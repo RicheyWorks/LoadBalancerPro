@@ -1,14 +1,13 @@
 @startuml cloudmanager
 
-' Style and appearance settings
-skinparam backgroundColor #2B2B2B
-skinparam classBackgroundColor #333333
-skinparam classBorderColor #FFFFFF
-skinparam classFontColor #FFFFFF
-skinparam classFontSize 14
-skinparam arrowColor #FFFFFF
-skinparam roundcorner 15
-skinparam shadowing false
+skinparam backgroundColor #ADD8E6  
+skinparam classBackgroundColor #FFFFFF  
+skinparam classBorderColor #000080  
+skinparam classFontColor #000000  
+skinparam classFontSize 14  
+skinparam arrowColor #FFFFFF  
+skinparam roundcorner 15  
+skinparam shadowing false  
 
 ' CloudManager class representing AWS integration
 class CloudManager {

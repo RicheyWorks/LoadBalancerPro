@@ -1,0 +1,27 @@
+@startuml utils
+
+skinparam backgroundColor #2B2B2B
+skinparam classBackgroundColor #333333
+skinparam classBorderColor #FFFFFF
+skinparam classFontColor #FFFFFF
+skinparam classFontSize 14
+skinparam arrowColor #FFFFFF
+skinparam roundcorner 15
+skinparam shadowing false
+
+class Utils {
+    + static long hash(String key)
+    + static void importServerLogs(String filename, String format, LoadBalancer balancer) throws IOException
+    + static void exportReport(String filename, String format, List<Server> servers, List<String> alertLog) throws IOException
+}
+
+Utils --> "1" LoadBalancer : interacts with
+Utils --> "many" Server : processes
+
+Utils --> "1" Logger : logs events
+
+Utils ..> "1" File : reads/writes
+
+title Utils - LoadBalancer Utility Functions
+
+@enduml

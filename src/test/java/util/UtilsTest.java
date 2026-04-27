@@ -8,6 +8,7 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
 import java.io.*;
 import java.nio.file.*;
 import java.util.Comparator;
@@ -203,7 +204,9 @@ class UtilsTest {
     void testImportServerLogsRejectsNonFiniteCsvMetrics() throws IOException {
         logger.info("Testing CSV import skips non-finite metrics");
         Path csvFile = createTestFile("nonfinite.csv",
-            TEST_SERVER_ID_1 + ",NaN,30.0,40.0\n" + TEST_SERVER_ID_2 + ",20.0,30.0,40.0");
+            TEST_SERVER_ID_1 + ",NaN,30.0,40.0\n"
+                + "S3,Infinity,30.0,40.0\n"
+                + TEST_SERVER_ID_2 + ",20.0,30.0,40.0");
 
         assertDoesNotThrow(() -> Utils.importServerLogs(csvFile.toString(), CSV_FORMAT, balancer),
             "Should skip non-finite metrics and keep importing valid rows!");
@@ -221,6 +224,45 @@ class UtilsTest {
 
         assertEquals(1, balancer.getServers().size(), "Pipe-delimited row should be loaded!");
         assertServerAttributes(balancer.getServerMap().get(TEST_SERVER_ID_1), TEST_SERVER_ID_1, 30.0, 40.0, 50.0, DEFAULT_CAPACITY);
+    }
+
+    @Test
+    void testImportServerLogsRejectsEmptyCsvDelimiter() throws IOException {
+        logger.info("Testing CSV import rejects empty delimiters");
+        Path csvFile = createTestFile("empty-delimiter.csv", TEST_SERVER_ID_1 + ",30.0,40.0,50.0");
+
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+            () -> Utils.importServerLogs(csvFile.toString(), CSV_FORMAT, balancer, null, "", true),
+            "Empty CSV delimiter should be rejected!");
+
+        assertTrue(thrown.getMessage().contains("delimiter"), "Exception should mention delimiter!");
+        assertEquals(0, balancer.getServers().size(), "No servers should be loaded after delimiter rejection!");
+    }
+
+    @Test
+    void testImportServerLogsFromMalformedJsonDocumentThrows() throws IOException {
+        logger.info("Testing malformed JSON document fails fast");
+        Path jsonFile = createTestFile("malformed.json", "[{\"serverId\":\"S1\"");
+
+        assertThrows(JSONException.class, () -> Utils.importServerLogs(jsonFile.toString(), JSON_FORMAT, balancer),
+            "Malformed JSON document should throw a JSON parsing exception!");
+        assertEquals(0, balancer.getServers().size(), "No servers should be loaded from malformed JSON!");
+    }
+
+    @Test
+    void testImportServerLogsSkipsInvalidJsonEntryAndContinues() throws IOException {
+        logger.info("Testing JSON import skips invalid entries and continues");
+        String json = "["
+            + "{\"cpuUsage\":10.0,\"memoryUsage\":20.0,\"diskUsage\":30.0},"
+            + "{\"serverId\":\"" + TEST_SERVER_ID_2 + "\",\"cpuUsage\":20.0,\"memoryUsage\":30.0,\"diskUsage\":40.0}"
+            + "]";
+        Path jsonFile = createTestFile("partially-invalid.json", json);
+
+        assertDoesNotThrow(() -> Utils.importServerLogs(jsonFile.toString(), JSON_FORMAT, balancer),
+            "Invalid JSON entries should be skipped while valid entries continue importing!");
+
+        assertEquals(1, balancer.getServers().size(), "Only valid JSON entry should be loaded!");
+        assertServerAttributes(balancer.getServerMap().get(TEST_SERVER_ID_2), TEST_SERVER_ID_2, 20.0, 30.0, 40.0, DEFAULT_CAPACITY);
     }
 
     @Test

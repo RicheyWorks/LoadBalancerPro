@@ -20,7 +20,6 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -30,16 +29,10 @@ import java.util.zip.GZIPOutputStream;
  */
 public class Utils {
     private static final Logger logger = LogManager.getLogger(Utils.class);
-    private static final int CSV_MIN_FIELDS = 4;
-    private static final int CSV_CAPACITY_INDEX = 4;
-    private static final int CSV_CLOUD_INDEX = 5;
-    private static final double DEFAULT_CAPACITY = 100.0;
     private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private static final int HASH_CACHE_SIZE = 1000;
     private static final int CSV_VERSION = 1;
     private static final int JSON_VERSION = 1;
-    private static final double MIN_VALUE = 0.0;
-    private static final double MAX_VALUE = 100.0;
     private static final long SHUTDOWN_TIMEOUT_SECONDS = 5;
     private static final int IO_RETRY_ATTEMPTS = 3;
     private static final long IO_RETRY_DELAY_MS = 500;
@@ -137,10 +130,7 @@ public class Utils {
     private static void importFromCsv(File file, LoadBalancer balancer, AtomicInteger processed, int totalLines,
                                       Consumer<Integer> progressCallback, String csvDelimiter, boolean cloudEnabled,
                                       String timestamp) throws IOException {
-        String delimiter = csvDelimiter != null ? csvDelimiter : ",";
-        if (delimiter.isEmpty()) {
-            throw new IllegalArgumentException("CSV delimiter cannot be empty");
-        }
+        String delimiter = CsvServerLogParser.normalizeDelimiter(csvDelimiter);
         try (BufferedReader br = openBufferedReader(file)) {
             List<String> batch = new ArrayList<>(BATCH_SIZE);
             String line;
@@ -172,7 +162,7 @@ public class Utils {
             String line = batch.get(i);
             int lineNum = startLineNum + i;
             try {
-                Server server = parseCsvLine(line, lineNum, delimiter);
+                Server server = CsvServerLogParser.parseLine(line, lineNum, delimiter);
                 if (cloudEnabled || server.getServerType() != ServerType.CLOUD) {
                     balancer.addServer(server);
                 } else {
@@ -186,24 +176,6 @@ public class Utils {
         }
     }
 
-    private static Server parseCsvLine(String line, int lineNum, String delimiter) {
-        String[] parts = line.split(Pattern.quote(delimiter), -1);
-        if (parts.length < CSV_MIN_FIELDS) {
-            throw new IllegalArgumentException("Insufficient fields (" + parts.length + " < " + CSV_MIN_FIELDS + ")");
-        }
-        String serverId = parts[0].trim();
-        if (serverId.isEmpty()) throw new IllegalArgumentException("Server ID cannot be empty");
-        double cpu = parseDouble(parts[1].trim(), "CPU", lineNum);
-        double mem = parseDouble(parts[2].trim(), "memory", lineNum);
-        double disk = parseDouble(parts[3].trim(), "disk", lineNum);
-        double capacity = parts.length > CSV_CAPACITY_INDEX ?
-                         parseNonNegativeDouble(parts[CSV_CAPACITY_INDEX].trim(), "capacity") : DEFAULT_CAPACITY;
-        ServerType serverType = determineServerType(parts, serverId, lineNum);
-        Server server = new Server(serverId, cpu, mem, disk, serverType);
-        server.setCapacity(capacity);
-        return server;
-    }
-
     private static void importFromJson(File file, LoadBalancer balancer, AtomicInteger processed, int totalLines,
                                        Consumer<Integer> progressCallback, boolean cloudEnabled, String timestamp) 
                                        throws IOException {
@@ -212,7 +184,7 @@ public class Utils {
             logger.warn("[{}] Empty JSON file: {}", timestamp, file.getName());
             return;
         }
-        JSONArray jsonArray = new JSONArray(jsonContent);
+        JSONArray jsonArray = JsonServerLogParser.parseArray(jsonContent);
         for (int i = 0; i < jsonArray.length(); i += BATCH_SIZE) {
             int end = Math.min(i + BATCH_SIZE, jsonArray.length());
             processJsonBatch(jsonArray, i, end, balancer, processed, totalLines, progressCallback, cloudEnabled, timestamp);
@@ -243,12 +215,12 @@ public class Utils {
                                          boolean cloudEnabled, String timestamp) {
         for (int i = start; i < end; i++) {
             try {
-                JSONObject json = jsonArray.getJSONObject(i);
-                int version = json.optInt("version", JSON_VERSION);
-                if (version != JSON_VERSION) {
-                    logger.warn("[{}] JSON entry {}: Unsupported version {}; using v{}", timestamp, i, version, JSON_VERSION);
+                JsonServerLogParser.ParsedServer parsedServer = JsonServerLogParser.parseEntry(jsonArray, i, JSON_VERSION);
+                if (parsedServer.getVersion() != JSON_VERSION) {
+                    logger.warn("[{}] JSON entry {}: Unsupported version {}; using v{}",
+                            timestamp, i, parsedServer.getVersion(), JSON_VERSION);
                 }
-                Server server = Server.fromJson(json);
+                Server server = parsedServer.getServer();
                 if (cloudEnabled || server.getServerType() != ServerType.CLOUD) {
                     balancer.addServer(server);
                 } else {
@@ -407,53 +379,6 @@ public class Utils {
     @FunctionalInterface
     private interface IOOperation<T> {
         T execute() throws IOException;
-    }
-
-    private static double parseDouble(String value, String field, int lineNum) {
-        try {
-            double parsed = Double.parseDouble(value);
-            if (Double.isNaN(parsed) || Double.isInfinite(parsed)) {
-                throw new IllegalArgumentException(field + " must be finite: " + value);
-            }
-            if (parsed < MIN_VALUE || parsed > MAX_VALUE) {
-                logger.warn("Line {}: {} value {} out of range [0, 100]; clamping.", lineNum, field, parsed);
-                return clamp(parsed);
-            }
-            return parsed;
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(field + " must be numeric: " + value);
-        }
-    }
-
-    private static double parseNonNegativeDouble(String value, String field) {
-        try {
-            double parsed = Double.parseDouble(value);
-            if (Double.isNaN(parsed) || Double.isInfinite(parsed) || parsed < MIN_VALUE) {
-                throw new IllegalArgumentException(field + " must be non-negative: " + value);
-            }
-            return parsed;
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(field + " must be numeric: " + value);
-        }
-    }
-
-    private static ServerType determineServerType(String[] parts, String serverId, int lineNum) {
-        if (parts.length > CSV_CLOUD_INDEX) {
-            String isCloudStr = parts[CSV_CLOUD_INDEX].trim().toLowerCase();
-            try {
-                return Boolean.parseBoolean(isCloudStr) || isCloudStr.equals("1") ? 
-                       ServerType.CLOUD : ServerType.ONSITE;
-            } catch (Exception e) {
-                logger.warn("Line {}: Invalid cloud flag '{}'; inferring from ID.", lineNum, isCloudStr);
-            }
-        }
-        ServerType inferred = serverId.startsWith("AWS-") ? ServerType.CLOUD : ServerType.ONSITE;
-        logger.info("Line {}: Inferred serverType for {}: {}", lineNum, serverId, inferred);
-        return inferred;
-    }
-
-    private static double clamp(double value) {
-        return Math.max(MIN_VALUE, Math.min(MAX_VALUE, value));
     }
 
     public static void shutdownExecutor() {

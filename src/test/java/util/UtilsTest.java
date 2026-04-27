@@ -216,6 +216,51 @@ class UtilsTest {
     }
 
     @Test
+    void testImportServerLogsHandlesCsvCapacityEdgeCases() throws IOException {
+        logger.info("Testing CSV import capacity edge cases");
+        Path csvFile = createTestFile("capacity-edge-cases.csv",
+            "CAP-VALID,10.0,20.0,30.0,250.0\n"
+                + "CAP-MISSING,10.0,20.0,30.0\n"
+                + "CAP-NEGATIVE,10.0,20.0,30.0,-1.0\n"
+                + "CAP-NAN,10.0,20.0,30.0,NaN\n"
+                + "CAP-INFINITY,10.0,20.0,30.0,Infinity\n"
+                + "CAP-TEXT,10.0,20.0,30.0,not-a-number");
+
+        assertDoesNotThrow(() -> Utils.importServerLogs(csvFile.toString(), CSV_FORMAT, balancer),
+            "Invalid capacity values should be skipped while valid rows continue importing!");
+
+        assertEquals(2, balancer.getServers().size(), "Only valid and missing-capacity rows should be loaded!");
+        assertServerAttributes(balancer.getServerMap().get("CAP-VALID"), "CAP-VALID", 10.0, 20.0, 30.0, 250.0);
+        assertServerAttributes(balancer.getServerMap().get("CAP-MISSING"), "CAP-MISSING", 10.0, 20.0, 30.0, DEFAULT_CAPACITY);
+        assertFalse(balancer.getServerMap().containsKey("CAP-NEGATIVE"), "Negative capacity row should be skipped!");
+        assertFalse(balancer.getServerMap().containsKey("CAP-NAN"), "NaN capacity row should be skipped!");
+        assertFalse(balancer.getServerMap().containsKey("CAP-INFINITY"), "Infinite capacity row should be skipped!");
+        assertFalse(balancer.getServerMap().containsKey("CAP-TEXT"), "Text capacity row should be skipped!");
+    }
+
+    @Test
+    void testImportServerLogsHandlesCsvCloudFlagSemantics() throws IOException {
+        logger.info("Testing CSV import cloud flag semantics");
+        Path csvFile = createTestFile("cloud-flag-semantics.csv",
+            "CLOUD-TRUE,10.0,20.0,30.0,100.0,true\n"
+                + "CLOUD-FALSE,10.0,20.0,30.0,100.0,false\n"
+                + "CLOUD-ONE,10.0,20.0,30.0,100.0,1\n"
+                + "CLOUD-ZERO,10.0,20.0,30.0,100.0,0\n"
+                + "CLOUD-BLANK,10.0,20.0,30.0,100.0,\n"
+                + "CLOUD-INVALID,10.0,20.0,30.0,100.0,maybe");
+
+        Utils.importServerLogs(csvFile.toString(), CSV_FORMAT, balancer);
+
+        assertEquals(6, balancer.getServers().size(), "All cloud flag rows should be parseable!");
+        assertTrue(balancer.getServerMap().get("CLOUD-TRUE").isCloudInstance(), "true flag should import as cloud!");
+        assertFalse(balancer.getServerMap().get("CLOUD-FALSE").isCloudInstance(), "false flag should import as onsite!");
+        assertTrue(balancer.getServerMap().get("CLOUD-ONE").isCloudInstance(), "1 flag should import as cloud!");
+        assertFalse(balancer.getServerMap().get("CLOUD-ZERO").isCloudInstance(), "0 flag should import as onsite!");
+        assertFalse(balancer.getServerMap().get("CLOUD-BLANK").isCloudInstance(), "Blank flag should import as onsite!");
+        assertFalse(balancer.getServerMap().get("CLOUD-INVALID").isCloudInstance(), "Invalid flag should import as onsite!");
+    }
+
+    @Test
     void testImportServerLogsTreatsCsvDelimiterLiterally() throws IOException {
         logger.info("Testing CSV import with a regex metacharacter delimiter");
         Path csvFile = createTestFile("pipe-delimited.csv", TEST_SERVER_ID_1 + "|30.0|40.0|50.0");

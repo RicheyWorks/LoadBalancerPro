@@ -67,13 +67,6 @@
             <version>2.20.0</version>
         </dependency>
 
-        <!-- Jackson for JSON parsing in tests -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.15.2</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -92,7 +85,6 @@
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
-            <version>3.5.11</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -174,6 +166,16 @@
                             <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
                     </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Spring Boot API runner: mvn spring-boot:run -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <configuration>
+                    <mainClass>api.LoadBalancerApiApplication</mainClass>
                 </configuration>
             </plugin>
 

@@ -353,7 +353,7 @@ class ServerTest {
      * and verifies that an IllegalArgumentException is thrown.
      */
     @Test
-    void testJsonDeserialization_MissingFields() {
+    void testJsonDeserialization_MissingFields() throws Exception {
         logger.info("=== TESTING JSON DESERIALIZATION WITH MISSING FIELDS ===");
         JSONObject json = new JSONObject();
         json.put("cpuUsage", 30.0);
@@ -385,7 +385,7 @@ class ServerTest {
      * and verifies that an IllegalArgumentException is thrown.
      */
     @Test
-    void testJsonDeserialization_InvalidTypes() {
+    void testJsonDeserialization_InvalidTypes() throws Exception {
         logger.info("=== TESTING JSON DESERIALIZATION WITH INVALID TYPES ===");
         JSONObject json = new JSONObject();
         json.put("serverId", "S1");

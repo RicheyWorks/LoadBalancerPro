@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
  */
 public class CloudManager {
     private static final Logger logger = LogManager.getLogger(CloudManager.class);
+    private static final String REQUIRED_LIVE_MUTATION_INTENT = "LOADBALANCERPRO_LIVE_MUTATION";
 
     private final AmazonEC2 ec2Client;
     private final AmazonCloudWatch cloudWatchClient;
@@ -425,6 +426,11 @@ public class CloudManager {
                 if (callback != null) callback.accept(true);
                 return;
             }
+            if (!manager.canUpdateAutoScalingGroupCapacity(desiredCapacity)) {
+                status = Status.FAILED;
+                if (callback != null) callback.accept(false);
+                return;
+            }
             UpdateAutoScalingGroupRequest request = new UpdateAutoScalingGroupRequest()
                     .withAutoScalingGroupName(manager.config.getAutoScalingGroupName())
                     .withDesiredCapacity(desiredCapacity);
@@ -638,6 +644,34 @@ public class CloudManager {
     @FunctionalInterface
     private interface CheckedRunnable {
         void run() throws Exception;
+    }
+
+    private boolean canUpdateAutoScalingGroupCapacity(int desiredCapacity) {
+        if (!config.isLiveMutationAllowed()) {
+            logZeroCopy("Denied live ASG scale update to %s: %s is not enabled.",
+                    desiredCapacity, CloudConfig.ALLOW_LIVE_MUTATION_PROPERTY);
+            return false;
+        }
+        if (!REQUIRED_LIVE_MUTATION_INTENT.equals(config.getOperatorIntent())) {
+            logZeroCopy("Denied live ASG scale update to %s: %s is missing or incorrect.",
+                    desiredCapacity, CloudConfig.OPERATOR_INTENT_PROPERTY);
+            return false;
+        }
+        if (desiredCapacity > config.getMaxDesiredCapacity()) {
+            logZeroCopy("Denied live ASG scale update to %s: exceeds %s=%s.",
+                    desiredCapacity, CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, config.getMaxDesiredCapacity());
+            return false;
+        }
+
+        int currentCapacity = getCurrentCapacity();
+        int scaleStep = Math.abs(desiredCapacity - currentCapacity);
+        if (scaleStep > config.getMaxScaleStep()) {
+            logZeroCopy("Denied live ASG scale update from %s to %s: step %s exceeds %s=%s.",
+                    currentCapacity, desiredCapacity, scaleStep,
+                    CloudConfig.MAX_SCALE_STEP_PROPERTY, config.getMaxScaleStep());
+            return false;
+        }
+        return true;
     }
 
     private boolean canDeleteCloudResources() {

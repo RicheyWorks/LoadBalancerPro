@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api")
 public class AllocatorController {
@@ -25,12 +27,12 @@ public class AllocatorController {
     }
 
     @PostMapping("/allocate/capacity-aware")
-    public AllocationResponse capacityAware(@RequestBody AllocationRequest request) {
+    public AllocationResponse capacityAware(@Valid @RequestBody AllocationRequest request) {
         return allocatorService.capacityAware(request);
     }
 
     @PostMapping("/allocate/predictive")
-    public AllocationResponse predictive(@RequestBody AllocationRequest request) {
+    public AllocationResponse predictive(@Valid @RequestBody AllocationRequest request) {
         return allocatorService.predictive(request);
     }
 }

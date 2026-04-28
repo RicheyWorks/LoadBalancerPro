@@ -111,6 +111,55 @@ class AllocatorControllerTest {
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").exists());
+                .andExpect(jsonPath("$.error", is("validation_failed")))
+                .andExpect(jsonPath("$.message", is("Request validation failed")))
+                .andExpect(jsonPath("$.details").isArray());
+    }
+
+    @Test
+    void allocationRejectsInvalidServerInput() throws Exception {
+        mockMvc.perform(post("/api/allocate/predictive")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "requestedLoad": 10.0,
+                                  "servers": [
+                                    {
+                                      "id": "",
+                                      "cpuUsage": 150.0,
+                                      "memoryUsage": 20.0,
+                                      "diskUsage": 20.0,
+                                      "capacity": 100.0,
+                                      "weight": 1.0,
+                                      "healthy": true
+                                    }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("validation_failed")))
+                .andExpect(jsonPath("$.details").isArray());
+    }
+
+    @Test
+    void actuatorHealthInfoAndMetricsAreAvailable() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").exists());
+
+        mockMvc.perform(get("/actuator/info"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.app.name", is("LoadBalancerPro")));
+
+        mockMvc.perform(get("/actuator/metrics"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.names").isArray());
+    }
+
+    @Test
+    void actuatorReadinessIsAvailable() throws Exception {
+        mockMvc.perform(get("/actuator/health/readiness"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").exists());
     }
 }

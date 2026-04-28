@@ -28,6 +28,14 @@ public class CloudConfig {
     public static final String LIVE_MODE_PROPERTY = "cloud.liveMode";
     public static final String ALLOW_RESOURCE_DELETION_PROPERTY = "cloud.allowResourceDeletion";
     public static final String CONFIRM_RESOURCE_OWNERSHIP_PROPERTY = "cloud.confirmResourceOwnership";
+    public static final String MAX_DESIRED_CAPACITY_PROPERTY = "cloud.maxDesiredCapacity";
+    public static final String MAX_SCALE_STEP_PROPERTY = "cloud.maxScaleStep";
+    public static final String ALLOW_LIVE_MUTATION_PROPERTY = "cloud.allowLiveMutation";
+    public static final String OPERATOR_INTENT_PROPERTY = "cloud.operatorIntent";
+    public static final int DEFAULT_MAX_DESIRED_CAPACITY = 0;
+    public static final int DEFAULT_MAX_SCALE_STEP = 0;
+    public static final boolean DEFAULT_ALLOW_LIVE_MUTATION = false;
+    public static final String DEFAULT_OPERATOR_INTENT = "";
 
     private final String accessKey;
     private final String secretKey;
@@ -51,6 +59,10 @@ public class CloudConfig {
     private final boolean liveMode;
     private final boolean allowResourceDeletion;
     private final boolean resourceOwnershipConfirmed;
+    private final int maxDesiredCapacity;
+    private final int maxScaleStep;
+    private final boolean allowLiveMutation;
+    private final String operatorIntent;
 
     public CloudConfig(String accessKey, String secretKey, String region, String launchTemplateId, String subnetId) {
         this(accessKey, secretKey, region, launchTemplateId, subnetId, new Properties());
@@ -80,6 +92,10 @@ public class CloudConfig {
         this.liveMode = parseBoolean(props, LIVE_MODE_PROPERTY, false);
         this.allowResourceDeletion = parseBoolean(props, ALLOW_RESOURCE_DELETION_PROPERTY, false);
         this.resourceOwnershipConfirmed = parseBoolean(props, CONFIRM_RESOURCE_OWNERSHIP_PROPERTY, false);
+        this.maxDesiredCapacity = parseInt(props, MAX_DESIRED_CAPACITY_PROPERTY, DEFAULT_MAX_DESIRED_CAPACITY, 0, Integer.MAX_VALUE);
+        this.maxScaleStep = parseInt(props, MAX_SCALE_STEP_PROPERTY, DEFAULT_MAX_SCALE_STEP, 0, Integer.MAX_VALUE);
+        this.allowLiveMutation = parseBoolean(props, ALLOW_LIVE_MUTATION_PROPERTY, DEFAULT_ALLOW_LIVE_MUTATION);
+        this.operatorIntent = parseString(props, OPERATOR_INTENT_PROPERTY, DEFAULT_OPERATOR_INTENT);
     }
 
     private void validateCredentials(String accessKey, String secretKey) {
@@ -148,6 +164,14 @@ public class CloudConfig {
         return Boolean.parseBoolean(raw);
     }
 
+    private String parseString(Properties props, String key, String defaultValue) {
+        String raw = props.getProperty(key, System.getProperty(key, defaultValue));
+        if (raw == null || raw.isBlank()) {
+            return defaultValue;
+        }
+        return raw.trim();
+    }
+
     // Getters
     public String getAccessKey() { return accessKey; }
     public String getSecretKey() { return secretKey; }
@@ -172,4 +196,8 @@ public class CloudConfig {
     public boolean isDryRun() { return !liveMode; }
     public boolean isResourceDeletionAllowed() { return allowResourceDeletion; }
     public boolean isResourceOwnershipConfirmed() { return resourceOwnershipConfirmed; }
+    public int getMaxDesiredCapacity() { return maxDesiredCapacity; }
+    public int getMaxScaleStep() { return maxScaleStep; }
+    public boolean isLiveMutationAllowed() { return allowLiveMutation; }
+    public String getOperatorIntent() { return operatorIntent; }
 }

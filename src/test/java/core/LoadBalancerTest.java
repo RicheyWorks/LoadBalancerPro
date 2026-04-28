@@ -287,8 +287,8 @@ class LoadBalancerTest {
     }
 
     @Test
-    void testWeightedDistributionWithAllZeroWeightsCurrentlyReturnsNaNAllocations() {
-        logger.info("=== TESTING CURRENT ALL-ZERO WEIGHTED DISTRIBUTION CONTRACT ===");
+    void testWeightedDistributionWithAllZeroWeightsFallsBackToEqualAllocation() {
+        logger.info("=== TESTING SAFE ALL-ZERO WEIGHTED DISTRIBUTION CONTRACT ===");
         addServers(
             serverWithWeightAndCapacity("S1", 10.0, 20.0, 30.0, 0.0, 100.0),
             serverWithWeightAndCapacity("S2", 20.0, 30.0, 40.0, 0.0, 100.0)
@@ -296,8 +296,8 @@ class LoadBalancerTest {
 
         Map<String, Double> result = balancer.weightedDistribution(100.0);
 
-        assertTrue(Double.isNaN(result.get("S1")), "All-zero weights currently produce NaN for S1!");
-        assertTrue(Double.isNaN(result.get("S2")), "All-zero weights currently produce NaN for S2!");
+        assertEquals(50.0, result.get("S1"), 0.01, "All-zero weights should fall back to equal allocation for S1!");
+        assertEquals(50.0, result.get("S2"), 0.01, "All-zero weights should fall back to equal allocation for S2!");
     }
 
     @Test

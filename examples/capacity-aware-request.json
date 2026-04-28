@@ -1,0 +1,23 @@
+{
+  "requestedLoad": 120.0,
+  "servers": [
+    {
+      "id": "api-1",
+      "cpuUsage": 50.0,
+      "memoryUsage": 45.0,
+      "diskUsage": 40.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": true
+    },
+    {
+      "id": "api-2",
+      "cpuUsage": 55.0,
+      "memoryUsage": 50.0,
+      "diskUsage": 45.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": true
+    }
+  ]
+}

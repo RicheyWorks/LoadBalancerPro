@@ -1,0 +1,14 @@
+{
+  "requestedLoad": -10.0,
+  "servers": [
+    {
+      "id": "",
+      "cpuUsage": 150.0,
+      "memoryUsage": 25.0,
+      "diskUsage": 25.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": true
+    }
+  ]
+}

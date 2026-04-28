@@ -1,0 +1,23 @@
+{
+  "requestedLoad": 80.0,
+  "servers": [
+    {
+      "id": "worker-1",
+      "cpuUsage": 40.0,
+      "memoryUsage": 35.0,
+      "diskUsage": 30.0,
+      "capacity": 120.0,
+      "weight": 1.0,
+      "healthy": true
+    },
+    {
+      "id": "worker-2",
+      "cpuUsage": 65.0,
+      "memoryUsage": 60.0,
+      "diskUsage": 55.0,
+      "capacity": 120.0,
+      "weight": 1.0,
+      "healthy": true
+    }
+  ]
+}

@@ -219,17 +219,9 @@ public class LoadBalancer {
     public Map<String, Double> leastLoaded(double totalData) {
         validateDistributionInput(totalData);
         return distributeWithHealthyServers(totalData, servers -> {
-            Map<String, Double> dist = new HashMap<>();
-            List<Server> sorted = servers.stream()
-                .sorted(Comparator.comparingDouble(Server::getLoadScore))
-                .toList();
-            double remaining = totalData;
-            for (Server server : sorted) {
-                double alloc = Math.min(remaining, totalData / sorted.size());
-                dist.put(server.getServerId(), alloc);
-                currentDistribution.merge(server.getServerId(), alloc, Double::sum);
-                remaining -= alloc;
-                if (remaining <= 0) break;
+            Map<String, Double> dist = LoadDistributionPlanner.leastLoaded(servers, totalData);
+            for (Map.Entry<String, Double> entry : dist.entrySet()) {
+                currentDistribution.merge(entry.getKey(), entry.getValue(), Double::sum);
             }
             return dist;
         });

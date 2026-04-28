@@ -224,6 +224,23 @@ class LoadBalancerTest {
     }
 
     @Test
+    void testLeastLoadedWithThreeUnequalLoadScoresKeepsCurrentEqualAllocation() {
+        logger.info("=== TESTING LEAST LOADED THREE-SERVER CURRENT CONTRACT ===");
+        addServers(
+            new Server("LOW", 0.0, 0.0, 0.0),
+            new Server("MID", 30.0, 30.0, 30.0),
+            new Server("HIGH", 90.0, 90.0, 90.0)
+        );
+
+        Map<String, Double> result = balancer.leastLoaded(90.0);
+
+        assertEquals(3, result.size(), "All healthy servers should receive an allocation!");
+        assertEquals(30.0, result.get("LOW"), 0.01, "Current least-loaded behavior allocates equal share to LOW!");
+        assertEquals(30.0, result.get("MID"), 0.01, "Current least-loaded behavior allocates equal share to MID!");
+        assertEquals(30.0, result.get("HIGH"), 0.01, "Current least-loaded behavior allocates equal share to HIGH!");
+    }
+
+    @Test
     void testWeightedDistributionUsesServerWeights() {
         logger.info("=== TESTING WEIGHTED DISTRIBUTION RATIOS ===");
         addServers(

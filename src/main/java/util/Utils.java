@@ -95,18 +95,21 @@ public class Utils {
         File file = new File(filePath);
         int totalLines = estimateLineCount(file);
         AtomicInteger processed = new AtomicInteger(0);
+        ImportDiagnostics diagnostics = new ImportDiagnostics();
 
         format = format.toLowerCase();
         if (format.startsWith("csv")) {
-            importFromCsv(file, balancer, processed, totalLines, progressCallback, csvDelimiter, cloudEnabled, timestamp);
+            importFromCsv(file, balancer, processed, totalLines, progressCallback, csvDelimiter, cloudEnabled, timestamp, diagnostics);
         } else if (format.startsWith("json")) {
-            importFromJson(file, balancer, processed, totalLines, progressCallback, cloudEnabled, timestamp);
+            importFromJson(file, balancer, processed, totalLines, progressCallback, cloudEnabled, timestamp, diagnostics);
         } else {
             throw new IllegalArgumentException("Unsupported format: " + format + ". Use 'csv[.gz]' or 'json[.gz]'");
         }
 
         long elapsedMs = (System.nanoTime() - startTime.get()) / 1_000_000;
-        logger.info("[{}] Import completed: {} servers processed in {}ms", timestamp, processed.get(), elapsedMs);
+        logger.info("[{}] Import completed: total={}, imported={}, skipped={}, malformedDocuments={}, elapsedMs={}",
+                timestamp, diagnostics.getTotalSeen(), diagnostics.getImported(), diagnostics.getSkipped(),
+                diagnostics.getMalformedDocuments(), elapsedMs);
     }
 
     public static void importServerLogs(String filePath, String format, LoadBalancer balancer) throws IOException {
@@ -129,7 +132,7 @@ public class Utils {
 
     private static void importFromCsv(File file, LoadBalancer balancer, AtomicInteger processed, int totalLines,
                                       Consumer<Integer> progressCallback, String csvDelimiter, boolean cloudEnabled,
-                                      String timestamp) throws IOException {
+                                      String timestamp, ImportDiagnostics diagnostics) throws IOException {
         String delimiter = CsvServerLogParser.normalizeDelimiter(csvDelimiter);
         try (BufferedReader br = openBufferedReader(file)) {
             List<String> batch = new ArrayList<>(BATCH_SIZE);
@@ -141,13 +144,13 @@ public class Utils {
                 batch.add(line);
                 if (batch.size() >= BATCH_SIZE) {
                     processCsvBatch(batch, lineNum - batch.size() + 1, balancer, processed, totalLines,
-                                    progressCallback, delimiter, cloudEnabled, timestamp);
+                                    progressCallback, delimiter, cloudEnabled, timestamp, diagnostics);
                     batch.clear();
                 }
             }
             if (!batch.isEmpty()) {
                 processCsvBatch(batch, lineNum - batch.size() + 1, balancer, processed, totalLines,
-                                progressCallback, delimiter, cloudEnabled, timestamp);
+                                progressCallback, delimiter, cloudEnabled, timestamp, diagnostics);
             }
         } catch (IOException e) {
             logger.error("[{}] Failed to import CSV from {}: {}", timestamp, file.getPath(), e.getMessage(), e);
@@ -157,37 +160,50 @@ public class Utils {
 
     private static void processCsvBatch(List<String> batch, int startLineNum, LoadBalancer balancer,
                                         AtomicInteger processed, int totalLines, Consumer<Integer> progressCallback,
-                                        String delimiter, boolean cloudEnabled, String timestamp) {
+                                        String delimiter, boolean cloudEnabled, String timestamp, ImportDiagnostics diagnostics) {
         for (int i = 0; i < batch.size(); i++) {
             String line = batch.get(i);
             int lineNum = startLineNum + i;
+            diagnostics.recordSeen();
             try {
                 Server server = CsvServerLogParser.parseLine(line, lineNum, delimiter);
                 if (cloudEnabled || server.getServerType() != ServerType.CLOUD) {
                     balancer.addServer(server);
+                    diagnostics.recordImported();
                 } else {
+                    diagnostics.recordSkipped();
                     logger.debug("[{}] Line {}: Skipping non-cloud server {} as cloud is disabled.", 
                                  timestamp, lineNum, server.getServerId());
                 }
                 updateProgress(processed, totalLines, progressCallback);
             } catch (Exception e) {
+                diagnostics.recordSkipped();
                 logger.error("[{}] Line {}: Failed to parse CSV line '{}': {}", timestamp, lineNum, line, e.getMessage(), e);
             }
         }
     }
 
     private static void importFromJson(File file, LoadBalancer balancer, AtomicInteger processed, int totalLines,
-                                       Consumer<Integer> progressCallback, boolean cloudEnabled, String timestamp) 
-                                       throws IOException {
+                                       Consumer<Integer> progressCallback, boolean cloudEnabled, String timestamp,
+                                       ImportDiagnostics diagnostics) throws IOException {
         String jsonContent = readJsonWithRetries(file, timestamp);
         if (jsonContent.trim().isEmpty()) {
             logger.warn("[{}] Empty JSON file: {}", timestamp, file.getName());
             return;
         }
-        JSONArray jsonArray = JsonServerLogParser.parseArray(jsonContent);
+        JSONArray jsonArray;
+        try {
+            jsonArray = JsonServerLogParser.parseArray(jsonContent);
+        } catch (RuntimeException e) {
+            diagnostics.recordMalformedDocument();
+            logger.info("[{}] Import failed: total={}, imported={}, skipped={}, malformedDocuments={}",
+                    timestamp, diagnostics.getTotalSeen(), diagnostics.getImported(), diagnostics.getSkipped(),
+                    diagnostics.getMalformedDocuments());
+            throw e;
+        }
         for (int i = 0; i < jsonArray.length(); i += BATCH_SIZE) {
             int end = Math.min(i + BATCH_SIZE, jsonArray.length());
-            processJsonBatch(jsonArray, i, end, balancer, processed, totalLines, progressCallback, cloudEnabled, timestamp);
+            processJsonBatch(jsonArray, i, end, balancer, processed, totalLines, progressCallback, cloudEnabled, timestamp, diagnostics);
         }
     }
 
@@ -212,8 +228,9 @@ public class Utils {
 
     private static void processJsonBatch(JSONArray jsonArray, int start, int end, LoadBalancer balancer,
                                          AtomicInteger processed, int totalLines, Consumer<Integer> progressCallback,
-                                         boolean cloudEnabled, String timestamp) {
+                                         boolean cloudEnabled, String timestamp, ImportDiagnostics diagnostics) {
         for (int i = start; i < end; i++) {
+            diagnostics.recordSeen();
             try {
                 JsonServerLogParser.ParsedServer parsedServer = JsonServerLogParser.parseEntry(jsonArray, i, JSON_VERSION);
                 if (parsedServer.getVersion() != JSON_VERSION) {
@@ -223,14 +240,56 @@ public class Utils {
                 Server server = parsedServer.getServer();
                 if (cloudEnabled || server.getServerType() != ServerType.CLOUD) {
                     balancer.addServer(server);
+                    diagnostics.recordImported();
                 } else {
+                    diagnostics.recordSkipped();
                     logger.debug("[{}] JSON entry {}: Skipping non-cloud server {} as cloud is disabled.", 
                                  timestamp, i, server.getServerId());
                 }
                 updateProgress(processed, totalLines, progressCallback);
             } catch (Exception e) {
+                diagnostics.recordSkipped();
                 logger.error("[{}] JSON entry {}: Failed to parse: {}", timestamp, i, e.getMessage(), e);
             }
+        }
+    }
+
+    private static final class ImportDiagnostics {
+        private int totalSeen;
+        private int imported;
+        private int skipped;
+        private int malformedDocuments;
+
+        void recordSeen() {
+            totalSeen++;
+        }
+
+        void recordImported() {
+            imported++;
+        }
+
+        void recordSkipped() {
+            skipped++;
+        }
+
+        void recordMalformedDocument() {
+            malformedDocuments++;
+        }
+
+        int getTotalSeen() {
+            return totalSeen;
+        }
+
+        int getImported() {
+            return imported;
+        }
+
+        int getSkipped() {
+            return skipped;
+        }
+
+        int getMalformedDocuments() {
+            return malformedDocuments;
         }
     }
 

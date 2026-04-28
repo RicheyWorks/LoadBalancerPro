@@ -201,6 +201,23 @@ class UtilsTest {
     }
 
     @Test
+    void testImportServerLogsContinuesAfterInvalidCsvRows() throws IOException {
+        logger.info("Testing CSV import continues after invalid rows");
+        Path csvFile = createTestFile("mixed-valid-invalid.csv",
+            TEST_SERVER_ID_1 + ",30.0,40.0,50.0\n"
+                + "BROKEN,30.0,not-a-number,50.0\n"
+                + TEST_SERVER_ID_2 + ",20.0,30.0,40.0");
+
+        assertDoesNotThrow(() -> Utils.importServerLogs(csvFile.toString(), CSV_FORMAT, balancer),
+            "Invalid CSV rows should not abort the import!");
+
+        assertEquals(2, balancer.getServers().size(), "Valid rows before and after the invalid row should be loaded!");
+        assertTrue(balancer.getServerMap().containsKey(TEST_SERVER_ID_1), "First valid row should be loaded!");
+        assertTrue(balancer.getServerMap().containsKey(TEST_SERVER_ID_2), "Valid row after invalid row should be loaded!");
+        assertFalse(balancer.getServerMap().containsKey("BROKEN"), "Invalid row should be skipped!");
+    }
+
+    @Test
     void testImportServerLogsRejectsNonFiniteCsvMetrics() throws IOException {
         logger.info("Testing CSV import skips non-finite metrics");
         Path csvFile = createTestFile("nonfinite.csv",

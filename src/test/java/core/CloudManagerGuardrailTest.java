@@ -37,6 +37,13 @@ import static org.mockito.Mockito.when;
 class CloudManagerGuardrailTest {
     private static final String ACCESS_KEY = "AKIAIOSFODNN7EXAMPLE";
     private static final String SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
+    private static final String CLOUD_ENVIRONMENT_PROPERTY = "cloud.environment";
+    private static final String CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY = "cloud.allowedAwsAccountIds";
+    private static final String CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY = "cloud.currentAwsAccountId";
+    private static final String CLOUD_ALLOWED_REGIONS_PROPERTY = "cloud.allowedRegions";
+    private static final String ALLOWED_ACCOUNT_ID = "123456789012";
+    private static final String DISALLOWED_ACCOUNT_ID = "999999999999";
+    private static final String DEPLOY_ENVIRONMENT = "prod";
     @TempDir
     Path tempDir;
 
@@ -242,6 +249,74 @@ class CloudManagerGuardrailTest {
     }
 
     @Test
+    void liveScaleWithoutEnvironmentIsDenied() throws InterruptedException {
+        AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
+        CloudConfig config = liveConfigWithAccountGuardrails(
+                CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, null, autoScaling, null);
+        AtomicBoolean callbackResult = new AtomicBoolean(true);
+
+        scaleAndWait(manager, 1, callbackResult::set);
+
+        assertFalse(callbackResult.get(), "Live scale must require an explicit deployment environment.");
+        verify(autoScaling, never()).updateAutoScalingGroup(any(UpdateAutoScalingGroupRequest.class));
+    }
+
+    @Test
+    void liveScaleWithoutAllowedAccountListIsDenied() throws InterruptedException {
+        AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
+        CloudConfig config = liveConfigWithAccountGuardrails(
+                CLOUD_ENVIRONMENT_PROPERTY, DEPLOY_ENVIRONMENT,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, null, autoScaling, null);
+        AtomicBoolean callbackResult = new AtomicBoolean(true);
+
+        scaleAndWait(manager, 1, callbackResult::set);
+
+        assertFalse(callbackResult.get(), "Live scale must require an explicit AWS account allow-list.");
+        verify(autoScaling, never()).updateAutoScalingGroup(any(UpdateAutoScalingGroupRequest.class));
+    }
+
+    @Test
+    void liveScaleWithDisallowedAccountIsDenied() throws InterruptedException {
+        AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
+        CloudConfig config = liveConfigWithAccountGuardrails(
+                CLOUD_ENVIRONMENT_PROPERTY, DEPLOY_ENVIRONMENT,
+                CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, DISALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, null, autoScaling, null);
+        AtomicBoolean callbackResult = new AtomicBoolean(true);
+
+        scaleAndWait(manager, 1, callbackResult::set);
+
+        assertFalse(callbackResult.get(), "Live scale must deny accounts outside the allow-list.");
+        verify(autoScaling, never()).updateAutoScalingGroup(any(UpdateAutoScalingGroupRequest.class));
+    }
+
+    @Test
+    void liveScaleWithAllowedAccountAndRegionPassesExistingGuardrails() throws Exception {
+        String auditLog = auditLogForScale(1,
+                CloudConfig.ALLOW_LIVE_MUTATION_PROPERTY, "true",
+                CloudConfig.OPERATOR_INTENT_PROPERTY, "LOADBALANCERPRO_LIVE_MUTATION",
+                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10",
+                CLOUD_ENVIRONMENT_PROPERTY, DEPLOY_ENVIRONMENT,
+                CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+
+        assertTrue(auditLog.contains("decision=ALLOW"));
+        assertTrue(auditLog.contains("environment=" + DEPLOY_ENVIRONMENT));
+        assertTrue(auditLog.contains("accountId=" + ALLOWED_ACCOUNT_ID));
+        assertTrue(auditLog.contains("region=us-east-1"));
+        assertTrue(auditLog.contains("reason=GUARDRAILS_PASSED"));
+    }
+
+    @Test
     void deletionRequiresLiveModeOwnershipAndDeletionApproval() {
         assertDeletionSkipped(configWithDeletionFlags(false, true, true));
         assertDeletionSkipped(configWithDeletionFlags(true, false, true));
@@ -348,6 +423,23 @@ class CloudManagerGuardrailTest {
             props.setProperty(keyValues[i], keyValues[i + 1]);
         }
         return new CloudConfig(ACCESS_KEY, SECRET_KEY, "us-east-1", "lt-test", "subnet-test", props);
+    }
+
+    private static CloudConfig liveConfigWithAccountGuardrails(String... keyValues) {
+        return liveConfigWithMutationGuardrails(
+                combineKeyValues(
+                        new String[] {
+                                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10"
+                        },
+                        keyValues));
+    }
+
+    private static String[] combineKeyValues(String[] baseKeyValues, String[] extraKeyValues) {
+        String[] combined = new String[baseKeyValues.length + extraKeyValues.length];
+        System.arraycopy(baseKeyValues, 0, combined, 0, baseKeyValues.length);
+        System.arraycopy(extraKeyValues, 0, combined, baseKeyValues.length, extraKeyValues.length);
+        return combined;
     }
 
     private String auditLogForScale(int desiredCapacity, String... keyValues)

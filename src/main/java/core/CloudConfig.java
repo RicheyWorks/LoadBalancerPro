@@ -3,9 +3,12 @@ package core;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 /**
  * Configuration class for CloudManager, providing customizable settings for AWS integration and scaling.
@@ -33,11 +36,17 @@ public class CloudConfig {
     public static final String ALLOW_LIVE_MUTATION_PROPERTY = "cloud.allowLiveMutation";
     public static final String OPERATOR_INTENT_PROPERTY = "cloud.operatorIntent";
     public static final String ALLOW_AUTONOMOUS_SCALE_UP_PROPERTY = "cloud.allowAutonomousScaleUp";
+    public static final String ENVIRONMENT_PROPERTY = "cloud.environment";
+    public static final String ALLOWED_AWS_ACCOUNT_IDS_PROPERTY = "cloud.allowedAwsAccountIds";
+    public static final String CURRENT_AWS_ACCOUNT_ID_PROPERTY = "cloud.currentAwsAccountId";
+    public static final String ALLOWED_REGIONS_PROPERTY = "cloud.allowedRegions";
     public static final int DEFAULT_MAX_DESIRED_CAPACITY = 0;
     public static final int DEFAULT_MAX_SCALE_STEP = 0;
     public static final boolean DEFAULT_ALLOW_LIVE_MUTATION = false;
     public static final String DEFAULT_OPERATOR_INTENT = "";
     public static final boolean DEFAULT_ALLOW_AUTONOMOUS_SCALE_UP = false;
+    public static final String DEFAULT_ENVIRONMENT = "";
+    public static final String DEFAULT_CURRENT_AWS_ACCOUNT_ID = "";
 
     private final String accessKey;
     private final String secretKey;
@@ -66,6 +75,10 @@ public class CloudConfig {
     private final boolean allowLiveMutation;
     private final String operatorIntent;
     private final boolean allowAutonomousScaleUp;
+    private final String environment;
+    private final List<String> allowedAwsAccountIds;
+    private final String currentAwsAccountId;
+    private final List<String> allowedRegions;
 
     public CloudConfig(String accessKey, String secretKey, String region, String launchTemplateId, String subnetId) {
         this(accessKey, secretKey, region, launchTemplateId, subnetId, new Properties());
@@ -100,6 +113,11 @@ public class CloudConfig {
         this.allowLiveMutation = parseBoolean(props, ALLOW_LIVE_MUTATION_PROPERTY, DEFAULT_ALLOW_LIVE_MUTATION);
         this.operatorIntent = parseString(props, OPERATOR_INTENT_PROPERTY, DEFAULT_OPERATOR_INTENT);
         this.allowAutonomousScaleUp = parseBoolean(props, ALLOW_AUTONOMOUS_SCALE_UP_PROPERTY, DEFAULT_ALLOW_AUTONOMOUS_SCALE_UP);
+        this.environment = parseString(props, ENVIRONMENT_PROPERTY, DEFAULT_ENVIRONMENT);
+        this.allowedAwsAccountIds = parseCsvList(props, ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, this::isValidAwsAccountId);
+        this.currentAwsAccountId = parseValidatedString(props, CURRENT_AWS_ACCOUNT_ID_PROPERTY,
+                DEFAULT_CURRENT_AWS_ACCOUNT_ID, this::isValidAwsAccountId);
+        this.allowedRegions = parseCsvList(props, ALLOWED_REGIONS_PROPERTY, this::isValidRegion);
     }
 
     private void validateCredentials(String accessKey, String secretKey) {
@@ -176,6 +194,42 @@ public class CloudConfig {
         return raw.trim();
     }
 
+    private String parseValidatedString(Properties props, String key, String defaultValue, Predicate<String> validator) {
+        String value = parseString(props, key, defaultValue);
+        if (value.equals(defaultValue) || validator.test(value)) {
+            return value;
+        }
+        logger.warn("{}={} is invalid; using default {}", key, value, defaultValue);
+        return defaultValue;
+    }
+
+    private List<String> parseCsvList(Properties props, String key, Predicate<String> validator) {
+        String raw = props.getProperty(key, System.getProperty(key, ""));
+        if (raw == null || raw.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(raw.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .filter(value -> {
+                    boolean valid = validator.test(value);
+                    if (!valid) {
+                        logger.warn("Ignoring invalid {} entry: {}", key, value);
+                    }
+                    return valid;
+                })
+                .distinct()
+                .toList();
+    }
+
+    private boolean isValidAwsAccountId(String value) {
+        return value != null && value.matches("\\d{12}");
+    }
+
+    private boolean isValidRegion(String value) {
+        return value != null && value.matches("[a-z]{2}(-gov)?-[a-z]+-\\d");
+    }
+
     // Getters
     public String getAccessKey() { return accessKey; }
     public String getSecretKey() { return secretKey; }
@@ -205,4 +259,8 @@ public class CloudConfig {
     public boolean isLiveMutationAllowed() { return allowLiveMutation; }
     public String getOperatorIntent() { return operatorIntent; }
     public boolean isAutonomousScaleUpAllowed() { return allowAutonomousScaleUp; }
+    public String getEnvironment() { return environment; }
+    public List<String> getAllowedAwsAccountIds() { return allowedAwsAccountIds; }
+    public String getCurrentAwsAccountId() { return currentAwsAccountId; }
+    public List<String> getAllowedRegions() { return allowedRegions; }
 }

@@ -20,6 +20,7 @@ class CloudConfigGuardrailTest {
         assertEquals(CloudConfig.DEFAULT_MAX_SCALE_STEP, config.getMaxScaleStep());
         assertFalse(config.isLiveMutationAllowed());
         assertEquals(CloudConfig.DEFAULT_OPERATOR_INTENT, config.getOperatorIntent());
+        assertFalse(config.isAutonomousScaleUpAllowed());
     }
 
     @Test
@@ -29,6 +30,7 @@ class CloudConfigGuardrailTest {
         props.setProperty(CloudConfig.MAX_SCALE_STEP_PROPERTY, "2");
         props.setProperty(CloudConfig.ALLOW_LIVE_MUTATION_PROPERTY, "true");
         props.setProperty(CloudConfig.OPERATOR_INTENT_PROPERTY, "LOADBALANCERPRO_LIVE_MUTATION");
+        props.setProperty(CloudConfig.ALLOW_AUTONOMOUS_SCALE_UP_PROPERTY, "true");
 
         CloudConfig config = new CloudConfig(ACCESS_KEY, SECRET_KEY, "us-east-1", "lt-test", "subnet-test", props);
 
@@ -36,6 +38,7 @@ class CloudConfigGuardrailTest {
         assertEquals(2, config.getMaxScaleStep());
         assertTrue(config.isLiveMutationAllowed());
         assertEquals("LOADBALANCERPRO_LIVE_MUTATION", config.getOperatorIntent());
+        assertTrue(config.isAutonomousScaleUpAllowed());
     }
 
     @Test
@@ -45,6 +48,7 @@ class CloudConfigGuardrailTest {
         props.setProperty(CloudConfig.MAX_SCALE_STEP_PROPERTY, "not-a-number");
         props.setProperty(CloudConfig.ALLOW_LIVE_MUTATION_PROPERTY, "not-true");
         props.setProperty(CloudConfig.OPERATOR_INTENT_PROPERTY, "   ");
+        props.setProperty(CloudConfig.ALLOW_AUTONOMOUS_SCALE_UP_PROPERTY, "not-true");
 
         CloudConfig config = new CloudConfig(ACCESS_KEY, SECRET_KEY, "us-east-1", "lt-test", "subnet-test", props);
 
@@ -52,5 +56,6 @@ class CloudConfigGuardrailTest {
         assertEquals(CloudConfig.DEFAULT_MAX_SCALE_STEP, config.getMaxScaleStep());
         assertFalse(config.isLiveMutationAllowed());
         assertEquals(CloudConfig.DEFAULT_OPERATOR_INTENT, config.getOperatorIntent());
+        assertFalse(config.isAutonomousScaleUpAllowed());
     }
 }

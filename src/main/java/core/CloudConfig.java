@@ -32,10 +32,12 @@ public class CloudConfig {
     public static final String MAX_SCALE_STEP_PROPERTY = "cloud.maxScaleStep";
     public static final String ALLOW_LIVE_MUTATION_PROPERTY = "cloud.allowLiveMutation";
     public static final String OPERATOR_INTENT_PROPERTY = "cloud.operatorIntent";
+    public static final String ALLOW_AUTONOMOUS_SCALE_UP_PROPERTY = "cloud.allowAutonomousScaleUp";
     public static final int DEFAULT_MAX_DESIRED_CAPACITY = 0;
     public static final int DEFAULT_MAX_SCALE_STEP = 0;
     public static final boolean DEFAULT_ALLOW_LIVE_MUTATION = false;
     public static final String DEFAULT_OPERATOR_INTENT = "";
+    public static final boolean DEFAULT_ALLOW_AUTONOMOUS_SCALE_UP = false;
 
     private final String accessKey;
     private final String secretKey;
@@ -63,6 +65,7 @@ public class CloudConfig {
     private final int maxScaleStep;
     private final boolean allowLiveMutation;
     private final String operatorIntent;
+    private final boolean allowAutonomousScaleUp;
 
     public CloudConfig(String accessKey, String secretKey, String region, String launchTemplateId, String subnetId) {
         this(accessKey, secretKey, region, launchTemplateId, subnetId, new Properties());
@@ -96,6 +99,7 @@ public class CloudConfig {
         this.maxScaleStep = parseInt(props, MAX_SCALE_STEP_PROPERTY, DEFAULT_MAX_SCALE_STEP, 0, Integer.MAX_VALUE);
         this.allowLiveMutation = parseBoolean(props, ALLOW_LIVE_MUTATION_PROPERTY, DEFAULT_ALLOW_LIVE_MUTATION);
         this.operatorIntent = parseString(props, OPERATOR_INTENT_PROPERTY, DEFAULT_OPERATOR_INTENT);
+        this.allowAutonomousScaleUp = parseBoolean(props, ALLOW_AUTONOMOUS_SCALE_UP_PROPERTY, DEFAULT_ALLOW_AUTONOMOUS_SCALE_UP);
     }
 
     private void validateCredentials(String accessKey, String secretKey) {
@@ -200,4 +204,5 @@ public class CloudConfig {
     public int getMaxScaleStep() { return maxScaleStep; }
     public boolean isLiveMutationAllowed() { return allowLiveMutation; }
     public String getOperatorIntent() { return operatorIntent; }
+    public boolean isAutonomousScaleUpAllowed() { return allowAutonomousScaleUp; }
 }

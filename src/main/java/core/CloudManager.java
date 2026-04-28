@@ -362,7 +362,7 @@ public class CloudManager {
             int currentCapacity = getCurrentCapacity();
             int predictedCapacity = predictCapacityWithAI();
             int desiredCapacity = Math.max(Math.max(currentCapacity + 1, predictedCapacity), getMinServers());
-            scaleServersAsync(desiredCapacity, success -> 
+            scaleServersAsync(desiredCapacity, CloudMutationSource.PREDICTIVE, success ->
                 logZeroCopy("Predictive scale-up to {} servers completed: {}", desiredCapacity, success));
         }
     }
@@ -391,8 +391,12 @@ public class CloudManager {
     }
 
     public void scaleServersAsync(int desiredCapacity, Consumer<Boolean> callback) {
+        scaleServersAsync(desiredCapacity, CloudMutationSource.OPERATOR, callback);
+    }
+
+    void scaleServersAsync(int desiredCapacity, CloudMutationSource source, Consumer<Boolean> callback) {
         if (desiredCapacity < 0) throw new IllegalArgumentException("Desired capacity cannot be negative: " + desiredCapacity);
-        Command command = new ScaleServersCommand(this, desiredCapacity, callback);
+        Command command = new ScaleServersCommand(this, desiredCapacity, source, callback);
         commandRecorder.accept(command);
         if (config.isDryRun()) {
             command.execute();
@@ -408,13 +412,16 @@ public class CloudManager {
     private static class ScaleServersCommand implements Command {
         private final CloudManager manager;
         private final int desiredCapacity;
+        private final CloudMutationSource source;
         private final Consumer<Boolean> callback;
         private final String id = "ScaleServers-" + System.nanoTime();
         private Status status = Status.PENDING;
 
-        ScaleServersCommand(CloudManager manager, int desiredCapacity, Consumer<Boolean> callback) {
+        ScaleServersCommand(CloudManager manager, int desiredCapacity, CloudMutationSource source,
+                            Consumer<Boolean> callback) {
             this.manager = manager;
             this.desiredCapacity = desiredCapacity;
+            this.source = source != null ? source : CloudMutationSource.UNKNOWN;
             this.callback = callback;
         }
 
@@ -426,7 +433,7 @@ public class CloudManager {
                 if (callback != null) callback.accept(true);
                 return;
             }
-            if (!manager.canUpdateAutoScalingGroupCapacity(desiredCapacity)) {
+            if (!manager.canUpdateAutoScalingGroupCapacity(desiredCapacity, source)) {
                 status = Status.FAILED;
                 if (callback != null) callback.accept(false);
                 return;
@@ -548,7 +555,7 @@ public class CloudManager {
             if (healthyCount < asg.getMinSize()) {
                 logZeroCopy("ASG {} unhealthy: {} healthy instances < min size {}; repairing...", 
                             config.getAutoScalingGroupName(), healthyCount, asg.getMinSize());
-                scaleServersAsync(asg.getMinSize(), success -> 
+                scaleServersAsync(asg.getMinSize(), CloudMutationSource.SELF_HEALING, success ->
                     logZeroCopy("Self-healing scale to min size {} completed: {}", asg.getMinSize(), success));
             }
         }
@@ -559,7 +566,7 @@ public class CloudManager {
             if (!isShuttingDown.get()) {
                 int currentCapacity = getCurrentCapacity();
                 int desiredCapacity = currentCapacity + config.getPreemptivePoolSize();
-                scaleServersAsync(desiredCapacity, success -> 
+                scaleServersAsync(desiredCapacity, CloudMutationSource.PREEMPTIVE, success ->
                     logZeroCopy("Preemptive pool increased to {} servers: {}", desiredCapacity, success));
             } else {
                 logger.debug("Skipping preemptive pooling due to shutdown");
@@ -646,35 +653,48 @@ public class CloudManager {
         void run() throws Exception;
     }
 
-    private boolean canUpdateAutoScalingGroupCapacity(int desiredCapacity) {
+    private boolean canUpdateAutoScalingGroupCapacity(int desiredCapacity, CloudMutationSource source) {
         if (!config.isLiveMutationAllowed()) {
-            auditScaleDecision("DENY", desiredCapacity, -1, -1, "ALLOW_LIVE_MUTATION_DISABLED");
+            auditScaleDecision("DENY", desiredCapacity, -1, -1, source, "ALLOW_LIVE_MUTATION_DISABLED");
             return false;
         }
         if (!REQUIRED_LIVE_MUTATION_INTENT.equals(config.getOperatorIntent())) {
-            auditScaleDecision("DENY", desiredCapacity, -1, -1, "OPERATOR_INTENT_INVALID");
+            auditScaleDecision("DENY", desiredCapacity, -1, -1, source, "OPERATOR_INTENT_INVALID");
             return false;
         }
         if (desiredCapacity > config.getMaxDesiredCapacity()) {
-            auditScaleDecision("DENY", desiredCapacity, -1, -1, "MAX_DESIRED_CAPACITY_EXCEEDED");
+            auditScaleDecision("DENY", desiredCapacity, -1, -1, source, "MAX_DESIRED_CAPACITY_EXCEEDED");
             return false;
         }
 
         int currentCapacity = getCurrentCapacity();
         int scaleStep = Math.abs(desiredCapacity - currentCapacity);
-        if (scaleStep > config.getMaxScaleStep()) {
-            auditScaleDecision("DENY", desiredCapacity, currentCapacity, scaleStep, "MAX_SCALE_STEP_EXCEEDED");
+        if (desiredCapacity > currentCapacity && requiresAutonomousScaleUpApproval(source)
+                && !config.isAutonomousScaleUpAllowed()) {
+            auditScaleDecision("DENY", desiredCapacity, currentCapacity, scaleStep, source,
+                    "AUTONOMOUS_SCALE_UP_DISABLED");
             return false;
         }
-        auditScaleDecision("ALLOW", desiredCapacity, currentCapacity, scaleStep, "GUARDRAILS_PASSED");
+        if (scaleStep > config.getMaxScaleStep()) {
+            auditScaleDecision("DENY", desiredCapacity, currentCapacity, scaleStep, source, "MAX_SCALE_STEP_EXCEEDED");
+            return false;
+        }
+        auditScaleDecision("ALLOW", desiredCapacity, currentCapacity, scaleStep, source, "GUARDRAILS_PASSED");
         return true;
     }
 
+    private boolean requiresAutonomousScaleUpApproval(CloudMutationSource source) {
+        return source == CloudMutationSource.UNKNOWN
+                || source == CloudMutationSource.PREDICTIVE
+                || source == CloudMutationSource.PREEMPTIVE;
+    }
+
     private void auditScaleDecision(String decision, int desiredCapacity, int currentCapacity, int scaleStep,
-                                    String reason) {
-        logZeroCopy("AUDIT cloud.scale.decision decision=%s desiredCapacity=%s currentCapacity=%s scaleStep=%s "
+                                    CloudMutationSource source, String reason) {
+        logZeroCopy("AUDIT cloud.scale.decision decision=%s source=%s desiredCapacity=%s currentCapacity=%s scaleStep=%s "
                         + "maxDesiredCapacity=%s maxScaleStep=%s asg=%s reason=%s",
                 decision,
+                source,
                 desiredCapacity,
                 currentCapacity,
                 scaleStep,

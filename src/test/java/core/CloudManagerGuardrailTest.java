@@ -17,6 +17,7 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,6 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.after;
 
 class CloudManagerGuardrailTest {
     private static final String ACCESS_KEY = "AKIAIOSFODNN7EXAMPLE";
@@ -190,6 +192,49 @@ class CloudManagerGuardrailTest {
     }
 
     @Test
+    void predictiveScaleUpSourceDoesNotLiveScaleWhenAutonomousScaleUpIsDisabled() throws InterruptedException {
+        AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
+        CloudConfig config = liveConfigWithMutationGuardrails(
+                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10");
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, null, autoScaling, null);
+        AtomicBoolean callbackResult = new AtomicBoolean(true);
+
+        scaleAndWait(manager, 2, CloudMutationSource.PREDICTIVE, callbackResult::set);
+
+        assertFalse(callbackResult.get());
+        verify(autoScaling, never()).updateAutoScalingGroup(any(UpdateAutoScalingGroupRequest.class));
+    }
+
+    @Test
+    void preemptivePoolingDoesNotLiveScaleWhenAutonomousScaleUpIsDisabled() throws InterruptedException {
+        AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
+        CloudConfig config = liveConfigWithMutationGuardrails(
+                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10");
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, null, autoScaling, null);
+
+        manager.startBackgroundJobs();
+        verify(autoScaling, after(500).never()).updateAutoScalingGroup(any(UpdateAutoScalingGroupRequest.class));
+        manager.shutdown();
+    }
+
+    @Test
+    void publicScaleServersAsyncApiRemainsOperatorCompatible() throws InterruptedException {
+        AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
+        CloudConfig config = liveConfigWithMutationGuardrails(
+                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10");
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, null, autoScaling, null);
+        AtomicBoolean callbackResult = new AtomicBoolean(false);
+
+        scaleAndWait(manager, 2, callbackResult::set);
+
+        assertTrue(callbackResult.get());
+        verify(autoScaling).updateAutoScalingGroup(any(UpdateAutoScalingGroupRequest.class));
+    }
+
+    @Test
     void deletionRequiresLiveModeOwnershipAndDeletionApproval() {
         assertDeletionSkipped(configWithDeletionFlags(false, true, true));
         assertDeletionSkipped(configWithDeletionFlags(true, false, true));
@@ -262,9 +307,27 @@ class CloudManagerGuardrailTest {
     }
 
     private static void scaleAndWait(CloudManager manager, int desiredCapacity) throws InterruptedException {
+        scaleAndWait(manager, desiredCapacity, ignored -> {});
+    }
+
+    private static void scaleAndWait(CloudManager manager, int desiredCapacity, Consumer<Boolean> callback)
+            throws InterruptedException {
+        scaleAndWait(manager, desiredCapacity, null, callback);
+    }
+
+    private static void scaleAndWait(CloudManager manager, int desiredCapacity, CloudMutationSource source,
+                                     Consumer<Boolean> callback) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        manager.scaleServersAsync(desiredCapacity, ignored -> latch.countDown());
+        Consumer<Boolean> callbackWithLatch = success -> {
+            callback.accept(success);
+            latch.countDown();
+        };
+        if (source == null) {
+            manager.scaleServersAsync(desiredCapacity, callbackWithLatch);
+        } else {
+            manager.scaleServersAsync(desiredCapacity, source, callbackWithLatch);
+        }
 
         assertTrue(latch.await(2, TimeUnit.SECONDS), "Scale callback should complete during the test.");
         manager.shutdown();

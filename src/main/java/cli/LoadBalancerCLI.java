@@ -33,6 +33,18 @@ public class LoadBalancerCLI {
     }
 
     static class CliRunner {
+        private static final String AWS_ACCESS_KEY_PROPERTY = "aws.accessKeyId";
+        private static final String AWS_SECRET_KEY_PROPERTY = "aws.secretAccessKey";
+        private static final String AWS_REGION_PROPERTY = "aws.region";
+        private static final String LAUNCH_TEMPLATE_PROPERTY = "cloud.launchTemplateId";
+        private static final String SUBNET_ID_PROPERTY = "cloud.subnetId";
+        private static final String AWS_ACCESS_KEY_ENV = "AWS_ACCESS_KEY_ID";
+        private static final String AWS_SECRET_KEY_ENV = "AWS_SECRET_ACCESS_KEY";
+        private static final String AWS_REGION_ENV = "AWS_REGION";
+        private static final String AWS_DEFAULT_REGION_ENV = "AWS_DEFAULT_REGION";
+        private static final String LAUNCH_TEMPLATE_ENV = "CLOUD_LAUNCH_TEMPLATE_ID";
+        private static final String SUBNET_ID_ENV = "CLOUD_SUBNET_ID";
+
         private final LoadBalancer balancer = new LoadBalancer();
         private final CliConfig config;
         private CloudManager cloudManager;
@@ -124,13 +136,128 @@ public class LoadBalancerCLI {
 
         private void initializeCloudManager() {
             if (config.isCloudEnabled()) {
-                cloudManager = new CloudManager(balancer, new CloudConfig("your-access-key", "your-secret-key", "us-west-2", 
-                                                                         "your-launch-template-id", "your-subnet-id"), 
-                                               undoManager::addCommand);
-                logger.info("CloudManager initialized with min={} and max={} servers.", 
+                try {
+                    CloudCliSettings cloudSettings = resolveCloudSettings(System.getProperties(), System.getenv());
+                    CloudConfig cloudConfig = cloudSettings.toCloudConfig();
+                    cloudManager = new CloudManager(balancer, cloudConfig, undoManager::addCommand);
+                    logger.info("CloudManager initialized in {} mode with min={} and max={} servers.",
+                            cloudConfig.isLiveMode() ? "live" : "dry-run",
                             config.getCloudMinServers(), config.getCloudMaxServers());
+                    if (cloudConfig.isLiveMode()) {
+                        logger.warn("Live cloud mode is enabled because {}=true was provided.", CloudConfig.LIVE_MODE_PROPERTY);
+                    }
+                } catch (IllegalArgumentException e) {
+                    cloudManager = null;
+                    String message = "Cloud integration requested but disabled: " + e.getMessage()
+                            + ". No AWS calls will be made.";
+                    printError(message);
+                    logger.warn(message);
+                }
             } else {
                 logger.info("Cloud integration disabled.");
+            }
+        }
+
+        static CloudCliSettings resolveCloudSettings(Properties systemProperties, Map<String, String> environment) {
+            Objects.requireNonNull(systemProperties, "systemProperties cannot be null");
+            Objects.requireNonNull(environment, "environment cannot be null");
+
+            Optional<String> accessKey = firstConfigured(systemProperties, environment,
+                    AWS_ACCESS_KEY_PROPERTY, AWS_ACCESS_KEY_ENV);
+            Optional<String> secretKey = firstConfigured(systemProperties, environment,
+                    AWS_SECRET_KEY_PROPERTY, AWS_SECRET_KEY_ENV);
+            Optional<String> region = firstConfigured(systemProperties, environment,
+                    AWS_REGION_PROPERTY, AWS_REGION_ENV, AWS_DEFAULT_REGION_ENV);
+            Optional<String> launchTemplateId = firstConfigured(systemProperties, environment,
+                    LAUNCH_TEMPLATE_PROPERTY, LAUNCH_TEMPLATE_ENV);
+            Optional<String> subnetId = firstConfigured(systemProperties, environment,
+                    SUBNET_ID_PROPERTY, SUBNET_ID_ENV);
+            boolean liveModeRequested = firstConfigured(systemProperties, environment,
+                    CloudConfig.LIVE_MODE_PROPERTY, "CLOUD_LIVE_MODE")
+                    .map(Boolean::parseBoolean)
+                    .orElse(false);
+
+            List<String> missing = new ArrayList<>();
+            if (accessKey.isEmpty()) {
+                missing.add(AWS_ACCESS_KEY_PROPERTY + "/" + AWS_ACCESS_KEY_ENV);
+            }
+            if (secretKey.isEmpty()) {
+                missing.add(AWS_SECRET_KEY_PROPERTY + "/" + AWS_SECRET_KEY_ENV);
+            }
+            if (region.isEmpty()) {
+                missing.add(AWS_REGION_PROPERTY + "/" + AWS_REGION_ENV + " or " + AWS_DEFAULT_REGION_ENV);
+            }
+            if (liveModeRequested && launchTemplateId.isEmpty()) {
+                missing.add(LAUNCH_TEMPLATE_PROPERTY + "/" + LAUNCH_TEMPLATE_ENV);
+            }
+            if (liveModeRequested && subnetId.isEmpty()) {
+                missing.add(SUBNET_ID_PROPERTY + "/" + SUBNET_ID_ENV);
+            }
+            if (!missing.isEmpty()) {
+                throw new IllegalArgumentException("missing required configuration: " + String.join(", ", missing));
+            }
+
+            Properties cloudProperties = new Properties();
+            copyCloudFlag(systemProperties, environment, cloudProperties, CloudConfig.LIVE_MODE_PROPERTY, "CLOUD_LIVE_MODE");
+            copyCloudFlag(systemProperties, environment, cloudProperties,
+                    CloudConfig.ALLOW_RESOURCE_DELETION_PROPERTY, "CLOUD_ALLOW_RESOURCE_DELETION");
+            copyCloudFlag(systemProperties, environment, cloudProperties,
+                    CloudConfig.CONFIRM_RESOURCE_OWNERSHIP_PROPERTY, "CLOUD_CONFIRM_RESOURCE_OWNERSHIP");
+
+            return new CloudCliSettings(
+                    accessKey.orElseThrow(),
+                    secretKey.orElseThrow(),
+                    region.orElseThrow(),
+                    launchTemplateId.orElse(""),
+                    subnetId.orElse(""),
+                    cloudProperties);
+        }
+
+        private static void copyCloudFlag(Properties systemProperties, Map<String, String> environment,
+                                          Properties target, String propertyName, String environmentName) {
+            firstConfigured(systemProperties, environment, propertyName, environmentName)
+                    .ifPresent(value -> target.setProperty(propertyName, value));
+        }
+
+        private static Optional<String> firstConfigured(Properties systemProperties, Map<String, String> environment,
+                                                       String propertyName, String... environmentNames) {
+            String propertyValue = systemProperties.getProperty(propertyName);
+            if (isConfigured(propertyValue)) {
+                return Optional.of(propertyValue.trim());
+            }
+            for (String environmentName : environmentNames) {
+                String value = environment.get(environmentName);
+                if (isConfigured(value)) {
+                    return Optional.of(value.trim());
+                }
+            }
+            return Optional.empty();
+        }
+
+        private static boolean isConfigured(String value) {
+            return value != null && !value.isBlank();
+        }
+
+        static final class CloudCliSettings {
+            private final String accessKey;
+            private final String secretKey;
+            private final String region;
+            private final String launchTemplateId;
+            private final String subnetId;
+            private final Properties cloudProperties;
+
+            private CloudCliSettings(String accessKey, String secretKey, String region,
+                                     String launchTemplateId, String subnetId, Properties cloudProperties) {
+                this.accessKey = accessKey;
+                this.secretKey = secretKey;
+                this.region = region;
+                this.launchTemplateId = launchTemplateId;
+                this.subnetId = subnetId;
+                this.cloudProperties = cloudProperties;
+            }
+
+            CloudConfig toCloudConfig() {
+                return new CloudConfig(accessKey, secretKey, region, launchTemplateId, subnetId, cloudProperties);
             }
         }
 

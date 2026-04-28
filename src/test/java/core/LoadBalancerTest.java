@@ -402,6 +402,99 @@ class LoadBalancerTest {
     }
 
     @Test
+    void testPredictiveDistributionWithVaryingLoadsPreservesCurrentHeuristic() {
+        logger.info("=== TESTING PREDICTIVE DISTRIBUTION VARYING LOADS ===");
+        Server low = serverWithWeightAndCapacity("LOW", 10.0, 10.0, 10.0, 1.0, 100.0);
+        Server mid = serverWithWeightAndCapacity("MID", 20.0, 20.0, 20.0, 1.0, 100.0);
+        Server high = serverWithWeightAndCapacity("HIGH", 30.0, 30.0, 30.0, 1.0, 100.0);
+        addServers(low, mid, high);
+        double defaultPredictiveLoadFactor = 1.1;
+        double totalPredictedCapacity = (low.getCapacity() - (low.getLoadScore() * defaultPredictiveLoadFactor))
+            + (mid.getCapacity() - (mid.getLoadScore() * defaultPredictiveLoadFactor))
+            + (high.getCapacity() - (high.getLoadScore() * defaultPredictiveLoadFactor));
+        double expectedLow = ((low.getCapacity() - (low.getLoadScore() * defaultPredictiveLoadFactor))
+            / totalPredictedCapacity) * 80.0;
+        double expectedMid = ((mid.getCapacity() - (mid.getLoadScore() * defaultPredictiveLoadFactor))
+            / totalPredictedCapacity) * 80.0;
+        double expectedHigh = 80.0 - expectedLow - expectedMid;
+
+        Map<String, Double> result = balancer.predictiveLoadBalancing(80.0);
+
+        assertEquals(expectedLow, result.get("LOW"), 0.01, "Lowest predicted load should receive current proportional share!");
+        assertEquals(expectedMid, result.get("MID"), 0.01, "Mid predicted load should receive current proportional share!");
+        assertEquals(expectedHigh, result.get("HIGH"), 0.01, "Highest predicted load should receive remaining proportional share!");
+    }
+
+    @Test
+    void testPredictiveDistributionWithEqualPredictedLoadsSplitsEvenly() {
+        logger.info("=== TESTING PREDICTIVE DISTRIBUTION EQUAL PREDICTED LOADS ===");
+        addServers(
+            serverWithWeightAndCapacity("S1", 25.0, 25.0, 25.0, 1.0, 100.0),
+            serverWithWeightAndCapacity("S2", 25.0, 25.0, 25.0, 1.0, 100.0)
+        );
+
+        Map<String, Double> result = balancer.predictiveLoadBalancing(80.0);
+
+        assertEquals(40.0, result.get("S1"), 0.01, "Equal predicted load should split evenly!");
+        assertEquals(40.0, result.get("S2"), 0.01, "Equal predicted load should split evenly!");
+    }
+
+    @Test
+    void testPredictiveDistributionSingleServerReceivesFullAllocation() {
+        logger.info("=== TESTING PREDICTIVE DISTRIBUTION SINGLE SERVER ===");
+        addServers(serverWithWeightAndCapacity("ONLY", 70.0, 70.0, 70.0, 1.0, 100.0));
+
+        Map<String, Double> result = balancer.predictiveLoadBalancing(75.0);
+
+        assertEquals(75.0, result.get("ONLY"), 0.01, "Single healthy server should receive full allocation!");
+        assertEquals(1, result.size(), "Only one server should be allocated!");
+    }
+
+    @Test
+    void testPredictiveDistributionEmptyServerListReturnsEmptyMap() {
+        logger.info("=== TESTING PREDICTIVE DISTRIBUTION EMPTY SERVER LIST ===");
+
+        Map<String, Double> result = balancer.predictiveLoadBalancing(100.0);
+
+        assertTrue(result.isEmpty(), "Predictive distribution should return empty map with no servers!");
+    }
+
+    @Test
+    void testPredictiveDistributionSkipsExhaustedPredictedCapacityAndPreservesOverflow() {
+        logger.info("=== TESTING PREDICTIVE DISTRIBUTION EXHAUSTED CAPACITY ===");
+        LoadBalancer aggressive = new LoadBalancer(100.0, 10, 2.0);
+        try {
+            aggressive.addServer(serverWithWeightAndCapacity("EXHAUSTED", 60.0, 60.0, 60.0, 1.0, 100.0));
+            aggressive.addServer(serverWithWeightAndCapacity("AVAILABLE", 20.0, 20.0, 20.0, 1.0, 100.0));
+
+            Map<String, Double> result = aggressive.predictiveLoadBalancing(150.0);
+
+            assertFalse(result.containsKey("EXHAUSTED"), "Server with no predicted spare capacity should receive no allocation!");
+            assertEquals(150.0, result.get("AVAILABLE"), 0.01,
+                "Current predictive behavior can allocate beyond predicted available capacity!");
+        } finally {
+            aggressive.shutdown();
+        }
+    }
+
+    @Test
+    void testPredictiveDistributionAccumulationFeedsRebalance() {
+        logger.info("=== TESTING PREDICTIVE DISTRIBUTION ACCUMULATION ===");
+        addServers(
+            serverWithWeightAndCapacity("S1", 25.0, 25.0, 25.0, 1.0, 100.0),
+            serverWithWeightAndCapacity("S2", 25.0, 25.0, 25.0, 1.0, 100.0)
+        );
+
+        balancer.predictiveLoadBalancing(80.0);
+        balancer.predictiveLoadBalancing(20.0);
+        balancer.setStrategy(LoadBalancer.Strategy.ROUND_ROBIN);
+        Map<String, Double> result = balancer.rebalanceExistingLoad();
+
+        assertEquals(50.0, result.get("S1"), 0.01, "Rebalance should include accumulated predictive allocation!");
+        assertEquals(50.0, result.get("S2"), 0.01, "Rebalance should include accumulated predictive allocation!");
+    }
+
+    @Test
     void testAllUnhealthyServersReturnEmptyDistribution() {
         logger.info("=== TESTING ALL UNHEALTHY DISTRIBUTION ===");
         Server s1 = new Server("S1", 10.0, 20.0, 30.0);

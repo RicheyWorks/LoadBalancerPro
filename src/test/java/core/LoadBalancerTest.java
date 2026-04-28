@@ -2,6 +2,7 @@ package test.core;
 
 import core.LoadBalancer;
 import core.LoadDistributionResult;
+import core.ScalingRecommendation;
 import core.Server;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -571,6 +572,45 @@ class LoadBalancerTest {
         assertEquals(40.0, capacityAware.get("S2"), 0.01);
         assertEquals(40.0, predictive.get("S1"), 0.01);
         assertEquals(40.0, predictive.get("S2"), 0.01);
+    }
+
+    @Test
+    void testScalingRecommendationWithNoUnallocatedLoadRecommendsZeroServers() {
+        logger.info("=== TESTING ZERO SCALING RECOMMENDATION ===");
+
+        ScalingRecommendation recommendation = balancer.recommendScaling(0.0, 100.0);
+
+        assertEquals(0, recommendation.additionalServers(), "No unallocated load should require no new servers!");
+        assertEquals(0.0, recommendation.unallocatedLoad(), 0.01);
+        assertEquals(100.0, recommendation.targetCapacityPerServer(), 0.01);
+    }
+
+    @Test
+    void testScalingRecommendationWithSmallUnallocatedLoadRecommendsOneServer() {
+        logger.info("=== TESTING SMALL SCALING RECOMMENDATION ===");
+
+        ScalingRecommendation recommendation = balancer.recommendScaling(25.0, 100.0);
+
+        assertEquals(1, recommendation.additionalServers(), "Any positive load below one target capacity needs one server!");
+    }
+
+    @Test
+    void testScalingRecommendationWithLargerUnallocatedLoadRecommendsMultipleServers() {
+        logger.info("=== TESTING MULTI-SERVER SCALING RECOMMENDATION ===");
+
+        ScalingRecommendation recommendation = balancer.recommendScaling(250.0, 100.0);
+
+        assertEquals(3, recommendation.additionalServers(), "Recommendation should round up to cover all unallocated load!");
+    }
+
+    @Test
+    void testScalingRecommendationHandlesInvalidTargetCapacitySafely() {
+        logger.info("=== TESTING INVALID SCALING TARGET CAPACITY ===");
+
+        assertEquals(0, balancer.recommendScaling(100.0, 0.0).additionalServers());
+        assertEquals(0, balancer.recommendScaling(100.0, -10.0).additionalServers());
+        assertEquals(0, balancer.recommendScaling(100.0, Double.NaN).additionalServers());
+        assertEquals(0, balancer.recommendScaling(Double.NaN, 100.0).additionalServers());
     }
 
     @Test

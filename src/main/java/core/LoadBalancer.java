@@ -305,6 +305,10 @@ public class LoadBalancer {
         });
     }
 
+    public ScalingRecommendation recommendScaling(double unallocatedLoad, double targetCapacityPerServer) {
+        return ScalingRecommendation.forUnallocatedLoad(unallocatedLoad, targetCapacityPerServer);
+    }
+
     private Map<String, Double> calculatePredictedLoads(List<Server> servers) {
         Map<String, Double> predicted = new HashMap<>();
         for (Server server : servers) {

@@ -76,4 +76,37 @@ class LoadBalancerCLITest {
         assertEquals("lt-1234567890abcdef0", cloudConfig.getLaunchTemplateId());
         assertEquals("subnet-1234567890abcdef0", cloudConfig.getSubnetId());
     }
+
+    @Test
+    void environmentCredentialsStillDefaultToDryRun() {
+        Map<String, String> environment = Map.of(
+                "AWS_ACCESS_KEY_ID", ACCESS_KEY,
+                "AWS_SECRET_ACCESS_KEY", SECRET_KEY,
+                "AWS_REGION", "us-east-2"
+        );
+
+        CloudConfig cloudConfig = LoadBalancerCLI.CliRunner
+                .resolveCloudSettings(new Properties(), environment)
+                .toCloudConfig();
+
+        assertFalse(cloudConfig.isLiveMode());
+        assertTrue(cloudConfig.isDryRun());
+        assertEquals("us-east-2", cloudConfig.getRegion());
+    }
+
+    @Test
+    void environmentLiveModeFailsClosedWithoutLaunchTemplateAndSubnet() {
+        Map<String, String> environment = Map.of(
+                "AWS_ACCESS_KEY_ID", ACCESS_KEY,
+                "AWS_SECRET_ACCESS_KEY", SECRET_KEY,
+                "AWS_REGION", "us-east-2",
+                "CLOUD_LIVE_MODE", "true"
+        );
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> LoadBalancerCLI.CliRunner.resolveCloudSettings(new Properties(), environment));
+
+        assertTrue(exception.getMessage().contains("cloud.launchTemplateId/CLOUD_LAUNCH_TEMPLATE_ID"));
+        assertTrue(exception.getMessage().contains("cloud.subnetId/CLOUD_SUBNET_ID"));
+    }
 }

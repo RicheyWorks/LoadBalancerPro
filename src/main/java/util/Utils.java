@@ -31,7 +31,6 @@ import java.util.zip.GZIPOutputStream;
 public class Utils {
     private static final Logger logger = LogManager.getLogger(Utils.class);
     private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    private static final int HASH_CACHE_SIZE = 1000;
     private static final int CSV_VERSION = 1;
     private static final int JSON_VERSION = 1;
     private static final long SHUTDOWN_TIMEOUT_SECONDS = 5;
@@ -39,8 +38,6 @@ public class Utils {
     private static final long IO_RETRY_DELAY_MS = 500;
     private static final int BATCH_SIZE = 100;
 
-    private static final MessageDigest MD5_DIGEST;
-    private static final ConcurrentHashMap<String, Long> hashCache = new ConcurrentHashMap<>(HASH_CACHE_SIZE);
     private static final ThreadPoolExecutor executor = new ThreadPoolExecutor(
         Runtime.getRuntime().availableProcessors(),
         Runtime.getRuntime().availableProcessors() * 2,
@@ -50,31 +47,25 @@ public class Utils {
     );
 
     static {
-        try {
-            MD5_DIGEST = MessageDigest.getInstance("MD5");
-            Runtime.getRuntime().addShutdownHook(new Thread(Utils::shutdownExecutor));
-        } catch (Exception e) {
-            throw new ExceptionInInitializerError("Failed to initialize MD5: " + e.getMessage());
-        }
+        Runtime.getRuntime().addShutdownHook(new Thread(Utils::shutdownExecutor));
     }
 
     /**
-     * Computes a hash for the given key using MD5, with caching for performance.
+     * Computes a hash for the given key using MD5.
      */
     public static long hash(String key) {
         if (key == null) {
             logger.warn("Hash called with null key; returning 0.");
             return 0L;
         }
-        return hashCache.computeIfAbsent(key, k -> {
-            try {
-                byte[] bytes = MD5_DIGEST.digest(k.getBytes(StandardCharsets.UTF_8));
-                return new BigInteger(1, bytes).longValue();
-            } catch (Exception e) {
-                logger.error("MD5 hash failed for key '{}': {}", k, e.getMessage(), e);
-                return (long) k.hashCode();
-            }
-        });
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] bytes = digest.digest(key.getBytes(StandardCharsets.UTF_8));
+            return new BigInteger(1, bytes).longValue();
+        } catch (Exception e) {
+            logger.error("MD5 hash failed; using hashCode fallback: {}", e.getMessage(), e);
+            return (long) key.hashCode();
+        }
     }
 
     /**

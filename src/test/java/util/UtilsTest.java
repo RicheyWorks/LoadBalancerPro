@@ -10,9 +10,23 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import java.io.*;
+import java.lang.reflect.Field;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 class UtilsTest {
@@ -231,6 +245,83 @@ class UtilsTest {
         long hash2 = Utils.hash("S1-1");
         assertEquals(hash1, hash2, "Hash isn’t consistent!");
         logger.info("Hash consistency test passed");
+    }
+
+    @Test
+    void testParallelHashingProducesExpectedStableHashes() throws Exception {
+        logger.info("Testing parallel hash stability");
+        int workerCount = 12;
+        int keysPerWorker = 600;
+        List<String> keys = IntStream.range(0, workerCount * keysPerWorker)
+                .mapToObj(i -> "parallel-hash-key-" + i)
+                .toList();
+        Map<String, Long> expectedHashes = keys.stream()
+                .collect(java.util.stream.Collectors.toMap(key -> key, UtilsTest::expectedMd5Long));
+        ExecutorService executor = Executors.newFixedThreadPool(workerCount);
+        CountDownLatch start = new CountDownLatch(1);
+        List<Callable<List<String>>> tasks = new ArrayList<>();
+        for (int worker = 0; worker < workerCount; worker++) {
+            int from = worker * keysPerWorker;
+            int to = from + keysPerWorker;
+            tasks.add(() -> {
+                start.await();
+                List<String> mismatches = new ArrayList<>();
+                for (String key : keys.subList(from, to)) {
+                    long actual = Utils.hash(key);
+                    long expected = expectedHashes.get(key);
+                    if (actual != expected) {
+                        mismatches.add(key + " expected=" + expected + " actual=" + actual);
+                    }
+                }
+                return mismatches;
+            });
+        }
+
+        try {
+            List<Future<List<String>>> futures = tasks.stream()
+                    .map(executor::submit)
+                    .toList();
+            start.countDown();
+            List<String> mismatches = new ArrayList<>();
+            for (Future<List<String>> future : futures) {
+                mismatches.addAll(future.get(10, TimeUnit.SECONDS));
+            }
+            assertEquals(Collections.emptyList(), mismatches,
+                    "Parallel hashing must match independently computed MD5 values!");
+        } finally {
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS), "Hash test executor should terminate!");
+        }
+    }
+
+    @Test
+    void testHashCacheDoesNotGrowWithoutBound() throws Exception {
+        logger.info("Testing hash cache boundedness");
+        int maxSafeRetainedKeys = 1000;
+        for (int i = 0; i < maxSafeRetainedKeys + 250; i++) {
+            Utils.hash("cache-boundary-key-" + i);
+        }
+
+        Field cacheField;
+        try {
+            cacheField = Utils.class.getDeclaredField("hashCache");
+        } catch (NoSuchFieldException cacheRemoved) {
+            return;
+        }
+        cacheField.setAccessible(true);
+        Object cache = cacheField.get(null);
+        assertTrue(cache instanceof Map<?, ?>, "Hash cache should be map-like when present!");
+        assertTrue(((Map<?, ?>) cache).size() <= maxSafeRetainedKeys,
+                "Hash cache must be explicitly bounded, not just initialized with a starting capacity!");
+    }
+
+    private static long expectedMd5Long(String key) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            return new BigInteger(1, digest.digest(key.getBytes(StandardCharsets.UTF_8))).longValue();
+        } catch (Exception e) {
+            throw new IllegalStateException("MD5 should be available in the JVM", e);
+        }
     }
 
     @Test

@@ -15,9 +15,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -48,7 +45,7 @@ public class LoadBalancerCLI {
         private final LoadBalancer balancer = new LoadBalancer();
         private final CliConfig config;
         private CloudManager cloudManager;
-        private final ExecutorService monitorExecutor = Executors.newSingleThreadExecutor();
+        private ServerMonitor monitor;
         private final UndoManager undoManager;
         private final ConsoleUtils console;
         private final Map<Integer, CliAction> actions;
@@ -280,19 +277,23 @@ public class LoadBalancerCLI {
         }
 
         private void startMonitorIfEnabled() {
-            if (!Arrays.stream(config.getArgs()).anyMatch("--no-monitor"::equals)) {
-                ServerMonitor monitor = new ServerMonitor(balancer, config.getAlertThreshold(),
-                        config.getMonitorIntervalMs(), config.getMaxFluctuation(),
-                        msg -> System.out.println(config.getErrorColor() + msg + config.getResetColor()));
-                monitor.start();
-                logger.info("Server monitor started.");
-            } else {
+            if (!isMonitorEnabled()) {
                 logger.info("Server monitor disabled via --no-monitor flag.");
+                return;
             }
+            if (monitor != null && monitor.isRunning()) {
+                logger.debug("Server monitor already running.");
+                return;
+            }
+            monitor = new ServerMonitor(balancer, config.getAlertThreshold(),
+                    config.getMonitorIntervalMs(), config.getMaxFluctuation(),
+                    msg -> System.out.println(config.getErrorColor() + msg + config.getResetColor()));
+            monitor.start();
+            logger.info("Server monitor started.");
         }
 
         private void checkMonitorStatus() {
-            if (!monitorExecutor.isShutdown() && monitorExecutor.isTerminated()) {
+            if (running && isMonitorEnabled() && monitor != null && !monitor.isRunning()) {
                 logger.warn("Server monitor stopped unexpectedly; restarting.");
                 int attempts = 0;
                 final int maxAttempts = 5;
@@ -316,16 +317,14 @@ public class LoadBalancerCLI {
             }
         }
 
+        private boolean isMonitorEnabled() {
+            return !Arrays.stream(config.getArgs()).anyMatch("--no-monitor"::equals);
+        }
+
         private void shutdown() {
             running = false;
-            monitorExecutor.shutdownNow();
-            try {
-                if (!monitorExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-                    logger.warn("Monitor did not shut down gracefully.");
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                logger.error("Shutdown interrupted: {}", e.getMessage(), e);
+            if (monitor != null) {
+                monitor.stop();
             }
             try {
                 balancer.shutdown();

@@ -3,8 +3,14 @@ package cli;
 import core.CloudConfig;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.function.BooleanSupplier;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -173,5 +179,56 @@ class LoadBalancerCLITest {
 
         assertTrue(exception.getMessage().contains("cloud.launchTemplateId/CLOUD_LAUNCH_TEMPLATE_ID"));
         assertTrue(exception.getMessage().contains("cloud.subnetId/CLOUD_SUBNET_ID"));
+    }
+
+    @Test
+    void shutdownStopsOwnedServerMonitor() throws Exception {
+        Path undoHistory = Path.of("undo_history.ser");
+        byte[] originalUndoHistory = Files.exists(undoHistory) ? Files.readAllBytes(undoHistory) : null;
+        Set<Thread> existingMonitorThreads = activeServerMonitorThreads();
+        LoadBalancerCLI.CliRunner runner = new LoadBalancerCLI.CliRunner(
+                new String[]{"--monitor-interval-ms", "100"});
+        Set<Thread> startedThreads = Set.of();
+        try {
+            assertTrue(waitUntil(() -> activeServerMonitorThreads().size() > existingMonitorThreads.size(), 2_000),
+                    "CLI should start an owned server monitor thread!");
+            startedThreads = activeServerMonitorThreads().stream()
+                    .filter(thread -> !existingMonitorThreads.contains(thread))
+                    .collect(Collectors.toSet());
+
+            Method shutdown = LoadBalancerCLI.CliRunner.class.getDeclaredMethod("shutdown");
+            shutdown.setAccessible(true);
+            shutdown.invoke(runner);
+
+            Set<Thread> ownedThreads = startedThreads;
+            assertTrue(waitUntil(() -> ownedThreads.stream().noneMatch(Thread::isAlive), 2_000),
+                    "CLI shutdown should stop the monitor thread it started!");
+        } finally {
+            startedThreads.stream()
+                    .filter(Thread::isAlive)
+                    .forEach(Thread::interrupt);
+            if (originalUndoHistory == null) {
+                Files.deleteIfExists(undoHistory);
+            } else {
+                Files.write(undoHistory, originalUndoHistory);
+            }
+        }
+    }
+
+    private static Set<Thread> activeServerMonitorThreads() {
+        return Thread.getAllStackTraces().keySet().stream()
+                .filter(thread -> thread.isAlive() && "ServerMonitor".equals(thread.getName()))
+                .collect(Collectors.toSet());
+    }
+
+    private static boolean waitUntil(BooleanSupplier condition, long timeoutMs) throws InterruptedException {
+        long deadline = System.nanoTime() + timeoutMs * 1_000_000L;
+        while (System.nanoTime() < deadline) {
+            if (condition.getAsBoolean()) {
+                return true;
+            }
+            Thread.sleep(25);
+        }
+        return condition.getAsBoolean();
     }
 }

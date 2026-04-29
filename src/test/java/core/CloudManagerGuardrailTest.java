@@ -2,6 +2,7 @@ package core;
 
 import com.amazonaws.services.autoscaling.AmazonAutoScaling;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
+import com.amazonaws.services.autoscaling.model.CreateAutoScalingGroupRequest;
 import com.amazonaws.services.autoscaling.model.DeleteAutoScalingGroupRequest;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
@@ -11,6 +12,9 @@ import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
 import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsRequest;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
+import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.InstanceState;
+import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.AmazonServiceException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -120,6 +124,126 @@ class CloudManagerGuardrailTest {
         scaleAndWait(manager, 1);
 
         verify(autoScaling, never()).updateAutoScalingGroup(any(UpdateAutoScalingGroupRequest.class));
+    }
+
+    @Test
+    void liveAsgCreationWithoutMutationGuardrailsIsDenied() throws InterruptedException {
+        AmazonEC2 ec2 = mock(AmazonEC2.class);
+        AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
+        Properties props = new Properties();
+        props.setProperty(CloudConfig.LIVE_MODE_PROPERTY, "true");
+        props.setProperty(CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10");
+        props.setProperty(CloudConfig.MAX_SCALE_STEP_PROPERTY, "10");
+        props.setProperty("retryAttempts", "1");
+        CloudConfig config = new CloudConfig(ACCESS_KEY, SECRET_KEY, "us-east-1", "lt-test", "subnet-test", props);
+        when(autoScaling.describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class)))
+                .thenReturn(asgDescribeResultWithInstances(config, "i-owned-1"));
+        when(ec2.describeInstances()).thenReturn(new DescribeInstancesResult());
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, ec2, null, autoScaling, null);
+
+        manager.initializeCloudServers(1, 2);
+        manager.shutdown();
+
+        verify(autoScaling, never()).createAutoScalingGroup(any(CreateAutoScalingGroupRequest.class));
+    }
+
+    @Test
+    void asgCreationFailureStopsInitializationBeforeWaitRegisterOrTag() throws InterruptedException {
+        AmazonEC2 ec2 = mock(AmazonEC2.class);
+        AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
+        CloudConfig config = liveConfigWithMutationGuardrails(
+                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10",
+                CLOUD_ENVIRONMENT_PROPERTY, DEPLOY_ENVIRONMENT,
+                CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+        when(autoScaling.createAutoScalingGroup(any(CreateAutoScalingGroupRequest.class)))
+                .thenThrow(new AmazonServiceException("create failed"));
+        when(autoScaling.describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class)))
+                .thenReturn(asgDescribeResultWithInstances(config, "i-owned-1"));
+        when(ec2.describeInstances()).thenReturn(new DescribeInstancesResult()
+                .withReservations(new Reservation().withInstances(runningEc2Instance("i-owned-1"))));
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, ec2, null, autoScaling, null);
+
+        manager.initializeCloudServers(1, 2);
+
+        verify(autoScaling).createAutoScalingGroup(any(CreateAutoScalingGroupRequest.class));
+        verify(autoScaling, after(500).never()).describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class));
+        verify(ec2, never()).describeInstances();
+        verify(ec2, never()).createTags(any(CreateTagsRequest.class));
+        manager.shutdown();
+    }
+
+    @Test
+    void guardrailDeniedInitializationDoesNotStartBackgroundJobs() throws InterruptedException {
+        AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
+        Properties props = new Properties();
+        props.setProperty(CloudConfig.LIVE_MODE_PROPERTY, "true");
+        props.setProperty(CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10");
+        props.setProperty(CloudConfig.MAX_SCALE_STEP_PROPERTY, "10");
+        props.setProperty("retryAttempts", "1");
+        CloudConfig config = new CloudConfig(ACCESS_KEY, SECRET_KEY, "us-east-1", "lt-test", "subnet-test", props);
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, null, autoScaling, null);
+
+        manager.initializeCloudServers(1, 2);
+
+        verify(autoScaling, never()).createAutoScalingGroup(any(CreateAutoScalingGroupRequest.class));
+        verify(autoScaling, after(500).never()).describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class));
+        verify(autoScaling, never()).updateAutoScalingGroup(any(UpdateAutoScalingGroupRequest.class));
+        manager.shutdown();
+    }
+
+    @Test
+    void liveScaleDescribeFailureDoesNotUpdateAutoScalingGroup() throws InterruptedException {
+        AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
+        CloudConfig config = liveConfigWithMutationGuardrails(
+                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10",
+                CLOUD_ENVIRONMENT_PROPERTY, DEPLOY_ENVIRONMENT,
+                CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+        when(autoScaling.describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class)))
+                .thenThrow(new AmazonServiceException("describe failed"));
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, null, autoScaling, null);
+        AtomicBoolean callbackResult = new AtomicBoolean(true);
+
+        scaleAndWait(manager, 1, callbackResult::set);
+
+        assertFalse(callbackResult.get(), "Scaling must fail closed when current ASG capacity cannot be described.");
+        verify(autoScaling, never()).updateAutoScalingGroup(any(UpdateAutoScalingGroupRequest.class));
+    }
+
+    @Test
+    void initializationRegistersOnlyInstancesOwnedByAutoScalingGroup() throws InterruptedException {
+        AmazonEC2 ec2 = mock(AmazonEC2.class);
+        AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
+        CloudConfig config = liveConfigWithMutationGuardrails(
+                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10",
+                CLOUD_ENVIRONMENT_PROPERTY, DEPLOY_ENVIRONMENT,
+                CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+        LoadBalancer balancer = new LoadBalancer();
+        when(autoScaling.describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class)))
+                .thenReturn(asgDescribeResultWithInstances(config, "i-owned-1"));
+        when(ec2.describeInstances()).thenReturn(new DescribeInstancesResult()
+                .withReservations(new Reservation().withInstances(
+                        runningEc2Instance("i-owned-1"),
+                        runningEc2Instance("i-stray-1"))));
+        CloudManager manager = new CloudManager(balancer, config, ec2, null, autoScaling, null);
+
+        manager.initializeCloudServers(1, 2);
+        manager.shutdown();
+
+        assertTrue(balancer.getServerMap().containsKey("i-owned-1"),
+                "ASG-owned running instances should be registered.");
+        assertFalse(balancer.getServerMap().containsKey("i-stray-1"),
+                "Running instances outside the ASG must not be registered.");
+        verify(ec2, never()).createTags(argThat(request ->
+                request.getResources() != null && request.getResources().contains("i-stray-1")));
     }
 
     @Test
@@ -247,6 +371,8 @@ class CloudManagerGuardrailTest {
                 CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
                 CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
                 CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+        when(autoScaling.describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class)))
+                .thenReturn(asgDescribeResultWithDesiredCapacity(config, 0));
         CloudManager manager = new CloudManager(new LoadBalancer(), config, null, null, autoScaling, null);
         AtomicBoolean callbackResult = new AtomicBoolean(false);
 
@@ -421,6 +547,41 @@ class CloudManagerGuardrailTest {
         return new DescribeAutoScalingGroupsResult().withAutoScalingGroups(asg);
     }
 
+    private static DescribeAutoScalingGroupsResult asgDescribeResultWithInstances(CloudConfig config,
+                                                                                  String... instanceIds) {
+        AutoScalingGroup asg = new AutoScalingGroup()
+                .withAutoScalingGroupName(config.getAutoScalingGroupName())
+                .withDesiredCapacity(instanceIds.length)
+                .withMinSize(instanceIds.length)
+                .withTags(new TagDescription()
+                        .withKey("LoadBalancerPro")
+                        .withValue(config.getAutoScalingGroupName()));
+        for (String instanceId : instanceIds) {
+            asg.withInstances(new com.amazonaws.services.autoscaling.model.Instance()
+                    .withInstanceId(instanceId)
+                    .withLifecycleState("InService")
+                    .withHealthStatus("Healthy"));
+        }
+        return new DescribeAutoScalingGroupsResult().withAutoScalingGroups(asg);
+    }
+
+    private static DescribeAutoScalingGroupsResult asgDescribeResultWithDesiredCapacity(CloudConfig config,
+                                                                                        int desiredCapacity) {
+        AutoScalingGroup asg = new AutoScalingGroup()
+                .withAutoScalingGroupName(config.getAutoScalingGroupName())
+                .withDesiredCapacity(desiredCapacity)
+                .withTags(new TagDescription()
+                        .withKey("LoadBalancerPro")
+                        .withValue(config.getAutoScalingGroupName()));
+        return new DescribeAutoScalingGroupsResult().withAutoScalingGroups(asg);
+    }
+
+    private static com.amazonaws.services.ec2.model.Instance runningEc2Instance(String instanceId) {
+        return new com.amazonaws.services.ec2.model.Instance()
+                .withInstanceId(instanceId)
+                .withState(new InstanceState().withName("running"));
+    }
+
     private static CloudConfig liveConfigWithMutationGuardrails(String... keyValues) {
         Properties props = new Properties();
         props.setProperty(CloudConfig.LIVE_MODE_PROPERTY, "true");
@@ -461,7 +622,10 @@ class CloudManagerGuardrailTest {
             props.setProperty(keyValues[i], keyValues[i + 1]);
         }
         CloudConfig config = new CloudConfig(ACCESS_KEY, SECRET_KEY, "us-east-1", "lt-test", "subnet-test", props);
-        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, null, mock(AmazonAutoScaling.class), null);
+        AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
+        when(autoScaling.describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class)))
+                .thenReturn(asgDescribeResultWithDesiredCapacity(config, 0));
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, null, autoScaling, null);
 
         scaleAndWait(manager, desiredCapacity);
 

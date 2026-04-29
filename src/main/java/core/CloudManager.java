@@ -142,7 +142,7 @@ public class CloudManager {
         }
         Command command = new InitializeCloudCommand(this, minServers, maxServers);
         command.execute();
-        if (config.isLiveMode()) {
+        if (config.isLiveMode() && command.getStatus() == Status.COMPLETED) {
             startBackgroundJobs();
         }
         commandRecorder.accept(command);
@@ -181,6 +181,12 @@ public class CloudManager {
                 status = Status.COMPLETED;
                 return;
             }
+            if (!manager.canCreateAutoScalingGroup(minServers, maxServers)) {
+                manager.logZeroCopy("[{}] Denied Auto Scaling Group creation because mutation guardrails did not pass.",
+                        timestamp);
+                status = Status.FAILED;
+                return;
+            }
             CreateAutoScalingGroupRequest asgRequest = new CreateAutoScalingGroupRequest()
                     .withAutoScalingGroupName(manager.config.getAutoScalingGroupName())
                     .withMinSize(minServers)
@@ -190,10 +196,17 @@ public class CloudManager {
                     .withVPCZoneIdentifier(manager.config.getSubnetId())
                     .withTags(new com.amazonaws.services.autoscaling.model.Tag().withKey("LoadBalancerPro").withValue(manager.config.getAutoScalingGroupName()));
 
-            manager.executeWithRetry(() -> {
+            boolean created = manager.executeWithRetry(() -> {
                 manager.autoScalingClient.createAutoScalingGroup(asgRequest);
                 manager.logZeroCopy("[{}] Created Auto Scaling Group: {}", timestamp, manager.config.getAutoScalingGroupName());
-            }, "create Auto Scaling Group");
+                return true;
+            }, "create Auto Scaling Group", false);
+            if (!created) {
+                manager.logZeroCopy("[{}] Failed to create Auto Scaling Group {}; initialization stopped.",
+                        timestamp, manager.config.getAutoScalingGroupName());
+                status = Status.FAILED;
+                return;
+            }
 
             try {
                 manager.waitForInstancesReady(minServers);
@@ -256,25 +269,53 @@ public class CloudManager {
             logZeroCopy("Dry-run mode: skipped cloud instance registration.");
             return;
         }
+        Set<String> ownedInstanceIds = getAutoScalingGroupInstanceIdsForRegistration();
+        if (ownedInstanceIds.isEmpty()) {
+            logZeroCopy("No ASG-owned instances found for registration; skipped cloud instance registration.");
+            return;
+        }
         DescribeInstancesResult result = executeWithRetry(() -> ec2Client.describeInstances(), 
                                                           "describe instances during initialization", null);
-        if (result != null) {
+        if (result != null && result.getReservations() != null) {
             for (Reservation reservation : result.getReservations()) {
                 for (com.amazonaws.services.ec2.model.Instance instance : reservation.getInstances()) {
-                    if (instance.getState().getName().equals("running")) {
-                        String instanceId = instance.getInstanceId();
-                        Server server = new Server(instanceId, 10.0, 20.0, 30.0, ServerType.CLOUD, 
-                                                  msg -> logZeroCopy("Health alert for {}: {}", instanceId, msg));
-                        server.setCapacity(500.0);
-                        balancer.addServer(server);
-                        if (tagInstances) {
-                            tagInstance(instanceId);
-                        }
-                        logZeroCopy("Registered and tagged cloud server: {}", instanceId);
+                    String instanceId = instance.getInstanceId();
+                    String stateName = instance.getState() != null ? instance.getState().getName() : "";
+                    if (!"running".equals(stateName)) {
+                        continue;
                     }
+                    if (!ownedInstanceIds.contains(instanceId)) {
+                        logger.debug("Skipping running instance {} because it is not owned by ASG {}",
+                                instanceId, config.getAutoScalingGroupName());
+                        continue;
+                    }
+                    Server server = new Server(instanceId, 10.0, 20.0, 30.0, ServerType.CLOUD, 
+                                              msg -> logZeroCopy("Health alert for {}: {}", instanceId, msg));
+                    server.setCapacity(500.0);
+                    balancer.addServer(server);
+                    if (tagInstances) {
+                        tagInstance(instanceId);
+                    }
+                    logZeroCopy("Registered and tagged cloud server: {}", instanceId);
                 }
             }
         }
+    }
+
+    private Set<String> getAutoScalingGroupInstanceIdsForRegistration() {
+        DescribeAutoScalingGroupsResult result = executeWithRetry(() ->
+                autoScalingClient.describeAutoScalingGroups(
+                        new DescribeAutoScalingGroupsRequest()
+                                .withAutoScalingGroupNames(config.getAutoScalingGroupName())),
+                "describe ASG instances for registration", null);
+        Optional<AutoScalingGroup> asg = findConfiguredAutoScalingGroup(result);
+        if (asg.isEmpty() || asg.get().getInstances() == null) {
+            return Set.of();
+        }
+        return asg.get().getInstances().stream()
+                .map(com.amazonaws.services.autoscaling.model.Instance::getInstanceId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     private void tagInstance(String instanceId) {
@@ -382,12 +423,31 @@ public class CloudManager {
         if (config.isDryRun()) {
             return balancer.getServersByType(ServerType.CLOUD).size();
         }
+        return describeCurrentCapacity().orElse(0);
+    }
+
+    private OptionalInt describeCurrentCapacity() {
+        if (config.isDryRun()) {
+            return OptionalInt.of(balancer.getServersByType(ServerType.CLOUD).size());
+        }
         DescribeAutoScalingGroupsResult result = executeWithRetry(() -> 
             autoScalingClient.describeAutoScalingGroups(
                 new DescribeAutoScalingGroupsRequest().withAutoScalingGroupNames(config.getAutoScalingGroupName())),
             "get current capacity", null);
-        return result != null && !result.getAutoScalingGroups().isEmpty() ? 
-               result.getAutoScalingGroups().get(0).getDesiredCapacity() : 0;
+        Optional<AutoScalingGroup> asg = findConfiguredAutoScalingGroup(result);
+        if (asg.isEmpty() || asg.get().getDesiredCapacity() == null) {
+            return OptionalInt.empty();
+        }
+        return OptionalInt.of(asg.get().getDesiredCapacity());
+    }
+
+    private Optional<AutoScalingGroup> findConfiguredAutoScalingGroup(DescribeAutoScalingGroupsResult result) {
+        if (result == null || result.getAutoScalingGroups() == null) {
+            return Optional.empty();
+        }
+        return result.getAutoScalingGroups().stream()
+                .filter(asg -> config.getAutoScalingGroupName().equals(asg.getAutoScalingGroupName()))
+                .findFirst();
     }
 
     public void scaleServersAsync(int desiredCapacity, Consumer<Boolean> callback) {
@@ -668,7 +728,13 @@ public class CloudManager {
             return false;
         }
 
-        int currentCapacity = getCurrentCapacity();
+        OptionalInt currentCapacityResult = describeCurrentCapacity();
+        if (currentCapacityResult.isEmpty()) {
+            auditScaleDecision("DENY", desiredCapacity, -1, -1, source, "CURRENT_CAPACITY_UNAVAILABLE");
+            return false;
+        }
+
+        int currentCapacity = currentCapacityResult.getAsInt();
         int scaleStep = Math.abs(desiredCapacity - currentCapacity);
         if (desiredCapacity > currentCapacity && requiresAutonomousScaleUpApproval(source)
                 && !config.isAutonomousScaleUpAllowed()) {
@@ -684,6 +750,37 @@ public class CloudManager {
             return false;
         }
         auditScaleDecision("ALLOW", desiredCapacity, currentCapacity, scaleStep, source, "GUARDRAILS_PASSED");
+        return true;
+    }
+
+    private boolean canCreateAutoScalingGroup(int minServers, int maxServers) {
+        CloudMutationSource source = CloudMutationSource.OPERATOR;
+        int currentCapacity = 0;
+        int scaleStep = minServers;
+        if (!config.isLiveMutationAllowed()) {
+            auditScaleDecision("DENY", minServers, currentCapacity, scaleStep, source,
+                    "ALLOW_LIVE_MUTATION_DISABLED");
+            return false;
+        }
+        if (!REQUIRED_LIVE_MUTATION_INTENT.equals(config.getOperatorIntent())) {
+            auditScaleDecision("DENY", minServers, currentCapacity, scaleStep, source,
+                    "OPERATOR_INTENT_INVALID");
+            return false;
+        }
+        if (minServers > config.getMaxDesiredCapacity() || maxServers > config.getMaxDesiredCapacity()) {
+            auditScaleDecision("DENY", minServers, currentCapacity, scaleStep, source,
+                    "MAX_DESIRED_CAPACITY_EXCEEDED");
+            return false;
+        }
+        if (scaleStep > config.getMaxScaleStep()) {
+            auditScaleDecision("DENY", minServers, currentCapacity, scaleStep, source,
+                    "MAX_SCALE_STEP_EXCEEDED");
+            return false;
+        }
+        if (!canScaleInConfiguredEnvironment(minServers, currentCapacity, scaleStep, source)) {
+            return false;
+        }
+        auditScaleDecision("ALLOW", minServers, currentCapacity, scaleStep, source, "GUARDRAILS_PASSED");
         return true;
     }
 

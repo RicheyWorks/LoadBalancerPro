@@ -203,6 +203,24 @@ public class LoadBalancerCLI {
                     CloudConfig.ALLOW_RESOURCE_DELETION_PROPERTY, "CLOUD_ALLOW_RESOURCE_DELETION");
             copyCloudFlag(systemProperties, environment, cloudProperties,
                     CloudConfig.CONFIRM_RESOURCE_OWNERSHIP_PROPERTY, "CLOUD_CONFIRM_RESOURCE_OWNERSHIP");
+            copyCloudFlag(systemProperties, environment, cloudProperties,
+                    CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "CLOUD_MAX_DESIRED_CAPACITY");
+            copyCloudFlag(systemProperties, environment, cloudProperties,
+                    CloudConfig.MAX_SCALE_STEP_PROPERTY, "CLOUD_MAX_SCALE_STEP");
+            copyCloudFlag(systemProperties, environment, cloudProperties,
+                    CloudConfig.ALLOW_LIVE_MUTATION_PROPERTY, "CLOUD_ALLOW_LIVE_MUTATION");
+            copyCloudFlag(systemProperties, environment, cloudProperties,
+                    CloudConfig.OPERATOR_INTENT_PROPERTY, "CLOUD_OPERATOR_INTENT");
+            copyCloudFlag(systemProperties, environment, cloudProperties,
+                    CloudConfig.ALLOW_AUTONOMOUS_SCALE_UP_PROPERTY, "CLOUD_ALLOW_AUTONOMOUS_SCALE_UP");
+            copyCloudFlag(systemProperties, environment, cloudProperties,
+                    CloudConfig.ENVIRONMENT_PROPERTY, "CLOUD_ENVIRONMENT");
+            copyCloudFlag(systemProperties, environment, cloudProperties,
+                    CloudConfig.ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, "CLOUD_ALLOWED_AWS_ACCOUNT_IDS");
+            copyCloudFlag(systemProperties, environment, cloudProperties,
+                    CloudConfig.CURRENT_AWS_ACCOUNT_ID_PROPERTY, "CLOUD_CURRENT_AWS_ACCOUNT_ID");
+            copyCloudFlag(systemProperties, environment, cloudProperties,
+                    CloudConfig.ALLOWED_REGIONS_PROPERTY, "CLOUD_ALLOWED_REGIONS");
 
             return new CloudCliSettings(
                     accessKey.orElseThrow(),

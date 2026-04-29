@@ -78,6 +78,71 @@ class LoadBalancerCLITest {
     }
 
     @Test
+    void cloudGuardrailSettingsCanBeLoadedFromEnvironmentMap() {
+        Map<String, String> environment = Map.ofEntries(
+                Map.entry("AWS_ACCESS_KEY_ID", ACCESS_KEY),
+                Map.entry("AWS_SECRET_ACCESS_KEY", SECRET_KEY),
+                Map.entry("AWS_REGION", "us-east-1"),
+                Map.entry("CLOUD_MAX_DESIRED_CAPACITY", "8"),
+                Map.entry("CLOUD_MAX_SCALE_STEP", "2"),
+                Map.entry("CLOUD_ALLOW_LIVE_MUTATION", "true"),
+                Map.entry("CLOUD_OPERATOR_INTENT", "LOADBALANCERPRO_LIVE_MUTATION"),
+                Map.entry("CLOUD_ALLOW_AUTONOMOUS_SCALE_UP", "true"),
+                Map.entry("CLOUD_ENVIRONMENT", "prod"),
+                Map.entry("CLOUD_ALLOWED_AWS_ACCOUNT_IDS", "123456789012,210987654321"),
+                Map.entry("CLOUD_CURRENT_AWS_ACCOUNT_ID", "123456789012"),
+                Map.entry("CLOUD_ALLOWED_REGIONS", "us-east-1,us-west-2")
+        );
+
+        CloudConfig cloudConfig = LoadBalancerCLI.CliRunner
+                .resolveCloudSettings(new Properties(), environment)
+                .toCloudConfig();
+
+        assertFalse(cloudConfig.isLiveMode());
+        assertEquals(8, cloudConfig.getMaxDesiredCapacity());
+        assertEquals(2, cloudConfig.getMaxScaleStep());
+        assertTrue(cloudConfig.isLiveMutationAllowed());
+        assertEquals("LOADBALANCERPRO_LIVE_MUTATION", cloudConfig.getOperatorIntent());
+        assertTrue(cloudConfig.isAutonomousScaleUpAllowed());
+        assertEquals("prod", cloudConfig.getEnvironment());
+        assertEquals("123456789012", cloudConfig.getCurrentAwsAccountId());
+        assertEquals(java.util.List.of("123456789012", "210987654321"), cloudConfig.getAllowedAwsAccountIds());
+        assertEquals(java.util.List.of("us-east-1", "us-west-2"), cloudConfig.getAllowedRegions());
+    }
+
+    @Test
+    void cloudGuardrailSettingsCanBeLoadedFromSystemProperties() {
+        Properties properties = new Properties();
+        properties.setProperty("aws.accessKeyId", ACCESS_KEY);
+        properties.setProperty("aws.secretAccessKey", SECRET_KEY);
+        properties.setProperty("aws.region", "us-west-2");
+        properties.setProperty(CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "5");
+        properties.setProperty(CloudConfig.MAX_SCALE_STEP_PROPERTY, "1");
+        properties.setProperty(CloudConfig.ALLOW_LIVE_MUTATION_PROPERTY, "true");
+        properties.setProperty(CloudConfig.OPERATOR_INTENT_PROPERTY, "LOADBALANCERPRO_LIVE_MUTATION");
+        properties.setProperty(CloudConfig.ALLOW_AUTONOMOUS_SCALE_UP_PROPERTY, "false");
+        properties.setProperty(CloudConfig.ENVIRONMENT_PROPERTY, "staging");
+        properties.setProperty(CloudConfig.ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, "123456789012");
+        properties.setProperty(CloudConfig.CURRENT_AWS_ACCOUNT_ID_PROPERTY, "123456789012");
+        properties.setProperty(CloudConfig.ALLOWED_REGIONS_PROPERTY, "us-west-2");
+
+        CloudConfig cloudConfig = LoadBalancerCLI.CliRunner
+                .resolveCloudSettings(properties, Map.of())
+                .toCloudConfig();
+
+        assertFalse(cloudConfig.isLiveMode());
+        assertEquals(5, cloudConfig.getMaxDesiredCapacity());
+        assertEquals(1, cloudConfig.getMaxScaleStep());
+        assertTrue(cloudConfig.isLiveMutationAllowed());
+        assertEquals("LOADBALANCERPRO_LIVE_MUTATION", cloudConfig.getOperatorIntent());
+        assertFalse(cloudConfig.isAutonomousScaleUpAllowed());
+        assertEquals("staging", cloudConfig.getEnvironment());
+        assertEquals(java.util.List.of("123456789012"), cloudConfig.getAllowedAwsAccountIds());
+        assertEquals("123456789012", cloudConfig.getCurrentAwsAccountId());
+        assertEquals(java.util.List.of("us-west-2"), cloudConfig.getAllowedRegions());
+    }
+
+    @Test
     void environmentCredentialsStillDefaultToDryRun() {
         Map<String, String> environment = Map.of(
                 "AWS_ACCESS_KEY_ID", ACCESS_KEY,

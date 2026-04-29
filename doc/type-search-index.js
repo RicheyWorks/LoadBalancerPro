@@ -1,1 +1,0 @@
-typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"core","l":"CloudManager"},{"p":"core","l":"LoadBalancer"},{"p":"cli","l":"LoadBalancerCLI"},{"p":"gui","l":"LoadBalancerGUI"},{"p":"core","l":"Server"},{"p":"core","l":"ServerMonitor"},{"p":"util","l":"Utils"}];updateSearchResults();

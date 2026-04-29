@@ -92,6 +92,57 @@ class UtilsTest {
     }
 
     @Test
+    void testImportServerLogsFromCsvWithQuotedComma() throws IOException {
+        logger.info("Testing CSV import with quoted comma fields");
+        Path csvFile = createTestFile("quoted-comma.csv", "\"S,1\",30.0,40.0,50.0,200.0,false\n");
+
+        Utils.importServerLogs(csvFile.toString(), CSV_FORMAT, balancer);
+
+        assertEquals(1, balancer.getServers().size(), "Quoted comma server ID should import as one field!");
+        assertServerAttributes(balancer.getServerMap().get("S,1"), "S,1", 30.0, 40.0, 50.0, 200.0);
+    }
+
+    @Test
+    void testImportServerLogsQuarantinesCsvRowsWithUnexpectedColumns() throws IOException {
+        logger.info("Testing CSV import quarantines schema-invalid rows");
+        Path csvFile = createTestFile("unexpected-columns.csv",
+            TEST_SERVER_ID_1 + ",30.0,40.0,50.0,200.0,false\n"
+                + "TOO-MANY,10.0,20.0,30.0,100.0,false,unexpected\n"
+                + TEST_SERVER_ID_2 + ",20.0,30.0,40.0");
+
+        assertDoesNotThrow(() -> Utils.importServerLogs(csvFile.toString(), CSV_FORMAT, balancer),
+            "Schema-invalid CSV rows should be quarantined while valid rows continue importing!");
+
+        assertEquals(2, balancer.getServers().size(), "Only schema-valid rows should be loaded!");
+        assertTrue(balancer.getServerMap().containsKey(TEST_SERVER_ID_1), "First valid row should load!");
+        assertTrue(balancer.getServerMap().containsKey(TEST_SERVER_ID_2), "Valid row after invalid row should load!");
+        assertFalse(balancer.getServerMap().containsKey("TOO-MANY"), "Unexpected-column row should be rejected!");
+    }
+
+    @Test
+    void testCsvInjectionIsRejectedOnImportAndNeutralizedOnExport() throws IOException {
+        logger.info("Testing CSV injection protections");
+        Path csvFile = createTestFile("csv-injection.csv",
+            "=cmd,10.0,20.0,30.0,100.0,false\n"
+                + TEST_SERVER_ID_1 + ",30.0,40.0,50.0,200.0,false");
+
+        Utils.importServerLogs(csvFile.toString(), CSV_FORMAT, balancer);
+
+        assertEquals(1, balancer.getServers().size(), "Formula-like server IDs should be rejected on import!");
+        assertFalse(balancer.getServerMap().containsKey("=cmd"), "Formula-like server ID must not be registered!");
+
+        Server dangerous = createTestServer("=SUM(A1:A2)", 10.0, 20.0, 30.0, 100.0);
+        Path report = TEST_DIR.resolve("csv-injection-report.csv");
+        Utils.exportReport(report.toString(), CSV_FORMAT, java.util.List.of(dangerous), java.util.List.of("@alert"));
+
+        String exported = Files.readString(report);
+        assertTrue(exported.contains("'=SUM(A1:A2)"), "Export should neutralize formula-like server IDs!");
+        assertTrue(exported.contains("'@alert"), "Export should neutralize formula-like alerts!");
+        assertFalse(exported.contains("\n=SUM"), "Exported rows must not start with formula syntax!");
+        assertFalse(exported.contains("\n@alert"), "Exported alerts must not start with formula syntax!");
+    }
+
+    @Test
     void testImportServerLogsFromJSON() throws IOException {
         logger.info("Testing JSON import for server: {}", TEST_SERVER_ID_1);
         String json = "[{\"serverId\":\"" + TEST_SERVER_ID_1 + "\",\"cpuUsage\":30.0,\"memoryUsage\":40.0,\"diskUsage\":50.0,\"capacity\":200.0}]";
@@ -117,6 +168,33 @@ class UtilsTest {
         assertTrue(report.containsKey("servers"), "Report should contain servers!");
         assertTrue(report.containsKey("alerts"), "Report should contain alerts!");
         logger.info("JSON export test passed for server: {}", TEST_SERVER_ID_1);
+    }
+
+    @Test
+    void testJsonExportImportsAsRoundTripReport() throws IOException {
+        logger.info("Testing JSON export/import round trip");
+        Server server = createTestServer("ROUNDTRIP", 30.0, 40.0, 50.0, 200.0, ServerType.CLOUD);
+        server.setWeight(2.0);
+        balancer.addServer(server);
+        balancer.logAlert("Roundtrip alert");
+        Path jsonFile = TEST_DIR.resolve("roundtrip-report.json");
+
+        Utils.exportReport(jsonFile.toString(), JSON_FORMAT, balancer.getServers(), balancer.getAlertLog());
+
+        LoadBalancer imported = new LoadBalancer();
+        try {
+            Utils.importServerLogs(jsonFile.toString(), JSON_FORMAT, imported);
+
+            assertEquals(1, imported.getServers().size(), "Exported report should import its server list!");
+            Server importedServer = imported.getServerMap().get("ROUNDTRIP");
+            assertNotNull(importedServer, "Round-tripped server should be registered!");
+            assertServerAttributes(importedServer, "ROUNDTRIP", 30.0, 40.0, 50.0, 200.0);
+            assertTrue(importedServer.isCloudInstance(), "Server type should survive JSON round trip!");
+            assertEquals(java.util.List.of("Roundtrip alert"), imported.getAlertLog(),
+                    "Exported alerts should import from the report contract!");
+        } finally {
+            imported.shutdown();
+        }
     }
 
     @Test
@@ -268,13 +346,13 @@ class UtilsTest {
 
         Utils.importServerLogs(csvFile.toString(), CSV_FORMAT, balancer);
 
-        assertEquals(6, balancer.getServers().size(), "All cloud flag rows should be parseable!");
+        assertEquals(5, balancer.getServers().size(), "Only valid cloud flag rows should be parseable!");
         assertTrue(balancer.getServerMap().get("CLOUD-TRUE").isCloudInstance(), "true flag should import as cloud!");
         assertFalse(balancer.getServerMap().get("CLOUD-FALSE").isCloudInstance(), "false flag should import as onsite!");
         assertTrue(balancer.getServerMap().get("CLOUD-ONE").isCloudInstance(), "1 flag should import as cloud!");
         assertFalse(balancer.getServerMap().get("CLOUD-ZERO").isCloudInstance(), "0 flag should import as onsite!");
         assertFalse(balancer.getServerMap().get("CLOUD-BLANK").isCloudInstance(), "Blank flag should import as onsite!");
-        assertFalse(balancer.getServerMap().get("CLOUD-INVALID").isCloudInstance(), "Invalid flag should import as onsite!");
+        assertFalse(balancer.getServerMap().containsKey("CLOUD-INVALID"), "Invalid cloud flag row should be rejected!");
     }
 
     @Test
@@ -312,19 +390,49 @@ class UtilsTest {
     }
 
     @Test
-    void testImportServerLogsSkipsInvalidJsonEntryAndContinues() throws IOException {
-        logger.info("Testing JSON import skips invalid entries and continues");
+    void testImportServerLogsRejectsInvalidJsonEntryWithoutPartialImport() throws IOException {
+        logger.info("Testing JSON import fails fast for invalid entries");
         String json = "["
             + "{\"cpuUsage\":10.0,\"memoryUsage\":20.0,\"diskUsage\":30.0},"
             + "{\"serverId\":\"" + TEST_SERVER_ID_2 + "\",\"cpuUsage\":20.0,\"memoryUsage\":30.0,\"diskUsage\":40.0}"
             + "]";
         Path jsonFile = createTestFile("partially-invalid.json", json);
 
-        assertDoesNotThrow(() -> Utils.importServerLogs(jsonFile.toString(), JSON_FORMAT, balancer),
-            "Invalid JSON entries should be skipped while valid entries continue importing!");
+        assertThrows(IllegalArgumentException.class, () -> Utils.importServerLogs(jsonFile.toString(), JSON_FORMAT, balancer),
+            "Invalid JSON schema should fail fast before importing later entries!");
 
-        assertEquals(1, balancer.getServers().size(), "Only valid JSON entry should be loaded!");
-        assertServerAttributes(balancer.getServerMap().get(TEST_SERVER_ID_2), TEST_SERVER_ID_2, 20.0, 30.0, 40.0, DEFAULT_CAPACITY);
+        assertEquals(0, balancer.getServers().size(), "Fail-fast JSON validation should avoid partial imports!");
+    }
+
+    @Test
+    void testImportServerLogsRejectsUnexpectedJsonSchemaFields() throws IOException {
+        logger.info("Testing JSON schema rejects unexpected fields");
+        String json = "{\"version\":1,\"timestamp\":\"2026-04-29 15:00:00\",\"servers\":["
+            + "{\"serverId\":\"" + TEST_SERVER_ID_1 + "\",\"cpuUsage\":10.0,\"memoryUsage\":20.0,"
+            + "\"diskUsage\":30.0,\"unexpected\":\"drop-me\"}],\"alerts\":[]}";
+        Path jsonFile = createTestFile("unexpected-schema.json", json);
+
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+            () -> Utils.importServerLogs(jsonFile.toString(), JSON_FORMAT, balancer),
+            "Unexpected JSON fields should be rejected instead of silently dropped!");
+
+        assertTrue(thrown.getMessage().contains("unexpected"),
+                "Schema error should identify the unexpected field!");
+        assertEquals(0, balancer.getServers().size(), "Rejected JSON should not partially import servers!");
+    }
+
+    @Test
+    void testImportServerLogsRejectsJsonWithTrailingData() throws IOException {
+        logger.info("Testing JSON import rejects trailing data");
+        Path jsonFile = createTestFile("trailing-json.json", "[] {\"unexpected\":true}");
+
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+            () -> Utils.importServerLogs(jsonFile.toString(), JSON_FORMAT, balancer),
+            "Trailing JSON content should be rejected as malformed input!");
+
+        assertTrue(thrown.getMessage().contains("single JSON value"),
+                "Schema error should identify trailing content!");
+        assertEquals(0, balancer.getServers().size(), "Rejected JSON should not import servers!");
     }
 
     @Test
@@ -372,6 +480,23 @@ class UtilsTest {
         assertEquals(serverCount, balancer.getServers().size(), "Didn’t load all servers!");
         long durationMs = (endTime - startTime) / 1_000_000;
         logger.info("Imported {} servers in {} ms", serverCount, durationMs);
+    }
+
+    @Test
+    void testLargeCsvWithQuotedFieldsProcessesWithoutCrash() throws IOException {
+        logger.info("Testing large CSV import with quoted fields");
+        Path csvFile = TEST_DIR.resolve("large_quoted_servers.csv");
+        int serverCount = 2500;
+        try (BufferedWriter writer = Files.newBufferedWriter(csvFile)) {
+            for (int i = 0; i < serverCount; i++) {
+                writer.write(String.format("\"S,%d\",10.0,20.0,30.0,100.0,false%n", i));
+            }
+        }
+
+        Utils.importServerLogs(csvFile.toString(), CSV_FORMAT, balancer);
+
+        assertEquals(serverCount, balancer.getServers().size(), "Large quoted CSV should import without crashing!");
+        assertTrue(balancer.getServerMap().containsKey("S,2499"), "Last quoted server ID should import correctly!");
     }
 
     @Test

@@ -136,22 +136,40 @@ public class Utils {
                                       String timestamp, ImportDiagnostics diagnostics) throws IOException {
         String delimiter = CsvServerLogParser.normalizeDelimiter(csvDelimiter);
         try (BufferedReader br = openBufferedReader(file)) {
-            List<String> batch = new ArrayList<>(BATCH_SIZE);
+            List<CsvRecord> batch = new ArrayList<>(BATCH_SIZE);
+            StringBuilder recordBuffer = new StringBuilder();
             String line;
             int lineNum = 0;
+            int recordStartLine = 0;
             while ((line = br.readLine()) != null) {
                 lineNum++;
-                if (line.trim().isEmpty()) continue;
-                batch.add(line);
-                if (batch.size() >= BATCH_SIZE) {
-                    processCsvBatch(batch, lineNum - batch.size() + 1, balancer, progressCount, totalLines,
-                                    progressCallback, delimiter, cloudEnabled, timestamp, diagnostics);
-                    batch.clear();
+                if (recordBuffer.length() == 0 && line.trim().isEmpty()) {
+                    continue;
+                }
+                if (recordBuffer.length() == 0) {
+                    recordStartLine = lineNum;
+                } else {
+                    recordBuffer.append('\n');
+                }
+                recordBuffer.append(line);
+                if (CsvServerLogParser.isRecordComplete(recordBuffer.toString())) {
+                    if (!recordBuffer.toString().trim().isEmpty()) {
+                        batch.add(new CsvRecord(recordBuffer.toString(), recordStartLine));
+                    }
+                    recordBuffer.setLength(0);
+                    if (batch.size() >= BATCH_SIZE) {
+                        processCsvBatch(batch, balancer, progressCount, totalLines, progressCallback, delimiter,
+                                cloudEnabled, timestamp, diagnostics);
+                        batch.clear();
+                    }
                 }
             }
+            if (recordBuffer.length() > 0) {
+                batch.add(new CsvRecord(recordBuffer.toString(), recordStartLine));
+            }
             if (!batch.isEmpty()) {
-                processCsvBatch(batch, lineNum - batch.size() + 1, balancer, progressCount, totalLines,
-                                progressCallback, delimiter, cloudEnabled, timestamp, diagnostics);
+                processCsvBatch(batch, balancer, progressCount, totalLines, progressCallback, delimiter,
+                        cloudEnabled, timestamp, diagnostics);
             }
         } catch (IOException e) {
             logger.error("[{}] Failed to import CSV from {}: {}", timestamp, file.getPath(), e.getMessage(), e);
@@ -159,15 +177,14 @@ public class Utils {
         }
     }
 
-    private static void processCsvBatch(List<String> batch, int startLineNum, LoadBalancer balancer,
+    private static void processCsvBatch(List<CsvRecord> batch, LoadBalancer balancer,
                                         AtomicInteger progressCount, int totalLines, Consumer<Integer> progressCallback,
                                         String delimiter, boolean cloudEnabled, String timestamp, ImportDiagnostics diagnostics) {
-        for (int i = 0; i < batch.size(); i++) {
-            String line = batch.get(i);
-            int lineNum = startLineNum + i;
+        for (CsvRecord record : batch) {
+            int lineNum = record.startLineNumber();
             diagnostics.recordSeen();
             try {
-                Server server = CsvServerLogParser.parseLine(line, lineNum, delimiter);
+                Server server = CsvServerLogParser.parseLine(record.content(), lineNum, delimiter);
                 if (cloudEnabled || server.getServerType() != ServerType.CLOUD) {
                     balancer.addServer(server);
                     diagnostics.recordImported();
@@ -180,9 +197,19 @@ public class Utils {
             } catch (Exception e) {
                 DomainMetrics.recordCsvParseFailure();
                 diagnostics.recordSkipped();
-                logger.error("[{}] Line {}: Failed to parse CSV line '{}': {}", timestamp, lineNum, line, e.getMessage(), e);
+                if (e instanceof CsvServerLogParser.CsvParseException csvException) {
+                    logger.warn("[{}] CSV record rejected line={} field={} reason={}",
+                            timestamp, csvException.getLineNumber(), csvException.getField(),
+                            csvException.getReason());
+                } else {
+                    logger.warn("[{}] CSV record rejected line={} field=record reason={}",
+                            timestamp, lineNum, e.getMessage());
+                }
             }
         }
+    }
+
+    private record CsvRecord(String content, int startLineNumber) {
     }
 
     private static void importFromJson(File file, LoadBalancer balancer, AtomicInteger progressCount, int totalLines,
@@ -193,9 +220,9 @@ public class Utils {
             logger.warn("[{}] Empty JSON file: {}", timestamp, file.getName());
             return;
         }
-        JSONArray jsonArray;
+        JsonServerLogParser.ParsedDocument document;
         try {
-            jsonArray = JsonServerLogParser.parseArray(jsonContent);
+            document = JsonServerLogParser.parseDocument(jsonContent, JSON_VERSION);
         } catch (RuntimeException e) {
             DomainMetrics.recordJsonParseFailure();
             diagnostics.recordMalformedDocument();
@@ -204,9 +231,18 @@ public class Utils {
                     diagnostics.getMalformedDocuments());
             throw e;
         }
-        for (int i = 0; i < jsonArray.length(); i += BATCH_SIZE) {
-            int end = Math.min(i + BATCH_SIZE, jsonArray.length());
-            processJsonBatch(jsonArray, i, end, balancer, progressCount, totalLines, progressCallback, cloudEnabled, timestamp, diagnostics);
+        if (document.getVersion() != JSON_VERSION) {
+            logger.warn("[{}] JSON report version {} differs from supported version {}",
+                    timestamp, document.getVersion(), JSON_VERSION);
+        }
+        List<JsonServerLogParser.ParsedServer> servers = document.getServers();
+        for (int i = 0; i < servers.size(); i += BATCH_SIZE) {
+            int end = Math.min(i + BATCH_SIZE, servers.size());
+            processJsonBatch(servers, i, end, balancer, progressCount, totalLines, progressCallback,
+                    cloudEnabled, timestamp, diagnostics);
+        }
+        for (String alert : document.getAlerts()) {
+            balancer.logAlert(alert);
         }
     }
 
@@ -229,32 +265,27 @@ public class Utils {
         }
     }
 
-    private static void processJsonBatch(JSONArray jsonArray, int start, int end, LoadBalancer balancer,
+    private static void processJsonBatch(List<JsonServerLogParser.ParsedServer> parsedServers, int start, int end,
+                                         LoadBalancer balancer,
                                          AtomicInteger progressCount, int totalLines, Consumer<Integer> progressCallback,
                                          boolean cloudEnabled, String timestamp, ImportDiagnostics diagnostics) {
         for (int i = start; i < end; i++) {
             diagnostics.recordSeen();
-            try {
-                JsonServerLogParser.ParsedServer parsedServer = JsonServerLogParser.parseEntry(jsonArray, i, JSON_VERSION);
-                if (parsedServer.getVersion() != JSON_VERSION) {
-                    logger.warn("[{}] JSON entry {}: Unsupported version {}; using v{}",
-                            timestamp, i, parsedServer.getVersion(), JSON_VERSION);
-                }
-                Server server = parsedServer.getServer();
-                if (cloudEnabled || server.getServerType() != ServerType.CLOUD) {
-                    balancer.addServer(server);
-                    diagnostics.recordImported();
-                } else {
-                    diagnostics.recordSkipped();
-                    logger.debug("[{}] JSON entry {}: Skipping non-cloud server {} as cloud is disabled.", 
-                                 timestamp, i, server.getServerId());
-                }
-                updateProgress(progressCount, totalLines, progressCallback);
-            } catch (Exception e) {
-                DomainMetrics.recordJsonParseFailure();
-                diagnostics.recordSkipped();
-                logger.error("[{}] JSON entry {}: Failed to parse: {}", timestamp, i, e.getMessage(), e);
+            JsonServerLogParser.ParsedServer parsedServer = parsedServers.get(i);
+            if (parsedServer.getVersion() != JSON_VERSION) {
+                logger.warn("[{}] JSON entry {}: server version {} differs from import version {}",
+                        timestamp, i, parsedServer.getVersion(), JSON_VERSION);
             }
+            Server server = parsedServer.getServer();
+            if (cloudEnabled || server.getServerType() != ServerType.CLOUD) {
+                balancer.addServer(server);
+                diagnostics.recordImported();
+            } else {
+                diagnostics.recordSkipped();
+                logger.debug("[{}] JSON entry {}: Skipping non-cloud server {} as cloud is disabled.", 
+                             timestamp, i, server.getServerId());
+            }
+            updateProgress(progressCount, totalLines, progressCallback);
         }
     }
 
@@ -365,9 +396,10 @@ public class Utils {
             } else {
                 for (Server server : servers) {
                     bw.write(String.format("%s,%.2f,%.2f,%.2f,%.2f,%.2f,%b,%s\n",
-                            server.getServerId(), server.getCpuUsage(), server.getMemoryUsage(),
+                            CsvServerLogParser.escapeForCsv(server.getServerId()),
+                            server.getCpuUsage(), server.getMemoryUsage(),
                             server.getDiskUsage(), server.getCapacity(), server.getLoadScore(),
-                            server.isHealthy(), server.getServerType()));
+                            server.isHealthy(), CsvServerLogParser.escapeForCsv(server.getServerType().toString())));
                     updateProgress(processed, totalItems, progressCallback);
                 }
             }
@@ -376,7 +408,7 @@ public class Utils {
                 bw.write("No alerts recorded.\n");
             } else {
                 for (String alert : alertLog) {
-                    bw.write(alert + "\n");
+                    bw.write(CsvServerLogParser.escapeForCsv(alert) + "\n");
                     updateProgress(processed, totalItems, progressCallback);
                 }
             }

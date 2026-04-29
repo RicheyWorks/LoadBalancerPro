@@ -93,11 +93,14 @@ class DomainMetricsTest {
                 "reason", "ALLOW_LIVE_MUTATION_DISABLED").count());
 
         AmazonAutoScaling allowedAutoScaling = mock(AmazonAutoScaling.class);
+        CloudConfig allowedConfig = liveConfigWithGuardrails();
         when(allowedAutoScaling.describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class)))
                 .thenReturn(new DescribeAutoScalingGroupsResult()
-                        .withAutoScalingGroups(new AutoScalingGroup().withDesiredCapacity(0)));
+                        .withAutoScalingGroups(new AutoScalingGroup()
+                                .withAutoScalingGroupName(allowedConfig.getAutoScalingGroupName())
+                                .withDesiredCapacity(0)));
         CloudManager allowedManager = new CloudManager(
-                new LoadBalancer(), liveConfigWithGuardrails(), null, null, allowedAutoScaling, null);
+                new LoadBalancer(), allowedConfig, null, null, allowedAutoScaling, null);
         scaleAndWait(allowedManager, 1, CloudMutationSource.OPERATOR);
         allowedManager.shutdown();
 

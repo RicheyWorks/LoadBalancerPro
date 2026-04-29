@@ -5,93 +5,71 @@ LoadBalancerPro is a Java load balancing project with:
 - Core allocation strategies and server health models
 - A command-line interface
 - A Spring Boot REST API for calculation-only allocation requests
-- Tests for allocator safety, server behavior, monitoring, and API responses
+- Micrometer/Actuator observability, including Prometheus metrics
+- Guardrailed AWS Auto Scaling integration that is dry-run by default
 
-The API and CLI are safe by default: allocation endpoints and demo commands do not call `CloudManager`, do not call AWS, and do not perform automatic scaling.
+The API and CLI are safe by default: allocation endpoints and demo commands do not call AWS, and cloud mutation stays disabled unless every live-mode guardrail is configured explicitly.
 
 ## Requirements
 
 - Java 17+
-- Maven
+- Maven 3.9+
+- Docker, optional
 
-## Build And Test
+Never commit AWS credentials, account IDs that should remain private, local config files containing secrets, or generated logs that may contain operational details.
 
-```bash
-mvn -q clean test
-```
+## Build, Test, And Package
 
-## CLI
-
-Run the interactive CLI:
+Run the unit and integration test suite:
 
 ```bash
-mvn -q exec:java "-Dexec.mainClass=cli.LoadBalancerCLI"
+mvn -q test
 ```
 
-Run the allocator safety demo:
+Build the executable Spring Boot JAR:
 
 ```bash
-mvn -q exec:java "-Dexec.mainClass=cli.LoadBalancerCLI" "-Dexec.args=--allocator-demo"
+mvn clean package
 ```
 
-The demo prints capacity-aware allocation results, unallocated load, and a calculation-only scaling recommendation.
+Run the packaged API locally:
 
-## REST API
+```bash
+java -jar target/LoadBalancerPro-1.0-SNAPSHOT.jar --spring.profiles.active=local
+```
 
-Run the Spring Boot API:
+Run from Maven during development:
 
 ```bash
 mvn -q exec:java "-Dexec.mainClass=api.LoadBalancerApiApplication"
 ```
 
-Endpoints:
+## Docker
+
+The repository includes a `Dockerfile`.
+
+Build the image:
+
+```bash
+docker build -t loadbalancerpro:local .
+```
+
+Run the API:
+
+```bash
+docker run --rm -p 8080:8080 loadbalancerpro:local
+```
+
+Pass cloud settings only through your runtime secret/config system. Do not bake credentials into the image.
+
+## REST API
+
+Run the Spring Boot API, then call:
 
 ```text
 GET  /api/health
 POST /api/allocate/capacity-aware
 POST /api/allocate/predictive
-```
-
-Enterprise endpoints:
-
-```text
-GET /swagger-ui.html
-GET /actuator/health
-GET /actuator/health/readiness
-GET /actuator/info
-GET /actuator/metrics
-```
-
-## CORS and Security
-
-The API includes a safe default browser configuration for local development and demos. CORS is enabled for `/api/**` from:
-
-```text
-http://localhost:3000
-http://localhost:8080
-```
-
-Allowed methods are `GET`, `POST`, and `OPTIONS`. Allowed request headers are `Content-Type` and `Authorization`, with credentials disabled.
-
-Responses include lightweight security headers without adding an authentication framework:
-
-```text
-X-Content-Type-Options: nosniff
-X-Frame-Options: DENY
-X-XSS-Protection: 1; mode=block
-Cache-Control: no-store
-```
-
-The API validates allocation requests before they reach the allocator. Invalid request bodies return HTTP 400 with a structured response:
-
-```json
-{
-  "error": "validation_failed",
-  "message": "Request validation failed",
-  "details": [
-    "servers: servers must contain at least one server"
-  ]
-}
 ```
 
 Example request:
@@ -110,42 +88,154 @@ curl -X POST http://localhost:8080/api/allocate/capacity-aware \
         "capacity": 100.0,
         "weight": 1.0,
         "healthy": true
-      },
-      {
-        "id": "worker-1",
-        "cpuUsage": 80.0,
-        "memoryUsage": 80.0,
-        "diskUsage": 80.0,
-        "capacity": 100.0,
-        "weight": 1.0,
-        "healthy": true
       }
     ]
   }'
 ```
 
-Example response:
+The allocation APIs are calculation-only. Scaling recommendations are simulations and do not call `CloudManager` or AWS.
 
-```json
-{
-  "allocations": {
-    "api-1": 10.0,
-    "worker-1": 20.0
-  },
-  "unallocatedLoad": 45.0,
-  "recommendedAdditionalServers": 1,
-  "scalingSimulation": {
-    "recommendedAdditionalServers": 1,
-    "reason": "Unallocated load exceeds available capacity; simulated scale-up recommended.",
-    "simulatedOnly": true
-  }
-}
+Invalid request bodies return HTTP 400 with a structured validation response. Browser CORS is enabled for `/api/**` from `http://localhost:3000` and `http://localhost:8080`, with credentials disabled. Responses include lightweight security headers such as `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Cache-Control: no-store`.
+
+OpenAPI UI is available at:
+
+```text
+GET /swagger-ui.html
 ```
 
-## Safety Notes
+## Actuator And Metrics
 
-- The REST API creates request-scoped `LoadBalancer` instances.
-- Allocation APIs are calculation-only.
-- Scaling recommendations are simulation-only and never call `CloudManager` or AWS.
-- Cloud operations remain behind existing `CloudManager` safety defaults.
-- No API endpoint performs live AWS mutation or automatic scaling.
+Actuator exposes these endpoints:
+
+```text
+GET /actuator/health
+GET /actuator/metrics
+GET /actuator/prometheus
+```
+
+Additional configured endpoints include:
+
+```text
+GET /actuator/info
+GET /actuator/health/readiness
+```
+
+Prometheus scraping target:
+
+```text
+http://localhost:8080/actuator/prometheus
+```
+
+Domain metrics include allocation counters/gauges, parsing failures, and cloud scale decisions with source and reason tags.
+
+## CLI
+
+Run the interactive CLI:
+
+```bash
+mvn -q exec:java "-Dexec.mainClass=cli.LoadBalancerCLI"
+```
+
+Run the allocator safety demo:
+
+```bash
+mvn -q exec:java "-Dexec.mainClass=cli.LoadBalancerCLI" "-Dexec.args=--allocator-demo"
+```
+
+Enable cloud integration for the CLI only when explicitly needed:
+
+```bash
+mvn -q exec:java "-Dexec.mainClass=cli.LoadBalancerCLI" "-Dexec.args=--cloud-enabled"
+```
+
+CLI general settings may be supplied in `cli.config` or with `--config <file>`. Cloud credentials and guardrails are loaded from system properties or environment variables.
+
+## CLI Cloud Configuration
+
+Use system properties:
+
+```text
+-Daws.accessKeyId=...
+-Daws.secretAccessKey=...
+-Daws.region=us-east-1
+-Dcloud.liveMode=false
+-Dcloud.launchTemplateId=...
+-Dcloud.subnetId=...
+-Dcloud.maxDesiredCapacity=3
+-Dcloud.maxScaleStep=1
+-Dcloud.allowLiveMutation=false
+-Dcloud.operatorIntent=
+-Dcloud.allowAutonomousScaleUp=false
+-Dcloud.environment=dev
+-Dcloud.allowedAwsAccountIds=123456789012
+-Dcloud.currentAwsAccountId=123456789012
+-Dcloud.allowedRegions=us-east-1,us-west-2
+-Dcloud.allowResourceDeletion=false
+-Dcloud.confirmResourceOwnership=false
+```
+
+Or environment variables:
+
+```text
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_REGION
+AWS_DEFAULT_REGION
+CLOUD_LIVE_MODE
+CLOUD_LAUNCH_TEMPLATE_ID
+CLOUD_SUBNET_ID
+CLOUD_MAX_DESIRED_CAPACITY
+CLOUD_MAX_SCALE_STEP
+CLOUD_ALLOW_LIVE_MUTATION
+CLOUD_OPERATOR_INTENT
+CLOUD_ALLOW_AUTONOMOUS_SCALE_UP
+CLOUD_ENVIRONMENT
+CLOUD_ALLOWED_AWS_ACCOUNT_IDS
+CLOUD_CURRENT_AWS_ACCOUNT_ID
+CLOUD_ALLOWED_REGIONS
+CLOUD_ALLOW_RESOURCE_DELETION
+CLOUD_CONFIRM_RESOURCE_OWNERSHIP
+```
+
+Required credentials are rejected if they are blank or placeholder values. Missing required cloud config disables CLI cloud mode safely and prints an operator-facing error.
+
+## Cloud Safety Modes
+
+Dry-run is the default because `cloud.liveMode=false` unless set otherwise. In dry-run mode, CloudManager logs decisions and does not perform live AWS mutation.
+
+Live ASG scale/update requires all of the following:
+
+- `cloud.liveMode=true`
+- `cloud.allowLiveMutation=true`
+- `cloud.operatorIntent=LOADBALANCERPRO_LIVE_MUTATION`
+- `cloud.maxDesiredCapacity` set high enough for the requested desired capacity
+- `cloud.maxScaleStep` set high enough for the requested scale step
+- `cloud.environment` set to a non-blank environment name
+- `cloud.allowedAwsAccountIds` containing `cloud.currentAwsAccountId`
+- `cloud.allowedRegions` either empty or containing `aws.region`
+- `cloud.launchTemplateId` and `cloud.subnetId` when live mode is requested through the CLI
+
+Autonomous scale-up from background sources is denied by default. Set `cloud.allowAutonomousScaleUp=true` only when predictive, preemptive, or unknown-source live scale-up is intended.
+
+Live deletion has additional gates:
+
+- `cloud.liveMode=true`
+- `cloud.allowResourceDeletion=true`
+- `cloud.confirmResourceOwnership=true`
+- the ASG can be described successfully
+- the ASG has the ownership tag `LoadBalancerPro=<auto-scaling-group-name>`
+
+If any deletion gate or ownership validation fails, deletion is skipped.
+
+## Deployment Checklist
+
+- Run `mvn -q test`.
+- Run `mvn clean package`.
+- Start the JAR with the intended Spring profile and verify `/actuator/health`.
+- Verify `/actuator/metrics` and `/actuator/prometheus` are reachable only where intended.
+- Confirm no credentials are stored in Git, Docker images, shell history, or committed config files.
+- Confirm cloud mode is dry-run unless a live change is scheduled.
+- For live scale/update, confirm operator intent, capacity caps, account ID, environment, and region allow-list.
+- For autonomous scale-up, confirm `cloud.allowAutonomousScaleUp=true` is intentional.
+- For deletion, confirm the ASG ownership tag and both deletion gates.
+- Review cloud audit logs and metrics after any live operation.

@@ -33,6 +33,78 @@ jobs:
       - name: Package executable JAR
         run: mvn -B package
 
+      - name: Smoke test LASE demo command
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          assert_contains() {
+            local file="$1"
+            local expected="$2"
+            if ! grep -Fq "$expected" "$file"; then
+              echo "Expected to find: $expected"
+              cat "$file"
+              exit 1
+            fi
+          }
+
+          assert_not_contains() {
+            local file="$1"
+            local unexpected="$2"
+            if grep -Fq "$unexpected" "$file"; then
+              echo "Unexpected output found: $unexpected"
+              cat "$file"
+              exit 1
+            fi
+          }
+
+          assert_no_spring_startup() {
+            local file="$1"
+            assert_not_contains "$file" "Started LoadBalancerApiApplication"
+            assert_not_contains "$file" "Tomcat started"
+            assert_not_contains "$file" "SpringApplication"
+          }
+
+          HEALTHY_LOG="$(mktemp)"
+          OVERLOADED_LOG="$(mktemp)"
+          INVALID_LOG="$(mktemp)"
+
+          java -jar target/LoadBalancerPro-1.0-SNAPSHOT.jar --lase-demo=healthy >"$HEALTHY_LOG" 2>&1
+          assert_contains "$HEALTHY_LOG" "=== LoadBalancerPro LASE Synthetic Demo ==="
+          assert_contains "$HEALTHY_LOG" "Evaluation ID: lase-demo-healthy"
+          assert_contains "$HEALTHY_LOG" "synthetic demo"
+          assert_contains "$HEALTHY_LOG" "recommendation-only"
+          assert_contains "$HEALTHY_LOG" "No live AWS resources touched"
+          assert_contains "$HEALTHY_LOG" "No real routing mutation"
+          assert_contains "$HEALTHY_LOG" "No CloudManager calls"
+          assert_no_spring_startup "$HEALTHY_LOG"
+
+          java -jar target/LoadBalancerPro-1.0-SNAPSHOT.jar --lase-demo=overloaded >"$OVERLOADED_LOG" 2>&1
+          assert_contains "$OVERLOADED_LOG" "Evaluation ID: lase-demo-overloaded"
+          assert_contains "$OVERLOADED_LOG" "Load Shedding:"
+          assert_contains "$OVERLOADED_LOG" "Action: SHED"
+          assert_contains "$OVERLOADED_LOG" "Shadow Autoscaling:"
+          assert_contains "$OVERLOADED_LOG" "SCALE_UP"
+          assert_contains "$OVERLOADED_LOG" "Failure Scenario:"
+          assert_no_spring_startup "$OVERLOADED_LOG"
+
+          set +e
+          java -jar target/LoadBalancerPro-1.0-SNAPSHOT.jar --lase-demo=invalid-name >"$INVALID_LOG" 2>&1
+          status=$?
+          set -e
+          if [ "$status" -ne 2 ]; then
+            echo "Expected invalid LASE demo scenario to exit 2, got $status"
+            cat "$INVALID_LOG"
+            exit 1
+          fi
+          assert_contains "$INVALID_LOG" "Invalid LASE demo scenario"
+          assert_contains "$INVALID_LOG" "Valid values:"
+          assert_contains "$INVALID_LOG" "healthy"
+          assert_contains "$INVALID_LOG" "overloaded"
+          assert_not_contains "$INVALID_LOG" "Exception"
+          assert_not_contains "$INVALID_LOG" "java.lang"
+          assert_no_spring_startup "$INVALID_LOG"
+
       - name: Smoke test packaged JAR
         shell: bash
         run: |

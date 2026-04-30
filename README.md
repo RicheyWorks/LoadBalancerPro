@@ -167,11 +167,14 @@ GitHub Actions verifies the default release gates on every push and pull request
 mvn -B -DskipTests dependency:tree
 mvn -B test
 mvn -B package
+java -jar target/LoadBalancerPro-1.0-SNAPSHOT.jar --lase-demo=healthy
+java -jar target/LoadBalancerPro-1.0-SNAPSHOT.jar --lase-demo=overloaded
+java -jar target/LoadBalancerPro-1.0-SNAPSHOT.jar --lase-demo=invalid-name
 java -jar target/LoadBalancerPro-1.0-SNAPSHOT.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 docker build -t loadbalancerpro:ci .
 ```
 
-The packaged JAR smoke test binds the app to `127.0.0.1`, waits for `GET /api/health` to return HTTP 200, then stops the local process. CI does not use AWS credentials, does not require live cloud resources, and does not create, modify, or delete AWS infrastructure. Pull requests also run GitHub's dependency review action for changed dependencies and fail on high-severity findings. Broader dependency lifecycle work, such as the AWS SDK v2 migration noted below, remains tracked separately.
+The LASE demo smoke checks run deterministic synthetic reports, verify safe failure for an invalid scenario name, and confirm the demo path does not emit Spring startup markers. The packaged JAR smoke test binds the app to `127.0.0.1`, waits for `GET /api/health` to return HTTP 200, then stops the local process. CI does not use AWS credentials, does not require live cloud resources, and does not create, modify, or delete AWS infrastructure. Pull requests also run GitHub's dependency review action for changed dependencies and fail on high-severity findings. Broader dependency lifecycle work, such as the AWS SDK v2 migration noted below, remains tracked separately.
 
 ## Docker
 

@@ -60,7 +60,7 @@ The packaged JAR smoke test binds the app to `127.0.0.1`, waits for `GET /api/he
 
 ## Docker
 
-The repository includes a `Dockerfile`.
+The repository includes a multi-stage `Dockerfile` that builds the packaged Spring Boot JAR and runs it from a Java 17 JRE image as a non-root user. The runtime image includes `curl` for the Docker `HEALTHCHECK`.
 
 Build the image:
 
@@ -68,13 +68,29 @@ Build the image:
 docker build -t loadbalancerpro:local .
 ```
 
-Run the API:
+Run the API for a local demo:
 
 ```bash
-docker run --rm -p 8080:8080 loadbalancerpro:local
+docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 loadbalancerpro:local
 ```
 
-Pass cloud settings only through your runtime secret/config system. Do not bake credentials into the image.
+The container binds the Spring Boot process to `0.0.0.0` inside the container so Docker port publishing works predictably. The command above binds the published host port to `127.0.0.1` for local-only access.
+
+Verify the API health endpoint:
+
+```bash
+curl -fsS http://127.0.0.1:8080/api/health
+```
+
+For detached runs, Docker also evaluates the image healthcheck:
+
+```bash
+docker run --rm -d --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 loadbalancerpro:local
+docker inspect --format='{{.State.Health.Status}}' loadbalancerpro-demo
+docker stop loadbalancerpro-demo
+```
+
+Docker mode starts the local/demo-safe API and does not require AWS credentials. Pass cloud settings only through your runtime secret/config system, do not bake credentials into the image, and enable live AWS behavior only with the explicit CloudManager guardrails described below.
 
 ## REST API
 

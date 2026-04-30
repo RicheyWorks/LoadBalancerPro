@@ -75,6 +75,8 @@ Build the executable Spring Boot JAR:
 mvn package
 ```
 
+Use `mvn clean package` when you want to remove stale local build artifacts before creating the JAR.
+
 Run the packaged API locally:
 
 ```bash
@@ -103,6 +105,27 @@ curl http://127.0.0.1:18080/api/health
 docker build -t loadbalancerpro:local .
 docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 loadbalancerpro:local
 ```
+
+## Deployment Profiles
+
+The default/local profile is for development, CI smoke tests, and portfolio demos. It keeps the demo-friendly behavior documented above: localhost browser CORS origins, `/api/health`, Swagger/OpenAPI, Actuator health/info/metrics/prometheus, and no live AWS mutation by default.
+
+Run the local/demo profile explicitly:
+
+```bash
+java -jar target/LoadBalancerPro-1.0.0-rc1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+```
+
+The `prod` profile is an explicit opt-in production-like starting point, not full production readiness. It keeps `cloud.liveMode=false`, does not require AWS credentials just to start, exposes only Actuator health/info by default, and leaves browser CORS origins empty unless configured through `LOADBALANCERPRO_CORS_ALLOWED_ORIGINS`.
+
+Run the production-like profile locally for validation:
+
+```bash
+LOADBALANCERPRO_CORS_ALLOWED_ORIGINS=https://app.example.com \
+java -jar target/LoadBalancerPro-1.0.0-rc1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=prod
+```
+
+Before using the prod profile beyond a local demo, add deployment-specific auth, TLS or trusted proxy termination, secret management, actuator/network lockdown, logging retention, and live-cloud change controls. This profile is a safer baseline for review, not a claim that the app is ready for unmanaged production traffic.
 
 ## Safe LASE Synthetic Demo
 
@@ -246,7 +269,7 @@ curl -X POST http://localhost:8080/api/allocate/capacity-aware \
 
 The allocation APIs are calculation-only. Scaling recommendations are simulations and do not call `CloudManager` or AWS.
 
-Invalid request bodies return HTTP 400 with a structured validation response. Browser CORS is enabled for `/api/**` from `http://localhost:3000` and `http://localhost:8080`, with credentials disabled. Responses include lightweight security headers such as `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Cache-Control: no-store`.
+Invalid request bodies return HTTP 400 with a structured validation response. In the local/demo profile, browser CORS is enabled for `/api/**` from `http://localhost:3000` and `http://localhost:8080`, with credentials disabled. In the `prod` profile, configure allowed origins explicitly with `LOADBALANCERPRO_CORS_ALLOWED_ORIGINS`. Responses include lightweight security headers such as `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Cache-Control: no-store`.
 
 OpenAPI UI is available at:
 
@@ -256,7 +279,7 @@ GET /swagger-ui.html
 
 ## Actuator And Metrics
 
-Actuator exposes these endpoints:
+The local/demo profile exposes these Actuator endpoints:
 
 ```text
 GET /actuator/health
@@ -278,6 +301,8 @@ http://localhost:8080/actuator/prometheus
 ```
 
 Domain metrics include allocation counters/gauges, parsing failures, and cloud scale decisions with source and reason tags.
+
+The `prod` profile exposes only `/actuator/health` and `/actuator/info` by default. Keep metrics and Prometheus behind deployment-specific network and authentication controls before enabling them outside a demo environment.
 
 ## CLI
 

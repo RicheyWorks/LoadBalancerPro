@@ -33,7 +33,7 @@ class ServerTest {
      */
     @BeforeAll
     static void setup() {
-        logger.info("=== SERVER TEST KICKOFF ===");
+        logger.info("Server test suite started.");
     }
 
     /**

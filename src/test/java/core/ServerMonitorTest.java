@@ -51,8 +51,8 @@ class ServerMonitorTest {
     @BeforeAll
     static void setupSuite() {
         when(logger.isEnabled(any())).thenReturn(true); // Enable all log levels
-        logger.info("=== SERVER MONITOR TEST SUITE KICKOFF ===");
-        verify(logger).info("=== SERVER MONITOR TEST SUITE KICKOFF ===");
+        logger.info("ServerMonitor test suite started.");
+        verify(logger).info("ServerMonitor test suite started.");
     }
 
     /**

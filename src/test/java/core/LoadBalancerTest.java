@@ -46,9 +46,9 @@ class LoadBalancerTest {
      * @throws IOException if an I/O error occurs while creating the test directory
      */
     @BeforeAll
-    static void setupMadness() throws IOException {
-        System.out.println("=== UNLEASHING LOAD BALANCER TESTING MADNESS ===");
-        logger.info("Test suite firing up—buck wild style!");
+    static void setupSuite() throws IOException {
+        System.out.println("=== LoadBalancer test suite started ===");
+        logger.info("LoadBalancer test suite started.");
         Files.createDirectories(TEST_DIR);
     }
 
@@ -60,7 +60,7 @@ class LoadBalancerTest {
      * @throws InterruptedException if the shutdown from a previous test is interrupted
      */
     @BeforeEach
-    void resetTheBeast() throws InterruptedException {
+    void resetBalancer() throws InterruptedException {
         logger.info("Resetting LoadBalancer for next test...");
         balancer = new LoadBalancer();
     }
@@ -74,7 +74,7 @@ class LoadBalancerTest {
      * @throws InterruptedException if the shutdown process is interrupted
      */
     @AfterEach
-    void shutdownTheBeast() throws InterruptedException {
+    void shutdownBalancer() throws InterruptedException {
         balancer.shutdown();
     }
 

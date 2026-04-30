@@ -8,7 +8,7 @@ LoadBalancerPro is a Java load balancing project with:
 - Micrometer/Actuator observability, including Prometheus metrics
 - Guardrailed AWS Auto Scaling integration that is dry-run by default
 
-The API and CLI are safe by default: allocation endpoints and demo commands do not call AWS, and cloud mutation stays disabled unless every live-mode guardrail is configured explicitly.
+The API and CLI are safe by default: allocation endpoints do not call AWS, CLI cloud integration is disabled unless requested, and cloud mutation stays disabled unless every live-mode guardrail is configured explicitly.
 
 ## Requirements
 
@@ -23,7 +23,7 @@ Never commit AWS credentials, account IDs that should remain private, local conf
 Run the unit and integration test suite:
 
 ```bash
-mvn -q test
+mvn test
 ```
 
 Build the executable Spring Boot JAR:
@@ -38,10 +38,10 @@ Run the packaged API locally:
 java -jar target/LoadBalancerPro-1.0-SNAPSHOT.jar --spring.profiles.active=local
 ```
 
-Run from Maven during development:
+Run the API from Maven during development:
 
 ```bash
-mvn -q exec:java "-Dexec.mainClass=api.LoadBalancerApiApplication"
+mvn spring-boot:run
 ```
 
 ## Docker
@@ -136,11 +136,7 @@ Run the interactive CLI:
 mvn -q exec:java "-Dexec.mainClass=cli.LoadBalancerCLI"
 ```
 
-Run the allocator safety demo:
-
-```bash
-mvn -q exec:java "-Dexec.mainClass=cli.LoadBalancerCLI" "-Dexec.args=--allocator-demo"
-```
+For a local allocation demo, run the interactive CLI and choose the balance-load workflow. The CLI does not currently expose a `--allocator-demo` flag.
 
 Enable cloud integration for the CLI only when explicitly needed:
 
@@ -199,6 +195,16 @@ CLOUD_CONFIRM_RESOURCE_OWNERSHIP
 
 Required credentials are rejected if they are blank or placeholder values. Missing required cloud config disables CLI cloud mode safely and prints an operator-facing error.
 
+## Dependency Lifecycle Notes
+
+LoadBalancerPro currently uses AWS SDK for Java 1.x modules for the guarded CloudManager integration. AWS announced that SDK v1 entered maintenance mode on July 31, 2024 and reached end-of-support on December 31, 2025. This project should track a future migration to AWS SDK for Java 2.x before expanding cloud features, but this production-readiness sweep intentionally does not migrate SDK major versions.
+
+Reference: https://aws.amazon.com/blogs/developer/announcing-end-of-support-for-aws-sdk-for-java-v1-x-on-december-31-2025/
+
+## Test Notes
+
+The default Maven test suite uses mocked cloud clients for CloudManager safety coverage and does not create or modify real AWS resources. A small set of legacy ServerMonitor cloud tests remain guarded by JUnit assumptions because they require an initialized CloudManager; they are skipped in the default local/CI path unless explicit cloud setup is provided.
+
 ## Cloud Safety Modes
 
 Dry-run is the default because `cloud.liveMode=false` unless set otherwise. In dry-run mode, CloudManager logs decisions and does not perform live AWS mutation.
@@ -229,7 +235,7 @@ If any deletion gate or ownership validation fails, deletion is skipped.
 
 ## Deployment Checklist
 
-- Run `mvn -q test`.
+- Run `mvn test`.
 - Run `mvn clean package`.
 - Start the JAR with the intended Spring profile and verify `/actuator/health`.
 - Verify `/actuator/metrics` and `/actuator/prometheus` are reachable only where intended.

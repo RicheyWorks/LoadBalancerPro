@@ -26,7 +26,7 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+@Order(Ordered.HIGHEST_PRECEDENCE + 2)
 public class RequestSizeLimitFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper;
     private final long maxRequestBytes;

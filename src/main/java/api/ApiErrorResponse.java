@@ -31,4 +31,10 @@ public record ApiErrorResponse(int status, String error, String message, String 
                 "Request body exceeds maximum size of " + maxBytes + " bytes",
                 path, Instant.now().toString(), List.of());
     }
+
+    public static ApiErrorResponse unauthorized(String path) {
+        return new ApiErrorResponse(401, "unauthorized",
+                "Valid API key required for this endpoint",
+                path, Instant.now().toString(), List.of());
+    }
 }

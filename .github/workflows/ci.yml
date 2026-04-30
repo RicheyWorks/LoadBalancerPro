@@ -4,10 +4,14 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  test:
-    name: Maven Tests
+  build:
+    name: Build, Test, Package, Smoke
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     steps:
       - name: Check out repository
@@ -20,5 +24,69 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: Resolve dependency tree
+        run: mvn -B -DskipTests dependency:tree
+
       - name: Run tests
-        run: mvn -q clean test
+        run: mvn -B test
+
+      - name: Package executable JAR
+        run: mvn -B package
+
+      - name: Smoke test packaged JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP_LOG="$(mktemp)"
+          java -jar target/LoadBalancerPro-1.0-SNAPSHOT.jar \
+            --server.address=127.0.0.1 \
+            --server.port=18080 \
+            --spring.profiles.active=local >"$APP_LOG" 2>&1 &
+          APP_PID=$!
+
+          cleanup() {
+            if kill -0 "$APP_PID" 2>/dev/null; then
+              kill "$APP_PID" 2>/dev/null || true
+              wait "$APP_PID" 2>/dev/null || true
+            fi
+          }
+          trap cleanup EXIT
+
+          for attempt in {1..60}; do
+            if curl -fsS -o /dev/null http://127.0.0.1:18080/api/health; then
+              echo "Packaged JAR smoke test passed."
+              exit 0
+            fi
+
+            if ! kill -0 "$APP_PID" 2>/dev/null; then
+              echo "Application exited before becoming healthy."
+              cat "$APP_LOG"
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          echo "Application did not return HTTP 200 from /api/health in time."
+          cat "$APP_LOG"
+          exit 1
+
+      - name: Build Docker image
+        run: docker build -t loadbalancerpro:ci .
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high

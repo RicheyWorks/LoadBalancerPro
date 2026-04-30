@@ -48,7 +48,7 @@ Roadmap backlog:
 - CSV/JSON handling validates schemas, handles robust CSV quoting, rejects malformed records, and neutralizes spreadsheet formula injection.
 - API hardening includes request-size enforcement, safe JSON error envelopes, validation response consistency, CORS coverage, and security headers.
 - Concurrency and lifecycle cleanup removed unsafe shared hashing state, bounded cache risk, and clarified CLI monitor shutdown ownership.
-- The default Maven test suite currently covers 329 tests with zero skipped tests and uses mocked cloud clients for cloud-adjacent coverage.
+- The default Maven test suite currently covers 359 tests with zero skipped tests and uses mocked cloud clients for cloud-adjacent coverage.
 - CI release gates verify tests, packaging, packaged-JAR smoke startup, dependency review on pull requests, and Docker image builds.
 - Docker runtime hardening runs the app as a non-root user and exposes a Docker healthcheck backed by `/api/health`.
 - The internal LASE telemetry-driven routing foundation models server state, scores tail-latency and pressure signals, samples candidates deterministically in tests, and emits explainable routing decisions.
@@ -105,6 +105,61 @@ curl http://127.0.0.1:18080/api/health
 docker build -t loadbalancerpro:local .
 docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 loadbalancerpro:local
 ```
+
+## Local Load-Test Evidence
+
+Local load testing is a reproducible sanity check for the API contract and JVM packaging path. It is not production benchmarking, capacity planning, or a universal performance claim; results depend on the local machine, JDK, OS, background load, and network loopback behavior.
+
+Start the local/demo API first:
+
+```bash
+mvn package
+java -jar target/LoadBalancerPro-1.0.0-rc1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+```
+
+The commands below use `hey` against `127.0.0.1` only and do not require AWS credentials, live cloud resources, or CloudManager configuration.
+
+Health endpoint steady-load check:
+
+```bash
+hey -z 30s -c 10 http://127.0.0.1:18080/api/health
+```
+
+Allocation endpoint steady-load check:
+
+```bash
+hey -z 30s -c 10 \
+  -m POST \
+  -H "Content-Type: application/json" \
+  -D examples/capacity-aware-request.json \
+  http://127.0.0.1:18080/api/allocate/capacity-aware
+```
+
+Allocation endpoint burst/spike check:
+
+```bash
+hey -n 1000 -c 50 \
+  -m POST \
+  -H "Content-Type: application/json" \
+  -D examples/capacity-aware-request.json \
+  http://127.0.0.1:18080/api/allocate/capacity-aware
+```
+
+PowerShell helper:
+
+```powershell
+.\scripts\load-test.ps1 -BaseUrl http://127.0.0.1:18080
+```
+
+Capture these metrics from each run:
+
+- Requests/sec
+- p50 latency
+- p95 latency
+- p99 latency
+- Error rate, derived from non-2xx/3xx status codes and reported errors
+
+Sample local results should be labeled with machine, OS, JDK, command, and timestamp before being compared or shared. No committed result should be treated as a production SLO.
 
 ## Deployment Profiles
 

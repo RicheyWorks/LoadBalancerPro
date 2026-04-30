@@ -121,6 +121,90 @@ class ShadowAutoscalerTest {
     }
 
     @Test
+    void thresholdBoundariesAreExplicit() {
+        assertHoldAtCurrent(signal("checkout", 4, 2, 10, 2, 20, 100.0, 150.0, 0.01, 100));
+        assertScaleUp(signal("checkout", 4, 2, 10, 2, 21, 100.0, 150.0, 0.01, 100), "queue depth");
+
+        assertHoldAtCurrent(signal("checkout", 4, 2, 10, 2, 2, 200.0, 150.0, 0.01, 100));
+        assertScaleUp(signal("checkout", 4, 2, 10, 2, 2, 200.1, 150.0, 0.01, 100), "p95 latency");
+
+        assertHoldAtCurrent(signal("checkout", 4, 2, 10, 2, 2, 100.0, 350.0, 0.01, 100));
+        assertScaleUp(signal("checkout", 4, 2, 10, 2, 2, 100.0, 350.1, 0.01, 100), "p99 latency");
+
+        assertHoldAtCurrent(signal("checkout", 4, 2, 10, 2, 2, 100.0, 150.0, 0.10, 100));
+        AutoscalingRecommendation errorAboveThreshold = autoscaler.recommend(
+                signal("checkout", 4, 2, 10, 2, 2, 100.0, 150.0, 0.11, 100), CONFIG);
+        assertEquals(AutoscalingAction.INVESTIGATE, errorAboveThreshold.action());
+        assertTrue(errorAboveThreshold.reason().contains("error rate"));
+
+        assertScaleUp(signal("checkout", 5, 2, 10, 4, 2, 100.0, 150.0, 0.01, 100), "utilization");
+        assertScaleUp(signal("checkout", 4, 2, 10, 4, 2, 100.0, 150.0, 0.01, 100), "utilization");
+
+        assertScaleDown(signal("checkout", 4, 2, 10, 1, 0, 100.0, 150.0, 0.01, 100));
+        assertScaleDown(signal("checkout", 8, 2, 10, 1, 0, 100.0, 150.0, 0.01, 100));
+    }
+
+    @Test
+    void capacityBoundariesClampRecommendations() {
+        ShadowAutoscalerConfig largeSteps =
+                new ShadowAutoscalerConfig(200.0, 350.0, 0.10, 20, 0.80, 0.25, 5, 5, 10);
+
+        AutoscalingRecommendation scaleUpNearMax = autoscaler.recommend(
+                signal("checkout", 9, 2, 10, 9, 25, 100.0, 150.0, 0.01, 100), largeSteps);
+        assertEquals(AutoscalingAction.SCALE_UP, scaleUpNearMax.action());
+        assertEquals(10, scaleUpNearMax.recommendedCapacity());
+
+        AutoscalingRecommendation scaleUpAtMax = autoscaler.recommend(
+                signal("checkout", 10, 2, 10, 10, 25, 100.0, 150.0, 0.01, 100), largeSteps);
+        assertEquals(AutoscalingAction.HOLD, scaleUpAtMax.action());
+        assertEquals(10, scaleUpAtMax.recommendedCapacity());
+        assertTrue(scaleUpAtMax.reason().contains("at max capacity"));
+
+        AutoscalingRecommendation scaleDownNearMin = autoscaler.recommend(
+                signal("checkout", 3, 2, 10, 0, 0, 100.0, 150.0, 0.01, 100), largeSteps);
+        assertEquals(AutoscalingAction.SCALE_DOWN, scaleDownNearMin.action());
+        assertEquals(2, scaleDownNearMin.recommendedCapacity());
+
+        AutoscalingRecommendation scaleDownAtMin = autoscaler.recommend(
+                signal("checkout", 2, 2, 10, 0, 0, 100.0, 150.0, 0.01, 100), largeSteps);
+        assertEquals(AutoscalingAction.HOLD, scaleDownAtMin.action());
+        assertEquals(2, scaleDownAtMin.recommendedCapacity());
+        assertTrue(scaleDownAtMin.reason().contains("at min capacity"));
+    }
+
+    @Test
+    void conflictingPressureIsResolvedSafelyAndExplained() {
+        AutoscalingRecommendation highErrorAndQueue = autoscaler.recommend(
+                signal("checkout", 4, 2, 10, 2, 25, 100.0, 150.0, 0.25, 100), CONFIG);
+        assertEquals(AutoscalingAction.SCALE_UP, highErrorAndQueue.action());
+        assertTrue(highErrorAndQueue.reason().contains("queue depth"));
+        assertTrue(highErrorAndQueue.reason().contains("error rate"));
+
+        AutoscalingRecommendation highErrorAndLatency = autoscaler.recommend(
+                signal("checkout", 4, 2, 10, 1, 0, 260.0, 450.0, 0.25, 100), CONFIG);
+        assertEquals(AutoscalingAction.SCALE_UP, highErrorAndLatency.action());
+        assertTrue(highErrorAndLatency.reason().contains("p95 latency"));
+        assertTrue(highErrorAndLatency.reason().contains("p99 latency"));
+        assertTrue(highErrorAndLatency.reason().contains("error rate"));
+
+        AutoscalingRecommendation lowUtilizationHighLatency = autoscaler.recommend(
+                signal("checkout", 8, 2, 10, 1, 0, 260.0, 150.0, 0.01, 100), CONFIG);
+        assertEquals(AutoscalingAction.SCALE_UP, lowUtilizationHighLatency.action());
+        assertNotEquals(AutoscalingAction.SCALE_DOWN, lowUtilizationHighLatency.action());
+
+        AutoscalingRecommendation lowUtilizationHighError = autoscaler.recommend(
+                signal("checkout", 8, 2, 10, 1, 0, 100.0, 150.0, 0.25, 100), CONFIG);
+        assertEquals(AutoscalingAction.INVESTIGATE, lowUtilizationHighError.action());
+        assertNotEquals(AutoscalingAction.SCALE_DOWN, lowUtilizationHighError.action());
+
+        AutoscalingRecommendation lowUtilizationWithQueue = autoscaler.recommend(
+                signal("checkout", 8, 2, 10, 1, 5, 100.0, 150.0, 0.01, 100), CONFIG);
+        assertEquals(AutoscalingAction.HOLD, lowUtilizationWithQueue.action());
+        assertNotEquals(AutoscalingAction.SCALE_DOWN, lowUtilizationWithQueue.action());
+        assertTrue(lowUtilizationWithQueue.reason().contains("queue"));
+    }
+
+    @Test
     void combinedLatencyAndQueuePressureProduceClearScaleUpReason() {
         AutoscalingRecommendation recommendation = autoscaler.recommend(
                 signal("checkout", 4, 2, 10, 4, 30, 260.0, 450.0, 0.01, 100), CONFIG);
@@ -147,9 +231,15 @@ class ShadowAutoscalerTest {
                 () -> assertInvalid(() -> new ShadowAutoscalerConfig(200.0, 350.0, 0.10, 20, -0.01, 0.25, 2, 1, 10)),
                 () -> assertInvalid(() -> new ShadowAutoscalerConfig(200.0, 350.0, 0.10, 20, 1.01, 0.25, 2, 1, 10)),
                 () -> assertInvalid(() -> new ShadowAutoscalerConfig(200.0, 350.0, 0.10, 20, 0.80, Double.NaN, 2, 1, 10)),
+                () -> assertInvalid(() -> new ShadowAutoscalerConfig(200.0, 350.0, 0.10, 20, Double.POSITIVE_INFINITY, 0.25, 2, 1, 10)),
+                () -> assertInvalid(() -> new ShadowAutoscalerConfig(200.0, 350.0, 0.10, 20, 0.80, Double.NEGATIVE_INFINITY, 2, 1, 10)),
                 () -> assertInvalid(() -> new ShadowAutoscalerConfig(200.0, 350.0, 0.10, 20, 0.80, 0.80, 2, 1, 10)),
+                () -> assertInvalid(() -> new ShadowAutoscalerConfig(Double.POSITIVE_INFINITY, 350.0, 0.10, 20, 0.80, 0.25, 2, 1, 10)),
+                () -> assertInvalid(() -> new ShadowAutoscalerConfig(200.0, Double.NaN, 0.10, 20, 0.80, 0.25, 2, 1, 10)),
                 () -> assertInvalid(() -> new ShadowAutoscalerConfig(200.0, 350.0, 0.10, 20, 0.80, 0.25, 0, 1, 10)),
+                () -> assertInvalid(() -> new ShadowAutoscalerConfig(200.0, 350.0, 0.10, 20, 0.80, 0.25, -1, 1, 10)),
                 () -> assertInvalid(() -> new ShadowAutoscalerConfig(200.0, 350.0, 0.10, 20, 0.80, 0.25, 2, 0, 10)),
+                () -> assertInvalid(() -> new ShadowAutoscalerConfig(200.0, 350.0, 0.10, 20, 0.80, 0.25, 2, -1, 10)),
                 () -> assertInvalid(() -> new ShadowAutoscalerConfig(200.0, 350.0, 0.10, 20, 0.80, 0.25, 2, 1, -1))
         );
     }
@@ -168,10 +258,13 @@ class ShadowAutoscalerTest {
                 () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, -1, 1.0, 1.0, 0.0, 100)),
                 () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, 0, -1.0, 1.0, 0.0, 100)),
                 () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, 0, Double.NaN, 1.0, 0.0, 100)),
+                () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, 0, Double.POSITIVE_INFINITY, 1.0, 0.0, 100)),
+                () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, 0, 1.0, Double.NaN, 0.0, 100)),
                 () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, 0, 1.0, Double.POSITIVE_INFINITY, 0.0, 100)),
                 () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, 0, 1.0, 1.0, -0.01, 100)),
                 () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, 0, 1.0, 1.0, 1.01, 100)),
                 () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, 0, 1.0, 1.0, Double.NaN, 100)),
+                () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, 0, 1.0, 1.0, Double.POSITIVE_INFINITY, 100)),
                 () -> assertInvalid(() -> signal("checkout", 4, 2, 10, 2, 0, 1.0, 1.0, 0.0, -1)),
                 () -> assertInvalid(() -> new AutoscalingSignal("checkout", 4, 2, 10, 2, 0,
                         1.0, 1.0, 0.0, 100, null))
@@ -197,6 +290,12 @@ class ShadowAutoscalerTest {
                         2, 1, 0.0, "reason", NOW, 2, 0, 0.50, 1.0, 1.0, 0.0, 100)),
                 () -> assertInvalid(() -> new AutoscalingRecommendation("checkout", AutoscalingAction.HOLD, 4, 4,
                         2, 10, Double.NaN, "reason", NOW, 2, 0, 0.50, 1.0, 1.0, 0.0, 100)),
+                () -> assertInvalid(() -> new AutoscalingRecommendation("checkout", AutoscalingAction.HOLD, 4, 4,
+                        2, 10, Double.POSITIVE_INFINITY, "reason", NOW, 2, 0, 0.50, 1.0, 1.0, 0.0, 100)),
+                () -> assertInvalid(() -> new AutoscalingRecommendation("checkout", AutoscalingAction.HOLD, 4, 4,
+                        2, 10, -0.01, "reason", NOW, 2, 0, 0.50, 1.0, 1.0, 0.0, 100)),
+                () -> assertInvalid(() -> new AutoscalingRecommendation("checkout", AutoscalingAction.HOLD, 4, 4,
+                        2, 10, 1.01, "reason", NOW, 2, 0, 0.50, 1.0, 1.0, 0.0, 100)),
                 () -> assertInvalid(() -> new AutoscalingRecommendation("checkout", AutoscalingAction.HOLD, 4, 4,
                         2, 10, 0.0, "   ", NOW, 2, 0, 0.50, 1.0, 1.0, 0.0, 100)),
                 () -> assertInvalid(() -> new AutoscalingRecommendation("checkout", AutoscalingAction.HOLD, 4, 4,
@@ -259,5 +358,28 @@ class ShadowAutoscalerTest {
         RuntimeException thrown = assertThrows(RuntimeException.class, executable);
         assertNotNull(thrown.getMessage());
         assertFalse(thrown.getMessage().isBlank());
+    }
+
+    private void assertHoldAtCurrent(AutoscalingSignal signal) {
+        AutoscalingRecommendation recommendation = autoscaler.recommend(signal, CONFIG);
+
+        assertEquals(AutoscalingAction.HOLD, recommendation.action());
+        assertEquals(signal.currentCapacity(), recommendation.recommendedCapacity());
+    }
+
+    private void assertScaleUp(AutoscalingSignal signal, String expectedReasonFragment) {
+        AutoscalingRecommendation recommendation = autoscaler.recommend(signal, CONFIG);
+
+        assertEquals(AutoscalingAction.SCALE_UP, recommendation.action());
+        assertTrue(recommendation.recommendedCapacity() > signal.currentCapacity());
+        assertTrue(recommendation.reason().contains(expectedReasonFragment));
+    }
+
+    private void assertScaleDown(AutoscalingSignal signal) {
+        AutoscalingRecommendation recommendation = autoscaler.recommend(signal, CONFIG);
+
+        assertEquals(AutoscalingAction.SCALE_DOWN, recommendation.action());
+        assertTrue(recommendation.recommendedCapacity() < signal.currentCapacity());
+        assertTrue(recommendation.reason().contains("low utilization"));
     }
 }

@@ -17,6 +17,10 @@ public final class ShadowAutoscaler {
         }
 
         List<String> scaleUpReasons = scaleUpReasons(signal, config);
+        if (!scaleUpReasons.isEmpty() && signal.observedErrorRate() > config.maxErrorRate()) {
+            scaleUpReasons.add("error rate " + format(signal.observedErrorRate())
+                    + " exceeded threshold " + format(config.maxErrorRate()));
+        }
         if (!scaleUpReasons.isEmpty()) {
             if (signal.currentCapacity() == signal.maxCapacity()) {
                 return recommendation(signal, AutoscalingAction.HOLD, signal.currentCapacity(),
@@ -37,6 +41,14 @@ public final class ShadowAutoscaler {
                     "Investigating error rate " + format(signal.observedErrorRate())
                             + " above threshold " + format(config.maxErrorRate())
                             + " without scaling pressure.");
+        }
+
+        if (signal.utilization() <= config.utilizationScaleDownThreshold()
+                && signal.queueDepth() > 0) {
+            return recommendation(signal, AutoscalingAction.HOLD, signal.currentCapacity(), 0.10,
+                    "Holding capacity because queue depth " + signal.queueDepth()
+                            + " is non-empty; avoiding scale down despite low utilization "
+                            + format(signal.utilization()) + ".");
         }
 
         if (signal.utilization() <= config.utilizationScaleDownThreshold()

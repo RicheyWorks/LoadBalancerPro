@@ -1,0 +1,8 @@
+# LoadBalancerPro Trivy vulnerability allowlist.
+#
+# Keep this file empty by default. Add vulnerability IDs only after review.
+# Each allowlist entry should be documented in the PR with:
+# - affected package/image layer
+# - reason for temporary acceptance
+# - owner
+# - expiry or follow-up issue

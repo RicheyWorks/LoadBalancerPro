@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import api.ApiErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 @Profile({"prod", "cloud-sandbox"})
+@ConditionalOnProperty(prefix = "loadbalancerpro.auth", name = "mode", havingValue = "api-key", matchIfMissing = true)
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class ProdApiKeyFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(ProdApiKeyFilter.class);

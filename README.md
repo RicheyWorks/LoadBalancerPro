@@ -194,6 +194,53 @@ If `LOADBALANCERPRO_API_KEY` is missing or blank, protected prod-profile API req
 
 The prod-profile API key is a minimal client-auth gate. It is not full user identity, RBAC, OAuth, production authorization, or secret rotation. Before using the prod profile beyond a local demo, add deployment-specific auth, TLS or trusted proxy termination, secret management, actuator/network lockdown, logging retention, and live-cloud change controls. This profile is a safer baseline for review, not a claim that the app is ready for unmanaged production traffic.
 
+### Cloud Sandbox Profile
+
+The `cloud-sandbox` profile is an explicit opt-in profile for controlled cloud-integration validation. It is dry-run by default and is designed for sandbox preparation, mocked validation, and future live sandbox testing without changing the local/demo or prod defaults.
+
+Run the sandbox profile locally:
+
+```bash
+LOADBALANCERPRO_API_KEY=replace-with-random-local-test-value \
+java -jar target/LoadBalancerPro-1.0.0-rc5.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=cloud-sandbox
+```
+
+Sandbox defaults remain fail-closed:
+
+- `cloud.liveMode=false`
+- `cloud.allowLiveMutation=false`
+- `cloud.allowResourceDeletion=false`
+- `cloud.confirmResourceOwnership=false`
+- `cloud.allowAutonomousScaleUp=false`
+- `cloud.maxDesiredCapacity=2`
+- `cloud.maxScaleStep=1`
+- `cloud.environment=sandbox`
+- `cloud.resourceNamePrefix=lbp-sandbox-`
+
+The profile does not require AWS credentials just to start the API, does not mutate AWS resources by default, and still protects API mutation/LASE observability endpoints with `X-API-Key`. Treat it as a cloud-safety validation lane, not production mode.
+
+Future live sandbox attempts should use disposable AWS resources and set all live guardrails explicitly:
+
+```text
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_REGION or AWS_DEFAULT_REGION
+CLOUD_LIVE_MODE=true
+CLOUD_ALLOW_LIVE_MUTATION=true
+CLOUD_OPERATOR_INTENT=LOADBALANCERPRO_LIVE_MUTATION
+CLOUD_ENVIRONMENT=sandbox
+CLOUD_RESOURCE_NAME_PREFIX=lbp-sandbox-
+CLOUD_ALLOWED_AWS_ACCOUNT_IDS=<12-digit sandbox account>
+CLOUD_CURRENT_AWS_ACCOUNT_ID=<same sandbox account>
+CLOUD_ALLOWED_REGIONS=<allowed sandbox region>
+CLOUD_MAX_DESIRED_CAPACITY=1 or 2
+CLOUD_MAX_SCALE_STEP=1
+CLOUD_LAUNCH_TEMPLATE_ID
+CLOUD_SUBNET_ID
+```
+
+Live sandbox mutation is denied unless the sandbox environment, account allow-list, region allow-list, operator intent, capacity caps, and sandbox resource-name prefix are all configured. Deletion remains off unless `CLOUD_ALLOW_RESOURCE_DELETION=true`, `CLOUD_CONFIRM_RESOURCE_OWNERSHIP=true`, live mode is enabled, and the existing CloudManager ownership checks pass. Do not use shared or production AWS resources for sandbox validation.
+
 ## Production Deployment Considerations
 
 LoadBalancerPro is designed as a portfolio/enterprise-demo system. The `prod` profile is a safer deployment starting point, not a complete production security system.
@@ -477,6 +524,7 @@ Use system properties:
 -Dcloud.operatorIntent=
 -Dcloud.allowAutonomousScaleUp=false
 -Dcloud.environment=dev
+-Dcloud.resourceNamePrefix=lbp-sandbox-
 -Dcloud.allowedAwsAccountIds=123456789012
 -Dcloud.currentAwsAccountId=123456789012
 -Dcloud.allowedRegions=us-east-1,us-west-2
@@ -500,6 +548,7 @@ CLOUD_ALLOW_LIVE_MUTATION
 CLOUD_OPERATOR_INTENT
 CLOUD_ALLOW_AUTONOMOUS_SCALE_UP
 CLOUD_ENVIRONMENT
+CLOUD_RESOURCE_NAME_PREFIX
 CLOUD_ALLOWED_AWS_ACCOUNT_IDS
 CLOUD_CURRENT_AWS_ACCOUNT_ID
 CLOUD_ALLOWED_REGIONS

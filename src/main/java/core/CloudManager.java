@@ -836,7 +836,22 @@ public class CloudManager {
             auditScaleDecision("DENY", desiredCapacity, currentCapacity, scaleStep, source, "REGION_NOT_ALLOWED");
             return false;
         }
+        if (isSandboxEnvironment() && config.getResourceNamePrefix().isBlank()) {
+            auditScaleDecision("DENY", desiredCapacity, currentCapacity, scaleStep, source,
+                    "SANDBOX_RESOURCE_PREFIX_MISSING");
+            return false;
+        }
+        if (isSandboxEnvironment()
+                && !config.getAutoScalingGroupName().startsWith(config.getResourceNamePrefix())) {
+            auditScaleDecision("DENY", desiredCapacity, currentCapacity, scaleStep, source,
+                    "SANDBOX_RESOURCE_PREFIX_MISMATCH");
+            return false;
+        }
         return true;
+    }
+
+    private boolean isSandboxEnvironment() {
+        return "sandbox".equalsIgnoreCase(config.getEnvironment());
     }
 
     private boolean requiresAutonomousScaleUpApproval(CloudMutationSource source) {

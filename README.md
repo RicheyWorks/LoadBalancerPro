@@ -48,7 +48,7 @@ Roadmap backlog:
 - CSV/JSON handling validates schemas, handles robust CSV quoting, rejects malformed records, and neutralizes spreadsheet formula injection.
 - API hardening includes request-size enforcement, safe JSON error envelopes, validation response consistency, CORS coverage, and security headers.
 - Concurrency and lifecycle cleanup removed unsafe shared hashing state, bounded cache risk, and clarified CLI monitor shutdown ownership.
-- The default Maven test suite currently covers 360 tests with zero skipped tests and uses mocked cloud clients for cloud-adjacent coverage.
+- The default Maven test suite currently covers 371 tests with zero skipped tests and uses mocked cloud clients for cloud-adjacent coverage.
 - CI release gates verify tests, packaging, packaged-JAR smoke startup, dependency review on pull requests, and Docker image builds.
 - Docker runtime hardening runs the app as a non-root user and exposes a Docker healthcheck backed by `/api/health`.
 - The internal LASE telemetry-driven routing foundation models server state, scores tail-latency and pressure signals, samples candidates deterministically in tests, and emits explainable routing decisions.
@@ -337,6 +337,7 @@ Run the Spring Boot API, then call:
 
 ```text
 GET  /api/health
+GET  /api/lase/shadow
 POST /api/allocate/capacity-aware
 POST /api/allocate/predictive
 ```
@@ -363,6 +364,10 @@ curl -X POST http://localhost:8080/api/allocate/capacity-aware \
 ```
 
 The allocation APIs are calculation-only. Scaling recommendations are simulations and do not call `CloudManager` or AWS.
+
+`GET /api/lase/shadow` returns the bounded in-memory LASE Shadow Advisor observability snapshot: aggregate shadow-evaluation counts, fail-safe counts, recommendation counts, agreement rate, and recent events. The endpoint is shadow-only: it reports what the internal LASE advisor observed or recommended after normal allocation decisions, and it does not change routing, allocation, CloudManager, AWS, or cloud-scaling behavior. Agreement rate currently means the LASE recommended server matched the top server selected by the normal allocation result when both values are comparable.
+
+In the `prod` profile, `GET /api/lase/shadow` requires the configured `X-API-Key`, just like protected allocation endpoints. `/api/health` remains public.
 
 Invalid request bodies return HTTP 400 with a structured validation response. In the local/demo profile, browser CORS is enabled for `/api/**` from `http://localhost:3000` and `http://localhost:8080`, with credentials disabled. In the `prod` profile, configure allowed origins explicitly with `LOADBALANCERPRO_CORS_ALLOWED_ORIGINS`. Responses include lightweight security headers such as `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Cache-Control: no-store`.
 

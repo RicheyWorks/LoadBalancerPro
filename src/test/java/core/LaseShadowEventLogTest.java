@@ -31,7 +31,29 @@ class LaseShadowEventLogTest {
         assertEquals(0, snapshot.summary().failSafeCount());
         assertEquals(SECOND, snapshot.summary().latestEventTimestamp());
         assertEquals(Map.of("SCALE_UP", 1L, "HOLD", 1L), snapshot.summary().recommendationCounts());
+        assertEquals(LaseShadowNetworkSummary.empty(), snapshot.summary().networkSummary());
         assertEquals(2, snapshot.recentEvents().size());
+    }
+
+    @Test
+    void recordsNetworkSignalAggregates() {
+        LaseShadowEventLog log = new LaseShadowEventLog(5);
+
+        log.record(successEvent("eval-1", FIRST, "S1", "S1", "HOLD", true,
+                new NetworkAwarenessSignal("S1", 0.10, 0.20, 0.05, 15.0, true, 2, 100, FIRST), 322.5));
+        log.record(successEvent("eval-2", SECOND, "S2", "S2", "SCALE_UP", true,
+                new NetworkAwarenessSignal("S2", 0.30, 0.10, 0.15, 25.0, false, 4, 100, SECOND), 423.5));
+
+        LaseShadowObservabilitySnapshot snapshot = log.snapshot();
+        LaseShadowNetworkSummary networkSummary = snapshot.summary().networkSummary();
+
+        assertEquals(0.20, networkSummary.averageTimeoutRate(), 0.001);
+        assertEquals(0.15, networkSummary.averageRetryRate(), 0.001);
+        assertEquals(0.10, networkSummary.averageConnectionFailureRate(), 0.001);
+        assertEquals(25.0, networkSummary.maxLatencyJitterMillis(), 0.001);
+        assertEquals(1, networkSummary.recentErrorBurstCount());
+        assertEquals(6, networkSummary.totalRequestTimeoutCount());
+        assertEquals(322.5, snapshot.recentEvents().get(0).networkRiskScore(), 0.001);
     }
 
     @Test
@@ -104,6 +126,18 @@ class LaseShadowEventLogTest {
                                                 String recommendedServer,
                                                 String action,
                                                 boolean agreed) {
+        return successEvent(evaluationId, timestamp, actualServer, recommendedServer, action, agreed,
+                NetworkAwarenessSignal.neutral(evaluationId, timestamp), 0.0);
+    }
+
+    private static LaseShadowEvent successEvent(String evaluationId,
+                                                Instant timestamp,
+                                                String actualServer,
+                                                String recommendedServer,
+                                                String action,
+                                                boolean agreed,
+                                                NetworkAwarenessSignal networkAwarenessSignal,
+                                                double networkRiskScore) {
         return new LaseShadowEvent(
                 evaluationId,
                 timestamp,
@@ -114,6 +148,8 @@ class LaseShadowEventLogTest {
                 recommendedServer,
                 action,
                 42.0,
+                networkAwarenessSignal,
+                networkRiskScore,
                 "Evaluation completed",
                 agreed,
                 false,

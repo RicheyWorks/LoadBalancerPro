@@ -12,7 +12,8 @@ public record LaseShadowSummary(
         double agreementRate,
         long failSafeCount,
         Instant latestEventTimestamp,
-        Map<String, Long> recommendationCounts) {
+        Map<String, Long> recommendationCounts,
+        LaseShadowNetworkSummary networkSummary) {
 
     public LaseShadowSummary {
         if (maxSize <= 0) {
@@ -32,7 +33,20 @@ public record LaseShadowSummary(
             throw new IllegalArgumentException("agreementRate must be between 0.0 and 1.0");
         }
         Objects.requireNonNull(recommendationCounts, "recommendationCounts cannot be null");
+        Objects.requireNonNull(networkSummary, "networkSummary cannot be null");
         recommendationCounts = Map.copyOf(recommendationCounts);
+    }
+
+    public LaseShadowSummary(int maxSize,
+                             long totalEvaluations,
+                             long comparableEvaluations,
+                             long agreementCount,
+                             double agreementRate,
+                             long failSafeCount,
+                             Instant latestEventTimestamp,
+                             Map<String, Long> recommendationCounts) {
+        this(maxSize, totalEvaluations, comparableEvaluations, agreementCount, agreementRate, failSafeCount,
+                latestEventTimestamp, recommendationCounts, LaseShadowNetworkSummary.empty());
     }
 
     private static void validateNonNegative(long value, String fieldName) {

@@ -13,6 +13,8 @@ public record LaseShadowEvent(
         String recommendedServerId,
         String recommendedAction,
         Double decisionScore,
+        NetworkAwarenessSignal networkAwarenessSignal,
+        Double networkRiskScore,
         String reason,
         Boolean agreedWithRouting,
         boolean failSafe,
@@ -30,12 +32,35 @@ public record LaseShadowEvent(
         if (decisionScore != null) {
             validateNonNegativeFinite(decisionScore, "decisionScore");
         }
+        Objects.requireNonNull(networkAwarenessSignal, "networkAwarenessSignal cannot be null");
+        if (networkRiskScore != null) {
+            validateNonNegativeFinite(networkRiskScore, "networkRiskScore");
+        }
         reason = requireNonBlank(reason, "reason");
         if (failSafe && (failureReason == null || failureReason.isBlank())) {
             failureReason = "shadow evaluation failed safely";
         } else {
             failureReason = blankToNull(failureReason);
         }
+    }
+
+    public LaseShadowEvent(String evaluationId,
+                           Instant timestamp,
+                           String strategy,
+                           double requestedLoad,
+                           double unallocatedLoad,
+                           String actualSelectedServerId,
+                           String recommendedServerId,
+                           String recommendedAction,
+                           Double decisionScore,
+                           String reason,
+                           Boolean agreedWithRouting,
+                           boolean failSafe,
+                           String failureReason) {
+        this(evaluationId, timestamp, strategy, requestedLoad, unallocatedLoad, actualSelectedServerId,
+                recommendedServerId, recommendedAction, decisionScore,
+                NetworkAwarenessSignal.neutral(evaluationId, timestamp), 0.0, reason, agreedWithRouting,
+                failSafe, failureReason);
     }
 
     private static void validateNonNegativeFinite(double value, String fieldName) {

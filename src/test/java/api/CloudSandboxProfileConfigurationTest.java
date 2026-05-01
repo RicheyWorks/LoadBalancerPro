@@ -59,6 +59,7 @@ class CloudSandboxProfileConfigurationTest {
         assertEquals("2", environment.getProperty("cloud.maxDesiredCapacity"));
         assertEquals("1", environment.getProperty("cloud.maxScaleStep"));
         assertEquals("sandbox", environment.getProperty("cloud.environment"));
+        assertEquals("lbp-sandbox-", environment.getProperty("cloud.resourceNamePrefix"));
         assertFalse(allocatorService.isLaseShadowEnabledForTesting());
     }
 

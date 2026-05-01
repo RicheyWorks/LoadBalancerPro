@@ -95,6 +95,7 @@ class LoadBalancerCLITest {
                 Map.entry("CLOUD_OPERATOR_INTENT", "LOADBALANCERPRO_LIVE_MUTATION"),
                 Map.entry("CLOUD_ALLOW_AUTONOMOUS_SCALE_UP", "true"),
                 Map.entry("CLOUD_ENVIRONMENT", "prod"),
+                Map.entry("CLOUD_RESOURCE_NAME_PREFIX", "lbp-sandbox-"),
                 Map.entry("CLOUD_ALLOWED_AWS_ACCOUNT_IDS", "123456789012,210987654321"),
                 Map.entry("CLOUD_CURRENT_AWS_ACCOUNT_ID", "123456789012"),
                 Map.entry("CLOUD_ALLOWED_REGIONS", "us-east-1,us-west-2")
@@ -111,6 +112,7 @@ class LoadBalancerCLITest {
         assertEquals("LOADBALANCERPRO_LIVE_MUTATION", cloudConfig.getOperatorIntent());
         assertTrue(cloudConfig.isAutonomousScaleUpAllowed());
         assertEquals("prod", cloudConfig.getEnvironment());
+        assertEquals("lbp-sandbox-", cloudConfig.getResourceNamePrefix());
         assertEquals("123456789012", cloudConfig.getCurrentAwsAccountId());
         assertEquals(java.util.List.of("123456789012", "210987654321"), cloudConfig.getAllowedAwsAccountIds());
         assertEquals(java.util.List.of("us-east-1", "us-west-2"), cloudConfig.getAllowedRegions());
@@ -128,6 +130,7 @@ class LoadBalancerCLITest {
         properties.setProperty(CloudConfig.OPERATOR_INTENT_PROPERTY, "LOADBALANCERPRO_LIVE_MUTATION");
         properties.setProperty(CloudConfig.ALLOW_AUTONOMOUS_SCALE_UP_PROPERTY, "false");
         properties.setProperty(CloudConfig.ENVIRONMENT_PROPERTY, "staging");
+        properties.setProperty(CloudConfig.RESOURCE_NAME_PREFIX_PROPERTY, "lbp-staging-");
         properties.setProperty(CloudConfig.ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, "123456789012");
         properties.setProperty(CloudConfig.CURRENT_AWS_ACCOUNT_ID_PROPERTY, "123456789012");
         properties.setProperty(CloudConfig.ALLOWED_REGIONS_PROPERTY, "us-west-2");
@@ -143,6 +146,7 @@ class LoadBalancerCLITest {
         assertEquals("LOADBALANCERPRO_LIVE_MUTATION", cloudConfig.getOperatorIntent());
         assertFalse(cloudConfig.isAutonomousScaleUpAllowed());
         assertEquals("staging", cloudConfig.getEnvironment());
+        assertEquals("lbp-staging-", cloudConfig.getResourceNamePrefix());
         assertEquals(java.util.List.of("123456789012"), cloudConfig.getAllowedAwsAccountIds());
         assertEquals("123456789012", cloudConfig.getCurrentAwsAccountId());
         assertEquals(java.util.List.of("us-west-2"), cloudConfig.getAllowedRegions());

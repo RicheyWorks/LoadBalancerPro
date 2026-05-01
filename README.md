@@ -215,6 +215,7 @@ Sandbox defaults remain fail-closed:
 - `cloud.maxDesiredCapacity=2`
 - `cloud.maxScaleStep=1`
 - `cloud.environment=sandbox`
+- `cloud.resourceNamePrefix=lbp-sandbox-`
 
 The profile does not require AWS credentials just to start the API, does not mutate AWS resources by default, and still protects API mutation/LASE observability endpoints with `X-API-Key`. Treat it as a cloud-safety validation lane, not production mode.
 
@@ -228,6 +229,7 @@ CLOUD_LIVE_MODE=true
 CLOUD_ALLOW_LIVE_MUTATION=true
 CLOUD_OPERATOR_INTENT=LOADBALANCERPRO_LIVE_MUTATION
 CLOUD_ENVIRONMENT=sandbox
+CLOUD_RESOURCE_NAME_PREFIX=lbp-sandbox-
 CLOUD_ALLOWED_AWS_ACCOUNT_IDS=<12-digit sandbox account>
 CLOUD_CURRENT_AWS_ACCOUNT_ID=<same sandbox account>
 CLOUD_ALLOWED_REGIONS=<allowed sandbox region>
@@ -237,7 +239,7 @@ CLOUD_LAUNCH_TEMPLATE_ID
 CLOUD_SUBNET_ID
 ```
 
-Deletion remains off unless `CLOUD_ALLOW_RESOURCE_DELETION=true`, `CLOUD_CONFIRM_RESOURCE_OWNERSHIP=true`, live mode is enabled, and the existing CloudManager ownership checks pass. Do not use shared or production AWS resources for sandbox validation.
+Live sandbox mutation is denied unless the sandbox environment, account allow-list, region allow-list, operator intent, capacity caps, and sandbox resource-name prefix are all configured. Deletion remains off unless `CLOUD_ALLOW_RESOURCE_DELETION=true`, `CLOUD_CONFIRM_RESOURCE_OWNERSHIP=true`, live mode is enabled, and the existing CloudManager ownership checks pass. Do not use shared or production AWS resources for sandbox validation.
 
 ## Production Deployment Considerations
 
@@ -522,6 +524,7 @@ Use system properties:
 -Dcloud.operatorIntent=
 -Dcloud.allowAutonomousScaleUp=false
 -Dcloud.environment=dev
+-Dcloud.resourceNamePrefix=lbp-sandbox-
 -Dcloud.allowedAwsAccountIds=123456789012
 -Dcloud.currentAwsAccountId=123456789012
 -Dcloud.allowedRegions=us-east-1,us-west-2
@@ -545,6 +548,7 @@ CLOUD_ALLOW_LIVE_MUTATION
 CLOUD_OPERATOR_INTENT
 CLOUD_ALLOW_AUTONOMOUS_SCALE_UP
 CLOUD_ENVIRONMENT
+CLOUD_RESOURCE_NAME_PREFIX
 CLOUD_ALLOWED_AWS_ACCOUNT_IDS
 CLOUD_CURRENT_AWS_ACCOUNT_ID
 CLOUD_ALLOWED_REGIONS

@@ -399,6 +399,90 @@ class CloudManagerGuardrailTest {
     }
 
     @Test
+    void liveSandboxScaleWithoutOperatorIntentIsDenied() throws Exception {
+        String auditLog = auditLogForScale(1,
+                CloudConfig.ALLOW_LIVE_MUTATION_PROPERTY, "true",
+                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10",
+                CLOUD_ENVIRONMENT_PROPERTY, "sandbox",
+                CloudConfig.RESOURCE_NAME_PREFIX_PROPERTY, "lbp-sandbox-",
+                CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+
+        assertTrue(auditLog.contains("decision=DENY"));
+        assertTrue(auditLog.contains("reason=OPERATOR_INTENT_INVALID"));
+    }
+
+    @Test
+    void liveSandboxScaleWithoutAllowedAccountListIsDenied() throws Exception {
+        String auditLog = auditLogForScale(1,
+                CloudConfig.ALLOW_LIVE_MUTATION_PROPERTY, "true",
+                CloudConfig.OPERATOR_INTENT_PROPERTY, "LOADBALANCERPRO_LIVE_MUTATION",
+                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10",
+                CLOUD_ENVIRONMENT_PROPERTY, "sandbox",
+                CloudConfig.RESOURCE_NAME_PREFIX_PROPERTY, "lbp-sandbox-",
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+
+        assertTrue(auditLog.contains("decision=DENY"));
+        assertTrue(auditLog.contains("reason=ALLOWED_ACCOUNT_LIST_MISSING"));
+    }
+
+    @Test
+    void liveSandboxScaleWithDisallowedRegionIsDenied() throws Exception {
+        String auditLog = auditLogForScale(1,
+                CloudConfig.ALLOW_LIVE_MUTATION_PROPERTY, "true",
+                CloudConfig.OPERATOR_INTENT_PROPERTY, "LOADBALANCERPRO_LIVE_MUTATION",
+                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10",
+                CLOUD_ENVIRONMENT_PROPERTY, "sandbox",
+                CloudConfig.RESOURCE_NAME_PREFIX_PROPERTY, "lbp-sandbox-",
+                CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-west-2");
+
+        assertTrue(auditLog.contains("decision=DENY"));
+        assertTrue(auditLog.contains("reason=REGION_NOT_ALLOWED"));
+    }
+
+    @Test
+    void liveSandboxScaleWithoutResourcePrefixIsDenied() throws Exception {
+        String auditLog = auditLogForScale(1,
+                CloudConfig.ALLOW_LIVE_MUTATION_PROPERTY, "true",
+                CloudConfig.OPERATOR_INTENT_PROPERTY, "LOADBALANCERPRO_LIVE_MUTATION",
+                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10",
+                CLOUD_ENVIRONMENT_PROPERTY, "sandbox",
+                CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+
+        assertTrue(auditLog.contains("decision=DENY"));
+        assertTrue(auditLog.contains("reason=SANDBOX_RESOURCE_PREFIX_MISSING"));
+    }
+
+    @Test
+    void liveSandboxScaleWithPrefixAccountRegionAndIntentPassesExistingGuardrails() throws Exception {
+        String auditLog = auditLogForScale(1,
+                CloudConfig.ALLOW_LIVE_MUTATION_PROPERTY, "true",
+                CloudConfig.OPERATOR_INTENT_PROPERTY, "LOADBALANCERPRO_LIVE_MUTATION",
+                CloudConfig.MAX_DESIRED_CAPACITY_PROPERTY, "10",
+                CloudConfig.MAX_SCALE_STEP_PROPERTY, "10",
+                CLOUD_ENVIRONMENT_PROPERTY, "sandbox",
+                CloudConfig.RESOURCE_NAME_PREFIX_PROPERTY, "lbp-sandbox-",
+                CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+
+        assertTrue(auditLog.contains("decision=ALLOW"));
+        assertTrue(auditLog.contains("reason=GUARDRAILS_PASSED"));
+        assertTrue(auditLog.contains("environment=sandbox"));
+        assertTrue(auditLog.contains("asg=lbp-sandbox-LoadBalancerPro-ASG-"));
+    }
+
+    @Test
     void liveScaleWithoutAllowedAccountListIsDenied() throws InterruptedException {
         AmazonAutoScaling autoScaling = mock(AmazonAutoScaling.class);
         CloudConfig config = liveConfigWithAccountGuardrails(

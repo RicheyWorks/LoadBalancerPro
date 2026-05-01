@@ -22,6 +22,7 @@ class CloudConfigGuardrailTest {
         assertEquals(CloudConfig.DEFAULT_OPERATOR_INTENT, config.getOperatorIntent());
         assertFalse(config.isAutonomousScaleUpAllowed());
         assertEquals(CloudConfig.DEFAULT_ENVIRONMENT, config.getEnvironment());
+        assertEquals(CloudConfig.DEFAULT_RESOURCE_NAME_PREFIX, config.getResourceNamePrefix());
         assertEquals(CloudConfig.DEFAULT_CURRENT_AWS_ACCOUNT_ID, config.getCurrentAwsAccountId());
         assertTrue(config.getAllowedAwsAccountIds().isEmpty());
         assertTrue(config.getAllowedRegions().isEmpty());
@@ -98,5 +99,35 @@ class CloudConfigGuardrailTest {
         assertEquals(CloudConfig.DEFAULT_CURRENT_AWS_ACCOUNT_ID, config.getCurrentAwsAccountId());
         assertEquals(java.util.List.of("123456789012"), config.getAllowedAwsAccountIds());
         assertEquals(java.util.List.of("us-east-1"), config.getAllowedRegions());
+    }
+
+    @Test
+    void resourceNamePrefixDefaultsToEmptyForCompatibility() {
+        CloudConfig config = new CloudConfig(ACCESS_KEY, SECRET_KEY, "us-east-1", "lt-test", "subnet-test");
+
+        assertEquals("", config.getResourceNamePrefix());
+        assertTrue(config.getAutoScalingGroupName().startsWith("LoadBalancerPro-ASG-"));
+    }
+
+    @Test
+    void validResourceNamePrefixIsAppliedToGeneratedAsgName() {
+        Properties props = new Properties();
+        props.setProperty(CloudConfig.RESOURCE_NAME_PREFIX_PROPERTY, "lbp-sandbox-");
+
+        CloudConfig config = new CloudConfig(ACCESS_KEY, SECRET_KEY, "us-east-1", "lt-test", "subnet-test", props);
+
+        assertEquals("lbp-sandbox-", config.getResourceNamePrefix());
+        assertTrue(config.getAutoScalingGroupName().startsWith("lbp-sandbox-LoadBalancerPro-ASG-"));
+    }
+
+    @Test
+    void invalidResourceNamePrefixFailsSafelyToCompatibilityDefault() {
+        Properties props = new Properties();
+        props.setProperty(CloudConfig.RESOURCE_NAME_PREFIX_PROPERTY, "../not-safe");
+
+        CloudConfig config = new CloudConfig(ACCESS_KEY, SECRET_KEY, "us-east-1", "lt-test", "subnet-test", props);
+
+        assertEquals("", config.getResourceNamePrefix());
+        assertTrue(config.getAutoScalingGroupName().startsWith("LoadBalancerPro-ASG-"));
     }
 }

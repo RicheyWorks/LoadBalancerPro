@@ -37,6 +37,7 @@ public class CloudConfig {
     public static final String OPERATOR_INTENT_PROPERTY = "cloud.operatorIntent";
     public static final String ALLOW_AUTONOMOUS_SCALE_UP_PROPERTY = "cloud.allowAutonomousScaleUp";
     public static final String ENVIRONMENT_PROPERTY = "cloud.environment";
+    public static final String RESOURCE_NAME_PREFIX_PROPERTY = "cloud.resourceNamePrefix";
     public static final String ALLOWED_AWS_ACCOUNT_IDS_PROPERTY = "cloud.allowedAwsAccountIds";
     public static final String CURRENT_AWS_ACCOUNT_ID_PROPERTY = "cloud.currentAwsAccountId";
     public static final String ALLOWED_REGIONS_PROPERTY = "cloud.allowedRegions";
@@ -46,6 +47,7 @@ public class CloudConfig {
     public static final String DEFAULT_OPERATOR_INTENT = "";
     public static final boolean DEFAULT_ALLOW_AUTONOMOUS_SCALE_UP = false;
     public static final String DEFAULT_ENVIRONMENT = "";
+    public static final String DEFAULT_RESOURCE_NAME_PREFIX = "";
     public static final String DEFAULT_CURRENT_AWS_ACCOUNT_ID = "";
 
     private final String accessKey;
@@ -76,6 +78,7 @@ public class CloudConfig {
     private final String operatorIntent;
     private final boolean allowAutonomousScaleUp;
     private final String environment;
+    private final String resourceNamePrefix;
     private final List<String> allowedAwsAccountIds;
     private final String currentAwsAccountId;
     private final List<String> allowedRegions;
@@ -89,9 +92,12 @@ public class CloudConfig {
         this.secretKey = secretKey;
         this.region = region;
         this.launchTemplateId = launchTemplateId;
-        this.autoScalingGroupName = "LoadBalancerPro-ASG-" + UUID.randomUUID().toString().substring(0, 8);
         this.subnetId = subnetId;
         validateCredentials(accessKey, secretKey);
+        this.resourceNamePrefix = parseValidatedString(props, RESOURCE_NAME_PREFIX_PROPERTY,
+                DEFAULT_RESOURCE_NAME_PREFIX, this::isValidResourceNamePrefix);
+        this.autoScalingGroupName = resourceNamePrefix + "LoadBalancerPro-ASG-"
+                + UUID.randomUUID().toString().substring(0, 8);
         this.retryAttempts = parseInt(props, "retryAttempts", DEFAULT_RETRY_ATTEMPTS, 1, Integer.MAX_VALUE);
         this.retryBaseDelayMs = parseLong(props, "retryBaseDelayMs", DEFAULT_RETRY_BASE_DELAY_MS, 100, Long.MAX_VALUE);
         this.pollIntervalSeconds = parseInt(props, "pollIntervalSeconds", DEFAULT_POLL_INTERVAL_SECONDS, 1, 60);
@@ -230,6 +236,10 @@ public class CloudConfig {
         return value != null && value.matches("[a-z]{2}(-gov)?-[a-z]+-\\d");
     }
 
+    private boolean isValidResourceNamePrefix(String value) {
+        return value != null && value.matches("[A-Za-z0-9][A-Za-z0-9-]{0,63}");
+    }
+
     // Getters
     public String getAccessKey() { return accessKey; }
     public String getSecretKey() { return secretKey; }
@@ -260,6 +270,7 @@ public class CloudConfig {
     public String getOperatorIntent() { return operatorIntent; }
     public boolean isAutonomousScaleUpAllowed() { return allowAutonomousScaleUp; }
     public String getEnvironment() { return environment; }
+    public String getResourceNamePrefix() { return resourceNamePrefix; }
     public List<String> getAllowedAwsAccountIds() { return allowedAwsAccountIds; }
     public String getCurrentAwsAccountId() { return currentAwsAccountId; }
     public List<String> getAllowedRegions() { return allowedRegions; }

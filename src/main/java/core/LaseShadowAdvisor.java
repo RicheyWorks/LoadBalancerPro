@@ -128,6 +128,7 @@ public final class LaseShadowAdvisor {
         Double decisionScore = recommendedServerId == null
                 ? null
                 : report.routingDecision().explanation().scores().get(recommendedServerId);
+        NetworkAwarenessSignal networkAwarenessSignal = recommendedNetworkSignal(report, recommendedServerId);
 
         eventLog.record(new LaseShadowEvent(
                 report.evaluationId(),
@@ -139,6 +140,8 @@ public final class LaseShadowAdvisor {
                 recommendedServerId,
                 report.autoscalingRecommendation().action().name(),
                 decisionScore,
+                networkAwarenessSignal,
+                new ServerScoreCalculator().networkRiskScore(networkAwarenessSignal),
                 report.summary(),
                 agreed,
                 false,
@@ -160,6 +163,8 @@ public final class LaseShadowAdvisor {
                 null,
                 "FAIL_SAFE",
                 null,
+                NetworkAwarenessSignal.neutral(evaluationId(strategyName), timestamp),
+                0.0,
                 "LASE shadow evaluation failed safely",
                 null,
                 true,
@@ -180,6 +185,16 @@ public final class LaseShadowAdvisor {
         return report.routingDecision().explanation().chosenServerId()
                 .or(() -> report.routingDecision().chosenServer().map(ServerStateVector::serverId))
                 .orElse(null);
+    }
+
+    private NetworkAwarenessSignal recommendedNetworkSignal(LaseEvaluationReport report, String recommendedServerId) {
+        if (recommendedServerId == null) {
+            return NetworkAwarenessSignal.neutral(report.evaluationId(), report.timestamp());
+        }
+        return report.routingDecision().chosenServer()
+                .filter(server -> recommendedServerId.equals(server.serverId()))
+                .map(ServerStateVector::networkAwarenessSignal)
+                .orElseGet(() -> NetworkAwarenessSignal.neutral(recommendedServerId, report.timestamp()));
     }
 
     private String safeStrategyName(String strategyName) {

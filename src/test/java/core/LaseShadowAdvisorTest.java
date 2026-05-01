@@ -80,6 +80,13 @@ class LaseShadowAdvisorTest {
         assertEquals("S2", event.actualSelectedServerId());
         assertTrue(event.recommendedServerId() == null || !event.recommendedServerId().isBlank());
         assertTrue(event.decisionScore() == null || event.decisionScore() >= 0.0);
+        assertEquals(0.0, event.networkAwarenessSignal().timeoutRate(), 0.0);
+        assertEquals(0.0, event.networkAwarenessSignal().retryRate(), 0.0);
+        assertEquals(0.0, event.networkAwarenessSignal().connectionFailureRate(), 0.0);
+        assertEquals(0.0, event.networkAwarenessSignal().latencyJitterMillis(), 0.0);
+        assertFalse(event.networkAwarenessSignal().recentErrorBurst());
+        assertEquals(0, event.networkAwarenessSignal().requestTimeoutCount());
+        assertEquals(0.0, event.networkRiskScore(), 0.0);
         if (event.agreedWithRouting() != null) {
             assertNotNull(event.actualSelectedServerId());
             assertNotNull(event.recommendedServerId());
@@ -106,6 +113,8 @@ class LaseShadowAdvisorTest {
         assertEquals(1, snapshot.summary().totalEvaluations());
         assertEquals(1, snapshot.summary().failSafeCount());
         assertEquals("FAIL_SAFE", snapshot.recentEvents().get(0).recommendedAction());
+        assertEquals(0.0, snapshot.recentEvents().get(0).networkAwarenessSignal().timeoutRate(), 0.0);
+        assertEquals(0.0, snapshot.recentEvents().get(0).networkRiskScore(), 0.0);
         assertTrue(snapshot.recentEvents().get(0).failureReason().contains("synthetic failure"));
     }
 

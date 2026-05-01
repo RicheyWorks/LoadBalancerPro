@@ -32,7 +32,7 @@ Roadmap backlog:
 - Load shedding and priority classes for graceful degradation under stress.
 - Shadow autoscaling mode that compares simulated scale decisions against actual traffic without mutating infrastructure.
 - Failure scenario simulator for repeatable demos of degraded servers, region constraints, and guarded cloud paths.
-- AWS SDK v2 migration before expanding live cloud behavior.
+- Guardrail-preserving cloud sandbox validation before expanding live cloud behavior.
 - Optional auth and deployment profile for demos that need controlled browser/API access.
 
 ## Safety Boundaries
@@ -374,7 +374,7 @@ trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 loadbalancer
 docker stop loadbalancerpro-ci
 ```
 
-The LASE demo smoke checks run deterministic synthetic reports, verify safe failure for an invalid scenario name, and confirm the demo path does not emit Spring startup markers. The packaged JAR smoke test binds the app to `127.0.0.1`, waits for `GET /api/health` to return HTTP 200, then stops the local process. CI builds the Docker image, starts the container on a loopback-bound host port, verifies `/api/health`, waits for the Docker healthcheck to become healthy, stops the container, and runs a blocking Trivy image scan for fixed high/critical OS and library vulnerabilities. CI does not use AWS credentials, does not require live cloud resources, and does not create, modify, or delete AWS infrastructure. Pull requests also run GitHub's dependency review action for changed dependencies and fail on high-severity findings. Broader dependency lifecycle work, such as the AWS SDK v2 migration noted below, remains tracked separately.
+The LASE demo smoke checks run deterministic synthetic reports, verify safe failure for an invalid scenario name, and confirm the demo path does not emit Spring startup markers. The packaged JAR smoke test binds the app to `127.0.0.1`, waits for `GET /api/health` to return HTTP 200, then stops the local process. CI builds the Docker image, starts the container on a loopback-bound host port, verifies `/api/health`, waits for the Docker healthcheck to become healthy, stops the container, and runs a blocking Trivy image scan for fixed high/critical OS and library vulnerabilities. CI does not use AWS credentials, does not require live cloud resources, and does not create, modify, or delete AWS infrastructure. Pull requests also run GitHub's dependency review action for changed dependencies and fail on high-severity findings. The guarded CloudManager integration uses AWS SDK for Java 2.x while keeping dry-run and cloud-sandbox guardrails in place.
 
 The Trivy allowlist file is `.trivyignore`. Keep it empty unless a finding has been reviewed and accepted temporarily. Any allowlist entry should be added in a focused PR with the vulnerability ID, affected package or image layer, owner, reason for temporary acceptance, and an expiry or follow-up issue. Do not use the allowlist to hide broad dependency drift.
 
@@ -560,7 +560,7 @@ Required credentials are rejected if they are blank or placeholder values. Missi
 
 ## Dependency Lifecycle Notes
 
-LoadBalancerPro currently uses AWS SDK for Java 1.x modules for the guarded CloudManager integration. AWS announced that SDK v1 entered maintenance mode on July 31, 2024 and reached end-of-support on December 31, 2025. This project should track a future migration to AWS SDK for Java 2.x before expanding cloud features, but this production-readiness sweep intentionally does not migrate SDK major versions.
+LoadBalancerPro uses AWS SDK for Java 2.x modules for the guarded CloudManager integration. AWS announced that SDK v1 entered maintenance mode on July 31, 2024 and reached end-of-support on December 31, 2025; the project has migrated away from SDK v1 dependencies while preserving dry-run behavior, cloud mutation guardrails, and mocked default test coverage.
 
 Reference: https://aws.amazon.com/blogs/developer/announcing-end-of-support-for-aws-sdk-for-java-v1-x-on-december-31-2025/
 

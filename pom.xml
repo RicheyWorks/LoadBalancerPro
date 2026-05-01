@@ -13,7 +13,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.version>3.2.5</spring-boot.version>
-        <aws-sdk.version>1.12.777</aws-sdk.version>
         <aws-sdk-v2.version>2.42.35</aws-sdk-v2.version>
         <javafx.version>17.0.10</javafx.version>
     </properties>
@@ -121,22 +120,7 @@
             <artifactId>reactor-core</artifactId>
         </dependency>
 
-        <!-- AWS SDK (unchanged, safe) -->
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-autoscaling</artifactId>
-            <version>${aws-sdk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-cloudwatch</artifactId>
-            <version>${aws-sdk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-ec2</artifactId>
-            <version>${aws-sdk.version}</version>
-        </dependency>
+        <!-- AWS SDK v2 clients used by the guarded CloudManager integration. -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>autoscaling</artifactId>

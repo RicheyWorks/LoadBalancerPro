@@ -10,8 +10,8 @@ import java.nio.charset.StandardCharsets;
 
 import api.ApiErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 2)
+@Order(SecurityProperties.DEFAULT_FILTER_ORDER + 1)
 public class RequestSizeLimitFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper;
     private final long maxRequestBytes;

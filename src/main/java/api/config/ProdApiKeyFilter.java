@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import api.ApiErrorResponse;
@@ -11,9 +12,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,6 +30,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 @Profile({"prod", "cloud-sandbox"})
+@Conditional(ProdApiKeyFilter.ApiKeyAuthModeCondition.class)
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class ProdApiKeyFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(ProdApiKeyFilter.class);
@@ -104,5 +110,17 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         objectMapper.writeValue(response.getWriter(), ApiErrorResponse.unauthorized(request.getRequestURI()));
+    }
+
+    static final class ApiKeyAuthModeCondition implements Condition {
+        @Override
+        public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+            String configuredMode = context.getEnvironment().getProperty("loadbalancerpro.auth.mode", "api-key");
+            return "api-key".equals(normalize(configuredMode));
+        }
+
+        private static String normalize(String mode) {
+            return mode == null ? "api-key" : mode.trim().replace('_', '-').toLowerCase(Locale.ROOT);
+        }
     }
 }

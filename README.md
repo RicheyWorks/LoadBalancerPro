@@ -171,7 +171,7 @@ Run the local/demo profile explicitly:
 java -jar target/LoadBalancerPro-1.0.0.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 ```
 
-The `prod` profile is an explicit opt-in production-like starting point, not full production readiness. It keeps `cloud.liveMode=false`, does not require AWS credentials just to start, exposes only Actuator health/info by default, leaves browser CORS origins empty unless configured through `LOADBALANCERPRO_CORS_ALLOWED_ORIGINS`, and protects API mutation/allocation endpoints with the `X-API-Key` header.
+The `prod` profile is an explicit opt-in production-like starting point, not full production readiness. It keeps `cloud.liveMode=false`, does not require AWS credentials just to start, exposes only Actuator health/info by default, leaves browser CORS origins empty unless configured through `LOADBALANCERPRO_CORS_ALLOWED_ORIGINS`, and protects API mutation/allocation endpoints with the `X-API-Key` header when `loadbalancerpro.auth.mode=api-key` is active.
 
 Run the production-like profile locally for validation:
 
@@ -192,7 +192,22 @@ curl -H "X-API-Key: $LOADBALANCERPRO_API_KEY" \
 
 If `LOADBALANCERPRO_API_KEY` is missing or blank, protected prod-profile API requests fail closed with HTTP 401. `/api/health`, Actuator health/info, and OpenAPI docs remain public for local validation and portfolio review.
 
-The prod-profile API key is a minimal client-auth gate. It is not full user identity, RBAC, OAuth, production authorization, or secret rotation. Before using the prod profile beyond a local demo, add deployment-specific auth, TLS or trusted proxy termination, secret management, actuator/network lockdown, logging retention, and live-cloud change controls. This profile is a safer baseline for review, not a claim that the app is ready for unmanaged production traffic.
+The prod-profile API key is a minimal client-auth gate. It is not full user identity, production authorization, or secret rotation. Before using the prod profile beyond a local demo, add deployment-specific auth, TLS or trusted proxy termination, secret management, actuator/network lockdown, logging retention, and live-cloud change controls. This profile is a safer baseline for review, not a claim that the app is ready for unmanaged production traffic.
+
+For stronger app-native authorization, set `loadbalancerpro.auth.mode=oauth2` and configure either `loadbalancerpro.auth.oauth2.issuer-uri` or `loadbalancerpro.auth.oauth2.jwk-set-uri`. OAuth2 mode uses Spring Security's JWT resource-server support, keeps `/api/health` public, requires the `observer` or `operator` role for `GET /api/lase/shadow`, and requires the `operator` role for allocation endpoints. Missing or invalid bearer tokens return HTTP 401; authenticated users without the required role return HTTP 403. OAuth2 mode fails startup if both issuer and JWK configuration are blank.
+
+OAuth2/JWT mode defaults:
+
+```properties
+loadbalancerpro.auth.mode=api-key
+loadbalancerpro.auth.oauth2.issuer-uri=
+loadbalancerpro.auth.oauth2.jwk-set-uri=
+loadbalancerpro.auth.docs-public=false
+loadbalancerpro.auth.required-role.lase-shadow=observer
+loadbalancerpro.auth.required-role.allocation=operator
+```
+
+When OAuth2 mode is active, OpenAPI/Swagger is gated by default; set `loadbalancerpro.auth.docs-public=true` only for an intentional demo or private-network deployment. Trusted reverse-proxy auth is still a valid deployment pattern, but if identity is forwarded through headers, restrict that trust boundary to the proxy and do not accept identity headers directly from public clients.
 
 ### Cloud Sandbox Profile
 
@@ -452,7 +467,7 @@ The allocation APIs are calculation-only. Scaling recommendations are simulation
 
 The shadow snapshot also includes application-layer network-awareness signals for LASE evaluation: `timeoutRate`, `retryRate`, `connectionFailureRate`, `latencyJitterMillis`, `recentErrorBurst`, `requestTimeoutCount`, `sampleSize`, and `networkRiskScore`. These are shadow/evaluation signals only. They do not use Wireshark, PCAP parsing, sockets, packet capture, or external network collectors, and they do not change live routing or cloud behavior.
 
-In the `prod` profile, `GET /api/lase/shadow` requires the configured `X-API-Key`, just like protected allocation endpoints. `/api/health` remains public.
+In the `prod` profile using `loadbalancerpro.auth.mode=api-key`, `GET /api/lase/shadow` requires the configured `X-API-Key`, just like protected allocation endpoints. In OAuth2 mode it requires an `observer` or `operator` role. `/api/health` remains public.
 
 Invalid request bodies return HTTP 400 with a structured validation response. In the local/demo profile, browser CORS is enabled for `/api/**` from `http://localhost:3000` and `http://localhost:8080`, with credentials disabled. In the `prod` profile, configure allowed origins explicitly with `LOADBALANCERPRO_CORS_ALLOWED_ORIGINS`. Responses include lightweight security headers such as `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Cache-Control: no-store`.
 

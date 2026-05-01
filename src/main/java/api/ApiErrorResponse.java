@@ -33,8 +33,16 @@ public record ApiErrorResponse(int status, String error, String message, String 
     }
 
     public static ApiErrorResponse unauthorized(String path) {
-        return new ApiErrorResponse(401, "unauthorized",
-                "Valid API key required for this endpoint",
+        return unauthorized(path, "Valid API key required for this endpoint");
+    }
+
+    public static ApiErrorResponse unauthorized(String path, String message) {
+        return new ApiErrorResponse(401, "unauthorized", message, path, Instant.now().toString(), List.of());
+    }
+
+    public static ApiErrorResponse forbidden(String path) {
+        return new ApiErrorResponse(403, "forbidden",
+                "Authenticated principal does not have the required role for this endpoint",
                 path, Instant.now().toString(), List.of());
     }
 }

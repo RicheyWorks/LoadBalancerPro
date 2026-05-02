@@ -19,6 +19,7 @@ Related evidence:
 - `evidence/SECURITY_POSTURE.md`
 - `evidence/TEST_EVIDENCE.md`
 - `evidence/THREAT_MODEL.md`
+- `evidence/SBOM_GUIDE.md`
 
 ## Current Dependency Posture
 
@@ -26,7 +27,7 @@ LoadBalancerPro is a Java 17 Maven project with Spring Boot, AWS SDK v2, Spring 
 
 The project currently uses Maven dependency management for the largest framework families and pins build plugins directly in `pom.xml`. CI runs dependency resolution, tests, packaging, smoke checks, Docker image build/runtime checks, Trivy image scanning, and GitHub dependency review for pull requests.
 
-This posture provides useful regression and review evidence, but it is not yet a full supply-chain evidence program because no SBOM, dependency-audit report, dependency update cadence, or accepted dependency-risk workflow is committed.
+This posture provides useful regression and review evidence, but it is not yet a full supply-chain evidence program because no generated SBOM, dependency-audit report, dependency update cadence, or accepted dependency-risk workflow is committed. Manual CycloneDX SBOM generation is documented in `evidence/SBOM_GUIDE.md`, but it is not integrated into `pom.xml`, CI, or release gates.
 
 ## BOM-Managed Dependencies
 
@@ -88,7 +89,8 @@ The repository also includes `.trivyignore`, documented as empty-by-default. All
 
 Known gaps as of this evidence pass:
 
-- No committed SBOM or CycloneDX evidence exists yet.
+- Manual CycloneDX SBOM generation is documented in `evidence/SBOM_GUIDE.md`, but no generated SBOM files are committed in Phase 6B.
+- CycloneDX is not integrated into `pom.xml` or CI yet.
 - No OWASP dependency-check report exists yet.
 - CI dependency tree output is generated but not captured as durable evidence.
 - No Dependabot or Renovate configuration was found.
@@ -125,7 +127,7 @@ Review this evidence and the dependency posture:
 
 Practical next steps, in conservative order:
 
-- Add manually invoked CycloneDX SBOM generation first, before making SBOM generation a release gate.
+- Use the manually invoked CycloneDX SBOM guide first, before making SBOM generation a release gate.
 - Define a dependency update cadence and dependency-risk triage process.
 - Capture dependency tree output or SBOM artifacts as durable release evidence.
 - Document accepted dependency risks with owner, severity, expiry, and follow-up action.

@@ -54,6 +54,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`RESIDUAL_RISKS.md`](evidence/RESIDUAL_RISKS.md) tracks ranked residual risks with owners, status, evidence, and next actions.
 - [`RESILIENCE_SCORE.md`](evidence/RESILIENCE_SCORE.md) provides a conservative evidence-backed resilience scorecard.
 - [`SUPPLY_CHAIN_EVIDENCE.md`](evidence/SUPPLY_CHAIN_EVIDENCE.md) records current dependency and supply-chain evidence, gaps, and future hardening options.
+- [`SBOM_GUIDE.md`](evidence/SBOM_GUIDE.md) documents a manual CycloneDX SBOM generation path without adding build or CI gates.
 
 ## Hardened Foundation Checklist
 

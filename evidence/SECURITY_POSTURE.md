@@ -42,6 +42,13 @@ This document summarizes the current security and safety posture for the portfol
 - Request-size filtering is covered by tests and is ordered behind authentication for protected mutation paths in hardened auth modes.
 - CSV/JSON import paths validate schema shape, reject dangerous or malformed input, and neutralize spreadsheet formula injection risk.
 
+## Static Analysis Posture
+
+- A separate CodeQL workflow provides Java/Kotlin static-analysis coverage with manual Maven build mode.
+- CodeQL is treated as a SAST baseline, not a complete security review, independent audit, or production-readiness claim.
+- Initial CodeQL findings should be reviewed and triaged before SAST is treated as a mature release blocker.
+- Findings involving CloudManager/AWS guardrails, auth, request validation, deserialization, file parsing, command execution, or telemetry redaction should receive priority review.
+
 ## What Is Verified By Tests
 
 - API-key protection and OAuth2 route policy.

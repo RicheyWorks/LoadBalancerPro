@@ -155,11 +155,11 @@ Reference evidence:
 - Description: Maven dependencies, transitive dependencies, build plugins, and GitHub Actions can drift or introduce vulnerabilities over time.
 - Severity: High.
 - Likelihood: Medium.
-- Current mitigation: CI release gates and dependency review are documented, and the test suite exercises core behavior after changes.
-- Evidence/tests: README documents CI dependency review and release gates. `evidence/THREAT_MODEL.md` lists dependency/SBOM scanning evidence as future hardening.
+- Current mitigation: CI release gates, dependency review, Dependabot, pinned GitHub Actions, pinned Docker digests, CI SBOM artifacts, Trivy image scanning, and CodeQL SAST baseline coverage are documented. The test suite exercises core behavior after changes.
+- Evidence/tests: README documents CI dependency review and release gates. `evidence/SUPPLY_CHAIN_EVIDENCE.md` records SBOM, Trivy, dependency review, Dependabot, pinning, and CodeQL baseline controls.
 - Owner: App.
 - Status: Needs Future Hardening.
-- Recommended next action: Add SBOM/dependency scanning evidence, document accepted dependency risks, and review dependencies before release tags.
+- Recommended next action: Review initial CodeQL findings, define dependency/static-analysis triage expectations, document accepted dependency risks, and review dependencies before release tags.
 
 ### RR-011: Framework-Generated Error Surface Review
 

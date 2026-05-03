@@ -94,7 +94,7 @@ Use `mvn clean package` when you want to remove stale local build artifacts befo
 Run the packaged API locally:
 
 ```bash
-java -jar target/LoadBalancerPro-1.1.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-1.2.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 ```
 
 Verify the health endpoint:
@@ -114,7 +114,7 @@ mvn spring-boot:run
 ```bash
 mvn test
 mvn package
-java -jar target/LoadBalancerPro-1.1.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-1.2.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 curl http://127.0.0.1:18080/api/health
 docker build -t loadbalancerpro:local .
 docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 loadbalancerpro:local
@@ -128,7 +128,7 @@ Start the local/demo API first:
 
 ```bash
 mvn package
-java -jar target/LoadBalancerPro-1.1.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-1.2.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 ```
 
 The commands below use `hey` against `127.0.0.1` only and do not require AWS credentials, live cloud resources, or CloudManager configuration.
@@ -182,7 +182,7 @@ The default/local profile is for development, CI smoke tests, and portfolio demo
 Run the local/demo profile explicitly:
 
 ```bash
-java -jar target/LoadBalancerPro-1.1.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-1.2.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 ```
 
 The `prod` profile is an explicit opt-in production-like starting point, not full production readiness. It keeps `cloud.liveMode=false`, does not require AWS credentials just to start, exposes only Actuator health/info by default, leaves browser CORS origins empty unless configured through `LOADBALANCERPRO_CORS_ALLOWED_ORIGINS`, and protects API mutation/allocation endpoints with the `X-API-Key` header when `loadbalancerpro.auth.mode=api-key` is active.
@@ -192,7 +192,7 @@ Run the production-like profile locally for validation:
 ```bash
 LOADBALANCERPRO_API_KEY=replace-with-random-local-test-value \
 LOADBALANCERPRO_CORS_ALLOWED_ORIGINS=https://app.example.com \
-java -jar target/LoadBalancerPro-1.1.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=prod
+java -jar target/LoadBalancerPro-1.2.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=prod
 ```
 
 Call protected prod-profile API endpoints with the configured key:
@@ -231,7 +231,7 @@ Run the sandbox profile locally:
 
 ```bash
 LOADBALANCERPRO_API_KEY=replace-with-random-local-test-value \
-java -jar target/LoadBalancerPro-1.1.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=cloud-sandbox
+java -jar target/LoadBalancerPro-1.2.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=cloud-sandbox
 ```
 
 Sandbox defaults remain fail-closed:
@@ -289,7 +289,7 @@ Example local validation behind a trusted proxy configuration:
 ```bash
 LOADBALANCERPRO_API_KEY=replace-with-random-deployment-secret \
 SERVER_FORWARD_HEADERS_STRATEGY=framework \
-java -jar target/LoadBalancerPro-1.1.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=prod
+java -jar target/LoadBalancerPro-1.2.1.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=prod
 ```
 
 The API key is passed through `LOADBALANCERPRO_API_KEY`, mapped to `loadbalancerpro.api.key`, and is never documented as a real value. Rotate it outside the application and avoid logging request headers at the proxy.
@@ -300,7 +300,7 @@ The packaged JAR can print deterministic, synthetic LASE evaluation reports with
 
 ```bash
 mvn package
-java -jar target/LoadBalancerPro-1.1.1.jar --lase-demo=healthy
+java -jar target/LoadBalancerPro-1.2.1.jar --lase-demo=healthy
 ```
 
 This is a safe internal control-plane demo only. It is recommendation-only, uses synthetic inputs, does not touch live AWS resources, does not call `CloudManager`, does not mutate real routing state, does not require the API server, does not require AWS credentials, and does not require network access.
@@ -308,14 +308,14 @@ This is a safe internal control-plane demo only. It is recommendation-only, uses
 Available demo commands:
 
 ```bash
-java -jar target/LoadBalancerPro-1.1.1.jar --lase-demo
-java -jar target/LoadBalancerPro-1.1.1.jar --lase-demo=all
-java -jar target/LoadBalancerPro-1.1.1.jar --lase-demo=healthy
-java -jar target/LoadBalancerPro-1.1.1.jar --lase-demo=overloaded
-java -jar target/LoadBalancerPro-1.1.1.jar --lase-demo=error-storm
-java -jar target/LoadBalancerPro-1.1.1.jar --lase-demo=partial-outage
-java -jar target/LoadBalancerPro-1.1.1.jar --lase-demo=low-sample
-java -jar target/LoadBalancerPro-1.1.1.jar --lase-demo=invalid-name
+java -jar target/LoadBalancerPro-1.2.1.jar --lase-demo
+java -jar target/LoadBalancerPro-1.2.1.jar --lase-demo=all
+java -jar target/LoadBalancerPro-1.2.1.jar --lase-demo=healthy
+java -jar target/LoadBalancerPro-1.2.1.jar --lase-demo=overloaded
+java -jar target/LoadBalancerPro-1.2.1.jar --lase-demo=error-storm
+java -jar target/LoadBalancerPro-1.2.1.jar --lase-demo=partial-outage
+java -jar target/LoadBalancerPro-1.2.1.jar --lase-demo=low-sample
+java -jar target/LoadBalancerPro-1.2.1.jar --lase-demo=invalid-name
 ```
 
 `--lase-demo` and `--lase-demo=all` print every scenario. Named scenarios print only that scenario. Invalid names fail safely with exit code `2`, print valid scenario names, and do not emit a raw stack trace.
@@ -355,7 +355,7 @@ Saved LASE shadow events can be replayed locally from JSON Lines without startin
 
 ```bash
 mvn package
-java -jar target/LoadBalancerPro-1.1.1.jar --lase-replay=shadow-events.jsonl
+java -jar target/LoadBalancerPro-1.2.1.jar --lase-replay=shadow-events.jsonl
 ```
 
 Replay mode is offline, read-only, and deterministic for a fixed input file. It does not change routing, does not call `CloudManager`, does not touch AWS resources, does not parse PCAP files, does not use Wireshark, does not open sockets, and does not require network access or AWS credentials. It evaluates previously saved shadow-observability records only; it is not a durable production telemetry store.
@@ -456,6 +456,7 @@ GET  /api/health
 GET  /api/lase/shadow
 POST /api/allocate/capacity-aware
 POST /api/allocate/predictive
+POST /api/routing/compare
 ```
 
 Example request:
@@ -481,11 +482,83 @@ curl -X POST http://localhost:8080/api/allocate/capacity-aware \
 
 The allocation APIs are calculation-only. Scaling recommendations are simulations and do not call `CloudManager` or AWS.
 
+`POST /api/routing/compare` compares supported routing strategies against caller-provided candidate telemetry. It is read-only and recommendation-only: it returns strategy results and explanations, does not call `CloudManager` or AWS, does not mutate cloud resources, does not mutate `LoadBalancer` allocation state, and does not alter the capacity-aware or predictive allocation endpoints.
+
+Routing comparison request:
+
+```bash
+curl -X POST http://localhost:8080/api/routing/compare \
+  -H "Content-Type: application/json" \
+  -d '{
+    "strategies": ["TAIL_LATENCY_POWER_OF_TWO"],
+    "servers": [
+      {
+        "serverId": "green",
+        "healthy": true,
+        "inFlightRequestCount": 5,
+        "configuredCapacity": 100.0,
+        "estimatedConcurrencyLimit": 100.0,
+        "averageLatencyMillis": 20.0,
+        "p95LatencyMillis": 40.0,
+        "p99LatencyMillis": 80.0,
+        "recentErrorRate": 0.01,
+        "queueDepth": 1,
+        "networkAwareness": {
+          "timeoutRate": 0.0,
+          "retryRate": 0.0,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 4.0,
+          "recentErrorBurst": false,
+          "requestTimeoutCount": 0,
+          "sampleSize": 120
+        }
+      },
+      {
+        "serverId": "blue",
+        "healthy": true,
+        "inFlightRequestCount": 75,
+        "configuredCapacity": 100.0,
+        "estimatedConcurrencyLimit": 100.0,
+        "averageLatencyMillis": 35.0,
+        "p95LatencyMillis": 120.0,
+        "p99LatencyMillis": 220.0,
+        "recentErrorRate": 0.15,
+        "queueDepth": 10
+      }
+    ]
+  }'
+```
+
+Routing comparison response:
+
+```json
+{
+  "requestedStrategies": ["TAIL_LATENCY_POWER_OF_TWO"],
+  "candidateCount": 2,
+  "timestamp": "2026-05-03T00:00:00Z",
+  "results": [
+    {
+      "strategyId": "TAIL_LATENCY_POWER_OF_TWO",
+      "status": "SUCCESS",
+      "chosenServerId": "green",
+      "reason": "Chose green based on lower tail-latency and pressure signals.",
+      "candidateServersConsidered": ["green", "blue"],
+      "scores": {
+        "green": 15.23,
+        "blue": 64.91
+      }
+    }
+  ]
+}
+```
+
+If `strategies` is omitted, the endpoint defaults to the registered routing strategy set, currently `TAIL_LATENCY_POWER_OF_TWO`. Invalid request bodies, unsupported strategies, duplicate server IDs, unsupported media types, and wrong HTTP methods return structured JSON errors.
+
 `GET /api/lase/shadow` returns the bounded in-memory LASE Shadow Advisor observability snapshot: aggregate shadow-evaluation counts, fail-safe counts, recommendation counts, agreement rate, and recent events. The endpoint is shadow-only: it reports what the internal LASE advisor observed or recommended after normal allocation decisions, and it does not change routing, allocation, CloudManager, AWS, or cloud-scaling behavior. Agreement rate currently means the LASE recommended server matched the top server selected by the normal allocation result when both values are comparable.
 
 The shadow snapshot also includes application-layer network-awareness signals for LASE evaluation: `timeoutRate`, `retryRate`, `connectionFailureRate`, `latencyJitterMillis`, `recentErrorBurst`, `requestTimeoutCount`, `sampleSize`, and `networkRiskScore`. These are shadow/evaluation signals only. They do not use Wireshark, PCAP parsing, sockets, packet capture, or external network collectors, and they do not change live routing or cloud behavior.
 
-In the `prod` profile using `loadbalancerpro.auth.mode=api-key`, `GET /api/lase/shadow` requires the configured `X-API-Key`, just like protected allocation endpoints. In OAuth2 mode it requires an `observer` or `operator` role. `/api/health` remains public.
+In the local/default profile, `POST /api/routing/compare` works without an API key for local demos. In the `prod` profile using `loadbalancerpro.auth.mode=api-key`, protected `POST` requests such as `POST /api/routing/compare` require the configured `X-API-Key`. In the `cloud-sandbox` profile using API-key mode, routing comparison has the same `X-API-Key` behavior and the profile remains dry-run by default. In OAuth2 mode, `POST /api/routing/**` requires the configured allocation role, which defaults to `operator`. `GET /api/lase/shadow` requires the configured `X-API-Key` in prod/cloud-sandbox API-key mode, or an `observer` or `operator` role in OAuth2 mode. `/api/health` remains public.
 
 Invalid request bodies return HTTP 400 with a structured validation response. In the local/demo profile, browser CORS is enabled for `/api/**` from `http://localhost:3000` and `http://localhost:8080`, with credentials disabled. In the `prod` profile, configure allowed origins explicitly with `LOADBALANCERPRO_CORS_ALLOWED_ORIGINS`. Responses include lightweight security headers such as `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Cache-Control: no-store`.
 

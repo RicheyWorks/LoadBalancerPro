@@ -1,6 +1,6 @@
 # Base images are pinned by digest. Update the tag and digest together after review.
 # maven:3.9-eclipse-temurin-17
-FROM maven:3.9-eclipse-temurin-17@sha256:036d1a6f2965e4368157bb87f02cd31652a96918a26f7eb5ae45a0aa33f2cb8e AS build
+FROM maven:3-eclipse-temurin-26@sha256:2afabfe1611261e4cc04d49c7819309c07653997b78157f44d86acc200a414f1 AS build
 WORKDIR /workspace
 
 COPY pom.xml .

@@ -55,6 +55,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`RESILIENCE_SCORE.md`](evidence/RESILIENCE_SCORE.md) provides a conservative evidence-backed resilience scorecard.
 - [`SUPPLY_CHAIN_EVIDENCE.md`](evidence/SUPPLY_CHAIN_EVIDENCE.md) records current dependency and supply-chain evidence, gaps, and future hardening options.
 - [`SBOM_GUIDE.md`](evidence/SBOM_GUIDE.md) documents manual CycloneDX SBOM generation, CI-published SBOM artifacts, and tag-triggered release JAR/SBOM/checksum artifact bundles.
+- [`RELEASE_ARTIFACT_EVIDENCE.md`](evidence/RELEASE_ARTIFACT_EVIDENCE.md) documents the v1.9.0 release artifact bundle, SHA-256 checksum, and GitHub attestation evidence.
 
 ## Hardened Foundation Checklist
 

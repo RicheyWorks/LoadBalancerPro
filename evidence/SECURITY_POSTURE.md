@@ -49,6 +49,13 @@ This document summarizes the current security and safety posture for the portfol
 - Initial CodeQL findings should be reviewed and triaged before SAST is treated as a mature release blocker.
 - Findings involving CloudManager/AWS guardrails, auth, request validation, deserialization, file parsing, command execution, or telemetry redaction should receive priority review.
 
+## Release Provenance Posture
+
+- A separate tag-triggered Release Artifacts workflow builds the executable JAR and CycloneDX SBOM JSON/XML for semantic version tags.
+- The workflow fails before upload if the Git tag version and Maven project version do not match.
+- Release artifacts are uploaded as GitHub Actions artifacts with deterministic names.
+- This is release evidence, not artifact signing, GitHub artifact attestation, GitHub Release asset publication, or a production-readiness claim.
+
 ## What Is Verified By Tests
 
 - API-key protection and OAuth2 route policy.

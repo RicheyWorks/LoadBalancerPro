@@ -1,0 +1,174 @@
+name: Release Artifacts
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+jobs:
+  release-artifacts:
+    name: Build Release Artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        # actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Set up Java
+        # actions/setup-java@v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Resolve release version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAG="${GITHUB_REF_NAME}"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Release artifact workflow only accepts semantic version tags like v1.6.1. Got: $TAG"
+            exit 1
+          fi
+
+          RELEASE_VERSION="${TAG#v}"
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> "$GITHUB_ENV"
+          echo "Release version: $RELEASE_VERSION"
+
+      - name: Verify Maven version matches tag
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          MAVEN_VERSION="$(mvn -q -DforceStdout -Dstyle.color=never help:evaluate -Dexpression=project.version | tail -n 1 | tr -d '\r')"
+          if [ "$MAVEN_VERSION" != "$RELEASE_VERSION" ]; then
+            echo "Git tag version and Maven project version differ."
+            echo "Tag version: $RELEASE_VERSION"
+            echo "Maven version: $MAVEN_VERSION"
+            exit 1
+          fi
+
+          echo "Maven project version matches tag: $MAVEN_VERSION"
+
+      - name: Package executable JAR
+        run: mvn -B -DskipTests package
+
+      - name: Locate executable JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          EXPECTED_JAR="target/LoadBalancerPro-${RELEASE_VERSION}.jar"
+          if [ -f "$EXPECTED_JAR" ]; then
+            RELEASE_JAR="$EXPECTED_JAR"
+          else
+            mapfile -t candidates < <(find target -maxdepth 1 -type f -name 'LoadBalancerPro-*.jar' \
+              ! -name '*-sources.jar' \
+              ! -name '*-javadoc.jar' \
+              ! -name '*-tests.jar' \
+              ! -name '*-plain.jar' \
+              ! -name '*-original.jar' | sort)
+
+            if [ "${#candidates[@]}" -ne 1 ]; then
+              echo "Expected exactly one executable release JAR, found ${#candidates[@]}."
+              printf '%s\n' "${candidates[@]}"
+              exit 1
+            fi
+
+            RELEASE_JAR="${candidates[0]}"
+          fi
+
+          echo "RELEASE_JAR=$RELEASE_JAR" >> "$GITHUB_ENV"
+          echo "Executable release JAR: $RELEASE_JAR"
+
+      - name: Smoke test release JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          assert_contains() {
+            local file="$1"
+            local expected="$2"
+            if ! grep -Fq "$expected" "$file"; then
+              echo "Expected to find: $expected"
+              cat "$file"
+              exit 1
+            fi
+          }
+
+          assert_not_contains() {
+            local file="$1"
+            local unexpected="$2"
+            if grep -Fq "$unexpected" "$file"; then
+              echo "Unexpected output found: $unexpected"
+              cat "$file"
+              exit 1
+            fi
+          }
+
+          VERSION_LOG="$(mktemp)"
+          HEALTHY_LOG="$(mktemp)"
+          INVALID_LOG="$(mktemp)"
+
+          java -jar "$RELEASE_JAR" --version >"$VERSION_LOG" 2>&1
+          assert_contains "$VERSION_LOG" "LoadBalancerPro version $RELEASE_VERSION"
+
+          java -jar "$RELEASE_JAR" --lase-demo=healthy >"$HEALTHY_LOG" 2>&1
+          assert_contains "$HEALTHY_LOG" "=== LoadBalancerPro LASE Synthetic Demo ==="
+          assert_contains "$HEALTHY_LOG" "Evaluation ID: lase-demo-healthy"
+          assert_contains "$HEALTHY_LOG" "recommendation-only"
+          assert_contains "$HEALTHY_LOG" "No live AWS resources touched"
+          assert_contains "$HEALTHY_LOG" "No CloudManager calls"
+
+          set +e
+          java -jar "$RELEASE_JAR" --lase-demo=invalid-name >"$INVALID_LOG" 2>&1
+          invalid_status=$?
+          set -e
+          if [ "$invalid_status" -eq 0 ]; then
+            echo "Invalid LASE demo scenario unexpectedly succeeded."
+            cat "$INVALID_LOG"
+            exit 1
+          fi
+          assert_contains "$INVALID_LOG" "Invalid LASE demo scenario"
+          assert_contains "$INVALID_LOG" "Valid values:"
+          assert_contains "$INVALID_LOG" "healthy"
+          assert_contains "$INVALID_LOG" "overloaded"
+          assert_not_contains "$INVALID_LOG" "Exception"
+          assert_not_contains "$INVALID_LOG" "java.lang"
+
+      - name: Generate CycloneDX SBOM
+        run: mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -Dcyclonedx.skipAttach=true
+
+      - name: Stage deterministic release artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f "$RELEASE_JAR"
+          test -f target/bom.json
+          test -f target/bom.xml
+
+          mkdir -p release-artifacts
+          cp "$RELEASE_JAR" "release-artifacts/LoadBalancerPro-${RELEASE_VERSION}.jar"
+          cp target/bom.json "release-artifacts/LoadBalancerPro-${RELEASE_VERSION}-bom.json"
+          cp target/bom.xml "release-artifacts/LoadBalancerPro-${RELEASE_VERSION}-bom.xml"
+
+          ls -l release-artifacts
+
+      - name: Upload release artifacts
+        # actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: loadbalancerpro-release-${{ env.RELEASE_VERSION }}
+          path: |
+            release-artifacts/LoadBalancerPro-${{ env.RELEASE_VERSION }}.jar
+            release-artifacts/LoadBalancerPro-${{ env.RELEASE_VERSION }}-bom.json
+            release-artifacts/LoadBalancerPro-${{ env.RELEASE_VERSION }}-bom.xml
+          retention-days: 90

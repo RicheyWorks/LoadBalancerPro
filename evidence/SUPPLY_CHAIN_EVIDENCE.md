@@ -1,8 +1,8 @@
 # LoadBalancerPro Supply Chain Evidence
 
 Date: 2026-05-03
-Branch: `feature/v1.6.0-codeql-sast`
-Verification commands: `mvn -q test`, `mvn -q -DskipTests package`
+Branch: `feature/v1.7.0-release-artifacts`
+Verification commands: `mvn -q test`, `mvn -q -DskipTests package`, `mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -Dcyclonedx.skipAttach=true`
 
 ## Purpose and Scope
 
@@ -25,9 +25,9 @@ Related evidence:
 
 LoadBalancerPro is a Java 17 Maven project with Spring Boot, AWS SDK v2, Spring Security/OAuth2, Micrometer telemetry libraries, JavaFX GUI support, JSON parsing utilities, caching, Reactor, and test dependencies.
 
-The project currently uses Maven dependency management for the largest framework families and pins build plugins directly in `pom.xml`. CI runs dependency resolution, tests, packaging, smoke checks, CycloneDX SBOM generation, Docker image build/runtime checks, Trivy image scanning, and GitHub dependency review for pull requests. A separate CodeQL workflow provides a Java/Kotlin static-analysis baseline with a manual Maven build.
+The project currently uses Maven dependency management for the largest framework families and pins build plugins directly in `pom.xml`. CI runs dependency resolution, tests, packaging, smoke checks, CycloneDX SBOM generation, Docker image build/runtime checks, Trivy image scanning, and GitHub dependency review for pull requests. A separate CodeQL workflow provides a Java/Kotlin static-analysis baseline with a manual Maven build. A separate tag-triggered release artifact workflow builds the executable JAR, generates CycloneDX SBOM JSON/XML, verifies Git tag and Maven version alignment, and uploads deterministic GitHub Actions artifacts.
 
-This posture provides useful regression and review evidence, but it is not yet a full supply-chain provenance program because no release artifact attestation, artifact signing, container signing, or mature accepted dependency-risk workflow is committed. CycloneDX SBOM generation is documented in `evidence/SBOM_GUIDE.md` and runs in CI without adding a CycloneDX plugin to `pom.xml`. CodeQL is a SAST baseline, not a complete security review or production-readiness proof.
+This posture provides useful regression and review evidence, but it is not yet a full supply-chain provenance program because no release artifact attestation, artifact signing, container signing, GitHub Release asset publication policy, or mature accepted dependency-risk workflow is committed. CycloneDX SBOM generation is documented in `evidence/SBOM_GUIDE.md` and runs in CI/release workflows without adding a CycloneDX plugin to `pom.xml`. CodeQL is a SAST baseline, not a complete security review or production-readiness proof.
 
 ## BOM-Managed Dependencies
 
@@ -88,6 +88,25 @@ Current GitHub Actions behavior includes:
 
 The repository also includes `.trivyignore`, documented as empty-by-default. Allowlist use is expected to be temporary and reviewed, with vulnerability ID, affected package or layer, owner, reason, and expiry or follow-up.
 
+## Release Artifact Provenance Checks
+
+The tag-triggered Release Artifacts workflow is separate from CI and CodeQL. It runs only on semantic version tags matching `v*.*.*` and does not run on normal branch pushes or pull requests.
+
+Current release artifact workflow behavior includes:
+
+- Extracting the release version from the Git tag.
+- Reading the Maven project version with Maven help tooling.
+- Failing before artifact upload if the Git tag version and Maven project version differ.
+- Building the executable JAR with `mvn -B -DskipTests package`.
+- Running lightweight packaged-JAR smoke checks, including `--version`, `--lase-demo=healthy`, and safe invalid-scenario handling.
+- Generating CycloneDX SBOM JSON/XML through direct `org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom` invocation.
+- Uploading deterministic GitHub Actions artifacts:
+  - `LoadBalancerPro-${version}.jar`
+  - `LoadBalancerPro-${version}-bom.json`
+  - `LoadBalancerPro-${version}-bom.xml`
+
+The uploaded artifact bundle is named `loadbalancerpro-release-${version}` and is retained for 90 days. This is GitHub Actions artifact publication only. It is not GitHub Release asset publication, signing, notarization, or attestation.
+
 ## Current Automation And Pinning
 
 - Dependabot is configured for Maven, GitHub Actions, and Docker on a weekly schedule.
@@ -95,12 +114,12 @@ The repository also includes `.trivyignore`, documented as empty-by-default. All
 - Docker build and runtime base images are pinned by digest in `Dockerfile`.
 - The CycloneDX Maven plugin is invoked directly with explicit version `2.9.1` instead of being added to `pom.xml`.
 - CodeQL Actions are pinned to reviewed commit SHAs, with comments preserving the upstream action names and version tags.
+- Release artifact workflow actions are pinned to reviewed commit SHAs, with comments preserving upstream action names and version tags.
 
 ## Known Gaps
 
 Known gaps as of this evidence pass:
 
-- Generated SBOM files are uploaded as CI artifacts but are not durable release artifacts yet.
 - CycloneDX is not integrated into `pom.xml`, by design for the current phase.
 - No OWASP dependency-check report exists yet.
 - CI dependency tree output is generated but not captured as durable evidence.
@@ -112,6 +131,7 @@ Known gaps as of this evidence pass:
 - No GitHub artifact attestation workflow exists yet.
 - No release artifact signing exists yet.
 - No container signing exists yet.
+- No GitHub Release asset publication policy exists yet.
 - No registry or release image signing policy exists yet.
 
 ## Higher-Sensitivity Dependency Areas
@@ -143,9 +163,10 @@ Review this evidence and the dependency posture:
 Practical next steps, in conservative order:
 
 - Keep CI SBOM artifact generation stable and review generated artifacts during release preparation.
+- Review tag-triggered release artifact bundles after release tags and keep tag/Maven version alignment mandatory.
 - Review the first CodeQL findings and document triage expectations before making SAST a hard release blocker.
 - Define a dependency update cadence and dependency-risk triage process.
-- Capture dependency tree output or SBOM artifacts as durable release evidence when release artifact publishing is defined.
+- Capture dependency tree output as durable release evidence if future release evidence needs it.
 - Document accepted dependency risks with owner, severity, expiry, and follow-up action.
 - Add GitHub artifact attestations after release artifact naming and publishing are stable.
 - Add container signing after registry and image naming decisions are made.
@@ -161,6 +182,7 @@ This document does not prove:
 - GitHub Actions are immune to tag movement or action supply-chain compromise.
 - The Maven repository, CI runner, Docker registry, or developer workstation is trusted.
 - Uploaded SBOM artifacts prove artifact provenance or runtime integrity.
+- Uploaded release artifact bundles are signed, attested, notarized, or published as GitHub Release assets.
 - CodeQL results prove the absence of vulnerabilities or replace human review.
 - Runtime deployment uses secure TLS, IAM, firewalling, egress policy, secret rotation, or artifact provenance.
 - Live AWS behavior has been validated by this documentation pass.

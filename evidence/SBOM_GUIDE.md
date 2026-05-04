@@ -1,14 +1,14 @@
 # LoadBalancerPro SBOM Guide
 
 Date: 2026-05-03
-Branch: `feature/v1.5.0-ci-sbom-artifacts`
+Branch: `feature/v1.7.0-release-artifacts`
 Verification commands: `mvn -q test`, `mvn -q -DskipTests package`, `mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -Dcyclonedx.skipAttach=true`
 
 ## Purpose and Scope
 
 This guide documents CycloneDX Software Bill of Materials (SBOM) generation for LoadBalancerPro.
 
-It covers both the manually invoked local command and the CI-generated SBOM artifact path. It does not change production code, `pom.xml`, dependencies, Maven plugin configuration, Docker behavior, or runtime behavior. It does not commit generated SBOM files.
+It covers the manually invoked local command, the branch CI-generated SBOM artifact path, and the tag-triggered release artifact SBOM path. It does not change production code, `pom.xml`, dependencies, Maven plugin configuration, Docker behavior, or runtime behavior. It does not commit generated SBOM files.
 
 This guide is intended to improve repeatable dependency inventory evidence while keeping supply-chain claims conservative.
 
@@ -58,6 +58,22 @@ The CI workflow uploads these files as a GitHub Actions artifact named `loadbala
 The artifact is retained for 30 days. Generated SBOM files remain build outputs under `target/` and are not committed to the repository.
 
 The CI SBOM artifact is component inventory only. Trivy image scanning and GitHub dependency review remain the vulnerability gates currently configured in CI.
+
+## Release Artifact SBOM Bundle
+
+The tag-triggered Release Artifacts workflow publishes a versioned GitHub Actions artifact bundle for semantic version tags such as `v1.6.1`.
+
+Before upload, the workflow verifies that the Git tag version matches the Maven project version. For example, tag `v1.6.1` must match Maven project version `1.6.1`. If the versions differ, the workflow fails before creating release artifacts.
+
+The release artifact bundle uses deterministic names:
+
+- `LoadBalancerPro-${version}.jar`
+- `LoadBalancerPro-${version}-bom.json`
+- `LoadBalancerPro-${version}-bom.xml`
+
+The uploaded artifact is named `loadbalancerpro-release-${version}` and is retained for 90 days. These are GitHub Actions artifacts, not GitHub Release assets. Generated JAR and SBOM files remain build outputs and are not committed to the repository.
+
+The release SBOM remains component inventory. It is not vulnerability proof, a signature, an attestation, or a production-readiness claim. Artifact attestations and signing are future work.
 
 ## Manual CycloneDX Command
 
@@ -138,10 +154,9 @@ Test libraries still matter to evidence quality and supply-chain review, but run
 
 Conservative next steps:
 
-- Consider publishing generated SBOMs as durable release artifacts outside the source tree.
+- Review versioned JAR/SBOM bundles produced by the tag-triggered release artifact workflow.
 - Add a documented dependency update cadence and accepted dependency-risk triage process.
 - Add a pinned CycloneDX plugin configuration to `pom.xml` only after manual generation proves useful.
-- Add CodeQL or equivalent SAST after defining triage expectations.
 - Add artifact attestations after release artifact naming and publishing are stable.
 - Consider Docker image SBOM generation separately from Maven dependency SBOMs.
 - Consider OWASP dependency-check after a triage and false-positive handling process exists.

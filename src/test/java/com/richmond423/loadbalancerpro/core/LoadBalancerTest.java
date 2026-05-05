@@ -763,7 +763,7 @@ class LoadBalancerTest {
         addServers(server);
         server.updateMetrics(100.0, 95.0, 95.0);
         balancer.checkServerHealth();
-        balancer.handleFailover();
+        balancer.checkServerHealth();
         assertFalse(server.isHealthy(), "Server should be marked unhealthy after 100% CPU!");
         assertEquals(0, balancer.getServers().size(), "Failed server should be removed after failover!");
         logger.info("Health check with failover test passed: Server removed correctly.");

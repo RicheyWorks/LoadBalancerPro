@@ -6,24 +6,30 @@ Document deprecated `LoadBalancer` compatibility shims before any removal work. 
 
 ## Current Decision
 
-No deprecated `LoadBalancer` shim should be removed immediately.
+No deprecated `LoadBalancer` shim should be removed immediately. Local test callers have been migrated away from the deprecated shims where practical, and `updateMetricsFromCloud()` now delegates to the non-deprecated wrapper. The remaining decision is public compatibility and removal policy, not urgent code cleanup.
 
 | Method | Replacement or intended API | Current behavior | Known callers | Removal risk | Recommendation |
 | --- | --- | --- | --- | --- | --- |
-| `getCloudManager()` | `getCloudManagerOptional()` or `hasCloudManager()` | Returns the nullable `CloudManager` field. | `src/test/java/com/richmond423/loadbalancerpro/core/ServerMonitorTest.java` line 387. | Medium: tests break and the method is public Java API. | Keep for compatibility; migrate tests first. |
-| `updateMetricsFromCloud()` | `updateCloudMetricsIfAvailable()` | Contains the current cloud metric update implementation, including retry and interrupt handling. `updateCloudMetricsIfAvailable()` delegates to it. | Internal caller in `src/main/java/com/richmond423/loadbalancerpro/core/LoadBalancer.java` line 430. | Medium: public API concern and implementation still lives in the deprecated method. | Keep until the implementation moves behind the non-deprecated wrapper and wrapper behavior tests exist. |
-| `handleFailover()` | `checkServerHealth()` | Delegates to `checkServerHealth()`. | `src/test/java/com/richmond423/loadbalancerpro/core/LoadBalancerTest.java` line 766. | Medium: tests break and the method is public Java API. | Migrate test caller to `checkServerHealth()` before removal. |
+| `getCloudManager()` | `getCloudManagerOptional()` or `hasCloudManager()` | Returns the nullable `CloudManager` field. | No local production or test callers remain. The former `ServerMonitorTest` caller now uses `getCloudManagerOptional()`. | Medium: the method is public Java API and nullable accessor removal can break external consumers. | Keep for compatibility until a public deprecation/removal policy is chosen. |
+| `updateMetricsFromCloud()` | `updateCloudMetricsIfAvailable()` | Compatibility shim that delegates to `updateCloudMetricsIfAvailable()`. The retry, delay, logging, interrupt handling, and `IOException` behavior now live behind the non-deprecated wrapper. | No local production or test callers of the deprecated method remain. `ServerMonitor` calls `updateCloudMetricsIfAvailable()`. | Medium: public API compatibility still matters even though implementation no longer lives in the deprecated method. | Keep for compatibility; no urgent code cleanup remains. |
+| `handleFailover()` | `checkServerHealth()` | Delegates to `checkServerHealth()`. | No local production or test callers remain. The former `LoadBalancerTest` caller now uses `checkServerHealth()`. | Low-to-medium: local callers are migrated, but the method is public Java API. | Keep for compatibility until a public deprecation/removal policy is chosen. |
 | `balanceLoad()` | `rebalanceExistingLoad()` or explicit strategy methods. | Delegates to `rebalanceExistingLoad()`. | No direct local callers found. | Low-to-medium: no local callers, but it is public Java API and documented as a legacy GUI entry point. | Do not remove now; document a public compatibility and removal timeline. |
-| `getServerMonitor()` | Public behavior checks or a narrower monitor-status API. | Returns the internal `ServerMonitor` instance. | `src/test/java/com/richmond423/loadbalancerpro/core/LoadBalancerTest.java` line 1005. | Medium/high: removal breaks shutdown/lifecycle tests and the method exposes internals. | Keep until tests are redesigned around public behavior or a narrower API exists. |
+| `getServerMonitor()` | Public behavior checks or a narrower monitor-status API. | Returns the internal `ServerMonitor` instance. | No local production or test callers remain. The former shutdown test now verifies public shutdown behavior. | Medium/high: the method exposes internals and external callers may depend on it. | Keep for compatibility until a public deprecation/removal policy is chosen. |
 
-## Required Pre-Removal Work
+## Completed Local Migration Work
 
-- Migrate tests away from `getCloudManager()`.
-- Move the `updateMetricsFromCloud()` implementation behind `updateCloudMetricsIfAvailable()`.
-- Add or confirm behavior tests for `updateCloudMetricsIfAvailable()`.
-- Migrate `handleFailover()` tests to `checkServerHealth()`.
+- Migrated `handleFailover()` test coverage to `checkServerHealth()`.
+- Migrated `getCloudManager()` test coverage to `getCloudManagerOptional()`.
+- Migrated `getServerMonitor()` test coverage to public shutdown behavior.
+- Moved the `updateMetricsFromCloud()` implementation behind `updateCloudMetricsIfAvailable()`.
+- Kept all deprecated shims in place.
+
+## Remaining Pre-Removal Work
+
+- Treat shim removal as a public compatibility decision, not routine cleanup.
 - Decide the public compatibility policy and removal timeline for `balanceLoad()`.
-- Redesign the `getServerMonitor()` lifecycle test around public behavior or introduce a narrower monitor-status API.
+- Decide whether deprecated shims should remain through the next major compatibility release.
+- Add release-note guidance before removing any public shim.
 
 ## Safety Notes
 

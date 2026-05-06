@@ -177,6 +177,33 @@ class LoadBalancerTest {
     }
 
     @Test
+    void testPublicServerSnapshotsAreDetachedFromRegistryState() {
+        logger.info("=== TESTING PUBLIC SERVER SNAPSHOT ISOLATION ===");
+        Server server = new Server("S1", 30.0, 40.0, 50.0);
+        addServers(server);
+
+        List<Server> serversSnapshot = balancer.getServers();
+        Map<String, Server> mapSnapshot = balancer.getServerMap();
+
+        serversSnapshot.clear();
+        assertThrows(UnsupportedOperationException.class, () -> mapSnapshot.remove("S1"),
+            "Server map snapshot should not expose mutable registry state!");
+
+        assertSame(server, balancer.getServer("S1"), "Mutating the server list snapshot should not remove S1!");
+        assertEquals(List.of(server), balancer.getServers(), "Registry should still expose the original server!");
+        assertEquals(1, balancer.getServerMap().size(), "Registry map should still contain the original entry!");
+        assertSame(server, balancer.getServerMap().get("S1"), "Registry map should still point to the original server!");
+
+        Server peer = new Server("S2", 20.0, 30.0, 40.0);
+        addServers(peer);
+
+        assertTrue(serversSnapshot.isEmpty(), "Previously returned server list should remain detached!");
+        assertEquals(1, mapSnapshot.size(), "Previously returned server map should remain a detached snapshot!");
+        assertFalse(mapSnapshot.containsKey("S2"), "Previously returned server map should not reflect later additions!");
+        assertEquals(2, balancer.getServers().size(), "Live registry should contain both current servers!");
+    }
+
+    @Test
     void testDuplicateServerReplacementUpdatesRegistryAndHashRing() {
         logger.info("=== TESTING DUPLICATE SERVER REPLACEMENT STATE ===");
         Server original = new Server("S1", 30.0, 40.0, 50.0);
@@ -197,6 +224,34 @@ class LoadBalancerTest {
         assertTrue(afterReplacement.containsKey("S1"), "Replacement S1 should participate in hash ring!");
         assertTrue(afterReplacement.keySet().stream().allMatch(id -> id.equals("S1") || id.equals("S2")),
             "Hashing should only route to current registry servers!");
+    }
+
+    @Test
+    void testDuplicateServerReplacementClearsAccumulatedLoadForReplacedServerId() {
+        logger.info("=== TESTING DUPLICATE REPLACEMENT ACCUMULATED LOAD RECONCILIATION ===");
+        Server original = new Server("S1", 30.0, 40.0, 50.0);
+        Server replacement = new Server("S1", 10.0, 20.0, 30.0);
+        addServers(original);
+
+        Map<String, Double> originalAllocation = balancer.roundRobin(80.0);
+        assertEquals(80.0, originalAllocation.get("S1"), 0.01,
+            "Single-server allocation should create accumulated load for S1!");
+
+        addServers(replacement);
+
+        assertSame(replacement, balancer.getServer("S1"), "Duplicate replacement should be the live S1!");
+        assertEquals(1, balancer.getServers().size(), "Duplicate replacement should keep one logical server!");
+        assertTrue(balancer.rebalanceExistingLoad().isEmpty(),
+            "Replacing S1 should remove accumulated load that belonged to the old S1 instance!");
+
+        Map<String, Double> replacementAllocation = balancer.roundRobin(20.0);
+        Map<String, Double> rebalancedReplacementLoad = balancer.rebalanceExistingLoad();
+
+        assertEquals(20.0, replacementAllocation.get("S1"), 0.01,
+            "Replacement S1 should receive new allocation normally!");
+        assertEquals(1, rebalancedReplacementLoad.size(), "Replacement rebalance should not create duplicate entries!");
+        assertEquals(20.0, rebalancedReplacementLoad.get("S1"), 0.01,
+            "Replacement rebalance should include only the new accumulated load!");
     }
 
     @Test

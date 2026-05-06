@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import com.richmond423.loadbalancerpro.util.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,10 +19,8 @@ public class LoadBalancer {
     private static final long CLOUD_RETRY_DELAY_MS = 1000;
     private static final int SHUTDOWN_RETRIES = 2;
 
-    private final List<Server> servers = Collections.synchronizedList(new ArrayList<>());
+    private final ServerRegistry serverRegistry = new ServerRegistry();
     private final List<String> alertLog = new CopyOnWriteArrayList<>();
-    private final Map<String, Server> serverMap = new ConcurrentHashMap<>();
-    private final PriorityQueue<Server> loadQueue = new PriorityQueue<>(Comparator.comparingDouble(Server::getLoadScore));
     private final Map<String, Double> currentDistribution = new ConcurrentHashMap<>();
     private final ConsistentHashRing consistentHashRing;
     private final ServerMonitor monitor;
@@ -124,13 +121,11 @@ public class LoadBalancer {
         if (server == null) throw new IllegalArgumentException("Server cannot be null");
         serverLock.writeLock().lock();
         try {
-            if (serverMap.containsKey(server.getServerId())) {
+            if (serverRegistry.contains(server.getServerId())) {
                 logger.warn("Duplicate server ID {} detected; replacing existing server.", server.getServerId());
-                removeFailedServer(serverMap.get(server.getServerId()));
+                removeFailedServer(serverRegistry.get(server.getServerId()));
             }
-            servers.add(server);
-            serverMap.put(server.getServerId(), server);
-            loadQueue.offer(server);
+            serverRegistry.add(server);
             consistentHashRing.addServer(server);
             logger.debug("Added server {} ({})", server.getServerId(), server.getServerType());
         } finally {
@@ -142,7 +137,7 @@ public class LoadBalancer {
         serverLock.writeLock().lock();
         try {
             List<Server> failedServers = new ArrayList<>();
-            for (Server server : servers) {
+            for (Server server : serverRegistry.snapshot()) {
                 if (server.getCpuUsage() >= maxUsageThreshold || server.getMemoryUsage() >= maxUsageThreshold || 
                     server.getDiskUsage() >= maxUsageThreshold || !server.isHealthy()) {
                     server.setHealthy(false);
@@ -175,9 +170,7 @@ public class LoadBalancer {
     private double removeFailedServer(Server failed) {
         Double data = currentDistribution.remove(failed.getServerId());
         double removedData = data != null ? data : 0;
-        servers.remove(failed);
-        serverMap.remove(failed.getServerId());
-        loadQueue.remove(failed);
+        serverRegistry.remove(failed);
         consistentHashRing.removeServer(failed);
         return removedData;
     }
@@ -244,7 +237,7 @@ public class LoadBalancer {
 
     public Map<String, Double> consistentHashing(double totalData, int numKeys) {
         if (totalData < 0 || numKeys <= 0) throw new IllegalArgumentException("Invalid totalData or numKeys");
-        if (servers.isEmpty()) {
+        if (serverRegistry.isEmpty()) {
             logger.info("No servers available.");
             return Collections.emptyMap();
         }
@@ -332,7 +325,7 @@ public class LoadBalancer {
     public void exportReport(String filename, String format) throws IOException {
         serverLock.readLock().lock();
         try {
-            Utils.exportReport(filename, format, servers, alertLog);
+            Utils.exportReport(filename, format, serverRegistry.snapshot(), alertLog);
         } finally {
             serverLock.readLock().unlock();
         }
@@ -384,7 +377,7 @@ public class LoadBalancer {
     public List<Server> getServers() {
         serverLock.readLock().lock();
         try {
-            return new ArrayList<>(servers);
+            return serverRegistry.snapshot();
         } finally {
             serverLock.readLock().unlock();
         }
@@ -395,7 +388,7 @@ public class LoadBalancer {
     }
 
     public Map<String, Server> getServerMap() {
-        return Collections.unmodifiableMap(new HashMap<>(serverMap));
+        return serverRegistry.mapSnapshot();
     }
 
     public void updateCloudMetricsIfAvailable() throws IOException {
@@ -443,14 +436,14 @@ public class LoadBalancer {
     }
 
     public Server getServer(String serverId) {
-        return serverMap.get(serverId);
+        return serverRegistry.get(serverId);
     }
 
     public void removeServer(String serverId) {
         if (serverId == null) return;
         serverLock.writeLock().lock();
         try {
-            Server server = serverMap.get(serverId);
+            Server server = serverRegistry.get(serverId);
             if (server != null) {
                 removeFailedServer(server);
             }
@@ -503,7 +496,7 @@ public class LoadBalancer {
     private List<Server> getHealthyServers() {
         serverLock.readLock().lock();
         try {
-            return servers.stream().filter(Server::isHealthy).toList();
+            return serverRegistry.healthySnapshot();
         } finally {
             serverLock.readLock().unlock();
         }
@@ -512,9 +505,7 @@ public class LoadBalancer {
     public List<Server> getServersByType(ServerType type) {
         serverLock.readLock().lock();
         try {
-            return servers.stream()
-                          .filter(server -> server.getServerType() == type)
-                          .collect(Collectors.toList());
+            return serverRegistry.byType(type);
         } finally {
             serverLock.readLock().unlock();
         }
@@ -549,7 +540,7 @@ public class LoadBalancer {
                                                              Function<List<Server>, Map<String, Double>> distributor) {
         serverLock.readLock().lock();
         try {
-            if (servers.isEmpty()) {
+            if (serverRegistry.isEmpty()) {
                 logger.info("No servers available.");
                 return Collections.emptyMap();
             }
@@ -568,7 +559,7 @@ public class LoadBalancer {
             double totalData, Function<List<Server>, LoadDistributionResult> distributor) {
         serverLock.readLock().lock();
         try {
-            if (servers.isEmpty()) {
+            if (serverRegistry.isEmpty()) {
                 logger.info("No servers available.");
                 return new LoadDistributionResult(Collections.emptyMap(), totalData);
             }

@@ -1,268 +1,219 @@
 # Enterprise Readiness Audit
 
-Date: 2026-05-03
+Date: 2026-05-06
+
+This document refreshes and supersedes the earlier 2026-05-03 enterprise readiness audit. The older audit reflected a v1.2-era repository state and is no longer accurate for the current `loadbalancerpro-clean` branch.
 
 ## Snapshot
 
 - Branch: `loadbalancerpro-clean`
-- Commit audited: `4eab1f9af0bd944d9243776810c831139b186111`
-- Current release tag: `v1.2.0`
-- Current Maven/project runtime version: `1.1.1`
-- Public default branch: `loadbalancerpro-clean`
+- Commit audited: `c098e56` - Merge pull request #27 from `richmond423/codex/cloud-sandbox-fail-closed-defaults`
+- Current release/version line: `v2.4.2` / `2.4.2`
+- Current Maven/project runtime version: `2.4.2`
+- Current public default branch: `loadbalancerpro-clean`
 - Public `main`: preserved and intentionally not used as the release branch
-- Audit scope: repository state, build/test posture, security posture, supply-chain posture, documentation, governance, and production-readiness gaps.
+- Audit scope: repository state, build/test posture, application security, supply chain, documentation, governance, cloud safety, and remaining enterprise-readiness gaps.
 
 ## Executive Verdict
 
-LoadBalancerPro is strong as an enterprise-style demo and portfolio system, but it is not yet enterprise-production ready.
+LoadBalancerPro is credible as a hardened portfolio and enterprise-demo system. It is not enterprise-production ready, and the repository should continue to say that plainly.
 
-The repository now has serious engineering signals: tests, CI, Docker verification, Trivy scanning, pinned CI actions, pinned Docker base images, structured API errors, auth modes, cloud mutation guardrails, telemetry guardrails, and evidence docs. That is a credible hardened-demo baseline.
+The current branch has strong engineering signals: focused tests, CI, packaged JAR verification, Docker runtime checks, SBOM generation, Trivy scanning, Dependency Review, CodeQL, pinned GitHub Actions, pinned Docker base images, structured API errors, API-key and OAuth2 modes, cloud mutation guardrails, telemetry guardrails, governance files, and evidence docs.
 
-The remaining gaps are mostly not algorithmic. They are release metadata, public API documentation, governance, deployment, operations, compliance, and artifact provenance gaps. Those are exactly the areas enterprise buyers and platform teams tend to inspect before trusting software outside a demo or pilot.
+The highest-value remaining gaps are not new load-balancing features. They are repository governance enforcement, security-alert triage, deployment/operations proof, cloud sandbox evidence, and continued documentation truthfulness.
 
 Readiness summary:
 
 | Area | Rating | Notes |
 | --- | --- | --- |
 | Enterprise demo readiness | Strong | Safe to present as a hardened, safety-aware demo with clear caveats. |
-| Product capability readiness | Moderate | v1.2.0 adds real routing comparison capability, but docs and examples lag the feature. |
-| Application security baseline | Good | Auth modes, request limits, structured errors, safety tests, and cloud guardrails are present. |
-| Supply-chain baseline | Good | CI runs Trivy and dependency review; actions and Docker bases are pinned. |
-| Enterprise operations readiness | Weak | Missing runbooks, deployment manifests, SLOs, alerting guidance, and incident response. |
-| Governance/compliance readiness | Weak | Missing license, security policy, CODEOWNERS, and contribution policy. |
-| Production enterprise readiness | Not ready | Needs release, governance, deployment, operations, and provenance work before production claims. |
+| Application security baseline | Good | Auth modes, request limits, structured errors, profile tests, OAuth2/RBAC tests, and cloud guardrail tests are present. |
+| Supply-chain baseline | Good | CI includes tests/package, SBOM generation, Docker smoke, Trivy, Dependency Review, CodeQL, pinned actions, and pinned Docker digests. |
+| Governance documentation | Good but not enforced | `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`, `.github/CODEOWNERS`, and Dependabot config exist; branch protection/rulesets are not configured. |
+| Cloud safety posture | Strong for mocked/default paths | Dry-run defaults and live mutation gates are well covered; real AWS validation remains outside default CI. |
+| Enterprise operations readiness | Moderate | Deployment, operations, secret-management, and performance docs exist, but production SLOs, live incident evidence, and platform-specific enforcement remain deployment responsibilities. |
+| Production enterprise readiness | Not ready | Needs branch protection, security-alert triage, production identity/edge controls, real deployment evidence, and live-cloud validation before production claims. |
 
 ## Verification Performed
 
-- `mvn -q test`: passed
-- Test count: 529 tests, 0 failures, 0 errors, 0 skipped
-- `mvn -q -DskipTests package`: passed
-- Current working tree before this audit file: clean
+Current audit evidence from the 2026-05-06 read-only pass:
+
+- GitHub default-branch CI passed for `c098e56`.
+- GitHub CodeQL passed for `c098e56`.
+- `mvn -q test`: passed.
+- `mvn -q -DskipTests package`: passed.
+- `java -jar target\LoadBalancerPro-2.4.2.jar --version`: passed.
+- `java -jar target\LoadBalancerPro-2.4.2.jar --lase-demo=healthy`: passed.
+- `java -jar target\LoadBalancerPro-2.4.2.jar --lase-demo=invalid-name`: failed safely with exit code `2` and valid scenario guidance.
+- Open Dependabot alerts from `gh`: none.
+- Open secret-scanning alerts from `gh`: none.
+- Open CodeQL alerts from `gh`: one `java/spring-disabled-csrf-protection` alert in `ApiSecurityConfiguration.java`.
+
+No real AWS credentials were used and no live cloud behavior was started during this audit.
 
 ## Major Strengths
 
-- Spring Boot 3.x baseline is present: `spring-boot.version=3.5.14`.
-- AWS SDK v2 BOM and modules are present.
-- `org.json:json` is fixed at `20231013`, addressing the previously flagged CVE-2023-5072 issue.
-- CI runs tests, dependency tree resolution, package verification, packaged JAR smoke tests, Docker build, Docker runtime smoke checks, Docker health checks, Trivy image scanning, and pull-request dependency review.
-- GitHub Actions are pinned by commit SHA.
+- Maven project/runtime version is aligned at `2.4.2`.
+- Spring Boot baseline is current for this project line: `spring-boot.version=3.5.14`.
+- AWS SDK v2 BOM and guarded AWS clients are present.
+- CI runs dependency resolution, tests, packaging, packaged-JAR smoke checks, LASE demo smoke checks, Docker build/runtime smoke, Docker healthcheck verification, CycloneDX SBOM generation, Trivy image scanning, and pull-request Dependency Review.
+- CodeQL runs as a separate Java/Kotlin SAST workflow.
+- GitHub Actions are pinned to commit SHAs.
 - Docker base images are pinned by digest.
-- Docker runtime uses a non-root user and has a healthcheck.
-- `.trivyignore` is intentionally empty except for process comments.
-- API error handling includes structured JSON for validation, unsupported media type, wrong method, and request-size failures.
-- Production and cloud-sandbox profiles protect write-like API operations with API-key mode.
-- OAuth2 mode supports role-gated access for allocation/routing operations and read-only LASE observation.
-- Request-size limiting and CORS configuration are present.
-- Telemetry export is opt-in and guarded against unsafe OTLP endpoint configuration.
-- Cloud mutation is guarded by dry-run defaults, explicit live mutation flags, operator intent, account/region allowlists, capacity caps, sandbox naming constraints, and deletion ownership checks.
-- v1.2.0 added a core routing strategy comparison foundation and a read-only `POST /api/routing/compare` recommendation endpoint.
-- Existing allocation endpoints and CloudManager/AWS mutation logic were intentionally left unchanged by the v1.2.0 routing API work.
-- Evidence docs exist for threat model, test evidence, supply chain, security posture, SBOM guide, safety invariants, resilience score, residual risks, and hardening review.
+- Docker runtime uses a non-root user and healthcheck.
+- Release artifact workflow supports semantic-version tags, Maven/tag version alignment checks, deterministic JAR/SBOM/checksum artifacts, and GitHub artifact attestations.
+- Governance files now exist: `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`, `.github/CODEOWNERS`, and `.github/dependabot.yml`.
+- API errors are structured for core validation, malformed JSON, unsupported media type, wrong method, request-size, auth, and authorization failures.
+- Recent OAuth2 tests cover docs-public behavior, custom required-role overrides, common JWT role claim shapes, and protected route behavior.
+- Recent 404 tests characterize unknown `/api/**` fallback behavior without forcing behavior changes.
+- Recent cloud-sandbox tests characterize fail-closed account/region allow-list defaults.
+- Prod and cloud-sandbox profiles keep cloud live mode disabled by default and protect mutation/LASE observability paths in API-key mode.
+- OAuth2 mode gates allocation/routing and LASE observability by role and gates OpenAPI/Swagger by default.
+- Telemetry export is disabled by default in prod/cloud-sandbox and guarded when OTLP is enabled.
+- Cloud mutation is guarded by dry-run defaults, explicit live mutation flags, operator intent, account/region allow-lists, capacity caps, sandbox prefix checks, and deletion ownership gates.
+- Evidence docs track safety invariants, residual risks, security posture, threat model, supply chain, tests, release artifacts, performance baseline, and operations guidance.
 
-## Enterprise Blockers
+## Enterprise Gaps
 
-### 1. Release Metadata Mismatch
+### 1. Default Branch Protection And Rulesets Are Not Configured
 
-The repository has a published `v1.2.0` release, but runtime/project metadata still reports `1.1.1`:
+GitHub reported `loadbalancerpro-clean` as not protected, and no repository rulesets were returned during the audit.
 
-- `pom.xml` project version is `1.1.1`.
-- `src/main/resources/application.properties` uses `loadbalancerpro.app.version=1.1.1`.
-- `info.app.version=1.1.1`.
-- `management.opentelemetry.resource-attributes[service.version]=1.1.1`.
-- README examples reference `target/LoadBalancerPro-1.1.1.jar`.
+Enterprise impact: CI, CodeQL, CODEOWNERS, and review expectations exist, but GitHub is not enforcing them at the default branch boundary. A maintainer mistake could bypass the intended review and status-check posture.
 
-Enterprise impact: release consumers, support teams, scanners, and runtime inventories may conclude they are running v1.1.1 even when testing or deploying the v1.2.0 tag. This is a release-management issue and should be fixed before stronger external enterprise claims.
+Recommended action: configure branch protection or rulesets for `loadbalancerpro-clean` requiring pull requests, passing CI, passing CodeQL, CODEOWNERS review for sensitive paths, and blocking force-pushes/deletions.
 
-Recommended action: create a small v1.2.1 patch that aligns Maven, JAR, API health, telemetry resource metadata, CLI version output, README examples, and release notes.
+### 2. Open CodeQL CSRF Alert Requires Triage
 
-### 2. v1.2.0 Routing API Documentation Gap
+The current open CodeQL alert is `java/spring-disabled-csrf-protection` at `ApiSecurityConfiguration.java:51`.
 
-The README REST API section still documents health, LASE shadow, and allocation endpoints, but it does not document the new `POST /api/routing/compare` endpoint.
+Enterprise impact: The application is designed as a stateless API with API-key and bearer-token flows, so disabled CSRF may be acceptable. It should still be explicitly triaged, documented, or fixed. Leaving a high-severity SAST alert open weakens enterprise review posture.
 
-Enterprise impact: the most important new v1.2.0 product capability is not discoverable from the primary project documentation. That weakens product credibility and makes API review harder.
+Recommended action: triage the alert in a focused security review. If accepted as a stateless API false positive, document the rationale. If not accepted, design a targeted security-config change with tests.
 
-Recommended action: update README and release notes with request/response examples, validation behavior, auth behavior, and the explicit statement that the endpoint is recommendation-only and read-only.
+### 3. Security Policy Needed Refresh
 
-### 3. Missing Legal and Governance Files
+Before this refresh, `SECURITY.md` listed stale `v1.3.x` support and contained a TODO for private contact.
 
-The following expected enterprise repository files were not present:
+Enterprise impact: vulnerability reporters need current support guidance and a safe private reporting path.
 
-- `LICENSE`
-- `SECURITY.md`
-- `CODEOWNERS`
-- `.github/CODEOWNERS`
-- `CONTRIBUTING.md`
-- `.github/dependabot.yml`
+Current action: this docs-only refresh updates the supported line to `v2.4.x` and replaces TODO contact text with GitHub Security Advisories / private vulnerability reporting guidance.
 
-Enterprise impact: without a license, downstream users do not have clear reuse rights. Without a security policy, vulnerability disclosure is unclear. Without CODEOWNERS and contribution guidance, review ownership and contribution controls are not auditable from the repository.
+Recommended action: enable or confirm GitHub private vulnerability reporting, and add a private contact path only if the maintainer wants one published.
 
-Recommended action: add these governance files before positioning the repository as enterprise-ready.
+### 4. API-Key Mode Is Compatibility-Oriented, Not Full Enterprise Auth
 
-### 4. Deployment Readiness Is Incomplete
+API-key mode remains useful for demos and compatibility. It protects prod/cloud-sandbox mutation paths and LASE observability, while local/default mode and some read/docs behavior remain demo-friendly.
 
-The app has strong local and container behavior, but the repo does not yet include an enterprise deployment reference:
+Enterprise impact: API keys are not a complete identity, authorization, rotation, or audit model. They should not be presented as production-grade enterprise auth by themselves.
 
-- No Kubernetes manifests or Helm chart.
-- No Terraform/IaC reference.
-- No reverse proxy/TLS/rate-limit example.
-- No WAF/API gateway guidance.
-- No secret-management integration example.
-- No runtime policy example for read-only filesystem, seccomp, dropped capabilities, memory limits, or CPU limits.
-- No IAM least-privilege policy template for the cloud-sandbox path.
+Recommended action: prefer OAuth2 mode for enterprise demos, deploy behind trusted TLS/edge controls, rotate secrets through deployment infrastructure, and keep public docs/read behavior intentional and documented.
 
-Enterprise impact: platform teams cannot easily evaluate how to run this safely in a controlled environment.
+### 5. Primitive DTO Omission Risk Remains Characterized
 
-Recommended action: add a deployment hardening guide and one minimal reference deployment profile.
+Some allocation DTO fields still use primitive numeric/boolean types. Tests characterize omitted values that deserialize to Java defaults, but the behavior is not eliminated.
 
-### 5. Operations Readiness Is Incomplete
+Enterprise impact: for hostile external exposure, omitted numeric or boolean fields should be rejected when absence is semantically different from zero or false.
 
-The repo documents safety posture well, but enterprise operations artifacts are still thin:
+Recommended action: plan a compatibility-aware API hardening branch that converts ambiguous primitive request fields to nullable validated fields where behavior should reject omissions.
 
-- No SLO/SLA targets.
-- No alerting rules.
-- No dashboard examples.
-- No incident response runbook.
-- No rollback guide.
-- No support matrix.
-- No log retention or audit-log export plan.
-- No performance baseline evidence committed for v1.2.0.
+### 6. Live Cloud Validation Is Outside Default CI
 
-Enterprise impact: the system can be evaluated technically, but not operated with enterprise discipline yet.
+Default tests use mocked AWS clients and avoid live AWS credentials or resources.
 
-Recommended action: add operations docs before production-like deployment claims.
+Enterprise impact: mocked cloud tests prove guardrail logic, not IAM policy behavior, real AWS account isolation, network policy, or teardown behavior.
 
-### 6. Supply-Chain Provenance Is Not Complete
+Recommended action: run live validation only in disposable sandbox infrastructure with documented account/region boundaries, IAM least privilege, `lbp-sandbox-` resource naming, teardown steps, and audit evidence.
 
-The current supply-chain baseline is good but not complete:
+### 7. Production Infrastructure Remains Deployment Responsibility
 
-- Trivy scan is enforced in CI.
-- Dependency review runs on pull requests.
-- Docker base images and GitHub Actions are pinned.
-- SBOM guidance exists in docs.
+The repository has deployment and operations guidance, but production controls remain external to the app.
 
-Missing:
+Enterprise impact: TLS, HSTS at the trusted edge, WAF/API gateway policy, rate limiting, identity lifecycle, secret rotation, log retention, alerting, incident response, private telemetry collector access, and network isolation must be supplied by the deployment platform.
 
-- No SBOM generated and archived as a CI/release artifact.
-- No artifact signing.
-- No container signing.
-- No SLSA/GitHub artifact attestation.
-- No CodeQL or equivalent SAST workflow visible in the repository.
-- No repository-managed secret scanning workflow or policy evidence.
-- No Dependabot configuration.
-
-Enterprise impact: the repo has vulnerability scanning, but not full provenance and maintenance automation.
-
-Recommended action: add CycloneDX or Syft SBOM generation, artifact upload, CodeQL, Dependabot, and a signing/provenance plan.
-
-### 7. Historical Repository Hygiene Risk
-
-`git count-objects -vH` shows loose objects around 79.67 MiB, with a packed size around 5.56 MiB. Prior release docs also mention a historical large JavaFX binary risk that was intentionally deferred.
-
-Enterprise impact: not a runtime blocker, but large history and binary remnants can complicate cloning, audits, and long-term repository maintenance.
-
-Recommended action: defer destructive history cleanup until after a separate reviewed plan. In the near term, run non-destructive repository maintenance such as `git gc` only after review.
+Recommended action: keep the current "enterprise-demo, not production-ready" claim until deployment-specific evidence exists.
 
 ## Important Non-Blockers
 
-- The routing comparison API is read-only/recommendation-only and has tests proving it does not construct `CloudManager`.
-- The routing API does not change existing allocation endpoint behavior.
-- The routing API does not mutate `LoadBalancer` state.
-- Production/cloud-sandbox API-key mode protects `POST /api/routing/compare`.
-- OAuth2 mode gates `POST /api/routing/**` behind the allocation/operator role.
-- Trivy is enforced in GitHub Actions, and the local `.trivyignore` is not being used to hide the prior `org.json` vulnerability.
+- Governance files exist now; the old audit claim that they were missing is superseded.
+- README documents the routing comparison API and current `2.4.2` JAR examples.
+- CI currently generates SBOM artifacts and runs CodeQL; the old audit claim that no SBOM/CodeQL/Dependabot baseline existed is superseded.
+- Open Dependabot and secret-scanning alerts were not found through `gh` during the audit.
+- API-key mode fail-closed behavior is covered for prod/cloud-sandbox protected mutation routes.
+- OAuth2 mode has mocked JWT coverage and does not require a real OAuth provider in tests.
+- CloudManager guardrail tests do not require real AWS services.
 
 ## Security Posture Notes
 
-The app has a solid application-level security baseline for a demo/pilot:
+The application security baseline is credible for a demo/pilot:
 
-- Structured errors reduce accidental stack trace exposure.
-- Request-size limits reduce simple oversized-body attacks.
-- Prod/cloud-sandbox profiles fail closed when API keys are missing.
-- OAuth2 startup validation fails when issuer/JWK configuration is missing.
-- Security headers are set by the app.
+- Structured errors reduce stack trace and exception leakage across covered API paths.
+- Request-size limits are tested.
+- Prod/cloud-sandbox API-key mode fails closed when the configured key is missing or wrong.
+- OAuth2 mode fails startup without issuer or JWK configuration.
+- OAuth2 role extraction covers common role claim shapes.
+- Security headers are set by the app for covered responses.
 - CORS origins are configurable and empty by default in prod/cloud-sandbox.
-- OTLP endpoint validation prevents unsafe telemetry export configuration.
+- OTLP endpoint validation prevents common unsafe telemetry export configurations.
 
 Production enterprise deployment still needs:
 
-- TLS termination and HSTS at the trusted edge.
-- OAuth2 preferred over API-key mode.
-- API gateway or reverse proxy rate limiting.
-- Centralized secret management and key rotation.
-- Centralized logging, retention, and alerting.
-- Network policy and infrastructure isolation.
-- A documented break-glass and incident process.
+- trusted TLS termination and HSTS policy at the edge,
+- OAuth2 or stronger identity integration rather than API-key-only operation,
+- API gateway or reverse proxy rate limiting,
+- secret management and rotation,
+- centralized logging with retention and access controls,
+- alerting and incident response runbooks,
+- network isolation and egress controls,
+- branch protection/ruleset enforcement,
+- CodeQL alert triage.
 
 ## Cloud Safety Notes
 
-Cloud mutation safety is stronger than typical demo code:
+Cloud mutation safety remains one of the strongest parts of the project:
 
 - Cloud live mode is disabled by default.
-- Cloud live mutation and deletion require explicit flags.
+- Live mutation and deletion require explicit flags.
 - Live mutation requires operator intent.
-- Sandbox profile forces `lbp-sandbox-` resource prefix and low capacity caps.
-- Region/account/resource-name checks exist.
+- Live mutation checks account and region assumptions.
+- Sandbox behavior uses the documented `lbp-sandbox-` prefix.
+- Capacity caps and scale-step limits are present.
 - Deletion has ownership guardrails.
+- Default and CI tests use mocks/dry-run behavior rather than real AWS resources.
 
-Remaining enterprise gaps:
+Remaining cloud gaps:
 
-- No live AWS sandbox evidence for v1.2.0 is committed.
-- No IAM least-privilege policy sample is committed.
-- No Terraform or CloudFormation reference exists.
-- No documented cloud rollback or incident procedure exists.
-
-## Documentation Gaps
-
-The docs are unusually strong for a student/portfolio repository, but the public-facing docs need another pass:
-
-- README does not yet surface `POST /api/routing/compare`.
-- README examples still reference `LoadBalancerPro-1.1.1.jar`.
-- The architecture text still leans toward routing comparison as internal foundation, even though v1.2.0 now exposes a read-only API.
-- Release notes for v1.2.0 should be created.
-- OpenAPI examples or curl examples for routing compare should be added.
-- A production deployment guide should explicitly state what the app does and does not provide.
+- no live AWS sandbox evidence in default CI,
+- no committed proof of IAM least-privilege behavior against a real account,
+- no production rollback/incident evidence for live cloud mutation,
+- fixed-prefix enforcement should continue to be treated as a safety invariant before any hostile-operator sandbox use.
 
 ## Recommended Next Safest Actions
 
-1. Create a v1.2.1 version/documentation patch.
-   - Align Maven/JAR/API health/CLI/telemetry metadata to the new patch version.
-   - Document `POST /api/routing/compare` in README.
-   - Add v1.2.0 or v1.2.1 release notes that describe routing comparison clearly.
-   - Verify Maven tests, package, Docker smoke, and GitHub Actions/Trivy before tagging.
+1. Configure GitHub branch protection or rulesets for `loadbalancerpro-clean`.
+   - Require pull requests.
+   - Require CI and CodeQL status checks.
+   - Require CODEOWNERS review for sensitive paths.
+   - Block force-pushes and branch deletion.
 
-2. Add governance basics.
-   - `LICENSE`
-   - `SECURITY.md`
-   - `CODEOWNERS`
-   - `CONTRIBUTING.md`
-   - Dependabot configuration
+2. Triage the open CodeQL CSRF alert.
+   - Treat this as a focused security-review task.
+   - Document stateless API rationale if accepting the alert.
+   - Add tests if any security behavior changes.
 
-3. Add supply-chain provenance.
-   - Generate SBOM in CI.
-   - Upload SBOM as an artifact.
-   - Add CodeQL or equivalent SAST.
-   - Plan artifact/container signing and release attestations.
+3. Keep security docs current.
+   - Confirm GitHub private vulnerability reporting is enabled.
+   - Keep `SECURITY.md` aligned with the current supported release line.
 
-4. Add enterprise deployment guidance.
-   - Reverse proxy/TLS/rate-limit pattern.
-   - OAuth2 production setup guidance.
-   - Secret management guidance.
-   - Minimal Kubernetes or Docker Compose production-like example.
-   - Cloud sandbox IAM policy sample.
+4. Add low-risk API hardening tests before DTO behavior changes.
+   - Continue characterizing primitive omission behavior before changing request DTO contracts.
 
-5. Add operations evidence.
-   - SLO targets.
-   - Basic alerting rules.
-   - Dashboard examples.
-   - Incident response and rollback runbooks.
-   - Performance baseline for routing comparison and allocation APIs.
-
-6. Defer destructive repository history cleanup.
-   - Keep public history stable for now.
-   - Plan large-file cleanup separately if the owner decides the clone/history cost is worth it.
+5. Keep cloud work sandbox-only until there is explicit live validation evidence.
+   - No shared or production AWS resources.
+   - No live mutation without disposable sandbox account boundaries and teardown evidence.
 
 ## Final Readiness Call
 
-LoadBalancerPro is enterprise-demo ready and credible as a hardened portfolio product. It is not yet enterprise-production ready.
+LoadBalancerPro is enterprise-demo ready and credible as a hardened portfolio product. It is not enterprise-production ready.
 
-The next highest-value move is not another feature. It is a small v1.2.1 patch for release metadata and routing API documentation, followed by governance and deployment-hardening docs. After that, a real enterprise review would be much easier to pass.
+The next highest-value enterprise move is repository enforcement and security-alert triage, not another feature: configure branch protection/rulesets, resolve or document the CodeQL CSRF alert, keep security docs current, and preserve the project's conservative no-overclaiming posture.

@@ -6,20 +6,15 @@ LoadBalancerPro is an enterprise-demo and portfolio project. This policy explain
 
 | Version | Supported |
 | --- | --- |
-| `v1.3.x` | Yes |
+| `v2.4.x` | Yes |
 | Older tags | Historical unless explicitly supported later |
 
 ## Reporting A Vulnerability
 
 If GitHub Security Advisories are enabled for this repository, please use them for private vulnerability reporting.
 
-If GitHub Security Advisories are not enabled, contact the repository owner privately before public disclosure.
-
-Private security contact:
-
-```text
-TODO: add private security contact.
-```
+If GitHub Security Advisories or private vulnerability reporting are not available, do not publish exploit details in a public issue.
+Open a minimal public issue asking for a private security contact path, or contact the repository owner through GitHub profile or organization channels before disclosure.
 
 Reports are reviewed as project capacity allows. This project does not promise a fixed response SLA. Accepted fixes may ship in a future patch release.
 

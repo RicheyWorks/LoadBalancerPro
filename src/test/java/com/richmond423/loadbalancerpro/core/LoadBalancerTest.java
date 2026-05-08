@@ -1370,4 +1370,72 @@ class LoadBalancerTest {
         assertDoesNotThrow(balancer::shutdown, "Repeated shutdown should remain safe after resources stop.");
         logger.info("Shutdown test passed: resources stopped while server registry remains intact.");
     }
+
+    @Test
+    void shutdownPreservesRegisteredServersAndPublicSnapshots() {
+        logger.info("=== TESTING SHUTDOWN PUBLIC SNAPSHOTS ===");
+        Server onsite = new Server("LIFE-ONSITE", 30.0, 40.0, 50.0, ServerType.ONSITE);
+        Server cloud = new Server("LIFE-CLOUD", 20.0, 30.0, 40.0, ServerType.CLOUD);
+        addServers(onsite, cloud);
+        balancer.logAlert("Lifecycle alert");
+
+        balancer.shutdown();
+
+        assertEquals(List.of(onsite, cloud), balancer.getServers(),
+            "Shutdown should not clear registered servers!");
+        assertSame(onsite, balancer.getServer("LIFE-ONSITE"),
+            "Server lookup should remain available after shutdown!");
+        assertSame(cloud, balancer.getServer("LIFE-CLOUD"),
+            "Cloud server lookup should remain available after shutdown!");
+        assertEquals(List.of(cloud), balancer.getServersByType(ServerType.CLOUD),
+            "Typed server snapshot should remain available after shutdown!");
+        assertEquals(List.of("Lifecycle alert"), balancer.getAlertLog(),
+            "Alert log snapshot should remain available after shutdown!");
+
+        Map<String, Server> afterShutdownMap = balancer.getServerMap();
+        assertEquals(2, afterShutdownMap.size(), "Server map snapshot should retain registered servers!");
+        assertSame(onsite, afterShutdownMap.get("LIFE-ONSITE"),
+            "Server map snapshot should retain onsite server!");
+        assertSame(cloud, afterShutdownMap.get("LIFE-CLOUD"),
+            "Server map snapshot should retain cloud server!");
+        assertThrows(UnsupportedOperationException.class, () -> afterShutdownMap.put("EXTRA", onsite),
+            "Server map snapshot should remain read-only after shutdown!");
+    }
+
+    @Test
+    void shutdownKeepsSynchronousDistributionFacadeCallable() {
+        logger.info("=== TESTING SHUTDOWN DISTRIBUTION FACADE ===");
+        addServers(
+            serverWithWeightAndCapacity("LIFE-A", 10.0, 10.0, 10.0, 1.0, 500.0),
+            serverWithWeightAndCapacity("LIFE-B", 20.0, 20.0, 20.0, 3.0, 500.0)
+        );
+
+        balancer.shutdown();
+
+        Map<String, Double> roundRobin = assertDoesNotThrow(() -> balancer.roundRobin(40.0),
+            "Round-robin should remain callable after shutdown!");
+        assertEquals(40.0, roundRobin.values().stream().mapToDouble(Double::doubleValue).sum(), 0.01,
+            "Round-robin should still allocate the requested load after shutdown!");
+
+        Map<String, Double> leastLoaded = assertDoesNotThrow(() -> balancer.leastLoaded(20.0),
+            "Least-loaded distribution should remain callable after shutdown!");
+        assertFalse(leastLoaded.isEmpty(), "Least-loaded distribution should still produce an allocation!");
+
+        Map<String, Double> weighted = assertDoesNotThrow(() -> balancer.weightedDistribution(80.0),
+            "Weighted distribution should remain callable after shutdown!");
+        assertFalse(weighted.isEmpty(), "Weighted distribution should still produce an allocation!");
+
+        LoadDistributionResult capacityAware = assertDoesNotThrow(() -> balancer.capacityAwareWithResult(50.0),
+            "Capacity-aware distribution should remain callable after shutdown!");
+        assertEquals(0.0, capacityAware.unallocatedLoad(), 0.01,
+            "Capacity-aware distribution should still allocate within available capacity after shutdown!");
+
+        Map<String, Double> predictive = assertDoesNotThrow(() -> balancer.predictiveLoadBalancing(30.0),
+            "Predictive distribution should remain callable after shutdown!");
+        assertFalse(predictive.isEmpty(), "Predictive distribution should still produce an allocation!");
+
+        Map<String, Double> consistentHashing = assertDoesNotThrow(() -> balancer.consistentHashing(20.0, 4),
+            "Consistent hashing should remain callable after shutdown!");
+        assertFalse(consistentHashing.isEmpty(), "Consistent hashing should still produce an allocation!");
+    }
 }

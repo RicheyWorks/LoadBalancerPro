@@ -128,6 +128,45 @@ class RoutingControllerTest {
     }
 
     @Test
+    void explicitMultiStrategyRequestPreservesCallerOrder() throws Exception {
+        mockMvc.perform(routingCompare("""
+                        {
+                          "strategies": [
+                            "WEIGHTED_LEAST_CONNECTIONS",
+                            "WEIGHTED_LEAST_LOAD"
+                          ],
+                          "servers": [
+                            {
+                              "serverId": "green",
+                              "healthy": true,
+                              "inFlightRequestCount": 1,
+                              "weight": 1.0,
+                              "averageLatencyMillis": 10.0,
+                              "p95LatencyMillis": 20.0,
+                              "p99LatencyMillis": 30.0,
+                              "recentErrorRate": 0.0
+                            },
+                            {
+                              "serverId": "blue",
+                              "healthy": true,
+                              "inFlightRequestCount": 4,
+                              "weight": 2.0,
+                              "averageLatencyMillis": 12.0,
+                              "p95LatencyMillis": 24.0,
+                              "p99LatencyMillis": 36.0,
+                              "recentErrorRate": 0.0
+                            }
+                          ]
+                        }
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.requestedStrategies[0]", is("WEIGHTED_LEAST_CONNECTIONS")))
+                .andExpect(jsonPath("$.requestedStrategies[1]", is("WEIGHTED_LEAST_LOAD")))
+                .andExpect(jsonPath("$.results[0].strategyId", is("WEIGHTED_LEAST_CONNECTIONS")))
+                .andExpect(jsonPath("$.results[1].strategyId", is("WEIGHTED_LEAST_LOAD")));
+    }
+
+    @Test
     void explicitWeightedLeastLoadRequestUsesRoutingWeightWithoutCloudMutationPath() throws Exception {
         try (MockedConstruction<CloudManager> mockedCloudManager =
                      Mockito.mockConstruction(CloudManager.class)) {

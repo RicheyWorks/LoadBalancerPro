@@ -2,14 +2,16 @@ name: CodeQL
 
 on:
   push:
-    # Phase 1 keeps the fuller project state on loadbalancerpro-clean until
-    # manual default-branch cleanup is complete; do not retarget this to main yet.
-    branches: [loadbalancerpro-clean]
+    branches:
+      - main
+      - loadbalancerpro-clean
   pull_request:
-    # CodeQL should protect the current canonical branch, not the small recreated main.
-    branches: [loadbalancerpro-clean]
+    branches:
+      - main
+      - loadbalancerpro-clean
   schedule:
     - cron: "0 12 * * 1"
+  workflow_dispatch:
 
 permissions:
   actions: read

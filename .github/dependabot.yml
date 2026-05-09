@@ -2,6 +2,9 @@ version: 2
 updates:
   - package-ecosystem: "maven"
     directory: "/"
+    # Phase 1: target the canonical project branch while GitHub default-branch
+    # cleanup is still pending.
+    target-branch: "loadbalancerpro-clean"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
@@ -21,6 +24,8 @@ updates:
 
   - package-ecosystem: "github-actions"
     directory: "/"
+    # Keep workflow update PRs off the small recreated main until branch cleanup.
+    target-branch: "loadbalancerpro-clean"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
@@ -35,6 +40,8 @@ updates:
 
   - package-ecosystem: "docker"
     directory: "/"
+    # Keep Docker update PRs on the canonical project branch during Phase 1.
+    target-branch: "loadbalancerpro-clean"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5

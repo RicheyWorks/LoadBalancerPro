@@ -97,7 +97,7 @@ Recommended location: `.github/CODEOWNERS`, because the repository already has a
 
 Recommended owner:
 
-- Use `@richmond423` if the repository owner confirms that handle should own reviews.
+- Use `@RicheyWorks` for the current `RicheyWorks/LoadBalancerPro` repository owner.
 - Otherwise use a clear placeholder such as `@OWNER_HANDLE`.
 - Do not invent a private organization or team.
 

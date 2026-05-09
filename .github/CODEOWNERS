@@ -1,12 +1,12 @@
-* @richmond423
+* @RicheyWorks
 
-/src/main/java/com/richmond423/loadbalancerpro/core/CloudManager.java @richmond423
-/src/main/java/com/richmond423/loadbalancerpro/api/ @richmond423
-/src/main/java/com/richmond423/loadbalancerpro/core/RoutingStrategy*.java @richmond423
-/src/main/java/com/richmond423/loadbalancerpro/core/*Routing*.java @richmond423
-/src/main/java/com/richmond423/loadbalancerpro/core/*Strategy.java @richmond423
-/Dockerfile @richmond423
-/.github/workflows/ @richmond423
-/pom.xml @richmond423
-/evidence/ @richmond423
-/docs/ @richmond423
+/src/main/java/com/richmond423/loadbalancerpro/core/CloudManager.java @RicheyWorks
+/src/main/java/com/richmond423/loadbalancerpro/api/ @RicheyWorks
+/src/main/java/com/richmond423/loadbalancerpro/core/RoutingStrategy*.java @RicheyWorks
+/src/main/java/com/richmond423/loadbalancerpro/core/*Routing*.java @RicheyWorks
+/src/main/java/com/richmond423/loadbalancerpro/core/*Strategy.java @RicheyWorks
+/Dockerfile @RicheyWorks
+/.github/workflows/ @RicheyWorks
+/pom.xml @RicheyWorks
+/evidence/ @RicheyWorks
+/docs/ @RicheyWorks

@@ -2,6 +2,8 @@
 
 Prepared: 2026-05-03
 
+> Phase 1 repo-move note, 2026-05-09: This is a historical publication plan from before the `RicheyWorks/LoadBalancerPro` move. Do not run its old remote, public, or `richmond423/LoadBalancerPro` publication commands. Current repair work targets `RicheyWorks/LoadBalancerPro` and keeps `loadbalancerpro-clean` as the canonical project-content branch until later manual default-branch cleanup.
+
 Scope: planning only. Do not run the command sequence in this document until it has been reviewed. This plan does not change remotes, push branches, merge branches, delete files, or overwrite public history.
 
 ## Current Canonical Local Branch

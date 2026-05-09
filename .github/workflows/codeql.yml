@@ -2,8 +2,11 @@ name: CodeQL
 
 on:
   push:
+    # Phase 1 keeps the fuller project state on loadbalancerpro-clean until
+    # manual default-branch cleanup is complete; do not retarget this to main yet.
     branches: [loadbalancerpro-clean]
   pull_request:
+    # CodeQL should protect the current canonical branch, not the small recreated main.
     branches: [loadbalancerpro-clean]
   schedule:
     - cron: "0 12 * * 1"
@@ -18,7 +21,7 @@ jobs:
     name: Analyze Java
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: github.repository == 'richmond423/LoadBalancerPro'
+    if: github.repository == 'RicheyWorks/LoadBalancerPro'
 
     strategy:
       fail-fast: false

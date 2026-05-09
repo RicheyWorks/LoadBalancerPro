@@ -2,6 +2,8 @@
 
 Prepared: 2026-05-03
 
+> Phase 1 repo-move note, 2026-05-09: This release review is historical and predates the `RicheyWorks/LoadBalancerPro` repository move. Do not use its old `public` remote, `richmond423/LoadBalancerPro`, or old-account instructions for current release work. GitHub Release publishing remains manual in the RicheyWorks repo after artifact workflow verification.
+
 Scope: review and planning only. No branches were merged, no tags were created, no remotes were changed, no pushes were made, no files were deleted, and no production code was touched while preparing this document.
 
 ## Current Public Branch State

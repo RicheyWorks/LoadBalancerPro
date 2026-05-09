@@ -2,6 +2,8 @@
 
 Audit run: 2026-05-02, America/Los_Angeles
 
+> Phase 1 repo-move note, 2026-05-09: This audit is retained as historical evidence from before the `RicheyWorks/LoadBalancerPro` move. Its old remote and public-repository findings should not be used as current setup instructions. Current repair work targets `RicheyWorks/LoadBalancerPro` and preserves `loadbalancerpro-clean` as the canonical project-content branch until later manual default-branch cleanup.
+
 Scope: audit only. No production code was changed, no branches were merged, no files were deleted, no fetch/merge was run, and no cloud mutation logic was touched. The only intended repository change from this work is this audit file.
 
 ## Executive Finding

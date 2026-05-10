@@ -196,6 +196,23 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 
 Use `--training-lab-export-dir walkthrough/all-examples` when the operator also needs the example `before.json`, `after.json`, and `expected-decision.json` files. The lab summarizes expected `PASS`, `WARN`, and `FAIL` examples, exits non-zero if any expected decision no longer matches, and remains a local checksum-policy training aid rather than proof of identity or legal custody.
 
+To grade an operator's decision, reason, action, and optional remediation note against packaged answer keys:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar --list-training-scorecards
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --print-training-scorecard regulated-handoff-fail
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --grade-training-scorecard scorecard-answers.json \
+  --scorecard-format markdown \
+  --scorecard-output scorecard-report.md \
+  --fail-on-score-below 80
+```
+
+The answers file contains an optional `operator` label plus `answers` entries with `exerciseName`, `decision`, `reason`, `action`, and optional `notes`. Scorecards are intended for onboarding and refresher drills. They are local training aids only, not certification, legal compliance proof, identity proof, or legal chain-of-custody.
+
 See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md), [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md), and [`EVIDENCE_POLICY_EXAMPLES.md`](EVIDENCE_POLICY_EXAMPLES.md) for CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, evidence handoff policies, packaged policy templates, example sender/receiver catalog pairs, safety guarantees, and JSON output.
 
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
@@ -275,6 +292,8 @@ Offline evidence handoff policies classify catalog drift with local pass/warn/fa
 Packaged evidence policy templates provide reusable local profiles for common handoffs: zero drift, receiver redaction, audit append, regulated review, and active investigation working copies. They are convenience rules for deterministic drift classification, not compliance certification, identity proof, or legal chain-of-custody.
 
 The evidence policy training lab batch-runs the packaged walkthrough examples and checks actual decisions against expected outcomes. It helps operators rehearse the sender/receiver handoff flow offline, but it remains synthetic training material and is not a substitute for real incident review.
+
+Evidence training scorecards grade packaged-example operator answers locally. They produce deterministic Markdown or JSON reports, can fail a script with `--fail-on-score-below`, do not start the API server, and do not construct or mutate `CloudManager`.
 
 ## Rollback And Release Evidence
 

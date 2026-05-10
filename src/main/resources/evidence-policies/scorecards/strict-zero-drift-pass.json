@@ -1,0 +1,14 @@
+{
+  "exerciseName" : "strict-zero-drift-pass",
+  "templateName" : "strict-zero-drift",
+  "expectedDecision" : "PASS",
+  "expectedPrimaryReason" : "No drift detected",
+  "acceptableActions" : [ "continue handoff" ],
+  "remediationNotes" : [ "No remediation required; record the zero-drift result and continue the handoff." ],
+  "prompt" : "Review the strict zero-drift pass example and choose whether the final handoff can continue.",
+  "scoring" : {
+    "decisionPoints" : 5,
+    "reasonPoints" : 3,
+    "actionPoints" : 2
+  }
+}

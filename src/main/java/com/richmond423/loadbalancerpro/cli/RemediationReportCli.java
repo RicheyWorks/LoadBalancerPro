@@ -46,6 +46,9 @@ public final class RemediationReportCli {
     private static final String PRINT_POLICY_EXAMPLE_FLAG = "--print-policy-example";
     private static final String WALKTHROUGH_POLICY_EXAMPLE_FLAG = "--walkthrough-policy-example";
     private static final String RUN_POLICY_TRAINING_LAB_FLAG = "--run-policy-training-lab";
+    private static final String LIST_TRAINING_SCORECARDS_FLAG = "--list-training-scorecards";
+    private static final String PRINT_TRAINING_SCORECARD_FLAG = "--print-training-scorecard";
+    private static final String GRADE_TRAINING_SCORECARD_FLAG = "--grade-training-scorecard";
     private static final String APP_VERSION = "2.4.2";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -80,7 +83,12 @@ public final class RemediationReportCli {
                         || arg.equals(PRINT_POLICY_EXAMPLE_FLAG) || arg.startsWith(PRINT_POLICY_EXAMPLE_FLAG + "=")
                         || arg.equals(WALKTHROUGH_POLICY_EXAMPLE_FLAG)
                         || arg.startsWith(WALKTHROUGH_POLICY_EXAMPLE_FLAG + "=")
-                        || arg.equals(RUN_POLICY_TRAINING_LAB_FLAG));
+                        || arg.equals(RUN_POLICY_TRAINING_LAB_FLAG)
+                        || arg.equals(LIST_TRAINING_SCORECARDS_FLAG)
+                        || arg.equals(PRINT_TRAINING_SCORECARD_FLAG)
+                        || arg.startsWith(PRINT_TRAINING_SCORECARD_FLAG + "=")
+                        || arg.equals(GRADE_TRAINING_SCORECARD_FLAG)
+                        || arg.startsWith(GRADE_TRAINING_SCORECARD_FLAG + "="));
     }
 
     public static Result runIfRequested(String[] args, PrintStream out, PrintStream err) {
@@ -96,6 +104,9 @@ public final class RemediationReportCli {
         Objects.requireNonNull(err, "err cannot be null");
 
         try {
+            if (trainingScorecardCommandRequested(args)) {
+                return runTrainingScorecardCommand(args, out);
+            }
             if (policyTrainingLabCommandRequested(args)) {
                 return runPolicyTrainingLabCommand(args, out);
             }
@@ -357,6 +368,51 @@ public final class RemediationReportCli {
         boolean failOnMismatch = CatalogDiffOptions.hasFlag(args, "--fail-on-training-mismatch")
                 || !CatalogDiffOptions.hasFlag(args, "--no-fail-on-training-mismatch");
         return new Result(true, service.exitCode(result, failOnMismatch));
+    }
+
+    private static Result runTrainingScorecardCommand(String[] args, PrintStream out) throws IOException {
+        EvidenceTrainingScorecardService service = new EvidenceTrainingScorecardService();
+        if (CatalogDiffOptions.hasFlag(args, LIST_TRAINING_SCORECARDS_FLAG)) {
+            out.print(service.renderScorecardList());
+            return new Result(true, 0);
+        }
+        Optional<String> printScorecard = CatalogDiffOptions.optionValue(args, PRINT_TRAINING_SCORECARD_FLAG)
+                .filter(value -> !value.isBlank());
+        if (printScorecard.isPresent()) {
+            out.print(service.renderScorecard(printScorecard.get()));
+            return new Result(true, 0);
+        }
+        Optional<Path> answersPath = CatalogDiffOptions.optionValue(args, GRADE_TRAINING_SCORECARD_FLAG)
+                .map(Path::of);
+        if (answersPath.isPresent()) {
+            Optional<Double> failOnScoreBelow = CatalogDiffOptions.optionValue(args, "--fail-on-score-below")
+                    .map(RemediationReportCli::scoreThreshold);
+            EvidenceTrainingScorecardService.ScorecardFormat format =
+                    CatalogDiffOptions.optionValue(args, "--scorecard-format")
+                            .map(EvidenceTrainingScorecardService.ScorecardFormat::parse)
+                            .orElse(EvidenceTrainingScorecardService.ScorecardFormat.MARKDOWN);
+            EvidenceTrainingScorecardService.ScorecardGradeResult result =
+                    service.grade(answersPath.get(), failOnScoreBelow);
+            String rendered = format == EvidenceTrainingScorecardService.ScorecardFormat.JSON
+                    ? service.renderJson(result)
+                    : service.renderMarkdown(result);
+            Optional<Path> outputPath = CatalogDiffOptions.optionValue(args, "--scorecard-output").map(Path::of);
+            writeOutput(rendered, outputPath, out);
+            return new Result(true, service.exitCode(result, failOnScoreBelow));
+        }
+        throw new IllegalArgumentException("training scorecard command is incomplete");
+    }
+
+    private static double scoreThreshold(String raw) {
+        try {
+            double threshold = Double.parseDouble(raw.trim());
+            if (!Double.isFinite(threshold) || threshold < 0.0 || threshold > 100.0) {
+                throw new IllegalArgumentException("--fail-on-score-below must be between 0 and 100");
+            }
+            return threshold;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("--fail-on-score-below must be a number", e);
+        }
     }
 
     private static Result runPolicyExampleWalkthrough(
@@ -850,6 +906,9 @@ public final class RemediationReportCli {
                 + "[--training-lab-format markdown|json] [--training-lab-output <path>] "
                 + "[--training-lab-export-dir <dir>] [--include-training-details] "
                 + "[--fail-on-training-mismatch] [--no-fail-on-training-mismatch] [--force]");
+        err.println("Training scorecards: --list-training-scorecards | --print-training-scorecard <name> | "
+                + "--grade-training-scorecard <answers.json> [--scorecard-format markdown|json] "
+                + "[--scorecard-output <path>] [--fail-on-score-below <percent>]");
         err.println("Safety: offline/read-only report generation; no API server, network access, "
                 + "CloudManager calls, or cloud mutation.");
     }
@@ -894,6 +953,16 @@ public final class RemediationReportCli {
         return Arrays.stream(args)
                 .filter(Objects::nonNull)
                 .anyMatch(arg -> arg.equals(RUN_POLICY_TRAINING_LAB_FLAG));
+    }
+
+    private static boolean trainingScorecardCommandRequested(String[] args) {
+        return Arrays.stream(args)
+                .filter(Objects::nonNull)
+                .anyMatch(arg -> arg.equals(LIST_TRAINING_SCORECARDS_FLAG)
+                        || arg.equals(PRINT_TRAINING_SCORECARD_FLAG)
+                        || arg.startsWith(PRINT_TRAINING_SCORECARD_FLAG + "=")
+                        || arg.equals(GRADE_TRAINING_SCORECARD_FLAG)
+                        || arg.startsWith(GRADE_TRAINING_SCORECARD_FLAG + "="));
     }
 
     public record Result(boolean requested, int exitCode) {

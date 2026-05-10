@@ -1,0 +1,14 @@
+{
+  "exerciseName" : "investigation-working-copy-warn",
+  "templateName" : "investigation-working-copy",
+  "expectedDecision" : "WARN",
+  "expectedPrimaryReason" : "Working notes and report edits require review",
+  "acceptableActions" : [ "review warning" ],
+  "remediationNotes" : [ "Review the working notes and report edits, then document why the investigation handoff can continue." ],
+  "prompt" : "Review the investigation working copy example and decide how to handle working notes and report edits.",
+  "scoring" : {
+    "decisionPoints" : 5,
+    "reasonPoints" : 3,
+    "actionPoints" : 2
+  }
+}

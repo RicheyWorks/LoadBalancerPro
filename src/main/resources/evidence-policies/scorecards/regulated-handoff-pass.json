@@ -1,0 +1,14 @@
+{
+  "exerciseName" : "regulated-handoff-pass",
+  "templateName" : "regulated-handoff",
+  "expectedDecision" : "PASS",
+  "expectedPrimaryReason" : "No drift detected",
+  "acceptableActions" : [ "continue handoff" ],
+  "remediationNotes" : [ "No remediation required; attach the clean regulated handoff review to the ticket." ],
+  "prompt" : "Review the regulated handoff pass example and choose whether the packaged evidence can proceed.",
+  "scoring" : {
+    "decisionPoints" : 5,
+    "reasonPoints" : 3,
+    "actionPoints" : 2
+  }
+}

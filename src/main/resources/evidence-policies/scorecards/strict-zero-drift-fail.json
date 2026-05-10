@@ -1,0 +1,14 @@
+{
+  "exerciseName" : "strict-zero-drift-fail",
+  "templateName" : "strict-zero-drift",
+  "expectedDecision" : "FAIL",
+  "expectedPrimaryReason" : "Report checksum drift violates strict zero-drift policy",
+  "acceptableActions" : [ "block handoff" ],
+  "remediationNotes" : [ "Block the handoff and ask the sender to resolve or justify the changed report before retrying." ],
+  "prompt" : "Review the strict zero-drift fail example and decide how to handle the changed report.",
+  "scoring" : {
+    "decisionPoints" : 5,
+    "reasonPoints" : 3,
+    "actionPoints" : 2
+  }
+}

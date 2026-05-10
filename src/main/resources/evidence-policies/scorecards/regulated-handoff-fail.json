@@ -1,0 +1,14 @@
+{
+  "exerciseName" : "regulated-handoff-fail",
+  "templateName" : "regulated-handoff",
+  "expectedDecision" : "FAIL",
+  "expectedPrimaryReason" : "Core evidence bundle is missing",
+  "acceptableActions" : [ "investigate missing evidence", "block handoff" ],
+  "remediationNotes" : [ "Investigate the missing bundle, block the handoff, and request a corrected evidence package." ],
+  "prompt" : "Review the regulated handoff fail example and decide how to respond to the removed core evidence bundle.",
+  "scoring" : {
+    "decisionPoints" : 5,
+    "reasonPoints" : 3,
+    "actionPoints" : 2
+  }
+}

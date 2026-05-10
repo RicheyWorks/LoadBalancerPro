@@ -25,30 +25,17 @@ final class EvidenceHandoffPolicyService {
     HandoffPolicy readPolicy(Path policyPath) throws IOException {
         Objects.requireNonNull(policyPath, "policy path cannot be null");
         try {
-            JsonNode root = POLICY_MAPPER.readTree(policyPath.toFile());
-            List<HandoffPolicyRule> rules = new ArrayList<>();
-            JsonNode ruleNodes = root.path("rules");
-            if (!ruleNodes.isMissingNode() && !ruleNodes.isArray()) {
-                throw new IllegalArgumentException("policy rules must be an array");
-            }
-            if (ruleNodes.isArray()) {
-                for (int index = 0; index < ruleNodes.size(); index++) {
-                    JsonNode rule = ruleNodes.get(index);
-                    rules.add(new HandoffPolicyRule(
-                            EvidenceCatalogDiffService.ChangeType.parse(requiredText(rule, "changeType")),
-                            requiredText(rule, "pathPattern"),
-                            Severity.parse(requiredText(rule, "severity")),
-                            optionalText(rule, "reason"),
-                            index + 1));
-                }
-            }
-            return new HandoffPolicy(
-                    requiredText(root, "policyVersion"),
-                    PolicyMode.parse(requiredText(root, "mode")),
-                    Severity.parse(optionalText(root, "defaultSeverity", "FAIL")),
-                    List.copyOf(rules));
+            return readPolicyNode(POLICY_MAPPER.readTree(policyPath.toFile()));
         } catch (IOException | IllegalArgumentException e) {
             throw new IOException("failed to read evidence handoff policy " + policyPath + ": " + safeMessage(e), e);
+        }
+    }
+
+    HandoffPolicy readPolicyJson(String sourceName, String policyJson) throws IOException {
+        try {
+            return readPolicyNode(POLICY_MAPPER.readTree(policyJson));
+        } catch (IOException | IllegalArgumentException e) {
+            throw new IOException("failed to read evidence handoff policy " + sourceName + ": " + safeMessage(e), e);
         }
     }
 
@@ -187,6 +174,35 @@ final class EvidenceHandoffPolicyService {
             }
         }
         return null;
+    }
+
+    private static HandoffPolicy readPolicyNode(JsonNode root) {
+        List<HandoffPolicyRule> rules = new ArrayList<>();
+        JsonNode ruleNodes = root.path("rules");
+        if (!ruleNodes.isMissingNode() && !ruleNodes.isArray()) {
+            throw new IllegalArgumentException("policy rules must be an array");
+        }
+        if (ruleNodes.isArray()) {
+            for (int index = 0; index < ruleNodes.size(); index++) {
+                JsonNode rule = ruleNodes.get(index);
+                EvidenceCatalogDiffService.ChangeType changeType =
+                        EvidenceCatalogDiffService.ChangeType.parse(requiredText(rule, "changeType"));
+                if (changeType == EvidenceCatalogDiffService.ChangeType.UNCHANGED) {
+                    throw new IllegalArgumentException("policy rule changeType cannot be UNCHANGED");
+                }
+                rules.add(new HandoffPolicyRule(
+                        changeType,
+                        requiredText(rule, "pathPattern"),
+                        Severity.parse(requiredText(rule, "severity")),
+                        optionalText(rule, "reason"),
+                        index + 1));
+            }
+        }
+        return new HandoffPolicy(
+                requiredText(root, "policyVersion"),
+                PolicyMode.parse(requiredText(root, "mode")),
+                Severity.parse(optionalText(root, "defaultSeverity", "FAIL")),
+                List.copyOf(rules));
     }
 
     private static String requiredText(JsonNode node, String field) {

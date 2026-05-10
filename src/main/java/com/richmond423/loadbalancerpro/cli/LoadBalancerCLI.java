@@ -894,6 +894,10 @@ public class LoadBalancerCLI {
                     "  --inventory <dir> Inventory local incident evidence as Markdown or JSON\n" +
                     "  --diff-inventory <before> <after> Diff two saved evidence inventory catalogs\n" +
                     "  --policy <file> Evaluate an inventory diff against handoff policy rules\n" +
+                    "  --policy-template <name> Evaluate an inventory diff with a packaged handoff policy template\n" +
+                    "  --list-policy-templates List packaged evidence handoff policy templates\n" +
+                    "  --export-policy-template <name> Export a packaged evidence handoff policy template\n" +
+                    "  --validate-policy <file> Validate an evidence handoff policy file\n" +
                     "  --test-mode         Exit after first operation (for testing)\n" +
                     "  --cloud-enabled     Enable cloud integration\n" +
                     "  --cloud-min-servers Set minimum cloud servers\n" +

@@ -100,9 +100,13 @@ curl -fsS -X POST http://127.0.0.1:8080/api/scenarios/replay \
 | `--fail-on-drift` | Exits non-zero when the diff finds added, removed, changed, status-drifted, or audit-anchor-drifted evidence. |
 | `--include-unchanged` | Includes unchanged evidence rows in the diff output. |
 | `--policy <path>` | Evaluates the inventory diff against a local evidence handoff policy JSON file. |
+| `--policy-template <name>` | Evaluates the inventory diff against a packaged evidence handoff policy template. |
 | `--policy-report-format markdown\|json` | Policy report output format. Defaults to `markdown`. |
 | `--policy-output <path>` | Optional policy report output file. If omitted, output is written to stdout. |
 | `--fail-on-policy-fail` | Exits non-zero when policy evaluation returns `FAIL`. `WARN` exits zero. |
+| `--list-policy-templates` | Lists packaged evidence handoff policy templates. |
+| `--export-policy-template <name>` | Writes the exact packaged template JSON to `--policy-output` or stdout. |
+| `--validate-policy <path>` | Validates a policy file mode, severity, change type, and path-rule schema. |
 
 ## Output Semantics
 
@@ -362,6 +366,36 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 
 Policy reports include a `PASS`, `WARN`, or `FAIL` decision, severity counts, matched rules, unclassified changes, and the same local-only limitations as the underlying checksum inventory diff. JSON output is stable for automation; Markdown output is stable for ticket attachment.
 
+Packaged templates can be listed, exported, validated, and used directly:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar --list-policy-templates
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --export-policy-template regulated-handoff \
+  --policy-output regulated-handoff.json
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --validate-policy regulated-handoff.json
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --diff-inventory sender-catalog.json receiver-catalog.json \
+  --policy-template regulated-handoff \
+  --policy-report-format markdown \
+  --fail-on-policy-fail \
+  --policy-output handoff-policy-report.md
+```
+
+Curated templates:
+
+- `strict-zero-drift`: final equality check where any drift fails.
+- `receiver-redaction`: expected receiver-side redaction summaries and reviewed redacted-output changes.
+- `audit-append`: expected audit-log anchor drift after receiver verification.
+- `regulated-handoff`: strict packaged profile for reviewed handoffs, without legal or identity-proof claims.
+- `investigation-working-copy`: permissive active-investigation profile where working notes are expected but missing core evidence still fails.
+
+See [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md) for intended use cases and examples.
+
 Policy JSON format:
 
 ```json
@@ -404,7 +438,7 @@ Recommended handoff workflow:
 
 1. Sender creates `sender-catalog.json` with `--inventory --verify-inventory --include-hashes`.
 2. Receiver creates `receiver-catalog.json` the same way after transfer.
-3. Operator runs `--diff-inventory ... --policy ... --fail-on-policy-fail`.
+3. Operator runs `--diff-inventory ... --policy-template ... --fail-on-policy-fail`, or uses `--policy <path>` for a custom exported policy.
 4. Attach the policy report to the incident ticket with the inventories and bundle evidence.
 
 `--fail-on-policy-fail` exits non-zero only for a `FAIL` decision. A `WARN` decision exits zero so scripted handoffs can proceed while still surfacing review items.
@@ -427,6 +461,7 @@ Offline report generation:
 - can inventory local evidence directories without starting the API server;
 - can diff saved evidence inventory catalogs without starting the API server;
 - can evaluate saved evidence inventory diffs against local handoff policies without starting the API server;
+- can list, export, validate, and apply packaged evidence policy templates without starting the API server;
 - generates and verifies checksum manifests locally with Java SHA-256, not external tools or signing keys.
 
 ## Limitations
@@ -439,5 +474,6 @@ Offline report generation:
 - Evidence inventories are local checksum catalogs, not legal chain-of-custody records or identity proof.
 - Evidence catalog diffs compare saved inventory records only; they cannot prove what happened before either inventory was created.
 - Evidence handoff policies classify catalog drift only; they do not prove operator identity, intent, or legal custody.
+- Evidence policy templates are reusable local rule profiles, not compliance certifications or legal custody controls.
 - Live deployment state should still be verified before taking operator action.
 - Invalid JSON or unsupported input shapes exit non-zero and print a safe error without stack traces.

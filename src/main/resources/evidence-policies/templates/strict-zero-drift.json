@@ -1,0 +1,6 @@
+{
+  "policyVersion" : "1",
+  "mode" : "STRICT",
+  "defaultSeverity" : "FAIL",
+  "rules" : [ ]
+}

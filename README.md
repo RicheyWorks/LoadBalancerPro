@@ -139,6 +139,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`INCIDENT_FIXTURE_CATALOG.md`](docs/INCIDENT_FIXTURE_CATALOG.md) documents curated deterministic replay fixtures and regression-diff descriptors for common degraded incidents.
 - `POST /api/remediation/report` exports deterministic Markdown/JSON remediation reports from evaluation or replay results for operator handoff.
 - [`REMEDIATION_REPORT_CLI.md`](docs/REMEDIATION_REPORT_CLI.md) documents offline Markdown/JSON remediation report generation, incident ZIP bundle export, deterministic literal redaction, SHA-256 checksum manifest verification, local checksum-chained CLI audit logs, local evidence inventory catalogs, evidence catalog diff reports, and handoff policy evaluation from saved evaluation or replay JSON.
+- [`EVIDENCE_POLICY_TEMPLATES.md`](docs/EVIDENCE_POLICY_TEMPLATES.md) documents packaged local evidence handoff policy templates for zero-drift, receiver-redaction, audit-append, regulated-review, and active-investigation profiles.
 - [`DOCKER_COMPOSE_PROD_LIKE_GUIDE.md`](docs/DOCKER_COMPOSE_PROD_LIKE_GUIDE.md) documents a local/private production-like Compose example with loopback binding and no live AWS.
 
 ## Hardened Foundation Checklist

@@ -162,15 +162,17 @@ Evaluate the handoff delta against a local policy when some drift is expected:
 ```bash
 java -jar target/LoadBalancerPro-2.4.2.jar \
   --diff-inventory sender-catalog.json receiver-catalog.json \
-  --policy handoff-policy.json \
+  --policy-template regulated-handoff \
   --policy-report-format markdown \
   --fail-on-policy-fail \
   --policy-output handoff-policy-report.md
 ```
 
+Use `strict-zero-drift` for final equality checks, `receiver-redaction` when receiver-side redaction is expected, `audit-append` when verification appends local audit entries, `regulated-handoff` for the strictest packaged review profile, and `investigation-working-copy` during active investigation. Use `--list-policy-templates` to see packaged templates, `--export-policy-template <name> --policy-output <path>` to copy one for local edits, and `--validate-policy <path>` before using custom policy files.
+
 Use `STRICT` policies for zero-drift handoffs and `ALLOWLIST` policies when expected changes are known, such as a receiver-side redaction summary or expected audit-log append. Policy decisions are `PASS`, `WARN`, or `FAIL`; `--fail-on-policy-fail` exits non-zero only for `FAIL`. Attach the policy report to the incident ticket alongside both inventories.
 
-See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, evidence handoff policies, safety guarantees, and JSON output.
+See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) and [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md) for CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, evidence handoff policies, packaged policy templates, safety guarantees, and JSON output.
 
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
 
@@ -245,6 +247,8 @@ Offline evidence inventory scans a local directory and summarizes bundles, manif
 Offline evidence catalog diffing compares two saved JSON inventory catalogs and summarizes handoff drift without starting the API server. It is useful for sender/receiver reviews and ticket revisions, but it remains checksum/inventory comparison only and does not prove identity or legal chain-of-custody.
 
 Offline evidence handoff policies classify catalog drift with local pass/warn/fail rules. They support strict zero-drift checks and allowlists for expected file, checksum, verification-status, or audit-anchor changes, but they remain local policy evaluation only and do not prove identity, intent, or legal custody.
+
+Packaged evidence policy templates provide reusable local profiles for common handoffs: zero drift, receiver redaction, audit append, regulated review, and active investigation working copies. They are convenience rules for deterministic drift classification, not compliance certification, identity proof, or legal chain-of-custody.
 
 ## Rollback And Release Evidence
 

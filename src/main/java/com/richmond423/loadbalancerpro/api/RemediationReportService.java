@@ -107,7 +107,10 @@ public class RemediationReportService {
                 reportSteps(steps));
     }
 
-    private String renderMarkdown(RemediationReportPayload payload) {
+    public String renderMarkdown(RemediationReportPayload payload) {
+        if (payload == null) {
+            throw new IllegalArgumentException("report payload is required for Markdown rendering");
+        }
         StringBuilder report = new StringBuilder();
         report.append("# ").append(payload.title()).append("\n\n");
         report.append("Report ID: ").append(payload.reportId()).append("\n");

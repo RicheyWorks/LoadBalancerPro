@@ -75,6 +75,19 @@ curl -fsS -X POST http://127.0.0.1:8080/api/remediation/report \
 
 The report exporter formats an existing evaluation or scenario replay response. It is advisory and read-only, does not execute remediation, does not construct `CloudManager`, and does not generate timestamps or random ids unless the caller supplies a report id.
 
+For offline handoff or post-incident analysis, save the evaluation or replay JSON and run the remediation report CLI without starting the API server:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --remediation-report \
+  --input saved-evaluation.json \
+  --format markdown \
+  --output incident-report.md \
+  --report-id incident-123
+```
+
+See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, options, safety guarantees, and JSON output.
+
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
 
 7. If simulated scale-up is recommended, review the cloud guardrails separately. Do not enable live cloud mutation until operator intent, account, region, ownership, and capacity limits are verified.

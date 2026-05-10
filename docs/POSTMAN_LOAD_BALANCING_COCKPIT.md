@@ -1,6 +1,6 @@
 # Postman Load-Balancing Cockpit
 
-This guide covers the `Unified Load-Balancing Cockpit` folder in `postman/LoadBalancerPro.postman_collection.json`.
+This guide covers the `Unified Load-Balancing Cockpit` and `Operator Scenario Gallery` folders in `postman/LoadBalancerPro.postman_collection.json`.
 It mirrors the browser page at:
 
 ```text
@@ -25,7 +25,7 @@ baseUrl = http://localhost:8080
 
 ## Request Order
 
-Run the `Unified Load-Balancing Cockpit` folder from top to bottom:
+Run the `Unified Load-Balancing Cockpit` folder from top to bottom for the single default cockpit path:
 
 1. `GET Unified Cockpit Health Check`
 2. `GET Unified Cockpit Readiness Check`
@@ -35,6 +35,23 @@ Run the `Unified Load-Balancing Cockpit` folder from top to bottom:
 6. `POST Cockpit Load-Shedding Evaluation`
 
 The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, and a deterministic side-by-side summary.
+
+Run the `Operator Scenario Gallery` folder when a reviewer wants to compare multiple packaged scenarios:
+
+1. `GET Scenario Gallery Health Check`
+2. `GET Scenario Gallery Readiness Check`
+3. `POST Normal Load Routing Comparison`
+4. `POST Normal Load Allocation Preview`
+5. `POST Normal Load Overload Evaluation Preview`
+6. `POST Overload Pressure Routing Comparison`
+7. `POST Overload Pressure Allocation Preview`
+8. `POST Overload Pressure Overload Evaluation Preview`
+9. `POST All-Unhealthy Degradation Routing Comparison`
+10. `POST All-Unhealthy Degradation Allocation Preview`
+11. `POST All-Unhealthy Degradation Overload Evaluation Preview`
+12. `POST Recovery Capacity Restored Routing Comparison`
+13. `POST Recovery Capacity Restored Allocation Preview`
+14. `POST Recovery Capacity Restored Overload Evaluation Preview`
 
 ## Supported Existing Endpoints
 
@@ -125,7 +142,18 @@ The cockpit fixture stores allocation, evaluation, and routing requests side by 
 }
 ```
 
-The folder sends each sub-request to the matching existing endpoint. Test fixtures are kept under `src/test/resources/load-balancing-cockpit/` for deterministic API and Postman coverage.
+The folder sends each sub-request to the matching existing endpoint. Test fixtures are kept under `src/test/resources/load-balancing-cockpit/` and `src/test/resources/load-balancing-cockpit/scenarios/` for deterministic API and Postman coverage.
+
+## Operator Scenario Gallery
+
+The browser cockpit includes a `Scenario Gallery` section with four safe packaged scenarios:
+
+- `Normal Load`
+- `Overload Pressure`
+- `All-Unhealthy Degradation`
+- `Recovery / Capacity Restored`
+
+Each scenario provides expected routing, allocation, load-shedding, and remediation hints before execution. The actual output still comes from the real endpoints after the scenario is run. The page can compare the latest run with the previous run and summarize what changed in unallocated load, rejected load, load-shedding action, remediation status, and selected routing servers.
 
 ## Response Shape
 

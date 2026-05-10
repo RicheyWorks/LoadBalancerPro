@@ -1,5 +1,6 @@
 package com.richmond423.loadbalancerpro.cli;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,6 +24,11 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 class RemediationReportCliTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -197,6 +203,177 @@ class RemediationReportCliTest {
     }
 
     @Test
+    void markdownIncidentBundleIncludesReportManifestAndVerificationSummary() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path bundle = tempDir.resolve("incident-bundle.zip");
+
+        CapturedRun run = runReport("--input", input.toString(),
+                "--format", "markdown", "--bundle", bundle.toString(), "--report-id", "bundle-md");
+
+        assertEquals(0, run.result().exitCode());
+        assertTrue(run.error().isBlank());
+        assertTrue(run.output().contains("Incident bundle written"));
+        assertTrue(run.output().contains("Incident bundle verification passed"));
+        Map<String, byte[]> entries = zipEntries(bundle);
+        assertTrue(entries.containsKey("input.json"));
+        assertTrue(entries.containsKey("report.md"));
+        assertTrue(entries.containsKey("manifest.json"));
+        assertTrue(entries.containsKey("verification-summary.json"));
+        assertTrue(entries.containsKey("README.md"));
+        assertEquals(Files.readString(input), text(entries, "input.json"));
+        assertTrue(text(entries, "report.md").contains("Report ID: bundle-md"));
+        assertTrue(text(entries, "verification-summary.json").contains("\"verificationStatus\" : \"PASS\""));
+        assertTrue(text(entries, "README.md").contains("not a cryptographic signature"));
+
+        JsonNode manifestJson = OBJECT_MAPPER.readTree(entries.get("manifest.json"));
+        assertManifestFile(manifestJson, "INPUT", "input.json", entries.get("input.json"));
+        assertManifestFile(manifestJson, "REPORT", "report.md", entries.get("report.md"));
+        assertManifestFile(manifestJson, "EXTRA", "README.md", entries.get("README.md"));
+        assertManifestFile(manifestJson, "EXTRA", "verification-summary.json",
+                entries.get("verification-summary.json"));
+    }
+
+    @Test
+    void jsonIncidentBundleIncludesStructuredReportAndManifest() throws Exception {
+        Path input = copyResource(REPLAY_FIXTURE, "replay.json");
+        Path bundle = tempDir.resolve("incident-bundle.zip");
+
+        CapturedRun run = runReport("--input", input.toString(),
+                "--format=json", "--bundle", bundle.toString(), "--report-id=bundle-json");
+
+        assertEquals(0, run.result().exitCode());
+        Map<String, byte[]> entries = zipEntries(bundle);
+        assertTrue(entries.containsKey("report.json"));
+        assertFalse(entries.containsKey("report.md"));
+        JsonNode report = OBJECT_MAPPER.readTree(entries.get("report.json"));
+        JsonNode manifest = OBJECT_MAPPER.readTree(entries.get("manifest.json"));
+        assertEquals("bundle-json", report.path("reportId").asText());
+        assertEquals("SCENARIO_REPLAY", report.path("sourceType").asText());
+        assertEquals("bundle-json", manifest.path("reportId").asText());
+        assertManifestFile(manifest, "REPORT", "report.json", entries.get("report.json"));
+    }
+
+    @Test
+    void verifyBundleSucceedsForUnchangedBundle() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path bundle = tempDir.resolve("incident-bundle.zip");
+        runReport("--input", input.toString(), "--bundle", bundle.toString());
+
+        CapturedRun verify = runReport("--verify-bundle", bundle.toString());
+
+        assertEquals(0, verify.result().exitCode());
+        assertTrue(verify.error().isBlank());
+        assertTrue(verify.output().contains("Incident bundle verification passed"));
+        assertTrue(verify.output().contains("OK [INPUT]"));
+        assertTrue(verify.output().contains("OK [REPORT]"));
+    }
+
+    @Test
+    void verifyBundleDetectsTamperedReport() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path bundle = tempDir.resolve("incident-bundle.zip");
+        runReport("--input", input.toString(), "--bundle", bundle.toString());
+        Map<String, byte[]> entries = zipEntries(bundle);
+        entries.put("report.md", (text(entries, "report.md") + "\nunauthorized edit\n")
+                .getBytes(StandardCharsets.UTF_8));
+        writeZip(bundle, entries);
+
+        CapturedRun verify = runReport("--verify-bundle", bundle.toString());
+
+        assertEquals(2, verify.result().exitCode());
+        assertTrue(verify.error().isBlank());
+        assertTrue(verify.output().contains("Incident bundle verification failed"));
+        assertTrue(verify.output().contains("MISMATCH [REPORT]"));
+    }
+
+    @Test
+    void verifyBundleDetectsMissingManifestAndMissingFiles() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path bundle = tempDir.resolve("incident-bundle.zip");
+        runReport("--input", input.toString(), "--bundle", bundle.toString());
+        Map<String, byte[]> entries = zipEntries(bundle);
+
+        Map<String, byte[]> withoutManifest = new LinkedHashMap<>(entries);
+        withoutManifest.remove("manifest.json");
+        Path missingManifestBundle = tempDir.resolve("missing-manifest.zip");
+        writeZip(missingManifestBundle, withoutManifest);
+
+        CapturedRun missingManifest = runReport("--verify-bundle", missingManifestBundle.toString());
+        assertEquals(2, missingManifest.result().exitCode());
+        assertTrue(missingManifest.output().contains("missing manifest.json"));
+
+        Map<String, byte[]> withoutReport = new LinkedHashMap<>(entries);
+        withoutReport.remove("report.md");
+        Path missingReportBundle = tempDir.resolve("missing-report.zip");
+        writeZip(missingReportBundle, withoutReport);
+
+        CapturedRun missingReport = runReport("--verify-bundle", missingReportBundle.toString());
+        assertEquals(2, missingReport.result().exitCode());
+        assertTrue(missingReport.output().contains("MISSING [REPORT]"));
+    }
+
+    @Test
+    void verifyBundleRejectsUnsafeZipEntryNames() throws Exception {
+        Path unsafeBundle = tempDir.resolve("unsafe.zip");
+        Map<String, byte[]> entries = new LinkedHashMap<>();
+        entries.put("../evil.txt", "tamper".getBytes(StandardCharsets.UTF_8));
+        writeZip(unsafeBundle, entries);
+
+        CapturedRun verify = runReport("--verify-bundle", unsafeBundle.toString());
+
+        assertEquals(2, verify.result().exitCode());
+        assertTrue(verify.output().isBlank());
+        assertTrue(verify.error().contains("unsafe bundle entry path"));
+    }
+
+    @Test
+    void repeatedBundleGenerationIsByteStable() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path firstBundle = tempDir.resolve("first.zip");
+        Path secondBundle = tempDir.resolve("second.zip");
+
+        CapturedRun first = runReport("--input", input.toString(), "--bundle", firstBundle.toString(),
+                "--report-id", "stable-bundle");
+        CapturedRun second = runReport("--input", input.toString(), "--bundle", secondBundle.toString(),
+                "--report-id", "stable-bundle");
+
+        assertEquals(0, first.result().exitCode());
+        assertEquals(0, second.result().exitCode());
+        assertArrayEquals(Files.readAllBytes(firstBundle), Files.readAllBytes(secondBundle));
+    }
+
+    @Test
+    void bundleInvalidInputFailsSafely() throws Exception {
+        Path invalid = tempDir.resolve("invalid.json");
+        Path bundle = tempDir.resolve("invalid-bundle.zip");
+        Files.writeString(invalid, "{}", StandardCharsets.UTF_8);
+
+        CapturedRun run = runReport("--input", invalid.toString(), "--bundle", bundle.toString());
+
+        assertEquals(2, run.result().exitCode());
+        assertTrue(run.output().isBlank());
+        assertTrue(run.error().contains("Input JSON must be"));
+        assertFalse(Files.exists(bundle));
+    }
+
+    @Test
+    void bundleGenerationAndVerificationDoNotConstructCloudManager() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path bundle = tempDir.resolve("incident-bundle.zip");
+
+        try (MockedConstruction<CloudManager> mockedCloudManager =
+                Mockito.mockConstruction(CloudManager.class)) {
+            CapturedRun generate = runReport("--input", input.toString(), "--bundle", bundle.toString());
+            CapturedRun verify = runReport("--verify-bundle", bundle.toString());
+
+            assertEquals(0, generate.result().exitCode());
+            assertEquals(0, verify.result().exitCode());
+            assertTrue(mockedCloudManager.constructed().isEmpty(),
+                    "Incident bundle export and verification must not construct CloudManager.");
+        }
+    }
+
+    @Test
     void invalidManifestFailsSafely() throws Exception {
         Path manifest = tempDir.resolve("invalid.manifest.json");
         Files.writeString(manifest, "{}", StandardCharsets.UTF_8);
@@ -361,6 +538,8 @@ class RemediationReportCliTest {
         assertTrue(RemediationReportCli.isRequested(new String[]{"--remediation-report", "--input", "report.json"}));
         assertTrue(RemediationReportCli.isRequested(new String[]{"--remediation-report=report.json"}));
         assertTrue(RemediationReportCli.isRequested(new String[]{"--verify-manifest", "report.manifest.json"}));
+        assertTrue(RemediationReportCli.isRequested(new String[]{"--input", "report.json", "--bundle", "bundle.zip"}));
+        assertTrue(RemediationReportCli.isRequested(new String[]{"--verify-bundle", "bundle.zip"}));
         assertFalse(RemediationReportCli.isRequested(new String[]{"--lase-replay=events.jsonl"}));
         assertFalse(RemediationReportCli.isRequested(new String[]{"--server.port=18080"}));
     }
@@ -395,6 +574,48 @@ class RemediationReportCliTest {
         assertTrue(matchingFile != null, "Manifest should include role " + role);
         assertEquals(path, matchingFile.path("path").asText());
         assertEquals(ReportChecksumManifestService.sha256(actualFile), matchingFile.path("sha256").asText());
+    }
+
+    private void assertManifestFile(JsonNode manifest, String role, String path, byte[] actualContent) {
+        JsonNode matchingFile = null;
+        for (JsonNode file : manifest.path("files")) {
+            if (role.equals(file.path("role").asText()) && path.equals(file.path("path").asText())) {
+                matchingFile = file;
+                break;
+            }
+        }
+        assertTrue(matchingFile != null, "Manifest should include role " + role + " at " + path);
+        assertEquals(ReportChecksumManifestService.sha256(actualContent), matchingFile.path("sha256").asText());
+    }
+
+    private Map<String, byte[]> zipEntries(Path zipPath) throws Exception {
+        Map<String, byte[]> entries = new LinkedHashMap<>();
+        try (ZipInputStream zip = new ZipInputStream(Files.newInputStream(zipPath))) {
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                ByteArrayOutputStream content = new ByteArrayOutputStream();
+                zip.transferTo(content);
+                entries.put(entry.getName(), content.toByteArray());
+                zip.closeEntry();
+            }
+        }
+        return entries;
+    }
+
+    private void writeZip(Path zipPath, Map<String, byte[]> entries) throws Exception {
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(zipPath))) {
+            for (Map.Entry<String, byte[]> entry : entries.entrySet()) {
+                ZipEntry zipEntry = new ZipEntry(entry.getKey());
+                zipEntry.setTime(315532800000L);
+                zip.putNextEntry(zipEntry);
+                zip.write(entry.getValue());
+                zip.closeEntry();
+            }
+        }
+    }
+
+    private String text(Map<String, byte[]> entries, String name) {
+        return new String(entries.get(name), StandardCharsets.UTF_8);
     }
 
     private record CapturedRun(RemediationReportCli.Result result, String output, String error) {

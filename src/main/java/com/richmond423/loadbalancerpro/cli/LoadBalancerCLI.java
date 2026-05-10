@@ -886,6 +886,8 @@ public class LoadBalancerCLI {
                     "  --lase-replay=<file> Replay saved LASE shadow JSONL events offline\n" +
                     "  --remediation-report --input <file> Export saved evaluation/replay JSON as Markdown or JSON\n" +
                     "  --verify-manifest <file> Verify an offline remediation report checksum manifest\n" +
+                    "  --bundle <file> Export an offline incident bundle with report, manifest, and summary\n" +
+                    "  --verify-bundle <file> Verify an offline incident bundle ZIP\n" +
                     "  --test-mode         Exit after first operation (for testing)\n" +
                     "  --cloud-enabled     Enable cloud integration\n" +
                     "  --cloud-min-servers Set minimum cloud servers\n" +

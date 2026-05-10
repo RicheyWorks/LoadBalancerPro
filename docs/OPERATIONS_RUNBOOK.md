@@ -96,7 +96,26 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 
 The manifest is SHA-256 checksum evidence only. It detects missing or changed files, but it is not a private-key signature and does not prove operator identity.
 
-See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, manifest verification, safety guarantees, and JSON output.
+For a portable ticket attachment, export a ZIP bundle instead:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --input saved-evaluation.json \
+  --format markdown \
+  --bundle incident-bundle.zip \
+  --report-id incident-123
+```
+
+Verify the bundle later without starting the API server:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --verify-bundle incident-bundle.zip
+```
+
+The bundle contains the saved input JSON, generated report, checksum manifest, verification summary, and README. Bundle verification checks manifest-listed SHA-256 hashes and rejects unsafe ZIP entry paths. It is tamper-evident evidence, not a cryptographic signature or identity proof.
+
+See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, bundle export, manifest verification, safety guarantees, and JSON output.
 
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
 
@@ -159,6 +178,8 @@ Live cloud mutation remains isolated behind `CloudManager` and explicit guardrai
 The remediation planner is advisory only. It ranks operator actions but does not execute them, does not construct `CloudManager`, and does not call AWS.
 
 The remediation report exporter is also advisory only. It converts supplied evaluation or replay results into deterministic Markdown/JSON evidence for humans and automation. It does not run allocation, replay, cloud, or remediation actions by itself.
+
+Incident bundle export wraps that same offline report output with the saved input JSON, checksum manifest, and verification summary. It remains local-only, does not start the API server, and does not add signing keys or key management.
 
 ## Rollback And Release Evidence
 

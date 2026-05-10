@@ -131,7 +131,21 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 
 The local audit log detects changed entries, malformed entries, sequence gaps, deleted middle entries, and reordered entries. It is checksum chaining only: it is not a cryptographic signature, does not prove identity, does not provide non-repudiation, and is not centralized append-only storage. Save the latest entry hash in the incident ticket if tail-truncation detection is required later.
 
-See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, bundle export, manifest verification, safety guarantees, and JSON output.
+Inventory the local evidence directory before handoff:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --inventory incident-evidence \
+  --inventory-format markdown \
+  --verify-inventory \
+  --include-hashes \
+  --fail-on-invalid \
+  --inventory-output evidence-catalog.md
+```
+
+The inventory detects bundles, manifests, audit logs, redaction summaries, reports, saved inputs, and verification summaries. It reuses offline bundle, manifest, and audit-log verification and reports the latest audit anchor hash/count when available. Treat it as a local checksum catalog only: it is not identity proof, cryptographic signing, centralized append-only storage, or legal chain-of-custody.
+
+See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, bundle export, manifest verification, evidence inventory, safety guarantees, and JSON output.
 
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
 
@@ -200,6 +214,8 @@ Incident bundle export wraps that same offline report output with the saved inpu
 Incident evidence redaction runs before checksum manifests are written. This means manifest and bundle verification prove the redacted files stayed unchanged after export, but they do not prove the original evidence was complete, safe to disclose, or fully scrubbed.
 
 Offline CLI audit logging appends local checksum-chained entries after successful report, manifest, bundle, verification, and redacted-output actions. It remains local-only and does not start the API server, construct `CloudManager`, add signing keys, or contact external services.
+
+Offline evidence inventory scans a local directory and summarizes bundles, manifests, audit logs, redaction summaries, reports, inputs, and verification summaries. With verification enabled, it detects tampered or missing bundle/manifest evidence and invalid audit chains while keeping the catalog deterministic and local-only.
 
 ## Rollback And Release Evidence
 

@@ -88,6 +88,12 @@ curl -fsS -X POST http://127.0.0.1:8080/api/scenarios/replay \
 | `--audit-actor <label>` | Optional operator-supplied actor label for audit entries. |
 | `--audit-action-id <id>` | Optional deterministic action or ticket id for audit entries. |
 | `--audit-note <text>` | Optional short operator note for audit entries. |
+| `--inventory <directory>` | Indexes local incident bundles, manifests, audit logs, redaction summaries, reports, and inputs. |
+| `--inventory-format markdown\|json` | Evidence inventory output format. Defaults to `markdown`. |
+| `--inventory-output <path>` | Optional evidence catalog output file. If omitted, output is written to stdout. |
+| `--verify-inventory` | Verifies bundles, manifests, and audit logs while inventorying. |
+| `--include-hashes` | Includes SHA-256 checksums for inventoried files. |
+| `--fail-on-invalid` | Exits non-zero when verification finds missing, tampered, or malformed evidence. |
 
 ## Output Semantics
 
@@ -275,6 +281,36 @@ Each audit entry includes:
 
 This is local checksum chaining for tamper evidence. It is not cryptographic signing, does not use private keys, does not prove operator identity, does not provide non-repudiation, and cannot by itself prove that a tail entry was not truncated unless the latest hash or entry count was saved elsewhere.
 
+## Evidence Inventory
+
+`--inventory` scans a local evidence directory and emits a deterministic Markdown or JSON catalog:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --inventory incident-evidence \
+  --inventory-format json \
+  --verify-inventory \
+  --include-hashes \
+  --fail-on-invalid \
+  --inventory-output evidence-catalog.json
+```
+
+The catalog detects:
+
+- incident bundle ZIPs;
+- checksum manifest JSON files;
+- offline CLI audit log JSONL files;
+- redaction summaries;
+- report files;
+- saved input JSON files;
+- verification summaries.
+
+When `--verify-inventory` is present, bundle verification reuses `--verify-bundle` logic, manifest verification reuses `--verify-manifest` logic, and audit-log verification reuses `--verify-audit-log` logic. Loose report and input files can be hashed with `--include-hashes`, but they are not independently verified unless covered by a manifest or bundle.
+
+Catalog summaries include bundle, manifest, audit-log, redaction-summary, and report counts; verification status; warning and failure counts; and the latest audit log entry hash/count when an audit log verifies. Inventory output is sorted by relative path and omits timestamps or random identifiers by default.
+
+The evidence inventory is a local checksum catalog. It does not prove operator identity, provide legal chain-of-custody, or replace centralized evidence storage.
+
 ## Safety
 
 Offline report generation:
@@ -288,6 +324,7 @@ Offline report generation:
 - does not generate timestamps or random ids unless the caller supplies `--report-id` or manifest `--created-at`;
 - can redact configured literal values before manifest and bundle checksums are calculated;
 - can append and verify local checksum-chained audit logs without an external service;
+- can inventory local evidence directories without starting the API server;
 - generates and verifies checksum manifests locally with Java SHA-256, not external tools or signing keys.
 
 ## Limitations
@@ -297,5 +334,6 @@ Offline report generation:
 - Incident bundles are portable evidence containers, not signed attestations.
 - Redaction is exact string replacement and should be reviewed by an operator before evidence is shared externally.
 - Audit logs are local checksum chains, not centralized append-only storage, cryptographic signatures, identity proof, or non-repudiation.
+- Evidence inventories are local checksum catalogs, not legal chain-of-custody records or identity proof.
 - Live deployment state should still be verified before taking operator action.
 - Invalid JSON or unsupported input shapes exit non-zero and print a safe error without stack traces.

@@ -483,7 +483,7 @@ The LASE demo smoke checks run deterministic synthetic reports, verify safe fail
 
 GitHub Actions are pinned to reviewed commit SHAs, with comments preserving the upstream action names and version tags for update review. Docker base images are pinned by digest in the Dockerfile; update the tag and digest together in a focused PR after rebuilding, running the test/package/JAR/Docker smokes, and reviewing the Trivy result.
 
-Semantic version tags also trigger a separate Release Artifacts workflow that verifies Git tag and Maven version alignment, publishes deterministic JAR/SBOM/checksum GitHub Release assets, and preserves a GitHub Actions artifact bundle as backup evidence.
+Semantic version tags also trigger a separate Release Artifacts workflow that verifies Git tag and Maven version alignment, publishes deterministic JAR/SBOM/checksum GitHub Release assets, and preserves a GitHub Actions artifact bundle as backup evidence. The same workflow includes a non-publishing manual dry run documented in [`docs/RELEASE_PROCESS.md`](docs/RELEASE_PROCESS.md).
 
 The Trivy allowlist file is `.trivyignore`. Keep it empty unless a finding has been reviewed and accepted temporarily. Any allowlist entry should be added in a focused PR with the vulnerability ID, affected package or image layer, owner, reason for temporary acceptance, and an expiry or follow-up issue. Do not use the allowlist to hide broad dependency drift.
 

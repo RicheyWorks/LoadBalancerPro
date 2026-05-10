@@ -133,6 +133,8 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`LOAD_SHEDDING.md`](docs/LOAD_SHEDDING.md) documents public allocation overload semantics, load shedding, metrics, and cloud-safety guarantees.
 - [`API_SECURITY.md`](docs/API_SECURITY.md) documents auth posture, rate-limit posture, validation protections, request-size limits, and abuse-resistance guarantees.
 - [`PERFORMANCE_BASELINES.md`](docs/PERFORMANCE_BASELINES.md) documents CI-safe performance smoke budgets for allocation, evaluation, and routing paths.
+- [`OBSERVABILITY.md`](docs/OBSERVABILITY.md) documents domain metrics, label cardinality policy, Prometheus query examples, and dashboard guidance.
+- [`OPERATIONS_RUNBOOK.md`](docs/OPERATIONS_RUNBOOK.md) documents degraded allocation, load-shedding, validation-failure, and cloud-safety incident response.
 - [`DOCKER_COMPOSE_PROD_LIKE_GUIDE.md`](docs/DOCKER_COMPOSE_PROD_LIKE_GUIDE.md) documents a local/private production-like Compose example with loopback binding and no live AWS.
 
 ## Hardened Foundation Checklist

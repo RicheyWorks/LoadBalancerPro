@@ -1,0 +1,54 @@
+{
+  "operator": "operator-perfect-demo",
+  "answers": [
+    {
+      "exerciseName": "audit-append-warn",
+      "decision": "WARN",
+      "reason": "Audit anchor advanced after receiver verification",
+      "action": "verify audit append",
+      "notes": "Verify that the appended audit entry is expected receiver-side verification activity and record the review."
+    },
+    {
+      "exerciseName": "investigation-working-copy-warn",
+      "decision": "WARN",
+      "reason": "Working notes and report edits require review",
+      "action": "review warning",
+      "notes": "Review the working notes and report edits, then document why the investigation handoff can continue."
+    },
+    {
+      "exerciseName": "receiver-redaction-warn",
+      "decision": "WARN",
+      "reason": "Receiver redaction changes require review",
+      "action": "confirm redaction summary",
+      "notes": "Confirm the redaction summary and document why the redacted evidence changes are acceptable before continuing."
+    },
+    {
+      "exerciseName": "regulated-handoff-fail",
+      "decision": "FAIL",
+      "reason": "Core evidence bundle is missing",
+      "action": "investigate missing evidence",
+      "notes": "Investigate the missing bundle, block the handoff, and request a corrected evidence package."
+    },
+    {
+      "exerciseName": "regulated-handoff-pass",
+      "decision": "PASS",
+      "reason": "No drift detected",
+      "action": "continue handoff",
+      "notes": "No remediation required; attach the clean regulated handoff review to the ticket."
+    },
+    {
+      "exerciseName": "strict-zero-drift-fail",
+      "decision": "FAIL",
+      "reason": "Report checksum drift violates strict zero-drift policy",
+      "action": "block handoff",
+      "notes": "Block the handoff and ask the sender to resolve or justify the changed report before retrying."
+    },
+    {
+      "exerciseName": "strict-zero-drift-pass",
+      "decision": "PASS",
+      "reason": "No drift detected",
+      "action": "continue handoff",
+      "notes": "No remediation required; record the zero-drift result and continue the handoff."
+    }
+  ]
+}

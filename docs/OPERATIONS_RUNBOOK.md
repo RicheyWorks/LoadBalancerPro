@@ -225,9 +225,9 @@ GET  /api/evidence-training/scorecards/{name}/answer-template
 POST /api/evidence-training/scorecards/grade
 ```
 
-Import `postman/LoadBalancerPro.postman_collection.json`, set `baseUrl` to the local API server such as `http://localhost:8080`, and run the `Evidence Training Onboarding` folder. These API routes are read-only discovery plus deterministic in-memory grading. They do not construct `CloudManager`, do not write runtime reports, and do not mutate cloud state. The API server is optional for CLI workflows.
+Import `postman/LoadBalancerPro.postman_collection.json`, set `baseUrl` to the local API server such as `http://localhost:8080`, and run the `Evidence Training Demo Walkthrough` folder for the guided health, readiness, onboarding, scorecard-template, and grading path. Use the `Evidence Training Onboarding` folder when only the core onboarding routes are needed. These API routes are read-only discovery plus deterministic in-memory grading. They do not construct `CloudManager`, do not write runtime reports, and do not mutate cloud state. The API server is required for API/Postman demos but optional for CLI workflows.
 
-See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md), [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md), and [`EVIDENCE_POLICY_EXAMPLES.md`](EVIDENCE_POLICY_EXAMPLES.md) for CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, evidence handoff policies, packaged policy templates, example sender/receiver catalog pairs, safety guarantees, and JSON output.
+See [`OPERATOR_DEMO_WALKTHROUGH.md`](OPERATOR_DEMO_WALKTHROUGH.md), [`POSTMAN_EVIDENCE_TRAINING.md`](POSTMAN_EVIDENCE_TRAINING.md), [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md), [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md), and [`EVIDENCE_POLICY_EXAMPLES.md`](EVIDENCE_POLICY_EXAMPLES.md) for demo steps, Postman import, CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, evidence handoff policies, packaged policy templates, example sender/receiver catalog pairs, safety guarantees, and JSON output.
 
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
 

@@ -1,0 +1,12 @@
+{
+  "operator": "operator-failing-demo",
+  "answers": [
+    {
+      "exerciseName": "strict-zero-drift-pass",
+      "decision": "FAIL",
+      "reason": "missing evidence",
+      "action": "investigate missing evidence",
+      "notes": "Intentionally wrong answer used to demonstrate failed grading output."
+    }
+  ]
+}

@@ -94,6 +94,11 @@ curl -fsS -X POST http://127.0.0.1:8080/api/scenarios/replay \
 | `--verify-inventory` | Verifies bundles, manifests, and audit logs while inventorying. |
 | `--include-hashes` | Includes SHA-256 checksums for inventoried files. |
 | `--fail-on-invalid` | Exits non-zero when verification finds missing, tampered, or malformed evidence. |
+| `--diff-inventory <before.json> <after.json>` | Compares two saved JSON evidence inventories. |
+| `--diff-format markdown\|json` | Evidence catalog diff output format. Defaults to `markdown`. |
+| `--diff-output <path>` | Optional evidence diff output file. If omitted, output is written to stdout. |
+| `--fail-on-drift` | Exits non-zero when the diff finds added, removed, changed, status-drifted, or audit-anchor-drifted evidence. |
+| `--include-unchanged` | Includes unchanged evidence rows in the diff output. |
 
 ## Output Semantics
 
@@ -311,6 +316,33 @@ Catalog summaries include bundle, manifest, audit-log, redaction-summary, and re
 
 The evidence inventory is a local checksum catalog. It does not prove operator identity, provide legal chain-of-custody, or replace centralized evidence storage.
 
+## Evidence Catalog Diff
+
+`--diff-inventory` compares two saved JSON inventory catalogs and emits a deterministic handoff-delta report:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --diff-inventory sender-catalog.json receiver-catalog.json \
+  --diff-format markdown \
+  --fail-on-drift \
+  --diff-output handoff-delta.md
+```
+
+Use it for before/after evidence inventories, sender/receiver handoffs, or incident-ticket evidence revisions. The diff matches evidence by stable relative path and reports:
+
+- new evidence files;
+- removed evidence files;
+- changed SHA-256 checksums;
+- verification status drift;
+- audit log latest-entry hash or entry-count drift;
+- report, input, manifest, bundle, redaction-summary, and verification-summary changes.
+
+JSON output is intended for automation. Markdown output is intended for incident tickets and human review. Both formats are sorted deterministically and omit timestamps or random identifiers. `--include-unchanged` can be useful when an operator wants a full handoff table; by default the report focuses on drift.
+
+`--fail-on-drift` exits non-zero when any drift is found, which is useful in scripted handoff checks. A non-zero drift result does not prove malicious activity; it means the two saved inventory catalogs disagree and should be reviewed.
+
+The diff is a local inventory comparison only. It cannot prove files were never changed before inventory, does not provide identity proof, and is not legal chain-of-custody.
+
 ## Safety
 
 Offline report generation:
@@ -325,6 +357,7 @@ Offline report generation:
 - can redact configured literal values before manifest and bundle checksums are calculated;
 - can append and verify local checksum-chained audit logs without an external service;
 - can inventory local evidence directories without starting the API server;
+- can diff saved evidence inventory catalogs without starting the API server;
 - generates and verifies checksum manifests locally with Java SHA-256, not external tools or signing keys.
 
 ## Limitations
@@ -335,5 +368,6 @@ Offline report generation:
 - Redaction is exact string replacement and should be reviewed by an operator before evidence is shared externally.
 - Audit logs are local checksum chains, not centralized append-only storage, cryptographic signatures, identity proof, or non-repudiation.
 - Evidence inventories are local checksum catalogs, not legal chain-of-custody records or identity proof.
+- Evidence catalog diffs compare saved inventory records only; they cannot prove what happened before either inventory was created.
 - Live deployment state should still be verified before taking operator action.
 - Invalid JSON or unsupported input shapes exit non-zero and print a safe error without stack traces.

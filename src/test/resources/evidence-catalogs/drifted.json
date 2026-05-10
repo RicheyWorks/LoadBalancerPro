@@ -1,0 +1,64 @@
+{
+  "catalogVersion" : "1",
+  "rootDirectory" : "incident-evidence",
+  "verificationEnabled" : true,
+  "includeHashes" : true,
+  "summary" : {
+    "bundleCount" : 1,
+    "manifestCount" : 1,
+    "auditLogCount" : 1,
+    "redactionSummaryCount" : 1,
+    "reportCount" : 1,
+    "validCount" : 2,
+    "warningCount" : 1,
+    "failureCount" : 1
+  },
+  "items" : [ {
+    "path" : "incident-bundle.zip",
+    "type" : "BUNDLE",
+    "sha256" : "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "verificationStatus" : "VALID",
+    "warnings" : [ ],
+    "failures" : [ ]
+  }, {
+    "path" : "manifest.json",
+    "type" : "MANIFEST",
+    "sha256" : "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "verificationStatus" : "FAILED",
+    "warnings" : [ ],
+    "failures" : [ "manifest MISMATCH [REPORT] report.md" ],
+    "reportId" : "incident-123"
+  }, {
+    "path" : "offline-cli-audit.jsonl",
+    "type" : "AUDIT_LOG",
+    "sha256" : "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "verificationStatus" : "VALID",
+    "warnings" : [ ],
+    "failures" : [ ],
+    "latestAuditEntryHash" : "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeef",
+    "entryCount" : 3
+  }, {
+    "path" : "redaction-summary.json",
+    "type" : "REDACTION_SUMMARY",
+    "sha256" : "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "verificationStatus" : "WARNING",
+    "warnings" : [ "redaction summary detected; original redacted values are not inspected" ],
+    "failures" : [ ]
+  }, {
+    "path" : "report.md",
+    "type" : "REPORT",
+    "sha256" : "9999999999999999999999999999999999999999999999999999999999999999",
+    "verificationStatus" : "NOT_VERIFIED",
+    "warnings" : [ ],
+    "failures" : [ ],
+    "reportId" : "incident-123"
+  }, {
+    "path" : "verification-summary.json",
+    "type" : "VERIFICATION_SUMMARY",
+    "sha256" : "8888888888888888888888888888888888888888888888888888888888888888",
+    "verificationStatus" : "NOT_VERIFIED",
+    "warnings" : [ ],
+    "failures" : [ ]
+  } ],
+  "advisoryNotes" : [ "Local checksum inventory only; no identity proof or cryptographic signature is provided." ]
+}

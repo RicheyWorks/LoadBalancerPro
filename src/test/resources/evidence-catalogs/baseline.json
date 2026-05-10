@@ -1,0 +1,64 @@
+{
+  "catalogVersion" : "1",
+  "rootDirectory" : "incident-evidence",
+  "verificationEnabled" : true,
+  "includeHashes" : true,
+  "summary" : {
+    "bundleCount" : 1,
+    "manifestCount" : 1,
+    "auditLogCount" : 1,
+    "redactionSummaryCount" : 1,
+    "reportCount" : 1,
+    "validCount" : 3,
+    "warningCount" : 1,
+    "failureCount" : 0
+  },
+  "items" : [ {
+    "path" : "input.json",
+    "type" : "INPUT",
+    "sha256" : "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "verificationStatus" : "NOT_VERIFIED",
+    "warnings" : [ ],
+    "failures" : [ ]
+  }, {
+    "path" : "incident-bundle.zip",
+    "type" : "BUNDLE",
+    "sha256" : "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "verificationStatus" : "VALID",
+    "warnings" : [ ],
+    "failures" : [ ]
+  }, {
+    "path" : "manifest.json",
+    "type" : "MANIFEST",
+    "sha256" : "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "verificationStatus" : "VALID",
+    "warnings" : [ ],
+    "failures" : [ ],
+    "reportId" : "incident-123"
+  }, {
+    "path" : "offline-cli-audit.jsonl",
+    "type" : "AUDIT_LOG",
+    "sha256" : "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "verificationStatus" : "VALID",
+    "warnings" : [ ],
+    "failures" : [ ],
+    "latestAuditEntryHash" : "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "entryCount" : 2
+  }, {
+    "path" : "redaction-summary.json",
+    "type" : "REDACTION_SUMMARY",
+    "sha256" : "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "verificationStatus" : "WARNING",
+    "warnings" : [ "redaction summary detected; original redacted values are not inspected" ],
+    "failures" : [ ]
+  }, {
+    "path" : "report.md",
+    "type" : "REPORT",
+    "sha256" : "7777777777777777777777777777777777777777777777777777777777777777",
+    "verificationStatus" : "NOT_VERIFIED",
+    "warnings" : [ ],
+    "failures" : [ ],
+    "reportId" : "incident-123"
+  } ],
+  "advisoryNotes" : [ "Local checksum inventory only; no identity proof or cryptographic signature is provided." ]
+}

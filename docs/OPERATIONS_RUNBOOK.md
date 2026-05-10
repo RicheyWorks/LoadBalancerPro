@@ -145,7 +145,19 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 
 The inventory detects bundles, manifests, audit logs, redaction summaries, reports, saved inputs, and verification summaries. It reuses offline bundle, manifest, and audit-log verification and reports the latest audit anchor hash/count when available. Treat it as a local checksum catalog only: it is not identity proof, cryptographic signing, centralized append-only storage, or legal chain-of-custody.
 
-See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, bundle export, manifest verification, evidence inventory, safety guarantees, and JSON output.
+Compare sender and receiver inventories during handoff:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --diff-inventory sender-catalog.json receiver-catalog.json \
+  --diff-format markdown \
+  --fail-on-drift \
+  --diff-output handoff-delta.md
+```
+
+The diff reports added, removed, checksum-changed, verification-status-drifted, and audit-anchor-drifted evidence. Audit anchor drift means the latest audit `entryHash` or entry count differs between catalogs. Treat drift as a review signal, not proof of malicious activity or legal chain-of-custody.
+
+See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, safety guarantees, and JSON output.
 
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
 
@@ -216,6 +228,8 @@ Incident evidence redaction runs before checksum manifests are written. This mea
 Offline CLI audit logging appends local checksum-chained entries after successful report, manifest, bundle, verification, and redacted-output actions. It remains local-only and does not start the API server, construct `CloudManager`, add signing keys, or contact external services.
 
 Offline evidence inventory scans a local directory and summarizes bundles, manifests, audit logs, redaction summaries, reports, inputs, and verification summaries. With verification enabled, it detects tampered or missing bundle/manifest evidence and invalid audit chains while keeping the catalog deterministic and local-only.
+
+Offline evidence catalog diffing compares two saved JSON inventory catalogs and summarizes handoff drift without starting the API server. It is useful for sender/receiver reviews and ticket revisions, but it remains checksum/inventory comparison only and does not prove identity or legal chain-of-custody.
 
 ## Rollback And Release Evidence
 

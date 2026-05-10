@@ -3,6 +3,7 @@ package com.richmond423.loadbalancerpro.api;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -15,6 +16,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.richmond423.loadbalancerpro.core.CloudManager;
+import com.richmond423.loadbalancerpro.core.DomainMetrics;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
@@ -29,6 +35,20 @@ import org.springframework.test.web.servlet.MockMvc;
 class AllocatorControllerTest {
     @Autowired
     private MockMvc mockMvc;
+
+    private SimpleMeterRegistry registry;
+
+    @BeforeEach
+    void setUpMetrics() {
+        registry = new SimpleMeterRegistry();
+        Metrics.addRegistry(registry);
+    }
+
+    @AfterEach
+    void tearDownMetrics() {
+        Metrics.removeRegistry(registry);
+        registry.close();
+    }
 
     @Test
     void healthReturnsStatusAndVersion() throws Exception {
@@ -75,6 +95,16 @@ class AllocatorControllerTest {
                 .andExpect(jsonPath("$.scalingSimulation.recommendedAdditionalServers", is(1)))
                 .andExpect(jsonPath("$.scalingSimulation.simulatedOnly", is(true)))
                 .andExpect(jsonPath("$.scalingSimulation.reason", containsString("simulated scale-up")));
+
+        assertEquals(1.0, registry.counter(
+                DomainMetrics.ALLOCATION_REQUESTS, "strategy", "CAPACITY_AWARE").count());
+        assertEquals(2.0, registry.summary(
+                DomainMetrics.ALLOCATION_SERVER_COUNT, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
+        assertEquals(45.0, registry.summary(
+                DomainMetrics.ALLOCATION_UNALLOCATED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
+        assertEquals(1.0, registry.summary(
+                DomainMetrics.ALLOCATION_SCALING_RECOMMENDED_SERVERS, "strategy", "CAPACITY_AWARE")
+                .totalAmount(), 0.01);
     }
 
     @Test
@@ -143,6 +173,16 @@ class AllocatorControllerTest {
                 .andExpect(jsonPath("$.recommendedAdditionalServers", is(1)))
                 .andExpect(jsonPath("$.scalingSimulation.recommendedAdditionalServers", is(1)))
                 .andExpect(jsonPath("$.scalingSimulation.simulatedOnly", is(true)));
+
+        assertEquals(1.0, registry.counter(
+                DomainMetrics.ALLOCATION_REQUESTS, "strategy", "PREDICTIVE").count());
+        assertEquals(2.0, registry.summary(
+                DomainMetrics.ALLOCATION_SERVER_COUNT, "strategy", "PREDICTIVE").totalAmount(), 0.01);
+        assertEquals(7.0, registry.summary(
+                DomainMetrics.ALLOCATION_UNALLOCATED_LOAD, "strategy", "PREDICTIVE").totalAmount(), 0.01);
+        assertEquals(1.0, registry.summary(
+                DomainMetrics.ALLOCATION_SCALING_RECOMMENDED_SERVERS, "strategy", "PREDICTIVE")
+                .totalAmount(), 0.01);
     }
 
     @Test
@@ -239,6 +279,16 @@ class AllocatorControllerTest {
                 .andExpect(jsonPath("$.scalingSimulation.recommendedAdditionalServers", is(0)))
                 .andExpect(jsonPath("$.scalingSimulation.simulatedOnly", is(true)))
                 .andExpect(jsonPath("$.scalingSimulation.reason", containsString("target capacity is unavailable")));
+
+        assertEquals(1.0, registry.counter(
+                DomainMetrics.ALLOCATION_REQUESTS, "strategy", "CAPACITY_AWARE").count());
+        assertEquals(0.0, registry.summary(
+                DomainMetrics.ALLOCATION_SERVER_COUNT, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
+        assertEquals(50.0, registry.summary(
+                DomainMetrics.ALLOCATION_UNALLOCATED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
+        assertEquals(0.0, registry.summary(
+                DomainMetrics.ALLOCATION_SCALING_RECOMMENDED_SERVERS, "strategy", "CAPACITY_AWARE")
+                .totalAmount(), 0.01);
     }
 
     @Test
@@ -535,6 +585,13 @@ class AllocatorControllerTest {
                 .andExpect(jsonPath("$.details[0]", containsString("capacity")))
                 .andExpect(jsonPath("$.trace").doesNotExist())
                 .andExpect(jsonPath("$.exception").doesNotExist());
+
+        assertEquals(1.0, registry.counter(
+                DomainMetrics.ALLOCATION_VALIDATION_FAILURES,
+                "path", "/api/allocate/predictive",
+                "reason", "validation_failed").count());
+        assertEquals(0.0, registry.counter(
+                DomainMetrics.ALLOCATION_REQUESTS, "strategy", "PREDICTIVE").count());
     }
 
     @Test
@@ -613,6 +670,13 @@ class AllocatorControllerTest {
                 .andExpect(header().string("Cache-Control", containsString("no-store")))
                 .andExpect(jsonPath("$.trace").doesNotExist())
                 .andExpect(jsonPath("$.exception").doesNotExist());
+
+        assertEquals(1.0, registry.counter(
+                DomainMetrics.ALLOCATION_VALIDATION_FAILURES,
+                "path", "/api/allocate/capacity-aware",
+                "reason", "bad_request").count());
+        assertEquals(0.0, registry.counter(
+                DomainMetrics.ALLOCATION_REQUESTS, "strategy", "CAPACITY_AWARE").count());
     }
 
     @Test

@@ -213,7 +213,7 @@ public class LoadBalancer {
 
     public LoadDistributionResult capacityAwareWithResult(double totalData) {
         validateDistributionInput(totalData);
-        LoadDistributionResult result = distributeWithHealthyServersResult(totalData,
+        LoadDistributionResult result = distributeWithHealthyServersResult(totalData, "CAPACITY_AWARE",
                 servers -> loadDistributionEngine.capacityAwareWithResult(servers, totalData));
         observeLaseShadow("CAPACITY_AWARE", totalData, result);
         return result;
@@ -225,7 +225,7 @@ public class LoadBalancer {
 
     public LoadDistributionResult predictiveLoadBalancingWithResult(double totalData) {
         validateDistributionInput(totalData);
-        LoadDistributionResult result = distributeWithHealthyServersResult(totalData,
+        LoadDistributionResult result = distributeWithHealthyServersResult(totalData, "PREDICTIVE",
                 servers -> loadDistributionEngine.predictiveLoadBalancingWithResult(servers, totalData));
         observeLaseShadow("PREDICTIVE", totalData, result);
         return result;
@@ -458,16 +458,18 @@ public class LoadBalancer {
     }
 
     private LoadDistributionResult distributeWithHealthyServersResult(
-            double totalData, Function<List<Server>, LoadDistributionResult> distributor) {
+            double totalData, String strategy, Function<List<Server>, LoadDistributionResult> distributor) {
         serverLock.readLock().lock();
         try {
             if (serverRegistry.isEmpty()) {
                 logger.info("No servers available.");
+                DomainMetrics.recordAllocation(strategy, 0, totalData);
                 return new LoadDistributionResult(Collections.emptyMap(), totalData);
             }
             List<Server> healthy = getHealthyServers();
             if (healthy.isEmpty()) {
                 logger.warn("No healthy servers available for distribution.");
+                DomainMetrics.recordAllocation(strategy, 0, totalData);
                 return new LoadDistributionResult(Collections.emptyMap(), totalData);
             }
             return distributor.apply(healthy);

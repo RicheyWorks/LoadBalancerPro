@@ -14,6 +14,9 @@ public final class DomainMetrics {
     public static final String ALLOCATION_REQUESTS = "allocation.requests.count";
     public static final String ALLOCATION_UNALLOCATED_LOAD = "allocation.unallocated.load";
     public static final String ALLOCATION_SERVER_COUNT = "allocation.server.count";
+    public static final String ALLOCATION_SCALING_RECOMMENDED_SERVERS =
+            "allocation.scaling.recommended.servers";
+    public static final String ALLOCATION_VALIDATION_FAILURES = "allocation.validation.failures.count";
     public static final String CLOUD_SCALE_ALLOWED = "cloud.scale.allowed.count";
     public static final String CLOUD_SCALE_DENIED = "cloud.scale.denied.count";
     public static final String CLOUD_SCALE_DRY_RUN = "cloud.scale.dryrun.count";
@@ -39,6 +42,21 @@ public final class DomainMetrics {
                 .baseUnit("gigabytes")
                 .register(Metrics.globalRegistry)
                 .record(Math.max(0.0, unallocatedLoad));
+    }
+
+    public static void recordAllocationScalingRecommendation(String strategy, int recommendedAdditionalServers) {
+        DistributionSummary.builder(ALLOCATION_SCALING_RECOMMENDED_SERVERS)
+                .tag("strategy", safeTag(strategy))
+                .register(Metrics.globalRegistry)
+                .record(Math.max(0, recommendedAdditionalServers));
+    }
+
+    public static void recordAllocationValidationFailure(String path, String reason) {
+        Counter.builder(ALLOCATION_VALIDATION_FAILURES)
+                .tag("path", safeTag(path))
+                .tag("reason", safeTag(reason))
+                .register(Metrics.globalRegistry)
+                .increment();
     }
 
     public static void recordCloudScaleDecision(String decision, CloudMutationSource source, String reason) {

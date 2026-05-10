@@ -1,0 +1,11 @@
+{
+  "policyVersion" : "1",
+  "mode" : "ALLOWLIST",
+  "defaultSeverity" : "FAIL",
+  "rules" : [ {
+    "changeType" : "ADDED",
+    "pathPattern" : "redaction-summary.json",
+    "severity" : "INFO",
+    "reason" : "receiver generated a redaction summary during evidence handoff"
+  } ]
+}

@@ -1,0 +1,11 @@
+{
+  "policyVersion" : "1",
+  "mode" : "ALLOWLIST",
+  "defaultSeverity" : "FAIL",
+  "rules" : [ {
+    "changeType" : "CHANGED",
+    "pathPattern" : "README.md",
+    "severity" : "IGNORE",
+    "reason" : "README evidence note changed outside the incident bundle"
+  } ]
+}

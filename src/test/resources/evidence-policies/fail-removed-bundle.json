@@ -1,0 +1,11 @@
+{
+  "policyVersion" : "1",
+  "mode" : "ALLOWLIST",
+  "defaultSeverity" : "WARN",
+  "rules" : [ {
+    "changeType" : "REMOVED",
+    "pathPattern" : "incident-bundle.zip",
+    "severity" : "FAIL",
+    "reason" : "incident bundle must survive evidence handoff"
+  } ]
+}

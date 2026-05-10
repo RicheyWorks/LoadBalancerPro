@@ -99,6 +99,10 @@ curl -fsS -X POST http://127.0.0.1:8080/api/scenarios/replay \
 | `--diff-output <path>` | Optional evidence diff output file. If omitted, output is written to stdout. |
 | `--fail-on-drift` | Exits non-zero when the diff finds added, removed, changed, status-drifted, or audit-anchor-drifted evidence. |
 | `--include-unchanged` | Includes unchanged evidence rows in the diff output. |
+| `--policy <path>` | Evaluates the inventory diff against a local evidence handoff policy JSON file. |
+| `--policy-report-format markdown\|json` | Policy report output format. Defaults to `markdown`. |
+| `--policy-output <path>` | Optional policy report output file. If omitted, output is written to stdout. |
+| `--fail-on-policy-fail` | Exits non-zero when policy evaluation returns `FAIL`. `WARN` exits zero. |
 
 ## Output Semantics
 
@@ -343,6 +347,70 @@ JSON output is intended for automation. Markdown output is intended for incident
 
 The diff is a local inventory comparison only. It cannot prove files were never changed before inventory, does not provide identity proof, and is not legal chain-of-custody.
 
+## Evidence Handoff Policies
+
+`--policy` evaluates a catalog diff against deterministic pass/warn/fail handoff rules:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --diff-inventory sender-catalog.json receiver-catalog.json \
+  --policy handoff-policy.json \
+  --policy-report-format markdown \
+  --fail-on-policy-fail \
+  --policy-output handoff-policy-report.md
+```
+
+Policy reports include a `PASS`, `WARN`, or `FAIL` decision, severity counts, matched rules, unclassified changes, and the same local-only limitations as the underlying checksum inventory diff. JSON output is stable for automation; Markdown output is stable for ticket attachment.
+
+Policy JSON format:
+
+```json
+{
+  "policyVersion": "1",
+  "mode": "ALLOWLIST",
+  "defaultSeverity": "FAIL",
+  "rules": [
+    {
+      "changeType": "ADDED",
+      "pathPattern": "redaction-summary.json",
+      "severity": "INFO",
+      "reason": "receiver generated redaction evidence"
+    },
+    {
+      "changeType": "AUDIT_ANCHOR_CHANGED",
+      "pathPattern": "offline-cli-audit.jsonl",
+      "severity": "WARN",
+      "reason": "receiver appended expected audit entries"
+    }
+  ]
+}
+```
+
+Modes:
+
+- `STRICT`: any drift fails unless a rule explicitly classifies it as `WARN`, `INFO`, or `IGNORE`.
+- `ALLOWLIST`: unmatched drift uses `defaultSeverity`.
+
+Severities:
+
+- `FAIL`: makes the policy decision `FAIL`.
+- `WARN`: makes the decision `WARN` unless any `FAIL` exists.
+- `INFO`: records expected drift without changing a passing decision.
+- `IGNORE`: records the match without affecting the decision.
+
+Rules match a `changeType` plus a catalog-relative `pathPattern`. Exact paths are supported, a trailing `/**` matches a subtree, and `*` / `**` wildcard patterns are supported for simple handoff allowlists. Matching remains local and deterministic; no external service is consulted.
+
+Recommended handoff workflow:
+
+1. Sender creates `sender-catalog.json` with `--inventory --verify-inventory --include-hashes`.
+2. Receiver creates `receiver-catalog.json` the same way after transfer.
+3. Operator runs `--diff-inventory ... --policy ... --fail-on-policy-fail`.
+4. Attach the policy report to the incident ticket with the inventories and bundle evidence.
+
+`--fail-on-policy-fail` exits non-zero only for a `FAIL` decision. A `WARN` decision exits zero so scripted handoffs can proceed while still surfacing review items.
+
+Policy evaluation is local checksum/policy evaluation only. It is not identity proof, not a cryptographic signature, not centralized evidence storage, and not legal chain-of-custody.
+
 ## Safety
 
 Offline report generation:
@@ -358,6 +426,7 @@ Offline report generation:
 - can append and verify local checksum-chained audit logs without an external service;
 - can inventory local evidence directories without starting the API server;
 - can diff saved evidence inventory catalogs without starting the API server;
+- can evaluate saved evidence inventory diffs against local handoff policies without starting the API server;
 - generates and verifies checksum manifests locally with Java SHA-256, not external tools or signing keys.
 
 ## Limitations
@@ -369,5 +438,6 @@ Offline report generation:
 - Audit logs are local checksum chains, not centralized append-only storage, cryptographic signatures, identity proof, or non-repudiation.
 - Evidence inventories are local checksum catalogs, not legal chain-of-custody records or identity proof.
 - Evidence catalog diffs compare saved inventory records only; they cannot prove what happened before either inventory was created.
+- Evidence handoff policies classify catalog drift only; they do not prove operator identity, intent, or legal custody.
 - Live deployment state should still be verified before taking operator action.
 - Invalid JSON or unsupported input shapes exit non-zero and print a safe error without stack traces.

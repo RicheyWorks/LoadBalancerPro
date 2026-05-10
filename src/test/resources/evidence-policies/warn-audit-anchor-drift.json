@@ -1,0 +1,11 @@
+{
+  "policyVersion" : "1",
+  "mode" : "ALLOWLIST",
+  "defaultSeverity" : "FAIL",
+  "rules" : [ {
+    "changeType" : "AUDIT_ANCHOR_CHANGED",
+    "pathPattern" : "offline-cli-audit.jsonl",
+    "severity" : "WARN",
+    "reason" : "receiver appended expected audit entries after handoff"
+  } ]
+}

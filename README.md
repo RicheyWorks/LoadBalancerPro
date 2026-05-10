@@ -135,6 +135,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`PERFORMANCE_BASELINES.md`](docs/PERFORMANCE_BASELINES.md) documents CI-safe performance smoke budgets for allocation, evaluation, and routing paths.
 - [`OBSERVABILITY.md`](docs/OBSERVABILITY.md) documents domain metrics, label cardinality policy, Prometheus query examples, and dashboard guidance.
 - [`OPERATIONS_RUNBOOK.md`](docs/OPERATIONS_RUNBOOK.md) documents degraded allocation, load-shedding, validation-failure, and cloud-safety incident response.
+- [`SCENARIO_SIMULATION.md`](docs/SCENARIO_SIMULATION.md) documents read-only traffic replay and degraded allocation/routing scenario simulation.
 - [`DOCKER_COMPOSE_PROD_LIKE_GUIDE.md`](docs/DOCKER_COMPOSE_PROD_LIKE_GUIDE.md) documents a local/private production-like Compose example with loopback binding and no live AWS.
 
 ## Hardened Foundation Checklist

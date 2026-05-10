@@ -44,6 +44,7 @@ public class AllocatorService {
     private final LaseShadowEventLog laseShadowEventLog = new LaseShadowEventLog();
     private final LoadDistributionEvaluator loadDistributionEvaluator = new LoadDistributionEvaluator();
     private final LoadSheddingPolicy loadSheddingPolicy = new LoadSheddingPolicy();
+    private final OperatorRemediationPlanner remediationPlanner = new OperatorRemediationPlanner();
 
     public AllocatorService(Environment environment) {
         this.laseShadowEnabled = resolveLaseShadowEnabled(environment);
@@ -75,6 +76,7 @@ public class AllocatorService {
                 resolvePriority(request.priority()),
                 signalFor(request, acceptedLoad, rejectedLoad),
                 DEFAULT_LOAD_SHEDDING_CONFIG);
+        LoadSheddingEvaluation loadShedding = toLoadSheddingEvaluation(loadSheddingDecision);
         AllocationEvaluationMetricsPreview metricsPreview = new AllocationEvaluationMetricsPreview(
                 strategy,
                 healthyServerCount(request.servers()),
@@ -92,9 +94,16 @@ public class AllocatorService {
                 rejectedLoad,
                 recommendation.additionalServers(),
                 simulation,
-                toLoadSheddingEvaluation(loadSheddingDecision),
+                loadShedding,
                 metricsPreview,
                 true,
+                remediationPlanner.planForEvaluation(
+                        acceptedLoad,
+                        rejectedLoad,
+                        rejectedLoad,
+                        recommendation.additionalServers(),
+                        loadShedding,
+                        request.servers()),
                 decisionReason(acceptedLoad, rejectedLoad, loadSheddingDecision));
     }
 

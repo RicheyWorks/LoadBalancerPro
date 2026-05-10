@@ -11,6 +11,9 @@
     "MARK_HEALTHY",
     "ROUTE"
   ],
+  "expectedRemediationActions": [
+    "INVESTIGATE_UNHEALTHY"
+  ],
   "expectNoNegativeAllocations": true,
   "steps": [
     {

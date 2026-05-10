@@ -28,6 +28,7 @@ They are deliberately smaller than full replay responses and include only contra
 - accepted, rejected, and unallocated load where deterministic;
 - scaling recommendation count where deterministic;
 - load-shedding priority/action where deterministic;
+- ranked remediation actions where deterministic;
 - selected server IDs for deterministic routing steps;
 - health-state expectations after failure/recovery steps;
 - no-negative-allocation expectation.
@@ -42,6 +43,7 @@ Descriptors must not include volatile or incidental fields such as timestamps, r
 - ordered replay step types;
 - accepted, rejected, and unallocated load where stable;
 - scale recommendation and load-shedding decisions where stable;
+- advisory remediation actions where stable;
 - no negative allocation values;
 - deterministic replay output for the mixed incident;
 - no `CloudManager` construction for valid fixtures;
@@ -54,6 +56,20 @@ Scenario replay regression diff mismatch for fixture 'overload-scale-recommendat
 ```
 
 The tests intentionally avoid timestamps, random IDs, raw request identifiers, or incidental JSON ordering. Ordered replay steps are asserted because sequence order is part of the API contract.
+
+## Remediation Descriptor Guidance
+
+Use `expectedRemediationActions` for the ranked, stable action sequence returned by `remediationPlan.recommendations[*].action`.
+
+Recommended fixture expectations:
+
+- `normal-baseline`: `NO_ACTION`;
+- `overload-scale-recommendation`: `SCALE_UP`, then `SHED_LOAD`;
+- `single-server-failure-recovery`: `INVESTIGATE_UNHEALTHY`;
+- `all-unhealthy-degradation`: `RESTORE_CAPACITY`, then `RETRY_WHEN_HEALTHY`;
+- `mixed-incident-replay`: `SCALE_UP`, `SHED_LOAD`, then `INVESTIGATE_UNHEALTHY`.
+
+Do not snapshot recommendation messages unless the wording itself is the behavior under review. Prefer action, priority, rank, server count, and load amount when those values are operationally stable.
 
 ## Running The Fixture Tests
 

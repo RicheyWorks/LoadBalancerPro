@@ -7,6 +7,10 @@
   "expectedStepTypes": [
     "OVERLOAD"
   ],
+  "expectedRemediationActions": [
+    "SCALE_UP",
+    "SHED_LOAD"
+  ],
   "expectNoNegativeAllocations": true,
   "steps": [
     {

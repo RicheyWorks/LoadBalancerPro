@@ -147,7 +147,12 @@ class ApiContractTest {
                 "queueDepth", "observedP95LatencyMillis", "observedErrorRate");
         assertSchemaProperties(docs, "AllocationEvaluationResponse", "strategy", "allocations",
                 "acceptedLoad", "rejectedLoad", "unallocatedLoad", "recommendedAdditionalServers",
-                "scalingSimulation", "loadShedding", "metricsPreview", "readOnly", "decisionReason");
+                "scalingSimulation", "loadShedding", "metricsPreview", "readOnly", "remediationPlan",
+                "decisionReason");
+        assertSchemaProperties(docs, "RemediationPlan", "status", "generatedFrom", "advisoryOnly",
+                "readOnly", "cloudMutation", "recommendations");
+        assertSchemaProperties(docs, "RemediationRecommendation", "rank", "action", "priority",
+                "reason", "serverCount", "loadAmount", "executable", "message");
         assertSchemaProperties(docs, "LoadSheddingEvaluation", "priority", "action", "reason",
                 "targetId", "currentInFlightRequestCount", "concurrencyLimit", "queueDepth",
                 "utilization", "observedP95LatencyMillis", "observedErrorRate");
@@ -163,7 +168,8 @@ class ApiContractTest {
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
                 "concurrencyLimit", "queueDepth", "observedP95LatencyMillis", "observedErrorRate");
-        assertSchemaProperties(docs, "ScenarioReplayResponse", "scenarioId", "readOnly", "cloudMutation", "steps");
+        assertSchemaProperties(docs, "ScenarioReplayResponse", "scenarioId", "readOnly", "cloudMutation",
+                "remediationPlan", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepResponse", "stepId", "type", "status", "strategy",
                 "allocations", "acceptedLoad", "rejectedLoad", "unallocatedLoad", "recommendedAdditionalServers",
                 "scalingSimulation", "loadShedding", "metricsPreview", "selectedServerId", "routingResults",
@@ -215,6 +221,13 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.metricsPreview.emitted", is(false)))
                 .andExpect(jsonPath("$.metricsPreview.metricNames").isArray())
                 .andExpect(jsonPath("$.readOnly", is(true)))
+                .andExpect(jsonPath("$.remediationPlan.status", is("OVERLOADED")))
+                .andExpect(jsonPath("$.remediationPlan.advisoryOnly", is(true)))
+                .andExpect(jsonPath("$.remediationPlan.cloudMutation", is(false)))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].action", is("SCALE_UP")))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].priority", is("HIGH")))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[1].action", is("SHED_LOAD")))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[2].action", is("INVESTIGATE_UNHEALTHY")))
                 .andExpect(jsonPath("$.decisionReason", containsString("Read-only evaluation")))
                 .andReturn()
                 .getResponse()

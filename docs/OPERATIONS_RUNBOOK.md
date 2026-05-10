@@ -50,10 +50,19 @@ curl -fsS -X POST http://127.0.0.1:8080/api/allocate/capacity-aware \
 - `loadShedding.action`
 - `loadShedding.reason`
 - `metricsPreview.emitted`
+- `remediationPlan.recommendations`
 
-4. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
+4. Use `remediationPlan.recommendations` as ranked advisory guidance:
 
-5. If simulated scale-up is recommended, review the cloud guardrails separately. Do not enable live cloud mutation until operator intent, account, region, ownership, and capacity limits are verified.
+- `SCALE_UP`: review capacity and cloud guardrails before any live scaling action.
+- `SHED_LOAD`: defer, queue, or shed lower-priority work until capacity pressure clears.
+- `INVESTIGATE_UNHEALTHY`: inspect health checks, server telemetry, and deployment drift.
+- `RESTORE_CAPACITY` / `RETRY_WHEN_HEALTHY`: restore at least one healthy server before retrying traffic.
+- `NO_ACTION`: keep current state and continue monitoring.
+
+5. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
+
+6. If simulated scale-up is recommended, review the cloud guardrails separately. Do not enable live cloud mutation until operator intent, account, region, ownership, and capacity limits are verified.
 
 ## Validation Failure Spike
 
@@ -93,8 +102,9 @@ Triage:
 1. Verify the caller-provided server list marks the intended servers as healthy.
 2. Check CPU, memory, disk, capacity, and weight fields for validation errors or exhausted capacity.
 3. Use `POST /api/allocate/evaluate` to preview the decision with the same server list.
-4. Confirm no live cloud mutation is expected from allocation or evaluation APIs.
-5. Escalate to infrastructure owners only after validating input health and capacity data.
+4. Check `remediationPlan.status`; `NO_HEALTHY_CAPACITY` means restore health/capacity before retrying allocation or routing.
+5. Confirm no live cloud mutation is expected from allocation or evaluation APIs.
+6. Escalate to infrastructure owners only after validating input health and capacity data.
 
 ## Cloud-Safety Expectations
 
@@ -107,6 +117,8 @@ Allocation, routing comparison, and read-only evaluation APIs are calculation an
 - require AWS credentials for local/demo use.
 
 Live cloud mutation remains isolated behind `CloudManager` and explicit guardrails. Treat any unexpected cloud mutation from allocation/evaluation paths as a high-severity bug.
+
+The remediation planner is advisory only. It ranks operator actions but does not execute them, does not construct `CloudManager`, and does not call AWS.
 
 ## Rollback And Release Evidence
 

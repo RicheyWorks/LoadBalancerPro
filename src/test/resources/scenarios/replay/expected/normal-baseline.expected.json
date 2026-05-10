@@ -9,6 +9,9 @@
     "EVALUATE",
     "ROUTE"
   ],
+  "expectedRemediationActions": [
+    "NO_ACTION"
+  ],
   "expectNoNegativeAllocations": true,
   "steps": [
     {

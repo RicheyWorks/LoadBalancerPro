@@ -63,6 +63,7 @@ The response includes:
 - `scenarioId`;
 - `readOnly=true`;
 - `cloudMutation=false`;
+- `remediationPlan`, an advisory read-only mitigation plan ranked from highest to lowest priority;
 - ordered `steps`.
 
 Each step includes the current `serverStates` snapshot. Allocation-like steps include:
@@ -81,6 +82,21 @@ Routing steps include:
 - `selectedServerId`;
 - `routingResults`;
 - current `serverStates`.
+
+## Remediation Plan
+
+`remediationPlan` converts the replay outcome into operator-review guidance. It is advisory only: every recommendation has `executable=false`, the plan has `advisoryOnly=true`, and `cloudMutation=false` remains part of the response contract.
+
+Recommendation actions are deterministic for the same replay input:
+
+- `NO_ACTION` when the scenario is healthy and no operator action is recommended;
+- `SCALE_UP` when simulated additional server capacity would cover unallocated load;
+- `SHED_LOAD` when replayed load-shedding recommends deferring or shedding lower-priority work;
+- `INVESTIGATE_UNHEALTHY` when a partial degradation includes unhealthy servers;
+- `RESTORE_CAPACITY` and `RETRY_WHEN_HEALTHY` when no healthy capacity is available;
+- `REVIEW_ROUTING` when routing cannot select a server and the incident is not already classified as no healthy capacity.
+
+The planner does not execute remediation, does not call `CloudManager`, and does not change replay state outside the request.
 
 ## Normal Scenario Example
 
@@ -220,6 +236,7 @@ Curated replay examples live in `src/test/resources/scenarios/replay/` and are i
 They cover normal load, overload with scale recommendation, single-server failure/recovery, all-unhealthy degradation, mixed incidents, and invalid scenario contracts.
 
 Expected-output descriptors live under `src/test/resources/scenarios/replay/expected/` and compare stable replay fields against current API behavior without full-response snapshots.
+Descriptors can also assert `expectedRemediationActions` to catch regressions in ranked operator guidance while avoiding brittle full JSON snapshots.
 
 See [`INCIDENT_FIXTURE_CATALOG.md`](INCIDENT_FIXTURE_CATALOG.md) for the fixture catalog, expected operator interpretation, regression-diff descriptors, and test guidance.
 

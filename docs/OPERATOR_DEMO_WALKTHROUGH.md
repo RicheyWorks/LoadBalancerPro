@@ -1,8 +1,8 @@
 # Operator Evidence Training Demo Walkthrough
 
-This walkthrough gives reviewers and operators one local path through health checks, the first-party browser demos, evidence training onboarding, routing decision comparison, Postman import, packaged policy discovery, answer templates, and deterministic scorecard grading.
+This walkthrough gives reviewers and operators one local path through health checks, the first-party browser demos, evidence training onboarding, routing decision comparison, unified load-balancing cockpit review, Postman import, packaged policy discovery, answer templates, and deterministic scorecard grading.
 
-The demo is a local/operator training and review aid only. It is not certification, not benchmark proof, not legal compliance proof, and not identity proof. The training, onboarding, and routing comparison routes do not mutate cloud state and do not require `CloudManager`.
+The demo is a local/operator training and review aid only. It is not certification, not benchmark proof, not legal compliance proof, and not identity proof. The training, onboarding, routing comparison, allocation preview, and read-only evaluation routes do not mutate cloud state and do not require `CloudManager`.
 
 ## 1. Start The API
 
@@ -91,7 +91,28 @@ The page calls the existing `POST /api/routing/compare` endpoint with synthetic 
 
 The same flow is available in Postman through the `Routing Decision Demo` folder. See [`POSTMAN_ROUTING_DEMO.md`](POSTMAN_ROUTING_DEMO.md) for the sample body, expected response shape, and explanation limits.
 
-## 5. Open Evidence Training Onboarding
+## 5. Open The Unified Load-Balancing Cockpit
+
+Open the unified cockpit browser page:
+
+```text
+http://localhost:8080/load-balancing-cockpit.html
+```
+
+Use the page from top to bottom:
+
+1. Check health and readiness.
+2. Load the packaged safe local scenario.
+3. Run allocation preview against `POST /api/allocate/capacity-aware`.
+4. Run routing comparison against `POST /api/routing/compare`.
+5. Run load-shedding preview and remediation hints against `POST /api/allocate/evaluate`.
+6. Compare allocation, routing, overload, and remediation-hint output side by side.
+7. Copy curl snippets, the scenario payload, raw responses, or the cockpit summary.
+8. Reset the cockpit before replaying it.
+
+The cockpit does not add a new API contract. It reuses existing calculation and recommendation routes, marks unsupported sections as `Not available in current API`, and does not fabricate allocation, routing, load-shedding, or remediation behavior. The matching Postman flow is the `Unified Load-Balancing Cockpit` folder. See [`POSTMAN_LOAD_BALANCING_COCKPIT.md`](POSTMAN_LOAD_BALANCING_COCKPIT.md) for the request order, sample body, expected response shape, and safety limits.
+
+## 6. Open Evidence Training Onboarding
 
 Open the summary route:
 
@@ -101,7 +122,7 @@ curl -fsS http://127.0.0.1:8080/api/evidence-training/onboarding
 
 The response lists packaged policy templates, examples, scorecards, workflow pointers, a sample answer template, and safety notes. Discovery routes are read-only. The scorecard grade route performs deterministic in-memory grading only.
 
-## 6. Import The Postman Collection
+## 7. Import The Postman Collection
 
 Import:
 
@@ -115,9 +136,9 @@ Set the collection variable:
 baseUrl = http://localhost:8080
 ```
 
-Run the `Evidence Training Demo Walkthrough` folder from top to bottom. It covers the same health, readiness, onboarding, policy template discovery, example discovery, scorecard discovery, answer template retrieval, and three grading examples as the evidence browser page. Run the `Routing Decision Demo` folder to cover the routing browser page's health, readiness, sample strategy comparison, weighted sample, least-connections sample, and tail-latency sample.
+Run the `Evidence Training Demo Walkthrough` folder from top to bottom. It covers the same health, readiness, onboarding, policy template discovery, example discovery, scorecard discovery, answer template retrieval, and three grading examples as the evidence browser page. Run the `Routing Decision Demo` folder to cover the routing browser page's health, readiness, sample strategy comparison, weighted sample, least-connections sample, and tail-latency sample. Run the `Unified Load-Balancing Cockpit` folder to cover health, readiness, routing comparison, capacity-aware allocation, predictive allocation, and read-only load-shedding/remediation evaluation.
 
-## 7. Inspect Templates, Examples, And Scorecards
+## 8. Inspect Templates, Examples, And Scorecards
 
 Equivalent curl requests:
 
@@ -130,7 +151,7 @@ curl -fsS http://127.0.0.1:8080/api/evidence-training/scorecards/strict-zero-dri
 
 Use the packaged scorecards to discuss expected `PASS`, `WARN`, and `FAIL` decisions before asking an operator to submit answers.
 
-## 8. Retrieve An Answer Template
+## 9. Retrieve An Answer Template
 
 Fetch a deterministic answer template:
 
@@ -155,7 +176,7 @@ The template shape is:
 }
 ```
 
-## 9. Submit Deterministic Grading Requests
+## 10. Submit Deterministic Grading Requests
 
 The repo includes small deterministic demo fixtures:
 
@@ -221,14 +242,14 @@ Expected deterministic result shape:
 
 No timestamps or random identifiers are generated by default.
 
-## 10. GUI-Facing Surface
+## 11. GUI-Facing Surface
 
-The evidence browser cockpit is a tiny static GUI-facing surface served by the existing Spring Boot app at `/evidence-training-demo.html`. It reuses the existing evidence training API endpoints and deterministic embedded sample payloads. The routing decision demo at `/routing-demo.html` is the matching static GUI-facing surface for the existing request-level routing comparison API. Both pages add no frontend framework, external dependency, external script, CDN, browser automation dependency, or controller.
+The evidence browser cockpit is a tiny static GUI-facing surface served by the existing Spring Boot app at `/evidence-training-demo.html`. It reuses the existing evidence training API endpoints and deterministic embedded sample payloads. The routing decision demo at `/routing-demo.html` is the matching static GUI-facing surface for the existing request-level routing comparison API. The unified load-balancing cockpit at `/load-balancing-cockpit.html` ties allocation, routing, overload/load-shedding, and remediation-hint views together with existing API responses. These pages add no frontend framework, external dependency, external script, CDN, browser automation dependency, or controller.
 
 ## Troubleshooting
 
 - If `curl` cannot connect, confirm the API is running on `127.0.0.1:8080` and no other process is using the port.
-- If the browser page returns `404`, confirm the app is running from a build that includes `src/main/resources/static/evidence-training-demo.html`.
+- If the browser page returns `404`, confirm the app is running from a build that includes `src/main/resources/static/evidence-training-demo.html`, `src/main/resources/static/routing-demo.html`, and `src/main/resources/static/load-balancing-cockpit.html`.
 - If copy buttons do not access the system clipboard, select the visible curl or payload block and copy it manually.
 - If Postman requests fail, confirm the collection `baseUrl` variable is `http://localhost:8080`.
 - If `POST /api/evidence-training/scorecards/grade` returns `400`, inspect the response message for malformed JSON, missing `answers`, an unknown `exerciseName`, or a decision outside `PASS`, `WARN`, and `FAIL`.
@@ -245,6 +266,7 @@ The evidence browser cockpit is a tiny static GUI-facing surface served by the e
 - No cloud mutation.
 - No `CloudManager` required for the training/onboarding demo.
 - No `CloudManager` required for the routing decision demo.
+- No `CloudManager` required for the unified load-balancing cockpit.
 - API server is required for browser/Postman demo but not for offline CLI workflows.
 - No external scripts, styles, fonts, images, CDNs, services, or dependencies.
 - No browser `localStorage` or `sessionStorage` is used.

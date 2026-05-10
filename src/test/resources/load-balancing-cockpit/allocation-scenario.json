@@ -1,0 +1,32 @@
+{
+  "requestedLoad": 120.0,
+  "servers": [
+    {
+      "id": "edge-alpha",
+      "cpuUsage": 45.0,
+      "memoryUsage": 40.0,
+      "diskUsage": 35.0,
+      "capacity": 100.0,
+      "weight": 2.0,
+      "healthy": true
+    },
+    {
+      "id": "edge-beta",
+      "cpuUsage": 60.0,
+      "memoryUsage": 55.0,
+      "diskUsage": 45.0,
+      "capacity": 80.0,
+      "weight": 1.0,
+      "healthy": true
+    },
+    {
+      "id": "edge-drain",
+      "cpuUsage": 20.0,
+      "memoryUsage": 25.0,
+      "diskUsage": 20.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": false
+    }
+  ]
+}

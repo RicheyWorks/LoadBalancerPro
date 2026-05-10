@@ -39,6 +39,8 @@ The static browser cockpit is served at `GET /evidence-training-demo.html`. It i
 
 The static routing decision demo is served at `GET /routing-demo.html`. It is not a new API contract and does not introduce new DTOs; it calls the existing health, readiness, and `POST /api/routing/compare` routes with synthetic caller-provided telemetry. The page displays selected servers, strategy reasons, raw JSON, copyable curl, copyable payloads, and a normalized copyable summary. The demo remains client-side only and does not write runtime reports.
 
+The static unified load-balancing cockpit is served at `GET /load-balancing-cockpit.html`. It is not a new API contract and does not introduce new DTOs; it calls the existing health, readiness, `POST /api/allocate/capacity-aware`, `POST /api/allocate/evaluate`, and `POST /api/routing/compare` routes with synthetic caller-provided inputs. The cockpit displays allocation results, routing decisions, load-shedding or overload signals, remediation-plan hints, raw JSON, copyable curl snippets, copyable payloads, and a side-by-side copyable summary. Unsupported sections must be marked `Not available in current API` instead of fabricating behavior. The cockpit remains client-side only and does not write runtime reports.
+
 Structured API errors expose `status`, `error`, `message`, `path`, `timestamp`, and `details` without diagnostic fields such as stack traces.
 
 ## Generated-Client Compatibility

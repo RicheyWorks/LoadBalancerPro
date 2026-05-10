@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoadBalancerPro Load-Balancing Cockpit</title>
+  <style>
+    :root {
+      --page: #f5f7fb;
+      --ink: #182235;
+      --muted: #5d6677;
+      --panel: #ffffff;
+      --line: #d8dee9;
+      --blue: #1859a9;
+      --teal: #0f766e;
+      --green: #0f7b47;
+      --amber: #9a5b00;
+      --red: #b42318;
+      --code-bg: #111827;
+      --code-text: #e5edf3;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+    }
+
+    header {
+      background: #182235;
+      color: #ffffff;
+      padding: 28px 20px;
+    }
+
+    main {
+      width: min(1240px, calc(100% - 32px));
+      margin: 18px auto 40px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+    }
+
+    h2 {
+      font-size: 1.12rem;
+    }
+
+    h3 {
+      font-size: 0.98rem;
+      margin-bottom: 8px;
+    }
+
+    p {
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      font: inherit;
+      color: var(--ink);
+      background: #ffffff;
+    }
+
+    textarea {
+      min-height: 360px;
+      resize: vertical;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    button {
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #0e3f80;
+      border-radius: 6px;
+      background: var(--blue);
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #334155;
+      border-color: #273449;
+    }
+
+    button.copy {
+      background: var(--teal);
+      border-color: #0f5f59;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      border-radius: 6px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef2f7;
+    }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .intro {
+      max-width: 940px;
+      color: #e5edf3;
+      margin: 10px 0 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .tri-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: #eef2f7;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-body {
+      padding: 14px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .status-box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #ffffff;
+    }
+
+    .status-box strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #ffffff;
+      background: #64748b;
+    }
+
+    .badge.passed {
+      background: var(--green);
+    }
+
+    .badge.warning {
+      background: var(--amber);
+    }
+
+    .badge.failed {
+      background: var(--red);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .copy-status {
+      min-height: 22px;
+      margin: 10px 0 0;
+      color: #dce8ff;
+    }
+
+    .summary-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 108px;
+      background: #ffffff;
+    }
+
+    .summary-card strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .postman-note {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin: 8px 0 0;
+    }
+
+    .safety-list {
+      margin: 0;
+      padding-left: 20px;
+      columns: 2;
+    }
+
+    @media (max-width: 920px) {
+      .grid, .tri-grid, .status-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      .safety-list {
+        columns: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Load-Balancing Cockpit</h1>
+    <p class="intro">
+      Run one local review flow across health, allocation, routing decisions, overload signals,
+      and advisory remediation hints. The cockpit uses existing same-origin API routes and safe
+      synthetic inputs only.
+    </p>
+    <p id="copy-status" class="copy-status">Copy status: idle.</p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Cockpit controls</h2>
+        <div class="actions">
+          <button data-action="health" type="button">Check health</button>
+          <button data-action="readiness" type="button">Check readiness</button>
+          <button data-action="load-sample" type="button">Load sample scenario</button>
+          <button data-action="allocation" type="button">Run allocation preview</button>
+          <button data-action="routing" type="button">Run routing comparison</button>
+          <button data-action="load-shedding" type="button">Run load-shedding preview</button>
+          <button data-action="remediation" type="button">Run remediation hints</button>
+          <button data-action="full-sequence" type="button">Run full cockpit sequence</button>
+          <button data-action="reset" type="button" class="secondary">Reset cockpit</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <label for="base-url">Base URL</label>
+        <div class="actions">
+          <input id="base-url" aria-label="Base URL" value="http://localhost:8080">
+          <button id="same-origin" type="button" class="secondary">Use same origin</button>
+        </div>
+        <div class="status-grid" aria-label="Cockpit status">
+          <div class="status-box">
+            <strong>Health / readiness</strong>
+            <span id="health-badge" class="badge">Not run</span>
+          </div>
+          <div class="status-box">
+            <strong>Scenario payload</strong>
+            <span id="scenario-badge" class="badge">Not run</span>
+          </div>
+          <div class="status-box">
+            <strong>Allocation results</strong>
+            <span id="allocation-badge" class="badge">Not run</span>
+          </div>
+          <div class="status-box">
+            <strong>Routing decisions</strong>
+            <span id="routing-badge" class="badge">Not run</span>
+          </div>
+          <div class="status-box">
+            <strong>Overload / remediation</strong>
+            <span id="evaluation-badge" class="badge">Not run</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid" style="margin-top: 16px;">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>1. Health / readiness</h2>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="health-output">Copy health response</button>
+            <button class="copy" type="button" data-copy-target="readiness-output">Copy readiness response</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <h3>Health response</h3>
+          <pre id="health-output">{}</pre>
+          <h3 style="margin-top: 12px;">Readiness response</h3>
+          <pre id="readiness-output">{}</pre>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>2. Scenario payload</h2>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="scenario-json">Copy payload</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <textarea id="scenario-json" aria-label="Unified load-balancing cockpit scenario"></textarea>
+          <p class="postman-note">
+            The packaged scenario uses deterministic synthetic server names, capacities, connection counts,
+            latency values, and no cloud identifiers.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <div class="tri-grid" style="margin-top: 16px;">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>3. Allocation results</h2>
+          <button class="copy" type="button" data-copy-target="allocation-output">Copy allocation</button>
+        </div>
+        <div class="panel-body">
+          <div id="allocation-summary" class="summary-card">
+            <strong>Allocation preview</strong>
+            <span class="muted">Run allocation preview to populate capacity-aware output.</span>
+          </div>
+          <h3 style="margin-top: 12px;">Raw JSON response</h3>
+          <pre id="allocation-output">{}</pre>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>4. Routing decisions</h2>
+          <button class="copy" type="button" data-copy-target="routing-output">Copy routing</button>
+        </div>
+        <div class="panel-body">
+          <table aria-label="Routing decision results">
+            <thead>
+              <tr>
+                <th>Strategy</th>
+                <th>Selected server</th>
+                <th>Why this server?</th>
+              </tr>
+            </thead>
+            <tbody id="routing-rows">
+              <tr>
+                <td colspan="3" class="muted">Run routing comparison to populate results.</td>
+              </tr>
+            </tbody>
+          </table>
+          <h3 style="margin-top: 12px;">Raw JSON response</h3>
+          <pre id="routing-output">{}</pre>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>5. Load-shedding / overload signals</h2>
+          <button class="copy" type="button" data-copy-target="evaluation-output">Copy evaluation</button>
+        </div>
+        <div class="panel-body">
+          <div id="load-shedding-summary" class="summary-card">
+            <strong>Load-shedding signal</strong>
+            <span class="muted">Run load-shedding preview to populate overload signals.</span>
+          </div>
+          <h3 style="margin-top: 12px;">Raw JSON response</h3>
+          <pre id="evaluation-output">{}</pre>
+        </div>
+      </section>
+    </div>
+
+    <div class="grid" style="margin-top: 16px;">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>6. Remediation-plan hints</h2>
+          <button class="copy" type="button" data-copy-target="remediation-output">Copy remediation hints</button>
+        </div>
+        <div class="panel-body">
+          <div id="remediation-summary" class="summary-card">
+            <strong>Advisory hints</strong>
+            <span class="muted">Run remediation hints to populate advisory plan output.</span>
+          </div>
+          <pre id="remediation-output">{}</pre>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>7. Side-by-side summary</h2>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="cockpit-summary">Copy summary</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <pre id="cockpit-summary">Run the cockpit sequence to generate a deterministic summary.</pre>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>8. Copy curl snippets</h2>
+        <button class="copy" type="button" data-copy-target="curl-snippets">Copy curl</button>
+      </div>
+      <div class="panel-body">
+        <pre id="curl-snippets"></pre>
+        <p class="postman-note">
+          Postman parity: run the <strong>Unified Load-Balancing Cockpit</strong> folder in
+          <code>postman/LoadBalancerPro.postman_collection.json</code>. The existing
+          <strong>Routing Decision Demo</strong> and <strong>Evidence Training Demo Walkthrough</strong>
+          folders remain unchanged.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>9. Unavailable-state handling</h2>
+      </div>
+      <div class="panel-body">
+        <p>
+          If an endpoint returns 404, 405, or a section is not supported by the current API, this cockpit marks
+          that section as <strong>Not available in current API</strong> and keeps the rest of the demo usable.
+          It does not fabricate allocation, routing, load-shedding, or remediation behavior.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>10. Safety limitations</h2>
+      </div>
+      <div class="panel-body">
+        <ul class="safety-list">
+          <li>Local/operator demo only.</li>
+          <li>Not certification.</li>
+          <li>Not benchmark proof.</li>
+          <li>Not legal compliance proof.</li>
+          <li>Not identity proof.</li>
+          <li>No cloud mutation.</li>
+          <li>No CloudManager required for cockpit demo.</li>
+          <li>No external services/dependencies.</li>
+          <li>No external scripts/CDNs.</li>
+          <li>API server required for browser/Postman demo.</li>
+          <li>No server-side report writing or runtime transcript storage.</li>
+          <li>No secret fields, login inputs, admin controls, release controls, or ruleset controls.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const cockpitScenario = {
+      scenarioName: "safe-local-load-balancing-cockpit",
+      allocationRequest: {
+        requestedLoad: 120.0,
+        servers: [
+          {
+            id: "edge-alpha",
+            cpuUsage: 45.0,
+            memoryUsage: 40.0,
+            diskUsage: 35.0,
+            capacity: 100.0,
+            weight: 2.0,
+            healthy: true
+          },
+          {
+            id: "edge-beta",
+            cpuUsage: 60.0,
+            memoryUsage: 55.0,
+            diskUsage: 45.0,
+            capacity: 80.0,
+            weight: 1.0,
+            healthy: true
+          },
+          {
+            id: "edge-drain",
+            cpuUsage: 20.0,
+            memoryUsage: 25.0,
+            diskUsage: 20.0,
+            capacity: 100.0,
+            weight: 1.0,
+            healthy: false
+          }
+        ]
+      },
+      evaluationRequest: {
+        requestedLoad: 210.0,
+        strategy: "CAPACITY_AWARE",
+        priority: "BACKGROUND",
+        currentInFlightRequestCount: 120,
+        concurrencyLimit: 100,
+        queueDepth: 55,
+        observedP95LatencyMillis: 320.0,
+        observedErrorRate: 0.18,
+        servers: [
+          {
+            id: "edge-alpha",
+            cpuUsage: 45.0,
+            memoryUsage: 40.0,
+            diskUsage: 35.0,
+            capacity: 100.0,
+            weight: 2.0,
+            healthy: true
+          },
+          {
+            id: "edge-beta",
+            cpuUsage: 60.0,
+            memoryUsage: 55.0,
+            diskUsage: 45.0,
+            capacity: 80.0,
+            weight: 1.0,
+            healthy: true
+          },
+          {
+            id: "edge-drain",
+            cpuUsage: 20.0,
+            memoryUsage: 25.0,
+            diskUsage: 20.0,
+            capacity: 100.0,
+            weight: 1.0,
+            healthy: false
+          }
+        ]
+      },
+      routingRequest: {
+        strategies: [
+          "TAIL_LATENCY_POWER_OF_TWO",
+          "WEIGHTED_LEAST_LOAD",
+          "WEIGHTED_LEAST_CONNECTIONS",
+          "WEIGHTED_ROUND_ROBIN",
+          "ROUND_ROBIN"
+        ],
+        servers: [
+          {
+            serverId: "edge-alpha",
+            healthy: true,
+            inFlightRequestCount: 5,
+            configuredCapacity: 100.0,
+            estimatedConcurrencyLimit: 100.0,
+            weight: 2.0,
+            averageLatencyMillis: 20.0,
+            p95LatencyMillis: 40.0,
+            p99LatencyMillis: 80.0,
+            recentErrorRate: 0.01,
+            queueDepth: 1,
+            networkAwareness: {
+              timeoutRate: 0.0,
+              retryRate: 0.0,
+              connectionFailureRate: 0.0,
+              latencyJitterMillis: 4.0,
+              recentErrorBurst: false,
+              requestTimeoutCount: 0,
+              sampleSize: 120
+            }
+          },
+          {
+            serverId: "edge-beta",
+            healthy: true,
+            inFlightRequestCount: 28,
+            configuredCapacity: 100.0,
+            estimatedConcurrencyLimit: 100.0,
+            weight: 4.0,
+            averageLatencyMillis: 24.0,
+            p95LatencyMillis: 52.0,
+            p99LatencyMillis: 96.0,
+            recentErrorRate: 0.02,
+            queueDepth: 3,
+            networkAwareness: {
+              timeoutRate: 0.01,
+              retryRate: 0.01,
+              connectionFailureRate: 0.0,
+              latencyJitterMillis: 7.0,
+              recentErrorBurst: false,
+              requestTimeoutCount: 1,
+              sampleSize: 120
+            }
+          },
+          {
+            serverId: "edge-drain",
+            healthy: false,
+            inFlightRequestCount: 1,
+            configuredCapacity: 100.0,
+            estimatedConcurrencyLimit: 100.0,
+            weight: 5.0,
+            averageLatencyMillis: 12.0,
+            p95LatencyMillis: 20.0,
+            p99LatencyMillis: 40.0,
+            recentErrorRate: 0.0,
+            queueDepth: 0
+          }
+        ]
+      }
+    };
+
+    const state = {
+      health: null,
+      readiness: null,
+      allocation: null,
+      routing: null,
+      evaluation: null
+    };
+
+    const outputs = {
+      health: document.getElementById("health-output"),
+      readiness: document.getElementById("readiness-output"),
+      scenario: document.getElementById("scenario-json"),
+      allocation: document.getElementById("allocation-output"),
+      routing: document.getElementById("routing-output"),
+      evaluation: document.getElementById("evaluation-output"),
+      remediation: document.getElementById("remediation-output"),
+      summary: document.getElementById("cockpit-summary"),
+      curl: document.getElementById("curl-snippets")
+    };
+
+    const badges = {
+      health: document.getElementById("health-badge"),
+      scenario: document.getElementById("scenario-badge"),
+      allocation: document.getElementById("allocation-badge"),
+      routing: document.getElementById("routing-badge"),
+      evaluation: document.getElementById("evaluation-badge")
+    };
+
+    const baseUrlInput = document.getElementById("base-url");
+    const copyStatus = document.getElementById("copy-status");
+
+    function stableJson(value) {
+      return JSON.stringify(value, null, 2);
+    }
+
+    function setBadge(name, status) {
+      const badge = badges[name];
+      if (!badge) {
+        return;
+      }
+      badge.textContent = status;
+      badge.className = "badge";
+      if (status === "Passed") {
+        badge.classList.add("passed");
+      } else if (status === "Warning") {
+        badge.classList.add("warning");
+      } else if (status === "Failed") {
+        badge.classList.add("failed");
+      }
+    }
+
+    function baseUrl() {
+      return baseUrlInput.value.trim().replace(/\/$/, "");
+    }
+
+    function apiUrl(path) {
+      return baseUrl() + path;
+    }
+
+    function unavailable(section, path, message) {
+      const body = {
+        status: "Not available in current API",
+        section,
+        endpoint: path,
+        message
+      };
+      return body;
+    }
+
+    async function callJson(path, options) {
+      const response = await fetch(apiUrl(path), options || {});
+      const contentType = response.headers.get("content-type") || "";
+      const body = contentType.includes("application/json")
+        ? await response.json()
+        : { status: response.status, body: await response.text() };
+      if (!response.ok) {
+        if (response.status === 404 || response.status === 405) {
+          return unavailable(path, path, "Endpoint is not available in current API.");
+        }
+        throw new Error(body.message || "Request failed with status " + response.status);
+      }
+      return body;
+    }
+
+    function requestOptions(body) {
+      return {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      };
+    }
+
+    function currentScenario() {
+      return JSON.parse(outputs.scenario.value);
+    }
+
+    function loadSampleScenario() {
+      outputs.scenario.value = stableJson(cockpitScenario);
+      setBadge("scenario", "Passed");
+      refreshCurlSnippets();
+      buildSummary();
+    }
+
+    async function checkHealth() {
+      try {
+        state.health = await callJson("/api/health");
+        outputs.health.textContent = stableJson(state.health);
+        setBadge("health", "Passed");
+      } catch (error) {
+        outputs.health.textContent = stableJson({ error: error.message });
+        setBadge("health", "Failed");
+      }
+      buildSummary();
+    }
+
+    async function checkReadiness() {
+      try {
+        state.readiness = await callJson("/actuator/health/readiness");
+        outputs.readiness.textContent = stableJson(state.readiness);
+        setBadge("health", state.health ? "Passed" : "Warning");
+      } catch (error) {
+        outputs.readiness.textContent = stableJson({ error: error.message });
+        setBadge("health", "Warning");
+      }
+      buildSummary();
+    }
+
+    async function runAllocation() {
+      try {
+        const scenario = currentScenario();
+        state.allocation = await callJson(
+          "/api/allocate/capacity-aware",
+          requestOptions(scenario.allocationRequest)
+        );
+        outputs.allocation.textContent = stableJson(state.allocation);
+        renderAllocation(state.allocation);
+        setBadge("allocation", "Passed");
+      } catch (error) {
+        outputs.allocation.textContent = stableJson({ error: error.message });
+        renderAllocation(unavailable("allocation results", "/api/allocate/capacity-aware", error.message));
+        setBadge("allocation", "Failed");
+      }
+      buildSummary();
+    }
+
+    async function runRouting() {
+      try {
+        const scenario = currentScenario();
+        state.routing = await callJson(
+          "/api/routing/compare",
+          requestOptions(scenario.routingRequest)
+        );
+        outputs.routing.textContent = stableJson(state.routing);
+        renderRouting(state.routing);
+        setBadge("routing", "Passed");
+      } catch (error) {
+        outputs.routing.textContent = stableJson({ error: error.message });
+        renderRouting(unavailable("routing decisions", "/api/routing/compare", error.message));
+        setBadge("routing", "Failed");
+      }
+      buildSummary();
+    }
+
+    async function runEvaluation() {
+      try {
+        const scenario = currentScenario();
+        state.evaluation = await callJson(
+          "/api/allocate/evaluate",
+          requestOptions(scenario.evaluationRequest)
+        );
+        outputs.evaluation.textContent = stableJson(state.evaluation);
+        outputs.remediation.textContent = stableJson(state.evaluation.remediationPlan || {});
+        renderLoadShedding(state.evaluation);
+        renderRemediation(state.evaluation.remediationPlan);
+        setBadge("evaluation", "Passed");
+      } catch (error) {
+        const body = unavailable("load-shedding or remediation hints", "/api/allocate/evaluate", error.message);
+        outputs.evaluation.textContent = stableJson(body);
+        outputs.remediation.textContent = stableJson(body);
+        renderLoadShedding(body);
+        renderRemediation(body);
+        setBadge("evaluation", "Failed");
+      }
+      buildSummary();
+    }
+
+    async function runFullSequence() {
+      loadSampleScenario();
+      await checkHealth();
+      await checkReadiness();
+      await runAllocation();
+      await runRouting();
+      await runEvaluation();
+    }
+
+    function renderAllocation(response) {
+      const container = document.getElementById("allocation-summary");
+      if (response.status === "Not available in current API") {
+        container.innerHTML = "<strong>Allocation preview</strong><span>Not available in current API.</span>";
+        return;
+      }
+      const allocations = response.allocations || {};
+      const rows = Object.keys(allocations)
+        .sort()
+        .map((key) => key + ": " + Number(allocations[key]).toFixed(3))
+        .join("<br>");
+      container.innerHTML = "<strong>Allocation preview</strong>"
+        + "<span>Unallocated load: " + Number(response.unallocatedLoad || 0).toFixed(3) + "</span><br>"
+        + "<span>Recommended additional servers: " + (response.recommendedAdditionalServers || 0) + "</span><br>"
+        + "<span>Allocations:</span><br>" + (rows || "<span class=\"muted\">No allocations returned.</span>");
+    }
+
+    function renderRouting(response) {
+      const rows = document.getElementById("routing-rows");
+      if (response.status === "Not available in current API") {
+        rows.innerHTML = "<tr><td colspan=\"3\">Not available in current API.</td></tr>";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        rows.innerHTML = "<tr><td colspan=\"3\" class=\"muted\">No routing results returned.</td></tr>";
+        return;
+      }
+      rows.innerHTML = results.map((result) => "<tr>"
+        + "<td>" + escapeHtml(result.strategyId || "unknown") + "</td>"
+        + "<td>" + escapeHtml(result.chosenServerId || "none") + "</td>"
+        + "<td>" + escapeHtml(result.reason || result.status || "No explanation returned.") + "</td>"
+        + "</tr>").join("");
+    }
+
+    function renderLoadShedding(response) {
+      const container = document.getElementById("load-shedding-summary");
+      if (response.status === "Not available in current API") {
+        container.innerHTML = "<strong>Load-shedding signal</strong><span>Not available in current API.</span>";
+        return;
+      }
+      const shedding = response.loadShedding || {};
+      container.innerHTML = "<strong>Load-shedding signal</strong>"
+        + "<span>Accepted load: " + Number(response.acceptedLoad || 0).toFixed(3) + "</span><br>"
+        + "<span>Rejected load: " + Number(response.rejectedLoad || 0).toFixed(3) + "</span><br>"
+        + "<span>Priority: " + escapeHtml(shedding.priority || "unknown") + "</span><br>"
+        + "<span>Action: " + escapeHtml(shedding.action || "unknown") + "</span><br>"
+        + "<span>Reason: " + escapeHtml(shedding.reason || "No reason returned.") + "</span>";
+    }
+
+    function renderRemediation(plan) {
+      const container = document.getElementById("remediation-summary");
+      if (!plan || plan.status === "Not available in current API") {
+        container.innerHTML = "<strong>Advisory hints</strong><span>Not available in current API.</span>";
+        return;
+      }
+      const recommendations = plan.recommendations || [];
+      const items = recommendations.map((item) =>
+        "Rank " + item.rank + ": " + item.action + " - " + item.message
+      ).join("<br>");
+      container.innerHTML = "<strong>Advisory hints</strong>"
+        + "<span>Status: " + escapeHtml(plan.status || "unknown") + "</span><br>"
+        + "<span>Advisory only: " + String(Boolean(plan.advisoryOnly)) + "</span><br>"
+        + (items || "<span class=\"muted\">No recommendations returned.</span>");
+    }
+
+    function refreshCurlSnippets() {
+      const scenario = currentScenario();
+      outputs.curl.textContent = [
+        "curl -fsS " + apiUrl("/api/health"),
+        "curl -fsS " + apiUrl("/actuator/health/readiness"),
+        "curl -fsS -X POST " + apiUrl("/api/allocate/capacity-aware")
+          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.allocationRequest) + "'",
+        "curl -fsS -X POST " + apiUrl("/api/allocate/evaluate")
+          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.evaluationRequest) + "'",
+        "curl -fsS -X POST " + apiUrl("/api/routing/compare")
+          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.routingRequest) + "'"
+      ].join("\n\n");
+    }
+
+    function buildSummary() {
+      const routingLines = (state.routing && state.routing.results ? state.routing.results : [])
+        .map((result) => "- " + result.strategyId + ": " + (result.chosenServerId || "none"))
+        .join("\n") || "- Not run";
+      const plan = state.evaluation && state.evaluation.remediationPlan;
+      const recommendationLines = plan && plan.recommendations
+        ? plan.recommendations.map((item) => "- " + item.rank + ". " + item.action + ": " + item.message).join("\n")
+        : "- Not run";
+      outputs.summary.textContent = [
+        "# Load-Balancing Cockpit Summary",
+        "",
+        "demoName: Load-Balancing Cockpit",
+        "mode: local browser same-origin demo",
+        "runtimeReportWritten: false",
+        "cloudMutation: false",
+        "",
+        "## Health",
+        "- health: " + (state.health ? "PASSED" : "NOT_RUN"),
+        "- readiness: " + (state.readiness ? "PASSED" : "NOT_RUN"),
+        "",
+        "## Allocation",
+        "- endpoint: /api/allocate/capacity-aware",
+        "- unallocatedLoad: " + (state.allocation ? Number(state.allocation.unallocatedLoad || 0).toFixed(3) : "NOT_RUN"),
+        "- recommendedAdditionalServers: "
+          + (state.allocation ? String(state.allocation.recommendedAdditionalServers || 0) : "NOT_RUN"),
+        "",
+        "## Routing Decisions",
+        routingLines,
+        "",
+        "## Load-Shedding / Overload",
+        "- endpoint: /api/allocate/evaluate",
+        "- acceptedLoad: " + (state.evaluation ? Number(state.evaluation.acceptedLoad || 0).toFixed(3) : "NOT_RUN"),
+        "- rejectedLoad: " + (state.evaluation ? Number(state.evaluation.rejectedLoad || 0).toFixed(3) : "NOT_RUN"),
+        "- action: " + (state.evaluation && state.evaluation.loadShedding ? state.evaluation.loadShedding.action : "NOT_RUN"),
+        "",
+        "## Remediation Hints",
+        recommendationLines,
+        "",
+        "## Safety",
+        "- local/operator demo only",
+        "- not certification",
+        "- not benchmark proof",
+        "- not legal compliance proof",
+        "- not identity proof",
+        "- no cloud mutation",
+        "- no CloudManager required",
+        "- no external scripts/CDNs",
+        "- no server-side report writing"
+      ].join("\n");
+    }
+
+    function resetCockpit() {
+      state.health = null;
+      state.readiness = null;
+      state.allocation = null;
+      state.routing = null;
+      state.evaluation = null;
+      outputs.health.textContent = "{}";
+      outputs.readiness.textContent = "{}";
+      outputs.allocation.textContent = "{}";
+      outputs.routing.textContent = "{}";
+      outputs.evaluation.textContent = "{}";
+      outputs.remediation.textContent = "{}";
+      document.getElementById("allocation-summary").innerHTML =
+        "<strong>Allocation preview</strong><span class=\"muted\">Run allocation preview to populate capacity-aware output.</span>";
+      document.getElementById("routing-rows").innerHTML =
+        "<tr><td colspan=\"3\" class=\"muted\">Run routing comparison to populate results.</td></tr>";
+      document.getElementById("load-shedding-summary").innerHTML =
+        "<strong>Load-shedding signal</strong><span class=\"muted\">Run load-shedding preview to populate overload signals.</span>";
+      document.getElementById("remediation-summary").innerHTML =
+        "<strong>Advisory hints</strong><span class=\"muted\">Run remediation hints to populate advisory plan output.</span>";
+      ["health", "scenario", "allocation", "routing", "evaluation"].forEach((name) => setBadge(name, "Not run"));
+      loadSampleScenario();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    async function copyTarget(targetId) {
+      const target = document.getElementById(targetId);
+      if (!target) {
+        return;
+      }
+      await navigator.clipboard.writeText(target.value || target.textContent);
+      copyStatus.textContent = "Copy status: copied " + targetId + ".";
+    }
+
+    document.querySelectorAll("[data-copy-target]").forEach((button) => {
+      button.addEventListener("click", () => copyTarget(button.getAttribute("data-copy-target")));
+    });
+
+    document.querySelectorAll("[data-action]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const action = button.getAttribute("data-action");
+        if (action === "health") {
+          await checkHealth();
+        } else if (action === "readiness") {
+          await checkReadiness();
+        } else if (action === "load-sample") {
+          loadSampleScenario();
+        } else if (action === "allocation") {
+          await runAllocation();
+        } else if (action === "routing") {
+          await runRouting();
+        } else if (action === "load-shedding" || action === "remediation") {
+          await runEvaluation();
+        } else if (action === "full-sequence") {
+          await runFullSequence();
+        } else if (action === "reset") {
+          resetCockpit();
+        }
+      });
+    });
+
+    document.getElementById("same-origin").addEventListener("click", () => {
+      baseUrlInput.value = window.location.origin || "http://localhost:8080";
+      refreshCurlSnippets();
+    });
+
+    baseUrlInput.addEventListener("change", refreshCurlSnippets);
+    outputs.scenario.addEventListener("change", () => {
+      setBadge("scenario", "Warning");
+      refreshCurlSnippets();
+      buildSummary();
+    });
+
+    loadSampleScenario();
+  </script>
+</body>
+</html>

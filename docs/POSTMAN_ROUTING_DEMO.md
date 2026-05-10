@@ -96,6 +96,8 @@ The all-strategy sample uses synthetic server names and deterministic telemetry:
 
 Test fixtures are kept under `src/test/resources/routing-demo/` for deterministic API and Postman coverage.
 
+For the broader side-by-side load-balancing review, use the `Unified Load-Balancing Cockpit` folder documented in [`POSTMAN_LOAD_BALANCING_COCKPIT.md`](POSTMAN_LOAD_BALANCING_COCKPIT.md). That folder keeps this routing comparison flow but adds existing allocation and read-only evaluation requests for overload/load-shedding and advisory remediation-plan hints.
+
 ## Response Shape
 
 The response includes the requested strategies, candidate count, and one result per strategy. Each result exposes the selected server, candidate set, score map when the strategy reports scores, and the strategy's explanation.

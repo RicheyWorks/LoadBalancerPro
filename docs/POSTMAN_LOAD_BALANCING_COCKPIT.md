@@ -1,0 +1,168 @@
+# Postman Load-Balancing Cockpit
+
+This guide covers the `Unified Load-Balancing Cockpit` folder in `postman/LoadBalancerPro.postman_collection.json`.
+It mirrors the browser page at:
+
+```text
+http://localhost:8080/load-balancing-cockpit.html
+```
+
+The cockpit is local/operator review only. It is not certification, not benchmark proof, not legal compliance proof, and not identity proof. It uses synthetic inputs, calls existing calculation/recommendation routes, does not mutate cloud state, does not construct `CloudManager`, does not call external services, and does not write runtime reports.
+
+## Import
+
+Import:
+
+```text
+postman/LoadBalancerPro.postman_collection.json
+```
+
+Set the collection variable:
+
+```text
+baseUrl = http://localhost:8080
+```
+
+## Request Order
+
+Run the `Unified Load-Balancing Cockpit` folder from top to bottom:
+
+1. `GET Unified Cockpit Health Check`
+2. `GET Unified Cockpit Readiness Check`
+3. `POST Cockpit Routing Comparison`
+4. `POST Cockpit Capacity-Aware Allocation`
+5. `POST Cockpit Predictive Allocation`
+6. `POST Cockpit Load-Shedding Evaluation`
+
+The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, and a deterministic side-by-side summary.
+
+## Supported Existing Endpoints
+
+The sprint does not add a new cockpit API endpoint. The browser and Postman flow reuse:
+
+```text
+GET  /api/health
+GET  /actuator/health/readiness
+POST /api/allocate/capacity-aware
+POST /api/allocate/predictive
+POST /api/allocate/evaluate
+POST /api/routing/compare
+```
+
+`POST /api/routing/compare` supports the registered routing strategy IDs:
+
+```text
+TAIL_LATENCY_POWER_OF_TWO
+WEIGHTED_LEAST_LOAD
+WEIGHTED_LEAST_CONNECTIONS
+WEIGHTED_ROUND_ROBIN
+ROUND_ROBIN
+```
+
+## Sample Request Shape
+
+The cockpit fixture stores allocation, evaluation, and routing requests side by side:
+
+```json
+{
+  "scenarioName": "safe-local-load-balancing-cockpit",
+  "allocationRequest": {
+    "requestedLoad": 120.0,
+    "servers": [
+      {
+        "id": "edge-alpha",
+        "cpuUsage": 45.0,
+        "memoryUsage": 40.0,
+        "diskUsage": 35.0,
+        "capacity": 100.0,
+        "weight": 2.0,
+        "healthy": true
+      }
+    ]
+  },
+  "evaluationRequest": {
+    "requestedLoad": 210.0,
+    "strategy": "CAPACITY_AWARE",
+    "priority": "BACKGROUND",
+    "currentInFlightRequestCount": 120,
+    "concurrencyLimit": 100,
+    "queueDepth": 55,
+    "observedP95LatencyMillis": 320.0,
+    "observedErrorRate": 0.18,
+    "servers": [
+      {
+        "id": "edge-alpha",
+        "cpuUsage": 45.0,
+        "memoryUsage": 40.0,
+        "diskUsage": 35.0,
+        "capacity": 100.0,
+        "weight": 2.0,
+        "healthy": true
+      }
+    ]
+  },
+  "routingRequest": {
+    "strategies": [
+      "TAIL_LATENCY_POWER_OF_TWO",
+      "WEIGHTED_LEAST_LOAD"
+    ],
+    "servers": [
+      {
+        "serverId": "edge-alpha",
+        "healthy": true,
+        "inFlightRequestCount": 5,
+        "configuredCapacity": 100.0,
+        "estimatedConcurrencyLimit": 100.0,
+        "weight": 2.0,
+        "averageLatencyMillis": 20.0,
+        "p95LatencyMillis": 40.0,
+        "p99LatencyMillis": 80.0,
+        "recentErrorRate": 0.01,
+        "queueDepth": 1
+      }
+    ]
+  }
+}
+```
+
+The folder sends each sub-request to the matching existing endpoint. Test fixtures are kept under `src/test/resources/load-balancing-cockpit/` for deterministic API and Postman coverage.
+
+## Response Shape
+
+Allocation responses include:
+
+- `allocations`
+- `unallocatedLoad`
+- `recommendedAdditionalServers`
+- `scalingSimulation`
+
+Read-only evaluation responses include:
+
+- `acceptedLoad`
+- `rejectedLoad`
+- `unallocatedLoad`
+- `loadShedding`
+- `remediationPlan`
+- `readOnly=true`
+- `remediationPlan.advisoryOnly=true`
+- `remediationPlan.cloudMutation=false`
+
+Routing comparison responses include one result per requested strategy with selected server, strategy status, candidate list, score map when available, and explanation reason.
+
+## Available Vs Unavailable
+
+Allocation, routing, load-shedding/overload signals, and remediation-plan hints are available through existing endpoints. If a future build removes or disables one of those routes, the browser cockpit must show `Not available in current API` instead of inventing output.
+
+## Safety Boundaries
+
+- Local/operator demo only.
+- Not certification.
+- Not benchmark proof.
+- Not legal compliance proof.
+- Not identity proof.
+- No cloud mutation.
+- No `CloudManager` required.
+- No external scripts, CDNs, services, or dependencies.
+- No generated runtime reports.
+- No server-side transcript writing.
+- No release, tag, ruleset, admin, or cloud-control requests in the Postman folder.

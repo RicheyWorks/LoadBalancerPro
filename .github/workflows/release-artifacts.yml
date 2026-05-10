@@ -6,7 +6,7 @@ on:
       - 'v*.*.*'
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
   attestations: write
   # Required by actions/attest@v4.1.0 for artifact storage records.
@@ -200,6 +200,129 @@ jobs:
         with:
           subject-path: release-artifacts/LoadBalancerPro-${{ env.RELEASE_VERSION }}.jar
           sbom-path: release-artifacts/LoadBalancerPro-${{ env.RELEASE_VERSION }}-bom.json
+
+      - name: Prepare GitHub Release notes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RELEASE_NOTES_FILE="$RUNNER_TEMP/loadbalancerpro-release-notes.md"
+          cat > "$RELEASE_NOTES_FILE" <<EOF
+          LoadBalancerPro v${RELEASE_VERSION}
+
+          Artifacts:
+          - LoadBalancerPro-${RELEASE_VERSION}.jar
+          - LoadBalancerPro-${RELEASE_VERSION}-bom.json
+          - LoadBalancerPro-${RELEASE_VERSION}-bom.xml
+          - LoadBalancerPro-${RELEASE_VERSION}-SHA256SUMS.txt
+
+          Checksums are included in LoadBalancerPro-${RELEASE_VERSION}-SHA256SUMS.txt.
+
+          This release was published automatically from the existing ${GITHUB_REF_NAME} tag.
+          EOF
+
+          echo "RELEASE_NOTES_FILE=$RELEASE_NOTES_FILE" >> "$GITHUB_ENV"
+
+      - name: Publish GitHub Release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          TAG="$GITHUB_REF_NAME"
+          ASSET_DIR="release-artifacts"
+          expected_assets=(
+            "LoadBalancerPro-${RELEASE_VERSION}.jar"
+            "LoadBalancerPro-${RELEASE_VERSION}-bom.json"
+            "LoadBalancerPro-${RELEASE_VERSION}-bom.xml"
+            "LoadBalancerPro-${RELEASE_VERSION}-SHA256SUMS.txt"
+          )
+          asset_paths=()
+          for asset in "${expected_assets[@]}"; do
+            path="$ASSET_DIR/$asset"
+            test -f "$path"
+            asset_paths+=("$path")
+          done
+
+          mapfile -t release_tags < <(
+            gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName --jq '.[].tagName' \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true
+          )
+          highest_version="$(
+            printf '%s\n' "${release_tags[@]}" "$TAG" \
+              | sed 's/^v//' \
+              | sort -V \
+              | tail -n 1
+          )"
+          latest_args=(--latest=false)
+          if [ "$highest_version" = "$RELEASE_VERSION" ]; then
+            latest_args=(--latest)
+          fi
+
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "GitHub Release $TAG already exists; verifying existing asset names before upload."
+            existing_is_draft="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft')"
+            existing_is_prerelease="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isPrerelease --jq '.isPrerelease')"
+            if [ "$existing_is_draft" != "false" ]; then
+              echo "Refusing to update draft release $TAG."
+              exit 1
+            fi
+            if [ "$existing_is_prerelease" != "false" ]; then
+              echo "Refusing to update prerelease $TAG."
+              exit 1
+            fi
+
+            mapfile -t existing_assets < <(
+              gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' | sort
+            )
+            expected_sorted="$(printf '%s\n' "${expected_assets[@]}" | sort)"
+            for existing in "${existing_assets[@]}"; do
+              if ! grep -Fxq "$existing" <<< "$expected_sorted"; then
+                echo "Refusing to overwrite release with unexpected existing asset: $existing"
+                printf 'Expected assets:\n%s\n' "$expected_sorted"
+                printf 'Existing assets:\n%s\n' "$(printf '%s\n' "${existing_assets[@]}")"
+                exit 1
+              fi
+            done
+
+            gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" "${asset_paths[@]}" --clobber
+          else
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "LoadBalancerPro v${RELEASE_VERSION}" \
+              --notes-file "$RELEASE_NOTES_FILE" \
+              --verify-tag \
+              "${latest_args[@]}" \
+              "${asset_paths[@]}"
+          fi
+
+      - name: Verify GitHub Release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          TAG="$GITHUB_REF_NAME"
+          expected_sorted="$(
+            printf '%s\n' \
+              "LoadBalancerPro-${RELEASE_VERSION}.jar" \
+              "LoadBalancerPro-${RELEASE_VERSION}-bom.json" \
+              "LoadBalancerPro-${RELEASE_VERSION}-bom.xml" \
+              "LoadBalancerPro-${RELEASE_VERSION}-SHA256SUMS.txt" \
+              | sort
+          )"
+          actual_sorted="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' | sort)"
+
+          if [ "$actual_sorted" != "$expected_sorted" ]; then
+            echo "GitHub Release asset names differ from expected."
+            printf 'Expected assets:\n%s\n' "$expected_sorted"
+            printf 'Actual assets:\n%s\n' "$actual_sorted"
+            exit 1
+          fi
+
+          echo "GitHub Release $TAG has exactly the expected release assets."
 
       - name: Upload release artifacts
         # actions/upload-artifact@v7

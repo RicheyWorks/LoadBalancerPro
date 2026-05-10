@@ -219,7 +219,9 @@ The response deliberately sets `cloudMutation=false` and includes `metricsPrevie
 Curated replay examples live in `src/test/resources/scenarios/replay/` and are indexed by `catalog.json`.
 They cover normal load, overload with scale recommendation, single-server failure/recovery, all-unhealthy degradation, mixed incidents, and invalid scenario contracts.
 
-See [`INCIDENT_FIXTURE_CATALOG.md`](INCIDENT_FIXTURE_CATALOG.md) for the fixture catalog, expected operator interpretation, and regression-test guidance.
+Expected-output descriptors live under `src/test/resources/scenarios/replay/expected/` and compare stable replay fields against current API behavior without full-response snapshots.
+
+See [`INCIDENT_FIXTURE_CATALOG.md`](INCIDENT_FIXTURE_CATALOG.md) for the fixture catalog, expected operator interpretation, regression-diff descriptors, and test guidance.
 
 ## Limitations
 

@@ -1,0 +1,8 @@
+{
+  "fixtureName": "invalid-scenario",
+  "requestPath": "scenarios/replay/invalid-scenario.json",
+  "expectedStatus": 400,
+  "error": "bad_request",
+  "messageContains": "Unsupported scenario step type",
+  "path": "/api/scenarios/replay"
+}

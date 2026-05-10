@@ -51,7 +51,7 @@ Open the first-party browser cockpit:
 http://localhost:8080/evidence-training-demo.html
 ```
 
-Use the page checklist from top to bottom:
+Click `Run demo sequence` to execute the local browser flow in order, or use the page checklist manually from top to bottom:
 
 1. Check health.
 2. Check readiness.
@@ -65,7 +65,9 @@ Use the page checklist from top to bottom:
 10. Grade the partial sample.
 11. Grade the failing sample.
 
-The cockpit shows deterministic step statuses (`Not run`, `Passed`, `Warning`, and `Failed`), summary counters, copyable curl snippets, Postman parity notes, copy/export sample answer payloads, and PASS/WARN/FAIL grading summaries while preserving raw JSON responses. The page uses same-origin API calls by default and contains no external scripts, styles, fonts, images, CDNs, services, secrets, auth fields, browser storage, admin controls, release controls, ruleset controls, or cloud mutation controls.
+Use `Stop demo` to halt any remaining queued steps and `Reset demo` to clear client-side statuses, responses, grading summaries, and the summary preview. The `Copy demo summary` control copies a deterministic client-side transcript preview with step outcomes and grading summaries; nothing is written to disk or posted back as a runtime report.
+
+The cockpit shows deterministic step statuses (`Not run`, `Passed`, `Warning`, and `Failed`), summary counters, copyable curl snippets, copyable response blocks, Postman parity notes, copy/export sample answer payloads, and PASS/WARN/FAIL grading summaries while preserving raw JSON responses. The page uses same-origin API calls by default and contains no external scripts, styles, fonts, images, CDNs, services, secrets, auth fields, browser storage, admin controls, release controls, ruleset controls, or cloud mutation controls.
 
 ## 4. Open Evidence Training Onboarding
 
@@ -222,4 +224,5 @@ The browser cockpit is a tiny static GUI-facing surface served by the existing S
 - API server is required for browser/Postman demo but not for offline CLI workflows.
 - No external scripts, styles, fonts, images, CDNs, services, or dependencies.
 - No browser `localStorage` or `sessionStorage` is used.
+- The browser summary/transcript preview is client-side copyable text only; it does not write runtime reports.
 - The grading endpoint is deterministic in-memory evaluation only; it does not write generated runtime reports.

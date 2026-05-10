@@ -46,7 +46,8 @@ class BrowserEvidenceTrainingDemoTest {
                 .andExpect(content().string(containsString("LoadBalancerPro Evidence Training Demo")))
                 .andExpect(content().string(containsString("LoadBalancerPro Evidence Training Cockpit")))
                 .andExpect(content().string(containsString("data-action=\"health\"")))
-                .andExpect(content().string(containsString("data-action=\"grade-perfect\"")));
+                .andExpect(content().string(containsString("data-action=\"grade-perfect\"")))
+                .andExpect(content().string(containsString("data-action=\"run-sequence\"")));
     }
 
     @Test
@@ -67,6 +68,29 @@ class BrowserEvidenceTrainingDemoTest {
         assertTrue(page.contains("Grade perfect sample"));
         assertTrue(page.contains("Grade partial sample"));
         assertTrue(page.contains("Grade failing sample"));
+        assertTrue(page.contains("sequenceSteps"));
+        assertTrue(page.contains("Evidence Training Browser Demo"));
+        assertTrue(page.contains("local browser same-origin demo"));
+    }
+
+    @Test
+    void staticBrowserDemoPageContainsRunSequenceControlsAndSummaryPreview() throws Exception {
+        String page = Files.readString(BROWSER_DEMO_PAGE, StandardCharsets.UTF_8);
+
+        assertTrue(page.contains("Run demo sequence"));
+        assertTrue(page.contains("Stop demo"));
+        assertTrue(page.contains("Reset demo"));
+        assertTrue(page.contains("Copy demo summary"));
+        assertTrue(page.contains("data-action=\"run-sequence\""));
+        assertTrue(page.contains("data-action=\"stop-sequence\""));
+        assertTrue(page.contains("data-action=\"reset-sequence\""));
+        assertTrue(page.contains("data-copy-target=\"demo-summary-output\""));
+        assertTrue(page.contains("Demo summary / transcript preview"));
+        assertTrue(page.contains("id=\"demo-summary-output\""));
+        assertTrue(page.contains("Client-side preview only. Nothing is written as a runtime report."));
+        assertTrue(page.contains("runDemoSequence"));
+        assertTrue(page.contains("stopDemoSequence"));
+        assertTrue(page.contains("resetDemoSequence"));
     }
 
     @Test
@@ -88,6 +112,10 @@ class BrowserEvidenceTrainingDemoTest {
         assertTrue(page.contains("data-step-status=\"health\""));
         assertTrue(page.contains("data-step-status=\"grade-failing\""));
         assertTrue(page.contains(">Not run<"));
+        assertTrue(page.contains("NOT_RUN"));
+        assertTrue(page.contains("PASSED"));
+        assertTrue(page.contains("WARNING"));
+        assertTrue(page.contains("FAILED"));
         assertTrue(page.contains("id=\"summary-total\""));
         assertTrue(page.contains("id=\"summary-passed\""));
         assertTrue(page.contains("id=\"summary-warning\""));
@@ -134,6 +162,14 @@ class BrowserEvidenceTrainingDemoTest {
         assertTrue(page.contains("Copy perfect payload"));
         assertTrue(page.contains("Copy partial payload"));
         assertTrue(page.contains("Copy failing payload"));
+        assertTrue(page.contains("Copy health response"));
+        assertTrue(page.contains("Copy onboarding response"));
+        assertTrue(page.contains("Copy templates response"));
+        assertTrue(page.contains("Copy examples response"));
+        assertTrue(page.contains("Copy scorecards response"));
+        assertTrue(page.contains("Copy scorecard response"));
+        assertTrue(page.contains("Copy answer template response"));
+        assertTrue(page.contains("Copy grading response"));
         assertTrue(page.contains("Export perfect payload"));
         assertTrue(page.contains("Export partial payload"));
         assertTrue(page.contains("Export failing payload"));
@@ -159,6 +195,8 @@ class BrowserEvidenceTrainingDemoTest {
         assertTrue(normalized.contains("api server is required for browser/postman demo but not for offline cli workflows"));
         assertTrue(normalized.contains("no external scripts/cdns"));
         assertTrue(normalized.contains("no external styles, fonts, images, services, or dependencies"));
+        assertTrue(normalized.contains("no runtime report is written"));
+        assertTrue(normalized.contains("no browser storage is used"));
         assertTrue(normalized.contains("no secrets, auth fields, admin controls, release controls, ruleset controls, or cloud mutation controls"));
     }
 
@@ -188,6 +226,25 @@ class BrowserEvidenceTrainingDemoTest {
         assertFalse(normalized.contains("/repos/"));
         assertFalse(normalized.contains("cloud.livemode"));
         assertFalse(normalized.contains("admin/"));
+    }
+
+    @Test
+    void staticBrowserDemoPageHasDeterministicClientSideSummaryOnly() throws Exception {
+        String page = Files.readString(BROWSER_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("demoName: Evidence Training Browser Demo"));
+        assertTrue(page.contains("mode: local browser same-origin demo"));
+        assertTrue(page.contains("no runtime report written"));
+        assertTrue(page.contains("recordTranscriptStep"));
+        assertTrue(page.contains("recordGradingTranscript"));
+        assertFalse(normalized.contains("date.now"));
+        assertFalse(normalized.contains("new date"));
+        assertFalse(normalized.contains("math.random"));
+        assertFalse(normalized.contains("randomuuid"));
+        assertFalse(normalized.contains("crypto.randomuuid"));
+        assertFalse(normalized.contains("timestamp"));
+        assertFalse(normalized.contains("generated runtime reports"));
     }
 
     @Test

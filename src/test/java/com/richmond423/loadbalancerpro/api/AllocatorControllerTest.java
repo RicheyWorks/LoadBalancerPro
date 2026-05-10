@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
@@ -369,6 +368,8 @@ class AllocatorControllerTest {
 
     @Test
     void evaluationEndpointReturnsReadOnlyCapacityRecommendationWithoutAllocationMetrics() throws Exception {
+        double beforeRequests = allocationRequestCount("CAPACITY_AWARE");
+
         mockMvc.perform(post("/api/allocate/evaluate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -411,9 +412,8 @@ class AllocatorControllerTest {
                 .andExpect(jsonPath("$.readOnly", is(true)))
                 .andExpect(jsonPath("$.decisionReason", containsString("Read-only evaluation")));
 
-        assertNull(registry.find(DomainMetrics.ALLOCATION_REQUESTS)
-                .tag("strategy", "CAPACITY_AWARE")
-                .counter(), "Evaluation previews must not increment allocation request metrics.");
+        assertEquals(beforeRequests, allocationRequestCount("CAPACITY_AWARE"), 0.01,
+                "Evaluation previews must not increment allocation request metrics.");
     }
 
     @Test
@@ -480,6 +480,8 @@ class AllocatorControllerTest {
 
     @Test
     void repeatedEvaluationRequestsRemainDeterministicAndDoNotMutateMetrics() throws Exception {
+        double beforeRequests = allocationRequestCount("CAPACITY_AWARE");
+
         String first = mockMvc.perform(post("/api/allocate/evaluate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(overloadedEvaluationRequest()))
@@ -496,9 +498,8 @@ class AllocatorControllerTest {
                 .getContentAsString();
 
         assertEquals(first, second, "Read-only evaluations should be deterministic for identical inputs.");
-        assertNull(registry.find(DomainMetrics.ALLOCATION_REQUESTS)
-                .tag("strategy", "CAPACITY_AWARE")
-                .counter(), "Repeated evaluation previews must not mutate allocation metrics.");
+        assertEquals(beforeRequests, allocationRequestCount("CAPACITY_AWARE"), 0.01,
+                "Repeated evaluation previews must not mutate allocation metrics.");
     }
 
     @Test
@@ -1075,6 +1076,13 @@ class AllocatorControllerTest {
                   ]
                 }
                 """;
+    }
+
+    private double allocationRequestCount(String strategy) {
+        var counter = registry.find(DomainMetrics.ALLOCATION_REQUESTS)
+                .tag("strategy", strategy)
+                .counter();
+        return counter == null ? 0.0 : counter.count();
     }
 
     private void expectOverloadedCapacityAwareResponse(String requestBody) throws Exception {

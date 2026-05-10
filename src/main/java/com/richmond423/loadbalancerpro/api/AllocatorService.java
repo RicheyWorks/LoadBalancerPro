@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import com.richmond423.loadbalancerpro.core.DomainMetrics;
 import com.richmond423.loadbalancerpro.core.LoadBalancer;
 import com.richmond423.loadbalancerpro.core.LoadDistributionResult;
 import com.richmond423.loadbalancerpro.core.LaseShadowEventLog;
@@ -42,6 +43,7 @@ public class AllocatorService {
         validateRequest(request);
         LoadBalancer balancer = createLoadBalancer();
         try {
+            String strategy = capacityAware ? "CAPACITY_AWARE" : "PREDICTIVE";
             for (ServerInput input : request.servers()) {
                 balancer.addServer(toServer(input));
             }
@@ -50,6 +52,7 @@ public class AllocatorService {
                     : balancer.predictiveLoadBalancingWithResult(request.requestedLoad());
             ScalingRecommendation recommendation = balancer.recommendScaling(
                     result.unallocatedLoad(), averageHealthyCapacity(request.servers()));
+            DomainMetrics.recordAllocationScalingRecommendation(strategy, recommendation.additionalServers());
             ScalingSimulationResult simulation = simulateScaling(result.unallocatedLoad(), recommendation);
             return new AllocationResponse(
                     result.allocations(),

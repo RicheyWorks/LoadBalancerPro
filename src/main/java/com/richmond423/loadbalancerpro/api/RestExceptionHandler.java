@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import com.richmond423.loadbalancerpro.core.DomainMetrics;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
@@ -21,6 +23,7 @@ public class RestExceptionHandler {
         String message = exception instanceof HttpMessageNotReadableException
                 ? "Malformed JSON request body"
                 : rootMessage(exception);
+        recordAllocationValidationFailure(request, "bad_request");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiErrorResponse.badRequest(message, request.getRequestURI()));
     }
@@ -32,6 +35,7 @@ public class RestExceptionHandler {
                 .map(RestExceptionHandler::fieldMessage)
                 .sorted()
                 .toList();
+        recordAllocationValidationFailure(request, "validation_failed");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiErrorResponse.validation(details, request.getRequestURI()));
     }
@@ -60,5 +64,12 @@ public class RestExceptionHandler {
 
     private static String fieldMessage(FieldError error) {
         return error.getField() + ": " + error.getDefaultMessage();
+    }
+
+    private static void recordAllocationValidationFailure(HttpServletRequest request, String reason) {
+        String path = request.getRequestURI();
+        if (path.startsWith("/api/allocate/")) {
+            DomainMetrics.recordAllocationValidationFailure(path, reason);
+        }
     }
 }

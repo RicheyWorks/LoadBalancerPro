@@ -1,0 +1,13 @@
+{
+  "template" : "receiver-redaction",
+  "before" : "before.json",
+  "after" : "after.json",
+  "expectedDecision" : "WARN",
+  "expectedFailCount" : 0,
+  "expectedWarnCount" : 2,
+  "expectedInfoCount" : 1,
+  "expectedIgnoredCount" : 0,
+  "expectedUnclassifiedCount" : 0,
+  "expectedChangedPaths" : [ "incident-bundle.zip", "redaction-summary.json", "report.md" ],
+  "expectedChangeTypes" : [ "CHANGED", "ADDED", "CHANGED" ]
+}

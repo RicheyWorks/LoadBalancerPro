@@ -898,6 +898,9 @@ public class LoadBalancerCLI {
                     "  --list-policy-templates List packaged evidence handoff policy templates\n" +
                     "  --export-policy-template <name> Export a packaged evidence handoff policy template\n" +
                     "  --validate-policy <file> Validate an evidence handoff policy file\n" +
+                    "  --list-policy-examples List packaged evidence policy walkthrough examples\n" +
+                    "  --export-policy-example <name> Export packaged before/after example catalogs\n" +
+                    "  --walkthrough-policy-example <name> Export and dry-run an example policy decision\n" +
                     "  --test-mode         Exit after first operation (for testing)\n" +
                     "  --cloud-enabled     Enable cloud integration\n" +
                     "  --cloud-min-servers Set minimum cloud servers\n" +

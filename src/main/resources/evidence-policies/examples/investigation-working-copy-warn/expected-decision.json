@@ -1,0 +1,13 @@
+{
+  "template" : "investigation-working-copy",
+  "before" : "before.json",
+  "after" : "after.json",
+  "expectedDecision" : "WARN",
+  "expectedFailCount" : 0,
+  "expectedWarnCount" : 1,
+  "expectedInfoCount" : 1,
+  "expectedIgnoredCount" : 0,
+  "expectedUnclassifiedCount" : 0,
+  "expectedChangedPaths" : [ "investigation-notes/triage.md", "report.md" ],
+  "expectedChangeTypes" : [ "ADDED", "CHANGED" ]
+}

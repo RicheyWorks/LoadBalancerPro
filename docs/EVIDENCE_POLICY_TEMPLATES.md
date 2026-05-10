@@ -67,3 +67,23 @@ Template listing, export, validation, JSON reports, and Markdown reports are det
 Policy evaluation classifies changes already recorded by `--diff-inventory`. It cannot prove files were never changed before either inventory was created, cannot prove operator identity, and cannot replace a centralized evidence system.
 
 For concrete sender/receiver catalog pairs and expected `PASS`, `WARN`, and `FAIL` outcomes, see [`EVIDENCE_POLICY_EXAMPLES.md`](EVIDENCE_POLICY_EXAMPLES.md).
+
+## Walkthrough Examples
+
+Packaged examples can be listed, exported, and dry-run fully offline:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar --list-policy-examples
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --export-policy-example regulated-handoff-fail \
+  --example-output-dir walkthrough/regulated-fail
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --walkthrough-policy-example regulated-handoff-fail \
+  --example-output-dir walkthrough/regulated-fail \
+  --policy-report-format json \
+  --policy-output walkthrough-summary.json
+```
+
+Walkthrough output is deterministic and local-only. It demonstrates policy behavior over synthetic catalogs; it is not identity proof, legal chain-of-custody, or a compliance certification.

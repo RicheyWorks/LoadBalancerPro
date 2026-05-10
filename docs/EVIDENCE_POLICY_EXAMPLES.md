@@ -2,25 +2,76 @@
 
 LoadBalancerPro includes tiny synthetic sender/receiver catalog pairs that show how each packaged evidence handoff policy template classifies drift. The examples are deterministic test fixtures, not generated operational reports, and they do not provide identity proof, cryptographic signing, legal chain-of-custody, or compliance certification.
 
-Example fixtures live under:
+Packaged walkthrough examples are available through the offline CLI. Source fixtures live under:
 
 ```text
 src/test/resources/evidence-policy-examples/
+src/main/resources/evidence-policies/examples/
 ```
 
-Each profile includes `before.json`, `after.json`, and an `expected-decision.json` descriptor. Some profiles also include a focused failure descriptor such as `expected-fail.json`.
+Each packaged example exports `before.json`, `after.json`, and an `expected-decision.json` descriptor. The older test fixture folders retain focused files such as `after-drift.json` and `expected-fail.json`, but the CLI export normalizes each walkthrough to the three deterministic filenames.
 
 ## Example Matrix
 
-| Template | Example | Expected Decision | What It Shows |
+| Template | Packaged Example | Expected Decision | What It Shows |
 | --- | --- | --- | --- |
-| `strict-zero-drift` | `strict-zero-drift/before.json` -> `strict-zero-drift/after.json` | `PASS` | Sender and receiver catalogs are identical. |
-| `strict-zero-drift` | `strict-zero-drift/before.json` -> `strict-zero-drift/after-drift.json` | `FAIL` | Any checksum drift fails a strict final handoff. |
-| `receiver-redaction` | `receiver-redaction/before.json` -> `receiver-redaction/after.json` | `WARN` | Redaction summary is expected, while redacted report/bundle changes remain review items. |
-| `audit-append` | `audit-append/before.json` -> `audit-append/after.json` | `WARN` | Receiver-side audit anchor advancement is expected but should be reviewed. |
-| `regulated-handoff` | `regulated-handoff/before.json` -> `regulated-handoff/after.json` | `PASS` | Strict packaged review profile with no drift. |
-| `regulated-handoff` | `regulated-handoff/before.json` -> `regulated-handoff/after-missing-bundle.json` | `FAIL` | Missing core bundle evidence fails. |
-| `investigation-working-copy` | `investigation-working-copy/before.json` -> `investigation-working-copy/after.json` | `WARN` | Working notes are informational, while report edits warn before final handoff. |
+| `strict-zero-drift` | `strict-zero-drift-pass` | `PASS` | Sender and receiver catalogs are identical. |
+| `strict-zero-drift` | `strict-zero-drift-fail` | `FAIL` | Any checksum drift fails a strict final handoff. |
+| `receiver-redaction` | `receiver-redaction-warn` | `WARN` | Redaction summary is expected, while redacted report/bundle changes remain review items. |
+| `audit-append` | `audit-append-warn` | `WARN` | Receiver-side audit anchor advancement is expected but should be reviewed. |
+| `regulated-handoff` | `regulated-handoff-pass` | `PASS` | Strict packaged review profile with no drift. |
+| `regulated-handoff` | `regulated-handoff-fail` | `FAIL` | Missing core bundle evidence fails. |
+| `investigation-working-copy` | `investigation-working-copy-warn` | `WARN` | Working notes are informational, while report edits warn before final handoff. |
+
+## Walkthrough CLI
+
+List packaged examples:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar --list-policy-examples
+```
+
+Print a compact summary:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar --print-policy-example receiver-redaction-warn
+```
+
+Export a training pair:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --export-policy-example receiver-redaction-warn \
+  --example-output-dir walkthrough/receiver-redaction
+```
+
+The export writes `before.json`, `after.json`, and `expected-decision.json`. Existing files are not overwritten unless `--force` is supplied.
+
+Run the full dry-run walkthrough:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --walkthrough-policy-example receiver-redaction-warn \
+  --example-output-dir walkthrough/receiver-redaction \
+  --policy-report-format markdown
+```
+
+The walkthrough exports the packaged example, runs the evidence catalog diff, evaluates the packaged policy template, and emits a deterministic Markdown or JSON tutorial summary. For JSON tutorial output, use `--policy-report-format json`. For a file output, add `--policy-output walkthrough-summary.json`.
+
+After exporting, operators can also run the underlying commands directly:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --diff-inventory walkthrough/receiver-redaction/before.json \
+                   walkthrough/receiver-redaction/after.json \
+  --diff-format markdown
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --diff-inventory walkthrough/receiver-redaction/before.json \
+                   walkthrough/receiver-redaction/after.json \
+  --policy-template receiver-redaction \
+  --policy-report-format markdown
+```
 
 ## CLI Examples
 

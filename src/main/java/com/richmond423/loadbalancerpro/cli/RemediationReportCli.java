@@ -41,6 +41,10 @@ public final class RemediationReportCli {
     private static final String LIST_POLICY_TEMPLATES_FLAG = "--list-policy-templates";
     private static final String EXPORT_POLICY_TEMPLATE_FLAG = "--export-policy-template";
     private static final String VALIDATE_POLICY_FLAG = "--validate-policy";
+    private static final String LIST_POLICY_EXAMPLES_FLAG = "--list-policy-examples";
+    private static final String EXPORT_POLICY_EXAMPLE_FLAG = "--export-policy-example";
+    private static final String PRINT_POLICY_EXAMPLE_FLAG = "--print-policy-example";
+    private static final String WALKTHROUGH_POLICY_EXAMPLE_FLAG = "--walkthrough-policy-example";
     private static final String APP_VERSION = "2.4.2";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -69,7 +73,12 @@ public final class RemediationReportCli {
                         || arg.equals(DIFF_INVENTORY_FLAG) || arg.startsWith(DIFF_INVENTORY_FLAG + "=")
                         || arg.equals(LIST_POLICY_TEMPLATES_FLAG)
                         || arg.equals(EXPORT_POLICY_TEMPLATE_FLAG) || arg.startsWith(EXPORT_POLICY_TEMPLATE_FLAG + "=")
-                        || arg.equals(VALIDATE_POLICY_FLAG) || arg.startsWith(VALIDATE_POLICY_FLAG + "="));
+                        || arg.equals(VALIDATE_POLICY_FLAG) || arg.startsWith(VALIDATE_POLICY_FLAG + "=")
+                        || arg.equals(LIST_POLICY_EXAMPLES_FLAG)
+                        || arg.equals(EXPORT_POLICY_EXAMPLE_FLAG) || arg.startsWith(EXPORT_POLICY_EXAMPLE_FLAG + "=")
+                        || arg.equals(PRINT_POLICY_EXAMPLE_FLAG) || arg.startsWith(PRINT_POLICY_EXAMPLE_FLAG + "=")
+                        || arg.equals(WALKTHROUGH_POLICY_EXAMPLE_FLAG)
+                        || arg.startsWith(WALKTHROUGH_POLICY_EXAMPLE_FLAG + "="));
     }
 
     public static Result runIfRequested(String[] args, PrintStream out, PrintStream err) {
@@ -85,6 +94,9 @@ public final class RemediationReportCli {
         Objects.requireNonNull(err, "err cannot be null");
 
         try {
+            if (policyExampleCommandRequested(args)) {
+                return runPolicyExampleCommand(args, out);
+            }
             if (policyTemplateCommandRequested(args)) {
                 return runPolicyTemplateCommand(args, out);
             }
@@ -283,6 +295,166 @@ public final class RemediationReportCli {
             return new Result(true, 0);
         }
         throw new IllegalArgumentException("policy template command is incomplete");
+    }
+
+    private static Result runPolicyExampleCommand(String[] args, PrintStream out) throws IOException {
+        EvidencePolicyExampleService service = new EvidencePolicyExampleService();
+        if (CatalogDiffOptions.hasFlag(args, LIST_POLICY_EXAMPLES_FLAG)) {
+            out.print(service.renderExampleList());
+            return new Result(true, 0);
+        }
+        Optional<String> printExample = CatalogDiffOptions.optionValue(args, PRINT_POLICY_EXAMPLE_FLAG)
+                .filter(value -> !value.isBlank());
+        if (printExample.isPresent()) {
+            out.print(service.renderExampleSummary(printExample.get()));
+            return new Result(true, 0);
+        }
+        Optional<String> walkthroughExample = CatalogDiffOptions.optionValue(args, WALKTHROUGH_POLICY_EXAMPLE_FLAG)
+                .filter(value -> !value.isBlank());
+        if (walkthroughExample.isPresent()) {
+            return runPolicyExampleWalkthrough(args, out, service, walkthroughExample.get());
+        }
+        Optional<String> exportExample = CatalogDiffOptions.optionValue(args, EXPORT_POLICY_EXAMPLE_FLAG)
+                .filter(value -> !value.isBlank());
+        if (exportExample.isPresent()) {
+            EvidencePolicyExampleService.ExportedPolicyExample exported = service.exportExample(
+                    exportExample.get(),
+                    exampleOutputDirectory(args),
+                    CatalogDiffOptions.hasFlag(args, "--force"));
+            out.println("Evidence policy example exported: " + exported.example().name());
+            out.println("- template=" + exported.example().templateName());
+            out.println("- expectedDecision=" + exported.example().expectedDecision());
+            out.println("- before=" + EvidencePolicyExampleService.BEFORE_FILE);
+            out.println("- after=" + EvidencePolicyExampleService.AFTER_FILE);
+            out.println("- expectedDecisionMetadata=" + EvidencePolicyExampleService.EXPECTED_DECISION_FILE);
+            return new Result(true, 0);
+        }
+        throw new IllegalArgumentException("policy example command is incomplete");
+    }
+
+    private static Result runPolicyExampleWalkthrough(
+            String[] args,
+            PrintStream out,
+            EvidencePolicyExampleService service,
+            String exampleName) throws IOException {
+        EvidencePolicyExampleService.ExportedPolicyExample exported = service.exportExample(
+                exampleName,
+                exampleOutputDirectory(args),
+                CatalogDiffOptions.hasFlag(args, "--force"));
+        EvidenceCatalogDiffService diffService = new EvidenceCatalogDiffService();
+        EvidenceCatalogDiffService.EvidenceCatalogDiff diff = diffService.diff(
+                new EvidenceCatalogDiffService.DiffRequest(
+                        exported.beforePath(),
+                        exported.afterPath(),
+                        false));
+        EvidenceHandoffPolicyService policyService = new EvidenceHandoffPolicyService();
+        EvidencePolicyTemplateService templateService = new EvidencePolicyTemplateService();
+        EvidenceHandoffPolicyService.HandoffPolicy policy = policyService.readPolicyJson(
+                "template:" + exported.example().templateName(),
+                templateService.templateJson(exported.example().templateName()));
+        EvidenceHandoffPolicyService.PolicyEvaluation evaluation = policyService.evaluate(diff, policy);
+        JsonNode expected = OBJECT_MAPPER.readTree(exported.expectedDecisionPath().toFile());
+        boolean decisionMatches = expected.path("expectedDecision").asText().equals(evaluation.decision().name());
+        EvidenceHandoffPolicyService.PolicyReportFormat format =
+                CatalogDiffOptions.optionValue(args, "--policy-report-format")
+                        .map(EvidenceHandoffPolicyService.PolicyReportFormat::parse)
+                        .orElse(EvidenceHandoffPolicyService.PolicyReportFormat.MARKDOWN);
+        String rendered = format == EvidenceHandoffPolicyService.PolicyReportFormat.JSON
+                ? renderWalkthroughJson(exported.example(), expected, evaluation, decisionMatches)
+                : renderWalkthroughMarkdown(exported.example(), expected, evaluation, decisionMatches);
+        Optional<Path> outputPath = CatalogDiffOptions.optionValue(args, "--policy-output").map(Path::of);
+        writeOutput(rendered, outputPath, out);
+        if (!decisionMatches) {
+            return new Result(true, 2);
+        }
+        int exitCode = CatalogDiffOptions.hasFlag(args, "--fail-on-policy-fail")
+                && evaluation.decision() == EvidenceHandoffPolicyService.PolicyDecision.FAIL ? 2 : 0;
+        return new Result(true, exitCode);
+    }
+
+    private static Path exampleOutputDirectory(String[] args) {
+        return CatalogDiffOptions.optionValue(args, "--example-output-dir")
+                .map(Path::of)
+                .orElseThrow(() -> new IllegalArgumentException("--example-output-dir requires a directory"));
+    }
+
+    private static String renderWalkthroughMarkdown(
+            EvidencePolicyExampleService.PolicyExample example,
+            JsonNode expected,
+            EvidenceHandoffPolicyService.PolicyEvaluation evaluation,
+            boolean decisionMatches) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("# LoadBalancerPro Evidence Policy Walkthrough")
+                .append(System.lineSeparator())
+                .append(System.lineSeparator());
+        builder.append("- Example: ").append(example.name()).append(System.lineSeparator());
+        builder.append("- Template: ").append(example.templateName()).append(System.lineSeparator());
+        builder.append("- Expected decision: ").append(expected.path("expectedDecision").asText())
+                .append(System.lineSeparator());
+        builder.append("- Actual decision: ").append(evaluation.decision()).append(System.lineSeparator());
+        builder.append("- Decision matches expectation: ").append(decisionMatches).append(System.lineSeparator());
+        builder.append("- Before catalog: ").append(EvidencePolicyExampleService.BEFORE_FILE)
+                .append(System.lineSeparator());
+        builder.append("- After catalog: ").append(EvidencePolicyExampleService.AFTER_FILE)
+                .append(System.lineSeparator());
+        builder.append("- Expected metadata: ").append(EvidencePolicyExampleService.EXPECTED_DECISION_FILE)
+                .append(System.lineSeparator())
+                .append(System.lineSeparator());
+
+        builder.append("## Policy Summary").append(System.lineSeparator()).append(System.lineSeparator());
+        builder.append("- Fail: ").append(evaluation.summary().failCount()).append(System.lineSeparator());
+        builder.append("- Warn: ").append(evaluation.summary().warnCount()).append(System.lineSeparator());
+        builder.append("- Info: ").append(evaluation.summary().infoCount()).append(System.lineSeparator());
+        builder.append("- Ignored: ").append(evaluation.summary().ignoredCount()).append(System.lineSeparator());
+        builder.append("- Unclassified: ").append(evaluation.summary().unclassifiedCount())
+                .append(System.lineSeparator())
+                .append(System.lineSeparator());
+
+        builder.append("## Dry-Run Commands").append(System.lineSeparator()).append(System.lineSeparator());
+        builder.append("```bash").append(System.lineSeparator());
+        builder.append("java -jar target/LoadBalancerPro-2.4.2.jar --diff-inventory before.json after.json ")
+                .append("--diff-format markdown").append(System.lineSeparator());
+        builder.append("java -jar target/LoadBalancerPro-2.4.2.jar --diff-inventory before.json after.json ")
+                .append("--policy-template ").append(example.templateName())
+                .append(" --policy-report-format markdown").append(System.lineSeparator());
+        builder.append("```").append(System.lineSeparator()).append(System.lineSeparator());
+
+        builder.append("## Limitations").append(System.lineSeparator()).append(System.lineSeparator());
+        builder.append("- Local checksum policy walkthrough only; no identity proof is provided.")
+                .append(System.lineSeparator());
+        builder.append("- This is not a legal chain-of-custody system.").append(System.lineSeparator());
+        builder.append("- The walkthrough compares packaged synthetic catalog records only.")
+                .append(System.lineSeparator());
+        return builder.toString();
+    }
+
+    private static String renderWalkthroughJson(
+            EvidencePolicyExampleService.PolicyExample example,
+            JsonNode expected,
+            EvidenceHandoffPolicyService.PolicyEvaluation evaluation,
+            boolean decisionMatches) throws IOException {
+        ObjectNode root = OBJECT_MAPPER.createObjectNode();
+        root.put("walkthroughVersion", "1");
+        root.put("exampleName", example.name());
+        root.put("template", example.templateName());
+        root.put("expectedDecision", expected.path("expectedDecision").asText());
+        root.put("actualDecision", evaluation.decision().name());
+        root.put("decisionMatchesExpectation", decisionMatches);
+        ObjectNode files = root.putObject("exportedFiles");
+        files.put("before", EvidencePolicyExampleService.BEFORE_FILE);
+        files.put("after", EvidencePolicyExampleService.AFTER_FILE);
+        files.put("expectedDecision", EvidencePolicyExampleService.EXPECTED_DECISION_FILE);
+        ObjectNode summary = root.putObject("summary");
+        summary.put("failCount", evaluation.summary().failCount());
+        summary.put("warnCount", evaluation.summary().warnCount());
+        summary.put("infoCount", evaluation.summary().infoCount());
+        summary.put("ignoredCount", evaluation.summary().ignoredCount());
+        summary.put("unclassifiedCount", evaluation.summary().unclassifiedCount());
+        ArrayNode limitations = root.putArray("limitations");
+        limitations.add("Local checksum policy walkthrough only; no identity proof is provided.");
+        limitations.add("This is not a legal chain-of-custody system.");
+        limitations.add("The walkthrough compares packaged synthetic catalog records only.");
+        return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(root) + System.lineSeparator();
     }
 
     private static Result writeBundle(
@@ -643,6 +815,10 @@ public final class RemediationReportCli {
                 + "[--policy-report-format markdown|json] [--policy-output <path>] [--fail-on-policy-fail]");
         err.println("Policy templates: --list-policy-templates | --export-policy-template <name> "
                 + "[--policy-output <path>] | --validate-policy <policy.json>");
+        err.println("Policy examples: --list-policy-examples | --print-policy-example <name> | "
+                + "--export-policy-example <name> --example-output-dir <dir> [--force] | "
+                + "--walkthrough-policy-example <name> --example-output-dir <dir> "
+                + "[--policy-report-format markdown|json] [--policy-output <path>] [--force]");
         err.println("Safety: offline/read-only report generation; no API server, network access, "
                 + "CloudManager calls, or cloud mutation.");
     }
@@ -669,6 +845,18 @@ public final class RemediationReportCli {
                         || arg.startsWith(EXPORT_POLICY_TEMPLATE_FLAG + "=")
                         || arg.equals(VALIDATE_POLICY_FLAG)
                         || arg.startsWith(VALIDATE_POLICY_FLAG + "="));
+    }
+
+    private static boolean policyExampleCommandRequested(String[] args) {
+        return Arrays.stream(args)
+                .filter(Objects::nonNull)
+                .anyMatch(arg -> arg.equals(LIST_POLICY_EXAMPLES_FLAG)
+                        || arg.equals(EXPORT_POLICY_EXAMPLE_FLAG)
+                        || arg.startsWith(EXPORT_POLICY_EXAMPLE_FLAG + "=")
+                        || arg.equals(PRINT_POLICY_EXAMPLE_FLAG)
+                        || arg.startsWith(PRINT_POLICY_EXAMPLE_FLAG + "=")
+                        || arg.equals(WALKTHROUGH_POLICY_EXAMPLE_FLAG)
+                        || arg.startsWith(WALKTHROUGH_POLICY_EXAMPLE_FLAG + "="));
     }
 
     public record Result(boolean requested, int exitCode) {

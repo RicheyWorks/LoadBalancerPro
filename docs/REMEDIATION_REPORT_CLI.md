@@ -34,6 +34,20 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
   --redact-file incident-redactions.txt
 ```
 
+For local API or Postman onboarding, the Spring Boot API also exposes read-only evidence training discovery routes:
+
+```text
+GET  /api/evidence-training/onboarding
+GET  /api/evidence-training/templates
+GET  /api/evidence-training/examples
+GET  /api/evidence-training/scorecards
+GET  /api/evidence-training/scorecards/{name}
+GET  /api/evidence-training/scorecards/{name}/answer-template
+POST /api/evidence-training/scorecards/grade
+```
+
+Those routes help GUI-facing clients and Postman users find templates, examples, scorecards, and answer JSON templates. The API grade route returns deterministic JSON in memory and does not write Markdown/JSON report files. The offline CLI remains available and does not require the API server. See [`POSTMAN_EVIDENCE_TRAINING.md`](POSTMAN_EVIDENCE_TRAINING.md) for collection import steps.
+
 ## Inputs
 
 The CLI accepts:

@@ -47,6 +47,155 @@
       }
     },
     {
+      "name": "Evidence Training Onboarding",
+      "item": [
+        {
+          "name": "GET Onboarding Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/onboarding",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "onboarding"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Policy Templates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/templates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "templates"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Policy Examples",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/examples",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "examples"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Training Scorecards",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Scorecard Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards/receiver-redaction-warn",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards",
+                "receiver-redaction-warn"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Scorecard Answer Template",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards/receiver-redaction-warn/answer-template",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards",
+                "receiver-redaction-warn",
+                "answer-template"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Grade Scorecard Answers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operator\": \"operator-a\",\n  \"answers\": [\n    {\n      \"exerciseName\": \"receiver-redaction-warn\",\n      \"decision\": \"WARN\",\n      \"reason\": \"Receiver redaction changes require review\",\n      \"action\": \"confirm redaction summary\",\n      \"notes\": \"Confirm the summary and document the reviewed redacted files.\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards/grade",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards",
+                "grade"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "POST Capacity-Aware Allocation",
       "request": {
         "method": "POST",

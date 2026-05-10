@@ -16,28 +16,29 @@ final class LoadDistributionEngine {
     Map<String, Double> roundRobin(List<Server> healthyServers, double totalData) {
         Map<String, Double> distribution = LoadDistributionPlanner.roundRobin(healthyServers, totalData);
         accumulate(distribution);
-        DomainMetrics.recordAllocation("ROUND_ROBIN", healthyServers.size(), 0.0);
+        DomainMetrics.recordAllocation("ROUND_ROBIN", healthyServers.size(), totalAllocated(distribution), 0.0);
         return distribution;
     }
 
     Map<String, Double> leastLoaded(List<Server> healthyServers, double totalData) {
         Map<String, Double> distribution = LoadDistributionPlanner.leastLoaded(healthyServers, totalData);
         accumulate(distribution);
-        DomainMetrics.recordAllocation("LEAST_LOADED", healthyServers.size(), 0.0);
+        DomainMetrics.recordAllocation("LEAST_LOADED", healthyServers.size(), totalAllocated(distribution), 0.0);
         return distribution;
     }
 
     Map<String, Double> weightedDistribution(List<Server> healthyServers, double totalData) {
         Map<String, Double> distribution = LoadDistributionPlanner.weighted(healthyServers, totalData);
         accumulate(distribution);
-        DomainMetrics.recordAllocation("WEIGHTED", healthyServers.size(), 0.0);
+        DomainMetrics.recordAllocation("WEIGHTED", healthyServers.size(), totalAllocated(distribution), 0.0);
         return distribution;
     }
 
     LoadDistributionResult capacityAwareWithResult(List<Server> healthyServers, double totalData) {
         LoadDistributionResult result = LoadDistributionPlanner.capacityAwareResult(healthyServers, totalData);
         accumulate(result.allocations());
-        DomainMetrics.recordAllocation("CAPACITY_AWARE", healthyServers.size(), result.unallocatedLoad());
+        DomainMetrics.recordAllocation(
+                "CAPACITY_AWARE", healthyServers.size(), totalAllocated(result.allocations()), result.unallocatedLoad());
         return result;
     }
 
@@ -45,7 +46,8 @@ final class LoadDistributionEngine {
         LoadDistributionResult result = LoadDistributionPlanner.predictiveResult(
                 healthyServers, totalData, calculatePredictedLoads(healthyServers));
         accumulate(result.allocations());
-        DomainMetrics.recordAllocation("PREDICTIVE", healthyServers.size(), result.unallocatedLoad());
+        DomainMetrics.recordAllocation(
+                "PREDICTIVE", healthyServers.size(), totalAllocated(result.allocations()), result.unallocatedLoad());
         return result;
     }
 
@@ -74,6 +76,12 @@ final class LoadDistributionEngine {
         for (Map.Entry<String, Double> entry : allocations.entrySet()) {
             currentDistribution.merge(entry.getKey(), entry.getValue(), Double::sum);
         }
+    }
+
+    private double totalAllocated(Map<String, Double> allocations) {
+        return allocations.values().stream()
+                .mapToDouble(value -> Math.max(0.0, value))
+                .sum();
     }
 
     private Map<String, Double> calculatePredictedLoads(List<Server> servers) {

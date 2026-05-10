@@ -174,6 +174,74 @@ class AllocatorControllerTest {
     }
 
     @Test
+    void capacityAwareAllocationExcludesUnhealthyServersAtApiBoundary() throws Exception {
+        mockMvc.perform(post("/api/allocate/capacity-aware")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "requestedLoad": 120.0,
+                                  "servers": [
+                                    {
+                                      "id": "steady",
+                                      "cpuUsage": 20.0,
+                                      "memoryUsage": 20.0,
+                                      "diskUsage": 20.0,
+                                      "capacity": 100.0,
+                                      "weight": 1.0,
+                                      "healthy": true
+                                    },
+                                    {
+                                      "id": "retired",
+                                      "cpuUsage": 0.0,
+                                      "memoryUsage": 0.0,
+                                      "diskUsage": 0.0,
+                                      "capacity": 1000.0,
+                                      "weight": 10.0,
+                                      "healthy": false
+                                    }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allocations.steady", closeTo(80.0, 0.01)))
+                .andExpect(jsonPath("$.allocations.retired").doesNotExist())
+                .andExpect(jsonPath("$.unallocatedLoad", closeTo(40.0, 0.01)))
+                .andExpect(jsonPath("$.recommendedAdditionalServers", is(1)))
+                .andExpect(jsonPath("$.scalingSimulation.recommendedAdditionalServers", is(1)))
+                .andExpect(jsonPath("$.scalingSimulation.simulatedOnly", is(true)));
+    }
+
+    @Test
+    void capacityAwareAllocationWithAllServersUnhealthyReturnsUnallocatedLoadWithoutScaleCount() throws Exception {
+        mockMvc.perform(post("/api/allocate/capacity-aware")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "requestedLoad": 50.0,
+                                  "servers": [
+                                    {
+                                      "id": "unhealthy",
+                                      "cpuUsage": 10.0,
+                                      "memoryUsage": 10.0,
+                                      "diskUsage": 10.0,
+                                      "capacity": 100.0,
+                                      "weight": 1.0,
+                                      "healthy": false
+                                    }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allocations").isMap())
+                .andExpect(jsonPath("$.allocations.unhealthy").doesNotExist())
+                .andExpect(jsonPath("$.unallocatedLoad", closeTo(50.0, 0.01)))
+                .andExpect(jsonPath("$.recommendedAdditionalServers", is(0)))
+                .andExpect(jsonPath("$.scalingSimulation.recommendedAdditionalServers", is(0)))
+                .andExpect(jsonPath("$.scalingSimulation.simulatedOnly", is(true)))
+                .andExpect(jsonPath("$.scalingSimulation.reason", containsString("target capacity is unavailable")));
+    }
+
+    @Test
     void scalingSimulationDoesNotConstructCloudManager() throws Exception {
         try (MockedConstruction<CloudManager> mockedCloudManager =
                 Mockito.mockConstruction(CloudManager.class)) {
@@ -201,6 +269,49 @@ class AllocatorControllerTest {
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "Scaling simulation must not construct CloudManager or call AWS paths.");
+        }
+    }
+
+    @Test
+    void predictiveAllocationSkipsExhaustedServersAndDoesNotConstructCloudManager() throws Exception {
+        try (MockedConstruction<CloudManager> mockedCloudManager =
+                Mockito.mockConstruction(CloudManager.class)) {
+            mockMvc.perform(post("/api/allocate/predictive")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                      "requestedLoad": 90.0,
+                                      "servers": [
+                                        {
+                                          "id": "available",
+                                          "cpuUsage": 20.0,
+                                          "memoryUsage": 20.0,
+                                          "diskUsage": 20.0,
+                                          "capacity": 100.0,
+                                          "weight": 1.0,
+                                          "healthy": true
+                                        },
+                                        {
+                                          "id": "exhausted",
+                                          "cpuUsage": 100.0,
+                                          "memoryUsage": 100.0,
+                                          "diskUsage": 100.0,
+                                          "capacity": 100.0,
+                                          "weight": 1.0,
+                                          "healthy": true
+                                        }
+                                      ]
+                                    }
+                                    """))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.allocations.available", closeTo(78.0, 0.01)))
+                    .andExpect(jsonPath("$.allocations.exhausted").doesNotExist())
+                    .andExpect(jsonPath("$.unallocatedLoad", closeTo(12.0, 0.01)))
+                    .andExpect(jsonPath("$.recommendedAdditionalServers", is(1)))
+                    .andExpect(jsonPath("$.scalingSimulation.simulatedOnly", is(true)));
+
+            assertTrue(mockedCloudManager.constructed().isEmpty(),
+                    "Predictive allocation must not construct CloudManager or call AWS paths.");
         }
     }
 
@@ -394,6 +505,36 @@ class AllocatorControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", is("validation_failed")))
                 .andExpect(jsonPath("$.details").isArray());
+    }
+
+    @Test
+    void allocationRejectsNegativeServerCapacityWithSafeValidationShape() throws Exception {
+        mockMvc.perform(post("/api/allocate/predictive")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "requestedLoad": 10.0,
+                                  "servers": [
+                                    {
+                                      "id": "api-1",
+                                      "cpuUsage": 10.0,
+                                      "memoryUsage": 20.0,
+                                      "diskUsage": 20.0,
+                                      "capacity": -1.0,
+                                      "weight": 1.0,
+                                      "healthy": true
+                                    }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error", is("validation_failed")))
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.path", is("/api/allocate/predictive")))
+                .andExpect(jsonPath("$.details[0]", containsString("capacity")))
+                .andExpect(jsonPath("$.trace").doesNotExist())
+                .andExpect(jsonPath("$.exception").doesNotExist());
     }
 
     @Test

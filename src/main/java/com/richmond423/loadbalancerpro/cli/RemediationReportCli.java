@@ -25,6 +25,8 @@ import java.util.Optional;
 public final class RemediationReportCli {
     private static final String FLAG = "--remediation-report";
     private static final String VERIFY_MANIFEST_FLAG = "--verify-manifest";
+    private static final String BUNDLE_FLAG = "--bundle";
+    private static final String VERIFY_BUNDLE_FLAG = "--verify-bundle";
     private static final String APP_VERSION = "2.4.2";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -45,7 +47,9 @@ public final class RemediationReportCli {
         return Arrays.stream(args)
                 .filter(Objects::nonNull)
                 .anyMatch(arg -> arg.equals(FLAG) || arg.startsWith(FLAG + "=")
-                        || arg.equals(VERIFY_MANIFEST_FLAG) || arg.startsWith(VERIFY_MANIFEST_FLAG + "="));
+                        || arg.equals(VERIFY_MANIFEST_FLAG) || arg.startsWith(VERIFY_MANIFEST_FLAG + "=")
+                        || arg.equals(BUNDLE_FLAG) || arg.startsWith(BUNDLE_FLAG + "=")
+                        || arg.equals(VERIFY_BUNDLE_FLAG) || arg.startsWith(VERIFY_BUNDLE_FLAG + "="));
     }
 
     public static Result runIfRequested(String[] args, PrintStream out, PrintStream err) {
@@ -65,9 +69,15 @@ public final class RemediationReportCli {
             if (options.verifyManifestPath().isPresent()) {
                 return verifyManifest(options.verifyManifestPath().get(), out);
             }
-            validateManifestOptions(options);
+            if (options.verifyBundlePath().isPresent()) {
+                return verifyBundle(options.verifyBundlePath().get(), out);
+            }
+            validateOptions(options);
             RemediationReportResponse response = responseFromInput(options);
             String rendered = render(response);
+            if (options.bundlePath().isPresent()) {
+                return writeBundle(options, response, rendered, out);
+            }
             writeOutput(rendered, options.outputPath(), out);
             writeManifestIfRequested(options, response);
             return new Result(true, 0);
@@ -115,6 +125,43 @@ public final class RemediationReportCli {
         return new Result(true, result.verified() ? 0 : 2);
     }
 
+    private static Result verifyBundle(Path bundlePath, PrintStream out) throws IOException {
+        IncidentBundleService.BundleVerificationResult result = new IncidentBundleService().verify(bundlePath);
+        out.println((result.verified() ? "Incident bundle verification passed: "
+                : "Incident bundle verification failed: ") + bundlePath);
+        for (String error : result.errors()) {
+            out.println("- ERROR " + error);
+        }
+        for (ReportChecksumManifestService.ManifestVerificationEntry entry : result.entries()) {
+            out.println("- " + entry.status() + " [" + entry.role() + "] " + entry.path()
+                    + " expected=" + entry.expectedSha256()
+                    + (entry.actualSha256() == null ? "" : " actual=" + entry.actualSha256()));
+        }
+        return new Result(true, result.verified() ? 0 : 2);
+    }
+
+    private static Result writeBundle(
+            CliOptions options,
+            RemediationReportResponse response,
+            String rendered,
+            PrintStream out) throws IOException {
+        Path inputPath = options.inputPath()
+                .orElseThrow(() -> new IllegalArgumentException("--bundle requires --input <path>"));
+        IncidentBundleService.BundleExportResult result = new IncidentBundleService().export(
+                new IncidentBundleService.BundleExportRequest(
+                        options.bundlePath().get(),
+                        inputPath,
+                        response.format(),
+                        rendered,
+                        response.json(),
+                        options.generatedBy().orElse(null),
+                        options.createdAt().orElse(null),
+                        appVersion()));
+        out.println("Incident bundle written: " + result.bundlePath());
+        out.println("Incident bundle verification passed: " + result.bundlePath());
+        return new Result(true, 0);
+    }
+
     private static void writeManifestIfRequested(
             CliOptions options, RemediationReportResponse response) throws IOException {
         if (options.manifestPath().isEmpty()) {
@@ -138,9 +185,13 @@ public final class RemediationReportCli {
         manifestService.write(options.manifestPath().get(), manifest);
     }
 
-    private static void validateManifestOptions(CliOptions options) {
+    private static void validateOptions(CliOptions options) {
         if (options.manifestPath().isPresent() && options.outputPath().isEmpty()) {
             throw new IllegalArgumentException("--manifest requires --output <path>");
+        }
+        if (options.bundlePath().isPresent()
+                && (options.outputPath().isPresent() || options.manifestPath().isPresent())) {
+            throw new IllegalArgumentException("--bundle writes its own report and manifest; omit --output and --manifest");
         }
     }
 
@@ -216,6 +267,9 @@ public final class RemediationReportCli {
                 + "[--manifest <path>]");
         err.println("Shorthand: --remediation-report=<path>");
         err.println("Verify: --verify-manifest <manifest.json>");
+        err.println("Bundle: --input <saved-evaluation-or-replay.json> [--format markdown|json] "
+                + "--bundle <incident-bundle.zip>");
+        err.println("Verify bundle: --verify-bundle <incident-bundle.zip>");
         err.println("Safety: offline/read-only report generation; no API server, network access, "
                 + "CloudManager calls, or cloud mutation.");
     }
@@ -240,6 +294,8 @@ public final class RemediationReportCli {
             Optional<Path> manifestPath,
             List<Path> manifestExtraPaths,
             Optional<Path> verifyManifestPath,
+            Optional<Path> bundlePath,
+            Optional<Path> verifyBundlePath,
             Optional<String> generatedBy,
             Optional<String> createdAt) {
 
@@ -251,6 +307,8 @@ public final class RemediationReportCli {
             manifestPath = manifestPath == null ? Optional.empty() : manifestPath;
             manifestExtraPaths = manifestExtraPaths == null ? List.of() : List.copyOf(manifestExtraPaths);
             verifyManifestPath = verifyManifestPath == null ? Optional.empty() : verifyManifestPath;
+            bundlePath = bundlePath == null ? Optional.empty() : bundlePath;
+            verifyBundlePath = verifyBundlePath == null ? Optional.empty() : verifyBundlePath;
             generatedBy = generatedBy == null ? Optional.empty() : generatedBy;
             createdAt = createdAt == null ? Optional.empty() : createdAt;
         }
@@ -260,6 +318,14 @@ public final class RemediationReportCli {
             if (verifyManifest.isPresent()) {
                 return new CliOptions(Optional.empty(), RemediationReportFormat.MARKDOWN, Optional.empty(),
                         Optional.empty(), Optional.empty(), Optional.empty(), List.of(), verifyManifest,
+                        Optional.empty(), Optional.empty(),
+                        Optional.empty(), Optional.empty());
+            }
+            Optional<Path> verifyBundle = optionValue(args, VERIFY_BUNDLE_FLAG).map(Path::of);
+            if (verifyBundle.isPresent()) {
+                return new CliOptions(Optional.empty(), RemediationReportFormat.MARKDOWN, Optional.empty(),
+                        Optional.empty(), Optional.empty(), Optional.empty(), List.of(), Optional.empty(),
+                        Optional.empty(), verifyBundle,
                         Optional.empty(), Optional.empty());
             }
             Path input = remediationReportPath(args)
@@ -273,6 +339,7 @@ public final class RemediationReportCli {
             Optional<String> reportId = optionValue(args, "--report-id").filter(value -> !value.isBlank());
             Optional<String> title = optionValue(args, "--title").filter(value -> !value.isBlank());
             Optional<Path> manifest = optionValue(args, "--manifest").map(Path::of);
+            Optional<Path> bundle = optionValue(args, BUNDLE_FLAG).map(Path::of);
             List<Path> manifestExtras = optionValues(args, "--manifest-extra").stream()
                     .filter(value -> !value.isBlank())
                     .map(Path::of)
@@ -280,7 +347,7 @@ public final class RemediationReportCli {
             Optional<String> generatedBy = optionValue(args, "--generated-by").filter(value -> !value.isBlank());
             Optional<String> createdAt = optionValue(args, "--created-at").filter(value -> !value.isBlank());
             return new CliOptions(Optional.of(input), format, output, reportId, title, manifest, manifestExtras,
-                    Optional.empty(), generatedBy, createdAt);
+                    Optional.empty(), bundle, Optional.empty(), generatedBy, createdAt);
         }
 
         private static Optional<String> remediationReportPath(String[] args) {

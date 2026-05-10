@@ -71,24 +71,38 @@ final class ReportChecksumManifestService {
 
     ManifestVerificationResult verify(Path manifestPath) throws IOException {
         Path normalizedManifest = normalize(manifestPath);
-        ReportChecksumManifest manifest = MANIFEST_MAPPER.readValue(
-                normalizedManifest.toFile(), ReportChecksumManifest.class);
+        ReportChecksumManifest manifest = readManifest(Files.readAllBytes(normalizedManifest));
+
+        Path manifestDirectory = normalizedManifest.getParent();
+        Path baseDirectory = manifestDirectory == null
+                ? Path.of(".").toAbsolutePath().normalize()
+                : manifestDirectory;
+
+        return verify(manifest, path -> {
+            Path resolved = resolveManifestFile(baseDirectory, path);
+            return Files.isRegularFile(resolved) ? Files.readAllBytes(resolved) : null;
+        });
+    }
+
+    ReportChecksumManifest readManifest(byte[] manifestBytes) throws IOException {
+        ReportChecksumManifest manifest = MANIFEST_MAPPER.readValue(manifestBytes, ReportChecksumManifest.class);
         validateManifest(manifest);
+        return manifest;
+    }
 
-        Path baseDirectory = normalizedManifest.getParent();
-        if (baseDirectory == null) {
-            baseDirectory = Path.of(".").toAbsolutePath().normalize();
-        }
-
+    ManifestVerificationResult verify(ReportChecksumManifest manifest, ManifestContentResolver resolver)
+            throws IOException {
+        validateManifest(manifest);
+        Objects.requireNonNull(resolver, "manifest content resolver cannot be null");
         List<ManifestVerificationEntry> entries = new ArrayList<>();
         for (ReportChecksumFile file : manifest.files()) {
-            Path resolved = resolveManifestFile(baseDirectory, file.path());
-            if (!Files.isRegularFile(resolved)) {
+            byte[] content = resolver.resolve(file.path());
+            if (content == null) {
                 entries.add(new ManifestVerificationEntry(file.path(), file.role(), file.sha256(), null, false,
                         "MISSING"));
                 continue;
             }
-            String actual = sha256(resolved);
+            String actual = sha256(content);
             boolean match = actual.equalsIgnoreCase(file.sha256());
             entries.add(new ManifestVerificationEntry(file.path(), file.role(), file.sha256(), actual, match,
                     match ? "OK" : "MISMATCH"));
@@ -110,6 +124,12 @@ final class ReportChecksumManifestService {
                 digest.update(buffer, 0, read);
             }
         }
+        return HexFormat.of().formatHex(digest.digest());
+    }
+
+    static String sha256(byte[] content) {
+        MessageDigest digest = sha256Digest();
+        digest.update(content);
         return HexFormat.of().formatHex(digest.digest());
     }
 
@@ -251,5 +271,10 @@ final class ReportChecksumManifestService {
             String actualSha256,
             boolean verified,
             String status) {
+    }
+
+    @FunctionalInterface
+    interface ManifestContentResolver {
+        byte[] resolve(String path) throws IOException;
     }
 }

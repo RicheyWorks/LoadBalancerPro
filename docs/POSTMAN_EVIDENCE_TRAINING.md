@@ -66,6 +66,16 @@ src/test/resources/evidence-training-demo/failing-scorecard-answers.json
 
 See [`OPERATOR_DEMO_WALKTHROUGH.md`](OPERATOR_DEMO_WALKTHROUGH.md) for the guided browser cockpit and Postman start-to-finish demo.
 
+## Routing Demo Parity
+
+For core load-balancing review, use the adjacent browser page:
+
+```text
+http://localhost:8080/routing-demo.html
+```
+
+The Postman collection also includes a `Routing Decision Demo` folder with health, readiness, all-strategy comparison, weighted, least-connections, and tail-latency samples against the existing `POST /api/routing/compare` endpoint. It uses synthetic server telemetry only and does not mutate cloud state. See [`POSTMAN_ROUTING_DEMO.md`](POSTMAN_ROUTING_DEMO.md).
+
 ## Sample Answer JSON
 
 ```json

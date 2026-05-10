@@ -447,6 +447,175 @@
       ]
     },
     {
+      "name": "Routing Decision Demo",
+      "description": "Ordered local routing demo: health, readiness, and read-only request-level routing comparison samples. Uses synthetic candidate telemetry only and does not mutate cloud state.",
+      "item": [
+        {
+          "name": "GET Routing Demo Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Routing Demo Readiness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health/readiness",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health",
+                "readiness"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Compare All Supported Strategies",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategies\": [\n    \"TAIL_LATENCY_POWER_OF_TWO\",\n    \"WEIGHTED_LEAST_LOAD\",\n    \"WEIGHTED_LEAST_CONNECTIONS\",\n    \"WEIGHTED_ROUND_ROBIN\",\n    \"ROUND_ROBIN\"\n  ],\n  \"servers\": [\n    {\n      \"serverId\": \"edge-alpha\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 5,\n      \"configuredCapacity\": 100.0,\n      \"estimatedConcurrencyLimit\": 100.0,\n      \"weight\": 2.0,\n      \"averageLatencyMillis\": 20.0,\n      \"p95LatencyMillis\": 40.0,\n      \"p99LatencyMillis\": 80.0,\n      \"recentErrorRate\": 0.01,\n      \"queueDepth\": 1,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0.0,\n        \"retryRate\": 0.0,\n        \"connectionFailureRate\": 0.0,\n        \"latencyJitterMillis\": 4.0,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 0,\n        \"sampleSize\": 120\n      }\n    },\n    {\n      \"serverId\": \"edge-beta\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 28,\n      \"configuredCapacity\": 100.0,\n      \"estimatedConcurrencyLimit\": 100.0,\n      \"weight\": 4.0,\n      \"averageLatencyMillis\": 24.0,\n      \"p95LatencyMillis\": 52.0,\n      \"p99LatencyMillis\": 96.0,\n      \"recentErrorRate\": 0.02,\n      \"queueDepth\": 3\n    },\n    {\n      \"serverId\": \"edge-drain\",\n      \"healthy\": false,\n      \"inFlightRequestCount\": 1,\n      \"configuredCapacity\": 100.0,\n      \"estimatedConcurrencyLimit\": 100.0,\n      \"weight\": 5.0,\n      \"averageLatencyMillis\": 12.0,\n      \"p95LatencyMillis\": 20.0,\n      \"p99LatencyMillis\": 40.0,\n      \"recentErrorRate\": 0.0,\n      \"queueDepth\": 0\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/routing/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routing",
+                "compare"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Weighted Strategy Sample",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategies\": [\n    \"WEIGHTED_LEAST_LOAD\",\n    \"WEIGHTED_ROUND_ROBIN\"\n  ],\n  \"servers\": [\n    {\n      \"serverId\": \"edge-standard\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 20,\n      \"configuredCapacity\": 100.0,\n      \"estimatedConcurrencyLimit\": 100.0,\n      \"weight\": 1.0,\n      \"averageLatencyMillis\": 20.0,\n      \"p95LatencyMillis\": 40.0,\n      \"p99LatencyMillis\": 80.0,\n      \"recentErrorRate\": 0.01,\n      \"queueDepth\": 2\n    },\n    {\n      \"serverId\": \"edge-weighted\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 20,\n      \"configuredCapacity\": 100.0,\n      \"estimatedConcurrencyLimit\": 100.0,\n      \"weight\": 4.0,\n      \"averageLatencyMillis\": 20.0,\n      \"p95LatencyMillis\": 40.0,\n      \"p99LatencyMillis\": 80.0,\n      \"recentErrorRate\": 0.01,\n      \"queueDepth\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/routing/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routing",
+                "compare"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Least Connections Sample",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategies\": [\n    \"WEIGHTED_LEAST_CONNECTIONS\"\n  ],\n  \"servers\": [\n    {\n      \"serverId\": \"edge-standard\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 5,\n      \"configuredCapacity\": 100.0,\n      \"estimatedConcurrencyLimit\": 100.0,\n      \"weight\": 1.0,\n      \"averageLatencyMillis\": 16.0,\n      \"p95LatencyMillis\": 30.0,\n      \"p99LatencyMillis\": 60.0,\n      \"recentErrorRate\": 0.0,\n      \"queueDepth\": 1\n    },\n    {\n      \"serverId\": \"edge-weighted\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 12,\n      \"configuredCapacity\": 100.0,\n      \"estimatedConcurrencyLimit\": 100.0,\n      \"weight\": 4.0,\n      \"averageLatencyMillis\": 18.0,\n      \"p95LatencyMillis\": 34.0,\n      \"p99LatencyMillis\": 70.0,\n      \"recentErrorRate\": 0.0,\n      \"queueDepth\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/routing/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routing",
+                "compare"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Tail Latency Sample",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategies\": [\n    \"TAIL_LATENCY_POWER_OF_TWO\"\n  ],\n  \"servers\": [\n    {\n      \"serverId\": \"edge-low-tail\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 4,\n      \"configuredCapacity\": 100.0,\n      \"estimatedConcurrencyLimit\": 100.0,\n      \"weight\": 1.0,\n      \"averageLatencyMillis\": 18.0,\n      \"p95LatencyMillis\": 32.0,\n      \"p99LatencyMillis\": 64.0,\n      \"recentErrorRate\": 0.0,\n      \"queueDepth\": 1,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0.0,\n        \"retryRate\": 0.0,\n        \"connectionFailureRate\": 0.0,\n        \"latencyJitterMillis\": 3.0,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 0,\n        \"sampleSize\": 120\n      }\n    },\n    {\n      \"serverId\": \"edge-high-tail\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 4,\n      \"configuredCapacity\": 100.0,\n      \"estimatedConcurrencyLimit\": 100.0,\n      \"weight\": 1.0,\n      \"averageLatencyMillis\": 28.0,\n      \"p95LatencyMillis\": 95.0,\n      \"p99LatencyMillis\": 180.0,\n      \"recentErrorRate\": 0.04,\n      \"queueDepth\": 4\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/routing/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routing",
+                "compare"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "POST Capacity-Aware Allocation",
       "request": {
         "method": "POST",

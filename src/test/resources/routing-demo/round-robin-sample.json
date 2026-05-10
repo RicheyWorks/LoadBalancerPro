@@ -1,0 +1,25 @@
+{
+  "strategies": [
+    "ROUND_ROBIN"
+  ],
+  "servers": [
+    {
+      "serverId": "edge-alpha",
+      "healthy": true,
+      "inFlightRequestCount": 5,
+      "averageLatencyMillis": 20.0,
+      "p95LatencyMillis": 40.0,
+      "p99LatencyMillis": 80.0,
+      "recentErrorRate": 0.01
+    },
+    {
+      "serverId": "edge-beta",
+      "healthy": true,
+      "inFlightRequestCount": 28,
+      "averageLatencyMillis": 24.0,
+      "p95LatencyMillis": 52.0,
+      "p99LatencyMillis": 96.0,
+      "recentErrorRate": 0.02
+    }
+  ]
+}

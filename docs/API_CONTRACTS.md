@@ -27,7 +27,7 @@ Allocation responses expose an `allocations` map, `unallocatedLoad`, `recommende
 
 Read-only evaluation responses expose `acceptedLoad`, `rejectedLoad`, `unallocatedLoad`, `scalingSimulation`, `loadShedding`, `metricsPreview`, and `remediationPlan`. The evaluation endpoint is recommendation-only: `readOnly` is `true`, `metricsPreview.emitted` is `false`, `remediationPlan.advisoryOnly` is `true`, and the endpoint must not construct `CloudManager`.
 
-Routing comparison responses expose `requestedStrategies`, `candidateCount`, `timestamp`, and a `results` array. A no-healthy-server comparison still returns a controlled result with `chosenServerId` set to `null`, empty candidate/scores collections, and an explanatory reason.
+Routing comparison responses expose `requestedStrategies`, `candidateCount`, `timestamp`, and a `results` array. Each result exposes the strategy id, status, selected server id when one is available, the strategy reason, considered candidates, and score map when the strategy reports scores. A no-healthy-server comparison still returns a controlled result with `chosenServerId` set to `null`, empty candidate/scores collections, and an explanatory reason.
 
 Scenario replay responses expose `scenarioId`, `readOnly`, `cloudMutation`, `remediationPlan`, and ordered `steps`. Remediation recommendations are advisory only and must not introduce cloud mutation or execution semantics.
 
@@ -36,6 +36,8 @@ Remediation report export requests accept exactly one report source: an existing
 Evidence training onboarding responses expose packaged policy templates, examples, scorecards, answer JSON templates, and workflow pointers for API/Postman users. Discovery routes are read-only. The scorecard grade route evaluates submitted JSON in memory, returns deterministic JSON, writes no runtime report files, and must not construct `CloudManager`. The operator demo walkthrough reuses these existing routes plus `/api/health` and Actuator readiness; it does not introduce a separate mutable demo API.
 
 The static browser cockpit is served at `GET /evidence-training-demo.html`. It is not a new API contract and does not introduce new DTOs; it calls the existing health, readiness, onboarding, template, example, scorecard, answer-template, and deterministic grading routes. Its run-sequence control, stop/reset controls, checklist status, summary counters, curl snippets, response copy controls, sample payload copy/export controls, summary/transcript preview, and PASS/WARN/FAIL grading summaries are client-side only and do not write runtime reports.
+
+The static routing decision demo is served at `GET /routing-demo.html`. It is not a new API contract and does not introduce new DTOs; it calls the existing health, readiness, and `POST /api/routing/compare` routes with synthetic caller-provided telemetry. The page displays selected servers, strategy reasons, raw JSON, copyable curl, copyable payloads, and a normalized copyable summary. The demo remains client-side only and does not write runtime reports.
 
 Structured API errors expose `status`, `error`, `message`, `path`, `timestamp`, and `details` without diagnostic fields such as stack traces.
 

@@ -136,6 +136,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`OBSERVABILITY.md`](docs/OBSERVABILITY.md) documents domain metrics, label cardinality policy, Prometheus query examples, and dashboard guidance.
 - [`OPERATIONS_RUNBOOK.md`](docs/OPERATIONS_RUNBOOK.md) documents degraded allocation, load-shedding, validation-failure, and cloud-safety incident response.
 - [`SCENARIO_SIMULATION.md`](docs/SCENARIO_SIMULATION.md) documents read-only traffic replay and degraded allocation/routing scenario simulation.
+- [`INCIDENT_FIXTURE_CATALOG.md`](docs/INCIDENT_FIXTURE_CATALOG.md) documents curated deterministic replay fixtures for common degraded incidents.
 - [`DOCKER_COMPOSE_PROD_LIKE_GUIDE.md`](docs/DOCKER_COMPOSE_PROD_LIKE_GUIDE.md) documents a local/private production-like Compose example with loopback binding and no live AWS.
 
 ## Hardened Foundation Checklist

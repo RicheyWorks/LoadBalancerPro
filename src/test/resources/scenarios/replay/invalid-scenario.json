@@ -1,0 +1,21 @@
+{
+  "scenarioId": "invalid-scenario",
+  "servers": [
+    {
+      "id": "green",
+      "cpuUsage": 20.0,
+      "memoryUsage": 20.0,
+      "diskUsage": 20.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": true
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "unsupported-event",
+      "type": "TELEPORT",
+      "requestedLoad": 50.0
+    }
+  ]
+}

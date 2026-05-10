@@ -1,0 +1,45 @@
+{
+  "scenarioId": "normal-baseline",
+  "servers": [
+    {
+      "id": "green",
+      "cpuUsage": 20.0,
+      "memoryUsage": 20.0,
+      "diskUsage": 20.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": true
+    },
+    {
+      "id": "blue",
+      "cpuUsage": 20.0,
+      "memoryUsage": 20.0,
+      "diskUsage": 20.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": true
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "allocate-normal",
+      "type": "ALLOCATE",
+      "requestedLoad": 50.0,
+      "strategy": "CAPACITY_AWARE"
+    },
+    {
+      "stepId": "evaluate-normal",
+      "type": "EVALUATE",
+      "requestedLoad": 40.0,
+      "strategy": "PREDICTIVE",
+      "priority": "USER"
+    },
+    {
+      "stepId": "route-normal",
+      "type": "ROUTE",
+      "routingStrategies": [
+        "ROUND_ROBIN"
+      ]
+    }
+  ]
+}

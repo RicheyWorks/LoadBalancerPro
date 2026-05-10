@@ -60,9 +60,24 @@ curl -fsS -X POST http://127.0.0.1:8080/api/allocate/capacity-aware \
 - `RESTORE_CAPACITY` / `RETRY_WHEN_HEALTHY`: restore at least one healthy server before retrying traffic.
 - `NO_ACTION`: keep current state and continue monitoring.
 
-5. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
+5. Export a deterministic Markdown or JSON remediation report when the incident needs to be attached to a ticket:
 
-6. If simulated scale-up is recommended, review the cloud guardrails separately. Do not enable live cloud mutation until operator intent, account, region, ownership, and capacity limits are verified.
+```bash
+curl -fsS -X POST http://127.0.0.1:8080/api/remediation/report \
+  -H "Content-Type: application/json" \
+  -d '{
+    "format": "MARKDOWN",
+    "reportId": "incident-123",
+    "title": "Allocation Overload Review",
+    "evaluation": <evaluation-response-json>
+  }'
+```
+
+The report exporter formats an existing evaluation or scenario replay response. It is advisory and read-only, does not execute remediation, does not construct `CloudManager`, and does not generate timestamps or random ids unless the caller supplies a report id.
+
+6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
+
+7. If simulated scale-up is recommended, review the cloud guardrails separately. Do not enable live cloud mutation until operator intent, account, region, ownership, and capacity limits are verified.
 
 ## Validation Failure Spike
 
@@ -120,6 +135,8 @@ Live cloud mutation remains isolated behind `CloudManager` and explicit guardrai
 
 The remediation planner is advisory only. It ranks operator actions but does not execute them, does not construct `CloudManager`, and does not call AWS.
 
+The remediation report exporter is also advisory only. It converts supplied evaluation or replay results into deterministic Markdown/JSON evidence for humans and automation. It does not run allocation, replay, cloud, or remediation actions by itself.
+
 ## Rollback And Release Evidence
 
 If a deployment must be rolled back:
@@ -129,6 +146,7 @@ If a deployment must be rolled back:
 3. Confirm the SBOM matches the artifact being deployed.
 4. Re-run health and a small allocation/evaluation smoke after rollback.
 5. Record the incident, release version, metrics observed, and operator decision.
+6. Attach the Markdown or JSON remediation report if one was exported during triage.
 
 Do not manually replace release assets unless hashes and provenance have been verified.
 

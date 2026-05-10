@@ -240,6 +240,23 @@ Descriptors can also assert `expectedRemediationActions` to catch regressions in
 
 See [`INCIDENT_FIXTURE_CATALOG.md`](INCIDENT_FIXTURE_CATALOG.md) for the fixture catalog, expected operator interpretation, regression-diff descriptors, and test guidance.
 
+## Remediation Report Export
+
+Replay and evaluation responses can be converted into deterministic operator reports:
+
+```text
+POST /api/remediation/report
+```
+
+The report request accepts exactly one source:
+
+- `evaluation`: a response from `POST /api/allocate/evaluate`;
+- `replay`: a response from `POST /api/scenarios/replay`.
+
+Set `format` to `MARKDOWN` for a human-readable incident report or `JSON` for automation-friendly structured output. The exported report summarizes accepted load, rejected/unallocated load, scaling recommendation, load-shedding decision, ranked remediation actions, and safety guarantees.
+
+The exporter is read-only and advisory. It formats supplied results only; it does not execute remediation actions, does not run cloud operations, does not construct `CloudManager`, and does not generate timestamps or random report identifiers unless the caller supplies a `reportId`.
+
 ## Limitations
 
 - Route steps derive request-level routing telemetry from the current replay server state. Use `POST /api/routing/compare` directly for full custom routing telemetry.

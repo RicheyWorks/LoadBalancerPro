@@ -138,6 +138,7 @@ class ApiContractTest {
         assertPathRequestSchemaAndOkResponse(docs, "/api/allocate/evaluate", "AllocationEvaluationRequest");
         assertPathRequestSchemaAndOkResponse(docs, "/api/routing/compare", "RoutingComparisonRequest");
         assertPathRequestSchemaAndOkResponse(docs, "/api/scenarios/replay", "ScenarioReplayRequest");
+        assertPathRequestSchemaAndOkResponse(docs, "/api/remediation/report", "RemediationReportRequest");
 
         assertSchemaProperties(docs, "AllocationRequest", "requestedLoad", "servers");
         assertSchemaProperties(docs, "AllocationResponse", "allocations", "unallocatedLoad",
@@ -176,6 +177,17 @@ class ApiContractTest {
                 "serverStates", "reason");
         assertSchemaProperties(docs, "ScenarioServerState", "id", "cpuUsage", "memoryUsage", "diskUsage",
                 "capacity", "weight", "healthy");
+        assertSchemaProperties(docs, "RemediationReportRequest", "reportId", "title", "format", "evaluation",
+                "replay");
+        assertSchemaProperties(docs, "RemediationReportResponse", "format", "contentType", "report", "json",
+                "readOnly", "advisoryOnly", "cloudMutation");
+        assertSchemaProperties(docs, "RemediationReportPayload", "reportId", "title", "sourceType", "status",
+                "summary", "acceptedLoad", "rejectedLoad", "unallocatedLoad", "recommendedAdditionalServers",
+                "scalingSimulation", "loadShedding", "remediationPlan", "readOnly", "advisoryOnly",
+                "cloudMutation", "warnings", "limitations", "steps");
+        assertSchemaProperties(docs, "RemediationReportStep", "stepId", "type", "status", "acceptedLoad",
+                "rejectedLoad", "unallocatedLoad", "recommendedAdditionalServers", "selectedServerId",
+                "loadSheddingAction", "reason");
     }
 
     @Test

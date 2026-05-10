@@ -44,4 +44,9 @@ public class AllocatorController {
     public AllocationResponse predictive(@Valid @RequestBody AllocationRequest request) {
         return allocatorService.predictive(request);
     }
+
+    @PostMapping("/allocate/evaluate")
+    public AllocationEvaluationResponse evaluate(@Valid @RequestBody AllocationEvaluationRequest request) {
+        return allocatorService.evaluate(request);
+    }
 }

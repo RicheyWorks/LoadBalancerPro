@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
@@ -364,6 +365,170 @@ class AllocatorControllerTest {
         assertEquals(2.0, registry.summary(
                 DomainMetrics.ALLOCATION_SCALING_RECOMMENDED_SERVERS, "strategy", "CAPACITY_AWARE")
                 .totalAmount(), 0.01);
+    }
+
+    @Test
+    void evaluationEndpointReturnsReadOnlyCapacityRecommendationWithoutAllocationMetrics() throws Exception {
+        mockMvc.perform(post("/api/allocate/evaluate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "requestedLoad": 25.0,
+                                  "strategy": "capacity-aware",
+                                  "priority": "USER",
+                                  "currentInFlightRequestCount": 25,
+                                  "concurrencyLimit": 100,
+                                  "queueDepth": 0,
+                                  "observedP95LatencyMillis": 80.0,
+                                  "observedErrorRate": 0.01,
+                                  "servers": [
+                                    {
+                                      "id": "api-1",
+                                      "cpuUsage": 10.0,
+                                      "memoryUsage": 10.0,
+                                      "diskUsage": 10.0,
+                                      "capacity": 100.0,
+                                      "weight": 1.0,
+                                      "healthy": true
+                                    }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.strategy", is("CAPACITY_AWARE")))
+                .andExpect(jsonPath("$.allocations.api-1", closeTo(25.0, 0.01)))
+                .andExpect(jsonPath("$.acceptedLoad", closeTo(25.0, 0.01)))
+                .andExpect(jsonPath("$.rejectedLoad", closeTo(0.0, 0.01)))
+                .andExpect(jsonPath("$.unallocatedLoad", closeTo(0.0, 0.01)))
+                .andExpect(jsonPath("$.recommendedAdditionalServers", is(0)))
+                .andExpect(jsonPath("$.scalingSimulation.simulatedOnly", is(true)))
+                .andExpect(jsonPath("$.loadShedding.priority", is("USER")))
+                .andExpect(jsonPath("$.loadShedding.action", is("ALLOW")))
+                .andExpect(jsonPath("$.loadShedding.utilization", closeTo(0.25, 0.01)))
+                .andExpect(jsonPath("$.metricsPreview.emitted", is(false)))
+                .andExpect(jsonPath("$.metricsPreview.acceptedLoad", closeTo(25.0, 0.01)))
+                .andExpect(jsonPath("$.metricsPreview.metricNames").isArray())
+                .andExpect(jsonPath("$.readOnly", is(true)))
+                .andExpect(jsonPath("$.decisionReason", containsString("Read-only evaluation")));
+
+        assertNull(registry.find(DomainMetrics.ALLOCATION_REQUESTS)
+                .tag("strategy", "CAPACITY_AWARE")
+                .counter(), "Evaluation previews must not increment allocation request metrics.");
+    }
+
+    @Test
+    void evaluationEndpointReportsOverloadPriorityDecisionAndStaysCloudSafe() throws Exception {
+        try (MockedConstruction<CloudManager> mockedCloudManager =
+                Mockito.mockConstruction(CloudManager.class)) {
+            mockMvc.perform(post("/api/allocate/evaluate")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(overloadedEvaluationRequest()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.strategy", is("CAPACITY_AWARE")))
+                    .andExpect(jsonPath("$.allocations.primary", closeTo(70.0, 0.01)))
+                    .andExpect(jsonPath("$.allocations.fallback", closeTo(30.0, 0.01)))
+                    .andExpect(jsonPath("$.allocations.failed").doesNotExist())
+                    .andExpect(jsonPath("$.acceptedLoad", closeTo(100.0, 0.01)))
+                    .andExpect(jsonPath("$.rejectedLoad", closeTo(50.0, 0.01)))
+                    .andExpect(jsonPath("$.unallocatedLoad", closeTo(50.0, 0.01)))
+                    .andExpect(jsonPath("$.recommendedAdditionalServers", is(1)))
+                    .andExpect(jsonPath("$.scalingSimulation.recommendedAdditionalServers", is(1)))
+                    .andExpect(jsonPath("$.loadShedding.priority", is("BACKGROUND")))
+                    .andExpect(jsonPath("$.loadShedding.action", is("SHED")))
+                    .andExpect(jsonPath("$.loadShedding.reason", containsString("hard utilization")))
+                    .andExpect(jsonPath("$.metricsPreview.evaluatedHealthyServerCount", is(2)))
+                    .andExpect(jsonPath("$.metricsPreview.rejectedLoad", closeTo(50.0, 0.01)))
+                    .andExpect(jsonPath("$.metricsPreview.emitted", is(false)))
+                    .andExpect(jsonPath("$.readOnly", is(true)));
+
+            assertTrue(mockedCloudManager.constructed().isEmpty(),
+                    "Evaluation endpoint must not construct CloudManager or call cloud mutation paths.");
+        }
+    }
+
+    @Test
+    void evaluationEndpointGracefullyReportsAllUnhealthyNoCapacity() throws Exception {
+        mockMvc.perform(post("/api/allocate/evaluate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "requestedLoad": 50.0,
+                                  "servers": [
+                                    {
+                                      "id": "unhealthy",
+                                      "cpuUsage": 10.0,
+                                      "memoryUsage": 10.0,
+                                      "diskUsage": 10.0,
+                                      "capacity": 100.0,
+                                      "weight": 1.0,
+                                      "healthy": false
+                                    }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allocations").isMap())
+                .andExpect(jsonPath("$.allocations.unhealthy").doesNotExist())
+                .andExpect(jsonPath("$.acceptedLoad", closeTo(0.0, 0.01)))
+                .andExpect(jsonPath("$.rejectedLoad", closeTo(50.0, 0.01)))
+                .andExpect(jsonPath("$.recommendedAdditionalServers", is(0)))
+                .andExpect(jsonPath("$.scalingSimulation.reason", containsString("target capacity is unavailable")))
+                .andExpect(jsonPath("$.loadShedding.action", is("SHED")))
+                .andExpect(jsonPath("$.metricsPreview.evaluatedHealthyServerCount", is(0)))
+                .andExpect(jsonPath("$.readOnly", is(true)));
+    }
+
+    @Test
+    void repeatedEvaluationRequestsRemainDeterministicAndDoNotMutateMetrics() throws Exception {
+        String first = mockMvc.perform(post("/api/allocate/evaluate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(overloadedEvaluationRequest()))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String second = mockMvc.perform(post("/api/allocate/evaluate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(overloadedEvaluationRequest()))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertEquals(first, second, "Read-only evaluations should be deterministic for identical inputs.");
+        assertNull(registry.find(DomainMetrics.ALLOCATION_REQUESTS)
+                .tag("strategy", "CAPACITY_AWARE")
+                .counter(), "Repeated evaluation previews must not mutate allocation metrics.");
+    }
+
+    @Test
+    void evaluationEndpointRejectsInvalidPriorityWithSafeErrorShape() throws Exception {
+        mockMvc.perform(post("/api/allocate/evaluate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "requestedLoad": 10.0,
+                                  "priority": "gold",
+                                  "servers": [
+                                    {
+                                      "id": "api-1",
+                                      "cpuUsage": 10.0,
+                                      "memoryUsage": 20.0,
+                                      "diskUsage": 20.0,
+                                      "capacity": 100.0,
+                                      "weight": 1.0,
+                                      "healthy": true
+                                    }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error", is("bad_request")))
+                .andExpect(jsonPath("$.message", containsString("priority must be one of")))
+                .andExpect(jsonPath("$.path", is("/api/allocate/evaluate")))
+                .andExpect(jsonPath("$.trace").doesNotExist())
+                .andExpect(jsonPath("$.exception").doesNotExist());
     }
 
     @Test
@@ -864,7 +1029,52 @@ class AllocatorControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.openapi").exists())
-                .andExpect(jsonPath("$.paths./api/allocate/capacity-aware").exists());
+                .andExpect(jsonPath("$.paths./api/allocate/capacity-aware").exists())
+                .andExpect(jsonPath("$.paths./api/allocate/evaluate").exists());
+    }
+
+    private String overloadedEvaluationRequest() {
+        return """
+                {
+                  "requestedLoad": 150.0,
+                  "strategy": "CAPACITY_AWARE",
+                  "priority": "BACKGROUND",
+                  "currentInFlightRequestCount": 95,
+                  "concurrencyLimit": 100,
+                  "queueDepth": 25,
+                  "observedP95LatencyMillis": 300.0,
+                  "observedErrorRate": 0.20,
+                  "servers": [
+                    {
+                      "id": "primary",
+                      "cpuUsage": 30.0,
+                      "memoryUsage": 30.0,
+                      "diskUsage": 30.0,
+                      "capacity": 100.0,
+                      "weight": 1.0,
+                      "healthy": true
+                    },
+                    {
+                      "id": "fallback",
+                      "cpuUsage": 70.0,
+                      "memoryUsage": 70.0,
+                      "diskUsage": 70.0,
+                      "capacity": 100.0,
+                      "weight": 1.0,
+                      "healthy": true
+                    },
+                    {
+                      "id": "failed",
+                      "cpuUsage": 0.0,
+                      "memoryUsage": 0.0,
+                      "diskUsage": 0.0,
+                      "capacity": 500.0,
+                      "weight": 10.0,
+                      "healthy": false
+                    }
+                  ]
+                }
+                """;
     }
 
     private void expectOverloadedCapacityAwareResponse(String requestBody) throws Exception {

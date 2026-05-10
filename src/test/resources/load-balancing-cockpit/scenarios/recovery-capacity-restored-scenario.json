@@ -1,0 +1,159 @@
+{
+  "scenarioName": "recovery-capacity-restored-scenario",
+  "label": "Recovery / Capacity Restored",
+  "description": "A previously constrained shape returns with healthy capacity and reduced pressure.",
+  "expectedHints": {
+    "routing": "Routing should again have healthy candidates and select from restored capacity.",
+    "allocation": "Allocation should place load across restored nodes with no or reduced unallocated load.",
+    "loadShedding": "USER priority under restored capacity should be allowed.",
+    "remediation": "Advisory hints should trend back toward no-action or monitoring guidance."
+  },
+  "allocationRequest": {
+    "requestedLoad": 110.0,
+    "servers": [
+      {
+        "id": "edge-recovery-a",
+        "cpuUsage": 30.0,
+        "memoryUsage": 34.0,
+        "diskUsage": 26.0,
+        "capacity": 130.0,
+        "weight": 3.0,
+        "healthy": true
+      },
+      {
+        "id": "edge-recovery-b",
+        "cpuUsage": 38.0,
+        "memoryUsage": 36.0,
+        "diskUsage": 30.0,
+        "capacity": 120.0,
+        "weight": 2.0,
+        "healthy": true
+      },
+      {
+        "id": "edge-recovery-c",
+        "cpuUsage": 44.0,
+        "memoryUsage": 40.0,
+        "diskUsage": 32.0,
+        "capacity": 100.0,
+        "weight": 1.0,
+        "healthy": true
+      }
+    ]
+  },
+  "evaluationRequest": {
+    "requestedLoad": 110.0,
+    "strategy": "CAPACITY_AWARE",
+    "priority": "USER",
+    "currentInFlightRequestCount": 28,
+    "concurrencyLimit": 120,
+    "queueDepth": 4,
+    "observedP95LatencyMillis": 110.0,
+    "observedErrorRate": 0.02,
+    "servers": [
+      {
+        "id": "edge-recovery-a",
+        "cpuUsage": 30.0,
+        "memoryUsage": 34.0,
+        "diskUsage": 26.0,
+        "capacity": 130.0,
+        "weight": 3.0,
+        "healthy": true
+      },
+      {
+        "id": "edge-recovery-b",
+        "cpuUsage": 38.0,
+        "memoryUsage": 36.0,
+        "diskUsage": 30.0,
+        "capacity": 120.0,
+        "weight": 2.0,
+        "healthy": true
+      },
+      {
+        "id": "edge-recovery-c",
+        "cpuUsage": 44.0,
+        "memoryUsage": 40.0,
+        "diskUsage": 32.0,
+        "capacity": 100.0,
+        "weight": 1.0,
+        "healthy": true
+      }
+    ]
+  },
+  "routingRequest": {
+    "strategies": [
+      "TAIL_LATENCY_POWER_OF_TWO",
+      "WEIGHTED_LEAST_LOAD",
+      "WEIGHTED_LEAST_CONNECTIONS",
+      "WEIGHTED_ROUND_ROBIN",
+      "ROUND_ROBIN"
+    ],
+    "servers": [
+      {
+        "serverId": "edge-recovery-a",
+        "healthy": true,
+        "inFlightRequestCount": 7,
+        "configuredCapacity": 130.0,
+        "estimatedConcurrencyLimit": 130.0,
+        "weight": 3.0,
+        "averageLatencyMillis": 20.0,
+        "p95LatencyMillis": 36.0,
+        "p99LatencyMillis": 68.0,
+        "recentErrorRate": 0.01,
+        "queueDepth": 1,
+        "networkAwareness": {
+          "timeoutRate": 0.0,
+          "retryRate": 0.0,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 4.0,
+          "recentErrorBurst": false,
+          "requestTimeoutCount": 0,
+          "sampleSize": 120
+        }
+      },
+      {
+        "serverId": "edge-recovery-b",
+        "healthy": true,
+        "inFlightRequestCount": 11,
+        "configuredCapacity": 120.0,
+        "estimatedConcurrencyLimit": 120.0,
+        "weight": 2.0,
+        "averageLatencyMillis": 24.0,
+        "p95LatencyMillis": 42.0,
+        "p99LatencyMillis": 78.0,
+        "recentErrorRate": 0.01,
+        "queueDepth": 2,
+        "networkAwareness": {
+          "timeoutRate": 0.0,
+          "retryRate": 0.0,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 5.0,
+          "recentErrorBurst": false,
+          "requestTimeoutCount": 0,
+          "sampleSize": 120
+        }
+      },
+      {
+        "serverId": "edge-recovery-c",
+        "healthy": true,
+        "inFlightRequestCount": 18,
+        "configuredCapacity": 100.0,
+        "estimatedConcurrencyLimit": 100.0,
+        "weight": 1.0,
+        "averageLatencyMillis": 30.0,
+        "p95LatencyMillis": 58.0,
+        "p99LatencyMillis": 96.0,
+        "recentErrorRate": 0.02,
+        "queueDepth": 3,
+        "networkAwareness": {
+          "timeoutRate": 0.01,
+          "retryRate": 0.01,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 8.0,
+          "recentErrorBurst": false,
+          "requestTimeoutCount": 1,
+          "sampleSize": 120
+        }
+      }
+    ]
+  }
+}

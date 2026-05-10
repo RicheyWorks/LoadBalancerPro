@@ -1,0 +1,159 @@
+{
+  "scenarioName": "overload-pressure-scenario",
+  "label": "Overload Pressure",
+  "description": "Healthy capacity is constrained while queue depth, latency, and error pressure are elevated.",
+  "expectedHints": {
+    "routing": "Routing should avoid the unhealthy drain node and explain the selected healthy candidate.",
+    "allocation": "Capacity-aware allocation should leave unallocated load and recommend simulated scale-up.",
+    "loadShedding": "BACKGROUND priority under overload pressure should shed.",
+    "remediation": "Advisory hints should call out scale-up, load shedding, or unhealthy-server investigation."
+  },
+  "allocationRequest": {
+    "requestedLoad": 240.0,
+    "servers": [
+      {
+        "id": "edge-overload-a",
+        "cpuUsage": 70.0,
+        "memoryUsage": 65.0,
+        "diskUsage": 55.0,
+        "capacity": 100.0,
+        "weight": 2.0,
+        "healthy": true
+      },
+      {
+        "id": "edge-overload-b",
+        "cpuUsage": 78.0,
+        "memoryUsage": 72.0,
+        "diskUsage": 60.0,
+        "capacity": 90.0,
+        "weight": 1.0,
+        "healthy": true
+      },
+      {
+        "id": "edge-overload-drain",
+        "cpuUsage": 20.0,
+        "memoryUsage": 25.0,
+        "diskUsage": 20.0,
+        "capacity": 120.0,
+        "weight": 4.0,
+        "healthy": false
+      }
+    ]
+  },
+  "evaluationRequest": {
+    "requestedLoad": 240.0,
+    "strategy": "CAPACITY_AWARE",
+    "priority": "BACKGROUND",
+    "currentInFlightRequestCount": 135,
+    "concurrencyLimit": 100,
+    "queueDepth": 64,
+    "observedP95LatencyMillis": 340.0,
+    "observedErrorRate": 0.19,
+    "servers": [
+      {
+        "id": "edge-overload-a",
+        "cpuUsage": 70.0,
+        "memoryUsage": 65.0,
+        "diskUsage": 55.0,
+        "capacity": 100.0,
+        "weight": 2.0,
+        "healthy": true
+      },
+      {
+        "id": "edge-overload-b",
+        "cpuUsage": 78.0,
+        "memoryUsage": 72.0,
+        "diskUsage": 60.0,
+        "capacity": 90.0,
+        "weight": 1.0,
+        "healthy": true
+      },
+      {
+        "id": "edge-overload-drain",
+        "cpuUsage": 20.0,
+        "memoryUsage": 25.0,
+        "diskUsage": 20.0,
+        "capacity": 120.0,
+        "weight": 4.0,
+        "healthy": false
+      }
+    ]
+  },
+  "routingRequest": {
+    "strategies": [
+      "TAIL_LATENCY_POWER_OF_TWO",
+      "WEIGHTED_LEAST_LOAD",
+      "WEIGHTED_LEAST_CONNECTIONS",
+      "WEIGHTED_ROUND_ROBIN",
+      "ROUND_ROBIN"
+    ],
+    "servers": [
+      {
+        "serverId": "edge-overload-a",
+        "healthy": true,
+        "inFlightRequestCount": 46,
+        "configuredCapacity": 100.0,
+        "estimatedConcurrencyLimit": 100.0,
+        "weight": 2.0,
+        "averageLatencyMillis": 38.0,
+        "p95LatencyMillis": 94.0,
+        "p99LatencyMillis": 160.0,
+        "recentErrorRate": 0.08,
+        "queueDepth": 12,
+        "networkAwareness": {
+          "timeoutRate": 0.02,
+          "retryRate": 0.02,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 22.0,
+          "recentErrorBurst": false,
+          "requestTimeoutCount": 2,
+          "sampleSize": 120
+        }
+      },
+      {
+        "serverId": "edge-overload-b",
+        "healthy": true,
+        "inFlightRequestCount": 58,
+        "configuredCapacity": 90.0,
+        "estimatedConcurrencyLimit": 90.0,
+        "weight": 1.0,
+        "averageLatencyMillis": 42.0,
+        "p95LatencyMillis": 120.0,
+        "p99LatencyMillis": 190.0,
+        "recentErrorRate": 0.12,
+        "queueDepth": 18,
+        "networkAwareness": {
+          "timeoutRate": 0.03,
+          "retryRate": 0.03,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 30.0,
+          "recentErrorBurst": true,
+          "requestTimeoutCount": 3,
+          "sampleSize": 120
+        }
+      },
+      {
+        "serverId": "edge-overload-drain",
+        "healthy": false,
+        "inFlightRequestCount": 2,
+        "configuredCapacity": 120.0,
+        "estimatedConcurrencyLimit": 120.0,
+        "weight": 4.0,
+        "averageLatencyMillis": 18.0,
+        "p95LatencyMillis": 30.0,
+        "p99LatencyMillis": 60.0,
+        "recentErrorRate": 0.0,
+        "queueDepth": 0,
+        "networkAwareness": {
+          "timeoutRate": 0.0,
+          "retryRate": 0.0,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 4.0,
+          "recentErrorBurst": false,
+          "requestTimeoutCount": 0,
+          "sampleSize": 120
+        }
+      }
+    ]
+  }
+}

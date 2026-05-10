@@ -785,6 +785,431 @@
       ]
     },
     {
+      "name": "Operator Scenario Gallery",
+      "description": "Ordered local scenario gallery demo: health, readiness, and per-scenario routing, allocation, and read-only evaluation calls for normal load, overload pressure, all-unhealthy degradation, and recovery. Uses deterministic synthetic inputs only and does not mutate cloud state.",
+      "item": [
+        {
+          "name": "GET Scenario Gallery Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Scenario Gallery Readiness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health/readiness",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health",
+                "readiness"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Normal Load Routing Comparison",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategies\": [\n    \"TAIL_LATENCY_POWER_OF_TWO\",\n    \"WEIGHTED_LEAST_LOAD\",\n    \"WEIGHTED_LEAST_CONNECTIONS\",\n    \"WEIGHTED_ROUND_ROBIN\",\n    \"ROUND_ROBIN\"\n  ],\n  \"servers\": [\n    {\n      \"serverId\": \"edge-normal-a\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 4,\n      \"configuredCapacity\": 120,\n      \"estimatedConcurrencyLimit\": 120,\n      \"weight\": 3,\n      \"averageLatencyMillis\": 18,\n      \"p95LatencyMillis\": 32,\n      \"p99LatencyMillis\": 62,\n      \"recentErrorRate\": 0,\n      \"queueDepth\": 1,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0,\n        \"retryRate\": 0,\n        \"connectionFailureRate\": 0,\n        \"latencyJitterMillis\": 3,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 0,\n        \"sampleSize\": 120\n      }\n    },\n    {\n      \"serverId\": \"edge-normal-b\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 9,\n      \"configuredCapacity\": 100,\n      \"estimatedConcurrencyLimit\": 100,\n      \"weight\": 2,\n      \"averageLatencyMillis\": 22,\n      \"p95LatencyMillis\": 40,\n      \"p99LatencyMillis\": 76,\n      \"recentErrorRate\": 0.01,\n      \"queueDepth\": 2,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0,\n        \"retryRate\": 0,\n        \"connectionFailureRate\": 0,\n        \"latencyJitterMillis\": 5,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 0,\n        \"sampleSize\": 120\n      }\n    },\n    {\n      \"serverId\": \"edge-normal-c\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 14,\n      \"configuredCapacity\": 90,\n      \"estimatedConcurrencyLimit\": 90,\n      \"weight\": 1,\n      \"averageLatencyMillis\": 28,\n      \"p95LatencyMillis\": 52,\n      \"p99LatencyMillis\": 88,\n      \"recentErrorRate\": 0.01,\n      \"queueDepth\": 3,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0,\n        \"retryRate\": 0,\n        \"connectionFailureRate\": 0,\n        \"latencyJitterMillis\": 6,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 0,\n        \"sampleSize\": 120\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/routing/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routing",
+                "compare"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Normal Load Allocation Preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestedLoad\": 90,\n  \"servers\": [\n    {\n      \"id\": \"edge-normal-a\",\n      \"cpuUsage\": 25,\n      \"memoryUsage\": 30,\n      \"diskUsage\": 20,\n      \"capacity\": 120,\n      \"weight\": 3,\n      \"healthy\": true\n    },\n    {\n      \"id\": \"edge-normal-b\",\n      \"cpuUsage\": 35,\n      \"memoryUsage\": 32,\n      \"diskUsage\": 24,\n      \"capacity\": 100,\n      \"weight\": 2,\n      \"healthy\": true\n    },\n    {\n      \"id\": \"edge-normal-c\",\n      \"cpuUsage\": 42,\n      \"memoryUsage\": 38,\n      \"diskUsage\": 28,\n      \"capacity\": 90,\n      \"weight\": 1,\n      \"healthy\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/allocate/capacity-aware",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allocate",
+                "capacity-aware"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Normal Load Overload Evaluation Preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestedLoad\": 90,\n  \"strategy\": \"CAPACITY_AWARE\",\n  \"priority\": \"USER\",\n  \"currentInFlightRequestCount\": 18,\n  \"concurrencyLimit\": 100,\n  \"queueDepth\": 2,\n  \"observedP95LatencyMillis\": 95,\n  \"observedErrorRate\": 0.01,\n  \"servers\": [\n    {\n      \"id\": \"edge-normal-a\",\n      \"cpuUsage\": 25,\n      \"memoryUsage\": 30,\n      \"diskUsage\": 20,\n      \"capacity\": 120,\n      \"weight\": 3,\n      \"healthy\": true\n    },\n    {\n      \"id\": \"edge-normal-b\",\n      \"cpuUsage\": 35,\n      \"memoryUsage\": 32,\n      \"diskUsage\": 24,\n      \"capacity\": 100,\n      \"weight\": 2,\n      \"healthy\": true\n    },\n    {\n      \"id\": \"edge-normal-c\",\n      \"cpuUsage\": 42,\n      \"memoryUsage\": 38,\n      \"diskUsage\": 28,\n      \"capacity\": 90,\n      \"weight\": 1,\n      \"healthy\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/allocate/evaluate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allocate",
+                "evaluate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Overload Pressure Routing Comparison",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategies\": [\n    \"TAIL_LATENCY_POWER_OF_TWO\",\n    \"WEIGHTED_LEAST_LOAD\",\n    \"WEIGHTED_LEAST_CONNECTIONS\",\n    \"WEIGHTED_ROUND_ROBIN\",\n    \"ROUND_ROBIN\"\n  ],\n  \"servers\": [\n    {\n      \"serverId\": \"edge-overload-a\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 46,\n      \"configuredCapacity\": 100,\n      \"estimatedConcurrencyLimit\": 100,\n      \"weight\": 2,\n      \"averageLatencyMillis\": 38,\n      \"p95LatencyMillis\": 94,\n      \"p99LatencyMillis\": 160,\n      \"recentErrorRate\": 0.08,\n      \"queueDepth\": 12,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0.02,\n        \"retryRate\": 0.02,\n        \"connectionFailureRate\": 0,\n        \"latencyJitterMillis\": 22,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 2,\n        \"sampleSize\": 120\n      }\n    },\n    {\n      \"serverId\": \"edge-overload-b\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 58,\n      \"configuredCapacity\": 90,\n      \"estimatedConcurrencyLimit\": 90,\n      \"weight\": 1,\n      \"averageLatencyMillis\": 42,\n      \"p95LatencyMillis\": 120,\n      \"p99LatencyMillis\": 190,\n      \"recentErrorRate\": 0.12,\n      \"queueDepth\": 18,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0.03,\n        \"retryRate\": 0.03,\n        \"connectionFailureRate\": 0,\n        \"latencyJitterMillis\": 30,\n        \"recentErrorBurst\": true,\n        \"requestTimeoutCount\": 3,\n        \"sampleSize\": 120\n      }\n    },\n    {\n      \"serverId\": \"edge-overload-drain\",\n      \"healthy\": false,\n      \"inFlightRequestCount\": 2,\n      \"configuredCapacity\": 120,\n      \"estimatedConcurrencyLimit\": 120,\n      \"weight\": 4,\n      \"averageLatencyMillis\": 18,\n      \"p95LatencyMillis\": 30,\n      \"p99LatencyMillis\": 60,\n      \"recentErrorRate\": 0,\n      \"queueDepth\": 0,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0,\n        \"retryRate\": 0,\n        \"connectionFailureRate\": 0,\n        \"latencyJitterMillis\": 4,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 0,\n        \"sampleSize\": 120\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/routing/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routing",
+                "compare"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Overload Pressure Allocation Preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestedLoad\": 240,\n  \"servers\": [\n    {\n      \"id\": \"edge-overload-a\",\n      \"cpuUsage\": 70,\n      \"memoryUsage\": 65,\n      \"diskUsage\": 55,\n      \"capacity\": 100,\n      \"weight\": 2,\n      \"healthy\": true\n    },\n    {\n      \"id\": \"edge-overload-b\",\n      \"cpuUsage\": 78,\n      \"memoryUsage\": 72,\n      \"diskUsage\": 60,\n      \"capacity\": 90,\n      \"weight\": 1,\n      \"healthy\": true\n    },\n    {\n      \"id\": \"edge-overload-drain\",\n      \"cpuUsage\": 20,\n      \"memoryUsage\": 25,\n      \"diskUsage\": 20,\n      \"capacity\": 120,\n      \"weight\": 4,\n      \"healthy\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/allocate/capacity-aware",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allocate",
+                "capacity-aware"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Overload Pressure Overload Evaluation Preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestedLoad\": 240,\n  \"strategy\": \"CAPACITY_AWARE\",\n  \"priority\": \"BACKGROUND\",\n  \"currentInFlightRequestCount\": 135,\n  \"concurrencyLimit\": 100,\n  \"queueDepth\": 64,\n  \"observedP95LatencyMillis\": 340,\n  \"observedErrorRate\": 0.19,\n  \"servers\": [\n    {\n      \"id\": \"edge-overload-a\",\n      \"cpuUsage\": 70,\n      \"memoryUsage\": 65,\n      \"diskUsage\": 55,\n      \"capacity\": 100,\n      \"weight\": 2,\n      \"healthy\": true\n    },\n    {\n      \"id\": \"edge-overload-b\",\n      \"cpuUsage\": 78,\n      \"memoryUsage\": 72,\n      \"diskUsage\": 60,\n      \"capacity\": 90,\n      \"weight\": 1,\n      \"healthy\": true\n    },\n    {\n      \"id\": \"edge-overload-drain\",\n      \"cpuUsage\": 20,\n      \"memoryUsage\": 25,\n      \"diskUsage\": 20,\n      \"capacity\": 120,\n      \"weight\": 4,\n      \"healthy\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/allocate/evaluate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allocate",
+                "evaluate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST All-Unhealthy Degradation Routing Comparison",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategies\": [\n    \"TAIL_LATENCY_POWER_OF_TWO\",\n    \"WEIGHTED_LEAST_LOAD\",\n    \"WEIGHTED_LEAST_CONNECTIONS\",\n    \"WEIGHTED_ROUND_ROBIN\",\n    \"ROUND_ROBIN\"\n  ],\n  \"servers\": [\n    {\n      \"serverId\": \"edge-down-a\",\n      \"healthy\": false,\n      \"inFlightRequestCount\": 0,\n      \"configuredCapacity\": 100,\n      \"estimatedConcurrencyLimit\": 100,\n      \"weight\": 2,\n      \"averageLatencyMillis\": 18,\n      \"p95LatencyMillis\": 35,\n      \"p99LatencyMillis\": 75,\n      \"recentErrorRate\": 0,\n      \"queueDepth\": 0,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0,\n        \"retryRate\": 0,\n        \"connectionFailureRate\": 0,\n        \"latencyJitterMillis\": 5,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 0,\n        \"sampleSize\": 120\n      }\n    },\n    {\n      \"serverId\": \"edge-down-b\",\n      \"healthy\": false,\n      \"inFlightRequestCount\": 0,\n      \"configuredCapacity\": 100,\n      \"estimatedConcurrencyLimit\": 100,\n      \"weight\": 2,\n      \"averageLatencyMillis\": 20,\n      \"p95LatencyMillis\": 38,\n      \"p99LatencyMillis\": 78,\n      \"recentErrorRate\": 0,\n      \"queueDepth\": 0,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0,\n        \"retryRate\": 0,\n        \"connectionFailureRate\": 0,\n        \"latencyJitterMillis\": 5,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 0,\n        \"sampleSize\": 120\n      }\n    },\n    {\n      \"serverId\": \"edge-down-c\",\n      \"healthy\": false,\n      \"inFlightRequestCount\": 0,\n      \"configuredCapacity\": 80,\n      \"estimatedConcurrencyLimit\": 80,\n      \"weight\": 1,\n      \"averageLatencyMillis\": 22,\n      \"p95LatencyMillis\": 42,\n      \"p99LatencyMillis\": 82,\n      \"recentErrorRate\": 0,\n      \"queueDepth\": 0,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0,\n        \"retryRate\": 0,\n        \"connectionFailureRate\": 0,\n        \"latencyJitterMillis\": 5,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 0,\n        \"sampleSize\": 120\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/routing/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routing",
+                "compare"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST All-Unhealthy Degradation Allocation Preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestedLoad\": 80,\n  \"servers\": [\n    {\n      \"id\": \"edge-down-a\",\n      \"cpuUsage\": 15,\n      \"memoryUsage\": 20,\n      \"diskUsage\": 18,\n      \"capacity\": 100,\n      \"weight\": 2,\n      \"healthy\": false\n    },\n    {\n      \"id\": \"edge-down-b\",\n      \"cpuUsage\": 18,\n      \"memoryUsage\": 24,\n      \"diskUsage\": 22,\n      \"capacity\": 100,\n      \"weight\": 2,\n      \"healthy\": false\n    },\n    {\n      \"id\": \"edge-down-c\",\n      \"cpuUsage\": 12,\n      \"memoryUsage\": 18,\n      \"diskUsage\": 16,\n      \"capacity\": 80,\n      \"weight\": 1,\n      \"healthy\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/allocate/capacity-aware",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allocate",
+                "capacity-aware"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST All-Unhealthy Degradation Overload Evaluation Preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestedLoad\": 80,\n  \"strategy\": \"CAPACITY_AWARE\",\n  \"priority\": \"CRITICAL\",\n  \"currentInFlightRequestCount\": 40,\n  \"concurrencyLimit\": 40,\n  \"queueDepth\": 28,\n  \"observedP95LatencyMillis\": 275,\n  \"observedErrorRate\": 0.16,\n  \"servers\": [\n    {\n      \"id\": \"edge-down-a\",\n      \"cpuUsage\": 15,\n      \"memoryUsage\": 20,\n      \"diskUsage\": 18,\n      \"capacity\": 100,\n      \"weight\": 2,\n      \"healthy\": false\n    },\n    {\n      \"id\": \"edge-down-b\",\n      \"cpuUsage\": 18,\n      \"memoryUsage\": 24,\n      \"diskUsage\": 22,\n      \"capacity\": 100,\n      \"weight\": 2,\n      \"healthy\": false\n    },\n    {\n      \"id\": \"edge-down-c\",\n      \"cpuUsage\": 12,\n      \"memoryUsage\": 18,\n      \"diskUsage\": 16,\n      \"capacity\": 80,\n      \"weight\": 1,\n      \"healthy\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/allocate/evaluate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allocate",
+                "evaluate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Recovery Capacity Restored Routing Comparison",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategies\": [\n    \"TAIL_LATENCY_POWER_OF_TWO\",\n    \"WEIGHTED_LEAST_LOAD\",\n    \"WEIGHTED_LEAST_CONNECTIONS\",\n    \"WEIGHTED_ROUND_ROBIN\",\n    \"ROUND_ROBIN\"\n  ],\n  \"servers\": [\n    {\n      \"serverId\": \"edge-recovery-a\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 7,\n      \"configuredCapacity\": 130,\n      \"estimatedConcurrencyLimit\": 130,\n      \"weight\": 3,\n      \"averageLatencyMillis\": 20,\n      \"p95LatencyMillis\": 36,\n      \"p99LatencyMillis\": 68,\n      \"recentErrorRate\": 0.01,\n      \"queueDepth\": 1,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0,\n        \"retryRate\": 0,\n        \"connectionFailureRate\": 0,\n        \"latencyJitterMillis\": 4,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 0,\n        \"sampleSize\": 120\n      }\n    },\n    {\n      \"serverId\": \"edge-recovery-b\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 11,\n      \"configuredCapacity\": 120,\n      \"estimatedConcurrencyLimit\": 120,\n      \"weight\": 2,\n      \"averageLatencyMillis\": 24,\n      \"p95LatencyMillis\": 42,\n      \"p99LatencyMillis\": 78,\n      \"recentErrorRate\": 0.01,\n      \"queueDepth\": 2,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0,\n        \"retryRate\": 0,\n        \"connectionFailureRate\": 0,\n        \"latencyJitterMillis\": 5,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 0,\n        \"sampleSize\": 120\n      }\n    },\n    {\n      \"serverId\": \"edge-recovery-c\",\n      \"healthy\": true,\n      \"inFlightRequestCount\": 18,\n      \"configuredCapacity\": 100,\n      \"estimatedConcurrencyLimit\": 100,\n      \"weight\": 1,\n      \"averageLatencyMillis\": 30,\n      \"p95LatencyMillis\": 58,\n      \"p99LatencyMillis\": 96,\n      \"recentErrorRate\": 0.02,\n      \"queueDepth\": 3,\n      \"networkAwareness\": {\n        \"timeoutRate\": 0.01,\n        \"retryRate\": 0.01,\n        \"connectionFailureRate\": 0,\n        \"latencyJitterMillis\": 8,\n        \"recentErrorBurst\": false,\n        \"requestTimeoutCount\": 1,\n        \"sampleSize\": 120\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/routing/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routing",
+                "compare"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Recovery Capacity Restored Allocation Preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestedLoad\": 110,\n  \"servers\": [\n    {\n      \"id\": \"edge-recovery-a\",\n      \"cpuUsage\": 30,\n      \"memoryUsage\": 34,\n      \"diskUsage\": 26,\n      \"capacity\": 130,\n      \"weight\": 3,\n      \"healthy\": true\n    },\n    {\n      \"id\": \"edge-recovery-b\",\n      \"cpuUsage\": 38,\n      \"memoryUsage\": 36,\n      \"diskUsage\": 30,\n      \"capacity\": 120,\n      \"weight\": 2,\n      \"healthy\": true\n    },\n    {\n      \"id\": \"edge-recovery-c\",\n      \"cpuUsage\": 44,\n      \"memoryUsage\": 40,\n      \"diskUsage\": 32,\n      \"capacity\": 100,\n      \"weight\": 1,\n      \"healthy\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/allocate/capacity-aware",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allocate",
+                "capacity-aware"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Recovery Capacity Restored Overload Evaluation Preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestedLoad\": 110,\n  \"strategy\": \"CAPACITY_AWARE\",\n  \"priority\": \"USER\",\n  \"currentInFlightRequestCount\": 28,\n  \"concurrencyLimit\": 120,\n  \"queueDepth\": 4,\n  \"observedP95LatencyMillis\": 110,\n  \"observedErrorRate\": 0.02,\n  \"servers\": [\n    {\n      \"id\": \"edge-recovery-a\",\n      \"cpuUsage\": 30,\n      \"memoryUsage\": 34,\n      \"diskUsage\": 26,\n      \"capacity\": 130,\n      \"weight\": 3,\n      \"healthy\": true\n    },\n    {\n      \"id\": \"edge-recovery-b\",\n      \"cpuUsage\": 38,\n      \"memoryUsage\": 36,\n      \"diskUsage\": 30,\n      \"capacity\": 120,\n      \"weight\": 2,\n      \"healthy\": true\n    },\n    {\n      \"id\": \"edge-recovery-c\",\n      \"cpuUsage\": 44,\n      \"memoryUsage\": 40,\n      \"diskUsage\": 32,\n      \"capacity\": 100,\n      \"weight\": 1,\n      \"healthy\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/allocate/evaluate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allocate",
+                "evaluate"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "POST Capacity-Aware Allocation",
       "request": {
         "method": "POST",

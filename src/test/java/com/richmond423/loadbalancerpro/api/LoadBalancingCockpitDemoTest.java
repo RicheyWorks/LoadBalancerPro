@@ -16,10 +16,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.richmond423.loadbalancerpro.core.CloudManager;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
@@ -49,6 +52,13 @@ class LoadBalancingCockpitDemoTest {
             Path.of("src/test/resources/load-balancing-cockpit/cockpit-summary-scenario.json");
     private static final List<Path> COCKPIT_FIXTURES = List.of(
             ALLOCATION_FIXTURE, OVERLOAD_FIXTURE, ROUTING_FIXTURE, REMEDIATION_FIXTURE, SUMMARY_FIXTURE);
+    private static final Path SCENARIO_GALLERY_DIR =
+            Path.of("src/test/resources/load-balancing-cockpit/scenarios");
+    private static final List<Path> SCENARIO_GALLERY_FIXTURES = List.of(
+            SCENARIO_GALLERY_DIR.resolve("normal-load-scenario.json"),
+            SCENARIO_GALLERY_DIR.resolve("overload-pressure-scenario.json"),
+            SCENARIO_GALLERY_DIR.resolve("all-unhealthy-degradation-scenario.json"),
+            SCENARIO_GALLERY_DIR.resolve("recovery-capacity-restored-scenario.json"));
 
     @Autowired
     private MockMvc mockMvc;
@@ -61,6 +71,7 @@ class LoadBalancingCockpitDemoTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(content().string(containsString("Load-Balancing Cockpit")))
+                .andExpect(content().string(containsString("Scenario Gallery")))
                 .andExpect(content().string(containsString("data-action=\"full-sequence\"")))
                 .andExpect(content().string(containsString("/api/allocate/capacity-aware")))
                 .andExpect(content().string(containsString("/api/routing/compare")));
@@ -75,6 +86,19 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("/api/allocate/capacity-aware"));
         assertTrue(page.contains("/api/allocate/evaluate"));
         assertTrue(page.contains("/api/routing/compare"));
+        assertTrue(page.contains("Scenario Gallery"));
+        assertTrue(page.contains("Normal Load"));
+        assertTrue(page.contains("Overload Pressure"));
+        assertTrue(page.contains("All-Unhealthy Degradation"));
+        assertTrue(page.contains("Recovery / Capacity Restored"));
+        assertTrue(page.contains("Load scenario"));
+        assertTrue(page.contains("Run selected scenario"));
+        assertTrue(page.contains("Compare with previous scenario"));
+        assertTrue(page.contains("Copy selected payload"));
+        assertTrue(page.contains("Copy selected curl"));
+        assertTrue(page.contains("Copy scenario summary"));
+        assertTrue(page.contains("Expected outcome hints"));
+        assertTrue(page.contains("What-changed summary"));
         assertTrue(page.contains("Allocation results"));
         assertTrue(page.contains("Routing decisions"));
         assertTrue(page.contains("Load-shedding / overload signals"));
@@ -103,7 +127,7 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(normalized.contains("not legal compliance proof"));
         assertTrue(normalized.contains("not identity proof"));
         assertTrue(normalized.contains("no cloud mutation"));
-        assertTrue(normalized.contains("no cloudmanager required for cockpit demo"));
+        assertTrue(normalized.contains("no cloudmanager required for cockpit/gallery demo"));
         assertTrue(normalized.contains("no external services/dependencies"));
         assertTrue(normalized.contains("no external scripts/cdns"));
         assertTrue(normalized.contains("api server required for browser/postman demo"));
@@ -178,6 +202,62 @@ class LoadBalancingCockpitDemoTest {
         assertEquals("edge-alpha", summary.at("/allocationRequest/servers/0/id").asText());
         assertEquals("TAIL_LATENCY_POWER_OF_TWO", summary.at("/routingRequest/strategies/0").asText());
         assertEquals("BACKGROUND", summary.at("/evaluationRequest/priority").asText());
+    }
+
+    @Test
+    void scenarioGalleryFixturesAreValidSafeAndMapToExistingEndpointShapes() throws Exception {
+        List<String> expectedScenarioNames = List.of(
+                "normal-load-scenario",
+                "overload-pressure-scenario",
+                "all-unhealthy-degradation-scenario",
+                "recovery-capacity-restored-scenario");
+        List<String> actualScenarioNames = new ArrayList<>();
+
+        try (MockedConstruction<CloudManager> mockedCloudManager =
+                     Mockito.mockConstruction(CloudManager.class)) {
+            for (Path fixture : SCENARIO_GALLERY_FIXTURES) {
+                assertTrue(Files.exists(fixture), fixture + " should exist");
+                JsonNode scenario = readJson(fixture);
+                String normalized = Files.readString(fixture, StandardCharsets.UTF_8).toLowerCase(Locale.ROOT);
+                actualScenarioNames.add(scenario.path("scenarioName").asText());
+
+                assertFalse(scenario.path("scenarioName").asText().isBlank());
+                assertTrue(scenario.path("expectedHints").has("routing"));
+                assertTrue(scenario.path("expectedHints").has("allocation"));
+                assertTrue(scenario.path("expectedHints").has("loadShedding"));
+                assertTrue(scenario.path("expectedHints").has("remediation"));
+                assertTrue(scenario.path("allocationRequest").path("servers").isArray());
+                assertTrue(scenario.path("evaluationRequest").path("servers").isArray());
+                assertTrue(scenario.path("routingRequest").path("servers").isArray());
+
+                assertFalse(normalized.contains("http://"));
+                assertFalse(normalized.contains("https://"));
+                assertFalse(normalized.contains("arn:"));
+                assertFalse(normalized.contains("cloudmanager"));
+                assertFalse(normalized.contains("cloud id"));
+                assertFalse(normalized.contains("prod-"));
+                assertFalse(normalized.contains("production"));
+                assertFalse(normalized.contains("password"));
+                assertFalse(normalized.contains("secret"));
+                assertFalse(normalized.contains("access key"));
+
+                postJsonNode("/api/allocate/capacity-aware", scenario.path("allocationRequest"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.scalingSimulation.simulatedOnly", is(true)));
+                postJsonNode("/api/allocate/evaluate", scenario.path("evaluationRequest"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.readOnly", is(true)))
+                        .andExpect(jsonPath("$.metricsPreview.emitted", is(false)))
+                        .andExpect(jsonPath("$.remediationPlan.cloudMutation", is(false)));
+                postJsonNode("/api/routing/compare", statelessRoutingRequest(scenario.path("routingRequest")))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.requestedStrategies[0]", is("WEIGHTED_LEAST_CONNECTIONS")))
+                        .andExpect(jsonPath("$.results[0].strategyId", is("WEIGHTED_LEAST_CONNECTIONS")));
+            }
+            assertEquals(expectedScenarioNames, actualScenarioNames);
+            assertTrue(mockedCloudManager.constructed().isEmpty(),
+                    "scenario gallery endpoints must not construct CloudManager");
+        }
     }
 
     @Test
@@ -301,10 +381,75 @@ class LoadBalancingCockpitDemoTest {
         assertFalse(normalized.contains("delete-branch"));
     }
 
+    @Test
+    void operatorScenarioGalleryPostmanFolderIsValidAndReadOnly() throws Exception {
+        JsonNode collection = readJson(Path.of("postman/LoadBalancerPro.postman_collection.json"));
+        JsonNode folder = findFolder(collection, "Operator Scenario Gallery");
+        assertNotNull(folder, "Postman collection should include an Operator Scenario Gallery folder");
+        assertEquals(14, folder.path("item").size());
+
+        List<String> expectedNames = List.of(
+                "GET Scenario Gallery Health Check",
+                "GET Scenario Gallery Readiness Check",
+                "POST Normal Load Routing Comparison",
+                "POST Normal Load Allocation Preview",
+                "POST Normal Load Overload Evaluation Preview",
+                "POST Overload Pressure Routing Comparison",
+                "POST Overload Pressure Allocation Preview",
+                "POST Overload Pressure Overload Evaluation Preview",
+                "POST All-Unhealthy Degradation Routing Comparison",
+                "POST All-Unhealthy Degradation Allocation Preview",
+                "POST All-Unhealthy Degradation Overload Evaluation Preview",
+                "POST Recovery Capacity Restored Routing Comparison",
+                "POST Recovery Capacity Restored Allocation Preview",
+                "POST Recovery Capacity Restored Overload Evaluation Preview");
+        for (int i = 0; i < expectedNames.size(); i++) {
+            assertEquals(expectedNames.get(i), folder.at("/item/" + i + "/name").asText());
+        }
+
+        assertEquals("{{baseUrl}}/api/health", folder.at("/item/0/request/url/raw").asText());
+        assertEquals("{{baseUrl}}/actuator/health/readiness", folder.at("/item/1/request/url/raw").asText());
+        assertEquals("{{baseUrl}}/api/routing/compare", folder.at("/item/2/request/url/raw").asText());
+        assertEquals("{{baseUrl}}/api/allocate/capacity-aware", folder.at("/item/3/request/url/raw").asText());
+        assertEquals("{{baseUrl}}/api/allocate/evaluate", folder.at("/item/4/request/url/raw").asText());
+        assertTrue(folder.toString().contains("edge-normal-a"));
+        assertTrue(folder.toString().contains("edge-overload-a"));
+        assertTrue(folder.toString().contains("edge-down-a"));
+        assertTrue(folder.toString().contains("edge-recovery-a"));
+
+        String normalized = Files.readString(Path.of("postman/LoadBalancerPro.postman_collection.json"),
+                StandardCharsets.UTF_8).toLowerCase(Locale.ROOT);
+        assertTrue(normalized.contains("{{baseurl}}/api/routing/compare"));
+        assertTrue(normalized.contains("{{baseurl}}/api/allocate/capacity-aware"));
+        assertTrue(normalized.contains("{{baseurl}}/api/allocate/evaluate"));
+        assertFalse(normalized.contains("x-api-key"));
+        assertFalse(normalized.contains("bearer"));
+        assertFalse(normalized.contains("authorization"));
+        assertFalse(normalized.contains("/rulesets"));
+        assertFalse(normalized.contains("create release"));
+        assertFalse(normalized.contains("create tag"));
+        assertFalse(normalized.contains("delete-branch"));
+    }
+
     private org.springframework.test.web.servlet.ResultActions postJson(String path, Path fixture) throws Exception {
         return mockMvc.perform(post(path)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(Files.readString(fixture, StandardCharsets.UTF_8)));
+    }
+
+    private org.springframework.test.web.servlet.ResultActions postJsonNode(String path, JsonNode body)
+            throws Exception {
+        return mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(OBJECT_MAPPER.writeValueAsString(body)));
+    }
+
+    private static JsonNode statelessRoutingRequest(JsonNode routingRequest) {
+        ObjectNode request = (ObjectNode) routingRequest.deepCopy();
+        ArrayNode strategies = OBJECT_MAPPER.createArrayNode();
+        strategies.add("WEIGHTED_LEAST_CONNECTIONS");
+        request.set("strategies", strategies);
+        return request;
     }
 
     private static String statelessRoutingRequest() {

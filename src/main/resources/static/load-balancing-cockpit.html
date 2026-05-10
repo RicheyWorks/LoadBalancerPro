@@ -261,6 +261,37 @@
       margin-bottom: 6px;
     }
 
+    .scenario-gallery {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .scenario-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .scenario-card.active {
+      border-color: var(--blue);
+      box-shadow: inset 0 0 0 2px rgba(24, 89, 169, 0.18);
+    }
+
+    .scenario-card p {
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .hint-list {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
     .postman-note {
       color: var(--muted);
       font-size: 0.92rem;
@@ -274,7 +305,7 @@
     }
 
     @media (max-width: 920px) {
-      .grid, .tri-grid, .status-grid {
+      .grid, .tri-grid, .status-grid, .scenario-gallery {
         grid-template-columns: 1fr;
       }
 
@@ -348,6 +379,40 @@
             <span id="evaluation-badge" class="badge">Not run</span>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Scenario Gallery</h2>
+        <div class="actions">
+          <button data-action="load-selected-scenario" type="button">Load scenario</button>
+          <button data-action="run-selected-scenario" type="button">Run selected scenario</button>
+          <button data-action="compare-scenarios" type="button">Compare with previous scenario</button>
+          <button class="copy" type="button" data-copy-target="scenario-json">Copy selected payload</button>
+          <button class="copy" type="button" data-copy-target="curl-snippets">Copy selected curl</button>
+          <button class="copy" type="button" data-copy-target="scenario-summary">Copy scenario summary</button>
+          <button data-action="reset-gallery" type="button" class="secondary">Reset scenario gallery</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div id="scenario-gallery" class="scenario-gallery" aria-label="Operator scenario gallery"></div>
+        <div class="grid" style="margin-top: 14px;">
+          <div class="summary-card">
+            <strong>Expected outcome hints</strong>
+            <div id="scenario-hints">Load a scenario to view routing, allocation, overload, and remediation hints.</div>
+          </div>
+          <div class="summary-card">
+            <strong>What-changed summary</strong>
+            <div id="what-changed-summary">Run two scenarios, then compare with previous scenario.</div>
+          </div>
+        </div>
+        <h3 style="margin-top: 12px;">Copy scenario summary</h3>
+        <pre id="scenario-summary">Load and run a scenario to generate a deterministic scenario summary.</pre>
+        <p class="postman-note">
+          Postman parity: run the <strong>Operator Scenario Gallery</strong> folder for the same normal load,
+          overload pressure, all-unhealthy degradation, and recovery flows.
+        </p>
       </div>
     </section>
 
@@ -511,7 +576,7 @@
           <li>Not legal compliance proof.</li>
           <li>Not identity proof.</li>
           <li>No cloud mutation.</li>
-          <li>No CloudManager required for cockpit demo.</li>
+          <li>No CloudManager required for cockpit/gallery demo.</li>
           <li>No external services/dependencies.</li>
           <li>No external scripts/CDNs.</li>
           <li>API server required for browser/Postman demo.</li>
@@ -523,148 +588,208 @@
   </main>
 
   <script>
-    const cockpitScenario = {
-      scenarioName: "safe-local-load-balancing-cockpit",
-      allocationRequest: {
-        requestedLoad: 120.0,
-        servers: [
-          {
-            id: "edge-alpha",
-            cpuUsage: 45.0,
-            memoryUsage: 40.0,
-            diskUsage: 35.0,
-            capacity: 100.0,
-            weight: 2.0,
-            healthy: true
-          },
-          {
-            id: "edge-beta",
-            cpuUsage: 60.0,
-            memoryUsage: 55.0,
-            diskUsage: 45.0,
-            capacity: 80.0,
-            weight: 1.0,
-            healthy: true
-          },
-          {
-            id: "edge-drain",
-            cpuUsage: 20.0,
-            memoryUsage: 25.0,
-            diskUsage: 20.0,
-            capacity: 100.0,
-            weight: 1.0,
-            healthy: false
-          }
-        ]
+    const scenarioGallery = [
+      {
+        id: "normal-load",
+        label: "Normal Load",
+        scenarioName: "normal-load-scenario",
+        description: "Healthy edge nodes have spare capacity and low observed pressure.",
+        expectedHints: {
+          routing: "Healthy low-latency nodes should be eligible; weighted strategies should prefer lower normalized load.",
+          allocation: "Capacity-aware allocation should place the requested load without simulated scale-up.",
+          loadShedding: "USER priority with low pressure should be allowed.",
+          remediation: "Advisory plan should stay in a no-action or nominal state."
+        },
+        safetyNote: "Synthetic local inputs only; no cloud mutation.",
+        allocationRequest: {
+          requestedLoad: 90.0,
+          servers: [
+            { id: "edge-normal-a", cpuUsage: 25.0, memoryUsage: 30.0, diskUsage: 20.0, capacity: 120.0, weight: 3.0, healthy: true },
+            { id: "edge-normal-b", cpuUsage: 35.0, memoryUsage: 32.0, diskUsage: 24.0, capacity: 100.0, weight: 2.0, healthy: true },
+            { id: "edge-normal-c", cpuUsage: 42.0, memoryUsage: 38.0, diskUsage: 28.0, capacity: 90.0, weight: 1.0, healthy: true }
+          ]
+        },
+        evaluationRequest: {
+          requestedLoad: 90.0,
+          strategy: "CAPACITY_AWARE",
+          priority: "USER",
+          currentInFlightRequestCount: 18,
+          concurrencyLimit: 100,
+          queueDepth: 2,
+          observedP95LatencyMillis: 95.0,
+          observedErrorRate: 0.01,
+          servers: [
+            { id: "edge-normal-a", cpuUsage: 25.0, memoryUsage: 30.0, diskUsage: 20.0, capacity: 120.0, weight: 3.0, healthy: true },
+            { id: "edge-normal-b", cpuUsage: 35.0, memoryUsage: 32.0, diskUsage: 24.0, capacity: 100.0, weight: 2.0, healthy: true },
+            { id: "edge-normal-c", cpuUsage: 42.0, memoryUsage: 38.0, diskUsage: 28.0, capacity: 90.0, weight: 1.0, healthy: true }
+          ]
+        },
+        routingRequest: {
+          strategies: [
+            "TAIL_LATENCY_POWER_OF_TWO",
+            "WEIGHTED_LEAST_LOAD",
+            "WEIGHTED_LEAST_CONNECTIONS",
+            "WEIGHTED_ROUND_ROBIN",
+            "ROUND_ROBIN"
+          ],
+          servers: [
+            routingServer("edge-normal-a", true, 4, 120.0, 3.0, 18.0, 32.0, 62.0, 0.0, 1, 3.0, 0.0),
+            routingServer("edge-normal-b", true, 9, 100.0, 2.0, 22.0, 40.0, 76.0, 0.01, 2, 5.0, 0.0),
+            routingServer("edge-normal-c", true, 14, 90.0, 1.0, 28.0, 52.0, 88.0, 0.01, 3, 6.0, 0.0)
+          ]
+        }
       },
-      evaluationRequest: {
-        requestedLoad: 210.0,
-        strategy: "CAPACITY_AWARE",
-        priority: "BACKGROUND",
-        currentInFlightRequestCount: 120,
-        concurrencyLimit: 100,
-        queueDepth: 55,
-        observedP95LatencyMillis: 320.0,
-        observedErrorRate: 0.18,
-        servers: [
-          {
-            id: "edge-alpha",
-            cpuUsage: 45.0,
-            memoryUsage: 40.0,
-            diskUsage: 35.0,
-            capacity: 100.0,
-            weight: 2.0,
-            healthy: true
-          },
-          {
-            id: "edge-beta",
-            cpuUsage: 60.0,
-            memoryUsage: 55.0,
-            diskUsage: 45.0,
-            capacity: 80.0,
-            weight: 1.0,
-            healthy: true
-          },
-          {
-            id: "edge-drain",
-            cpuUsage: 20.0,
-            memoryUsage: 25.0,
-            diskUsage: 20.0,
-            capacity: 100.0,
-            weight: 1.0,
-            healthy: false
-          }
-        ]
+      {
+        id: "overload-pressure",
+        label: "Overload Pressure",
+        scenarioName: "overload-pressure-scenario",
+        description: "Healthy capacity is constrained while queue depth, latency, and error pressure are elevated.",
+        expectedHints: {
+          routing: "Routing should avoid the unhealthy drain node and explain the selected healthy candidate.",
+          allocation: "Capacity-aware allocation should leave unallocated load and recommend simulated scale-up.",
+          loadShedding: "BACKGROUND priority under overload pressure should shed.",
+          remediation: "Advisory hints should call out scale-up, load shedding, or unhealthy-server investigation."
+        },
+        safetyNote: "Synthetic local overload pressure only; no external calls.",
+        allocationRequest: {
+          requestedLoad: 240.0,
+          servers: [
+            { id: "edge-overload-a", cpuUsage: 70.0, memoryUsage: 65.0, diskUsage: 55.0, capacity: 100.0, weight: 2.0, healthy: true },
+            { id: "edge-overload-b", cpuUsage: 78.0, memoryUsage: 72.0, diskUsage: 60.0, capacity: 90.0, weight: 1.0, healthy: true },
+            { id: "edge-overload-drain", cpuUsage: 20.0, memoryUsage: 25.0, diskUsage: 20.0, capacity: 120.0, weight: 4.0, healthy: false }
+          ]
+        },
+        evaluationRequest: {
+          requestedLoad: 240.0,
+          strategy: "CAPACITY_AWARE",
+          priority: "BACKGROUND",
+          currentInFlightRequestCount: 135,
+          concurrencyLimit: 100,
+          queueDepth: 64,
+          observedP95LatencyMillis: 340.0,
+          observedErrorRate: 0.19,
+          servers: [
+            { id: "edge-overload-a", cpuUsage: 70.0, memoryUsage: 65.0, diskUsage: 55.0, capacity: 100.0, weight: 2.0, healthy: true },
+            { id: "edge-overload-b", cpuUsage: 78.0, memoryUsage: 72.0, diskUsage: 60.0, capacity: 90.0, weight: 1.0, healthy: true },
+            { id: "edge-overload-drain", cpuUsage: 20.0, memoryUsage: 25.0, diskUsage: 20.0, capacity: 120.0, weight: 4.0, healthy: false }
+          ]
+        },
+        routingRequest: {
+          strategies: [
+            "TAIL_LATENCY_POWER_OF_TWO",
+            "WEIGHTED_LEAST_LOAD",
+            "WEIGHTED_LEAST_CONNECTIONS",
+            "WEIGHTED_ROUND_ROBIN",
+            "ROUND_ROBIN"
+          ],
+          servers: [
+            routingServer("edge-overload-a", true, 46, 100.0, 2.0, 38.0, 94.0, 160.0, 0.08, 12, 22.0, 0.02),
+            routingServer("edge-overload-b", true, 58, 90.0, 1.0, 42.0, 120.0, 190.0, 0.12, 18, 30.0, 0.03),
+            routingServer("edge-overload-drain", false, 2, 120.0, 4.0, 18.0, 30.0, 60.0, 0.0, 0, 4.0, 0.0)
+          ]
+        }
       },
-      routingRequest: {
-        strategies: [
-          "TAIL_LATENCY_POWER_OF_TWO",
-          "WEIGHTED_LEAST_LOAD",
-          "WEIGHTED_LEAST_CONNECTIONS",
-          "WEIGHTED_ROUND_ROBIN",
-          "ROUND_ROBIN"
-        ],
-        servers: [
-          {
-            serverId: "edge-alpha",
-            healthy: true,
-            inFlightRequestCount: 5,
-            configuredCapacity: 100.0,
-            estimatedConcurrencyLimit: 100.0,
-            weight: 2.0,
-            averageLatencyMillis: 20.0,
-            p95LatencyMillis: 40.0,
-            p99LatencyMillis: 80.0,
-            recentErrorRate: 0.01,
-            queueDepth: 1,
-            networkAwareness: {
-              timeoutRate: 0.0,
-              retryRate: 0.0,
-              connectionFailureRate: 0.0,
-              latencyJitterMillis: 4.0,
-              recentErrorBurst: false,
-              requestTimeoutCount: 0,
-              sampleSize: 120
-            }
-          },
-          {
-            serverId: "edge-beta",
-            healthy: true,
-            inFlightRequestCount: 28,
-            configuredCapacity: 100.0,
-            estimatedConcurrencyLimit: 100.0,
-            weight: 4.0,
-            averageLatencyMillis: 24.0,
-            p95LatencyMillis: 52.0,
-            p99LatencyMillis: 96.0,
-            recentErrorRate: 0.02,
-            queueDepth: 3,
-            networkAwareness: {
-              timeoutRate: 0.01,
-              retryRate: 0.01,
-              connectionFailureRate: 0.0,
-              latencyJitterMillis: 7.0,
-              recentErrorBurst: false,
-              requestTimeoutCount: 1,
-              sampleSize: 120
-            }
-          },
-          {
-            serverId: "edge-drain",
-            healthy: false,
-            inFlightRequestCount: 1,
-            configuredCapacity: 100.0,
-            estimatedConcurrencyLimit: 100.0,
-            weight: 5.0,
-            averageLatencyMillis: 12.0,
-            p95LatencyMillis: 20.0,
-            p99LatencyMillis: 40.0,
-            recentErrorRate: 0.0,
-            queueDepth: 0
-          }
-        ]
+      {
+        id: "all-unhealthy-degradation",
+        label: "All-Unhealthy Degradation",
+        scenarioName: "all-unhealthy-degradation-scenario",
+        description: "Every candidate is marked unhealthy to show controlled degradation and no fabricated selection.",
+        expectedHints: {
+          routing: "Routing strategies should return no selected server or a safe failed status.",
+          allocation: "Capacity-aware allocation should return no allocations and leave the requested load unallocated.",
+          loadShedding: "Critical pressure may still be evaluated, but no healthy capacity is available.",
+          remediation: "Advisory hints should focus on restoring healthy capacity before accepting load."
+        },
+        safetyNote: "Synthetic degradation scenario; no recovery action is executed.",
+        allocationRequest: {
+          requestedLoad: 80.0,
+          servers: [
+            { id: "edge-down-a", cpuUsage: 15.0, memoryUsage: 20.0, diskUsage: 18.0, capacity: 100.0, weight: 2.0, healthy: false },
+            { id: "edge-down-b", cpuUsage: 18.0, memoryUsage: 24.0, diskUsage: 22.0, capacity: 100.0, weight: 2.0, healthy: false },
+            { id: "edge-down-c", cpuUsage: 12.0, memoryUsage: 18.0, diskUsage: 16.0, capacity: 80.0, weight: 1.0, healthy: false }
+          ]
+        },
+        evaluationRequest: {
+          requestedLoad: 80.0,
+          strategy: "CAPACITY_AWARE",
+          priority: "CRITICAL",
+          currentInFlightRequestCount: 40,
+          concurrencyLimit: 40,
+          queueDepth: 28,
+          observedP95LatencyMillis: 275.0,
+          observedErrorRate: 0.16,
+          servers: [
+            { id: "edge-down-a", cpuUsage: 15.0, memoryUsage: 20.0, diskUsage: 18.0, capacity: 100.0, weight: 2.0, healthy: false },
+            { id: "edge-down-b", cpuUsage: 18.0, memoryUsage: 24.0, diskUsage: 22.0, capacity: 100.0, weight: 2.0, healthy: false },
+            { id: "edge-down-c", cpuUsage: 12.0, memoryUsage: 18.0, diskUsage: 16.0, capacity: 80.0, weight: 1.0, healthy: false }
+          ]
+        },
+        routingRequest: {
+          strategies: [
+            "TAIL_LATENCY_POWER_OF_TWO",
+            "WEIGHTED_LEAST_LOAD",
+            "WEIGHTED_LEAST_CONNECTIONS",
+            "WEIGHTED_ROUND_ROBIN",
+            "ROUND_ROBIN"
+          ],
+          servers: [
+            routingServer("edge-down-a", false, 0, 100.0, 2.0, 18.0, 35.0, 75.0, 0.0, 0, 5.0, 0.0),
+            routingServer("edge-down-b", false, 0, 100.0, 2.0, 20.0, 38.0, 78.0, 0.0, 0, 5.0, 0.0),
+            routingServer("edge-down-c", false, 0, 80.0, 1.0, 22.0, 42.0, 82.0, 0.0, 0, 5.0, 0.0)
+          ]
+        }
+      },
+      {
+        id: "recovery-capacity-restored",
+        label: "Recovery / Capacity Restored",
+        scenarioName: "recovery-capacity-restored-scenario",
+        description: "A previously constrained shape returns with healthy capacity and reduced pressure.",
+        expectedHints: {
+          routing: "Routing should again have healthy candidates and select from restored capacity.",
+          allocation: "Allocation should place load across restored nodes with no or reduced unallocated load.",
+          loadShedding: "USER priority under restored capacity should be allowed.",
+          remediation: "Advisory hints should trend back toward no-action or monitoring guidance."
+        },
+        safetyNote: "Synthetic recovery inputs only; no infrastructure changes are made.",
+        allocationRequest: {
+          requestedLoad: 110.0,
+          servers: [
+            { id: "edge-recovery-a", cpuUsage: 30.0, memoryUsage: 34.0, diskUsage: 26.0, capacity: 130.0, weight: 3.0, healthy: true },
+            { id: "edge-recovery-b", cpuUsage: 38.0, memoryUsage: 36.0, diskUsage: 30.0, capacity: 120.0, weight: 2.0, healthy: true },
+            { id: "edge-recovery-c", cpuUsage: 44.0, memoryUsage: 40.0, diskUsage: 32.0, capacity: 100.0, weight: 1.0, healthy: true }
+          ]
+        },
+        evaluationRequest: {
+          requestedLoad: 110.0,
+          strategy: "CAPACITY_AWARE",
+          priority: "USER",
+          currentInFlightRequestCount: 28,
+          concurrencyLimit: 120,
+          queueDepth: 4,
+          observedP95LatencyMillis: 110.0,
+          observedErrorRate: 0.02,
+          servers: [
+            { id: "edge-recovery-a", cpuUsage: 30.0, memoryUsage: 34.0, diskUsage: 26.0, capacity: 130.0, weight: 3.0, healthy: true },
+            { id: "edge-recovery-b", cpuUsage: 38.0, memoryUsage: 36.0, diskUsage: 30.0, capacity: 120.0, weight: 2.0, healthy: true },
+            { id: "edge-recovery-c", cpuUsage: 44.0, memoryUsage: 40.0, diskUsage: 32.0, capacity: 100.0, weight: 1.0, healthy: true }
+          ]
+        },
+        routingRequest: {
+          strategies: [
+            "TAIL_LATENCY_POWER_OF_TWO",
+            "WEIGHTED_LEAST_LOAD",
+            "WEIGHTED_LEAST_CONNECTIONS",
+            "WEIGHTED_ROUND_ROBIN",
+            "ROUND_ROBIN"
+          ],
+          servers: [
+            routingServer("edge-recovery-a", true, 7, 130.0, 3.0, 20.0, 36.0, 68.0, 0.01, 1, 4.0, 0.0),
+            routingServer("edge-recovery-b", true, 11, 120.0, 2.0, 24.0, 42.0, 78.0, 0.01, 2, 5.0, 0.0),
+            routingServer("edge-recovery-c", true, 18, 100.0, 1.0, 30.0, 58.0, 96.0, 0.02, 3, 8.0, 0.01)
+          ]
+        }
       }
-    };
+    ];
 
     const state = {
       health: null,
@@ -683,6 +808,7 @@
       evaluation: document.getElementById("evaluation-output"),
       remediation: document.getElementById("remediation-output"),
       summary: document.getElementById("cockpit-summary"),
+      scenarioSummary: document.getElementById("scenario-summary"),
       curl: document.getElementById("curl-snippets")
     };
 
@@ -696,9 +822,47 @@
 
     const baseUrlInput = document.getElementById("base-url");
     const copyStatus = document.getElementById("copy-status");
+    let selectedScenarioId = "normal-load";
+    let previousScenarioSnapshot = null;
+    let latestScenarioSnapshot = null;
+
+    function routingServer(serverId, healthy, inFlightRequestCount, capacity, weight,
+                           averageLatencyMillis, p95LatencyMillis, p99LatencyMillis,
+                           recentErrorRate, queueDepth, latencyJitterMillis, timeoutRate) {
+      return {
+        serverId,
+        healthy,
+        inFlightRequestCount,
+        configuredCapacity: capacity,
+        estimatedConcurrencyLimit: capacity,
+        weight,
+        averageLatencyMillis,
+        p95LatencyMillis,
+        p99LatencyMillis,
+        recentErrorRate,
+        queueDepth,
+        networkAwareness: {
+          timeoutRate,
+          retryRate: timeoutRate,
+          connectionFailureRate: 0.0,
+          latencyJitterMillis,
+          recentErrorBurst: recentErrorRate >= 0.10,
+          requestTimeoutCount: Math.round(timeoutRate * 100),
+          sampleSize: 120
+        }
+      };
+    }
 
     function stableJson(value) {
       return JSON.stringify(value, null, 2);
+    }
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function selectedScenario() {
+      return clone(scenarioGallery.find((scenario) => scenario.id === selectedScenarioId) || scenarioGallery[0]);
     }
 
     function setBadge(name, status) {
@@ -726,13 +890,12 @@
     }
 
     function unavailable(section, path, message) {
-      const body = {
+      return {
         status: "Not available in current API",
         section,
         endpoint: path,
         message
       };
-      return body;
     }
 
     async function callJson(path, options) {
@@ -762,11 +925,63 @@
       return JSON.parse(outputs.scenario.value);
     }
 
-    function loadSampleScenario() {
-      outputs.scenario.value = stableJson(cockpitScenario);
+    function renderScenarioGallery() {
+      const gallery = document.getElementById("scenario-gallery");
+      gallery.innerHTML = scenarioGallery.map((scenario) => "<div class=\"scenario-card"
+        + (scenario.id === selectedScenarioId ? " active" : "")
+        + "\" data-card-id=\"" + scenario.id + "\">"
+        + "<h3>" + escapeHtml(scenario.label) + "</h3>"
+        + "<p>" + escapeHtml(scenario.description) + "</p>"
+        + "<ul class=\"hint-list\">"
+        + "<li>Routing: " + escapeHtml(scenario.expectedHints.routing) + "</li>"
+        + "<li>Allocation: " + escapeHtml(scenario.expectedHints.allocation) + "</li>"
+        + "<li>Load-shedding: " + escapeHtml(scenario.expectedHints.loadShedding) + "</li>"
+        + "<li>Remediation: " + escapeHtml(scenario.expectedHints.remediation) + "</li>"
+        + "</ul>"
+        + "<p class=\"muted\">" + escapeHtml(scenario.safetyNote) + "</p>"
+        + "<button type=\"button\" data-scenario-id=\"" + scenario.id + "\">Load scenario</button>"
+        + "</div>").join("");
+      document.querySelectorAll("[data-scenario-id]").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectedScenarioId = button.getAttribute("data-scenario-id");
+          renderScenarioGallery();
+          loadSelectedScenario();
+        });
+      });
+      renderScenarioHints();
+    }
+
+    function renderScenarioHints() {
+      const scenario = selectedScenario();
+      document.getElementById("scenario-hints").innerHTML = "<ul class=\"hint-list\">"
+        + "<li>Routing: " + escapeHtml(scenario.expectedHints.routing) + "</li>"
+        + "<li>Allocation: " + escapeHtml(scenario.expectedHints.allocation) + "</li>"
+        + "<li>Load-shedding: " + escapeHtml(scenario.expectedHints.loadShedding) + "</li>"
+        + "<li>Remediation: " + escapeHtml(scenario.expectedHints.remediation) + "</li>"
+        + "<li>Safety: " + escapeHtml(scenario.safetyNote) + "</li>"
+        + "</ul>";
+    }
+
+    function loadSelectedScenario() {
+      outputs.scenario.value = stableJson(selectedScenario());
       setBadge("scenario", "Passed");
       refreshCurlSnippets();
       buildSummary();
+      outputs.scenarioSummary.textContent = buildScenarioSummary(null);
+    }
+
+    function loadSampleScenario() {
+      selectedScenarioId = "normal-load";
+      renderScenarioGallery();
+      loadSelectedScenario();
+    }
+
+    function ensureScenarioLoaded() {
+      if (!outputs.scenario.value.trim()) {
+        loadSelectedScenario();
+      } else {
+        refreshCurlSnippets();
+      }
     }
 
     async function checkHealth() {
@@ -853,12 +1068,21 @@
     }
 
     async function runFullSequence() {
-      loadSampleScenario();
+      ensureScenarioLoaded();
+      previousScenarioSnapshot = latestScenarioSnapshot;
       await checkHealth();
       await checkReadiness();
       await runAllocation();
       await runRouting();
       await runEvaluation();
+      latestScenarioSnapshot = scenarioSnapshot();
+      outputs.scenarioSummary.textContent = buildScenarioSummary(latestScenarioSnapshot);
+      renderWhatChanged();
+    }
+
+    async function runSelectedScenario() {
+      loadSelectedScenario();
+      await runFullSequence();
     }
 
     function renderAllocation(response) {
@@ -942,6 +1166,7 @@
     }
 
     function buildSummary() {
+      const scenarioName = outputs.scenario.value.trim() ? currentScenario().scenarioName : "not-loaded";
       const routingLines = (state.routing && state.routing.results ? state.routing.results : [])
         .map((result) => "- " + result.strategyId + ": " + (result.chosenServerId || "none"))
         .join("\n") || "- Not run";
@@ -953,6 +1178,7 @@
         "# Load-Balancing Cockpit Summary",
         "",
         "demoName: Load-Balancing Cockpit",
+        "scenarioName: " + scenarioName,
         "mode: local browser same-origin demo",
         "runtimeReportWritten: false",
         "cloudMutation: false",
@@ -992,7 +1218,120 @@
       ].join("\n");
     }
 
-    function resetCockpit() {
+    function scenarioSnapshot() {
+      const scenario = currentScenario();
+      const routingResults = state.routing && state.routing.results ? state.routing.results : [];
+      return {
+        scenarioName: scenario.scenarioName,
+        allocationUnallocatedLoad: state.allocation ? Number(state.allocation.unallocatedLoad || 0) : null,
+        allocationRecommendedServers: state.allocation ? Number(state.allocation.recommendedAdditionalServers || 0) : null,
+        acceptedLoad: state.evaluation ? Number(state.evaluation.acceptedLoad || 0) : null,
+        rejectedLoad: state.evaluation ? Number(state.evaluation.rejectedLoad || 0) : null,
+        loadSheddingAction: state.evaluation && state.evaluation.loadShedding ? state.evaluation.loadShedding.action : "NOT_RUN",
+        remediationStatus: state.evaluation && state.evaluation.remediationPlan ? state.evaluation.remediationPlan.status : "NOT_RUN",
+        routingSelections: routingResults.map((result) => ({
+          strategy: result.strategyId,
+          selected: result.chosenServerId || "none",
+          status: result.status || "unknown"
+        }))
+      };
+    }
+
+    function buildScenarioSummary(snapshot) {
+      const scenario = currentScenario();
+      const hints = scenario.expectedHints || {};
+      const actual = snapshot || {
+        scenarioName: scenario.scenarioName,
+        allocationUnallocatedLoad: null,
+        allocationRecommendedServers: null,
+        acceptedLoad: null,
+        rejectedLoad: null,
+        loadSheddingAction: "NOT_RUN",
+        remediationStatus: "NOT_RUN",
+        routingSelections: []
+      };
+      const routingLines = actual.routingSelections.length
+        ? actual.routingSelections.map((item) =>
+          "- " + item.strategy + ": " + item.selected + " (" + item.status + ")").join("\n")
+        : "- Not run";
+      return [
+        "# Operator Scenario Gallery Summary",
+        "",
+        "scenarioName: " + scenario.scenarioName,
+        "scenarioLabel: " + (scenario.label || scenario.scenarioName),
+        "runtimeReportWritten: false",
+        "cloudMutation: false",
+        "",
+        "## Expected Outcome Hints",
+        "- routing: " + (hints.routing || "not provided"),
+        "- allocation: " + (hints.allocation || "not provided"),
+        "- loadShedding: " + (hints.loadShedding || "not provided"),
+        "- remediation: " + (hints.remediation || "not provided"),
+        "",
+        "## Actual Endpoint Output Summary",
+        "- allocationUnallocatedLoad: " + formatMaybeNumber(actual.allocationUnallocatedLoad),
+        "- allocationRecommendedServers: " + formatMaybeNumber(actual.allocationRecommendedServers),
+        "- acceptedLoad: " + formatMaybeNumber(actual.acceptedLoad),
+        "- rejectedLoad: " + formatMaybeNumber(actual.rejectedLoad),
+        "- loadSheddingAction: " + actual.loadSheddingAction,
+        "- remediationStatus: " + actual.remediationStatus,
+        "",
+        "## Routing Selections",
+        routingLines,
+        "",
+        "## Safety",
+        "- local/operator demo only",
+        "- not certification",
+        "- not benchmark proof",
+        "- not legal compliance proof",
+        "- not identity proof",
+        "- no cloud mutation",
+        "- no runtime report written"
+      ].join("\n");
+    }
+
+    function renderWhatChanged() {
+      const container = document.getElementById("what-changed-summary");
+      if (!previousScenarioSnapshot || !latestScenarioSnapshot) {
+        container.textContent = "Run two scenarios, then compare with previous scenario.";
+        return;
+      }
+      const previousRouting = routingMap(previousScenarioSnapshot);
+      const latestRouting = routingMap(latestScenarioSnapshot);
+      const strategies = Object.keys(Object.assign({}, previousRouting, latestRouting)).sort();
+      const routingLines = strategies.map((strategy) =>
+        "<li>" + escapeHtml(strategy) + ": "
+        + escapeHtml(previousRouting[strategy] || "not run") + " -> "
+        + escapeHtml(latestRouting[strategy] || "not run") + "</li>"
+      ).join("");
+      container.innerHTML = "<ul class=\"hint-list\">"
+        + "<li>Scenario: " + escapeHtml(previousScenarioSnapshot.scenarioName)
+        + " -> " + escapeHtml(latestScenarioSnapshot.scenarioName) + "</li>"
+        + "<li>Unallocated load: " + formatMaybeNumber(previousScenarioSnapshot.allocationUnallocatedLoad)
+        + " -> " + formatMaybeNumber(latestScenarioSnapshot.allocationUnallocatedLoad) + "</li>"
+        + "<li>Rejected load: " + formatMaybeNumber(previousScenarioSnapshot.rejectedLoad)
+        + " -> " + formatMaybeNumber(latestScenarioSnapshot.rejectedLoad) + "</li>"
+        + "<li>Load-shedding action: " + escapeHtml(previousScenarioSnapshot.loadSheddingAction)
+        + " -> " + escapeHtml(latestScenarioSnapshot.loadSheddingAction) + "</li>"
+        + "<li>Remediation status: " + escapeHtml(previousScenarioSnapshot.remediationStatus)
+        + " -> " + escapeHtml(latestScenarioSnapshot.remediationStatus) + "</li>"
+        + routingLines
+        + "</ul>";
+    }
+
+    function routingMap(snapshot) {
+      const map = {};
+      snapshot.routingSelections.forEach((item) => {
+        map[item.strategy] = item.selected;
+      });
+      return map;
+    }
+
+    function formatMaybeNumber(value) {
+      return value === null || value === undefined ? "NOT_RUN" : Number(value).toFixed(3);
+    }
+
+    function resetRuntimeState() {
       state.health = null;
       state.readiness = null;
       state.allocation = null;
@@ -1013,7 +1352,26 @@
       document.getElementById("remediation-summary").innerHTML =
         "<strong>Advisory hints</strong><span class=\"muted\">Run remediation hints to populate advisory plan output.</span>";
       ["health", "scenario", "allocation", "routing", "evaluation"].forEach((name) => setBadge(name, "Not run"));
+    }
+
+    function resetCockpit() {
+      resetRuntimeState();
+      previousScenarioSnapshot = null;
+      latestScenarioSnapshot = null;
       loadSampleScenario();
+      document.getElementById("what-changed-summary").textContent =
+        "Run two scenarios, then compare with previous scenario.";
+    }
+
+    function resetScenarioGallery() {
+      previousScenarioSnapshot = null;
+      latestScenarioSnapshot = null;
+      selectedScenarioId = "normal-load";
+      renderScenarioGallery();
+      resetRuntimeState();
+      loadSelectedScenario();
+      document.getElementById("what-changed-summary").textContent =
+        "Run two scenarios, then compare with previous scenario.";
     }
 
     function escapeHtml(value) {
@@ -1045,8 +1403,8 @@
           await checkHealth();
         } else if (action === "readiness") {
           await checkReadiness();
-        } else if (action === "load-sample") {
-          loadSampleScenario();
+        } else if (action === "load-sample" || action === "load-selected-scenario") {
+          loadSelectedScenario();
         } else if (action === "allocation") {
           await runAllocation();
         } else if (action === "routing") {
@@ -1055,6 +1413,12 @@
           await runEvaluation();
         } else if (action === "full-sequence") {
           await runFullSequence();
+        } else if (action === "run-selected-scenario") {
+          await runSelectedScenario();
+        } else if (action === "compare-scenarios") {
+          renderWhatChanged();
+        } else if (action === "reset-gallery") {
+          resetScenarioGallery();
         } else if (action === "reset") {
           resetCockpit();
         }
@@ -1071,9 +1435,11 @@
       setBadge("scenario", "Warning");
       refreshCurlSnippets();
       buildSummary();
+      outputs.scenarioSummary.textContent = buildScenarioSummary(null);
     });
 
-    loadSampleScenario();
+    renderScenarioGallery();
+    loadSelectedScenario();
   </script>
 </body>
 </html>

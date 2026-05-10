@@ -1,0 +1,159 @@
+{
+  "scenarioName": "all-unhealthy-degradation-scenario",
+  "label": "All-Unhealthy Degradation",
+  "description": "Every candidate is marked unhealthy to show controlled degradation and no fabricated selection.",
+  "expectedHints": {
+    "routing": "Routing strategies should return no selected server or a safe failed status.",
+    "allocation": "Capacity-aware allocation should return no allocations and leave the requested load unallocated.",
+    "loadShedding": "Critical pressure may still be evaluated, but no healthy capacity is available.",
+    "remediation": "Advisory hints should focus on restoring healthy capacity before accepting load."
+  },
+  "allocationRequest": {
+    "requestedLoad": 80.0,
+    "servers": [
+      {
+        "id": "edge-down-a",
+        "cpuUsage": 15.0,
+        "memoryUsage": 20.0,
+        "diskUsage": 18.0,
+        "capacity": 100.0,
+        "weight": 2.0,
+        "healthy": false
+      },
+      {
+        "id": "edge-down-b",
+        "cpuUsage": 18.0,
+        "memoryUsage": 24.0,
+        "diskUsage": 22.0,
+        "capacity": 100.0,
+        "weight": 2.0,
+        "healthy": false
+      },
+      {
+        "id": "edge-down-c",
+        "cpuUsage": 12.0,
+        "memoryUsage": 18.0,
+        "diskUsage": 16.0,
+        "capacity": 80.0,
+        "weight": 1.0,
+        "healthy": false
+      }
+    ]
+  },
+  "evaluationRequest": {
+    "requestedLoad": 80.0,
+    "strategy": "CAPACITY_AWARE",
+    "priority": "CRITICAL",
+    "currentInFlightRequestCount": 40,
+    "concurrencyLimit": 40,
+    "queueDepth": 28,
+    "observedP95LatencyMillis": 275.0,
+    "observedErrorRate": 0.16,
+    "servers": [
+      {
+        "id": "edge-down-a",
+        "cpuUsage": 15.0,
+        "memoryUsage": 20.0,
+        "diskUsage": 18.0,
+        "capacity": 100.0,
+        "weight": 2.0,
+        "healthy": false
+      },
+      {
+        "id": "edge-down-b",
+        "cpuUsage": 18.0,
+        "memoryUsage": 24.0,
+        "diskUsage": 22.0,
+        "capacity": 100.0,
+        "weight": 2.0,
+        "healthy": false
+      },
+      {
+        "id": "edge-down-c",
+        "cpuUsage": 12.0,
+        "memoryUsage": 18.0,
+        "diskUsage": 16.0,
+        "capacity": 80.0,
+        "weight": 1.0,
+        "healthy": false
+      }
+    ]
+  },
+  "routingRequest": {
+    "strategies": [
+      "TAIL_LATENCY_POWER_OF_TWO",
+      "WEIGHTED_LEAST_LOAD",
+      "WEIGHTED_LEAST_CONNECTIONS",
+      "WEIGHTED_ROUND_ROBIN",
+      "ROUND_ROBIN"
+    ],
+    "servers": [
+      {
+        "serverId": "edge-down-a",
+        "healthy": false,
+        "inFlightRequestCount": 0,
+        "configuredCapacity": 100.0,
+        "estimatedConcurrencyLimit": 100.0,
+        "weight": 2.0,
+        "averageLatencyMillis": 18.0,
+        "p95LatencyMillis": 35.0,
+        "p99LatencyMillis": 75.0,
+        "recentErrorRate": 0.0,
+        "queueDepth": 0,
+        "networkAwareness": {
+          "timeoutRate": 0.0,
+          "retryRate": 0.0,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 5.0,
+          "recentErrorBurst": false,
+          "requestTimeoutCount": 0,
+          "sampleSize": 120
+        }
+      },
+      {
+        "serverId": "edge-down-b",
+        "healthy": false,
+        "inFlightRequestCount": 0,
+        "configuredCapacity": 100.0,
+        "estimatedConcurrencyLimit": 100.0,
+        "weight": 2.0,
+        "averageLatencyMillis": 20.0,
+        "p95LatencyMillis": 38.0,
+        "p99LatencyMillis": 78.0,
+        "recentErrorRate": 0.0,
+        "queueDepth": 0,
+        "networkAwareness": {
+          "timeoutRate": 0.0,
+          "retryRate": 0.0,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 5.0,
+          "recentErrorBurst": false,
+          "requestTimeoutCount": 0,
+          "sampleSize": 120
+        }
+      },
+      {
+        "serverId": "edge-down-c",
+        "healthy": false,
+        "inFlightRequestCount": 0,
+        "configuredCapacity": 80.0,
+        "estimatedConcurrencyLimit": 80.0,
+        "weight": 1.0,
+        "averageLatencyMillis": 22.0,
+        "p95LatencyMillis": 42.0,
+        "p99LatencyMillis": 82.0,
+        "recentErrorRate": 0.0,
+        "queueDepth": 0,
+        "networkAwareness": {
+          "timeoutRate": 0.0,
+          "retryRate": 0.0,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 5.0,
+          "recentErrorBurst": false,
+          "requestTimeoutCount": 0,
+          "sampleSize": 120
+        }
+      }
+    ]
+  }
+}

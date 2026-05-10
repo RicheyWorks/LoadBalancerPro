@@ -1,0 +1,159 @@
+{
+  "scenarioName": "normal-load-scenario",
+  "label": "Normal Load",
+  "description": "Healthy edge nodes have spare capacity and low observed pressure.",
+  "expectedHints": {
+    "routing": "Healthy low-latency nodes should be eligible; weighted strategies should prefer lower normalized load.",
+    "allocation": "Capacity-aware allocation should place the requested load without simulated scale-up.",
+    "loadShedding": "USER priority with low pressure should be allowed.",
+    "remediation": "Advisory plan should stay in a no-action or nominal state."
+  },
+  "allocationRequest": {
+    "requestedLoad": 90.0,
+    "servers": [
+      {
+        "id": "edge-normal-a",
+        "cpuUsage": 25.0,
+        "memoryUsage": 30.0,
+        "diskUsage": 20.0,
+        "capacity": 120.0,
+        "weight": 3.0,
+        "healthy": true
+      },
+      {
+        "id": "edge-normal-b",
+        "cpuUsage": 35.0,
+        "memoryUsage": 32.0,
+        "diskUsage": 24.0,
+        "capacity": 100.0,
+        "weight": 2.0,
+        "healthy": true
+      },
+      {
+        "id": "edge-normal-c",
+        "cpuUsage": 42.0,
+        "memoryUsage": 38.0,
+        "diskUsage": 28.0,
+        "capacity": 90.0,
+        "weight": 1.0,
+        "healthy": true
+      }
+    ]
+  },
+  "evaluationRequest": {
+    "requestedLoad": 90.0,
+    "strategy": "CAPACITY_AWARE",
+    "priority": "USER",
+    "currentInFlightRequestCount": 18,
+    "concurrencyLimit": 100,
+    "queueDepth": 2,
+    "observedP95LatencyMillis": 95.0,
+    "observedErrorRate": 0.01,
+    "servers": [
+      {
+        "id": "edge-normal-a",
+        "cpuUsage": 25.0,
+        "memoryUsage": 30.0,
+        "diskUsage": 20.0,
+        "capacity": 120.0,
+        "weight": 3.0,
+        "healthy": true
+      },
+      {
+        "id": "edge-normal-b",
+        "cpuUsage": 35.0,
+        "memoryUsage": 32.0,
+        "diskUsage": 24.0,
+        "capacity": 100.0,
+        "weight": 2.0,
+        "healthy": true
+      },
+      {
+        "id": "edge-normal-c",
+        "cpuUsage": 42.0,
+        "memoryUsage": 38.0,
+        "diskUsage": 28.0,
+        "capacity": 90.0,
+        "weight": 1.0,
+        "healthy": true
+      }
+    ]
+  },
+  "routingRequest": {
+    "strategies": [
+      "TAIL_LATENCY_POWER_OF_TWO",
+      "WEIGHTED_LEAST_LOAD",
+      "WEIGHTED_LEAST_CONNECTIONS",
+      "WEIGHTED_ROUND_ROBIN",
+      "ROUND_ROBIN"
+    ],
+    "servers": [
+      {
+        "serverId": "edge-normal-a",
+        "healthy": true,
+        "inFlightRequestCount": 4,
+        "configuredCapacity": 120.0,
+        "estimatedConcurrencyLimit": 120.0,
+        "weight": 3.0,
+        "averageLatencyMillis": 18.0,
+        "p95LatencyMillis": 32.0,
+        "p99LatencyMillis": 62.0,
+        "recentErrorRate": 0.0,
+        "queueDepth": 1,
+        "networkAwareness": {
+          "timeoutRate": 0.0,
+          "retryRate": 0.0,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 3.0,
+          "recentErrorBurst": false,
+          "requestTimeoutCount": 0,
+          "sampleSize": 120
+        }
+      },
+      {
+        "serverId": "edge-normal-b",
+        "healthy": true,
+        "inFlightRequestCount": 9,
+        "configuredCapacity": 100.0,
+        "estimatedConcurrencyLimit": 100.0,
+        "weight": 2.0,
+        "averageLatencyMillis": 22.0,
+        "p95LatencyMillis": 40.0,
+        "p99LatencyMillis": 76.0,
+        "recentErrorRate": 0.01,
+        "queueDepth": 2,
+        "networkAwareness": {
+          "timeoutRate": 0.0,
+          "retryRate": 0.0,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 5.0,
+          "recentErrorBurst": false,
+          "requestTimeoutCount": 0,
+          "sampleSize": 120
+        }
+      },
+      {
+        "serverId": "edge-normal-c",
+        "healthy": true,
+        "inFlightRequestCount": 14,
+        "configuredCapacity": 90.0,
+        "estimatedConcurrencyLimit": 90.0,
+        "weight": 1.0,
+        "averageLatencyMillis": 28.0,
+        "p95LatencyMillis": 52.0,
+        "p99LatencyMillis": 88.0,
+        "recentErrorRate": 0.01,
+        "queueDepth": 3,
+        "networkAwareness": {
+          "timeoutRate": 0.0,
+          "retryRate": 0.0,
+          "connectionFailureRate": 0.0,
+          "latencyJitterMillis": 6.0,
+          "recentErrorBurst": false,
+          "requestTimeoutCount": 0,
+          "sampleSize": 120
+        }
+      }
+    ]
+  }
+}

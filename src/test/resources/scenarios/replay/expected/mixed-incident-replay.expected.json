@@ -69,7 +69,7 @@
       "acceptedLoad": 90.0,
       "rejectedLoad": 0.0,
       "unallocatedLoad": 0.0,
-      "recommendedAdditionalServers": 0,
+      "recommendedAdditionalServers": 1,
       "metricsPreviewEmitted": false
     }
   ]

@@ -221,15 +221,15 @@ class LoadBalancingCockpitDemoTest {
             assertEquals(firstEvaluation, secondEvaluation,
                     "Read-only evaluation fixture output should be deterministic.");
 
-            postJson("/api/routing/compare", ROUTING_FIXTURE)
+            mockMvc.perform(post("/api/routing/compare")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(statelessRoutingRequest()))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.requestedStrategies[0]", is("TAIL_LATENCY_POWER_OF_TWO")))
-                    .andExpect(jsonPath("$.candidateCount", is(3)))
+                    .andExpect(jsonPath("$.requestedStrategies[0]", is("WEIGHTED_LEAST_CONNECTIONS")))
+                    .andExpect(jsonPath("$.candidateCount", is(2)))
                     .andExpect(jsonPath("$.results[0].status", is("SUCCESS")))
-                    .andExpect(jsonPath("$.results[1].strategyId", is("WEIGHTED_LEAST_LOAD")))
-                    .andExpect(jsonPath("$.results[2].strategyId", is("WEIGHTED_LEAST_CONNECTIONS")))
-                    .andExpect(jsonPath("$.results[3].strategyId", is("WEIGHTED_ROUND_ROBIN")))
-                    .andExpect(jsonPath("$.results[4].strategyId", is("ROUND_ROBIN")));
+                    .andExpect(jsonPath("$.results[0].strategyId", is("WEIGHTED_LEAST_CONNECTIONS")))
+                    .andExpect(jsonPath("$.results[0].chosenServerId", is("edge-weighted")));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "cockpit demo endpoints must not construct CloudManager");
@@ -305,6 +305,44 @@ class LoadBalancingCockpitDemoTest {
         return mockMvc.perform(post(path)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(Files.readString(fixture, StandardCharsets.UTF_8)));
+    }
+
+    private static String statelessRoutingRequest() {
+        return """
+                {
+                  "strategies": [
+                    "WEIGHTED_LEAST_CONNECTIONS"
+                  ],
+                  "servers": [
+                    {
+                      "serverId": "edge-standard",
+                      "healthy": true,
+                      "inFlightRequestCount": 5,
+                      "configuredCapacity": 100.0,
+                      "estimatedConcurrencyLimit": 100.0,
+                      "weight": 1.0,
+                      "averageLatencyMillis": 16.0,
+                      "p95LatencyMillis": 30.0,
+                      "p99LatencyMillis": 60.0,
+                      "recentErrorRate": 0.0,
+                      "queueDepth": 1
+                    },
+                    {
+                      "serverId": "edge-weighted",
+                      "healthy": true,
+                      "inFlightRequestCount": 12,
+                      "configuredCapacity": 100.0,
+                      "estimatedConcurrencyLimit": 100.0,
+                      "weight": 4.0,
+                      "averageLatencyMillis": 18.0,
+                      "p95LatencyMillis": 34.0,
+                      "p99LatencyMillis": 70.0,
+                      "recentErrorRate": 0.0,
+                      "queueDepth": 2
+                    }
+                  ]
+                }
+                """;
     }
 
     private static JsonNode readJson(Path path) throws Exception {

@@ -1,0 +1,51 @@
+{
+  "strategies": [
+    "TAIL_LATENCY_POWER_OF_TWO"
+  ],
+  "servers": [
+    {
+      "serverId": "edge-low-tail",
+      "healthy": true,
+      "inFlightRequestCount": 4,
+      "configuredCapacity": 100.0,
+      "estimatedConcurrencyLimit": 100.0,
+      "weight": 1.0,
+      "averageLatencyMillis": 18.0,
+      "p95LatencyMillis": 32.0,
+      "p99LatencyMillis": 64.0,
+      "recentErrorRate": 0.0,
+      "queueDepth": 1,
+      "networkAwareness": {
+        "timeoutRate": 0.0,
+        "retryRate": 0.0,
+        "connectionFailureRate": 0.0,
+        "latencyJitterMillis": 3.0,
+        "recentErrorBurst": false,
+        "requestTimeoutCount": 0,
+        "sampleSize": 120
+      }
+    },
+    {
+      "serverId": "edge-high-tail",
+      "healthy": true,
+      "inFlightRequestCount": 4,
+      "configuredCapacity": 100.0,
+      "estimatedConcurrencyLimit": 100.0,
+      "weight": 1.0,
+      "averageLatencyMillis": 28.0,
+      "p95LatencyMillis": 95.0,
+      "p99LatencyMillis": 180.0,
+      "recentErrorRate": 0.04,
+      "queueDepth": 4,
+      "networkAwareness": {
+        "timeoutRate": 0.03,
+        "retryRate": 0.02,
+        "connectionFailureRate": 0.0,
+        "latencyJitterMillis": 18.0,
+        "recentErrorBurst": false,
+        "requestTimeoutCount": 3,
+        "sampleSize": 120
+      }
+    }
+  ]
+}

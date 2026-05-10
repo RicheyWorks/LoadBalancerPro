@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoadBalancerPro Routing Decision Demo</title>
+  <style>
+    :root {
+      --page: #f7f8fb;
+      --ink: #172033;
+      --muted: #5b6475;
+      --panel: #ffffff;
+      --line: #d8dee9;
+      --blue: #1958a6;
+      --green: #0f7b47;
+      --amber: #9a5b00;
+      --red: #b42318;
+      --code-bg: #111827;
+      --code-text: #e5edf3;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+    }
+
+    header {
+      background: #172033;
+      color: #ffffff;
+      padding: 28px 20px;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 20px auto 40px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+    }
+
+    p {
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      font: inherit;
+      color: var(--ink);
+      background: #ffffff;
+    }
+
+    textarea {
+      min-height: 340px;
+      resize: vertical;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    button {
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #0e3f80;
+      border-radius: 6px;
+      background: var(--blue);
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #334155;
+      border-color: #273449;
+    }
+
+    button.copy {
+      background: #0f766e;
+      border-color: #0f5f59;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      border-radius: 6px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.86rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef2f7;
+    }
+
+    .intro {
+      max-width: 920px;
+      color: #e5edf3;
+      margin: 10px 0 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: #eef2f7;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-body {
+      padding: 14px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .status-box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #ffffff;
+    }
+
+    .status-box strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #ffffff;
+      background: #64748b;
+    }
+
+    .badge.passed {
+      background: var(--green);
+    }
+
+    .badge.warning {
+      background: var(--amber);
+    }
+
+    .badge.failed {
+      background: var(--red);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .copy-status {
+      min-height: 22px;
+      margin: 10px 0 0;
+      color: #dce8ff;
+    }
+
+    .postman-note {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin: 8px 0 0;
+    }
+
+    .safety-list {
+      margin: 0;
+      padding-left: 20px;
+      columns: 2;
+    }
+
+    @media (max-width: 820px) {
+      .grid, .status-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      .safety-list {
+        columns: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Routing Decision Demo</h1>
+    <p class="intro">
+      Compare LoadBalancerPro request-level routing strategies with safe packaged sample telemetry,
+      inspect selected servers, and copy a deterministic browser summary. This page calls the existing
+      local API only.
+    </p>
+    <p id="copy-status" class="copy-status">Copy status: idle.</p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Demo controls</h2>
+        <div class="actions">
+          <button data-action="health" type="button">Check health</button>
+          <button data-action="readiness" type="button">Check readiness</button>
+          <button data-action="load-sample" type="button">Load sample scenario</button>
+          <button data-action="compare" type="button">Compare strategies</button>
+          <button data-action="reset" type="button" class="secondary">Reset demo</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <label for="base-url">Base URL</label>
+        <div class="actions">
+          <input id="base-url" aria-label="Base URL" value="http://localhost:8080">
+          <button id="same-origin" class="secondary" type="button">Use same origin</button>
+        </div>
+        <div class="status-grid" aria-label="Demo status">
+          <div class="status-box">
+            <strong>Health / readiness</strong>
+            <span id="health-badge" class="badge">Not run</span>
+          </div>
+          <div class="status-box">
+            <strong>Sample scenario</strong>
+            <span id="sample-badge" class="badge">Not run</span>
+          </div>
+          <div class="status-box">
+            <strong>Strategy comparison</strong>
+            <span id="compare-badge" class="badge">Not run</span>
+          </div>
+          <div class="status-box">
+            <strong>Copyable summary</strong>
+            <span id="summary-badge" class="badge">Not run</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid" style="margin-top: 16px;">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>1. Health / readiness</h2>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="health-output">Copy health response</button>
+            <button class="copy" type="button" data-copy-target="readiness-output">Copy readiness response</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <h3>Health response</h3>
+          <pre id="health-output">{}</pre>
+          <h3 style="margin-top: 12px;">Readiness response</h3>
+          <pre id="readiness-output">{}</pre>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>2. Copy curl snippet</h2>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="routing-curl">Copy curl</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <pre id="routing-curl"></pre>
+          <p class="postman-note">
+            Postman parity: run the <strong>Routing Decision Demo</strong> folder in
+            <code>postman/LoadBalancerPro.postman_collection.json</code>.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <div class="grid" style="margin-top: 16px;">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>3. Sample request editor/viewer</h2>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="request-json">Copy payload</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <textarea id="request-json" aria-label="Routing comparison request"></textarea>
+          <p class="postman-note">
+            The packaged scenario uses synthetic server names, deterministic weights, connection counts,
+            latency values, and no cloud identifiers.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>4. Results table/cards</h2>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="summary-output">Copy summary</button>
+            <button class="copy" type="button" data-copy-target="routing-output">Copy raw response</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <table aria-label="Routing strategy comparison results">
+            <thead>
+              <tr>
+                <th>Strategy</th>
+                <th>Selected server</th>
+                <th>Status</th>
+                <th>Why this server?</th>
+              </tr>
+            </thead>
+            <tbody id="result-rows">
+              <tr>
+                <td colspan="4" class="muted">Run a strategy comparison to populate results.</td>
+              </tr>
+            </tbody>
+          </table>
+          <h3 style="margin-top: 14px;">Raw JSON response</h3>
+          <pre id="routing-output">{}</pre>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>5. Copy response summary</h2>
+        <span class="muted">Deterministic client-side summary; variable server fields are omitted.</span>
+      </div>
+      <div class="panel-body">
+        <pre id="summary-output">Run a comparison to generate a summary.</pre>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>6. Safety limitations</h2>
+      </div>
+      <div class="panel-body">
+        <ul class="safety-list">
+          <li>Local/operator demo only.</li>
+          <li>Not certification.</li>
+          <li>Not benchmark proof.</li>
+          <li>Not legal compliance proof.</li>
+          <li>Not identity proof.</li>
+          <li>No cloud mutation.</li>
+          <li>No CloudManager required for routing demo.</li>
+          <li>No external services/dependencies.</li>
+          <li>No external scripts/CDNs.</li>
+          <li>API server required for browser/Postman demo.</li>
+          <li>No runtime reports or demo transcripts are written.</li>
+          <li>No secret fields, login inputs, release controls, ruleset controls, or cloud-control buttons.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const sampleScenario = {
+      strategies: [
+        "TAIL_LATENCY_POWER_OF_TWO",
+        "WEIGHTED_LEAST_LOAD",
+        "WEIGHTED_LEAST_CONNECTIONS",
+        "WEIGHTED_ROUND_ROBIN",
+        "ROUND_ROBIN"
+      ],
+      servers: [
+        {
+          serverId: "edge-alpha",
+          healthy: true,
+          inFlightRequestCount: 5,
+          configuredCapacity: 100.0,
+          estimatedConcurrencyLimit: 100.0,
+          weight: 2.0,
+          averageLatencyMillis: 20.0,
+          p95LatencyMillis: 40.0,
+          p99LatencyMillis: 80.0,
+          recentErrorRate: 0.01,
+          queueDepth: 1,
+          networkAwareness: {
+            timeoutRate: 0.0,
+            retryRate: 0.0,
+            connectionFailureRate: 0.0,
+            latencyJitterMillis: 4.0,
+            recentErrorBurst: false,
+            requestTimeoutCount: 0,
+            sampleSize: 120
+          }
+        },
+        {
+          serverId: "edge-beta",
+          healthy: true,
+          inFlightRequestCount: 28,
+          configuredCapacity: 100.0,
+          estimatedConcurrencyLimit: 100.0,
+          weight: 4.0,
+          averageLatencyMillis: 24.0,
+          p95LatencyMillis: 52.0,
+          p99LatencyMillis: 96.0,
+          recentErrorRate: 0.02,
+          queueDepth: 3,
+          networkAwareness: {
+            timeoutRate: 0.01,
+            retryRate: 0.01,
+            connectionFailureRate: 0.0,
+            latencyJitterMillis: 7.0,
+            recentErrorBurst: false,
+            requestTimeoutCount: 1,
+            sampleSize: 120
+          }
+        },
+        {
+          serverId: "edge-drain",
+          healthy: false,
+          inFlightRequestCount: 1,
+          configuredCapacity: 100.0,
+          estimatedConcurrencyLimit: 100.0,
+          weight: 5.0,
+          averageLatencyMillis: 12.0,
+          p95LatencyMillis: 20.0,
+          p99LatencyMillis: 40.0,
+          recentErrorRate: 0.0,
+          queueDepth: 0
+        }
+      ]
+    };
+
+    const outputs = {
+      health: document.getElementById("health-output"),
+      readiness: document.getElementById("readiness-output"),
+      routing: document.getElementById("routing-output"),
+      summary: document.getElementById("summary-output")
+    };
+    const requestJson = document.getElementById("request-json");
+    const baseUrlInput = document.getElementById("base-url");
+    const copyStatus = document.getElementById("copy-status");
+    const resultRows = document.getElementById("result-rows");
+    let lastRoutingBody = null;
+
+    function sameOriginBaseUrl() {
+      return window.location.origin || "http://localhost:8080";
+    }
+
+    function baseUrl() {
+      return baseUrlInput.value.replace(/\/+$/, "");
+    }
+
+    function endpoint(path) {
+      return baseUrl() + path;
+    }
+
+    function renderJson(target, value) {
+      target.textContent = JSON.stringify(value, null, 2);
+    }
+
+    function setBadge(id, state, label) {
+      const badge = document.getElementById(id);
+      badge.textContent = label || state;
+      badge.className = "badge " + state;
+    }
+
+    function loadSampleScenario() {
+      requestJson.value = JSON.stringify(sampleScenario, null, 2);
+      setBadge("sample-badge", "passed", "Loaded");
+      renderCurl();
+      renderSummary();
+    }
+
+    function renderCurl() {
+      document.getElementById("routing-curl").textContent =
+        "curl -fsS -X POST " + endpoint("/api/routing/compare")
+        + " \\\n  -H \"Content-Type: application/json\""
+        + " \\\n  --data-binary @routing-compare-request.json";
+    }
+
+    async function getJson(path, outputKey, badgeId) {
+      try {
+        const response = await fetch(endpoint(path), { headers: { Accept: "application/json" } });
+        const body = await parseResponse(response);
+        renderJson(outputs[outputKey], body);
+        setBadge(badgeId, response.ok ? "passed" : "warning", response.ok ? "Passed" : "Warning");
+        return body;
+      } catch (error) {
+        renderJson(outputs[outputKey], { error: String(error.message || error) });
+        setBadge(badgeId, "failed", "Failed");
+        return null;
+      }
+    }
+
+    async function parseResponse(response) {
+      const text = await response.text();
+      let body = text;
+      try {
+        body = text ? JSON.parse(text) : {};
+      } catch (error) {
+        body = { raw: text };
+      }
+      if (!response.ok) {
+        return { status: response.status, error: body };
+      }
+      return body;
+    }
+
+    async function checkHealth() {
+      await getJson("/api/health", "health", "health-badge");
+      renderSummary();
+    }
+
+    async function checkReadiness() {
+      await getJson("/actuator/health/readiness", "readiness", "health-badge");
+      renderSummary();
+    }
+
+    async function compareStrategies() {
+      let payload;
+      try {
+        payload = JSON.parse(requestJson.value);
+      } catch (error) {
+        renderJson(outputs.routing, { error: "Malformed sample request JSON." });
+        setBadge("compare-badge", "failed", "Failed");
+        renderSummary();
+        return;
+      }
+
+      try {
+        const response = await fetch(endpoint("/api/routing/compare"), {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+        const body = await parseResponse(response);
+        lastRoutingBody = body;
+        renderJson(outputs.routing, body);
+        renderResults(body);
+        setBadge("compare-badge", response.ok ? "passed" : "warning", response.ok ? "Passed" : "Warning");
+      } catch (error) {
+        lastRoutingBody = null;
+        renderJson(outputs.routing, { error: String(error.message || error) });
+        renderResults(null);
+        setBadge("compare-badge", "failed", "Failed");
+      }
+      renderSummary();
+    }
+
+    function renderResults(body) {
+      resultRows.innerHTML = "";
+      const results = body && Array.isArray(body.results) ? body.results : [];
+      if (results.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 4;
+        cell.className = "muted";
+        cell.textContent = "No routing comparison result is available. The endpoint may be unavailable or the request failed validation.";
+        row.appendChild(cell);
+        resultRows.appendChild(row);
+        return;
+      }
+
+      results.forEach((result) => {
+        const row = document.createElement("tr");
+        [result.strategyId, result.chosenServerId || "No server selected", result.status, result.reason || "No explanation returned."]
+          .forEach((value) => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+          });
+        resultRows.appendChild(row);
+      });
+    }
+
+    function normalizedValue(value) {
+      if (Array.isArray(value)) {
+        return value.map(normalizedValue);
+      }
+      if (value && typeof value === "object") {
+        const copy = {};
+        Object.keys(value).sort().forEach((key) => {
+          if (!key.toLowerCase().includes("stamp")) {
+            copy[key] = normalizedValue(value[key]);
+          }
+        });
+        return copy;
+      }
+      return value;
+    }
+
+    function renderSummary() {
+      const results = lastRoutingBody && Array.isArray(lastRoutingBody.results)
+        ? lastRoutingBody.results
+        : [];
+      const lines = [
+        "# Routing Decision Browser Demo",
+        "",
+        "mode: local browser same-origin demo",
+        "endpoint: POST /api/routing/compare",
+        "strategies: TAIL_LATENCY_POWER_OF_TWO, WEIGHTED_LEAST_LOAD, WEIGHTED_LEAST_CONNECTIONS, WEIGHTED_ROUND_ROBIN, ROUND_ROBIN",
+        "",
+        "## Results"
+      ];
+
+      if (results.length === 0) {
+        lines.push("- NOT_RUN: Run Compare strategies to populate selected server output.");
+      } else {
+        results.forEach((result) => {
+          lines.push("- " + result.strategyId + ": "
+            + (result.chosenServerId || "no server selected")
+            + " (" + result.status + ") - " + (result.reason || "no explanation returned"));
+        });
+      }
+
+      lines.push(
+        "",
+        "## Safety",
+        "- local/operator demo only",
+        "- not certification",
+        "- not benchmark proof",
+        "- not legal compliance proof",
+        "- not identity proof",
+        "- no cloud mutation",
+        "- no CloudManager required",
+        "- no runtime report written",
+        "- no external scripts/CDNs"
+      );
+
+      if (lastRoutingBody) {
+        lines.push("", "## Normalized response preview", JSON.stringify(normalizedValue(lastRoutingBody), null, 2));
+      }
+
+      outputs.summary.textContent = lines.join("\n");
+      setBadge("summary-badge", results.length > 0 ? "passed" : "warning", results.length > 0 ? "Ready" : "Waiting");
+    }
+
+    function resetDemo() {
+      lastRoutingBody = null;
+      outputs.health.textContent = "{}";
+      outputs.readiness.textContent = "{}";
+      outputs.routing.textContent = "{}";
+      resultRows.innerHTML = "<tr><td colspan=\"4\" class=\"muted\">Run a strategy comparison to populate results.</td></tr>";
+      setBadge("health-badge", "", "Not run");
+      setBadge("sample-badge", "", "Not run");
+      setBadge("compare-badge", "", "Not run");
+      setBadge("summary-badge", "", "Not run");
+      loadSampleScenario();
+      copyStatus.textContent = "Copy status: idle.";
+    }
+
+    async function copyTarget(targetId) {
+      const target = document.getElementById(targetId);
+      if (!target) {
+        return;
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(target.value || target.textContent);
+          copyStatus.textContent = "Copied " + targetId + ".";
+        } else {
+          throw new Error("Clipboard unavailable");
+        }
+      } catch (error) {
+        copyStatus.textContent = "Copy failed; select the visible text and copy manually.";
+      }
+    }
+
+    const actions = {
+      health: checkHealth,
+      readiness: checkReadiness,
+      "load-sample": loadSampleScenario,
+      compare: compareStrategies,
+      reset: resetDemo
+    };
+
+    document.querySelectorAll("[data-action]").forEach((button) => {
+      button.addEventListener("click", () => actions[button.dataset.action]());
+    });
+
+    document.querySelectorAll("[data-copy-target]").forEach((button) => {
+      button.addEventListener("click", () => copyTarget(button.dataset.copyTarget));
+    });
+
+    document.getElementById("same-origin").addEventListener("click", () => {
+      baseUrlInput.value = sameOriginBaseUrl();
+      renderCurl();
+    });
+    baseUrlInput.addEventListener("input", renderCurl);
+
+    baseUrlInput.value = sameOriginBaseUrl();
+    loadSampleScenario();
+    renderSummary();
+  </script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+{
+  "strategies": [
+    "WEIGHTED_LEAST_LOAD",
+    "WEIGHTED_ROUND_ROBIN"
+  ],
+  "servers": [
+    {
+      "serverId": "edge-standard",
+      "healthy": true,
+      "inFlightRequestCount": 20,
+      "configuredCapacity": 100.0,
+      "estimatedConcurrencyLimit": 100.0,
+      "weight": 1.0,
+      "averageLatencyMillis": 20.0,
+      "p95LatencyMillis": 40.0,
+      "p99LatencyMillis": 80.0,
+      "recentErrorRate": 0.01,
+      "queueDepth": 2
+    },
+    {
+      "serverId": "edge-weighted",
+      "healthy": true,
+      "inFlightRequestCount": 20,
+      "configuredCapacity": 100.0,
+      "estimatedConcurrencyLimit": 100.0,
+      "weight": 4.0,
+      "averageLatencyMillis": 20.0,
+      "p95LatencyMillis": 40.0,
+      "p99LatencyMillis": 80.0,
+      "recentErrorRate": 0.01,
+      "queueDepth": 2
+    }
+  ]
+}

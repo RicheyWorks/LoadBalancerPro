@@ -1,0 +1,68 @@
+{
+  "strategies": [
+    "TAIL_LATENCY_POWER_OF_TWO",
+    "WEIGHTED_LEAST_LOAD",
+    "WEIGHTED_LEAST_CONNECTIONS",
+    "WEIGHTED_ROUND_ROBIN",
+    "ROUND_ROBIN"
+  ],
+  "servers": [
+    {
+      "serverId": "edge-alpha",
+      "healthy": true,
+      "inFlightRequestCount": 5,
+      "configuredCapacity": 100.0,
+      "estimatedConcurrencyLimit": 100.0,
+      "weight": 2.0,
+      "averageLatencyMillis": 20.0,
+      "p95LatencyMillis": 40.0,
+      "p99LatencyMillis": 80.0,
+      "recentErrorRate": 0.01,
+      "queueDepth": 1,
+      "networkAwareness": {
+        "timeoutRate": 0.0,
+        "retryRate": 0.0,
+        "connectionFailureRate": 0.0,
+        "latencyJitterMillis": 4.0,
+        "recentErrorBurst": false,
+        "requestTimeoutCount": 0,
+        "sampleSize": 120
+      }
+    },
+    {
+      "serverId": "edge-beta",
+      "healthy": true,
+      "inFlightRequestCount": 28,
+      "configuredCapacity": 100.0,
+      "estimatedConcurrencyLimit": 100.0,
+      "weight": 4.0,
+      "averageLatencyMillis": 24.0,
+      "p95LatencyMillis": 52.0,
+      "p99LatencyMillis": 96.0,
+      "recentErrorRate": 0.02,
+      "queueDepth": 3,
+      "networkAwareness": {
+        "timeoutRate": 0.01,
+        "retryRate": 0.01,
+        "connectionFailureRate": 0.0,
+        "latencyJitterMillis": 7.0,
+        "recentErrorBurst": false,
+        "requestTimeoutCount": 1,
+        "sampleSize": 120
+      }
+    },
+    {
+      "serverId": "edge-drain",
+      "healthy": false,
+      "inFlightRequestCount": 1,
+      "configuredCapacity": 100.0,
+      "estimatedConcurrencyLimit": 100.0,
+      "weight": 5.0,
+      "averageLatencyMillis": 12.0,
+      "p95LatencyMillis": 20.0,
+      "p99LatencyMillis": 40.0,
+      "recentErrorRate": 0.0,
+      "queueDepth": 0
+    }
+  ]
+}

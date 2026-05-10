@@ -448,7 +448,23 @@ final class EvidenceCatalogDiffService {
         CHANGED,
         STATUS_CHANGED,
         AUDIT_ANCHOR_CHANGED,
-        UNCHANGED
+        UNCHANGED;
+
+        static ChangeType parse(String value) {
+            String normalized = Objects.requireNonNull(value, "change type is required")
+                    .trim()
+                    .toUpperCase(Locale.ROOT);
+            return switch (normalized) {
+                case "ADDED" -> ADDED;
+                case "REMOVED" -> REMOVED;
+                case "CHANGED" -> CHANGED;
+                case "STATUS_CHANGED" -> STATUS_CHANGED;
+                case "AUDIT_ANCHOR_CHANGED" -> AUDIT_ANCHOR_CHANGED;
+                case "UNCHANGED" -> UNCHANGED;
+                default -> throw new IllegalArgumentException(
+                        "changeType must be ADDED, REMOVED, CHANGED, STATUS_CHANGED, or AUDIT_ANCHOR_CHANGED");
+            };
+        }
     }
 
     record DiffRequest(

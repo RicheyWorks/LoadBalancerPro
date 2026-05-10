@@ -157,7 +157,20 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 
 The diff reports added, removed, checksum-changed, verification-status-drifted, and audit-anchor-drifted evidence. Audit anchor drift means the latest audit `entryHash` or entry count differs between catalogs. Treat drift as a review signal, not proof of malicious activity or legal chain-of-custody.
 
-See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, safety guarantees, and JSON output.
+Evaluate the handoff delta against a local policy when some drift is expected:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --diff-inventory sender-catalog.json receiver-catalog.json \
+  --policy handoff-policy.json \
+  --policy-report-format markdown \
+  --fail-on-policy-fail \
+  --policy-output handoff-policy-report.md
+```
+
+Use `STRICT` policies for zero-drift handoffs and `ALLOWLIST` policies when expected changes are known, such as a receiver-side redaction summary or expected audit-log append. Policy decisions are `PASS`, `WARN`, or `FAIL`; `--fail-on-policy-fail` exits non-zero only for `FAIL`. Attach the policy report to the incident ticket alongside both inventories.
+
+See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, evidence handoff policies, safety guarantees, and JSON output.
 
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
 
@@ -230,6 +243,8 @@ Offline CLI audit logging appends local checksum-chained entries after successfu
 Offline evidence inventory scans a local directory and summarizes bundles, manifests, audit logs, redaction summaries, reports, inputs, and verification summaries. With verification enabled, it detects tampered or missing bundle/manifest evidence and invalid audit chains while keeping the catalog deterministic and local-only.
 
 Offline evidence catalog diffing compares two saved JSON inventory catalogs and summarizes handoff drift without starting the API server. It is useful for sender/receiver reviews and ticket revisions, but it remains checksum/inventory comparison only and does not prove identity or legal chain-of-custody.
+
+Offline evidence handoff policies classify catalog drift with local pass/warn/fail rules. They support strict zero-drift checks and allowlists for expected file, checksum, verification-status, or audit-anchor changes, but they remain local policy evaluation only and do not prove identity, intent, or legal custody.
 
 ## Rollback And Release Evidence
 

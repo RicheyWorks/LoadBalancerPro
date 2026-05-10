@@ -36,6 +36,7 @@ public final class RemediationReportCli {
     private static final String VERIFY_AUDIT_LOG_FLAG = "--verify-audit-log";
     private static final String INVENTORY_FLAG = "--inventory";
     private static final String DIFF_INVENTORY_FLAG = "--diff-inventory";
+    private static final String POLICY_FLAG = "--policy";
     private static final String APP_VERSION = "2.4.2";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -210,6 +211,18 @@ public final class RemediationReportCli {
                         options.beforeCatalogPath(),
                         options.afterCatalogPath(),
                         options.includeUnchanged()));
+        if (options.policyPath().isPresent()) {
+            EvidenceHandoffPolicyService policyService = new EvidenceHandoffPolicyService();
+            EvidenceHandoffPolicyService.HandoffPolicy policy = policyService.readPolicy(options.policyPath().get());
+            EvidenceHandoffPolicyService.PolicyEvaluation evaluation = policyService.evaluate(diff, policy);
+            String rendered = options.policyReportFormat() == EvidenceHandoffPolicyService.PolicyReportFormat.JSON
+                    ? policyService.renderJson(evaluation)
+                    : policyService.renderMarkdown(evaluation);
+            writeOutput(rendered, options.policyOutputPath(), out);
+            int exitCode = options.failOnPolicyFail()
+                    && evaluation.decision() == EvidenceHandoffPolicyService.PolicyDecision.FAIL ? 2 : 0;
+            return new Result(true, exitCode);
+        }
         String rendered = options.diffFormat() == EvidenceCatalogDiffService.DiffFormat.JSON
                 ? service.renderJson(diff)
                 : service.renderMarkdown(diff);
@@ -571,6 +584,8 @@ public final class RemediationReportCli {
                 + "[--inventory-output <path>] [--verify-inventory] [--include-hashes] [--fail-on-invalid]");
         err.println("Diff inventory: --diff-inventory <before.json> <after.json> "
                 + "[--diff-format markdown|json] [--diff-output <path>] [--fail-on-drift] [--include-unchanged]");
+        err.println("Handoff policy: --diff-inventory <before.json> <after.json> --policy <policy.json> "
+                + "[--policy-report-format markdown|json] [--policy-output <path>] [--fail-on-policy-fail]");
         err.println("Safety: offline/read-only report generation; no API server, network access, "
                 + "CloudManager calls, or cloud mutation.");
     }
@@ -598,13 +613,22 @@ public final class RemediationReportCli {
             EvidenceCatalogDiffService.DiffFormat diffFormat,
             Optional<Path> outputPath,
             boolean failOnDrift,
-            boolean includeUnchanged) {
+            boolean includeUnchanged,
+            Optional<Path> policyPath,
+            EvidenceHandoffPolicyService.PolicyReportFormat policyReportFormat,
+            Optional<Path> policyOutputPath,
+            boolean failOnPolicyFail) {
 
         private CatalogDiffOptions {
             Objects.requireNonNull(beforeCatalogPath, "before catalog path cannot be null");
             Objects.requireNonNull(afterCatalogPath, "after catalog path cannot be null");
             diffFormat = diffFormat == null ? EvidenceCatalogDiffService.DiffFormat.MARKDOWN : diffFormat;
             outputPath = outputPath == null ? Optional.empty() : outputPath;
+            policyPath = policyPath == null ? Optional.empty() : policyPath;
+            policyReportFormat = policyReportFormat == null
+                    ? EvidenceHandoffPolicyService.PolicyReportFormat.MARKDOWN
+                    : policyReportFormat;
+            policyOutputPath = policyOutputPath == null ? Optional.empty() : policyOutputPath;
         }
 
         private static CatalogDiffOptions parse(String[] args) {
@@ -613,13 +637,23 @@ public final class RemediationReportCli {
                     .map(EvidenceCatalogDiffService.DiffFormat::parse)
                     .orElse(EvidenceCatalogDiffService.DiffFormat.MARKDOWN);
             Optional<Path> output = optionValue(args, "--diff-output").map(Path::of);
+            Optional<Path> policy = optionValue(args, POLICY_FLAG).map(Path::of);
+            EvidenceHandoffPolicyService.PolicyReportFormat policyFormat =
+                    optionValue(args, "--policy-report-format")
+                            .map(EvidenceHandoffPolicyService.PolicyReportFormat::parse)
+                            .orElse(EvidenceHandoffPolicyService.PolicyReportFormat.MARKDOWN);
+            Optional<Path> policyOutput = optionValue(args, "--policy-output").map(Path::of);
             return new CatalogDiffOptions(
                     catalogs.get(0),
                     catalogs.get(1),
                     format,
                     output,
                     hasFlag(args, "--fail-on-drift"),
-                    hasFlag(args, "--include-unchanged"));
+                    hasFlag(args, "--include-unchanged"),
+                    policy,
+                    policyFormat,
+                    policyOutput,
+                    hasFlag(args, "--fail-on-policy-fail"));
         }
 
         private static List<Path> diffInventoryPaths(String[] args) {

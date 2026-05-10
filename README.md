@@ -138,7 +138,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`SCENARIO_SIMULATION.md`](docs/SCENARIO_SIMULATION.md) documents read-only traffic replay, advisory remediation plans, and degraded allocation/routing scenario simulation.
 - [`INCIDENT_FIXTURE_CATALOG.md`](docs/INCIDENT_FIXTURE_CATALOG.md) documents curated deterministic replay fixtures and regression-diff descriptors for common degraded incidents.
 - `POST /api/remediation/report` exports deterministic Markdown/JSON remediation reports from evaluation or replay results for operator handoff.
-- [`REMEDIATION_REPORT_CLI.md`](docs/REMEDIATION_REPORT_CLI.md) documents offline Markdown/JSON remediation report generation, incident ZIP bundle export, and SHA-256 checksum manifest verification from saved evaluation or replay JSON.
+- [`REMEDIATION_REPORT_CLI.md`](docs/REMEDIATION_REPORT_CLI.md) documents offline Markdown/JSON remediation report generation, incident ZIP bundle export, deterministic literal redaction, and SHA-256 checksum manifest verification from saved evaluation or replay JSON.
 - [`DOCKER_COMPOSE_PROD_LIKE_GUIDE.md`](docs/DOCKER_COMPOSE_PROD_LIKE_GUIDE.md) documents a local/private production-like Compose example with loopback binding and no live AWS.
 
 ## Hardened Foundation Checklist

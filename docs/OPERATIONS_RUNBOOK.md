@@ -103,7 +103,9 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
   --input saved-evaluation.json \
   --format markdown \
   --bundle incident-bundle.zip \
-  --report-id incident-123
+  --report-id incident-123 \
+  --redact internal-host-01 \
+  --redact-file incident-redactions.txt
 ```
 
 Verify the bundle later without starting the API server:
@@ -114,6 +116,8 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 ```
 
 The bundle contains the saved input JSON, generated report, checksum manifest, verification summary, and README. Bundle verification checks manifest-listed SHA-256 hashes and rejects unsafe ZIP entry paths. It is tamper-evident evidence, not a cryptographic signature or identity proof.
+
+Use `--redact` or `--redact-file` before sharing incident evidence outside the immediate response team. Redaction is deterministic literal string replacement for known sensitive values such as hostnames, server IDs, internal IDs, operator notes, or ticket-specific strings. Redacted bundles include `redaction-summary.json` with token SHA-256 digests and replacement counts, not the original sensitive strings. Review the exported report before attachment because redaction is not legal anonymization and cannot infer every sensitive value automatically.
 
 See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, bundle export, manifest verification, safety guarantees, and JSON output.
 
@@ -180,6 +184,8 @@ The remediation planner is advisory only. It ranks operator actions but does not
 The remediation report exporter is also advisory only. It converts supplied evaluation or replay results into deterministic Markdown/JSON evidence for humans and automation. It does not run allocation, replay, cloud, or remediation actions by itself.
 
 Incident bundle export wraps that same offline report output with the saved input JSON, checksum manifest, and verification summary. It remains local-only, does not start the API server, and does not add signing keys or key management.
+
+Incident evidence redaction runs before checksum manifests are written. This means manifest and bundle verification prove the redacted files stayed unchanged after export, but they do not prove the original evidence was complete, safe to disclose, or fully scrubbed.
 
 ## Rollback And Release Evidence
 

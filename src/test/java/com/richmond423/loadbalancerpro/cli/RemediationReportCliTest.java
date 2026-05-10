@@ -254,6 +254,159 @@ class RemediationReportCliTest {
     }
 
     @Test
+    void markdownReportRedactsLiteralValuesAndWritesSafeSummary() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path summary = tempDir.resolve("redaction-summary.json");
+        String sensitiveReportId = "host-a.internal";
+
+        CapturedRun run = runReport("--remediation-report", "--input", input.toString(),
+                "--format", "markdown", "--report-id", sensitiveReportId,
+                "--redact", sensitiveReportId, "--redact", "primary",
+                "--redact-output-summary", summary.toString());
+
+        assertEquals(0, run.result().exitCode());
+        assertTrue(run.error().isBlank());
+        assertTrue(run.output().contains("[REDACTED]"));
+        assertFalse(run.output().contains(sensitiveReportId));
+
+        String summaryText = Files.readString(summary);
+        JsonNode summaryJson = OBJECT_MAPPER.readTree(summaryText);
+        assertTrue(summaryJson.path("redactionApplied").asBoolean());
+        assertEquals(2, summaryJson.path("configuredTokenCount").asInt());
+        assertTrue(summaryJson.path("totalReplacementCount").asInt() >= 2);
+        assertTrue(summaryText.contains(ReportChecksumManifestService.sha256(
+                sensitiveReportId.getBytes(StandardCharsets.UTF_8))));
+        assertTrue(summaryText.contains(ReportChecksumManifestService.sha256(
+                "primary".getBytes(StandardCharsets.UTF_8))));
+        assertFalse(summaryText.contains(sensitiveReportId));
+        assertFalse(summaryText.contains("primary"));
+    }
+
+    @Test
+    void jsonReportRedactsSavedReplayValues() throws Exception {
+        Path input = copyResource(REPLAY_FIXTURE, "replay.json");
+
+        CapturedRun run = runReport("--remediation-report=" + input, "--format=json",
+                "--redact", "green", "--redaction-label", "[MASKED]");
+
+        assertEquals(0, run.result().exitCode());
+        assertTrue(run.error().isBlank());
+        assertFalse(run.output().contains("green"));
+        assertTrue(run.output().contains("[MASKED]"));
+        JsonNode report = OBJECT_MAPPER.readTree(run.output());
+        assertEquals("[MASKED]", report.path("steps").get(0).path("selectedServerId").asText());
+    }
+
+    @Test
+    void redactedBundleContainsRedactedInputReportSummaryAndVerifies() throws Exception {
+        Path input = copyResource(REPLAY_FIXTURE, "replay.json");
+        Path bundle = tempDir.resolve("incident-bundle.zip");
+
+        CapturedRun run = runReport("--input", input.toString(), "--format", "markdown",
+                "--bundle", bundle.toString(),
+                "--redact", "mixed-incident-replay", "--redact", "green");
+
+        assertEquals(0, run.result().exitCode());
+        Map<String, byte[]> entries = zipEntries(bundle);
+        assertTrue(entries.containsKey("redaction-summary.json"));
+        assertFalse(text(entries, "input.json").contains("mixed-incident-replay"));
+        assertFalse(text(entries, "input.json").contains("green"));
+        assertFalse(text(entries, "report.md").contains("mixed-incident-replay"));
+        assertFalse(text(entries, "report.md").contains("green"));
+        assertFalse(text(entries, "redaction-summary.json").contains("mixed-incident-replay"));
+        assertFalse(text(entries, "redaction-summary.json").contains("green"));
+        assertTrue(text(entries, "redaction-summary.json").contains(ReportChecksumManifestService.sha256(
+                "mixed-incident-replay".getBytes(StandardCharsets.UTF_8))));
+        assertTrue(text(entries, "README.md").contains("Redaction applied: true"));
+
+        JsonNode manifest = OBJECT_MAPPER.readTree(entries.get("manifest.json"));
+        assertManifestFile(manifest, "INPUT", "input.json", entries.get("input.json"));
+        assertManifestFile(manifest, "REPORT", "report.md", entries.get("report.md"));
+        assertManifestFile(manifest, "EXTRA", "redaction-summary.json", entries.get("redaction-summary.json"));
+
+        CapturedRun verify = runReport("--verify-bundle", bundle.toString());
+        assertEquals(0, verify.result().exitCode());
+        assertTrue(verify.output().contains("Incident bundle verification passed"));
+    }
+
+    @Test
+    void redactionFileAppliesMultipleValuesDeterministically() throws Exception {
+        Path input = copyResource(REPLAY_FIXTURE, "replay.json");
+        Path redactionFile = tempDir.resolve("redactions.json");
+        Path firstBundle = tempDir.resolve("first.zip");
+        Path secondBundle = tempDir.resolve("second.zip");
+        Files.writeString(redactionFile, "[\"green\",\"blue\"]", StandardCharsets.UTF_8);
+
+        CapturedRun first = runReport("--input", input.toString(), "--format=json",
+                "--bundle", firstBundle.toString(), "--redact-file", redactionFile.toString());
+        CapturedRun second = runReport("--input", input.toString(), "--format=json",
+                "--bundle", secondBundle.toString(), "--redact-file", redactionFile.toString());
+
+        assertEquals(0, first.result().exitCode());
+        assertEquals(0, second.result().exitCode());
+        assertArrayEquals(Files.readAllBytes(firstBundle), Files.readAllBytes(secondBundle));
+        String report = text(zipEntries(firstBundle), "report.json");
+        assertFalse(report.contains("green"));
+        assertFalse(report.contains("blue"));
+        assertTrue(report.contains("[REDACTED]"));
+    }
+
+    @Test
+    void redactedManifestHashesRedactedInputAndReportFiles() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path output = tempDir.resolve("incident-report.md");
+        Path manifest = tempDir.resolve("incident-report.manifest.json");
+        Path summary = tempDir.resolve("incident-report.redaction-summary.json");
+
+        CapturedRun run = runReport("--remediation-report", "--input", input.toString(),
+                "--format", "markdown", "--output", output.toString(), "--manifest", manifest.toString(),
+                "--redact", "primary", "--redact-output-summary", summary.toString());
+
+        assertEquals(0, run.result().exitCode());
+        Path redactedInput = tempDir.resolve("incident-report.input.redacted.json");
+        assertTrue(Files.exists(redactedInput));
+        assertFalse(Files.readString(redactedInput).contains("primary"));
+        assertFalse(Files.readString(output).contains("primary"));
+
+        JsonNode manifestJson = OBJECT_MAPPER.readTree(manifest.toFile());
+        assertManifestFile(manifestJson, "INPUT", "incident-report.input.redacted.json", redactedInput);
+        assertManifestFile(manifestJson, "REPORT", "incident-report.md", output);
+        assertManifestFile(manifestJson, "EXTRA", "incident-report.redaction-summary.json", summary);
+
+        CapturedRun verify = runReport("--verify-manifest", manifest.toString());
+        assertEquals(0, verify.result().exitCode());
+    }
+
+    @Test
+    void noRedactionOptionsPreserveExistingOutputBehavior() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+
+        CapturedRun baseline = runReport("--remediation-report", "--input", input.toString(),
+                "--format", "markdown", "--report-id", "stable");
+        CapturedRun withUnusedLabel = runReport("--remediation-report", "--input", input.toString(),
+                "--format", "markdown", "--report-id", "stable", "--redaction-label", "[MASKED]");
+
+        assertEquals(0, baseline.result().exitCode());
+        assertEquals(0, withUnusedLabel.result().exitCode());
+        assertEquals(baseline.output(), withUnusedLabel.output());
+    }
+
+    @Test
+    void invalidRedactionFileFailsSafely() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path redactionFile = tempDir.resolve("invalid-redactions.json");
+        Files.writeString(redactionFile, "[1]", StandardCharsets.UTF_8);
+
+        CapturedRun run = runReport("--remediation-report", "--input", input.toString(),
+                "--redact-file", redactionFile.toString());
+
+        assertEquals(2, run.result().exitCode());
+        assertTrue(run.output().isBlank());
+        assertTrue(run.error().contains("redaction JSON file must contain only strings"));
+        assertFalse(run.error().contains("\tat "));
+    }
+
+    @Test
     void verifyBundleSucceedsForUnchangedBundle() throws Exception {
         Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
         Path bundle = tempDir.resolve("incident-bundle.zip");

@@ -116,6 +116,7 @@ class ScenarioReplayRegressionDiffTest {
                 diff(fixtureName, "/steps[*].type", expectedStepTypes(descriptor), actualStepTypes(actual)));
         assertEquals(descriptor.path("steps").size(), actual.path("steps").size(),
                 diff(fixtureName, "/steps.length", descriptor.path("steps").size(), actual.path("steps").size()));
+        compareRemediationActions(fixtureName, descriptor, actual);
 
         for (JsonNode stepExpectation : descriptor.path("steps")) {
             compareStep(fixtureName, stepExpectation, actual.path("steps").get(stepExpectation.path("index").asInt()));
@@ -123,6 +124,26 @@ class ScenarioReplayRegressionDiffTest {
         if (descriptor.path("expectNoNegativeAllocations").asBoolean(false)) {
             assertNoNegativeAllocations(fixtureName, actual);
         }
+    }
+
+    private void compareRemediationActions(String fixtureName, JsonNode descriptor, JsonNode actual) {
+        if (!descriptor.has("expectedRemediationActions")) {
+            return;
+        }
+        assertEquals(true, actual.path("remediationPlan").path("advisoryOnly").asBoolean(),
+                diff(fixtureName, "/remediationPlan/advisoryOnly", true,
+                        actual.path("remediationPlan").path("advisoryOnly").asBoolean()));
+        assertEquals(true, actual.path("remediationPlan").path("readOnly").asBoolean(),
+                diff(fixtureName, "/remediationPlan/readOnly", true,
+                        actual.path("remediationPlan").path("readOnly").asBoolean()));
+        assertEquals(false, actual.path("remediationPlan").path("cloudMutation").asBoolean(),
+                diff(fixtureName, "/remediationPlan/cloudMutation", false,
+                        actual.path("remediationPlan").path("cloudMutation").asBoolean()));
+        assertEquals(expectedTextList(descriptor.path("expectedRemediationActions")),
+                actualRemediationActions(actual),
+                diff(fixtureName, "/remediationPlan/recommendations[*].action",
+                        expectedTextList(descriptor.path("expectedRemediationActions")),
+                        actualRemediationActions(actual)));
     }
 
     private void compareStep(String fixtureName, JsonNode expectedStep, JsonNode actualStep) {
@@ -319,11 +340,15 @@ class ScenarioReplayRegressionDiffTest {
     }
 
     private List<String> expectedStepTypes(JsonNode descriptor) {
-        List<String> types = new ArrayList<>();
-        for (JsonNode type : descriptor.path("expectedStepTypes")) {
-            types.add(type.asText());
+        return expectedTextList(descriptor.path("expectedStepTypes"));
+    }
+
+    private List<String> expectedTextList(JsonNode values) {
+        List<String> text = new ArrayList<>();
+        for (JsonNode value : values) {
+            text.add(value.asText());
         }
-        return types;
+        return text;
     }
 
     private List<String> actualStepTypes(JsonNode response) {
@@ -332,6 +357,14 @@ class ScenarioReplayRegressionDiffTest {
             types.add(step.path("type").asText());
         }
         return types;
+    }
+
+    private List<String> actualRemediationActions(JsonNode response) {
+        List<String> actions = new ArrayList<>();
+        for (JsonNode recommendation : response.path("remediationPlan").path("recommendations")) {
+            actions.add(recommendation.path("action").asText());
+        }
+        return actions;
     }
 
     private String diff(String fixtureName, String path, Object expected, Object actual) {

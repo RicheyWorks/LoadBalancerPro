@@ -39,10 +39,13 @@ The endpoint is read-only and recommendation-only. It uses the caller-provided s
 - `recommendedAdditionalServers` and `scalingSimulation`: the simulated scale-up recommendation.
 - `loadShedding`: the internal priority/load-shedding decision for the supplied or default pressure signal.
 - `metricsPreview`: the allocation metric names and values that correspond to the evaluation result.
+- `remediationPlan`: ranked, advisory operator recommendations such as `SCALE_UP`, `SHED_LOAD`, `INVESTIGATE_UNHEALTHY`, `RESTORE_CAPACITY`, `RETRY_WHEN_HEALTHY`, or `NO_ACTION`.
 
 Supported evaluation strategies are `CAPACITY_AWARE` and `PREDICTIVE`; omitted strategy defaults to `CAPACITY_AWARE`. Supported priority values are `CRITICAL`, `USER`, `BACKGROUND`, and `PREFETCH`; omitted priority defaults to `USER`. Optional pressure fields such as `currentInFlightRequestCount`, `concurrencyLimit`, `queueDepth`, `observedP95LatencyMillis`, and `observedErrorRate` let operators preview soft or hard overload decisions. If those fields are omitted, the service derives deterministic defaults from requested load, healthy capacity, and unallocated load.
 
 Evaluation does not construct `CloudManager`, does not call AWS, does not enqueue traffic, does not mutate `LoadBalancer` allocation state, and does not increment the normal allocation metrics. The `metricsPreview.emitted` field is `false` to make that observability boundary explicit.
+
+The remediation plan is not an execution path. `advisoryOnly=true`, `readOnly=true`, `cloudMutation=false`, and each recommendation has `executable=false`.
 
 ## Determinism
 

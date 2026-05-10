@@ -8,6 +8,10 @@
     "EVALUATE",
     "ROUTE"
   ],
+  "expectedRemediationActions": [
+    "RESTORE_CAPACITY",
+    "RETRY_WHEN_HEALTHY"
+  ],
   "expectNoNegativeAllocations": true,
   "steps": [
     {

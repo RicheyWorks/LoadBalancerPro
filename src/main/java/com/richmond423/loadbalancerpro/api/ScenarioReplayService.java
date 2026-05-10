@@ -15,6 +15,7 @@ public class ScenarioReplayService {
     private static final String STATUS_OK = "OK";
 
     private final AllocatorService allocatorService;
+    private final OperatorRemediationPlanner remediationPlanner = new OperatorRemediationPlanner();
 
     public ScenarioReplayService(AllocatorService allocatorService) {
         this.allocatorService = allocatorService;
@@ -34,7 +35,13 @@ public class ScenarioReplayService {
             results.add(replayStep(serverState, step, index));
             index++;
         }
-        return new ScenarioReplayResponse(scenarioId(request.scenarioId()), true, false, List.copyOf(results));
+        List<ScenarioReplayStepResponse> replayResults = List.copyOf(results);
+        return new ScenarioReplayResponse(
+                scenarioId(request.scenarioId()),
+                true,
+                false,
+                remediationPlanner.planForReplay(replayResults),
+                replayResults);
     }
 
     private ScenarioReplayStepResponse replayStep(

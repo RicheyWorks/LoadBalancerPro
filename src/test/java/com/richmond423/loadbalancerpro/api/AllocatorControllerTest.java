@@ -410,6 +410,12 @@ class AllocatorControllerTest {
                 .andExpect(jsonPath("$.metricsPreview.acceptedLoad", closeTo(25.0, 0.01)))
                 .andExpect(jsonPath("$.metricsPreview.metricNames").isArray())
                 .andExpect(jsonPath("$.readOnly", is(true)))
+                .andExpect(jsonPath("$.remediationPlan.status", is("HEALTHY")))
+                .andExpect(jsonPath("$.remediationPlan.advisoryOnly", is(true)))
+                .andExpect(jsonPath("$.remediationPlan.cloudMutation", is(false)))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].action", is("NO_ACTION")))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].priority", is("LOW")))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].executable", is(false)))
                 .andExpect(jsonPath("$.decisionReason", containsString("Read-only evaluation")));
 
         assertEquals(beforeRequests, allocationRequestCount("CAPACITY_AWARE"), 0.01,
@@ -439,7 +445,22 @@ class AllocatorControllerTest {
                     .andExpect(jsonPath("$.metricsPreview.evaluatedHealthyServerCount", is(2)))
                     .andExpect(jsonPath("$.metricsPreview.rejectedLoad", closeTo(50.0, 0.01)))
                     .andExpect(jsonPath("$.metricsPreview.emitted", is(false)))
-                    .andExpect(jsonPath("$.readOnly", is(true)));
+                    .andExpect(jsonPath("$.readOnly", is(true)))
+                    .andExpect(jsonPath("$.remediationPlan.status", is("OVERLOADED")))
+                    .andExpect(jsonPath("$.remediationPlan.generatedFrom", is("allocation-evaluation")))
+                    .andExpect(jsonPath("$.remediationPlan.advisoryOnly", is(true)))
+                    .andExpect(jsonPath("$.remediationPlan.readOnly", is(true)))
+                    .andExpect(jsonPath("$.remediationPlan.cloudMutation", is(false)))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[0].rank", is(1)))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[0].action", is("SCALE_UP")))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[0].priority", is("HIGH")))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[0].serverCount", is(1)))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[0].loadAmount", closeTo(50.0, 0.01)))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[0].executable", is(false)))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[1].action", is("SHED_LOAD")))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[1].priority", is("MEDIUM")))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[2].action", is("INVESTIGATE_UNHEALTHY")))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[2].serverCount", is(1)));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "Evaluation endpoint must not construct CloudManager or call cloud mutation paths.");
@@ -475,7 +496,14 @@ class AllocatorControllerTest {
                 .andExpect(jsonPath("$.scalingSimulation.reason", containsString("target capacity is unavailable")))
                 .andExpect(jsonPath("$.loadShedding.action", is("SHED")))
                 .andExpect(jsonPath("$.metricsPreview.evaluatedHealthyServerCount", is(0)))
-                .andExpect(jsonPath("$.readOnly", is(true)));
+                .andExpect(jsonPath("$.readOnly", is(true)))
+                .andExpect(jsonPath("$.remediationPlan.status", is("NO_HEALTHY_CAPACITY")))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].action", is("RESTORE_CAPACITY")))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].priority", is("HIGH")))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].loadAmount", closeTo(50.0, 0.01)))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].executable", is(false)))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[1].action", is("RETRY_WHEN_HEALTHY")))
+                .andExpect(jsonPath("$.remediationPlan.cloudMutation", is(false)));
     }
 
     @Test

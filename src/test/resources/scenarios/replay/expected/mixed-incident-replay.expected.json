@@ -12,6 +12,11 @@
     "MARK_HEALTHY",
     "ALLOCATE"
   ],
+  "expectedRemediationActions": [
+    "SCALE_UP",
+    "SHED_LOAD",
+    "INVESTIGATE_UNHEALTHY"
+  ],
   "expectNoNegativeAllocations": true,
   "steps": [
     {

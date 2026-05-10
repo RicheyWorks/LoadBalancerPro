@@ -67,6 +67,11 @@ class ScenarioReplayControllerTest {
                 .andExpect(jsonPath("$.scenarioId", is("normal")))
                 .andExpect(jsonPath("$.readOnly", is(true)))
                 .andExpect(jsonPath("$.cloudMutation", is(false)))
+                .andExpect(jsonPath("$.remediationPlan.status", is("HEALTHY")))
+                .andExpect(jsonPath("$.remediationPlan.advisoryOnly", is(true)))
+                .andExpect(jsonPath("$.remediationPlan.cloudMutation", is(false)))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].action", is("NO_ACTION")))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].executable", is(false)))
                 .andExpect(jsonPath("$.steps[0].stepId", is("allocate-normal")))
                 .andExpect(jsonPath("$.steps[0].type", is("ALLOCATE")))
                 .andExpect(jsonPath("$.steps[0].strategy", is("CAPACITY_AWARE")))
@@ -131,7 +136,12 @@ class ScenarioReplayControllerTest {
                 .andExpect(jsonPath("$.steps[0].recommendedAdditionalServers", is(1)))
                 .andExpect(jsonPath("$.steps[0].loadShedding.action", is("SHED")))
                 .andExpect(jsonPath("$.steps[0].metricsPreview.emitted", is(false)))
-                .andExpect(jsonPath("$.steps[0].reason", containsString("Simulated overload preview")));
+                .andExpect(jsonPath("$.steps[0].reason", containsString("Simulated overload preview")))
+                .andExpect(jsonPath("$.remediationPlan.status", is("OVERLOADED")))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].action", is("SCALE_UP")))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[0].serverCount", is(1)))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[1].action", is("SHED_LOAD")))
+                .andExpect(jsonPath("$.remediationPlan.recommendations[1].loadAmount", closeTo(50.0, 0.01)));
     }
 
     @Test
@@ -191,7 +201,10 @@ class ScenarioReplayControllerTest {
                     .andExpect(jsonPath("$.steps[1].routingResults[0].chosenServerId", is("blue")))
                     .andExpect(jsonPath("$.steps[2].serverStates[0].healthy", is(true)))
                     .andExpect(jsonPath("$.steps[3].selectedServerId", is("green")))
-                    .andExpect(jsonPath("$.steps[3].routingResults[0].chosenServerId", is("green")));
+                    .andExpect(jsonPath("$.steps[3].routingResults[0].chosenServerId", is("green")))
+                    .andExpect(jsonPath("$.remediationPlan.status", is("DEGRADED")))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[0].action", is("INVESTIGATE_UNHEALTHY")))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[0].serverCount", is(1)));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "Scenario replay must not construct CloudManager or call cloud mutation paths.");
@@ -237,7 +250,11 @@ class ScenarioReplayControllerTest {
                     .andExpect(jsonPath("$.steps[0].recommendedAdditionalServers", is(0)))
                     .andExpect(jsonPath("$.steps[1].selectedServerId", nullValue()))
                     .andExpect(jsonPath("$.steps[1].routingResults[0].chosenServerId", nullValue()))
-                    .andExpect(jsonPath("$.steps[1].reason", containsString("no healthy")));
+                    .andExpect(jsonPath("$.steps[1].reason", containsString("no healthy")))
+                    .andExpect(jsonPath("$.remediationPlan.status", is("NO_HEALTHY_CAPACITY")))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[0].action", is("RESTORE_CAPACITY")))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[0].priority", is("HIGH")))
+                    .andExpect(jsonPath("$.remediationPlan.recommendations[1].action", is("RETRY_WHEN_HEALTHY")));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "All-unhealthy replay must not construct CloudManager or call cloud mutation paths.");

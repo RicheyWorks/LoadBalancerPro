@@ -130,12 +130,12 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md) documents production-like deployment boundaries, edge controls, auth, telemetry, and cloud-safety guidance.
 - [`SECRET_MANAGEMENT_GUIDE.md`](docs/SECRET_MANAGEMENT_GUIDE.md) documents secret categories, storage guidance, leakage paths, rotation, and sanitized examples.
 - [`OPERATIONS_GUIDE.md`](docs/OPERATIONS_GUIDE.md) documents startup checks, health verification, monitoring, incident response, rollback, and release evidence review guidance.
-- [`LOAD_SHEDDING.md`](docs/LOAD_SHEDDING.md) documents public allocation overload semantics, load shedding, metrics, and cloud-safety guarantees.
+- [`LOAD_SHEDDING.md`](docs/LOAD_SHEDDING.md) documents public allocation overload semantics, load shedding, advisory remediation plans, metrics, and cloud-safety guarantees.
 - [`API_SECURITY.md`](docs/API_SECURITY.md) documents auth posture, rate-limit posture, validation protections, request-size limits, and abuse-resistance guarantees.
 - [`PERFORMANCE_BASELINES.md`](docs/PERFORMANCE_BASELINES.md) documents CI-safe performance smoke budgets for allocation, evaluation, and routing paths.
 - [`OBSERVABILITY.md`](docs/OBSERVABILITY.md) documents domain metrics, label cardinality policy, Prometheus query examples, and dashboard guidance.
 - [`OPERATIONS_RUNBOOK.md`](docs/OPERATIONS_RUNBOOK.md) documents degraded allocation, load-shedding, validation-failure, and cloud-safety incident response.
-- [`SCENARIO_SIMULATION.md`](docs/SCENARIO_SIMULATION.md) documents read-only traffic replay and degraded allocation/routing scenario simulation.
+- [`SCENARIO_SIMULATION.md`](docs/SCENARIO_SIMULATION.md) documents read-only traffic replay, advisory remediation plans, and degraded allocation/routing scenario simulation.
 - [`INCIDENT_FIXTURE_CATALOG.md`](docs/INCIDENT_FIXTURE_CATALOG.md) documents curated deterministic replay fixtures and regression-diff descriptors for common degraded incidents.
 - [`DOCKER_COMPOSE_PROD_LIKE_GUIDE.md`](docs/DOCKER_COMPOSE_PROD_LIKE_GUIDE.md) documents a local/private production-like Compose example with loopback binding and no live AWS.
 

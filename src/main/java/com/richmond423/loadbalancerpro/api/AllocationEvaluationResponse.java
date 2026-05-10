@@ -13,5 +13,6 @@ public record AllocationEvaluationResponse(
         LoadSheddingEvaluation loadShedding,
         AllocationEvaluationMetricsPreview metricsPreview,
         boolean readOnly,
+        RemediationPlan remediationPlan,
         String decisionReason) {
 }

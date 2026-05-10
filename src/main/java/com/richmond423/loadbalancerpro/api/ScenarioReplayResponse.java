@@ -6,5 +6,6 @@ public record ScenarioReplayResponse(
         String scenarioId,
         boolean readOnly,
         boolean cloudMutation,
+        RemediationPlan remediationPlan,
         List<ScenarioReplayStepResponse> steps) {
 }

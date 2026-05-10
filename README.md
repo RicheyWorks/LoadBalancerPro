@@ -141,6 +141,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`REMEDIATION_REPORT_CLI.md`](docs/REMEDIATION_REPORT_CLI.md) documents offline Markdown/JSON remediation report generation, incident ZIP bundle export, deterministic literal redaction, SHA-256 checksum manifest verification, local checksum-chained CLI audit logs, local evidence inventory catalogs, evidence catalog diff reports, handoff policy evaluation, packaged policy training labs, and operator scorecard grading for offline incident handoff workflows.
 - [`EVIDENCE_POLICY_TEMPLATES.md`](docs/EVIDENCE_POLICY_TEMPLATES.md) documents packaged local evidence handoff policy templates for zero-drift, receiver-redaction, audit-append, regulated-review, and active-investigation profiles.
 - [`EVIDENCE_POLICY_EXAMPLES.md`](docs/EVIDENCE_POLICY_EXAMPLES.md) documents packaged synthetic sender/receiver catalog examples, expected policy decisions, offline CLI walkthrough commands, the batch training lab, and scorecard answer-key grading for packaged evidence handoff templates.
+- [`POSTMAN_EVIDENCE_TRAINING.md`](docs/POSTMAN_EVIDENCE_TRAINING.md) documents the API/Postman onboarding surface for policy templates, examples, scorecards, answer templates, and deterministic in-memory grading.
 - [`DOCKER_COMPOSE_PROD_LIKE_GUIDE.md`](docs/DOCKER_COMPOSE_PROD_LIKE_GUIDE.md) documents a local/private production-like Compose example with loopback binding and no live AWS.
 
 ## Hardened Foundation Checklist
@@ -543,9 +544,16 @@ Run the Spring Boot API, then call:
 ```text
 GET  /api/health
 GET  /api/lase/shadow
+GET  /api/evidence-training/onboarding
+GET  /api/evidence-training/templates
+GET  /api/evidence-training/examples
+GET  /api/evidence-training/scorecards
+GET  /api/evidence-training/scorecards/{name}
+GET  /api/evidence-training/scorecards/{name}/answer-template
 POST /api/allocate/capacity-aware
 POST /api/allocate/predictive
 POST /api/routing/compare
+POST /api/evidence-training/scorecards/grade
 ```
 
 Example request:
@@ -570,6 +578,8 @@ curl -X POST http://localhost:8080/api/allocate/capacity-aware \
 ```
 
 The allocation APIs are calculation-only. Scaling recommendations are simulations and do not call `CloudManager` or AWS.
+
+`/api/evidence-training/**` exposes a read-only onboarding surface for packaged evidence policy templates, examples, scorecards, answer JSON templates, and local Postman workflows. `POST /api/evidence-training/scorecards/grade` grades submitted answers in memory and returns deterministic JSON; it does not write runtime reports, construct `CloudManager`, or mutate cloud state. Import `postman/LoadBalancerPro.postman_collection.json` and run the `Evidence Training Onboarding` folder for local API practice. The offline CLI remains available and does not require starting the API server.
 
 `POST /api/routing/compare` compares supported routing strategies against caller-provided candidate telemetry. Supported strategy IDs are `ROUND_ROBIN`, `TAIL_LATENCY_POWER_OF_TWO`, `WEIGHTED_LEAST_LOAD`, `WEIGHTED_LEAST_CONNECTIONS`, and `WEIGHTED_ROUND_ROBIN`. It is read-only and recommendation-only: it returns strategy results and explanations, does not call `CloudManager` or AWS, does not mutate cloud resources, does not mutate `LoadBalancer` allocation state, and does not alter the capacity-aware or predictive allocation endpoints.
 
@@ -708,7 +718,7 @@ If `strategies` is omitted, the endpoint defaults to the registered routing stra
 
 The shadow snapshot also includes application-layer network-awareness signals for LASE evaluation: `timeoutRate`, `retryRate`, `connectionFailureRate`, `latencyJitterMillis`, `recentErrorBurst`, `requestTimeoutCount`, `sampleSize`, and `networkRiskScore`. These are shadow/evaluation signals only. They do not use Wireshark, PCAP parsing, sockets, packet capture, or external network collectors, and they do not change live routing or cloud behavior.
 
-In the local/default profile, `POST /api/routing/compare` works without an API key for local demos. In the `prod` profile using `loadbalancerpro.auth.mode=api-key`, protected `POST` requests such as `POST /api/routing/compare` require the configured `X-API-Key`. In the `cloud-sandbox` profile using API-key mode, routing comparison has the same `X-API-Key` behavior and the profile remains dry-run by default. In OAuth2 mode, `POST /api/routing/**` requires the configured allocation role, which defaults to `operator`. `GET /api/lase/shadow` requires the configured `X-API-Key` in prod/cloud-sandbox API-key mode, or an `observer` or `operator` role in OAuth2 mode. `/api/health` remains public.
+In the local/default profile, `POST /api/routing/compare` works without an API key for local demos. In the `prod` profile using `loadbalancerpro.auth.mode=api-key`, protected `POST` requests such as `POST /api/routing/compare` and `POST /api/evidence-training/scorecards/grade` require the configured `X-API-Key`. In the `cloud-sandbox` profile using API-key mode, routing comparison and scorecard grading have the same `X-API-Key` behavior and the profile remains dry-run by default. In OAuth2 mode, `POST /api/routing/**` requires the configured allocation role, which defaults to `operator`; other `/api/**` training onboarding routes require a valid authenticated token. `GET /api/lase/shadow` requires the configured `X-API-Key` in prod/cloud-sandbox API-key mode, or an `observer` or `operator` role in OAuth2 mode. `/api/health` remains public.
 
 Invalid request bodies return HTTP 400 with a structured validation response. In the local/demo profile, browser CORS is enabled for `/api/**` from `http://localhost:3000` and `http://localhost:8080`, with credentials disabled. In the `prod` profile, configure allowed origins explicitly with `LOADBALANCERPRO_CORS_ALLOWED_ORIGINS`. Responses include lightweight security headers such as `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Cache-Control: no-store`.
 

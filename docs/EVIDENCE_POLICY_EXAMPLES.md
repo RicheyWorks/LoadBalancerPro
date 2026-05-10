@@ -125,6 +125,21 @@ The report includes `scorecardVersion`, total/max score, percent, pass/fail stat
 
 Scorecards are a local onboarding aid only. They are not certification, not legal compliance proof, not identity proof, and not a substitute for real incident review.
 
+## API And Postman Onboarding
+
+When the Spring Boot API is running for a local demo, operators can discover the same packaged examples and scorecards through read-only onboarding routes:
+
+```text
+GET  /api/evidence-training/onboarding
+GET  /api/evidence-training/examples
+GET  /api/evidence-training/scorecards
+GET  /api/evidence-training/scorecards/{name}
+GET  /api/evidence-training/scorecards/{name}/answer-template
+POST /api/evidence-training/scorecards/grade
+```
+
+The grade route evaluates submitted answer JSON in memory and returns deterministic JSON; it does not write runtime reports or mutate cloud state. Import `postman/LoadBalancerPro.postman_collection.json` and use the `Evidence Training Onboarding` folder for local Postman walkthroughs. See [`POSTMAN_EVIDENCE_TRAINING.md`](POSTMAN_EVIDENCE_TRAINING.md) for the `baseUrl` variable, sample answer JSON, and limitations.
+
 After exporting, operators can also run the underlying commands directly:
 
 ```bash

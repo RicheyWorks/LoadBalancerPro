@@ -213,6 +213,20 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 
 The answers file contains an optional `operator` label plus `answers` entries with `exerciseName`, `decision`, `reason`, `action`, and optional `notes`. Scorecards are intended for onboarding and refresher drills. They are local training aids only, not certification, legal compliance proof, identity proof, or legal chain-of-custody.
 
+For GUI-facing or Postman-driven onboarding during a local API demo, use the read-only training routes:
+
+```text
+GET  /api/evidence-training/onboarding
+GET  /api/evidence-training/templates
+GET  /api/evidence-training/examples
+GET  /api/evidence-training/scorecards
+GET  /api/evidence-training/scorecards/{name}
+GET  /api/evidence-training/scorecards/{name}/answer-template
+POST /api/evidence-training/scorecards/grade
+```
+
+Import `postman/LoadBalancerPro.postman_collection.json`, set `baseUrl` to the local API server such as `http://localhost:8080`, and run the `Evidence Training Onboarding` folder. These API routes are read-only discovery plus deterministic in-memory grading. They do not construct `CloudManager`, do not write runtime reports, and do not mutate cloud state. The API server is optional for CLI workflows.
+
 See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md), [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md), and [`EVIDENCE_POLICY_EXAMPLES.md`](EVIDENCE_POLICY_EXAMPLES.md) for CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, evidence handoff policies, packaged policy templates, example sender/receiver catalog pairs, safety guarantees, and JSON output.
 
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.

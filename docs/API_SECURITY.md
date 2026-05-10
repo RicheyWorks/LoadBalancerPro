@@ -24,6 +24,8 @@ Rejected requests must not construct or mutate `CloudManager`. Read-only evaluat
 
 Request-size limits are enforced for `/api/**` POST, PUT, and PATCH requests. The default limit is 16 KiB and can be changed with `loadbalancerpro.api.max-request-bytes`.
 
+Evidence training onboarding routes under `/api/evidence-training/**` expose packaged template, example, scorecard, and answer-template metadata for local operator onboarding and Postman demos. Discovery routes are read-only. `POST /api/evidence-training/scorecards/grade` performs deterministic in-memory grading only; it does not write report files, construct `CloudManager`, or mutate cloud state. Treat the scorecard output as a local training aid only, not certification, legal compliance proof, or identity proof.
+
 ## Out Of Scope
 
 The repository does not currently provide WAF rules, distributed quotas, bot detection, credential rotation, customer identity lifecycle management, TLS certificates, or production incident-response automation. Those controls belong in the deployment platform and should be reviewed separately before public exposure.

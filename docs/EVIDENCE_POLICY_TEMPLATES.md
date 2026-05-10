@@ -10,6 +10,15 @@ List packaged templates:
 java -jar target/LoadBalancerPro-2.4.2.jar --list-policy-templates
 ```
 
+When the local Spring Boot API is running, the same template catalog is also exposed for GUI-facing clients and Postman:
+
+```text
+GET /api/evidence-training/onboarding
+GET /api/evidence-training/templates
+```
+
+These routes are read-only discovery surfaces. They do not construct `CloudManager`, do not mutate cloud state, and do not replace the offline CLI.
+
 Export a template:
 
 ```bash
@@ -111,3 +120,5 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 ```
 
 Scorecards use the packaged template names and expected `PASS`, `WARN`, and `FAIL` decisions. Each exercise grades decision, reason, and action fields and can include optional remediation notes in the operator answer. Walkthrough and scorecard output is deterministic and local-only. It demonstrates policy behavior over synthetic catalogs; it is not identity proof, legal chain-of-custody, legal compliance proof, or a compliance certification.
+
+For Postman-driven onboarding, import `postman/LoadBalancerPro.postman_collection.json` and run the `Evidence Training Onboarding` folder. The collection uses the `{{baseUrl}}` variable, defaulting to `http://localhost:8080`. Details and limitations are documented in [`POSTMAN_EVIDENCE_TRAINING.md`](POSTMAN_EVIDENCE_TRAINING.md).

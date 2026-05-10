@@ -137,6 +137,7 @@ class ApiContractTest {
         assertPathRequestSchemaAndOkResponse(docs, "/api/allocate/predictive", "AllocationRequest");
         assertPathRequestSchemaAndOkResponse(docs, "/api/allocate/evaluate", "AllocationEvaluationRequest");
         assertPathRequestSchemaAndOkResponse(docs, "/api/routing/compare", "RoutingComparisonRequest");
+        assertPathRequestSchemaAndOkResponse(docs, "/api/scenarios/replay", "ScenarioReplayRequest");
 
         assertSchemaProperties(docs, "AllocationRequest", "requestedLoad", "servers");
         assertSchemaProperties(docs, "AllocationResponse", "allocations", "unallocatedLoad",
@@ -158,6 +159,17 @@ class ApiContractTest {
                 "timestamp", "results");
         assertSchemaProperties(docs, "RoutingComparisonResultResponse", "strategyId", "status",
                 "chosenServerId", "reason", "candidateServersConsidered", "scores");
+        assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
+        assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
+                "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
+                "concurrencyLimit", "queueDepth", "observedP95LatencyMillis", "observedErrorRate");
+        assertSchemaProperties(docs, "ScenarioReplayResponse", "scenarioId", "readOnly", "cloudMutation", "steps");
+        assertSchemaProperties(docs, "ScenarioReplayStepResponse", "stepId", "type", "status", "strategy",
+                "allocations", "acceptedLoad", "rejectedLoad", "unallocatedLoad", "recommendedAdditionalServers",
+                "scalingSimulation", "loadShedding", "metricsPreview", "selectedServerId", "routingResults",
+                "serverStates", "reason");
+        assertSchemaProperties(docs, "ScenarioServerState", "id", "cpuUsage", "memoryUsage", "diskUsage",
+                "capacity", "weight", "healthy");
     }
 
     @Test

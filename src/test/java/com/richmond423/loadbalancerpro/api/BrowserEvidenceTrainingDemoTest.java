@@ -44,6 +44,7 @@ class BrowserEvidenceTrainingDemoTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(content().string(containsString("LoadBalancerPro Evidence Training Demo")))
+                .andExpect(content().string(containsString("LoadBalancerPro Evidence Training Cockpit")))
                 .andExpect(content().string(containsString("data-action=\"health\"")))
                 .andExpect(content().string(containsString("data-action=\"grade-perfect\"")));
     }
@@ -69,6 +70,82 @@ class BrowserEvidenceTrainingDemoTest {
     }
 
     @Test
+    void staticBrowserDemoPageContainsGuidedChecklistAndSummaryCounters() throws Exception {
+        String page = Files.readString(BROWSER_DEMO_PAGE, StandardCharsets.UTF_8);
+
+        assertTrue(page.contains("Guided checklist"));
+        assertTrue(page.contains("Health check"));
+        assertTrue(page.contains("Readiness check"));
+        assertTrue(page.contains("Load onboarding"));
+        assertTrue(page.contains("List templates"));
+        assertTrue(page.contains("List examples"));
+        assertTrue(page.contains("List scorecards"));
+        assertTrue(page.contains("Load scorecard detail"));
+        assertTrue(page.contains("Load answer template"));
+        assertTrue(page.contains("Grade perfect sample"));
+        assertTrue(page.contains("Grade partial sample"));
+        assertTrue(page.contains("Grade failing sample"));
+        assertTrue(page.contains("data-step-status=\"health\""));
+        assertTrue(page.contains("data-step-status=\"grade-failing\""));
+        assertTrue(page.contains(">Not run<"));
+        assertTrue(page.contains("id=\"summary-total\""));
+        assertTrue(page.contains("id=\"summary-passed\""));
+        assertTrue(page.contains("id=\"summary-warning\""));
+        assertTrue(page.contains("id=\"summary-failed\""));
+        assertTrue(page.contains("id=\"summary-not-run\""));
+    }
+
+    @Test
+    void staticBrowserDemoPageContainsCurlSnippetsAndPostmanParity() throws Exception {
+        String page = Files.readString(BROWSER_DEMO_PAGE, StandardCharsets.UTF_8);
+
+        assertTrue(page.contains("curl and Postman parity"));
+        assertTrue(page.contains("data-copy-target=\"curl-health\""));
+        assertTrue(page.contains("data-copy-target=\"curl-readiness\""));
+        assertTrue(page.contains("data-copy-target=\"curl-onboarding\""));
+        assertTrue(page.contains("data-copy-target=\"curl-templates\""));
+        assertTrue(page.contains("data-copy-target=\"curl-examples\""));
+        assertTrue(page.contains("data-copy-target=\"curl-scorecards\""));
+        assertTrue(page.contains("data-copy-target=\"curl-scorecard-detail\""));
+        assertTrue(page.contains("data-copy-target=\"curl-answer-template\""));
+        assertTrue(page.contains("data-copy-target=\"curl-grading\""));
+        assertTrue(page.contains("data-curl-path=\"/api/health\""));
+        assertTrue(page.contains("data-curl-path=\"/actuator/health/readiness\""));
+        assertTrue(page.contains("data-curl-path=\"/api/evidence-training/onboarding\""));
+        assertTrue(page.contains("data-curl-path=\"/api/evidence-training/templates\""));
+        assertTrue(page.contains("data-curl-path=\"/api/evidence-training/examples\""));
+        assertTrue(page.contains("data-curl-path=\"/api/evidence-training/scorecards\""));
+        assertTrue(page.contains("data-dynamic-curl=\"scorecard-detail\""));
+        assertTrue(page.contains("data-dynamic-curl=\"answer-template\""));
+        assertTrue(page.contains("data-curl-method=\"POST\""));
+        assertTrue(page.contains("Postman parity: Evidence Training Demo Walkthrough"));
+    }
+
+    @Test
+    void staticBrowserDemoPageContainsCopyablePayloadsAndGradingSummary() throws Exception {
+        String page = Files.readString(BROWSER_DEMO_PAGE, StandardCharsets.UTF_8);
+
+        assertTrue(page.contains("Grading visual summary"));
+        assertTrue(page.contains("Visual result"));
+        assertTrue(page.contains("Score percent"));
+        assertTrue(page.contains("Passed boolean"));
+        assertTrue(page.contains("Exercise count"));
+        assertTrue(page.contains("id=\"grade-decisions\""));
+        assertTrue(page.contains("Copy perfect payload"));
+        assertTrue(page.contains("Copy partial payload"));
+        assertTrue(page.contains("Copy failing payload"));
+        assertTrue(page.contains("Export perfect payload"));
+        assertTrue(page.contains("Export partial payload"));
+        assertTrue(page.contains("Export failing payload"));
+        assertTrue(page.contains("operator-perfect-demo"));
+        assertTrue(page.contains("operator-partial-demo"));
+        assertTrue(page.contains("operator-failing-demo"));
+        assertTrue(page.contains("perfect-scorecard-answers.json"));
+        assertTrue(page.contains("partial-scorecard-answers.json"));
+        assertTrue(page.contains("failing-scorecard-answers.json"));
+    }
+
+    @Test
     void staticBrowserDemoPageContainsSafetyLimitations() throws Exception {
         String page = Files.readString(BROWSER_DEMO_PAGE, StandardCharsets.UTF_8);
         String normalized = page.toLowerCase(Locale.ROOT);
@@ -80,22 +157,29 @@ class BrowserEvidenceTrainingDemoTest {
         assertTrue(normalized.contains("no cloud mutation"));
         assertTrue(normalized.contains("no cloudmanager required for training/onboarding demo"));
         assertTrue(normalized.contains("api server is required for browser/postman demo but not for offline cli workflows"));
-        assertTrue(normalized.contains("no external scripts, styles, fonts, cdns, services, secrets, or admin controls"));
+        assertTrue(normalized.contains("no external scripts/cdns"));
+        assertTrue(normalized.contains("no external styles, fonts, images, services, or dependencies"));
+        assertTrue(normalized.contains("no secrets, auth fields, admin controls, release controls, ruleset controls, or cloud mutation controls"));
     }
 
     @Test
-    void staticBrowserDemoPageHasNoExternalScriptsCdnsOrAuthPlaceholders() throws Exception {
+    void staticBrowserDemoPageHasNoExternalScriptsCdnsFontsImagesStorageOrAuthPlaceholders() throws Exception {
         String page = Files.readString(BROWSER_DEMO_PAGE, StandardCharsets.UTF_8);
         String normalized = page.toLowerCase(Locale.ROOT);
 
         assertFalse(normalized.contains("<script src="));
         assertFalse(normalized.contains("<link rel=\"stylesheet\""));
+        assertFalse(normalized.contains("<img"));
+        assertFalse(normalized.contains("background-image"));
         assertFalse(normalized.contains("cdn."));
         assertFalse(normalized.contains("fonts.googleapis"));
         assertFalse(normalized.contains("fonts.gstatic"));
+        assertFalse(normalized.contains("localstorage"));
+        assertFalse(normalized.contains("sessionstorage"));
         assertFalse(normalized.contains("x-api-key"));
         assertFalse(normalized.contains("bearer"));
         assertFalse(normalized.contains("authorization"));
+        assertFalse(normalized.contains("type=\"password\""));
         assertFalse(normalized.contains("password"));
         assertFalse(normalized.contains("access key"));
         assertFalse(normalized.contains("secret key"));
@@ -119,6 +203,11 @@ class BrowserEvidenceTrainingDemoTest {
         assertFalse(normalized.contains("create release"));
         assertFalse(normalized.contains("create tag"));
         assertFalse(normalized.contains("mutate cloud"));
+        assertFalse(normalized.contains("new cloudmanager"));
+        assertFalse(normalized.contains("construct cloudmanager"));
+        assertFalse(normalized.contains("certified operator"));
+        assertFalse(normalized.contains("legal training compliance"));
+        assertFalse(normalized.contains("identity verified"));
     }
 
     @Test

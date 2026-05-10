@@ -86,4 +86,14 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
   --policy-output walkthrough-summary.json
 ```
 
+To run every packaged PASS/WARN/FAIL walkthrough in one deterministic practice pass:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --run-policy-training-lab \
+  --training-lab-format markdown
+```
+
+The training lab compares each actual policy decision to its packaged expected decision, summarizes the expected `PASS`, `WARN`, and `FAIL` counts, and exits non-zero if any example no longer matches its descriptor. It remains local-only and does not prove identity or legal custody.
+
 Walkthrough output is deterministic and local-only. It demonstrates policy behavior over synthetic catalogs; it is not identity proof, legal chain-of-custody, or a compliance certification.

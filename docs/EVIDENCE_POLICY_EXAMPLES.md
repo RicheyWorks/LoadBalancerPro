@@ -58,6 +58,25 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 
 The walkthrough exports the packaged example, runs the evidence catalog diff, evaluates the packaged policy template, and emits a deterministic Markdown or JSON tutorial summary. For JSON tutorial output, use `--policy-report-format json`. For a file output, add `--policy-output walkthrough-summary.json`.
 
+Run every packaged walkthrough as a one-command offline training lab:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --run-policy-training-lab \
+  --training-lab-format markdown
+```
+
+For automation or operator onboarding records, emit JSON or write the transcript to a file:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --run-policy-training-lab \
+  --training-lab-format json \
+  --training-lab-output policy-training-lab.json
+```
+
+The training lab loads all packaged examples, runs the same diff and policy evaluator used by `--walkthrough-policy-example`, compares actual decisions to `expected-decision.json`, and exits non-zero if any expected decision does not match. Add `--training-lab-export-dir walkthrough/all-examples` to export the example files used by the lab, `--include-training-details` to include per-change detail in the transcript, and `--force` to replace an existing export directory.
+
 After exporting, operators can also run the underlying commands directly:
 
 ```bash

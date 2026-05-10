@@ -45,6 +45,7 @@ public final class RemediationReportCli {
     private static final String EXPORT_POLICY_EXAMPLE_FLAG = "--export-policy-example";
     private static final String PRINT_POLICY_EXAMPLE_FLAG = "--print-policy-example";
     private static final String WALKTHROUGH_POLICY_EXAMPLE_FLAG = "--walkthrough-policy-example";
+    private static final String RUN_POLICY_TRAINING_LAB_FLAG = "--run-policy-training-lab";
     private static final String APP_VERSION = "2.4.2";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -78,7 +79,8 @@ public final class RemediationReportCli {
                         || arg.equals(EXPORT_POLICY_EXAMPLE_FLAG) || arg.startsWith(EXPORT_POLICY_EXAMPLE_FLAG + "=")
                         || arg.equals(PRINT_POLICY_EXAMPLE_FLAG) || arg.startsWith(PRINT_POLICY_EXAMPLE_FLAG + "=")
                         || arg.equals(WALKTHROUGH_POLICY_EXAMPLE_FLAG)
-                        || arg.startsWith(WALKTHROUGH_POLICY_EXAMPLE_FLAG + "="));
+                        || arg.startsWith(WALKTHROUGH_POLICY_EXAMPLE_FLAG + "=")
+                        || arg.equals(RUN_POLICY_TRAINING_LAB_FLAG));
     }
 
     public static Result runIfRequested(String[] args, PrintStream out, PrintStream err) {
@@ -94,6 +96,9 @@ public final class RemediationReportCli {
         Objects.requireNonNull(err, "err cannot be null");
 
         try {
+            if (policyTrainingLabCommandRequested(args)) {
+                return runPolicyTrainingLabCommand(args, out);
+            }
             if (policyExampleCommandRequested(args)) {
                 return runPolicyExampleCommand(args, out);
             }
@@ -330,6 +335,28 @@ public final class RemediationReportCli {
             return new Result(true, 0);
         }
         throw new IllegalArgumentException("policy example command is incomplete");
+    }
+
+    private static Result runPolicyTrainingLabCommand(String[] args, PrintStream out) throws IOException {
+        EvidencePolicyTrainingLabService service = new EvidencePolicyTrainingLabService();
+        EvidencePolicyTrainingLabService.TrainingLabFormat format =
+                CatalogDiffOptions.optionValue(args, "--training-lab-format")
+                        .map(EvidencePolicyTrainingLabService.TrainingLabFormat::parse)
+                        .orElse(EvidencePolicyTrainingLabService.TrainingLabFormat.MARKDOWN);
+        EvidencePolicyTrainingLabService.TrainingLabRequest request =
+                new EvidencePolicyTrainingLabService.TrainingLabRequest(
+                        CatalogDiffOptions.optionValue(args, "--training-lab-export-dir").map(Path::of),
+                        CatalogDiffOptions.hasFlag(args, "--force"),
+                        CatalogDiffOptions.hasFlag(args, "--include-training-details"));
+        EvidencePolicyTrainingLabService.TrainingLabResult result = service.run(request);
+        String rendered = format == EvidencePolicyTrainingLabService.TrainingLabFormat.JSON
+                ? service.renderJson(result)
+                : service.renderMarkdown(result);
+        Optional<Path> outputPath = CatalogDiffOptions.optionValue(args, "--training-lab-output").map(Path::of);
+        writeOutput(rendered, outputPath, out);
+        boolean failOnMismatch = CatalogDiffOptions.hasFlag(args, "--fail-on-training-mismatch")
+                || !CatalogDiffOptions.hasFlag(args, "--no-fail-on-training-mismatch");
+        return new Result(true, service.exitCode(result, failOnMismatch));
     }
 
     private static Result runPolicyExampleWalkthrough(
@@ -819,6 +846,10 @@ public final class RemediationReportCli {
                 + "--export-policy-example <name> --example-output-dir <dir> [--force] | "
                 + "--walkthrough-policy-example <name> --example-output-dir <dir> "
                 + "[--policy-report-format markdown|json] [--policy-output <path>] [--force]");
+        err.println("Policy training lab: --run-policy-training-lab "
+                + "[--training-lab-format markdown|json] [--training-lab-output <path>] "
+                + "[--training-lab-export-dir <dir>] [--include-training-details] "
+                + "[--fail-on-training-mismatch] [--no-fail-on-training-mismatch] [--force]");
         err.println("Safety: offline/read-only report generation; no API server, network access, "
                 + "CloudManager calls, or cloud mutation.");
     }
@@ -857,6 +888,12 @@ public final class RemediationReportCli {
                         || arg.startsWith(PRINT_POLICY_EXAMPLE_FLAG + "=")
                         || arg.equals(WALKTHROUGH_POLICY_EXAMPLE_FLAG)
                         || arg.startsWith(WALKTHROUGH_POLICY_EXAMPLE_FLAG + "="));
+    }
+
+    private static boolean policyTrainingLabCommandRequested(String[] args) {
+        return Arrays.stream(args)
+                .filter(Objects::nonNull)
+                .anyMatch(arg -> arg.equals(RUN_POLICY_TRAINING_LAB_FLAG));
     }
 
     public record Result(boolean requested, int exitCode) {

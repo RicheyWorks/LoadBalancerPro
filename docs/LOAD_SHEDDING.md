@@ -47,6 +47,16 @@ Evaluation does not construct `CloudManager`, does not call AWS, does not enqueu
 
 The remediation plan is not an execution path. `advisoryOnly=true`, `readOnly=true`, `cloudMutation=false`, and each recommendation has `executable=false`.
 
+## Report Export
+
+Evaluation and replay results can be converted into deterministic remediation reports with:
+
+- `POST /api/remediation/report`
+
+Markdown reports are intended for incident tickets and operator handoff. JSON reports expose the same summary, load impact, scaling recommendation, load-shedding decision, ranked remediation recommendations, and safety guarantees for automation.
+
+The exporter accepts supplied evaluation or replay responses. It does not rerun allocation, execute remediation actions, construct `CloudManager`, call AWS, or generate timestamps/random ids by default.
+
 ## Determinism
 
 Capacity-aware and predictive allocation are deterministic for the same input:

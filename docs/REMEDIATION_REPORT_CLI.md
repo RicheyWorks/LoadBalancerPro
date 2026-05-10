@@ -8,6 +8,7 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
   --input saved-evaluation.json \
   --format markdown \
   --output incident-report.md \
+  --manifest incident-report.manifest.json \
   --report-id incident-123
 ```
 
@@ -59,6 +60,11 @@ curl -fsS -X POST http://127.0.0.1:8080/api/scenarios/replay \
 | `--output <path>` | Optional output file. If omitted, output is written to stdout. |
 | `--report-id <id>` | Optional deterministic report id. |
 | `--title <title>` | Optional Markdown report title. |
+| `--manifest <path>` | Optional checksum manifest JSON for the generated report bundle. Requires `--output`. |
+| `--manifest-extra <path>` | Optional extra file to include in the checksum manifest. May be repeated. |
+| `--generated-by <text>` | Optional manifest metadata. Defaults to `LoadBalancerPro offline remediation report CLI`. |
+| `--created-at <text>` | Optional caller-supplied manifest timestamp or incident time. Omitted by default for deterministic output. |
+| `--verify-manifest <path>` | Offline verification mode for an existing checksum manifest. |
 
 ## Output Semantics
 
@@ -74,6 +80,39 @@ Markdown output is intended for humans and incident tickets. JSON output is the 
 
 The CLI reuses `RemediationReportService`, so output semantics match `POST /api/remediation/report`.
 
+## Checksum Manifests
+
+When `--manifest` is supplied, the CLI writes a deterministic JSON manifest with SHA-256 checksums for:
+
+- the saved input JSON;
+- the generated Markdown or JSON report file;
+- any `--manifest-extra` files.
+
+Example:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --remediation-report \
+  --input saved-replay.json \
+  --format json \
+  --output incident-report.json \
+  --manifest incident-report.manifest.json \
+  --report-id incident-123
+```
+
+Verify the bundle later without starting the API server:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --verify-manifest incident-report.manifest.json
+```
+
+Verification exits `0` when every listed file exists and matches its recorded SHA-256 digest. It exits non-zero when the manifest is invalid, a file is missing, or a digest does not match.
+
+The manifest is checksum-based tamper evidence. It can detect accidental corruption, missing files, and edits after the manifest was created. It is not a cryptographic signature, does not prove who generated the report, does not use private keys, and does not replace release artifact attestations or operator review.
+
+Default manifest output omits timestamps and random identifiers. `reportId`, `generatedBy`, source type, app version, safety flags, and file roles are deterministic. `createdAt` is included only when the caller supplies `--created-at`.
+
 ## Safety
 
 Offline report generation:
@@ -83,10 +122,12 @@ Offline report generation:
 - does not construct or mutate `CloudManager`;
 - does not call AWS;
 - does not execute remediation actions;
-- does not generate timestamps or random ids unless the caller supplies `--report-id`.
+- does not generate timestamps or random ids unless the caller supplies `--report-id` or manifest `--created-at`;
+- generates and verifies checksum manifests locally with Java SHA-256, not external tools or signing keys.
 
 ## Limitations
 
 - The CLI formats saved results. It does not recompute allocation, replay, routing, health checks, or remediation.
+- Checksum manifests are useful for bundle integrity, not identity proof or non-repudiation.
 - Live deployment state should still be verified before taking operator action.
 - Invalid JSON or unsupported input shapes exit non-zero and print a safe error without stack traces.

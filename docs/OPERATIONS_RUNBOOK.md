@@ -83,10 +83,20 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
   --input saved-evaluation.json \
   --format markdown \
   --output incident-report.md \
+  --manifest incident-report.manifest.json \
   --report-id incident-123
 ```
 
-See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, options, safety guarantees, and JSON output.
+Attach both `incident-report.md` and `incident-report.manifest.json` to the incident ticket when integrity evidence is needed. Re-verify the bundle offline with:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --verify-manifest incident-report.manifest.json
+```
+
+The manifest is SHA-256 checksum evidence only. It detects missing or changed files, but it is not a private-key signature and does not prove operator identity.
+
+See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, manifest verification, safety guarantees, and JSON output.
 
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
 

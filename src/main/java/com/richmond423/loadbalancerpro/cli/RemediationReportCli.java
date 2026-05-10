@@ -176,6 +176,7 @@ public final class RemediationReportCli {
 
         static CliOptions parse(String[] args) {
             Path input = remediationReportPath(args)
+                    .map(Path::of)
                     .or(() -> optionValue(args, "--input").map(Path::of))
                     .orElseThrow(() -> new IllegalArgumentException("input path is required"));
             RemediationReportFormat format = optionValue(args, "--format")

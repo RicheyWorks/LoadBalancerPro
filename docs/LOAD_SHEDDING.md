@@ -25,6 +25,25 @@ The core LASE package includes internal `RequestPriority` and `LoadSheddingPolic
 
 Until a future API version explicitly exposes priority classes, public allocation requests are treated as aggregate batch-load simulations. The service does not prioritize one caller-provided unit of work over another inside a single allocation request.
 
+## Read-Only Evaluation API
+
+Operators can preview allocation and load-shedding behavior without performing an allocation by calling:
+
+- `POST /api/allocate/evaluate`
+
+The endpoint is read-only and recommendation-only. It uses the caller-provided server list and load pressure to return:
+
+- `allocations`: the load that would be assigned to eligible healthy servers.
+- `acceptedLoad`: the total load that would be assigned.
+- `rejectedLoad` and `unallocatedLoad`: the load that would remain unassigned under current healthy capacity.
+- `recommendedAdditionalServers` and `scalingSimulation`: the simulated scale-up recommendation.
+- `loadShedding`: the internal priority/load-shedding decision for the supplied or default pressure signal.
+- `metricsPreview`: the allocation metric names and values that correspond to the evaluation result.
+
+Supported evaluation strategies are `CAPACITY_AWARE` and `PREDICTIVE`; omitted strategy defaults to `CAPACITY_AWARE`. Supported priority values are `CRITICAL`, `USER`, `BACKGROUND`, and `PREFETCH`; omitted priority defaults to `USER`. Optional pressure fields such as `currentInFlightRequestCount`, `concurrencyLimit`, `queueDepth`, `observedP95LatencyMillis`, and `observedErrorRate` let operators preview soft or hard overload decisions. If those fields are omitted, the service derives deterministic defaults from requested load, healthy capacity, and unallocated load.
+
+Evaluation does not construct `CloudManager`, does not call AWS, does not enqueue traffic, does not mutate `LoadBalancer` allocation state, and does not increment the normal allocation metrics. The `metricsPreview.emitted` field is `false` to make that observability boundary explicit.
+
 ## Determinism
 
 Capacity-aware and predictive allocation are deterministic for the same input:

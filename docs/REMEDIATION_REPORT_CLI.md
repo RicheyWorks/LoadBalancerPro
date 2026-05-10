@@ -83,6 +83,11 @@ curl -fsS -X POST http://127.0.0.1:8080/api/scenarios/replay \
 | `--redact-file <path>` | Newline-delimited literal values or a JSON string array of values to redact. May be repeated. |
 | `--redaction-label <label>` | Replacement label. Defaults to `[REDACTED]`. |
 | `--redact-output-summary <path>` | Optional redaction summary JSON for standalone report output. Bundles include `redaction-summary.json` automatically when redaction is used. |
+| `--audit-log <path>` | Appends a local checksum-chained audit entry after a successful offline CLI action. |
+| `--verify-audit-log <path>` | Verifies a local offline CLI audit log checksum chain. |
+| `--audit-actor <label>` | Optional operator-supplied actor label for audit entries. |
+| `--audit-action-id <id>` | Optional deterministic action or ticket id for audit entries. |
+| `--audit-note <text>` | Optional short operator note for audit entries. |
 
 ## Output Semantics
 
@@ -220,6 +225,56 @@ Redaction limitations:
 - It does not infer every possible hostname, IP address, identity, or secret shape.
 - Checksum manifests prove files did not change after redaction; they do not prove the original data was safe, complete, or fully redacted.
 
+## Local Audit Log
+
+`--audit-log` appends a JSON Lines audit entry after successful offline CLI actions:
+
+- Markdown or JSON report generation;
+- checksum manifest generation;
+- checksum manifest verification;
+- incident bundle generation;
+- incident bundle verification;
+- redacted report or bundle generation.
+
+Example:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --input saved-replay.json \
+  --format markdown \
+  --bundle incident-bundle.zip \
+  --redact-file redactions.txt \
+  --audit-log incident-audit.jsonl \
+  --audit-action-id incident-123 \
+  --audit-actor operator-a \
+  --audit-note "redacted bundle for ticket attachment"
+```
+
+Verify the audit log later:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --verify-audit-log incident-audit.jsonl
+```
+
+Each audit entry includes:
+
+- schema version;
+- monotonic sequence number;
+- action name;
+- optional action id, actor, and note;
+- sanitized path fields where possible;
+- SHA-256 file hashes for relevant input, report, manifest, or bundle files;
+- `previousEntryHash`;
+- `entryHash`;
+- `advisoryOnly=true`;
+- `cloudMutation=false`;
+- `redactionApplied` when the action generated redacted output.
+
+`entryHash` is SHA-256 over canonical entry content excluding `entryHash` itself. `previousEntryHash` links each entry to the prior entry, with the first entry using an all-zero previous hash. Verification recomputes each entry hash and link, and exits non-zero for malformed JSON lines, changed entry content, deleted middle entries, reordered entries, sequence gaps, or bad previous-entry hashes.
+
+This is local checksum chaining for tamper evidence. It is not cryptographic signing, does not use private keys, does not prove operator identity, does not provide non-repudiation, and cannot by itself prove that a tail entry was not truncated unless the latest hash or entry count was saved elsewhere.
+
 ## Safety
 
 Offline report generation:
@@ -232,6 +287,7 @@ Offline report generation:
 - can write and verify incident ZIP bundles entirely offline;
 - does not generate timestamps or random ids unless the caller supplies `--report-id` or manifest `--created-at`;
 - can redact configured literal values before manifest and bundle checksums are calculated;
+- can append and verify local checksum-chained audit logs without an external service;
 - generates and verifies checksum manifests locally with Java SHA-256, not external tools or signing keys.
 
 ## Limitations
@@ -240,5 +296,6 @@ Offline report generation:
 - Checksum manifests are useful for bundle integrity, not identity proof or non-repudiation.
 - Incident bundles are portable evidence containers, not signed attestations.
 - Redaction is exact string replacement and should be reviewed by an operator before evidence is shared externally.
+- Audit logs are local checksum chains, not centralized append-only storage, cryptographic signatures, identity proof, or non-repudiation.
 - Live deployment state should still be verified before taking operator action.
 - Invalid JSON or unsupported input shapes exit non-zero and print a safe error without stack traces.

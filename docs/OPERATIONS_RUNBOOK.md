@@ -105,7 +105,10 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
   --bundle incident-bundle.zip \
   --report-id incident-123 \
   --redact internal-host-01 \
-  --redact-file incident-redactions.txt
+  --redact-file incident-redactions.txt \
+  --audit-log incident-audit.jsonl \
+  --audit-action-id incident-123 \
+  --audit-actor operator-a
 ```
 
 Verify the bundle later without starting the API server:
@@ -118,6 +121,15 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 The bundle contains the saved input JSON, generated report, checksum manifest, verification summary, and README. Bundle verification checks manifest-listed SHA-256 hashes and rejects unsafe ZIP entry paths. It is tamper-evident evidence, not a cryptographic signature or identity proof.
 
 Use `--redact` or `--redact-file` before sharing incident evidence outside the immediate response team. Redaction is deterministic literal string replacement for known sensitive values such as hostnames, server IDs, internal IDs, operator notes, or ticket-specific strings. Redacted bundles include `redaction-summary.json` with token SHA-256 digests and replacement counts, not the original sensitive strings. Review the exported report before attachment because redaction is not legal anonymization and cannot infer every sensitive value automatically.
+
+Use `--audit-log` when the offline CLI action should be chained into a local operator evidence trail. Audit entries are JSON Lines with SHA-256 `entryHash` and `previousEntryHash` fields. Verify the chain later with:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --verify-audit-log incident-audit.jsonl
+```
+
+The local audit log detects changed entries, malformed entries, sequence gaps, deleted middle entries, and reordered entries. It is checksum chaining only: it is not a cryptographic signature, does not prove identity, does not provide non-repudiation, and is not centralized append-only storage. Save the latest entry hash in the incident ticket if tail-truncation detection is required later.
 
 See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for CLI inputs, bundle export, manifest verification, safety guarantees, and JSON output.
 
@@ -186,6 +198,8 @@ The remediation report exporter is also advisory only. It converts supplied eval
 Incident bundle export wraps that same offline report output with the saved input JSON, checksum manifest, and verification summary. It remains local-only, does not start the API server, and does not add signing keys or key management.
 
 Incident evidence redaction runs before checksum manifests are written. This means manifest and bundle verification prove the redacted files stayed unchanged after export, but they do not prove the original evidence was complete, safe to disclose, or fully scrubbed.
+
+Offline CLI audit logging appends local checksum-chained entries after successful report, manifest, bundle, verification, and redacted-output actions. It remains local-only and does not start the API server, construct `CloudManager`, add signing keys, or contact external services.
 
 ## Rollback And Release Evidence
 

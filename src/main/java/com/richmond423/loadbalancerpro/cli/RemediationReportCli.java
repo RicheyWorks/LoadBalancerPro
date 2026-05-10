@@ -32,6 +32,8 @@ public final class RemediationReportCli {
     private static final String VERIFY_MANIFEST_FLAG = "--verify-manifest";
     private static final String BUNDLE_FLAG = "--bundle";
     private static final String VERIFY_BUNDLE_FLAG = "--verify-bundle";
+    private static final String AUDIT_LOG_FLAG = "--audit-log";
+    private static final String VERIFY_AUDIT_LOG_FLAG = "--verify-audit-log";
     private static final String APP_VERSION = "2.4.2";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -54,7 +56,8 @@ public final class RemediationReportCli {
                 .anyMatch(arg -> arg.equals(FLAG) || arg.startsWith(FLAG + "=")
                         || arg.equals(VERIFY_MANIFEST_FLAG) || arg.startsWith(VERIFY_MANIFEST_FLAG + "=")
                         || arg.equals(BUNDLE_FLAG) || arg.startsWith(BUNDLE_FLAG + "=")
-                        || arg.equals(VERIFY_BUNDLE_FLAG) || arg.startsWith(VERIFY_BUNDLE_FLAG + "="));
+                        || arg.equals(VERIFY_BUNDLE_FLAG) || arg.startsWith(VERIFY_BUNDLE_FLAG + "=")
+                        || arg.equals(VERIFY_AUDIT_LOG_FLAG) || arg.startsWith(VERIFY_AUDIT_LOG_FLAG + "="));
     }
 
     public static Result runIfRequested(String[] args, PrintStream out, PrintStream err) {
@@ -71,11 +74,22 @@ public final class RemediationReportCli {
 
         try {
             CliOptions options = CliOptions.parse(args);
+            if (options.verifyAuditLogPath().isPresent()) {
+                return verifyAuditLog(options.verifyAuditLogPath().get(), out);
+            }
             if (options.verifyManifestPath().isPresent()) {
-                return verifyManifest(options.verifyManifestPath().get(), out);
+                Result result = verifyManifest(options.verifyManifestPath().get(), out);
+                appendAuditIfSuccessful(options, result, "MANIFEST_VERIFIED",
+                        null, null, options.verifyManifestPath().get(), null, false,
+                        List.of(auditFile("MANIFEST", options.verifyManifestPath().get())));
+                return result;
             }
             if (options.verifyBundlePath().isPresent()) {
-                return verifyBundle(options.verifyBundlePath().get(), out);
+                Result result = verifyBundle(options.verifyBundlePath().get(), out);
+                appendAuditIfSuccessful(options, result, "BUNDLE_VERIFIED",
+                        null, null, null, options.verifyBundlePath().get(), false,
+                        List.of(auditFile("BUNDLE", options.verifyBundlePath().get())));
+                return result;
             }
             validateOptions(options);
             RemediationReportResponse response = responseFromInput(options);
@@ -87,7 +101,11 @@ public final class RemediationReportCli {
             }
             writeOutput(redaction.renderedReport(), options.outputPath(), out);
             writeRedactionSummaryIfRequested(options, redaction);
-            writeManifestIfRequested(options, response, redaction);
+            Optional<ManifestWriteResult> manifestWrite = writeManifestIfRequested(options, response, redaction);
+            appendReportAudit(options, response, redaction);
+            if (manifestWrite.isPresent()) {
+                appendManifestAudit(options, manifestWrite.get(), redaction);
+            }
             return new Result(true, 0);
         } catch (IllegalArgumentException e) {
             err.println("Remediation report export failed safely: " + safeMessage(e));
@@ -148,6 +166,18 @@ public final class RemediationReportCli {
         return new Result(true, result.verified() ? 0 : 2);
     }
 
+    private static Result verifyAuditLog(Path auditLogPath, PrintStream out) throws IOException {
+        OfflineCliAuditLogService.AuditVerificationResult result =
+                new OfflineCliAuditLogService().verify(auditLogPath);
+        out.println((result.verified() ? "Audit log verification passed: "
+                : "Audit log verification failed: ") + auditLogPath);
+        out.println("- entries=" + result.entryCount() + " latestEntryHash=" + result.latestEntryHash());
+        for (String error : result.errors()) {
+            out.println("- ERROR " + error);
+        }
+        return new Result(true, result.verified() ? 0 : 2);
+    }
+
     private static Result writeBundle(
             CliOptions options,
             RemediationReportResponse response,
@@ -170,13 +200,16 @@ public final class RemediationReportCli {
         writeRedactionSummaryIfRequested(options, redaction);
         out.println("Incident bundle written: " + result.bundlePath());
         out.println("Incident bundle verification passed: " + result.bundlePath());
+        appendAuditIfRequested(options, "BUNDLE_GENERATED",
+                inputPath, null, null, options.bundlePath().get(), redaction.enabled(),
+                List.of(auditFile("BUNDLE", options.bundlePath().get())));
         return new Result(true, 0);
     }
 
-    private static void writeManifestIfRequested(
+    private static Optional<ManifestWriteResult> writeManifestIfRequested(
             CliOptions options, RemediationReportResponse response, RedactionContext redaction) throws IOException {
         if (options.manifestPath().isEmpty()) {
-            return;
+            return Optional.empty();
         }
         Path outputPath = options.outputPath()
                 .orElseThrow(() -> new IllegalArgumentException("--manifest requires --output <path>"));
@@ -206,6 +239,11 @@ public final class RemediationReportCli {
             manifestJson = redaction.plan().redactWithoutCounting(manifestJson);
         }
         Files.writeString(options.manifestPath().get(), manifestJson, StandardCharsets.UTF_8);
+        return Optional.of(new ManifestWriteResult(
+                options.manifestPath().get(),
+                manifestInputPath,
+                outputPath,
+                List.copyOf(manifestExtras)));
     }
 
     private static void writeRedactionSummaryIfRequested(
@@ -215,6 +253,93 @@ public final class RemediationReportCli {
         }
         Files.writeString(options.redactionSummaryPath().get(), redaction.redactionSummaryJson().orElseThrow(),
                 StandardCharsets.UTF_8);
+    }
+
+    private static void appendReportAudit(
+            CliOptions options,
+            RemediationReportResponse response,
+            RedactionContext redaction) throws IOException {
+        String action = response.format() == RemediationReportFormat.JSON
+                ? "JSON_REPORT_GENERATED"
+                : "MARKDOWN_REPORT_GENERATED";
+        List<OfflineCliAuditLogService.AuditFileSource> files = new ArrayList<>();
+        options.inputPath().ifPresent(path -> files.add(auditFile("INPUT", path)));
+        options.outputPath().ifPresent(path -> files.add(auditFile("REPORT", path)));
+        options.redactionSummaryPath().ifPresent(path -> files.add(auditFile("REDACTION_SUMMARY", path)));
+        appendAuditIfRequested(options, action,
+                options.inputPath().orElse(null),
+                options.outputPath().orElse(null),
+                null,
+                null,
+                redaction.enabled(),
+                files);
+    }
+
+    private static void appendManifestAudit(
+            CliOptions options,
+            ManifestWriteResult manifestWrite,
+            RedactionContext redaction) throws IOException {
+        List<OfflineCliAuditLogService.AuditFileSource> files = new ArrayList<>();
+        files.add(auditFile("INPUT", manifestWrite.inputPath()));
+        files.add(auditFile("REPORT", manifestWrite.reportPath()));
+        files.add(auditFile("MANIFEST", manifestWrite.manifestPath()));
+        for (Path extra : manifestWrite.extraPaths()) {
+            files.add(auditFile("EXTRA", extra));
+        }
+        appendAuditIfRequested(options, "MANIFEST_GENERATED",
+                manifestWrite.inputPath(),
+                manifestWrite.reportPath(),
+                manifestWrite.manifestPath(),
+                null,
+                redaction.enabled(),
+                files);
+    }
+
+    private static void appendAuditIfSuccessful(
+            CliOptions options,
+            Result result,
+            String action,
+            Path inputPath,
+            Path outputPath,
+            Path manifestPath,
+            Path bundlePath,
+            boolean redactionApplied,
+            List<OfflineCliAuditLogService.AuditFileSource> files) throws IOException {
+        if (result.exitCode() == 0) {
+            appendAuditIfRequested(options, action, inputPath, outputPath, manifestPath, bundlePath,
+                    redactionApplied, files);
+        }
+    }
+
+    private static void appendAuditIfRequested(
+            CliOptions options,
+            String action,
+            Path inputPath,
+            Path outputPath,
+            Path manifestPath,
+            Path bundlePath,
+            boolean redactionApplied,
+            List<OfflineCliAuditLogService.AuditFileSource> files) throws IOException {
+        if (options.auditLogPath().isEmpty()) {
+            return;
+        }
+        new OfflineCliAuditLogService().append(new OfflineCliAuditLogService.AuditAppendRequest(
+                options.auditLogPath().get(),
+                action,
+                options.auditActionId().orElse(null),
+                options.auditActor().orElse(null),
+                options.auditNote().orElse(null),
+                inputPath,
+                outputPath,
+                manifestPath,
+                bundlePath,
+                OfflineCliAuditLogService.SUCCESS,
+                redactionApplied,
+                files));
+    }
+
+    private static OfflineCliAuditLogService.AuditFileSource auditFile(String role, Path path) {
+        return new OfflineCliAuditLogService.AuditFileSource(role, path);
     }
 
     private static void validateOptions(CliOptions options) {
@@ -227,6 +352,12 @@ public final class RemediationReportCli {
         }
         if (options.redactionSummaryPath().isPresent() && !options.redactionRequested()) {
             throw new IllegalArgumentException("--redact-output-summary requires --redact or --redact-file");
+        }
+        if (options.auditLogPath().isEmpty()
+                && (options.auditActor().isPresent()
+                || options.auditActionId().isPresent()
+                || options.auditNote().isPresent())) {
+            throw new IllegalArgumentException("--audit-actor, --audit-action-id, and --audit-note require --audit-log");
         }
     }
 
@@ -393,6 +524,9 @@ public final class RemediationReportCli {
         err.println("Verify bundle: --verify-bundle <incident-bundle.zip>");
         err.println("Redaction: [--redact <literal>] [--redact-file <path>] "
                 + "[--redaction-label <label>] [--redact-output-summary <path>]");
+        err.println("Audit: [--audit-log <audit.jsonl>] [--audit-actor <label>] "
+                + "[--audit-action-id <id>] [--audit-note <note>]");
+        err.println("Verify audit log: --verify-audit-log <audit.jsonl>");
         err.println("Safety: offline/read-only report generation; no API server, network access, "
                 + "CloudManager calls, or cloud mutation.");
     }
@@ -422,6 +556,17 @@ public final class RemediationReportCli {
         }
     }
 
+    private record ManifestWriteResult(
+            Path manifestPath,
+            Path inputPath,
+            Path reportPath,
+            List<Path> extraPaths) {
+
+        private ManifestWriteResult {
+            extraPaths = extraPaths == null ? List.of() : List.copyOf(extraPaths);
+        }
+    }
+
     record CliOptions(
             Optional<Path> inputPath,
             RemediationReportFormat format,
@@ -438,7 +583,12 @@ public final class RemediationReportCli {
             List<String> redactionValues,
             List<Path> redactionFilePaths,
             Optional<String> redactionLabel,
-            Optional<Path> redactionSummaryPath) {
+            Optional<Path> redactionSummaryPath,
+            Optional<Path> auditLogPath,
+            Optional<Path> verifyAuditLogPath,
+            Optional<String> auditActor,
+            Optional<String> auditActionId,
+            Optional<String> auditNote) {
 
         CliOptions {
             inputPath = inputPath == null ? Optional.empty() : inputPath;
@@ -456,22 +606,41 @@ public final class RemediationReportCli {
             redactionFilePaths = redactionFilePaths == null ? List.of() : List.copyOf(redactionFilePaths);
             redactionLabel = redactionLabel == null ? Optional.empty() : redactionLabel;
             redactionSummaryPath = redactionSummaryPath == null ? Optional.empty() : redactionSummaryPath;
+            auditLogPath = auditLogPath == null ? Optional.empty() : auditLogPath;
+            verifyAuditLogPath = verifyAuditLogPath == null ? Optional.empty() : verifyAuditLogPath;
+            auditActor = auditActor == null ? Optional.empty() : auditActor;
+            auditActionId = auditActionId == null ? Optional.empty() : auditActionId;
+            auditNote = auditNote == null ? Optional.empty() : auditNote;
         }
 
         static CliOptions parse(String[] args) {
+            Optional<Path> auditLog = optionValue(args, AUDIT_LOG_FLAG).map(Path::of);
+            Optional<Path> verifyAuditLog = optionValue(args, VERIFY_AUDIT_LOG_FLAG).map(Path::of);
+            Optional<String> auditActor = optionValue(args, "--audit-actor").filter(value -> !value.isBlank());
+            Optional<String> auditActionId = optionValue(args, "--audit-action-id").filter(value -> !value.isBlank());
+            Optional<String> auditNote = optionValue(args, "--audit-note").filter(value -> !value.isBlank());
+            if (verifyAuditLog.isPresent()) {
+                return new CliOptions(Optional.empty(), RemediationReportFormat.MARKDOWN, Optional.empty(),
+                        Optional.empty(), Optional.empty(), Optional.empty(), List.of(), Optional.empty(),
+                        Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                        List.of(), List.of(), Optional.empty(), Optional.empty(), Optional.empty(),
+                        verifyAuditLog, Optional.empty(), Optional.empty(), Optional.empty());
+            }
             Optional<Path> verifyManifest = optionValue(args, VERIFY_MANIFEST_FLAG).map(Path::of);
             if (verifyManifest.isPresent()) {
                 return new CliOptions(Optional.empty(), RemediationReportFormat.MARKDOWN, Optional.empty(),
                         Optional.empty(), Optional.empty(), Optional.empty(), List.of(), verifyManifest,
                         Optional.empty(), Optional.empty(),
-                        Optional.empty(), Optional.empty(), List.of(), List.of(), Optional.empty(), Optional.empty());
+                        Optional.empty(), Optional.empty(), List.of(), List.of(), Optional.empty(), Optional.empty(),
+                        auditLog, Optional.empty(), auditActor, auditActionId, auditNote);
             }
             Optional<Path> verifyBundle = optionValue(args, VERIFY_BUNDLE_FLAG).map(Path::of);
             if (verifyBundle.isPresent()) {
                 return new CliOptions(Optional.empty(), RemediationReportFormat.MARKDOWN, Optional.empty(),
                         Optional.empty(), Optional.empty(), Optional.empty(), List.of(), Optional.empty(),
                         Optional.empty(), verifyBundle,
-                        Optional.empty(), Optional.empty(), List.of(), List.of(), Optional.empty(), Optional.empty());
+                        Optional.empty(), Optional.empty(), List.of(), List.of(), Optional.empty(), Optional.empty(),
+                        auditLog, Optional.empty(), auditActor, auditActionId, auditNote);
             }
             Path input = remediationReportPath(args)
                     .map(Path::of)
@@ -503,7 +672,8 @@ public final class RemediationReportCli {
             Optional<String> createdAt = optionValue(args, "--created-at").filter(value -> !value.isBlank());
             return new CliOptions(Optional.of(input), format, output, reportId, title, manifest, manifestExtras,
                     Optional.empty(), bundle, Optional.empty(), generatedBy, createdAt, redactions, redactionFiles,
-                    redactionLabel, redactionSummary);
+                    redactionLabel, redactionSummary, auditLog, Optional.empty(),
+                    auditActor, auditActionId, auditNote);
         }
 
         private boolean redactionRequested() {

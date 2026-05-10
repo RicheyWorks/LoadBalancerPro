@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -655,6 +656,195 @@ class RemediationReportCliTest {
     }
 
     @Test
+    void reportGenerationAppendsChecksumChainedAuditEntry() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path output = tempDir.resolve("incident-report.md");
+        Path auditLog = tempDir.resolve("offline-cli-audit.jsonl");
+
+        CapturedRun run = runReport("--remediation-report", "--input", input.toString(),
+                "--format", "markdown", "--output", output.toString(),
+                "--audit-log", auditLog.toString(), "--audit-actor", "operator-a",
+                "--audit-action-id", "ticket-123", "--audit-note", "initial report");
+
+        assertEquals(0, run.result().exitCode());
+        List<JsonNode> entries = auditEntries(auditLog);
+        assertEquals(1, entries.size());
+        JsonNode entry = entries.get(0);
+        assertEquals(1, entry.path("sequence").asInt());
+        assertEquals("MARKDOWN_REPORT_GENERATED", entry.path("action").asText());
+        assertEquals("ticket-123", entry.path("actionId").asText());
+        assertEquals("operator-a", entry.path("actor").asText());
+        assertEquals(OfflineCliAuditLogService.ZERO_PREVIOUS_HASH, entry.path("previousEntryHash").asText());
+        assertTrue(entry.path("entryHash").asText().matches("(?i)[0-9a-f]{64}"));
+        assertFalse(entry.path("cloudMutation").asBoolean());
+
+        CapturedRun verify = runReport("--verify-audit-log", auditLog.toString());
+        assertEquals(0, verify.result().exitCode());
+        assertTrue(verify.output().contains("Audit log verification passed"));
+        assertTrue(verify.output().contains("entries=1"));
+    }
+
+    @Test
+    void jsonReportGenerationAppendsAuditEntry() throws Exception {
+        Path input = copyResource(REPLAY_FIXTURE, "replay.json");
+        Path output = tempDir.resolve("incident-report.json");
+        Path auditLog = tempDir.resolve("offline-cli-audit.jsonl");
+
+        CapturedRun run = runReport("--remediation-report", "--input", input.toString(),
+                "--format", "json", "--output", output.toString(), "--audit-log", auditLog.toString());
+
+        assertEquals(0, run.result().exitCode());
+        List<JsonNode> entries = auditEntries(auditLog);
+        assertEquals(1, entries.size());
+        assertEquals("JSON_REPORT_GENERATED", entries.get(0).path("action").asText());
+        assertEquals("SUCCESS", entries.get(0).path("result").asText());
+        assertAuditFile(entries.get(0), "REPORT", "incident-report.json", output);
+    }
+
+    @Test
+    void manifestGenerationAndVerificationAppendAuditEntries() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path output = tempDir.resolve("incident-report.md");
+        Path manifest = tempDir.resolve("incident-report.manifest.json");
+        Path auditLog = tempDir.resolve("offline-cli-audit.jsonl");
+
+        CapturedRun generate = runReport("--remediation-report", "--input", input.toString(),
+                "--output", output.toString(), "--manifest", manifest.toString(),
+                "--audit-log", auditLog.toString());
+        CapturedRun verifyManifest = runReport("--verify-manifest", manifest.toString(),
+                "--audit-log", auditLog.toString());
+
+        assertEquals(0, generate.result().exitCode());
+        assertEquals(0, verifyManifest.result().exitCode());
+        List<JsonNode> entries = auditEntries(auditLog);
+        assertEquals(3, entries.size());
+        assertEquals("MARKDOWN_REPORT_GENERATED", entries.get(0).path("action").asText());
+        assertEquals("MANIFEST_GENERATED", entries.get(1).path("action").asText());
+        assertEquals("MANIFEST_VERIFIED", entries.get(2).path("action").asText());
+        assertEquals(entries.get(0).path("entryHash").asText(), entries.get(1).path("previousEntryHash").asText());
+        assertEquals(entries.get(1).path("entryHash").asText(), entries.get(2).path("previousEntryHash").asText());
+
+        CapturedRun verifyAudit = runReport("--verify-audit-log", auditLog.toString());
+        assertEquals(0, verifyAudit.result().exitCode());
+    }
+
+    @Test
+    void bundleGenerationAndVerificationAppendAuditEntriesIncludingRedactionState() throws Exception {
+        Path input = copyResource(REPLAY_FIXTURE, "replay.json");
+        Path bundle = tempDir.resolve("incident-bundle.zip");
+        Path auditLog = tempDir.resolve("offline-cli-audit.jsonl");
+
+        CapturedRun generate = runReport("--input", input.toString(), "--format=json",
+                "--bundle", bundle.toString(), "--redact", "green",
+                "--audit-log", auditLog.toString());
+        CapturedRun verifyBundle = runReport("--verify-bundle", bundle.toString(),
+                "--audit-log", auditLog.toString());
+
+        assertEquals(0, generate.result().exitCode());
+        assertEquals(0, verifyBundle.result().exitCode());
+        List<JsonNode> entries = auditEntries(auditLog);
+        assertEquals(2, entries.size());
+        assertEquals("BUNDLE_GENERATED", entries.get(0).path("action").asText());
+        assertTrue(entries.get(0).path("redactionApplied").asBoolean());
+        assertEquals("BUNDLE_VERIFIED", entries.get(1).path("action").asText());
+        assertFalse(entries.get(1).path("redactionApplied").asBoolean());
+
+        CapturedRun verifyAudit = runReport("--verify-audit-log", auditLog.toString());
+        assertEquals(0, verifyAudit.result().exitCode());
+    }
+
+    @Test
+    void auditLogVerificationDetectsTamperedEntry() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path output = tempDir.resolve("incident-report.md");
+        Path auditLog = tempDir.resolve("offline-cli-audit.jsonl");
+        runReport("--remediation-report", "--input", input.toString(),
+                "--output", output.toString(), "--audit-log", auditLog.toString());
+
+        String tampered = Files.readString(auditLog).replace("MARKDOWN_REPORT_GENERATED", "JSON_REPORT_GENERATED");
+        Files.writeString(auditLog, tampered, StandardCharsets.UTF_8);
+
+        CapturedRun verify = runReport("--verify-audit-log", auditLog.toString());
+        assertEquals(2, verify.result().exitCode());
+        assertTrue(verify.output().contains("Audit log verification failed"));
+        assertTrue(verify.output().contains("entryHash mismatch"));
+    }
+
+    @Test
+    void auditLogVerificationDetectsDeletedOrReorderedEntries() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path output = tempDir.resolve("incident-report.md");
+        Path manifest = tempDir.resolve("incident-report.manifest.json");
+        Path auditLog = tempDir.resolve("offline-cli-audit.jsonl");
+        runReport("--remediation-report", "--input", input.toString(),
+                "--output", output.toString(), "--manifest", manifest.toString(),
+                "--audit-log", auditLog.toString());
+        runReport("--verify-manifest", manifest.toString(), "--audit-log", auditLog.toString());
+        List<String> originalLines = Files.readAllLines(auditLog, StandardCharsets.UTF_8);
+
+        Path deletedMiddle = tempDir.resolve("deleted-middle-audit.jsonl");
+        Files.write(deletedMiddle, List.of(originalLines.get(0), originalLines.get(2)), StandardCharsets.UTF_8);
+        CapturedRun deletedVerify = runReport("--verify-audit-log", deletedMiddle.toString());
+        assertEquals(2, deletedVerify.result().exitCode());
+        assertTrue(deletedVerify.output().contains("sequence expected 2"));
+        assertTrue(deletedVerify.output().contains("previousEntryHash expected"));
+
+        Path reordered = tempDir.resolve("reordered-audit.jsonl");
+        Files.write(reordered, List.of(originalLines.get(1), originalLines.get(0), originalLines.get(2)),
+                StandardCharsets.UTF_8);
+        CapturedRun reorderedVerify = runReport("--verify-audit-log", reordered.toString());
+        assertEquals(2, reorderedVerify.result().exitCode());
+        assertTrue(reorderedVerify.output().contains("Audit log verification failed"));
+    }
+
+    @Test
+    void auditLogVerificationDetectsBadPreviousHashAndMalformedLine() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path output = tempDir.resolve("incident-report.md");
+        Path manifest = tempDir.resolve("incident-report.manifest.json");
+        Path auditLog = tempDir.resolve("offline-cli-audit.jsonl");
+        runReport("--remediation-report", "--input", input.toString(),
+                "--output", output.toString(), "--manifest", manifest.toString(),
+                "--audit-log", auditLog.toString());
+        List<String> lines = Files.readAllLines(auditLog, StandardCharsets.UTF_8);
+
+        Path badPrevious = tempDir.resolve("bad-previous-audit.jsonl");
+        String replacementHash = "f".repeat(64);
+        String changedPrevious = lines.get(1).replace(lines.get(0).substring(
+                lines.get(0).indexOf("\"entryHash\":\"") + 13,
+                lines.get(0).indexOf("\"", lines.get(0).indexOf("\"entryHash\":\"") + 13)), replacementHash);
+        Files.write(badPrevious, List.of(lines.get(0), changedPrevious), StandardCharsets.UTF_8);
+        CapturedRun badPreviousVerify = runReport("--verify-audit-log", badPrevious.toString());
+        assertEquals(2, badPreviousVerify.result().exitCode());
+        assertTrue(badPreviousVerify.output().contains("previousEntryHash expected"));
+
+        Path malformed = tempDir.resolve("malformed-audit.jsonl");
+        Files.writeString(malformed, "{\"schemaVersion\":\"1\"", StandardCharsets.UTF_8);
+        CapturedRun malformedVerify = runReport("--verify-audit-log", malformed.toString());
+        assertEquals(2, malformedVerify.result().exitCode());
+        assertTrue(malformedVerify.output().contains("malformed"));
+    }
+
+    @Test
+    void auditLoggingDoesNotConstructCloudManager() throws Exception {
+        Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
+        Path output = tempDir.resolve("incident-report.md");
+        Path auditLog = tempDir.resolve("offline-cli-audit.jsonl");
+
+        try (MockedConstruction<CloudManager> mockedCloudManager =
+                Mockito.mockConstruction(CloudManager.class)) {
+            CapturedRun generate = runReport("--remediation-report", "--input", input.toString(),
+                    "--output", output.toString(), "--audit-log", auditLog.toString());
+            CapturedRun verify = runReport("--verify-audit-log", auditLog.toString());
+
+            assertEquals(0, generate.result().exitCode());
+            assertEquals(0, verify.result().exitCode());
+            assertTrue(mockedCloudManager.constructed().isEmpty(),
+                    "Offline audit log generation and verification must not construct CloudManager.");
+        }
+    }
+
+    @Test
     void manifestRequiresOutputFileForReportChecksum() throws Exception {
         Path input = copyResource(EVALUATION_FIXTURE, "evaluation.json");
         Path manifest = tempDir.resolve("incident-report.manifest.json");
@@ -693,6 +883,7 @@ class RemediationReportCliTest {
         assertTrue(RemediationReportCli.isRequested(new String[]{"--verify-manifest", "report.manifest.json"}));
         assertTrue(RemediationReportCli.isRequested(new String[]{"--input", "report.json", "--bundle", "bundle.zip"}));
         assertTrue(RemediationReportCli.isRequested(new String[]{"--verify-bundle", "bundle.zip"}));
+        assertTrue(RemediationReportCli.isRequested(new String[]{"--verify-audit-log", "offline-cli-audit.jsonl"}));
         assertFalse(RemediationReportCli.isRequested(new String[]{"--lase-replay=events.jsonl"}));
         assertFalse(RemediationReportCli.isRequested(new String[]{"--server.port=18080"}));
     }
@@ -714,6 +905,14 @@ class RemediationReportCliTest {
                 new PrintStream(error, true, StandardCharsets.UTF_8));
         return new CapturedRun(result, output.toString(StandardCharsets.UTF_8),
                 error.toString(StandardCharsets.UTF_8));
+    }
+
+    private List<JsonNode> auditEntries(Path auditLog) throws Exception {
+        List<JsonNode> entries = new java.util.ArrayList<>();
+        for (String line : Files.readAllLines(auditLog, StandardCharsets.UTF_8)) {
+            entries.add(OBJECT_MAPPER.readTree(line));
+        }
+        return entries;
     }
 
     private void assertManifestFile(JsonNode manifest, String role, String path, Path actualFile) throws Exception {
@@ -739,6 +938,18 @@ class RemediationReportCliTest {
         }
         assertTrue(matchingFile != null, "Manifest should include role " + role + " at " + path);
         assertEquals(ReportChecksumManifestService.sha256(actualContent), matchingFile.path("sha256").asText());
+    }
+
+    private void assertAuditFile(JsonNode auditEntry, String role, String path, Path actualFile) throws Exception {
+        JsonNode matchingFile = null;
+        for (JsonNode file : auditEntry.path("fileHashes")) {
+            if (role.equals(file.path("role").asText()) && path.equals(file.path("path").asText())) {
+                matchingFile = file;
+                break;
+            }
+        }
+        assertTrue(matchingFile != null, "Audit entry should include role " + role + " at " + path);
+        assertEquals(ReportChecksumManifestService.sha256(actualFile), matchingFile.path("sha256").asText());
     }
 
     private Map<String, byte[]> zipEntries(Path zipPath) throws Exception {

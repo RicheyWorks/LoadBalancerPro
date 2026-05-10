@@ -1,0 +1,12 @@
+{
+  "operator": "operator-partial-demo",
+  "answers": [
+    {
+      "exerciseName": "audit-append-warn",
+      "decision": "WARN",
+      "reason": "audit anchor",
+      "action": "verify audit",
+      "notes": "Partial practice answer for the audit append warning."
+    }
+  ]
+}

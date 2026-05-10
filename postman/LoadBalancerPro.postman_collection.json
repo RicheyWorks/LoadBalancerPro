@@ -196,6 +196,257 @@
       ]
     },
     {
+      "name": "Evidence Training Demo Walkthrough",
+      "description": "Ordered local operator demo: health, readiness, onboarding discovery, scorecard detail, answer template, and deterministic grading samples. Read-only discovery plus in-memory grading only.",
+      "item": [
+        {
+          "name": "GET Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Readiness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health/readiness",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health",
+                "readiness"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Evidence Training Onboarding",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/onboarding",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "onboarding"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Demo Policy Templates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/templates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "templates"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Demo Policy Examples",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/examples",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "examples"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Demo Training Scorecards",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Strict Zero Drift Pass Scorecard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards/strict-zero-drift-pass",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards",
+                "strict-zero-drift-pass"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Strict Zero Drift Pass Answer Template",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards/strict-zero-drift-pass/answer-template",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards",
+                "strict-zero-drift-pass",
+                "answer-template"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Grade Perfect Demo Sample",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operator\": \"operator-perfect-demo\",\n  \"answers\": [\n    {\n      \"exerciseName\": \"audit-append-warn\",\n      \"decision\": \"WARN\",\n      \"reason\": \"Audit anchor advanced after receiver verification\",\n      \"action\": \"verify audit append\",\n      \"notes\": \"Verify that the appended audit entry is expected receiver-side verification activity and record the review.\"\n    },\n    {\n      \"exerciseName\": \"investigation-working-copy-warn\",\n      \"decision\": \"WARN\",\n      \"reason\": \"Working notes and report edits require review\",\n      \"action\": \"review warning\",\n      \"notes\": \"Review the working notes and report edits, then document why the investigation handoff can continue.\"\n    },\n    {\n      \"exerciseName\": \"receiver-redaction-warn\",\n      \"decision\": \"WARN\",\n      \"reason\": \"Receiver redaction changes require review\",\n      \"action\": \"confirm redaction summary\",\n      \"notes\": \"Confirm the redaction summary and document why the redacted evidence changes are acceptable before continuing.\"\n    },\n    {\n      \"exerciseName\": \"regulated-handoff-fail\",\n      \"decision\": \"FAIL\",\n      \"reason\": \"Core evidence bundle is missing\",\n      \"action\": \"investigate missing evidence\",\n      \"notes\": \"Investigate the missing bundle, block the handoff, and request a corrected evidence package.\"\n    },\n    {\n      \"exerciseName\": \"regulated-handoff-pass\",\n      \"decision\": \"PASS\",\n      \"reason\": \"No drift detected\",\n      \"action\": \"continue handoff\",\n      \"notes\": \"No remediation required; attach the clean regulated handoff review to the ticket.\"\n    },\n    {\n      \"exerciseName\": \"strict-zero-drift-fail\",\n      \"decision\": \"FAIL\",\n      \"reason\": \"Report checksum drift violates strict zero-drift policy\",\n      \"action\": \"block handoff\",\n      \"notes\": \"Block the handoff and ask the sender to resolve or justify the changed report before retrying.\"\n    },\n    {\n      \"exerciseName\": \"strict-zero-drift-pass\",\n      \"decision\": \"PASS\",\n      \"reason\": \"No drift detected\",\n      \"action\": \"continue handoff\",\n      \"notes\": \"No remediation required; record the zero-drift result and continue the handoff.\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards/grade",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards",
+                "grade"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Grade Partial Demo Sample",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operator\": \"operator-partial-demo\",\n  \"answers\": [\n    {\n      \"exerciseName\": \"audit-append-warn\",\n      \"decision\": \"WARN\",\n      \"reason\": \"audit anchor\",\n      \"action\": \"verify audit\",\n      \"notes\": \"Partial practice answer for the audit append warning.\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards/grade",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards",
+                "grade"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Grade Failing Demo Sample",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operator\": \"operator-failing-demo\",\n  \"answers\": [\n    {\n      \"exerciseName\": \"strict-zero-drift-pass\",\n      \"decision\": \"FAIL\",\n      \"reason\": \"missing evidence\",\n      \"action\": \"investigate missing evidence\",\n      \"notes\": \"Intentionally wrong answer used to demonstrate failed grading output.\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards/grade",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards",
+                "grade"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "POST Capacity-Aware Allocation",
       "request": {
         "method": "POST",

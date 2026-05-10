@@ -30,6 +30,34 @@ POST {{baseUrl}}/api/evidence-training/scorecards/grade
 
 The `GET` routes are discovery-only. The `POST` grade route evaluates the submitted answer JSON in memory and returns deterministic JSON. It does not write report files or runtime artifacts.
 
+## Demo Walkthrough Folder
+
+The `Evidence Training Demo Walkthrough` folder is ordered for a reviewer demo:
+
+```text
+GET  {{baseUrl}}/api/health
+GET  {{baseUrl}}/actuator/health/readiness
+GET  {{baseUrl}}/api/evidence-training/onboarding
+GET  {{baseUrl}}/api/evidence-training/templates
+GET  {{baseUrl}}/api/evidence-training/examples
+GET  {{baseUrl}}/api/evidence-training/scorecards
+GET  {{baseUrl}}/api/evidence-training/scorecards/strict-zero-drift-pass
+GET  {{baseUrl}}/api/evidence-training/scorecards/strict-zero-drift-pass/answer-template
+POST {{baseUrl}}/api/evidence-training/scorecards/grade
+POST {{baseUrl}}/api/evidence-training/scorecards/grade
+POST {{baseUrl}}/api/evidence-training/scorecards/grade
+```
+
+The three grade requests embed deterministic perfect, partial, and failing demo bodies from these fixtures:
+
+```text
+src/test/resources/evidence-training-demo/perfect-scorecard-answers.json
+src/test/resources/evidence-training-demo/partial-scorecard-answers.json
+src/test/resources/evidence-training-demo/failing-scorecard-answers.json
+```
+
+See [`OPERATOR_DEMO_WALKTHROUGH.md`](OPERATOR_DEMO_WALKTHROUGH.md) for the guided start-to-finish demo.
+
 ## Sample Answer JSON
 
 ```json
@@ -73,3 +101,4 @@ The repository currently has a JavaFX operational GUI, but no existing web-stati
 - Read-only discovery plus deterministic in-memory grading only.
 - No cloud mutation.
 - No `CloudManager` construction is required.
+- API server is required for API/Postman demos but optional for offline CLI workflows.

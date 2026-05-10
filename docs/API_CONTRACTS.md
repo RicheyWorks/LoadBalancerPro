@@ -33,7 +33,7 @@ Scenario replay responses expose `scenarioId`, `readOnly`, `cloudMutation`, `rem
 
 Remediation report export requests accept exactly one report source: an existing read-only evaluation response or an existing scenario replay response. The response exposes the requested `format`, report `contentType`, optional Markdown `report`, structured `json` payload, and top-level `readOnly`, `advisoryOnly`, and `cloudMutation` flags. Report output is deterministic for the same input and does not add generated timestamps or random identifiers unless the caller supplies a report id.
 
-Evidence training onboarding responses expose packaged policy templates, examples, scorecards, answer JSON templates, and workflow pointers for API/Postman users. Discovery routes are read-only. The scorecard grade route evaluates submitted JSON in memory, returns deterministic JSON, writes no runtime report files, and must not construct `CloudManager`.
+Evidence training onboarding responses expose packaged policy templates, examples, scorecards, answer JSON templates, and workflow pointers for API/Postman users. Discovery routes are read-only. The scorecard grade route evaluates submitted JSON in memory, returns deterministic JSON, writes no runtime report files, and must not construct `CloudManager`. The operator demo walkthrough reuses these existing routes plus `/api/health` and Actuator readiness; it does not introduce a separate mutable demo API.
 
 Structured API errors expose `status`, `error`, `message`, `path`, `timestamp`, and `details` without diagnostic fields such as stack traces.
 

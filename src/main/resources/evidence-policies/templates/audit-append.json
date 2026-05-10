@@ -1,0 +1,36 @@
+{
+  "policyVersion" : "1",
+  "mode" : "ALLOWLIST",
+  "defaultSeverity" : "FAIL",
+  "rules" : [ {
+    "changeType" : "AUDIT_ANCHOR_CHANGED",
+    "pathPattern" : "offline-cli-audit.jsonl",
+    "severity" : "WARN",
+    "reason" : "receiver appended expected audit entries after verification"
+  }, {
+    "changeType" : "CHANGED",
+    "pathPattern" : "offline-cli-audit.jsonl",
+    "severity" : "WARN",
+    "reason" : "audit log file checksum changed because expected entries were appended"
+  }, {
+    "changeType" : "REMOVED",
+    "pathPattern" : "incident-bundle.zip",
+    "severity" : "FAIL",
+    "reason" : "incident bundle must survive audit append handoff"
+  }, {
+    "changeType" : "REMOVED",
+    "pathPattern" : "manifest.json",
+    "severity" : "FAIL",
+    "reason" : "checksum manifest must survive audit append handoff"
+  }, {
+    "changeType" : "CHANGED",
+    "pathPattern" : "incident-bundle.zip",
+    "severity" : "FAIL",
+    "reason" : "bundle content change is not expected during audit append handoff"
+  }, {
+    "changeType" : "CHANGED",
+    "pathPattern" : "manifest.json",
+    "severity" : "FAIL",
+    "reason" : "manifest content change is not expected during audit append handoff"
+  } ]
+}

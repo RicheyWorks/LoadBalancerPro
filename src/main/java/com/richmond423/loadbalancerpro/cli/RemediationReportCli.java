@@ -37,6 +37,10 @@ public final class RemediationReportCli {
     private static final String INVENTORY_FLAG = "--inventory";
     private static final String DIFF_INVENTORY_FLAG = "--diff-inventory";
     private static final String POLICY_FLAG = "--policy";
+    private static final String POLICY_TEMPLATE_FLAG = "--policy-template";
+    private static final String LIST_POLICY_TEMPLATES_FLAG = "--list-policy-templates";
+    private static final String EXPORT_POLICY_TEMPLATE_FLAG = "--export-policy-template";
+    private static final String VALIDATE_POLICY_FLAG = "--validate-policy";
     private static final String APP_VERSION = "2.4.2";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -62,7 +66,10 @@ public final class RemediationReportCli {
                         || arg.equals(VERIFY_BUNDLE_FLAG) || arg.startsWith(VERIFY_BUNDLE_FLAG + "=")
                         || arg.equals(VERIFY_AUDIT_LOG_FLAG) || arg.startsWith(VERIFY_AUDIT_LOG_FLAG + "=")
                         || arg.equals(INVENTORY_FLAG) || arg.startsWith(INVENTORY_FLAG + "=")
-                        || arg.equals(DIFF_INVENTORY_FLAG) || arg.startsWith(DIFF_INVENTORY_FLAG + "="));
+                        || arg.equals(DIFF_INVENTORY_FLAG) || arg.startsWith(DIFF_INVENTORY_FLAG + "=")
+                        || arg.equals(LIST_POLICY_TEMPLATES_FLAG)
+                        || arg.equals(EXPORT_POLICY_TEMPLATE_FLAG) || arg.startsWith(EXPORT_POLICY_TEMPLATE_FLAG + "=")
+                        || arg.equals(VALIDATE_POLICY_FLAG) || arg.startsWith(VALIDATE_POLICY_FLAG + "="));
     }
 
     public static Result runIfRequested(String[] args, PrintStream out, PrintStream err) {
@@ -78,6 +85,9 @@ public final class RemediationReportCli {
         Objects.requireNonNull(err, "err cannot be null");
 
         try {
+            if (policyTemplateCommandRequested(args)) {
+                return runPolicyTemplateCommand(args, out);
+            }
             if (catalogDiffRequested(args)) {
                 return writeCatalogDiff(CatalogDiffOptions.parse(args), out);
             }
@@ -214,6 +224,31 @@ public final class RemediationReportCli {
         if (options.policyPath().isPresent()) {
             EvidenceHandoffPolicyService policyService = new EvidenceHandoffPolicyService();
             EvidenceHandoffPolicyService.HandoffPolicy policy = policyService.readPolicy(options.policyPath().get());
+            return writePolicyReport(options, out, diff, policyService, policy);
+        }
+        if (options.policyTemplateName().isPresent()) {
+            EvidenceHandoffPolicyService policyService = new EvidenceHandoffPolicyService();
+            EvidencePolicyTemplateService templateService = new EvidencePolicyTemplateService();
+            String templateName = options.policyTemplateName().get();
+            EvidenceHandoffPolicyService.HandoffPolicy policy = policyService.readPolicyJson(
+                    "template:" + templateName,
+                    templateService.templateJson(templateName));
+            return writePolicyReport(options, out, diff, policyService, policy);
+        }
+        String rendered = options.diffFormat() == EvidenceCatalogDiffService.DiffFormat.JSON
+                ? service.renderJson(diff)
+                : service.renderMarkdown(diff);
+        writeOutput(rendered, options.outputPath(), out);
+        int exitCode = options.failOnDrift() && diff.hasDrift() ? 2 : 0;
+        return new Result(true, exitCode);
+    }
+
+    private static Result writePolicyReport(
+            CatalogDiffOptions options,
+            PrintStream out,
+            EvidenceCatalogDiffService.EvidenceCatalogDiff diff,
+            EvidenceHandoffPolicyService policyService,
+            EvidenceHandoffPolicyService.HandoffPolicy policy) throws IOException {
             EvidenceHandoffPolicyService.PolicyEvaluation evaluation = policyService.evaluate(diff, policy);
             String rendered = options.policyReportFormat() == EvidenceHandoffPolicyService.PolicyReportFormat.JSON
                     ? policyService.renderJson(evaluation)
@@ -222,13 +257,32 @@ public final class RemediationReportCli {
             int exitCode = options.failOnPolicyFail()
                     && evaluation.decision() == EvidenceHandoffPolicyService.PolicyDecision.FAIL ? 2 : 0;
             return new Result(true, exitCode);
+    }
+
+    private static Result runPolicyTemplateCommand(String[] args, PrintStream out) throws IOException {
+        EvidencePolicyTemplateService service = new EvidencePolicyTemplateService();
+        if (CatalogDiffOptions.hasFlag(args, LIST_POLICY_TEMPLATES_FLAG)) {
+            out.print(service.renderTemplateList());
+            return new Result(true, 0);
         }
-        String rendered = options.diffFormat() == EvidenceCatalogDiffService.DiffFormat.JSON
-                ? service.renderJson(diff)
-                : service.renderMarkdown(diff);
-        writeOutput(rendered, options.outputPath(), out);
-        int exitCode = options.failOnDrift() && diff.hasDrift() ? 2 : 0;
-        return new Result(true, exitCode);
+        Optional<String> exportTemplate = CatalogDiffOptions.optionValue(args, EXPORT_POLICY_TEMPLATE_FLAG)
+                .filter(value -> !value.isBlank());
+        if (exportTemplate.isPresent()) {
+            String templateJson = service.templateJson(exportTemplate.get());
+            Optional<Path> outputPath = CatalogDiffOptions.optionValue(args, "--policy-output").map(Path::of);
+            writeOutput(templateJson, outputPath, out);
+            return new Result(true, 0);
+        }
+        Optional<Path> validatePolicy = CatalogDiffOptions.optionValue(args, VALIDATE_POLICY_FLAG).map(Path::of);
+        if (validatePolicy.isPresent()) {
+            EvidenceHandoffPolicyService.HandoffPolicy policy = service.validatePolicy(validatePolicy.get());
+            out.println("Policy validation passed: " + validatePolicy.get());
+            out.println("- mode=" + policy.mode());
+            out.println("- defaultSeverity=" + policy.defaultSeverity());
+            out.println("- rules=" + policy.rules().size());
+            return new Result(true, 0);
+        }
+        throw new IllegalArgumentException("policy template command is incomplete");
     }
 
     private static Result writeBundle(
@@ -584,8 +638,11 @@ public final class RemediationReportCli {
                 + "[--inventory-output <path>] [--verify-inventory] [--include-hashes] [--fail-on-invalid]");
         err.println("Diff inventory: --diff-inventory <before.json> <after.json> "
                 + "[--diff-format markdown|json] [--diff-output <path>] [--fail-on-drift] [--include-unchanged]");
-        err.println("Handoff policy: --diff-inventory <before.json> <after.json> --policy <policy.json> "
+        err.println("Handoff policy: --diff-inventory <before.json> <after.json> "
+                + "[--policy <policy.json> | --policy-template <name>] "
                 + "[--policy-report-format markdown|json] [--policy-output <path>] [--fail-on-policy-fail]");
+        err.println("Policy templates: --list-policy-templates | --export-policy-template <name> "
+                + "[--policy-output <path>] | --validate-policy <policy.json>");
         err.println("Safety: offline/read-only report generation; no API server, network access, "
                 + "CloudManager calls, or cloud mutation.");
     }
@@ -604,6 +661,16 @@ public final class RemediationReportCli {
                 .anyMatch(arg -> arg.equals(DIFF_INVENTORY_FLAG) || arg.startsWith(DIFF_INVENTORY_FLAG + "="));
     }
 
+    private static boolean policyTemplateCommandRequested(String[] args) {
+        return Arrays.stream(args)
+                .filter(Objects::nonNull)
+                .anyMatch(arg -> arg.equals(LIST_POLICY_TEMPLATES_FLAG)
+                        || arg.equals(EXPORT_POLICY_TEMPLATE_FLAG)
+                        || arg.startsWith(EXPORT_POLICY_TEMPLATE_FLAG + "=")
+                        || arg.equals(VALIDATE_POLICY_FLAG)
+                        || arg.startsWith(VALIDATE_POLICY_FLAG + "="));
+    }
+
     public record Result(boolean requested, int exitCode) {
     }
 
@@ -615,6 +682,7 @@ public final class RemediationReportCli {
             boolean failOnDrift,
             boolean includeUnchanged,
             Optional<Path> policyPath,
+            Optional<String> policyTemplateName,
             EvidenceHandoffPolicyService.PolicyReportFormat policyReportFormat,
             Optional<Path> policyOutputPath,
             boolean failOnPolicyFail) {
@@ -625,6 +693,10 @@ public final class RemediationReportCli {
             diffFormat = diffFormat == null ? EvidenceCatalogDiffService.DiffFormat.MARKDOWN : diffFormat;
             outputPath = outputPath == null ? Optional.empty() : outputPath;
             policyPath = policyPath == null ? Optional.empty() : policyPath;
+            policyTemplateName = policyTemplateName == null ? Optional.empty() : policyTemplateName;
+            if (policyPath.isPresent() && policyTemplateName.isPresent()) {
+                throw new IllegalArgumentException("--policy and --policy-template cannot be used together");
+            }
             policyReportFormat = policyReportFormat == null
                     ? EvidenceHandoffPolicyService.PolicyReportFormat.MARKDOWN
                     : policyReportFormat;
@@ -638,6 +710,8 @@ public final class RemediationReportCli {
                     .orElse(EvidenceCatalogDiffService.DiffFormat.MARKDOWN);
             Optional<Path> output = optionValue(args, "--diff-output").map(Path::of);
             Optional<Path> policy = optionValue(args, POLICY_FLAG).map(Path::of);
+            Optional<String> policyTemplate = optionValue(args, POLICY_TEMPLATE_FLAG)
+                    .filter(value -> !value.isBlank());
             EvidenceHandoffPolicyService.PolicyReportFormat policyFormat =
                     optionValue(args, "--policy-report-format")
                             .map(EvidenceHandoffPolicyService.PolicyReportFormat::parse)
@@ -651,6 +725,7 @@ public final class RemediationReportCli {
                     hasFlag(args, "--fail-on-drift"),
                     hasFlag(args, "--include-unchanged"),
                     policy,
+                    policyTemplate,
                     policyFormat,
                     policyOutput,
                     hasFlag(args, "--fail-on-policy-fail"));

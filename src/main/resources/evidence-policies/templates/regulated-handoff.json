@@ -1,0 +1,41 @@
+{
+  "policyVersion" : "1",
+  "mode" : "ALLOWLIST",
+  "defaultSeverity" : "FAIL",
+  "rules" : [ {
+    "changeType" : "ADDED",
+    "pathPattern" : "redaction-summary.json",
+    "severity" : "INFO",
+    "reason" : "documented redaction summary was added for review"
+  }, {
+    "changeType" : "ADDED",
+    "pathPattern" : "verification-summary.json",
+    "severity" : "INFO",
+    "reason" : "documented verification summary was added for review"
+  }, {
+    "changeType" : "AUDIT_ANCHOR_CHANGED",
+    "pathPattern" : "offline-cli-audit.jsonl",
+    "severity" : "WARN",
+    "reason" : "audit anchor advanced and must be reviewed against the saved ticket anchor"
+  }, {
+    "changeType" : "REMOVED",
+    "pathPattern" : "incident-bundle.zip",
+    "severity" : "FAIL",
+    "reason" : "regulated handoff requires the incident bundle"
+  }, {
+    "changeType" : "REMOVED",
+    "pathPattern" : "manifest.json",
+    "severity" : "FAIL",
+    "reason" : "regulated handoff requires the checksum manifest"
+  }, {
+    "changeType" : "CHANGED",
+    "pathPattern" : "incident-bundle.zip",
+    "severity" : "FAIL",
+    "reason" : "regulated handoff does not allow changed bundle content"
+  }, {
+    "changeType" : "CHANGED",
+    "pathPattern" : "manifest.json",
+    "severity" : "FAIL",
+    "reason" : "regulated handoff does not allow changed manifest content"
+  } ]
+}

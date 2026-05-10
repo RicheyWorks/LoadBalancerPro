@@ -1,0 +1,41 @@
+{
+  "policyVersion" : "1",
+  "mode" : "ALLOWLIST",
+  "defaultSeverity" : "WARN",
+  "rules" : [ {
+    "changeType" : "ADDED",
+    "pathPattern" : "investigation-notes/**",
+    "severity" : "INFO",
+    "reason" : "working-copy investigation notes may be added before final handoff"
+  }, {
+    "changeType" : "ADDED",
+    "pathPattern" : "notes/**",
+    "severity" : "INFO",
+    "reason" : "operator notes may be added before final handoff"
+  }, {
+    "changeType" : "CHANGED",
+    "pathPattern" : "report.md",
+    "severity" : "WARN",
+    "reason" : "working-copy Markdown report edits require review"
+  }, {
+    "changeType" : "CHANGED",
+    "pathPattern" : "report.json",
+    "severity" : "WARN",
+    "reason" : "working-copy JSON report edits require review"
+  }, {
+    "changeType" : "REMOVED",
+    "pathPattern" : "incident-bundle.zip",
+    "severity" : "FAIL",
+    "reason" : "core bundle evidence must not be removed"
+  }, {
+    "changeType" : "REMOVED",
+    "pathPattern" : "manifest.json",
+    "severity" : "FAIL",
+    "reason" : "core manifest evidence must not be removed"
+  }, {
+    "changeType" : "REMOVED",
+    "pathPattern" : "input.json",
+    "severity" : "FAIL",
+    "reason" : "saved input evidence must not be removed"
+  } ]
+}

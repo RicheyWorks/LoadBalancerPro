@@ -1,0 +1,36 @@
+{
+  "policyVersion" : "1",
+  "mode" : "ALLOWLIST",
+  "defaultSeverity" : "FAIL",
+  "rules" : [ {
+    "changeType" : "ADDED",
+    "pathPattern" : "redaction-summary.json",
+    "severity" : "INFO",
+    "reason" : "receiver generated a redaction summary for shared evidence"
+  }, {
+    "changeType" : "ADDED",
+    "pathPattern" : "**/redaction-summary.json",
+    "severity" : "INFO",
+    "reason" : "receiver generated a nested redaction summary for shared evidence"
+  }, {
+    "changeType" : "CHANGED",
+    "pathPattern" : "report.md",
+    "severity" : "WARN",
+    "reason" : "redacted Markdown report content may differ from sender evidence"
+  }, {
+    "changeType" : "CHANGED",
+    "pathPattern" : "report.json",
+    "severity" : "WARN",
+    "reason" : "redacted JSON report content may differ from sender evidence"
+  }, {
+    "changeType" : "CHANGED",
+    "pathPattern" : "incident-bundle.zip",
+    "severity" : "WARN",
+    "reason" : "redacted bundle content may differ from sender evidence"
+  }, {
+    "changeType" : "REMOVED",
+    "pathPattern" : "incident-bundle.zip",
+    "severity" : "FAIL",
+    "reason" : "incident bundle must not disappear during redaction handoff"
+  } ]
+}

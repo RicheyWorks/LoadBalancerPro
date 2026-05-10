@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoadBalancerPro Evidence Training Demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f5f7f8;
+      --panel: #ffffff;
+      --panel-strong: #f8faf9;
+      --text: #172026;
+      --muted: #5e6a71;
+      --line: #d8e0e4;
+      --accent: #0f766e;
+      --accent-dark: #115e59;
+      --blue: #1d4ed8;
+      --amber: #b45309;
+      --danger: #b91c1c;
+      --success: #047857;
+      --code-bg: #111827;
+      --code-text: #e5edf3;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      padding: 18px clamp(16px, 4vw, 48px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      letter-spacing: 0;
+    }
+
+    main {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 18px clamp(14px, 3vw, 32px) 40px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 38px;
+      padding: 8px 10px;
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font: inherit;
+    }
+
+    select {
+      min-width: 260px;
+    }
+
+    button {
+      min-height: 38px;
+      padding: 8px 12px;
+      color: #ffffff;
+      background: var(--accent);
+      border: 1px solid var(--accent-dark);
+      border-radius: 6px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button.secondary {
+      background: var(--blue);
+      border-color: #1e40af;
+    }
+
+    button.warning {
+      background: var(--amber);
+      border-color: #92400e;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    section,
+    .notice {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    section {
+      min-width: 0;
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .body {
+      padding: 12px 14px 14px;
+    }
+
+    .status-line {
+      min-height: 24px;
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .status-line.ok {
+      color: var(--success);
+    }
+
+    .status-line.error {
+      color: var(--danger);
+    }
+
+    pre {
+      min-height: 156px;
+      max-height: 360px;
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      color: var(--code-text);
+      background: var(--code-bg);
+      border-radius: 6px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.86rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .compact pre {
+      min-height: 112px;
+    }
+
+    .notice {
+      margin-top: 14px;
+      padding: 14px;
+      background: var(--panel-strong);
+    }
+
+    .notice ul {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 20px;
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+
+    .notice li {
+      margin: 0;
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 840px) {
+      .topbar,
+      .grid,
+      .notice ul {
+        grid-template-columns: 1fr;
+      }
+
+      select {
+        min-width: 0;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LoadBalancerPro Evidence Training Demo</h1>
+  </header>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <label for="base-url">API base URL</label>
+        <input id="base-url" type="text" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="actions">
+        <button id="reset-base-url" type="button" class="secondary">Use same origin</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="compact">
+        <div class="section-head">
+          <h2>1. Health / readiness</h2>
+          <div class="actions">
+            <button data-action="health" type="button">Check health</button>
+            <button data-action="readiness" type="button">Check readiness</button>
+          </div>
+        </div>
+        <div class="body">
+          <p id="health-status" class="status-line">No request run.</p>
+          <pre id="health-output">{}</pre>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>2. Onboarding summary</h2>
+          <button data-action="onboarding" type="button">Load onboarding</button>
+        </div>
+        <div class="body">
+          <p id="onboarding-status" class="status-line">No request run.</p>
+          <pre id="onboarding-output">{}</pre>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>3. Templates</h2>
+          <button data-action="templates" type="button">List templates</button>
+        </div>
+        <div class="body">
+          <p id="templates-status" class="status-line">No request run.</p>
+          <pre id="templates-output">[]</pre>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>4. Examples</h2>
+          <button data-action="examples" type="button">List examples</button>
+        </div>
+        <div class="body">
+          <p id="examples-status" class="status-line">No request run.</p>
+          <pre id="examples-output">[]</pre>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>5. Scorecards</h2>
+          <button data-action="scorecards" type="button">List scorecards</button>
+        </div>
+        <div class="body">
+          <p id="scorecards-status" class="status-line">No request run.</p>
+          <pre id="scorecards-output">[]</pre>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>6. Scorecard detail</h2>
+          <div class="actions">
+            <select id="scorecard-select" aria-label="Scorecard exercise">
+              <option value="strict-zero-drift-pass">strict-zero-drift-pass</option>
+              <option value="strict-zero-drift-fail">strict-zero-drift-fail</option>
+              <option value="receiver-redaction-warn">receiver-redaction-warn</option>
+              <option value="audit-append-warn">audit-append-warn</option>
+              <option value="regulated-handoff-pass">regulated-handoff-pass</option>
+              <option value="regulated-handoff-fail">regulated-handoff-fail</option>
+              <option value="investigation-working-copy-warn">investigation-working-copy-warn</option>
+            </select>
+            <button data-action="scorecard-detail" type="button">Load selected scorecard</button>
+          </div>
+        </div>
+        <div class="body">
+          <p id="scorecard-detail-status" class="status-line">No request run.</p>
+          <pre id="scorecard-detail-output">{}</pre>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>7. Answer template</h2>
+          <button data-action="answer-template" type="button">Load answer template</button>
+        </div>
+        <div class="body">
+          <p id="answer-template-status" class="status-line">No request run.</p>
+          <pre id="answer-template-output">{}</pre>
+        </div>
+      </section>
+
+      <section class="wide">
+        <div class="section-head">
+          <h2>8. Grade samples</h2>
+          <div class="actions">
+            <button data-action="grade-perfect" type="button">Grade perfect sample</button>
+            <button data-action="grade-partial" type="button" class="warning">Grade partial sample</button>
+            <button data-action="grade-failing" type="button" class="warning">Grade failing sample</button>
+          </div>
+        </div>
+        <div class="body">
+          <p id="grading-status" class="status-line">No request run.</p>
+          <pre id="grading-output">{}</pre>
+        </div>
+      </section>
+    </div>
+
+    <div class="notice">
+      <h3>Safety limitations</h3>
+      <ul>
+        <li>Local/operator training aid only.</li>
+        <li>Not certification.</li>
+        <li>Not legal compliance proof.</li>
+        <li>Not identity proof.</li>
+        <li>No cloud mutation.</li>
+        <li>No CloudManager required for training/onboarding demo.</li>
+        <li>API server is required for browser/Postman demo but not for offline CLI workflows.</li>
+        <li>No external scripts, styles, fonts, CDNs, services, secrets, or admin controls.</li>
+      </ul>
+    </div>
+  </main>
+
+  <script>
+    "use strict";
+
+    const samples = {
+      perfect: {
+        operator: "operator-perfect-demo",
+        answers: [
+          {
+            exerciseName: "audit-append-warn",
+            decision: "WARN",
+            reason: "Audit anchor advanced after receiver verification",
+            action: "verify audit append",
+            notes: "Verify that the appended audit entry is expected receiver-side verification activity and record the review."
+          },
+          {
+            exerciseName: "investigation-working-copy-warn",
+            decision: "WARN",
+            reason: "Working notes and report edits require review",
+            action: "review warning",
+            notes: "Review the working notes and report edits, then document why the investigation handoff can continue."
+          },
+          {
+            exerciseName: "receiver-redaction-warn",
+            decision: "WARN",
+            reason: "Receiver redaction changes require review",
+            action: "confirm redaction summary",
+            notes: "Confirm the redaction summary and document why the redacted evidence changes are acceptable before continuing."
+          },
+          {
+            exerciseName: "regulated-handoff-fail",
+            decision: "FAIL",
+            reason: "Core evidence bundle is missing",
+            action: "investigate missing evidence",
+            notes: "Investigate the missing bundle, block the handoff, and request a corrected evidence package."
+          },
+          {
+            exerciseName: "regulated-handoff-pass",
+            decision: "PASS",
+            reason: "No drift detected",
+            action: "continue handoff",
+            notes: "No remediation required; attach the clean regulated handoff review to the ticket."
+          },
+          {
+            exerciseName: "strict-zero-drift-fail",
+            decision: "FAIL",
+            reason: "Report checksum drift violates strict zero-drift policy",
+            action: "block handoff",
+            notes: "Block the handoff and ask the sender to resolve or justify the changed report before retrying."
+          },
+          {
+            exerciseName: "strict-zero-drift-pass",
+            decision: "PASS",
+            reason: "No drift detected",
+            action: "continue handoff",
+            notes: "No remediation required; record the zero-drift result and continue the handoff."
+          }
+        ]
+      },
+      partial: {
+        operator: "operator-partial-demo",
+        answers: [
+          {
+            exerciseName: "audit-append-warn",
+            decision: "WARN",
+            reason: "audit anchor",
+            action: "verify audit",
+            notes: "Partial practice answer for the audit append warning."
+          }
+        ]
+      },
+      failing: {
+        operator: "operator-failing-demo",
+        answers: [
+          {
+            exerciseName: "strict-zero-drift-pass",
+            decision: "FAIL",
+            reason: "missing evidence",
+            action: "investigate missing evidence",
+            notes: "Intentionally wrong answer used to demonstrate failed grading output."
+          }
+        ]
+      }
+    };
+
+    const outputs = {
+      health: {
+        status: document.getElementById("health-status"),
+        output: document.getElementById("health-output")
+      },
+      onboarding: {
+        status: document.getElementById("onboarding-status"),
+        output: document.getElementById("onboarding-output")
+      },
+      templates: {
+        status: document.getElementById("templates-status"),
+        output: document.getElementById("templates-output")
+      },
+      examples: {
+        status: document.getElementById("examples-status"),
+        output: document.getElementById("examples-output")
+      },
+      scorecards: {
+        status: document.getElementById("scorecards-status"),
+        output: document.getElementById("scorecards-output")
+      },
+      detail: {
+        status: document.getElementById("scorecard-detail-status"),
+        output: document.getElementById("scorecard-detail-output")
+      },
+      template: {
+        status: document.getElementById("answer-template-status"),
+        output: document.getElementById("answer-template-output")
+      },
+      grading: {
+        status: document.getElementById("grading-status"),
+        output: document.getElementById("grading-output")
+      }
+    };
+
+    const baseUrlInput = document.getElementById("base-url");
+    const scorecardSelect = document.getElementById("scorecard-select");
+
+    function sameOriginBaseUrl() {
+      return window.location.origin && window.location.origin !== "null" ? window.location.origin : "http://localhost:8080";
+    }
+
+    function baseUrl() {
+      return (baseUrlInput.value || sameOriginBaseUrl()).replace(/\/+$/, "");
+    }
+
+    function endpoint(path) {
+      return baseUrl() + path;
+    }
+
+    function render(target, state, value) {
+      const selected = outputs[target];
+      selected.status.textContent = state;
+      selected.status.className = "status-line ok";
+      selected.output.textContent = JSON.stringify(value, null, 2);
+    }
+
+    function renderError(target, path, error) {
+      const selected = outputs[target];
+      selected.status.textContent = "Request failed.";
+      selected.status.className = "status-line error";
+      selected.output.textContent = JSON.stringify({
+        path,
+        error: error.message || String(error)
+      }, null, 2);
+    }
+
+    async function requestJson(target, path, options) {
+      try {
+        const response = await fetch(endpoint(path), Object.assign({
+          headers: {
+            Accept: "application/json"
+          }
+        }, options || {}));
+        const text = await response.text();
+        let body = text;
+        try {
+          body = text ? JSON.parse(text) : {};
+        } catch (parseError) {
+          body = { raw: text };
+        }
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status + " from " + path + ": " + JSON.stringify(body));
+        }
+        render(target, "HTTP " + response.status + " " + path, body);
+        return body;
+      } catch (error) {
+        renderError(target, path, error);
+        return null;
+      }
+    }
+
+    function selectedScorecardName() {
+      return scorecardSelect.value || "strict-zero-drift-pass";
+    }
+
+    async function listScorecards() {
+      const body = await requestJson("scorecards", "/api/evidence-training/scorecards");
+      if (Array.isArray(body) && body.length > 0) {
+        const current = selectedScorecardName();
+        scorecardSelect.innerHTML = "";
+        body.forEach((scorecard) => {
+          const option = document.createElement("option");
+          option.value = scorecard.exerciseName;
+          option.textContent = scorecard.exerciseName;
+          scorecardSelect.appendChild(option);
+        });
+        scorecardSelect.value = body.some((scorecard) => scorecard.exerciseName === current)
+          ? current
+          : body[0].exerciseName;
+      }
+    }
+
+    async function grade(sample) {
+      await requestJson("grading", "/api/evidence-training/scorecards/grade", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(samples[sample])
+      });
+    }
+
+    const actions = {
+      health: () => requestJson("health", "/api/health"),
+      readiness: () => requestJson("health", "/actuator/health/readiness"),
+      onboarding: () => requestJson("onboarding", "/api/evidence-training/onboarding"),
+      templates: () => requestJson("templates", "/api/evidence-training/templates"),
+      examples: () => requestJson("examples", "/api/evidence-training/examples"),
+      scorecards: listScorecards,
+      "scorecard-detail": () => requestJson("detail", "/api/evidence-training/scorecards/" + encodeURIComponent(selectedScorecardName())),
+      "answer-template": () => requestJson("template", "/api/evidence-training/scorecards/" + encodeURIComponent(selectedScorecardName()) + "/answer-template"),
+      "grade-perfect": () => grade("perfect"),
+      "grade-partial": () => grade("partial"),
+      "grade-failing": () => grade("failing")
+    };
+
+    document.querySelectorAll("[data-action]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const action = actions[button.dataset.action];
+        if (action) {
+          action();
+        }
+      });
+    });
+
+    document.getElementById("reset-base-url").addEventListener("click", () => {
+      baseUrlInput.value = sameOriginBaseUrl();
+    });
+
+    baseUrlInput.value = sameOriginBaseUrl();
+  </script>
+</body>
+</html>

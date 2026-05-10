@@ -15,13 +15,17 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
 public final class RemediationReportCli {
     private static final String FLAG = "--remediation-report";
+    private static final String VERIFY_MANIFEST_FLAG = "--verify-manifest";
+    private static final String APP_VERSION = "2.4.2";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private RemediationReportCli() {
@@ -40,7 +44,8 @@ public final class RemediationReportCli {
         }
         return Arrays.stream(args)
                 .filter(Objects::nonNull)
-                .anyMatch(arg -> arg.equals(FLAG) || arg.startsWith(FLAG + "="));
+                .anyMatch(arg -> arg.equals(FLAG) || arg.startsWith(FLAG + "=")
+                        || arg.equals(VERIFY_MANIFEST_FLAG) || arg.startsWith(VERIFY_MANIFEST_FLAG + "="));
     }
 
     public static Result runIfRequested(String[] args, PrintStream out, PrintStream err) {
@@ -57,9 +62,14 @@ public final class RemediationReportCli {
 
         try {
             CliOptions options = CliOptions.parse(args);
+            if (options.verifyManifestPath().isPresent()) {
+                return verifyManifest(options.verifyManifestPath().get(), out);
+            }
+            validateManifestOptions(options);
             RemediationReportResponse response = responseFromInput(options);
             String rendered = render(response);
             writeOutput(rendered, options.outputPath(), out);
+            writeManifestIfRequested(options, response);
             return new Result(true, 0);
         } catch (IllegalArgumentException e) {
             err.println("Remediation report export failed safely: " + safeMessage(e));
@@ -75,7 +85,9 @@ public final class RemediationReportCli {
     }
 
     static RemediationReportResponse responseFromInput(CliOptions options) throws IOException {
-        JsonNode root = OBJECT_MAPPER.readTree(options.inputPath().toFile());
+        Path inputPath = options.inputPath()
+                .orElseThrow(() -> new IllegalArgumentException("input path is required"));
+        JsonNode root = OBJECT_MAPPER.readTree(inputPath.toFile());
         RemediationReportService service = new RemediationReportService();
         if (root.has("json") && root.path("json").has("sourceType")) {
             return responseForPayload(options.format(),
@@ -88,6 +100,48 @@ public final class RemediationReportCli {
                     service);
         }
         return service.export(requestFromJson(root, options));
+    }
+
+    private static Result verifyManifest(Path manifestPath, PrintStream out) throws IOException {
+        ReportChecksumManifestService service = new ReportChecksumManifestService();
+        ReportChecksumManifestService.ManifestVerificationResult result = service.verify(manifestPath);
+        out.println((result.verified() ? "Manifest verification passed: " : "Manifest verification failed: ")
+                + manifestPath);
+        for (ReportChecksumManifestService.ManifestVerificationEntry entry : result.entries()) {
+            out.println("- " + entry.status() + " [" + entry.role() + "] " + entry.path()
+                    + " expected=" + entry.expectedSha256()
+                    + (entry.actualSha256() == null ? "" : " actual=" + entry.actualSha256()));
+        }
+        return new Result(true, result.verified() ? 0 : 2);
+    }
+
+    private static void writeManifestIfRequested(
+            CliOptions options, RemediationReportResponse response) throws IOException {
+        if (options.manifestPath().isEmpty()) {
+            return;
+        }
+        Path outputPath = options.outputPath()
+                .orElseThrow(() -> new IllegalArgumentException("--manifest requires --output <path>"));
+        Path inputPath = options.inputPath()
+                .orElseThrow(() -> new IllegalArgumentException("--manifest requires --input <path>"));
+        ReportChecksumManifestService manifestService = new ReportChecksumManifestService();
+        ReportChecksumManifestService.ReportChecksumManifest manifest = manifestService.create(
+                new ReportChecksumManifestService.ManifestCreateRequest(
+                        options.manifestPath().get(),
+                        inputPath,
+                        outputPath,
+                        options.manifestExtraPaths(),
+                        response.json(),
+                        options.generatedBy().orElse(null),
+                        options.createdAt().orElse(null),
+                        appVersion()));
+        manifestService.write(options.manifestPath().get(), manifest);
+    }
+
+    private static void validateManifestOptions(CliOptions options) {
+        if (options.manifestPath().isPresent() && options.outputPath().isEmpty()) {
+            throw new IllegalArgumentException("--manifest requires --output <path>");
+        }
     }
 
     private static RemediationReportRequest requestFromJson(JsonNode root, CliOptions options) throws IOException {
@@ -158,23 +212,56 @@ public final class RemediationReportCli {
 
     private static void printUsage(PrintStream err) {
         err.println("Usage: --remediation-report --input <saved-evaluation-or-replay.json> "
-                + "[--format markdown|json] [--output <path>] [--report-id <id>] [--title <title>]");
+                + "[--format markdown|json] [--output <path>] [--report-id <id>] [--title <title>] "
+                + "[--manifest <path>]");
         err.println("Shorthand: --remediation-report=<path>");
+        err.println("Verify: --verify-manifest <manifest.json>");
         err.println("Safety: offline/read-only report generation; no API server, network access, "
                 + "CloudManager calls, or cloud mutation.");
+    }
+
+    private static String appVersion() {
+        Package packageInfo = RemediationReportCli.class.getPackage();
+        String implementationVersion = packageInfo == null ? null : packageInfo.getImplementationVersion();
+        return implementationVersion == null || implementationVersion.isBlank()
+                ? APP_VERSION
+                : implementationVersion.trim();
     }
 
     public record Result(boolean requested, int exitCode) {
     }
 
     record CliOptions(
-            Path inputPath,
+            Optional<Path> inputPath,
             RemediationReportFormat format,
             Optional<Path> outputPath,
             Optional<String> reportId,
-            Optional<String> title) {
+            Optional<String> title,
+            Optional<Path> manifestPath,
+            List<Path> manifestExtraPaths,
+            Optional<Path> verifyManifestPath,
+            Optional<String> generatedBy,
+            Optional<String> createdAt) {
+
+        CliOptions {
+            inputPath = inputPath == null ? Optional.empty() : inputPath;
+            outputPath = outputPath == null ? Optional.empty() : outputPath;
+            reportId = reportId == null ? Optional.empty() : reportId;
+            title = title == null ? Optional.empty() : title;
+            manifestPath = manifestPath == null ? Optional.empty() : manifestPath;
+            manifestExtraPaths = manifestExtraPaths == null ? List.of() : List.copyOf(manifestExtraPaths);
+            verifyManifestPath = verifyManifestPath == null ? Optional.empty() : verifyManifestPath;
+            generatedBy = generatedBy == null ? Optional.empty() : generatedBy;
+            createdAt = createdAt == null ? Optional.empty() : createdAt;
+        }
 
         static CliOptions parse(String[] args) {
+            Optional<Path> verifyManifest = optionValue(args, VERIFY_MANIFEST_FLAG).map(Path::of);
+            if (verifyManifest.isPresent()) {
+                return new CliOptions(Optional.empty(), RemediationReportFormat.MARKDOWN, Optional.empty(),
+                        Optional.empty(), Optional.empty(), Optional.empty(), List.of(), verifyManifest,
+                        Optional.empty(), Optional.empty());
+            }
             Path input = remediationReportPath(args)
                     .map(Path::of)
                     .or(() -> optionValue(args, "--input").map(Path::of))
@@ -185,7 +272,15 @@ public final class RemediationReportCli {
             Optional<Path> output = optionValue(args, "--output").map(Path::of);
             Optional<String> reportId = optionValue(args, "--report-id").filter(value -> !value.isBlank());
             Optional<String> title = optionValue(args, "--title").filter(value -> !value.isBlank());
-            return new CliOptions(input, format, output, reportId, title);
+            Optional<Path> manifest = optionValue(args, "--manifest").map(Path::of);
+            List<Path> manifestExtras = optionValues(args, "--manifest-extra").stream()
+                    .filter(value -> !value.isBlank())
+                    .map(Path::of)
+                    .toList();
+            Optional<String> generatedBy = optionValue(args, "--generated-by").filter(value -> !value.isBlank());
+            Optional<String> createdAt = optionValue(args, "--created-at").filter(value -> !value.isBlank());
+            return new CliOptions(Optional.of(input), format, output, reportId, title, manifest, manifestExtras,
+                    Optional.empty(), generatedBy, createdAt);
         }
 
         private static Optional<String> remediationReportPath(String[] args) {
@@ -214,6 +309,28 @@ public final class RemediationReportCli {
                 }
             }
             return Optional.empty();
+        }
+
+        private static List<String> optionValues(String[] args, String option) {
+            List<String> values = new ArrayList<>();
+            for (int index = 0; index < args.length; index++) {
+                String arg = args[index];
+                if (arg == null) {
+                    continue;
+                }
+                if (arg.startsWith(option + "=")) {
+                    values.add(arg.substring((option + "=").length()).trim());
+                    continue;
+                }
+                if (arg.equals(option)) {
+                    if (index + 1 >= args.length || args[index + 1] == null || args[index + 1].startsWith("--")) {
+                        throw new IllegalArgumentException(option + " requires a value");
+                    }
+                    values.add(args[index + 1].trim());
+                    index++;
+                }
+            }
+            return values;
         }
 
         private static RemediationReportFormat format(String value) {

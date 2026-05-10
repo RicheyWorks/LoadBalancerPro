@@ -52,6 +52,7 @@ class OperatorDemoPostmanTest {
         assertTrue(guide.contains("curl -fsS http://127.0.0.1:8080/actuator/health/readiness"));
         assertTrue(guide.contains("/api/evidence-training/onboarding"));
         assertTrue(guide.contains("postman/LoadBalancerPro.postman_collection.json"));
+        assertTrue(guide.contains("http://localhost:8080/evidence-training-demo.html"));
         assertTrue(guide.contains("Evidence Training Demo Walkthrough"));
         assertTrue(guide.contains("src/test/resources/evidence-training-demo/perfect-scorecard-answers.json"));
         assertTrue(guide.contains("src/test/resources/evidence-training-demo/partial-scorecard-answers.json"));
@@ -62,7 +63,7 @@ class OperatorDemoPostmanTest {
         assertTrue(normalized.contains("not identity proof"));
         assertTrue(normalized.contains("no cloud mutation"));
         assertTrue(normalized.contains("no `cloudmanager` required"));
-        assertTrue(normalized.contains("api server is required for api/postman demo but not for offline cli workflows"));
+        assertTrue(normalized.contains("api server is required for browser/postman demo but not for offline cli workflows"));
     }
 
     @Test
@@ -147,9 +148,9 @@ class OperatorDemoPostmanTest {
     }
 
     @Test
-    void demoAddsNoStaticPageOrGeneratedRuntimeReports() {
-        assertFalse(Files.exists(Path.of("src/main/resources/static/evidence-training-demo.html")),
-                "the repo has no existing web-static onboarding pattern, so this sprint should not add a page");
+    void demoAddsBrowserPageWithoutGeneratedRuntimeReports() {
+        assertTrue(Files.exists(Path.of("src/main/resources/static/evidence-training-demo.html")),
+                "operator demos should include the no-dependency browser page");
         assertFalse(Files.exists(Path.of("docs/examples/evidence-training-demo/scorecard-report.md")));
         assertFalse(Files.exists(Path.of("docs/examples/evidence-training-demo/scorecard-report.json")));
     }

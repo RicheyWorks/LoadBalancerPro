@@ -107,6 +107,12 @@ curl -fsS -X POST http://127.0.0.1:8080/api/scenarios/replay \
 | `--list-policy-templates` | Lists packaged evidence handoff policy templates. |
 | `--export-policy-template <name>` | Writes the exact packaged template JSON to `--policy-output` or stdout. |
 | `--validate-policy <path>` | Validates a policy file mode, severity, change type, and path-rule schema. |
+| `--list-policy-examples` | Lists packaged evidence policy walkthrough examples. |
+| `--print-policy-example <name>` | Prints a compact summary for a packaged walkthrough example. |
+| `--export-policy-example <name>` | Exports a packaged before/after catalog pair and expected decision metadata. Requires `--example-output-dir`. |
+| `--example-output-dir <directory>` | Target directory for exported policy examples or walkthrough exports. |
+| `--walkthrough-policy-example <name>` | Exports an example, runs diff and policy evaluation, and emits a deterministic tutorial summary. |
+| `--force` | Allows packaged example export or walkthrough export to overwrite existing example files. |
 
 ## Output Semantics
 
@@ -396,6 +402,33 @@ Curated templates:
 
 See [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md) for intended use cases and [`EVIDENCE_POLICY_EXAMPLES.md`](EVIDENCE_POLICY_EXAMPLES.md) for concrete sender/receiver catalog pairs with expected `PASS`, `WARN`, and `FAIL` decisions.
 
+Packaged walkthrough examples let operators practice the full flow without locating test resources:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar --list-policy-examples
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --export-policy-example receiver-redaction-warn \
+  --example-output-dir walkthrough/receiver-redaction
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --diff-inventory walkthrough/receiver-redaction/before.json \
+                   walkthrough/receiver-redaction/after.json \
+  --policy-template receiver-redaction \
+  --policy-report-format markdown
+```
+
+For a single-command tutorial dry-run:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --walkthrough-policy-example receiver-redaction-warn \
+  --example-output-dir walkthrough/receiver-redaction \
+  --policy-report-format json
+```
+
+The walkthrough command exports `before.json`, `after.json`, and `expected-decision.json`, runs the same catalog diff and policy evaluator as production CLI handoff checks, and returns a deterministic Markdown or JSON tutorial summary. It refuses to overwrite existing exported example files unless `--force` is supplied.
+
 Policy JSON format:
 
 ```json
@@ -462,6 +495,7 @@ Offline report generation:
 - can diff saved evidence inventory catalogs without starting the API server;
 - can evaluate saved evidence inventory diffs against local handoff policies without starting the API server;
 - can list, export, validate, and apply packaged evidence policy templates without starting the API server;
+- can list, export, and dry-run packaged evidence policy examples without starting the API server;
 - generates and verifies checksum manifests locally with Java SHA-256, not external tools or signing keys.
 
 ## Limitations

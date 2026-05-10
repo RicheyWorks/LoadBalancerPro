@@ -1,0 +1,57 @@
+{
+  "catalogVersion" : "1",
+  "rootDirectory" : "audit-append-example",
+  "verificationEnabled" : true,
+  "includeHashes" : true,
+  "summary" : {
+    "bundleCount" : 1,
+    "manifestCount" : 1,
+    "auditLogCount" : 1,
+    "redactionSummaryCount" : 0,
+    "reportCount" : 1,
+    "validCount" : 3,
+    "warningCount" : 0,
+    "failureCount" : 0
+  },
+  "items" : [ {
+    "path" : "input.json",
+    "type" : "INPUT",
+    "sha256" : "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "verificationStatus" : "NOT_VERIFIED",
+    "warnings" : [ ],
+    "failures" : [ ]
+  }, {
+    "path" : "incident-bundle.zip",
+    "type" : "BUNDLE",
+    "sha256" : "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "verificationStatus" : "VALID",
+    "warnings" : [ ],
+    "failures" : [ ]
+  }, {
+    "path" : "manifest.json",
+    "type" : "MANIFEST",
+    "sha256" : "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "verificationStatus" : "VALID",
+    "warnings" : [ ],
+    "failures" : [ ],
+    "reportId" : "example-audit"
+  }, {
+    "path" : "offline-cli-audit.jsonl",
+    "type" : "AUDIT_LOG",
+    "sha256" : "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "verificationStatus" : "VALID",
+    "warnings" : [ ],
+    "failures" : [ ],
+    "latestAuditEntryHash" : "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "entryCount" : 2
+  }, {
+    "path" : "report.md",
+    "type" : "REPORT",
+    "sha256" : "7777777777777777777777777777777777777777777777777777777777777777",
+    "verificationStatus" : "NOT_VERIFIED",
+    "warnings" : [ ],
+    "failures" : [ ],
+    "reportId" : "example-audit"
+  } ],
+  "advisoryNotes" : [ "Synthetic example catalog for local checksum policy evaluation only." ]
+}

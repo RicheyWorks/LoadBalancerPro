@@ -1,0 +1,13 @@
+{
+  "template" : "strict-zero-drift",
+  "before" : "before.json",
+  "after" : "after.json",
+  "expectedDecision" : "PASS",
+  "expectedFailCount" : 0,
+  "expectedWarnCount" : 0,
+  "expectedInfoCount" : 0,
+  "expectedIgnoredCount" : 0,
+  "expectedUnclassifiedCount" : 0,
+  "expectedChangedPaths" : [ ],
+  "expectedChangeTypes" : [ ]
+}

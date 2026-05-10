@@ -172,6 +172,19 @@ Use `strict-zero-drift` for final equality checks, `receiver-redaction` when rec
 
 Use `STRICT` policies for zero-drift handoffs and `ALLOWLIST` policies when expected changes are known, such as a receiver-side redaction summary or expected audit-log append. Policy decisions are `PASS`, `WARN`, or `FAIL`; `--fail-on-policy-fail` exits non-zero only for `FAIL`. Attach the policy report to the incident ticket alongside both inventories.
 
+For operator training or a dry-run before a real handoff, list and export packaged examples:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar --list-policy-examples
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --walkthrough-policy-example receiver-redaction-warn \
+  --example-output-dir walkthrough/receiver-redaction \
+  --policy-report-format markdown
+```
+
+The walkthrough exports synthetic `before.json`, `after.json`, and `expected-decision.json` files, runs the same local diff and policy evaluator, and emits a deterministic tutorial summary. These examples are for training and regression checks only; they are not identity proof or legal chain-of-custody.
+
 See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md), [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md), and [`EVIDENCE_POLICY_EXAMPLES.md`](EVIDENCE_POLICY_EXAMPLES.md) for CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, evidence handoff policies, packaged policy templates, example sender/receiver catalog pairs, safety guarantees, and JSON output.
 
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.

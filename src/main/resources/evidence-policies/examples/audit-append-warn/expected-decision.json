@@ -1,0 +1,13 @@
+{
+  "template" : "audit-append",
+  "before" : "before.json",
+  "after" : "after.json",
+  "expectedDecision" : "WARN",
+  "expectedFailCount" : 0,
+  "expectedWarnCount" : 1,
+  "expectedInfoCount" : 0,
+  "expectedIgnoredCount" : 0,
+  "expectedUnclassifiedCount" : 0,
+  "expectedChangedPaths" : [ "offline-cli-audit.jsonl" ],
+  "expectedChangeTypes" : [ "AUDIT_ANCHOR_CHANGED" ]
+}

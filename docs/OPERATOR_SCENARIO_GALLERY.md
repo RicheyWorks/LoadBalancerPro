@@ -55,9 +55,12 @@ The actual result still comes from the existing API response after the operator 
 4. Click `Run selected scenario` to call health, readiness, allocation, routing, and evaluation flows.
 5. Review raw JSON for `POST /api/allocate/capacity-aware`, `POST /api/routing/compare`, and `POST /api/allocate/evaluate`.
 6. Run a second scenario, then click `Compare with previous scenario`.
-7. Copy the selected payload, curl snippets, or scenario summary.
+7. Review `Explanation Drill-Down` for routing, allocation, overload, remediation, and scenario-delta rationale.
+8. Copy the selected payload, curl snippets, scenario summary, drill-down summary, explanation curl snippets, or operator rationale.
 
 The what-changed summary compares scenario name, unallocated load, rejected load, load-shedding action, remediation status, and selected server per routing strategy. It is client-side copyable text only; it is not written to disk or sent to a report endpoint.
+
+The explanation drill-down uses the same real endpoint outputs and visible scenario inputs. Exact internal scores and every internal threshold are not exposed by the current API, so supporting math is labeled as derived from visible request/response fields and raw JSON remains the source of truth.
 
 ## Real Endpoints Used
 
@@ -96,6 +99,8 @@ baseUrl = http://localhost:8080
 ```
 
 Run the `Operator Scenario Gallery` folder. It includes health, readiness, and per-scenario routing comparison, capacity-aware allocation, and read-only evaluation requests for the normal load, overload pressure, all-unhealthy degradation, and recovery flows.
+
+Run the `Operator Explanation Drill-Down` folder when a reviewer wants the matching request set for the cockpit explanation panels. It uses the same endpoints and scenario bodies; the browser-side drill-down labels any derived explanation as derived from visible request/response fields.
 
 ## Fixtures
 

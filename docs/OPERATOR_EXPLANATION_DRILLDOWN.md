@@ -1,0 +1,72 @@
+# Operator Explanation Drill-Down
+
+The operator explanation drill-down lives inside the unified cockpit:
+
+```text
+http://localhost:8080/load-balancing-cockpit.html
+```
+
+It helps reviewers inspect why a packaged scenario produced its routing, allocation, overload, and advisory remediation output. The drill-down is browser-side only; it reuses existing endpoint responses and visible scenario input fields.
+
+## What It Explains
+
+- `Routing Strategy Explanation`: selected server, strategy status, API reason, visible health, weight, capacity, connection, latency, and queue inputs.
+- `Allocation Math / Capacity Explanation`: requested load, returned allocations, unallocated load, recommended simulated capacity, and client-derived remaining capacity from visible request/response fields.
+- `Load-Shedding / Overload Reason Breakdown`: evaluation decision reason, priority, action, queue depth, utilization, latency, error rate, healthy-server count, and read-only metrics state.
+- `Remediation Rationale`: advisory-only `remediationPlan` status and recommendation reasons returned by the evaluate endpoint.
+- `Scenario Delta Explanation`: changed scenario name, healthy allocation server count, total visible capacity, average routing pressure, unallocated load, and load-shedding action versus the prior run.
+
+Exact internal scores and every internal threshold are not exposed by the current API. When the browser derives supporting math, the page labels it as derived from visible request/response fields and preserves the raw JSON as the source of truth.
+
+## Browser Flow
+
+1. Start the local app.
+2. Open `http://localhost:8080/load-balancing-cockpit.html`.
+3. Select `Normal Load`, `Overload Pressure`, `All-Unhealthy Degradation`, or `Recovery / Capacity Restored`.
+4. Click `Run selected scenario`.
+5. Review raw JSON for `POST /api/routing/compare`, `POST /api/allocate/capacity-aware`, and `POST /api/allocate/evaluate`.
+6. Review `Explanation Drill-Down`.
+7. Run a second scenario, then click `Compare with previous scenario`.
+8. Copy the drill-down summary, explanation curl snippets, or operator rationale.
+
+## Postman Parity
+
+Import:
+
+```text
+postman/LoadBalancerPro.postman_collection.json
+```
+
+Set:
+
+```text
+baseUrl = http://localhost:8080
+```
+
+Run the `Operator Explanation Drill-Down` folder. It includes health, readiness, and per-scenario routing, allocation, overload, and remediation explanation requests using the same synthetic scenario bodies as the browser cockpit.
+
+## Existing Endpoints Used
+
+```text
+GET  /api/health
+GET  /actuator/health/readiness
+POST /api/routing/compare
+POST /api/allocate/capacity-aware
+POST /api/allocate/evaluate
+```
+
+No new API contract is added for the drill-down.
+
+## Safety Boundaries
+
+- Local/operator demo only.
+- Not certification.
+- Not benchmark proof.
+- Not legal compliance proof.
+- Not identity proof.
+- No cloud mutation.
+- No `CloudManager` required.
+- No external scripts, CDNs, services, or dependencies.
+- No generated runtime reports.
+- No server-side transcript writing.
+- No fabricated allocation, routing, load-shedding, remediation, score, or threshold output.

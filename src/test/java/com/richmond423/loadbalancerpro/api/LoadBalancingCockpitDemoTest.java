@@ -113,6 +113,18 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Run load-shedding preview"));
         assertTrue(page.contains("Run remediation hints"));
         assertTrue(page.contains("Not available in current API"));
+        assertTrue(page.contains("Explanation Drill-Down"));
+        assertTrue(page.contains("Routing Strategy Explanation"));
+        assertTrue(page.contains("Allocation Math / Capacity Explanation"));
+        assertTrue(page.contains("Load-Shedding / Overload Reason Breakdown"));
+        assertTrue(page.contains("Remediation Rationale"));
+        assertTrue(page.contains("Scenario Delta Explanation"));
+        assertTrue(page.contains("Copy drill-down summary"));
+        assertTrue(page.contains("Copy explanation curl"));
+        assertTrue(page.contains("Copy operator rationale"));
+        assertTrue(page.contains("Exact internal score not exposed by the current API"));
+        assertTrue(page.contains("derived from visible request/response fields"));
+        assertTrue(page.contains("No prior scenario comparison available"));
     }
 
     @Test
@@ -127,7 +139,7 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(normalized.contains("not legal compliance proof"));
         assertTrue(normalized.contains("not identity proof"));
         assertTrue(normalized.contains("no cloud mutation"));
-        assertTrue(normalized.contains("no cloudmanager required for cockpit/gallery demo"));
+        assertTrue(normalized.contains("no cloudmanager required for cockpit/gallery/drill-down demo"));
         assertTrue(normalized.contains("no external services/dependencies"));
         assertTrue(normalized.contains("no external scripts/cdns"));
         assertTrue(normalized.contains("api server required for browser/postman demo"));
@@ -412,6 +424,59 @@ class LoadBalancingCockpitDemoTest {
         assertEquals("{{baseUrl}}/api/routing/compare", folder.at("/item/2/request/url/raw").asText());
         assertEquals("{{baseUrl}}/api/allocate/capacity-aware", folder.at("/item/3/request/url/raw").asText());
         assertEquals("{{baseUrl}}/api/allocate/evaluate", folder.at("/item/4/request/url/raw").asText());
+        assertTrue(folder.toString().contains("edge-normal-a"));
+        assertTrue(folder.toString().contains("edge-overload-a"));
+        assertTrue(folder.toString().contains("edge-down-a"));
+        assertTrue(folder.toString().contains("edge-recovery-a"));
+
+        String normalized = Files.readString(Path.of("postman/LoadBalancerPro.postman_collection.json"),
+                StandardCharsets.UTF_8).toLowerCase(Locale.ROOT);
+        assertTrue(normalized.contains("{{baseurl}}/api/routing/compare"));
+        assertTrue(normalized.contains("{{baseurl}}/api/allocate/capacity-aware"));
+        assertTrue(normalized.contains("{{baseurl}}/api/allocate/evaluate"));
+        assertFalse(normalized.contains("x-api-key"));
+        assertFalse(normalized.contains("bearer"));
+        assertFalse(normalized.contains("authorization"));
+        assertFalse(normalized.contains("/rulesets"));
+        assertFalse(normalized.contains("create release"));
+        assertFalse(normalized.contains("create tag"));
+        assertFalse(normalized.contains("delete-branch"));
+    }
+
+    @Test
+    void operatorExplanationDrillDownPostmanFolderIsValidAndReadOnly() throws Exception {
+        JsonNode collection = readJson(Path.of("postman/LoadBalancerPro.postman_collection.json"));
+        JsonNode folder = findFolder(collection, "Operator Explanation Drill-Down");
+        assertNotNull(folder, "Postman collection should include an Operator Explanation Drill-Down folder");
+        assertEquals(14, folder.path("item").size());
+
+        List<String> expectedNames = List.of(
+                "GET Explanation Drill-Down Health Check",
+                "GET Explanation Drill-Down Readiness Check",
+                "POST Normal Load Routing Explanation",
+                "POST Normal Load Allocation Explanation",
+                "POST Normal Load Overload And Remediation Explanation",
+                "POST Overload Pressure Routing Explanation",
+                "POST Overload Pressure Allocation Explanation",
+                "POST Overload Pressure Overload And Remediation Explanation",
+                "POST All-Unhealthy Degradation Routing Explanation",
+                "POST All-Unhealthy Degradation Allocation Explanation",
+                "POST All-Unhealthy Degradation Overload And Remediation Explanation",
+                "POST Recovery Capacity Restored Routing Explanation",
+                "POST Recovery Capacity Restored Allocation Explanation",
+                "POST Recovery Capacity Restored Overload And Remediation Explanation");
+        for (int i = 0; i < expectedNames.size(); i++) {
+            assertEquals(expectedNames.get(i), folder.at("/item/" + i + "/name").asText());
+        }
+
+        assertEquals("{{baseUrl}}/api/health", folder.at("/item/0/request/url/raw").asText());
+        assertEquals("{{baseUrl}}/actuator/health/readiness", folder.at("/item/1/request/url/raw").asText());
+        assertEquals("{{baseUrl}}/api/routing/compare", folder.at("/item/2/request/url/raw").asText());
+        assertEquals("{{baseUrl}}/api/allocate/capacity-aware", folder.at("/item/3/request/url/raw").asText());
+        assertEquals("{{baseUrl}}/api/allocate/evaluate", folder.at("/item/4/request/url/raw").asText());
+        assertTrue(folder.toString().contains("chosen server"));
+        assertTrue(folder.toString().contains("loadShedding"));
+        assertTrue(folder.toString().contains("remediationPlan"));
         assertTrue(folder.toString().contains("edge-normal-a"));
         assertTrue(folder.toString().contains("edge-overload-a"));
         assertTrue(folder.toString().contains("edge-down-a"));

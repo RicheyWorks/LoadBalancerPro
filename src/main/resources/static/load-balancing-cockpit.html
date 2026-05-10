@@ -292,6 +292,32 @@
       line-height: 1.45;
     }
 
+    .drilldown-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .drilldown-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+      min-height: 144px;
+    }
+
+    .drilldown-card strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .drilldown-note {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
     .postman-note {
       color: var(--muted);
       font-size: 0.92rem;
@@ -305,7 +331,7 @@
     }
 
     @media (max-width: 920px) {
-      .grid, .tri-grid, .status-grid, .scenario-gallery {
+      .grid, .tri-grid, .status-grid, .scenario-gallery, .drilldown-grid {
         grid-template-columns: 1fr;
       }
 
@@ -553,6 +579,55 @@
 
     <section class="panel" style="margin-top: 16px;">
       <div class="panel-head">
+        <h2>Explanation Drill-Down</h2>
+        <div class="actions">
+          <button class="copy" type="button" data-copy-target="drilldown-summary">Copy drill-down summary</button>
+          <button class="copy" type="button" data-copy-target="explanation-curl">Copy explanation curl</button>
+          <button class="copy" type="button" data-copy-target="operator-rationale">Copy operator rationale</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="drilldown-note">
+          Exact internal score not exposed by the current API for every strategy; this explanation is derived
+          from visible request/response fields when an API score or exact math is unavailable.
+        </p>
+        <div class="drilldown-grid">
+          <div class="drilldown-card">
+            <strong>Routing Strategy Explanation</strong>
+            <div id="routing-explanation">Run routing comparison to populate strategy explanations.</div>
+          </div>
+          <div class="drilldown-card">
+            <strong>Allocation Math / Capacity Explanation</strong>
+            <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
+          </div>
+          <div class="drilldown-card">
+            <strong>Load-Shedding / Overload Reason Breakdown</strong>
+            <div id="overload-explanation">Run load-shedding preview to populate overload reasons.</div>
+          </div>
+          <div class="drilldown-card">
+            <strong>Remediation Rationale</strong>
+            <div id="remediation-explanation">Run remediation hints to populate advisory rationale.</div>
+          </div>
+          <div class="drilldown-card">
+            <strong>Scenario Delta Explanation</strong>
+            <div id="scenario-delta-explanation">No prior scenario comparison available.</div>
+          </div>
+          <div class="drilldown-card">
+            <strong>Operator Rationale</strong>
+            <div id="operator-rationale-view">Run a scenario to generate operator-facing rationale.</div>
+          </div>
+        </div>
+        <h3 style="margin-top: 12px;">Copy drill-down summary</h3>
+        <pre id="drilldown-summary">Run the cockpit sequence to generate a deterministic drill-down summary.</pre>
+        <h3 style="margin-top: 12px;">Copy explanation curl</h3>
+        <pre id="explanation-curl"></pre>
+        <h3 style="margin-top: 12px;">Copy operator rationale</h3>
+        <pre id="operator-rationale">Run a scenario to generate operator rationale.</pre>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
         <h2>9. Unavailable-state handling</h2>
       </div>
       <div class="panel-body">
@@ -576,7 +651,7 @@
           <li>Not legal compliance proof.</li>
           <li>Not identity proof.</li>
           <li>No cloud mutation.</li>
-          <li>No CloudManager required for cockpit/gallery demo.</li>
+          <li>No CloudManager required for cockpit/gallery/drill-down demo.</li>
           <li>No external services/dependencies.</li>
           <li>No external scripts/CDNs.</li>
           <li>API server required for browser/Postman demo.</li>
@@ -809,6 +884,9 @@
       remediation: document.getElementById("remediation-output"),
       summary: document.getElementById("cockpit-summary"),
       scenarioSummary: document.getElementById("scenario-summary"),
+      drilldownSummary: document.getElementById("drilldown-summary"),
+      explanationCurl: document.getElementById("explanation-curl"),
+      operatorRationale: document.getElementById("operator-rationale"),
       curl: document.getElementById("curl-snippets")
     };
 
@@ -1151,6 +1229,196 @@
         + (items || "<span class=\"muted\">No recommendations returned.</span>");
     }
 
+    function refreshDrillDown() {
+      if (!outputs.scenario.value.trim()) {
+        return;
+      }
+      const scenario = currentScenario();
+      renderRoutingExplanation(scenario);
+      renderAllocationExplanation(scenario);
+      renderOverloadExplanation(scenario);
+      renderRemediationExplanation();
+      renderScenarioDeltaExplanation();
+      outputs.drilldownSummary.textContent = buildDrillDownSummary(scenario);
+      outputs.operatorRationale.textContent = buildOperatorRationale(scenario);
+      document.getElementById("operator-rationale-view").innerHTML =
+        textBlockToHtml(outputs.operatorRationale.textContent);
+    }
+
+    function renderRoutingExplanation(scenario) {
+      const container = document.getElementById("routing-explanation");
+      if (!state.routing) {
+        container.textContent = "Run routing comparison to populate strategy explanations.";
+        return;
+      }
+      if (state.routing.status === "Not available in current API") {
+        container.textContent = "Not available in current API.";
+        return;
+      }
+      const serverInputs = routingInputMap(scenario);
+      const results = state.routing.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned.";
+        return;
+      }
+      container.innerHTML = "<p class=\"drilldown-note\">Exact internal score not exposed by the current API for every strategy; this explanation is derived from visible request/response fields when scores are absent.</p>"
+        + "<table aria-label=\"Routing Strategy Explanation\"><thead><tr>"
+        + "<th>Strategy</th><th>Selected server</th><th>Visible factors</th><th>Explanation</th>"
+        + "</tr></thead><tbody>"
+        + results.map((result) => {
+          const selected = result.chosenServerId || "none";
+          const input = serverInputs[selected];
+          const scores = result.scores || {};
+          const responseScore = Object.prototype.hasOwnProperty.call(scores, selected)
+            ? Number(scores[selected]).toFixed(3)
+            : "not exposed";
+          const factors = input
+            ? [
+              "health=" + String(Boolean(input.healthy)),
+              "weight=" + formatMaybeNumber(input.weight),
+              "capacity=" + formatMaybeNumber(input.configuredCapacity),
+              "connections=" + formatMaybeNumber(input.inFlightRequestCount),
+              "avgLatencyMs=" + formatMaybeNumber(input.averageLatencyMillis),
+              "p95LatencyMs=" + formatMaybeNumber(input.p95LatencyMillis),
+              "queueDepth=" + formatMaybeNumber(input.queueDepth)
+            ].join("<br>")
+            : "Selected server input unavailable; no selected server was returned.";
+          const scoreText = responseScore === "not exposed"
+            ? "Exact internal score not exposed by the current API; derived from visible request/response fields."
+            : "API score field for selected server: " + responseScore + ".";
+          return "<tr>"
+            + "<td>" + escapeHtml(result.strategyId || "unknown") + "</td>"
+            + "<td>" + escapeHtml(selected) + "</td>"
+            + "<td>" + factors + "</td>"
+            + "<td>" + escapeHtml(result.reason || result.status || "No reason returned.") + "<br>"
+            + escapeHtml(scoreText) + "</td>"
+            + "</tr>";
+        }).join("")
+        + "</tbody></table>";
+    }
+
+    function renderAllocationExplanation(scenario) {
+      const container = document.getElementById("allocation-explanation");
+      if (!state.allocation) {
+        container.textContent = "Run allocation preview to populate capacity math.";
+        return;
+      }
+      if (state.allocation.status === "Not available in current API") {
+        container.textContent = "Not available in current API.";
+        return;
+      }
+      const allocations = state.allocation.allocations || {};
+      const servers = scenario.allocationRequest.servers || [];
+      container.innerHTML = "<p class=\"drilldown-note\">Derived from visible request/response fields: load score uses average CPU, memory, and disk because the allocation response does not expose per-server load score.</p>"
+        + "<p>Requested load: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3)
+        + "; unallocated load: " + Number(state.allocation.unallocatedLoad || 0).toFixed(3)
+        + "; simulated additional servers: " + String(state.allocation.recommendedAdditionalServers || 0)
+        + ".</p>"
+        + "<table aria-label=\"Allocation Math / Capacity Explanation\"><thead><tr>"
+        + "<th>Server</th><th>Health</th><th>Capacity</th><th>Derived current load</th><th>Allocated</th><th>Derived remaining capacity</th>"
+        + "</tr></thead><tbody>"
+        + servers.map((server) => {
+          const loadScore = derivedLoadScore(server);
+          const allocated = Number(allocations[server.id] || 0);
+          const remaining = Math.max(0, Number(server.capacity || 0) - loadScore - allocated);
+          return "<tr>"
+            + "<td>" + escapeHtml(server.id) + "</td>"
+            + "<td>" + escapeHtml(String(Boolean(server.healthy))) + "</td>"
+            + "<td>" + Number(server.capacity || 0).toFixed(3) + "</td>"
+            + "<td>" + loadScore.toFixed(3) + "</td>"
+            + "<td>" + allocated.toFixed(3) + "</td>"
+            + "<td>" + remaining.toFixed(3) + "</td>"
+            + "</tr>";
+        }).join("")
+        + "</tbody></table>";
+    }
+
+    function renderOverloadExplanation(scenario) {
+      const container = document.getElementById("overload-explanation");
+      if (!state.evaluation) {
+        container.textContent = "Run load-shedding preview to populate overload reasons.";
+        return;
+      }
+      if (state.evaluation.status === "Not available in current API") {
+        container.textContent = "Not available in current API.";
+        return;
+      }
+      const shedding = state.evaluation.loadShedding || {};
+      const metrics = state.evaluation.metricsPreview || {};
+      const unhealthyCount = (scenario.evaluationRequest.servers || [])
+        .filter((server) => !server.healthy)
+        .length;
+      container.innerHTML = "<p class=\"drilldown-note\">Derived from visible request/response fields. Exact policy thresholds are not exposed in this response.</p>"
+        + "<ul class=\"hint-list\">"
+        + "<li>Decision reason: " + escapeHtml(state.evaluation.decisionReason || "No decision reason returned.") + "</li>"
+        + "<li>Priority/action: " + escapeHtml(shedding.priority || "unknown") + " / "
+        + escapeHtml(shedding.action || "unknown") + "</li>"
+        + "<li>In-flight vs limit: " + formatMaybeNumber(shedding.currentInFlightRequestCount)
+        + " / " + formatMaybeNumber(shedding.concurrencyLimit) + "</li>"
+        + "<li>Queue depth: " + formatMaybeNumber(shedding.queueDepth) + "</li>"
+        + "<li>Utilization: " + formatMaybeNumber(shedding.utilization) + "</li>"
+        + "<li>P95 latency ms: " + formatMaybeNumber(shedding.observedP95LatencyMillis) + "</li>"
+        + "<li>Error rate: " + formatMaybeNumber(shedding.observedErrorRate) + "</li>"
+        + "<li>Healthy servers evaluated: " + formatMaybeNumber(metrics.evaluatedHealthyServerCount) + "</li>"
+        + "<li>Unhealthy inputs in scenario: " + String(unhealthyCount) + "</li>"
+        + "<li>Read-only metrics emitted: " + escapeHtml(String(Boolean(metrics.emitted))) + "</li>"
+        + "</ul>";
+    }
+
+    function renderRemediationExplanation() {
+      const container = document.getElementById("remediation-explanation");
+      const plan = state.evaluation && state.evaluation.remediationPlan;
+      if (!plan) {
+        container.textContent = "Run remediation hints to populate advisory rationale.";
+        return;
+      }
+      if (plan.status === "Not available in current API") {
+        container.textContent = "Not available in current API.";
+        return;
+      }
+      const recommendations = plan.recommendations || [];
+      container.innerHTML = "<p>Status: " + escapeHtml(plan.status || "unknown")
+        + "; generated from: " + escapeHtml(plan.generatedFrom || "unknown")
+        + "; advisory only: " + escapeHtml(String(Boolean(plan.advisoryOnly))) + ".</p>"
+        + (recommendations.length
+          ? "<ul class=\"hint-list\">" + recommendations.map((item) =>
+            "<li>Rank " + item.rank + ": " + escapeHtml(item.action)
+            + " because " + escapeHtml(item.reason || "response did not include a reason")
+            + ". Priority: " + escapeHtml(item.priority || "unknown")
+            + "; executable: " + escapeHtml(String(Boolean(item.executable)))
+            + "; serverCount: " + formatMaybeNumber(item.serverCount)
+            + "; loadAmount: " + formatMaybeNumber(item.loadAmount)
+            + ". " + escapeHtml(item.message || "") + "</li>"
+          ).join("") + "</ul>"
+          : "<p>No remediation recommendations returned.</p>");
+    }
+
+    function renderScenarioDeltaExplanation() {
+      const container = document.getElementById("scenario-delta-explanation");
+      if (!previousScenarioSnapshot || !latestScenarioSnapshot) {
+        container.textContent = "No prior scenario comparison available.";
+        return;
+      }
+      const previousInput = previousScenarioSnapshot.inputSummary || {};
+      const latestInput = latestScenarioSnapshot.inputSummary || {};
+      container.innerHTML = "<ul class=\"hint-list\">"
+        + "<li>Scenario: " + escapeHtml(previousScenarioSnapshot.scenarioName)
+        + " -> " + escapeHtml(latestScenarioSnapshot.scenarioName) + "</li>"
+        + "<li>Healthy allocation servers: " + formatMaybeNumber(previousInput.healthyAllocationServers)
+        + " -> " + formatMaybeNumber(latestInput.healthyAllocationServers) + "</li>"
+        + "<li>Total allocation capacity: " + formatMaybeNumber(previousInput.totalAllocationCapacity)
+        + " -> " + formatMaybeNumber(latestInput.totalAllocationCapacity) + "</li>"
+        + "<li>Average routing connections: " + formatMaybeNumber(previousInput.averageRoutingConnections)
+        + " -> " + formatMaybeNumber(latestInput.averageRoutingConnections) + "</li>"
+        + "<li>Average routing p95 latency: " + formatMaybeNumber(previousInput.averageRoutingP95Latency)
+        + " -> " + formatMaybeNumber(latestInput.averageRoutingP95Latency) + "</li>"
+        + "<li>Unallocated load: " + formatMaybeNumber(previousScenarioSnapshot.allocationUnallocatedLoad)
+        + " -> " + formatMaybeNumber(latestScenarioSnapshot.allocationUnallocatedLoad) + "</li>"
+        + "<li>Load-shedding action: " + escapeHtml(previousScenarioSnapshot.loadSheddingAction)
+        + " -> " + escapeHtml(latestScenarioSnapshot.loadSheddingAction) + "</li>"
+        + "</ul>";
+    }
+
     function refreshCurlSnippets() {
       const scenario = currentScenario();
       outputs.curl.textContent = [
@@ -1163,6 +1431,19 @@
         "curl -fsS -X POST " + apiUrl("/api/routing/compare")
           + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.routingRequest) + "'"
       ].join("\n\n");
+      outputs.explanationCurl.textContent = [
+        "# Explanation-focused routing response with real reason, scores, and selected server fields",
+        "curl -fsS -X POST " + apiUrl("/api/routing/compare")
+          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.routingRequest) + "'",
+        "",
+        "# Explanation-focused allocation response with real allocations and unallocated load",
+        "curl -fsS -X POST " + apiUrl("/api/allocate/capacity-aware")
+          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.allocationRequest) + "'",
+        "",
+        "# Explanation-focused evaluation response with real load-shedding and remediationPlan fields",
+        "curl -fsS -X POST " + apiUrl("/api/allocate/evaluate")
+          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.evaluationRequest) + "'"
+      ].join("\n");
     }
 
     function buildSummary() {
@@ -1216,6 +1497,7 @@
         "- no external scripts/CDNs",
         "- no server-side report writing"
       ].join("\n");
+      refreshDrillDown();
     }
 
     function scenarioSnapshot() {
@@ -1233,7 +1515,8 @@
           strategy: result.strategyId,
           selected: result.chosenServerId || "none",
           status: result.status || "unknown"
-        }))
+        })),
+        inputSummary: buildInputSummary(scenario)
       };
     }
 
@@ -1290,6 +1573,113 @@
       ].join("\n");
     }
 
+    function buildDrillDownSummary(scenario) {
+      const routingResults = state.routing && state.routing.results ? state.routing.results : [];
+      const routingLines = routingResults.length
+        ? routingResults.map((result) => "- " + result.strategyId
+          + ": selected=" + (result.chosenServerId || "none")
+          + ", status=" + (result.status || "unknown")
+          + ", reason=" + (result.reason || "No reason returned.")).join("\n")
+        : "- Not run";
+      const allocationLines = state.allocation
+        ? [
+          "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
+          "- unallocatedLoad: " + Number(state.allocation.unallocatedLoad || 0).toFixed(3),
+          "- recommendedAdditionalServers: " + String(state.allocation.recommendedAdditionalServers || 0)
+        ].join("\n")
+        : "- Not run";
+      const shedding = state.evaluation && state.evaluation.loadShedding;
+      const overloadLines = shedding
+        ? [
+          "- action: " + shedding.action,
+          "- priority: " + shedding.priority,
+          "- reason: " + shedding.reason,
+          "- utilization: " + formatMaybeNumber(shedding.utilization)
+        ].join("\n")
+        : "- Not run";
+      const plan = state.evaluation && state.evaluation.remediationPlan;
+      const recommendationLines = plan && plan.recommendations && plan.recommendations.length
+        ? plan.recommendations.map((item) =>
+          "- " + item.rank + ". " + item.action + " (" + item.reason + "): " + item.message).join("\n")
+        : "- Not run";
+      return [
+        "# Operator Explanation Drill-Down",
+        "",
+        "scenarioName: " + scenario.scenarioName,
+        "derivedExplanationLabel: derived from visible request/response fields",
+        "exactInternalScoreAvailability: exact internal score not exposed by the current API for every strategy",
+        "runtimeReportWritten: false",
+        "cloudMutation: false",
+        "",
+        "## Routing Strategy Explanation",
+        routingLines,
+        "",
+        "## Allocation Math / Capacity Explanation",
+        allocationLines,
+        "",
+        "## Load-Shedding / Overload Reason Breakdown",
+        overloadLines,
+        "",
+        "## Remediation Rationale",
+        recommendationLines,
+        "",
+        "## Scenario Delta Explanation",
+        previousScenarioSnapshot && latestScenarioSnapshot
+          ? "- compared: " + previousScenarioSnapshot.scenarioName + " -> " + latestScenarioSnapshot.scenarioName
+          : "- No prior scenario comparison available.",
+        "",
+        "## Safety",
+        "- local/operator demo only",
+        "- not certification",
+        "- not benchmark proof",
+        "- not legal compliance proof",
+        "- not identity proof",
+        "- no cloud mutation",
+        "- no runtime report written"
+      ].join("\n");
+    }
+
+    function buildOperatorRationale(scenario) {
+      const lines = [
+        "Operator rationale for " + scenario.scenarioName + ":",
+        "Use the raw JSON as the source of truth. The notes below are derived from visible request/response fields."
+      ];
+      if (state.routing && state.routing.results) {
+        const successful = state.routing.results
+          .filter((result) => result.chosenServerId)
+          .map((result) => result.strategyId + " selected " + result.chosenServerId);
+        lines.push("Routing: " + (successful.length ? successful.join("; ") : "no selected server returned."));
+      } else {
+        lines.push("Routing: not run.");
+      }
+      if (state.allocation) {
+        lines.push("Allocation: requested "
+          + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3)
+          + " with unallocated load "
+          + Number(state.allocation.unallocatedLoad || 0).toFixed(3) + ".");
+      } else {
+        lines.push("Allocation: not run.");
+      }
+      if (state.evaluation && state.evaluation.loadShedding) {
+        lines.push("Load-shedding: "
+          + state.evaluation.loadShedding.action
+          + " because "
+          + state.evaluation.loadShedding.reason + ".");
+      } else {
+        lines.push("Load-shedding: not run.");
+      }
+      if (state.evaluation && state.evaluation.remediationPlan) {
+        lines.push("Remediation: "
+          + state.evaluation.remediationPlan.status
+          + " with "
+          + (state.evaluation.remediationPlan.recommendations || []).length
+          + " advisory recommendations.");
+      } else {
+        lines.push("Remediation: not run.");
+      }
+      return lines.join("\n");
+    }
+
     function renderWhatChanged() {
       const container = document.getElementById("what-changed-summary");
       if (!previousScenarioSnapshot || !latestScenarioSnapshot) {
@@ -1317,6 +1707,7 @@
         + " -> " + escapeHtml(latestScenarioSnapshot.remediationStatus) + "</li>"
         + routingLines
         + "</ul>";
+      renderScenarioDeltaExplanation();
     }
 
     function routingMap(snapshot) {
@@ -1329,6 +1720,49 @@
 
     function formatMaybeNumber(value) {
       return value === null || value === undefined ? "NOT_RUN" : Number(value).toFixed(3);
+    }
+
+    function routingInputMap(scenario) {
+      const map = {};
+      (scenario.routingRequest.servers || []).forEach((server) => {
+        map[server.serverId] = server;
+      });
+      return map;
+    }
+
+    function derivedLoadScore(server) {
+      return (Number(server.cpuUsage || 0) + Number(server.memoryUsage || 0) + Number(server.diskUsage || 0)) / 3.0;
+    }
+
+    function buildInputSummary(scenario) {
+      const allocationServers = scenario.allocationRequest.servers || [];
+      const routingServers = scenario.routingRequest.servers || [];
+      const healthyAllocationServers = allocationServers.filter((server) => server.healthy).length;
+      const totalAllocationCapacity = allocationServers
+        .filter((server) => server.healthy)
+        .reduce((sum, server) => sum + Number(server.capacity || 0), 0);
+      const averageRoutingConnections = average(routingServers.map((server) => Number(server.inFlightRequestCount || 0)));
+      const averageRoutingP95Latency = average(routingServers.map((server) => Number(server.p95LatencyMillis || 0)));
+      return {
+        healthyAllocationServers,
+        totalAllocationCapacity,
+        averageRoutingConnections,
+        averageRoutingP95Latency
+      };
+    }
+
+    function average(values) {
+      if (!values.length) {
+        return null;
+      }
+      return values.reduce((sum, value) => sum + value, 0) / values.length;
+    }
+
+    function textBlockToHtml(text) {
+      return "<ul class=\"hint-list\">" + text.split("\n")
+        .filter((line) => line.trim())
+        .map((line) => "<li>" + escapeHtml(line) + "</li>")
+        .join("") + "</ul>";
     }
 
     function resetRuntimeState() {
@@ -1351,6 +1785,22 @@
         "<strong>Load-shedding signal</strong><span class=\"muted\">Run load-shedding preview to populate overload signals.</span>";
       document.getElementById("remediation-summary").innerHTML =
         "<strong>Advisory hints</strong><span class=\"muted\">Run remediation hints to populate advisory plan output.</span>";
+      document.getElementById("routing-explanation").textContent =
+        "Run routing comparison to populate strategy explanations.";
+      document.getElementById("allocation-explanation").textContent =
+        "Run allocation preview to populate capacity math.";
+      document.getElementById("overload-explanation").textContent =
+        "Run load-shedding preview to populate overload reasons.";
+      document.getElementById("remediation-explanation").textContent =
+        "Run remediation hints to populate advisory rationale.";
+      document.getElementById("scenario-delta-explanation").textContent =
+        "No prior scenario comparison available.";
+      document.getElementById("operator-rationale-view").textContent =
+        "Run a scenario to generate operator-facing rationale.";
+      outputs.drilldownSummary.textContent =
+        "Run the cockpit sequence to generate a deterministic drill-down summary.";
+      outputs.operatorRationale.textContent =
+        "Run a scenario to generate operator rationale.";
       ["health", "scenario", "allocation", "routing", "evaluation"].forEach((name) => setBadge(name, "Not run"));
     }
 

@@ -1,6 +1,6 @@
 # Postman Load-Balancing Cockpit
 
-This guide covers the `Unified Load-Balancing Cockpit` and `Operator Scenario Gallery` folders in `postman/LoadBalancerPro.postman_collection.json`.
+This guide covers the `Unified Load-Balancing Cockpit`, `Operator Scenario Gallery`, and `Operator Explanation Drill-Down` folders in `postman/LoadBalancerPro.postman_collection.json`.
 It mirrors the browser page at:
 
 ```text
@@ -52,6 +52,16 @@ Run the `Operator Scenario Gallery` folder when a reviewer wants to compare mult
 12. `POST Recovery Capacity Restored Routing Comparison`
 13. `POST Recovery Capacity Restored Allocation Preview`
 14. `POST Recovery Capacity Restored Overload Evaluation Preview`
+
+Run the `Operator Explanation Drill-Down` folder when a reviewer wants request-by-request parity for the cockpit's explanation panels:
+
+1. `GET Explanation Drill-Down Health Check`
+2. `GET Explanation Drill-Down Readiness Check`
+3. Per-scenario `Routing Explanation` requests against `POST /api/routing/compare`
+4. Per-scenario `Allocation Explanation` requests against `POST /api/allocate/capacity-aware`
+5. Per-scenario `Overload And Remediation Explanation` requests against `POST /api/allocate/evaluate`
+
+The explanation folder does not call a new endpoint. It exposes the same visible scenario inputs and real response fields that the browser uses for routing, allocation, overload, remediation, and scenario-delta rationale.
 
 ## Supported Existing Endpoints
 
@@ -154,6 +164,12 @@ The browser cockpit includes a `Scenario Gallery` section with four safe package
 - `Recovery / Capacity Restored`
 
 Each scenario provides expected routing, allocation, load-shedding, and remediation hints before execution. The actual output still comes from the real endpoints after the scenario is run. The page can compare the latest run with the previous run and summarize what changed in unallocated load, rejected load, load-shedding action, remediation status, and selected routing servers.
+
+## Explanation Drill-Down
+
+The cockpit includes an `Explanation Drill-Down` area for operator review. It shows routing strategy explanations, allocation capacity math, overload reason breakdowns, remediation rationale, and scenario delta explanations.
+
+Raw JSON remains the source of truth. Exact internal scores and every internal threshold are not exposed by the current API, so client-side supporting text is labeled as derived from visible request/response fields. The page provides copy controls for drill-down summary, explanation curl snippets, and operator rationale.
 
 ## Response Shape
 

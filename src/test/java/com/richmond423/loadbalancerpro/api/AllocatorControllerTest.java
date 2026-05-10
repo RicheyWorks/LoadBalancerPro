@@ -100,6 +100,10 @@ class AllocatorControllerTest {
                 DomainMetrics.ALLOCATION_REQUESTS, "strategy", "CAPACITY_AWARE").count());
         assertEquals(2.0, registry.summary(
                 DomainMetrics.ALLOCATION_SERVER_COUNT, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
+        assertEquals(30.0, registry.summary(
+                DomainMetrics.ALLOCATION_ACCEPTED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
+        assertEquals(45.0, registry.summary(
+                DomainMetrics.ALLOCATION_REJECTED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
         assertEquals(45.0, registry.summary(
                 DomainMetrics.ALLOCATION_UNALLOCATED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
         assertEquals(1.0, registry.summary(
@@ -290,6 +294,10 @@ class AllocatorControllerTest {
                 DomainMetrics.ALLOCATION_REQUESTS, "strategy", "CAPACITY_AWARE").count());
         assertEquals(0.0, registry.summary(
                 DomainMetrics.ALLOCATION_SERVER_COUNT, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
+        assertEquals(0.0, registry.summary(
+                DomainMetrics.ALLOCATION_ACCEPTED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
+        assertEquals(50.0, registry.summary(
+                DomainMetrics.ALLOCATION_REJECTED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
         assertEquals(50.0, registry.summary(
                 DomainMetrics.ALLOCATION_UNALLOCATED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
         assertEquals(0.0, registry.summary(
@@ -347,6 +355,10 @@ class AllocatorControllerTest {
                 DomainMetrics.ALLOCATION_REQUESTS, "strategy", "CAPACITY_AWARE").count());
         assertEquals(4.0, registry.summary(
                 DomainMetrics.ALLOCATION_SERVER_COUNT, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
+        assertEquals(200.0, registry.summary(
+                DomainMetrics.ALLOCATION_ACCEPTED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
+        assertEquals(100.0, registry.summary(
+                DomainMetrics.ALLOCATION_REJECTED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
         assertEquals(100.0, registry.summary(
                 DomainMetrics.ALLOCATION_UNALLOCATED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
         assertEquals(2.0, registry.summary(

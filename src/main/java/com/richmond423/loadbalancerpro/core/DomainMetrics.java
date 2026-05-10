@@ -12,6 +12,8 @@ import java.util.Locale;
  */
 public final class DomainMetrics {
     public static final String ALLOCATION_REQUESTS = "allocation.requests.count";
+    public static final String ALLOCATION_ACCEPTED_LOAD = "allocation.accepted.load";
+    public static final String ALLOCATION_REJECTED_LOAD = "allocation.rejected.load";
     public static final String ALLOCATION_UNALLOCATED_LOAD = "allocation.unallocated.load";
     public static final String ALLOCATION_SERVER_COUNT = "allocation.server.count";
     public static final String ALLOCATION_SCALING_RECOMMENDED_SERVERS =
@@ -28,11 +30,25 @@ public final class DomainMetrics {
     }
 
     public static void recordAllocation(String strategy, int serverCount, double unallocatedLoad) {
+        recordAllocation(strategy, serverCount, 0.0, unallocatedLoad);
+    }
+
+    public static void recordAllocation(String strategy, int serverCount, double acceptedLoad, double unallocatedLoad) {
         String safeStrategy = safeTag(strategy);
         Counter.builder(ALLOCATION_REQUESTS)
                 .tag("strategy", safeStrategy)
                 .register(Metrics.globalRegistry)
                 .increment();
+        DistributionSummary.builder(ALLOCATION_ACCEPTED_LOAD)
+                .tag("strategy", safeStrategy)
+                .baseUnit("gigabytes")
+                .register(Metrics.globalRegistry)
+                .record(Math.max(0.0, acceptedLoad));
+        DistributionSummary.builder(ALLOCATION_REJECTED_LOAD)
+                .tag("strategy", safeStrategy)
+                .baseUnit("gigabytes")
+                .register(Metrics.globalRegistry)
+                .record(Math.max(0.0, unallocatedLoad));
         DistributionSummary.builder(ALLOCATION_SERVER_COUNT)
                 .tag("strategy", safeStrategy)
                 .register(Metrics.globalRegistry)

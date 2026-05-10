@@ -56,6 +56,10 @@ class DomainMetricsTest {
             balancer.capacityAwareWithResult(40.0);
 
             assertEquals(1.0, registry.counter(DomainMetrics.ALLOCATION_REQUESTS, "strategy", "CAPACITY_AWARE").count());
+            assertEquals(15.0, registry.summary(
+                    DomainMetrics.ALLOCATION_ACCEPTED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount());
+            assertEquals(25.0, registry.summary(
+                    DomainMetrics.ALLOCATION_REJECTED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount());
             assertEquals(25.0, registry.summary(
                     DomainMetrics.ALLOCATION_UNALLOCATED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount());
             assertEquals(1.0, registry.summary(
@@ -187,6 +191,8 @@ class DomainMetricsTest {
                 DomainMetrics.ALLOCATION_SERVER_COUNT, "strategy", strategy).totalAmount());
         assertEquals(expectedUnallocatedLoad, registry.summary(
                 DomainMetrics.ALLOCATION_UNALLOCATED_LOAD, "strategy", strategy).totalAmount());
+        assertEquals(expectedUnallocatedLoad, registry.summary(
+                DomainMetrics.ALLOCATION_REJECTED_LOAD, "strategy", strategy).totalAmount());
     }
 
     private static Server metricServer(String id, double load, double weight, double capacity) {

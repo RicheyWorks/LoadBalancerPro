@@ -203,7 +203,8 @@ public class LoadBalancer {
                 logger.warn("No healthy servers found for data key {}", i);
             }
         }
-        DomainMetrics.recordAllocation("CONSISTENT_HASHING", healthy.size(), 0.0);
+        DomainMetrics.recordAllocation("CONSISTENT_HASHING", healthy.size(),
+                dist.values().stream().mapToDouble(Double::doubleValue).sum(), 0.0);
         return dist;
     }
 
@@ -463,13 +464,13 @@ public class LoadBalancer {
         try {
             if (serverRegistry.isEmpty()) {
                 logger.info("No servers available.");
-                DomainMetrics.recordAllocation(strategy, 0, totalData);
+                DomainMetrics.recordAllocation(strategy, 0, 0.0, totalData);
                 return new LoadDistributionResult(Collections.emptyMap(), totalData);
             }
             List<Server> healthy = getHealthyServers();
             if (healthy.isEmpty()) {
                 logger.warn("No healthy servers available for distribution.");
-                DomainMetrics.recordAllocation(strategy, 0, totalData);
+                DomainMetrics.recordAllocation(strategy, 0, 0.0, totalData);
                 return new LoadDistributionResult(Collections.emptyMap(), totalData);
             }
             return distributor.apply(healthy);

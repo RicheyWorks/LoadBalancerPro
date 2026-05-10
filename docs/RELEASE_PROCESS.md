@@ -61,6 +61,42 @@ LoadBalancerPro-<version>-SHA256SUMS.txt
 
 The workflow marks releases as non-prerelease by default. It marks the release as latest only when the tag is the highest semantic version among existing GitHub Releases; older backfill tags are explicitly not marked latest.
 
+## Dry-Run Release Verification
+
+Use the manual `workflow_dispatch` path in `.github/workflows/release-artifacts.yml` to verify release asset generation before creating a tag.
+
+The dry run:
+
+- runs from the selected branch or commit, normally `main`,
+- uses the optional `version` input or falls back to `pom.xml` project version,
+- verifies the Maven project version matches the resolved release version,
+- builds and smoke-tests the executable JAR,
+- generates CycloneDX SBOM files,
+- stages the exact release asset filenames,
+- writes and verifies `LoadBalancerPro-<version>-SHA256SUMS.txt`,
+- uploads a GitHub Actions workflow artifact named `loadbalancerpro-release-<version>-dry-run`.
+
+The dry run does not create tags, create GitHub Releases, upload GitHub Release assets, overwrite existing assets, or mark anything latest.
+
+To run it:
+
+1. Open the `Release Artifacts` workflow in GitHub Actions.
+2. Choose `Run workflow`.
+3. Select `main`.
+4. Leave `version` blank to use `pom.xml`, or enter the intended semantic version without the leading `v`.
+5. Wait for the run to finish and download the workflow artifact bundle.
+
+After the dry run, verify the artifact contains exactly:
+
+```text
+LoadBalancerPro-<version>.jar
+LoadBalancerPro-<version>-bom.json
+LoadBalancerPro-<version>-bom.xml
+LoadBalancerPro-<version>-SHA256SUMS.txt
+```
+
+Then verify the checksum file against the JAR and both SBOM files before creating a real release tag.
+
 ## Checksums And SBOMs
 
 `LoadBalancerPro-<version>-SHA256SUMS.txt` contains SHA-256 hashes for the JAR and both SBOM files. Use it to verify downloaded release assets.

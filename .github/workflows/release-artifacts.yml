@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Optional dry-run version without leading v. Defaults to pom.xml project.version.
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -32,34 +38,64 @@ jobs:
           cache: maven
 
       - name: Resolve release version
+        id: resolve-release
         shell: bash
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version || '' }}
         run: |
           set -euo pipefail
 
-          TAG="${GITHUB_REF_NAME}"
-          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Release artifact workflow only accepts semantic version tags like v1.6.1. Got: $TAG"
-            exit 1
+          RELEASE_PUBLISH=false
+          RELEASE_MODE=dry-run
+
+          if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
+            TAG="${GITHUB_REF_NAME}"
+            if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Release artifact workflow only accepts semantic version tags like v1.6.1. Got: $TAG"
+              exit 1
+            fi
+
+            RELEASE_VERSION="${TAG#v}"
+            RELEASE_PUBLISH=true
+            RELEASE_MODE=publish
+            ARTIFACT_BUNDLE_NAME="loadbalancerpro-release-${RELEASE_VERSION}"
+          else
+            if [ -n "$INPUT_VERSION" ]; then
+              RELEASE_VERSION="$INPUT_VERSION"
+            else
+              RELEASE_VERSION="$(mvn -q -DforceStdout -Dstyle.color=never help:evaluate -Dexpression=project.version | tail -n 1 | tr -d '\r')"
+            fi
+
+            if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Release dry run requires a semantic version like 2.4.3. Got: $RELEASE_VERSION"
+              exit 1
+            fi
+
+            ARTIFACT_BUNDLE_NAME="loadbalancerpro-release-${RELEASE_VERSION}-dry-run"
           fi
 
-          RELEASE_VERSION="${TAG#v}"
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> "$GITHUB_ENV"
+          echo "RELEASE_MODE=$RELEASE_MODE" >> "$GITHUB_ENV"
+          echo "RELEASE_PUBLISH=$RELEASE_PUBLISH" >> "$GITHUB_ENV"
+          echo "ARTIFACT_BUNDLE_NAME=$ARTIFACT_BUNDLE_NAME" >> "$GITHUB_ENV"
+          echo "release_publish=$RELEASE_PUBLISH" >> "$GITHUB_OUTPUT"
           echo "Release version: $RELEASE_VERSION"
+          echo "Release mode: $RELEASE_MODE"
 
-      - name: Verify Maven version matches tag
+      - name: Verify Maven version matches release version
         shell: bash
         run: |
           set -euo pipefail
 
           MAVEN_VERSION="$(mvn -q -DforceStdout -Dstyle.color=never help:evaluate -Dexpression=project.version | tail -n 1 | tr -d '\r')"
           if [ "$MAVEN_VERSION" != "$RELEASE_VERSION" ]; then
-            echo "Git tag version and Maven project version differ."
-            echo "Tag version: $RELEASE_VERSION"
+            echo "Release version and Maven project version differ."
+            echo "Release version: $RELEASE_VERSION"
             echo "Maven version: $MAVEN_VERSION"
             exit 1
           fi
 
-          echo "Maven project version matches tag: $MAVEN_VERSION"
+          echo "Maven project version matches release version: $MAVEN_VERSION"
 
       - name: Package executable JAR
         run: mvn -B -DskipTests package
@@ -188,13 +224,31 @@ jobs:
           cd release-artifacts
           sha256sum -c "LoadBalancerPro-${RELEASE_VERSION}-SHA256SUMS.txt"
 
+      - name: Summarize release artifact bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Release mode: $RELEASE_MODE"
+          echo "Publishing enabled: $RELEASE_PUBLISH"
+          echo "Release artifact bundle:"
+          cd release-artifacts
+          ls -l
+          sha256sum \
+            "LoadBalancerPro-${RELEASE_VERSION}.jar" \
+            "LoadBalancerPro-${RELEASE_VERSION}-bom.json" \
+            "LoadBalancerPro-${RELEASE_VERSION}-bom.xml" \
+            "LoadBalancerPro-${RELEASE_VERSION}-SHA256SUMS.txt"
+
       - name: Attest release JAR provenance
+        if: steps.resolve-release.outputs.release_publish == 'true'
         # actions/attest@v4.1.0
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26
         with:
           subject-path: release-artifacts/LoadBalancerPro-${{ env.RELEASE_VERSION }}.jar
 
       - name: Attest release JAR SBOM
+        if: steps.resolve-release.outputs.release_publish == 'true'
         # actions/attest@v4.1.0
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26
         with:
@@ -202,6 +256,7 @@ jobs:
           sbom-path: release-artifacts/LoadBalancerPro-${{ env.RELEASE_VERSION }}-bom.json
 
       - name: Prepare GitHub Release notes
+        if: steps.resolve-release.outputs.release_publish == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -224,6 +279,7 @@ jobs:
           echo "RELEASE_NOTES_FILE=$RELEASE_NOTES_FILE" >> "$GITHUB_ENV"
 
       - name: Publish GitHub Release assets
+        if: steps.resolve-release.outputs.release_publish == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -298,6 +354,7 @@ jobs:
           fi
 
       - name: Verify GitHub Release assets
+        if: steps.resolve-release.outputs.release_publish == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -328,7 +385,7 @@ jobs:
         # actions/upload-artifact@v7
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: loadbalancerpro-release-${{ env.RELEASE_VERSION }}
+          name: ${{ env.ARTIFACT_BUNDLE_NAME }}
           path: |
             release-artifacts/LoadBalancerPro-${{ env.RELEASE_VERSION }}.jar
             release-artifacts/LoadBalancerPro-${{ env.RELEASE_VERSION }}-bom.json

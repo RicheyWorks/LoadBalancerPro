@@ -376,6 +376,34 @@
       font-weight: 700;
     }
 
+    .sequence-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 14px;
+      padding: 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .demo-summary-panel {
+      margin-bottom: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .demo-summary-panel .body {
+      padding-top: 0;
+    }
+
+    .demo-summary-panel pre {
+      min-height: 220px;
+      max-height: 380px;
+    }
+
     .grade-summary {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -489,6 +517,13 @@
 
     <p id="copy-status" class="copy-status">Copy/export status: idle.</p>
 
+    <div class="sequence-controls" aria-label="Guided demo sequence controls">
+      <button data-action="run-sequence" type="button">Run demo sequence</button>
+      <button data-action="stop-sequence" type="button" class="warning" disabled>Stop demo</button>
+      <button data-action="reset-sequence" type="button" class="secondary">Reset demo</button>
+      <button class="copy" type="button" data-copy-target="demo-summary-output">Copy demo summary</button>
+    </div>
+
     <div class="status-summary" aria-label="Demo status summary">
       <div class="summary-item">
         <span class="summary-label">Total steps</span>
@@ -595,6 +630,16 @@
       </ol>
     </div>
 
+    <section class="demo-summary-panel">
+      <div class="section-head">
+        <h2>Demo summary / transcript preview</h2>
+        <p class="postman-note">Client-side preview only. Nothing is written as a runtime report.</p>
+      </div>
+      <div class="body">
+        <pre id="demo-summary-output"></pre>
+      </div>
+    </section>
+
     <div class="grid">
       <section class="compact">
         <div class="section-head">
@@ -606,6 +651,9 @@
         </div>
         <div class="body">
           <p id="health-status" class="status-line">No request run.</p>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="health-output">Copy health response</button>
+          </div>
           <pre id="health-output">{}</pre>
           <details class="snippet">
             <summary>curl and Postman parity</summary>
@@ -627,6 +675,9 @@
         </div>
         <div class="body">
           <p id="onboarding-status" class="status-line">No request run.</p>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="onboarding-output">Copy onboarding response</button>
+          </div>
           <pre id="onboarding-output">{}</pre>
           <details class="snippet">
             <summary>curl and Postman parity</summary>
@@ -644,6 +695,9 @@
         </div>
         <div class="body">
           <p id="templates-status" class="status-line">No request run.</p>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="templates-output">Copy templates response</button>
+          </div>
           <pre id="templates-output">[]</pre>
           <details class="snippet">
             <summary>curl and Postman parity</summary>
@@ -661,6 +715,9 @@
         </div>
         <div class="body">
           <p id="examples-status" class="status-line">No request run.</p>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="examples-output">Copy examples response</button>
+          </div>
           <pre id="examples-output">[]</pre>
           <details class="snippet">
             <summary>curl and Postman parity</summary>
@@ -678,6 +735,9 @@
         </div>
         <div class="body">
           <p id="scorecards-status" class="status-line">No request run.</p>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="scorecards-output">Copy scorecards response</button>
+          </div>
           <pre id="scorecards-output">[]</pre>
           <details class="snippet">
             <summary>curl and Postman parity</summary>
@@ -706,6 +766,9 @@
         </div>
         <div class="body">
           <p id="scorecard-detail-status" class="status-line">No request run.</p>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="scorecard-detail-output">Copy scorecard response</button>
+          </div>
           <pre id="scorecard-detail-output">{}</pre>
           <details class="snippet">
             <summary>curl and Postman parity</summary>
@@ -723,6 +786,9 @@
         </div>
         <div class="body">
           <p id="answer-template-status" class="status-line">No request run.</p>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="answer-template-output">Copy answer template response</button>
+          </div>
           <pre id="answer-template-output">{}</pre>
           <details class="snippet">
             <summary>curl and Postman parity</summary>
@@ -766,6 +832,9 @@
             </ul>
           </div>
           <p id="grading-status" class="status-line">No request run.</p>
+          <div class="actions">
+            <button class="copy" type="button" data-copy-target="grading-output">Copy grading response</button>
+          </div>
           <pre id="grading-output">{}</pre>
           <details class="snippet" open>
             <summary>curl, payload copies, and Postman parity</summary>
@@ -815,6 +884,8 @@
         <li>API server is required for browser/Postman demo but not for offline CLI workflows.</li>
         <li>No external scripts/CDNs.</li>
         <li>No external styles, fonts, images, services, or dependencies.</li>
+        <li>No runtime report is written.</li>
+        <li>No browser storage is used.</li>
         <li>No secrets, auth fields, admin controls, release controls, ruleset controls, or cloud mutation controls.</li>
       </ul>
     </div>
@@ -837,7 +908,38 @@
       "grade-failing"
     ];
 
+    const sequenceSteps = [
+      { step: "health", name: "Health check", method: "GET", endpoint: "/api/health" },
+      { step: "readiness", name: "Readiness check", method: "GET", endpoint: "/actuator/health/readiness" },
+      { step: "onboarding", name: "Load onboarding", method: "GET", endpoint: "/api/evidence-training/onboarding" },
+      { step: "templates", name: "List templates", method: "GET", endpoint: "/api/evidence-training/templates" },
+      { step: "examples", name: "List examples", method: "GET", endpoint: "/api/evidence-training/examples" },
+      { step: "scorecards", name: "List scorecards", method: "GET", endpoint: "/api/evidence-training/scorecards" },
+      { step: "scorecard-detail", name: "Load scorecard detail", method: "GET", endpoint: "/api/evidence-training/scorecards/{name}" },
+      { step: "answer-template", name: "Load answer template", method: "GET", endpoint: "/api/evidence-training/scorecards/{name}/answer-template" },
+      { step: "grade-perfect", name: "Grade perfect sample", method: "POST", endpoint: "/api/evidence-training/scorecards/grade" },
+      { step: "grade-partial", name: "Grade partial sample", method: "POST", endpoint: "/api/evidence-training/scorecards/grade" },
+      { step: "grade-failing", name: "Grade failing sample", method: "POST", endpoint: "/api/evidence-training/scorecards/grade" }
+    ];
+
     const stepState = Object.fromEntries(stepOrder.map((step) => [step, "not-run"]));
+    const transcriptState = Object.fromEntries(sequenceSteps.map((step) => [
+      step.step,
+      {
+        name: step.name,
+        method: step.method,
+        endpoint: step.endpoint,
+        status: "NOT_RUN",
+        outcome: "Not run"
+      }
+    ]));
+    const gradingTranscript = {
+      perfect: null,
+      partial: null,
+      failing: null
+    };
+    let sequenceRunning = false;
+    let stopRequested = false;
 
     const samples = {
       perfect: {
@@ -964,6 +1066,9 @@
     const baseUrlInput = document.getElementById("base-url");
     const scorecardSelect = document.getElementById("scorecard-select");
     const copyStatus = document.getElementById("copy-status");
+    const demoSummaryOutput = document.getElementById("demo-summary-output");
+    const runSequenceButton = document.querySelector("[data-action=\"run-sequence\"]");
+    const stopSequenceButton = document.querySelector("[data-action=\"stop-sequence\"]");
 
     function sameOriginBaseUrl() {
       return window.location.origin && window.location.origin !== "null" ? window.location.origin : "http://localhost:8080";
@@ -987,6 +1092,76 @@
 
     function selectedAnswerTemplatePath() {
       return selectedScorecardPath() + "/answer-template";
+    }
+
+    function endpointForStep(step) {
+      if (step === "scorecard-detail") {
+        return selectedScorecardPath();
+      }
+      if (step === "answer-template") {
+        return selectedAnswerTemplatePath();
+      }
+      const match = sequenceSteps.find((candidate) => candidate.step === step);
+      return match ? match.endpoint : "";
+    }
+
+    function transcriptStatus(status) {
+      if (status === "passed") {
+        return "PASSED";
+      }
+      if (status === "warning") {
+        return "WARNING";
+      }
+      if (status === "failed") {
+        return "FAILED";
+      }
+      return "NOT_RUN";
+    }
+
+    function escapeSummaryCell(value) {
+      return String(value || "")
+        .replace(/\|/g, "/")
+        .replace(/\r?\n/g, " ")
+        .trim();
+    }
+
+    function formatPercent(value) {
+      return typeof value === "number" ? value.toFixed(1) + "%" : "not run";
+    }
+
+    function formatPassed(value) {
+      return typeof value === "boolean" ? String(value) : "not run";
+    }
+
+    function listCount(body) {
+      return Array.isArray(body) ? body.length : 0;
+    }
+
+    function responseOutcome(config, body, status) {
+      if (config.step === "health" || config.step === "readiness") {
+        const serviceStatus = body && body.status ? String(body.status) : "response returned";
+        return status === "warning" ? "Service status " + serviceStatus : "Service status " + serviceStatus;
+      }
+      if (config.step === "templates") {
+        return listCount(body) + " template(s) returned";
+      }
+      if (config.step === "examples") {
+        return listCount(body) + " example(s) returned";
+      }
+      if (config.step === "scorecards") {
+        return listCount(body) + " scorecard(s) returned";
+      }
+      if (config.step === "scorecard-detail") {
+        return "Scorecard " + selectedScorecardName() + " loaded";
+      }
+      if (config.step === "answer-template") {
+        const count = body && Array.isArray(body.answers) ? body.answers.length : 0;
+        return count + " answer item(s) returned";
+      }
+      if (config.step && config.step.indexOf("grade-") === 0) {
+        return "Score " + formatPercent(body && body.percent) + "; passed=" + formatPassed(body && body.passed);
+      }
+      return "Response loaded";
     }
 
     function statusLabel(status) {
@@ -1027,6 +1202,83 @@
       document.getElementById("summary-warning").textContent = String(counts.warning);
       document.getElementById("summary-failed").textContent = String(counts.failed);
       document.getElementById("summary-not-run").textContent = String(counts["not-run"]);
+    }
+
+    function updateSequenceControls() {
+      runSequenceButton.disabled = sequenceRunning;
+      stopSequenceButton.disabled = !sequenceRunning;
+    }
+
+    function recordTranscriptStep(config, status, outcome) {
+      const baseStep = sequenceSteps.find((step) => step.step === config.step);
+      if (!baseStep) {
+        return;
+      }
+      transcriptState[config.step] = {
+        name: baseStep.name,
+        method: config.options && config.options.method ? config.options.method : baseStep.method,
+        endpoint: config.path || endpointForStep(config.step),
+        status: transcriptStatus(status),
+        outcome
+      };
+      renderDemoSummary();
+    }
+
+    function recordTranscriptFailure(config, error) {
+      const message = error && error.message ? error.message : "Request failed";
+      recordTranscriptStep(config, "failed", message);
+    }
+
+    function recordGradingTranscript(sample, body) {
+      gradingTranscript[sample] = {
+        percent: body && typeof body.percent === "number" ? body.percent : null,
+        passed: body && typeof body.passed === "boolean" ? body.passed : null
+      };
+    }
+
+    function renderDemoSummary() {
+      const lines = [
+        "# Evidence Training Browser Demo",
+        "",
+        "demoName: Evidence Training Browser Demo",
+        "mode: local browser same-origin demo",
+        "",
+        "## Steps",
+        "| name | endpoint | method | status | short outcome |",
+        "| --- | --- | --- | --- | --- |"
+      ];
+
+      sequenceSteps.forEach((step) => {
+        const entry = transcriptState[step.step];
+        lines.push("| " + escapeSummaryCell(entry.name)
+          + " | " + escapeSummaryCell(entry.endpoint)
+          + " | " + escapeSummaryCell(entry.method)
+          + " | " + escapeSummaryCell(entry.status)
+          + " | " + escapeSummaryCell(entry.outcome) + " |");
+      });
+
+      lines.push(
+        "",
+        "## Grading Summary",
+        "- perfect sample: percent=" + formatPercent(gradingTranscript.perfect && gradingTranscript.perfect.percent)
+          + "; passed=" + formatPassed(gradingTranscript.perfect && gradingTranscript.perfect.passed),
+        "- partial sample: percent=" + formatPercent(gradingTranscript.partial && gradingTranscript.partial.percent)
+          + "; passed=" + formatPassed(gradingTranscript.partial && gradingTranscript.partial.passed),
+        "- failing sample: percent=" + formatPercent(gradingTranscript.failing && gradingTranscript.failing.percent)
+          + "; passed=" + formatPassed(gradingTranscript.failing && gradingTranscript.failing.passed),
+        "",
+        "## Safety",
+        "- local/operator training aid only",
+        "- not certification",
+        "- not legal compliance proof",
+        "- not identity proof",
+        "- no cloud mutation",
+        "- no CloudManager required",
+        "- no runtime report written",
+        "- no external scripts/CDNs"
+      );
+
+      demoSummaryOutput.textContent = lines.join("\n");
     }
 
     function render(target, state, value, status) {
@@ -1095,6 +1347,7 @@
       const result = await requestJson(config.target, config.path, config.options);
       if (result.error) {
         setStepStatus(config.step, "failed");
+        recordTranscriptFailure(config, result.error);
         return null;
       }
       const status = config.classify ? config.classify(result.body) : "passed";
@@ -1103,11 +1356,15 @@
       if (config.after) {
         config.after(result.body, status);
       }
+      if (config.sample) {
+        recordGradingTranscript(config.sample, result.body);
+      }
+      recordTranscriptStep(config, status, responseOutcome(config, result.body, status));
       return result.body;
     }
 
     async function listScorecards() {
-      await runRequest({
+      return await runRequest({
         step: "scorecards",
         target: "scorecards",
         path: "/api/evidence-training/scorecards",
@@ -1165,9 +1422,61 @@
       }
     }
 
+    function resetGradeSummary() {
+      const badge = document.getElementById("grade-result-badge");
+      badge.textContent = "Not run";
+      badge.className = "badge not-run";
+      document.getElementById("grade-percent").textContent = "not run";
+      document.getElementById("grade-passed").textContent = "not run";
+      document.getElementById("grade-exercises").textContent = "not run";
+      const decisions = document.getElementById("grade-decisions");
+      decisions.innerHTML = "";
+      const item = document.createElement("li");
+      item.textContent = "No per-exercise decision summary yet.";
+      decisions.appendChild(item);
+    }
+
+    function resetClientState(copyMessage) {
+      const defaults = {
+        health: "{}",
+        onboarding: "{}",
+        templates: "[]",
+        examples: "[]",
+        scorecards: "[]",
+        detail: "{}",
+        template: "{}",
+        grading: "{}"
+      };
+
+      Object.keys(outputs).forEach((target) => {
+        outputs[target].status.textContent = "No request run.";
+        outputs[target].status.className = "status-line";
+        outputs[target].output.textContent = defaults[target];
+      });
+      stepOrder.forEach((step) => setStepStatus(step, "not-run"));
+      sequenceSteps.forEach((step) => {
+        transcriptState[step.step] = {
+          name: step.name,
+          method: step.method,
+          endpoint: endpointForStep(step.step),
+          status: "NOT_RUN",
+          outcome: "Not run"
+        };
+      });
+      gradingTranscript.perfect = null;
+      gradingTranscript.partial = null;
+      gradingTranscript.failing = null;
+      resetGradeSummary();
+      renderDemoSummary();
+      if (copyMessage) {
+        copyStatus.textContent = copyMessage;
+      }
+    }
+
     async function grade(sample, step) {
-      await runRequest({
+      return await runRequest({
         step,
+        sample,
         target: "grading",
         path: "/api/evidence-training/scorecards/grade",
         options: {
@@ -1283,6 +1592,51 @@
       "grade-failing": () => grade("failing", "grade-failing")
     };
 
+    async function runDemoSequence() {
+      if (sequenceRunning) {
+        return;
+      }
+
+      resetClientState(null);
+      sequenceRunning = true;
+      stopRequested = false;
+      updateSequenceControls();
+      copyStatus.textContent = "Demo sequence running.";
+
+      for (const step of stepOrder) {
+        if (stopRequested) {
+          break;
+        }
+        await actions[step]();
+      }
+
+      const stopped = stopRequested;
+      sequenceRunning = false;
+      stopRequested = false;
+      updateSequenceControls();
+      copyStatus.textContent = stopped ? "Demo sequence stopped." : "Demo sequence complete.";
+      renderDemoSummary();
+    }
+
+    function stopDemoSequence() {
+      if (!sequenceRunning) {
+        return;
+      }
+      stopRequested = true;
+      copyStatus.textContent = "Demo sequence stop requested.";
+    }
+
+    function resetDemoSequence() {
+      stopRequested = true;
+      sequenceRunning = false;
+      updateSequenceControls();
+      resetClientState("Demo sequence reset.");
+    }
+
+    actions["run-sequence"] = runDemoSequence;
+    actions["stop-sequence"] = stopDemoSequence;
+    actions["reset-sequence"] = resetDemoSequence;
+
     document.querySelectorAll("[data-action]").forEach((button) => {
       button.addEventListener("click", () => {
         const action = actions[button.dataset.action];
@@ -1325,7 +1679,8 @@
     baseUrlInput.value = sameOriginBaseUrl();
     renderPayloads();
     renderCurlSnippets();
-    updateSummary();
+    resetClientState(null);
+    updateSequenceControls();
   </script>
 </body>
 </html>

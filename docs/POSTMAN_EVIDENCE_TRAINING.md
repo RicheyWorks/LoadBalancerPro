@@ -36,7 +36,7 @@ POST {{baseUrl}}/api/evidence-training/scorecards/grade
 
 The `GET` routes are discovery-only. The `POST` grade route evaluates the submitted answer JSON in memory and returns deterministic JSON. It does not write report files or runtime artifacts.
 
-The browser cockpit mirrors the Postman workflow with same-origin API calls for health, readiness, onboarding, templates, examples, scorecards, scorecard detail, answer templates, and perfect/partial/failing grading samples. It also shows checklist status, summary counters, copyable curl snippets, copy/export sample payloads, and PASS/WARN/FAIL grading summaries for reviewer demos.
+The browser cockpit mirrors the Postman workflow with same-origin API calls for health, readiness, onboarding, templates, examples, scorecards, scorecard detail, answer templates, and perfect/partial/failing grading samples. It also shows checklist status, summary counters, a `Run demo sequence` control, stop/reset controls, copyable curl snippets, copyable response blocks, copy/export sample payloads, a client-side-only summary preview, and PASS/WARN/FAIL grading summaries for reviewer demos.
 
 ## Demo Walkthrough Folder
 
@@ -98,7 +98,7 @@ java -jar target/LoadBalancerPro-2.4.2.jar --grade-training-scorecard scorecard-
 
 ## Browser Parity
 
-The static browser cockpit is plain HTML, CSS, and vanilla JavaScript served by the app. It has no external frontend scripts, styles, fonts, images, CDNs, services, dependencies, browser storage, or browser automation dependency. It does not expose secrets, auth fields, admin controls, release controls, ruleset controls, or cloud mutation controls. Its copy/export controls are client-side helpers for deterministic curl snippets and sample answer JSON only.
+The static browser cockpit is plain HTML, CSS, and vanilla JavaScript served by the app. It has no external frontend scripts, styles, fonts, images, CDNs, services, dependencies, browser storage, or browser automation dependency. It does not expose secrets, auth fields, admin controls, release controls, ruleset controls, or cloud mutation controls. Its copy/export controls are client-side helpers for deterministic curl snippets, response blocks, sample answer JSON, and the demo summary preview only; no runtime report is written by the browser flow.
 
 ## Limits
 

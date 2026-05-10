@@ -19,6 +19,7 @@
       --amber: #b45309;
       --danger: #b91c1c;
       --success: #047857;
+      --not-run: #64748b;
       --code-bg: #111827;
       --code-text: #e5edf3;
       font-family: Arial, Helvetica, sans-serif;
@@ -61,6 +62,10 @@
       letter-spacing: 0;
     }
 
+    p {
+      margin-top: 0;
+    }
+
     main {
       max-width: 1320px;
       margin: 0 auto;
@@ -72,7 +77,7 @@
       grid-template-columns: minmax(220px, 1fr) auto;
       gap: 12px;
       align-items: end;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
 
     label {
@@ -123,6 +128,15 @@
       border-color: #92400e;
     }
 
+    button.copy {
+      min-height: 32px;
+      padding: 6px 10px;
+      color: var(--text);
+      background: var(--panel-strong);
+      border-color: var(--line);
+      font-size: 0.86rem;
+    }
+
     button:disabled {
       opacity: 0.55;
       cursor: not-allowed;
@@ -135,7 +149,9 @@
     }
 
     section,
-    .notice {
+    .notice,
+    .status-summary,
+    .checklist-panel {
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -177,6 +193,10 @@
       color: var(--success);
     }
 
+    .status-line.warn {
+      color: var(--amber);
+    }
+
     .status-line.error {
       color: var(--danger);
     }
@@ -200,9 +220,16 @@
       min-height: 112px;
     }
 
+    .notice,
+    .status-summary,
+    .checklist-panel {
+      margin-bottom: 14px;
+      padding: 14px;
+    }
+
     .notice {
       margin-top: 14px;
-      padding: 14px;
+      margin-bottom: 0;
       background: var(--panel-strong);
     }
 
@@ -220,6 +247,211 @@
 
     .wide {
       grid-column: 1 / -1;
+    }
+
+    .status-summary {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .summary-item {
+      min-width: 0;
+      padding: 10px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .summary-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .summary-value {
+      display: block;
+      margin-top: 4px;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .checklist-panel h2 {
+      margin-bottom: 10px;
+    }
+
+    .checklist {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .checklist li {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .step-title {
+      display: block;
+      font-weight: 700;
+    }
+
+    .step-postman {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 74px;
+      min-height: 28px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge.not-run {
+      background: var(--not-run);
+    }
+
+    .badge.passed {
+      background: var(--success);
+    }
+
+    .badge.warning {
+      background: var(--amber);
+    }
+
+    .badge.failed {
+      background: var(--danger);
+    }
+
+    .snippet {
+      margin: 10px 0 0;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+    }
+
+    .snippet summary {
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .snippet pre,
+    .payload-panel pre {
+      min-height: 88px;
+      max-height: 220px;
+      margin-top: 8px;
+    }
+
+    .postman-note {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .copy-status {
+      min-height: 22px;
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .grade-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+      padding: 12px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .grade-summary-item {
+      min-width: 0;
+    }
+
+    .grade-summary-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .grade-summary-value {
+      display: block;
+      margin-top: 4px;
+      font-weight: 700;
+    }
+
+    .decision-list {
+      grid-column: 1 / -1;
+      display: grid;
+      gap: 6px;
+      margin: 4px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .decision-list li {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .payload-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .payload-panel {
+      min-width: 0;
+      padding: 10px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .payload-panel h3 {
+      margin-bottom: 8px;
+    }
+
+    @media (max-width: 940px) {
+      .status-summary,
+      .checklist,
+      .payload-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .grade-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 840px) {
@@ -241,7 +473,7 @@
 </head>
 <body>
   <header>
-    <h1>LoadBalancerPro Evidence Training Demo</h1>
+    <h1>LoadBalancerPro Evidence Training Cockpit</h1>
   </header>
 
   <main>
@@ -253,6 +485,114 @@
       <div class="actions">
         <button id="reset-base-url" type="button" class="secondary">Use same origin</button>
       </div>
+    </div>
+
+    <p id="copy-status" class="copy-status">Copy/export status: idle.</p>
+
+    <div class="status-summary" aria-label="Demo status summary">
+      <div class="summary-item">
+        <span class="summary-label">Total steps</span>
+        <span id="summary-total" class="summary-value">11</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Passed</span>
+        <span id="summary-passed" class="summary-value">0</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Warning</span>
+        <span id="summary-warning" class="summary-value">0</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Failed</span>
+        <span id="summary-failed" class="summary-value">0</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Not run</span>
+        <span id="summary-not-run" class="summary-value">11</span>
+      </div>
+    </div>
+
+    <div class="checklist-panel">
+      <h2>Guided checklist</h2>
+      <ol class="checklist" aria-label="Evidence training demo checklist">
+        <li data-step="health">
+          <span>
+            <span class="step-title">Health check</span>
+            <span class="step-postman">Postman parity: Evidence Training Demo Walkthrough / Health check</span>
+          </span>
+          <span class="badge not-run" data-step-status="health">Not run</span>
+        </li>
+        <li data-step="readiness">
+          <span>
+            <span class="step-title">Readiness check</span>
+            <span class="step-postman">Postman parity: Evidence Training Demo Walkthrough / Readiness check</span>
+          </span>
+          <span class="badge not-run" data-step-status="readiness">Not run</span>
+        </li>
+        <li data-step="onboarding">
+          <span>
+            <span class="step-title">Load onboarding</span>
+            <span class="step-postman">Postman parity: Evidence Training Demo Walkthrough / Evidence training onboarding</span>
+          </span>
+          <span class="badge not-run" data-step-status="onboarding">Not run</span>
+        </li>
+        <li data-step="templates">
+          <span>
+            <span class="step-title">List templates</span>
+            <span class="step-postman">Postman parity: Evidence Training Demo Walkthrough / List templates</span>
+          </span>
+          <span class="badge not-run" data-step-status="templates">Not run</span>
+        </li>
+        <li data-step="examples">
+          <span>
+            <span class="step-title">List examples</span>
+            <span class="step-postman">Postman parity: Evidence Training Demo Walkthrough / List examples</span>
+          </span>
+          <span class="badge not-run" data-step-status="examples">Not run</span>
+        </li>
+        <li data-step="scorecards">
+          <span>
+            <span class="step-title">List scorecards</span>
+            <span class="step-postman">Postman parity: Evidence Training Demo Walkthrough / List scorecards</span>
+          </span>
+          <span class="badge not-run" data-step-status="scorecards">Not run</span>
+        </li>
+        <li data-step="scorecard-detail">
+          <span>
+            <span class="step-title">Load scorecard detail</span>
+            <span class="step-postman">Postman parity: Evidence Training Demo Walkthrough / Get strict-zero-drift-pass scorecard</span>
+          </span>
+          <span class="badge not-run" data-step-status="scorecard-detail">Not run</span>
+        </li>
+        <li data-step="answer-template">
+          <span>
+            <span class="step-title">Load answer template</span>
+            <span class="step-postman">Postman parity: Evidence Training Demo Walkthrough / Get answer template</span>
+          </span>
+          <span class="badge not-run" data-step-status="answer-template">Not run</span>
+        </li>
+        <li data-step="grade-perfect">
+          <span>
+            <span class="step-title">Grade perfect sample</span>
+            <span class="step-postman">Postman parity: Evidence Training Demo Walkthrough / Grade perfect sample</span>
+          </span>
+          <span class="badge not-run" data-step-status="grade-perfect">Not run</span>
+        </li>
+        <li data-step="grade-partial">
+          <span>
+            <span class="step-title">Grade partial sample</span>
+            <span class="step-postman">Postman parity: Evidence Training Demo Walkthrough / Grade partial sample</span>
+          </span>
+          <span class="badge not-run" data-step-status="grade-partial">Not run</span>
+        </li>
+        <li data-step="grade-failing">
+          <span>
+            <span class="step-title">Grade failing sample</span>
+            <span class="step-postman">Postman parity: Evidence Training Demo Walkthrough / Grade failing sample</span>
+          </span>
+          <span class="badge not-run" data-step-status="grade-failing">Not run</span>
+        </li>
+      </ol>
     </div>
 
     <div class="grid">
@@ -267,6 +607,16 @@
         <div class="body">
           <p id="health-status" class="status-line">No request run.</p>
           <pre id="health-output">{}</pre>
+          <details class="snippet">
+            <summary>curl and Postman parity</summary>
+            <div class="actions">
+              <button class="copy" type="button" data-copy-target="curl-health">Copy health curl</button>
+              <button class="copy" type="button" data-copy-target="curl-readiness">Copy readiness curl</button>
+            </div>
+            <pre id="curl-health" data-curl-path="/api/health"></pre>
+            <pre id="curl-readiness" data-curl-path="/actuator/health/readiness"></pre>
+            <p class="postman-note">Postman parity: Evidence Training Demo Walkthrough / Health check and Readiness check.</p>
+          </details>
         </div>
       </section>
 
@@ -278,6 +628,12 @@
         <div class="body">
           <p id="onboarding-status" class="status-line">No request run.</p>
           <pre id="onboarding-output">{}</pre>
+          <details class="snippet">
+            <summary>curl and Postman parity</summary>
+            <button class="copy" type="button" data-copy-target="curl-onboarding">Copy onboarding curl</button>
+            <pre id="curl-onboarding" data-curl-path="/api/evidence-training/onboarding"></pre>
+            <p class="postman-note">Postman parity: Evidence Training Demo Walkthrough / Evidence training onboarding.</p>
+          </details>
         </div>
       </section>
 
@@ -289,6 +645,12 @@
         <div class="body">
           <p id="templates-status" class="status-line">No request run.</p>
           <pre id="templates-output">[]</pre>
+          <details class="snippet">
+            <summary>curl and Postman parity</summary>
+            <button class="copy" type="button" data-copy-target="curl-templates">Copy templates curl</button>
+            <pre id="curl-templates" data-curl-path="/api/evidence-training/templates"></pre>
+            <p class="postman-note">Postman parity: Evidence Training Demo Walkthrough / List templates.</p>
+          </details>
         </div>
       </section>
 
@@ -300,6 +662,12 @@
         <div class="body">
           <p id="examples-status" class="status-line">No request run.</p>
           <pre id="examples-output">[]</pre>
+          <details class="snippet">
+            <summary>curl and Postman parity</summary>
+            <button class="copy" type="button" data-copy-target="curl-examples">Copy examples curl</button>
+            <pre id="curl-examples" data-curl-path="/api/evidence-training/examples"></pre>
+            <p class="postman-note">Postman parity: Evidence Training Demo Walkthrough / List examples.</p>
+          </details>
         </div>
       </section>
 
@@ -311,6 +679,12 @@
         <div class="body">
           <p id="scorecards-status" class="status-line">No request run.</p>
           <pre id="scorecards-output">[]</pre>
+          <details class="snippet">
+            <summary>curl and Postman parity</summary>
+            <button class="copy" type="button" data-copy-target="curl-scorecards">Copy scorecards curl</button>
+            <pre id="curl-scorecards" data-curl-path="/api/evidence-training/scorecards"></pre>
+            <p class="postman-note">Postman parity: Evidence Training Demo Walkthrough / List scorecards.</p>
+          </details>
         </div>
       </section>
 
@@ -333,6 +707,12 @@
         <div class="body">
           <p id="scorecard-detail-status" class="status-line">No request run.</p>
           <pre id="scorecard-detail-output">{}</pre>
+          <details class="snippet">
+            <summary>curl and Postman parity</summary>
+            <button class="copy" type="button" data-copy-target="curl-scorecard-detail">Copy scorecard detail curl</button>
+            <pre id="curl-scorecard-detail" data-dynamic-curl="scorecard-detail"></pre>
+            <p class="postman-note">Postman parity: Evidence Training Demo Walkthrough / Get strict-zero-drift-pass scorecard.</p>
+          </details>
         </div>
       </section>
 
@@ -344,6 +724,12 @@
         <div class="body">
           <p id="answer-template-status" class="status-line">No request run.</p>
           <pre id="answer-template-output">{}</pre>
+          <details class="snippet">
+            <summary>curl and Postman parity</summary>
+            <button class="copy" type="button" data-copy-target="curl-answer-template">Copy answer template curl</button>
+            <pre id="curl-answer-template" data-dynamic-curl="answer-template"></pre>
+            <p class="postman-note">Postman parity: Evidence Training Demo Walkthrough / Get answer template.</p>
+          </details>
         </div>
       </section>
 
@@ -357,8 +743,62 @@
           </div>
         </div>
         <div class="body">
+          <div id="grading-summary" class="grade-summary" aria-label="Grading visual summary">
+            <h3 class="wide">Grading visual summary</h3>
+            <div class="grade-summary-item">
+              <span class="grade-summary-label">Visual result</span>
+              <span id="grade-result-badge" class="badge not-run">Not run</span>
+            </div>
+            <div class="grade-summary-item">
+              <span class="grade-summary-label">Score percent</span>
+              <span id="grade-percent" class="grade-summary-value">not run</span>
+            </div>
+            <div class="grade-summary-item">
+              <span class="grade-summary-label">Passed boolean</span>
+              <span id="grade-passed" class="grade-summary-value">not run</span>
+            </div>
+            <div class="grade-summary-item">
+              <span class="grade-summary-label">Exercise count</span>
+              <span id="grade-exercises" class="grade-summary-value">not run</span>
+            </div>
+            <ul id="grade-decisions" class="decision-list">
+              <li>No per-exercise decision summary yet.</li>
+            </ul>
+          </div>
           <p id="grading-status" class="status-line">No request run.</p>
           <pre id="grading-output">{}</pre>
+          <details class="snippet" open>
+            <summary>curl, payload copies, and Postman parity</summary>
+            <button class="copy" type="button" data-copy-target="curl-grading">Copy grading curl</button>
+            <pre id="curl-grading" data-curl-path="/api/evidence-training/scorecards/grade" data-curl-method="POST"></pre>
+            <p class="postman-note">Postman parity: Evidence Training Demo Walkthrough / Grade perfect sample, Grade partial sample, and Grade failing sample.</p>
+          </details>
+          <div class="payload-grid" aria-label="Copyable sample payloads">
+            <div class="payload-panel">
+              <h3>Perfect sample payload</h3>
+              <div class="actions">
+                <button class="copy" type="button" data-copy-sample="perfect">Copy perfect payload</button>
+                <button class="copy" type="button" data-download-sample="perfect">Export perfect payload</button>
+              </div>
+              <pre id="payload-perfect"></pre>
+            </div>
+            <div class="payload-panel">
+              <h3>Partial sample payload</h3>
+              <div class="actions">
+                <button class="copy" type="button" data-copy-sample="partial">Copy partial payload</button>
+                <button class="copy" type="button" data-download-sample="partial">Export partial payload</button>
+              </div>
+              <pre id="payload-partial"></pre>
+            </div>
+            <div class="payload-panel">
+              <h3>Failing sample payload</h3>
+              <div class="actions">
+                <button class="copy" type="button" data-copy-sample="failing">Copy failing payload</button>
+                <button class="copy" type="button" data-download-sample="failing">Export failing payload</button>
+              </div>
+              <pre id="payload-failing"></pre>
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -373,13 +813,31 @@
         <li>No cloud mutation.</li>
         <li>No CloudManager required for training/onboarding demo.</li>
         <li>API server is required for browser/Postman demo but not for offline CLI workflows.</li>
-        <li>No external scripts, styles, fonts, CDNs, services, secrets, or admin controls.</li>
+        <li>No external scripts/CDNs.</li>
+        <li>No external styles, fonts, images, services, or dependencies.</li>
+        <li>No secrets, auth fields, admin controls, release controls, ruleset controls, or cloud mutation controls.</li>
       </ul>
     </div>
   </main>
 
   <script>
     "use strict";
+
+    const stepOrder = [
+      "health",
+      "readiness",
+      "onboarding",
+      "templates",
+      "examples",
+      "scorecards",
+      "scorecard-detail",
+      "answer-template",
+      "grade-perfect",
+      "grade-partial",
+      "grade-failing"
+    ];
+
+    const stepState = Object.fromEntries(stepOrder.map((step) => [step, "not-run"]));
 
     const samples = {
       perfect: {
@@ -462,6 +920,12 @@
       }
     };
 
+    const sampleFileNames = {
+      perfect: "perfect-scorecard-answers.json",
+      partial: "partial-scorecard-answers.json",
+      failing: "failing-scorecard-answers.json"
+    };
+
     const outputs = {
       health: {
         status: document.getElementById("health-status"),
@@ -499,6 +963,7 @@
 
     const baseUrlInput = document.getElementById("base-url");
     const scorecardSelect = document.getElementById("scorecard-select");
+    const copyStatus = document.getElementById("copy-status");
 
     function sameOriginBaseUrl() {
       return window.location.origin && window.location.origin !== "null" ? window.location.origin : "http://localhost:8080";
@@ -512,10 +977,62 @@
       return baseUrl() + path;
     }
 
-    function render(target, state, value) {
+    function selectedScorecardName() {
+      return scorecardSelect.value || "strict-zero-drift-pass";
+    }
+
+    function selectedScorecardPath() {
+      return "/api/evidence-training/scorecards/" + encodeURIComponent(selectedScorecardName());
+    }
+
+    function selectedAnswerTemplatePath() {
+      return selectedScorecardPath() + "/answer-template";
+    }
+
+    function statusLabel(status) {
+      if (status === "passed") {
+        return "Passed";
+      }
+      if (status === "warning") {
+        return "Warning";
+      }
+      if (status === "failed") {
+        return "Failed";
+      }
+      return "Not run";
+    }
+
+    function setStepStatus(step, status) {
+      stepState[step] = status;
+      const badge = document.querySelector("[data-step-status=\"" + step + "\"]");
+      if (badge) {
+        badge.textContent = statusLabel(status);
+        badge.className = "badge " + status;
+      }
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const counts = {
+        passed: 0,
+        warning: 0,
+        failed: 0,
+        "not-run": 0
+      };
+      Object.values(stepState).forEach((status) => {
+        counts[status] += 1;
+      });
+      document.getElementById("summary-total").textContent = String(stepOrder.length);
+      document.getElementById("summary-passed").textContent = String(counts.passed);
+      document.getElementById("summary-warning").textContent = String(counts.warning);
+      document.getElementById("summary-failed").textContent = String(counts.failed);
+      document.getElementById("summary-not-run").textContent = String(counts["not-run"]);
+    }
+
+    function render(target, state, value, status) {
       const selected = outputs[target];
       selected.status.textContent = state;
-      selected.status.className = "status-line ok";
+      selected.status.className = "status-line " + (status === "warning" ? "warn" : "ok");
       selected.output.textContent = JSON.stringify(value, null, 2);
     }
 
@@ -527,6 +1044,27 @@
         path,
         error: error.message || String(error)
       }, null, 2);
+    }
+
+    function classifyListResponse(body) {
+      return Array.isArray(body) && body.length === 0 ? "warning" : "passed";
+    }
+
+    function classifyHealthResponse(body) {
+      if (body && typeof body.status === "string" && body.status.toUpperCase() !== "UP") {
+        return "warning";
+      }
+      return "passed";
+    }
+
+    function classifyGradeResponse(body) {
+      if (!body) {
+        return "failed";
+      }
+      if (body.passed === true) {
+        return "passed";
+      }
+      return Number(body.percent || 0) > 0 ? "warning" : "failed";
     }
 
     async function requestJson(target, path, options) {
@@ -546,58 +1084,203 @@
         if (!response.ok) {
           throw new Error("HTTP " + response.status + " from " + path + ": " + JSON.stringify(body));
         }
-        render(target, "HTTP " + response.status + " " + path, body);
-        return body;
+        return { status: response.status, body };
       } catch (error) {
         renderError(target, path, error);
-        return null;
+        return { error };
       }
     }
 
-    function selectedScorecardName() {
-      return scorecardSelect.value || "strict-zero-drift-pass";
+    async function runRequest(config) {
+      const result = await requestJson(config.target, config.path, config.options);
+      if (result.error) {
+        setStepStatus(config.step, "failed");
+        return null;
+      }
+      const status = config.classify ? config.classify(result.body) : "passed";
+      setStepStatus(config.step, status);
+      render(config.target, "HTTP " + result.status + " " + config.path, result.body, status);
+      if (config.after) {
+        config.after(result.body, status);
+      }
+      return result.body;
     }
 
     async function listScorecards() {
-      const body = await requestJson("scorecards", "/api/evidence-training/scorecards");
-      if (Array.isArray(body) && body.length > 0) {
-        const current = selectedScorecardName();
-        scorecardSelect.innerHTML = "";
-        body.forEach((scorecard) => {
-          const option = document.createElement("option");
-          option.value = scorecard.exerciseName;
-          option.textContent = scorecard.exerciseName;
-          scorecardSelect.appendChild(option);
-        });
-        scorecardSelect.value = body.some((scorecard) => scorecard.exerciseName === current)
-          ? current
-          : body[0].exerciseName;
-      }
-    }
-
-    async function grade(sample) {
-      await requestJson("grading", "/api/evidence-training/scorecards/grade", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(samples[sample])
+      await runRequest({
+        step: "scorecards",
+        target: "scorecards",
+        path: "/api/evidence-training/scorecards",
+        classify: classifyListResponse,
+        after: (body) => {
+          if (Array.isArray(body) && body.length > 0) {
+            const current = selectedScorecardName();
+            scorecardSelect.innerHTML = "";
+            body.forEach((scorecard) => {
+              const option = document.createElement("option");
+              option.value = scorecard.exerciseName;
+              option.textContent = scorecard.exerciseName;
+              scorecardSelect.appendChild(option);
+            });
+            scorecardSelect.value = body.some((scorecard) => scorecard.exerciseName === current)
+              ? current
+              : body[0].exerciseName;
+            renderCurlSnippets();
+          }
+        }
       });
     }
 
+    function renderGradeSummary(body) {
+      const visualStatus = classifyGradeResponse(body);
+      const badge = document.getElementById("grade-result-badge");
+      badge.textContent = visualStatus === "passed" ? "PASS" : visualStatus === "warning" ? "WARN" : "FAIL";
+      badge.className = "badge " + visualStatus;
+      document.getElementById("grade-percent").textContent =
+        typeof body.percent === "number" ? body.percent.toFixed(1) + "%" : "unknown";
+      document.getElementById("grade-passed").textContent = String(body.passed === true);
+      document.getElementById("grade-exercises").textContent =
+        String(body.totalExercises || (Array.isArray(body.perExercise) ? body.perExercise.length : 0));
+
+      const decisions = document.getElementById("grade-decisions");
+      decisions.innerHTML = "";
+      if (Array.isArray(body.perExercise) && body.perExercise.length > 0) {
+        body.perExercise.forEach((exercise) => {
+          const item = document.createElement("li");
+          const decisionBadge = document.createElement("span");
+          const actualDecision = exercise.actualDecision || "UNKNOWN";
+          decisionBadge.textContent = actualDecision;
+          decisionBadge.className = "badge " + (exercise.decisionCorrect ? "passed" : "failed");
+          const details = document.createElement("span");
+          details.textContent = exercise.exerciseName + ": expected " + exercise.expectedDecision
+            + ", actual " + actualDecision + ", score " + exercise.score + "/" + exercise.maxScore;
+          item.appendChild(decisionBadge);
+          item.appendChild(details);
+          decisions.appendChild(item);
+        });
+      } else {
+        const item = document.createElement("li");
+        item.textContent = "No per-exercise decision summary returned.";
+        decisions.appendChild(item);
+      }
+    }
+
+    async function grade(sample, step) {
+      await runRequest({
+        step,
+        target: "grading",
+        path: "/api/evidence-training/scorecards/grade",
+        options: {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(samples[sample])
+        },
+        classify: classifyGradeResponse,
+        after: renderGradeSummary
+      });
+    }
+
+    function curlCommand(path, method) {
+      if (method === "POST") {
+        return "curl -fsS -X POST " + endpoint(path)
+          + " \\\n  -H \"Content-Type: application/json\" \\\n  --data-binary @scorecard-answers.json";
+      }
+      return "curl -fsS " + endpoint(path);
+    }
+
+    function renderCurlSnippets() {
+      document.querySelectorAll("[data-curl-path]").forEach((node) => {
+        node.textContent = curlCommand(node.dataset.curlPath, node.dataset.curlMethod || "GET");
+      });
+      document.querySelector("[data-dynamic-curl=\"scorecard-detail\"]").textContent =
+        curlCommand(selectedScorecardPath(), "GET");
+      document.querySelector("[data-dynamic-curl=\"answer-template\"]").textContent =
+        curlCommand(selectedAnswerTemplatePath(), "GET");
+    }
+
+    function sampleText(sample) {
+      return JSON.stringify(samples[sample], null, 2);
+    }
+
+    function renderPayloads() {
+      document.getElementById("payload-perfect").textContent = sampleText("perfect");
+      document.getElementById("payload-partial").textContent = sampleText("partial");
+      document.getElementById("payload-failing").textContent = sampleText("failing");
+    }
+
+    async function copyText(label, text) {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          throw new Error("clipboard unavailable");
+        }
+        copyStatus.textContent = "Copied " + label + ".";
+      } catch (error) {
+        copyStatus.textContent = "Copy failed for " + label + "; select the block and copy manually.";
+      }
+    }
+
+    function exportSample(sample) {
+      const blob = new Blob([sampleText(sample) + "\n"], { type: "application/json" });
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = sampleFileNames[sample];
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+      copyStatus.textContent = "Exported " + sampleFileNames[sample] + ".";
+    }
+
     const actions = {
-      health: () => requestJson("health", "/api/health"),
-      readiness: () => requestJson("health", "/actuator/health/readiness"),
-      onboarding: () => requestJson("onboarding", "/api/evidence-training/onboarding"),
-      templates: () => requestJson("templates", "/api/evidence-training/templates"),
-      examples: () => requestJson("examples", "/api/evidence-training/examples"),
+      health: () => runRequest({
+        step: "health",
+        target: "health",
+        path: "/api/health",
+        classify: classifyHealthResponse
+      }),
+      readiness: () => runRequest({
+        step: "readiness",
+        target: "health",
+        path: "/actuator/health/readiness",
+        classify: classifyHealthResponse
+      }),
+      onboarding: () => runRequest({
+        step: "onboarding",
+        target: "onboarding",
+        path: "/api/evidence-training/onboarding"
+      }),
+      templates: () => runRequest({
+        step: "templates",
+        target: "templates",
+        path: "/api/evidence-training/templates",
+        classify: classifyListResponse
+      }),
+      examples: () => runRequest({
+        step: "examples",
+        target: "examples",
+        path: "/api/evidence-training/examples",
+        classify: classifyListResponse
+      }),
       scorecards: listScorecards,
-      "scorecard-detail": () => requestJson("detail", "/api/evidence-training/scorecards/" + encodeURIComponent(selectedScorecardName())),
-      "answer-template": () => requestJson("template", "/api/evidence-training/scorecards/" + encodeURIComponent(selectedScorecardName()) + "/answer-template"),
-      "grade-perfect": () => grade("perfect"),
-      "grade-partial": () => grade("partial"),
-      "grade-failing": () => grade("failing")
+      "scorecard-detail": () => runRequest({
+        step: "scorecard-detail",
+        target: "detail",
+        path: selectedScorecardPath()
+      }),
+      "answer-template": () => runRequest({
+        step: "answer-template",
+        target: "template",
+        path: selectedAnswerTemplatePath()
+      }),
+      "grade-perfect": () => grade("perfect", "grade-perfect"),
+      "grade-partial": () => grade("partial", "grade-partial"),
+      "grade-failing": () => grade("failing", "grade-failing")
     };
 
     document.querySelectorAll("[data-action]").forEach((button) => {
@@ -609,11 +1292,40 @@
       });
     });
 
-    document.getElementById("reset-base-url").addEventListener("click", () => {
-      baseUrlInput.value = sameOriginBaseUrl();
+    document.querySelectorAll("[data-copy-target]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = document.getElementById(button.dataset.copyTarget);
+        if (target) {
+          copyText(button.textContent.replace(/^Copy\s+/i, ""), target.textContent);
+        }
+      });
     });
 
+    document.querySelectorAll("[data-copy-sample]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const sample = button.dataset.copySample;
+        copyText(sample + " payload", sampleText(sample));
+      });
+    });
+
+    document.querySelectorAll("[data-download-sample]").forEach((button) => {
+      button.addEventListener("click", () => {
+        exportSample(button.dataset.downloadSample);
+      });
+    });
+
+    document.getElementById("reset-base-url").addEventListener("click", () => {
+      baseUrlInput.value = sameOriginBaseUrl();
+      renderCurlSnippets();
+    });
+
+    baseUrlInput.addEventListener("input", renderCurlSnippets);
+    scorecardSelect.addEventListener("change", renderCurlSnippets);
+
     baseUrlInput.value = sameOriginBaseUrl();
+    renderPayloads();
+    renderCurlSnippets();
+    updateSummary();
   </script>
 </body>
 </html>

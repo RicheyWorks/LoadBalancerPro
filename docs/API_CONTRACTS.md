@@ -35,7 +35,7 @@ Remediation report export requests accept exactly one report source: an existing
 
 Evidence training onboarding responses expose packaged policy templates, examples, scorecards, answer JSON templates, and workflow pointers for API/Postman users. Discovery routes are read-only. The scorecard grade route evaluates submitted JSON in memory, returns deterministic JSON, writes no runtime report files, and must not construct `CloudManager`. The operator demo walkthrough reuses these existing routes plus `/api/health` and Actuator readiness; it does not introduce a separate mutable demo API.
 
-The static browser demo is served at `GET /evidence-training-demo.html`. It is not a new API contract and does not introduce new DTOs; it calls the existing health, readiness, onboarding, template, example, scorecard, answer-template, and deterministic grading routes.
+The static browser cockpit is served at `GET /evidence-training-demo.html`. It is not a new API contract and does not introduce new DTOs; it calls the existing health, readiness, onboarding, template, example, scorecard, answer-template, and deterministic grading routes. Its checklist status, summary counters, curl snippets, sample payload copy/export controls, and PASS/WARN/FAIL grading summaries are client-side only.
 
 Structured API errors expose `status`, `error`, `message`, `path`, `timestamp`, and `details` without diagnostic fields such as stack traces.
 

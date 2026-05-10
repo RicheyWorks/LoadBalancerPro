@@ -2,7 +2,7 @@
 
 LoadBalancerPro exposes read-only evidence training onboarding routes for local API demos, GUI-facing clients, and Postman walkthroughs. The routes surface the packaged evidence policy templates, examples, scorecards, and scorecard answer JSON shape without replacing the offline CLI.
 
-The same local demo flow is available in the first-party browser page:
+The same local demo flow is available in the first-party browser cockpit:
 
 ```text
 http://localhost:8080/evidence-training-demo.html
@@ -36,7 +36,7 @@ POST {{baseUrl}}/api/evidence-training/scorecards/grade
 
 The `GET` routes are discovery-only. The `POST` grade route evaluates the submitted answer JSON in memory and returns deterministic JSON. It does not write report files or runtime artifacts.
 
-The browser page mirrors the Postman workflow with same-origin API calls for health, readiness, onboarding, templates, examples, scorecards, scorecard detail, answer templates, and perfect/partial/failing grading samples.
+The browser cockpit mirrors the Postman workflow with same-origin API calls for health, readiness, onboarding, templates, examples, scorecards, scorecard detail, answer templates, and perfect/partial/failing grading samples. It also shows checklist status, summary counters, copyable curl snippets, copy/export sample payloads, and PASS/WARN/FAIL grading summaries for reviewer demos.
 
 ## Demo Walkthrough Folder
 
@@ -64,7 +64,7 @@ src/test/resources/evidence-training-demo/partial-scorecard-answers.json
 src/test/resources/evidence-training-demo/failing-scorecard-answers.json
 ```
 
-See [`OPERATOR_DEMO_WALKTHROUGH.md`](OPERATOR_DEMO_WALKTHROUGH.md) for the guided browser and Postman start-to-finish demo.
+See [`OPERATOR_DEMO_WALKTHROUGH.md`](OPERATOR_DEMO_WALKTHROUGH.md) for the guided browser cockpit and Postman start-to-finish demo.
 
 ## Sample Answer JSON
 
@@ -98,7 +98,7 @@ java -jar target/LoadBalancerPro-2.4.2.jar --grade-training-scorecard scorecard-
 
 ## Browser Parity
 
-The static browser page is plain HTML, CSS, and vanilla JavaScript served by the app. It has no external frontend scripts, styles, fonts, CDNs, services, or dependencies. It does not expose secrets, auth fields, admin controls, release controls, ruleset controls, or cloud mutation controls.
+The static browser cockpit is plain HTML, CSS, and vanilla JavaScript served by the app. It has no external frontend scripts, styles, fonts, images, CDNs, services, dependencies, browser storage, or browser automation dependency. It does not expose secrets, auth fields, admin controls, release controls, ruleset controls, or cloud mutation controls. Its copy/export controls are client-side helpers for deterministic curl snippets and sample answer JSON only.
 
 ## Limits
 

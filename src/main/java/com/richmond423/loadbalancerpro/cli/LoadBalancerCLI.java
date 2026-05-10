@@ -892,6 +892,7 @@ public class LoadBalancerCLI {
                     "  --audit-log <file> Append a checksum-chained offline CLI audit entry\n" +
                     "  --verify-audit-log <file> Verify an offline CLI audit log checksum chain\n" +
                     "  --inventory <dir> Inventory local incident evidence as Markdown or JSON\n" +
+                    "  --diff-inventory <before> <after> Diff two saved evidence inventory catalogs\n" +
                     "  --test-mode         Exit after first operation (for testing)\n" +
                     "  --cloud-enabled     Enable cloud integration\n" +
                     "  --cloud-min-servers Set minimum cloud servers\n" +

@@ -35,6 +35,7 @@ public final class RemediationReportCli {
     private static final String AUDIT_LOG_FLAG = "--audit-log";
     private static final String VERIFY_AUDIT_LOG_FLAG = "--verify-audit-log";
     private static final String INVENTORY_FLAG = "--inventory";
+    private static final String DIFF_INVENTORY_FLAG = "--diff-inventory";
     private static final String APP_VERSION = "2.4.2";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -59,7 +60,8 @@ public final class RemediationReportCli {
                         || arg.equals(BUNDLE_FLAG) || arg.startsWith(BUNDLE_FLAG + "=")
                         || arg.equals(VERIFY_BUNDLE_FLAG) || arg.startsWith(VERIFY_BUNDLE_FLAG + "=")
                         || arg.equals(VERIFY_AUDIT_LOG_FLAG) || arg.startsWith(VERIFY_AUDIT_LOG_FLAG + "=")
-                        || arg.equals(INVENTORY_FLAG) || arg.startsWith(INVENTORY_FLAG + "="));
+                        || arg.equals(INVENTORY_FLAG) || arg.startsWith(INVENTORY_FLAG + "=")
+                        || arg.equals(DIFF_INVENTORY_FLAG) || arg.startsWith(DIFF_INVENTORY_FLAG + "="));
     }
 
     public static Result runIfRequested(String[] args, PrintStream out, PrintStream err) {
@@ -75,6 +77,9 @@ public final class RemediationReportCli {
         Objects.requireNonNull(err, "err cannot be null");
 
         try {
+            if (catalogDiffRequested(args)) {
+                return writeCatalogDiff(CatalogDiffOptions.parse(args), out);
+            }
             CliOptions options = CliOptions.parse(args);
             if (options.inventoryPath().isPresent()) {
                 return writeInventory(options, out);
@@ -195,6 +200,21 @@ public final class RemediationReportCli {
                 : service.renderMarkdown(catalog);
         writeOutput(rendered, options.inventoryOutputPath(), out);
         int exitCode = options.failOnInvalid() && catalog.summary().failureCount() > 0 ? 2 : 0;
+        return new Result(true, exitCode);
+    }
+
+    private static Result writeCatalogDiff(CatalogDiffOptions options, PrintStream out) throws IOException {
+        EvidenceCatalogDiffService service = new EvidenceCatalogDiffService();
+        EvidenceCatalogDiffService.EvidenceCatalogDiff diff = service.diff(
+                new EvidenceCatalogDiffService.DiffRequest(
+                        options.beforeCatalogPath(),
+                        options.afterCatalogPath(),
+                        options.includeUnchanged()));
+        String rendered = options.diffFormat() == EvidenceCatalogDiffService.DiffFormat.JSON
+                ? service.renderJson(diff)
+                : service.renderMarkdown(diff);
+        writeOutput(rendered, options.outputPath(), out);
+        int exitCode = options.failOnDrift() && diff.hasDrift() ? 2 : 0;
         return new Result(true, exitCode);
     }
 
@@ -549,6 +569,8 @@ public final class RemediationReportCli {
         err.println("Verify audit log: --verify-audit-log <audit.jsonl>");
         err.println("Inventory: --inventory <directory> [--inventory-format markdown|json] "
                 + "[--inventory-output <path>] [--verify-inventory] [--include-hashes] [--fail-on-invalid]");
+        err.println("Diff inventory: --diff-inventory <before.json> <after.json> "
+                + "[--diff-format markdown|json] [--diff-output <path>] [--fail-on-drift] [--include-unchanged]");
         err.println("Safety: offline/read-only report generation; no API server, network access, "
                 + "CloudManager calls, or cloud mutation.");
     }
@@ -561,7 +583,99 @@ public final class RemediationReportCli {
                 : implementationVersion.trim();
     }
 
+    private static boolean catalogDiffRequested(String[] args) {
+        return Arrays.stream(args)
+                .filter(Objects::nonNull)
+                .anyMatch(arg -> arg.equals(DIFF_INVENTORY_FLAG) || arg.startsWith(DIFF_INVENTORY_FLAG + "="));
+    }
+
     public record Result(boolean requested, int exitCode) {
+    }
+
+    private record CatalogDiffOptions(
+            Path beforeCatalogPath,
+            Path afterCatalogPath,
+            EvidenceCatalogDiffService.DiffFormat diffFormat,
+            Optional<Path> outputPath,
+            boolean failOnDrift,
+            boolean includeUnchanged) {
+
+        private CatalogDiffOptions {
+            Objects.requireNonNull(beforeCatalogPath, "before catalog path cannot be null");
+            Objects.requireNonNull(afterCatalogPath, "after catalog path cannot be null");
+            diffFormat = diffFormat == null ? EvidenceCatalogDiffService.DiffFormat.MARKDOWN : diffFormat;
+            outputPath = outputPath == null ? Optional.empty() : outputPath;
+        }
+
+        private static CatalogDiffOptions parse(String[] args) {
+            List<Path> catalogs = diffInventoryPaths(args);
+            EvidenceCatalogDiffService.DiffFormat format = optionValue(args, "--diff-format")
+                    .map(EvidenceCatalogDiffService.DiffFormat::parse)
+                    .orElse(EvidenceCatalogDiffService.DiffFormat.MARKDOWN);
+            Optional<Path> output = optionValue(args, "--diff-output").map(Path::of);
+            return new CatalogDiffOptions(
+                    catalogs.get(0),
+                    catalogs.get(1),
+                    format,
+                    output,
+                    hasFlag(args, "--fail-on-drift"),
+                    hasFlag(args, "--include-unchanged"));
+        }
+
+        private static List<Path> diffInventoryPaths(String[] args) {
+            for (int index = 0; index < args.length; index++) {
+                String arg = args[index];
+                if (arg == null) {
+                    continue;
+                }
+                if (arg.startsWith(DIFF_INVENTORY_FLAG + "=")) {
+                    String raw = arg.substring((DIFF_INVENTORY_FLAG + "=").length()).trim();
+                    String[] values = raw.split(",", -1);
+                    if (values.length != 2 || values[0].isBlank() || values[1].isBlank()) {
+                        throw new IllegalArgumentException(
+                                "--diff-inventory requires before and after catalog paths");
+                    }
+                    return List.of(Path.of(values[0].trim()), Path.of(values[1].trim()));
+                }
+                if (arg.equals(DIFF_INVENTORY_FLAG)) {
+                    if (index + 2 >= args.length
+                            || args[index + 1] == null
+                            || args[index + 2] == null
+                            || args[index + 1].startsWith("--")
+                            || args[index + 2].startsWith("--")) {
+                        throw new IllegalArgumentException(
+                                "--diff-inventory requires before and after catalog paths");
+                    }
+                    return List.of(Path.of(args[index + 1].trim()), Path.of(args[index + 2].trim()));
+                }
+            }
+            throw new IllegalArgumentException("--diff-inventory requires before and after catalog paths");
+        }
+
+        private static Optional<String> optionValue(String[] args, String option) {
+            for (int index = 0; index < args.length; index++) {
+                String arg = args[index];
+                if (arg == null) {
+                    continue;
+                }
+                if (arg.startsWith(option + "=")) {
+                    return Optional.of(arg.substring((option + "=").length()).trim());
+                }
+                if (arg.equals(option)) {
+                    if (index + 1 >= args.length || args[index + 1] == null || args[index + 1].startsWith("--")) {
+                        throw new IllegalArgumentException(option + " requires a value");
+                    }
+                    return Optional.of(args[index + 1].trim());
+                }
+            }
+            return Optional.empty();
+        }
+
+        private static boolean hasFlag(String[] args, String option) {
+            return Arrays.stream(args)
+                    .filter(Objects::nonNull)
+                    .anyMatch(arg -> arg.equals(option));
+        }
     }
 
     private record RedactionContext(

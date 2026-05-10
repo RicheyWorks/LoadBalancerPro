@@ -1,0 +1,14 @@
+{
+  "exerciseName" : "audit-append-warn",
+  "templateName" : "audit-append",
+  "expectedDecision" : "WARN",
+  "expectedPrimaryReason" : "Audit anchor advanced after receiver verification",
+  "acceptableActions" : [ "verify audit append", "review warning" ],
+  "remediationNotes" : [ "Verify that the appended audit entry is expected receiver-side verification activity and record the review." ],
+  "prompt" : "Review the audit append example and decide how to handle the changed local audit anchor.",
+  "scoring" : {
+    "decisionPoints" : 5,
+    "reasonPoints" : 3,
+    "actionPoints" : 2
+  }
+}

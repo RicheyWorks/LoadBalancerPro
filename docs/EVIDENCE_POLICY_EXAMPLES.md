@@ -7,6 +7,7 @@ Packaged walkthrough examples are available through the offline CLI. Source fixt
 ```text
 src/test/resources/evidence-policy-examples/
 src/main/resources/evidence-policies/examples/
+src/main/resources/evidence-policies/scorecards/
 ```
 
 Each packaged example exports `before.json`, `after.json`, and an `expected-decision.json` descriptor. The older test fixture folders retain focused files such as `after-drift.json` and `expected-fail.json`, but the CLI export normalizes each walkthrough to the three deterministic filenames.
@@ -76,6 +77,53 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 ```
 
 The training lab loads all packaged examples, runs the same diff and policy evaluator used by `--walkthrough-policy-example`, compares actual decisions to `expected-decision.json`, and exits non-zero if any expected decision does not match. Add `--training-lab-export-dir walkthrough/all-examples` to export the example files used by the lab, `--include-training-details` to include per-change detail in the transcript, and `--force` to replace an existing export directory.
+
+## Training Scorecards
+
+Scorecards grade operator-submitted decisions against the same packaged examples without starting the API server:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar --list-training-scorecards
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --print-training-scorecard receiver-redaction-warn
+```
+
+Use this answers shape for offline practice:
+
+```json
+{
+  "operator": "operator-a",
+  "answers": [
+    {
+      "exerciseName": "receiver-redaction-warn",
+      "decision": "WARN",
+      "reason": "Receiver redaction changes require review",
+      "action": "confirm redaction summary",
+      "notes": "Confirm the summary and document the reviewed redacted files."
+    }
+  ]
+}
+```
+
+Grade answers as Markdown or JSON:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --grade-training-scorecard scorecard-answers.json \
+  --scorecard-format markdown \
+  --scorecard-output scorecard-report.md \
+  --fail-on-score-below 80
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --grade-training-scorecard scorecard-answers.json \
+  --scorecard-format json \
+  --scorecard-output scorecard-report.json
+```
+
+The report includes `scorecardVersion`, total/max score, percent, pass/fail status, and per-exercise decision, reason, action, score, and feedback fields. Each exercise is worth 10 points by default: 5 for the `PASS`/`WARN`/`FAIL` decision, 3 for the expected primary reason, and 2 for an acceptable action. Reason and action scoring can award deterministic partial credit for token overlap. Output omits timestamps and random ids by default.
+
+Scorecards are a local onboarding aid only. They are not certification, not legal compliance proof, not identity proof, and not a substitute for real incident review.
 
 After exporting, operators can also run the underlying commands directly:
 

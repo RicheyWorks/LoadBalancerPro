@@ -902,6 +902,9 @@ public class LoadBalancerCLI {
                     "  --export-policy-example <name> Export packaged before/after example catalogs\n" +
                     "  --walkthrough-policy-example <name> Export and dry-run an example policy decision\n" +
                     "  --run-policy-training-lab Batch-run packaged evidence policy walkthroughs\n" +
+                    "  --list-training-scorecards List packaged evidence training scorecards\n" +
+                    "  --print-training-scorecard <name> Print a packaged training scorecard\n" +
+                    "  --grade-training-scorecard <answers.json> Grade offline training scorecard answers\n" +
                     "  --test-mode         Exit after first operation (for testing)\n" +
                     "  --cloud-enabled     Enable cloud integration\n" +
                     "  --cloud-min-servers Set minimum cloud servers\n" +

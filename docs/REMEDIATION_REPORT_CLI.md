@@ -119,6 +119,12 @@ curl -fsS -X POST http://127.0.0.1:8080/api/scenarios/replay \
 | `--include-training-details` | Includes per-change policy details in the training lab JSON transcript. |
 | `--fail-on-training-mismatch` | Explicitly exits non-zero when a training lab expected decision mismatch is detected. This is the default behavior. |
 | `--no-fail-on-training-mismatch` | Allows the training lab to exit zero even when an expected decision mismatch is detected. |
+| `--list-training-scorecards` | Lists packaged operator scorecards for the evidence policy examples. |
+| `--print-training-scorecard <name>` | Prints a deterministic scorecard prompt, answer key, remediation note, and scoring model. |
+| `--grade-training-scorecard <answers.json>` | Grades operator answers against packaged scorecards. |
+| `--scorecard-format markdown\|json` | Scorecard grading report format. Defaults to `markdown`. |
+| `--scorecard-output <path>` | Optional scorecard report output file. If omitted, output is written to stdout. |
+| `--fail-on-score-below <percent>` | Exits non-zero when the graded score is below the supplied percentage. |
 | `--force` | Allows packaged example export, walkthrough export, or training-lab export to overwrite existing example files. |
 
 ## Output Semantics
@@ -455,6 +461,94 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 
 The training lab batch-runs the packaged `PASS`, `WARN`, and `FAIL` walkthrough examples, compares actual decisions to each `expected-decision.json`, summarizes matched and mismatched examples, and exits non-zero if a mismatch appears. Use `--training-lab-export-dir <directory>` to save the exact example files used, `--include-training-details` for per-change JSON detail, and `--force` to overwrite an existing export directory. The transcript is deterministic and omits timestamps or random ids by default.
 
+Training scorecards let operators submit answers for the packaged examples and receive deterministic grading reports:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar --list-training-scorecards
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --print-training-scorecard audit-append-warn
+```
+
+Answers use this JSON shape:
+
+```json
+{
+  "operator": "operator-a",
+  "answers": [
+    {
+      "exerciseName": "audit-append-warn",
+      "decision": "WARN",
+      "reason": "Audit anchor advanced after receiver verification",
+      "action": "verify audit append",
+      "notes": "Verify the appended audit entry and record the review."
+    }
+  ]
+}
+```
+
+Grade the answers as Markdown or JSON:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --grade-training-scorecard scorecard-answers.json \
+  --scorecard-format markdown \
+  --scorecard-output scorecard-report.md
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --grade-training-scorecard scorecard-answers.json \
+  --scorecard-format json \
+  --scorecard-output scorecard-report.json \
+  --fail-on-score-below 80
+```
+
+Markdown reports summarize score, max score, percentage, pass status, and a per-exercise table:
+
+```markdown
+# LoadBalancerPro Evidence Training Scorecard
+
+- Scorecard version: 1
+- Operator: operator-a
+- Total exercises: 7
+- Total score: 70
+- Max score: 70
+- Percent: 100.0
+- Passing score: 80.0
+- Passed: true
+```
+
+JSON reports expose the same deterministic fields for automation:
+
+```json
+{
+  "scorecardVersion": "1",
+  "operator": "operator-a",
+  "totalExercises": 7,
+  "totalScore": 70,
+  "maxScore": 70,
+  "percent": 100.0,
+  "passed": true,
+  "passingScore": 80.0,
+  "perExercise": [
+    {
+      "exerciseName": "audit-append-warn",
+      "expectedDecision": "WARN",
+      "actualDecision": "WARN",
+      "decisionCorrect": true,
+      "reasonMatched": true,
+      "reasonCredit": 3,
+      "actionMatched": true,
+      "actionCredit": 2,
+      "score": 10,
+      "maxScore": 10,
+      "feedback": "Decision matched expected WARN; Reason matched expected primary reason; Action matched acceptable action."
+    }
+  ]
+}
+```
+
+Each scorecard is worth 10 points: 5 decision points, 3 reason points, and 2 action points. Exact matches receive full credit; reason and action text can earn deterministic partial credit from token overlap. The scorecard path is an offline training aid only. It does not start the API server, does not construct `CloudManager`, does not mutate cloud state, and is not certification, legal compliance proof, identity proof, or legal chain-of-custody.
+
 Policy JSON format:
 
 ```json
@@ -523,6 +617,7 @@ Offline report generation:
 - can list, export, validate, and apply packaged evidence policy templates without starting the API server;
 - can list, export, and dry-run packaged evidence policy examples without starting the API server;
 - can batch-run packaged policy training examples without starting the API server;
+- can grade packaged evidence training scorecard answers without starting the API server;
 - generates and verifies checksum manifests locally with Java SHA-256, not external tools or signing keys.
 
 ## Limitations

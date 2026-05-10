@@ -1,0 +1,14 @@
+{
+  "exerciseName" : "receiver-redaction-warn",
+  "templateName" : "receiver-redaction",
+  "expectedDecision" : "WARN",
+  "expectedPrimaryReason" : "Receiver redaction changes require review",
+  "acceptableActions" : [ "confirm redaction summary", "review warning" ],
+  "remediationNotes" : [ "Confirm the redaction summary and document why the redacted evidence changes are acceptable before continuing." ],
+  "prompt" : "Review the receiver redaction example and decide how to handle the added redaction summary and changed redacted files.",
+  "scoring" : {
+    "decisionPoints" : 5,
+    "reasonPoints" : 3,
+    "actionPoints" : 2
+  }
+}

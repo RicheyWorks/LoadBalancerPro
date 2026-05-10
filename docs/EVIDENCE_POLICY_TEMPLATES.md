@@ -96,4 +96,18 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 
 The training lab compares each actual policy decision to its packaged expected decision, summarizes the expected `PASS`, `WARN`, and `FAIL` counts, and exits non-zero if any example no longer matches its descriptor. It remains local-only and does not prove identity or legal custody.
 
-Walkthrough output is deterministic and local-only. It demonstrates policy behavior over synthetic catalogs; it is not identity proof, legal chain-of-custody, or a compliance certification.
+To grade operator answers against those examples without mutating cloud state:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar --list-training-scorecards
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --print-training-scorecard regulated-handoff-fail
+
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --grade-training-scorecard scorecard-answers.json \
+  --scorecard-format json \
+  --fail-on-score-below 80
+```
+
+Scorecards use the packaged template names and expected `PASS`, `WARN`, and `FAIL` decisions. Each exercise grades decision, reason, and action fields and can include optional remediation notes in the operator answer. Walkthrough and scorecard output is deterministic and local-only. It demonstrates policy behavior over synthetic catalogs; it is not identity proof, legal chain-of-custody, legal compliance proof, or a compliance certification.

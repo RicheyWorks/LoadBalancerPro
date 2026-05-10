@@ -34,6 +34,7 @@ public final class RemediationReportCli {
     private static final String VERIFY_BUNDLE_FLAG = "--verify-bundle";
     private static final String AUDIT_LOG_FLAG = "--audit-log";
     private static final String VERIFY_AUDIT_LOG_FLAG = "--verify-audit-log";
+    private static final String INVENTORY_FLAG = "--inventory";
     private static final String APP_VERSION = "2.4.2";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -57,7 +58,8 @@ public final class RemediationReportCli {
                         || arg.equals(VERIFY_MANIFEST_FLAG) || arg.startsWith(VERIFY_MANIFEST_FLAG + "=")
                         || arg.equals(BUNDLE_FLAG) || arg.startsWith(BUNDLE_FLAG + "=")
                         || arg.equals(VERIFY_BUNDLE_FLAG) || arg.startsWith(VERIFY_BUNDLE_FLAG + "=")
-                        || arg.equals(VERIFY_AUDIT_LOG_FLAG) || arg.startsWith(VERIFY_AUDIT_LOG_FLAG + "="));
+                        || arg.equals(VERIFY_AUDIT_LOG_FLAG) || arg.startsWith(VERIFY_AUDIT_LOG_FLAG + "=")
+                        || arg.equals(INVENTORY_FLAG) || arg.startsWith(INVENTORY_FLAG + "="));
     }
 
     public static Result runIfRequested(String[] args, PrintStream out, PrintStream err) {
@@ -74,6 +76,9 @@ public final class RemediationReportCli {
 
         try {
             CliOptions options = CliOptions.parse(args);
+            if (options.inventoryPath().isPresent()) {
+                return writeInventory(options, out);
+            }
             if (options.verifyAuditLogPath().isPresent()) {
                 return verifyAuditLog(options.verifyAuditLogPath().get(), out);
             }
@@ -176,6 +181,21 @@ public final class RemediationReportCli {
             out.println("- ERROR " + error);
         }
         return new Result(true, result.verified() ? 0 : 2);
+    }
+
+    private static Result writeInventory(CliOptions options, PrintStream out) throws IOException {
+        EvidenceInventoryService service = new EvidenceInventoryService();
+        EvidenceInventoryService.EvidenceCatalog catalog = service.inventory(
+                new EvidenceInventoryService.InventoryRequest(
+                        options.inventoryPath().get(),
+                        options.verifyInventory(),
+                        options.includeInventoryHashes()));
+        String rendered = options.inventoryFormat() == EvidenceInventoryService.InventoryFormat.JSON
+                ? service.renderJson(catalog)
+                : service.renderMarkdown(catalog);
+        writeOutput(rendered, options.inventoryOutputPath(), out);
+        int exitCode = options.failOnInvalid() && catalog.summary().failureCount() > 0 ? 2 : 0;
+        return new Result(true, exitCode);
     }
 
     private static Result writeBundle(
@@ -527,6 +547,8 @@ public final class RemediationReportCli {
         err.println("Audit: [--audit-log <audit.jsonl>] [--audit-actor <label>] "
                 + "[--audit-action-id <id>] [--audit-note <note>]");
         err.println("Verify audit log: --verify-audit-log <audit.jsonl>");
+        err.println("Inventory: --inventory <directory> [--inventory-format markdown|json] "
+                + "[--inventory-output <path>] [--verify-inventory] [--include-hashes] [--fail-on-invalid]");
         err.println("Safety: offline/read-only report generation; no API server, network access, "
                 + "CloudManager calls, or cloud mutation.");
     }
@@ -588,7 +610,13 @@ public final class RemediationReportCli {
             Optional<Path> verifyAuditLogPath,
             Optional<String> auditActor,
             Optional<String> auditActionId,
-            Optional<String> auditNote) {
+            Optional<String> auditNote,
+            Optional<Path> inventoryPath,
+            EvidenceInventoryService.InventoryFormat inventoryFormat,
+            Optional<Path> inventoryOutputPath,
+            boolean verifyInventory,
+            boolean includeInventoryHashes,
+            boolean failOnInvalid) {
 
         CliOptions {
             inputPath = inputPath == null ? Optional.empty() : inputPath;
@@ -611,6 +639,11 @@ public final class RemediationReportCli {
             auditActor = auditActor == null ? Optional.empty() : auditActor;
             auditActionId = auditActionId == null ? Optional.empty() : auditActionId;
             auditNote = auditNote == null ? Optional.empty() : auditNote;
+            inventoryPath = inventoryPath == null ? Optional.empty() : inventoryPath;
+            inventoryFormat = inventoryFormat == null
+                    ? EvidenceInventoryService.InventoryFormat.MARKDOWN
+                    : inventoryFormat;
+            inventoryOutputPath = inventoryOutputPath == null ? Optional.empty() : inventoryOutputPath;
         }
 
         static CliOptions parse(String[] args) {
@@ -619,12 +652,29 @@ public final class RemediationReportCli {
             Optional<String> auditActor = optionValue(args, "--audit-actor").filter(value -> !value.isBlank());
             Optional<String> auditActionId = optionValue(args, "--audit-action-id").filter(value -> !value.isBlank());
             Optional<String> auditNote = optionValue(args, "--audit-note").filter(value -> !value.isBlank());
+            Optional<Path> inventory = optionValue(args, INVENTORY_FLAG).map(Path::of);
+            if (inventory.isPresent()) {
+                EvidenceInventoryService.InventoryFormat inventoryFormat = optionValue(args, "--inventory-format")
+                        .map(EvidenceInventoryService.InventoryFormat::parse)
+                        .orElse(EvidenceInventoryService.InventoryFormat.MARKDOWN);
+                Optional<Path> inventoryOutput = optionValue(args, "--inventory-output").map(Path::of);
+                return new CliOptions(Optional.empty(), RemediationReportFormat.MARKDOWN, Optional.empty(),
+                        Optional.empty(), Optional.empty(), Optional.empty(), List.of(), Optional.empty(),
+                        Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                        List.of(), List.of(), Optional.empty(), Optional.empty(), Optional.empty(),
+                        Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                        inventory, inventoryFormat, inventoryOutput,
+                        hasFlag(args, "--verify-inventory"),
+                        hasFlag(args, "--include-hashes"),
+                        hasFlag(args, "--fail-on-invalid"));
+            }
             if (verifyAuditLog.isPresent()) {
                 return new CliOptions(Optional.empty(), RemediationReportFormat.MARKDOWN, Optional.empty(),
                         Optional.empty(), Optional.empty(), Optional.empty(), List.of(), Optional.empty(),
                         Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                         List.of(), List.of(), Optional.empty(), Optional.empty(), Optional.empty(),
-                        verifyAuditLog, Optional.empty(), Optional.empty(), Optional.empty());
+                        verifyAuditLog, Optional.empty(), Optional.empty(), Optional.empty(),
+                        Optional.empty(), null, Optional.empty(), false, false, false);
             }
             Optional<Path> verifyManifest = optionValue(args, VERIFY_MANIFEST_FLAG).map(Path::of);
             if (verifyManifest.isPresent()) {
@@ -632,7 +682,8 @@ public final class RemediationReportCli {
                         Optional.empty(), Optional.empty(), Optional.empty(), List.of(), verifyManifest,
                         Optional.empty(), Optional.empty(),
                         Optional.empty(), Optional.empty(), List.of(), List.of(), Optional.empty(), Optional.empty(),
-                        auditLog, Optional.empty(), auditActor, auditActionId, auditNote);
+                        auditLog, Optional.empty(), auditActor, auditActionId, auditNote,
+                        Optional.empty(), null, Optional.empty(), false, false, false);
             }
             Optional<Path> verifyBundle = optionValue(args, VERIFY_BUNDLE_FLAG).map(Path::of);
             if (verifyBundle.isPresent()) {
@@ -640,7 +691,8 @@ public final class RemediationReportCli {
                         Optional.empty(), Optional.empty(), Optional.empty(), List.of(), Optional.empty(),
                         Optional.empty(), verifyBundle,
                         Optional.empty(), Optional.empty(), List.of(), List.of(), Optional.empty(), Optional.empty(),
-                        auditLog, Optional.empty(), auditActor, auditActionId, auditNote);
+                        auditLog, Optional.empty(), auditActor, auditActionId, auditNote,
+                        Optional.empty(), null, Optional.empty(), false, false, false);
             }
             Path input = remediationReportPath(args)
                     .map(Path::of)
@@ -673,7 +725,8 @@ public final class RemediationReportCli {
             return new CliOptions(Optional.of(input), format, output, reportId, title, manifest, manifestExtras,
                     Optional.empty(), bundle, Optional.empty(), generatedBy, createdAt, redactions, redactionFiles,
                     redactionLabel, redactionSummary, auditLog, Optional.empty(),
-                    auditActor, auditActionId, auditNote);
+                    auditActor, auditActionId, auditNote,
+                    Optional.empty(), null, Optional.empty(), false, false, false);
         }
 
         private boolean redactionRequested() {
@@ -728,6 +781,12 @@ public final class RemediationReportCli {
                 }
             }
             return values;
+        }
+
+        private static boolean hasFlag(String[] args, String option) {
+            return Arrays.stream(args)
+                    .filter(Objects::nonNull)
+                    .anyMatch(arg -> arg.equals(option));
         }
 
         private static RemediationReportFormat format(String value) {

@@ -522,28 +522,34 @@ class RoutingControllerTest {
 
     @Test
     void allUnhealthyCandidatesReturnSafeNoDecisionResult() throws Exception {
-        mockMvc.perform(routingCompare("""
-                        {
-                          "strategies": ["TAIL_LATENCY_POWER_OF_TWO"],
-                          "servers": [
+        try (MockedConstruction<CloudManager> mockedCloudManager =
+                     Mockito.mockConstruction(CloudManager.class)) {
+            mockMvc.perform(routingCompare("""
                             {
-                              "serverId": "green",
-                              "healthy": false,
-                              "inFlightRequestCount": 1,
-                              "averageLatencyMillis": 10.0,
-                              "p95LatencyMillis": 20.0,
-                              "p99LatencyMillis": 30.0,
-                              "recentErrorRate": 0.0
+                              "strategies": ["TAIL_LATENCY_POWER_OF_TWO"],
+                              "servers": [
+                                {
+                                  "serverId": "green",
+                                  "healthy": false,
+                                  "inFlightRequestCount": 1,
+                                  "averageLatencyMillis": 10.0,
+                                  "p95LatencyMillis": 20.0,
+                                  "p99LatencyMillis": 30.0,
+                                  "recentErrorRate": 0.0
+                                }
+                              ]
                             }
-                          ]
-                        }
-                        """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.results[0].strategyId", is("TAIL_LATENCY_POWER_OF_TWO")))
-                .andExpect(jsonPath("$.results[0].status", is("SUCCESS")))
-                .andExpect(jsonPath("$.results[0].chosenServerId", nullValue()))
-                .andExpect(jsonPath("$.results[0].candidateServersConsidered").isEmpty())
-                .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
+                            """))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.results[0].strategyId", is("TAIL_LATENCY_POWER_OF_TWO")))
+                    .andExpect(jsonPath("$.results[0].status", is("SUCCESS")))
+                    .andExpect(jsonPath("$.results[0].chosenServerId", nullValue()))
+                    .andExpect(jsonPath("$.results[0].candidateServersConsidered").isEmpty())
+                    .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
+
+            assertTrue(mockedCloudManager.constructed().isEmpty(),
+                    "All-unhealthy routing comparison must not construct CloudManager or call AWS paths.");
+        }
     }
 
     @Test

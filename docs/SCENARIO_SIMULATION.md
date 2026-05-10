@@ -257,6 +257,18 @@ Set `format` to `MARKDOWN` for a human-readable incident report or `JSON` for au
 
 The exporter is read-only and advisory. It formats supplied results only; it does not execute remediation actions, does not run cloud operations, does not construct `CloudManager`, and does not generate timestamps or random report identifiers unless the caller supplies a `reportId`.
 
+Saved replay or evaluation responses can also be exported offline with the remediation report CLI:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --remediation-report \
+  --input saved-replay.json \
+  --format json \
+  --output replay-report.json
+```
+
+See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) for no-server/no-cloud usage.
+
 ## Limitations
 
 - Route steps derive request-level routing telemetry from the current replay server state. Use `POST /api/routing/compare` directly for full custom routing telemetry.

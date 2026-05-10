@@ -1,0 +1,160 @@
+{
+  "scenarioId": "mixed-incident-replay",
+  "readOnly": true,
+  "cloudMutation": false,
+  "remediationPlan": {
+    "status": "OVERLOADED",
+    "generatedFrom": "scenario-replay",
+    "advisoryOnly": true,
+    "readOnly": true,
+    "cloudMutation": false,
+    "recommendations": [
+      {
+        "rank": 1,
+        "action": "SCALE_UP",
+        "priority": "HIGH",
+        "reason": "CAPACITY_DEFICIT",
+        "serverCount": 1,
+        "loadAmount": 20.0,
+        "executable": false,
+        "message": "Scale up by the largest simulated additional server count seen in replay."
+      },
+      {
+        "rank": 2,
+        "action": "SHED_LOAD",
+        "priority": "MEDIUM",
+        "reason": "LOW_PRIORITY_LOAD_SHED",
+        "serverCount": null,
+        "loadAmount": 20.0,
+        "executable": false,
+        "message": "Shed or defer low-priority work observed during replay overload."
+      },
+      {
+        "rank": 3,
+        "action": "INVESTIGATE_UNHEALTHY",
+        "priority": "MEDIUM",
+        "reason": "UNHEALTHY_SERVERS_PRESENT",
+        "serverCount": 1,
+        "loadAmount": null,
+        "executable": false,
+        "message": "Investigate servers that became unhealthy during the replay scenario."
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepId": "route-before-incident",
+      "type": "ROUTE",
+      "status": "OK",
+      "strategy": null,
+      "allocations": {},
+      "acceptedLoad": 0.0,
+      "rejectedLoad": 0.0,
+      "unallocatedLoad": 0.0,
+      "recommendedAdditionalServers": 0,
+      "scalingSimulation": null,
+      "loadShedding": null,
+      "metricsPreview": null,
+      "selectedServerId": "green",
+      "routingResults": [],
+      "serverStates": [
+        {
+          "id": "green",
+          "cpuUsage": 10.0,
+          "memoryUsage": 20.0,
+          "diskUsage": 15.0,
+          "capacity": 100.0,
+          "weight": 2.0,
+          "healthy": true
+        }
+      ],
+      "reason": "Routing preview selected green."
+    },
+    {
+      "stepId": "overload-spike",
+      "type": "OVERLOAD",
+      "status": "OK",
+      "strategy": "CAPACITY_AWARE",
+      "allocations": {
+        "green": 100.0,
+        "blue": 100.0,
+        "red": 20.0
+      },
+      "acceptedLoad": 220.0,
+      "rejectedLoad": 20.0,
+      "unallocatedLoad": 20.0,
+      "recommendedAdditionalServers": 1,
+      "scalingSimulation": {
+        "recommendedAdditionalServers": 1,
+        "reason": "Unallocated load exceeds available capacity; simulated scale-up recommended.",
+        "simulatedOnly": true
+      },
+      "loadShedding": {
+        "priority": "BACKGROUND",
+        "action": "SHED",
+        "reason": "Background load should be shed under overload pressure.",
+        "targetId": "allocation-evaluation",
+        "currentInFlightRequestCount": 120,
+        "concurrencyLimit": 100,
+        "queueDepth": 50,
+        "utilization": 1.2,
+        "observedP95LatencyMillis": 375.0,
+        "observedErrorRate": 0.15
+      },
+      "metricsPreview": {
+        "strategy": "CAPACITY_AWARE",
+        "evaluatedHealthyServerCount": 3,
+        "acceptedLoad": 220.0,
+        "rejectedLoad": 20.0,
+        "unallocatedLoad": 20.0,
+        "recommendedAdditionalServers": 1,
+        "metricNames": [
+          "allocation.requests.count"
+        ],
+        "emitted": false
+      },
+      "selectedServerId": null,
+      "routingResults": [],
+      "serverStates": [
+        {
+          "id": "green",
+          "cpuUsage": 10.0,
+          "memoryUsage": 20.0,
+          "diskUsage": 15.0,
+          "capacity": 100.0,
+          "weight": 2.0,
+          "healthy": true
+        }
+      ],
+      "reason": "Simulated overload preview."
+    },
+    {
+      "stepId": "fail-blue",
+      "type": "MARK_UNHEALTHY",
+      "status": "OK",
+      "strategy": null,
+      "allocations": {},
+      "acceptedLoad": 0.0,
+      "rejectedLoad": 0.0,
+      "unallocatedLoad": 0.0,
+      "recommendedAdditionalServers": 0,
+      "scalingSimulation": null,
+      "loadShedding": null,
+      "metricsPreview": null,
+      "selectedServerId": null,
+      "routingResults": [],
+      "serverStates": [
+        {
+          "id": "blue",
+          "cpuUsage": 45.0,
+          "memoryUsage": 45.0,
+          "diskUsage": 40.0,
+          "capacity": 100.0,
+          "weight": 1.0,
+          "healthy": false
+        }
+      ],
+      "reason": "Server blue marked unhealthy for this replay only."
+    }
+  ]
+}

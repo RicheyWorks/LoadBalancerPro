@@ -1,0 +1,76 @@
+{
+  "strategy": "CAPACITY_AWARE",
+  "allocations": {
+    "primary": 70.0,
+    "fallback": 30.0
+  },
+  "acceptedLoad": 100.0,
+  "rejectedLoad": 50.0,
+  "unallocatedLoad": 50.0,
+  "recommendedAdditionalServers": 1,
+  "scalingSimulation": {
+    "recommendedAdditionalServers": 1,
+    "reason": "Unallocated load exceeds available capacity; simulated scale-up recommended.",
+    "simulatedOnly": true
+  },
+  "loadShedding": {
+    "priority": "BACKGROUND",
+    "action": "SHED",
+    "reason": "Background load should be shed under overload pressure.",
+    "targetId": "allocation-evaluation",
+    "currentInFlightRequestCount": 95,
+    "concurrencyLimit": 100,
+    "queueDepth": 25,
+    "utilization": 0.95,
+    "observedP95LatencyMillis": 300.0,
+    "observedErrorRate": 0.2
+  },
+  "metricsPreview": {
+    "strategy": "CAPACITY_AWARE",
+    "evaluatedHealthyServerCount": 2,
+    "acceptedLoad": 100.0,
+    "rejectedLoad": 50.0,
+    "unallocatedLoad": 50.0,
+    "recommendedAdditionalServers": 1,
+    "metricNames": [
+      "allocation.requests.count",
+      "allocation.accepted.load",
+      "allocation.rejected.load",
+      "allocation.unallocated.load",
+      "allocation.server.count",
+      "allocation.scaling.recommended.servers"
+    ],
+    "emitted": false
+  },
+  "readOnly": true,
+  "remediationPlan": {
+    "status": "OVERLOADED",
+    "generatedFrom": "allocation-evaluation",
+    "advisoryOnly": true,
+    "readOnly": true,
+    "cloudMutation": false,
+    "recommendations": [
+      {
+        "rank": 1,
+        "action": "SCALE_UP",
+        "priority": "HIGH",
+        "reason": "CAPACITY_DEFICIT",
+        "serverCount": 1,
+        "loadAmount": 50.0,
+        "executable": false,
+        "message": "Scale up by the simulated additional server count to cover unallocated load."
+      },
+      {
+        "rank": 2,
+        "action": "SHED_LOAD",
+        "priority": "MEDIUM",
+        "reason": "LOW_PRIORITY_LOAD_SHED",
+        "serverCount": null,
+        "loadAmount": 50.0,
+        "executable": false,
+        "message": "Shed, defer, or queue low-priority work until capacity pressure clears."
+      }
+    ]
+  },
+  "decisionReason": "Read-only evaluation accepted 100.000 load and left 50.000 load unallocated; background load shed."
+}

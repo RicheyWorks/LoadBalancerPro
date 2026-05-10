@@ -326,7 +326,8 @@ class ServerMonitorTest {
             assertTrue(isolatedMonitor.getStatus().getConsecutiveFailures() >= 1,
                 "Cloud metric IOException path should record a consecutive failure.");
             verify(mockedBalancer, atLeastOnce()).updateCloudMetricsIfAvailable();
-            verify(mockedBalancer, atLeastOnce()).logAlert(contains("Persistent cloud metric fetch failure"));
+            verify(mockedBalancer, timeout(3000).atLeastOnce())
+                .logAlert(contains("Persistent cloud metric fetch failure"));
             verify(mockedBalancer, timeout(3000).atLeastOnce()).checkServerHealth();
         } finally {
             isolatedMonitor.stop();

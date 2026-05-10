@@ -1,0 +1,81 @@
+{
+  "scenarioId": "mixed-incident-replay",
+  "servers": [
+    {
+      "id": "green",
+      "cpuUsage": 10.0,
+      "memoryUsage": 20.0,
+      "diskUsage": 15.0,
+      "capacity": 100.0,
+      "weight": 2.0,
+      "healthy": true
+    },
+    {
+      "id": "blue",
+      "cpuUsage": 45.0,
+      "memoryUsage": 45.0,
+      "diskUsage": 40.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": true
+    },
+    {
+      "id": "red",
+      "cpuUsage": 25.0,
+      "memoryUsage": 20.0,
+      "diskUsage": 20.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": true
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "route-before-incident",
+      "type": "ROUTE",
+      "routingStrategies": [
+        "ROUND_ROBIN"
+      ]
+    },
+    {
+      "stepId": "overload-spike",
+      "type": "OVERLOAD",
+      "requestedLoad": 240.0,
+      "strategy": "CAPACITY_AWARE",
+      "priority": "BACKGROUND",
+      "currentInFlightRequestCount": 120,
+      "concurrencyLimit": 100,
+      "queueDepth": 50,
+      "observedP95LatencyMillis": 375.0,
+      "observedErrorRate": 0.15
+    },
+    {
+      "stepId": "fail-blue",
+      "type": "MARK_UNHEALTHY",
+      "serverId": "blue"
+    },
+    {
+      "stepId": "evaluate-degraded",
+      "type": "EVALUATE",
+      "requestedLoad": 120.0,
+      "strategy": "PREDICTIVE",
+      "priority": "USER",
+      "currentInFlightRequestCount": 60,
+      "concurrencyLimit": 100,
+      "queueDepth": 10,
+      "observedP95LatencyMillis": 120.0,
+      "observedErrorRate": 0.03
+    },
+    {
+      "stepId": "recover-blue",
+      "type": "MARK_HEALTHY",
+      "serverId": "blue"
+    },
+    {
+      "stepId": "allocate-after-recovery",
+      "type": "ALLOCATE",
+      "requestedLoad": 90.0,
+      "strategy": "CAPACITY_AWARE"
+    }
+  ]
+}

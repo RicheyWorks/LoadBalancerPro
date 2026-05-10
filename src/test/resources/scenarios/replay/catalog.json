@@ -1,0 +1,41 @@
+{
+  "catalogVersion": 1,
+  "fixtures": [
+    {
+      "name": "normal-baseline",
+      "path": "scenarios/replay/normal-baseline.json",
+      "expectedStatus": 200,
+      "purpose": "Healthy allocation, evaluation, and routing baseline with no unallocated load."
+    },
+    {
+      "name": "overload-scale-recommendation",
+      "path": "scenarios/replay/overload-scale-recommendation.json",
+      "expectedStatus": 200,
+      "purpose": "Overload pressure that accepts available capacity and recommends scale-up for unallocated load."
+    },
+    {
+      "name": "single-server-failure-recovery",
+      "path": "scenarios/replay/single-server-failure-recovery.json",
+      "expectedStatus": 200,
+      "purpose": "One server fails, traffic routes around it, allocation excludes it, and recovery re-enters routing."
+    },
+    {
+      "name": "all-unhealthy-degradation",
+      "path": "scenarios/replay/all-unhealthy-degradation.json",
+      "expectedStatus": 200,
+      "purpose": "All servers unavailable with controlled no-capacity and no-route responses."
+    },
+    {
+      "name": "mixed-incident-replay",
+      "path": "scenarios/replay/mixed-incident-replay.json",
+      "expectedStatus": 200,
+      "purpose": "A multi-step incident mixing routing, overload, failure, evaluation, recovery, and allocation."
+    },
+    {
+      "name": "invalid-scenario",
+      "path": "scenarios/replay/invalid-scenario.json",
+      "expectedStatus": 400,
+      "purpose": "Unsupported event type contract fixture for controlled bad-request behavior."
+    }
+  ]
+}

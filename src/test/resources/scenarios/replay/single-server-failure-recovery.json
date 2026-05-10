@@ -1,0 +1,55 @@
+{
+  "scenarioId": "single-server-failure-recovery",
+  "servers": [
+    {
+      "id": "green",
+      "cpuUsage": 5.0,
+      "memoryUsage": 10.0,
+      "diskUsage": 10.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": true
+    },
+    {
+      "id": "blue",
+      "cpuUsage": 15.0,
+      "memoryUsage": 10.0,
+      "diskUsage": 10.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": true
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "fail-green",
+      "type": "MARK_UNHEALTHY",
+      "serverId": "green"
+    },
+    {
+      "stepId": "route-around",
+      "type": "ROUTE",
+      "routingStrategies": [
+        "ROUND_ROBIN"
+      ]
+    },
+    {
+      "stepId": "allocate-degraded",
+      "type": "ALLOCATE",
+      "requestedLoad": 60.0,
+      "strategy": "CAPACITY_AWARE"
+    },
+    {
+      "stepId": "recover-green",
+      "type": "MARK_HEALTHY",
+      "serverId": "green"
+    },
+    {
+      "stepId": "route-after-recovery",
+      "type": "ROUTE",
+      "routingStrategies": [
+        "ROUND_ROBIN"
+      ]
+    }
+  ]
+}

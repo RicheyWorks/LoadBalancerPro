@@ -214,6 +214,13 @@ Scenario replay is read-only:
 
 The response deliberately sets `cloudMutation=false` and includes `metricsPreview.emitted=false` for allocation-like steps.
 
+## Curated Incident Fixtures
+
+Curated replay examples live in `src/test/resources/scenarios/replay/` and are indexed by `catalog.json`.
+They cover normal load, overload with scale recommendation, single-server failure/recovery, all-unhealthy degradation, mixed incidents, and invalid scenario contracts.
+
+See [`INCIDENT_FIXTURE_CATALOG.md`](INCIDENT_FIXTURE_CATALOG.md) for the fixture catalog, expected operator interpretation, and regression-test guidance.
+
 ## Limitations
 
 - Route steps derive request-level routing telemetry from the current replay server state. Use `POST /api/routing/compare` directly for full custom routing telemetry.

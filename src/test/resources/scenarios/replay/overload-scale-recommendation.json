@@ -1,0 +1,37 @@
+{
+  "scenarioId": "overload-scale-recommendation",
+  "servers": [
+    {
+      "id": "primary",
+      "cpuUsage": 30.0,
+      "memoryUsage": 30.0,
+      "diskUsage": 30.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": true
+    },
+    {
+      "id": "fallback",
+      "cpuUsage": 70.0,
+      "memoryUsage": 70.0,
+      "diskUsage": 70.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": true
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "overload-check",
+      "type": "OVERLOAD",
+      "requestedLoad": 150.0,
+      "strategy": "CAPACITY_AWARE",
+      "priority": "BACKGROUND",
+      "currentInFlightRequestCount": 95,
+      "concurrencyLimit": 100,
+      "queueDepth": 25,
+      "observedP95LatencyMillis": 300.0,
+      "observedErrorRate": 0.2
+    }
+  ]
+}

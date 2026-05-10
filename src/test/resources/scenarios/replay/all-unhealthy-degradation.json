@@ -1,0 +1,38 @@
+{
+  "scenarioId": "all-unhealthy-degradation",
+  "servers": [
+    {
+      "id": "red",
+      "cpuUsage": 20.0,
+      "memoryUsage": 20.0,
+      "diskUsage": 20.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": false
+    },
+    {
+      "id": "yellow",
+      "cpuUsage": 35.0,
+      "memoryUsage": 30.0,
+      "diskUsage": 30.0,
+      "capacity": 100.0,
+      "weight": 1.0,
+      "healthy": false
+    }
+  ],
+  "steps": [
+    {
+      "stepId": "evaluate-outage",
+      "type": "EVALUATE",
+      "requestedLoad": 80.0,
+      "strategy": "CAPACITY_AWARE"
+    },
+    {
+      "stepId": "route-outage",
+      "type": "ROUTE",
+      "routingStrategies": [
+        "TAIL_LATENCY_POWER_OF_TWO"
+      ]
+    }
+  ]
+}

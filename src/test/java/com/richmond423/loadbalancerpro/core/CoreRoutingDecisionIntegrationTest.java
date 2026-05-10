@@ -76,6 +76,46 @@ class CoreRoutingDecisionIntegrationTest {
     }
 
     @Test
+    void capacityAwareOverloadStaysDeterministicDuringFailureAndReAdmitsRecoveredServer() {
+        LoadBalancer balancer = new LoadBalancer();
+        try {
+            Server primary = server("primary", 30.0, 30.0, 30.0, 1.0, 100.0);
+            Server fallback = server("fallback", 70.0, 70.0, 70.0, 1.0, 100.0);
+            Server recovering = server("recovering", 10.0, 10.0, 10.0, 1.0, 100.0);
+            recovering.setHealthy(false);
+
+            balancer.addServer(primary);
+            balancer.addServer(fallback);
+            balancer.addServer(recovering);
+
+            LoadDistributionResult degraded = balancer.capacityAwareWithResult(150.0);
+            LoadDistributionResult repeatedDegraded = balancer.capacityAwareWithResult(150.0);
+
+            assertAll("transient failure excludes recovering server and keeps overload accounting stable",
+                    () -> assertEquals(degraded.allocations(), repeatedDegraded.allocations()),
+                    () -> assertEquals(degraded.unallocatedLoad(), repeatedDegraded.unallocatedLoad(), 0.01),
+                    () -> assertEquals(70.0, degraded.allocations().get("primary"), 0.01),
+                    () -> assertEquals(30.0, degraded.allocations().get("fallback"), 0.01),
+                    () -> assertFalse(degraded.allocations().containsKey("recovering")),
+                    () -> assertEquals(50.0, degraded.unallocatedLoad(), 0.01),
+                    () -> assertTrue(degraded.allocations().values().stream().allMatch(value -> value >= 0.0)));
+
+            recovering.setHealthy(true);
+
+            LoadDistributionResult recovered = balancer.capacityAwareWithResult(150.0);
+
+            assertAll("recovered server re-enters degraded allocation without negative or stale state",
+                    () -> assertTrue(recovered.allocations().containsKey("recovering")),
+                    () -> assertTrue(recovered.allocations().get("recovering") > 0.0),
+                    () -> assertEquals(150.0, sum(recovered.allocations()), 0.01),
+                    () -> assertEquals(0.0, recovered.unallocatedLoad(), 0.01),
+                    () -> assertTrue(recovered.allocations().values().stream().allMatch(value -> value >= 0.0)));
+        } finally {
+            balancer.shutdown();
+        }
+    }
+
+    @Test
     void routingComparisonEngineExcludesUnhealthyCandidatesAcrossWeightedAndLeastConnectionStrategies() {
         RoutingComparisonEngine engine = routingEngine();
         List<ServerStateVector> candidates = List.of(

@@ -253,32 +253,38 @@ class AllocatorControllerTest {
 
     @Test
     void capacityAwareAllocationWithAllServersUnhealthyReturnsUnallocatedLoadWithoutScaleCount() throws Exception {
-        mockMvc.perform(post("/api/allocate/capacity-aware")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "requestedLoad": 50.0,
-                                  "servers": [
+        try (MockedConstruction<CloudManager> mockedCloudManager =
+                Mockito.mockConstruction(CloudManager.class)) {
+            mockMvc.perform(post("/api/allocate/capacity-aware")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
                                     {
-                                      "id": "unhealthy",
-                                      "cpuUsage": 10.0,
-                                      "memoryUsage": 10.0,
-                                      "diskUsage": 10.0,
-                                      "capacity": 100.0,
-                                      "weight": 1.0,
-                                      "healthy": false
+                                      "requestedLoad": 50.0,
+                                      "servers": [
+                                        {
+                                          "id": "unhealthy",
+                                          "cpuUsage": 10.0,
+                                          "memoryUsage": 10.0,
+                                          "diskUsage": 10.0,
+                                          "capacity": 100.0,
+                                          "weight": 1.0,
+                                          "healthy": false
+                                        }
+                                      ]
                                     }
-                                  ]
-                                }
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.allocations").isMap())
-                .andExpect(jsonPath("$.allocations.unhealthy").doesNotExist())
-                .andExpect(jsonPath("$.unallocatedLoad", closeTo(50.0, 0.01)))
-                .andExpect(jsonPath("$.recommendedAdditionalServers", is(0)))
-                .andExpect(jsonPath("$.scalingSimulation.recommendedAdditionalServers", is(0)))
-                .andExpect(jsonPath("$.scalingSimulation.simulatedOnly", is(true)))
-                .andExpect(jsonPath("$.scalingSimulation.reason", containsString("target capacity is unavailable")));
+                                    """))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.allocations").isMap())
+                    .andExpect(jsonPath("$.allocations.unhealthy").doesNotExist())
+                    .andExpect(jsonPath("$.unallocatedLoad", closeTo(50.0, 0.01)))
+                    .andExpect(jsonPath("$.recommendedAdditionalServers", is(0)))
+                    .andExpect(jsonPath("$.scalingSimulation.recommendedAdditionalServers", is(0)))
+                    .andExpect(jsonPath("$.scalingSimulation.simulatedOnly", is(true)))
+                    .andExpect(jsonPath("$.scalingSimulation.reason", containsString("target capacity is unavailable")));
+
+            assertTrue(mockedCloudManager.constructed().isEmpty(),
+                    "All-unhealthy allocation must not construct CloudManager or call AWS paths.");
+        }
 
         assertEquals(1.0, registry.counter(
                 DomainMetrics.ALLOCATION_REQUESTS, "strategy", "CAPACITY_AWARE").count());
@@ -287,6 +293,63 @@ class AllocatorControllerTest {
         assertEquals(50.0, registry.summary(
                 DomainMetrics.ALLOCATION_UNALLOCATED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
         assertEquals(0.0, registry.summary(
+                DomainMetrics.ALLOCATION_SCALING_RECOMMENDED_SERVERS, "strategy", "CAPACITY_AWARE")
+                .totalAmount(), 0.01);
+    }
+
+    @Test
+    void repeatedOverloadedCapacityAwareRequestsRemainDeterministicObservableAndCloudSafe() throws Exception {
+        String requestBody = """
+                {
+                  "requestedLoad": 150.0,
+                  "servers": [
+                    {
+                      "id": "primary",
+                      "cpuUsage": 30.0,
+                      "memoryUsage": 30.0,
+                      "diskUsage": 30.0,
+                      "capacity": 100.0,
+                      "weight": 1.0,
+                      "healthy": true
+                    },
+                    {
+                      "id": "fallback",
+                      "cpuUsage": 70.0,
+                      "memoryUsage": 70.0,
+                      "diskUsage": 70.0,
+                      "capacity": 100.0,
+                      "weight": 1.0,
+                      "healthy": true
+                    },
+                    {
+                      "id": "failed",
+                      "cpuUsage": 0.0,
+                      "memoryUsage": 0.0,
+                      "diskUsage": 0.0,
+                      "capacity": 500.0,
+                      "weight": 10.0,
+                      "healthy": false
+                    }
+                  ]
+                }
+                """;
+
+        try (MockedConstruction<CloudManager> mockedCloudManager =
+                Mockito.mockConstruction(CloudManager.class)) {
+            expectOverloadedCapacityAwareResponse(requestBody);
+            expectOverloadedCapacityAwareResponse(requestBody);
+
+            assertTrue(mockedCloudManager.constructed().isEmpty(),
+                    "Degraded allocation and scale recommendation must not construct CloudManager or call AWS paths.");
+        }
+
+        assertEquals(2.0, registry.counter(
+                DomainMetrics.ALLOCATION_REQUESTS, "strategy", "CAPACITY_AWARE").count());
+        assertEquals(4.0, registry.summary(
+                DomainMetrics.ALLOCATION_SERVER_COUNT, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
+        assertEquals(100.0, registry.summary(
+                DomainMetrics.ALLOCATION_UNALLOCATED_LOAD, "strategy", "CAPACITY_AWARE").totalAmount(), 0.01);
+        assertEquals(2.0, registry.summary(
                 DomainMetrics.ALLOCATION_SCALING_RECOMMENDED_SERVERS, "strategy", "CAPACITY_AWARE")
                 .totalAmount(), 0.01);
     }
@@ -790,5 +853,20 @@ class AllocatorControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.openapi").exists())
                 .andExpect(jsonPath("$.paths./api/allocate/capacity-aware").exists());
+    }
+
+    private void expectOverloadedCapacityAwareResponse(String requestBody) throws Exception {
+        mockMvc.perform(post("/api/allocate/capacity-aware")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allocations.primary", closeTo(70.0, 0.01)))
+                .andExpect(jsonPath("$.allocations.fallback", closeTo(30.0, 0.01)))
+                .andExpect(jsonPath("$.allocations.failed").doesNotExist())
+                .andExpect(jsonPath("$.unallocatedLoad", closeTo(50.0, 0.01)))
+                .andExpect(jsonPath("$.recommendedAdditionalServers", is(1)))
+                .andExpect(jsonPath("$.scalingSimulation.recommendedAdditionalServers", is(1)))
+                .andExpect(jsonPath("$.scalingSimulation.simulatedOnly", is(true)))
+                .andExpect(jsonPath("$.scalingSimulation.reason", containsString("simulated scale-up")));
     }
 }

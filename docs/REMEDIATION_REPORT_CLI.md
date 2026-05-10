@@ -394,7 +394,7 @@ Curated templates:
 - `regulated-handoff`: strict packaged profile for reviewed handoffs, without legal or identity-proof claims.
 - `investigation-working-copy`: permissive active-investigation profile where working notes are expected but missing core evidence still fails.
 
-See [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md) for intended use cases and examples.
+See [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md) for intended use cases and [`EVIDENCE_POLICY_EXAMPLES.md`](EVIDENCE_POLICY_EXAMPLES.md) for concrete sender/receiver catalog pairs with expected `PASS`, `WARN`, and `FAIL` decisions.
 
 Policy JSON format:
 

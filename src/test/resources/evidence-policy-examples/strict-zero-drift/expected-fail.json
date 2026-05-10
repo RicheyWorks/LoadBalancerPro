@@ -1,0 +1,13 @@
+{
+  "template" : "strict-zero-drift",
+  "before" : "before.json",
+  "after" : "after-drift.json",
+  "expectedDecision" : "FAIL",
+  "expectedFailCount" : 1,
+  "expectedWarnCount" : 0,
+  "expectedInfoCount" : 0,
+  "expectedIgnoredCount" : 0,
+  "expectedUnclassifiedCount" : 1,
+  "expectedChangedPaths" : [ "report.md" ],
+  "expectedChangeTypes" : [ "CHANGED" ]
+}

@@ -172,7 +172,7 @@ Use `strict-zero-drift` for final equality checks, `receiver-redaction` when rec
 
 Use `STRICT` policies for zero-drift handoffs and `ALLOWLIST` policies when expected changes are known, such as a receiver-side redaction summary or expected audit-log append. Policy decisions are `PASS`, `WARN`, or `FAIL`; `--fail-on-policy-fail` exits non-zero only for `FAIL`. Attach the policy report to the incident ticket alongside both inventories.
 
-See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md) and [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md) for CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, evidence handoff policies, packaged policy templates, safety guarantees, and JSON output.
+See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md), [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md), and [`EVIDENCE_POLICY_EXAMPLES.md`](EVIDENCE_POLICY_EXAMPLES.md) for CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, evidence handoff policies, packaged policy templates, example sender/receiver catalog pairs, safety guarantees, and JSON output.
 
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
 

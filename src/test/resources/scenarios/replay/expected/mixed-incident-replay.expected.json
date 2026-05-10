@@ -1,0 +1,76 @@
+{
+  "fixtureName": "mixed-incident-replay",
+  "requestPath": "scenarios/replay/mixed-incident-replay.json",
+  "expectedStatus": 200,
+  "expectedReadOnly": true,
+  "expectedCloudMutation": false,
+  "expectedStepTypes": [
+    "ROUTE",
+    "OVERLOAD",
+    "MARK_UNHEALTHY",
+    "EVALUATE",
+    "MARK_HEALTHY",
+    "ALLOCATE"
+  ],
+  "expectNoNegativeAllocations": true,
+  "steps": [
+    {
+      "index": 0,
+      "stepId": "route-before-incident",
+      "type": "ROUTE",
+      "selectedServerId": "green",
+      "routingFirstChosenServerId": "green"
+    },
+    {
+      "index": 1,
+      "stepId": "overload-spike",
+      "type": "OVERLOAD",
+      "acceptedLoad": 220.0,
+      "rejectedLoad": 20.0,
+      "unallocatedLoad": 20.0,
+      "recommendedAdditionalServers": 1,
+      "scalingRecommendedAdditionalServers": 1,
+      "loadSheddingPriority": "BACKGROUND",
+      "loadSheddingAction": "SHED",
+      "metricsPreviewEmitted": false
+    },
+    {
+      "index": 2,
+      "stepId": "fail-blue",
+      "type": "MARK_UNHEALTHY",
+      "serverHealth": {
+        "blue": false
+      }
+    },
+    {
+      "index": 3,
+      "stepId": "evaluate-degraded",
+      "type": "EVALUATE",
+      "acceptedLoad": 120.0,
+      "rejectedLoad": 0.0,
+      "unallocatedLoad": 0.0,
+      "recommendedAdditionalServers": 0,
+      "loadSheddingPriority": "USER",
+      "loadSheddingAction": "ALLOW",
+      "metricsPreviewEmitted": false
+    },
+    {
+      "index": 4,
+      "stepId": "recover-blue",
+      "type": "MARK_HEALTHY",
+      "serverHealth": {
+        "blue": true
+      }
+    },
+    {
+      "index": 5,
+      "stepId": "allocate-after-recovery",
+      "type": "ALLOCATE",
+      "acceptedLoad": 90.0,
+      "rejectedLoad": 0.0,
+      "unallocatedLoad": 0.0,
+      "recommendedAdditionalServers": 0,
+      "metricsPreviewEmitted": false
+    }
+  ]
+}

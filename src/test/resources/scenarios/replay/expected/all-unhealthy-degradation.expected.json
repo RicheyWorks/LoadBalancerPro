@@ -1,0 +1,32 @@
+{
+  "fixtureName": "all-unhealthy-degradation",
+  "requestPath": "scenarios/replay/all-unhealthy-degradation.json",
+  "expectedStatus": 200,
+  "expectedReadOnly": true,
+  "expectedCloudMutation": false,
+  "expectedStepTypes": [
+    "EVALUATE",
+    "ROUTE"
+  ],
+  "expectNoNegativeAllocations": true,
+  "steps": [
+    {
+      "index": 0,
+      "stepId": "evaluate-outage",
+      "type": "EVALUATE",
+      "acceptedLoad": 0.0,
+      "rejectedLoad": 80.0,
+      "unallocatedLoad": 80.0,
+      "recommendedAdditionalServers": 0,
+      "loadSheddingAction": "SHED",
+      "metricsPreviewEmitted": false
+    },
+    {
+      "index": 1,
+      "stepId": "route-outage",
+      "type": "ROUTE",
+      "selectedServerId": null,
+      "routingFirstChosenServerId": null
+    }
+  ]
+}

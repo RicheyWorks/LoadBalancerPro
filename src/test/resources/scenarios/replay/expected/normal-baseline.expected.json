@@ -1,0 +1,43 @@
+{
+  "fixtureName": "normal-baseline",
+  "requestPath": "scenarios/replay/normal-baseline.json",
+  "expectedStatus": 200,
+  "expectedReadOnly": true,
+  "expectedCloudMutation": false,
+  "expectedStepTypes": [
+    "ALLOCATE",
+    "EVALUATE",
+    "ROUTE"
+  ],
+  "expectNoNegativeAllocations": true,
+  "steps": [
+    {
+      "index": 0,
+      "stepId": "allocate-normal",
+      "type": "ALLOCATE",
+      "acceptedLoad": 50.0,
+      "rejectedLoad": 0.0,
+      "unallocatedLoad": 0.0,
+      "recommendedAdditionalServers": 0,
+      "metricsPreviewEmitted": false
+    },
+    {
+      "index": 1,
+      "stepId": "evaluate-normal",
+      "type": "EVALUATE",
+      "acceptedLoad": 40.0,
+      "rejectedLoad": 0.0,
+      "unallocatedLoad": 0.0,
+      "recommendedAdditionalServers": 0,
+      "loadSheddingAction": "ALLOW",
+      "metricsPreviewEmitted": false
+    },
+    {
+      "index": 2,
+      "stepId": "route-normal",
+      "type": "ROUTE",
+      "selectedServerId": "green",
+      "routingFirstChosenServerId": "green"
+    }
+  ]
+}

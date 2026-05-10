@@ -1,0 +1,26 @@
+{
+  "fixtureName": "overload-scale-recommendation",
+  "requestPath": "scenarios/replay/overload-scale-recommendation.json",
+  "expectedStatus": 200,
+  "expectedReadOnly": true,
+  "expectedCloudMutation": false,
+  "expectedStepTypes": [
+    "OVERLOAD"
+  ],
+  "expectNoNegativeAllocations": true,
+  "steps": [
+    {
+      "index": 0,
+      "stepId": "overload-check",
+      "type": "OVERLOAD",
+      "acceptedLoad": 100.0,
+      "rejectedLoad": 50.0,
+      "unallocatedLoad": 50.0,
+      "recommendedAdditionalServers": 1,
+      "scalingRecommendedAdditionalServers": 1,
+      "loadSheddingPriority": "BACKGROUND",
+      "loadSheddingAction": "SHED",
+      "metricsPreviewEmitted": false
+    }
+  ]
+}

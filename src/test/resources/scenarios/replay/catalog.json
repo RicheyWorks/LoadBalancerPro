@@ -4,36 +4,42 @@
     {
       "name": "normal-baseline",
       "path": "scenarios/replay/normal-baseline.json",
+      "expectedPath": "scenarios/replay/expected/normal-baseline.expected.json",
       "expectedStatus": 200,
       "purpose": "Healthy allocation, evaluation, and routing baseline with no unallocated load."
     },
     {
       "name": "overload-scale-recommendation",
       "path": "scenarios/replay/overload-scale-recommendation.json",
+      "expectedPath": "scenarios/replay/expected/overload-scale-recommendation.expected.json",
       "expectedStatus": 200,
       "purpose": "Overload pressure that accepts available capacity and recommends scale-up for unallocated load."
     },
     {
       "name": "single-server-failure-recovery",
       "path": "scenarios/replay/single-server-failure-recovery.json",
+      "expectedPath": "scenarios/replay/expected/single-server-failure-recovery.expected.json",
       "expectedStatus": 200,
       "purpose": "One server fails, traffic routes around it, allocation excludes it, and recovery re-enters routing."
     },
     {
       "name": "all-unhealthy-degradation",
       "path": "scenarios/replay/all-unhealthy-degradation.json",
+      "expectedPath": "scenarios/replay/expected/all-unhealthy-degradation.expected.json",
       "expectedStatus": 200,
       "purpose": "All servers unavailable with controlled no-capacity and no-route responses."
     },
     {
       "name": "mixed-incident-replay",
       "path": "scenarios/replay/mixed-incident-replay.json",
+      "expectedPath": "scenarios/replay/expected/mixed-incident-replay.expected.json",
       "expectedStatus": 200,
       "purpose": "A multi-step incident mixing routing, overload, failure, evaluation, recovery, and allocation."
     },
     {
       "name": "invalid-scenario",
       "path": "scenarios/replay/invalid-scenario.json",
+      "expectedPath": "scenarios/replay/expected/invalid-scenario.expected.json",
       "expectedStatus": 400,
       "purpose": "Unsupported event type contract fixture for controlled bad-request behavior."
     }

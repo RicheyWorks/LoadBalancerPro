@@ -65,3 +65,5 @@ Use `investigation-working-copy` while responders are actively adding notes or r
 Template listing, export, validation, JSON reports, and Markdown reports are deterministic and do not include timestamps or random identifiers by default.
 
 Policy evaluation classifies changes already recorded by `--diff-inventory`. It cannot prove files were never changed before either inventory was created, cannot prove operator identity, and cannot replace a centralized evidence system.
+
+For concrete sender/receiver catalog pairs and expected `PASS`, `WARN`, and `FAIL` outcomes, see [`EVIDENCE_POLICY_EXAMPLES.md`](EVIDENCE_POLICY_EXAMPLES.md).

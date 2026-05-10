@@ -1,0 +1,13 @@
+{
+  "template" : "regulated-handoff",
+  "before" : "before.json",
+  "after" : "after-missing-bundle.json",
+  "expectedDecision" : "FAIL",
+  "expectedFailCount" : 1,
+  "expectedWarnCount" : 0,
+  "expectedInfoCount" : 0,
+  "expectedIgnoredCount" : 0,
+  "expectedUnclassifiedCount" : 0,
+  "expectedChangedPaths" : [ "incident-bundle.zip" ],
+  "expectedChangeTypes" : [ "REMOVED" ]
+}

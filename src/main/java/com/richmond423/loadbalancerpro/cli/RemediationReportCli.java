@@ -2,6 +2,9 @@ package com.richmond423.loadbalancerpro.cli;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.richmond423.loadbalancerpro.api.AllocationEvaluationResponse;
 import com.richmond423.loadbalancerpro.api.RemediationReportFormat;
 import com.richmond423.loadbalancerpro.api.RemediationReportPayload;
@@ -17,8 +20,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -75,11 +80,14 @@ public final class RemediationReportCli {
             validateOptions(options);
             RemediationReportResponse response = responseFromInput(options);
             String rendered = render(response);
+            EvidenceRedactionService.RedactionPlan redactionPlan = redactionPlan(options);
+            RedactionContext redaction = redactionContext(options, response, rendered, redactionPlan);
             if (options.bundlePath().isPresent()) {
-                return writeBundle(options, response, rendered, out);
+                return writeBundle(options, response, redaction, out);
             }
-            writeOutput(rendered, options.outputPath(), out);
-            writeManifestIfRequested(options, response);
+            writeOutput(redaction.renderedReport(), options.outputPath(), out);
+            writeRedactionSummaryIfRequested(options, redaction);
+            writeManifestIfRequested(options, response, redaction);
             return new Result(true, 0);
         } catch (IllegalArgumentException e) {
             err.println("Remediation report export failed safely: " + safeMessage(e));
@@ -143,7 +151,7 @@ public final class RemediationReportCli {
     private static Result writeBundle(
             CliOptions options,
             RemediationReportResponse response,
-            String rendered,
+            RedactionContext redaction,
             PrintStream out) throws IOException {
         Path inputPath = options.inputPath()
                 .orElseThrow(() -> new IllegalArgumentException("--bundle requires --input <path>"));
@@ -152,18 +160,21 @@ public final class RemediationReportCli {
                         options.bundlePath().get(),
                         inputPath,
                         response.format(),
-                        rendered,
-                        response.json(),
+                        redaction.renderedReport(),
+                        redaction.redactedInputJson().orElse(null),
+                        redaction.redactionSummaryJson().orElse(null),
+                        redaction.payload(),
                         options.generatedBy().orElse(null),
                         options.createdAt().orElse(null),
                         appVersion()));
+        writeRedactionSummaryIfRequested(options, redaction);
         out.println("Incident bundle written: " + result.bundlePath());
         out.println("Incident bundle verification passed: " + result.bundlePath());
         return new Result(true, 0);
     }
 
     private static void writeManifestIfRequested(
-            CliOptions options, RemediationReportResponse response) throws IOException {
+            CliOptions options, RemediationReportResponse response, RedactionContext redaction) throws IOException {
         if (options.manifestPath().isEmpty()) {
             return;
         }
@@ -171,18 +182,39 @@ public final class RemediationReportCli {
                 .orElseThrow(() -> new IllegalArgumentException("--manifest requires --output <path>"));
         Path inputPath = options.inputPath()
                 .orElseThrow(() -> new IllegalArgumentException("--manifest requires --input <path>"));
+        Path manifestInputPath = inputPath;
+        List<Path> manifestExtras = new ArrayList<>(options.manifestExtraPaths());
+        if (redaction.enabled()) {
+            manifestInputPath = redactedInputPath(outputPath);
+            Files.writeString(manifestInputPath, redaction.redactedInputJson().orElseThrow(),
+                    StandardCharsets.UTF_8);
+            options.redactionSummaryPath().ifPresent(manifestExtras::add);
+        }
         ReportChecksumManifestService manifestService = new ReportChecksumManifestService();
         ReportChecksumManifestService.ReportChecksumManifest manifest = manifestService.create(
                 new ReportChecksumManifestService.ManifestCreateRequest(
                         options.manifestPath().get(),
-                        inputPath,
+                        manifestInputPath,
                         outputPath,
-                        options.manifestExtraPaths(),
-                        response.json(),
+                        manifestExtras,
+                        redaction.enabled() ? redaction.payload() : response.json(),
                         options.generatedBy().orElse(null),
                         options.createdAt().orElse(null),
                         appVersion()));
-        manifestService.write(options.manifestPath().get(), manifest);
+        String manifestJson = manifestService.toJson(manifest);
+        if (redaction.enabled()) {
+            manifestJson = redaction.plan().redactWithoutCounting(manifestJson);
+        }
+        Files.writeString(options.manifestPath().get(), manifestJson, StandardCharsets.UTF_8);
+    }
+
+    private static void writeRedactionSummaryIfRequested(
+            CliOptions options, RedactionContext redaction) throws IOException {
+        if (options.redactionSummaryPath().isEmpty()) {
+            return;
+        }
+        Files.writeString(options.redactionSummaryPath().get(), redaction.redactionSummaryJson().orElseThrow(),
+                StandardCharsets.UTF_8);
     }
 
     private static void validateOptions(CliOptions options) {
@@ -192,6 +224,9 @@ public final class RemediationReportCli {
         if (options.bundlePath().isPresent()
                 && (options.outputPath().isPresent() || options.manifestPath().isPresent())) {
             throw new IllegalArgumentException("--bundle writes its own report and manifest; omit --output and --manifest");
+        }
+        if (options.redactionSummaryPath().isPresent() && !options.redactionRequested()) {
+            throw new IllegalArgumentException("--redact-output-summary requires --redact or --redact-file");
         }
     }
 
@@ -252,6 +287,92 @@ public final class RemediationReportCli {
         out.print(rendered);
     }
 
+    private static EvidenceRedactionService.RedactionPlan redactionPlan(CliOptions options) throws IOException {
+        EvidenceRedactionService service = new EvidenceRedactionService();
+        List<String> values = new ArrayList<>(options.redactionValues());
+        for (Path path : options.redactionFilePaths()) {
+            values.addAll(service.readRedactionFile(path));
+        }
+        return service.createPlan(values, options.redactionLabel().orElse(null));
+    }
+
+    private static RedactionContext redactionContext(
+            CliOptions options,
+            RemediationReportResponse response,
+            String rendered,
+            EvidenceRedactionService.RedactionPlan plan) throws IOException {
+        if (!plan.enabled()) {
+            return new RedactionContext(
+                    rendered,
+                    Optional.empty(),
+                    response.json(),
+                    Optional.empty(),
+                    plan,
+                    false);
+        }
+        Path inputPath = options.inputPath()
+                .orElseThrow(() -> new IllegalArgumentException("input path is required"));
+        EvidenceRedactionService.RedactionSession session = plan.newSession();
+        String redactedInput = session.redact(IncidentBundleService.INPUT_ENTRY,
+                Files.readString(inputPath, StandardCharsets.UTF_8));
+        String reportEntry = response.format() == RemediationReportFormat.JSON
+                ? IncidentBundleService.JSON_REPORT_ENTRY
+                : IncidentBundleService.MARKDOWN_REPORT_ENTRY;
+        String redactedReport = session.redact(reportEntry, rendered);
+        RemediationReportPayload redactedPayload = redactedPayload(response.json(), plan);
+        String summaryJson = new EvidenceRedactionService().toJson(session.summary());
+        return new RedactionContext(
+                redactedReport,
+                Optional.of(redactedInput),
+                redactedPayload,
+                Optional.of(summaryJson),
+                plan,
+                true);
+    }
+
+    private static RemediationReportPayload redactedPayload(
+            RemediationReportPayload payload, EvidenceRedactionService.RedactionPlan plan) throws IOException {
+        JsonNode tree = OBJECT_MAPPER.valueToTree(payload);
+        JsonNode redacted = redactJsonNode(tree, plan);
+        return OBJECT_MAPPER.treeToValue(redacted, RemediationReportPayload.class);
+    }
+
+    private static JsonNode redactJsonNode(JsonNode node, EvidenceRedactionService.RedactionPlan plan) {
+        if (node == null || node.isNull()) {
+            return node;
+        }
+        if (node.isTextual()) {
+            return TextNode.valueOf(plan.redactWithoutCounting(node.asText()));
+        }
+        if (node.isArray()) {
+            ArrayNode array = OBJECT_MAPPER.createArrayNode();
+            for (JsonNode child : node) {
+                array.add(redactJsonNode(child, plan));
+            }
+            return array;
+        }
+        if (node.isObject()) {
+            ObjectNode object = OBJECT_MAPPER.createObjectNode();
+            Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> field = fields.next();
+                object.set(field.getKey(), redactJsonNode(field.getValue(), plan));
+            }
+            return object;
+        }
+        return node.deepCopy();
+    }
+
+    private static Path redactedInputPath(Path outputPath) {
+        Path normalized = outputPath.toAbsolutePath().normalize();
+        Path parent = normalized.getParent();
+        String fileName = normalized.getFileName().toString();
+        int extensionIndex = fileName.lastIndexOf('.');
+        String stem = extensionIndex > 0 ? fileName.substring(0, extensionIndex) : fileName;
+        Path target = Path.of(stem + ".input.redacted.json");
+        return parent == null ? target : parent.resolve(target);
+    }
+
     private static String firstNonBlank(String preferred, String fallback) {
         return preferred == null || preferred.isBlank() ? fallback : preferred;
     }
@@ -270,6 +391,8 @@ public final class RemediationReportCli {
         err.println("Bundle: --input <saved-evaluation-or-replay.json> [--format markdown|json] "
                 + "--bundle <incident-bundle.zip>");
         err.println("Verify bundle: --verify-bundle <incident-bundle.zip>");
+        err.println("Redaction: [--redact <literal>] [--redact-file <path>] "
+                + "[--redaction-label <label>] [--redact-output-summary <path>]");
         err.println("Safety: offline/read-only report generation; no API server, network access, "
                 + "CloudManager calls, or cloud mutation.");
     }
@@ -285,6 +408,20 @@ public final class RemediationReportCli {
     public record Result(boolean requested, int exitCode) {
     }
 
+    private record RedactionContext(
+            String renderedReport,
+            Optional<String> redactedInputJson,
+            RemediationReportPayload payload,
+            Optional<String> redactionSummaryJson,
+            EvidenceRedactionService.RedactionPlan plan,
+            boolean enabled) {
+
+        private RedactionContext {
+            redactedInputJson = redactedInputJson == null ? Optional.empty() : redactedInputJson;
+            redactionSummaryJson = redactionSummaryJson == null ? Optional.empty() : redactionSummaryJson;
+        }
+    }
+
     record CliOptions(
             Optional<Path> inputPath,
             RemediationReportFormat format,
@@ -297,7 +434,11 @@ public final class RemediationReportCli {
             Optional<Path> bundlePath,
             Optional<Path> verifyBundlePath,
             Optional<String> generatedBy,
-            Optional<String> createdAt) {
+            Optional<String> createdAt,
+            List<String> redactionValues,
+            List<Path> redactionFilePaths,
+            Optional<String> redactionLabel,
+            Optional<Path> redactionSummaryPath) {
 
         CliOptions {
             inputPath = inputPath == null ? Optional.empty() : inputPath;
@@ -311,6 +452,10 @@ public final class RemediationReportCli {
             verifyBundlePath = verifyBundlePath == null ? Optional.empty() : verifyBundlePath;
             generatedBy = generatedBy == null ? Optional.empty() : generatedBy;
             createdAt = createdAt == null ? Optional.empty() : createdAt;
+            redactionValues = redactionValues == null ? List.of() : List.copyOf(redactionValues);
+            redactionFilePaths = redactionFilePaths == null ? List.of() : List.copyOf(redactionFilePaths);
+            redactionLabel = redactionLabel == null ? Optional.empty() : redactionLabel;
+            redactionSummaryPath = redactionSummaryPath == null ? Optional.empty() : redactionSummaryPath;
         }
 
         static CliOptions parse(String[] args) {
@@ -319,14 +464,14 @@ public final class RemediationReportCli {
                 return new CliOptions(Optional.empty(), RemediationReportFormat.MARKDOWN, Optional.empty(),
                         Optional.empty(), Optional.empty(), Optional.empty(), List.of(), verifyManifest,
                         Optional.empty(), Optional.empty(),
-                        Optional.empty(), Optional.empty());
+                        Optional.empty(), Optional.empty(), List.of(), List.of(), Optional.empty(), Optional.empty());
             }
             Optional<Path> verifyBundle = optionValue(args, VERIFY_BUNDLE_FLAG).map(Path::of);
             if (verifyBundle.isPresent()) {
                 return new CliOptions(Optional.empty(), RemediationReportFormat.MARKDOWN, Optional.empty(),
                         Optional.empty(), Optional.empty(), Optional.empty(), List.of(), Optional.empty(),
                         Optional.empty(), verifyBundle,
-                        Optional.empty(), Optional.empty());
+                        Optional.empty(), Optional.empty(), List.of(), List.of(), Optional.empty(), Optional.empty());
             }
             Path input = remediationReportPath(args)
                     .map(Path::of)
@@ -340,6 +485,16 @@ public final class RemediationReportCli {
             Optional<String> title = optionValue(args, "--title").filter(value -> !value.isBlank());
             Optional<Path> manifest = optionValue(args, "--manifest").map(Path::of);
             Optional<Path> bundle = optionValue(args, BUNDLE_FLAG).map(Path::of);
+            List<String> redactions = optionValues(args, "--redact").stream()
+                    .filter(value -> !value.isBlank())
+                    .toList();
+            List<Path> redactionFiles = optionValues(args, "--redact-file").stream()
+                    .filter(value -> !value.isBlank())
+                    .map(Path::of)
+                    .toList();
+            Optional<String> redactionLabel = optionValue(args, "--redaction-label")
+                    .filter(value -> !value.isBlank());
+            Optional<Path> redactionSummary = optionValue(args, "--redact-output-summary").map(Path::of);
             List<Path> manifestExtras = optionValues(args, "--manifest-extra").stream()
                     .filter(value -> !value.isBlank())
                     .map(Path::of)
@@ -347,7 +502,12 @@ public final class RemediationReportCli {
             Optional<String> generatedBy = optionValue(args, "--generated-by").filter(value -> !value.isBlank());
             Optional<String> createdAt = optionValue(args, "--created-at").filter(value -> !value.isBlank());
             return new CliOptions(Optional.of(input), format, output, reportId, title, manifest, manifestExtras,
-                    Optional.empty(), bundle, Optional.empty(), generatedBy, createdAt);
+                    Optional.empty(), bundle, Optional.empty(), generatedBy, createdAt, redactions, redactionFiles,
+                    redactionLabel, redactionSummary);
+        }
+
+        private boolean redactionRequested() {
+            return !redactionValues.isEmpty() || !redactionFilePaths.isEmpty();
         }
 
         private static Optional<String> remediationReportPath(String[] args) {

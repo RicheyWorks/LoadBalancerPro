@@ -33,6 +33,7 @@ final class IncidentBundleService {
     static final String JSON_REPORT_ENTRY = "report.json";
     static final String MANIFEST_ENTRY = "manifest.json";
     static final String VERIFICATION_SUMMARY_ENTRY = "verification-summary.json";
+    static final String REDACTION_SUMMARY_ENTRY = "redaction-summary.json";
     static final String README_ENTRY = "README.md";
 
     private static final String BUNDLE_FORMAT_VERSION = "1";
@@ -46,8 +47,11 @@ final class IncidentBundleService {
         Path bundlePath = normalize(request.bundlePath());
         RemediationReportPayload payload = Objects.requireNonNull(request.payload(),
                 "remediation report payload cannot be null");
-        byte[] inputJson = Files.readAllBytes(normalize(request.inputPath()));
+        byte[] inputJson = request.inputJson() == null
+                ? Files.readAllBytes(normalize(request.inputPath()))
+                : request.inputJson().getBytes(StandardCharsets.UTF_8);
         String reportEntry = reportEntry(request.format());
+        boolean redactionApplied = request.redactionSummaryJson() != null && !request.redactionSummaryJson().isBlank();
 
         Path staging = Files.createTempDirectory("loadbalancerpro-incident-bundle-");
         try {
@@ -55,13 +59,25 @@ final class IncidentBundleService {
             Path stagedReport = staging.resolve(reportEntry);
             Path stagedReadme = staging.resolve(README_ENTRY);
             Path stagedSummary = staging.resolve(VERIFICATION_SUMMARY_ENTRY);
+            Path stagedRedactionSummary = staging.resolve(REDACTION_SUMMARY_ENTRY);
             Path stagedManifest = staging.resolve(MANIFEST_ENTRY);
 
             Files.write(stagedInput, inputJson);
             Files.writeString(stagedReport, request.report(), StandardCharsets.UTF_8);
-            Files.writeString(stagedReadme, readme(payload, request.format(), reportEntry), StandardCharsets.UTF_8);
-            Files.writeString(stagedSummary, verificationSummary(payload, request.format(), reportEntry),
+            Files.writeString(stagedReadme, readme(payload, request.format(), reportEntry, redactionApplied),
                     StandardCharsets.UTF_8);
+            Files.writeString(stagedSummary, verificationSummary(
+                    payload, request.format(), reportEntry, redactionApplied),
+                    StandardCharsets.UTF_8);
+            if (redactionApplied) {
+                Files.writeString(stagedRedactionSummary, request.redactionSummaryJson(), StandardCharsets.UTF_8);
+            }
+            List<Path> extraFiles = new ArrayList<>();
+            extraFiles.add(stagedReadme);
+            extraFiles.add(stagedSummary);
+            if (redactionApplied) {
+                extraFiles.add(stagedRedactionSummary);
+            }
 
             ReportChecksumManifestService manifestService = new ReportChecksumManifestService();
             ReportChecksumManifestService.ReportChecksumManifest manifest = manifestService.create(
@@ -69,7 +85,7 @@ final class IncidentBundleService {
                             stagedManifest,
                             stagedInput,
                             stagedReport,
-                            List.of(stagedReadme, stagedSummary),
+                            extraFiles,
                             payload,
                             request.generatedBy(),
                             request.createdAt(),
@@ -85,6 +101,9 @@ final class IncidentBundleService {
             entries.put(INPUT_ENTRY, Files.readAllBytes(stagedInput));
             entries.put(reportEntry, Files.readAllBytes(stagedReport));
             entries.put(MANIFEST_ENTRY, Files.readAllBytes(stagedManifest));
+            if (redactionApplied) {
+                entries.put(REDACTION_SUMMARY_ENTRY, Files.readAllBytes(stagedRedactionSummary));
+            }
             entries.put(VERIFICATION_SUMMARY_ENTRY, Files.readAllBytes(stagedSummary));
             entries.put(README_ENTRY, Files.readAllBytes(stagedReadme));
 
@@ -207,7 +226,8 @@ final class IncidentBundleService {
     private static String readme(
             RemediationReportPayload payload,
             RemediationReportFormat format,
-            String reportEntry) {
+            String reportEntry,
+            boolean redactionApplied) {
         return "# LoadBalancerPro Incident Bundle\n\n"
                 + "This offline bundle contains saved incident input, a deterministic remediation report, "
                 + "a SHA-256 checksum manifest, and a verification summary.\n\n"
@@ -215,12 +235,14 @@ final class IncidentBundleService {
                 + "- `input.json`: saved evaluation, replay, or report request JSON.\n"
                 + "- `" + reportEntry + "`: generated " + format.name().toLowerCase() + " remediation report.\n"
                 + "- `manifest.json`: checksum manifest for bundle files.\n"
+                + (redactionApplied ? "- `redaction-summary.json`: redaction counts and token hashes without originals.\n" : "")
                 + "- `verification-summary.json`: deterministic summary of bundle safety semantics.\n"
                 + "- `README.md`: this file.\n\n"
                 + "## Safety\n\n"
                 + "- Advisory only: " + payload.advisoryOnly() + "\n"
                 + "- Read only: " + payload.readOnly() + "\n"
                 + "- Cloud mutation: " + payload.cloudMutation() + "\n"
+                + "- Redaction applied: " + redactionApplied + "\n"
                 + "- Signing or key management: false\n\n"
                 + "The manifest is checksum-based tamper evidence. It is not a cryptographic signature "
                 + "and does not prove operator identity.\n";
@@ -229,7 +251,8 @@ final class IncidentBundleService {
     private static String verificationSummary(
             RemediationReportPayload payload,
             RemediationReportFormat format,
-            String reportEntry) throws IOException {
+            String reportEntry,
+            boolean redactionApplied) throws IOException {
         BundleVerificationSummary summary = new BundleVerificationSummary(
                 BUNDLE_FORMAT_VERSION,
                 "PASS",
@@ -242,6 +265,7 @@ final class IncidentBundleService {
                 payload.readOnly(),
                 payload.advisoryOnly(),
                 payload.cloudMutation(),
+                redactionApplied,
                 false,
                 List.of(
                         "Exporter verifies manifest checksums before reporting success.",
@@ -271,6 +295,8 @@ final class IncidentBundleService {
             Path inputPath,
             RemediationReportFormat format,
             String report,
+            String inputJson,
+            String redactionSummaryJson,
             RemediationReportPayload payload,
             String generatedBy,
             String createdAt,
@@ -306,6 +332,7 @@ final class IncidentBundleService {
             boolean readOnly,
             boolean advisoryOnly,
             boolean cloudMutation,
+            boolean redactionApplied,
             boolean signingKeyManagement,
             List<String> notes) {
 

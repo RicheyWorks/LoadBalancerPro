@@ -29,7 +29,9 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
   --input saved-evaluation.json \
   --format markdown \
   --bundle incident-bundle.zip \
-  --report-id incident-123
+  --report-id incident-123 \
+  --redact internal-host-01 \
+  --redact-file incident-redactions.txt
 ```
 
 ## Inputs
@@ -77,6 +79,10 @@ curl -fsS -X POST http://127.0.0.1:8080/api/scenarios/replay \
 | `--verify-manifest <path>` | Offline verification mode for an existing checksum manifest. |
 | `--bundle <path>` | Writes an incident ZIP bundle with saved input, generated report, checksum manifest, verification summary, and README. |
 | `--verify-bundle <path>` | Offline verification mode for an incident ZIP bundle. |
+| `--redact <literal>` | Literal value to replace in saved input evidence and generated report output. May be repeated. |
+| `--redact-file <path>` | Newline-delimited literal values or a JSON string array of values to redact. May be repeated. |
+| `--redaction-label <label>` | Replacement label. Defaults to `[REDACTED]`. |
+| `--redact-output-summary <path>` | Optional redaction summary JSON for standalone report output. Bundles include `redaction-summary.json` automatically when redaction is used. |
 
 ## Output Semantics
 
@@ -125,6 +131,8 @@ The manifest is checksum-based tamper evidence. It can detect accidental corrupt
 
 Default manifest output omits timestamps and random identifiers. `reportId`, `generatedBy`, source type, app version, safety flags, and file roles are deterministic. `createdAt` is included only when the caller supplies `--created-at`.
 
+When redaction is used with standalone `--manifest`, the CLI writes a companion redacted input file next to the report, named from the report output such as `incident-report.input.redacted.json`. The manifest hashes that redacted input file and the redacted report file, so later verification checks the evidence that was actually shared.
+
 ## Incident Bundles
 
 `--bundle` creates a deterministic, offline ZIP for ticket attachment and later verification. The bundle contains:
@@ -156,6 +164,62 @@ Bundle verification opens the ZIP safely, rejects unsafe entry names, requires `
 
 Bundles use stable entry names, stable entry ordering, and normalized ZIP entry timestamps. With the same input and same options, output is intended to be byte-stable. The guarantee remains checksum-based content integrity, not identity proof.
 
+When redaction is used with `--bundle`, the ZIP includes redacted `input.json`, redacted `report.md` or `report.json`, and `redaction-summary.json`. The manifest hashes the redacted files, so `--verify-bundle` confirms the redacted bundle content has not changed after export.
+
+## Redaction
+
+Redaction is deterministic literal string replacement. It is designed for operator-controlled removal of known sensitive strings before attaching evidence to a ticket:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --input saved-replay.json \
+  --format markdown \
+  --bundle incident-bundle.zip \
+  --redact internal-host-01 \
+  --redact server-blue-prod \
+  --redact-file redactions.txt \
+  --redaction-label "[REDACTED]"
+```
+
+`redactions.txt` is newline-delimited:
+
+```text
+internal-host-01
+server-blue-prod
+operator-note-42
+```
+
+The same option can read a JSON string array:
+
+```json
+["internal-host-01", "server-blue-prod", "operator-note-42"]
+```
+
+Redaction applies before report, manifest, and bundle hashing. It covers:
+
+- the saved input copy inside a bundle;
+- the generated Markdown or JSON report;
+- manifest metadata that would otherwise echo redacted report fields;
+- redaction summary output when requested.
+
+The redaction summary records:
+
+- summary version;
+- replacement label;
+- configured token count;
+- total replacement count;
+- SHA-256 digest of each configured redaction token;
+- replacement counts by token digest and file name.
+
+It intentionally does not include the original sensitive values. Token hashes are included so operators can compare summaries without storing the raw values in the incident evidence.
+
+Redaction limitations:
+
+- It is literal replacement, not legal anonymization or a privacy compliance guarantee.
+- It only removes exact strings supplied by the operator.
+- It does not infer every possible hostname, IP address, identity, or secret shape.
+- Checksum manifests prove files did not change after redaction; they do not prove the original data was safe, complete, or fully redacted.
+
 ## Safety
 
 Offline report generation:
@@ -167,6 +231,7 @@ Offline report generation:
 - does not execute remediation actions;
 - can write and verify incident ZIP bundles entirely offline;
 - does not generate timestamps or random ids unless the caller supplies `--report-id` or manifest `--created-at`;
+- can redact configured literal values before manifest and bundle checksums are calculated;
 - generates and verifies checksum manifests locally with Java SHA-256, not external tools or signing keys.
 
 ## Limitations
@@ -174,5 +239,6 @@ Offline report generation:
 - The CLI formats saved results. It does not recompute allocation, replay, routing, health checks, or remediation.
 - Checksum manifests are useful for bundle integrity, not identity proof or non-repudiation.
 - Incident bundles are portable evidence containers, not signed attestations.
+- Redaction is exact string replacement and should be reviewed by an operator before evidence is shared externally.
 - Live deployment state should still be verified before taking operator action.
 - Invalid JSON or unsupported input shapes exit non-zero and print a safe error without stack traces.

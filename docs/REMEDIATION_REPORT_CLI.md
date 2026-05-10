@@ -112,7 +112,14 @@ curl -fsS -X POST http://127.0.0.1:8080/api/scenarios/replay \
 | `--export-policy-example <name>` | Exports a packaged before/after catalog pair and expected decision metadata. Requires `--example-output-dir`. |
 | `--example-output-dir <directory>` | Target directory for exported policy examples or walkthrough exports. |
 | `--walkthrough-policy-example <name>` | Exports an example, runs diff and policy evaluation, and emits a deterministic tutorial summary. |
-| `--force` | Allows packaged example export or walkthrough export to overwrite existing example files. |
+| `--run-policy-training-lab` | Batch-runs every packaged policy walkthrough and compares actual decisions to expected decisions. |
+| `--training-lab-format markdown\|json` | Training lab transcript format. Defaults to `markdown`. |
+| `--training-lab-output <path>` | Optional training transcript output file. If omitted, output is written to stdout. |
+| `--training-lab-export-dir <directory>` | Optional directory where the training lab exports the packaged examples it used. |
+| `--include-training-details` | Includes per-change policy details in the training lab JSON transcript. |
+| `--fail-on-training-mismatch` | Explicitly exits non-zero when a training lab expected decision mismatch is detected. This is the default behavior. |
+| `--no-fail-on-training-mismatch` | Allows the training lab to exit zero even when an expected decision mismatch is detected. |
+| `--force` | Allows packaged example export, walkthrough export, or training-lab export to overwrite existing example files. |
 
 ## Output Semantics
 
@@ -429,6 +436,25 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 
 The walkthrough command exports `before.json`, `after.json`, and `expected-decision.json`, runs the same catalog diff and policy evaluator as production CLI handoff checks, and returns a deterministic Markdown or JSON tutorial summary. It refuses to overwrite existing exported example files unless `--force` is supplied.
 
+Run the full offline training lab when an operator needs to practice every packaged profile in one pass:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --run-policy-training-lab \
+  --training-lab-format markdown
+```
+
+For a machine-readable transcript:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --run-policy-training-lab \
+  --training-lab-format json \
+  --training-lab-output evidence-policy-training-lab.json
+```
+
+The training lab batch-runs the packaged `PASS`, `WARN`, and `FAIL` walkthrough examples, compares actual decisions to each `expected-decision.json`, summarizes matched and mismatched examples, and exits non-zero if a mismatch appears. Use `--training-lab-export-dir <directory>` to save the exact example files used, `--include-training-details` for per-change JSON detail, and `--force` to overwrite an existing export directory. The transcript is deterministic and omits timestamps or random ids by default.
+
 Policy JSON format:
 
 ```json
@@ -496,6 +522,7 @@ Offline report generation:
 - can evaluate saved evidence inventory diffs against local handoff policies without starting the API server;
 - can list, export, validate, and apply packaged evidence policy templates without starting the API server;
 - can list, export, and dry-run packaged evidence policy examples without starting the API server;
+- can batch-run packaged policy training examples without starting the API server;
 - generates and verifies checksum manifests locally with Java SHA-256, not external tools or signing keys.
 
 ## Limitations
@@ -509,5 +536,6 @@ Offline report generation:
 - Evidence catalog diffs compare saved inventory records only; they cannot prove what happened before either inventory was created.
 - Evidence handoff policies classify catalog drift only; they do not prove operator identity, intent, or legal custody.
 - Evidence policy templates are reusable local rule profiles, not compliance certifications or legal custody controls.
+- Evidence policy training labs use packaged synthetic examples only; they are not a substitute for real incident review.
 - Live deployment state should still be verified before taking operator action.
 - Invalid JSON or unsupported input shapes exit non-zero and print a safe error without stack traces.

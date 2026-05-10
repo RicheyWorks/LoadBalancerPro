@@ -185,6 +185,17 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 
 The walkthrough exports synthetic `before.json`, `after.json`, and `expected-decision.json` files, runs the same local diff and policy evaluator, and emits a deterministic tutorial summary. These examples are for training and regression checks only; they are not identity proof or legal chain-of-custody.
 
+To practice the entire packaged policy matrix in one offline command:
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar \
+  --run-policy-training-lab \
+  --training-lab-format markdown \
+  --training-lab-output evidence-policy-training-lab.md
+```
+
+Use `--training-lab-export-dir walkthrough/all-examples` when the operator also needs the example `before.json`, `after.json`, and `expected-decision.json` files. The lab summarizes expected `PASS`, `WARN`, and `FAIL` examples, exits non-zero if any expected decision no longer matches, and remains a local checksum-policy training aid rather than proof of identity or legal custody.
+
 See [`REMEDIATION_REPORT_CLI.md`](REMEDIATION_REPORT_CLI.md), [`EVIDENCE_POLICY_TEMPLATES.md`](EVIDENCE_POLICY_TEMPLATES.md), and [`EVIDENCE_POLICY_EXAMPLES.md`](EVIDENCE_POLICY_EXAMPLES.md) for CLI inputs, bundle export, manifest verification, evidence inventory, evidence catalog diffing, evidence handoff policies, packaged policy templates, example sender/receiver catalog pairs, safety guarantees, and JSON output.
 
 6. If unallocated load is expected because all servers are unhealthy or exhausted, remediate the server health/capacity input before changing cloud settings.
@@ -262,6 +273,8 @@ Offline evidence catalog diffing compares two saved JSON inventory catalogs and 
 Offline evidence handoff policies classify catalog drift with local pass/warn/fail rules. They support strict zero-drift checks and allowlists for expected file, checksum, verification-status, or audit-anchor changes, but they remain local policy evaluation only and do not prove identity, intent, or legal custody.
 
 Packaged evidence policy templates provide reusable local profiles for common handoffs: zero drift, receiver redaction, audit append, regulated review, and active investigation working copies. They are convenience rules for deterministic drift classification, not compliance certification, identity proof, or legal chain-of-custody.
+
+The evidence policy training lab batch-runs the packaged walkthrough examples and checks actual decisions against expected outcomes. It helps operators rehearse the sender/receiver handoff flow offline, but it remains synthetic training material and is not a substitute for real incident review.
 
 ## Rollback And Release Evidence
 

@@ -901,6 +901,7 @@ public class LoadBalancerCLI {
                     "  --list-policy-examples List packaged evidence policy walkthrough examples\n" +
                     "  --export-policy-example <name> Export packaged before/after example catalogs\n" +
                     "  --walkthrough-policy-example <name> Export and dry-run an example policy decision\n" +
+                    "  --run-policy-training-lab Batch-run packaged evidence policy walkthroughs\n" +
                     "  --test-mode         Exit after first operation (for testing)\n" +
                     "  --cloud-enabled     Enable cloud integration\n" +
                     "  --cloud-min-servers Set minimum cloud servers\n" +

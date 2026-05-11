@@ -26,6 +26,8 @@ java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLau
 
 The Maven exec plugin is declared without lifecycle bindings, so it does not replace the Spring Boot main class and does not change normal `mvn test`, `mvn package`, or `java -jar` behavior.
 
+For a release-free packaged-jar and status-page smoke path that wraps these checks, see [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md).
+
 ## Packaged API Jar
 
 Build the normal Spring Boot application jar:
@@ -86,6 +88,7 @@ The active Java package root is `com.richmond423.loadbalancerpro` while the repo
 ## Boundaries
 
 - No default proxy enablement.
+- No tag, release, or asset creation.
 - No package rename.
 - No cloud services or cloud mutation.
 - No `CloudManager` construction from the launcher or example profiles.

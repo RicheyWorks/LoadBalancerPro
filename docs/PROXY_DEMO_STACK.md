@@ -4,6 +4,8 @@ This is the shortest local path for reviewing the practical reverse proxy mode w
 
 The stack is loopback-only. It does not require cloud credentials, does not contact public internet, does not write backend state beyond the fixture health toggle endpoints, and does not prove production gateway readiness or benchmark performance.
 
+For release-free packaged-jar smoke checks around this stack, use [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md).
+
 ## Quick Start
 
 Use one terminal for the two fixture backends and one terminal for LoadBalancerPro.

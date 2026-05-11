@@ -4,6 +4,8 @@
 
 It is optional demo tooling. It does not change default application behavior, does not enable proxy mode by default, does not persist state, and is not a production gateway or benchmark proof.
 
+For release-free packaged-jar, Maven exec, proxy profile, real-backend example, and status-page smoke checks, see [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md).
+
 ## Build The Launcher
 
 From the repository root:

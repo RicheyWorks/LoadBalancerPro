@@ -19,6 +19,7 @@ function Assert-RequiredJarEntry {
 
 Write-Host "LoadBalancerPro local artifact verification"
 Write-Host "Release-free: no tags, releases, assets, or release workflow changes."
+Write-Host "CI artifact parity: packaged-artifact-smoke contains artifact-smoke-summary.txt, artifact-sha256.txt, and jar-resource-list.txt."
 Write-Host ""
 
 if ($Build) {
@@ -70,5 +71,8 @@ Write-Host "  curl -fsS http://127.0.0.1:8080/api/proxy/status"
 Write-Host ""
 Write-Host "Maven exec fixture launcher:"
 Write-Host "  mvn -q -DskipTests compile exec:java `"-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher`" `"-Dexec.args=--mode round-robin`""
+Write-Host ""
+Write-Host "GitHub Actions artifact:"
+Write-Host "  packaged-artifact-smoke"
 Write-Host ""
 Write-Host "Do not commit generated jars, checksums, manifests, or smoke output."

@@ -6,6 +6,8 @@ No tags, releases, or assets are created. The kit does not upload artifacts, doe
 
 For focused local checksum, manifest, jar resource, static page, demo profile, and launcher-class verification after packaging, see [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md).
 
+GitHub CI now runs the same release-free packaged artifact inspection and uploads the `packaged-artifact-smoke` workflow artifact with `artifact-smoke-summary.txt`, `artifact-sha256.txt`, and `jar-resource-list.txt`. This is workflow evidence only; it does not create tags, GitHub releases, release assets, or `release-downloads/` files.
+
 ## Prerequisites
 
 - Java 17

@@ -115,6 +115,37 @@ bash scripts/local-artifact-verify.sh --jar target/LoadBalancerPro-2.4.2.jar
 
 The helpers optionally run `mvn -B -DskipTests package`, compute a SHA-256 checksum for the local jar, inspect required jar entries, and print local run commands. They do not start long-running servers unless the operator runs the printed commands separately.
 
+## CI Packaged Artifact Smoke
+
+The `Build, Test, Package, Smoke` GitHub Actions workflow also runs a release-free packaged artifact smoke lane after `mvn -B package`.
+
+The workflow uploads a normal GitHub Actions artifact named:
+
+```text
+packaged-artifact-smoke
+```
+
+That workflow artifact contains:
+
+```text
+artifact-smoke-summary.txt
+artifact-sha256.txt
+jar-resource-list.txt
+```
+
+The CI summary verifies the same required jar entries as the local helpers:
+
+```text
+BOOT-INF/classes/static/proxy-status.html
+BOOT-INF/classes/static/load-balancing-cockpit.html
+BOOT-INF/classes/application-proxy-demo-round-robin.properties
+BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties
+BOOT-INF/classes/application-proxy-demo-failover.properties
+BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class
+```
+
+Use the artifact checksum as CI evidence for the jar built in that workflow run. It is not a GitHub Release checksum, is not uploaded as a release asset, and should not be copied into `release-downloads/` for this verification path.
+
 ## Local Run Commands
 
 Start the packaged API jar on loopback:

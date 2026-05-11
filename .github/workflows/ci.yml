@@ -100,6 +100,73 @@ jobs:
       - name: Package executable JAR
         run: mvn -B package
 
+      - name: Verify packaged artifact resources
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          OUTPUT_DIR="target/artifact-smoke"
+          mkdir -p "$OUTPUT_DIR"
+
+          JAR="$(ls -t target/LoadBalancerPro-*.jar | grep -Ev '(-sources|-javadoc|-tests)\.jar$' | head -n 1)"
+          if [ -z "${JAR:-}" ]; then
+            echo "No packaged LoadBalancerPro jar found."
+            exit 1
+          fi
+
+          SUMMARY="$OUTPUT_DIR/artifact-smoke-summary.txt"
+          SHA_OUTPUT="$OUTPUT_DIR/artifact-sha256.txt"
+          RESOURCE_LIST="$OUTPUT_DIR/jar-resource-list.txt"
+
+          jar tf "$JAR" | sort > "$RESOURCE_LIST"
+          sha256sum "$JAR" > "$SHA_OUTPUT"
+
+          {
+            echo "LoadBalancerPro packaged artifact smoke"
+            echo "Artifact: $JAR"
+            echo "Release-free: workflow artifact/log evidence only; no tags, GitHub releases, or release assets."
+            echo ""
+            echo "SHA-256:"
+            cat "$SHA_OUTPUT"
+            echo ""
+            echo "Required jar entries:"
+          } > "$SUMMARY"
+
+          require_entry() {
+            local entry="$1"
+            if ! grep -Fxq "$entry" "$RESOURCE_LIST"; then
+              echo "Missing required jar entry: $entry" | tee -a "$SUMMARY"
+              exit 1
+            fi
+            echo "OK: $entry" | tee -a "$SUMMARY"
+          }
+
+          require_entry "META-INF/MANIFEST.MF"
+          require_entry "BOOT-INF/classes/static/proxy-status.html"
+          require_entry "BOOT-INF/classes/static/load-balancing-cockpit.html"
+          require_entry "BOOT-INF/classes/application-proxy-demo-round-robin.properties"
+          require_entry "BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties"
+          require_entry "BOOT-INF/classes/application-proxy-demo-failover.properties"
+          require_entry "BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"
+
+          {
+            echo ""
+            echo "Output files:"
+            echo "- artifact-smoke-summary.txt"
+            echo "- artifact-sha256.txt"
+            echo "- jar-resource-list.txt"
+            echo ""
+            echo "This CI smoke lane uploads workflow artifacts only and does not publish release assets."
+          } >> "$SUMMARY"
+
+      - name: Upload packaged artifact smoke output
+        # actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: packaged-artifact-smoke
+          path: target/artifact-smoke
+          retention-days: 30
+
       - name: Generate CycloneDX SBOM
         run: mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -Dcyclonedx.skipAttach=true
 

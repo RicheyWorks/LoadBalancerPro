@@ -20,6 +20,8 @@ Exact internal scores and every internal threshold are not exposed by the curren
 
 The operator comparison matrix reuses the same explanation boundaries. It summarizes routing, allocation pressure, overload, remediation, and delta fields across scenarios without inventing scores or benchmark claims.
 
+Operator replay mode also reuses these boundaries. Its before/after rationale deltas are derived from visible request/response fields and do not expose or invent unavailable internal scores.
+
 ## Browser Flow
 
 1. Start the local app.
@@ -30,7 +32,8 @@ The operator comparison matrix reuses the same explanation boundaries. It summar
 6. Review `Explanation Drill-Down`.
 7. Run a second scenario, then click `Compare with previous scenario`.
 8. Run `Operator Comparison Matrix` when you want all packaged scenario explanations summarized side by side.
-9. Copy the drill-down summary, matrix summary, explanation curl snippets, or operator rationale.
+9. Use `Operator Replay Mode` when you want one baseline/comparison pair highlighted side by side.
+10. Copy the drill-down summary, matrix summary, replay reviewer note, explanation curl snippets, or operator rationale.
 
 ## Postman Parity
 

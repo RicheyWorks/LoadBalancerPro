@@ -8,6 +8,8 @@ http://localhost:8080/load-balancing-cockpit.html
 
 It runs the packaged cockpit scenarios in a stable order and summarizes the real endpoint outputs in one reviewer-friendly table.
 
+Use operator replay mode when a reviewer wants to focus on one baseline/comparison pair after scanning the full matrix.
+
 ## What It Runs
 
 Click `Run all scenarios` to execute:
@@ -49,6 +51,10 @@ Missing fields or unavailable endpoints are shown as unavailable instead of bein
 - `Copy matrix payloads`: packaged deterministic scenario request bodies.
 
 The copy output is client-side text only. It is not written to disk or sent to a server-side report endpoint.
+
+## Replay Follow-Up
+
+After reviewing the matrix, select two scenario rows in the browser's `Operator Replay Mode` selectors and click `Replay selected pair`. Replay mode reruns the two packaged scenarios in deterministic order, highlights before/after routing, allocation, overload, remediation, rationale, and error-state differences, and produces a deterministic reviewer note.
 
 ## Safety Boundaries
 

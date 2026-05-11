@@ -146,6 +146,8 @@ BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.c
 
 Use the artifact checksum as CI evidence for the jar built in that workflow run. It is not a GitHub Release checksum, is not uploaded as a release asset, and should not be copied into `release-downloads/` for this verification path.
 
+For a reviewer-facing workflow artifact download and local-vs-CI SHA-256 comparison checklist, see [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md). That guide also covers the `jacoco-coverage-report` and `loadbalancerpro-sbom` workflow artifacts.
+
 ## Local Run Commands
 
 Start the packaged API jar on loopback:

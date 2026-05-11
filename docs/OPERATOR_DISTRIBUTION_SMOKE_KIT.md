@@ -8,6 +8,8 @@ For focused local checksum, manifest, jar resource, static page, demo profile, a
 
 GitHub CI now runs the same release-free packaged artifact inspection and uploads the `packaged-artifact-smoke` workflow artifact with `artifact-smoke-summary.txt`, `artifact-sha256.txt`, and `jar-resource-list.txt`. This is workflow evidence only; it does not create tags, GitHub releases, release assets, or `release-downloads/` files.
 
+For one reviewer guide covering CI artifact download, JaCoCo coverage, SBOM files, packaged smoke files, and local-vs-CI SHA-256 comparison, use [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md).
+
 ## Prerequisites
 
 - Java 17

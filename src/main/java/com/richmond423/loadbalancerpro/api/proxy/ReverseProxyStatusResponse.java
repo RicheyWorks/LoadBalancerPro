@@ -8,6 +8,7 @@ public record ReverseProxyStatusResponse(
         HealthCheckStatus healthCheck,
         RetryStatus retry,
         CooldownStatus cooldown,
+        List<RouteStatus> routes,
         List<UpstreamStatus> upstreams,
         ReverseProxyMetricsSnapshot metrics) {
 
@@ -31,6 +32,13 @@ public record ReverseProxyStatusResponse(
             int consecutiveFailureThreshold,
             long durationMillis,
             boolean recoverOnSuccessfulHealthCheck) {
+    }
+
+    public record RouteStatus(
+            String name,
+            String pathPrefix,
+            String strategy,
+            List<String> targetIds) {
     }
 
     public record UpstreamStatus(

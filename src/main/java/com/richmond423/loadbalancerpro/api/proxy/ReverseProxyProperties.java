@@ -2,8 +2,10 @@ package com.richmond423.loadbalancerpro.api.proxy;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -18,6 +20,7 @@ public class ReverseProxyProperties {
     private Retry retry = new Retry();
     private Cooldown cooldown = new Cooldown();
     private List<Upstream> upstreams = new ArrayList<>();
+    private Map<String, Route> routes = new LinkedHashMap<>();
 
     public boolean isEnabled() {
         return enabled;
@@ -81,6 +84,44 @@ public class ReverseProxyProperties {
 
     public void setUpstreams(List<Upstream> upstreams) {
         this.upstreams = upstreams == null ? new ArrayList<>() : new ArrayList<>(upstreams);
+    }
+
+    public Map<String, Route> getRoutes() {
+        return routes;
+    }
+
+    public void setRoutes(Map<String, Route> routes) {
+        this.routes = routes == null ? new LinkedHashMap<>() : new LinkedHashMap<>(routes);
+    }
+
+    public static final class Route {
+        private String pathPrefix = "/";
+        private String strategy;
+        private List<Upstream> targets = new ArrayList<>();
+
+        public String getPathPrefix() {
+            return pathPrefix;
+        }
+
+        public void setPathPrefix(String pathPrefix) {
+            this.pathPrefix = pathPrefix;
+        }
+
+        public String getStrategy() {
+            return strategy;
+        }
+
+        public void setStrategy(String strategy) {
+            this.strategy = strategy;
+        }
+
+        public List<Upstream> getTargets() {
+            return targets;
+        }
+
+        public void setTargets(List<Upstream> targets) {
+            this.targets = targets == null ? new ArrayList<>() : new ArrayList<>(targets);
+        }
     }
 
     public static final class Upstream {

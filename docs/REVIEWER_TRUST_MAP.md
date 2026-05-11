@@ -4,7 +4,7 @@ Use this map when you want to review LoadBalancerPro evidence without opening ev
 
 ## Start Here
 
-LoadBalancerPro is a Java/Spring load-balancing simulator and API project with guarded cloud boundaries, optional static browser review pages, optional lightweight reverse proxy mode, packaged local proxy demos, release-free artifact checks, and CI-published workflow evidence.
+LoadBalancerPro is a Java/Spring load-balancing simulator and API project with guarded cloud boundaries, optional static browser review pages, optional lightweight reverse proxy mode, operator-configured route/target examples, packaged local proxy demos, release-free artifact checks, and CI-published workflow evidence.
 
 What it is not claiming:
 
@@ -38,7 +38,7 @@ Recommended first paths:
 | Are retries and cooldowns documented? | Resilience docs and counters | [`REVERSE_PROXY_RESILIENCE.md`](REVERSE_PROXY_RESILIENCE.md) | `/api/proxy/status`, retry/cooldown counters | Optional bounded retry and process-local cooldown behavior is explainable and visible | Infinite retry safety or distributed cooldown state |
 | Is there an operator status page? | Static browser UI docs | [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md) | `/proxy-status.html` | Operators can manually refresh and inspect read-only proxy status | A full monitoring console |
 | Are strategy demos available? | Demo lab and fixture stack | [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md) | `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, failover profiles | Reviewers can observe selected-upstream and strategy headers through local HTTP traffic | Throughput, capacity, or latency evidence |
-| Can examples target non-fixture local services? | Copy/adapt example profiles | [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) | `docs/examples/proxy/*.properties` | Operators can adapt loopback/private backend examples safely | Proof against public upstreams or external services |
+| Can examples target non-fixture local services? | Copy/adapt example profiles | [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) | `docs/examples/proxy/*.properties` | Operators can adapt loopback/private backend examples and named route targets safely | Proof against public upstreams or external services |
 | Is there a Java fixture launcher? | Packaged demo launcher docs | [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md) | `ProxyDemoFixtureLauncher` | Two loopback fixture backends can be launched from project Java code | A change to default app startup behavior |
 | Where are operator commands? | Side-by-side command matrix | [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md) | Packaged jar, Maven exec, Spring profiles, scripts | Reviewers can choose Windows/Unix install/run paths | Release publication |
 | Can local artifacts be inspected? | Local checksum and jar inspection guide | [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md) | `jar tf`, SHA-256, static resources, demo profiles | A locally built jar can be inspected without publishing | Signed release provenance |

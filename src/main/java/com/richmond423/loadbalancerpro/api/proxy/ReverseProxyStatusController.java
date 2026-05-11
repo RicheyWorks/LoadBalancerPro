@@ -2,8 +2,10 @@ package com.richmond423.loadbalancerpro.api.proxy;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.ObjectProvider;
@@ -42,6 +44,7 @@ public class ReverseProxyStatusController {
                 healthCheckStatus(),
                 retryStatus(),
                 cooldownStatus(),
+                disabledRouteStatuses(),
                 properties.getUpstreams().stream()
                         .map(upstream -> new ReverseProxyStatusResponse.UpstreamStatus(
                                 safeUpstreamId(upstream),
@@ -95,6 +98,36 @@ public class ReverseProxyStatusController {
                 cooldown.isRecoverOnSuccessfulHealthCheck());
     }
 
+    private List<ReverseProxyStatusResponse.RouteStatus> disabledRouteStatuses() {
+        if (!properties.getRoutes().isEmpty()) {
+            List<ReverseProxyStatusResponse.RouteStatus> routes = new ArrayList<>();
+            for (Map.Entry<String, ReverseProxyProperties.Route> entry : properties.getRoutes().entrySet()) {
+                ReverseProxyProperties.Route route =
+                        Objects.requireNonNullElseGet(entry.getValue(), ReverseProxyProperties.Route::new);
+                routes.add(new ReverseProxyStatusResponse.RouteStatus(
+                        entry.getKey(),
+                        safePathPrefix(route.getPathPrefix()),
+                        ReverseProxyRoutePlanner.safeRouteStrategy(properties, route),
+                        route.getTargets().stream()
+                                .map(ReverseProxyStatusController::safeUpstreamId)
+                                .filter(id -> !id.isEmpty())
+                                .toList()));
+            }
+            return routes;
+        }
+        if (!properties.getUpstreams().isEmpty()) {
+            return List.of(new ReverseProxyStatusResponse.RouteStatus(
+                    ReverseProxyRoutePlanner.LEGACY_ROUTE_NAME,
+                    "/",
+                    properties.getStrategy(),
+                    properties.getUpstreams().stream()
+                            .map(ReverseProxyStatusController::safeUpstreamId)
+                            .filter(id -> !id.isEmpty())
+                            .toList()));
+        }
+        return List.of();
+    }
+
     private static String safeUpstreamId(ReverseProxyProperties.Upstream upstream) {
         return upstream.getId() == null ? "" : upstream.getId().trim();
     }
@@ -114,6 +147,11 @@ public class ReverseProxyStatusController {
 
     private static String normalizedPath(String path) {
         String value = path == null || path.isBlank() ? "/health" : path.trim();
+        return value.startsWith("/") ? value : "/" + value;
+    }
+
+    private static String safePathPrefix(String pathPrefix) {
+        String value = pathPrefix == null || pathPrefix.isBlank() ? "/" : pathPrefix.trim();
         return value.startsWith("/") ? value : "/" + value;
     }
 }

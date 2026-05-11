@@ -29,6 +29,8 @@ class RealBackendProxyExamplesDocumentationTest {
     private static final Path API_SECURITY = Path.of("docs/API_SECURITY.md");
     private static final Path RELEASE_INTENT = Path.of("docs/RELEASE_INTENT_CHECKLIST.md");
     private static final Path DEFAULT_PROPERTIES = Path.of("src/main/resources/application.properties");
+    private static final Path OPERATOR_ROUTE_EXAMPLE =
+            Path.of("docs/examples/proxy/application-proxy-operator-routes-example.properties");
 
     private static final List<Path> EXAMPLES = List.of(
             Path.of("docs/examples/proxy/application-proxy-real-backend-example.properties"),
@@ -51,6 +53,7 @@ class RealBackendProxyExamplesDocumentationTest {
         assertTrue(guide.contains("# Real-Backend Proxy Examples"));
         assertTrue(guide.contains("local or private HTTP services"));
         assertTrue(guide.contains("ROUND_ROBIN Example"));
+        assertTrue(guide.contains("Operator-Configured Route Example"));
         assertTrue(guide.contains("WEIGHTED_ROUND_ROBIN Example"));
         assertTrue(guide.contains("Health-Aware Failover Example"));
         assertTrue(guide.contains("Retry And Cooldown Example"));
@@ -63,6 +66,24 @@ class RealBackendProxyExamplesDocumentationTest {
         assertTrue(guide.contains("RELEASE_CANDIDATE_DRY_RUN.md"));
         assertTrue(guide.contains("RELEASE_INTENT_CHECKLIST.md"));
         assertNoUnsafeContent(guide, GUIDE);
+    }
+
+    @Test
+    void operatorRouteExampleUsesNamedRoutesAndSafeLoopbackTargets() throws Exception {
+        String content = read(OPERATOR_ROUTE_EXAMPLE);
+
+        assertTrue(content.contains("loadbalancerpro.proxy.enabled=true"),
+                OPERATOR_ROUTE_EXAMPLE + " should require explicit proxy opt-in");
+        assertTrue(content.contains("loadbalancerpro.proxy.routes.api.path-prefix=/api"));
+        assertTrue(content.contains("loadbalancerpro.proxy.routes.api.strategy=ROUND_ROBIN"));
+        assertTrue(content.contains("loadbalancerpro.proxy.routes.api.targets[0].id=local-api-a"));
+        assertTrue(content.contains("loadbalancerpro.proxy.routes.api.targets[0].url=http://localhost:9001"));
+        assertTrue(content.contains("loadbalancerpro.proxy.routes.api.targets[1].id=local-api-b"));
+        assertTrue(content.contains("loadbalancerpro.proxy.routes.api.targets[1].url=http://localhost:9002"));
+        assertTrue(content.contains("loadbalancerpro.proxy.health-check.path=/health"));
+        assertNoUnsafeContent(content, OPERATOR_ROUTE_EXAMPLE);
+        assertFalse(CLOUD_CONFIG_ASSIGNMENT.matcher(content).find(),
+                OPERATOR_ROUTE_EXAMPLE + " should not contain cloud config");
     }
 
     @Test

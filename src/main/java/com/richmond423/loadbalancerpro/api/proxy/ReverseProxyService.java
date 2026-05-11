@@ -9,6 +9,7 @@ import java.net.http.HttpResponse;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -26,8 +27,6 @@ import java.util.stream.Collectors;
 
 import com.richmond423.loadbalancerpro.core.NetworkAwarenessSignal;
 import com.richmond423.loadbalancerpro.core.RoutingDecision;
-import com.richmond423.loadbalancerpro.core.RoutingStrategy;
-import com.richmond423.loadbalancerpro.core.RoutingStrategyId;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,8 +60,7 @@ public class ReverseProxyService {
     private final ReverseProxyProperties properties;
     private final HttpClient httpClient;
     private final ReverseProxyMetrics metrics;
-    private final RoutingStrategy strategy;
-    private final RoutingStrategyId strategyId;
+    private final List<ReverseProxyRoutePlanner.ConfiguredRoute> routes;
     private final Clock clock;
     private final ConcurrentMap<String, ProbeState> probeStates = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, ResilienceState> resilienceStates = new ConcurrentHashMap<>();
@@ -84,12 +82,7 @@ public class ReverseProxyService {
         this.metrics = Objects.requireNonNull(metrics, "metrics cannot be null");
         Objects.requireNonNull(registry, "registry cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
-        this.strategyId = RoutingStrategyId.fromName(properties.getStrategy())
-                .orElseThrow(() -> new IllegalStateException(
-                        "Unsupported proxy routing strategy: " + properties.getStrategy()));
-        this.strategy = registry.find(strategyId)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Proxy routing strategy is not registered: " + strategyId.externalName()));
+        this.routes = ReverseProxyRoutePlanner.buildEnabledRoutes(properties, registry);
     }
 
     @SuppressWarnings("java/ssrf")
@@ -101,21 +94,35 @@ public class ReverseProxyService {
                     "Proxy request body exceeds maximum size of " + properties.getMaxRequestBytes() + " bytes");
         }
 
+        String proxyPathSuffix;
+        try {
+            proxyPathSuffix = validatedProxyPathSuffix(request);
+        } catch (IllegalArgumentException exception) {
+            metrics.recordFailure(null, HttpStatus.BAD_REQUEST.value());
+            return proxyError(HttpStatus.BAD_REQUEST, "proxy_path_invalid", exception.getMessage());
+        }
+        Optional<ReverseProxyRoutePlanner.ConfiguredRoute> selectedRoute = routeFor(proxyPathSuffix);
+        if (selectedRoute.isEmpty()) {
+            metrics.recordFailure(null, HttpStatus.NOT_FOUND.value());
+            return proxyError(HttpStatus.NOT_FOUND, "proxy_route_not_found",
+                    "No configured proxy route matches path " + proxyPathSuffix);
+        }
+        ReverseProxyRoutePlanner.ConfiguredRoute route = selectedRoute.get();
         int maxAttempts = maxAttemptsFor(request.getMethod());
         Set<String> attemptedUpstreamIds = new LinkedHashSet<>();
         ReverseProxyResponse lastResponse = null;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            List<UpstreamCandidate> upstreams = configuredUpstreams(attemptedUpstreamIds);
+            List<UpstreamCandidate> upstreams = configuredUpstreams(route, attemptedUpstreamIds);
             if (upstreams.isEmpty()) {
                 if (lastResponse != null) {
                     return lastResponse;
                 }
                 metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
                 return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
-                        "No proxy upstreams are configured.");
+                        "No proxy upstreams are configured for route " + route.name() + ".");
             }
 
-            RoutingDecision decision = strategy.choose(upstreams.stream()
+            RoutingDecision decision = route.strategy().choose(upstreams.stream()
                     .map(UpstreamCandidate::state)
                     .toList());
             Optional<String> selectedServerId = decision.explanation().chosenServerId();
@@ -145,7 +152,8 @@ public class ReverseProxyService {
             if (attempt > 1) {
                 metrics.recordRetryAttempt(upstreamId);
             }
-            ForwardAttemptResult attemptResult = forwardOnce(request, body, upstream);
+            ForwardAttemptResult attemptResult =
+                    forwardOnce(request, body, upstream, route.strategyId().externalName(), proxyPathSuffix);
             lastResponse = attemptResult.response();
             if (!attemptResult.retriable() || attempt == maxAttempts) {
                 return attemptResult.response();
@@ -168,7 +176,7 @@ public class ReverseProxyService {
         ReverseProxyProperties.Cooldown cooldown = properties.getCooldown();
         return new ReverseProxyStatusResponse(
                 properties.isEnabled(),
-                strategyId.externalName(),
+                routes.size() == 1 ? routes.get(0).strategyId().externalName() : properties.getStrategy(),
                 new ReverseProxyStatusResponse.HealthCheckStatus(
                         healthCheck.isEnabled(),
                         normalizedHealthCheckPath(healthCheck.getPath()),
@@ -185,13 +193,25 @@ public class ReverseProxyService {
                         Math.max(1, cooldown.getConsecutiveFailureThreshold()),
                         Math.max(0, cooldown.getDuration().toMillis()),
                         cooldown.isRecoverOnSuccessfulHealthCheck()),
+                routes.stream()
+                        .map(route -> new ReverseProxyStatusResponse.RouteStatus(
+                                route.name(),
+                                route.pathPrefix(),
+                                route.strategyId().externalName(),
+                                route.targets().stream()
+                                        .map(ReverseProxyProperties.Upstream::getId)
+                                        .toList()))
+                        .toList(),
                 upstreamStatuses,
                 metrics.snapshot(upstreamIds));
     }
 
     @SuppressWarnings("java/ssrf")
-    private HttpRequest buildOutboundRequest(HttpServletRequest request, byte[] body, UpstreamCandidate upstream) {
-        HttpRequest.Builder builder = HttpRequest.newBuilder(targetUri(request, upstream))
+    private HttpRequest buildOutboundRequest(HttpServletRequest request,
+                                             byte[] body,
+                                             UpstreamCandidate upstream,
+                                             String proxyPathSuffix) {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(targetUri(request, upstream, proxyPathSuffix))
                 .timeout(properties.getRequestTimeout());
         Collections.list(request.getHeaderNames()).forEach(headerName -> {
             if (isForwardableHeader(headerName)) {
@@ -205,15 +225,19 @@ public class ReverseProxyService {
         return builder.method(request.getMethod().toUpperCase(Locale.ROOT), publisher).build();
     }
 
-    private ForwardAttemptResult forwardOnce(HttpServletRequest request, byte[] body, UpstreamCandidate upstream) {
+    private ForwardAttemptResult forwardOnce(HttpServletRequest request,
+                                             byte[] body,
+                                             UpstreamCandidate upstream,
+                                             String strategyName,
+                                             String proxyPathSuffix) {
         String upstreamId = upstream.state().serverId();
         try {
-            HttpRequest outbound = buildOutboundRequest(request, body, upstream);
+            HttpRequest outbound = buildOutboundRequest(request, body, upstream, proxyPathSuffix);
             HttpResponse<byte[]> response = httpClient.send(outbound, HttpResponse.BodyHandlers.ofByteArray());
             metrics.recordForwarded(upstreamId, response.statusCode());
             HttpHeaders responseHeaders = forwardedResponseHeaders(response.headers().map());
             responseHeaders.set(UPSTREAM_HEADER, upstreamId);
-            responseHeaders.set(STRATEGY_HEADER, strategyId.externalName());
+            responseHeaders.set(STRATEGY_HEADER, strategyName);
             ReverseProxyResponse proxyResponse =
                     new ReverseProxyResponse(response.statusCode(), responseHeaders, response.body());
             if (isRetryStatus(response.statusCode())) {
@@ -240,8 +264,7 @@ public class ReverseProxyService {
         }
     }
 
-    private URI targetUri(HttpServletRequest request, UpstreamCandidate upstream) {
-        String suffix = validatedProxyPathSuffix(request);
+    private URI targetUri(HttpServletRequest request, UpstreamCandidate upstream, String suffix) {
         String query = request.getQueryString();
         if (query != null && containsControlCharacter(query)) {
             throw new IllegalArgumentException("Proxy query string must not contain control characters.");
@@ -299,9 +322,16 @@ public class ReverseProxyService {
         return value.chars().anyMatch(character -> character < 0x20 || character == 0x7f);
     }
 
-    private List<UpstreamCandidate> configuredUpstreams(Set<String> excludedUpstreamIds) {
+    private Optional<ReverseProxyRoutePlanner.ConfiguredRoute> routeFor(String proxyPathSuffix) {
+        return routes.stream()
+                .filter(route -> ReverseProxyRoutePlanner.pathMatches(route.pathPrefix(), proxyPathSuffix))
+                .max(Comparator.comparingInt(route -> route.pathPrefix().length()));
+    }
+
+    private List<UpstreamCandidate> configuredUpstreams(ReverseProxyRoutePlanner.ConfiguredRoute route,
+                                                        Set<String> excludedUpstreamIds) {
         Instant now = Instant.now(clock);
-        return properties.getUpstreams().stream()
+        return route.targets().stream()
                 .filter(upstream -> excludedUpstreamIds == null
                         || !excludedUpstreamIds.contains(requireNonBlank(
                                 upstream.getId(), "loadbalancerpro.proxy.upstreams[].id")))
@@ -331,24 +361,25 @@ public class ReverseProxyService {
     }
 
     private List<ReverseProxyStatusResponse.UpstreamStatus> configuredUpstreamStatuses(Instant now) {
-        return properties.getUpstreams().stream()
-                .map(upstream -> {
-                    String id = requireNonBlank(upstream.getId(), "loadbalancerpro.proxy.upstreams[].id");
-                    URI baseUri = configuredBaseUri(upstream, id);
-                    EffectiveHealth health = effectiveHealth(upstream, id, baseUri, now);
-                    ResilienceState resilienceState = resilienceState(id);
-                    return new ReverseProxyStatusResponse.UpstreamStatus(
-                            id,
-                            safeConfiguredUrl(baseUri),
-                            upstream.isHealthy(),
-                            health.healthy(),
-                            health.source(),
-                            health.lastProbeStatusCode(),
-                            health.lastProbeOutcome(),
-                            resilienceState.consecutiveFailures(),
-                            resilienceState.cooldownActive(now),
-                            resilienceState.cooldownRemainingMillis(now));
-                })
+        return routes.stream()
+                .flatMap(route -> route.targets().stream()
+                        .map(upstream -> {
+                            String id = requireNonBlank(upstream.getId(), "loadbalancerpro.proxy.upstreams[].id");
+                            URI baseUri = configuredBaseUri(upstream, id);
+                            EffectiveHealth health = effectiveHealth(upstream, id, baseUri, now);
+                            ResilienceState resilienceState = resilienceState(id);
+                            return new ReverseProxyStatusResponse.UpstreamStatus(
+                                    id,
+                                    safeConfiguredUrl(baseUri),
+                                    upstream.isHealthy(),
+                                    health.healthy(),
+                                    health.source(),
+                                    health.lastProbeStatusCode(),
+                                    health.lastProbeOutcome(),
+                                    resilienceState.consecutiveFailures(),
+                                    resilienceState.cooldownActive(now),
+                                    resilienceState.cooldownRemainingMillis(now));
+                        }))
                 .toList();
     }
 

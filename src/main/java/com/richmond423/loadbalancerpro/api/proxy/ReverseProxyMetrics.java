@@ -19,6 +19,8 @@ public class ReverseProxyMetrics {
 
     private final LongAdder totalForwarded = new LongAdder();
     private final LongAdder totalFailures = new LongAdder();
+    private final LongAdder totalRetryAttempts = new LongAdder();
+    private final LongAdder totalCooldownActivations = new LongAdder();
     private final ConcurrentMap<String, UpstreamCounterState> upstreamCounters = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, LongAdder> statusClassCounters = new ConcurrentHashMap<>();
     private final AtomicReference<String> lastSelectedUpstream = new AtomicReference<>("none");
@@ -45,6 +47,22 @@ public class ReverseProxyMetrics {
         statusClassCounters.computeIfAbsent(statusClass(statusCode), ignored -> new LongAdder()).increment();
     }
 
+    void recordRetryAttempt(String upstreamId) {
+        String normalizedUpstreamId = normalizeUpstreamId(upstreamId);
+        totalRetryAttempts.increment();
+        if (!normalizedUpstreamId.isEmpty()) {
+            countersFor(normalizedUpstreamId).retryAttempts.increment();
+        }
+    }
+
+    void recordCooldownActivation(String upstreamId) {
+        String normalizedUpstreamId = normalizeUpstreamId(upstreamId);
+        totalCooldownActivations.increment();
+        if (!normalizedUpstreamId.isEmpty()) {
+            countersFor(normalizedUpstreamId).cooldownActivations.increment();
+        }
+    }
+
     ReverseProxyMetricsSnapshot snapshot(List<String> orderedUpstreamIds) {
         Set<String> orderedIds = new LinkedHashSet<>();
         if (orderedUpstreamIds != null) {
@@ -62,7 +80,11 @@ public class ReverseProxyMetrics {
                 .map(id -> {
                     UpstreamCounterState counters = countersFor(id);
                     return new ReverseProxyMetricsSnapshot.UpstreamCounters(
-                            id, counters.forwarded.sum(), counters.failures.sum());
+                            id,
+                            counters.forwarded.sum(),
+                            counters.failures.sum(),
+                            counters.retryAttempts.sum(),
+                            counters.cooldownActivations.sum());
                 })
                 .toList();
 
@@ -73,6 +95,8 @@ public class ReverseProxyMetrics {
         return new ReverseProxyMetricsSnapshot(
                 totalForwarded.sum(),
                 totalFailures.sum(),
+                totalRetryAttempts.sum(),
+                totalCooldownActivations.sum(),
                 statusClasses,
                 lastSelectedUpstream.get(),
                 upstreamSnapshots);
@@ -105,5 +129,7 @@ public class ReverseProxyMetrics {
     private static final class UpstreamCounterState {
         private final LongAdder forwarded = new LongAdder();
         private final LongAdder failures = new LongAdder();
+        private final LongAdder retryAttempts = new LongAdder();
+        private final LongAdder cooldownActivations = new LongAdder();
     }
 }

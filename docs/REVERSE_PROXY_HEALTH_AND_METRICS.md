@@ -36,14 +36,31 @@ The endpoint is read-only and reports:
 - proxy enabled flag
 - configured strategy
 - health-check path, timeout, and interval
+- retry enabled flag, maximum attempts, retry methods, and retry statuses
+- cooldown enabled flag, consecutive failure threshold, duration, and health-check recovery setting
 - upstream id, sanitized URL, configured health, effective health, and last probe outcome
+- per-upstream consecutive failure count, cooldown active flag, and cooldown remaining milliseconds
 - total forwarded count
 - total failure count
+- total retry attempt count
+- total cooldown activation count
 - per-upstream forwarded and failure counters
+- per-upstream retry and cooldown counters
 - status-class counters for `2xx`, `3xx`, `4xx`, `5xx`, and `other`
 - last selected upstream id
 
 Counters are process-local and in memory only. They reset on restart and are not persisted or exported as a generated report.
+
+## Retry And Cooldown Visibility
+
+Retries and cooldown are optional resilience aids for the lightweight local proxy path. They are disabled by default:
+
+```properties
+loadbalancerpro.proxy.retry.enabled=false
+loadbalancerpro.proxy.cooldown.enabled=false
+```
+
+When retries are enabled, attempts are bounded by `loadbalancerpro.proxy.retry.max-attempts` and default to idempotent methods (`GET`, `HEAD`). Non-idempotent retries remain disabled by default because they can duplicate upstream side effects. When cooldown is enabled, consecutive forwarding or probe failures can temporarily remove an upstream from routing. Cooldown state is process-local and can recover after the configured duration or after a successful active health check when `recover-on-successful-health-check=true`.
 
 ## Local Two-Backend Demo
 
@@ -77,6 +94,6 @@ The fixture has no cloud dependency and no public internet dependency. It is mea
 
 ## Test Evidence
 
-The reverse proxy test suite uses loopback-only JDK `HttpServer` fixtures and unused local ports. It covers disabled defaults, GET forwarding, POST/body forwarding, query preservation, configured unhealthy upstream skipping, active health probes, dynamic unhealthy skipping, read-only status output, forwarding counters, failure counters, status-class counters, unreachable upstream behavior, and no `CloudManager` construction.
+The reverse proxy test suite uses loopback-only JDK `HttpServer` fixtures and unused local ports. It covers disabled defaults, GET forwarding, POST/body forwarding, query preservation, configured unhealthy upstream skipping, active health probes, dynamic unhealthy skipping, read-only status output, forwarding counters, failure counters, retry counters, cooldown counters, status-class counters, unreachable upstream behavior, bounded retry behavior, non-idempotent no-retry defaults, cooldown recovery, and no `CloudManager` construction.
 
 JaCoCo coverage and skipped-test counts remain surfaced by the `Build, Test, Package, Smoke` workflow artifacts and logs.

@@ -60,7 +60,7 @@ The CI step fails when the skipped count is nonzero. At the time this document w
 | Security and API hardening | prod auth/profile tests, request-size tests, OpenAPI/security tests | Covers local API behavior and mock auth paths, not full deployment identity-provider operations. |
 | CLI and evidence workflows | CLI tests under `src/test/java/com/richmond423/loadbalancerpro/cli` | Covers offline deterministic file/console workflows and no-cloud construction boundaries. |
 | Browser/Postman operator demos | browser static tests, Postman collection tests, cockpit tests | Static and API contract coverage for local demo parity; not browser automation or visual regression testing. |
-| Lightweight reverse proxy mode | `ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest` | Uses in-process loopback upstream fixtures to prove real local HTTP forwarding, query/body preservation, configured and active health-aware skipping, read-only status output, forwarding/failure/status-class counters, upstream failure handling, and no `CloudManager` construction. |
+| Lightweight reverse proxy mode | `ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, `ReverseProxyRetryCooldownTest` | Uses in-process loopback upstream fixtures to prove real local HTTP forwarding, query/body preservation, configured and active health-aware skipping, read-only status output, forwarding/failure/retry/cooldown/status-class counters, bounded GET retry behavior, non-idempotent no-retry defaults, cooldown skip/recovery, upstream failure handling, and no `CloudManager` construction. |
 
 ## Mocked And Simulated Boundaries
 
@@ -69,7 +69,7 @@ Default CI deliberately avoids real cloud mutation and live external services. C
 - live AWS IAM behavior
 - production network policy
 - production reverse proxy throughput
-- production-grade active health or observability behavior
+- production-grade active health, retry, cooldown, or observability behavior
 - public internet traffic balancing
 - live autoscaling side effects
 - end-to-end identity-provider behavior
@@ -79,8 +79,8 @@ Default CI deliberately avoids real cloud mutation and live external services. C
 - No coverage percentage is claimed in docs unless it comes from a generated JaCoCo report or CI log.
 - No coverage gate is enforced yet because the initial goal is reviewer visibility, not gaming a threshold.
 - Generated coverage reports are not committed to the repository.
-- Default tests now exercise a lightweight local reverse proxy path against loopback fixture servers, including active health checks and local in-memory metrics/status output, but not a production-grade gateway data plane.
+- Default tests now exercise a lightweight local reverse proxy path against loopback fixture servers, including active health checks, bounded retry/cooldown behavior, and local in-memory metrics/status output, but not a production-grade gateway data plane.
 
 ## Next Credibility Step
 
-The highest-value next testing move is strategy-specific proxy integration coverage with health transitions, bounded retry experiments, and operator-facing visibility for the proxy status endpoint.
+The highest-value next testing move is strategy-specific proxy integration coverage with live status UI visibility, richer local backend fixtures, and long-running soak-style checks that stay outside the default CI hot path.

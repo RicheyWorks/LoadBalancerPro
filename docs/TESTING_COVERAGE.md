@@ -56,6 +56,8 @@ For the release-free go/no-go packet that records CI status, CodeQL status, skip
 
 For install/run command coverage across CI artifacts, local artifact verification, packaged jar, Maven exec, proxy profiles, and smoke helpers, see [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md). For the explicit hard stop before any future release process, see [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md).
 
+JavaFX desktop UI support is documented as optional in [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md). The tested API, proxy, static browser, fixture launcher, artifact verification, and operator smoke paths do not require JavaFX.
+
 ## Skipped-Test Evidence
 
 CI parses `target/surefire-reports/*.xml` after the test step and prints:

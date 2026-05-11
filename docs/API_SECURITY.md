@@ -38,6 +38,8 @@ Optional reverse proxy mode at `/proxy/**` is disabled by default and forwards c
 
 [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md) maps the release-free Windows and Unix operator command paths for packaged jar, Maven exec, proxy profiles, status pages, CI artifacts, and smoke helpers. [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md) records the hard stops that must remain in place before any future release action is separately approved.
 
+[`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) clarifies that JavaFX is optional desktop UI support. The Spring API, `/proxy/**`, `/proxy-status.html`, `/load-balancing-cockpit.html`, proxy demo stack, CI artifact verification, and operator smoke paths do not require JavaFX and do not gain new API or security behavior from JavaFX documentation.
+
 ## Out Of Scope
 
 The repository does not currently provide WAF rules, distributed quotas, bot detection, credential rotation, customer identity lifecycle management, TLS certificates, or production incident-response automation. Those controls belong in the deployment platform and should be reviewed separately before public exposure.

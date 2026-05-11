@@ -81,6 +81,7 @@ public class ApiSecurityConfiguration {
                     configureDocsAuthorization(authorize, authProperties, readRoles);
                     authorize.requestMatchers(HttpMethod.GET, "/api/lase/shadow")
                             .hasAnyRole(laseShadowRole, allocationRole);
+                    authorize.requestMatchers(HttpMethod.GET, "/api/proxy/status").hasRole(allocationRole);
                     authorize.requestMatchers("/proxy", "/proxy/**").hasRole(allocationRole);
                     authorize.requestMatchers(HttpMethod.POST, "/api/routing/**").hasRole(allocationRole);
                     authorize.requestMatchers(HttpMethod.POST, "/api/allocate/**").hasRole(allocationRole);

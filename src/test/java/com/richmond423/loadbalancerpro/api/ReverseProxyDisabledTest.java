@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.api;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
@@ -19,5 +20,17 @@ class ReverseProxyDisabledTest {
     void proxyModeIsDisabledByDefault() throws Exception {
         mockMvc.perform(get("/proxy/anything"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void proxyStatusReportsDisabledDefaults() throws Exception {
+        mockMvc.perform(get("/api/proxy/status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.proxyEnabled").value(false))
+                .andExpect(jsonPath("$.strategy").value("ROUND_ROBIN"))
+                .andExpect(jsonPath("$.healthCheck.enabled").value(false))
+                .andExpect(jsonPath("$.healthCheck.path").value("/health"))
+                .andExpect(jsonPath("$.metrics.totalForwarded").value(0))
+                .andExpect(jsonPath("$.metrics.totalFailures").value(0));
     }
 }

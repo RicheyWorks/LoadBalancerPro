@@ -3,6 +3,7 @@ package com.richmond423.loadbalancerpro.api;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
@@ -42,6 +43,16 @@ class ReverseProxyFailureTest {
                 .andExpect(content().string(containsString("\"error\":\"proxy_upstream_failure\"")))
                 .andExpect(content().string(containsString(
                         "\"message\":\"Proxy could not reach upstream downstream-offline\"")));
+
+        mockMvc.perform(get("/api/proxy/status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.proxyEnabled").value(true))
+                .andExpect(jsonPath("$.metrics.totalForwarded").value(0))
+                .andExpect(jsonPath("$.metrics.totalFailures").value(1))
+                .andExpect(jsonPath("$.metrics.statusClassCounts['5xx']").value(1))
+                .andExpect(jsonPath("$.metrics.lastSelectedUpstream").value("downstream-offline"))
+                .andExpect(jsonPath("$.metrics.upstreams[0].upstreamId").value("downstream-offline"))
+                .andExpect(jsonPath("$.metrics.upstreams[0].failures").value(1));
     }
 
     private static int unusedLocalPort() {

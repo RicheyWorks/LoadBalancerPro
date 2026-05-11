@@ -140,6 +140,14 @@ curl -s http://127.0.0.1:8080/api/proxy/status
 
 The response reports the proxy enabled flag, selected strategy, health-check configuration, retry/cooldown configuration, configured upstreams, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `5xx`, `other`), and the last selected upstream id.
 
+For a browser view of the same read-only status data, open:
+
+```text
+http://localhost:8080/proxy-status.html
+```
+
+The page uses same-origin `GET /api/proxy/status` only. It shows the upstream table, counters, retry/cooldown state, raw JSON, copyable status summary, and local demo curl commands without browser storage or backend mutation controls.
+
 Counters and active health state are local memory only. They are reset when the app process restarts. There is no persistence, reset/admin mutation endpoint, Prometheus compatibility claim, external metrics store, generated runtime report, or cloud mutation.
 
 ## Local Two-Backend Demo Fixture
@@ -155,6 +163,7 @@ The script starts two loopback-only HTTP backends on ports `18081` and `18082` w
 ```bash
 curl -i http://127.0.0.1:8080/proxy/demo
 curl -s http://127.0.0.1:8080/api/proxy/status
+# Browser: http://localhost:8080/proxy-status.html
 curl http://127.0.0.1:18082/fixture/health/fail
 curl -i http://127.0.0.1:8080/proxy/demo
 ```

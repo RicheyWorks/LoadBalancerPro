@@ -47,6 +47,8 @@ The optional lightweight reverse proxy is served at `/proxy/**` only when `loadb
 
 `GET /api/proxy/status` is read-only. It reports the proxy enabled flag, strategy, health-check settings, retry/cooldown settings, configured upstreams, effective health state, consecutive failure and cooldown state, local in-memory forwarding/failure/retry/cooldown counters, status-class counters, and last selected upstream. It does not reset counters, persist metrics or cooldown state, write reports, construct `CloudManager`, or call cloud services. Proxy mode is disabled by default, has local/no-cloud integration tests, and does not claim production gateway behavior.
 
+The static proxy operator status page is served at `GET /proxy-status.html`. It is not a new mutable API contract and does not introduce new DTOs; it calls same-origin `GET /api/proxy/status` only. The page displays proxy enabled state, strategy, upstream health/cooldown fields, forwarding/failure/retry/cooldown counters, status-class counters, last selected upstream, raw JSON, copyable status summaries, and local demo curl commands. Optional live refresh is browser-memory only. The page has no backend write, reset, metric mutation, storage, cloud, or monitoring-control behavior.
+
 Structured API errors expose `status`, `error`, `message`, `path`, `timestamp`, and `details` without diagnostic fields such as stack traces.
 
 ## Generated-Client Compatibility

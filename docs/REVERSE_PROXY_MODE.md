@@ -33,6 +33,15 @@ loadbalancerpro.proxy.health-check.enabled=false
 loadbalancerpro.proxy.health-check.path=/health
 loadbalancerpro.proxy.health-check.timeout=1s
 loadbalancerpro.proxy.health-check.interval=30s
+loadbalancerpro.proxy.retry.enabled=false
+loadbalancerpro.proxy.retry.max-attempts=2
+loadbalancerpro.proxy.retry.retry-non-idempotent=false
+loadbalancerpro.proxy.retry.methods=GET,HEAD
+loadbalancerpro.proxy.retry.retry-statuses=502,503,504
+loadbalancerpro.proxy.cooldown.enabled=false
+loadbalancerpro.proxy.cooldown.consecutive-failure-threshold=2
+loadbalancerpro.proxy.cooldown.duration=30s
+loadbalancerpro.proxy.cooldown.recover-on-successful-health-check=true
 loadbalancerpro.proxy.upstreams[0].id=backend-a
 loadbalancerpro.proxy.upstreams[0].url=http://127.0.0.1:18081
 loadbalancerpro.proxy.upstreams[0].healthy=true
@@ -103,6 +112,10 @@ loadbalancerpro.proxy.health-check.interval=30s
 
 Health checks are on-demand and in-memory: the proxy probes an upstream when forwarding or status inspection needs health data and the configured interval has elapsed. Probe responses with 2xx or 3xx status are treated as healthy; other responses or probe failures are treated as unhealthy. The proxy does not start service discovery, persist health state, or contact any cloud service.
 
+Optional bounded retries can be enabled with `loadbalancerpro.proxy.retry.enabled=true`. Retries are disabled by default, capped by `loadbalancerpro.proxy.retry.max-attempts`, and limited to `GET` and `HEAD` unless `loadbalancerpro.proxy.retry.retry-non-idempotent=true` is set. Be careful with non-idempotent methods: retrying `POST`, `PUT`, `PATCH`, or `DELETE` can duplicate upstream side effects.
+
+Optional cooldown can be enabled with `loadbalancerpro.proxy.cooldown.enabled=true`. When an upstream reaches the configured consecutive-failure threshold, it is process-locally cooled down and skipped until the duration expires or a successful active health check recovers it. A configured `healthy=false` upstream remains hard disabled and is not recovered by cooldown state.
+
 If no healthy upstream is available, the proxy returns HTTP 503 with a deterministic JSON error:
 
 ```json
@@ -125,7 +138,7 @@ Inspect the read-only proxy status endpoint:
 curl -s http://127.0.0.1:8080/api/proxy/status
 ```
 
-The response reports the proxy enabled flag, selected strategy, health-check configuration, configured upstreams, effective health state, total forwarded count, total failure count, per-upstream forwarded/failure counters, status-class counters (`2xx`, `3xx`, `4xx`, `5xx`, `other`), and the last selected upstream id.
+The response reports the proxy enabled flag, selected strategy, health-check configuration, retry/cooldown configuration, configured upstreams, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `5xx`, `other`), and the last selected upstream id.
 
 Counters and active health state are local memory only. They are reset when the app process restarts. There is no persistence, reset/admin mutation endpoint, Prometheus compatibility claim, external metrics store, generated runtime report, or cloud mutation.
 
@@ -157,6 +170,7 @@ After marking `backend-b` unhealthy through the fixture, the active probe should
 - No backend writes beyond forwarding the caller's request to the configured upstream.
 - No generated runtime reports.
 - No persistent proxy health or metrics state.
+- No persistent retry or cooldown state.
 - No TLS termination, WebSocket support, WAF, distributed rate limiting, credential rotation, or production gateway guarantee.
 - No benchmark, certification, legal compliance, identity, or production-readiness claim.
 
@@ -164,7 +178,7 @@ In OAuth2 mode, `/proxy/**` requires the configured allocation role, which defau
 
 ## Test Evidence
 
-`ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, and `ReverseProxyFailureTest` use local in-process JDK `HttpServer` fixtures or unused loopback ports. They prove:
+`ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, and `ReverseProxyRetryCooldownTest` use local in-process JDK `HttpServer` fixtures or unused loopback ports. They prove:
 
 - proxy mode is disabled by default
 - GET requests are forwarded to local upstreams
@@ -176,6 +190,11 @@ In OAuth2 mode, `/proxy/**` requires the configured allocation role, which defau
 - optional active health probes mark failing backends unhealthy
 - dynamically unhealthy upstreams are skipped
 - proxy status and metrics counters are exposed read-only
+- retries are disabled by default and bounded when enabled
+- non-idempotent methods are not retried by default
+- cooldown activates after configured consecutive failures
+- cooled-down upstreams are skipped
+- healthy active probes can recover cooldown state
 - unreachable upstreams return controlled HTTP 502
 - proxy requests do not construct `CloudManager`
 
@@ -183,4 +202,4 @@ These are local/no-cloud integration tests. They reduce the simulator-only gap, 
 
 ## Next Steps
 
-Good follow-up slices are strategy-specific proxy examples, documented production-hardening checklists, bounded retry policy experiments, and richer operator UI visibility for the live proxy status endpoint.
+Good follow-up slices are strategy-specific proxy examples, documented production-hardening checklists, a small proxy status UI, and richer operator visibility for retry/cooldown behavior.

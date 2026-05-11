@@ -2,7 +2,9 @@ package com.richmond423.loadbalancerpro.api.proxy;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -13,6 +15,8 @@ public class ReverseProxyProperties {
     private Duration requestTimeout = Duration.ofSeconds(2);
     private long maxRequestBytes = 65_536;
     private HealthCheck healthCheck = new HealthCheck();
+    private Retry retry = new Retry();
+    private Cooldown cooldown = new Cooldown();
     private List<Upstream> upstreams = new ArrayList<>();
 
     public boolean isEnabled() {
@@ -53,6 +57,22 @@ public class ReverseProxyProperties {
 
     public void setHealthCheck(HealthCheck healthCheck) {
         this.healthCheck = healthCheck == null ? new HealthCheck() : healthCheck;
+    }
+
+    public Retry getRetry() {
+        return retry;
+    }
+
+    public void setRetry(Retry retry) {
+        this.retry = retry == null ? new Retry() : retry;
+    }
+
+    public Cooldown getCooldown() {
+        return cooldown;
+    }
+
+    public void setCooldown(Cooldown cooldown) {
+        this.cooldown = cooldown == null ? new Cooldown() : cooldown;
     }
 
     public List<Upstream> getUpstreams() {
@@ -210,6 +230,93 @@ public class ReverseProxyProperties {
 
         public void setInterval(Duration interval) {
             this.interval = interval == null ? Duration.ofSeconds(30) : interval;
+        }
+    }
+
+    public static final class Retry {
+        private boolean enabled = false;
+        private int maxAttempts = 2;
+        private boolean retryNonIdempotent = false;
+        private Set<String> methods = new LinkedHashSet<>(Set.of("GET", "HEAD"));
+        private Set<Integer> retryStatuses = new LinkedHashSet<>(Set.of(502, 503, 504));
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public int getMaxAttempts() {
+            return maxAttempts;
+        }
+
+        public void setMaxAttempts(int maxAttempts) {
+            this.maxAttempts = maxAttempts;
+        }
+
+        public boolean isRetryNonIdempotent() {
+            return retryNonIdempotent;
+        }
+
+        public void setRetryNonIdempotent(boolean retryNonIdempotent) {
+            this.retryNonIdempotent = retryNonIdempotent;
+        }
+
+        public Set<String> getMethods() {
+            return methods;
+        }
+
+        public void setMethods(Set<String> methods) {
+            this.methods = methods == null ? new LinkedHashSet<>() : new LinkedHashSet<>(methods);
+        }
+
+        public Set<Integer> getRetryStatuses() {
+            return retryStatuses;
+        }
+
+        public void setRetryStatuses(Set<Integer> retryStatuses) {
+            this.retryStatuses = retryStatuses == null ? new LinkedHashSet<>() : new LinkedHashSet<>(retryStatuses);
+        }
+    }
+
+    public static final class Cooldown {
+        private boolean enabled = false;
+        private int consecutiveFailureThreshold = 2;
+        private Duration duration = Duration.ofSeconds(30);
+        private boolean recoverOnSuccessfulHealthCheck = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public int getConsecutiveFailureThreshold() {
+            return consecutiveFailureThreshold;
+        }
+
+        public void setConsecutiveFailureThreshold(int consecutiveFailureThreshold) {
+            this.consecutiveFailureThreshold = consecutiveFailureThreshold;
+        }
+
+        public Duration getDuration() {
+            return duration;
+        }
+
+        public void setDuration(Duration duration) {
+            this.duration = duration == null ? Duration.ofSeconds(30) : duration;
+        }
+
+        public boolean isRecoverOnSuccessfulHealthCheck() {
+            return recoverOnSuccessfulHealthCheck;
+        }
+
+        public void setRecoverOnSuccessfulHealthCheck(boolean recoverOnSuccessfulHealthCheck) {
+            this.recoverOnSuccessfulHealthCheck = recoverOnSuccessfulHealthCheck;
         }
     }
 }

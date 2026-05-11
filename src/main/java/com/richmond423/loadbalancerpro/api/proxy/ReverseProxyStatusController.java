@@ -3,6 +3,8 @@ package com.richmond423.loadbalancerpro.api.proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +40,8 @@ public class ReverseProxyStatusController {
                 false,
                 properties.getStrategy(),
                 healthCheckStatus(),
+                retryStatus(),
+                cooldownStatus(),
                 properties.getUpstreams().stream()
                         .map(upstream -> new ReverseProxyStatusResponse.UpstreamStatus(
                                 safeUpstreamId(upstream),
@@ -46,7 +50,10 @@ public class ReverseProxyStatusController {
                                 upstream.isHealthy(),
                                 "CONFIGURED",
                                 null,
-                                "proxy disabled; active probes not run"))
+                                "proxy disabled; active probes not run",
+                                0,
+                                false,
+                                0))
                         .toList(),
                 metrics.snapshot(upstreamIds));
     }
@@ -58,6 +65,34 @@ public class ReverseProxyStatusController {
                 normalizedPath(healthCheck.getPath()),
                 healthCheck.getTimeout().toMillis(),
                 healthCheck.getInterval().toMillis());
+    }
+
+    private ReverseProxyStatusResponse.RetryStatus retryStatus() {
+        ReverseProxyProperties.Retry retry = properties.getRetry();
+        return new ReverseProxyStatusResponse.RetryStatus(
+                retry.isEnabled(),
+                Math.max(1, retry.getMaxAttempts()),
+                retry.isRetryNonIdempotent(),
+                retry.getMethods().stream()
+                        .filter(Objects::nonNull)
+                        .map(String::trim)
+                        .filter(method -> !method.isEmpty())
+                        .map(method -> method.toUpperCase(Locale.ROOT))
+                        .sorted()
+                        .toList(),
+                retry.getRetryStatuses().stream()
+                        .filter(Objects::nonNull)
+                        .sorted()
+                        .toList());
+    }
+
+    private ReverseProxyStatusResponse.CooldownStatus cooldownStatus() {
+        ReverseProxyProperties.Cooldown cooldown = properties.getCooldown();
+        return new ReverseProxyStatusResponse.CooldownStatus(
+                cooldown.isEnabled(),
+                Math.max(1, cooldown.getConsecutiveFailureThreshold()),
+                Math.max(0, cooldown.getDuration().toMillis()),
+                cooldown.isRecoverOnSuccessfulHealthCheck());
     }
 
     private static String safeUpstreamId(ReverseProxyProperties.Upstream upstream) {

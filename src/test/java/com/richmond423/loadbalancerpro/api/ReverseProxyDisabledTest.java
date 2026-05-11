@@ -30,6 +30,11 @@ class ReverseProxyDisabledTest {
                 .andExpect(jsonPath("$.strategy").value("ROUND_ROBIN"))
                 .andExpect(jsonPath("$.healthCheck.enabled").value(false))
                 .andExpect(jsonPath("$.healthCheck.path").value("/health"))
+                .andExpect(jsonPath("$.retry.enabled").value(false))
+                .andExpect(jsonPath("$.retry.maxAttempts").value(2))
+                .andExpect(jsonPath("$.retry.retryNonIdempotent").value(false))
+                .andExpect(jsonPath("$.cooldown.enabled").value(false))
+                .andExpect(jsonPath("$.cooldown.consecutiveFailureThreshold").value(2))
                 .andExpect(jsonPath("$.metrics.totalForwarded").value(0))
                 .andExpect(jsonPath("$.metrics.totalFailures").value(0));
     }

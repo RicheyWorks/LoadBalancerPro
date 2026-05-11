@@ -6,6 +6,8 @@ public record ReverseProxyStatusResponse(
         boolean proxyEnabled,
         String strategy,
         HealthCheckStatus healthCheck,
+        RetryStatus retry,
+        CooldownStatus cooldown,
         List<UpstreamStatus> upstreams,
         ReverseProxyMetricsSnapshot metrics) {
 
@@ -16,6 +18,21 @@ public record ReverseProxyStatusResponse(
             long intervalMillis) {
     }
 
+    public record RetryStatus(
+            boolean enabled,
+            int maxAttempts,
+            boolean retryNonIdempotent,
+            List<String> methods,
+            List<Integer> retryStatuses) {
+    }
+
+    public record CooldownStatus(
+            boolean enabled,
+            int consecutiveFailureThreshold,
+            long durationMillis,
+            boolean recoverOnSuccessfulHealthCheck) {
+    }
+
     public record UpstreamStatus(
             String id,
             String url,
@@ -23,6 +40,9 @@ public record ReverseProxyStatusResponse(
             boolean effectiveHealthy,
             String healthSource,
             Integer lastProbeStatusCode,
-            String lastProbeOutcome) {
+            String lastProbeOutcome,
+            int consecutiveFailures,
+            boolean cooldownActive,
+            long cooldownRemainingMillis) {
     }
 }

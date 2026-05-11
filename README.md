@@ -8,7 +8,7 @@ The API and CLI are safe by default: allocation endpoints do not call AWS, CLI c
 
 JavaFX UI support is optional. API, proxy, CLI, Java fixture launcher, and static browser workflows do not require JavaFX; desktop UI deployment remains platform-sensitive and separate from the Spring API/proxy operator path. See [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md).
 
-For a top-level navigation map across testing, proxy behavior, real-backend examples, CI artifacts, release-free packaging, install/run commands, JavaFX optionality, package naming, and reviewer safety boundaries, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
+Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
 
 ## What This Project Demonstrates
 
@@ -132,7 +132,6 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`SBOM_GUIDE.md`](evidence/SBOM_GUIDE.md) documents manual CycloneDX SBOM generation, CI-published SBOM artifacts, and tag-triggered release JAR/SBOM/checksum artifact bundles.
 - [`RELEASE_ARTIFACT_EVIDENCE.md`](evidence/RELEASE_ARTIFACT_EVIDENCE.md) documents release artifact bundle, SHA-256 checksum, and GitHub attestation evidence.
 - [`PERFORMANCE_BASELINE.md`](evidence/PERFORMANCE_BASELINE.md) provides a conservative local performance baseline template with no production SLO claims.
-- [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md) is the top-level guide for choosing evidence paths across testing, proxy behavior, real-backend examples, CI artifacts, release-free readiness, install/run commands, JavaFX optionality, and package naming.
 - [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md) documents production-like deployment boundaries, edge controls, auth, telemetry, and cloud-safety guidance.
 - [`SECRET_MANAGEMENT_GUIDE.md`](docs/SECRET_MANAGEMENT_GUIDE.md) documents secret categories, storage guidance, leakage paths, rotation, and sanitized examples.
 - [`OPERATIONS_GUIDE.md`](docs/OPERATIONS_GUIDE.md) documents startup checks, health verification, monitoring, incident response, rollback, and release evidence review guidance.

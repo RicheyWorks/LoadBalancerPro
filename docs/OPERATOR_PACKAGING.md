@@ -2,7 +2,7 @@
 
 This page collects the shortest operator commands for local API/proxy review, the Java fixture launcher, real-backend examples, and packaging caveats. Default application behavior remains unchanged: `src/main/resources/application.properties` keeps `loadbalancerpro.proxy.enabled=false`.
 
-For a higher-level reviewer map that explains when to use these packaging commands versus proxy demos, CI artifacts, release-free checklists, JavaFX optionality, or package naming docs, see [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
+Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
 
 ## Fixture Launcher
 

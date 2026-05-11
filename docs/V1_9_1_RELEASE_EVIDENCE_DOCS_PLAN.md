@@ -98,7 +98,7 @@ Recommended contents:
 Add only a short link under `Evidence and Hardening`:
 
 ```text
-[`RELEASE_ARTIFACT_EVIDENCE.md`](evidence/RELEASE_ARTIFACT_EVIDENCE.md) documents the v1.9.0 release artifact bundle, checksum, and GitHub attestation evidence.
+[`RELEASE_ARTIFACT_EVIDENCE.md`](../evidence/RELEASE_ARTIFACT_EVIDENCE.md) documents the v1.9.0 release artifact bundle, checksum, and GitHub attestation evidence.
 ```
 
 Avoid adding a large README section. The README should remain a discoverability index, not the canonical release-evidence record.

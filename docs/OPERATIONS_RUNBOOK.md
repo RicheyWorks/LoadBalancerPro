@@ -2,6 +2,8 @@
 
 This runbook is for degraded allocation, load-shedding, validation-failure, and observability incidents in LoadBalancerPro. It assumes the service is running in a trusted environment and that release and cloud-safety guardrails remain enabled.
 
+For reviewer navigation across testing evidence, proxy demos, real-backend examples, CI artifacts, release-free readiness, install/run commands, JavaFX optionality, and package naming, start with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
+
 ## First Checks
 
 1. Confirm the running version:

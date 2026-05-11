@@ -4,6 +4,8 @@ Use this guide when you want to adapt the lightweight `/proxy/**` mode to local 
 
 These examples are copy/adapt starting points. They do not change `src/main/resources/application.properties`, do not enable proxy mode by default, do not contact public upstreams, do not require cloud services, and do not construct or mutate `CloudManager`.
 
+For the top-level reviewer path that connects these examples to proxy docs, status UI evidence, CI artifacts, and release-free checklists, see [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
+
 ## What Counts Here
 
 A real backend in this guide means one of these operator-controlled HTTP targets:

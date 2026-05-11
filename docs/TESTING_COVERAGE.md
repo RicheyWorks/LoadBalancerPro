@@ -2,6 +2,8 @@
 
 LoadBalancerPro now generates JaCoCo coverage output during CI so reviewers can inspect coverage numbers directly instead of relying on prose claims.
 
+For a top-level reviewer map that connects testing evidence to proxy demos, CI artifacts, release-free packaging, JavaFX optionality, and package naming, see [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
+
 ## How To Run Locally
 
 ```bash

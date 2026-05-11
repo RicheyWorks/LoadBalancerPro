@@ -4,6 +4,8 @@ This guide rehearses a LoadBalancerPro release candidate review without publishi
 
 This dry run does not publish a release.
 
+For the top-level evidence navigation path that leads into this dry run, see [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
+
 For command selection across packaged jar, Maven exec, proxy profiles, status pages, workflow artifacts, and smoke helpers, use [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md). Before any future release process is intentionally invoked, complete [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md); it is a hard-stop checklist, not a publishing procedure.
 
 ## Non-Goals

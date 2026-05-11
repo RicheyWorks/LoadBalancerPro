@@ -26,6 +26,8 @@ curl -fsS http://127.0.0.1:8080/api/proxy/status
 
 The status response is read-only. For operator-configured routes, verify the expected `routes[].pathPrefix`, `routes[].strategy`, and target ids before sending traffic through `/proxy/**`.
 
+For proxy mode outside loopback-only local demos, confirm `/proxy/**`, `GET /api/proxy/status`, and `/proxy-status.html` sit behind the expected access-control boundary. Prod or cloud-sandbox API-key mode requires `X-API-Key` for proxy forwarding/status, OAuth2 mode requires the configured allocation role, and TLS termination remains a deployment responsibility at a trusted reverse proxy, ingress, managed load balancer, platform edge, or service mesh.
+
 4. Confirm the latest deployed version matches the expected GitHub Release or deployment artifact. The current release automation publishes the JAR, CycloneDX SBOMs, and SHA256SUMS for future semantic version tags.
 
 5. Confirm metrics exposure is intentional for the active profile. Local/demo exposes Prometheus. Production-like profiles should expose metrics only behind trusted network and authentication controls.

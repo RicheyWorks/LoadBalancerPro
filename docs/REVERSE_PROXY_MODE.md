@@ -236,11 +236,19 @@ The examples target loopback placeholders `http://localhost:9001` and `http://lo
 - No TLS termination, WebSocket support, WAF, distributed rate limiting, credential rotation, or production gateway guarantee.
 - No benchmark, certification, legal compliance, identity, or production-readiness claim.
 
-In OAuth2 mode, `/proxy/**` requires the configured allocation role, which defaults to `operator`. In local/default API-key mode, the app remains demo-friendly; keep proxy mode loopback-bound or behind trusted local network controls unless deployment-specific authentication and network policy are in place.
+## Auth And TLS Boundary
+
+Local/default API-key mode stays demo-friendly for loopback demos and is not a security boundary. Keep proxy mode bound to localhost or a trusted private network unless deployment-level access control is in place.
+
+In prod or cloud-sandbox API-key mode, `/proxy/**` and `GET /api/proxy/status` require the configured `X-API-Key`. In OAuth2 mode, the same proxy surfaces require the configured allocation role, which defaults to `operator`. `/proxy-status.html` is a static same-origin page, so expose it only where callers are allowed to read the status JSON it uses.
+
+LoadBalancerPro does not terminate TLS for proxy traffic and does not provide end-to-end encryption between clients, this app, and upstreams. Terminate TLS at a trusted reverse proxy, ingress, managed load balancer, platform edge, or service mesh before exposing proxy mode beyond a private review environment. Configure forwarded headers only when the deployment owns that trust boundary.
+
+Do not expose `/proxy/**`, `GET /api/proxy/status`, `/proxy-status.html`, or Actuator endpoints publicly without deployment-level authentication, TLS termination, network policy, and rate limiting appropriate to the environment.
 
 ## Test Evidence
 
-`ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, `ReverseProxyRetryCooldownTest`, `ReverseProxyStrategyDemoLabTest`, and `ProxyDemoFixtureLauncherTest` use local in-process JDK `HttpServer` fixtures or unused loopback ports. They prove:
+`ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, `ReverseProxyRetryCooldownTest`, `ReverseProxyStrategyDemoLabTest`, `ProxyDemoFixtureLauncherTest`, `ProdApiKeyProtectionTest`, `OAuth2AuthorizationTest`, and `OperatorAuthTlsBoundaryDocumentationTest` use local in-process JDK `HttpServer` fixtures, unused loopback ports, MockMvc requests, or static docs assertions. They prove:
 
 - proxy mode is disabled by default
 - GET requests are forwarded to local upstreams
@@ -259,6 +267,9 @@ In OAuth2 mode, `/proxy/**` requires the configured allocation role, which defau
 - healthy active probes can recover cooldown state
 - strategy-specific real HTTP demos expose selected-upstream and strategy headers for round-robin, weighted round-robin, and health-aware failover behavior
 - unreachable upstreams return controlled HTTP 502
+- prod API-key mode protects proxy forwarding/status surfaces with `X-API-Key`
+- OAuth2 mode requires the configured operator/allocation role for proxy forwarding/status surfaces
+- TLS termination and public exposure controls are documented as deployment responsibilities
 - proxy requests do not construct `CloudManager`
 
 These are local/no-cloud integration tests. They reduce the simulator-only gap, but they do not prove production throughput, public internet safety, TLS behavior, WebSocket behavior, or end-to-end identity-provider operation.

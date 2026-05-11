@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
@@ -56,6 +57,13 @@ class ReverseProxyHealthAwareTest {
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-LoadBalancerPro-Upstream", "healthy-backend"))
                 .andExpect(content().string(containsString("healthy-backend GET /health-aware")));
+
+        mockMvc.perform(get("/api/proxy/status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.upstreams[0].id").value("configured-unhealthy"))
+                .andExpect(jsonPath("$.upstreams[0].configuredHealthy").value(false))
+                .andExpect(jsonPath("$.upstreams[0].effectiveHealthy").value(false))
+                .andExpect(jsonPath("$.upstreams[0].healthSource").value("CONFIGURED_DISABLED"));
     }
 
     private static final class TestUpstream {

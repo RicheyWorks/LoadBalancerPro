@@ -12,6 +12,7 @@ public class ReverseProxyProperties {
     private String strategy = "ROUND_ROBIN";
     private Duration requestTimeout = Duration.ofSeconds(2);
     private long maxRequestBytes = 65_536;
+    private HealthCheck healthCheck = new HealthCheck();
     private List<Upstream> upstreams = new ArrayList<>();
 
     public boolean isEnabled() {
@@ -44,6 +45,14 @@ public class ReverseProxyProperties {
 
     public void setMaxRequestBytes(long maxRequestBytes) {
         this.maxRequestBytes = maxRequestBytes;
+    }
+
+    public HealthCheck getHealthCheck() {
+        return healthCheck;
+    }
+
+    public void setHealthCheck(HealthCheck healthCheck) {
+        this.healthCheck = healthCheck == null ? new HealthCheck() : healthCheck;
     }
 
     public List<Upstream> getUpstreams() {
@@ -162,6 +171,45 @@ public class ReverseProxyProperties {
 
         public void setQueueDepth(Integer queueDepth) {
             this.queueDepth = queueDepth;
+        }
+    }
+
+    public static final class HealthCheck {
+        private boolean enabled = false;
+        private String path = "/health";
+        private Duration timeout = Duration.ofSeconds(1);
+        private Duration interval = Duration.ofSeconds(30);
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path == null || path.isBlank() ? "/health" : path;
+        }
+
+        public Duration getTimeout() {
+            return timeout;
+        }
+
+        public void setTimeout(Duration timeout) {
+            this.timeout = timeout == null ? Duration.ofSeconds(1) : timeout;
+        }
+
+        public Duration getInterval() {
+            return interval;
+        }
+
+        public void setInterval(Duration interval) {
+            this.interval = interval == null ? Duration.ofSeconds(30) : interval;
         }
     }
 }

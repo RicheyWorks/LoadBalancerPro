@@ -7,6 +7,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +18,8 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -56,21 +59,27 @@ public class ReverseProxyService {
 
     private final ReverseProxyProperties properties;
     private final HttpClient httpClient;
+    private final ReverseProxyMetrics metrics;
     private final RoutingStrategy strategy;
     private final RoutingStrategyId strategyId;
     private final Clock clock;
+    private final ConcurrentMap<String, ProbeState> probeStates = new ConcurrentHashMap<>();
 
     @Autowired
-    public ReverseProxyService(ReverseProxyProperties properties, HttpClient httpClient) {
-        this(properties, httpClient, RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC());
+    public ReverseProxyService(ReverseProxyProperties properties,
+                               HttpClient httpClient,
+                               ReverseProxyMetrics metrics) {
+        this(properties, httpClient, metrics, RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC());
     }
 
     ReverseProxyService(ReverseProxyProperties properties,
                         HttpClient httpClient,
+                        ReverseProxyMetrics metrics,
                         RoutingStrategyRegistry registry,
                         Clock clock) {
         this.properties = Objects.requireNonNull(properties, "properties cannot be null");
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient cannot be null");
+        this.metrics = Objects.requireNonNull(metrics, "metrics cannot be null");
         Objects.requireNonNull(registry, "registry cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
         this.strategyId = RoutingStrategyId.fromName(properties.getStrategy())
@@ -85,12 +94,14 @@ public class ReverseProxyService {
     ReverseProxyResponse forward(HttpServletRequest request, byte[] requestBody) {
         byte[] body = requestBody == null ? new byte[0] : requestBody.clone();
         if (body.length > properties.getMaxRequestBytes()) {
+            metrics.recordFailure(null, HttpStatus.PAYLOAD_TOO_LARGE.value());
             return proxyError(HttpStatus.PAYLOAD_TOO_LARGE, "proxy_payload_too_large",
                     "Proxy request body exceeds maximum size of " + properties.getMaxRequestBytes() + " bytes");
         }
 
         List<UpstreamCandidate> upstreams = configuredUpstreams();
         if (upstreams.isEmpty()) {
+            metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
             return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
                     "No proxy upstreams are configured.");
         }
@@ -100,6 +111,7 @@ public class ReverseProxyService {
                 .toList());
         Optional<String> selectedServerId = decision.explanation().chosenServerId();
         if (selectedServerId.isEmpty()) {
+            metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
             return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
                     "No healthy proxy upstreams are available.");
         }
@@ -108,6 +120,7 @@ public class ReverseProxyService {
                 .collect(Collectors.toMap(candidate -> candidate.state().serverId(), Function.identity()));
         UpstreamCandidate upstream = upstreamById.get(selectedServerId.get());
         if (upstream == null) {
+            metrics.recordFailure(selectedServerId.get(), HttpStatus.SERVICE_UNAVAILABLE.value());
             return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
                     "Selected proxy upstream is not configured: " + selectedServerId.get());
         }
@@ -115,18 +128,40 @@ public class ReverseProxyService {
         try {
             HttpRequest outbound = buildOutboundRequest(request, body, upstream);
             HttpResponse<byte[]> response = httpClient.send(outbound, HttpResponse.BodyHandlers.ofByteArray());
+            metrics.recordForwarded(upstream.state().serverId(), response.statusCode());
             HttpHeaders responseHeaders = forwardedResponseHeaders(response.headers().map());
             responseHeaders.set(UPSTREAM_HEADER, upstream.state().serverId());
             responseHeaders.set(STRATEGY_HEADER, strategyId.externalName());
             return new ReverseProxyResponse(response.statusCode(), responseHeaders, response.body());
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
+            metrics.recordFailure(upstream.state().serverId(), HttpStatus.BAD_GATEWAY.value());
             return proxyError(HttpStatus.BAD_GATEWAY, "proxy_upstream_failure",
                     "Proxy forwarding was interrupted while calling upstream " + upstream.state().serverId());
         } catch (IOException | IllegalArgumentException exception) {
+            metrics.recordFailure(upstream.state().serverId(), HttpStatus.BAD_GATEWAY.value());
             return proxyError(HttpStatus.BAD_GATEWAY, "proxy_upstream_failure",
                     "Proxy could not reach upstream " + upstream.state().serverId());
         }
+    }
+
+    ReverseProxyStatusResponse statusSnapshot() {
+        List<ReverseProxyStatusResponse.UpstreamStatus> upstreamStatuses =
+                configuredUpstreamStatuses(Instant.now(clock));
+        List<String> upstreamIds = upstreamStatuses.stream()
+                .map(ReverseProxyStatusResponse.UpstreamStatus::id)
+                .toList();
+        ReverseProxyProperties.HealthCheck healthCheck = properties.getHealthCheck();
+        return new ReverseProxyStatusResponse(
+                properties.isEnabled(),
+                strategyId.externalName(),
+                new ReverseProxyStatusResponse.HealthCheckStatus(
+                        healthCheck.isEnabled(),
+                        normalizedHealthCheckPath(healthCheck.getPath()),
+                        healthCheck.getTimeout().toMillis(),
+                        healthCheck.getInterval().toMillis()),
+                upstreamStatuses,
+                metrics.snapshot(upstreamIds));
     }
 
     @SuppressWarnings("java/ssrf")
@@ -213,17 +248,11 @@ public class ReverseProxyService {
 
     private UpstreamCandidate toCandidate(ReverseProxyProperties.Upstream upstream, Instant timestamp) {
         String id = requireNonBlank(upstream.getId(), "loadbalancerpro.proxy.upstreams[].id");
-        URI baseUri = URI.create(requireNonBlank(upstream.getUrl(), "loadbalancerpro.proxy.upstreams[].url"));
-        if (!"http".equalsIgnoreCase(baseUri.getScheme()) && !"https".equalsIgnoreCase(baseUri.getScheme())) {
-            throw new IllegalArgumentException("Proxy upstream URL must use http or https: " + id);
-        }
-        if (baseUri.getHost() == null || baseUri.getUserInfo() != null) {
-            throw new IllegalArgumentException("Proxy upstream URL must provide a host and must not include user info: "
-                    + id);
-        }
+        URI baseUri = configuredBaseUri(upstream, id);
+        EffectiveHealth effectiveHealth = effectiveHealth(upstream, id, baseUri, timestamp);
         ServerStateVector state = new ServerStateVector(
                 id,
-                upstream.isHealthy(),
+                effectiveHealth.healthy(),
                 nonNegative(upstream.getInFlightRequestCount(), "inFlightRequestCount"),
                 optionalNonNegative(upstream.getConfiguredCapacity(), "configuredCapacity"),
                 optionalPositive(upstream.getEstimatedConcurrencyLimit(), "estimatedConcurrencyLimit"),
@@ -236,6 +265,126 @@ public class ReverseProxyService {
                 NetworkAwarenessSignal.neutral(id, timestamp),
                 timestamp);
         return new UpstreamCandidate(baseUri, state);
+    }
+
+    private List<ReverseProxyStatusResponse.UpstreamStatus> configuredUpstreamStatuses(Instant now) {
+        return properties.getUpstreams().stream()
+                .map(upstream -> {
+                    String id = requireNonBlank(upstream.getId(), "loadbalancerpro.proxy.upstreams[].id");
+                    URI baseUri = configuredBaseUri(upstream, id);
+                    EffectiveHealth health = effectiveHealth(upstream, id, baseUri, now);
+                    return new ReverseProxyStatusResponse.UpstreamStatus(
+                            id,
+                            safeConfiguredUrl(baseUri),
+                            upstream.isHealthy(),
+                            health.healthy(),
+                            health.source(),
+                            health.lastProbeStatusCode(),
+                            health.lastProbeOutcome());
+                })
+                .toList();
+    }
+
+    private URI configuredBaseUri(ReverseProxyProperties.Upstream upstream, String id) {
+        URI baseUri = URI.create(requireNonBlank(upstream.getUrl(), "loadbalancerpro.proxy.upstreams[].url"));
+        if (!"http".equalsIgnoreCase(baseUri.getScheme()) && !"https".equalsIgnoreCase(baseUri.getScheme())) {
+            throw new IllegalArgumentException("Proxy upstream URL must use http or https: " + id);
+        }
+        if (baseUri.getHost() == null || baseUri.getUserInfo() != null) {
+            throw new IllegalArgumentException("Proxy upstream URL must provide a host and must not include user info: "
+                    + id);
+        }
+        return baseUri;
+    }
+
+    private EffectiveHealth effectiveHealth(ReverseProxyProperties.Upstream upstream,
+                                            String id,
+                                            URI baseUri,
+                                            Instant now) {
+        if (!upstream.isHealthy()) {
+            return new EffectiveHealth(false, "CONFIGURED_DISABLED", null, "configured healthy=false");
+        }
+        ReverseProxyProperties.HealthCheck healthCheck = properties.getHealthCheck();
+        if (!healthCheck.isEnabled()) {
+            return new EffectiveHealth(true, "CONFIGURED", null, "active health checks disabled");
+        }
+        ProbeState existing = probeStates.get(id);
+        ProbeState current = probeDue(existing, now) ? probeUpstream(id, baseUri, now) : existing;
+        if (current != existing) {
+            probeStates.put(id, current);
+        }
+        return new EffectiveHealth(
+                current.healthy(),
+                "ACTIVE_PROBE",
+                current.statusCode(),
+                current.outcome());
+    }
+
+    private boolean probeDue(ProbeState existing, Instant now) {
+        if (existing == null) {
+            return true;
+        }
+        Duration interval = properties.getHealthCheck().getInterval();
+        if (interval.isZero() || interval.isNegative()) {
+            return true;
+        }
+        return !existing.checkedAt().plus(interval).isAfter(now);
+    }
+
+    @SuppressWarnings("java/ssrf")
+    private ProbeState probeUpstream(String id, URI baseUri, Instant now) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder(healthCheckUri(baseUri))
+                    .timeout(properties.getHealthCheck().getTimeout())
+                    .GET()
+                    .build();
+            HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+            int statusCode = response.statusCode();
+            boolean healthy = statusCode >= 200 && statusCode <= 399;
+            return new ProbeState(
+                    healthy,
+                    statusCode,
+                    healthy ? "2xx/3xx probe response" : "non-2xx/3xx probe response",
+                    now);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            return new ProbeState(false, null, "probe interrupted", now);
+        } catch (IOException | IllegalArgumentException exception) {
+            return new ProbeState(false, null, "probe failed", now);
+        }
+    }
+
+    private URI healthCheckUri(URI baseUri) {
+        String healthPath = normalizedHealthCheckPath(properties.getHealthCheck().getPath());
+        String targetPath = joinPath(baseUri.getPath(), healthPath);
+        try {
+            URI target = new URI(baseUri.getScheme(), null, baseUri.getHost(), baseUri.getPort(),
+                    targetPath, null, null);
+            validateConfiguredAuthority(baseUri, target);
+            return target;
+        } catch (URISyntaxException exception) {
+            throw new IllegalArgumentException("Proxy health-check URI could not be constructed for upstream.",
+                    exception);
+        }
+    }
+
+    private static String normalizedHealthCheckPath(String configuredPath) {
+        String path = configuredPath == null || configuredPath.isBlank() ? "/health" : configuredPath.trim();
+        String normalizedPath = path.startsWith("/") ? path : "/" + path;
+        if (normalizedPath.startsWith("//") || normalizedPath.contains("\\") || normalizedPath.contains("?")
+                || containsControlCharacter(normalizedPath)) {
+            throw new IllegalArgumentException("Proxy health-check path must be a relative absolute path.");
+        }
+        return normalizedPath;
+    }
+
+    private static String safeConfiguredUrl(URI baseUri) {
+        try {
+            return new URI(baseUri.getScheme(), null, baseUri.getHost(), baseUri.getPort(),
+                    baseUri.getPath(), null, null).toString();
+        } catch (URISyntaxException exception) {
+            return "invalid";
+        }
     }
 
     private static HttpHeaders forwardedResponseHeaders(Map<String, List<String>> upstreamHeaders) {
@@ -310,5 +459,19 @@ public class ReverseProxyService {
     }
 
     private record UpstreamCandidate(URI baseUri, ServerStateVector state) {
+    }
+
+    private record EffectiveHealth(
+            boolean healthy,
+            String source,
+            Integer lastProbeStatusCode,
+            String lastProbeOutcome) {
+    }
+
+    private record ProbeState(
+            boolean healthy,
+            Integer statusCode,
+            String outcome,
+            Instant checkedAt) {
     }
 }

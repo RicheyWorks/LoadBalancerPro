@@ -150,6 +150,39 @@ class OAuth2AuthorizationTest {
     }
 
     @Test
+    void oauth2ModeRequiresOperatorRoleForProxyStatus() throws Exception {
+        mockMvc.perform(get("/api/proxy/status"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.path", is("/api/proxy/status")));
+
+        mockMvc.perform(get("/api/proxy/status").header(HttpHeaders.AUTHORIZATION, "Bearer observer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.path", is("/api/proxy/status")));
+
+        mockMvc.perform(get("/api/proxy/status").header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.proxyEnabled", is(false)));
+    }
+
+    @Test
+    void oauth2ModeProtectsProxyForwardingSurface() throws Exception {
+        mockMvc.perform(get("/proxy/demo"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.path", is("/proxy/demo")));
+
+        mockMvc.perform(get("/proxy/demo").header(HttpHeaders.AUTHORIZATION, "Bearer observer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.path", is("/proxy/demo")));
+
+        mockMvc.perform(get("/proxy/demo").header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void oauth2ModeAllowsOperatorFromSingleRoleClaim() throws Exception {
         mockMvc.perform(allocationRequest().header(HttpHeaders.AUTHORIZATION, "Bearer role-operator-token"))
                 .andExpect(status().isOk())

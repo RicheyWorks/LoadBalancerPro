@@ -74,7 +74,13 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
     }
 
     private static boolean isProtectedApiRequest(HttpServletRequest request) {
-        return isProtectedApiMutation(request) || isProtectedLaseObservability(request);
+        if ("OPTIONS".equals(request.getMethod())) {
+            return false;
+        }
+        return isProtectedApiMutation(request)
+                || isProtectedLaseObservability(request)
+                || isProtectedProxyStatus(request)
+                || isProtectedProxyRequest(request);
     }
 
     private static boolean isProtectedApiMutation(HttpServletRequest request) {
@@ -85,6 +91,15 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
 
     private static boolean isProtectedLaseObservability(HttpServletRequest request) {
         return "GET".equals(request.getMethod()) && request.getRequestURI().startsWith("/api/lase/");
+    }
+
+    private static boolean isProtectedProxyStatus(HttpServletRequest request) {
+        return "GET".equals(request.getMethod()) && "/api/proxy/status".equals(request.getRequestURI());
+    }
+
+    private static boolean isProtectedProxyRequest(HttpServletRequest request) {
+        String requestUri = request.getRequestURI();
+        return "/proxy".equals(requestUri) || requestUri.startsWith("/proxy/");
     }
 
     private static boolean constantTimeEquals(byte[] expected, byte[] actual) {

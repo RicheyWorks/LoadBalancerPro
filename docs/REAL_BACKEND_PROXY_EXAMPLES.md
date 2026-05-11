@@ -192,5 +192,7 @@ Tie this evidence back to release-free operator review:
 - These examples are not production gateway configurations.
 - These examples do not prove throughput, latency, availability, TLS termination, WebSocket support, WAF behavior, identity enforcement, legal compliance, or security posture.
 - Metrics and cooldown state are process-local.
-- Public exposure, TLS, authentication, ingress, rate limits, and service ownership checks belong to the deployment environment.
+- Local/default API-key mode stays demo-friendly and is not a security boundary.
+- In prod or cloud-sandbox API-key mode, `/proxy/**` and `GET /api/proxy/status` require `X-API-Key`; in OAuth2 mode they require the configured allocation role, which defaults to `operator`.
+- TLS termination, public exposure, authentication, ingress, rate limits, and service ownership checks belong to the deployment environment.
 - This guide does not create tags, GitHub Releases, release assets, or `release-downloads/` evidence.

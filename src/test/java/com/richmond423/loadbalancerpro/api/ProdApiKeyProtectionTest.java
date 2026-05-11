@@ -171,6 +171,39 @@ class ProdApiKeyProtectionTest {
     }
 
     @Test
+    void prodProfileProtectsProxyStatusWithoutApiKey() throws Exception {
+        mockMvc.perform(get("/api/proxy/status"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.error", is("unauthorized")))
+                .andExpect(jsonPath("$.path", is("/api/proxy/status")));
+    }
+
+    @Test
+    void prodProfileAllowsProxyStatusWithCorrectApiKey() throws Exception {
+        mockMvc.perform(get("/api/proxy/status").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.proxyEnabled", is(false)));
+    }
+
+    @Test
+    void prodProfileProtectsProxyForwardingSurfaceWithoutApiKey() throws Exception {
+        mockMvc.perform(get("/proxy/demo"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.error", is("unauthorized")))
+                .andExpect(jsonPath("$.path", is("/proxy/demo")));
+    }
+
+    @Test
+    void prodProfileStillKeepsProxyDisabledByDefaultAfterApiKeyAuth() throws Exception {
+        mockMvc.perform(get("/proxy/demo").header("X-API-Key", API_KEY))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void prodProfileProtectsLaseShadowObservabilityWithoutApiKey() throws Exception {
         mockMvc.perform(get("/api/lase/shadow"))
                 .andExpect(status().isUnauthorized())

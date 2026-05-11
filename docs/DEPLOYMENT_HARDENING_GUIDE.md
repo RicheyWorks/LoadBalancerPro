@@ -48,6 +48,7 @@ Recommended auth posture:
 
 - Keep `/api/health` public only where intentionally allowed.
 - Protect POST, PUT, and PATCH routes with deliberate auth configuration.
+- Treat `/proxy/**`, `/api/proxy/status`, and `/proxy-status.html` as operator proxy surfaces; prod API-key mode and OAuth2 mode add app-level checks, but TLS termination and ingress policy still belong at the deployment edge.
 - Prefer OAuth2 for shared enterprise demos or multi-user review.
 - Keep Swagger/OpenAPI public only for local demos or intentionally private review environments.
 - Gate or disable Swagger/OpenAPI outside local/demo use when route and schema exposure matters.

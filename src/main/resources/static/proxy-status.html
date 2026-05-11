@@ -348,12 +348,17 @@
     <section class="panel" aria-labelledby="curl-title">
       <h2 id="curl-title">Demo curl commands</h2>
       <p class="muted">
-        Examples for the loopback two-backend fixture from <code>scripts/proxy-demo.ps1</code>.
-        See <code>docs/PROXY_STRATEGY_DEMO_LAB.md</code> for strategy-specific recipes.
+        Examples for the loopback two-backend fixture from <code>scripts/proxy-demo.ps1</code>
+        or <code>scripts/proxy-demo.sh</code>. See <code>docs/PROXY_DEMO_STACK.md</code>
+        for the complete start-demo-stack path and <code>docs/PROXY_STRATEGY_DEMO_LAB.md</code>
+        for strategy-specific recipes.
       </p>
       <pre id="demo-curl-commands">powershell -ExecutionPolicy Bypass -File .\scripts\proxy-demo.ps1 -Mode round-robin
 powershell -ExecutionPolicy Bypass -File .\scripts\proxy-demo.ps1 -Mode weighted-round-robin
 powershell -ExecutionPolicy Bypass -File .\scripts\proxy-demo.ps1 -Mode failover
+bash scripts/proxy-demo.sh --mode round-robin
+bash scripts/proxy-demo.sh --mode weighted-round-robin
+bash scripts/proxy-demo.sh --mode failover
 curl -i http://127.0.0.1:8080/proxy/demo?step=1
 curl -i http://127.0.0.1:8080/proxy/demo?step=2
 curl -i http://127.0.0.1:8080/proxy/weighted?step=1

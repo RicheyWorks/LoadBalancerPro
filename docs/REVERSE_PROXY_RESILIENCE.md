@@ -49,13 +49,15 @@ Open `http://localhost:8080/proxy-status.html` for a read-only browser view of t
 
 ## Local Demo Flow
 
+Use [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md) when you want the complete Windows/Unix demo-stack path with checked-in profiles, fixture backends, startup commands, curl verification, status-page review, and cleanup.
+
 Use the loopback fixture:
 
 ```powershell
 .\scripts\proxy-demo.ps1
 ```
 
-Start LoadBalancerPro with the command printed by the script, then add retry/cooldown arguments when you want to demonstrate resilience behavior:
+Start LoadBalancerPro with the command printed by the script, or use `bash scripts/proxy-demo.sh --mode round-robin` on Unix. The printed command activates a demo profile such as `proxy-demo-round-robin`; add retry/cooldown arguments when you want to demonstrate resilience behavior:
 
 ```text
 --loadbalancerpro.proxy.retry.enabled=true

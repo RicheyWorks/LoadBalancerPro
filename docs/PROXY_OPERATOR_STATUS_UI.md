@@ -43,6 +43,8 @@ Use **Start live refresh** to poll the status endpoint every few seconds for the
 
 **Copy demo curl commands** copies loopback demo commands for `scripts/proxy-demo.ps1` modes, `/proxy/demo`, `/proxy/weighted`, `/proxy/failover`, and `/api/proxy/status`.
 
+For the complete local demo-stack path, use [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md). It points Windows and Unix users to the fixture scripts, checked-in `proxy-demo-*` profiles, startup commands, curl verification, status-page review, and cleanup steps.
+
 For strategy-specific recipes, use [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md). It covers `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover examples that pair forwarded response headers with the status page.
 
 ## Safety Boundaries

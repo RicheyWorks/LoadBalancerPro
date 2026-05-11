@@ -6,6 +6,8 @@ It is optional demo tooling. It does not change default application behavior, do
 
 For release-free packaged-jar, Maven exec, proxy profile, real-backend example, and status-page smoke checks, see [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md).
 
+For checking that the fixture launcher class is present in the built Spring Boot jar, see [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md).
+
 ## Build The Launcher
 
 From the repository root:

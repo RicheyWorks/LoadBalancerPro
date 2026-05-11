@@ -154,6 +154,8 @@ Counters and active health state are local memory only. They are reset when the 
 
 For the single Windows/Unix quick-start path, checked-in demo profiles, startup commands, curl recipes, status-page verification, and cleanup steps, start with [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md).
 
+For release-free distribution smoke checks that validate packaged jar startup, static resources, proxy demo profiles, and real-backend examples without creating release assets, use [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md).
+
 For a local no-cloud reviewer demo, use the Java fixture launcher:
 
 ```bash

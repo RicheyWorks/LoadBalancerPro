@@ -6,7 +6,7 @@ The operator scenario gallery extends the unified browser cockpit at:
 http://localhost:8080/load-balancing-cockpit.html
 ```
 
-It lets a reviewer load safe packaged scenarios, run the same real endpoints for each scenario, and compare what changed across allocation, routing, load-shedding, and remediation-hint output. It also feeds the cockpit's operator comparison matrix, which can run every packaged scenario in sequence and summarize the outputs in one table, and operator replay mode, which can rerun a selected baseline/comparison pair side by side. It adds no backend endpoint and does not replace the existing CLI, routing demo, or evidence training cockpit.
+It lets a reviewer load safe packaged scenarios, run the same real endpoints for each scenario, and compare what changed across allocation, routing, load-shedding, and remediation-hint output. It also feeds the cockpit's operator guided walkthrough, the operator comparison matrix, which can run every packaged scenario in sequence and summarize the outputs in one table, and operator replay mode, which can rerun a selected baseline/comparison pair side by side. It adds no backend endpoint and does not replace the existing CLI, routing demo, or evidence training cockpit.
 
 ## Start
 
@@ -50,16 +50,17 @@ The actual result still comes from the existing API response after the operator 
 ## Browser Flow
 
 1. Open `http://localhost:8080/load-balancing-cockpit.html`.
-2. Pick a scenario in `Scenario Gallery`.
-3. Click `Load scenario` to copy its deterministic payload into the cockpit editor.
-4. Click `Run selected scenario` to call health, readiness, allocation, routing, and evaluation flows.
-5. Review raw JSON for `POST /api/allocate/capacity-aware`, `POST /api/routing/compare`, and `POST /api/allocate/evaluate`.
-6. Run a second scenario, then click `Compare with previous scenario`.
-7. Review `Explanation Drill-Down` for routing, allocation, overload, remediation, and scenario-delta rationale.
-8. Click `Run all scenarios` in `Operator Comparison Matrix` when you want the four packaged scenarios summarized side by side.
-9. Use `Operator Replay Mode` to select one baseline and one comparison scenario, then click `Replay selected pair`.
-10. Click `Generate trace` in `API Contract Trace` when you want endpoint, payload, raw-field, derived-label, and unavailable-field mapping.
-11. Copy the selected payload, curl snippets, scenario summary, drill-down summary, matrix summary, replay reviewer note, API contract trace, matrix curls, matrix payloads, explanation curl snippets, or operator rationale.
+2. Optionally click `Start walkthrough` in `Operator Guided Walkthrough` to follow the deterministic review order.
+3. Pick a scenario in `Scenario Gallery`.
+4. Click `Load scenario` to copy its deterministic payload into the cockpit editor.
+5. Click `Run selected scenario` to call health, readiness, allocation, routing, and evaluation flows.
+6. Review raw JSON for `POST /api/allocate/capacity-aware`, `POST /api/routing/compare`, and `POST /api/allocate/evaluate`.
+7. Run a second scenario, then click `Compare with previous scenario`.
+8. Review `Explanation Drill-Down` for routing, allocation, overload, remediation, and scenario-delta rationale.
+9. Click `Run all scenarios` in `Operator Comparison Matrix` when you want the four packaged scenarios summarized side by side.
+10. Use `Operator Replay Mode` to select one baseline and one comparison scenario, then click `Replay selected pair`.
+11. Click `Generate trace` in `API Contract Trace` when you want endpoint, payload, raw-field, derived-label, and unavailable-field mapping.
+12. Copy the selected payload, curl snippets, scenario summary, drill-down summary, matrix summary, replay reviewer note, API contract trace, matrix curls, matrix payloads, explanation curl snippets, or operator rationale.
 
 The what-changed summary compares scenario name, unallocated load, rejected load, load-shedding action, remediation status, and selected server per routing strategy. It is client-side copyable text only; it is not written to disk or sent to a report endpoint.
 

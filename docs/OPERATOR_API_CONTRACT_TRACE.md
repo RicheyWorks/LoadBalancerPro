@@ -13,8 +13,9 @@ It maps visible cockpit panels back to the endpoint paths, request payload sourc
 1. Start the local app.
 2. Open the cockpit URL.
 3. Load or run a scenario from `Scenario Gallery`.
-4. Run `Operator Comparison Matrix`, `Operator Replay Mode`, `Explanation Drill-Down`, or `Operator Review Packet` as needed.
-5. Click `Generate trace`.
+4. Start `Operator Guided Walkthrough` if you want the checklist to point to trace verification at the right point in the review.
+5. Run `Operator Comparison Matrix`, `Operator Replay Mode`, `Explanation Drill-Down`, or `Operator Review Packet` as needed.
+6. Click `Generate trace`.
 
 If a panel has not been run yet, the trace marks the source as `not generated yet` or unavailable instead of inventing fields.
 
@@ -29,7 +30,11 @@ If a panel has not been run yet, the trace marks the source as `not generated ye
 - unavailable or missing fields
 - mutation behavior and safety notes
 
-The trace includes the scenario gallery, explanation drill-down, comparison matrix, replay mode, review packet, and the trace panel itself.
+The trace includes the scenario gallery, operator guided walkthrough, explanation drill-down, comparison matrix, replay mode, review packet, and the trace panel itself.
+
+## Guided Walkthrough Relationship
+
+The `Operator Guided Walkthrough` includes a `Generate API Contract Trace` step and a `Verify raw-vs-derived fields` step. Those steps do not add API behavior; they point reviewers to the trace table so raw API fields, derived client labels, and unavailable fields can be checked before the review packet is trusted.
 
 ## Raw Fields Vs Derived Labels
 

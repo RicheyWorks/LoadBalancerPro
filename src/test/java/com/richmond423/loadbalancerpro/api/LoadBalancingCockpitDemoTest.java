@@ -97,6 +97,30 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Copy selected payload"));
         assertTrue(page.contains("Copy selected curl"));
         assertTrue(page.contains("Copy scenario summary"));
+        assertTrue(page.contains("Operator Guided Walkthrough"));
+        assertTrue(page.contains("Start walkthrough"));
+        assertTrue(page.contains("Previous step"));
+        assertTrue(page.contains("Next step"));
+        assertTrue(page.contains("Mark step complete"));
+        assertTrue(page.contains("Clear walkthrough"));
+        assertTrue(page.contains("Copy walkthrough summary"));
+        assertTrue(page.contains("walkthrough-current-step"));
+        assertTrue(page.contains("Checklist/progress display"));
+        assertTrue(page.contains("Jump to panel"));
+        assertTrue(page.contains("Expected evidence"));
+        assertTrue(page.contains("not generated yet"));
+        assertTrue(page.contains("Select packaged scenario"));
+        assertTrue(page.contains("Run scenario / endpoint evaluation"));
+        assertTrue(page.contains("Review raw JSON output"));
+        assertTrue(page.contains("Review explanation drill-down"));
+        assertTrue(page.contains("Generate comparison matrix"));
+        assertTrue(page.contains("Replay selected pair"));
+        assertTrue(page.contains("Generate API Contract Trace"));
+        assertTrue(page.contains("Verify raw-vs-derived fields"));
+        assertTrue(page.contains("Generate Operator Review Packet"));
+        assertTrue(page.contains("Copy or print final handoff"));
+        assertTrue(page.contains("walkthrough-highlight"));
+        assertTrue(page.contains("Operator Guided Walkthrough Summary"));
         assertTrue(page.contains("Operator Comparison Matrix"));
         assertTrue(page.contains("Run all scenarios"));
         assertTrue(page.contains("Clear matrix"));
@@ -163,6 +187,7 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Unavailable / missing fields"));
         assertTrue(page.contains("Mutation behavior / safety notes"));
         assertTrue(page.contains("panelName: \"Scenario Gallery\""));
+        assertTrue(page.contains("panelName: \"Operator Guided Walkthrough\""));
         assertTrue(page.contains("panelName: \"Explanation Drill-Down\""));
         assertTrue(page.contains("panelName: \"Operator Comparison Matrix\""));
         assertTrue(page.contains("panelName: \"Operator Replay Mode\""));
@@ -209,7 +234,7 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(normalized.contains("not legal compliance proof"));
         assertTrue(normalized.contains("not identity proof"));
         assertTrue(normalized.contains("no cloud mutation"));
-        assertTrue(normalized.contains("no cloudmanager required for cockpit/gallery/replay/drill-down demo"));
+        assertTrue(normalized.contains("no cloudmanager required for cockpit/gallery/replay/drill-down/walkthrough demo"));
         assertTrue(normalized.contains("no external services/dependencies"));
         assertTrue(normalized.contains("no external scripts/cdns"));
         assertTrue(normalized.contains("api server required for browser/postman demo"));
@@ -267,6 +292,8 @@ class LoadBalancingCockpitDemoTest {
         assertFalse(normalized.contains("server-side packet"));
         assertFalse(normalized.contains("persist packet"));
         assertFalse(normalized.contains("persist trace"));
+        assertFalse(normalized.contains("persist walkthrough"));
+        assertFalse(normalized.contains("walkthrough score"));
         assertFalse(normalized.contains("legal training compliance"));
         assertFalse(normalized.contains("identity verified"));
         assertTrue(countOccurrences(normalized, "cloudmanager") <= 2,

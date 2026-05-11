@@ -9,6 +9,7 @@ http://localhost:8080/load-balancing-cockpit.html
 It runs the packaged cockpit scenarios in a stable order and summarizes the real endpoint outputs in one reviewer-friendly table.
 
 Use operator replay mode when a reviewer wants to focus on one baseline/comparison pair after scanning the full matrix.
+Use the `Operator Guided Walkthrough` when a reviewer wants the matrix step placed in order between raw JSON/explanation review and replay comparison.
 
 ## What It Runs
 

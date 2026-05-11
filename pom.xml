@@ -185,6 +185,13 @@
                 <version>3.5.5</version>
             </plugin>
 
+            <!-- Optional local operator launcher recipes. No execution is bound to the default lifecycle. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+            </plugin>
+
             <!-- Test coverage reporting. Reports are generated under target/site/jacoco during verify. -->
             <plugin>
                 <groupId>org.jacoco</groupId>

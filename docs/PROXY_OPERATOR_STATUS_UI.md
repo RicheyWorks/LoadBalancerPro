@@ -47,6 +47,8 @@ For the complete local demo-stack path, use [`PROXY_DEMO_STACK.md`](PROXY_DEMO_S
 
 For strategy-specific recipes, use [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md). It covers `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover examples that pair forwarded response headers with the status page.
 
+For packaged-jar startup, one-command Maven exec launcher usage, and real-backend example property files, use [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md).
+
 ## Safety Boundaries
 
 - Read-only browser view.

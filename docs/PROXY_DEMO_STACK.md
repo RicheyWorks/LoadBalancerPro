@@ -11,6 +11,12 @@ Use one terminal for the two fixture backends and one terminal for LoadBalancerP
 Recommended cross-platform Java fixture path:
 
 ```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
+```
+
+Classpath fallback:
+
+```bash
 mvn -q -DskipTests compile
 java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin
 ```
@@ -81,6 +87,7 @@ failover
 Optional port overrides:
 
 ```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin --backend-a-port 18091 --backend-b-port 18092"
 java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin --backend-a-port 18091 --backend-b-port 18092
 ```
 
@@ -106,6 +113,18 @@ src/main/resources/application-proxy-demo-failover.properties
 All three profiles bind LoadBalancerPro to `127.0.0.1:8080`, enable `/proxy/**`, use loopback upstreams only, and keep retry/cooldown disabled unless an operator adds extra arguments for a resilience demo.
 
 Default application behavior is unchanged: `src/main/resources/application.properties` keeps `loadbalancerpro.proxy.enabled=false`.
+
+## Real-Backend Example Profiles
+
+For local services beyond the fixture backends, copy/adapt the example files under `docs/examples/proxy`:
+
+```text
+docs/examples/proxy/application-proxy-real-backend-example.properties
+docs/examples/proxy/application-proxy-real-backend-weighted-example.properties
+docs/examples/proxy/application-proxy-real-backend-failover-example.properties
+```
+
+They use loopback placeholders `http://localhost:9001` and `http://localhost:9002`, include explicit strategy/health/retry/cooldown settings, contain no secrets or public upstream URLs, and are not loaded unless an operator imports or copies them intentionally.
 
 ## ROUND_ROBIN Path
 

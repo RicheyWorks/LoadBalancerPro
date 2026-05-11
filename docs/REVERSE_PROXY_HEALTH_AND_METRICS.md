@@ -76,6 +76,12 @@ For the single documented demo-stack path with the Java fixture launcher, Window
 
 Start two loopback fixture backends:
 
+```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
+```
+
+or:
+
 ```powershell
 .\scripts\proxy-demo.ps1
 ```
@@ -94,6 +100,8 @@ http://localhost:8080/proxy-status.html
 The fixture has no cloud dependency and no public internet dependency. It is meant for local reviewer demos of routing and failover visibility, not throughput proof.
 
 For strategy-specific loopback recipes, run the same fixture with `-Mode round-robin`, `-Mode weighted-round-robin`, or `-Mode failover` and follow [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md). Those flows pair forwarded response headers with `/proxy-status.html` counters so reviewers can verify selected-upstream behavior without cloud dependencies.
+
+For local real-backend examples, see [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md) and the copy/adapt property files under `docs/examples/proxy`.
 
 ## Safety Boundaries
 

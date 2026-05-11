@@ -53,6 +53,12 @@ Use [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md) when you want the complete Wind
 
 Use the loopback fixture:
 
+```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
+```
+
+or:
+
 ```powershell
 .\scripts\proxy-demo.ps1
 ```
@@ -70,6 +76,8 @@ Start LoadBalancerPro with the command printed by the Java launcher or helper sc
 Use `curl -s http://127.0.0.1:8080/api/proxy/status` to watch retry and cooldown counters while you mark a fixture backend unhealthy or healthy again through the fixture endpoints.
 
 For strategy-specific startup and curl recipes, use `.\scripts\proxy-demo.ps1 -Mode round-robin`, `.\scripts\proxy-demo.ps1 -Mode weighted-round-robin`, or `.\scripts\proxy-demo.ps1 -Mode failover` and follow [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md). The lab keeps retry/cooldown behavior optional and focuses on selected-upstream evidence from real forwarded traffic.
+
+For packaged-jar commands, Maven exec launcher recipes, and real-backend example property files, see [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md).
 
 ## Test Evidence
 

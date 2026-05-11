@@ -12,18 +12,20 @@ It assembles the current in-memory cockpit state into one deterministic Markdown
 
 1. Start the local app.
 2. Open the cockpit URL.
-3. Load or run a scenario from `Scenario Gallery`.
-4. Run `Operator Comparison Matrix` if matrix rows are needed.
-5. Run `Operator Replay Mode` if before/after deltas are needed.
-6. Review `Explanation Drill-Down` if rationale notes are needed.
-7. Click `Generate trace` in `API Contract Trace` if endpoint/raw-field mapping is needed.
-8. Click `Generate review packet`.
+3. Start `Operator Guided Walkthrough` when you want a deterministic review order.
+4. Load or run a scenario from `Scenario Gallery`.
+5. Run `Operator Comparison Matrix` if matrix rows are needed.
+6. Run `Operator Replay Mode` if before/after deltas are needed.
+7. Review `Explanation Drill-Down` if rationale notes are needed.
+8. Click `Generate trace` in `API Contract Trace` if endpoint/raw-field mapping is needed.
+9. Click `Generate review packet`.
 
 If a section has not been generated yet, the packet includes explicit `not generated yet` text instead of inventing data.
 
 ## What It Includes
 
 - review packet summary
+- guided walkthrough summary when started
 - selected scenario summary
 - comparison matrix summary
 - replay delta summary

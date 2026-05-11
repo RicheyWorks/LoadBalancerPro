@@ -34,7 +34,7 @@ Run the `Unified Load-Balancing Cockpit` folder from top to bottom for the singl
 5. `POST Cockpit Predictive Allocation`
 6. `POST Cockpit Load-Shedding Evaluation`
 
-The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, a deterministic side-by-side summary, an operator comparison matrix summary, replay-mode reviewer notes, an API contract trace, and a copyable/printable operator review packet.
+The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, a deterministic side-by-side summary, an operator guided walkthrough checklist summary, an operator comparison matrix summary, replay-mode reviewer notes, an API contract trace, and a copyable/printable operator review packet.
 
 Run the `Operator Scenario Gallery` folder when a reviewer wants to compare multiple packaged scenarios:
 
@@ -155,6 +155,8 @@ The cockpit fixture stores allocation, evaluation, and routing requests side by 
 The folder sends each sub-request to the matching existing endpoint. Test fixtures are kept under `src/test/resources/load-balancing-cockpit/` and `src/test/resources/load-balancing-cockpit/scenarios/` for deterministic API and Postman coverage.
 
 ## Operator Scenario Gallery
+
+The browser-only `Operator Guided Walkthrough` can be used before or alongside Postman to step reviewers through scenario selection, endpoint execution, raw JSON review, explanation drill-down, comparison matrix generation, replay, API contract trace verification, and review packet generation. It adds no Postman folder because it does not call a new endpoint; it guides existing cockpit and Postman-equivalent requests.
 
 The browser cockpit includes a `Scenario Gallery` section with four safe packaged scenarios:
 

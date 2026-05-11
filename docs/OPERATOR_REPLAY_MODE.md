@@ -8,6 +8,8 @@ http://localhost:8080/load-balancing-cockpit.html
 
 It lets a reviewer choose one packaged scenario as the baseline, choose another packaged scenario as the comparison, and replay both through the existing local API calls in deterministic order.
 
+The `Operator Guided Walkthrough` points reviewers to replay mode after the comparison matrix step, then uses the replay output as evidence for API trace verification and review packet generation.
+
 ## What It Runs
 
 Click `Replay selected pair` to run the baseline first and the comparison second:

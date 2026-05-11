@@ -338,6 +338,60 @@
       min-height: 280px;
     }
 
+    .walkthrough-target {
+      scroll-margin-top: 14px;
+      transition: box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .walkthrough-highlight {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(24, 89, 169, 0.2);
+    }
+
+    .walkthrough-current {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #f8fafc;
+      min-height: 132px;
+    }
+
+    .walkthrough-progress {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .walkthrough-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .walkthrough-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #ffffff;
+    }
+
+    .walkthrough-item.active {
+      border-color: var(--blue);
+      box-shadow: inset 0 0 0 2px rgba(24, 89, 169, 0.16);
+    }
+
+    .walkthrough-item.complete {
+      border-color: rgba(15, 123, 71, 0.45);
+      background: rgba(15, 123, 71, 0.06);
+    }
+
+    .walkthrough-item button {
+      margin-top: 8px;
+    }
+
     @media print {
       body {
         background: #ffffff;
@@ -387,7 +441,7 @@
     }
 
     @media (max-width: 920px) {
-      .grid, .tri-grid, .status-grid, .scenario-gallery, .drilldown-grid {
+      .grid, .tri-grid, .status-grid, .scenario-gallery, .drilldown-grid, .walkthrough-progress {
         grid-template-columns: 1fr;
       }
 
@@ -418,7 +472,7 @@
   </header>
 
   <main>
-    <section class="panel">
+    <section id="cockpit-controls-panel" class="panel walkthrough-target">
       <div class="panel-head">
         <h2>Cockpit controls</h2>
         <div class="actions">
@@ -464,7 +518,62 @@
       </div>
     </section>
 
-    <section class="panel" style="margin-top: 16px;">
+    <section id="guided-walkthrough-panel" class="panel walkthrough-target" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Operator Guided Walkthrough</h2>
+        <div class="actions">
+          <button data-action="start-guided-walkthrough" type="button">Start walkthrough</button>
+          <button data-action="walkthrough-prev" type="button" class="secondary">Previous step</button>
+          <button data-action="walkthrough-next" type="button">Next step</button>
+          <button data-action="walkthrough-complete" type="button">Mark step complete</button>
+          <button data-action="clear-guided-walkthrough" type="button" class="secondary">Clear walkthrough</button>
+          <button class="copy" type="button" data-copy-target="walkthrough-summary">Copy walkthrough summary</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="postman-note">
+          Step through scenario selection, endpoint execution, raw JSON review, trace verification, replay comparison,
+          and review packet generation. Walkthrough state is client-side only, in memory only, and never written as a
+          runtime report.
+        </p>
+        <div class="grid" style="margin-top: 14px;">
+          <div class="walkthrough-current" id="walkthrough-current-step">
+            <strong>Current step display</strong>
+            <div id="walkthrough-current-title">Start walkthrough to begin the deterministic review checklist.</div>
+            <p id="walkthrough-current-action" class="muted">Action to take next: start walkthrough.</p>
+            <p id="walkthrough-current-evidence" class="muted">Expected evidence: not generated yet.</p>
+            <button id="walkthrough-current-jump" type="button" class="secondary" data-walkthrough-jump="0">Jump to panel</button>
+          </div>
+          <div>
+            <strong>Checklist/progress display</strong>
+            <div class="walkthrough-progress" aria-label="Guided walkthrough progress">
+              <div class="status-box">
+                <strong>Total steps</strong>
+                <span id="walkthrough-total">10</span>
+              </div>
+              <div class="status-box">
+                <strong>Completed</strong>
+                <span id="walkthrough-completed">0</span>
+              </div>
+              <div class="status-box">
+                <strong>Current</strong>
+                <span id="walkthrough-current-number">Not started</span>
+              </div>
+              <div class="status-box">
+                <strong>Remaining</strong>
+                <span id="walkthrough-remaining">10</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h3 style="margin-top: 12px;">Deterministic checklist</h3>
+        <ul id="walkthrough-checklist" class="walkthrough-list" aria-label="Operator guided walkthrough checklist"></ul>
+        <h3 style="margin-top: 12px;">Copy walkthrough summary</h3>
+        <pre id="walkthrough-summary">Start walkthrough to generate a deterministic checklist summary.</pre>
+      </div>
+    </section>
+
+    <section id="scenario-gallery-panel" class="panel walkthrough-target" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Scenario Gallery</h2>
         <div class="actions">
@@ -498,7 +607,7 @@
       </div>
     </section>
 
-    <section class="panel" style="margin-top: 16px;">
+    <section id="comparison-matrix-panel" class="panel walkthrough-target" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Operator Comparison Matrix</h2>
         <div class="actions">
@@ -547,7 +656,7 @@
       </div>
     </section>
 
-    <section class="panel" style="margin-top: 16px;">
+    <section id="replay-mode-panel" class="panel walkthrough-target" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Operator Replay Mode</h2>
         <div class="actions">
@@ -628,7 +737,7 @@
       </div>
     </section>
 
-    <section class="panel review-packet-panel" style="margin-top: 16px;">
+    <section id="review-packet-panel" class="panel review-packet-panel walkthrough-target" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Operator Review Packet</h2>
         <div class="actions">
@@ -648,7 +757,7 @@
       </div>
     </section>
 
-    <section class="panel" style="margin-top: 16px;">
+    <section id="api-contract-trace-panel" class="panel walkthrough-target" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>API Contract Trace</h2>
         <div class="actions">
@@ -690,7 +799,7 @@
     </section>
 
     <div class="grid" style="margin-top: 16px;">
-      <section class="panel">
+      <section id="health-readiness-panel" class="panel walkthrough-target">
         <div class="panel-head">
           <h2>1. Health / readiness</h2>
           <div class="actions">
@@ -706,7 +815,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section id="scenario-payload-panel" class="panel walkthrough-target">
         <div class="panel-head">
           <h2>2. Scenario payload</h2>
           <div class="actions">
@@ -724,7 +833,7 @@
     </div>
 
     <div class="tri-grid" style="margin-top: 16px;">
-      <section class="panel">
+      <section id="allocation-results-panel" class="panel walkthrough-target">
         <div class="panel-head">
           <h2>3. Allocation results</h2>
           <button class="copy" type="button" data-copy-target="allocation-output">Copy allocation</button>
@@ -739,7 +848,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section id="routing-decisions-panel" class="panel walkthrough-target">
         <div class="panel-head">
           <h2>4. Routing decisions</h2>
           <button class="copy" type="button" data-copy-target="routing-output">Copy routing</button>
@@ -764,7 +873,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section id="load-shedding-panel" class="panel walkthrough-target">
         <div class="panel-head">
           <h2>5. Load-shedding / overload signals</h2>
           <button class="copy" type="button" data-copy-target="evaluation-output">Copy evaluation</button>
@@ -781,7 +890,7 @@
     </div>
 
     <div class="grid" style="margin-top: 16px;">
-      <section class="panel">
+      <section id="remediation-hints-panel" class="panel walkthrough-target">
         <div class="panel-head">
           <h2>6. Remediation-plan hints</h2>
           <button class="copy" type="button" data-copy-target="remediation-output">Copy remediation hints</button>
@@ -795,7 +904,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section id="side-by-side-summary-panel" class="panel walkthrough-target">
         <div class="panel-head">
           <h2>7. Side-by-side summary</h2>
           <div class="actions">
@@ -808,7 +917,7 @@
       </section>
     </div>
 
-    <section class="panel" style="margin-top: 16px;">
+    <section id="curl-snippets-panel" class="panel walkthrough-target" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>8. Copy curl snippets</h2>
         <button class="copy" type="button" data-copy-target="curl-snippets">Copy curl</button>
@@ -824,7 +933,7 @@
       </div>
     </section>
 
-    <section class="panel" style="margin-top: 16px;">
+    <section id="explanation-drilldown-panel" class="panel walkthrough-target" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Explanation Drill-Down</h2>
         <div class="actions">
@@ -873,7 +982,7 @@
       </div>
     </section>
 
-    <section class="panel" style="margin-top: 16px;">
+    <section id="unavailable-state-panel" class="panel walkthrough-target" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>9. Unavailable-state handling</h2>
       </div>
@@ -886,7 +995,7 @@
       </div>
     </section>
 
-    <section class="panel" style="margin-top: 16px;">
+    <section id="safety-limitations-panel" class="panel walkthrough-target" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>10. Safety limitations</h2>
       </div>
@@ -898,7 +1007,7 @@
           <li>Not legal compliance proof.</li>
           <li>Not identity proof.</li>
           <li>No cloud mutation.</li>
-          <li>No CloudManager required for cockpit/gallery/replay/drill-down demo.</li>
+          <li>No CloudManager required for cockpit/gallery/replay/drill-down/walkthrough demo.</li>
           <li>No external services/dependencies.</li>
           <li>No external scripts/CDNs.</li>
           <li>API server required for browser/Postman demo.</li>
@@ -1122,7 +1231,12 @@
       matrixRows: [],
       replay: null,
       reviewPacket: null,
-      apiContractTrace: null
+      apiContractTrace: null,
+      walkthrough: {
+        active: false,
+        currentStep: 0,
+        completed: []
+      }
     };
 
     const outputs = {
@@ -1148,6 +1262,7 @@
       replayComparisonOutput: document.getElementById("replay-comparison-output"),
       reviewPacket: document.getElementById("review-packet-preview"),
       apiContractTrace: document.getElementById("api-contract-trace-preview"),
+      walkthroughSummary: document.getElementById("walkthrough-summary"),
       curl: document.getElementById("curl-snippets")
     };
 
@@ -1164,6 +1279,69 @@
     let selectedScenarioId = "normal-load";
     let previousScenarioSnapshot = null;
     let latestScenarioSnapshot = null;
+
+    const walkthroughSteps = [
+      {
+        title: "Select packaged scenario",
+        action: "Choose a packaged scenario in the Scenario Gallery and load it into the cockpit.",
+        evidence: "Scenario payload textarea, expected outcome hints, and selected scenario summary.",
+        panelId: "scenario-gallery-panel"
+      },
+      {
+        title: "Run scenario / endpoint evaluation",
+        action: "Run scenario to call health, readiness, allocation, routing, and evaluation endpoints.",
+        evidence: "Passed or warning badges plus allocation, routing, evaluation, and remediation raw JSON blocks.",
+        panelId: "cockpit-controls-panel"
+      },
+      {
+        title: "Review raw JSON output",
+        action: "Inspect the raw JSON response panels before trusting derived summaries.",
+        evidence: "Allocation, routing, load-shedding, and remediation raw JSON panels show current responses.",
+        panelId: "allocation-results-panel"
+      },
+      {
+        title: "Review explanation drill-down",
+        action: "Review explanation drill-down for raw-field rationale and derived labels.",
+        evidence: "Routing, allocation, overload, remediation, and scenario delta explanations.",
+        panelId: "explanation-drilldown-panel"
+      },
+      {
+        title: "Generate comparison matrix",
+        action: "Run all scenarios to generate the operator comparison matrix.",
+        evidence: "Matrix rows for packaged scenarios and a deterministic matrix summary.",
+        panelId: "comparison-matrix-panel"
+      },
+      {
+        title: "Replay selected pair",
+        action: "Replay selected pair to compare before/after scenario results.",
+        evidence: "Side-by-side baseline and comparison output plus changed-fields summary.",
+        panelId: "replay-mode-panel"
+      },
+      {
+        title: "Generate API Contract Trace",
+        action: "Generate trace to map visible claims to endpoints, payload sources, raw fields, and derived labels.",
+        evidence: "API Contract Trace table and copyable trace summary.",
+        panelId: "api-contract-trace-panel"
+      },
+      {
+        title: "Verify raw-vs-derived fields",
+        action: "Verify trace rows distinguish raw API fields from derived client labels and unavailable fields.",
+        evidence: "Trace rows reviewed manually; unavailable fields remain honestly marked.",
+        panelId: "api-contract-trace-panel"
+      },
+      {
+        title: "Generate Operator Review Packet",
+        action: "Generate the client-side review packet from current in-memory cockpit state.",
+        evidence: "Review packet preview with scenario, matrix, replay, explanation, trace, endpoint, and safety sections.",
+        panelId: "review-packet-panel"
+      },
+      {
+        title: "Copy or print final handoff",
+        action: "Copy or print final handoff from the review packet, and copy this walkthrough summary if useful.",
+        evidence: "Copied or printed handoff; no backend write, cloud mutation, browser storage, or runtime report.",
+        panelId: "review-packet-panel"
+      }
+    ];
 
     function routingServer(serverId, healthy, inFlightRequestCount, capacity, weight,
                            averageLatencyMillis, p95LatencyMillis, p99LatencyMillis,
@@ -1576,6 +1754,7 @@
         routingRequest: scenario.routingRequest,
         evaluationRequest: scenario.evaluationRequest
       })));
+      refreshWalkthroughSummary();
     }
 
     function buildComparisonMatrixSummary(rows) {
@@ -1846,6 +2025,7 @@
         outputs.replayReviewerNote.textContent =
           "Replay selected pair to generate a deterministic reviewer note.";
       }
+      refreshWalkthroughSummary();
     }
 
     function buildReplayCurls(baseline, comparison) {
@@ -1914,11 +2094,13 @@
     function generateReviewPacket() {
       state.reviewPacket = buildReviewPacket();
       outputs.reviewPacket.textContent = state.reviewPacket;
+      refreshWalkthroughSummary();
     }
 
     function clearReviewPacket() {
       state.reviewPacket = null;
       outputs.reviewPacket.textContent = "Generate review packet to assemble the current cockpit state.";
+      refreshWalkthroughSummary();
     }
 
     function printReviewPacket() {
@@ -1946,6 +2128,10 @@
         "- replayGenerated: " + (state.replay ? "true" : "false"),
         "- explanationGenerated: " + (hasGeneratedText(outputs.drilldownSummary, "Run the cockpit sequence") ? "true" : "false"),
         "- apiContractTraceGenerated: " + (state.apiContractTrace ? "true" : "false"),
+        "- guidedWalkthroughActive: " + (state.walkthrough.active ? "true" : "false"),
+        "",
+        "## Operator Guided Walkthrough Summary",
+        packetBlock(outputs.walkthroughSummary, "Start walkthrough to generate checklist summary."),
         "",
         "## Selected Scenario",
         packetBlock(outputs.scenarioSummary, "Load and run a scenario to generate selected scenario summary."),
@@ -2031,11 +2217,221 @@
       return text && text !== "{}" ? "available in cockpit raw JSON block" : "not generated yet";
     }
 
+    function startGuidedWalkthrough() {
+      state.walkthrough.active = true;
+      state.walkthrough.currentStep = 0;
+      state.walkthrough.completed = walkthroughSteps.map(() => false);
+      renderGuidedWalkthrough();
+      jumpToWalkthroughStep(0);
+    }
+
+    function clearGuidedWalkthrough() {
+      state.walkthrough.active = false;
+      state.walkthrough.currentStep = 0;
+      state.walkthrough.completed = walkthroughSteps.map(() => false);
+      document.querySelectorAll(".walkthrough-highlight").forEach((panel) => {
+        panel.classList.remove("walkthrough-highlight");
+      });
+      renderGuidedWalkthrough();
+    }
+
+    function previousWalkthroughStep() {
+      state.walkthrough.active = true;
+      state.walkthrough.currentStep = Math.max(0, state.walkthrough.currentStep - 1);
+      renderGuidedWalkthrough();
+      jumpToWalkthroughStep(state.walkthrough.currentStep);
+    }
+
+    function nextWalkthroughStep() {
+      state.walkthrough.active = true;
+      state.walkthrough.currentStep = Math.min(walkthroughSteps.length - 1, state.walkthrough.currentStep + 1);
+      renderGuidedWalkthrough();
+      jumpToWalkthroughStep(state.walkthrough.currentStep);
+    }
+
+    function markWalkthroughStepComplete() {
+      state.walkthrough.active = true;
+      state.walkthrough.completed[state.walkthrough.currentStep] = true;
+      if (state.walkthrough.currentStep < walkthroughSteps.length - 1) {
+        state.walkthrough.currentStep += 1;
+      }
+      renderGuidedWalkthrough();
+      jumpToWalkthroughStep(state.walkthrough.currentStep);
+    }
+
+    function selectWalkthroughStep(index) {
+      if (Number.isNaN(index) || index < 0 || index >= walkthroughSteps.length) {
+        return;
+      }
+      state.walkthrough.active = true;
+      state.walkthrough.currentStep = index;
+      renderGuidedWalkthrough();
+      jumpToWalkthroughStep(index);
+    }
+
+    function jumpToWalkthroughStep(index) {
+      const step = walkthroughSteps[index] || walkthroughSteps[0];
+      if (!step) {
+        return;
+      }
+      const panel = document.getElementById(step.panelId);
+      document.querySelectorAll(".walkthrough-highlight").forEach((target) => {
+        target.classList.remove("walkthrough-highlight");
+      });
+      if (panel) {
+        panel.classList.add("walkthrough-highlight");
+        panel.scrollIntoView({ block: "start" });
+      }
+    }
+
+    function renderGuidedWalkthrough() {
+      if (!Array.isArray(state.walkthrough.completed) || state.walkthrough.completed.length !== walkthroughSteps.length) {
+        state.walkthrough.completed = walkthroughSteps.map(() => false);
+      }
+      const currentIndex = state.walkthrough.currentStep;
+      const current = walkthroughSteps[currentIndex] || walkthroughSteps[0];
+      const completedCount = state.walkthrough.completed.filter(Boolean).length;
+      document.getElementById("walkthrough-total").textContent = String(walkthroughSteps.length);
+      document.getElementById("walkthrough-completed").textContent = String(completedCount);
+      document.getElementById("walkthrough-current-number").textContent = state.walkthrough.active
+        ? String(currentIndex + 1)
+        : "Not started";
+      document.getElementById("walkthrough-remaining").textContent = String(walkthroughSteps.length - completedCount);
+      document.getElementById("walkthrough-current-title").textContent = state.walkthrough.active
+        ? current.title
+        : "Start walkthrough to begin the deterministic review checklist.";
+      document.getElementById("walkthrough-current-action").textContent = "Action to take next: "
+        + (state.walkthrough.active ? current.action : "start walkthrough.");
+      document.getElementById("walkthrough-current-evidence").textContent = "Expected evidence: "
+        + (state.walkthrough.active ? current.evidence + " Current evidence state: " + walkthroughEvidenceState(currentIndex) : "not generated yet.");
+      document.getElementById("walkthrough-current-jump").setAttribute("data-walkthrough-jump", String(currentIndex));
+
+      document.getElementById("walkthrough-checklist").innerHTML = walkthroughSteps.map((step, index) => {
+        const complete = state.walkthrough.completed[index];
+        const active = state.walkthrough.active && index === currentIndex;
+        const status = complete ? "Complete" : active ? "Current" : "Not complete";
+        return "<li class=\"walkthrough-item" + (active ? " active" : "") + (complete ? " complete" : "") + "\">"
+          + "<strong>" + (index + 1) + ". " + escapeHtml(step.title) + "</strong>"
+          + "<p>Status: " + escapeHtml(status) + "</p>"
+          + "<p>Action to take next: " + escapeHtml(step.action) + "</p>"
+          + "<p>Expected evidence: " + escapeHtml(step.evidence) + "</p>"
+          + "<p>Evidence state: " + escapeHtml(walkthroughEvidenceState(index)) + "</p>"
+          + "<button type=\"button\" class=\"secondary\" data-walkthrough-step=\"" + index + "\">Jump to panel</button>"
+          + "</li>";
+      }).join("");
+      refreshWalkthroughSummary();
+    }
+
+    function walkthroughEvidenceState(index) {
+      if (index === 0) {
+        return safeCurrentScenario() ? "generated: packaged scenario is loaded in the scenario payload panel" : "not generated yet";
+      }
+      if (index === 1) {
+        return state.allocation && state.routing && state.evaluation
+          ? "generated: endpoint evaluation outputs are available"
+          : "not generated yet";
+      }
+      if (index === 2) {
+        const states = [
+          rawJsonState(outputs.allocation),
+          rawJsonState(outputs.routing),
+          rawJsonState(outputs.evaluation),
+          rawJsonState(outputs.remediation)
+        ];
+        return states.every((value) => value !== "not generated yet")
+          ? "generated: raw JSON blocks are available for review"
+          : "not generated yet";
+      }
+      if (index === 3) {
+        return hasGeneratedText(outputs.drilldownSummary, "Run the cockpit sequence")
+          ? "generated: explanation drill-down summary is available"
+          : "not generated yet";
+      }
+      if (index === 4) {
+        return state.matrixRows.length
+          ? "generated: " + state.matrixRows.length + " comparison matrix rows are available"
+          : "not generated yet";
+      }
+      if (index === 5) {
+        return state.replay ? "generated: replay comparison state is available" : "not generated yet";
+      }
+      if (index === 6) {
+        return state.apiContractTrace ? "generated: API Contract Trace summary is available" : "not generated yet";
+      }
+      if (index === 7) {
+        return state.apiContractTrace
+          ? "manual verification required: inspect raw API fields, derived client labels, and unavailable fields"
+          : "not generated yet";
+      }
+      if (index === 8) {
+        return state.reviewPacket ? "generated: Operator Review Packet preview is available" : "not generated yet";
+      }
+      if (index === 9) {
+        return state.reviewPacket
+          ? "manual verification required: copy or print the final handoff from the browser"
+          : "not generated yet";
+      }
+      return "not generated yet";
+    }
+
+    function refreshWalkthroughSummary() {
+      outputs.walkthroughSummary.textContent = buildWalkthroughSummary();
+    }
+
+    function buildWalkthroughSummary() {
+      const completedCount = state.walkthrough.completed.filter(Boolean).length;
+      const currentStep = walkthroughSteps[state.walkthrough.currentStep] || walkthroughSteps[0];
+      const rows = walkthroughSteps.map((step, index) => {
+        const status = state.walkthrough.completed[index]
+          ? "COMPLETE"
+          : state.walkthrough.active && index === state.walkthrough.currentStep
+            ? "CURRENT"
+            : "NOT_COMPLETE";
+        return "| " + [
+          String(index + 1),
+          step.title,
+          status,
+          step.panelId,
+          walkthroughEvidenceState(index)
+        ].map(markdownCell).join(" | ") + " |";
+      }).join("\n");
+      return [
+        "# Operator Guided Walkthrough Summary",
+        "",
+        "mode: local browser same-origin demo",
+        "walkthroughState: client-side only",
+        "statePersistence: in-memory only",
+        "backendWrites: false",
+        "cloudMutation: false",
+        "generatedRuntimeReport: false",
+        "currentStep: " + (state.walkthrough.active ? currentStep.title : "not started"),
+        "completedSteps: " + completedCount + "/" + walkthroughSteps.length,
+        "",
+        "| Step | Checklist item | Status | Target panel | Evidence state |",
+        "| --- | --- | --- | --- | --- |",
+        rows,
+        "",
+        "## Expected Evidence",
+        walkthroughSteps.map((step, index) => "- " + (index + 1) + ". " + step.title + ": " + step.evidence).join("\n"),
+        "",
+        "## Safety",
+        "- Client-side only.",
+        "- Walkthrough state is in memory only.",
+        "- Same-origin read/evaluation calls only.",
+        "- No backend writes.",
+        "- No cloud mutation.",
+        "- No browser storage.",
+        "- No benchmark, certification, legal compliance, identity, or production guarantee claims.",
+        "- Displayed summaries are either raw API fields or explicitly marked derived client labels."
+      ].join("\n");
+    }
+
     function generateApiContractTrace() {
       const rows = buildApiContractTraceRows();
       renderApiContractTraceRows(rows);
       state.apiContractTrace = buildApiContractTraceSummary(rows);
       outputs.apiContractTrace.textContent = state.apiContractTrace;
+      refreshWalkthroughSummary();
     }
 
     function clearApiContractTrace() {
@@ -2044,6 +2440,7 @@
         "<tr><td colspan=\"8\" class=\"muted\">Generate trace to map cockpit panels to API contracts.</td></tr>";
       outputs.apiContractTrace.textContent =
         "Generate trace to map cockpit panels to endpoint paths, raw fields, derived labels, and unavailable fields.";
+      refreshWalkthroughSummary();
     }
 
     function buildApiContractTraceRows() {
@@ -2066,6 +2463,16 @@
           unavailableFields: rawJsonState(outputs.health) === "not generated yet" && rawJsonState(outputs.readiness) === "not generated yet"
             ? "not generated yet"
             : "No hidden readiness internals beyond returned raw JSON are claimed",
+          mutationBehavior: commonSafety
+        },
+        {
+          panelName: "Operator Guided Walkthrough",
+          endpointPath: "No endpoint call; guides existing cockpit controls and panels",
+          requestPayloadSource: "Current packaged scenario payload and current in-memory cockpit state",
+          rawResponseSource: "References health-output, readiness-output, allocation-output, routing-output, evaluation-output, remediation-output, trace, replay, matrix, and review packet panels",
+          displayedRawFields: "Walkthrough evidence states reference raw JSON availability labels and generated summary panels",
+          derivedFields: "Current step display; checklist/progress display; expected evidence text; jump-to-panel controls; copyable walkthrough summary",
+          unavailableFields: "Steps not run yet are labeled not generated yet; trace verification remains manual verification required",
           mutationBehavior: commonSafety
         },
         {
@@ -2652,6 +3059,7 @@
         "- no server-side report writing"
       ].join("\n");
       refreshDrillDown();
+      refreshWalkthroughSummary();
     }
 
     function scenarioSnapshot() {
@@ -2963,6 +3371,7 @@
       clearReplayMode();
       clearReviewPacket();
       clearApiContractTrace();
+      clearGuidedWalkthrough();
       ["health", "scenario", "allocation", "routing", "evaluation"].forEach((name) => setBadge(name, "Not run"));
     }
 
@@ -3047,6 +3456,16 @@
           generateApiContractTrace();
         } else if (action === "clear-api-contract-trace") {
           clearApiContractTrace();
+        } else if (action === "start-guided-walkthrough") {
+          startGuidedWalkthrough();
+        } else if (action === "walkthrough-prev") {
+          previousWalkthroughStep();
+        } else if (action === "walkthrough-next") {
+          nextWalkthroughStep();
+        } else if (action === "walkthrough-complete") {
+          markWalkthroughStepComplete();
+        } else if (action === "clear-guided-walkthrough") {
+          clearGuidedWalkthrough();
         } else if (action === "reset-gallery") {
           resetScenarioGallery();
         } else if (action === "reset") {
@@ -3060,12 +3479,23 @@
       refreshCurlSnippets();
       refreshMatrixCopyBlocks();
       refreshReplayCopyBlocks();
+      refreshWalkthroughSummary();
     });
 
     baseUrlInput.addEventListener("change", () => {
       refreshCurlSnippets();
       refreshMatrixCopyBlocks();
       refreshReplayCopyBlocks();
+      refreshWalkthroughSummary();
+    });
+    document.getElementById("walkthrough-current-jump").addEventListener("click", (event) => {
+      jumpToWalkthroughStep(Number(event.currentTarget.getAttribute("data-walkthrough-jump") || "0"));
+    });
+    document.getElementById("walkthrough-checklist").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-walkthrough-step]");
+      if (button) {
+        selectWalkthroughStep(Number(button.getAttribute("data-walkthrough-step")));
+      }
     });
     document.getElementById("replay-baseline-scenario").addEventListener("change", refreshReplayCopyBlocks);
     document.getElementById("replay-comparison-scenario").addEventListener("change", refreshReplayCopyBlocks);
@@ -3074,6 +3504,7 @@
       refreshCurlSnippets();
       buildSummary();
       outputs.scenarioSummary.textContent = buildScenarioSummary(null);
+      refreshWalkthroughSummary();
     });
 
     renderScenarioGallery();
@@ -3081,6 +3512,7 @@
     loadSelectedScenario();
     refreshMatrixCopyBlocks();
     refreshReplayCopyBlocks();
+    renderGuidedWalkthrough();
   </script>
 </body>
 </html>

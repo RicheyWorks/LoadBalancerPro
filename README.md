@@ -149,6 +149,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`OPERATOR_REPLAY_MODE.md`](docs/OPERATOR_REPLAY_MODE.md) documents the cockpit replay mode for baseline/comparison scenario pairs and deterministic reviewer notes.
 - [`OPERATOR_REVIEW_PACKET.md`](docs/OPERATOR_REVIEW_PACKET.md) documents the cockpit review packet for copyable and printable operator handoff notes.
 - [`OPERATOR_API_CONTRACT_TRACE.md`](docs/OPERATOR_API_CONTRACT_TRACE.md) documents the cockpit API contract trace for mapping visible claims to endpoint paths, request payloads, raw fields, derived labels, and unavailable fields.
+- [`OPERATOR_GUIDED_WALKTHROUGH.md`](docs/OPERATOR_GUIDED_WALKTHROUGH.md) documents the cockpit guided walkthrough that steps reviewers through scenario selection, endpoint execution, trace verification, replay comparison, and review packet handoff.
 - [`OPERATOR_EXPLANATION_DRILLDOWN.md`](docs/OPERATOR_EXPLANATION_DRILLDOWN.md) documents the cockpit explanation drill-down panels for routing, allocation, overload, remediation, and scenario-delta rationale.
 - [`OPERATOR_DEMO_WALKTHROUGH.md`](docs/OPERATOR_DEMO_WALKTHROUGH.md) provides a single local demo path from API health checks through the guided browser cockpit, Postman import, evidence training onboarding, and deterministic scorecard grading.
 - [`DOCKER_COMPOSE_PROD_LIKE_GUIDE.md`](docs/DOCKER_COMPOSE_PROD_LIKE_GUIDE.md) documents a local/private production-like Compose example with loopback binding and no live AWS.

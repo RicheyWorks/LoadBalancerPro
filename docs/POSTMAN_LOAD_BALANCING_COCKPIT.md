@@ -34,7 +34,7 @@ Run the `Unified Load-Balancing Cockpit` folder from top to bottom for the singl
 5. `POST Cockpit Predictive Allocation`
 6. `POST Cockpit Load-Shedding Evaluation`
 
-The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, a deterministic side-by-side summary, an operator comparison matrix summary, and replay-mode reviewer notes.
+The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, a deterministic side-by-side summary, an operator comparison matrix summary, replay-mode reviewer notes, and a copyable/printable operator review packet.
 
 Run the `Operator Scenario Gallery` folder when a reviewer wants to compare multiple packaged scenarios:
 
@@ -191,6 +191,14 @@ POST /api/allocate/evaluate
 ```
 
 The browser highlights before/after differences for routing selections, selected outcomes, allocation pressure, load-shedding action, remediation hints, explanation rationale, scenario delta, and error state. Copy controls provide deterministic reviewer notes, replay curl commands, and replay payloads. Replay mode is client-side only; it does not write backend reports, use browser storage, or create benchmark/score claims.
+
+## Operator Review Packet
+
+The browser cockpit includes an `Operator Review Packet` section. Click `Generate review packet` after running the scenario, matrix, replay, or drill-down flows you want to capture.
+
+The packet assembles selected scenario summary, comparison matrix summary, replay delta summary, explanation/rationale summary, endpoint references, payload/curl references, raw JSON reference notes, safety notes, and limitations/unavailable-field notes. Sections that have not been generated yet are labeled as not generated yet. `Copy review packet` copies deterministic Markdown-style text, and `Print review packet` uses browser print styling for the packet panel only.
+
+The review packet is client-side only. It does not add a Postman request, backend report endpoint, browser storage, generated runtime file, benchmark result, score, certification claim, legal compliance claim, or identity claim.
 
 ## Explanation Drill-Down
 

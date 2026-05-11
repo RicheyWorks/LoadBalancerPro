@@ -68,6 +68,8 @@ The comparison matrix uses stable scenario ordering and reports unavailable fiel
 
 Replay mode uses the same packaged payloads and endpoint calls. Its before/after highlights are client-side comparisons of visible response fields, not scores, benchmark results, or production guarantees.
 
+The review packet can then assemble the selected scenario, matrix, replay, explanation, endpoint, raw JSON reference, and safety notes into one copyable/printable handoff. If a scenario, matrix, or replay section has not been generated, the packet marks that section as not generated yet.
+
 ## Real Endpoints Used
 
 ```text

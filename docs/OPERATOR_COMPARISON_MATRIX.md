@@ -56,6 +56,8 @@ The copy output is client-side text only. It is not written to disk or sent to a
 
 After reviewing the matrix, select two scenario rows in the browser's `Operator Replay Mode` selectors and click `Replay selected pair`. Replay mode reruns the two packaged scenarios in deterministic order, highlights before/after routing, allocation, overload, remediation, rationale, and error-state differences, and produces a deterministic reviewer note.
 
+When a reviewer needs one handoff artifact, click `Generate review packet` after the matrix or replay steps. The packet includes matrix output when available and labels it as not generated yet when it has not been run.
+
 ## Safety Boundaries
 
 - Local/operator demo only.

@@ -313,6 +313,12 @@ The evidence policy training lab batch-runs the packaged walkthrough examples an
 
 Evidence training scorecards grade packaged-example operator answers locally. They produce deterministic Markdown or JSON reports, can fail a script with `--fail-on-score-below`, do not start the API server, and do not construct or mutate `CloudManager`.
 
+## Test And Coverage Evidence
+
+For reviewer-facing test evidence, use [`TESTING_COVERAGE.md`](TESTING_COVERAGE.md). GitHub CI is the source of truth when a local workstation cannot resolve Maven dependencies because of Java trust-store or PKIX issues.
+
+The `Build, Test, Package, Smoke` workflow runs the default Maven tests, verifies the Surefire skipped-test count, generates JaCoCo HTML/XML/CSV output under `target/site/jacoco`, prints instruction/branch/line percentages from `jacoco.csv`, and uploads the report as the `jacoco-coverage-report` artifact. Treat those reports as quantified regression evidence for the simulator, API, CLI, safety, and local cockpit flows. They are not production reverse-proxy throughput proof, benchmark proof, certification, legal compliance proof, or live-cloud validation.
+
 ## Rollback And Release Evidence
 
 If a deployment must be rolled back:

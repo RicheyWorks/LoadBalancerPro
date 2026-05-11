@@ -34,7 +34,7 @@ Run the `Unified Load-Balancing Cockpit` folder from top to bottom for the singl
 5. `POST Cockpit Predictive Allocation`
 6. `POST Cockpit Load-Shedding Evaluation`
 
-The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, and a deterministic side-by-side summary.
+The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, a deterministic side-by-side summary, and an operator comparison matrix summary.
 
 Run the `Operator Scenario Gallery` folder when a reviewer wants to compare multiple packaged scenarios:
 
@@ -164,6 +164,19 @@ The browser cockpit includes a `Scenario Gallery` section with four safe package
 - `Recovery / Capacity Restored`
 
 Each scenario provides expected routing, allocation, load-shedding, and remediation hints before execution. The actual output still comes from the real endpoints after the scenario is run. The page can compare the latest run with the previous run and summarize what changed in unallocated load, rejected load, load-shedding action, remediation status, and selected routing servers.
+
+## Operator Comparison Matrix
+
+The browser cockpit includes an `Operator Comparison Matrix` section. Click `Run all scenarios` to execute the packaged scenarios in this deterministic order:
+
+1. `Normal Load`
+2. `Overload Pressure`
+3. `All-Unhealthy Degradation`
+4. `Recovery / Capacity Restored`
+
+The matrix summarizes routing strategy output, selected server labels, allocation pressure, load-shedding action, remediation hints, explanation rationale, and delta versus the prior scenario. It uses existing endpoint responses and visible scenario inputs only. It is not a benchmark, does not invent score values, and marks missing or unavailable fields as unavailable.
+
+Copy controls provide deterministic matrix Markdown, scenario-by-scenario curl commands, and packaged scenario payloads.
 
 ## Explanation Drill-Down
 

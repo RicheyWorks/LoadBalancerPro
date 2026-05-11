@@ -318,6 +318,14 @@
       font-size: 0.9rem;
     }
 
+    .matrix-scroll {
+      overflow-x: auto;
+    }
+
+    .matrix-scroll table {
+      min-width: 1280px;
+    }
+
     .postman-note {
       color: var(--muted);
       font-size: 0.92rem;
@@ -439,6 +447,55 @@
           Postman parity: run the <strong>Operator Scenario Gallery</strong> folder for the same normal load,
           overload pressure, all-unhealthy degradation, and recovery flows.
         </p>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Operator Comparison Matrix</h2>
+        <div class="actions">
+          <button data-action="run-comparison-matrix" type="button">Run all scenarios</button>
+          <button data-action="clear-comparison-matrix" type="button" class="secondary">Clear matrix</button>
+          <button class="copy" type="button" data-copy-target="comparison-matrix-summary">Copy matrix summary</button>
+          <button class="copy" type="button" data-copy-target="comparison-matrix-curls">Copy matrix curls</button>
+          <button class="copy" type="button" data-copy-target="comparison-matrix-payloads">Copy matrix payloads</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="postman-note">
+          Runs the packaged scenarios sequentially in a stable order, using the same existing same-origin API
+          calls as the gallery. Missing fields are marked unavailable; no score, benchmark, or runtime report is
+          generated.
+        </p>
+        <div class="matrix-scroll" aria-label="Operator comparison matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th>Expected pressure / incident type</th>
+                <th>Routing strategy summary</th>
+                <th>Selected server / outcome label</th>
+                <th>Allocation pressure summary</th>
+                <th>Load-shedding / overload signal</th>
+                <th>Remediation hint summary</th>
+                <th>Explanation / rationale summary</th>
+                <th>Delta vs prior scenario</th>
+                <th>Raw status / error state</th>
+              </tr>
+            </thead>
+            <tbody id="comparison-matrix-rows">
+              <tr>
+                <td colspan="10" class="muted">Run all scenarios to populate the operator comparison matrix.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <h3 style="margin-top: 12px;">Copy matrix summary</h3>
+        <pre id="comparison-matrix-summary">Run all scenarios to generate a deterministic comparison matrix summary.</pre>
+        <h3 style="margin-top: 12px;">Copy scenario-by-scenario curl commands</h3>
+        <pre id="comparison-matrix-curls"></pre>
+        <h3 style="margin-top: 12px;">Copy packaged scenario payloads</h3>
+        <pre id="comparison-matrix-payloads"></pre>
       </div>
     </section>
 
@@ -871,7 +928,8 @@
       readiness: null,
       allocation: null,
       routing: null,
-      evaluation: null
+      evaluation: null,
+      matrixRows: []
     };
 
     const outputs = {
@@ -887,6 +945,9 @@
       drilldownSummary: document.getElementById("drilldown-summary"),
       explanationCurl: document.getElementById("explanation-curl"),
       operatorRationale: document.getElementById("operator-rationale"),
+      matrixSummary: document.getElementById("comparison-matrix-summary"),
+      matrixCurls: document.getElementById("comparison-matrix-curls"),
+      matrixPayloads: document.getElementById("comparison-matrix-payloads"),
       curl: document.getElementById("curl-snippets")
     };
 
@@ -1161,6 +1222,322 @@
     async function runSelectedScenario() {
       loadSelectedScenario();
       await runFullSequence();
+    }
+
+    async function runComparisonMatrix() {
+      clearComparisonMatrix();
+      await checkHealth();
+      await checkReadiness();
+      const rows = [];
+      let priorSnapshot = null;
+      for (const scenarioSeed of scenarioGallery) {
+        selectedScenarioId = scenarioSeed.id;
+        renderScenarioGallery();
+        const scenario = selectedScenario();
+        outputs.scenario.value = stableJson(scenario);
+        setBadge("scenario", "Passed");
+        refreshCurlSnippets();
+        let row;
+        try {
+          const responses = {
+            allocation: await callJson("/api/allocate/capacity-aware", requestOptions(scenario.allocationRequest)),
+            routing: await callJson("/api/routing/compare", requestOptions(scenario.routingRequest)),
+            evaluation: await callJson("/api/allocate/evaluate", requestOptions(scenario.evaluationRequest))
+          };
+          state.allocation = responses.allocation;
+          state.routing = responses.routing;
+          state.evaluation = responses.evaluation;
+          outputs.allocation.textContent = stableJson(state.allocation);
+          outputs.routing.textContent = stableJson(state.routing);
+          outputs.evaluation.textContent = stableJson(state.evaluation);
+          outputs.remediation.textContent = stableJson(state.evaluation.remediationPlan || {});
+          renderAllocation(state.allocation);
+          renderRouting(state.routing);
+          renderLoadShedding(state.evaluation);
+          renderRemediation(state.evaluation.remediationPlan);
+          setBadge("allocation", "Passed");
+          setBadge("routing", "Passed");
+          setBadge("evaluation", "Passed");
+          row = buildComparisonMatrixRow(scenario, responses, priorSnapshot);
+          previousScenarioSnapshot = priorSnapshot;
+          latestScenarioSnapshot = row.snapshot;
+          outputs.scenarioSummary.textContent = buildScenarioSummary(latestScenarioSnapshot);
+          refreshDrillDown();
+          renderWhatChanged();
+        } catch (error) {
+          row = buildComparisonMatrixErrorRow(scenario, error, priorSnapshot);
+        }
+        rows.push(row);
+        priorSnapshot = row.snapshot;
+        state.matrixRows = rows;
+        renderComparisonMatrixRows(rows);
+        refreshMatrixCopyBlocks();
+      }
+      setBadge("scenario", "Passed");
+    }
+
+    function clearComparisonMatrix() {
+      state.matrixRows = [];
+      renderComparisonMatrixRows([]);
+      outputs.matrixSummary.textContent =
+        "Run all scenarios to generate a deterministic comparison matrix summary.";
+      refreshMatrixCopyBlocks();
+    }
+
+    function buildComparisonMatrixRow(scenario, responses, priorSnapshot) {
+      const snapshot = matrixSnapshot(scenario, responses);
+      return {
+        scenarioName: scenario.scenarioName,
+        scenarioLabel: scenario.label || scenario.scenarioName,
+        expectedPressure: scenario.description || "Not available in current API",
+        routingSummary: routingStrategySummary(responses.routing),
+        selectedOutcome: selectedOutcomeSummary(responses.routing),
+        allocationPressure: allocationPressureSummary(responses.allocation),
+        loadShedding: loadSheddingSignalSummary(responses.evaluation),
+        remediation: remediationHintSummary(responses.evaluation && responses.evaluation.remediationPlan),
+        rationale: matrixRationaleSummary(scenario, responses),
+        delta: matrixDeltaSummary(priorSnapshot, snapshot),
+        rawStatus: matrixRawStatus(responses),
+        snapshot
+      };
+    }
+
+    function buildComparisonMatrixErrorRow(scenario, error, priorSnapshot) {
+      const snapshot = {
+        scenarioName: scenario.scenarioName,
+        allocationUnallocatedLoad: null,
+        acceptedLoad: null,
+        rejectedLoad: null,
+        loadSheddingAction: "FAILED",
+        remediationStatus: "FAILED",
+        routingSelections: [],
+        inputSummary: buildInputSummary(scenario)
+      };
+      return {
+        scenarioName: scenario.scenarioName,
+        scenarioLabel: scenario.label || scenario.scenarioName,
+        expectedPressure: scenario.description || "Not available in current API",
+        routingSummary: "Not available in current API",
+        selectedOutcome: "Not available in current API",
+        allocationPressure: "Not available in current API",
+        loadShedding: "Not available in current API",
+        remediation: "Not available in current API",
+        rationale: "Scenario failed before all endpoint responses were available.",
+        delta: matrixDeltaSummary(priorSnapshot, snapshot),
+        rawStatus: "FAILED: " + error.message,
+        snapshot
+      };
+    }
+
+    function renderComparisonMatrixRows(rows) {
+      const body = document.getElementById("comparison-matrix-rows");
+      if (!rows.length) {
+        body.innerHTML = "<tr><td colspan=\"10\" class=\"muted\">Run all scenarios to populate the operator comparison matrix.</td></tr>";
+        return;
+      }
+      body.innerHTML = rows.map((row) => "<tr>"
+        + "<td>" + escapeHtml(row.scenarioLabel) + "</td>"
+        + "<td>" + escapeHtml(row.expectedPressure) + "</td>"
+        + "<td>" + escapeHtml(row.routingSummary) + "</td>"
+        + "<td>" + escapeHtml(row.selectedOutcome) + "</td>"
+        + "<td>" + escapeHtml(row.allocationPressure) + "</td>"
+        + "<td>" + escapeHtml(row.loadShedding) + "</td>"
+        + "<td>" + escapeHtml(row.remediation) + "</td>"
+        + "<td>" + escapeHtml(row.rationale) + "</td>"
+        + "<td>" + escapeHtml(row.delta) + "</td>"
+        + "<td>" + escapeHtml(row.rawStatus) + "</td>"
+        + "</tr>").join("");
+    }
+
+    function refreshMatrixCopyBlocks() {
+      outputs.matrixSummary.textContent = buildComparisonMatrixSummary(state.matrixRows);
+      outputs.matrixCurls.textContent = buildComparisonMatrixCurls();
+      outputs.matrixPayloads.textContent = stableJson(scenarioGallery.map((scenario) => ({
+        scenarioName: scenario.scenarioName,
+        label: scenario.label,
+        allocationRequest: scenario.allocationRequest,
+        routingRequest: scenario.routingRequest,
+        evaluationRequest: scenario.evaluationRequest
+      })));
+    }
+
+    function buildComparisonMatrixSummary(rows) {
+      if (!rows.length) {
+        return "Run all scenarios to generate a deterministic comparison matrix summary.";
+      }
+      const rowLines = rows.map((row) =>
+        "| " + [
+          row.scenarioLabel,
+          row.selectedOutcome,
+          row.allocationPressure,
+          row.loadShedding,
+          row.remediation,
+          row.delta,
+          row.rawStatus
+        ].map(markdownCell).join(" | ") + " |"
+      ).join("\n");
+      return [
+        "# Operator Comparison Matrix",
+        "",
+        "mode: local browser same-origin demo",
+        "scenarioOrder: " + scenarioGallery.map((scenario) => scenario.scenarioName).join(", "),
+        "runtimeReportWritten: false",
+        "cloudMutation: false",
+        "",
+        "| Scenario | Selected server / outcome label | Allocation pressure | Load-shedding / overload | Remediation hints | Delta vs prior scenario | Raw status |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+        rowLines,
+        "",
+        "## Safety",
+        "- local/operator demo only",
+        "- not certification",
+        "- not benchmark proof",
+        "- not legal compliance proof",
+        "- not identity proof",
+        "- no cloud mutation",
+        "- no server-side report writing"
+      ].join("\n");
+    }
+
+    function buildComparisonMatrixCurls() {
+      return scenarioGallery.map((scenario) => [
+        "# " + scenario.label,
+        "curl -fsS -X POST " + apiUrl("/api/routing/compare")
+          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.routingRequest) + "'",
+        "curl -fsS -X POST " + apiUrl("/api/allocate/capacity-aware")
+          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.allocationRequest) + "'",
+        "curl -fsS -X POST " + apiUrl("/api/allocate/evaluate")
+          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.evaluationRequest) + "'"
+      ].join("\n")).join("\n\n");
+    }
+
+    function matrixSnapshot(scenario, responses) {
+      const routingResults = responses.routing && responses.routing.results ? responses.routing.results : [];
+      return {
+        scenarioName: scenario.scenarioName,
+        allocationUnallocatedLoad: responses.allocation ? Number(responses.allocation.unallocatedLoad || 0) : null,
+        acceptedLoad: responses.evaluation ? Number(responses.evaluation.acceptedLoad || 0) : null,
+        rejectedLoad: responses.evaluation ? Number(responses.evaluation.rejectedLoad || 0) : null,
+        loadSheddingAction: responses.evaluation && responses.evaluation.loadShedding
+          ? responses.evaluation.loadShedding.action
+          : "NOT_RUN",
+        remediationStatus: responses.evaluation && responses.evaluation.remediationPlan
+          ? responses.evaluation.remediationPlan.status
+          : "NOT_RUN",
+        routingSelections: routingResults.map((result) => ({
+          strategy: result.strategyId,
+          selected: result.chosenServerId || "none",
+          status: result.status || "unknown"
+        })),
+        inputSummary: buildInputSummary(scenario)
+      };
+    }
+
+    function routingStrategySummary(routing) {
+      if (!routing || routing.status === "Not available in current API") {
+        return "Not available in current API";
+      }
+      const results = routing.results || [];
+      if (!results.length) {
+        return "No routing results returned";
+      }
+      return results.map((result) =>
+        (result.strategyId || "unknown") + "=" + (result.chosenServerId || result.status || "none")
+      ).join("; ");
+    }
+
+    function selectedOutcomeSummary(routing) {
+      if (!routing || routing.status === "Not available in current API") {
+        return "Not available in current API";
+      }
+      const selected = unique((routing.results || [])
+        .map((result) => result.chosenServerId || "none"));
+      if (!selected.length || selected.every((server) => server === "none")) {
+        return "No selected server returned";
+      }
+      return selected.join(", ");
+    }
+
+    function allocationPressureSummary(allocation) {
+      if (!allocation || allocation.status === "Not available in current API") {
+        return "Not available in current API";
+      }
+      const unallocated = Number(allocation.unallocatedLoad || 0);
+      const additionalServers = Number(allocation.recommendedAdditionalServers || 0);
+      const label = unallocated > 0 || additionalServers > 0 ? "pressure" : "placed";
+      return label + ": unallocated=" + unallocated.toFixed(3)
+        + "; simulatedAdditionalServers=" + additionalServers.toFixed(0);
+    }
+
+    function loadSheddingSignalSummary(evaluation) {
+      if (!evaluation || evaluation.status === "Not available in current API") {
+        return "Not available in current API";
+      }
+      const shedding = evaluation.loadShedding || {};
+      return "action=" + (shedding.action || "unknown")
+        + "; rejected=" + Number(evaluation.rejectedLoad || 0).toFixed(3)
+        + "; reason=" + (shedding.reason || "No reason returned.");
+    }
+
+    function remediationHintSummary(plan) {
+      if (!plan || plan.status === "Not available in current API") {
+        return "Not available in current API";
+      }
+      const recommendations = plan.recommendations || [];
+      const actions = recommendations.map((item) => item.action).filter(Boolean);
+      return "status=" + (plan.status || "unknown")
+        + "; recommendations=" + (actions.length ? unique(actions).join(", ") : "none");
+    }
+
+    function matrixRationaleSummary(scenario, responses) {
+      const routingReason = responses.routing && responses.routing.results && responses.routing.results.length
+        ? responses.routing.results[0].reason || responses.routing.results[0].status || "No routing reason returned."
+        : "No routing reason returned.";
+      const allocation = allocationPressureSummary(responses.allocation);
+      const shedding = responses.evaluation && responses.evaluation.loadShedding
+        ? responses.evaluation.loadShedding.reason || "No load-shedding reason returned."
+        : "No load-shedding reason returned.";
+      return "Derived from visible request/response fields: "
+        + "routing=" + routingReason
+        + "; allocation=" + allocation
+        + "; overload=" + shedding
+        + "; expected=" + (scenario.expectedHints && scenario.expectedHints.remediation
+          ? scenario.expectedHints.remediation
+          : "not provided");
+    }
+
+    function matrixDeltaSummary(prior, current) {
+      if (!prior) {
+        return "Baseline scenario";
+      }
+      const previousRouting = routingMap(prior);
+      const currentRouting = routingMap(current);
+      const firstStrategy = Object.keys(Object.assign({}, previousRouting, currentRouting)).sort()[0];
+      const routingDelta = firstStrategy
+        ? firstStrategy + " " + (previousRouting[firstStrategy] || "not run")
+          + " -> " + (currentRouting[firstStrategy] || "not run")
+        : "routing not run";
+      return "unallocated " + formatMaybeNumber(prior.allocationUnallocatedLoad)
+        + " -> " + formatMaybeNumber(current.allocationUnallocatedLoad)
+        + "; rejected " + formatMaybeNumber(prior.rejectedLoad)
+        + " -> " + formatMaybeNumber(current.rejectedLoad)
+        + "; action " + prior.loadSheddingAction + " -> " + current.loadSheddingAction
+        + "; " + routingDelta;
+    }
+
+    function matrixRawStatus(responses) {
+      const values = [responses.allocation, responses.routing, responses.evaluation];
+      return values.some((value) => value && value.status === "Not available in current API")
+        ? "WARNING: one or more sections unavailable"
+        : "PASSED";
+    }
+
+    function unique(values) {
+      return values.filter((value, index, array) => array.indexOf(value) === index);
+    }
+
+    function markdownCell(value) {
+      return String(value).replace(/\|/g, "/").replace(/\n/g, " ");
     }
 
     function renderAllocation(response) {
@@ -1801,6 +2178,11 @@
         "Run the cockpit sequence to generate a deterministic drill-down summary.";
       outputs.operatorRationale.textContent =
         "Run a scenario to generate operator rationale.";
+      state.matrixRows = [];
+      renderComparisonMatrixRows([]);
+      outputs.matrixSummary.textContent =
+        "Run all scenarios to generate a deterministic comparison matrix summary.";
+      refreshMatrixCopyBlocks();
       ["health", "scenario", "allocation", "routing", "evaluation"].forEach((name) => setBadge(name, "Not run"));
     }
 
@@ -1867,6 +2249,10 @@
           await runSelectedScenario();
         } else if (action === "compare-scenarios") {
           renderWhatChanged();
+        } else if (action === "run-comparison-matrix") {
+          await runComparisonMatrix();
+        } else if (action === "clear-comparison-matrix") {
+          clearComparisonMatrix();
         } else if (action === "reset-gallery") {
           resetScenarioGallery();
         } else if (action === "reset") {
@@ -1878,9 +2264,13 @@
     document.getElementById("same-origin").addEventListener("click", () => {
       baseUrlInput.value = window.location.origin || "http://localhost:8080";
       refreshCurlSnippets();
+      refreshMatrixCopyBlocks();
     });
 
-    baseUrlInput.addEventListener("change", refreshCurlSnippets);
+    baseUrlInput.addEventListener("change", () => {
+      refreshCurlSnippets();
+      refreshMatrixCopyBlocks();
+    });
     outputs.scenario.addEventListener("change", () => {
       setBadge("scenario", "Warning");
       refreshCurlSnippets();
@@ -1890,6 +2280,7 @@
 
     renderScenarioGallery();
     loadSelectedScenario();
+    refreshMatrixCopyBlocks();
   </script>
 </body>
 </html>

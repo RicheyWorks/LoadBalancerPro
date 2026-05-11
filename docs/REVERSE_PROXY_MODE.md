@@ -157,6 +157,12 @@ For the single Windows/Unix quick-start path, checked-in demo profiles, startup 
 For a local no-cloud reviewer demo, use the Java fixture launcher:
 
 ```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
+```
+
+Classpath fallback:
+
+```bash
 mvn -q -DskipTests compile
 java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin
 ```
@@ -180,6 +186,18 @@ curl -i http://127.0.0.1:8080/proxy/demo
 After marking `backend-b` unhealthy through the fixture, the active probe should report it unhealthy and the proxy should continue forwarding to the healthy backend. This is an illustrative local fixture, not a benchmark or production failover proof.
 
 For deterministic strategy-specific walkthroughs, see [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md). It documents `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover flows using real forwarded HTTP responses, `X-LoadBalancerPro-Upstream`, `X-LoadBalancerPro-Strategy`, and `/proxy-status.html` evidence. For launcher-specific arguments and fixture behavior, see [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md).
+
+## Real-Backend Examples
+
+When operators want to test local services instead of the fixture launcher, use the copy/adapt examples under `docs/examples/proxy`:
+
+```text
+docs/examples/proxy/application-proxy-real-backend-example.properties
+docs/examples/proxy/application-proxy-real-backend-weighted-example.properties
+docs/examples/proxy/application-proxy-real-backend-failover-example.properties
+```
+
+The examples target loopback placeholders `http://localhost:9001` and `http://localhost:9002`, include explicit proxy strategy, health-check, retry, and cooldown settings, and are not active unless imported or copied into a local run configuration. See [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md) for packaged-jar and Maven exec recipes.
 
 ## Safety Boundaries
 
@@ -223,4 +241,4 @@ These are local/no-cloud integration tests. They reduce the simulator-only gap, 
 
 ## Next Steps
 
-Good follow-up slices are documented production-hardening checklists, richer real-backend examples, and packaging/operator usability around local proxy demos.
+Good follow-up slices are documented deployment-hardening checklists, richer real-backend walkthroughs, and packaging/operator usability around local proxy demos.

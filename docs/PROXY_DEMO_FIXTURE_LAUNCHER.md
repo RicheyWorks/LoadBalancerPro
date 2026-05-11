@@ -9,6 +9,14 @@ It is optional demo tooling. It does not change default application behavior, do
 From the repository root:
 
 ```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
+```
+
+That Maven exec recipe is the easiest one-command launcher path. The `exec-maven-plugin` is not bound to the default Maven lifecycle, so normal tests, packaging, and Spring Boot startup behavior are unchanged.
+
+If you prefer a separate compile and classpath command:
+
+```bash
 mvn -q -DskipTests compile
 ```
 
@@ -19,18 +27,21 @@ The launcher uses JDK `HttpServer`, so `target/classes` is enough for the fixtur
 ROUND_ROBIN:
 
 ```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
 java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin
 ```
 
 WEIGHTED_ROUND_ROBIN:
 
 ```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode weighted-round-robin"
 java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode weighted-round-robin
 ```
 
 Failover:
 
 ```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode failover"
 java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode failover
 ```
 

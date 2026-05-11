@@ -7,6 +7,12 @@ For the single start-to-finish demo stack path with checked-in profile files, th
 Start the two local fixture backends with the cross-platform Java launcher:
 
 ```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
+```
+
+Classpath fallback:
+
+```bash
 mvn -q -DskipTests compile
 java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin
 ```
@@ -39,6 +45,7 @@ The status page and `GET /api/proxy/status` should show the selected strategy, l
 Start the fixture:
 
 ```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
 java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin
 ```
 
@@ -82,6 +89,7 @@ Each forwarded response should include `X-LoadBalancerPro-Strategy: ROUND_ROBIN`
 Start the fixture:
 
 ```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode weighted-round-robin"
 java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode weighted-round-robin
 ```
 
@@ -122,6 +130,7 @@ This is selected-upstream evidence for the configured local demo, not a throughp
 Start the fixture:
 
 ```bash
+mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode failover"
 java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode failover
 ```
 

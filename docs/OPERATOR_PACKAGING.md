@@ -30,6 +30,8 @@ For a release-free packaged-jar and status-page smoke path that wraps these chec
 
 When preparing a release-free go/no-go operator packet, use [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md) to cite these packaging commands alongside CI artifacts and demo evidence.
 
+For a side-by-side Windows/Unix install/run matrix covering packaged jar, Maven exec, Spring profiles, proxy demos, status pages, CI artifacts, local verification, and smoke helpers, see [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md). Before any future release process is intentionally invoked, complete [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md).
+
 ## Packaged API Jar
 
 Build the normal Spring Boot application jar:

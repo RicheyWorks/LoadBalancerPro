@@ -36,6 +36,8 @@ Optional reverse proxy mode at `/proxy/**` is disabled by default and forwards c
 
 [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md) provides the release-free go/no-go packet for combining those artifacts with local verification, packaged jar smoke evidence, proxy status UI review, and demo stack commands without adding API behavior or release publication steps.
 
+[`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md) maps the release-free Windows and Unix operator command paths for packaged jar, Maven exec, proxy profiles, status pages, CI artifacts, and smoke helpers. [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md) records the hard stops that must remain in place before any future release action is separately approved.
+
 ## Out Of Scope
 
 The repository does not currently provide WAF rules, distributed quotas, bot detection, credential rotation, customer identity lifecycle management, TLS certificates, or production incident-response automation. Those controls belong in the deployment platform and should be reviewed separately before public exposure.

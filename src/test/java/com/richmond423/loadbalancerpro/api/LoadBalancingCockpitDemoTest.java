@@ -97,6 +97,21 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Copy selected payload"));
         assertTrue(page.contains("Copy selected curl"));
         assertTrue(page.contains("Copy scenario summary"));
+        assertTrue(page.contains("Operator Comparison Matrix"));
+        assertTrue(page.contains("Run all scenarios"));
+        assertTrue(page.contains("Clear matrix"));
+        assertTrue(page.contains("Copy matrix summary"));
+        assertTrue(page.contains("Copy matrix curls"));
+        assertTrue(page.contains("Copy matrix payloads"));
+        assertTrue(page.contains("Expected pressure / incident type"));
+        assertTrue(page.contains("Routing strategy summary"));
+        assertTrue(page.contains("Selected server / outcome label"));
+        assertTrue(page.contains("Allocation pressure summary"));
+        assertTrue(page.contains("Load-shedding / overload signal"));
+        assertTrue(page.contains("Remediation hint summary"));
+        assertTrue(page.contains("Explanation / rationale summary"));
+        assertTrue(page.contains("Delta vs prior scenario"));
+        assertTrue(page.contains("Raw status / error state"));
         assertTrue(page.contains("Expected outcome hints"));
         assertTrue(page.contains("What-changed summary"));
         assertTrue(page.contains("Allocation results"));
@@ -186,6 +201,10 @@ class LoadBalancingCockpitDemoTest {
         assertFalse(normalized.contains("construct cloudmanager"));
         assertFalse(normalized.contains("certified operator"));
         assertFalse(normalized.contains("production benchmark"));
+        assertFalse(normalized.contains("matrix score"));
+        assertFalse(normalized.contains("benchmark score"));
+        assertFalse(normalized.contains("certification score"));
+        assertFalse(normalized.contains("performance score"));
         assertFalse(normalized.contains("legal training compliance"));
         assertFalse(normalized.contains("identity verified"));
         assertTrue(countOccurrences(normalized, "cloudmanager") <= 2,

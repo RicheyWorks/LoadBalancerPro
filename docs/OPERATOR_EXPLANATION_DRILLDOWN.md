@@ -18,6 +18,8 @@ It helps reviewers inspect why a packaged scenario produced its routing, allocat
 
 Exact internal scores and every internal threshold are not exposed by the current API. When the browser derives supporting math, the page labels it as derived from visible request/response fields and preserves the raw JSON as the source of truth.
 
+The operator comparison matrix reuses the same explanation boundaries. It summarizes routing, allocation pressure, overload, remediation, and delta fields across scenarios without inventing scores or benchmark claims.
+
 ## Browser Flow
 
 1. Start the local app.
@@ -27,7 +29,8 @@ Exact internal scores and every internal threshold are not exposed by the curren
 5. Review raw JSON for `POST /api/routing/compare`, `POST /api/allocate/capacity-aware`, and `POST /api/allocate/evaluate`.
 6. Review `Explanation Drill-Down`.
 7. Run a second scenario, then click `Compare with previous scenario`.
-8. Copy the drill-down summary, explanation curl snippets, or operator rationale.
+8. Run `Operator Comparison Matrix` when you want all packaged scenario explanations summarized side by side.
+9. Copy the drill-down summary, matrix summary, explanation curl snippets, or operator rationale.
 
 ## Postman Parity
 

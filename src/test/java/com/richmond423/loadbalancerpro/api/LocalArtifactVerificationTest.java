@@ -59,6 +59,9 @@ class LocalArtifactVerificationTest {
         assertTrue(doc.contains("java -jar target/LoadBalancerPro-2.4.2.jar"));
         assertTrue(doc.contains("compile exec:java"));
         assertTrue(doc.contains("ProxyDemoFixtureLauncher"));
+        assertTrue(doc.contains("packaged-artifact-smoke"));
+        assertTrue(doc.contains("artifact-sha256.txt"));
+        assertTrue(doc.contains("jar-resource-list.txt"));
         assertNoUnsafeArtifactContent(doc, LOCAL_ARTIFACT_DOC);
     }
 
@@ -81,6 +84,7 @@ class LocalArtifactVerificationTest {
         assertTrue(combined.contains("BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"));
         assertTrue(combined.contains("java -jar"));
         assertTrue(combined.contains("exec:java"));
+        assertTrue(combined.contains("packaged-artifact-smoke"));
         assertFalse(normalized.contains("gh release"), "artifact helpers must not create or upload releases");
         assertFalse(normalized.contains("git tag"), "artifact helpers must not create tags");
         assertFalse(normalized.contains("softprops/action-gh-release"), "artifact helpers must not call release actions");

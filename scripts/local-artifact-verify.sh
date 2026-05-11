@@ -71,6 +71,7 @@ assert_entry() {
 
 echo "LoadBalancerPro local artifact verification"
 echo "Release-free: no tags, releases, assets, or release workflow changes."
+echo "CI artifact parity: packaged-artifact-smoke contains artifact-smoke-summary.txt, artifact-sha256.txt, and jar-resource-list.txt."
 echo
 
 if [[ "$BUILD" == "true" ]]; then
@@ -119,6 +120,9 @@ Status and static page checks:
 
 Maven exec fixture launcher:
   mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
+
+GitHub Actions artifact:
+  packaged-artifact-smoke
 
 Do not commit generated jars, checksums, manifests, or smoke output.
 COMMANDS

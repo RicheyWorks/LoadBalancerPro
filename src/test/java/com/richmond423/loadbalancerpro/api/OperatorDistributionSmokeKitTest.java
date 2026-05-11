@@ -60,6 +60,10 @@ class OperatorDistributionSmokeKitTest {
         assertTrue(doc.contains("docs/examples/proxy/application-proxy-real-backend-example.properties"));
         assertTrue(doc.contains("docs/examples/proxy/application-proxy-real-backend-weighted-example.properties"));
         assertTrue(doc.contains("docs/examples/proxy/application-proxy-real-backend-failover-example.properties"));
+        assertTrue(doc.contains("packaged-artifact-smoke"));
+        assertTrue(doc.contains("artifact-smoke-summary.txt"));
+        assertTrue(doc.contains("artifact-sha256.txt"));
+        assertTrue(doc.contains("jar-resource-list.txt"));
         assertNoUnsafeDistributionContent(doc, DISTRIBUTION_SMOKE_DOC);
     }
 

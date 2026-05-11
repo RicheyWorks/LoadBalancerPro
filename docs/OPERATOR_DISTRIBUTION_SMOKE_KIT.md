@@ -4,6 +4,8 @@ This smoke kit validates the local operator distribution path without creating a
 
 No tags, releases, or assets are created. The kit does not upload artifacts, does not modify release workflows, and does not touch local release evidence.
 
+For focused local checksum, manifest, jar resource, static page, demo profile, and launcher-class verification after packaging, see [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md).
+
 ## Prerequisites
 
 - Java 17
@@ -186,6 +188,18 @@ jar tf target/LoadBalancerPro-2.4.2.jar | grep 'BOOT-INF/classes/static/load-bal
 ```
 
 The proxy operator status page uses `GET /api/proxy/status` as its status source.
+
+For a reusable helper that checks these entries plus the demo profiles and `ProxyDemoFixtureLauncher.class`, run:
+
+```powershell
+.\scripts\local-artifact-verify.ps1
+```
+
+or:
+
+```bash
+bash scripts/local-artifact-verify.sh
+```
 
 ## Cleanup
 

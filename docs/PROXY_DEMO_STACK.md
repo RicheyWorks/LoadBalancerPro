@@ -6,6 +6,8 @@ The stack is loopback-only. It does not require cloud credentials, does not cont
 
 For release-free packaged-jar smoke checks around this stack, use [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md).
 
+For local artifact checksum and jar resource inspection after packaging, use [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md).
+
 ## Quick Start
 
 Use one terminal for the two fixture backends and one terminal for LoadBalancerPro.

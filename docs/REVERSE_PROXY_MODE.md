@@ -156,6 +156,8 @@ For the single Windows/Unix quick-start path, checked-in demo profiles, startup 
 
 For release-free distribution smoke checks that validate packaged jar startup, static resources, proxy demo profiles, and real-backend examples without creating release assets, use [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md).
 
+For local SHA-256, manifest, `jar tf`, static page, proxy demo profile, and fixture launcher class verification of the built jar, use [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md).
+
 For a local no-cloud reviewer demo, use the Java fixture launcher:
 
 ```bash

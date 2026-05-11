@@ -2,7 +2,7 @@
 
 This matrix gives operators and reviewers one place to choose a release-free command path for CI-built artifacts, local builds, proxy demos, static status pages, and verification helpers. Every row below is release-free: it consumes source, local build output, or GitHub Actions workflow artifacts only. Workflow artifacts are not GitHub Release assets.
 
-For goal-based navigation before choosing a command path, start with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
+Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
 
 ## Matrix
 

@@ -28,6 +28,8 @@ The Maven exec plugin is declared without lifecycle bindings, so it does not rep
 
 For a release-free packaged-jar and status-page smoke path that wraps these checks, see [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md). For local SHA-256, manifest, `jar tf`, static page, demo profile, and fixture launcher class inspection, see [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md). CI also uploads the same packaged-jar inspection output as the `packaged-artifact-smoke` workflow artifact; [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md) explains how reviewers download that artifact, compare checksum evidence, and inspect the JaCoCo/SBOM workflow artifacts without publishing a release.
 
+When preparing a release-free go/no-go operator packet, use [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md) to cite these packaging commands alongside CI artifacts and demo evidence.
+
 ## Packaged API Jar
 
 Build the normal Spring Boot application jar:

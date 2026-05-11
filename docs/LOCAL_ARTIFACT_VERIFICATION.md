@@ -148,6 +148,8 @@ Use the artifact checksum as CI evidence for the jar built in that workflow run.
 
 For a reviewer-facing workflow artifact download and local-vs-CI SHA-256 comparison checklist, see [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md). That guide also covers the `jacoco-coverage-report` and `loadbalancerpro-sbom` workflow artifacts.
 
+For a release-free go/no-go packet that records local verification alongside CI artifacts, SBOM files, packaged smoke evidence, proxy status UI review, and demo stack commands, see [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md).
+
 ## Local Run Commands
 
 Start the packaged API jar on loopback:

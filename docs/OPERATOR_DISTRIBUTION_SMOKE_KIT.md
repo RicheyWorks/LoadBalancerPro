@@ -10,6 +10,8 @@ GitHub CI now runs the same release-free packaged artifact inspection and upload
 
 For one reviewer guide covering CI artifact download, JaCoCo coverage, SBOM files, packaged smoke files, and local-vs-CI SHA-256 comparison, use [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md).
 
+For the combined release-free go/no-go review packet, use [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md).
+
 ## Prerequisites
 
 - Java 17

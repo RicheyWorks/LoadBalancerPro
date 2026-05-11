@@ -34,6 +34,8 @@ Optional reverse proxy mode at `/proxy/**` is disabled by default and forwards c
 
 [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md) documents how reviewers consume JaCoCo, packaged-artifact-smoke, and SBOM workflow artifacts without creating tags, GitHub releases, release assets, or `release-downloads/` evidence. Those workflow artifacts are review evidence only and do not change API security behavior or publish release assets.
 
+[`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md) provides the release-free go/no-go packet for combining those artifacts with local verification, packaged jar smoke evidence, proxy status UI review, and demo stack commands without adding API behavior or release publication steps.
+
 ## Out Of Scope
 
 The repository does not currently provide WAF rules, distributed quotas, bot detection, credential rotation, customer identity lifecycle management, TLS certificates, or production incident-response automation. Those controls belong in the deployment platform and should be reviewed separately before public exposure.

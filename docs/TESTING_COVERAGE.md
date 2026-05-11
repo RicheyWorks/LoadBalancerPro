@@ -54,6 +54,8 @@ For a single reviewer workflow covering JaCoCo download, packaged-artifact-smoke
 
 For the release-free go/no-go packet that records CI status, CodeQL status, skipped-test count, coverage review, packaged smoke evidence, SBOM review, and operator demo checks together, see [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md).
 
+For install/run command coverage across CI artifacts, local artifact verification, packaged jar, Maven exec, proxy profiles, and smoke helpers, see [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md). For the explicit hard stop before any future release process, see [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md).
+
 ## Skipped-Test Evidence
 
 CI parses `target/surefire-reports/*.xml` after the test step and prints:

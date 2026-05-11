@@ -1,6 +1,6 @@
 # Release Candidate Review Packet Template
 
-Use this template after completing [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md). Replace placeholders with observed evidence only.
+Use this template after completing [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md). Use [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md) for the install/run path names and [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md) for the hard-stop release-intent gate. Replace placeholders with observed evidence only.
 
 ```text
 Release Candidate Dry-Run Review Packet
@@ -43,6 +43,12 @@ Jar resources verified:
 
 Proxy demo reviewed:
 <yes|no>
+
+Operator install/run path selected:
+<matrix-row-or-not-selected>
+
+Release-intent checklist result:
+<not-started|remain-release-free|separate-release-approval-needed>
 
 Known limitations:
 <observed-limitations>

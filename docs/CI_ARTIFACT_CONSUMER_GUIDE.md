@@ -4,6 +4,8 @@ This guide shows reviewers how to consume LoadBalancerPro CI evidence without pu
 
 This path is release-free: no tags, no GitHub releases, no release assets, no `release-downloads/` changes, and no generated jars or checksums committed.
 
+For operator command selection across CI artifacts, local verification, packaged jar startup, Maven exec, proxy profiles, and smoke helpers, see [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md). For the hard stop before any future release process, see [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md).
+
 ## Find The Latest Main CI Run
 
 In GitHub, open Actions, choose the `CI` workflow, and select the latest successful `main` run. The expected build job is named:

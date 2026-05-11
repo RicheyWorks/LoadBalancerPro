@@ -12,6 +12,8 @@ For one reviewer guide covering CI artifact download, JaCoCo coverage, SBOM file
 
 For the combined release-free go/no-go review packet, use [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md).
 
+For one command matrix that compares packaged jar, Maven exec, Spring profile, proxy demo stack, status page, CI artifact, local artifact, and distribution smoke paths, use [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md). For the hard stop before any future release publication step, use [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md).
+
 ## Prerequisites
 
 - Java 17

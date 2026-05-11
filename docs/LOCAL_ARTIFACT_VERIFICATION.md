@@ -4,6 +4,8 @@ This guide verifies a locally built LoadBalancerPro jar without publishing a rel
 
 This path is release-free: it creates no tags, no GitHub releases, no release assets, and no canonical release evidence. It does not modify release workflows, does not touch `release-downloads/`, and does not commit generated jars, checksums, manifests, or reports.
 
+For a wider install/run matrix covering packaged jar, Maven exec, proxy profiles, status pages, CI artifacts, and smoke helpers, see [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md). Before any future release process is intentionally invoked, use [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md).
+
 ## Build The Jar
 
 Build the normal Spring Boot executable jar:

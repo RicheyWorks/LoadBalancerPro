@@ -112,6 +112,26 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Explanation / rationale summary"));
         assertTrue(page.contains("Delta vs prior scenario"));
         assertTrue(page.contains("Raw status / error state"));
+        assertTrue(page.contains("Operator Replay Mode"));
+        assertTrue(page.contains("Baseline scenario selector"));
+        assertTrue(page.contains("Comparison scenario selector"));
+        assertTrue(page.contains("Replay selected pair"));
+        assertTrue(page.contains("Clear replay"));
+        assertTrue(page.contains("Copy reviewer note"));
+        assertTrue(page.contains("Copy replay curls"));
+        assertTrue(page.contains("Copy replay payloads"));
+        assertTrue(page.contains("Baseline scenario"));
+        assertTrue(page.contains("Comparison scenario"));
+        assertTrue(page.contains("Changed-fields summary"));
+        assertTrue(page.contains("Routing diff - strategy / selected route summary"));
+        assertTrue(page.contains("Selected server / outcome label diff"));
+        assertTrue(page.contains("Allocation pressure diff"));
+        assertTrue(page.contains("Load-shedding / overload diff"));
+        assertTrue(page.contains("Remediation hint diff"));
+        assertTrue(page.contains("Explanation / rationale diff"));
+        assertTrue(page.contains("Scenario delta diff"));
+        assertTrue(page.contains("Error state diff"));
+        assertTrue(page.contains("Replay error panel"));
         assertTrue(page.contains("Expected outcome hints"));
         assertTrue(page.contains("What-changed summary"));
         assertTrue(page.contains("Allocation results"));
@@ -154,7 +174,7 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(normalized.contains("not legal compliance proof"));
         assertTrue(normalized.contains("not identity proof"));
         assertTrue(normalized.contains("no cloud mutation"));
-        assertTrue(normalized.contains("no cloudmanager required for cockpit/gallery/drill-down demo"));
+        assertTrue(normalized.contains("no cloudmanager required for cockpit/gallery/replay/drill-down demo"));
         assertTrue(normalized.contains("no external services/dependencies"));
         assertTrue(normalized.contains("no external scripts/cdns"));
         assertTrue(normalized.contains("api server required for browser/postman demo"));
@@ -205,6 +225,7 @@ class LoadBalancingCockpitDemoTest {
         assertFalse(normalized.contains("benchmark score"));
         assertFalse(normalized.contains("certification score"));
         assertFalse(normalized.contains("performance score"));
+        assertFalse(normalized.contains("replay score"));
         assertFalse(normalized.contains("legal training compliance"));
         assertFalse(normalized.contains("identity verified"));
         assertTrue(countOccurrences(normalized, "cloudmanager") <= 2,

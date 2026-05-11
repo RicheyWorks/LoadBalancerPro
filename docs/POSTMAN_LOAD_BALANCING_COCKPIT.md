@@ -34,7 +34,7 @@ Run the `Unified Load-Balancing Cockpit` folder from top to bottom for the singl
 5. `POST Cockpit Predictive Allocation`
 6. `POST Cockpit Load-Shedding Evaluation`
 
-The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, a deterministic side-by-side summary, and an operator comparison matrix summary.
+The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, a deterministic side-by-side summary, an operator comparison matrix summary, and replay-mode reviewer notes.
 
 Run the `Operator Scenario Gallery` folder when a reviewer wants to compare multiple packaged scenarios:
 
@@ -177,6 +177,20 @@ The browser cockpit includes an `Operator Comparison Matrix` section. Click `Run
 The matrix summarizes routing strategy output, selected server labels, allocation pressure, load-shedding action, remediation hints, explanation rationale, and delta versus the prior scenario. It uses existing endpoint responses and visible scenario inputs only. It is not a benchmark, does not invent score values, and marks missing or unavailable fields as unavailable.
 
 Copy controls provide deterministic matrix Markdown, scenario-by-scenario curl commands, and packaged scenario payloads.
+
+## Operator Replay Mode
+
+The browser cockpit includes an `Operator Replay Mode` section. Select a baseline scenario and a comparison scenario, then click `Replay selected pair`.
+
+Replay mode runs the baseline first and the comparison second against the same existing endpoints used by the Postman folders:
+
+```text
+POST /api/routing/compare
+POST /api/allocate/capacity-aware
+POST /api/allocate/evaluate
+```
+
+The browser highlights before/after differences for routing selections, selected outcomes, allocation pressure, load-shedding action, remediation hints, explanation rationale, scenario delta, and error state. Copy controls provide deterministic reviewer notes, replay curl commands, and replay payloads. Replay mode is client-side only; it does not write backend reports, use browser storage, or create benchmark/score claims.
 
 ## Explanation Drill-Down
 

@@ -326,6 +326,14 @@
       min-width: 1280px;
     }
 
+    .diff-changed {
+      background: rgba(202, 138, 4, 0.12);
+    }
+
+    .diff-unchanged {
+      background: rgba(22, 101, 52, 0.08);
+    }
+
     .postman-note {
       color: var(--muted);
       font-size: 0.92rem;
@@ -496,6 +504,87 @@
         <pre id="comparison-matrix-curls"></pre>
         <h3 style="margin-top: 12px;">Copy packaged scenario payloads</h3>
         <pre id="comparison-matrix-payloads"></pre>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Operator Replay Mode</h2>
+        <div class="actions">
+          <button data-action="run-replay-mode" type="button">Replay selected pair</button>
+          <button data-action="clear-replay-mode" type="button" class="secondary">Clear replay</button>
+          <button class="copy" type="button" data-copy-target="replay-reviewer-note">Copy reviewer note</button>
+          <button class="copy" type="button" data-copy-target="replay-curls">Copy replay curls</button>
+          <button class="copy" type="button" data-copy-target="replay-payloads">Copy replay payloads</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="postman-note">
+          Select a baseline scenario and a comparison scenario, then replay them in deterministic order using the
+          same existing same-origin API calls. Replay state stays in memory only; no backend writes, browser
+          storage, benchmark output, or runtime report is generated.
+        </p>
+        <div class="grid">
+          <div>
+            <label for="replay-baseline-scenario">Baseline scenario selector</label>
+            <select id="replay-baseline-scenario" aria-label="Baseline scenario selector"></select>
+          </div>
+          <div>
+            <label for="replay-comparison-scenario">Comparison scenario selector</label>
+            <select id="replay-comparison-scenario" aria-label="Comparison scenario selector"></select>
+          </div>
+        </div>
+        <div class="grid" style="margin-top: 14px;">
+          <div class="summary-card">
+            <strong>Baseline scenario</strong>
+            <div id="replay-baseline-label">Select and replay a baseline scenario.</div>
+          </div>
+          <div class="summary-card">
+            <strong>Comparison scenario</strong>
+            <div id="replay-comparison-label">Select and replay a comparison scenario.</div>
+          </div>
+        </div>
+        <div class="summary-card" style="margin-top: 14px;">
+          <strong>Changed-fields summary</strong>
+          <div id="replay-changed-fields">Replay selected pair to populate before/after differences.</div>
+        </div>
+        <div id="replay-error-panel" class="summary-card" style="margin-top: 14px;">
+          <strong>Replay error panel</strong>
+          <span class="muted">No replay errors.</span>
+        </div>
+        <div class="matrix-scroll" aria-label="Operator replay before and after diff">
+          <table>
+            <thead>
+              <tr>
+                <th>Replay field</th>
+                <th>Baseline scenario</th>
+                <th>Comparison scenario</th>
+                <th>Changed?</th>
+              </tr>
+            </thead>
+            <tbody id="replay-diff-rows">
+              <tr>
+                <td colspan="4" class="muted">Replay selected pair to populate side-by-side differences.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="grid" style="margin-top: 14px;">
+          <div>
+            <h3>Baseline raw replay output</h3>
+            <pre id="replay-baseline-output">{}</pre>
+          </div>
+          <div>
+            <h3>Comparison raw replay output</h3>
+            <pre id="replay-comparison-output">{}</pre>
+          </div>
+        </div>
+        <h3 style="margin-top: 12px;">Copy deterministic reviewer note</h3>
+        <pre id="replay-reviewer-note">Replay selected pair to generate a deterministic reviewer note.</pre>
+        <h3 style="margin-top: 12px;">Copy replay curls</h3>
+        <pre id="replay-curls"></pre>
+        <h3 style="margin-top: 12px;">Copy replay payloads</h3>
+        <pre id="replay-payloads"></pre>
       </div>
     </section>
 
@@ -708,7 +797,7 @@
           <li>Not legal compliance proof.</li>
           <li>Not identity proof.</li>
           <li>No cloud mutation.</li>
-          <li>No CloudManager required for cockpit/gallery/drill-down demo.</li>
+          <li>No CloudManager required for cockpit/gallery/replay/drill-down demo.</li>
           <li>No external services/dependencies.</li>
           <li>No external scripts/CDNs.</li>
           <li>API server required for browser/Postman demo.</li>
@@ -929,7 +1018,8 @@
       allocation: null,
       routing: null,
       evaluation: null,
-      matrixRows: []
+      matrixRows: [],
+      replay: null
     };
 
     const outputs = {
@@ -948,6 +1038,11 @@
       matrixSummary: document.getElementById("comparison-matrix-summary"),
       matrixCurls: document.getElementById("comparison-matrix-curls"),
       matrixPayloads: document.getElementById("comparison-matrix-payloads"),
+      replayReviewerNote: document.getElementById("replay-reviewer-note"),
+      replayCurls: document.getElementById("replay-curls"),
+      replayPayloads: document.getElementById("replay-payloads"),
+      replayBaselineOutput: document.getElementById("replay-baseline-output"),
+      replayComparisonOutput: document.getElementById("replay-comparison-output"),
       curl: document.getElementById("curl-snippets")
     };
 
@@ -1099,6 +1194,23 @@
         + "<li>Remediation: " + escapeHtml(scenario.expectedHints.remediation) + "</li>"
         + "<li>Safety: " + escapeHtml(scenario.safetyNote) + "</li>"
         + "</ul>";
+    }
+
+    function populateReplaySelectors() {
+      const baseline = document.getElementById("replay-baseline-scenario");
+      const comparison = document.getElementById("replay-comparison-scenario");
+      const options = scenarioGallery.map((scenario) =>
+        "<option value=\"" + escapeHtml(scenario.id) + "\">" + escapeHtml(scenario.label) + "</option>"
+      ).join("");
+      baseline.innerHTML = options;
+      comparison.innerHTML = options;
+      baseline.value = "normal-load";
+      comparison.value = "overload-pressure";
+      refreshReplayCopyBlocks();
+    }
+
+    function scenarioById(id) {
+      return clone(scenarioGallery.find((scenario) => scenario.id === id) || scenarioGallery[0]);
     }
 
     function loadSelectedScenario() {
@@ -1409,6 +1521,289 @@
         "curl -fsS -X POST " + apiUrl("/api/allocate/evaluate")
           + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.evaluationRequest) + "'"
       ].join("\n")).join("\n\n");
+    }
+
+    async function runReplayMode() {
+      clearReplayMode();
+      await checkHealth();
+      await checkReadiness();
+      const pair = replayScenarioPair();
+      const baseline = await executeScenarioReplay(pair.baseline);
+      const comparison = await executeScenarioReplay(pair.comparison);
+      comparison.row.delta = matrixDeltaSummary(baseline.row.snapshot, comparison.row.snapshot);
+      state.replay = { baseline, comparison };
+      state.allocation = comparison.responses.allocation || null;
+      state.routing = comparison.responses.routing || null;
+      state.evaluation = comparison.responses.evaluation || null;
+      outputs.allocation.textContent = stableJson(state.allocation || {});
+      outputs.routing.textContent = stableJson(state.routing || {});
+      outputs.evaluation.textContent = stableJson(state.evaluation || {});
+      outputs.remediation.textContent = stableJson(state.evaluation && state.evaluation.remediationPlan
+        ? state.evaluation.remediationPlan
+        : {});
+      if (state.allocation) {
+        renderAllocation(state.allocation);
+        setBadge("allocation", "Passed");
+      } else {
+        renderAllocation(unavailable("allocation results", "/api/allocate/capacity-aware", "Replay comparison did not return allocation output."));
+        setBadge("allocation", "Failed");
+      }
+      if (state.routing) {
+        renderRouting(state.routing);
+        setBadge("routing", "Passed");
+      } else {
+        renderRouting(unavailable("routing decisions", "/api/routing/compare", "Replay comparison did not return routing output."));
+        setBadge("routing", "Failed");
+      }
+      if (state.evaluation) {
+        renderLoadShedding(state.evaluation);
+        renderRemediation(state.evaluation.remediationPlan);
+        setBadge("evaluation", "Passed");
+      } else {
+        const body = unavailable("load-shedding or remediation hints", "/api/allocate/evaluate", "Replay comparison did not return evaluation output.");
+        renderLoadShedding(body);
+        renderRemediation(body);
+        setBadge("evaluation", "Failed");
+      }
+      selectedScenarioId = pair.comparison.id;
+      renderScenarioGallery();
+      outputs.scenario.value = stableJson(pair.comparison);
+      setBadge("scenario", "Passed");
+      previousScenarioSnapshot = baseline.row.snapshot;
+      latestScenarioSnapshot = comparison.row.snapshot;
+      outputs.scenarioSummary.textContent = buildScenarioSummary(latestScenarioSnapshot);
+      buildSummary();
+      renderWhatChanged();
+      refreshDrillDown();
+      renderReplayMode();
+    }
+
+    function clearReplayMode() {
+      state.replay = null;
+      renderReplayDiffRows([]);
+      document.getElementById("replay-baseline-label").textContent = "Select and replay a baseline scenario.";
+      document.getElementById("replay-comparison-label").textContent = "Select and replay a comparison scenario.";
+      document.getElementById("replay-changed-fields").textContent =
+        "Replay selected pair to populate before/after differences.";
+      document.getElementById("replay-error-panel").innerHTML =
+        "<strong>Replay error panel</strong><span class=\"muted\">No replay errors.</span>";
+      outputs.replayBaselineOutput.textContent = "{}";
+      outputs.replayComparisonOutput.textContent = "{}";
+      outputs.replayReviewerNote.textContent =
+        "Replay selected pair to generate a deterministic reviewer note.";
+      refreshReplayCopyBlocks();
+    }
+
+    async function executeScenarioReplay(scenario) {
+      try {
+        const responses = {
+          allocation: await callJson("/api/allocate/capacity-aware", requestOptions(scenario.allocationRequest)),
+          routing: await callJson("/api/routing/compare", requestOptions(scenario.routingRequest)),
+          evaluation: await callJson("/api/allocate/evaluate", requestOptions(scenario.evaluationRequest))
+        };
+        return {
+          scenario,
+          responses,
+          row: buildComparisonMatrixRow(scenario, responses, null),
+          error: null
+        };
+      } catch (error) {
+        return {
+          scenario,
+          responses: {},
+          row: buildComparisonMatrixErrorRow(scenario, error, null),
+          error: error.message
+        };
+      }
+    }
+
+    function replayScenarioPair() {
+      const baselineId = document.getElementById("replay-baseline-scenario").value || "normal-load";
+      const comparisonId = document.getElementById("replay-comparison-scenario").value || "overload-pressure";
+      return {
+        baseline: scenarioById(baselineId),
+        comparison: scenarioById(comparisonId)
+      };
+    }
+
+    function renderReplayMode() {
+      if (!state.replay) {
+        clearReplayMode();
+        return;
+      }
+      const baseline = state.replay.baseline;
+      const comparison = state.replay.comparison;
+      document.getElementById("replay-baseline-label").textContent =
+        baseline.scenario.label + " (" + baseline.scenario.scenarioName + ")";
+      document.getElementById("replay-comparison-label").textContent =
+        comparison.scenario.label + " (" + comparison.scenario.scenarioName + ")";
+      outputs.replayBaselineOutput.textContent = stableJson(replayRawOutput(baseline));
+      outputs.replayComparisonOutput.textContent = stableJson(replayRawOutput(comparison));
+      const rows = buildReplayDiffRows(baseline, comparison);
+      renderReplayDiffRows(rows);
+      renderReplayChangedFields(rows);
+      renderReplayErrorPanel(baseline, comparison);
+      outputs.replayReviewerNote.textContent = buildReplayReviewerNote(baseline, comparison, rows);
+      refreshReplayCopyBlocks();
+    }
+
+    function replayRawOutput(result) {
+      return {
+        scenarioName: result.scenario.scenarioName,
+        allocation: result.responses.allocation || { status: "Not available in current API" },
+        routing: result.responses.routing || { status: "Not available in current API" },
+        evaluation: result.responses.evaluation || { status: "Not available in current API" },
+        error: result.error || null
+      };
+    }
+
+    function buildReplayDiffRows(baseline, comparison) {
+      const rows = [
+        replayDiffRow("Routing diff - strategy / selected route summary",
+          baseline.row.routingSummary, comparison.row.routingSummary),
+        replayDiffRow("Selected server / outcome label diff",
+          baseline.row.selectedOutcome, comparison.row.selectedOutcome),
+        replayDiffRow("Allocation pressure diff",
+          baseline.row.allocationPressure, comparison.row.allocationPressure),
+        replayDiffRow("Load-shedding / overload diff",
+          baseline.row.loadShedding, comparison.row.loadShedding),
+        replayDiffRow("Remediation hint diff",
+          baseline.row.remediation, comparison.row.remediation),
+        replayDiffRow("Explanation / rationale diff",
+          baseline.row.rationale, comparison.row.rationale),
+        replayDiffRow("Scenario delta diff",
+          "Baseline scenario", comparison.row.delta),
+        replayDiffRow("Error state diff",
+          baseline.row.rawStatus, comparison.row.rawStatus)
+      ];
+      return rows;
+    }
+
+    function replayDiffRow(field, baselineValue, comparisonValue) {
+      const baselineText = String(baselineValue || "Not available in current API");
+      const comparisonText = String(comparisonValue || "Not available in current API");
+      return {
+        field,
+        baseline: baselineText,
+        comparison: comparisonText,
+        changed: baselineText !== comparisonText
+      };
+    }
+
+    function renderReplayDiffRows(rows) {
+      const body = document.getElementById("replay-diff-rows");
+      if (!rows.length) {
+        body.innerHTML = "<tr><td colspan=\"4\" class=\"muted\">Replay selected pair to populate side-by-side differences.</td></tr>";
+        return;
+      }
+      body.innerHTML = rows.map((row) => "<tr class=\"" + (row.changed ? "diff-changed" : "diff-unchanged") + "\">"
+        + "<td>" + escapeHtml(row.field) + "</td>"
+        + "<td>" + escapeHtml(row.baseline) + "</td>"
+        + "<td>" + escapeHtml(row.comparison) + "</td>"
+        + "<td>" + (row.changed ? "Changed" : "No change") + "</td>"
+        + "</tr>").join("");
+    }
+
+    function renderReplayChangedFields(rows) {
+      const changed = rows.filter((row) => row.changed);
+      const container = document.getElementById("replay-changed-fields");
+      if (!changed.length) {
+        container.textContent = "No changed fields detected for the selected replay pair.";
+        return;
+      }
+      container.innerHTML = "<ul class=\"hint-list\">" + changed.map((row) =>
+        "<li>" + escapeHtml(row.field) + "</li>"
+      ).join("") + "</ul>";
+    }
+
+    function renderReplayErrorPanel(baseline, comparison) {
+      const errors = [baseline, comparison]
+        .filter((result) => result.error)
+        .map((result) => result.scenario.label + ": " + result.error);
+      const panel = document.getElementById("replay-error-panel");
+      if (!errors.length) {
+        panel.innerHTML = "<strong>Replay error panel</strong><span class=\"muted\">No replay errors.</span>";
+        return;
+      }
+      panel.innerHTML = "<strong>Replay error panel</strong><ul class=\"hint-list\">"
+        + errors.map((line) => "<li>" + escapeHtml(line) + "</li>").join("")
+        + "</ul>";
+    }
+
+    function refreshReplayCopyBlocks() {
+      if (!outputs.replayCurls || !outputs.replayPayloads) {
+        return;
+      }
+      const pair = replayScenarioPair();
+      outputs.replayCurls.textContent = buildReplayCurls(pair.baseline, pair.comparison);
+      outputs.replayPayloads.textContent = buildReplayPayloads(pair.baseline, pair.comparison);
+      if (!state.replay) {
+        outputs.replayReviewerNote.textContent =
+          "Replay selected pair to generate a deterministic reviewer note.";
+      }
+    }
+
+    function buildReplayCurls(baseline, comparison) {
+      return [baseline, comparison].map((scenario) => [
+        "# " + scenario.label,
+        "curl -fsS -X POST " + apiUrl("/api/routing/compare")
+          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.routingRequest) + "'",
+        "curl -fsS -X POST " + apiUrl("/api/allocate/capacity-aware")
+          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.allocationRequest) + "'",
+        "curl -fsS -X POST " + apiUrl("/api/allocate/evaluate")
+          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.evaluationRequest) + "'"
+      ].join("\n")).join("\n\n");
+    }
+
+    function buildReplayPayloads(baseline, comparison) {
+      return stableJson([baseline, comparison].map((scenario) => ({
+        scenarioName: scenario.scenarioName,
+        label: scenario.label,
+        allocationRequest: scenario.allocationRequest,
+        routingRequest: scenario.routingRequest,
+        evaluationRequest: scenario.evaluationRequest
+      })));
+    }
+
+    function buildReplayReviewerNote(baseline, comparison, rows) {
+      const rowLines = rows.map((row) =>
+        "| " + [
+          row.field,
+          row.baseline,
+          row.comparison,
+          row.changed ? "Changed" : "No change"
+        ].map(markdownCell).join(" | ") + " |"
+      ).join("\n");
+      const changedFields = rows.filter((row) => row.changed).map((row) => row.field);
+      return [
+        "# Operator Replay Reviewer Note",
+        "",
+        "mode: local browser same-origin demo",
+        "baselineScenario: " + baseline.scenario.scenarioName,
+        "comparisonScenario: " + comparison.scenario.scenarioName,
+        "replayOrder: baseline, comparison",
+        "runtimeReportWritten: false",
+        "backendWrites: false",
+        "browserStorage: false",
+        "cloudMutation: false",
+        "",
+        "## Changed Fields",
+        changedFields.length ? changedFields.map((field) => "- " + field).join("\n") : "- No changed fields detected",
+        "",
+        "| Replay field | Baseline scenario | Comparison scenario | Changed? |",
+        "| --- | --- | --- | --- |",
+        rowLines,
+        "",
+        "## Safety",
+        "- local/operator demo only",
+        "- not certification",
+        "- not benchmark proof",
+        "- not legal compliance proof",
+        "- not identity proof",
+        "- no cloud mutation",
+        "- no backend writes",
+        "- no generated runtime reports"
+      ].join("\n");
     }
 
     function matrixSnapshot(scenario, responses) {
@@ -2183,6 +2578,7 @@
       outputs.matrixSummary.textContent =
         "Run all scenarios to generate a deterministic comparison matrix summary.";
       refreshMatrixCopyBlocks();
+      clearReplayMode();
       ["health", "scenario", "allocation", "routing", "evaluation"].forEach((name) => setBadge(name, "Not run"));
     }
 
@@ -2253,6 +2649,10 @@
           await runComparisonMatrix();
         } else if (action === "clear-comparison-matrix") {
           clearComparisonMatrix();
+        } else if (action === "run-replay-mode") {
+          await runReplayMode();
+        } else if (action === "clear-replay-mode") {
+          clearReplayMode();
         } else if (action === "reset-gallery") {
           resetScenarioGallery();
         } else if (action === "reset") {
@@ -2265,12 +2665,16 @@
       baseUrlInput.value = window.location.origin || "http://localhost:8080";
       refreshCurlSnippets();
       refreshMatrixCopyBlocks();
+      refreshReplayCopyBlocks();
     });
 
     baseUrlInput.addEventListener("change", () => {
       refreshCurlSnippets();
       refreshMatrixCopyBlocks();
+      refreshReplayCopyBlocks();
     });
+    document.getElementById("replay-baseline-scenario").addEventListener("change", refreshReplayCopyBlocks);
+    document.getElementById("replay-comparison-scenario").addEventListener("change", refreshReplayCopyBlocks);
     outputs.scenario.addEventListener("change", () => {
       setBadge("scenario", "Warning");
       refreshCurlSnippets();
@@ -2279,8 +2683,10 @@
     });
 
     renderScenarioGallery();
+    populateReplaySelectors();
     loadSelectedScenario();
     refreshMatrixCopyBlocks();
+    refreshReplayCopyBlocks();
   </script>
 </body>
 </html>

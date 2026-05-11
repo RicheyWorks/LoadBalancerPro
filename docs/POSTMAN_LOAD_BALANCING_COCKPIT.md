@@ -34,7 +34,7 @@ Run the `Unified Load-Balancing Cockpit` folder from top to bottom for the singl
 5. `POST Cockpit Predictive Allocation`
 6. `POST Cockpit Load-Shedding Evaluation`
 
-The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, a deterministic side-by-side summary, an operator guided walkthrough checklist summary, an operator comparison matrix summary, replay-mode reviewer notes, an API contract trace, and a copyable/printable operator review packet.
+The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, a deterministic side-by-side summary, cockpit navigation/readiness badges, an operator guided walkthrough checklist summary, an operator comparison matrix summary, replay-mode reviewer notes, an API contract trace, and a copyable/printable operator review packet. Navigation/readiness is browser-only because it summarizes current in-memory page state rather than a Postman request.
 
 Run the `Operator Scenario Gallery` folder when a reviewer wants to compare multiple packaged scenarios:
 

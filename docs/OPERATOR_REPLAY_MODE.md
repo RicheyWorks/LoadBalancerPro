@@ -10,6 +10,8 @@ It lets a reviewer choose one packaged scenario as the baseline, choose another 
 
 The `Operator Guided Walkthrough` points reviewers to replay mode after the comparison matrix step, then uses the replay output as evidence for API trace verification and review packet generation.
 
+Use `Cockpit Navigation & Readiness` to jump back to replay mode and confirm the `Replay generated` readiness badge after running the pair.
+
 ## What It Runs
 
 Click `Replay selected pair` to run the baseline first and the comparison second:

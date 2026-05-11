@@ -392,6 +392,52 @@
       margin-top: 8px;
     }
 
+    .section-index {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .readiness-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .readiness-badge {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #ffffff;
+      min-height: 96px;
+    }
+
+    .readiness-badge strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .readiness-badge.ready {
+      border-color: rgba(15, 123, 71, 0.5);
+      background: rgba(15, 123, 71, 0.06);
+    }
+
+    .readiness-badge.partial {
+      border-color: rgba(154, 91, 0, 0.45);
+      background: rgba(154, 91, 0, 0.08);
+    }
+
+    .readiness-badge.not-ready {
+      border-color: var(--line);
+      background: #f8fafc;
+    }
+
+    .navigation-highlight {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18);
+    }
+
     @media print {
       body {
         background: #ffffff;
@@ -441,7 +487,7 @@
     }
 
     @media (max-width: 920px) {
-      .grid, .tri-grid, .status-grid, .scenario-gallery, .drilldown-grid, .walkthrough-progress {
+      .grid, .tri-grid, .status-grid, .scenario-gallery, .drilldown-grid, .walkthrough-progress, .section-index, .readiness-grid {
         grid-template-columns: 1fr;
       }
 
@@ -515,6 +561,51 @@
             <span id="evaluation-badge" class="badge">Not run</span>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section id="navigation-readiness-panel" class="panel walkthrough-target" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Cockpit Navigation &amp; Readiness</h2>
+        <div class="actions">
+          <button data-action="refresh-navigation-readiness" type="button">Refresh readiness</button>
+          <button class="copy" type="button" data-copy-target="navigation-readiness-summary">Copy readiness summary</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="postman-note">
+          Use the section index to jump through the dense cockpit, then use readiness badges to see which current-session
+          evidence has been generated. Readiness state is client-side only, in memory only, and never written as a
+          runtime report.
+        </p>
+        <h3 style="margin-top: 12px;">Section index</h3>
+        <div id="section-index" class="section-index" aria-label="Cockpit section index">
+          <button type="button" class="secondary" data-nav-target="scenario-gallery-panel">Scenario Gallery</button>
+          <button type="button" class="secondary" data-nav-target="explanation-drilldown-panel">Explanation Drill-Down</button>
+          <button type="button" class="secondary" data-nav-target="comparison-matrix-panel">Operator Comparison Matrix</button>
+          <button type="button" class="secondary" data-nav-target="replay-mode-panel">Operator Replay Mode</button>
+          <button type="button" class="secondary" data-nav-target="review-packet-panel">Operator Review Packet</button>
+          <button type="button" class="secondary" data-nav-target="api-contract-trace-panel">API Contract Trace</button>
+          <button type="button" class="secondary" data-nav-target="guided-walkthrough-panel">Operator Guided Walkthrough</button>
+          <button type="button" class="secondary" data-nav-target="allocation-results-panel">Raw JSON / endpoint outputs</button>
+        </div>
+        <div class="grid" style="margin-top: 14px;">
+          <div class="summary-card">
+            <strong>Current-panel mini-map / orientation</strong>
+            <div id="navigation-current-panel">Current panel: Cockpit controls. Use quick links to jump to a panel.</div>
+          </div>
+          <div class="summary-card">
+            <strong>How to use this cockpit</strong>
+            <div>
+              Pick a scenario, run endpoint previews, inspect raw JSON, generate trace/replay/packet outputs,
+              and refresh readiness when you want an at-a-glance review state.
+            </div>
+          </div>
+        </div>
+        <h3 style="margin-top: 12px;">Readiness badges</h3>
+        <div id="readiness-badges" class="readiness-grid" aria-label="Cockpit readiness badges"></div>
+        <h3 style="margin-top: 12px;">Copy readiness summary</h3>
+        <pre id="navigation-readiness-summary">Refresh readiness to generate a deterministic cockpit readiness summary.</pre>
       </div>
     </section>
 
@@ -1236,6 +1327,9 @@
         active: false,
         currentStep: 0,
         completed: []
+      },
+      navigation: {
+        currentPanelId: "cockpit-controls-panel"
       }
     };
 
@@ -1263,6 +1357,7 @@
       reviewPacket: document.getElementById("review-packet-preview"),
       apiContractTrace: document.getElementById("api-contract-trace-preview"),
       walkthroughSummary: document.getElementById("walkthrough-summary"),
+      navigationReadinessSummary: document.getElementById("navigation-readiness-summary"),
       curl: document.getElementById("curl-snippets")
     };
 
@@ -1341,6 +1436,19 @@
         evidence: "Copied or printed handoff; no backend write, cloud mutation, browser storage, or runtime report.",
         panelId: "review-packet-panel"
       }
+    ];
+
+    const navigationSections = [
+      { label: "Cockpit controls", panelId: "cockpit-controls-panel" },
+      { label: "Cockpit Navigation & Readiness", panelId: "navigation-readiness-panel" },
+      { label: "Operator Guided Walkthrough", panelId: "guided-walkthrough-panel" },
+      { label: "Scenario Gallery", panelId: "scenario-gallery-panel" },
+      { label: "Explanation Drill-Down", panelId: "explanation-drilldown-panel" },
+      { label: "Operator Comparison Matrix", panelId: "comparison-matrix-panel" },
+      { label: "Operator Replay Mode", panelId: "replay-mode-panel" },
+      { label: "Operator Review Packet", panelId: "review-packet-panel" },
+      { label: "API Contract Trace", panelId: "api-contract-trace-panel" },
+      { label: "Raw JSON / endpoint output areas", panelId: "allocation-results-panel" }
     ];
 
     function routingServer(serverId, healthy, inFlightRequestCount, capacity, weight,
@@ -2217,6 +2325,142 @@
       return text && text !== "{}" ? "available in cockpit raw JSON block" : "not generated yet";
     }
 
+    function navigationSectionLabel(panelId) {
+      const section = navigationSections.find((item) => item.panelId === panelId);
+      return section ? section.label : "Unknown panel";
+    }
+
+    function setNavigationCurrentPanel(panelId, shouldScroll) {
+      const panel = document.getElementById(panelId);
+      if (!panel) {
+        return;
+      }
+      state.navigation.currentPanelId = panelId;
+      document.querySelectorAll(".navigation-highlight").forEach((target) => {
+        target.classList.remove("navigation-highlight");
+      });
+      panel.classList.add("navigation-highlight");
+      if (shouldScroll) {
+        panel.scrollIntoView({ block: "start" });
+      }
+      refreshNavigationReadiness();
+    }
+
+    function refreshNavigationReadiness() {
+      const currentLabel = navigationSectionLabel(state.navigation.currentPanelId);
+      document.getElementById("navigation-current-panel").textContent =
+        "Current panel: " + currentLabel + ". Readiness is computed from current in-memory page state.";
+      renderReadinessBadges();
+      outputs.navigationReadinessSummary.textContent = buildNavigationReadinessSummary();
+    }
+
+    function renderReadinessBadges() {
+      document.getElementById("readiness-badges").innerHTML = navigationReadinessItems().map((item) => {
+        const className = item.status === "Ready" ? "ready" : item.status === "Partial" ? "partial" : "not-ready";
+        return "<div class=\"readiness-badge " + className + "\">"
+          + "<strong>" + escapeHtml(item.label) + "</strong>"
+          + "<span class=\"badge " + (item.status === "Ready" ? "passed" : item.status === "Partial" ? "warning" : "") + "\">"
+          + escapeHtml(item.status) + "</span>"
+          + "<p class=\"muted\">" + escapeHtml(item.detail) + "</p>"
+          + "</div>";
+      }).join("");
+    }
+
+    function navigationReadinessItems() {
+      const scenario = safeCurrentScenario();
+      const rawReady = rawJsonState(outputs.allocation) !== "not generated yet"
+        && rawJsonState(outputs.routing) !== "not generated yet"
+        && rawJsonState(outputs.evaluation) !== "not generated yet"
+        && rawJsonState(outputs.remediation) !== "not generated yet";
+      const scenarioRun = Boolean(state.allocation && state.routing && state.evaluation);
+      const explanationReady = hasGeneratedText(outputs.drilldownSummary, "Run the cockpit sequence");
+      const completedCount = state.walkthrough.completed.filter(Boolean).length;
+      return [
+        readinessItem("Scenario selected", Boolean(scenario),
+          scenario ? "Selected scenario: " + scenario.scenarioName : "Not ready yet: load a packaged scenario."),
+        readinessItem("Scenario run", scenarioRun,
+          scenarioRun ? "Allocation, routing, and evaluation outputs are generated." : "Not ready yet: run selected scenario or full cockpit sequence."),
+        readinessItem("Raw JSON available", rawReady,
+          rawReady ? "Raw allocation, routing, evaluation, and remediation blocks are available." : "not generated yet: run endpoint previews first."),
+        readinessItem("Explanation generated", explanationReady,
+          explanationReady ? "Explanation drill-down summary is generated." : "not generated yet: run endpoint previews first."),
+        readinessItem("Matrix generated", state.matrixRows.length > 0,
+          state.matrixRows.length ? "Matrix rows generated: " + state.matrixRows.length : "not generated yet: run all scenarios."),
+        readinessItem("Replay generated", Boolean(state.replay),
+          state.replay ? "Replay baseline/comparison output is generated." : "not generated yet: replay selected pair."),
+        readinessItem("Trace generated", Boolean(state.apiContractTrace),
+          state.apiContractTrace ? "API Contract Trace summary is generated." : "not generated yet: generate trace."),
+        readinessItem("Review packet generated", Boolean(state.reviewPacket),
+          state.reviewPacket ? "Review packet preview is generated." : "not generated yet: generate review packet."),
+        readinessItem("Walkthrough started", state.walkthrough.active || completedCount > 0,
+          state.walkthrough.active || completedCount > 0 ? "Walkthrough current step: "
+            + (state.walkthrough.currentStep + 1) + " of " + walkthroughSteps.length : "Not ready yet: start walkthrough."),
+        walkthroughCompletionReadiness(completedCount)
+      ];
+    }
+
+    function readinessItem(label, ready, detail) {
+      return {
+        label,
+        status: ready ? "Ready" : "Not ready yet",
+        detail
+      };
+    }
+
+    function walkthroughCompletionReadiness(completedCount) {
+      if (completedCount === walkthroughSteps.length) {
+        return {
+          label: "Walkthrough completed or partially completed",
+          status: "Ready",
+          detail: "Walkthrough completed."
+        };
+      }
+      if (completedCount > 0) {
+        return {
+          label: "Walkthrough completed or partially completed",
+          status: "Partial",
+          detail: "Walkthrough partially completed: " + completedCount + " of " + walkthroughSteps.length + " steps."
+        };
+      }
+      return {
+        label: "Walkthrough completed or partially completed",
+        status: "Not ready yet",
+        detail: "not generated yet: no walkthrough steps marked complete."
+      };
+    }
+
+    function buildNavigationReadinessSummary() {
+      const rows = navigationReadinessItems().map((item) => "| "
+        + [item.label, item.status, item.detail].map(markdownCell).join(" | ")
+        + " |").join("\n");
+      return [
+        "# Cockpit Navigation Readiness Summary",
+        "",
+        "mode: local browser same-origin demo",
+        "navigationState: client-side only",
+        "readinessState: in-memory only",
+        "backendWrites: false",
+        "cloudMutation: false",
+        "generatedRuntimeReport: false",
+        "currentPanel: " + navigationSectionLabel(state.navigation.currentPanelId),
+        "sectionOrder: " + navigationSections.map((section) => section.label).join(" -> "),
+        "",
+        "| Readiness badge | Status | Evidence source |",
+        "| --- | --- | --- |",
+        rows,
+        "",
+        "## Safety",
+        "- Client-side only.",
+        "- Readiness state is in memory only.",
+        "- Same-origin read/evaluation calls only.",
+        "- No backend writes.",
+        "- No cloud mutation.",
+        "- No browser storage.",
+        "- No benchmark, certification, legal compliance, identity, or production guarantee claims.",
+        "- Not ready yet and not generated yet labels are used when current-session evidence is missing."
+      ].join("\n");
+    }
+
     function startGuidedWalkthrough() {
       state.walkthrough.active = true;
       state.walkthrough.currentStep = 0;
@@ -2279,6 +2523,7 @@
         target.classList.remove("walkthrough-highlight");
       });
       if (panel) {
+        setNavigationCurrentPanel(step.panelId, false);
         panel.classList.add("walkthrough-highlight");
         panel.scrollIntoView({ block: "start" });
       }
@@ -2376,6 +2621,7 @@
 
     function refreshWalkthroughSummary() {
       outputs.walkthroughSummary.textContent = buildWalkthroughSummary();
+      refreshNavigationReadiness();
     }
 
     function buildWalkthroughSummary() {
@@ -2463,6 +2709,16 @@
           unavailableFields: rawJsonState(outputs.health) === "not generated yet" && rawJsonState(outputs.readiness) === "not generated yet"
             ? "not generated yet"
             : "No hidden readiness internals beyond returned raw JSON are claimed",
+          mutationBehavior: commonSafety
+        },
+        {
+          panelName: "Cockpit Navigation & Readiness",
+          endpointPath: "No endpoint call; indexes existing cockpit panels and reads current in-memory state",
+          requestPayloadSource: "Current in-memory cockpit state and generated output containers",
+          rawResponseSource: "Existing health, readiness, allocation, routing, evaluation, remediation, matrix, replay, trace, packet, and walkthrough panels",
+          displayedRawFields: "Current-panel orientation label and readiness badge labels for scenario, raw JSON, explanation, matrix, replay, trace, packet, and walkthrough outputs",
+          derivedFields: "Section index; current-panel mini-map / orientation; readiness badges; deterministic readiness summary",
+          unavailableFields: "Evidence not generated in the current page session is labeled not ready yet or not generated yet",
           mutationBehavior: commonSafety
         },
         {
@@ -3466,6 +3722,8 @@
           markWalkthroughStepComplete();
         } else if (action === "clear-guided-walkthrough") {
           clearGuidedWalkthrough();
+        } else if (action === "refresh-navigation-readiness") {
+          refreshNavigationReadiness();
         } else if (action === "reset-gallery") {
           resetScenarioGallery();
         } else if (action === "reset") {
@@ -3487,6 +3745,12 @@
       refreshMatrixCopyBlocks();
       refreshReplayCopyBlocks();
       refreshWalkthroughSummary();
+    });
+    document.getElementById("section-index").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-nav-target]");
+      if (button) {
+        setNavigationCurrentPanel(button.getAttribute("data-nav-target"), true);
+      }
     });
     document.getElementById("walkthrough-current-jump").addEventListener("click", (event) => {
       jumpToWalkthroughStep(Number(event.currentTarget.getAttribute("data-walkthrough-jump") || "0"));

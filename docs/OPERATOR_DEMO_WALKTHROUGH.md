@@ -101,26 +101,27 @@ http://localhost:8080/load-balancing-cockpit.html
 
 Use the page from top to bottom:
 
-1. Click `Start walkthrough` in `Operator Guided Walkthrough` if you want the cockpit to step through the review order.
-2. Check health and readiness.
-3. Pick a scenario from `Scenario Gallery`, or load the default safe local scenario.
-4. Run allocation preview against `POST /api/allocate/capacity-aware`.
-5. Run routing comparison against `POST /api/routing/compare`.
-6. Run load-shedding preview and remediation hints against `POST /api/allocate/evaluate`.
-7. Compare allocation, routing, overload, and remediation-hint output side by side.
-8. Run another scenario and click `Compare with previous scenario` to see what changed.
-9. Click `Run all scenarios` in `Operator Comparison Matrix` to summarize every packaged scenario in one table.
-10. Select a baseline and comparison in `Operator Replay Mode`, then click `Replay selected pair` to highlight before/after differences.
-11. Review `Explanation Drill-Down` for routing, allocation, overload, remediation, and scenario-delta rationale.
-12. Click `Generate trace` in `API Contract Trace` to map visible claims to endpoints, payloads, raw fields, derived labels, and unavailable fields.
-13. Use the guided walkthrough's raw-vs-derived verification step before trusting derived summaries.
-14. Click `Generate review packet`, then copy or print the packet for a deterministic operator handoff.
-15. Copy curl snippets, the selected scenario payload, raw responses, cockpit summary, scenario summary, matrix summary, replay reviewer note, API contract trace, walkthrough summary, review packet, drill-down summary, explanation curl snippets, or operator rationale.
-16. Reset the cockpit before replaying it.
+1. Use `Cockpit Navigation & Readiness` to jump between dense cockpit panels and refresh current-session readiness badges.
+2. Click `Start walkthrough` in `Operator Guided Walkthrough` if you want the cockpit to step through the review order.
+3. Check health and readiness.
+4. Pick a scenario from `Scenario Gallery`, or load the default safe local scenario.
+5. Run allocation preview against `POST /api/allocate/capacity-aware`.
+6. Run routing comparison against `POST /api/routing/compare`.
+7. Run load-shedding preview and remediation hints against `POST /api/allocate/evaluate`.
+8. Compare allocation, routing, overload, and remediation-hint output side by side.
+9. Run another scenario and click `Compare with previous scenario` to see what changed.
+10. Click `Run all scenarios` in `Operator Comparison Matrix` to summarize every packaged scenario in one table.
+11. Select a baseline and comparison in `Operator Replay Mode`, then click `Replay selected pair` to highlight before/after differences.
+12. Review `Explanation Drill-Down` for routing, allocation, overload, remediation, and scenario-delta rationale.
+13. Click `Generate trace` in `API Contract Trace` to map visible claims to endpoints, payloads, raw fields, derived labels, and unavailable fields.
+14. Use the guided walkthrough's raw-vs-derived verification step before trusting derived summaries.
+15. Click `Generate review packet`, then copy or print the packet for a deterministic operator handoff.
+16. Copy curl snippets, the selected scenario payload, raw responses, cockpit summary, scenario summary, matrix summary, replay reviewer note, API contract trace, walkthrough summary, readiness summary, review packet, drill-down summary, explanation curl snippets, or operator rationale.
+17. Reset the cockpit before replaying it.
 
 The packaged scenario gallery includes `Normal Load`, `Overload Pressure`, `All-Unhealthy Degradation`, and `Recovery / Capacity Restored`. Each scenario shows expected outcome hints before execution, but actual allocation, routing, load-shedding, and remediation output comes from existing endpoints only.
 
-The cockpit does not add a new API contract. It reuses existing calculation and recommendation routes, marks unsupported sections as `Not available in current API`, and does not fabricate allocation, routing, load-shedding, or remediation behavior. The operator guided walkthrough keeps deterministic checklist state in memory only, highlights existing panels, and copies a Markdown-style checklist summary without backend writes or browser storage. The operator comparison matrix runs packaged scenarios in deterministic order and summarizes real endpoint outputs without benchmark or score claims. The operator replay mode replays a selected baseline/comparison pair in memory only and copies deterministic reviewer notes without backend writes or browser storage. The operator review packet assembles current in-memory scenario, matrix, replay, explanation, API contract trace, endpoint, payload, raw JSON reference, and safety text into a copyable/printable browser handoff. The API contract trace maps cockpit claims to endpoint paths, request payload sources, raw response sources, displayed raw fields, derived labels, unavailable fields, and safety notes. The explanation drill-down labels client-side supporting math as derived from visible request/response fields when exact internal scores or thresholds are not exposed by the current API. The matching Postman flows are the `Unified Load-Balancing Cockpit`, `Operator Scenario Gallery`, and `Operator Explanation Drill-Down` folders. See [`POSTMAN_LOAD_BALANCING_COCKPIT.md`](POSTMAN_LOAD_BALANCING_COCKPIT.md), [`OPERATOR_SCENARIO_GALLERY.md`](OPERATOR_SCENARIO_GALLERY.md), [`OPERATOR_EXPLANATION_DRILLDOWN.md`](OPERATOR_EXPLANATION_DRILLDOWN.md), [`OPERATOR_COMPARISON_MATRIX.md`](OPERATOR_COMPARISON_MATRIX.md), [`OPERATOR_REPLAY_MODE.md`](OPERATOR_REPLAY_MODE.md), [`OPERATOR_REVIEW_PACKET.md`](OPERATOR_REVIEW_PACKET.md), [`OPERATOR_API_CONTRACT_TRACE.md`](OPERATOR_API_CONTRACT_TRACE.md), and [`OPERATOR_GUIDED_WALKTHROUGH.md`](OPERATOR_GUIDED_WALKTHROUGH.md) for request order, sample bodies, expected response shape, scenario comparison, drill-down behavior, matrix behavior, replay behavior, review packet behavior, API contract trace behavior, guided walkthrough behavior, and safety limits.
+The cockpit does not add a new API contract. It reuses existing calculation and recommendation routes, marks unsupported sections as `Not available in current API`, and does not fabricate allocation, routing, load-shedding, or remediation behavior. The cockpit navigation/readiness layer keeps section orientation and readiness badges in memory only, with deterministic copy output and no backend writes or browser storage. The operator guided walkthrough keeps deterministic checklist state in memory only, highlights existing panels, and copies a Markdown-style checklist summary without backend writes or browser storage. The operator comparison matrix runs packaged scenarios in deterministic order and summarizes real endpoint outputs without benchmark or score claims. The operator replay mode replays a selected baseline/comparison pair in memory only and copies deterministic reviewer notes without backend writes or browser storage. The operator review packet assembles current in-memory scenario, matrix, replay, explanation, API contract trace, endpoint, payload, raw JSON reference, and safety text into a copyable/printable browser handoff. The API contract trace maps cockpit claims to endpoint paths, request payload sources, raw response sources, displayed raw fields, derived labels, unavailable fields, and safety notes. The explanation drill-down labels client-side supporting math as derived from visible request/response fields when exact internal scores or thresholds are not exposed by the current API. The matching Postman flows are the `Unified Load-Balancing Cockpit`, `Operator Scenario Gallery`, and `Operator Explanation Drill-Down` folders. See [`POSTMAN_LOAD_BALANCING_COCKPIT.md`](POSTMAN_LOAD_BALANCING_COCKPIT.md), [`OPERATOR_SCENARIO_GALLERY.md`](OPERATOR_SCENARIO_GALLERY.md), [`OPERATOR_EXPLANATION_DRILLDOWN.md`](OPERATOR_EXPLANATION_DRILLDOWN.md), [`OPERATOR_COMPARISON_MATRIX.md`](OPERATOR_COMPARISON_MATRIX.md), [`OPERATOR_REPLAY_MODE.md`](OPERATOR_REPLAY_MODE.md), [`OPERATOR_REVIEW_PACKET.md`](OPERATOR_REVIEW_PACKET.md), [`OPERATOR_API_CONTRACT_TRACE.md`](OPERATOR_API_CONTRACT_TRACE.md), [`OPERATOR_GUIDED_WALKTHROUGH.md`](OPERATOR_GUIDED_WALKTHROUGH.md), and [`OPERATOR_NAVIGATION_READINESS.md`](OPERATOR_NAVIGATION_READINESS.md) for request order, sample bodies, expected response shape, scenario comparison, drill-down behavior, matrix behavior, replay behavior, review packet behavior, API contract trace behavior, guided walkthrough behavior, navigation/readiness behavior, and safety limits.
 
 ## 6. Open Evidence Training Onboarding
 
@@ -254,7 +255,7 @@ No timestamps or random identifiers are generated by default.
 
 ## 11. GUI-Facing Surface
 
-The evidence browser cockpit is a tiny static GUI-facing surface served by the existing Spring Boot app at `/evidence-training-demo.html`. It reuses the existing evidence training API endpoints and deterministic embedded sample payloads. The routing decision demo at `/routing-demo.html` is the matching static GUI-facing surface for the existing request-level routing comparison API. The unified load-balancing cockpit at `/load-balancing-cockpit.html` ties allocation, routing, overload/load-shedding, remediation-hint, scenario-gallery, comparison-matrix, replay-mode, review-packet, API-contract-trace, and explanation drill-down views together with existing API responses. These pages add no frontend framework, external dependency, external script, CDN, browser automation dependency, or controller.
+The evidence browser cockpit is a tiny static GUI-facing surface served by the existing Spring Boot app at `/evidence-training-demo.html`. It reuses the existing evidence training API endpoints and deterministic embedded sample payloads. The routing decision demo at `/routing-demo.html` is the matching static GUI-facing surface for the existing request-level routing comparison API. The unified load-balancing cockpit at `/load-balancing-cockpit.html` ties allocation, routing, overload/load-shedding, remediation-hint, scenario-gallery, comparison-matrix, replay-mode, review-packet, API-contract-trace, guided-walkthrough, navigation/readiness, and explanation drill-down views together with existing API responses. These pages add no frontend framework, external dependency, external script, CDN, browser automation dependency, or controller.
 
 ## Troubleshooting
 

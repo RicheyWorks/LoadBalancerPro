@@ -6,7 +6,7 @@ The operator scenario gallery extends the unified browser cockpit at:
 http://localhost:8080/load-balancing-cockpit.html
 ```
 
-It lets a reviewer load safe packaged scenarios, run the same real endpoints for each scenario, and compare what changed across allocation, routing, load-shedding, and remediation-hint output. It also feeds the cockpit's operator guided walkthrough, the operator comparison matrix, which can run every packaged scenario in sequence and summarize the outputs in one table, and operator replay mode, which can rerun a selected baseline/comparison pair side by side. It adds no backend endpoint and does not replace the existing CLI, routing demo, or evidence training cockpit.
+It lets a reviewer load safe packaged scenarios, run the same real endpoints for each scenario, and compare what changed across allocation, routing, load-shedding, and remediation-hint output. It also feeds the cockpit's operator guided walkthrough, the operator comparison matrix, which can run every packaged scenario in sequence and summarize the outputs in one table, operator replay mode, which can rerun a selected baseline/comparison pair side by side, and the navigation/readiness layer, which shows current-session evidence badges. It adds no backend endpoint and does not replace the existing CLI, routing demo, or evidence training cockpit.
 
 ## Start
 

@@ -52,6 +52,8 @@ The artifact contains `artifact-smoke-summary.txt`, `artifact-sha256.txt`, and `
 
 For a single reviewer workflow covering JaCoCo download, packaged-artifact-smoke inspection, SBOM artifact handling, local-vs-CI SHA-256 comparison, and a release-free candidate checklist, see [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md).
 
+For the release-free go/no-go packet that records CI status, CodeQL status, skipped-test count, coverage review, packaged smoke evidence, SBOM review, and operator demo checks together, see [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md).
+
 ## Skipped-Test Evidence
 
 CI parses `target/surefire-reports/*.xml` after the test step and prints:

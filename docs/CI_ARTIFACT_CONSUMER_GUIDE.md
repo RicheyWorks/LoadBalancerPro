@@ -162,6 +162,8 @@ An exact match is useful integrity evidence when comparing the same artifact or 
 
 For deeper local inspection commands, see [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md).
 
+For a full release-free go/no-go packet that combines this CI artifact review with local verification, packaged jar smoke evidence, SBOM review, proxy status UI checks, and demo stack commands, see [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md).
+
 ## Release Candidate Checklist
 
 - CI workflow passed on `main`.

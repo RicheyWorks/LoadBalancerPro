@@ -40,6 +40,8 @@ Optional reverse proxy mode at `/proxy/**` is disabled by default and forwards c
 
 [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) clarifies that JavaFX is optional desktop UI support. The Spring API, `/proxy/**`, `/proxy-status.html`, `/load-balancing-cockpit.html`, proxy demo stack, CI artifact verification, and operator smoke paths do not require JavaFX and do not gain new API or security behavior from JavaFX documentation.
 
+[`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) provides copy/adapt proxy examples for local or private HTTP services only. The examples use loopback placeholders, require no secrets or public upstreams, add no backend write/reset controls, and keep the same read-only `/api/proxy/status` verification boundary.
+
 ## Out Of Scope
 
 The repository does not currently provide WAF rules, distributed quotas, bot detection, credential rotation, customer identity lifecycle management, TLS certificates, or production incident-response automation. Those controls belong in the deployment platform and should be reviewed separately before public exposure.

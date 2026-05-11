@@ -60,11 +60,15 @@ Example files for local real backends live under `docs/examples/proxy`:
 
 ```text
 docs/examples/proxy/application-proxy-real-backend-example.properties
+docs/examples/proxy/application-proxy-real-backend-round-robin-example.properties
 docs/examples/proxy/application-proxy-real-backend-weighted-example.properties
 docs/examples/proxy/application-proxy-real-backend-failover-example.properties
+docs/examples/proxy/application-proxy-real-backend-resilience-example.properties
 ```
 
 They are copy/adapt examples, not active default profiles. Each file uses loopback backend placeholders such as `http://localhost:9001` and `http://localhost:9002`, enables proxy mode only inside the example, and includes health-check, retry, and cooldown settings that operators can adjust for their local services.
+
+Use [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) for the full round-robin, weighted, health-aware failover, retry/cooldown, header verification, status-page verification, and release-free evidence checklist.
 
 One local run pattern is:
 

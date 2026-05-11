@@ -124,11 +124,13 @@ For local services beyond the fixture backends, copy/adapt the example files und
 
 ```text
 docs/examples/proxy/application-proxy-real-backend-example.properties
+docs/examples/proxy/application-proxy-real-backend-round-robin-example.properties
 docs/examples/proxy/application-proxy-real-backend-weighted-example.properties
 docs/examples/proxy/application-proxy-real-backend-failover-example.properties
+docs/examples/proxy/application-proxy-real-backend-resilience-example.properties
 ```
 
-They use loopback placeholders `http://localhost:9001` and `http://localhost:9002`, include explicit strategy/health/retry/cooldown settings, contain no secrets or public upstream URLs, and are not loaded unless an operator imports or copies them intentionally.
+They use loopback placeholders `http://localhost:9001` and `http://localhost:9002`, include explicit strategy/health/retry/cooldown settings, contain no secrets or public upstream URLs, and are not loaded unless an operator imports or copies them intentionally. Use [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) when adapting these profiles to local/private HTTP services.
 
 ## ROUND_ROBIN Path
 

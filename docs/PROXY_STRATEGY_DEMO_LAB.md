@@ -4,6 +4,8 @@ This lab shows strategy-specific reverse proxy behavior with two local loopback 
 
 For the single start-to-finish demo stack path with checked-in profile files, the Java fixture launcher, Windows PowerShell commands, Unix shell commands, status-page verification, and cleanup steps, see [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md). For the Java launcher details, see [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md).
 
+For copy/adapt examples that point at local or private HTTP services beyond the fixture launcher, use [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md). It keeps the same selected-upstream and strategy-header evidence model while avoiding public upstreams and cloud dependencies.
+
 Start the two local fixture backends with the cross-platform Java launcher:
 
 ```bash

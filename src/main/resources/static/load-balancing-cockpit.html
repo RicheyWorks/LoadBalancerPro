@@ -648,6 +648,47 @@
       </div>
     </section>
 
+    <section class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>API Contract Trace</h2>
+        <div class="actions">
+          <button data-action="generate-api-contract-trace" type="button">Generate trace</button>
+          <button data-action="clear-api-contract-trace" type="button" class="secondary">Clear trace</button>
+          <button class="copy" type="button" data-copy-target="api-contract-trace-preview">Copy trace summary</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="postman-note">
+          Maps visible cockpit claims to endpoint paths, request payload sources, raw response sources, displayed raw
+          fields, derived client labels, unavailable or missing fields, and mutation behavior / safety notes. Trace
+          state stays in memory only and is not written to the backend.
+        </p>
+        <div class="matrix-scroll" aria-label="API Contract Trace table">
+          <table>
+            <thead>
+              <tr>
+                <th>Panel name</th>
+                <th>Endpoint path</th>
+                <th>Request payload source</th>
+                <th>Raw response source</th>
+                <th>Displayed raw fields</th>
+                <th>Derived fields / labels</th>
+                <th>Unavailable / missing fields</th>
+                <th>Mutation behavior / safety notes</th>
+              </tr>
+            </thead>
+            <tbody id="api-contract-trace-rows">
+              <tr>
+                <td colspan="8" class="muted">Generate trace to map cockpit panels to API contracts.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <h3 style="margin-top: 12px;">API Contract Trace Summary</h3>
+        <pre id="api-contract-trace-preview">Generate trace to map cockpit panels to endpoint paths, raw fields, derived labels, and unavailable fields.</pre>
+      </div>
+    </section>
+
     <div class="grid" style="margin-top: 16px;">
       <section class="panel">
         <div class="panel-head">
@@ -1080,7 +1121,8 @@
       evaluation: null,
       matrixRows: [],
       replay: null,
-      reviewPacket: null
+      reviewPacket: null,
+      apiContractTrace: null
     };
 
     const outputs = {
@@ -1105,6 +1147,7 @@
       replayBaselineOutput: document.getElementById("replay-baseline-output"),
       replayComparisonOutput: document.getElementById("replay-comparison-output"),
       reviewPacket: document.getElementById("review-packet-preview"),
+      apiContractTrace: document.getElementById("api-contract-trace-preview"),
       curl: document.getElementById("curl-snippets")
     };
 
@@ -1902,6 +1945,7 @@
         "- comparisonMatrixRows: " + state.matrixRows.length,
         "- replayGenerated: " + (state.replay ? "true" : "false"),
         "- explanationGenerated: " + (hasGeneratedText(outputs.drilldownSummary, "Run the cockpit sequence") ? "true" : "false"),
+        "- apiContractTraceGenerated: " + (state.apiContractTrace ? "true" : "false"),
         "",
         "## Selected Scenario",
         packetBlock(outputs.scenarioSummary, "Load and run a scenario to generate selected scenario summary."),
@@ -1917,6 +1961,9 @@
         "",
         "## Operator Rationale",
         packetBlock(outputs.operatorRationale, "Run a scenario to generate operator rationale."),
+        "",
+        "## API Contract Trace Summary",
+        packetBlock(outputs.apiContractTrace, "Generate trace to map cockpit claims to endpoint paths, raw fields, derived labels, and unavailable fields."),
         "",
         "## Endpoint References",
         "- GET /api/health",
@@ -1982,6 +2029,163 @@
     function rawJsonState(output) {
       const text = (output && (output.value || output.textContent) || "").trim();
       return text && text !== "{}" ? "available in cockpit raw JSON block" : "not generated yet";
+    }
+
+    function generateApiContractTrace() {
+      const rows = buildApiContractTraceRows();
+      renderApiContractTraceRows(rows);
+      state.apiContractTrace = buildApiContractTraceSummary(rows);
+      outputs.apiContractTrace.textContent = state.apiContractTrace;
+    }
+
+    function clearApiContractTrace() {
+      state.apiContractTrace = null;
+      document.getElementById("api-contract-trace-rows").innerHTML =
+        "<tr><td colspan=\"8\" class=\"muted\">Generate trace to map cockpit panels to API contracts.</td></tr>";
+      outputs.apiContractTrace.textContent =
+        "Generate trace to map cockpit panels to endpoint paths, raw fields, derived labels, and unavailable fields.";
+    }
+
+    function buildApiContractTraceRows() {
+      const selectedScenario = safeCurrentScenario();
+      const scenarioName = selectedScenario ? selectedScenario.scenarioName : "not generated yet";
+      const scenarioPayloadSource = selectedScenario
+        ? "Scenario payload textarea for " + scenarioName + " using packaged allocationRequest, routingRequest, and evaluationRequest"
+        : "Scenario payload textarea not generated yet";
+      const rawPanelSources = "allocation-output, routing-output, evaluation-output, remediation-output";
+      const endpointSet = "POST /api/allocate/capacity-aware; POST /api/routing/compare; POST /api/allocate/evaluate";
+      const commonSafety = "Same-origin read/evaluation calls only; client-side trace; no backend writes; no cloud mutation; no browser storage.";
+      return [
+        {
+          panelName: "Health / Readiness",
+          endpointPath: "GET /api/health; GET /actuator/health/readiness",
+          requestPayloadSource: "No request payload; base URL input resolves to same origin by default",
+          rawResponseSource: "health-output; readiness-output",
+          displayedRawFields: "health status fields returned by /api/health; readiness status fields returned by Actuator",
+          derivedFields: "Health / readiness status badge and cockpit status summary",
+          unavailableFields: rawJsonState(outputs.health) === "not generated yet" && rawJsonState(outputs.readiness) === "not generated yet"
+            ? "not generated yet"
+            : "No hidden readiness internals beyond returned raw JSON are claimed",
+          mutationBehavior: commonSafety
+        },
+        {
+          panelName: "Scenario Gallery",
+          endpointPath: endpointSet,
+          requestPayloadSource: scenarioPayloadSource,
+          rawResponseSource: rawPanelSources,
+          displayedRawFields: "allocation.unallocatedLoad; routing.results[].strategyId/chosenServerId/status/reason; evaluation.acceptedLoad/rejectedLoad/loadShedding/remediationPlan",
+          derivedFields: "Expected outcome hints; what-changed summary; scenario summary; cockpit status badges",
+          unavailableFields: unavailableFieldSummary(),
+          mutationBehavior: commonSafety
+        },
+        {
+          panelName: "Explanation Drill-Down",
+          endpointPath: endpointSet,
+          requestPayloadSource: scenarioPayloadSource + "; explanation helpers read visible scenario input and raw response blocks",
+          rawResponseSource: rawPanelSources,
+          displayedRawFields: "routing selected server and reason fields; allocation requestedLoad/unallocatedLoad/recommendedAdditionalServers; loadShedding action/priority/reason; remediationPlan status/recommendations",
+          derivedFields: "Routing Strategy Explanation; Allocation Math / Capacity Explanation; Load-Shedding / Overload Reason Breakdown; Remediation Rationale; Scenario Delta Explanation; Operator rationale",
+          unavailableFields: "Exact internal score not exposed by the current API; exact internal thresholds not exposed; missing fields stay unavailable",
+          mutationBehavior: commonSafety
+        },
+        {
+          panelName: "Operator Comparison Matrix",
+          endpointPath: endpointSet,
+          requestPayloadSource: "All packaged scenario payloads in stable scenarioGallery order",
+          rawResponseSource: "In-memory matrix rows built from each scenario response; raw JSON panels remain visible for the latest selected run",
+          displayedRawFields: "scenarioName; selected routing server labels; allocation unallocatedLoad; evaluation loadShedding action; remediationPlan status",
+          derivedFields: "Routing summary; selected outcome label; allocation pressure summary; remediation hint summary; explanation rationale summary; delta vs prior scenario",
+          unavailableFields: state.matrixRows.length ? "Error rows mark failed or unavailable endpoint sections" : "not generated yet",
+          mutationBehavior: commonSafety
+        },
+        {
+          panelName: "Operator Replay Mode",
+          endpointPath: endpointSet,
+          requestPayloadSource: "Baseline and comparison selectors using packaged scenario payloads",
+          rawResponseSource: "replay-baseline-output; replay-comparison-output",
+          displayedRawFields: "baseline and comparison allocation/routing/evaluation snapshots from existing endpoint responses",
+          derivedFields: "Changed-fields summary; routing diff; allocation pressure diff; load-shedding diff; remediation hint diff; explanation/rationale diff; reviewer note",
+          unavailableFields: state.replay ? "Replay error panel marks failed or unavailable endpoint sections" : "not generated yet",
+          mutationBehavior: commonSafety
+        },
+        {
+          panelName: "Operator Review Packet",
+          endpointPath: "No endpoint call; composes current in-memory cockpit state",
+          requestPayloadSource: "Current scenario, matrix, replay, explanation, endpoint, payload/curl, raw JSON, and trace summaries",
+          rawResponseSource: "Raw JSON reference notes only; the packet references cockpit raw blocks instead of writing files",
+          displayedRawFields: "Endpoint references and raw JSON availability labels",
+          derivedFields: "Deterministic Markdown-style Review Packet Summary, Safety Notes, and Limitations / Unavailable Fields",
+          unavailableFields: state.reviewPacket ? "Sections not run yet remain marked not generated yet inside packet" : "not generated yet",
+          mutationBehavior: "Client-side composition only; browser print only; no backend writes; no generated runtime reports; no browser storage."
+        },
+        {
+          panelName: "API Contract Trace",
+          endpointPath: "No endpoint call; static contract map plus current in-memory output state",
+          requestPayloadSource: "Known endpoint and payload mappings from the cockpit plus current selected scenario state",
+          rawResponseSource: "References cockpit raw JSON blocks and generated summaries; does not create new API responses",
+          displayedRawFields: "Panel name; endpoint path; request payload source; raw response source; displayed raw fields",
+          derivedFields: "Derived fields / labels column; unavailable / missing fields column; mutation behavior / safety notes column; copyable trace summary",
+          unavailableFields: "Panels not run yet are marked not generated yet; hidden scores and thresholds are not invented",
+          mutationBehavior: "Client-side trace only; no backend writes; no cloud mutation; no browser storage; no benchmark or certification claims."
+        }
+      ];
+    }
+
+    function renderApiContractTraceRows(rows) {
+      const body = document.getElementById("api-contract-trace-rows");
+      body.innerHTML = rows.map((row) => "<tr>"
+        + "<td>" + escapeHtml(row.panelName) + "</td>"
+        + "<td>" + escapeHtml(row.endpointPath) + "</td>"
+        + "<td>" + escapeHtml(row.requestPayloadSource) + "</td>"
+        + "<td>" + escapeHtml(row.rawResponseSource) + "</td>"
+        + "<td>" + escapeHtml(row.displayedRawFields) + "</td>"
+        + "<td>" + escapeHtml(row.derivedFields) + "</td>"
+        + "<td>" + escapeHtml(row.unavailableFields) + "</td>"
+        + "<td>" + escapeHtml(row.mutationBehavior) + "</td>"
+        + "</tr>").join("");
+    }
+
+    function buildApiContractTraceSummary(rows) {
+      const rowBlocks = rows.map((row) => [
+        "## " + row.panelName,
+        "- endpointPath: " + row.endpointPath,
+        "- requestPayloadSource: " + row.requestPayloadSource,
+        "- rawResponseSource: " + row.rawResponseSource,
+        "- displayedRawFields: " + row.displayedRawFields,
+        "- derivedFields / labels: " + row.derivedFields,
+        "- unavailable / missing fields: " + row.unavailableFields,
+        "- mutation behavior / safety notes: " + row.mutationBehavior
+      ].join("\n")).join("\n\n");
+      return [
+        "# API Contract Trace Summary",
+        "",
+        "mode: local browser same-origin demo",
+        "traceState: client-side only",
+        "backendWrites: false",
+        "browserStorage: false",
+        "cloudMutation: false",
+        "generatedRuntimeReport: false",
+        "",
+        rowBlocks,
+        "",
+        "## Trace Safety Notes",
+        "- Raw API fields are listed separately from derived client labels.",
+        "- Derived labels are client-side summaries of current API responses and packaged scenario payloads.",
+        "- Unavailable fields are marked unavailable or not generated yet.",
+        "- Exact internal scores and hidden thresholds are not invented.",
+        "- No benchmark, certification, legal compliance, identity, or production guarantee claims."
+      ].join("\n");
+    }
+
+    function unavailableFieldSummary() {
+      const states = [
+        rawJsonState(outputs.allocation),
+        rawJsonState(outputs.routing),
+        rawJsonState(outputs.evaluation)
+      ];
+      return states.every((stateValue) => stateValue === "not generated yet")
+        ? "not generated yet"
+        : "Missing response fields stay unavailable; exact internal scores and hidden thresholds are not claimed";
     }
 
     function matrixSnapshot(scenario, responses) {
@@ -2758,6 +2962,7 @@
       refreshMatrixCopyBlocks();
       clearReplayMode();
       clearReviewPacket();
+      clearApiContractTrace();
       ["health", "scenario", "allocation", "routing", "evaluation"].forEach((name) => setBadge(name, "Not run"));
     }
 
@@ -2838,6 +3043,10 @@
           clearReviewPacket();
         } else if (action === "print-review-packet") {
           printReviewPacket();
+        } else if (action === "generate-api-contract-trace") {
+          generateApiContractTrace();
+        } else if (action === "clear-api-contract-trace") {
+          clearApiContractTrace();
         } else if (action === "reset-gallery") {
           resetScenarioGallery();
         } else if (action === "reset") {

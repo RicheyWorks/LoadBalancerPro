@@ -24,6 +24,8 @@ Operator replay mode also reuses these boundaries. Its before/after rationale de
 
 The operator review packet includes the drill-down summary and operator rationale when they have been generated, or marks those sections as not generated yet.
 
+The API contract trace maps each drill-down claim to endpoint paths, request payload sources, raw response sources, displayed raw fields, derived labels, unavailable fields, and safety notes. Use it when a reviewer wants to audit which text came from raw API responses and which text is client-side explanation derived from visible request/response fields.
+
 ## Browser Flow
 
 1. Start the local app.
@@ -35,8 +37,9 @@ The operator review packet includes the drill-down summary and operator rational
 7. Run a second scenario, then click `Compare with previous scenario`.
 8. Run `Operator Comparison Matrix` when you want all packaged scenario explanations summarized side by side.
 9. Use `Operator Replay Mode` when you want one baseline/comparison pair highlighted side by side.
-10. Generate `Operator Review Packet` when you want one copyable/printable handoff.
-11. Copy the drill-down summary, matrix summary, replay reviewer note, review packet, explanation curl snippets, or operator rationale.
+10. Generate `API Contract Trace` when you want raw-vs-derived contract mapping.
+11. Generate `Operator Review Packet` when you want one copyable/printable handoff.
+12. Copy the drill-down summary, matrix summary, replay reviewer note, API contract trace, review packet, explanation curl snippets, or operator rationale.
 
 ## Postman Parity
 

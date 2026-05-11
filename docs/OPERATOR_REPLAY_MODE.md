@@ -47,6 +47,8 @@ The copy output is generated client-side only. It is not written to disk, sent t
 
 After replaying a pair, click `Generate review packet` in the cockpit to assemble the selected scenario summary, comparison matrix summary, replay delta summary, explanation notes, endpoint references, raw JSON reference notes, and safety notes into one deterministic copyable/printable handoff.
 
+Click `Generate trace` in `API Contract Trace` when a reviewer wants the replay diff mapped back to endpoint paths, packaged payload sources, raw response blocks, derived labels, and unavailable fields before generating the packet.
+
 ## Safety Boundaries
 
 - Local/operator demo only.

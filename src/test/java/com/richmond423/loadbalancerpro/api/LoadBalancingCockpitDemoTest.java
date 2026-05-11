@@ -148,6 +148,25 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Raw JSON Reference Notes"));
         assertTrue(page.contains("Safety Notes"));
         assertTrue(page.contains("Limitations / Unavailable Fields"));
+        assertTrue(page.contains("API Contract Trace"));
+        assertTrue(page.contains("Generate trace"));
+        assertTrue(page.contains("Clear trace"));
+        assertTrue(page.contains("Copy trace summary"));
+        assertTrue(page.contains("api-contract-trace-preview"));
+        assertTrue(page.contains("API Contract Trace Summary"));
+        assertTrue(page.contains("Panel name"));
+        assertTrue(page.contains("Endpoint path"));
+        assertTrue(page.contains("Request payload source"));
+        assertTrue(page.contains("Raw response source"));
+        assertTrue(page.contains("Displayed raw fields"));
+        assertTrue(page.contains("Derived fields / labels"));
+        assertTrue(page.contains("Unavailable / missing fields"));
+        assertTrue(page.contains("Mutation behavior / safety notes"));
+        assertTrue(page.contains("panelName: \"Scenario Gallery\""));
+        assertTrue(page.contains("panelName: \"Explanation Drill-Down\""));
+        assertTrue(page.contains("panelName: \"Operator Comparison Matrix\""));
+        assertTrue(page.contains("panelName: \"Operator Replay Mode\""));
+        assertTrue(page.contains("panelName: \"Operator Review Packet\""));
         assertTrue(page.contains("Expected outcome hints"));
         assertTrue(page.contains("What-changed summary"));
         assertTrue(page.contains("Allocation results"));
@@ -243,9 +262,11 @@ class LoadBalancingCockpitDemoTest {
         assertFalse(normalized.contains("performance score"));
         assertFalse(normalized.contains("replay score"));
         assertFalse(normalized.contains("review score"));
+        assertFalse(normalized.contains("trace score"));
         assertFalse(normalized.contains("saved to server"));
         assertFalse(normalized.contains("server-side packet"));
         assertFalse(normalized.contains("persist packet"));
+        assertFalse(normalized.contains("persist trace"));
         assertFalse(normalized.contains("legal training compliance"));
         assertFalse(normalized.contains("identity verified"));
         assertTrue(countOccurrences(normalized, "cloudmanager") <= 2,

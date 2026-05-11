@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 class ProxyDemoStackUsabilityTest {
     private static final Path DEMO_STACK_DOC = Path.of("docs/PROXY_DEMO_STACK.md");
+    private static final Path LAUNCHER_DOC = Path.of("docs/PROXY_DEMO_FIXTURE_LAUNCHER.md");
     private static final Path DEFAULT_PROPERTIES = Path.of("src/main/resources/application.properties");
     private static final Path ROUND_ROBIN_PROFILE =
             Path.of("src/main/resources/application-proxy-demo-round-robin.properties");
@@ -33,8 +34,21 @@ class ProxyDemoStackUsabilityTest {
     @Test
     void demoStackDocsExposeSingleOperatorPathAndEvidence() throws Exception {
         String doc = read(DEMO_STACK_DOC);
+        String launcherDoc = read(LAUNCHER_DOC);
 
         assertTrue(doc.contains("# Proxy Demo Stack"));
+        assertTrue(doc.contains("ProxyDemoFixtureLauncher"));
+        assertTrue(doc.contains("java -cp target/classes"));
+        assertTrue(launcherDoc.contains("# Proxy Demo Fixture Launcher"));
+        assertTrue(launcherDoc.contains("ProxyDemoFixtureLauncher"));
+        assertTrue(launcherDoc.contains("--mode round-robin"));
+        assertTrue(launcherDoc.contains("--mode weighted-round-robin"));
+        assertTrue(launcherDoc.contains("--mode failover"));
+        assertTrue(launcherDoc.contains("X-Fixture-Upstream"));
+        assertTrue(launcherDoc.contains("X-LoadBalancerPro-Upstream"));
+        assertTrue(launcherDoc.contains("X-LoadBalancerPro-Strategy"));
+        assertTrue(launcherDoc.toLowerCase(Locale.ROOT).contains("no cloud"));
+        assertTrue(launcherDoc.toLowerCase(Locale.ROOT).contains("no production gateway"));
         assertTrue(doc.contains(".\\scripts\\proxy-demo.ps1 -Mode round-robin"));
         assertTrue(doc.contains("bash scripts/proxy-demo.sh --mode round-robin"));
         assertTrue(doc.contains("proxy-demo-round-robin"));
@@ -49,6 +63,7 @@ class ProxyDemoStackUsabilityTest {
         assertTrue(doc.toLowerCase(Locale.ROOT).contains("no production gateway"));
         assertTrue(doc.toLowerCase(Locale.ROOT).contains("not benchmark")
                 || doc.toLowerCase(Locale.ROOT).contains("no benchmark"));
+        assertNoUnsafeDemoContent(launcherDoc, LAUNCHER_DOC);
     }
 
     @Test
@@ -96,11 +111,14 @@ class ProxyDemoStackUsabilityTest {
         assertTrue(combined.contains("proxy-demo-round-robin"));
         assertTrue(combined.contains("proxy-demo-weighted-round-robin"));
         assertTrue(combined.contains("proxy-demo-failover"));
+        assertTrue(combined.contains("ProxyDemoFixtureLauncher"));
+        assertTrue(combined.contains("java -cp target/classes"));
         assertTrue(combined.contains("proxy-status.html"));
         assertTrue(combined.contains("/api/proxy/status"));
         assertTrue(combined.contains("X-Fixture-Upstream"));
         assertTrue(combined.contains("/proxy/weighted?step=1"));
         assertTrue(combined.contains("/proxy/failover?step=1"));
+        assertFalse(unix.contains("python3"));
         assertNoUnsafeDemoContent(combined, POWERSHELL_SCRIPT);
         assertFalse(combined.toLowerCase(Locale.ROOT).contains("reset metrics"));
         assertFalse(combined.toLowerCase(Locale.ROOT).contains("reset cooldown"));

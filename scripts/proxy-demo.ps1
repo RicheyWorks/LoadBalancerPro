@@ -2,7 +2,8 @@ param(
     [int]$BackendAPort = 18081,
     [int]$BackendBPort = 18082,
     [ValidateSet("round-robin", "weighted-round-robin", "failover", "status")]
-    [string]$Mode = "round-robin"
+    [string]$Mode = "round-robin",
+    [switch]$LegacyPowerShellFixture
 )
 
 $ErrorActionPreference = "Stop"
@@ -124,6 +125,12 @@ function Write-StatusCommands {
     Write-Host "  Browser: http://localhost:8080/proxy-status.html"
     Write-Host "  curl -s http://127.0.0.1:8080/api/proxy/status"
     Write-Host ""
+    Write-Host "Recommended cross-platform Java fixture launcher:"
+    Write-Host "  mvn -q -DskipTests compile"
+    Write-Host "  java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin"
+    Write-Host "  java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode weighted-round-robin"
+    Write-Host "  java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode failover"
+    Write-Host ""
     Write-Host "Demo profiles:"
     Write-Host "  proxy-demo-round-robin"
     Write-Host "  proxy-demo-weighted-round-robin"
@@ -132,6 +139,36 @@ function Write-StatusCommands {
 
 if ($Mode -eq "status") {
     Write-StatusCommands
+    return
+}
+
+if (-not $LegacyPowerShellFixture) {
+    Write-Host "Starting the cross-platform Java fixture launcher."
+    Write-Host "Use -LegacyPowerShellFixture to run the older PowerShell-only backend fixture jobs."
+    Write-Host ""
+    $launcherClass = "target/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"
+    if (-not (Test-Path $launcherClass)) {
+        Write-Host "Compiled launcher class not found; compiling launcher classes:"
+        Write-Host "  mvn -q -DskipTests compile"
+        & mvn -q -DskipTests compile
+        if ($LASTEXITCODE -ne 0) {
+            throw "Maven compile failed; the Java fixture launcher was not started."
+        }
+    } else {
+        Write-Host "Using existing compiled launcher class: $launcherClass"
+    }
+
+    $launcherArgs = @(
+        "-cp", "target/classes",
+        "com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher",
+        "--mode", $Mode,
+        "--backend-a-port", "$BackendAPort",
+        "--backend-b-port", "$BackendBPort"
+    )
+    Write-Host ""
+    Write-Host "Running:"
+    Write-Host "  java $($launcherArgs -join ' ')"
+    & java @launcherArgs
     return
 }
 

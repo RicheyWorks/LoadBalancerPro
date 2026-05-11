@@ -79,6 +79,8 @@ class ProxyOperatorStatusPageTest {
         assertTrue(page.contains("lastSelectedUpstream"));
         assertTrue(page.contains("PROXY_DEMO_STACK.md"));
         assertTrue(page.contains("PROXY_STRATEGY_DEMO_LAB.md"));
+        assertTrue(page.contains("ProxyDemoFixtureLauncher"));
+        assertTrue(page.contains("java -cp target/classes"));
         assertTrue(page.contains("-Mode round-robin"));
         assertTrue(page.contains("-Mode weighted-round-robin"));
         assertTrue(page.contains("-Mode failover"));

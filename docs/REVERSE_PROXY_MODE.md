@@ -154,13 +154,20 @@ Counters and active health state are local memory only. They are reset when the 
 
 For the single Windows/Unix quick-start path, checked-in demo profiles, startup commands, curl recipes, status-page verification, and cleanup steps, start with [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md).
 
-For a local no-cloud reviewer demo, run the PowerShell fixture:
+For a local no-cloud reviewer demo, use the Java fixture launcher:
+
+```bash
+mvn -q -DskipTests compile
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin
+```
+
+The helper scripts also point to this Java launcher:
 
 ```powershell
 .\scripts\proxy-demo.ps1
 ```
 
-The script starts two loopback-only HTTP backends on ports `18081` and `18082` with distinct response headers and `/health` probes. It prints a `mvn spring-boot:run` command using one of the explicit demo profiles in `src/main/resources`: `proxy-demo-round-robin`, `proxy-demo-weighted-round-robin`, or `proxy-demo-failover`. Use `-Mode round-robin`, `-Mode weighted-round-robin`, or `-Mode failover` for strategy-specific recipes. Unix users can use `bash scripts/proxy-demo.sh --mode round-robin` for the same loopback fixture flow. Example review commands:
+The launcher starts two loopback-only HTTP backends on ports `18081` and `18082` with distinct response headers and `/health` probes. It prints a `mvn spring-boot:run` command using one of the explicit demo profiles in `src/main/resources`: `proxy-demo-round-robin`, `proxy-demo-weighted-round-robin`, or `proxy-demo-failover`. Use `--mode round-robin`, `--mode weighted-round-robin`, or `--mode failover` for strategy-specific recipes. Unix users can use `bash scripts/proxy-demo.sh --mode round-robin` for the same Java fixture flow. Example review commands:
 
 ```bash
 curl -i http://127.0.0.1:8080/proxy/demo
@@ -172,7 +179,7 @@ curl -i http://127.0.0.1:8080/proxy/demo
 
 After marking `backend-b` unhealthy through the fixture, the active probe should report it unhealthy and the proxy should continue forwarding to the healthy backend. This is an illustrative local fixture, not a benchmark or production failover proof.
 
-For deterministic strategy-specific walkthroughs, see [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md). It documents `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover flows using real forwarded HTTP responses, `X-LoadBalancerPro-Upstream`, `X-LoadBalancerPro-Strategy`, and `/proxy-status.html` evidence.
+For deterministic strategy-specific walkthroughs, see [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md). It documents `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover flows using real forwarded HTTP responses, `X-LoadBalancerPro-Upstream`, `X-LoadBalancerPro-Strategy`, and `/proxy-status.html` evidence. For launcher-specific arguments and fixture behavior, see [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md).
 
 ## Safety Boundaries
 
@@ -191,7 +198,7 @@ In OAuth2 mode, `/proxy/**` requires the configured allocation role, which defau
 
 ## Test Evidence
 
-`ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, `ReverseProxyRetryCooldownTest`, and `ReverseProxyStrategyDemoLabTest` use local in-process JDK `HttpServer` fixtures or unused loopback ports. They prove:
+`ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, `ReverseProxyRetryCooldownTest`, `ReverseProxyStrategyDemoLabTest`, and `ProxyDemoFixtureLauncherTest` use local in-process JDK `HttpServer` fixtures or unused loopback ports. They prove:
 
 - proxy mode is disabled by default
 - GET requests are forwarded to local upstreams

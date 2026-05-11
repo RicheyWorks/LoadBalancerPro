@@ -58,6 +58,8 @@ After reviewing the matrix, select two scenario rows in the browser's `Operator 
 
 When a reviewer needs one handoff artifact, click `Generate review packet` after the matrix or replay steps. The packet includes matrix output when available and labels it as not generated yet when it has not been run.
 
+Run `API Contract Trace` after the matrix when a reviewer needs to audit matrix columns back to endpoint paths, packaged scenario payloads, raw response fields, derived labels, and unavailable-field handling.
+
 ## Safety Boundaries
 
 - Local/operator demo only.

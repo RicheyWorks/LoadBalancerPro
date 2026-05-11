@@ -34,7 +34,7 @@ Run the `Unified Load-Balancing Cockpit` folder from top to bottom for the singl
 5. `POST Cockpit Predictive Allocation`
 6. `POST Cockpit Load-Shedding Evaluation`
 
-The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, a deterministic side-by-side summary, an operator comparison matrix summary, replay-mode reviewer notes, and a copyable/printable operator review packet.
+The browser cockpit also exposes copyable curl snippets, a copyable scenario payload, raw JSON response blocks, a deterministic side-by-side summary, an operator comparison matrix summary, replay-mode reviewer notes, an API contract trace, and a copyable/printable operator review packet.
 
 Run the `Operator Scenario Gallery` folder when a reviewer wants to compare multiple packaged scenarios:
 
@@ -199,6 +199,12 @@ The browser cockpit includes an `Operator Review Packet` section. Click `Generat
 The packet assembles selected scenario summary, comparison matrix summary, replay delta summary, explanation/rationale summary, endpoint references, payload/curl references, raw JSON reference notes, safety notes, and limitations/unavailable-field notes. Sections that have not been generated yet are labeled as not generated yet. `Copy review packet` copies deterministic Markdown-style text, and `Print review packet` uses browser print styling for the packet panel only.
 
 The review packet is client-side only. It does not add a Postman request, backend report endpoint, browser storage, generated runtime file, benchmark result, score, certification claim, legal compliance claim, or identity claim.
+
+## API Contract Trace
+
+The browser cockpit includes an `API Contract Trace` section. Click `Generate trace` to map visible cockpit panels to endpoint paths, request payload sources, raw response sources, displayed raw fields, derived client labels, unavailable fields, and mutation behavior / safety notes.
+
+The trace does not add a Postman request or backend endpoint. It audits the same existing requests shown in the `Unified Load-Balancing Cockpit`, `Operator Scenario Gallery`, and `Operator Explanation Drill-Down` folders. Reviewers can copy the deterministic trace summary and optionally generate the review packet afterward to include trace notes.
 
 ## Explanation Drill-Down
 

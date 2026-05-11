@@ -58,7 +58,8 @@ The actual result still comes from the existing API response after the operator 
 7. Review `Explanation Drill-Down` for routing, allocation, overload, remediation, and scenario-delta rationale.
 8. Click `Run all scenarios` in `Operator Comparison Matrix` when you want the four packaged scenarios summarized side by side.
 9. Use `Operator Replay Mode` to select one baseline and one comparison scenario, then click `Replay selected pair`.
-10. Copy the selected payload, curl snippets, scenario summary, drill-down summary, matrix summary, replay reviewer note, matrix curls, matrix payloads, explanation curl snippets, or operator rationale.
+10. Click `Generate trace` in `API Contract Trace` when you want endpoint, payload, raw-field, derived-label, and unavailable-field mapping.
+11. Copy the selected payload, curl snippets, scenario summary, drill-down summary, matrix summary, replay reviewer note, API contract trace, matrix curls, matrix payloads, explanation curl snippets, or operator rationale.
 
 The what-changed summary compares scenario name, unallocated load, rejected load, load-shedding action, remediation status, and selected server per routing strategy. It is client-side copyable text only; it is not written to disk or sent to a report endpoint.
 
@@ -69,6 +70,8 @@ The comparison matrix uses stable scenario ordering and reports unavailable fiel
 Replay mode uses the same packaged payloads and endpoint calls. Its before/after highlights are client-side comparisons of visible response fields, not scores, benchmark results, or production guarantees.
 
 The review packet can then assemble the selected scenario, matrix, replay, explanation, endpoint, raw JSON reference, and safety notes into one copyable/printable handoff. If a scenario, matrix, or replay section has not been generated, the packet marks that section as not generated yet.
+
+The API contract trace can be generated before the packet to include raw-vs-derived mapping and unavailable-field notes in the review flow.
 
 ## Real Endpoints Used
 

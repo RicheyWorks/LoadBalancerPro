@@ -1,7 +1,7 @@
 param(
     [int]$BackendAPort = 18081,
     [int]$BackendBPort = 18082,
-    [ValidateSet("round-robin", "weighted-round-robin", "failover")]
+    [ValidateSet("round-robin", "weighted-round-robin", "failover", "status")]
     [string]$Mode = "round-robin"
 )
 
@@ -55,6 +55,20 @@ function Start-DemoBackend {
     }
 }
 
+function Get-ProxyProfileName {
+    param(
+        [string]$SelectedMode
+    )
+
+    if ($SelectedMode -eq "weighted-round-robin") {
+        return "proxy-demo-weighted-round-robin"
+    }
+    if ($SelectedMode -eq "failover") {
+        return "proxy-demo-failover"
+    }
+    return "proxy-demo-round-robin"
+}
+
 function Get-ProxyArguments {
     param(
         [string]$SelectedMode,
@@ -62,27 +76,14 @@ function Get-ProxyArguments {
         [int]$BackendBPort
     )
 
-    $strategy = if ($SelectedMode -eq "weighted-round-robin") { "WEIGHTED_ROUND_ROBIN" } else { "ROUND_ROBIN" }
-    $arguments = @(
-        "--server.address=127.0.0.1",
-        "--server.port=8080",
-        "--loadbalancerpro.proxy.enabled=true",
-        "--loadbalancerpro.proxy.strategy=$strategy",
-        "--loadbalancerpro.proxy.health-check.enabled=true",
-        "--loadbalancerpro.proxy.health-check.interval=1s",
-        "--loadbalancerpro.proxy.upstreams[0].id=backend-a",
-        "--loadbalancerpro.proxy.upstreams[0].url=http://127.0.0.1:$BackendAPort",
-        "--loadbalancerpro.proxy.upstreams[0].healthy=true",
-        "--loadbalancerpro.proxy.upstreams[1].id=backend-b",
-        "--loadbalancerpro.proxy.upstreams[1].url=http://127.0.0.1:$BackendBPort",
-        "--loadbalancerpro.proxy.upstreams[1].healthy=true"
-    )
+    $profile = Get-ProxyProfileName -SelectedMode $SelectedMode
+    $arguments = @("--spring.profiles.active=$profile")
 
-    if ($SelectedMode -eq "weighted-round-robin") {
-        $arguments += @(
-            "--loadbalancerpro.proxy.upstreams[0].weight=3.0",
-            "--loadbalancerpro.proxy.upstreams[1].weight=1.0"
-        )
+    if ($BackendAPort -ne 18081) {
+        $arguments += "--loadbalancerpro.proxy.upstreams[0].url=http://127.0.0.1:$BackendAPort"
+    }
+    if ($BackendBPort -ne 18082) {
+        $arguments += "--loadbalancerpro.proxy.upstreams[1].url=http://127.0.0.1:$BackendBPort"
     }
 
     return $arguments -join " "
@@ -118,6 +119,22 @@ function Write-DemoCurlRecipes {
     Write-Host "  Browser status page: http://localhost:8080/proxy-status.html"
 }
 
+function Write-StatusCommands {
+    Write-Host "Proxy status UI:"
+    Write-Host "  Browser: http://localhost:8080/proxy-status.html"
+    Write-Host "  curl -s http://127.0.0.1:8080/api/proxy/status"
+    Write-Host ""
+    Write-Host "Demo profiles:"
+    Write-Host "  proxy-demo-round-robin"
+    Write-Host "  proxy-demo-weighted-round-robin"
+    Write-Host "  proxy-demo-failover"
+}
+
+if ($Mode -eq "status") {
+    Write-StatusCommands
+    return
+}
+
 $jobs = @(
     Start-DemoBackend -Name "backend-a" -Port $BackendAPort
     Start-DemoBackend -Name "backend-b" -Port $BackendBPort
@@ -130,6 +147,9 @@ try {
     Write-Host "  backend-b http://127.0.0.1:$BackendBPort"
     Write-Host ""
     Write-Host "Selected strategy demo mode: $Mode"
+    $profile = Get-ProxyProfileName -SelectedMode $Mode
+    Write-Host "Checked-in Spring profile: $profile"
+    Write-Host "Profile file: src/main/resources/application-$profile.properties"
     Write-Host ""
     Write-Host "Start LoadBalancerPro in a second terminal:"
     $proxyArguments = Get-ProxyArguments -SelectedMode $Mode -BackendAPort $BackendAPort -BackendBPort $BackendBPort

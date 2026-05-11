@@ -2,6 +2,8 @@
 
 This lab shows strategy-specific reverse proxy behavior with two local loopback backends and the existing optional `/proxy/**` forwarding path. It uses no cloud services, no public internet, no generated reports, and no backend mutation controls.
 
+For the single start-to-finish demo stack path with checked-in profile files, Windows PowerShell commands, Unix shell commands, status-page verification, and cleanup steps, see [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md).
+
 Start the two local fixture backends with PowerShell:
 
 ```powershell

@@ -152,13 +152,15 @@ Counters and active health state are local memory only. They are reset when the 
 
 ## Local Two-Backend Demo Fixture
 
+For the single Windows/Unix quick-start path, checked-in demo profiles, startup commands, curl recipes, status-page verification, and cleanup steps, start with [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md).
+
 For a local no-cloud reviewer demo, run the PowerShell fixture:
 
 ```powershell
 .\scripts\proxy-demo.ps1
 ```
 
-The script starts two loopback-only HTTP backends on ports `18081` and `18082` with distinct response headers and `/health` probes. It prints a `mvn spring-boot:run` command that enables proxy mode and active health checks. Use `-Mode round-robin`, `-Mode weighted-round-robin`, or `-Mode failover` for strategy-specific recipes. Example review commands:
+The script starts two loopback-only HTTP backends on ports `18081` and `18082` with distinct response headers and `/health` probes. It prints a `mvn spring-boot:run` command using one of the explicit demo profiles in `src/main/resources`: `proxy-demo-round-robin`, `proxy-demo-weighted-round-robin`, or `proxy-demo-failover`. Use `-Mode round-robin`, `-Mode weighted-round-robin`, or `-Mode failover` for strategy-specific recipes. Unix users can use `bash scripts/proxy-demo.sh --mode round-robin` for the same loopback fixture flow. Example review commands:
 
 ```bash
 curl -i http://127.0.0.1:8080/proxy/demo

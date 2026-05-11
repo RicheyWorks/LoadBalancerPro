@@ -77,10 +77,14 @@ class ProxyOperatorStatusPageTest {
         assertTrue(page.contains("totalRetryAttempts"));
         assertTrue(page.contains("totalCooldownActivations"));
         assertTrue(page.contains("lastSelectedUpstream"));
+        assertTrue(page.contains("PROXY_DEMO_STACK.md"));
         assertTrue(page.contains("PROXY_STRATEGY_DEMO_LAB.md"));
         assertTrue(page.contains("-Mode round-robin"));
         assertTrue(page.contains("-Mode weighted-round-robin"));
         assertTrue(page.contains("-Mode failover"));
+        assertTrue(page.contains("scripts/proxy-demo.sh --mode round-robin"));
+        assertTrue(page.contains("scripts/proxy-demo.sh --mode weighted-round-robin"));
+        assertTrue(page.contains("scripts/proxy-demo.sh --mode failover"));
         assertTrue(page.contains("/proxy/weighted?step=1"));
         assertTrue(page.contains("/proxy/failover?step=1"));
     }

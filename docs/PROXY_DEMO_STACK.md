@@ -1,0 +1,249 @@
+# Proxy Demo Stack
+
+This is the shortest local path for reviewing the practical reverse proxy mode with two fixture backends, checked-in demo profiles, copyable curl commands, and the browser status page.
+
+The stack is loopback-only. It does not require cloud credentials, does not contact public internet, does not write backend state beyond the fixture health toggle endpoints, and does not prove production gateway readiness or benchmark performance.
+
+## Quick Start
+
+Use one terminal for the two fixture backends and one terminal for LoadBalancerPro.
+
+Windows PowerShell:
+
+```powershell
+.\scripts\proxy-demo.ps1 -Mode round-robin
+```
+
+Unix shell:
+
+```bash
+bash scripts/proxy-demo.sh --mode round-robin
+```
+
+The script prints the exact LoadBalancerPro startup command. For the default ports, the round-robin command is:
+
+```bash
+mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=proxy-demo-round-robin"
+```
+
+Open the read-only browser status page after the app starts:
+
+```text
+http://localhost:8080/proxy-status.html
+```
+
+Inspect the raw status endpoint:
+
+```bash
+curl -s http://127.0.0.1:8080/api/proxy/status
+```
+
+## Demo Modes
+
+The scripts support these modes:
+
+```text
+round-robin
+weighted-round-robin
+failover
+status
+```
+
+Use `status` when the app is already running and you only want the status page and endpoint reminders.
+
+## Checked-In Demo Profiles
+
+The demo profiles live under `src/main/resources` and are inactive unless explicitly selected:
+
+```text
+src/main/resources/application-proxy-demo-round-robin.properties
+src/main/resources/application-proxy-demo-weighted-round-robin.properties
+src/main/resources/application-proxy-demo-failover.properties
+```
+
+All three profiles bind LoadBalancerPro to `127.0.0.1:8080`, enable `/proxy/**`, use loopback upstreams only, and keep retry/cooldown disabled unless an operator adds extra arguments for a resilience demo.
+
+Default application behavior is unchanged: `src/main/resources/application.properties` keeps `loadbalancerpro.proxy.enabled=false`.
+
+## ROUND_ROBIN Path
+
+Start fixture backends:
+
+```powershell
+.\scripts\proxy-demo.ps1 -Mode round-robin
+```
+
+or:
+
+```bash
+bash scripts/proxy-demo.sh --mode round-robin
+```
+
+Start LoadBalancerPro in a second terminal:
+
+```bash
+mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=proxy-demo-round-robin"
+```
+
+Run four forwarded requests:
+
+```bash
+curl -i http://127.0.0.1:8080/proxy/demo?step=1
+curl -i http://127.0.0.1:8080/proxy/demo?step=2
+curl -i http://127.0.0.1:8080/proxy/demo?step=3
+curl -i http://127.0.0.1:8080/proxy/demo?step=4
+curl -s http://127.0.0.1:8080/api/proxy/status
+```
+
+Expected first four selected upstream headers:
+
+```text
+X-LoadBalancerPro-Upstream: backend-a
+X-LoadBalancerPro-Upstream: backend-b
+X-LoadBalancerPro-Upstream: backend-a
+X-LoadBalancerPro-Upstream: backend-b
+X-LoadBalancerPro-Strategy: ROUND_ROBIN
+```
+
+Verify `/proxy-status.html` shows both upstreams and increasing forwarded counters.
+
+## WEIGHTED_ROUND_ROBIN Path
+
+Start fixture backends:
+
+```powershell
+.\scripts\proxy-demo.ps1 -Mode weighted-round-robin
+```
+
+or:
+
+```bash
+bash scripts/proxy-demo.sh --mode weighted-round-robin
+```
+
+Start LoadBalancerPro in a second terminal:
+
+```bash
+mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=proxy-demo-weighted-round-robin"
+```
+
+The demo profile configures `backend-a` with weight `3.0` and `backend-b` with weight `1.0`.
+
+Run four forwarded requests:
+
+```bash
+curl -i http://127.0.0.1:8080/proxy/weighted?step=1
+curl -i http://127.0.0.1:8080/proxy/weighted?step=2
+curl -i http://127.0.0.1:8080/proxy/weighted?step=3
+curl -i http://127.0.0.1:8080/proxy/weighted?step=4
+curl -s http://127.0.0.1:8080/api/proxy/status
+```
+
+Expected first four selected upstream headers for this fresh local process:
+
+```text
+X-LoadBalancerPro-Upstream: backend-a
+X-LoadBalancerPro-Upstream: backend-a
+X-LoadBalancerPro-Upstream: backend-b
+X-LoadBalancerPro-Upstream: backend-a
+X-LoadBalancerPro-Strategy: WEIGHTED_ROUND_ROBIN
+```
+
+This is selected-upstream evidence for the checked-in local fixture profile. It is not benchmark evidence. Extra manual requests advance the process-local strategy state, so restart LoadBalancerPro before repeating the exact first-four sequence.
+
+## Failover Path
+
+Start fixture backends:
+
+```powershell
+.\scripts\proxy-demo.ps1 -Mode failover
+```
+
+or:
+
+```bash
+bash scripts/proxy-demo.sh --mode failover
+```
+
+Start LoadBalancerPro in a second terminal:
+
+```bash
+mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=proxy-demo-failover"
+```
+
+Mark `backend-b` unhealthy, send proxy traffic, then restore it:
+
+```bash
+curl http://127.0.0.1:18082/fixture/health/fail
+curl -i http://127.0.0.1:8080/proxy/failover?step=1
+curl -s http://127.0.0.1:8080/api/proxy/status
+curl http://127.0.0.1:18082/fixture/health/ok
+curl -i http://127.0.0.1:8080/proxy/failover?step=2
+```
+
+Expected evidence while `backend-b` is failing:
+
+- `X-LoadBalancerPro-Upstream: backend-a`
+- `X-LoadBalancerPro-Strategy: ROUND_ROBIN`
+- `/proxy-status.html` shows `backend-b` as not effectively healthy after the active probe
+- `/api/proxy/status` shows health and forwarded counters without reset or mutation controls
+
+## Status Page Verification
+
+Use the browser page:
+
+```text
+http://localhost:8080/proxy-status.html
+```
+
+or the JSON endpoint:
+
+```bash
+curl -s http://127.0.0.1:8080/api/proxy/status
+```
+
+Check:
+
+- proxy enabled flag
+- configured strategy
+- upstream effective health
+- last selected upstream
+- total and per-upstream forwarded counters
+- failure counters
+- retry/cooldown fields when optional resilience settings are enabled
+- status-class counters
+
+## Cleanup
+
+Stop LoadBalancerPro with `Ctrl+C` in the app terminal.
+
+Stop fixture backends:
+
+- PowerShell script: press Enter in the fixture terminal.
+- Unix shell script: press Enter in the fixture terminal, or use `Ctrl+C`.
+
+The scripts use loopback processes only. They do not write generated runtime reports into the repository.
+
+## Troubleshooting
+
+- If `/proxy/**` returns 404, confirm the app was started with one of the `proxy-demo-*` profiles.
+- If `/proxy-status.html` loads but reports proxy disabled, confirm `--spring.profiles.active=proxy-demo-round-robin`, `proxy-demo-weighted-round-robin`, or `proxy-demo-failover` was passed to the app.
+- If fixture startup fails, check whether ports `18081` or `18082` are already in use.
+- If the weighted sequence differs, restart LoadBalancerPro and rerun the first four weighted curl commands before sending any other proxy traffic.
+- If failover does not skip `backend-b`, run `curl http://127.0.0.1:18082/fixture/health/fail` before the proxy request and refresh `/proxy-status.html`.
+- If Unix `python3` is unavailable, use the PowerShell script or start two local HTTP fixtures manually with the same `/health` behavior.
+
+## Safety Boundaries
+
+- Demo configs are explicit profiles only.
+- Default proxy mode remains disabled.
+- Demos use loopback upstreams only.
+- No cloud services.
+- No cloud mutation.
+- No `CloudManager` construction.
+- No public internet requirement.
+- No secrets.
+- No backend reset, metrics reset, or cooldown reset controls.
+- No browser storage.
+- No generated runtime reports.
+- No production gateway, benchmark, certification, legal, identity, or security guarantee.

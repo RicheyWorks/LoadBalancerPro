@@ -12,11 +12,12 @@ It gives reviewers a deterministic checklist for moving through scenario selecti
 
 1. Start the local API.
 2. Open the cockpit URL.
-3. Click `Start walkthrough`.
-4. Use `Next step`, `Previous step`, and `Mark step complete` to move through the checklist.
-5. Use each `Jump to panel` control to move to the cockpit panel for the current step.
-6. Run the existing cockpit controls when a step calls for evidence.
-7. Click `Copy walkthrough summary` when the checklist should be attached to a reviewer note.
+3. Use `Cockpit Navigation & Readiness` if you want a section index before starting.
+4. Click `Start walkthrough`.
+5. Use `Next step`, `Previous step`, and `Mark step complete` to move through the checklist.
+6. Use each `Jump to panel` control to move to the cockpit panel for the current step.
+7. Run the existing cockpit controls when a step calls for evidence.
+8. Click `Refresh readiness` to update current-session badges, then click `Copy walkthrough summary` when the checklist should be attached to a reviewer note.
 
 `Clear walkthrough` resets the checklist state in the browser only.
 
@@ -55,4 +56,4 @@ Each step shows the action to take next and the evidence expected from the exist
 
 ## Limitations
 
-The walkthrough does not add API behavior. It guides existing cockpit controls and panels. It does not prove that a reviewer actually inspected every raw JSON field, and it does not replace API tests, Postman checks, or offline evidence workflows.
+The walkthrough does not add API behavior. It guides existing cockpit controls and panels. The navigation/readiness layer can show where the walkthrough is in the current browser session, but it does not prove that a reviewer actually inspected every raw JSON field, and it does not replace API tests, Postman checks, or offline evidence workflows.

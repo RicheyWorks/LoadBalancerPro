@@ -28,6 +28,8 @@ The API contract trace maps each drill-down claim to endpoint paths, request pay
 
 The operator guided walkthrough places explanation review before matrix, replay, trace verification, and review packet generation so reviewers see raw-vs-derived rationale before copying a handoff.
 
+The cockpit navigation/readiness layer can jump directly to `Explanation Drill-Down` and shows whether the explanation summary has been generated in the current page session.
+
 ## Browser Flow
 
 1. Start the local app.

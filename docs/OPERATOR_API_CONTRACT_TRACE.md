@@ -30,7 +30,7 @@ If a panel has not been run yet, the trace marks the source as `not generated ye
 - unavailable or missing fields
 - mutation behavior and safety notes
 
-The trace includes the scenario gallery, operator guided walkthrough, explanation drill-down, comparison matrix, replay mode, review packet, and the trace panel itself.
+The trace includes health/readiness, cockpit navigation/readiness, scenario gallery, operator guided walkthrough, explanation drill-down, comparison matrix, replay mode, review packet, and the trace panel itself.
 
 ## Guided Walkthrough Relationship
 

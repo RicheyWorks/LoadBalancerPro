@@ -18,7 +18,8 @@ It assembles the current in-memory cockpit state into one deterministic Markdown
 6. Run `Operator Replay Mode` if before/after deltas are needed.
 7. Review `Explanation Drill-Down` if rationale notes are needed.
 8. Click `Generate trace` in `API Contract Trace` if endpoint/raw-field mapping is needed.
-9. Click `Generate review packet`.
+9. Use `Cockpit Navigation & Readiness` to refresh current-session readiness before final handoff if useful.
+10. Click `Generate review packet`.
 
 If a section has not been generated yet, the packet includes explicit `not generated yet` text instead of inventing data.
 
@@ -43,6 +44,8 @@ If a section has not been generated yet, the packet includes explicit `not gener
 - `Print review packet` uses the browser print dialog with print-focused styling for the packet panel.
 
 The packet is not written to disk, sent to a backend report endpoint, or stored in browser storage.
+
+The navigation/readiness summary is a separate copyable browser note. It can be copied alongside the packet when a reviewer wants an at-a-glance view of which cockpit panels generated evidence in the current page session.
 
 ## API Contract Trace Relationship
 

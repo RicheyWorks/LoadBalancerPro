@@ -6,7 +6,7 @@ It is built as a polished portfolio and enterprise-demo system: the code demonst
 
 The API and CLI are safe by default: allocation endpoints do not call AWS, CLI cloud integration is disabled unless requested, Docker/local runs do not require AWS credentials, and cloud mutation stays disabled unless every live-mode guardrail is configured explicitly.
 
-JavaFX UI support is optional. API, proxy, CLI, Java fixture launcher, and static browser workflows do not require JavaFX; desktop UI deployment remains platform-sensitive and separate from the Spring API/proxy operator path.
+JavaFX UI support is optional. API, proxy, CLI, Java fixture launcher, and static browser workflows do not require JavaFX; desktop UI deployment remains platform-sensitive and separate from the Spring API/proxy operator path. See [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md).
 
 ## What This Project Demonstrates
 
@@ -158,6 +158,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`RELEASE_CANDIDATE_DRY_RUN.md`](docs/RELEASE_CANDIDATE_DRY_RUN.md) ties CI artifacts, local verification, SBOM review, packaged jar smoke evidence, proxy status UI, and demo stack commands into one release-free go/no-go packet with a placeholder-only review template.
 - [`OPERATOR_INSTALL_RUN_MATRIX.md`](docs/OPERATOR_INSTALL_RUN_MATRIX.md) gives Windows and Unix command paths for packaged jar, Maven exec, Spring profiles, proxy demo stack, fixture launcher, status pages, CI artifacts, and smoke helpers.
 - [`RELEASE_INTENT_CHECKLIST.md`](docs/RELEASE_INTENT_CHECKLIST.md) adds the explicit release-intent hard stop before any future tag, release, upload, ruleset, or `release-downloads/` action is considered.
+- [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md) documents JavaFX desktop UI scope, platform caveats, launch guidance, troubleshooting, and why API/proxy/operator paths do not require JavaFX.
 - [`PACKAGE_NAMING.md`](docs/PACKAGE_NAMING.md) documents why the `RicheyWorks/LoadBalancerPro` repository currently keeps the stable `com.richmond423.loadbalancerpro` Java namespace.
 - [`PROXY_OPERATOR_STATUS_UI.md`](docs/PROXY_OPERATOR_STATUS_UI.md) documents the read-only `/proxy-status.html` browser view for proxy health, counters, retry/cooldown state, raw status JSON, and demo commands.
 - [`PROXY_STRATEGY_DEMO_LAB.md`](docs/PROXY_STRATEGY_DEMO_LAB.md) documents local strategy-specific proxy demos for `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover selected-upstream evidence.

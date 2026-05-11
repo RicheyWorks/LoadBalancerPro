@@ -85,6 +85,8 @@ The examples avoid public upstream URLs, secrets, cloud settings, generated runt
 
 JavaFX UI support exists in the project, but the API, proxy, CLI, Java fixture launcher, static browser pages, and Maven exec recipes do not require JavaFX. Treat JavaFX as optional desktop UI support with platform-sensitive deployment considerations, not as a required operator path for the Spring API or reverse proxy demos.
 
+See [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) for desktop UI scope, platform caveats, launch guidance, troubleshooting, and the recommended API/proxy/static browser operator paths.
+
 ## Naming Note
 
 The active Java package root is `com.richmond423.loadbalancerpro` while the repository is `RicheyWorks/LoadBalancerPro`. See [`PACKAGE_NAMING.md`](PACKAGE_NAMING.md) for the stable legacy namespace decision and why a package rename is deferred.

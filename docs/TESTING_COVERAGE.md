@@ -50,6 +50,8 @@ packaged-artifact-smoke
 
 The artifact contains `artifact-smoke-summary.txt`, `artifact-sha256.txt`, and `jar-resource-list.txt`. The lane checks the jar manifest, `/proxy-status.html`, `/load-balancing-cockpit.html`, proxy demo profiles, and `ProxyDemoFixtureLauncher.class`. It is workflow artifact evidence only; it does not create tags, GitHub releases, release assets, or `release-downloads/` files.
 
+For a single reviewer workflow covering JaCoCo download, packaged-artifact-smoke inspection, SBOM artifact handling, local-vs-CI SHA-256 comparison, and a release-free candidate checklist, see [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md).
+
 ## Skipped-Test Evidence
 
 CI parses `target/surefire-reports/*.xml` after the test step and prints:

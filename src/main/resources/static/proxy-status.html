@@ -347,12 +347,22 @@
 
     <section class="panel" aria-labelledby="curl-title">
       <h2 id="curl-title">Demo curl commands</h2>
-      <p class="muted">Examples for the loopback two-backend fixture from <code>scripts/proxy-demo.ps1</code>.</p>
-      <pre id="demo-curl-commands">powershell -ExecutionPolicy Bypass -File .\scripts\proxy-demo.ps1
-curl -i http://127.0.0.1:8080/proxy/demo
+      <p class="muted">
+        Examples for the loopback two-backend fixture from <code>scripts/proxy-demo.ps1</code>.
+        See <code>docs/PROXY_STRATEGY_DEMO_LAB.md</code> for strategy-specific recipes.
+      </p>
+      <pre id="demo-curl-commands">powershell -ExecutionPolicy Bypass -File .\scripts\proxy-demo.ps1 -Mode round-robin
+powershell -ExecutionPolicy Bypass -File .\scripts\proxy-demo.ps1 -Mode weighted-round-robin
+powershell -ExecutionPolicy Bypass -File .\scripts\proxy-demo.ps1 -Mode failover
+curl -i http://127.0.0.1:8080/proxy/demo?step=1
+curl -i http://127.0.0.1:8080/proxy/demo?step=2
+curl -i http://127.0.0.1:8080/proxy/weighted?step=1
+curl -i http://127.0.0.1:8080/proxy/weighted?step=2
+curl -i http://127.0.0.1:8080/proxy/weighted?step=3
+curl -i http://127.0.0.1:8080/proxy/weighted?step=4
 curl -s http://127.0.0.1:8080/api/proxy/status
 curl http://127.0.0.1:18082/fixture/health/fail
-curl -i http://127.0.0.1:8080/proxy/demo
+curl -i http://127.0.0.1:8080/proxy/failover?step=1
 curl http://127.0.0.1:18082/fixture/health/ok
 curl -s http://127.0.0.1:8080/api/proxy/status</pre>
     </section>

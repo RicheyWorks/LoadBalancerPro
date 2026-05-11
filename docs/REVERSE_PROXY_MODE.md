@@ -158,7 +158,7 @@ For a local no-cloud reviewer demo, run the PowerShell fixture:
 .\scripts\proxy-demo.ps1
 ```
 
-The script starts two loopback-only HTTP backends on ports `18081` and `18082` with distinct response headers and `/health` probes. It prints a `mvn spring-boot:run` command that enables proxy mode and active health checks. Example review commands:
+The script starts two loopback-only HTTP backends on ports `18081` and `18082` with distinct response headers and `/health` probes. It prints a `mvn spring-boot:run` command that enables proxy mode and active health checks. Use `-Mode round-robin`, `-Mode weighted-round-robin`, or `-Mode failover` for strategy-specific recipes. Example review commands:
 
 ```bash
 curl -i http://127.0.0.1:8080/proxy/demo
@@ -169,6 +169,8 @@ curl -i http://127.0.0.1:8080/proxy/demo
 ```
 
 After marking `backend-b` unhealthy through the fixture, the active probe should report it unhealthy and the proxy should continue forwarding to the healthy backend. This is an illustrative local fixture, not a benchmark or production failover proof.
+
+For deterministic strategy-specific walkthroughs, see [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md). It documents `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover flows using real forwarded HTTP responses, `X-LoadBalancerPro-Upstream`, `X-LoadBalancerPro-Strategy`, and `/proxy-status.html` evidence.
 
 ## Safety Boundaries
 
@@ -187,7 +189,7 @@ In OAuth2 mode, `/proxy/**` requires the configured allocation role, which defau
 
 ## Test Evidence
 
-`ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, and `ReverseProxyRetryCooldownTest` use local in-process JDK `HttpServer` fixtures or unused loopback ports. They prove:
+`ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, `ReverseProxyRetryCooldownTest`, and `ReverseProxyStrategyDemoLabTest` use local in-process JDK `HttpServer` fixtures or unused loopback ports. They prove:
 
 - proxy mode is disabled by default
 - GET requests are forwarded to local upstreams
@@ -204,6 +206,7 @@ In OAuth2 mode, `/proxy/**` requires the configured allocation role, which defau
 - cooldown activates after configured consecutive failures
 - cooled-down upstreams are skipped
 - healthy active probes can recover cooldown state
+- strategy-specific real HTTP demos expose selected-upstream and strategy headers for round-robin, weighted round-robin, and health-aware failover behavior
 - unreachable upstreams return controlled HTTP 502
 - proxy requests do not construct `CloudManager`
 
@@ -211,4 +214,4 @@ These are local/no-cloud integration tests. They reduce the simulator-only gap, 
 
 ## Next Steps
 
-Good follow-up slices are strategy-specific proxy examples, documented production-hardening checklists, a small proxy status UI, and richer operator visibility for retry/cooldown behavior.
+Good follow-up slices are documented production-hardening checklists, richer real-backend examples, and packaging/operator usability around local proxy demos.

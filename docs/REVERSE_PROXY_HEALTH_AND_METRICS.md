@@ -91,6 +91,8 @@ http://localhost:8080/proxy-status.html
 
 The fixture has no cloud dependency and no public internet dependency. It is meant for local reviewer demos of routing and failover visibility, not throughput proof.
 
+For strategy-specific loopback recipes, run the same fixture with `-Mode round-robin`, `-Mode weighted-round-robin`, or `-Mode failover` and follow [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md). Those flows pair forwarded response headers with `/proxy-status.html` counters so reviewers can verify selected-upstream behavior without cloud dependencies.
+
 ## Safety Boundaries
 
 - Optional mode only.
@@ -103,6 +105,6 @@ The fixture has no cloud dependency and no public internet dependency. It is mea
 
 ## Test Evidence
 
-The reverse proxy test suite uses loopback-only JDK `HttpServer` fixtures and unused local ports. It covers disabled defaults, GET forwarding, POST/body forwarding, query preservation, configured unhealthy upstream skipping, active health probes, dynamic unhealthy skipping, read-only status output, forwarding counters, failure counters, retry counters, cooldown counters, status-class counters, unreachable upstream behavior, bounded retry behavior, non-idempotent no-retry defaults, cooldown recovery, and no `CloudManager` construction.
+The reverse proxy test suite uses loopback-only JDK `HttpServer` fixtures and unused local ports. It covers disabled defaults, GET forwarding, POST/body forwarding, query preservation, configured unhealthy upstream skipping, active health probes, dynamic unhealthy skipping, read-only status output, forwarding counters, failure counters, retry counters, cooldown counters, status-class counters, unreachable upstream behavior, bounded retry behavior, non-idempotent no-retry defaults, cooldown recovery, strategy-specific selected-upstream evidence, and no `CloudManager` construction.
 
 JaCoCo coverage and skipped-test counts remain surfaced by the `Build, Test, Package, Smoke` workflow artifacts and logs.

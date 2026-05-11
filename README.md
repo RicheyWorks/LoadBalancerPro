@@ -10,6 +10,18 @@ JavaFX UI support is optional. API, proxy, CLI, Java fixture launcher, and stati
 
 Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
 
+## Try the Web Cockpit
+
+Run the Spring Boot app locally:
+
+```bash
+mvn spring-boot:run
+```
+
+Then open [`http://localhost:8080/`](http://localhost:8080/) for the app landing page or go directly to [`http://localhost:8080/load-balancing-cockpit.html`](http://localhost:8080/load-balancing-cockpit.html).
+
+The web cockpit is the quickest first look at LoadBalancerPro. It uses existing health, allocation, evaluation, and routing comparison endpoints with synthetic local inputs, keeps output in the browser, and preserves the existing cockpit URL. For routing-only review, open [`http://localhost:8080/routing-demo.html`](http://localhost:8080/routing-demo.html). This is a simulator/operator review surface, not managed cloud load-balancing infrastructure; proxy mode remains optional and disabled by default unless explicitly enabled.
+
 ## What This Project Demonstrates
 
 - Java 17 and Spring Boot API design with validation, structured errors, health/metrics endpoints, OpenAPI docs, and conservative profile defaults.

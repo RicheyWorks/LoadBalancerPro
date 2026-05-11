@@ -16,6 +16,7 @@
         <netty.version>4.2.13.Final</netty.version>
         <aws-sdk-v2.version>2.44.4</aws-sdk-v2.version>
         <javafx.version>17.0.10</javafx.version>
+        <jacoco.version>0.8.13</jacoco.version>
     </properties>
 
     <!-- Let Spring Boot manage dependency versions -->
@@ -182,6 +183,28 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.5</version>
+            </plugin>
+
+            <!-- Test coverage reporting. Reports are generated under target/site/jacoco during verify. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- JAR metadata used by the executable Spring Boot artifact. -->

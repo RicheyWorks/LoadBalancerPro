@@ -32,6 +32,71 @@ jobs:
       - name: Run tests
         run: mvn -B test
 
+      - name: Verify zero skipped tests
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! compgen -G "target/surefire-reports/*.xml" > /dev/null; then
+            echo "No Surefire XML reports found."
+            exit 1
+          fi
+
+          total_tests="$({ grep -hoE 'tests="[0-9]+"' target/surefire-reports/*.xml || true; } | cut -d'"' -f2 | awk '{ total += $1 } END { print total + 0 }')"
+          skipped_tests="$({ grep -hoE 'skipped="[0-9]+"' target/surefire-reports/*.xml || true; } | cut -d'"' -f2 | awk '{ total += $1 } END { print total + 0 }')"
+
+          echo "Surefire tests reported: ${total_tests}"
+          echo "Surefire skipped tests reported: ${skipped_tests}"
+
+          if [ "${skipped_tests}" -ne 0 ]; then
+            echo "Skipped tests must be documented instead of hidden."
+            exit 1
+          fi
+
+      - name: Generate JaCoCo coverage report
+        run: mvn -B jacoco:report
+
+      - name: Summarize JaCoCo coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          report="target/site/jacoco/jacoco.csv"
+          if [ ! -f "$report" ]; then
+            echo "JaCoCo CSV report not found at $report"
+            exit 1
+          fi
+
+          awk -F, '
+            NR > 1 {
+              instruction_missed += $4;
+              instruction_covered += $5;
+              branch_missed += $6;
+              branch_covered += $7;
+              line_missed += $8;
+              line_covered += $9;
+            }
+            END {
+              instruction_total = instruction_missed + instruction_covered;
+              branch_total = branch_missed + branch_covered;
+              line_total = line_missed + line_covered;
+              instruction_pct = instruction_total ? (100 * instruction_covered / instruction_total) : 0;
+              branch_pct = branch_total ? (100 * branch_covered / branch_total) : 0;
+              line_pct = line_total ? (100 * line_covered / line_total) : 0;
+              printf "JaCoCo instruction coverage: %.2f%% (%d/%d)%s", instruction_pct, instruction_covered, instruction_total, ORS;
+              printf "JaCoCo branch coverage: %.2f%% (%d/%d)%s", branch_pct, branch_covered, branch_total, ORS;
+              printf "JaCoCo line coverage: %.2f%% (%d/%d)%s", line_pct, line_covered, line_total, ORS;
+            }
+          ' "$report"
+
+      - name: Upload JaCoCo coverage artifacts
+        # actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: jacoco-coverage-report
+          path: target/site/jacoco
+          retention-days: 30
+
       - name: Package executable JAR
         run: mvn -B package
 

@@ -1,6 +1,6 @@
 # LoadBalancerPro
 
-LoadBalancerPro is a Java 17 / Spring Boot load-balancing simulator and cloud-safety demo with guarded AWS mutation paths, hardened API contracts, robust import/export handling, CLI workflows, observability endpoints, CI release gates, Docker runtime hardening, and comprehensive mocked test coverage.
+LoadBalancerPro is a Java 17 / Spring Boot load-balancing simulator and cloud-safety demo with guarded AWS mutation paths, hardened API contracts, robust import/export handling, CLI workflows, observability endpoints, CI release gates, Docker runtime hardening, and broad mocked/default test coverage with CI-published JaCoCo artifacts.
 
 It is built as a polished portfolio and enterprise-demo system: the code demonstrates production-minded boundaries, tests, packaging, and cloud guardrails, but it is not a drop-in production cloud load balancer.
 
@@ -121,6 +121,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`THREAT_MODEL.md`](evidence/THREAT_MODEL.md) documents assets, trust boundaries, threat scenarios, mitigations, and residual risks.
 - [`SAFETY_INVARIANTS.md`](evidence/SAFETY_INVARIANTS.md) defines non-negotiable safety rules and maps them to current evidence.
 - [`TEST_EVIDENCE.md`](evidence/TEST_EVIDENCE.md) maps major safety claims to Maven test coverage.
+- [`TESTING_COVERAGE.md`](docs/TESTING_COVERAGE.md) documents JaCoCo report paths, CI coverage artifacts, skipped-test evidence, coverage mapping, and limitations.
 - [`RESIDUAL_RISKS.md`](evidence/RESIDUAL_RISKS.md) tracks ranked residual risks with owners, status, evidence, and next actions.
 - [`RESILIENCE_SCORE.md`](evidence/RESILIENCE_SCORE.md) provides a conservative evidence-backed resilience scorecard.
 - [`SUPPLY_CHAIN_EVIDENCE.md`](evidence/SUPPLY_CHAIN_EVIDENCE.md) records current dependency and supply-chain evidence, gaps, and future hardening options.
@@ -161,7 +162,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - CSV/JSON handling validates schemas, handles robust CSV quoting, rejects malformed records, and neutralizes spreadsheet formula injection.
 - API hardening includes request-size enforcement, safe JSON error envelopes, validation response consistency, CORS coverage, and security headers.
 - Concurrency and lifecycle cleanup removed unsafe shared hashing state, bounded cache risk, and clarified CLI monitor shutdown ownership.
-- The full Maven test suite passes with broad mocked cloud-client coverage for cloud-adjacent behavior.
+- The full Maven test suite passes in CI with broad mocked cloud-client coverage for cloud-adjacent behavior, zero skipped tests enforced from Surefire XML, and JaCoCo coverage artifacts for reviewer inspection.
 - CI release gates verify tests, packaging, packaged-JAR smoke startup, dependency review on pull requests, and Docker image builds.
 - Docker runtime hardening runs the app as a non-root user and exposes a Docker healthcheck backed by `/api/health`.
 - The internal LASE telemetry-driven routing foundation models server state, scores tail-latency and pressure signals, samples candidates deterministically in tests, and emits explainable routing decisions.
@@ -488,6 +489,7 @@ GitHub Actions verifies the default release gates on every push and pull request
 ```bash
 mvn -B -DskipTests dependency:tree
 mvn -B test
+mvn -B jacoco:report
 mvn -B package
 JAR="$(ls -t target/LoadBalancerPro-*.jar | grep -Ev '(-sources|-javadoc|-tests)\.jar$' | head -n 1)"
 java -jar "$JAR" --lase-demo=healthy
@@ -502,7 +504,7 @@ trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 loadbalancer
 docker stop loadbalancerpro-ci
 ```
 
-The LASE demo smoke checks run deterministic synthetic reports, verify safe failure for an invalid scenario name, and confirm the demo path does not emit Spring startup markers. The packaged JAR smoke test binds the app to `127.0.0.1`, waits for `GET /api/health` to return HTTP 200, then stops the local process. CI generates CycloneDX SBOM files and uploads them as workflow artifacts, then builds the Docker image, starts the container on a loopback-bound host port, verifies `/api/health`, waits for the Docker healthcheck to become healthy, stops the container, and runs a blocking Trivy image scan for fixed high/critical OS and library vulnerabilities. CI does not use AWS credentials, does not require live cloud resources, and does not create, modify, or delete AWS infrastructure. Pull requests also run GitHub's dependency review action for changed dependencies and fail on high-severity findings. The guarded CloudManager integration uses AWS SDK for Java 2.x while keeping dry-run and cloud-sandbox guardrails in place.
+The LASE demo smoke checks run deterministic synthetic reports, verify safe failure for an invalid scenario name, and confirm the demo path does not emit Spring startup markers. CI parses Surefire XML after `mvn -B test`, prints the total and skipped test counts, and fails if skipped tests are present without being surfaced. CI generates JaCoCo HTML/XML/CSV coverage under `target/site/jacoco`, prints instruction/branch/line percentages from `jacoco.csv`, and uploads the report as the `jacoco-coverage-report` workflow artifact. The packaged JAR smoke test binds the app to `127.0.0.1`, waits for `GET /api/health` to return HTTP 200, then stops the local process. CI generates CycloneDX SBOM files and uploads them as workflow artifacts, then builds the Docker image, starts the container on a loopback-bound host port, verifies `/api/health`, waits for the Docker healthcheck to become healthy, stops the container, and runs a blocking Trivy image scan for fixed high/critical OS and library vulnerabilities. CI does not use AWS credentials, does not require live cloud resources, and does not create, modify, or delete AWS infrastructure. Pull requests also run GitHub's dependency review action for changed dependencies and fail on high-severity findings. The guarded CloudManager integration uses AWS SDK for Java 2.x while keeping dry-run and cloud-sandbox guardrails in place.
 
 GitHub Actions are pinned to reviewed commit SHAs, with comments preserving the upstream action names and version tags for update review. Docker base images are pinned by digest in the Dockerfile; update the tag and digest together in a focused PR after rebuilding, running the test/package/JAR/Docker smokes, and reviewing the Trivy result.
 
@@ -868,7 +870,7 @@ Reference: https://aws.amazon.com/blogs/developer/announcing-end-of-support-for-
 
 ## Test Notes
 
-The default Maven test suite uses mocked cloud clients for CloudManager and ServerMonitor cloud-path coverage. It does not create, modify, or delete real AWS resources, and `mvn test` is expected to complete with zero skipped tests. Live AWS validation is intentionally outside the default Maven lifecycle; run it only in a controlled AWS sandbox with explicit cloud guardrails, operator intent, and disposable resources.
+The default Maven test suite uses mocked cloud clients for CloudManager and ServerMonitor cloud-path coverage. It does not create, modify, or delete real AWS resources. CI verifies zero skipped tests from Surefire XML and uploads JaCoCo coverage output as the `jacoco-coverage-report` artifact; inspect `target/site/jacoco/index.html`, `jacoco.xml`, or `jacoco.csv` from that artifact for exact coverage numbers. Live AWS validation is intentionally outside the default Maven lifecycle; run it only in a controlled AWS sandbox with explicit cloud guardrails, operator intent, and disposable resources.
 
 ## Cloud Safety Modes
 

@@ -71,6 +71,7 @@ class LoadBalancingCockpitDemoTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(content().string(containsString("Load-Balancing Cockpit")))
+                .andExpect(content().string(containsString("Cockpit Visual Summary")))
                 .andExpect(content().string(containsString("Scenario Gallery")))
                 .andExpect(content().string(containsString("data-action=\"full-sequence\"")))
                 .andExpect(content().string(containsString("/api/allocate/capacity-aware")))
@@ -99,6 +100,7 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Copy scenario summary"));
         assertTrue(page.contains("Cockpit Navigation &amp; Readiness"));
         assertTrue(page.contains("section-index"));
+        assertTrue(page.contains("data-nav-target=\"visual-summary-panel\""));
         assertTrue(page.contains("Current-panel mini-map / orientation"));
         assertTrue(page.contains("readiness-badges"));
         assertTrue(page.contains("Refresh readiness"));
@@ -250,6 +252,32 @@ class LoadBalancingCockpitDemoTest {
     }
 
     @Test
+    void cockpitPageContainsVisualSummaryBusyStateAndAccessibilityMarkers() throws Exception {
+        String page = Files.readString(COCKPIT_PAGE, StandardCharsets.UTF_8);
+
+        assertTrue(page.contains("id=\"visual-summary-panel\""));
+        assertTrue(page.contains("Cockpit Visual Summary"));
+        assertTrue(page.contains("id=\"visual-status-summary\""));
+        assertTrue(page.contains("id=\"visual-scenario-summary\""));
+        assertTrue(page.contains("id=\"visual-strategy-highlight\""));
+        assertTrue(page.contains("id=\"visual-health-badges\""));
+        assertTrue(page.contains("id=\"visual-delta-bars\""));
+        assertTrue(page.contains("Scenario delta mini-bars"));
+        assertTrue(page.contains("mini-bar"));
+        assertTrue(page.contains("selected-strategy"));
+        assertTrue(page.contains("Health/metrics badges"));
+        assertTrue(page.contains("Run a scenario to populate compact visual summaries."));
+        assertTrue(page.contains("id=\"action-status\""));
+        assertTrue(page.contains("role=\"status\""));
+        assertTrue(page.contains("aria-live=\"polite\""));
+        assertTrue(page.contains("aria-busy"));
+        assertTrue(page.contains("setActionButtonBusy"));
+        assertTrue(page.contains("button[aria-busy=\"true\"]"));
+        assertTrue(page.contains("button:focus-visible"));
+        assertTrue(page.contains("refreshVisualSummary"));
+    }
+
+    @Test
     void cockpitPageContainsSafetyLimitationsAndPostmanParity() throws Exception {
         String page = Files.readString(COCKPIT_PAGE, StandardCharsets.UTF_8);
         String normalized = page.toLowerCase(Locale.ROOT);
@@ -301,11 +329,16 @@ class LoadBalancingCockpitDemoTest {
         assertFalse(normalized.contains("data-action=\"cloud"));
         assertFalse(normalized.contains("/rulesets"));
         assertFalse(normalized.contains("/repos/"));
+        assertFalse(normalized.contains("gh release"));
+        assertFalse(normalized.contains("git tag"));
         assertFalse(normalized.contains("create release"));
         assertFalse(normalized.contains("create tag"));
+        assertFalse(normalized.contains("release asset"));
         assertFalse(normalized.contains("delete-branch"));
         assertFalse(normalized.contains("new cloudmanager"));
         assertFalse(normalized.contains("construct cloudmanager"));
+        assertFalse(normalized.contains("production-grade"));
+        assertFalse(normalized.contains("production gateway"));
         assertFalse(normalized.contains("certified operator"));
         assertFalse(normalized.contains("production benchmark"));
         assertFalse(normalized.contains("matrix score"));
@@ -327,6 +360,10 @@ class LoadBalancingCockpitDemoTest {
         assertFalse(normalized.contains("navigation score"));
         assertFalse(normalized.contains("legal training compliance"));
         assertFalse(normalized.contains("identity verified"));
+        assertFalse(normalized.contains("sha256"));
+        assertFalse(normalized.contains("fake hash"));
+        assertFalse(normalized.contains("placeholder hash"));
+        assertFalse(normalized.contains("fake evidence"));
         assertTrue(countOccurrences(normalized, "cloudmanager") <= 2,
                 "CloudManager may appear only in safety limitation text");
     }

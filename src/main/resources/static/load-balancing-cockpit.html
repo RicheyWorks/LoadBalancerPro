@@ -114,6 +114,33 @@
       cursor: not-allowed;
     }
 
+    button[aria-busy="true"]::after {
+      content: "";
+      display: inline-block;
+      width: 0.72em;
+      height: 0.72em;
+      margin-left: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: cockpit-spin 0.8s linear infinite;
+      vertical-align: -0.08em;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+      outline: 3px solid #8ec5ff;
+      outline-offset: 2px;
+    }
+
+    @keyframes cockpit-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     pre {
       margin: 0;
       padding: 12px;
@@ -248,6 +275,10 @@
       color: #dce8ff;
     }
 
+    .action-status {
+      color: #b9f6ed;
+    }
+
     .summary-card {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -259,6 +290,125 @@
     .summary-card strong {
       display: block;
       margin-bottom: 6px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: #dbeafe;
+      color: #123c73;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .visual-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .visual-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+      min-height: 126px;
+    }
+
+    .visual-card strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .visual-value {
+      font-size: 1.02rem;
+      font-weight: 700;
+    }
+
+    .visual-hint {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .health-badge-row,
+    .strategy-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .strategy-chip {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 9px;
+      color: var(--ink);
+      background: #eef2f7;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .selected-strategy {
+      border-color: #0f766e;
+      color: #064e3b;
+      background: #ccfbf1;
+    }
+
+    .visual-bars {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .visual-bars-title {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .mini-bar {
+      margin-top: 10px;
+    }
+
+    .mini-bar-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 5px;
+      font-size: 0.88rem;
+    }
+
+    .mini-bar-track {
+      width: 100%;
+      height: 9px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      overflow: hidden;
+    }
+
+    .mini-bar-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+    }
+
+    .mini-bar-fill.warning {
+      background: var(--amber);
+    }
+
+    .mini-bar-fill.danger {
+      background: var(--red);
+    }
+
+    .visual-empty-state {
+      color: var(--muted);
     }
 
     .scenario-gallery {
@@ -487,7 +637,7 @@
     }
 
     @media (max-width: 920px) {
-      .grid, .tri-grid, .status-grid, .scenario-gallery, .drilldown-grid, .walkthrough-progress, .section-index, .readiness-grid {
+      .grid, .tri-grid, .status-grid, .scenario-gallery, .visual-summary-grid, .drilldown-grid, .walkthrough-progress, .section-index, .readiness-grid {
         grid-template-columns: 1fr;
       }
 
@@ -515,6 +665,7 @@
       synthetic inputs only.
     </p>
     <p id="copy-status" class="copy-status">Copy status: idle.</p>
+    <p id="action-status" class="copy-status action-status" role="status" aria-live="polite">Last action: idle.</p>
   </header>
 
   <main>
@@ -564,6 +715,44 @@
       </div>
     </section>
 
+    <section id="visual-summary-panel" class="panel visual-summary-panel walkthrough-target" style="margin-top: 16px;" aria-labelledby="visual-summary-title">
+      <div class="panel-head">
+        <h2 id="visual-summary-title">Cockpit Visual Summary</h2>
+        <span id="visual-last-updated" class="status-pill">No actions run</span>
+      </div>
+      <div class="panel-body">
+        <div class="visual-summary-grid" aria-label="Cockpit visual status summary">
+          <div id="visual-status-summary" class="visual-card">
+            <strong>Current status</strong>
+            <div class="visual-value">Not run</div>
+            <p class="visual-hint">Run health, allocation, routing, or scenario actions to populate this summary.</p>
+          </div>
+          <div id="visual-scenario-summary" class="visual-card">
+            <strong>Scenario snapshot</strong>
+            <div class="visual-value">Normal Load</div>
+            <p class="visual-hint">Selected packaged scenario is loaded into the request panels.</p>
+          </div>
+          <div id="visual-strategy-highlight" class="visual-card">
+            <strong>Selected strategy highlight</strong>
+            <div class="strategy-chip-row"><span class="strategy-chip">Not run</span></div>
+            <p class="visual-hint">Routing comparison results will show the first selected strategy here.</p>
+          </div>
+          <div id="visual-health-badges" class="visual-card">
+            <strong>Health/metrics badges</strong>
+            <div class="health-badge-row">
+              <span class="badge">Health not run</span>
+              <span class="badge">Readiness not run</span>
+            </div>
+            <p class="visual-hint">Server counts come from the selected scenario inputs.</p>
+          </div>
+        </div>
+        <div id="visual-delta-bars" class="visual-bars" aria-label="Scenario delta mini-bars">
+          <strong class="visual-bars-title">Scenario delta mini-bars</strong>
+          <div id="visual-empty-state" class="visual-empty-state">Run a scenario to populate compact visual summaries.</div>
+        </div>
+      </div>
+    </section>
+
     <section id="navigation-readiness-panel" class="panel walkthrough-target" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Cockpit Navigation &amp; Readiness</h2>
@@ -581,6 +770,7 @@
         <h3 style="margin-top: 12px;">Section index</h3>
         <div id="section-index" class="section-index" aria-label="Cockpit section index">
           <button type="button" class="secondary" data-nav-target="scenario-gallery-panel">Scenario Gallery</button>
+          <button type="button" class="secondary" data-nav-target="visual-summary-panel">Cockpit Visual Summary</button>
           <button type="button" class="secondary" data-nav-target="explanation-drilldown-panel">Explanation Drill-Down</button>
           <button type="button" class="secondary" data-nav-target="comparison-matrix-panel">Operator Comparison Matrix</button>
           <button type="button" class="secondary" data-nav-target="replay-mode-panel">Operator Replay Mode</button>
@@ -1358,6 +1548,13 @@
       apiContractTrace: document.getElementById("api-contract-trace-preview"),
       walkthroughSummary: document.getElementById("walkthrough-summary"),
       navigationReadinessSummary: document.getElementById("navigation-readiness-summary"),
+      actionStatus: document.getElementById("action-status"),
+      visualStatusSummary: document.getElementById("visual-status-summary"),
+      visualScenarioSummary: document.getElementById("visual-scenario-summary"),
+      visualStrategyHighlight: document.getElementById("visual-strategy-highlight"),
+      visualHealthBadges: document.getElementById("visual-health-badges"),
+      visualDeltaBars: document.getElementById("visual-delta-bars"),
+      visualLastUpdated: document.getElementById("visual-last-updated"),
       curl: document.getElementById("curl-snippets")
     };
 
@@ -1374,6 +1571,8 @@
     let selectedScenarioId = "normal-load";
     let previousScenarioSnapshot = null;
     let latestScenarioSnapshot = null;
+    let lastActionLabel = "idle";
+    let actionBusy = false;
 
     const walkthroughSteps = [
       {
@@ -1440,6 +1639,7 @@
 
     const navigationSections = [
       { label: "Cockpit controls", panelId: "cockpit-controls-panel" },
+      { label: "Cockpit Visual Summary", panelId: "visual-summary-panel" },
       { label: "Cockpit Navigation & Readiness", panelId: "navigation-readiness-panel" },
       { label: "Operator Guided Walkthrough", panelId: "guided-walkthrough-panel" },
       { label: "Scenario Gallery", panelId: "scenario-gallery-panel" },
@@ -2302,6 +2502,164 @@
       } catch (error) {
         return null;
       }
+    }
+
+    function readableActionLabel(action) {
+      return String(action || "action").replace(/-/g, " ");
+    }
+
+    function setActionButtonBusy(button, busy) {
+      if (!button) {
+        return;
+      }
+      if (busy) {
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+      } else {
+        button.disabled = false;
+        button.removeAttribute("aria-busy");
+      }
+    }
+
+    function setActionStatus(label, busy) {
+      lastActionLabel = label || "idle";
+      actionBusy = Boolean(busy);
+      if (outputs.actionStatus) {
+        outputs.actionStatus.textContent = actionBusy
+          ? "Last action: running " + lastActionLabel + "."
+          : "Last action: " + lastActionLabel + ".";
+      }
+      refreshVisualSummary();
+    }
+
+    function statusText(name) {
+      return badges[name] ? badges[name].textContent : "Not run";
+    }
+
+    function badgeClassForStatus(status) {
+      if (status === "Passed" || status === "Ready") {
+        return "badge passed";
+      }
+      if (status === "Warning" || status === "Partial") {
+        return "badge warning";
+      }
+      if (status === "Failed") {
+        return "badge failed";
+      }
+      return "badge";
+    }
+
+    function metricNumber(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function boundedPercent(value, total) {
+      if (value === null || total === null || total <= 0) {
+        return 0;
+      }
+      return Math.max(0, Math.min(100, (value / total) * 100));
+    }
+
+    function miniBar(label, value, total, tone) {
+      const safeValue = metricNumber(value);
+      const safeTotal = metricNumber(total);
+      const percent = boundedPercent(safeValue, safeTotal);
+      const totalText = safeTotal === null ? "not run" : formatMaybeNumber(safeTotal);
+      const valueText = safeValue === null ? "not run" : formatMaybeNumber(safeValue);
+      const fillClass = tone ? "mini-bar-fill " + tone : "mini-bar-fill";
+      return "<div class=\"mini-bar\" aria-label=\"" + escapeHtml(label + ": " + valueText + " of " + totalText) + "\">"
+        + "<div class=\"mini-bar-header\"><span>" + escapeHtml(label) + "</span><span>"
+        + escapeHtml(valueText + " / " + totalText) + "</span></div>"
+        + "<div class=\"mini-bar-track\"><div class=\"" + fillClass + "\" style=\"width: "
+        + percent.toFixed(0) + "%\"></div></div>"
+        + "</div>";
+    }
+
+    function scenarioServers(scenario) {
+      return scenario && scenario.routingRequest && Array.isArray(scenario.routingRequest.servers)
+        ? scenario.routingRequest.servers
+        : [];
+    }
+
+    function refreshVisualSummary() {
+      if (!outputs.visualStatusSummary || !outputs.visualDeltaBars) {
+        return;
+      }
+      const scenario = safeCurrentScenario() || selectedScenario();
+      const scenarioLabel = scenario.label || scenario.scenarioName || "Selected scenario";
+      const servers = scenarioServers(scenario);
+      const healthyServers = servers.filter((server) => server.healthy !== false).length;
+      const completedStatuses = ["health", "scenario", "allocation", "routing", "evaluation"]
+        .map(statusText)
+        .filter((status) => status !== "Not run").length;
+      const failedStatuses = ["health", "scenario", "allocation", "routing", "evaluation"]
+        .map(statusText)
+        .filter((status) => status === "Failed").length;
+      const routingResults = state.routing && Array.isArray(state.routing.results) ? state.routing.results : [];
+      const selectedRoute = routingResults.find((result) => result.chosenServerId) || routingResults[0] || null;
+      const strategies = scenario.routingRequest && Array.isArray(scenario.routingRequest.strategies)
+        ? scenario.routingRequest.strategies
+        : [];
+      const requestedLoad = metricNumber(scenario.allocationRequest && scenario.allocationRequest.requestedLoad);
+      const unallocated = state.allocation ? metricNumber(state.allocation.unallocatedLoad || 0) : null;
+      const placedLoad = requestedLoad !== null && unallocated !== null ? Math.max(0, requestedLoad - unallocated) : null;
+      const acceptedLoad = state.evaluation ? metricNumber(state.evaluation.acceptedLoad || 0) : null;
+      const rejectedLoad = state.evaluation ? metricNumber(state.evaluation.rejectedLoad || 0) : null;
+      const evaluatedLoad = acceptedLoad !== null || rejectedLoad !== null
+        ? (acceptedLoad || 0) + (rejectedLoad || 0)
+        : null;
+      const selectedCount = routingResults.length
+        ? routingResults.filter((result) => result.chosenServerId).length
+        : null;
+      const strategyCount = routingResults.length || strategies.length || null;
+
+      outputs.visualLastUpdated.textContent = actionBusy
+        ? "Running action"
+        : lastActionLabel === "idle" ? "No actions run" : "Updated: " + lastActionLabel;
+      outputs.visualStatusSummary.innerHTML = "<strong>Current status</strong>"
+        + "<div class=\"visual-value\">" + completedStatuses + " / 5 checkpoints touched</div>"
+        + "<p class=\"visual-hint\">" + escapeHtml(failedStatuses
+          ? failedStatuses + " checkpoint(s) need review."
+          : "No failed cockpit checkpoints in the current browser state.") + "</p>";
+      outputs.visualScenarioSummary.innerHTML = "<strong>Scenario snapshot</strong>"
+        + "<div class=\"visual-value\">" + escapeHtml(scenarioLabel) + "</div>"
+        + "<p class=\"visual-hint\">Healthy routing inputs: " + healthyServers + " / "
+        + servers.length + ". Expected pressure: "
+        + escapeHtml(scenario.description || "Not available in current API") + "</p>";
+      outputs.visualStrategyHighlight.innerHTML = "<strong>Selected strategy highlight</strong>"
+        + "<div class=\"strategy-chip-row\"><span class=\"strategy-chip selected-strategy\">"
+        + escapeHtml(selectedRoute ? (selectedRoute.strategyId || "unknown strategy") : "Not run") + "</span></div>"
+        + "<p class=\"visual-hint\">" + escapeHtml(selectedRoute
+          ? "Selected route: " + (selectedRoute.chosenServerId || selectedRoute.status || "none")
+            + ". " + (selectedRoute.reason || "No reason returned.")
+          : "Routing comparison results will show the first selected strategy here.") + "</p>";
+      outputs.visualHealthBadges.innerHTML = "<strong>Health/metrics badges</strong>"
+        + "<div class=\"health-badge-row\">"
+        + "<span class=\"" + badgeClassForStatus(statusText("health")) + "\">Health " + escapeHtml(statusText("health")) + "</span>"
+        + "<span class=\"" + (state.readiness ? "badge passed" : "badge") + "\">Readiness "
+        + escapeHtml(state.readiness ? "Passed" : "Not run") + "</span>"
+        + "<span class=\"badge\">Servers " + healthyServers + "/" + servers.length + " healthy</span>"
+        + "</div><p class=\"visual-hint\">Badges summarize current in-memory health, readiness, and selected scenario inputs.</p>";
+
+      if (!state.allocation && !state.routing && !state.evaluation) {
+        outputs.visualDeltaBars.innerHTML = "<strong class=\"visual-bars-title\">Scenario delta mini-bars</strong>"
+          + "<div id=\"visual-empty-state\" class=\"visual-empty-state\">Run a scenario to populate compact visual summaries.</div>";
+        return;
+      }
+      const deltaText = previousScenarioSnapshot && latestScenarioSnapshot
+        ? "Delta: " + previousScenarioSnapshot.scenarioName + " -> " + latestScenarioSnapshot.scenarioName
+          + "; unallocated " + formatMaybeNumber(previousScenarioSnapshot.allocationUnallocatedLoad)
+          + " -> " + formatMaybeNumber(latestScenarioSnapshot.allocationUnallocatedLoad)
+          + "; rejected " + formatMaybeNumber(previousScenarioSnapshot.rejectedLoad)
+          + " -> " + formatMaybeNumber(latestScenarioSnapshot.rejectedLoad) + "."
+        : "Delta: run two scenarios, matrix, or replay mode for before/after context.";
+      outputs.visualDeltaBars.innerHTML = "<strong class=\"visual-bars-title\">Scenario delta mini-bars</strong>"
+        + "<p class=\"visual-hint\">" + escapeHtml(deltaText) + "</p>"
+        + miniBar("Requested load placed", placedLoad, requestedLoad, "")
+        + miniBar("Rejected load pressure", rejectedLoad, evaluatedLoad, "danger")
+        + miniBar("Healthy routing inputs", healthyServers, servers.length, "")
+        + miniBar("Routing strategies selected", selectedCount, strategyCount, "warning");
     }
 
     function packetBlock(output, emptyText) {
@@ -3316,6 +3674,7 @@
       ].join("\n");
       refreshDrillDown();
       refreshWalkthroughSummary();
+      refreshVisualSummary();
     }
 
     function scenarioSnapshot() {
@@ -3676,58 +4035,69 @@
     document.querySelectorAll("[data-action]").forEach((button) => {
       button.addEventListener("click", async () => {
         const action = button.getAttribute("data-action");
-        if (action === "health") {
-          await checkHealth();
-        } else if (action === "readiness") {
-          await checkReadiness();
-        } else if (action === "load-sample" || action === "load-selected-scenario") {
-          loadSelectedScenario();
-        } else if (action === "allocation") {
-          await runAllocation();
-        } else if (action === "routing") {
-          await runRouting();
-        } else if (action === "load-shedding" || action === "remediation") {
-          await runEvaluation();
-        } else if (action === "full-sequence") {
-          await runFullSequence();
-        } else if (action === "run-selected-scenario") {
-          await runSelectedScenario();
-        } else if (action === "compare-scenarios") {
-          renderWhatChanged();
-        } else if (action === "run-comparison-matrix") {
-          await runComparisonMatrix();
-        } else if (action === "clear-comparison-matrix") {
-          clearComparisonMatrix();
-        } else if (action === "run-replay-mode") {
-          await runReplayMode();
-        } else if (action === "clear-replay-mode") {
-          clearReplayMode();
-        } else if (action === "generate-review-packet") {
-          generateReviewPacket();
-        } else if (action === "clear-review-packet") {
-          clearReviewPacket();
-        } else if (action === "print-review-packet") {
-          printReviewPacket();
-        } else if (action === "generate-api-contract-trace") {
-          generateApiContractTrace();
-        } else if (action === "clear-api-contract-trace") {
-          clearApiContractTrace();
-        } else if (action === "start-guided-walkthrough") {
-          startGuidedWalkthrough();
-        } else if (action === "walkthrough-prev") {
-          previousWalkthroughStep();
-        } else if (action === "walkthrough-next") {
-          nextWalkthroughStep();
-        } else if (action === "walkthrough-complete") {
-          markWalkthroughStepComplete();
-        } else if (action === "clear-guided-walkthrough") {
-          clearGuidedWalkthrough();
-        } else if (action === "refresh-navigation-readiness") {
-          refreshNavigationReadiness();
-        } else if (action === "reset-gallery") {
-          resetScenarioGallery();
-        } else if (action === "reset") {
-          resetCockpit();
+        const actionLabel = readableActionLabel(action);
+        setActionButtonBusy(button, true);
+        setActionStatus(actionLabel, true);
+        try {
+          if (action === "health") {
+            await checkHealth();
+          } else if (action === "readiness") {
+            await checkReadiness();
+          } else if (action === "load-sample" || action === "load-selected-scenario") {
+            loadSelectedScenario();
+          } else if (action === "allocation") {
+            await runAllocation();
+          } else if (action === "routing") {
+            await runRouting();
+          } else if (action === "load-shedding" || action === "remediation") {
+            await runEvaluation();
+          } else if (action === "full-sequence") {
+            await runFullSequence();
+          } else if (action === "run-selected-scenario") {
+            await runSelectedScenario();
+          } else if (action === "compare-scenarios") {
+            renderWhatChanged();
+          } else if (action === "run-comparison-matrix") {
+            await runComparisonMatrix();
+          } else if (action === "clear-comparison-matrix") {
+            clearComparisonMatrix();
+          } else if (action === "run-replay-mode") {
+            await runReplayMode();
+          } else if (action === "clear-replay-mode") {
+            clearReplayMode();
+          } else if (action === "generate-review-packet") {
+            generateReviewPacket();
+          } else if (action === "clear-review-packet") {
+            clearReviewPacket();
+          } else if (action === "print-review-packet") {
+            printReviewPacket();
+          } else if (action === "generate-api-contract-trace") {
+            generateApiContractTrace();
+          } else if (action === "clear-api-contract-trace") {
+            clearApiContractTrace();
+          } else if (action === "start-guided-walkthrough") {
+            startGuidedWalkthrough();
+          } else if (action === "walkthrough-prev") {
+            previousWalkthroughStep();
+          } else if (action === "walkthrough-next") {
+            nextWalkthroughStep();
+          } else if (action === "walkthrough-complete") {
+            markWalkthroughStepComplete();
+          } else if (action === "clear-guided-walkthrough") {
+            clearGuidedWalkthrough();
+          } else if (action === "refresh-navigation-readiness") {
+            refreshNavigationReadiness();
+          } else if (action === "reset-gallery") {
+            resetScenarioGallery();
+          } else if (action === "reset") {
+            resetCockpit();
+          }
+          setActionStatus("completed " + actionLabel, false);
+        } catch (error) {
+          setActionStatus("failed " + actionLabel + ": " + error.message, false);
+        } finally {
+          setActionButtonBusy(button, false);
+          refreshVisualSummary();
         }
       });
     });
@@ -3769,6 +4139,7 @@
       buildSummary();
       outputs.scenarioSummary.textContent = buildScenarioSummary(null);
       refreshWalkthroughSummary();
+      refreshVisualSummary();
     });
 
     renderScenarioGallery();
@@ -3777,6 +4148,7 @@
     refreshMatrixCopyBlocks();
     refreshReplayCopyBlocks();
     renderGuidedWalkthrough();
+    refreshVisualSummary();
   </script>
 </body>
 </html>

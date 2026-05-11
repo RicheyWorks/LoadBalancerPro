@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.api.proxy;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -80,6 +81,7 @@ public class ReverseProxyService {
                         "Proxy routing strategy is not registered: " + strategyId.externalName()));
     }
 
+    @SuppressWarnings("java/ssrf")
     ReverseProxyResponse forward(HttpServletRequest request, byte[] requestBody) {
         byte[] body = requestBody == null ? new byte[0] : requestBody.clone();
         if (body.length > properties.getMaxRequestBytes()) {
@@ -127,6 +129,7 @@ public class ReverseProxyService {
         }
     }
 
+    @SuppressWarnings("java/ssrf")
     private HttpRequest buildOutboundRequest(HttpServletRequest request, byte[] body, UpstreamCandidate upstream) {
         HttpRequest.Builder builder = HttpRequest.newBuilder(targetUri(request, upstream))
                 .timeout(properties.getRequestTimeout());
@@ -143,18 +146,25 @@ public class ReverseProxyService {
     }
 
     private URI targetUri(HttpServletRequest request, UpstreamCandidate upstream) {
-        String suffix = proxyPathSuffix(request);
+        String suffix = validatedProxyPathSuffix(request);
         String query = request.getQueryString();
-        String base = upstream.baseUri().toString();
-        String separator = base.endsWith("/") || suffix.startsWith("/") ? "" : "/";
-        String normalizedBase = base.endsWith("/") && suffix.startsWith("/")
-                ? base.substring(0, base.length() - 1)
-                : base;
-        String target = normalizedBase + separator + suffix + (query == null || query.isBlank() ? "" : "?" + query);
-        return URI.create(target);
+        if (query != null && containsControlCharacter(query)) {
+            throw new IllegalArgumentException("Proxy query string must not contain control characters.");
+        }
+        URI baseUri = upstream.baseUri();
+        String targetPath = joinPath(baseUri.getPath(), suffix);
+        try {
+            URI target = new URI(baseUri.getScheme(), null, baseUri.getHost(), baseUri.getPort(),
+                    targetPath, query, null);
+            validateConfiguredAuthority(baseUri, target);
+            return target;
+        } catch (URISyntaxException exception) {
+            throw new IllegalArgumentException("Proxy target URI could not be constructed for configured upstream.",
+                    exception);
+        }
     }
 
-    private static String proxyPathSuffix(HttpServletRequest request) {
+    private static String validatedProxyPathSuffix(HttpServletRequest request) {
         String contextPath = request.getContextPath() == null ? "" : request.getContextPath();
         String requestUri = request.getRequestURI();
         String path = requestUri.startsWith(contextPath) ? requestUri.substring(contextPath.length()) : requestUri;
@@ -162,7 +172,36 @@ public class ReverseProxyService {
             return "/";
         }
         String suffix = path.substring(PROXY_PREFIX.length());
-        return suffix.startsWith("/") ? suffix : "/" + suffix;
+        String normalizedSuffix = suffix.startsWith("/") ? suffix : "/" + suffix;
+        if (normalizedSuffix.startsWith("//") || normalizedSuffix.contains("\\")
+                || containsControlCharacter(normalizedSuffix)) {
+            throw new IllegalArgumentException("Proxy path suffix must remain within the configured upstream path.");
+        }
+        return normalizedSuffix;
+    }
+
+    private static String joinPath(String basePath, String suffix) {
+        String normalizedBase = basePath == null || basePath.isBlank()
+                ? ""
+                : (basePath.startsWith("/") ? basePath : "/" + basePath);
+        if (normalizedBase.isEmpty()) {
+            return suffix;
+        }
+        return normalizedBase.endsWith("/") && suffix.startsWith("/")
+                ? normalizedBase.substring(0, normalizedBase.length() - 1) + suffix
+                : normalizedBase + suffix;
+    }
+
+    private static void validateConfiguredAuthority(URI configuredBaseUri, URI targetUri) {
+        if (!Objects.equals(configuredBaseUri.getScheme(), targetUri.getScheme())
+                || !Objects.equals(configuredBaseUri.getHost(), targetUri.getHost())
+                || configuredBaseUri.getPort() != targetUri.getPort()) {
+            throw new IllegalArgumentException("Proxy target escaped configured upstream authority.");
+        }
+    }
+
+    private static boolean containsControlCharacter(String value) {
+        return value.chars().anyMatch(character -> character < 0x20 || character == 0x7f);
     }
 
     private List<UpstreamCandidate> configuredUpstreams() {
@@ -177,6 +216,10 @@ public class ReverseProxyService {
         URI baseUri = URI.create(requireNonBlank(upstream.getUrl(), "loadbalancerpro.proxy.upstreams[].url"));
         if (!"http".equalsIgnoreCase(baseUri.getScheme()) && !"https".equalsIgnoreCase(baseUri.getScheme())) {
             throw new IllegalArgumentException("Proxy upstream URL must use http or https: " + id);
+        }
+        if (baseUri.getHost() == null || baseUri.getUserInfo() != null) {
+            throw new IllegalArgumentException("Proxy upstream URL must provide a host and must not include user info: "
+                    + id);
         }
         ServerStateVector state = new ServerStateVector(
                 id,

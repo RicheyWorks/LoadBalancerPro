@@ -76,10 +76,12 @@ public class ApiSecurityConfiguration {
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(authorize -> {
                     authorize.requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll();
+                    authorize.requestMatchers(HttpMethod.OPTIONS, "/proxy", "/proxy/**").permitAll();
                     authorize.requestMatchers(HttpMethod.GET, "/api/health").permitAll();
                     configureDocsAuthorization(authorize, authProperties, readRoles);
                     authorize.requestMatchers(HttpMethod.GET, "/api/lase/shadow")
                             .hasAnyRole(laseShadowRole, allocationRole);
+                    authorize.requestMatchers("/proxy", "/proxy/**").hasRole(allocationRole);
                     authorize.requestMatchers(HttpMethod.POST, "/api/routing/**").hasRole(allocationRole);
                     authorize.requestMatchers(HttpMethod.POST, "/api/allocate/**").hasRole(allocationRole);
                     authorize.requestMatchers(HttpMethod.PUT, "/api/allocate/**").hasRole(allocationRole);

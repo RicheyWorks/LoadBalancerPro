@@ -23,6 +23,11 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "OPTIONS")
                 .allowedHeaders("Content-Type", "Authorization", "X-API-Key")
                 .allowCredentials(false);
+        registry.addMapping("/proxy/**")
+                .allowedOrigins(allowedOrigins)
+                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS")
+                .allowedHeaders("Content-Type", "Authorization", "X-API-Key")
+                .allowCredentials(false);
     }
 
     private static String[] splitCsv(String value) {

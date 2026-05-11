@@ -19,6 +19,7 @@ Complete and record these checks before considering release publication:
 - Local artifact verification has passed or CI has been explicitly recorded as source of truth because local Maven is blocked.
 - SBOM files `bom.json` and `bom.xml` have been reviewed as workflow artifact evidence.
 - Packaged jar smoke evidence has been reviewed.
+- Real-backend proxy example evidence from [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) has been reviewed if those examples are part of the release candidate packet.
 - Known limitations and proxy demo boundaries have been acknowledged.
 - Documentation links for install/run, artifact verification, CI artifact consumption, and release candidate dry run have been reviewed.
 

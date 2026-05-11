@@ -197,11 +197,13 @@ When operators want to test local services instead of the fixture launcher, use 
 
 ```text
 docs/examples/proxy/application-proxy-real-backend-example.properties
+docs/examples/proxy/application-proxy-real-backend-round-robin-example.properties
 docs/examples/proxy/application-proxy-real-backend-weighted-example.properties
 docs/examples/proxy/application-proxy-real-backend-failover-example.properties
+docs/examples/proxy/application-proxy-real-backend-resilience-example.properties
 ```
 
-The examples target loopback placeholders `http://localhost:9001` and `http://localhost:9002`, include explicit proxy strategy, health-check, retry, and cooldown settings, and are not active unless imported or copied into a local run configuration. See [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md) for packaged-jar and Maven exec recipes.
+The examples target loopback placeholders `http://localhost:9001` and `http://localhost:9002`, include explicit proxy strategy, health-check, retry, and cooldown settings, and are not active unless imported or copied into a local run configuration. See [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) for the copy/adapt walkthrough and [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md) for packaged-jar and Maven exec recipes.
 
 ## Safety Boundaries
 

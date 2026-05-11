@@ -101,7 +101,7 @@ The fixture has no cloud dependency and no public internet dependency. It is mea
 
 For strategy-specific loopback recipes, run the same fixture with `-Mode round-robin`, `-Mode weighted-round-robin`, or `-Mode failover` and follow [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md). Those flows pair forwarded response headers with `/proxy-status.html` counters so reviewers can verify selected-upstream behavior without cloud dependencies.
 
-For local real-backend examples, see [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md) and the copy/adapt property files under `docs/examples/proxy`.
+For local/private real-backend examples, see [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md), [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md), and the copy/adapt property files under `docs/examples/proxy`.
 
 ## Safety Boundaries
 

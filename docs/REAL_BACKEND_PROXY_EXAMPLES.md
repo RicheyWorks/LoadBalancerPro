@@ -22,6 +22,7 @@ The copy/adapt files live under `docs/examples/proxy`:
 
 ```text
 docs/examples/proxy/application-proxy-real-backend-round-robin-example.properties
+docs/examples/proxy/application-proxy-operator-routes-example.properties
 docs/examples/proxy/application-proxy-real-backend-example.properties
 docs/examples/proxy/application-proxy-real-backend-weighted-example.properties
 docs/examples/proxy/application-proxy-real-backend-failover-example.properties
@@ -29,6 +30,7 @@ docs/examples/proxy/application-proxy-real-backend-resilience-example.properties
 ```
 
 `application-proxy-real-backend-example.properties` remains the compatibility round-robin example used by older operator docs. Prefer the strategy-named files for new reviews.
+`application-proxy-operator-routes-example.properties` shows the newer named-route shape for operator-managed backends.
 
 Each profile uses loopback placeholders:
 
@@ -69,6 +71,34 @@ X-LoadBalancerPro-Strategy: ROUND_ROBIN
 ```
 
 Open `http://localhost:8080/proxy-status.html` and confirm the proxy is enabled, the strategy is `ROUND_ROBIN`, both upstreams are visible, and counters increment.
+
+## Operator-Configured Route Example
+
+Use `application-proxy-operator-routes-example.properties` when you want the first operator-configured route foundation instead of the legacy global upstream list.
+
+```bash
+java -jar target/LoadBalancerPro-2.4.2.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-operator-routes-example.properties
+```
+
+The example keeps proxy mode disabled in the default app and enables it only in this imported file:
+
+```properties
+loadbalancerpro.proxy.enabled=true
+loadbalancerpro.proxy.routes.api.path-prefix=/api
+loadbalancerpro.proxy.routes.api.strategy=ROUND_ROBIN
+loadbalancerpro.proxy.routes.api.targets[0].id=local-api-a
+loadbalancerpro.proxy.routes.api.targets[0].url=http://localhost:9001
+loadbalancerpro.proxy.routes.api.targets[1].id=local-api-b
+loadbalancerpro.proxy.routes.api.targets[1].url=http://localhost:9002
+```
+
+Send a request through the configured route:
+
+```bash
+curl -i http://127.0.0.1:8080/proxy/api/health
+```
+
+Verify `/api/proxy/status` reports the `api` route, `/api` path prefix, selected strategy, and target ids. Invalid route names, blank target ids, missing targets, unsupported URI schemes, malformed URLs, and non-positive weights fail startup with configuration errors.
 
 ## WEIGHTED_ROUND_ROBIN Example
 

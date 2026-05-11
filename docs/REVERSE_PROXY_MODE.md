@@ -2,7 +2,7 @@
 
 LoadBalancerPro includes an optional Spring MVC reverse proxy path for local and simulated upstreams. It forwards real HTTP requests through existing request-level routing strategy concepts so reviewers can validate practical forwarding behavior without cloud mutation.
 
-This mode is disabled by default and is intentionally small. It is not a production-grade enterprise gateway, benchmark harness, TLS terminator, WebSocket proxy, WAF, distributed rate limiter, or identity system.
+This mode is disabled by default and is intentionally small. It is not an internet-edge gateway, benchmark harness, TLS terminator, WebSocket proxy, WAF, distributed rate limiter, or identity system.
 
 ## Enable Proxy Mode
 
@@ -49,6 +49,24 @@ loadbalancerpro.proxy.upstreams[1].id=backend-b
 loadbalancerpro.proxy.upstreams[1].url=http://127.0.0.1:18082
 loadbalancerpro.proxy.upstreams[1].healthy=true
 ```
+
+The global `upstreams` list remains supported for the packaged demo profiles and existing operator examples. New operator-managed configurations can instead use named routes:
+
+```properties
+loadbalancerpro.proxy.enabled=true
+loadbalancerpro.proxy.routes.api.path-prefix=/api
+loadbalancerpro.proxy.routes.api.strategy=ROUND_ROBIN
+loadbalancerpro.proxy.routes.api.targets[0].id=local-a
+loadbalancerpro.proxy.routes.api.targets[0].url=http://127.0.0.1:18081
+loadbalancerpro.proxy.routes.api.targets[0].weight=1
+loadbalancerpro.proxy.routes.api.targets[1].id=local-b
+loadbalancerpro.proxy.routes.api.targets[1].url=http://127.0.0.1:18082
+loadbalancerpro.proxy.routes.api.targets[1].weight=1
+```
+
+When `routes` are configured, the proxy selects the longest matching `path-prefix` after removing `/proxy`. A request to `/proxy/api/widgets` matches the `api` route above and forwards `/api/widgets` to one configured target. If `routes` are absent, the legacy global upstream list acts as a single `/` route so existing demos keep working.
+
+When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be greater than zero.
 
 Optional upstream telemetry fields are available for strategies that use them:
 
@@ -138,7 +156,7 @@ Inspect the read-only proxy status endpoint:
 curl -s http://127.0.0.1:8080/api/proxy/status
 ```
 
-The response reports the proxy enabled flag, selected strategy, health-check configuration, retry/cooldown configuration, configured upstreams, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `5xx`, `other`), and the last selected upstream id.
+The response reports the proxy enabled flag, selected strategy, configured routes, health-check configuration, retry/cooldown configuration, configured upstreams, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `5xx`, `other`), and the last selected upstream id.
 
 For a browser view of the same read-only status data, open:
 

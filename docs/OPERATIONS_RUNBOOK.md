@@ -18,9 +18,17 @@ curl -fsS http://127.0.0.1:8080/api/health
 curl -fsS http://127.0.0.1:8080/actuator/health
 ```
 
-3. Confirm the latest deployed version matches the expected GitHub Release or deployment artifact. The current release automation publishes the JAR, CycloneDX SBOMs, and SHA256SUMS for future semantic version tags.
+3. If optional proxy mode is enabled, confirm the configured routes and targets are visible:
 
-4. Confirm metrics exposure is intentional for the active profile. Local/demo exposes Prometheus. Production-like profiles should expose metrics only behind trusted network and authentication controls.
+```bash
+curl -fsS http://127.0.0.1:8080/api/proxy/status
+```
+
+The status response is read-only. For operator-configured routes, verify the expected `routes[].pathPrefix`, `routes[].strategy`, and target ids before sending traffic through `/proxy/**`.
+
+4. Confirm the latest deployed version matches the expected GitHub Release or deployment artifact. The current release automation publishes the JAR, CycloneDX SBOMs, and SHA256SUMS for future semantic version tags.
+
+5. Confirm metrics exposure is intentional for the active profile. Local/demo exposes Prometheus. Production-like profiles should expose metrics only behind trusted network and authentication controls.
 
 ## Degraded Allocation Or Load Shedding
 

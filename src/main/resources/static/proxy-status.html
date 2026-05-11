@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoadBalancerPro Proxy Operator Status</title>
+  <style>
+    :root {
+      --page: #f5f7fb;
+      --ink: #182235;
+      --muted: #5d6677;
+      --panel: #ffffff;
+      --line: #d8dee9;
+      --blue: #1859a9;
+      --teal: #0f766e;
+      --green: #0f7b47;
+      --amber: #9a5b00;
+      --red: #b42318;
+      --code-bg: #111827;
+      --code-text: #e5edf3;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+    }
+
+    header {
+      background: #182235;
+      color: #ffffff;
+      padding: 28px 20px;
+    }
+
+    main {
+      width: min(1240px, calc(100% - 32px));
+      margin: 18px auto 40px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+    }
+
+    h2 {
+      font-size: 1.12rem;
+    }
+
+    h3 {
+      font-size: 0.98rem;
+      margin-bottom: 8px;
+    }
+
+    p {
+      line-height: 1.5;
+    }
+
+    button {
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #0e3f80;
+      border-radius: 6px;
+      background: var(--blue);
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #334155;
+      border-color: #273449;
+    }
+
+    button.copy {
+      background: var(--teal);
+      border-color: #0f5f59;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef2f7;
+    }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      border-radius: 6px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .intro {
+      max-width: 920px;
+      color: #e5edf3;
+      margin: 10px 0 0;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px;
+      background: #fbfcfe;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .metric .value {
+      display: block;
+      margin-top: 6px;
+      font-size: 1.3rem;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .status-line {
+      color: var(--muted);
+      margin-top: 10px;
+      min-height: 22px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #334155;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .badge.good {
+      background: #e8f7ef;
+      color: var(--green);
+    }
+
+    .badge.warn {
+      background: #fff7e6;
+      color: var(--amber);
+    }
+
+    .badge.bad {
+      background: #fdeceb;
+      color: var(--red);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      margin-top: 12px;
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .grid, .two-column {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LoadBalancerPro Proxy Operator Status</h1>
+    <p class="intro">
+      Read-only browser view for <code>GET /api/proxy/status</code>. It helps local reviewers watch proxy health,
+      routing counters, retries, cooldown state, and demo commands without backend writes or browser storage.
+    </p>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="controls-title">
+      <h2 id="controls-title">Proxy status summary</h2>
+      <p class="muted">
+        Use manual refresh for a point-in-time view, or opt into live refresh for this page session only.
+        Live refresh state is in-memory only.
+      </p>
+      <div class="controls">
+        <button type="button" id="refresh-status">Refresh status</button>
+        <button type="button" id="start-live-refresh" class="secondary">Start live refresh</button>
+        <button type="button" id="stop-live-refresh" class="secondary" disabled>Stop live refresh</button>
+        <button type="button" id="copy-status-summary" class="copy">Copy status summary</button>
+        <button type="button" id="copy-demo-curl-commands" class="copy">Copy demo curl commands</button>
+      </div>
+      <div id="status-message" class="status-line">Status not loaded yet.</div>
+    </section>
+
+    <section class="panel" aria-labelledby="overview-title">
+      <h2 id="overview-title">Current proxy overview</h2>
+      <div class="grid" id="overview-grid">
+        <div class="metric"><span class="label">Proxy enabled</span><span class="value" id="proxy-enabled">Unavailable</span></div>
+        <div class="metric"><span class="label">Strategy</span><span class="value" id="strategy">Unavailable</span></div>
+        <div class="metric"><span class="label">Health check enabled</span><span class="value" id="health-check-enabled">Unavailable</span></div>
+        <div class="metric"><span class="label">Last selected upstream</span><span class="value" id="last-selected-upstream">Unavailable</span></div>
+        <div class="metric"><span class="label">Retry enabled</span><span class="value" id="retry-enabled">Unavailable</span></div>
+        <div class="metric"><span class="label">Cooldown enabled</span><span class="value" id="cooldown-enabled">Unavailable</span></div>
+        <div class="metric"><span class="label">Total forwarded</span><span class="value" id="total-forwarded">Unavailable</span></div>
+        <div class="metric"><span class="label">Total failure</span><span class="value" id="total-failure">Unavailable</span></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="upstream-title">
+      <h2 id="upstream-title">Upstream table</h2>
+      <p class="muted">Configured health, effective health, cooldown, consecutive failures, and per-upstream counters.</p>
+      <div class="table-wrap">
+        <table id="upstream-table">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Sanitized URL</th>
+              <th>Configured healthy</th>
+              <th>Effective health</th>
+              <th>Cooldown active</th>
+              <th>Cooldown remaining millis</th>
+              <th>Consecutive failures</th>
+              <th>Forwarded</th>
+              <th>Failure count</th>
+              <th>Retry count</th>
+              <th>Cooldown activations</th>
+            </tr>
+          </thead>
+          <tbody id="upstream-table-body">
+            <tr><td colspan="11">Not loaded yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="counters-title">
+      <h2 id="counters-title">Counters table</h2>
+      <div class="grid">
+        <div class="metric"><span class="label">Total retry</span><span class="value" id="total-retry">Unavailable</span></div>
+        <div class="metric"><span class="label">Total cooldown</span><span class="value" id="total-cooldown">Unavailable</span></div>
+        <div class="metric"><span class="label">2xx</span><span class="value" id="status-2xx">Unavailable</span></div>
+        <div class="metric"><span class="label">3xx</span><span class="value" id="status-3xx">Unavailable</span></div>
+        <div class="metric"><span class="label">4xx</span><span class="value" id="status-4xx">Unavailable</span></div>
+        <div class="metric"><span class="label">5xx</span><span class="value" id="status-5xx">Unavailable</span></div>
+        <div class="metric"><span class="label">Other</span><span class="value" id="status-other">Unavailable</span></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="retry-cooldown-title">
+      <h2 id="retry-cooldown-title">Retry / cooldown section</h2>
+      <div class="two-column">
+        <div>
+          <h3>Retry configuration</h3>
+          <div class="table-wrap">
+            <table>
+              <tbody id="retry-config-body">
+                <tr><td>Retry enabled</td><td>Unavailable</td></tr>
+                <tr><td>Max attempts</td><td>Unavailable</td></tr>
+                <tr><td>Retry methods</td><td>Unavailable</td></tr>
+                <tr><td>Retry statuses</td><td>Unavailable</td></tr>
+                <tr><td>Retry non-idempotent</td><td>Unavailable</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3>Cooldown configuration</h3>
+          <div class="table-wrap">
+            <table>
+              <tbody id="cooldown-config-body">
+                <tr><td>Cooldown enabled</td><td>Unavailable</td></tr>
+                <tr><td>Consecutive failure threshold</td><td>Unavailable</td></tr>
+                <tr><td>Cooldown duration millis</td><td>Unavailable</td></tr>
+                <tr><td>Recover on successful health check</td><td>Unavailable</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="curl-title">
+      <h2 id="curl-title">Demo curl commands</h2>
+      <p class="muted">Examples for the loopback two-backend fixture from <code>scripts/proxy-demo.ps1</code>.</p>
+      <pre id="demo-curl-commands">powershell -ExecutionPolicy Bypass -File .\scripts\proxy-demo.ps1
+curl -i http://127.0.0.1:8080/proxy/demo
+curl -s http://127.0.0.1:8080/api/proxy/status
+curl http://127.0.0.1:18082/fixture/health/fail
+curl -i http://127.0.0.1:8080/proxy/demo
+curl http://127.0.0.1:18082/fixture/health/ok
+curl -s http://127.0.0.1:8080/api/proxy/status</pre>
+    </section>
+
+    <section class="panel" aria-labelledby="raw-title">
+      <h2 id="raw-title">Raw JSON display</h2>
+      <pre id="raw-json">Status not loaded yet.</pre>
+    </section>
+
+    <section class="panel" aria-labelledby="safety-title">
+      <h2 id="safety-title">Safety / limitations</h2>
+      <ul>
+        <li>Read-only UI backed only by same-origin <code>GET /api/proxy/status</code>.</li>
+        <li>No backend writes, no reset controls, and no mutation controls.</li>
+        <li>No cloud mutation and no external services.</li>
+        <li>No browser storage; live refresh state stays in memory for this page session.</li>
+        <li>Lightweight local operator view, not production monitoring.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    const STATUS_ENDPOINT = "/api/proxy/status";
+    const UNAVAILABLE = "Unavailable";
+    let currentStatus = null;
+    let liveRefreshHandle = null;
+
+    const elements = {
+      statusMessage: document.getElementById("status-message"),
+      proxyEnabled: document.getElementById("proxy-enabled"),
+      strategy: document.getElementById("strategy"),
+      healthCheckEnabled: document.getElementById("health-check-enabled"),
+      retryEnabled: document.getElementById("retry-enabled"),
+      cooldownEnabled: document.getElementById("cooldown-enabled"),
+      totalForwarded: document.getElementById("total-forwarded"),
+      totalFailure: document.getElementById("total-failure"),
+      totalRetry: document.getElementById("total-retry"),
+      totalCooldown: document.getElementById("total-cooldown"),
+      lastSelectedUpstream: document.getElementById("last-selected-upstream"),
+      status2xx: document.getElementById("status-2xx"),
+      status3xx: document.getElementById("status-3xx"),
+      status4xx: document.getElementById("status-4xx"),
+      status5xx: document.getElementById("status-5xx"),
+      statusOther: document.getElementById("status-other"),
+      upstreamTableBody: document.getElementById("upstream-table-body"),
+      retryConfigBody: document.getElementById("retry-config-body"),
+      cooldownConfigBody: document.getElementById("cooldown-config-body"),
+      rawJson: document.getElementById("raw-json"),
+      startLiveRefresh: document.getElementById("start-live-refresh"),
+      stopLiveRefresh: document.getElementById("stop-live-refresh"),
+      demoCurlCommands: document.getElementById("demo-curl-commands")
+    };
+
+    document.getElementById("refresh-status").addEventListener("click", () => refreshStatus());
+    document.getElementById("start-live-refresh").addEventListener("click", startLiveRefresh);
+    document.getElementById("stop-live-refresh").addEventListener("click", stopLiveRefresh);
+    document.getElementById("copy-status-summary").addEventListener("click", () => {
+      copyText(buildStatusSummary(currentStatus), "Status summary copied.");
+    });
+    document.getElementById("copy-demo-curl-commands").addEventListener("click", () => {
+      copyText(elements.demoCurlCommands.textContent.trim(), "Demo curl commands copied.");
+    });
+
+    refreshStatus();
+
+    async function refreshStatus() {
+      try {
+        elements.statusMessage.textContent = "Loading proxy status from " + STATUS_ENDPOINT + ".";
+        const response = await fetch(STATUS_ENDPOINT, { method: "GET", headers: { "Accept": "application/json" } });
+        if (!response.ok) {
+          throw new Error("Status endpoint returned HTTP " + response.status);
+        }
+        const status = await response.json();
+        currentStatus = status;
+        renderStatus(status);
+        elements.statusMessage.textContent = "Status loaded from " + STATUS_ENDPOINT + ".";
+      } catch (error) {
+        renderError(error);
+      }
+    }
+
+    function startLiveRefresh() {
+      if (liveRefreshHandle !== null) {
+        return;
+      }
+      liveRefreshHandle = window.setInterval(refreshStatus, 5000);
+      elements.startLiveRefresh.disabled = true;
+      elements.stopLiveRefresh.disabled = false;
+      elements.statusMessage.textContent = "Live refresh enabled for this page session.";
+      refreshStatus();
+    }
+
+    function stopLiveRefresh() {
+      if (liveRefreshHandle !== null) {
+        window.clearInterval(liveRefreshHandle);
+        liveRefreshHandle = null;
+      }
+      elements.startLiveRefresh.disabled = false;
+      elements.stopLiveRefresh.disabled = true;
+      elements.statusMessage.textContent = "Live refresh stopped. State was not persisted.";
+    }
+
+    function renderStatus(status) {
+      const metrics = status.metrics || {};
+      const statusClasses = metrics.statusClassCounts || {};
+      setText(elements.proxyEnabled, formatBoolean(status.proxyEnabled));
+      setText(elements.strategy, valueOrUnavailable(status.strategy));
+      setText(elements.healthCheckEnabled, formatBoolean(status.healthCheck && status.healthCheck.enabled));
+      setText(elements.retryEnabled, formatBoolean(status.retry && status.retry.enabled));
+      setText(elements.cooldownEnabled, formatBoolean(status.cooldown && status.cooldown.enabled));
+      setText(elements.totalForwarded, valueOrUnavailable(metrics.totalForwarded));
+      setText(elements.totalFailure, valueOrUnavailable(metrics.totalFailures));
+      setText(elements.totalRetry, valueOrUnavailable(metrics.totalRetryAttempts));
+      setText(elements.totalCooldown, valueOrUnavailable(metrics.totalCooldownActivations));
+      setText(elements.lastSelectedUpstream, valueOrUnavailable(metrics.lastSelectedUpstream));
+      setText(elements.status2xx, valueOrUnavailable(statusClasses["2xx"]));
+      setText(elements.status3xx, valueOrUnavailable(statusClasses["3xx"]));
+      setText(elements.status4xx, valueOrUnavailable(statusClasses["4xx"]));
+      setText(elements.status5xx, valueOrUnavailable(statusClasses["5xx"]));
+      setText(elements.statusOther, valueOrUnavailable(statusClasses.other));
+      renderUpstreams(status);
+      renderRetryConfig(status.retry || {});
+      renderCooldownConfig(status.cooldown || {});
+      elements.rawJson.textContent = JSON.stringify(status, null, 2);
+    }
+
+    function renderUpstreams(status) {
+      const metricsByUpstream = new Map((status.metrics && status.metrics.upstreams || [])
+        .map(upstream => [upstream.upstreamId, upstream]));
+      const upstreams = status.upstreams || [];
+      elements.upstreamTableBody.replaceChildren();
+      if (upstreams.length === 0) {
+        appendRow(elements.upstreamTableBody, ["No configured upstreams reported."], 11);
+        return;
+      }
+      upstreams.forEach(upstream => {
+        const counters = metricsByUpstream.get(upstream.id) || {};
+        const row = document.createElement("tr");
+        [
+          upstream.id,
+          upstream.url,
+          formatBoolean(upstream.configuredHealthy),
+          badgeText(upstream.effectiveHealthy),
+          formatBoolean(upstream.cooldownActive),
+          valueOrUnavailable(upstream.cooldownRemainingMillis),
+          valueOrUnavailable(upstream.consecutiveFailures),
+          valueOrUnavailable(counters.forwarded),
+          valueOrUnavailable(counters.failures),
+          valueOrUnavailable(counters.retryAttempts),
+          valueOrUnavailable(counters.cooldownActivations)
+        ].forEach((value, index) => {
+          const cell = document.createElement("td");
+          if (index === 3) {
+            cell.appendChild(renderBadge(upstream.effectiveHealthy));
+          } else if (index === 4) {
+            cell.appendChild(renderBadge(!upstream.cooldownActive, formatBoolean(upstream.cooldownActive)));
+          } else {
+            cell.textContent = valueOrUnavailable(value);
+          }
+          row.appendChild(cell);
+        });
+        elements.upstreamTableBody.appendChild(row);
+      });
+    }
+
+    function renderRetryConfig(retry) {
+      elements.retryConfigBody.replaceChildren();
+      [
+        ["Retry enabled", formatBoolean(retry.enabled)],
+        ["Max attempts", valueOrUnavailable(retry.maxAttempts)],
+        ["Retry methods", formatList(retry.methods)],
+        ["Retry statuses", formatList(retry.retryStatuses)],
+        ["Retry non-idempotent", formatBoolean(retry.retryNonIdempotent)]
+      ].forEach(row => appendRow(elements.retryConfigBody, row, 1));
+    }
+
+    function renderCooldownConfig(cooldown) {
+      elements.cooldownConfigBody.replaceChildren();
+      [
+        ["Cooldown enabled", formatBoolean(cooldown.enabled)],
+        ["Consecutive failure threshold", valueOrUnavailable(cooldown.consecutiveFailureThreshold)],
+        ["Cooldown duration millis", valueOrUnavailable(cooldown.durationMillis)],
+        ["Recover on successful health check", formatBoolean(cooldown.recoverOnSuccessfulHealthCheck)]
+      ].forEach(row => appendRow(elements.cooldownConfigBody, row, 1));
+    }
+
+    function renderError(error) {
+      currentStatus = null;
+      elements.statusMessage.textContent = "Unable to load proxy status: " + error.message;
+      elements.rawJson.textContent = "Error state: " + error.message;
+      [
+        elements.proxyEnabled,
+        elements.strategy,
+        elements.healthCheckEnabled,
+        elements.retryEnabled,
+        elements.cooldownEnabled,
+        elements.totalForwarded,
+        elements.totalFailure,
+        elements.totalRetry,
+        elements.totalCooldown,
+        elements.lastSelectedUpstream,
+        elements.status2xx,
+        elements.status3xx,
+        elements.status4xx,
+        elements.status5xx,
+        elements.statusOther
+      ].forEach(element => setText(element, UNAVAILABLE));
+      elements.upstreamTableBody.replaceChildren();
+      appendRow(elements.upstreamTableBody, ["Status endpoint unavailable."], 11);
+    }
+
+    function buildStatusSummary(status) {
+      if (!status) {
+        return [
+          "LoadBalancerPro Proxy Status Summary",
+          "- Status: not loaded",
+          "- Endpoint: " + STATUS_ENDPOINT,
+          "- Backend writes: avoided",
+          "- Browser storage: avoided"
+        ].join("\n");
+      }
+      const metrics = status.metrics || {};
+      const statusClasses = metrics.statusClassCounts || {};
+      const lines = [
+        "LoadBalancerPro Proxy Status Summary",
+        "- Endpoint: " + STATUS_ENDPOINT,
+        "- Proxy enabled: " + formatBoolean(status.proxyEnabled),
+        "- Strategy: " + valueOrUnavailable(status.strategy),
+        "- Health check enabled: " + formatBoolean(status.healthCheck && status.healthCheck.enabled),
+        "- Retry enabled: " + formatBoolean(status.retry && status.retry.enabled),
+        "- Cooldown enabled: " + formatBoolean(status.cooldown && status.cooldown.enabled),
+        "- Total forwarded: " + valueOrUnavailable(metrics.totalForwarded),
+        "- Total failure: " + valueOrUnavailable(metrics.totalFailures),
+        "- Total retry: " + valueOrUnavailable(metrics.totalRetryAttempts),
+        "- Total cooldown: " + valueOrUnavailable(metrics.totalCooldownActivations),
+        "- Last selected upstream: " + valueOrUnavailable(metrics.lastSelectedUpstream),
+        "- Status classes: 2xx=" + valueOrUnavailable(statusClasses["2xx"])
+          + ", 3xx=" + valueOrUnavailable(statusClasses["3xx"])
+          + ", 4xx=" + valueOrUnavailable(statusClasses["4xx"])
+          + ", 5xx=" + valueOrUnavailable(statusClasses["5xx"])
+          + ", other=" + valueOrUnavailable(statusClasses.other),
+        "Upstreams:"
+      ];
+      (status.upstreams || []).forEach(upstream => {
+        const counters = ((metrics.upstreams || []).find(item => item.upstreamId === upstream.id)) || {};
+        lines.push("- " + valueOrUnavailable(upstream.id)
+          + ": configuredHealthy=" + formatBoolean(upstream.configuredHealthy)
+          + ", effectiveHealthy=" + formatBoolean(upstream.effectiveHealthy)
+          + ", cooldownActive=" + formatBoolean(upstream.cooldownActive)
+          + ", consecutiveFailures=" + valueOrUnavailable(upstream.consecutiveFailures)
+          + ", forwarded=" + valueOrUnavailable(counters.forwarded)
+          + ", failures=" + valueOrUnavailable(counters.failures)
+          + ", retries=" + valueOrUnavailable(counters.retryAttempts)
+          + ", cooldownActivations=" + valueOrUnavailable(counters.cooldownActivations));
+      });
+      if ((status.upstreams || []).length === 0) {
+        lines.push("- No configured upstreams reported.");
+      }
+      lines.push("Safety:");
+      lines.push("- Read-only browser view");
+      lines.push("- No backend writes");
+      lines.push("- No browser storage");
+      lines.push("- No cloud mutation");
+      return lines.join("\n");
+    }
+
+    async function copyText(text, message) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+      elements.statusMessage.textContent = message;
+    }
+
+    function setText(element, value) {
+      element.textContent = valueOrUnavailable(value);
+    }
+
+    function valueOrUnavailable(value) {
+      if (value === null || value === undefined || value === "") {
+        return UNAVAILABLE;
+      }
+      return String(value);
+    }
+
+    function formatBoolean(value) {
+      if (value === true) {
+        return "true";
+      }
+      if (value === false) {
+        return "false";
+      }
+      return UNAVAILABLE;
+    }
+
+    function formatList(value) {
+      return Array.isArray(value) && value.length > 0 ? value.join(", ") : UNAVAILABLE;
+    }
+
+    function badgeText(value) {
+      return value === true ? "healthy" : "not ready";
+    }
+
+    function renderBadge(good, label) {
+      const badge = document.createElement("span");
+      badge.className = "badge " + (good ? "good" : "bad");
+      badge.textContent = label || badgeText(good);
+      return badge;
+    }
+
+    function appendRow(body, values, colSpan) {
+      const row = document.createElement("tr");
+      values.forEach(value => {
+        const cell = document.createElement("td");
+        cell.textContent = valueOrUnavailable(value);
+        if (values.length === 1 && colSpan > 1) {
+          cell.colSpan = colSpan;
+        }
+        row.appendChild(cell);
+      });
+      body.appendChild(row);
+    }
+  </script>
+</body>
+</html>

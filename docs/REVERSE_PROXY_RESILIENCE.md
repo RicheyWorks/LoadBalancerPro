@@ -43,6 +43,10 @@ When enabled, consecutive forwarding or active-probe failures can temporarily mo
 
 No reset endpoint, database, metrics export service, generated runtime report, or cloud mutation is added.
 
+## Browser Status View
+
+Open `http://localhost:8080/proxy-status.html` for a read-only browser view of the same status data. The page reads same-origin `GET /api/proxy/status` only, shows retry/cooldown counters, per-upstream cooldown state, raw JSON, and copyable local demo commands, and keeps optional live-refresh state in memory only.
+
 ## Local Demo Flow
 
 Use the loopback fixture:

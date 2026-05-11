@@ -81,6 +81,7 @@ try {
     Write-Host "  curl -i http://127.0.0.1:8080/proxy/demo"
     Write-Host "  curl http://127.0.0.1:$BackendBPort/fixture/health/ok"
     Write-Host "  curl -s http://127.0.0.1:8080/api/proxy/status"
+    Write-Host "  Browser status page: http://localhost:8080/proxy-status.html"
     Write-Host ""
     Read-Host "Press Enter to stop demo backends"
 } finally {

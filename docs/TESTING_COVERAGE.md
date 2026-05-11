@@ -59,8 +59,8 @@ The CI step fails when the skipped count is nonzero. At the time this document w
 | Cloud safety guardrails | `CloudManagerGuardrailTest`, `CloudManagerSafetyTest`, cloud sandbox API tests | Uses mocked AWS SDK clients and dry-run defaults; does not mutate live AWS resources. |
 | Security and API hardening | prod auth/profile tests, request-size tests, OpenAPI/security tests | Covers local API behavior and mock auth paths, not full deployment identity-provider operations. |
 | CLI and evidence workflows | CLI tests under `src/test/java/com/richmond423/loadbalancerpro/cli` | Covers offline deterministic file/console workflows and no-cloud construction boundaries. |
-| Browser/Postman operator demos | browser static tests, Postman collection tests, cockpit tests | Static and API contract coverage for local demo parity; not browser automation or visual regression testing. |
-| Lightweight reverse proxy mode | `ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, `ReverseProxyRetryCooldownTest` | Uses in-process loopback upstream fixtures to prove real local HTTP forwarding, query/body preservation, configured and active health-aware skipping, read-only status output, forwarding/failure/retry/cooldown/status-class counters, bounded GET retry behavior, non-idempotent no-retry defaults, cooldown skip/recovery, upstream failure handling, and no `CloudManager` construction. |
+| Browser/Postman operator demos | browser static tests, Postman collection tests, cockpit tests, `ProxyOperatorStatusPageTest` | Static and API contract coverage for local demo parity and read-only proxy status UI safety; not browser automation or visual regression testing. |
+| Lightweight reverse proxy mode | `ReverseProxyDisabledTest`, `ReverseProxyControllerTest`, `ReverseProxyHealthAwareTest`, `ReverseProxyHealthMetricsTest`, `ReverseProxyFailureTest`, `ReverseProxyRetrySafetyTest`, `ReverseProxyRetryCooldownTest`, `ProxyOperatorStatusPageTest` | Uses in-process loopback upstream fixtures to prove real local HTTP forwarding, query/body preservation, configured and active health-aware skipping, read-only status output, forwarding/failure/retry/cooldown/status-class counters, bounded GET retry behavior, non-idempotent no-retry defaults, cooldown skip/recovery, upstream failure handling, static status UI safety, and no `CloudManager` construction. |
 
 ## Mocked And Simulated Boundaries
 
@@ -79,7 +79,7 @@ Default CI deliberately avoids real cloud mutation and live external services. C
 - No coverage percentage is claimed in docs unless it comes from a generated JaCoCo report or CI log.
 - No coverage gate is enforced yet because the initial goal is reviewer visibility, not gaming a threshold.
 - Generated coverage reports are not committed to the repository.
-- Default tests now exercise a lightweight local reverse proxy path against loopback fixture servers, including active health checks, bounded retry/cooldown behavior, and local in-memory metrics/status output, but not a production-grade gateway data plane.
+- Default tests now exercise a lightweight local reverse proxy path against loopback fixture servers, including active health checks, bounded retry/cooldown behavior, local in-memory metrics/status output, and a read-only static proxy status UI, but not a production-grade gateway data plane.
 
 ## Next Credibility Step
 

@@ -31,6 +31,12 @@ Inspect current proxy state:
 curl -s http://127.0.0.1:8080/api/proxy/status
 ```
 
+Or open the read-only browser view:
+
+```text
+http://localhost:8080/proxy-status.html
+```
+
 The endpoint is read-only and reports:
 
 - proxy enabled flag
@@ -50,6 +56,8 @@ The endpoint is read-only and reports:
 - last selected upstream id
 
 Counters are process-local and in memory only. They reset on restart and are not persisted or exported as a generated report.
+
+The browser status page displays the same endpoint output as tables and raw JSON, supports manual refresh, has opt-in in-memory live refresh, and provides copyable demo commands. It does not add backend writes, reset controls, or browser storage.
 
 ## Retry And Cooldown Visibility
 
@@ -78,6 +86,7 @@ curl -s http://127.0.0.1:8080/api/proxy/status
 curl http://127.0.0.1:18082/fixture/health/fail
 curl -i http://127.0.0.1:8080/proxy/demo
 curl -s http://127.0.0.1:8080/api/proxy/status
+http://localhost:8080/proxy-status.html
 ```
 
 The fixture has no cloud dependency and no public internet dependency. It is meant for local reviewer demos of routing and failover visibility, not throughput proof.

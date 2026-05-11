@@ -41,7 +41,9 @@ Use **Start live refresh** to poll the status endpoint every few seconds for the
 
 **Copy status summary** produces deterministic Markdown-style text from the currently loaded status response. If status has not loaded, the copied summary says that status is not loaded.
 
-**Copy demo curl commands** copies loopback demo commands for `scripts/proxy-demo.ps1`, `/proxy/demo`, and `/api/proxy/status`.
+**Copy demo curl commands** copies loopback demo commands for `scripts/proxy-demo.ps1` modes, `/proxy/demo`, `/proxy/weighted`, `/proxy/failover`, and `/api/proxy/status`.
+
+For strategy-specific recipes, use [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md). It covers `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover examples that pair forwarded response headers with the status page.
 
 ## Safety Boundaries
 

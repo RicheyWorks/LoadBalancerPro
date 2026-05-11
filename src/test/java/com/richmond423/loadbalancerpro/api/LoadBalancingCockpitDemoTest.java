@@ -132,6 +132,22 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Scenario delta diff"));
         assertTrue(page.contains("Error state diff"));
         assertTrue(page.contains("Replay error panel"));
+        assertTrue(page.contains("Operator Review Packet"));
+        assertTrue(page.contains("Generate review packet"));
+        assertTrue(page.contains("Clear review packet"));
+        assertTrue(page.contains("Copy review packet"));
+        assertTrue(page.contains("Print review packet"));
+        assertTrue(page.contains("review-packet-preview"));
+        assertTrue(page.contains("Review Packet Summary"));
+        assertTrue(page.contains("Selected Scenario"));
+        assertTrue(page.contains("Comparison Matrix Summary"));
+        assertTrue(page.contains("Replay Delta Summary"));
+        assertTrue(page.contains("Explanation / Rationale Summary"));
+        assertTrue(page.contains("Endpoint References"));
+        assertTrue(page.contains("Payload / Curl References"));
+        assertTrue(page.contains("Raw JSON Reference Notes"));
+        assertTrue(page.contains("Safety Notes"));
+        assertTrue(page.contains("Limitations / Unavailable Fields"));
         assertTrue(page.contains("Expected outcome hints"));
         assertTrue(page.contains("What-changed summary"));
         assertTrue(page.contains("Allocation results"));
@@ -226,6 +242,10 @@ class LoadBalancingCockpitDemoTest {
         assertFalse(normalized.contains("certification score"));
         assertFalse(normalized.contains("performance score"));
         assertFalse(normalized.contains("replay score"));
+        assertFalse(normalized.contains("review score"));
+        assertFalse(normalized.contains("saved to server"));
+        assertFalse(normalized.contains("server-side packet"));
+        assertFalse(normalized.contains("persist packet"));
         assertFalse(normalized.contains("legal training compliance"));
         assertFalse(normalized.contains("identity verified"));
         assertTrue(countOccurrences(normalized, "cloudmanager") <= 2,

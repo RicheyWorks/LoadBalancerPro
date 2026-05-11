@@ -1,0 +1,55 @@
+# Operator Review Packet
+
+The operator review packet is part of the unified browser cockpit:
+
+```text
+http://localhost:8080/load-balancing-cockpit.html
+```
+
+It assembles the current in-memory cockpit state into one deterministic Markdown-style handoff that can be copied or printed from the browser.
+
+## How To Generate It
+
+1. Start the local app.
+2. Open the cockpit URL.
+3. Load or run a scenario from `Scenario Gallery`.
+4. Run `Operator Comparison Matrix` if matrix rows are needed.
+5. Run `Operator Replay Mode` if before/after deltas are needed.
+6. Review `Explanation Drill-Down` if rationale notes are needed.
+7. Click `Generate review packet`.
+
+If a section has not been generated yet, the packet includes explicit `not generated yet` text instead of inventing data.
+
+## What It Includes
+
+- review packet summary
+- selected scenario summary
+- comparison matrix summary
+- replay delta summary
+- explanation and operator rationale summary
+- endpoint references
+- payload and curl references
+- raw JSON reference notes
+- safety notes
+- limitations and unavailable-field notes
+
+## Copy And Print
+
+- `Copy review packet` copies the deterministic Markdown-style handoff text.
+- `Print review packet` uses the browser print dialog with print-focused styling for the packet panel.
+
+The packet is not written to disk, sent to a backend report endpoint, or stored in browser storage.
+
+## Safety Boundaries
+
+- Client-side only.
+- No backend writes.
+- No cloud mutation.
+- No browser storage.
+- No generated runtime reports.
+- No fake scoring.
+- Not certification.
+- Not benchmark proof.
+- Not legal compliance proof.
+- Not identity proof.
+- No external scripts, CDNs, services, or dependencies.

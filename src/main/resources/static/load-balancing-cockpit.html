@@ -334,6 +334,46 @@
       background: rgba(22, 101, 52, 0.08);
     }
 
+    .review-packet-panel pre {
+      min-height: 280px;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+
+      header,
+      #copy-status,
+      main > .panel:not(.review-packet-panel),
+      main > .grid,
+      main > .tri-grid {
+        display: none !important;
+      }
+
+      main {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .review-packet-panel {
+        border: 0;
+        box-shadow: none;
+      }
+
+      .review-packet-panel .actions,
+      .review-packet-panel .postman-note {
+        display: none !important;
+      }
+
+      .review-packet-panel pre {
+        border: 0;
+        background: #ffffff;
+        white-space: pre-wrap;
+      }
+    }
+
     .postman-note {
       color: var(--muted);
       font-size: 0.92rem;
@@ -585,6 +625,26 @@
         <pre id="replay-curls"></pre>
         <h3 style="margin-top: 12px;">Copy replay payloads</h3>
         <pre id="replay-payloads"></pre>
+      </div>
+    </section>
+
+    <section class="panel review-packet-panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Operator Review Packet</h2>
+        <div class="actions">
+          <button data-action="generate-review-packet" type="button">Generate review packet</button>
+          <button data-action="clear-review-packet" type="button" class="secondary">Clear review packet</button>
+          <button class="copy" type="button" data-copy-target="review-packet-preview">Copy review packet</button>
+          <button data-action="print-review-packet" type="button">Print review packet</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="postman-note">
+          Assembles the current in-memory cockpit state into one deterministic Markdown-style handoff. Sections that
+          have not been generated yet are labeled honestly; the packet is not stored, written to the backend, or saved
+          as a runtime report.
+        </p>
+        <pre id="review-packet-preview">Generate review packet to assemble the current cockpit state.</pre>
       </div>
     </section>
 
@@ -1019,7 +1079,8 @@
       routing: null,
       evaluation: null,
       matrixRows: [],
-      replay: null
+      replay: null,
+      reviewPacket: null
     };
 
     const outputs = {
@@ -1043,6 +1104,7 @@
       replayPayloads: document.getElementById("replay-payloads"),
       replayBaselineOutput: document.getElementById("replay-baseline-output"),
       replayComparisonOutput: document.getElementById("replay-comparison-output"),
+      reviewPacket: document.getElementById("review-packet-preview"),
       curl: document.getElementById("curl-snippets")
     };
 
@@ -1804,6 +1866,122 @@
         "- no backend writes",
         "- no generated runtime reports"
       ].join("\n");
+    }
+
+    function generateReviewPacket() {
+      state.reviewPacket = buildReviewPacket();
+      outputs.reviewPacket.textContent = state.reviewPacket;
+    }
+
+    function clearReviewPacket() {
+      state.reviewPacket = null;
+      outputs.reviewPacket.textContent = "Generate review packet to assemble the current cockpit state.";
+    }
+
+    function printReviewPacket() {
+      if (!state.reviewPacket) {
+        generateReviewPacket();
+      }
+      window.print();
+    }
+
+    function buildReviewPacket() {
+      const scenario = safeCurrentScenario();
+      return [
+        "# Operator Review Packet",
+        "",
+        "mode: local browser same-origin demo",
+        "packetState: client-side only",
+        "backendWrites: false",
+        "browserStorage: false",
+        "cloudMutation: false",
+        "generatedRuntimeReport: false",
+        "",
+        "## Review Packet Summary",
+        "- selectedScenario: " + (scenario ? scenario.scenarioName : "not generated yet"),
+        "- comparisonMatrixRows: " + state.matrixRows.length,
+        "- replayGenerated: " + (state.replay ? "true" : "false"),
+        "- explanationGenerated: " + (hasGeneratedText(outputs.drilldownSummary, "Run the cockpit sequence") ? "true" : "false"),
+        "",
+        "## Selected Scenario",
+        packetBlock(outputs.scenarioSummary, "Load and run a scenario to generate selected scenario summary."),
+        "",
+        "## Comparison Matrix Summary",
+        packetBlock(outputs.matrixSummary, "Run all scenarios to generate comparison matrix summary."),
+        "",
+        "## Replay Delta Summary",
+        packetBlock(outputs.replayReviewerNote, "Replay selected pair to generate replay delta summary."),
+        "",
+        "## Explanation / Rationale Summary",
+        packetBlock(outputs.drilldownSummary, "Run a scenario to generate explanation summary."),
+        "",
+        "## Operator Rationale",
+        packetBlock(outputs.operatorRationale, "Run a scenario to generate operator rationale."),
+        "",
+        "## Endpoint References",
+        "- GET /api/health",
+        "- GET /actuator/health/readiness",
+        "- POST /api/routing/compare",
+        "- POST /api/allocate/capacity-aware",
+        "- POST /api/allocate/evaluate",
+        "",
+        "## Payload / Curl References",
+        "Selected scenario curl references:",
+        packetBlock(outputs.curl, "Load a scenario to generate selected curl references."),
+        "",
+        "Replay curl references:",
+        packetBlock(outputs.replayCurls, "Select replay scenarios to generate replay curl references."),
+        "",
+        "## Raw JSON Reference Notes",
+        "- allocationRawJson: " + rawJsonState(outputs.allocation),
+        "- routingRawJson: " + rawJsonState(outputs.routing),
+        "- evaluationRawJson: " + rawJsonState(outputs.evaluation),
+        "- remediationRawJson: " + rawJsonState(outputs.remediation),
+        "- Raw JSON remains visible in the cockpit panels; this packet references those blocks instead of writing files.",
+        "",
+        "## Safety Notes",
+        "- Client-side only.",
+        "- No backend writes.",
+        "- No cloud mutation.",
+        "- No browser storage.",
+        "- No benchmark, certification, legal compliance, identity, or production guarantee claims.",
+        "- Derived from current API responses and packaged scenario payloads.",
+        "",
+        "## Limitations / Unavailable Fields",
+        "- Sections not run yet are marked not generated yet.",
+        "- Exact internal scores and every internal threshold are not exposed by the current API.",
+        "- Missing or unavailable fields are not invented.",
+        "- The packet is copyable and printable from the browser only."
+      ].join("\n");
+    }
+
+    function safeCurrentScenario() {
+      try {
+        return outputs.scenario.value.trim() ? currentScenario() : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function packetBlock(output, emptyText) {
+      const text = (output && (output.value || output.textContent) || "").trim();
+      if (!text || text === "{}") {
+        return "not generated yet: " + emptyText;
+      }
+      if (text.startsWith("Run ") || text.startsWith("Replay ") || text.startsWith("Generate ") || text.startsWith("Load ")) {
+        return "not generated yet: " + text;
+      }
+      return text;
+    }
+
+    function hasGeneratedText(output, placeholderPrefix) {
+      const text = (output && (output.value || output.textContent) || "").trim();
+      return Boolean(text) && !text.startsWith(placeholderPrefix);
+    }
+
+    function rawJsonState(output) {
+      const text = (output && (output.value || output.textContent) || "").trim();
+      return text && text !== "{}" ? "available in cockpit raw JSON block" : "not generated yet";
     }
 
     function matrixSnapshot(scenario, responses) {
@@ -2579,6 +2757,7 @@
         "Run all scenarios to generate a deterministic comparison matrix summary.";
       refreshMatrixCopyBlocks();
       clearReplayMode();
+      clearReviewPacket();
       ["health", "scenario", "allocation", "routing", "evaluation"].forEach((name) => setBadge(name, "Not run"));
     }
 
@@ -2653,6 +2832,12 @@
           await runReplayMode();
         } else if (action === "clear-replay-mode") {
           clearReplayMode();
+        } else if (action === "generate-review-packet") {
+          generateReviewPacket();
+        } else if (action === "clear-review-packet") {
+          clearReviewPacket();
+        } else if (action === "print-review-packet") {
+          printReviewPacket();
         } else if (action === "reset-gallery") {
           resetScenarioGallery();
         } else if (action === "reset") {

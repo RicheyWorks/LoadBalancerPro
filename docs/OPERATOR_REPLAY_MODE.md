@@ -43,6 +43,10 @@ Changed rows are highlighted in the browser. Missing fields and unavailable sect
 
 The copy output is generated client-side only. It is not written to disk, sent to a server-side report endpoint, or stored in browser storage.
 
+## Review Packet Follow-Up
+
+After replaying a pair, click `Generate review packet` in the cockpit to assemble the selected scenario summary, comparison matrix summary, replay delta summary, explanation notes, endpoint references, raw JSON reference notes, and safety notes into one deterministic copyable/printable handoff.
+
 ## Safety Boundaries
 
 - Local/operator demo only.

@@ -348,12 +348,16 @@
     <section class="panel" aria-labelledby="curl-title">
       <h2 id="curl-title">Demo curl commands</h2>
       <p class="muted">
-        Examples for the loopback two-backend fixture from <code>scripts/proxy-demo.ps1</code>
-        or <code>scripts/proxy-demo.sh</code>. See <code>docs/PROXY_DEMO_STACK.md</code>
+        Examples for the Java loopback fixture launcher and helper scripts.
+        See <code>docs/PROXY_DEMO_STACK.md</code>
         for the complete start-demo-stack path and <code>docs/PROXY_STRATEGY_DEMO_LAB.md</code>
         for strategy-specific recipes.
       </p>
-      <pre id="demo-curl-commands">powershell -ExecutionPolicy Bypass -File .\scripts\proxy-demo.ps1 -Mode round-robin
+      <pre id="demo-curl-commands">mvn -q -DskipTests compile
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode weighted-round-robin
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode failover
+powershell -ExecutionPolicy Bypass -File .\scripts\proxy-demo.ps1 -Mode round-robin
 powershell -ExecutionPolicy Bypass -File .\scripts\proxy-demo.ps1 -Mode weighted-round-robin
 powershell -ExecutionPolicy Bypass -File .\scripts\proxy-demo.ps1 -Mode failover
 bash scripts/proxy-demo.sh --mode round-robin

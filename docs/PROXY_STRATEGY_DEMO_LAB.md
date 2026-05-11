@@ -2,9 +2,16 @@
 
 This lab shows strategy-specific reverse proxy behavior with two local loopback backends and the existing optional `/proxy/**` forwarding path. It uses no cloud services, no public internet, no generated reports, and no backend mutation controls.
 
-For the single start-to-finish demo stack path with checked-in profile files, Windows PowerShell commands, Unix shell commands, status-page verification, and cleanup steps, see [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md).
+For the single start-to-finish demo stack path with checked-in profile files, the Java fixture launcher, Windows PowerShell commands, Unix shell commands, status-page verification, and cleanup steps, see [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md). For the Java launcher details, see [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md).
 
-Start the two local fixture backends with PowerShell:
+Start the two local fixture backends with the cross-platform Java launcher:
+
+```bash
+mvn -q -DskipTests compile
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin
+```
+
+Or use the helper script:
 
 ```powershell
 .\scripts\proxy-demo.ps1 -Mode round-robin
@@ -30,6 +37,12 @@ The status page and `GET /api/proxy/status` should show the selected strategy, l
 ## ROUND_ROBIN
 
 Start the fixture:
+
+```bash
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin
+```
+
+or:
 
 ```powershell
 .\scripts\proxy-demo.ps1 -Mode round-robin
@@ -68,6 +81,12 @@ Each forwarded response should include `X-LoadBalancerPro-Strategy: ROUND_ROBIN`
 
 Start the fixture:
 
+```bash
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode weighted-round-robin
+```
+
+or:
+
 ```powershell
 .\scripts\proxy-demo.ps1 -Mode weighted-round-robin
 ```
@@ -101,6 +120,12 @@ This is selected-upstream evidence for the configured local demo, not a throughp
 ## Health-Aware Failover
 
 Start the fixture:
+
+```bash
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode failover
+```
+
+or:
 
 ```powershell
 .\scripts\proxy-demo.ps1 -Mode failover

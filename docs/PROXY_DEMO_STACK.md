@@ -8,6 +8,15 @@ The stack is loopback-only. It does not require cloud credentials, does not cont
 
 Use one terminal for the two fixture backends and one terminal for LoadBalancerPro.
 
+Recommended cross-platform Java fixture path:
+
+```bash
+mvn -q -DskipTests compile
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin
+```
+
+The Java launcher starts both loopback fixture backends, prints the matching `proxy-demo-*` profile, prints curl recipes, and blocks until `Ctrl+C`. It is the preferred path on both Windows and Unix because it uses Java code from this project instead of shell-specific backend code.
+
 Windows PowerShell:
 
 ```powershell
@@ -20,7 +29,9 @@ Unix shell:
 bash scripts/proxy-demo.sh --mode round-robin
 ```
 
-The script prints the exact LoadBalancerPro startup command. For the default ports, the round-robin command is:
+The scripts also point to the Java launcher path. PowerShell keeps `-LegacyPowerShellFixture` as a local fallback, but the Java fixture launcher is the single cross-platform backend fixture path.
+
+The launcher prints the exact LoadBalancerPro startup command. For the default ports, the round-robin command is:
 
 ```bash
 mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=proxy-demo-round-robin"
@@ -51,6 +62,37 @@ status
 
 Use `status` when the app is already running and you only want the status page and endpoint reminders.
 
+## Java Fixture Launcher
+
+The launcher class is:
+
+```text
+com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher
+```
+
+Supported modes:
+
+```text
+round-robin
+weighted-round-robin
+failover
+```
+
+Optional port overrides:
+
+```bash
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin --backend-a-port 18091 --backend-b-port 18092
+```
+
+Fixture endpoints:
+
+- `GET /health`: `200` when healthy, `503` when unhealthy
+- `GET /fixture/health/fail`: marks the fixture unhealthy
+- `GET /fixture/health/ok`: marks the fixture healthy
+- any other path: echoes backend id, method, path, query string, and body length
+
+Failover mode starts `backend-b` with failing health so the active health-check profile has immediate skip evidence.
+
 ## Checked-In Demo Profiles
 
 The demo profiles live under `src/main/resources` and are inactive unless explicitly selected:
@@ -68,6 +110,12 @@ Default application behavior is unchanged: `src/main/resources/application.prope
 ## ROUND_ROBIN Path
 
 Start fixture backends:
+
+```bash
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode round-robin
+```
+
+or:
 
 ```powershell
 .\scripts\proxy-demo.ps1 -Mode round-robin
@@ -110,6 +158,12 @@ Verify `/proxy-status.html` shows both upstreams and increasing forwarded counte
 ## WEIGHTED_ROUND_ROBIN Path
 
 Start fixture backends:
+
+```bash
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode weighted-round-robin
+```
+
+or:
 
 ```powershell
 .\scripts\proxy-demo.ps1 -Mode weighted-round-robin
@@ -154,6 +208,12 @@ This is selected-upstream evidence for the checked-in local fixture profile. It 
 ## Failover Path
 
 Start fixture backends:
+
+```bash
+java -cp target/classes com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher --mode failover
+```
+
+or:
 
 ```powershell
 .\scripts\proxy-demo.ps1 -Mode failover
@@ -231,7 +291,7 @@ The scripts use loopback processes only. They do not write generated runtime rep
 - If fixture startup fails, check whether ports `18081` or `18082` are already in use.
 - If the weighted sequence differs, restart LoadBalancerPro and rerun the first four weighted curl commands before sending any other proxy traffic.
 - If failover does not skip `backend-b`, run `curl http://127.0.0.1:18082/fixture/health/fail` before the proxy request and refresh `/proxy-status.html`.
-- If Unix `python3` is unavailable, use the PowerShell script or start two local HTTP fixtures manually with the same `/health` behavior.
+- If Maven cannot compile locally, use CI as the source of truth for tests and compile output; the Java fixture path itself does not require Python, Node, Docker, or public internet.
 
 ## Safety Boundaries
 
@@ -242,6 +302,7 @@ The scripts use loopback processes only. They do not write generated runtime rep
 - No cloud mutation.
 - No `CloudManager` construction.
 - No public internet requirement.
+- No Python, Node, or Docker requirement for the Java fixture path.
 - No secrets.
 - No backend reset, metrics reset, or cooldown reset controls.
 - No browser storage.

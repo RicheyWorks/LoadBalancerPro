@@ -72,7 +72,7 @@ When retries are enabled, attempts are bounded by `loadbalancerpro.proxy.retry.m
 
 ## Local Two-Backend Demo
 
-For the single documented demo-stack path with Windows and Unix commands, checked-in proxy profiles, curl recipes, status-page verification, and cleanup steps, use [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md).
+For the single documented demo-stack path with the Java fixture launcher, Windows and Unix commands, checked-in proxy profiles, curl recipes, status-page verification, and cleanup steps, use [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md). The launcher itself is documented in [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md).
 
 Start two loopback fixture backends:
 
@@ -80,7 +80,7 @@ Start two loopback fixture backends:
 .\scripts\proxy-demo.ps1
 ```
 
-In a second terminal, use the command printed by the script to start LoadBalancerPro with the selected `proxy-demo-*` profile and active health checks enabled. Unix users can start the same fixture with `bash scripts/proxy-demo.sh --mode round-robin`. Then try:
+In a second terminal, use the command printed by the Java launcher or helper script to start LoadBalancerPro with the selected `proxy-demo-*` profile and active health checks enabled. Unix users can start the same fixture with `bash scripts/proxy-demo.sh --mode round-robin`. Then try:
 
 ```bash
 curl -i http://127.0.0.1:8080/proxy/demo

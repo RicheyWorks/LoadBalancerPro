@@ -25,6 +25,7 @@ import com.richmond423.loadbalancerpro.core.RoutingStrategy;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyId;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -58,6 +59,7 @@ public class ReverseProxyService {
     private final RoutingStrategyId strategyId;
     private final Clock clock;
 
+    @Autowired
     public ReverseProxyService(ReverseProxyProperties properties, HttpClient httpClient) {
         this(properties, httpClient, RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC());
     }

@@ -4,6 +4,8 @@ LoadBalancerPro includes an optional Spring MVC reverse proxy path for local and
 
 This mode is disabled by default and is intentionally small. It is not an internet-edge gateway, benchmark harness, TLS terminator, WebSocket proxy, WAF, distributed rate limiter, or identity system.
 
+For copyable run profiles that combine local demo, prod API-key, cloud-sandbox API-key, OAuth2, and proxy-loopback validation, see [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md).
+
 ## Enable Proxy Mode
 
 Start the API with proxy mode enabled and two local upstreams:

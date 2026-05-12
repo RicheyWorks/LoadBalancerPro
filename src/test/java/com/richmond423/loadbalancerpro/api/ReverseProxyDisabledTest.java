@@ -44,6 +44,9 @@ class ReverseProxyDisabledTest {
                 .andExpect(jsonPath("$.observability.readiness").value("proxy_disabled"))
                 .andExpect(jsonPath("$.securityBoundary.authMode").value("api-key"))
                 .andExpect(jsonPath("$.securityBoundary.proxyStatusProtected").value(false))
-                .andExpect(jsonPath("$.securityBoundary.proxyForwardingProtected").value(false));
+                .andExpect(jsonPath("$.securityBoundary.proxyForwardingProtected").value(false))
+                .andExpect(jsonPath("$.reload.configReloadSupported").value(false))
+                .andExpect(jsonPath("$.reload.activeConfigGeneration").value(0))
+                .andExpect(jsonPath("$.reload.lastReloadStatus").value("unsupported"));
     }
 }

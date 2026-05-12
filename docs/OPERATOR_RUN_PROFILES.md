@@ -123,7 +123,9 @@ curl -s http://127.0.0.1:8080/api/proxy/status
 # Browser: http://localhost:8080/proxy-status.html
 ```
 
-When you need the prod API-key boundary and proxy loopback together, combine the import with `--spring.profiles.active=prod` and `LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY`, then send `X-API-Key` on `/proxy/**` and `GET /api/proxy/status`.
+When you need the prod API-key boundary and proxy loopback together, combine the import with `--spring.profiles.active=prod` and `LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY`, then send `X-API-Key` on `/proxy/**`, `GET /api/proxy/status`, and any operator-controlled `POST /api/proxy/reload` check.
+
+Runtime proxy config reload is optional and process-local. Use it only with a reviewed local JSON payload, the same operator auth/TLS boundary as the proxy surfaces, and `/api/proxy/status.reload` verification. Invalid reloads preserve the last known-good config; restart remains recommended after deployment secret, TLS, auth, JVM, or non-proxy config changes.
 
 ### Container Run
 
@@ -165,7 +167,7 @@ They are not active defaults. The only example that enables proxy mode is `proxy
 
 - Demo mode is not a security boundary.
 - Proxy mode is disabled by default and remains lightweight.
-- `/proxy/**`, `GET /api/proxy/status`, and `/proxy-status.html` should not be exposed publicly without deployment-level access control and TLS termination.
+- `/proxy/**`, `GET /api/proxy/status`, `POST /api/proxy/reload`, and `/proxy-status.html` should not be exposed publicly without deployment-level access control and TLS termination.
 - TLS termination is expected at a trusted reverse proxy, ingress, managed load balancer, platform edge, or service mesh unless in-app TLS is explicitly configured and tested in a future slice.
 - API-key and OAuth2 modes are access boundaries for controlled validation; they are not certification, full identity lifecycle management, or secret rotation.
 - Use placeholder secrets only in docs and examples. Store real secrets outside Git.

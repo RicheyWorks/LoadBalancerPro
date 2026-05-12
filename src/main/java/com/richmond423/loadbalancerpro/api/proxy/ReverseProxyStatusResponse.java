@@ -12,7 +12,8 @@ public record ReverseProxyStatusResponse(
         List<UpstreamStatus> upstreams,
         ReverseProxyMetricsSnapshot metrics,
         ObservabilitySummary observability,
-        SecurityBoundaryStatus securityBoundary) {
+        SecurityBoundaryStatus securityBoundary,
+        ReloadStatus reload) {
 
     public record HealthCheckStatus(
             boolean enabled,
@@ -77,5 +78,17 @@ public record ReverseProxyStatusResponse(
             boolean proxyStatusProtected,
             boolean proxyForwardingProtected,
             String note) {
+    }
+
+    public record ReloadStatus(
+            boolean configReloadSupported,
+            long activeConfigGeneration,
+            String lastReloadAttemptedAt,
+            String lastReloadSucceededAt,
+            String lastReloadFailedAt,
+            String lastReloadStatus,
+            List<String> lastReloadValidationErrors,
+            int activeRouteCount,
+            int activeBackendTargetCount) {
     }
 }

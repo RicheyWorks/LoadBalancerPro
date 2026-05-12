@@ -24,7 +24,7 @@
 
 - Mockito/JDK dynamic-agent warning: fixed by running tests with Mockito as an explicit test JVM agent while preserving the JaCoCo `argLine`.
 - javac annotation-processing future warning: fixed by explicitly disabling annotation processing; the project does not use compile-time processors such as Lombok or MapStruct.
-- OpenJFX effective-model warning: deferred. The warning comes from duplicate activation metadata inside the upstream `org.openjfx:javafx:17.0.10` POM pulled by `javafx-controls`. A same-major JavaFX patch should be validated separately when local Maven can resolve uncached artifacts without the workstation PKIX trust-chain issue.
+- OpenJFX effective-model warning: deferred. The warning comes from duplicate activation metadata inside the upstream `org.openjfx:javafx:17.0.10` POM pulled by `javafx-controls`. Maven Central metadata shows same-major `javafx-controls` `17.0.19`, but local Maven could not validate it because the workstation Java trust store failed PKIX validation while resolving the uncached artifact from Maven Central. Keep `17.0.10` until the Maven trust-chain issue is fixed or CI validates a same-major patch in a dedicated PR.
 - Deprecated API notes: deferred. Current notes point at existing test code and should be handled as a narrow source cleanup only if they become actionable failures.
 
 ## Remaining Open PR Posture

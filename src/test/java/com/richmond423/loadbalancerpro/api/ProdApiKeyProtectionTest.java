@@ -184,7 +184,12 @@ class ProdApiKeyProtectionTest {
     void prodProfileAllowsProxyStatusWithCorrectApiKey() throws Exception {
         mockMvc.perform(get("/api/proxy/status").header("X-API-Key", API_KEY))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.proxyEnabled", is(false)));
+                .andExpect(content().string(not(containsString(API_KEY))))
+                .andExpect(jsonPath("$.proxyEnabled", is(false)))
+                .andExpect(jsonPath("$.securityBoundary.authMode", is("api-key")))
+                .andExpect(jsonPath("$.securityBoundary.apiKeyConfigured", is(true)))
+                .andExpect(jsonPath("$.securityBoundary.proxyStatusProtected", is(true)))
+                .andExpect(jsonPath("$.securityBoundary.proxyForwardingProtected", is(true)));
     }
 
     @Test

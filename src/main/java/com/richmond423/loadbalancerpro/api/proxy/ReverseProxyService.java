@@ -29,6 +29,8 @@ import com.richmond423.loadbalancerpro.core.NetworkAwarenessSignal;
 import com.richmond423.loadbalancerpro.core.RoutingDecision;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
@@ -41,6 +43,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @Service
 @ConditionalOnProperty(prefix = "loadbalancerpro.proxy", name = "enabled", havingValue = "true")
 public class ReverseProxyService {
+    private static final Logger logger = LoggerFactory.getLogger(ReverseProxyService.class);
     private static final String PROXY_PREFIX = "/proxy";
     private static final String UPSTREAM_HEADER = "X-LoadBalancerPro-Upstream";
     private static final String STRATEGY_HEADER = "X-LoadBalancerPro-Strategy";
@@ -83,12 +86,15 @@ public class ReverseProxyService {
         Objects.requireNonNull(registry, "registry cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
         this.routes = ReverseProxyRoutePlanner.buildEnabledRoutes(properties, registry);
+        logStartupSummary();
     }
 
     @SuppressWarnings("java/ssrf")
     ReverseProxyResponse forward(HttpServletRequest request, byte[] requestBody) {
         byte[] body = requestBody == null ? new byte[0] : requestBody.clone();
         if (body.length > properties.getMaxRequestBytes()) {
+            logger.warn("proxy.forward.failure reason=payload_too_large requestBytes={} maxRequestBytes={}",
+                    body.length, properties.getMaxRequestBytes());
             metrics.recordFailure(null, HttpStatus.PAYLOAD_TOO_LARGE.value());
             return proxyError(HttpStatus.PAYLOAD_TOO_LARGE, "proxy_payload_too_large",
                     "Proxy request body exceeds maximum size of " + properties.getMaxRequestBytes() + " bytes");
@@ -98,11 +104,13 @@ public class ReverseProxyService {
         try {
             proxyPathSuffix = validatedProxyPathSuffix(request);
         } catch (IllegalArgumentException exception) {
+            logger.warn("proxy.forward.failure reason=invalid_path message={}", exception.getMessage());
             metrics.recordFailure(null, HttpStatus.BAD_REQUEST.value());
             return proxyError(HttpStatus.BAD_REQUEST, "proxy_path_invalid", exception.getMessage());
         }
         Optional<ReverseProxyRoutePlanner.ConfiguredRoute> selectedRoute = routeFor(proxyPathSuffix);
         if (selectedRoute.isEmpty()) {
+            logger.warn("proxy.forward.failure reason=route_not_found pathSuffix={}", proxyPathSuffix);
             metrics.recordFailure(null, HttpStatus.NOT_FOUND.value());
             return proxyError(HttpStatus.NOT_FOUND, "proxy_route_not_found",
                     "No configured proxy route matches path " + proxyPathSuffix);
@@ -117,6 +125,8 @@ public class ReverseProxyService {
                 if (lastResponse != null) {
                     return lastResponse;
                 }
+                logger.warn("proxy.forward.failure reason=no_configured_upstreams route={} attempt={}",
+                        route.name(), attempt);
                 metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
                 return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
                         "No proxy upstreams are configured for route " + route.name() + ".");
@@ -130,6 +140,8 @@ public class ReverseProxyService {
                 if (lastResponse != null) {
                     return lastResponse;
                 }
+                logger.warn("proxy.forward.failure reason=no_healthy_upstreams route={} attempt={}",
+                        route.name(), attempt);
                 metrics.recordFailure(null, HttpStatus.SERVICE_UNAVAILABLE.value());
                 return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
                         "No healthy proxy upstreams are available.");
@@ -142,6 +154,8 @@ public class ReverseProxyService {
                 if (lastResponse != null) {
                     return lastResponse;
                 }
+                logger.warn("proxy.forward.failure reason=selected_upstream_not_configured route={} upstreamId={}",
+                        route.name(), selectedServerId.get());
                 metrics.recordFailure(selectedServerId.get(), HttpStatus.SERVICE_UNAVAILABLE.value());
                 return proxyError(HttpStatus.SERVICE_UNAVAILABLE, "proxy_unavailable",
                         "Selected proxy upstream is not configured: " + selectedServerId.get());
@@ -150,6 +164,8 @@ public class ReverseProxyService {
             String upstreamId = upstream.state().serverId();
             attemptedUpstreamIds.add(upstreamId);
             if (attempt > 1) {
+                logger.info("proxy.forward.retry route={} attempt={} upstreamId={}",
+                        route.name(), attempt, upstreamId);
                 metrics.recordRetryAttempt(upstreamId);
             }
             ForwardAttemptResult attemptResult =
@@ -174,6 +190,16 @@ public class ReverseProxyService {
         ReverseProxyProperties.HealthCheck healthCheck = properties.getHealthCheck();
         ReverseProxyProperties.Retry retry = properties.getRetry();
         ReverseProxyProperties.Cooldown cooldown = properties.getCooldown();
+        List<ReverseProxyStatusResponse.RouteStatus> routeStatuses = routes.stream()
+                .map(route -> new ReverseProxyStatusResponse.RouteStatus(
+                        route.name(),
+                        route.pathPrefix(),
+                        route.strategyId().externalName(),
+                        route.targets().stream()
+                                .map(ReverseProxyProperties.Upstream::getId)
+                                .toList()))
+                .toList();
+        ReverseProxyMetricsSnapshot metricsSnapshot = metrics.snapshot(upstreamIds);
         return new ReverseProxyStatusResponse(
                 properties.isEnabled(),
                 routes.size() == 1 ? routes.get(0).strategyId().externalName() : properties.getStrategy(),
@@ -193,17 +219,12 @@ public class ReverseProxyService {
                         Math.max(1, cooldown.getConsecutiveFailureThreshold()),
                         Math.max(0, cooldown.getDuration().toMillis()),
                         cooldown.isRecoverOnSuccessfulHealthCheck()),
-                routes.stream()
-                        .map(route -> new ReverseProxyStatusResponse.RouteStatus(
-                                route.name(),
-                                route.pathPrefix(),
-                                route.strategyId().externalName(),
-                                route.targets().stream()
-                                        .map(ReverseProxyProperties.Upstream::getId)
-                                        .toList()))
-                        .toList(),
+                routeStatuses,
                 upstreamStatuses,
-                metrics.snapshot(upstreamIds));
+                metricsSnapshot,
+                ReverseProxyStatusSummaries.observability(properties.isEnabled(), routeStatuses, upstreamStatuses,
+                        metricsSnapshot),
+                ReverseProxyStatusSummaries.controllerNotAvailableSecurityBoundary());
     }
 
     @SuppressWarnings("java/ssrf")
@@ -241,6 +262,8 @@ public class ReverseProxyService {
             ReverseProxyResponse proxyResponse =
                     new ReverseProxyResponse(response.statusCode(), responseHeaders, response.body());
             if (isRetryStatus(response.statusCode())) {
+                logger.warn("proxy.forward.retryable_status upstreamId={} status={} reason=retry_status",
+                        upstreamId, response.statusCode());
                 recordResilienceFailure(upstreamId);
                 return new ForwardAttemptResult(proxyResponse, true);
             }
@@ -248,6 +271,7 @@ public class ReverseProxyService {
             return new ForwardAttemptResult(proxyResponse, false);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
+            logger.warn("proxy.forward.failure upstreamId={} reason=interrupted", upstreamId);
             metrics.recordFailure(upstreamId, HttpStatus.BAD_GATEWAY.value());
             recordResilienceFailure(upstreamId);
             return new ForwardAttemptResult(
@@ -255,6 +279,8 @@ public class ReverseProxyService {
                             "Proxy forwarding was interrupted while calling upstream " + upstreamId),
                     true);
         } catch (IOException | IllegalArgumentException exception) {
+            logger.warn("proxy.forward.failure upstreamId={} reason=upstream_unreachable exceptionType={}",
+                    upstreamId, exception.getClass().getSimpleName());
             metrics.recordFailure(upstreamId, HttpStatus.BAD_GATEWAY.value());
             recordResilienceFailure(upstreamId);
             return new ForwardAttemptResult(
@@ -541,6 +567,10 @@ public class ReverseProxyService {
         boolean activated = resilienceState(upstreamId).recordFailure(Instant.now(clock), properties.getCooldown());
         if (activated) {
             metrics.recordCooldownActivation(upstreamId);
+            logger.warn("proxy.cooldown.activated upstreamId={} threshold={} durationMillis={}",
+                    upstreamId,
+                    Math.max(1, properties.getCooldown().getConsecutiveFailureThreshold()),
+                    Math.max(0, properties.getCooldown().getDuration().toMillis()));
         }
     }
 
@@ -594,6 +624,30 @@ public class ReverseProxyService {
             throw new IllegalArgumentException(fieldName + " must not be blank");
         }
         return value.trim();
+    }
+
+    private void logStartupSummary() {
+        int backendTargetCount = routes.stream()
+                .mapToInt(route -> route.targets().size())
+                .sum();
+        logger.info(
+                "proxy.observability.startup proxyEnabled={} routeCount={} backendTargetCount={} "
+                        + "healthCheckEnabled={} retryEnabled={} cooldownEnabled={}",
+                properties.isEnabled(),
+                routes.size(),
+                backendTargetCount,
+                properties.getHealthCheck().isEnabled(),
+                properties.getRetry().isEnabled(),
+                properties.getCooldown().isEnabled());
+        routes.forEach(route -> logger.info(
+                "proxy.observability.route route={} pathPrefix={} strategy={} targetCount={} targetIds={}",
+                route.name(),
+                route.pathPrefix(),
+                route.strategyId().externalName(),
+                route.targets().size(),
+                route.targets().stream()
+                        .map(ReverseProxyProperties.Upstream::getId)
+                        .toList()));
     }
 
     private static OptionalDouble optionalNonNegative(Double value, String fieldName) {

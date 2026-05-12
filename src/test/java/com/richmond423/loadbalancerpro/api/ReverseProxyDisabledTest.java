@@ -36,6 +36,14 @@ class ReverseProxyDisabledTest {
                 .andExpect(jsonPath("$.cooldown.enabled").value(false))
                 .andExpect(jsonPath("$.cooldown.consecutiveFailureThreshold").value(2))
                 .andExpect(jsonPath("$.metrics.totalForwarded").value(0))
-                .andExpect(jsonPath("$.metrics.totalFailures").value(0));
+                .andExpect(jsonPath("$.metrics.totalFailures").value(0))
+                .andExpect(jsonPath("$.observability.routeCount").value(0))
+                .andExpect(jsonPath("$.observability.backendTargetCount").value(0))
+                .andExpect(jsonPath("$.observability.effectiveHealthyBackendCount").value(0))
+                .andExpect(jsonPath("$.observability.cooldownActiveBackendCount").value(0))
+                .andExpect(jsonPath("$.observability.readiness").value("proxy_disabled"))
+                .andExpect(jsonPath("$.securityBoundary.authMode").value("api-key"))
+                .andExpect(jsonPath("$.securityBoundary.proxyStatusProtected").value(false))
+                .andExpect(jsonPath("$.securityBoundary.proxyForwardingProtected").value(false));
     }
 }

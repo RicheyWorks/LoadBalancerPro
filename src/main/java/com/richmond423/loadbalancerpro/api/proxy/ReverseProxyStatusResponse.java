@@ -10,7 +10,9 @@ public record ReverseProxyStatusResponse(
         CooldownStatus cooldown,
         List<RouteStatus> routes,
         List<UpstreamStatus> upstreams,
-        ReverseProxyMetricsSnapshot metrics) {
+        ReverseProxyMetricsSnapshot metrics,
+        ObservabilitySummary observability,
+        SecurityBoundaryStatus securityBoundary) {
 
     public record HealthCheckStatus(
             boolean enabled,
@@ -52,5 +54,28 @@ public record ReverseProxyStatusResponse(
             int consecutiveFailures,
             boolean cooldownActive,
             long cooldownRemainingMillis) {
+    }
+
+    public record ObservabilitySummary(
+            int routeCount,
+            int backendTargetCount,
+            int effectiveHealthyBackendCount,
+            int effectiveUnhealthyBackendCount,
+            int cooldownActiveBackendCount,
+            long totalForwarded,
+            long totalFailures,
+            long totalRetryAttempts,
+            long totalCooldownActivations,
+            String lastSelectedUpstream,
+            String readiness) {
+    }
+
+    public record SecurityBoundaryStatus(
+            String authMode,
+            List<String> activeProfiles,
+            boolean apiKeyConfigured,
+            boolean proxyStatusProtected,
+            boolean proxyForwardingProtected,
+            String note) {
     }
 }

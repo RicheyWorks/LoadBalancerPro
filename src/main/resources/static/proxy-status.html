@@ -265,6 +265,12 @@
         <div class="metric"><span class="label">Strategy</span><span class="value" id="strategy">Unavailable</span></div>
         <div class="metric"><span class="label">Health check enabled</span><span class="value" id="health-check-enabled">Unavailable</span></div>
         <div class="metric"><span class="label">Last selected upstream</span><span class="value" id="last-selected-upstream">Unavailable</span></div>
+        <div class="metric"><span class="label">Configured routes</span><span class="value" id="configured-route-count">Unavailable</span></div>
+        <div class="metric"><span class="label">Backend targets</span><span class="value" id="backend-target-count">Unavailable</span></div>
+        <div class="metric"><span class="label">Effective healthy</span><span class="value" id="effective-healthy-backends">Unavailable</span></div>
+        <div class="metric"><span class="label">Cooldown active backends</span><span class="value" id="cooldown-active-backends">Unavailable</span></div>
+        <div class="metric"><span class="label">Readiness signal</span><span class="value" id="readiness-signal">Unavailable</span></div>
+        <div class="metric"><span class="label">Access boundary</span><span class="value" id="security-boundary">Unavailable</span></div>
         <div class="metric"><span class="label">Retry enabled</span><span class="value" id="retry-enabled">Unavailable</span></div>
         <div class="metric"><span class="label">Cooldown enabled</span><span class="value" id="cooldown-enabled">Unavailable</span></div>
         <div class="metric"><span class="label">Total forwarded</span><span class="value" id="total-forwarded">Unavailable</span></div>
@@ -411,6 +417,12 @@ curl -s http://127.0.0.1:8080/api/proxy/status</pre>
       totalRetry: document.getElementById("total-retry"),
       totalCooldown: document.getElementById("total-cooldown"),
       lastSelectedUpstream: document.getElementById("last-selected-upstream"),
+      configuredRouteCount: document.getElementById("configured-route-count"),
+      backendTargetCount: document.getElementById("backend-target-count"),
+      effectiveHealthyBackends: document.getElementById("effective-healthy-backends"),
+      cooldownActiveBackends: document.getElementById("cooldown-active-backends"),
+      readinessSignal: document.getElementById("readiness-signal"),
+      securityBoundary: document.getElementById("security-boundary"),
       status2xx: document.getElementById("status-2xx"),
       status3xx: document.getElementById("status-3xx"),
       status4xx: document.getElementById("status-4xx"),
@@ -476,10 +488,18 @@ curl -s http://127.0.0.1:8080/api/proxy/status</pre>
 
     function renderStatus(status) {
       const metrics = status.metrics || {};
+      const observability = status.observability || {};
+      const securityBoundary = status.securityBoundary || {};
       const statusClasses = metrics.statusClassCounts || {};
       setText(elements.proxyEnabled, formatBoolean(status.proxyEnabled));
       setText(elements.strategy, valueOrUnavailable(status.strategy));
       setText(elements.healthCheckEnabled, formatBoolean(status.healthCheck && status.healthCheck.enabled));
+      setText(elements.configuredRouteCount, valueOrUnavailable(observability.routeCount));
+      setText(elements.backendTargetCount, valueOrUnavailable(observability.backendTargetCount));
+      setText(elements.effectiveHealthyBackends, valueOrUnavailable(observability.effectiveHealthyBackendCount));
+      setText(elements.cooldownActiveBackends, valueOrUnavailable(observability.cooldownActiveBackendCount));
+      setText(elements.readinessSignal, valueOrUnavailable(observability.readiness));
+      setText(elements.securityBoundary, securityBoundarySummary(securityBoundary));
       setText(elements.retryEnabled, formatBoolean(status.retry && status.retry.enabled));
       setText(elements.cooldownEnabled, formatBoolean(status.cooldown && status.cooldown.enabled));
       setText(elements.totalForwarded, valueOrUnavailable(metrics.totalForwarded));
@@ -566,6 +586,12 @@ curl -s http://127.0.0.1:8080/api/proxy/status</pre>
         elements.proxyEnabled,
         elements.strategy,
         elements.healthCheckEnabled,
+        elements.configuredRouteCount,
+        elements.backendTargetCount,
+        elements.effectiveHealthyBackends,
+        elements.cooldownActiveBackends,
+        elements.readinessSignal,
+        elements.securityBoundary,
         elements.retryEnabled,
         elements.cooldownEnabled,
         elements.totalForwarded,
@@ -594,12 +620,20 @@ curl -s http://127.0.0.1:8080/api/proxy/status</pre>
         ].join("\n");
       }
       const metrics = status.metrics || {};
+      const observability = status.observability || {};
+      const securityBoundary = status.securityBoundary || {};
       const statusClasses = metrics.statusClassCounts || {};
       const lines = [
         "LoadBalancerPro Proxy Status Summary",
         "- Endpoint: " + STATUS_ENDPOINT,
         "- Proxy enabled: " + formatBoolean(status.proxyEnabled),
         "- Strategy: " + valueOrUnavailable(status.strategy),
+        "- Configured routes: " + valueOrUnavailable(observability.routeCount),
+        "- Backend targets: " + valueOrUnavailable(observability.backendTargetCount),
+        "- Effective healthy backends: " + valueOrUnavailable(observability.effectiveHealthyBackendCount),
+        "- Cooldown active backends: " + valueOrUnavailable(observability.cooldownActiveBackendCount),
+        "- Readiness signal: " + valueOrUnavailable(observability.readiness),
+        "- Access boundary: " + securityBoundarySummary(securityBoundary),
         "- Health check enabled: " + formatBoolean(status.healthCheck && status.healthCheck.enabled),
         "- Retry enabled: " + formatBoolean(status.retry && status.retry.enabled),
         "- Cooldown enabled: " + formatBoolean(status.cooldown && status.cooldown.enabled),
@@ -675,6 +709,16 @@ curl -s http://127.0.0.1:8080/api/proxy/status</pre>
 
     function formatList(value) {
       return Array.isArray(value) && value.length > 0 ? value.join(", ") : UNAVAILABLE;
+    }
+
+    function securityBoundarySummary(boundary) {
+      if (!boundary || !boundary.authMode) {
+        return UNAVAILABLE;
+      }
+      const protectedText = boundary.proxyStatusProtected && boundary.proxyForwardingProtected
+        ? "protected"
+        : "demo/local";
+      return boundary.authMode + " / " + protectedText;
     }
 
     function badgeText(value) {

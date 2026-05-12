@@ -18,6 +18,8 @@ It does not write backend state, reset counters, mutate cooldown state, persist 
 
 - proxy enabled or disabled state
 - configured routing strategy
+- observability summary with configured route count, backend target count, effective healthy backend count, cooldown-active backend count, and readiness signal
+- Access boundary summary derived from the status response's `securityBoundary` fields
 - active health-check enabled state
 - retry enabled state
 - cooldown enabled state

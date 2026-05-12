@@ -41,6 +41,8 @@ The endpoint is read-only and reports:
 
 - proxy enabled flag
 - configured strategy
+- `observability` summary with route count, backend target count, effective healthy/unhealthy backend counts, cooldown-active backend count, request totals, retry/cooldown totals, last selected upstream, and a compact readiness signal
+- `securityBoundary` summary with auth mode, active profiles, whether an API-key value is configured, and whether `/proxy/**` plus `GET /api/proxy/status` are protected in the active mode
 - health-check path, timeout, and interval
 - retry enabled flag, maximum attempts, retry methods, and retry statuses
 - cooldown enabled flag, consecutive failure threshold, duration, and health-check recovery setting
@@ -58,6 +60,30 @@ The endpoint is read-only and reports:
 Counters are process-local and in memory only. They reset on restart and are not persisted or exported as a generated report.
 
 The browser status page displays the same endpoint output as tables and raw JSON, supports manual refresh, has opt-in in-memory live refresh, and provides copyable demo commands. It does not add backend writes, reset controls, or browser storage.
+
+## Operator Observability Summary
+
+The `observability` block is intended for fast deployment checks before reading the full upstream table. Use `routeCount` and `backendTargetCount` to confirm the loaded proxy configuration, then compare `effectiveHealthyBackendCount`, `effectiveUnhealthyBackendCount`, and `cooldownActiveBackendCount` before sending traffic through `/proxy/**`.
+
+The `readiness` value is a local process signal only:
+
+- `proxy_disabled`: proxy mode is off.
+- `proxy_enabled_without_configured_targets`: proxy mode is on but no route/target summary is visible.
+- `no_effective_healthy_backends`: configured targets are currently unavailable for routing.
+- `cooldown_active`: at least one backend is temporarily cooled down.
+- `request_failures_observed`: the process-local counters include failed forwarding outcomes.
+- `retries_observed`: retry attempts have occurred.
+- `ready`: the current process sees at least one effective healthy backend and no failure/cooldown signal in the summary.
+
+The `securityBoundary` block reports mode and booleans only. It does not expose API-key values, bearer tokens, or backend credentials. In prod or cloud-sandbox API-key mode, `apiKeyConfigured` reports only whether a key value is present.
+
+Structured startup and failure markers are written to the application log when proxy mode is enabled:
+
+- `proxy.observability.startup` summarizes proxy enabled state, route count, backend target count, and health/retry/cooldown toggles.
+- `proxy.observability.route` lists route name, path prefix, strategy, target count, and target ids without target URLs.
+- `proxy.forward.failure`, `proxy.forward.retry`, `proxy.forward.retryable_status`, and `proxy.cooldown.activated` identify retry/cooldown/failure paths without logging secrets.
+
+During smoke validation, correlate the smoke script's `PASS` lines with `/api/proxy/status` and these log markers. This is a retry/cooldown/failure interpretation aid, not durable monitoring or external telemetry. No external telemetry service is required.
 
 ## Retry And Cooldown Visibility
 
@@ -110,6 +136,7 @@ For local/private real-backend examples, see [`REAL_BACKEND_PROXY_EXAMPLES.md`](
 - No cloud mutation.
 - No persistent metrics state.
 - No database, broker, service discovery system, or external observability stack.
+- No external telemetry required for these local status/log checks.
 - No external network dependency in tests.
 - No TLS, WebSocket, WAF, distributed rate limiting, identity, production-grade gateway, benchmark, certification, legal compliance, or security guarantee.
 

@@ -125,6 +125,17 @@ The live smoke script waits for startup by retrying the exact loopback endpoint 
 
 If the first local-demo check reports connection failures, inspect the printed log tail before assuming the packaged jar is broken. Common local causes are a slow first Spring Boot startup, a selected port already in use, local security software delaying loopback connections, or an app-side startup error visible in the temp logs.
 
+## Observability Checks
+
+For the proxy-loopback step, use `/api/proxy/status` and the app log tail together:
+
+- `proxy.observability.startup` should show the proxy enabled flag, route count, backend target count, and health/retry/cooldown toggles loaded for the smoke profile.
+- `proxy.observability.route` should show the loopback route name, path prefix, strategy, target count, and target ids without secret values.
+- `proxy.forward.retryable_status`, `proxy.forward.retry`, `proxy.forward.failure`, or `proxy.cooldown.activated` explain retry/cooldown/failure paths if the loopback request does not behave as expected.
+- `status.observability.routeCount`, `status.observability.backendTargetCount`, and `status.securityBoundary` should match the run profile being smoked.
+
+These checks help interpret local smoke readiness. They are not benchmark evidence, certification evidence, or external telemetry.
+
 ## Safety Boundaries
 
 - Local-only network targets: `127.0.0.1` and `localhost`.

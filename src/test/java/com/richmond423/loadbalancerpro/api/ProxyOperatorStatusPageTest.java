@@ -58,6 +58,12 @@ class ProxyOperatorStatusPageTest {
         assertTrue(page.contains("Proxy enabled"));
         assertTrue(page.contains("Strategy"));
         assertTrue(page.contains("Health check enabled"));
+        assertTrue(page.contains("Configured routes"));
+        assertTrue(page.contains("Backend targets"));
+        assertTrue(page.contains("Effective healthy"));
+        assertTrue(page.contains("Cooldown active backends"));
+        assertTrue(page.contains("Readiness signal"));
+        assertTrue(page.contains("Access boundary"));
         assertTrue(page.contains("Retry enabled"));
         assertTrue(page.contains("Cooldown enabled"));
         assertTrue(page.contains("Total forwarded"));
@@ -77,6 +83,9 @@ class ProxyOperatorStatusPageTest {
         assertTrue(page.contains("totalRetryAttempts"));
         assertTrue(page.contains("totalCooldownActivations"));
         assertTrue(page.contains("lastSelectedUpstream"));
+        assertTrue(page.contains("status.observability"));
+        assertTrue(page.contains("status.securityBoundary"));
+        assertTrue(page.contains("securityBoundarySummary"));
         assertTrue(page.contains("PROXY_DEMO_STACK.md"));
         assertTrue(page.contains("PROXY_STRATEGY_DEMO_LAB.md"));
         assertTrue(page.contains("ProxyDemoFixtureLauncher"));

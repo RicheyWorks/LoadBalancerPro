@@ -163,7 +163,10 @@ class OAuth2AuthorizationTest {
 
         mockMvc.perform(get("/api/proxy/status").header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.proxyEnabled", is(false)));
+                .andExpect(jsonPath("$.proxyEnabled", is(false)))
+                .andExpect(jsonPath("$.securityBoundary.authMode", is("oauth2")))
+                .andExpect(jsonPath("$.securityBoundary.proxyStatusProtected", is(true)))
+                .andExpect(jsonPath("$.securityBoundary.proxyForwardingProtected", is(true)));
     }
 
     @Test

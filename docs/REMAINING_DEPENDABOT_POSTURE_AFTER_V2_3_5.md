@@ -20,6 +20,13 @@
 
 `actions/dependency-review-action` now has a Node.js 24-capable `v5.0.0` release, and the CI dependency review step is pinned to that release. Future updates should continue to preserve the dependency-review job name, pull-request-only trigger, and `fail-on-severity: high` gate.
 
+## Maven Warning Posture
+
+- Mockito/JDK dynamic-agent warning: fixed by running tests with Mockito as an explicit test JVM agent while preserving the JaCoCo `argLine`.
+- javac annotation-processing future warning: fixed by explicitly disabling annotation processing; the project does not use compile-time processors such as Lombok or MapStruct.
+- OpenJFX effective-model warning: deferred. The warning comes from duplicate activation metadata inside the upstream `org.openjfx:javafx:17.0.10` POM pulled by `javafx-controls`. A same-major JavaFX patch should be validated separately when local Maven can resolve uncached artifacts without the workstation PKIX trust-chain issue.
+- Deprecated API notes: deferred. Current notes point at existing test code and should be handled as a narrow source cleanup only if they become actionable failures.
+
 ## Remaining Open PR Posture
 
 - #2: `eclipse-temurin` `17` -> `25`: defer; Java runtime major jump.

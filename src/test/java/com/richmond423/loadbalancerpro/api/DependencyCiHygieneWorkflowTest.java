@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 class DependencyCiHygieneWorkflowTest {
     private static final Path CI_WORKFLOW = Path.of(".github/workflows/ci.yml");
     private static final Path RELEASE_WORKFLOW = Path.of(".github/workflows/release-artifacts.yml");
+    private static final Path POM = Path.of("pom.xml");
     private static final Path DEFAULT_PROPERTIES = Path.of("src/main/resources/application.properties");
     private static final Path API_SECURITY = Path.of("src/main/java/com/richmond423/loadbalancerpro/api/config/ApiSecurityConfiguration.java");
 
@@ -65,6 +66,17 @@ class DependencyCiHygieneWorkflowTest {
         assertFalse(defaults.contains("loadbalancerpro.proxy.enabled=true"));
         assertTrue(security.contains("HttpMethod.POST, \"/api/proxy/reload\""));
         assertTrue(security.contains("hasRole(allocationRole)"));
+    }
+
+    @Test
+    void mavenBuildHygienePreservesJacocoAndUsesExplicitMockitoAgent() throws Exception {
+        String pom = read(POM);
+
+        assertTrue(pom.contains("<mockito.version>5.17.0</mockito.version>"));
+        assertTrue(pom.contains("<proc>none</proc>"));
+        assertTrue(pom.contains("<argLine>@{argLine} -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar</argLine>"));
+        assertTrue(pom.contains("<artifactId>jacoco-maven-plugin</artifactId>"));
+        assertTrue(pom.contains("<goal>prepare-agent</goal>"));
     }
 
     @Test

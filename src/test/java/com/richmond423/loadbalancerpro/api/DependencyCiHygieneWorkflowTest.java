@@ -80,6 +80,16 @@ class DependencyCiHygieneWorkflowTest {
     }
 
     @Test
+    void javaFxVersionStaysOnSameMajorSeventeenLine() throws Exception {
+        String pom = read(POM);
+
+        assertTrue(pom.contains("<javafx.version>17.0."));
+        assertTrue(pom.contains("<artifactId>javafx-controls</artifactId>"));
+        assertFalse(pom.contains("<javafx.version>21."));
+        assertFalse(pom.contains("<javafx.version>26."));
+    }
+
+    @Test
     void ciWorkflowAvoidsInflatedClaims() throws Exception {
         String workflow = read(CI_WORKFLOW).toLowerCase(Locale.ROOT);
 

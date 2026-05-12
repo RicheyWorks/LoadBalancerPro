@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,46 +21,72 @@ public class ReverseProxyStatusController {
     private final ReverseProxyProperties properties;
     private final ReverseProxyMetrics metrics;
     private final ObjectProvider<ReverseProxyService> reverseProxyService;
+    private final Environment environment;
+    private final String configuredApiKey;
 
     public ReverseProxyStatusController(ReverseProxyProperties properties,
                                         ReverseProxyMetrics metrics,
-                                        ObjectProvider<ReverseProxyService> reverseProxyService) {
+                                        ObjectProvider<ReverseProxyService> reverseProxyService,
+                                        Environment environment,
+                                        @Value("${loadbalancerpro.api.key:}") String configuredApiKey) {
         this.properties = properties;
         this.metrics = metrics;
         this.reverseProxyService = reverseProxyService;
+        this.environment = environment;
+        this.configuredApiKey = configuredApiKey;
     }
 
     @GetMapping("/status")
     public ReverseProxyStatusResponse status() {
         ReverseProxyService service = reverseProxyService.getIfAvailable();
         if (service != null) {
-            return service.statusSnapshot();
+            return decorate(service.statusSnapshot());
         }
         List<String> upstreamIds = properties.getUpstreams().stream()
                 .map(ReverseProxyStatusController::safeUpstreamId)
                 .filter(id -> !id.isEmpty())
                 .toList();
-        return new ReverseProxyStatusResponse(
+        List<ReverseProxyStatusResponse.RouteStatus> routes = disabledRouteStatuses();
+        List<ReverseProxyStatusResponse.UpstreamStatus> upstreams = properties.getUpstreams().stream()
+                .map(upstream -> new ReverseProxyStatusResponse.UpstreamStatus(
+                        safeUpstreamId(upstream),
+                        safeUrl(upstream.getUrl()),
+                        upstream.isHealthy(),
+                        upstream.isHealthy(),
+                        "CONFIGURED",
+                        null,
+                        "proxy disabled; active probes not run",
+                        0,
+                        false,
+                        0))
+                .toList();
+        ReverseProxyMetricsSnapshot metricsSnapshot = metrics.snapshot(upstreamIds);
+        return decorate(new ReverseProxyStatusResponse(
                 false,
                 properties.getStrategy(),
                 healthCheckStatus(),
                 retryStatus(),
                 cooldownStatus(),
-                disabledRouteStatuses(),
-                properties.getUpstreams().stream()
-                        .map(upstream -> new ReverseProxyStatusResponse.UpstreamStatus(
-                                safeUpstreamId(upstream),
-                                safeUrl(upstream.getUrl()),
-                                upstream.isHealthy(),
-                                upstream.isHealthy(),
-                                "CONFIGURED",
-                                null,
-                                "proxy disabled; active probes not run",
-                                0,
-                                false,
-                                0))
-                        .toList(),
-                metrics.snapshot(upstreamIds));
+                routes,
+                upstreams,
+                metricsSnapshot,
+                ReverseProxyStatusSummaries.observability(false, routes, upstreams, metricsSnapshot),
+                ReverseProxyStatusSummaries.controllerNotAvailableSecurityBoundary()));
+    }
+
+    private ReverseProxyStatusResponse decorate(ReverseProxyStatusResponse response) {
+        return new ReverseProxyStatusResponse(
+                response.proxyEnabled(),
+                response.strategy(),
+                response.healthCheck(),
+                response.retry(),
+                response.cooldown(),
+                response.routes(),
+                response.upstreams(),
+                response.metrics(),
+                ReverseProxyStatusSummaries.observability(response.proxyEnabled(), response.routes(),
+                        response.upstreams(), response.metrics()),
+                ReverseProxyStatusSummaries.securityBoundary(environment, configuredApiKey));
     }
 
     private ReverseProxyStatusResponse.HealthCheckStatus healthCheckStatus() {

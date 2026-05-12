@@ -78,6 +78,11 @@ class ReverseProxyHealthMetricsTest {
                     .andExpect(jsonPath("$.upstreams[1].effectiveHealthy").value(false))
                     .andExpect(jsonPath("$.upstreams[1].lastProbeStatusCode").value(500))
                     .andExpect(jsonPath("$.upstreams[1].healthSource").value("ACTIVE_PROBE"))
+                    .andExpect(jsonPath("$.observability.routeCount").value(1))
+                    .andExpect(jsonPath("$.observability.backendTargetCount").value(2))
+                    .andExpect(jsonPath("$.observability.effectiveHealthyBackendCount").value(1))
+                    .andExpect(jsonPath("$.observability.effectiveUnhealthyBackendCount").value(1))
+                    .andExpect(jsonPath("$.observability.cooldownActiveBackendCount").value(0))
                     .andExpect(jsonPath("$.metrics.totalForwarded").value(0))
                     .andExpect(jsonPath("$.metrics.totalFailures").value(0));
 
@@ -95,6 +100,9 @@ class ReverseProxyHealthMetricsTest {
                     .andExpect(jsonPath("$.metrics.statusClassCounts['2xx']").value(1))
                     .andExpect(jsonPath("$.metrics.statusClassCounts['5xx']").value(0))
                     .andExpect(jsonPath("$.metrics.lastSelectedUpstream").value("backend-a"))
+                    .andExpect(jsonPath("$.observability.totalForwarded").value(1))
+                    .andExpect(jsonPath("$.observability.totalFailures").value(0))
+                    .andExpect(jsonPath("$.observability.lastSelectedUpstream").value("backend-a"))
                     .andExpect(jsonPath("$.metrics.upstreams[0].upstreamId").value("backend-a"))
                     .andExpect(jsonPath("$.metrics.upstreams[0].forwarded").value(1))
                     .andExpect(jsonPath("$.metrics.upstreams[1].upstreamId").value("backend-b"))

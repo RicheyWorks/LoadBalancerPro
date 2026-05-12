@@ -28,6 +28,8 @@ The status response is read-only. For operator-configured routes, verify the exp
 
 For proxy mode outside loopback-only local demos, confirm `/proxy/**`, `GET /api/proxy/status`, and `/proxy-status.html` sit behind the expected access-control boundary. Prod or cloud-sandbox API-key mode requires `X-API-Key` for proxy forwarding/status, OAuth2 mode requires the configured allocation role, and TLS termination remains a deployment responsibility at a trusted reverse proxy, ingress, managed load balancer, platform edge, or service mesh.
 
+When triaging proxy startup or forwarding failures, check the application log for `proxy.observability.startup` and `proxy.observability.route` before traffic, then `proxy.forward.failure`, `proxy.forward.retry`, `proxy.forward.retryable_status`, and `proxy.cooldown.activated` after traffic. Pair those log markers with `/api/proxy/status.observability` so route counts, backend target counts, request outcomes, retry counts, cooldown counts, and access-boundary mode agree with the intended run profile.
+
 4. Confirm the latest deployed version matches the expected GitHub Release or deployment artifact. The current release automation publishes the JAR, CycloneDX SBOMs, and SHA256SUMS for future semantic version tags.
 
 5. Confirm metrics exposure is intentional for the active profile. Local/demo exposes Prometheus. Production-like profiles should expose metrics only behind trusted network and authentication controls.

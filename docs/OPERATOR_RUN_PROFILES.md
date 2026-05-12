@@ -4,6 +4,8 @@ Use this guide when you want the shortest safe path from "which mode should I ru
 
 Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md). Use this page as the execution hub after you know which evidence path you want.
 
+After choosing a profile, use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) for the local-only packaged-jar, prod API-key, and proxy-loopback smoke path.
+
 ## Start Here
 
 The local demo remains the easiest mode. It keeps browser review pages available, uses local-friendly CORS defaults, keeps live AWS mutation off, and keeps proxy mode disabled unless you explicitly enable a proxy profile or imported proxy config.

@@ -1,6 +1,6 @@
 # Deployment Smoke Kit
 
-Use this smoke kit after choosing a run mode in [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md). It gives operators and reviewers one local-only path for checking the packaged jar, the prod API-key boundary, and the proxy-loopback recipe without external services.
+Use this smoke kit after choosing a run mode in [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md). It gives operators and reviewers one local-only path for checking the packaged jar, the prod API-key boundary, and the proxy-loopback recipe without external services. Use [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) for the separate local-only Docker build/run path.
 
 This is a local deployment confidence check. It is not production certification, a benchmark, public exposure approval, release evidence, or a security guarantee.
 

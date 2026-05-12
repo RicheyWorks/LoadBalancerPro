@@ -147,6 +147,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md) documents production-like deployment boundaries, edge controls, auth, telemetry, and cloud-safety guidance.
 - [`OPERATOR_RUN_PROFILES.md`](docs/OPERATOR_RUN_PROFILES.md) is the execution hub for local demo, packaged jar, prod API-key, cloud-sandbox API-key, OAuth2, proxy-loopback, and container run recipes.
 - [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEPLOYMENT_SMOKE_KIT.md) gives a local-only smoke path for the packaged jar, prod API-key boundary, and proxy-loopback recipe.
+- [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md) documents local-only Docker build/run recipes, API-key boundary checks, proxy-loopback caveats, and the no-registry-publish boundary.
 - [`SECRET_MANAGEMENT_GUIDE.md`](docs/SECRET_MANAGEMENT_GUIDE.md) documents secret categories, storage guidance, leakage paths, rotation, and sanitized examples.
 - [`OPERATIONS_GUIDE.md`](docs/OPERATIONS_GUIDE.md) documents startup checks, health verification, monitoring, incident response, rollback, and release evidence review guidance.
 - [`LOAD_SHEDDING.md`](docs/LOAD_SHEDDING.md) documents public allocation overload semantics, load shedding, advisory remediation plans, metrics, and cloud-safety guarantees.
@@ -551,6 +552,8 @@ The Trivy allowlist file is `.trivyignore`. Keep it empty unless a finding has b
 ## Docker
 
 The repository includes a multi-stage `Dockerfile` that builds the packaged Spring Boot JAR and runs it from a Java 17 JRE image as a non-root user. The runtime image includes `curl` for the Docker `HEALTHCHECK`.
+
+For the consolidated local-only container deployment path, including prod API-key boundary checks and proxy-loopback caveats, see [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md).
 
 Build the image:
 

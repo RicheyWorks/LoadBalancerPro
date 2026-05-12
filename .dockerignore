@@ -4,6 +4,7 @@ target
 bin
 doc
 lib
+release-downloads/
 
 *.class
 *.log

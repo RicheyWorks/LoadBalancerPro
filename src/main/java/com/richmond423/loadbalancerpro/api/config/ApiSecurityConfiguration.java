@@ -48,7 +48,11 @@ public class ApiSecurityConfiguration {
                                                Converter<Jwt, ? extends AbstractAuthenticationToken>
                                                        loadBalancerProJwtAuthenticationConverter)
             throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http.csrf(csrf -> csrf.ignoringRequestMatchers(
+                        "/api/**",
+                        "/proxy",
+                        "/proxy/**",
+                        "/actuator/**"))
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(AbstractHttpConfigurer::disable)

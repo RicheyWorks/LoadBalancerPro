@@ -58,6 +58,8 @@ Recommended auth posture:
 
 CORS does not authenticate users. It only controls browser cross-origin behavior. Authorization still belongs in API-key mode, OAuth2 mode, or a trusted upstream identity layer.
 
+CSRF protection is scoped for the current stateless API model. Protected API/proxy calls use explicit `X-API-Key` or Bearer-token headers rather than session-cookie credentials, while Spring form login, HTTP Basic, logout, and stateful sessions remain disabled. Revisit CSRF before adding cookie/session authentication, browser ambient credentials, or credentialed cross-site browser mutation flows.
+
 Proxy config reload is local and operator-controlled. It validates a submitted replacement route/backend config before activation, preserves the last known-good active config on validation failure, and reports reload status through `/api/proxy/status.reload`. It does not add dynamic cloud config, distributed coordination, remote config fetching, or a hot-reload production-readiness guarantee.
 
 ## Actuator And Telemetry Exposure

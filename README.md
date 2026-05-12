@@ -8,7 +8,33 @@ The API and CLI are safe by default: allocation endpoints do not call AWS, CLI c
 
 JavaFX UI support is optional. API, proxy, CLI, Java fixture launcher, and static browser workflows do not require JavaFX; desktop UI deployment remains platform-sensitive and separate from the Spring API/proxy operator path. See [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md).
 
-Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
+For a concise non-technical overview, start with [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). For evidence navigation, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md). For a guided local demo path, use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md).
+
+## Why This Project Matters
+
+LoadBalancerPro is designed to show how a load-balancing system can grow from an algorithm simulator into an operator-focused service without losing safety boundaries. It combines routing strategy comparison, local reverse-proxy validation, API-key/OAuth2 deployment boundaries, reload/status observability, release-free evidence, and container smoke posture in one reviewable Java/Spring codebase.
+
+For reviewers and recruiters, the useful signal is not a single flashy demo. It is the combination of conservative defaults, explicit guardrails, repeatable local validation, CI-published artifacts, and documentation that distinguishes implemented behavior from roadmap work.
+
+## Evaluate In 5 Minutes
+
+1. Read [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) for the short positioning and limitation summary.
+2. Run `mvn spring-boot:run`, then open [`http://localhost:8080/`](http://localhost:8080/) and [`http://localhost:8080/load-balancing-cockpit.html`](http://localhost:8080/load-balancing-cockpit.html).
+3. Use [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEPLOYMENT_SMOKE_KIT.md) to validate the packaged jar, API-key boundary, and proxy-loopback recipe on localhost.
+4. Use [`OPERATOR_RUN_PROFILES.md`](docs/OPERATOR_RUN_PROFILES.md) when choosing local demo, packaged jar, prod API-key, cloud-sandbox API-key, OAuth2, proxy-loopback, or container modes.
+5. Use [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md) for the local-only Docker build/run path, and [`API_SECURITY.md`](docs/API_SECURITY.md) plus [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md) before exposing any operator surface beyond a trusted environment.
+
+## Enterprise-Style Operator Foundation
+
+- Operator-configured proxy routes and backend targets can be loaded from application configuration while proxy mode remains disabled by default.
+- Prod/cloud-sandbox API-key modes protect `/proxy/**` and `GET /api/proxy/status`; OAuth2 mode is documented where configured.
+- Proxy status, metrics, retry/cooldown counters, reload status, and the read-only `/proxy-status.html` page expose operator diagnostics without adding external telemetry vendors.
+- The deployment smoke kit validates packaged-jar startup, API-key behavior, and proxy-loopback forwarding locally; CI also builds and smoke-tests the Docker runtime.
+- The project keeps release, cloud, and `CloudManager` mutation boundaries explicit so demo evidence does not become a hidden production or release claim.
+
+## Coverage And Evidence
+
+CI publishes `jacoco-coverage-report`, `packaged-artifact-smoke`, and `loadbalancerpro-sbom` workflow artifacts for reviewer inspection. The README intentionally does not claim a fixed coverage percentage; inspect the generated JaCoCo report or the CI `Summarize JaCoCo coverage` log step for the exact numbers from a specific run. [`TESTING_COVERAGE.md`](docs/TESTING_COVERAGE.md) and [`CI_ARTIFACT_CONSUMER_GUIDE.md`](docs/CI_ARTIFACT_CONSUMER_GUIDE.md) explain how to review those artifacts without creating tags, GitHub Releases, or release assets.
 
 ## Try the Web Cockpit
 
@@ -132,6 +158,8 @@ Roadmap backlog:
 
 The release evidence set lives in [`evidence/`](evidence/):
 
+- [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) provides a short public-facing overview, evaluation path, and limitations summary.
+- [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) gives a 60 to 90 second local demo outline for the root page, cockpit, API-key boundary, proxy-loopback, observability, and container path.
 - [`HARDENING_AUDIT_001.md`](evidence/HARDENING_AUDIT_001.md) captures the formal hardening audit results.
 - [`SECURITY_POSTURE.md`](evidence/SECURITY_POSTURE.md) summarizes current auth, telemetry, cloud, replay, LASE, and input/API posture.
 - [`THREAT_MODEL.md`](evidence/THREAT_MODEL.md) documents assets, trust boundaries, threat scenarios, mitigations, and residual risks.

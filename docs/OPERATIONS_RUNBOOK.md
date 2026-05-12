@@ -28,6 +28,8 @@ The status response is read-only. For operator-configured routes, verify the exp
 
 For proxy mode outside loopback-only local demos, confirm `/proxy/**`, `GET /api/proxy/status`, and `/proxy-status.html` sit behind the expected access-control boundary. Prod or cloud-sandbox API-key mode requires `X-API-Key` for proxy forwarding/status, OAuth2 mode requires the configured allocation role, and TLS termination remains a deployment responsibility at a trusted reverse proxy, ingress, managed load balancer, platform edge, or service mesh.
 
+If a proxy config reload was attempted, inspect `/api/proxy/status.reload` before sending more traffic. A successful reload increments `activeConfigGeneration` and updates active route/backend counts. A failed reload reports `lastReloadValidationErrors` and keeps the last known-good config active; treat the failure as a config correction task rather than a reason to restart blindly.
+
 When triaging proxy startup or forwarding failures, check the application log for `proxy.observability.startup` and `proxy.observability.route` before traffic, then `proxy.forward.failure`, `proxy.forward.retry`, `proxy.forward.retryable_status`, and `proxy.cooldown.activated` after traffic. Pair those log markers with `/api/proxy/status.observability` so route counts, backend target counts, request outcomes, retry counts, cooldown counts, and access-boundary mode agree with the intended run profile.
 
 4. Confirm the latest deployed version matches the expected GitHub Release or deployment artifact. The current release automation publishes the JAR, CycloneDX SBOMs, and SHA256SUMS for future semantic version tags.

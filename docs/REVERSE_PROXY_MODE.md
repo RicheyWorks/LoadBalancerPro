@@ -70,6 +70,14 @@ When `routes` are configured, the proxy selects the longest matching `path-prefi
 
 When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be greater than zero.
 
+## Operator Config Reload
+
+When proxy mode is already enabled, operators can submit a full replacement proxy route/backend config to `POST /api/proxy/reload`. The endpoint validates the candidate config before activation, then atomically swaps the in-memory route snapshot only on success. Invalid reloads fail safe: the last known-good active config stays in use, the active config generation does not advance, and `/api/proxy/status.reload.lastReloadValidationErrors` reports the validation failure without API-key values or backend credentials.
+
+In API-key mode, reload requires `X-API-Key` even for local/default profile use. In prod or cloud-sandbox API-key mode the existing API-key boundary also protects this mutation. In OAuth2 mode, reload requires the configured allocation/operator role. Do not expose reload outside localhost or trusted networks without the same deployment-level access control and TLS termination used for `/proxy/**`.
+
+Reload is local and process-scoped. It does not read remote URLs, does not contact cloud config backends, does not persist config, does not coordinate across replicas, and does not replace restart-based deployment controls. Restart remains the clearest path after changing TLS, auth, deployment secrets, JVM settings, or any config outside `loadbalancerpro.proxy.*`.
+
 Optional upstream telemetry fields are available for strategies that use them:
 
 ```properties
@@ -158,7 +166,7 @@ Inspect the read-only proxy status endpoint:
 curl -s http://127.0.0.1:8080/api/proxy/status
 ```
 
-The response reports the proxy enabled flag, selected strategy, configured routes, health-check configuration, retry/cooldown configuration, configured upstreams, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `5xx`, `other`), and the last selected upstream id.
+The response reports the proxy enabled flag, selected strategy, configured routes, health-check configuration, retry/cooldown configuration, configured upstreams, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `other`), the last selected upstream id, and reload status fields such as active config generation, last reload status, validation errors, and active route/backend counts.
 
 For a browser view of the same read-only status data, open:
 
@@ -235,6 +243,8 @@ The examples target loopback placeholders `http://localhost:9001` and `http://lo
 - No generated runtime reports.
 - No persistent proxy health or metrics state.
 - No persistent retry or cooldown state.
+- No external or distributed config backend.
+- No hot-reload production-readiness claim.
 - No TLS termination, WebSocket support, WAF, distributed rate limiting, credential rotation, or production gateway guarantee.
 - No benchmark, certification, legal compliance, identity, or production-readiness claim.
 

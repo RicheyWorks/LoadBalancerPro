@@ -50,13 +50,15 @@ Recommended auth posture:
 
 - Keep `/api/health` public only where intentionally allowed.
 - Protect POST, PUT, and PATCH routes with deliberate auth configuration.
-- Treat `/proxy/**`, `/api/proxy/status`, and `/proxy-status.html` as operator proxy surfaces; prod API-key mode and OAuth2 mode add app-level checks, but TLS termination and ingress policy still belong at the deployment edge.
+- Treat `/proxy/**`, `/api/proxy/status`, `POST /api/proxy/reload`, and `/proxy-status.html` as operator proxy surfaces; prod API-key mode and OAuth2 mode add app-level checks, but TLS termination and ingress policy still belong at the deployment edge.
 - Prefer OAuth2 for shared enterprise demos or multi-user review.
 - Keep Swagger/OpenAPI public only for local demos or intentionally private review environments.
 - Gate or disable Swagger/OpenAPI outside local/demo use when route and schema exposure matters.
 - Do not trust identity headers from public clients unless a trusted reverse proxy strips and injects them.
 
 CORS does not authenticate users. It only controls browser cross-origin behavior. Authorization still belongs in API-key mode, OAuth2 mode, or a trusted upstream identity layer.
+
+Proxy config reload is local and operator-controlled. It validates a submitted replacement route/backend config before activation, preserves the last known-good active config on validation failure, and reports reload status through `/api/proxy/status.reload`. It does not add dynamic cloud config, distributed coordination, remote config fetching, or a hot-reload production-readiness guarantee.
 
 ## Actuator And Telemetry Exposure
 

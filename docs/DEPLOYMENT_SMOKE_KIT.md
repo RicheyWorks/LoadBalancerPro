@@ -133,6 +133,7 @@ For the proxy-loopback step, use `/api/proxy/status` and the app log tail togeth
 - `proxy.observability.route` should show the loopback route name, path prefix, strategy, target count, and target ids without secret values.
 - `proxy.forward.retryable_status`, `proxy.forward.retry`, `proxy.forward.failure`, or `proxy.cooldown.activated` explain retry/cooldown/failure paths if the loopback request does not behave as expected.
 - `status.observability.routeCount`, `status.observability.backendTargetCount`, and `status.securityBoundary` should match the run profile being smoked.
+- `status.reload.activeConfigGeneration` and `status.reload.lastReloadStatus` should be present; the smoke kit does not mutate proxy config by default, so a normal packaged-jar smoke should report startup generation and no reload attempt unless an operator runs a separate reload check.
 
 These checks help interpret local smoke readiness. They are not benchmark evidence, certification evidence, or external telemetry.
 

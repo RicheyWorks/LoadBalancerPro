@@ -43,6 +43,7 @@ The endpoint is read-only and reports:
 - configured strategy
 - `observability` summary with route count, backend target count, effective healthy/unhealthy backend counts, cooldown-active backend count, request totals, retry/cooldown totals, last selected upstream, and a compact readiness signal
 - `securityBoundary` summary with auth mode, active profiles, whether an API-key value is configured, and whether `/proxy/**` plus `GET /api/proxy/status` are protected in the active mode
+- `reload` summary with config reload support, active config generation, last reload attempt/success/failure timestamps, last reload status, validation errors, active route count, and active backend target count
 - health-check path, timeout, and interval
 - retry enabled flag, maximum attempts, retry methods, and retry statuses
 - cooldown enabled flag, consecutive failure threshold, duration, and health-check recovery setting
@@ -76,6 +77,8 @@ The `readiness` value is a local process signal only:
 - `ready`: the current process sees at least one effective healthy backend and no failure/cooldown signal in the summary.
 
 The `securityBoundary` block reports mode and booleans only. It does not expose API-key values, bearer tokens, or backend credentials. In prod or cloud-sandbox API-key mode, `apiKeyConfigured` reports only whether a key value is present.
+
+The `reload` block is read-only status for operator-controlled proxy config reload. `activeConfigGeneration` starts at the startup config and increments only after a successful validated reload. `lastReloadStatus` is `not_attempted`, `success`, `failure`, or `unsupported`. On `failure`, `lastReloadValidationErrors` explains why the candidate config was rejected while the active route/backend counts continue to describe the last known-good config.
 
 Structured startup and failure markers are written to the application log when proxy mode is enabled:
 
@@ -136,6 +139,7 @@ For local/private real-backend examples, see [`REAL_BACKEND_PROXY_EXAMPLES.md`](
 - No cloud mutation.
 - No persistent metrics state.
 - No database, broker, service discovery system, or external observability stack.
+- No external or distributed config backend.
 - No external telemetry required for these local status/log checks.
 - No external network dependency in tests.
 - No TLS, WebSocket, WAF, distributed rate limiting, identity, production-grade gateway, benchmark, certification, legal compliance, or security guarantee.

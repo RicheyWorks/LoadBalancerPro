@@ -2,6 +2,9 @@ package com.richmond423.loadbalancerpro.api.proxy;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -11,13 +14,21 @@ import java.util.Objects;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/proxy")
 public class ReverseProxyStatusController {
+    private static final String API_KEY_HEADER = "X-API-Key";
+
     private final ReverseProxyProperties properties;
     private final ReverseProxyMetrics metrics;
     private final ObjectProvider<ReverseProxyService> reverseProxyService;
@@ -71,7 +82,32 @@ public class ReverseProxyStatusController {
                 upstreams,
                 metricsSnapshot,
                 ReverseProxyStatusSummaries.observability(false, routes, upstreams, metricsSnapshot),
-                ReverseProxyStatusSummaries.controllerNotAvailableSecurityBoundary()));
+                ReverseProxyStatusSummaries.controllerNotAvailableSecurityBoundary(),
+                reloadNotSupported()));
+    }
+
+    @PostMapping("/reload")
+    public ResponseEntity<ReverseProxyReloadResponse> reload(@RequestBody ReverseProxyProperties candidate,
+                                                             HttpServletRequest request) {
+        if (!oauth2Mode() && !validApiKey(request)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(reloadRejected("unauthorized", List.of("X-API-Key is required for proxy config reload")));
+        }
+        ReverseProxyService service = reverseProxyService.getIfAvailable();
+        if (service == null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ReverseProxyReloadResponse(
+                            false,
+                            "unsupported",
+                            0,
+                            0,
+                            0,
+                            List.of("Proxy mode must be enabled at startup before runtime reload is available."),
+                            reloadNotSupported()));
+        }
+        ReverseProxyReloadResponse response = service.reload(candidate);
+        return ResponseEntity.status(response.success() ? HttpStatus.OK : HttpStatus.BAD_REQUEST)
+                .body(response);
     }
 
     private ReverseProxyStatusResponse decorate(ReverseProxyStatusResponse response) {
@@ -86,7 +122,8 @@ public class ReverseProxyStatusController {
                 response.metrics(),
                 ReverseProxyStatusSummaries.observability(response.proxyEnabled(), response.routes(),
                         response.upstreams(), response.metrics()),
-                ReverseProxyStatusSummaries.securityBoundary(environment, configuredApiKey));
+                ReverseProxyStatusSummaries.securityBoundary(environment, configuredApiKey),
+                response.reload());
     }
 
     private ReverseProxyStatusResponse.HealthCheckStatus healthCheckStatus() {
@@ -181,5 +218,59 @@ public class ReverseProxyStatusController {
     private static String safePathPrefix(String pathPrefix) {
         String value = pathPrefix == null || pathPrefix.isBlank() ? "/" : pathPrefix.trim();
         return value.startsWith("/") ? value : "/" + value;
+    }
+
+    private boolean oauth2Mode() {
+        String configuredMode = environment.getProperty("loadbalancerpro.auth.mode", "api-key");
+        return "oauth2".equals(configuredMode == null
+                ? "api-key"
+                : configuredMode.trim().replace('_', '-').toLowerCase(Locale.ROOT));
+    }
+
+    private boolean validApiKey(HttpServletRequest request) {
+        String expected = configuredApiKey == null ? "" : configuredApiKey.trim();
+        if (expected.isEmpty()) {
+            return false;
+        }
+        String presented = request.getHeader(API_KEY_HEADER);
+        return presented != null && !presented.isBlank()
+                && constantTimeEquals(expected.getBytes(StandardCharsets.UTF_8),
+                        presented.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static boolean constantTimeEquals(byte[] expected, byte[] actual) {
+        return MessageDigest.isEqual(sha256(expected), sha256(actual));
+    }
+
+    private static byte[] sha256(byte[] value) {
+        try {
+            return MessageDigest.getInstance("SHA-256").digest(value);
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 digest algorithm is unavailable", exception);
+        }
+    }
+
+    private static ReverseProxyReloadResponse reloadRejected(String status, List<String> errors) {
+        return new ReverseProxyReloadResponse(
+                false,
+                status,
+                0,
+                0,
+                0,
+                errors,
+                reloadNotSupported());
+    }
+
+    private static ReverseProxyStatusResponse.ReloadStatus reloadNotSupported() {
+        return new ReverseProxyStatusResponse.ReloadStatus(
+                false,
+                0,
+                null,
+                null,
+                null,
+                "unsupported",
+                List.of(),
+                0,
+                0);
     }
 }

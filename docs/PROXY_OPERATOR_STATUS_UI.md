@@ -20,6 +20,7 @@ It does not write backend state, reset counters, mutate cooldown state, persist 
 - configured routing strategy
 - observability summary with configured route count, backend target count, effective healthy backend count, cooldown-active backend count, and readiness signal
 - Access boundary summary derived from the status response's `securityBoundary` fields
+- reload support, active config generation, last reload status, last reload attempt, and validation errors from the status response's `reload` fields
 - active health-check enabled state
 - retry enabled state
 - cooldown enabled state
@@ -55,6 +56,7 @@ For packaged-jar startup, one-command Maven exec launcher usage, and real-backen
 
 - Read-only browser view.
 - Same-origin `GET /api/proxy/status` only.
+- Reload status is displayed read-only; the page does not submit reloads.
 - No backend writes.
 - No metric reset controls.
 - No cooldown mutation controls.

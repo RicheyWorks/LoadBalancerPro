@@ -119,6 +119,12 @@ If a local terminal is interrupted, verify no leftover Java process is still bou
 Get-NetTCPConnection -LocalPort 18080,18081,18082,18181,18182 -ErrorAction SilentlyContinue
 ```
 
+## Troubleshooting Live Startup
+
+The live smoke script waits for startup by retrying the exact loopback endpoint it is checking. During startup it prints the checked URL, attempt count, request timeout, and retry delay. If a profile never becomes reachable, the script prints the app process exit code when available, the stdout/stderr log paths under the user temp directory, and the last log lines before cleanup.
+
+If the first local-demo check reports connection failures, inspect the printed log tail before assuming the packaged jar is broken. Common local causes are a slow first Spring Boot startup, a selected port already in use, local security software delaying loopback connections, or an app-side startup error visible in the temp logs.
+
 ## Safety Boundaries
 
 - Local-only network targets: `127.0.0.1` and `localhost`.

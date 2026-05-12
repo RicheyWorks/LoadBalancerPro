@@ -53,6 +53,9 @@ class DeploymentSmokeKitDocumentationTest {
 
         assertTrue(script.contains("[switch]$DryRun"));
         assertTrue(script.contains("[switch]$Package"));
+        assertTrue(script.contains("[int]$StartupAttempts"));
+        assertTrue(script.contains("[int]$StartupDelaySeconds"));
+        assertTrue(script.contains("[int]$RequestTimeoutSeconds"));
         assertTrue(script.contains("mvn"));
         assertTrue(script.contains("java"));
         assertTrue(script.contains("Start-SmokeApp"));
@@ -62,11 +65,39 @@ class DeploymentSmokeKitDocumentationTest {
         assertTrue(script.contains("CHANGE_ME_LOCAL_API_KEY"));
         assertTrue(script.contains("proxy/api/smoke?step=1"));
         assertTrue(script.contains("docs/examples/operator-run-profiles/proxy-loopback.properties"));
+        assertTrue(script.contains("loadbalancerpro.proxy.routes.api.targets[0].id=local-a"));
+        assertTrue(script.contains("loadbalancerpro.proxy.routes.api.targets[0].weight=1"));
+        assertTrue(script.contains("loadbalancerpro.proxy.routes.api.targets[1].id=local-b"));
+        assertTrue(script.contains("loadbalancerpro.proxy.routes.api.targets[1].weight=1"));
         assertTrue(script.contains("PASS:"));
         assertTrue(script.contains("WARN:"));
         assertTrue(script.contains("FAIL:"));
         assertTrue(script.contains("exit $exitCode"));
         assertTrue(script.contains("finally"));
+    }
+
+    @Test
+    void smokeScriptRetriesStartupAndPrintsFailureDiagnostics() throws Exception {
+        String script = read(SMOKE_SCRIPT);
+
+        assertTrue(script.contains("Checking $Url for HTTP $ExpectedStatus"),
+                "script should print the endpoint being checked");
+        assertTrue(script.contains("attempt $attempt/$Attempts"),
+                "script should print retry timing");
+        assertTrue(script.contains("Start-Sleep -Seconds $StartupDelaySeconds"),
+                "script should retry startup checks instead of failing immediately");
+        assertTrue(script.contains("Test-SmokePortAvailable"),
+                "script should detect loopback port collisions before starting child processes");
+        assertTrue(script.contains("Log paths for ${Name}"),
+                "script should print app log paths");
+        assertTrue(script.contains("Write-SmokeLogTail"),
+                "script should tail app logs on failure");
+        assertTrue(script.contains("Get-SmokeExitCodeText"),
+                "script should handle unavailable exit codes without hiding diagnostics");
+        assertTrue(script.contains("process exit code"),
+                "script should expose process exit codes when available");
+        assertTrue(script.contains("Timed out after $Attempts attempt(s)"),
+                "script should fail clearly after readiness timeout");
     }
 
     @Test
@@ -94,6 +125,9 @@ class DeploymentSmokeKitDocumentationTest {
         assertTrue(doc.contains("PKIX"));
         assertTrue(doc.contains("HTTP 401 without X-API-Key"));
         assertTrue(doc.contains("HTTP 200 with X-API-Key"));
+        assertTrue(doc.contains("Troubleshooting Live Startup"));
+        assertTrue(doc.contains("prints the checked URL, attempt count"));
+        assertTrue(doc.contains("stdout/stderr log paths"));
         assertTrue(doc.contains("No tag, release, or asset creation"));
         assertTrue(doc.contains("No generated artifacts committed"));
         assertTrue(normalized.contains("not production certification"));

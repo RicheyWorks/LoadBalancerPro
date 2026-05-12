@@ -16,7 +16,9 @@
         <netty.version>4.2.13.Final</netty.version>
         <aws-sdk-v2.version>2.44.4</aws-sdk-v2.version>
         <javafx.version>17.0.10</javafx.version>
+        <mockito.version>5.17.0</mockito.version>
         <jacoco.version>0.8.13</jacoco.version>
+        <argLine></argLine>
     </properties>
 
     <!-- Let Spring Boot manage dependency versions -->
@@ -175,6 +177,7 @@
                 <version>3.15.0</version>
                 <configuration>
                     <release>${java.version}</release>
+                    <proc>none</proc>
                 </configuration>
             </plugin>
 
@@ -183,6 +186,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.5</version>
+                <configuration>
+                    <argLine>@{argLine} -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar</argLine>
+                </configuration>
             </plugin>
 
             <!-- Optional local operator launcher recipes. No execution is bound to the default lifecycle. -->

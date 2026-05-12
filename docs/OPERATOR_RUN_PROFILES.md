@@ -4,7 +4,7 @@ Use this guide when you want the shortest safe path from "which mode should I ru
 
 Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md). Use this page as the execution hub after you know which evidence path you want.
 
-After choosing a profile, use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) for the local-only packaged-jar, prod API-key, and proxy-loopback smoke path.
+After choosing a profile, use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) for the local-only packaged-jar, prod API-key, and proxy-loopback smoke path. Use [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) for local-only Docker build/run recipes and container-specific caveats.
 
 ## Start Here
 
@@ -129,7 +129,7 @@ Runtime proxy config reload is optional and process-local. Use it only with a re
 
 ### Container Run
 
-The repository has a Dockerfile. There is no checked-in compose file, so keep this to a loopback-bound single-container smoke:
+The repository has a Dockerfile. There is no checked-in compose file, so keep this to a loopback-bound single-container smoke. For the full container guide, use [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md):
 
 ```bash
 docker build -t loadbalancerpro:local .

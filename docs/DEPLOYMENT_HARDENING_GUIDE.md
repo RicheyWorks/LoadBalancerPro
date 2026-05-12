@@ -10,7 +10,7 @@ This guide is not production certification. It does not prove that a deployment 
 
 Deployment operators remain responsible for TLS, IAM, network policy, secrets, monitoring, incident response, logging, retention, backup, rollback, and all infrastructure-specific controls.
 
-For the concise profile matrix and copyable local/API-key/OAuth2/proxy-loopback/container recipes, use [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) before adapting deployment-specific controls.
+For the concise profile matrix and copyable local/API-key/OAuth2/proxy-loopback/container recipes, use [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) before adapting deployment-specific controls. For local-only Docker build/run guidance, use [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md).
 
 ## Deployment Posture Summary
 

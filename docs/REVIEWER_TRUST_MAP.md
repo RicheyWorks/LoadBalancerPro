@@ -22,6 +22,7 @@ Recommended first paths:
 - I want to run local proxy demos: start with [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md), [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md), and [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md).
 - I want to adapt proxy mode to local/private backends: start with [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md).
 - I want to choose the right run profile: start with [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) for local demo, packaged jar, prod API-key, cloud-sandbox API-key, OAuth2, proxy-loopback, and container recipes.
+- I want to build and run the app in a local container: start with [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) for Docker build/run recipes, API-key checks, proxy-loopback caveats, and no-registry-publish boundaries.
 - I want one local smoke path for the packaged jar, API-key boundary, and proxy-loopback recipe: start with [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md).
 - I want to verify the proxy auth/TLS boundary: start with [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md#auth-and-tls-boundary), then check [`API_SECURITY.md`](API_SECURITY.md) and [`OPERATIONS_RUNBOOK.md`](OPERATIONS_RUNBOOK.md).
 - I want to inspect CI artifacts: start with [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md), then review `jacoco-coverage-report`, `packaged-artifact-smoke`, and `loadbalancerpro-sbom`.

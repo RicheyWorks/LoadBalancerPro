@@ -16,9 +16,9 @@
 - #8: `actions/setup-java` `4.8.0` -> `5.2.0`, included in `v2.3.5`.
 - #6: `actions/upload-artifact` `4.6.2` -> `7.0.1`, included in `v2.3.5`.
 
-## Remaining Warning
+## Resolved Warning
 
-`actions/dependency-review-action` `v4.9.0` still uses Node.js 20. No clean Node.js 24 update exists today. Wait for a Dependabot PR or upstream Node.js 24-capable release before changing it.
+`actions/dependency-review-action` now has a Node.js 24-capable `v5.0.0` release, and the CI dependency review step is pinned to that release. Future updates should continue to preserve the dependency-review job name, pull-request-only trigger, and `fail-on-severity: high` gate.
 
 ## Remaining Open PR Posture
 

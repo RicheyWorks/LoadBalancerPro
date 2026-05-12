@@ -2,6 +2,8 @@
 
 LoadBalancerPro's HTTP API is intended for demos, CI validation, and controlled operator review. The application includes app-level guardrails, but it is not a complete internet-edge security boundary by itself.
 
+For copyable run commands that exercise local demo, prod API-key, cloud-sandbox API-key, OAuth2, and proxy-loopback boundaries, start with [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md).
+
 ## Authentication Posture
 
 The local/default profile keeps API routes convenient for development and automated tests. Production-like deployments should use the `prod` or `cloud-sandbox` profile with API-key mode or OAuth2 mode configured.

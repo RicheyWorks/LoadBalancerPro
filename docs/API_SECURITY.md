@@ -12,6 +12,12 @@ API-key mode protects mutation-style API routes with the `X-API-Key` header. In 
 
 Deployments that expose the service beyond a private test network should place it behind a trusted ingress, API gateway, reverse proxy, or zero-trust access layer.
 
+## CSRF Disposition
+
+LoadBalancerPro keeps protected API/proxy paths stateless. Spring Security is configured with stateless sessions, form login disabled, HTTP Basic disabled, and logout disabled. API clients authenticate with explicit request headers in protected modes: `X-API-Key` for prod/cloud-sandbox API-key mode or `Authorization: Bearer ...` for OAuth2 mode.
+
+CSRF token enforcement is not required for those stateless header-auth API/proxy calls because they do not rely on browser ambient cookie credentials. The security configuration therefore scopes CSRF token checks away from `/api/**`, `/proxy`, `/proxy/**`, and Actuator paths while preserving the existing API-key/OAuth2 boundaries. If future work introduces session-cookie authentication, form login, browser ambient credentials, or credentialed cross-site browser flows for protected mutation endpoints, this CSRF disposition must be re-evaluated before that change ships.
+
 ## Rate-Limit Posture
 
 The application currently uses validation, request-size limits, structured errors, and cloud-safety boundaries as app-level protections. It does not provide a distributed app-native rate limiter, and it does not depend on Redis, a database, or an external queue for throttling.

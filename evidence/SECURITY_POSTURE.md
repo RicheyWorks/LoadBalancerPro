@@ -13,14 +13,15 @@ Audited baseline: `loadbalancerpro-clean` at `daa4817e9b0c937919dedc8340209e3d93
 
 ## CSRF Posture
 
-CodeQL flags the current Spring Security configuration with `java/spring-disabled-csrf-protection`. The documented disposition is accepted for the stateless JSON API design, not a claim that CSRF is irrelevant for every future deployment or hosting model.
+The current Spring Security configuration avoids the earlier global CSRF-disable pattern and scopes CSRF token checks away from the stateless API/proxy/Actuator surfaces that use explicit header authentication or public health semantics. This is not a claim that CSRF is irrelevant for every future deployment or hosting model.
 
-- CSRF is intentionally disabled for the current stateless API design.
+- CSRF is not globally disabled.
+- CSRF token checks are scoped away from `/api/**`, `/proxy`, `/proxy/**`, and `/actuator/**` for the current stateless API design.
 - The app does not use browser session or form-login authentication.
 - Spring Security is configured with `SessionCreationPolicy.STATELESS`, and HTTP Basic, form login, and logout are disabled.
 - CORS uses `allowCredentials(false)`.
 - Protected mutating routes require `X-API-Key` in prod/cloud-sandbox API-key mode or OAuth2 bearer JWT roles in OAuth2 mode.
-- Enabling CSRF would require CSRF token plumbing and could break legitimate header-auth API clients without a meaningful benefit under the current no-cookie auth model.
+- Requiring CSRF tokens on the stateless API/proxy paths would require token plumbing and could break legitimate header-auth API clients without a meaningful benefit under the current no-cookie auth model.
 
 Revisit this disposition if cookie/session authentication, credentialed CORS, or browser ambient-credential flows are introduced.
 
@@ -72,7 +73,7 @@ Revisit this disposition if cookie/session authentication, credentialed CORS, or
 
 - A separate CodeQL workflow provides Java/Kotlin static-analysis coverage with manual Maven build mode.
 - CodeQL is treated as a SAST baseline, not a complete security review, independent audit, or production-readiness claim.
-- The disabled-CSRF finding has a documented accepted disposition for the current stateless JSON/no-cookie API design.
+- The earlier disabled-CSRF finding is addressed by scoped CSRF configuration for the current stateless JSON/no-cookie API design; if GitHub still shows the historical alert before fresh analysis, use the current security configuration and `docs/API_SECURITY.md#csrf-disposition` as the review record.
 - Findings involving CloudManager/AWS guardrails, auth, request validation, deserialization, file parsing, command execution, or telemetry redaction should receive priority review.
 
 ## Release Provenance Posture

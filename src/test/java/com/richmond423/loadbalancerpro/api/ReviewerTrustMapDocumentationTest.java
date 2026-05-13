@@ -24,6 +24,7 @@ class ReviewerTrustMapDocumentationTest {
     private static final Path INSTALL_MATRIX = Path.of("docs/OPERATOR_INSTALL_RUN_MATRIX.md");
     private static final Path RELEASE_DRY_RUN = Path.of("docs/RELEASE_CANDIDATE_DRY_RUN.md");
     private static final Path REAL_BACKEND_EXAMPLES = Path.of("docs/REAL_BACKEND_PROXY_EXAMPLES.md");
+    private static final Path PRIVATE_NETWORK_DRY_RUN = Path.of("docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md");
     private static final Path TESTING_COVERAGE = Path.of("docs/TESTING_COVERAGE.md");
     private static final Path V1_9_1_EVIDENCE_PLAN = Path.of("docs/V1_9_1_RELEASE_EVIDENCE_DOCS_PLAN.md");
     private static final Path RELEASE_ARTIFACT_EVIDENCE = Path.of("evidence/RELEASE_ARTIFACT_EVIDENCE.md");
@@ -38,6 +39,7 @@ class ReviewerTrustMapDocumentationTest {
             INSTALL_MATRIX,
             RELEASE_DRY_RUN,
             REAL_BACKEND_EXAMPLES,
+            PRIVATE_NETWORK_DRY_RUN,
             TESTING_COVERAGE);
 
     private static final List<Path> RELEASE_FREE_DOCS = List.of(
@@ -46,6 +48,7 @@ class ReviewerTrustMapDocumentationTest {
             INSTALL_MATRIX,
             RELEASE_DRY_RUN,
             REAL_BACKEND_EXAMPLES,
+            PRIVATE_NETWORK_DRY_RUN,
             TESTING_COVERAGE);
 
     private static final Pattern FAKE_HASH =
@@ -86,6 +89,10 @@ class ReviewerTrustMapDocumentationTest {
                 "target/proxy-evidence/local-proxy-evidence.md",
                 "target/proxy-evidence/local-proxy-evidence.json",
                 "PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md",
+                "PRIVATE_NETWORK_PROXY_DRY_RUN.md",
+                "PrivateNetworkProxyDryRunEvidenceTest",
+                "target/proxy-evidence/private-network-validation-dry-run.md",
+                "target/proxy-evidence/private-network-validation-dry-run.json",
                 "PROXY_STRATEGY_DEMO_LAB.md",
                 "PROXY_DEMO_STACK.md",
                 "PROXY_DEMO_FIXTURE_LAUNCHER.md",
@@ -109,7 +116,7 @@ class ReviewerTrustMapDocumentationTest {
     @Test
     void keyDocsLinkBackToReviewerTrustMap() throws Exception {
         for (Path doc : List.of(README, RUNBOOK, OPERATOR_PACKAGING, INSTALL_MATRIX,
-                RELEASE_DRY_RUN, REAL_BACKEND_EXAMPLES, TESTING_COVERAGE)) {
+                RELEASE_DRY_RUN, REAL_BACKEND_EXAMPLES, PRIVATE_NETWORK_DRY_RUN, TESTING_COVERAGE)) {
             assertTrue(read(doc).contains("REVIEWER_TRUST_MAP.md"), doc + " should link to trust map");
         }
     }
@@ -139,6 +146,47 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(recipe.contains("apiKeyRedacted=\"<REDACTED>\""));
         assertTrue(readme.contains("REVIEWER_TRUST_MAP.md#local-proxy-evidence-export"));
         assertTrue(runbook.contains("REVIEWER_TRUST_MAP.md#local-proxy-evidence-export"));
+    }
+
+    @Test
+    void privateNetworkDryRunRecipeIsConciseAndSafetyBounded() throws Exception {
+        String trustMap = read(TRUST_MAP);
+        String readme = read(README);
+        String runbook = read(RUNBOOK);
+        String recipe = section(trustMap, "### Private-Network Validation Dry Run",
+                "### Release-Readiness Review");
+        String normalized = recipe.toLowerCase(Locale.ROOT);
+
+        assertTrue(recipe.contains("mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test"));
+        assertTrue(recipe.contains("target/proxy-evidence/private-network-validation-dry-run.md"));
+        assertTrue(recipe.contains("target/proxy-evidence/private-network-validation-dry-run.json"));
+        assertTrue(recipe.contains("loadbalancerpro.proxy.private-network-validation.enabled=true"));
+        assertTrue(recipe.contains("LOOPBACK_ALLOWED"));
+        assertTrue(recipe.contains("PRIVATE_NETWORK_ALLOWED"));
+        assertTrue(recipe.contains("PUBLIC_NETWORK_REJECTED"));
+        assertTrue(recipe.contains("AMBIGUOUS_HOST_REJECTED"));
+        assertTrue(recipe.contains("USERINFO_REJECTED"));
+        assertTrue(recipe.contains("UNSUPPORTED_SCHEME_REJECTED"));
+        assertTrue(recipe.contains("INVALID_REJECTED"));
+        assertTrue(normalized.contains("human review path"));
+        assertTrue(normalized.contains("structured evidence path"));
+        assertTrue(normalized.contains("loopback/local-only and private literal url samples"));
+        assertTrue(normalized.contains("fail-closed-before-active-config"));
+        assertTrue(normalized.contains("dryrunonly=true"));
+        assertTrue(normalized.contains("trafficsent=false"));
+        assertTrue(normalized.contains("dnsresolution=false"));
+        assertTrue(normalized.contains("reachabilitychecks=false"));
+        assertTrue(normalized.contains("portscanning=false"));
+        assertTrue(normalized.contains("postmanexecution=false"));
+        assertTrue(normalized.contains("smokeexecution=false"));
+        assertTrue(normalized.contains("apikeypersisted=false"));
+        assertTrue(normalized.contains("secretpersisted=false"));
+        assertTrue(normalized.contains("ignored `target/` output"));
+        assertTrue(normalized.contains("do not write api keys or secrets"));
+        assertTrue(normalized.contains("do not add private-network live execution"));
+        assertTrue(readme.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md"));
+        assertTrue(runbook.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md"));
+        assertTrue(read(PRIVATE_NETWORK_DRY_RUN).contains("REVIEWER_TRUST_MAP.md"));
     }
 
     @Test
@@ -178,6 +226,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(trustMap.contains("Workflow artifacts are not GitHub Release assets."));
         assertTrue(trustMap.contains("do not construct or mutate `CloudManager`"));
         assertTrue(trustMap.contains("explicit operator-provided backend URLs only"));
+        assertTrue(trustMap.contains("dry-run-only evidence under ignored `target/`"));
         assertTrue(trustMap.contains("no private-network live execution until separately approved"));
     }
 

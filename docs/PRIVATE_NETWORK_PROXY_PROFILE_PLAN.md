@@ -2,7 +2,7 @@
 
 This is a design and rollout plan for a future controlled private-network proxy validation profile. It now includes an opt-in configuration-validation primitive, but it does not add private-network live execution, does not change proxy request routing, and does not change the current local-only evidence path.
 
-Use this plan after reviewing [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md), [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md), and [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
+Use this plan after reviewing [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md), [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](PRIVATE_NETWORK_PROXY_DRY_RUN.md), [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md), and [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
 
 ## Intended Use Case
 
@@ -42,7 +42,7 @@ Future implementation should validate each configured backend URL before startup
 
 URLs with user info, query strings, fragments, blank hosts, unsupported schemes, public addresses, wildcard domains, or ambiguous resolution should fail closed during startup or explicit reload validation.
 
-Implemented configuration primitive: `ProxyBackendUrlClassifier` is a source-visible Java helper for offline classification only. It classifies literal `http`/`https` backend URLs as loopback allowed, private-network allowed, public-network rejected, invalid rejected, unsupported-scheme rejected, user-info rejected, or ambiguous-host rejected. When `loadbalancerpro.proxy.private-network-validation.enabled=true`, startup and explicit proxy reload validation use that classifier so unsafe backend URLs fail closed before becoming an active config. The gate does not resolve DNS, perform reachability checks, scan ports, discover hosts, change default/local/demo behavior, add private-network live execution, or add script, Postman, or smoke execution.
+Implemented configuration primitive: `ProxyBackendUrlClassifier` is a source-visible Java helper for offline classification only. It classifies literal `http`/`https` backend URLs as loopback allowed, private-network allowed, public-network rejected, invalid rejected, unsupported-scheme rejected, user-info rejected, or ambiguous-host rejected. When `loadbalancerpro.proxy.private-network-validation.enabled=true`, startup and explicit proxy reload validation use that classifier so unsafe backend URLs fail closed before becoming an active config. The gate does not resolve DNS, perform reachability checks, scan ports, discover hosts, change default/local/demo behavior, add private-network live execution, or add script, Postman, or smoke execution. The dry-run-only reviewer recipe in [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](PRIVATE_NETWORK_PROXY_DRY_RUN.md) generates ignored Markdown/JSON evidence from classifier samples without sending traffic.
 
 ## API-Key And OAuth2 Expectations
 
@@ -90,7 +90,7 @@ Runtime validation should progress in this order:
 1. Keep CI on loopback-only JUnit/JDK `HttpServer` evidence.
 2. Add pure Java unit tests for `ProxyBackendUrlClassifier` before it is wired into runtime.
 3. Add startup/reload validation tests for allowed and rejected backend URLs.
-4. Add a dry-run-only private-network profile recipe that prints intended validation inputs without sending traffic.
+4. Use the implemented dry-run-only private-network profile recipe to write ignored Markdown/JSON evidence from intended validation inputs without sending traffic.
 5. Add opt-in private-network live smoke only after a separate reviewed task approves the exact environment gate and operator-provided URLs.
 
 No test should scan ports, discover hosts, require public DNS, require live cloud resources, download servers, or write secrets.
@@ -100,6 +100,6 @@ No test should scan ports, discover hosts, require public DNS, require live clou
 1. Design and guard: this plan plus static documentation tests only.
 2. Classify: source-visible Java `ProxyBackendUrlClassifier` with focused unit tests.
 3. Gate: opt-in configuration validation properties and explicit failure messages for unsupported hosts, without live private-network execution.
-4. Evidence: redacted Markdown/JSON under ignored `target/` output.
+4. Evidence: implemented dry-run Markdown/JSON output under ignored `target/proxy-evidence/private-network-validation-dry-run.md` and `target/proxy-evidence/private-network-validation-dry-run.json`.
 5. Smoke: dry-run first, then separately approved private-network live smoke with operator-provided URLs only.
 6. Review: merge only with CI, CodeQL, docs/static tests, security tests, and existing smoke dry-runs passing.

@@ -16,7 +16,7 @@ For the concise profile matrix and copyable local/API-key/OAuth2/proxy-loopback/
 
 The local/default profile is for development, CI smoke tests, and demos. It intentionally favors convenient local behavior such as localhost browser access, public health checks, local Actuator visibility, and no live AWS mutation by default.
 
-The `prod` profile is production-like, but it is not complete production readiness. It narrows Actuator exposure by default, uses explicit CORS configuration, keeps live AWS disabled, and protects allocation/routing mutation-style routes when a hardened auth mode is configured.
+The `prod` profile is production-like, but it is not complete production readiness. It narrows Actuator exposure by default, uses explicit CORS configuration, keeps live AWS disabled, and in API-key mode protects `/api/**`, `/proxy/**`, OpenAPI, and Swagger by default. The explicit public API exceptions are `GET /api/health` and unauthenticated `OPTIONS` preflight requests; Actuator health/info exposure is configured separately by profile.
 
 The checked-in Dockerfile defaults containers to `SPRING_PROFILES_ACTIVE=prod`, so container/default deployment mode uses the prod API-key boundary unless an operator explicitly overrides the profile. Keep `LOADBALANCERPRO_API_KEY` in runtime secret/config management, and use `-e SPRING_PROFILES_ACTIVE=local` only for loopback-bound local/demo containers. Do not expose local/demo mode on public interfaces.
 

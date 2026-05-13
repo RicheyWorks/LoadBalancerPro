@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -19,7 +20,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(properties = {
         "spring.profiles.active=prod",
-        "loadbalancerpro.api.key=TEST_PROD_API_KEY"
+        "loadbalancerpro.api.key=TEST_PROD_API_KEY",
+        "loadbalancerpro.api.cors.allowed-origins=https://app.example.com"
 })
 @AutoConfigureMockMvc
 class ProdApiKeyProtectionTest {
@@ -175,6 +177,46 @@ class ProdApiKeyProtectionTest {
         mockMvc.perform(get("/api/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("ok")));
+    }
+
+    @Test
+    void prodProfileKeepsPreflightPublic() throws Exception {
+        mockMvc.perform(options("/api/evidence-training/onboarding")
+                        .header("Origin", "https://app.example.com")
+                        .header("Access-Control-Request-Method", "GET")
+                        .header("Access-Control-Request-Headers", "X-API-Key"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void prodProfileProtectsReadOnlyApiByDefaultWithoutApiKey() throws Exception {
+        mockMvc.perform(get("/api/evidence-training/onboarding"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.error", is("unauthorized")))
+                .andExpect(jsonPath("$.path", is("/api/evidence-training/onboarding")));
+
+        mockMvc.perform(get("/api/evidence-training/templates"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.error", is("unauthorized")))
+                .andExpect(jsonPath("$.path", is("/api/evidence-training/templates")));
+    }
+
+    @Test
+    void prodProfileAllowsReadOnlyApiWithCorrectApiKey() throws Exception {
+        mockMvc.perform(get("/api/evidence-training/onboarding").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(not(containsString(API_KEY))));
+
+        mockMvc.perform(get("/api/evidence-training/templates").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(content().string(not(containsString(API_KEY))));
     }
 
     @Test

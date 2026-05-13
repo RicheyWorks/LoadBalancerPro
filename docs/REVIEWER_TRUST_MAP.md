@@ -162,7 +162,7 @@ Read [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION
 ## Safety Boundaries
 
 - Proxy is disabled by default.
-- Container/default deployment mode is protected by the prod API-key profile; provide `LOADBALANCERPRO_API_KEY` at run time for protected prod container usage.
+- Container/default deployment mode is protected by the prod API-key profile; provide `LOADBALANCERPRO_API_KEY` at run time for prod `/api/**`, proxy, OpenAPI, and Swagger usage. The explicit public API exceptions are `GET /api/health` and unauthenticated `OPTIONS` preflight requests.
 - JavaFX is optional and not required for API, proxy, static browser, artifact, or operator smoke paths.
 - Release-free docs do not create tags, GitHub Releases, or release assets.
 - `release-downloads/` remains manual and explicit only.

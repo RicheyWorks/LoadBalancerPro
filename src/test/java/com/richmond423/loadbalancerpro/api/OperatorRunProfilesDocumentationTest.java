@@ -79,6 +79,7 @@ class OperatorRunProfilesDocumentationTest {
         assertTrue(guide.contains("loadbalancerpro.proxy.enabled=false"));
         assertTrue(guide.contains("Container/default deployment mode is protected by the prod API-key profile"));
         assertTrue(guide.contains("Dockerfile defaults to `SPRING_PROFILES_ACTIVE=prod`"));
+        assertTrue(guide.contains("public API exceptions are `GET /api/health` and unauthenticated `OPTIONS`"));
     }
 
     @Test
@@ -96,6 +97,7 @@ class OperatorRunProfilesDocumentationTest {
         assertTrue(guide.contains("CHANGE_ME_LOCAL_API_KEY"));
         assertTrue(guide.contains("curl -i http://127.0.0.1:8080/v3/api-docs"));
         assertTrue(guide.contains("The unauthenticated OpenAPI request returns HTTP 401"));
+        assertTrue(guide.contains("`/api/**` requires `X-API-Key` by default"));
         assertTrue(guide.contains("-e SPRING_PROFILES_ACTIVE=local"));
     }
 

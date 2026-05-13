@@ -35,7 +35,7 @@ This status field does not call `PrivateNetworkLiveValidationExecutor`, does not
 
 `POST /api/proxy/private-network-live-validation` is a non-executing operator command contract. It validates a minimal request shape (`requestPath`, optional `evidenceRequested`, and optional operator acknowledgement), evaluates the same offline gate, and returns structured `INVALID_REQUEST`, `BLOCKED_BY_GATE`, or `NOT_IMPLEMENTED` responses with `accepted=false`, `executable=false`, `trafficExecuted=false`, and `evidenceWritten=false`.
 
-The command contract is protected by the same production boundaries as other proxy mutations: prod/cloud-sandbox API-key mode requires `X-API-Key`, and OAuth2 mode requires the configured allocation role. It rejects unsafe request paths before returning a gate result, does not echo raw suspicious path input, does not call `PrivateNetworkLiveValidationExecutor`, does not write evidence, and does not send private-LAN or public traffic. The expected not-wired response message is `traffic execution is not wired in this release`.
+The command response mirrors the status report's top-level `gateStatus` and `allowedByGate` fields and also nests the full `gate` report for backend classifier details. The command contract is protected by the same production boundaries as other proxy mutations: prod/cloud-sandbox API-key mode requires `X-API-Key`, and OAuth2 mode requires the configured allocation role. It rejects unsafe request paths before returning a gate result, does not echo raw suspicious path input, does not call `PrivateNetworkLiveValidationExecutor`, does not write evidence, and does not send private-LAN or public traffic. The expected not-wired response message is `traffic execution is not wired in this release`.
 
 The response also documents the future evidence contract without producing runtime evidence. It returns `trafficExecution="traffic execution is not wired in this release"`, `redactionRequired=true`, and planned ignored output names:
 
@@ -46,6 +46,31 @@ The response also documents the future evidence contract without producing runti
 - `auditTrail.plannedAuditTrail="target/proxy-evidence/private-network-live-validation-audit.jsonl"`.
 
 `evidenceEligible` and `auditTrail.auditTrailEligible` only describe whether the current request and offline gate are shaped for future evidence after a separately approved execution-wiring task. They do not mean traffic will run in this release.
+
+## Status And Reason Codes
+
+The status report and command contract use the same gate vocabulary so operators can compare them directly:
+
+| Code or status | Surface | Meaning |
+| --- | --- | --- |
+| `NOT_ENABLED` | status/report gate | Live validation flag is still default-off. |
+| `BLOCKED` | status/report gate | One or more required flags, proxy settings, or backend classifier checks failed. |
+| `ALLOWED` | status/report gate | Offline gate requirements passed; no traffic has been executed by the report. |
+| `INVALID_REQUEST` | command status | Command request shape failed before execution. |
+| `BLOCKED_BY_GATE` | command status | Request shape was acceptable, but the offline gate blocked execution. |
+| `NOT_IMPLEMENTED` | command status | Request and gate are shaped for future execution, but traffic wiring is intentionally absent. |
+| `LIVE_VALIDATION_DISABLED` | reason code | `loadbalancerpro.proxy.private-network-live-validation.enabled` is false. |
+| `OPERATOR_APPROVAL_REQUIRED` | reason code | `loadbalancerpro.proxy.private-network-live-validation.operator-approved` is not true. |
+| `CONFIG_VALIDATION_REQUIRED` | reason code | `loadbalancerpro.proxy.private-network-validation.enabled` is not true. |
+| `PROXY_ENABLED_REQUIRED` | reason code | `loadbalancerpro.proxy.enabled` is not true. |
+| `BACKEND_URL_REQUIRED` | reason code | No explicit operator-provided backend URL is configured. |
+| `BACKEND_CLASSIFIER_REJECTED` | reason code | At least one backend literal was rejected by `ProxyBackendUrlClassifier`. |
+| `PROXY_CONFIGURATION_REQUIRED` | reason code | Proxy configuration was missing. |
+| `GATE_BLOCKED` | reason code | A gate failure did not match a narrower code. |
+| `ALLOWED_BY_GATE` | reason code | Offline gate requirements passed. |
+| `INVALID_REQUEST` | reason code | Command body was missing. |
+| `INVALID_REQUEST_PATH` | reason code | Command path was unsafe or malformed. |
+| `LIVE_VALIDATION_EXECUTION_NOT_WIRED` | reason code | Command reached the allowed gate state but remains non-executing in this release. |
 
 ## Allowed Backend Model
 

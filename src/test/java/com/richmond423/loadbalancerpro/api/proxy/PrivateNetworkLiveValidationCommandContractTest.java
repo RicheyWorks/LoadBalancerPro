@@ -3,6 +3,7 @@ package com.richmond423.loadbalancerpro.api.proxy;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -76,6 +77,8 @@ class PrivateNetworkLiveValidationCommandContractTest {
                 .andExpect(jsonPath("$.executable", is(false)))
                 .andExpect(jsonPath("$.trafficExecuted", is(false)))
                 .andExpect(jsonPath("$.status", is("NOT_IMPLEMENTED")))
+                .andExpect(jsonPath("$.gateStatus", is("ALLOWED")))
+                .andExpect(jsonPath("$.allowedByGate", is(true)))
                 .andExpect(jsonPath("$.message", is("traffic execution is not wired in this release")))
                 .andExpect(jsonPath("$.requestPath", is("/health")))
                 .andExpect(jsonPath("$.evidenceRequested", is(true)))
@@ -118,6 +121,10 @@ class PrivateNetworkLiveValidationCommandContractTest {
         assertFalse(response.trafficExecuted());
         assertFalse(response.evidenceWritten());
         assertFalse(response.evidenceEligible());
+        assertEquals("BLOCKED_BY_GATE", response.status());
+        assertEquals(response.gate().gateStatus(), response.gateStatus());
+        assertEquals(response.gate().allowedByGate(), response.allowedByGate());
+        assertEquals("NOT_ENABLED", response.gateStatus());
         assertTrue(response.plannedEvidenceDirectory().equals("target/proxy-evidence/"));
         assertTrue(response.plannedEvidenceMarkdown().equals("private-network-live-validation.md"));
         assertTrue(response.plannedEvidenceJson().equals("private-network-live-validation.json"));
@@ -130,6 +137,69 @@ class PrivateNetworkLiveValidationCommandContractTest {
         assertTrue(response.reasonCodes().contains("LIVE_VALIDATION_DISABLED"));
         assertTrue(response.message().contains("traffic execution is not wired in this release"));
         assertTrue(response.gate().gateStatus().equals("NOT_ENABLED"));
+    }
+
+    @Test
+    void commandFactoryKeepsGateSummaryConsistentForBlockedAndAllowedStates() {
+        ReverseProxyProperties blocked = propertiesWithTarget("blocked", "http://127.0.0.1:18081");
+        blocked.getPrivateNetworkLiveValidation().setEnabled(true);
+        blocked.getPrivateNetworkValidation().setEnabled(true);
+
+        PrivateNetworkLiveValidationCommandResponse blockedResponse =
+                PrivateNetworkLiveValidationCommandResponse.from(
+                        blocked,
+                        new PrivateNetworkLiveValidationCommandRequest("/health", true, false, null));
+
+        assertEquals("BLOCKED_BY_GATE", blockedResponse.status());
+        assertEquals(blockedResponse.gate().gateStatus(), blockedResponse.gateStatus());
+        assertEquals(blockedResponse.gate().allowedByGate(), blockedResponse.allowedByGate());
+        assertEquals("BLOCKED", blockedResponse.gateStatus());
+        assertFalse(blockedResponse.allowedByGate());
+        assertFalse(blockedResponse.trafficExecuted());
+        assertFalse(blockedResponse.evidenceWritten());
+        assertFalse(blockedResponse.auditTrail().auditTrailWritten());
+        assertTrue(blockedResponse.reasonCodes().contains("OPERATOR_APPROVAL_REQUIRED"));
+
+        ReverseProxyProperties allowed = propertiesWithTarget("allowed", "http://127.0.0.1:18081");
+        enableAllLiveGateFlags(allowed);
+        PrivateNetworkLiveValidationCommandResponse allowedResponse =
+                PrivateNetworkLiveValidationCommandResponse.from(
+                        allowed,
+                        new PrivateNetworkLiveValidationCommandRequest("/health", true, true, null));
+
+        assertEquals("NOT_IMPLEMENTED", allowedResponse.status());
+        assertEquals(allowedResponse.gate().gateStatus(), allowedResponse.gateStatus());
+        assertEquals(allowedResponse.gate().allowedByGate(), allowedResponse.allowedByGate());
+        assertEquals("ALLOWED", allowedResponse.gateStatus());
+        assertTrue(allowedResponse.allowedByGate());
+        assertEquals(List.of("LIVE_VALIDATION_EXECUTION_NOT_WIRED"), allowedResponse.reasonCodes());
+        assertEquals(List.of("ALLOWED_BY_GATE"), allowedResponse.gate().reasonCodes());
+        assertFalse(allowedResponse.trafficExecuted());
+        assertFalse(allowedResponse.evidenceWritten());
+        assertFalse(allowedResponse.auditTrail().auditTrailWritten());
+    }
+
+    @Test
+    void invalidRequestFailsClosedWhileStillReportingOfflineGateSummary() {
+        ReverseProxyProperties allowed = propertiesWithTarget("allowed", "http://127.0.0.1:18081");
+        enableAllLiveGateFlags(allowed);
+
+        PrivateNetworkLiveValidationCommandResponse response =
+                PrivateNetworkLiveValidationCommandResponse.from(
+                        allowed,
+                        new PrivateNetworkLiveValidationCommandRequest(
+                                "/health?token=SHOULD_NOT_ECHO", true, true, null));
+
+        assertEquals("INVALID_REQUEST", response.status());
+        assertEquals("ALLOWED", response.gateStatus());
+        assertTrue(response.allowedByGate());
+        assertEquals("", response.requestPath());
+        assertFalse(response.trafficExecuted());
+        assertFalse(response.evidenceWritten());
+        assertFalse(response.evidenceEligible());
+        assertFalse(response.auditTrail().auditTrailWritten());
+        assertTrue(response.reasonCodes().contains("INVALID_REQUEST_PATH"));
+        assertFalse(response.toString().contains("SHOULD_NOT_ECHO"));
     }
 
     @ParameterizedTest
@@ -157,6 +227,8 @@ class PrivateNetworkLiveValidationCommandContractTest {
                 .andExpect(jsonPath("$.executable", is(false)))
                 .andExpect(jsonPath("$.trafficExecuted", is(false)))
                 .andExpect(jsonPath("$.status", is("INVALID_REQUEST")))
+                .andExpect(jsonPath("$.gateStatus", is("ALLOWED")))
+                .andExpect(jsonPath("$.allowedByGate", is(true)))
                 .andExpect(jsonPath("$.requestPath", is("")))
                 .andExpect(jsonPath("$.evidenceWritten", is(false)))
                 .andExpect(jsonPath("$.evidenceEligible", is(false)))
@@ -182,6 +254,8 @@ class PrivateNetworkLiveValidationCommandContractTest {
                 .andExpect(jsonPath("$.executable", is(false)))
                 .andExpect(jsonPath("$.trafficExecuted", is(false)))
                 .andExpect(jsonPath("$.status", is("INVALID_REQUEST")))
+                .andExpect(jsonPath("$.gateStatus", is("ALLOWED")))
+                .andExpect(jsonPath("$.allowedByGate", is(true)))
                 .andExpect(jsonPath("$.requestPath", is("")))
                 .andExpect(jsonPath("$.evidenceEligible", is(false)))
                 .andExpect(jsonPath("$.evidenceWritten", is(false)))
@@ -199,6 +273,8 @@ class PrivateNetworkLiveValidationCommandContractTest {
 
         assertTrue(commandSources.contains("traffic execution is not wired in this release"));
         assertTrue(commandSources.contains("trafficExecuted"));
+        assertTrue(commandSources.contains("gateStatus"));
+        assertTrue(commandSources.contains("allowedByGate"));
         assertTrue(commandSources.contains("evidenceEligible"));
         assertTrue(commandSources.contains("plannedEvidenceDirectory"));
         assertTrue(commandSources.contains("plannedEvidenceMarkdown"));
@@ -244,6 +320,27 @@ class PrivateNetworkLiveValidationCommandContractTest {
 
     private String json(Map<String, Object> payload) throws IOException {
         return objectMapper.writeValueAsString(payload);
+    }
+
+    private static ReverseProxyProperties propertiesWithTarget(String id, String url) {
+        ReverseProxyProperties properties = new ReverseProxyProperties();
+        properties.setEnabled(true);
+        properties.setUpstreams(List.of(upstream(id, url)));
+        return properties;
+    }
+
+    private static ReverseProxyProperties.Upstream upstream(String id, String url) {
+        ReverseProxyProperties.Upstream upstream = new ReverseProxyProperties.Upstream();
+        upstream.setId(id);
+        upstream.setUrl(url);
+        upstream.setWeight(1.0);
+        return upstream;
+    }
+
+    private static void enableAllLiveGateFlags(ReverseProxyProperties properties) {
+        properties.getPrivateNetworkLiveValidation().setEnabled(true);
+        properties.getPrivateNetworkLiveValidation().setOperatorApproved(true);
+        properties.getPrivateNetworkValidation().setEnabled(true);
     }
 
     private static String read(Path path) throws IOException {

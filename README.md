@@ -8,7 +8,7 @@ The API and CLI are safe by default: allocation endpoints do not call AWS, CLI c
 
 JavaFX UI support is optional. API, proxy, CLI, Java fixture launcher, and static browser workflows do not require JavaFX; desktop UI deployment remains platform-sensitive and separate from the Spring API/proxy operator path. See [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md).
 
-For a concise non-technical overview, start with [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). For evidence navigation, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md). For a guided local demo path, use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md).
+For a concise non-technical overview, start with [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). For evidence navigation, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md). For a guided local demo path, use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md). For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md) and [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md).
 
 ## Why This Project Matters
 
@@ -173,8 +173,10 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`RELEASE_ARTIFACT_EVIDENCE.md`](evidence/RELEASE_ARTIFACT_EVIDENCE.md) documents release artifact bundle, SHA-256 checksum, and GitHub attestation evidence.
 - [`PERFORMANCE_BASELINE.md`](evidence/PERFORMANCE_BASELINE.md) provides a conservative local performance baseline template with no production SLO claims.
 - [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md) documents production-like deployment boundaries, edge controls, auth, telemetry, and cloud-safety guidance.
+- [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md) documents safe default artifact types, avoided native/binary tooling patterns, antivirus-response policy, repo hygiene, and future live/proxy tooling boundaries.
+- [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md) documents opt-in live/proxy validation, localhost/private-network defaults, no port scanning, no persistence, no scheduled tasks, no service installation, and operator-secret containment.
 - [`ENTERPRISE_COCKPIT_AUTH_PLAN.md`](docs/ENTERPRISE_COCKPIT_AUTH_PLAN.md) documents the cockpit auth product mismatch, endpoint exposure matrix, and current Swagger/OpenAPI gating path.
-- [`POSTMAN_COLLECTION.md`](docs/POSTMAN_COLLECTION.md) documents the deterministic enterprise lab collection and local environment for local/demo and prod API-key API exploration with placeholders only.
+- [`POSTMAN_COLLECTION.md`](docs/POSTMAN_COLLECTION.md) documents the deterministic enterprise lab collection, local environment, and local-only smoke harness for local/demo and prod API-key API exploration with placeholders only.
 - [`OPERATOR_RUN_PROFILES.md`](docs/OPERATOR_RUN_PROFILES.md) is the execution hub for local demo, packaged jar, prod API-key, cloud-sandbox API-key, OAuth2, proxy-loopback, and container run recipes.
 - [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEPLOYMENT_SMOKE_KIT.md) gives a local-only smoke path for the packaged jar, prod API-key boundary, and proxy-loopback recipe.
 - [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md) documents local-only Docker build/run recipes, API-key boundary checks, proxy-loopback caveats, and the no-registry-publish boundary.

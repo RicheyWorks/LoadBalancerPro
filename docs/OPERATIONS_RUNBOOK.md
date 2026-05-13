@@ -4,9 +4,11 @@ This runbook is for degraded allocation, load-shedding, validation-failure, and 
 
 Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md). Use [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) when you need copyable local, API-key, OAuth2, proxy-loopback, or container startup recipes, use [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) for local-only Docker build/run guidance, then use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) for the local-only packaged-jar and proxy-loopback smoke path.
 
+For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](ANTIVIRUS_SAFE_DEVELOPMENT.md). For live/proxy validation containment, use [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md) before expanding beyond localhost or private-network backends.
+
 For the enterprise cockpit auth, operator UX, and Swagger/OpenAPI gating plan/current phase, see [`ENTERPRISE_COCKPIT_AUTH_PLAN.md`](ENTERPRISE_COCKPIT_AUTH_PLAN.md).
 
-For a deterministic Postman runbook across local/demo and prod API-key modes, import the files documented in [`POSTMAN_COLLECTION.md`](POSTMAN_COLLECTION.md). Keep `apiKey` as a local Postman placeholder value only.
+For a deterministic Postman runbook across local/demo and prod API-key modes, import the files documented in [`POSTMAN_COLLECTION.md`](POSTMAN_COLLECTION.md). Keep `apiKey` as a local Postman placeholder value only. To validate the same local-only 200/401 boundaries and export sanitized Markdown/JSON reviewer evidence, run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\postman-enterprise-lab-safe-smoke.ps1 -DryRun`, then `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\postman-enterprise-lab-safe-smoke.ps1 -Package -EvidenceDir target\postman-enterprise-lab-smoke` when local ports are available. The evidence redacts the API key as `<REDACTED>`, uses no real secrets, does not require Newman, does not implement OAuth2, and does not mutate cloud state.
 
 ## First Checks
 

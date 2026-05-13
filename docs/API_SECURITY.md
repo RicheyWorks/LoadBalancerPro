@@ -6,7 +6,7 @@ For copyable run commands that exercise local demo, prod API-key, cloud-sandbox 
 
 For the cockpit auth and Swagger/OpenAPI gating roadmap/current phase notes, see [`ENTERPRISE_COCKPIT_AUTH_PLAN.md`](ENTERPRISE_COCKPIT_AUTH_PLAN.md).
 
-For placeholder-only Postman review of local/demo and prod API-key boundaries, use [`POSTMAN_COLLECTION.md`](POSTMAN_COLLECTION.md). It documents the enterprise lab collection, local environment, Swagger/OpenAPI gating checks, and the no-real-secrets rule.
+For placeholder-only Postman review of local/demo and prod API-key boundaries, use [`POSTMAN_COLLECTION.md`](POSTMAN_COLLECTION.md). It documents the enterprise lab collection, local environment, local-only safe smoke harness, Swagger/OpenAPI gating checks, sanitized evidence export, and the no-real-secrets rule.
 
 ## Authentication Posture
 

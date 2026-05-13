@@ -158,6 +158,10 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("config-validation-only and sends no traffic"));
         assertTrue(normalized.contains("sends one bounded junit-only request"));
         assertTrue(normalized.contains("not startup, postman, smoke, or proxy-routing execution"));
+        assertTrue(normalized.contains("rejects unsafe validation paths before transport"));
+        assertTrue(normalized.contains("allowlists validation headers"));
+        assertTrue(normalized.contains("allowlists response summary headers"));
+        assertTrue(normalized.contains("reports redirects without following public targets"));
         assertTrue(normalized.contains("api keys, bearer tokens, credentials, and secrets are redacted or not written"));
         assertTrue(normalized.contains("no dns resolution"));
         assertTrue(normalized.contains("reachability checks"));
@@ -254,6 +258,45 @@ class ReviewerTrustMapDocumentationTest {
     }
 
     @Test
+    void privateNetworkLiveLoopbackProofRecipeLocksHardeningAndRedaction() throws Exception {
+        String trustMap = read(TRUST_MAP);
+        String recipe = section(trustMap, "### Private-Network Live Loopback Proof",
+                "### Private-Network Live Validation Gate");
+        String normalized = recipe.toLowerCase(Locale.ROOT);
+
+        assertTrue(recipe.contains("mvn -Dtest=PrivateNetworkLiveValidationExecutorTest test"));
+        assertTrue(recipe.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
+        assertTrue(recipe.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
+        assertTrue(normalized.contains("markdown file is the human review path"));
+        assertTrue(normalized.contains("json file is the structured evidence path"));
+        assertTrue(normalized.contains("loopbackonly=true"));
+        assertTrue(normalized.contains("trafficsent=true"));
+        assertTrue(normalized.contains("requestcount=1"));
+        assertTrue(normalized.contains("boundedtimeoutms=2000"));
+        assertTrue(normalized.contains("dnsresolution=false"));
+        assertTrue(normalized.contains("discovery=false"));
+        assertTrue(normalized.contains("portscanning=false"));
+        assertTrue(normalized.contains("postmanexecution=false"));
+        assertTrue(normalized.contains("smokeexecution=false"));
+        assertTrue(normalized.contains("releasedownloadsmutated=false"));
+        assertTrue(normalized.contains("secretpersisted=false"));
+        assertTrue(normalized.contains("broaderprivatelanvalidation=false"));
+        assertTrue(normalized.contains("apikeyredacted=\"<redacted>\""));
+        assertTrue(normalized.contains("unsafe validation paths fail before transport"));
+        assertTrue(normalized.contains("allowlisted deterministic validation headers are propagated"));
+        assertTrue(normalized.contains("allowlisted response summary headers are captured"));
+        assertTrue(normalized.contains("redirects are reported without following public `location` targets"));
+        assertTrue(normalized.contains("excludes api keys, bearer tokens, cookies, tokens, redirect targets"));
+        assertTrue(normalized.contains("raw backend urls"));
+        assertTrue(normalized.contains("broader private-lan validation claims"));
+        assertTrue(normalized.contains("ignored `target/` output"));
+        assertTrue(normalized.contains("do not write api keys or secrets"));
+        assertTrue(normalized.contains("do not add startup, postman, smoke, proxy-routing"));
+        assertTrue(normalized.contains("public-network"));
+        assertTrue(normalized.contains("broader private-lan live execution"));
+    }
+
+    @Test
     void privateNetworkLiveValidationGateRecipeIsConciseAndSafetyBounded() throws Exception {
         String trustMap = read(TRUST_MAP);
         String readme = read(README);
@@ -295,6 +338,10 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("no secret persistence"));
         assertTrue(normalized.contains("fail-closed startup/reload behavior"));
         assertTrue(normalized.contains("current live traffic proof is limited"));
+        assertTrue(normalized.contains("fail-closed path validation"));
+        assertTrue(normalized.contains("allowlisted validation headers"));
+        assertTrue(normalized.contains("allowlisted response summary headers"));
+        assertTrue(normalized.contains("no redirect following"));
         assertTrue(gate.contains("loadbalancerpro.proxy.private-network-live-validation.enabled=true"));
         assertTrue(gate.contains("loadbalancerpro.proxy.private-network-live-validation.enabled=false"));
         assertTrue(gate.contains("loadbalancerpro.proxy.private-network-live-validation.operator-approved=true"));

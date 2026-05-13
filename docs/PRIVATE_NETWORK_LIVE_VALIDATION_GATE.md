@@ -47,7 +47,7 @@ Any runtime/private-LAN implementation must keep the live path bounded and audit
 - no native executables, installers, wrappers, packers, `native-image`, `launch4j`, `jpackage`, self-extracting archives, downloaded servers, or vendored binaries;
 - no release assets, tags, release workflows, or `release-downloads/` mutation.
 
-Live validation must use existing Java/Spring source-visible code only. The current executor is not a Spring component, is not called by startup, Postman, smoke, or proxy routing, and does not create a production network client by itself. Its JUnit loopback proof supplies a test-only transport against a JDK `HttpServer` bound to loopback. Any timeout must be bounded, documented, and short enough for operator review; the current executor uses a two-second default and cap. Retries must stay disabled unless a separate reviewed task approves bounded retry semantics for validation traffic.
+Live validation must use existing Java/Spring source-visible code only. The current executor is not a Spring component, is not called by startup, Postman, smoke, or proxy routing, and does not create a production network client by itself. Its JUnit loopback proof supplies a test-only transport against a JDK `HttpServer` bound to loopback. The executor accepts only simple relative validation paths such as `/health` or `/private-network-live-validation`; null, blank, absolute, scheme-relative, query-string, fragment, traversal, encoded traversal, encoded control-character, raw control-character, and backslash paths fail closed before transport is invoked. It propagates only allowlisted deterministic validation request headers, captures only allowlisted response summary headers, and reports redirects without following them. Any timeout must be bounded, documented, and short enough for operator review; the current executor uses a two-second default and cap. Retries must stay disabled unless a separate reviewed task approves bounded retry semantics for validation traffic.
 
 ## Failure And Abort Behavior
 
@@ -76,6 +76,8 @@ Generated evidence must be Markdown or JSON under ignored `target/` output, for 
 
 Evidence must never include raw API keys, bearer tokens, credentials, private hostnames marked for redaction, request secrets, release assets, or files copied from `release-downloads/`.
 
+Evidence must stay summary-only: record the validation path, safe proof labels, status, bounded timeout, redacted auth boundary, and loopback-only scope; do not write `Authorization`, `X-API-Key`, cookie, token, redirect target, raw backend URL, or broader private-LAN validation claims.
+
 Current loopback-only executor proof writes:
 
 - `target/proxy-evidence/private-network-live-loopback-validation.md`;
@@ -92,11 +94,14 @@ Implemented source-visible pieces:
   - `loadbalancerpro.proxy.private-network-live-validation.operator-approved=false`;
 - `PrivateNetworkLiveValidationGate`, which evaluates configuration only and returns allowed, not-enabled, or blocked results;
 - `PrivateNetworkLiveValidationExecutor`, a bounded primitive that requires an allowed gate result, uses the already-classified normalized backend URL, validates a relative request path, delegates exactly one request to an injected transport, and returns structured success, blocked, invalid-request, or failed results;
+- request-path hardening that rejects null/blank input, absolute URLs, scheme-relative paths, query strings, fragments, traversal segments, encoded traversal, encoded control characters, raw control characters, and backslashes before transport;
+- request/response header hardening that propagates only allowlisted deterministic validation headers and captures only allowlisted response summary headers;
+- redirect hardening proving loopback redirects are reported as `302` without following public `Location` targets;
 - focused tests proving missing flags, missing operator approval, disabled config validation, disabled proxy mode, and classifier-rejected targets fail closed;
 - focused tests proving loopback/private literal targets can pass the offline gate without any backend listener running;
 - focused loopback-only executor proof using JUnit, a JDK `HttpServer` bound to loopback with a Java-assigned ephemeral port, and a test-only transport;
 - redacted ignored evidence at `target/proxy-evidence/private-network-live-loopback-validation.md` and `target/proxy-evidence/private-network-live-loopback-validation.json`;
-- focused tests proving blocked or invalid requests do not invoke transport;
+- focused tests proving blocked or invalid requests do not invoke transport, sensitive request headers are not propagated, sensitive response headers are not captured, and API keys, bearer tokens, cookies, tokens, redirect targets, raw backend URLs, and broader private-LAN claims are not written to evidence;
 - focused tests proving the executor is not wired into startup, Postman, smoke scripts, or proxy routing;
 - source guards proving the gate does not use DNS, reachability, socket, probe, discovery, or scanning APIs.
 

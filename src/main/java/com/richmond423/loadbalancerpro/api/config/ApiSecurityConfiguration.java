@@ -146,11 +146,10 @@ public class ApiSecurityConfiguration {
 
     private static Collection<GrantedAuthority> extractRoleAuthorities(Jwt jwt) {
         Set<String> roles = new LinkedHashSet<>();
+        // OAuth2 scope/scp claims are intentionally not application roles.
         addRoleClaim(jwt.getClaim("roles"), roles);
         addRoleClaim(jwt.getClaim("role"), roles);
         addRoleClaim(jwt.getClaim("authorities"), roles);
-        addRoleClaim(jwt.getClaim("scope"), roles);
-        addRoleClaim(jwt.getClaim("scp"), roles);
         Object realmAccess = jwt.getClaim("realm_access");
         if (realmAccess instanceof Map<?, ?> realmAccessMap) {
             addRoleClaim(realmAccessMap.get("roles"), roles);
@@ -178,9 +177,6 @@ public class ApiSecurityConfiguration {
         String trimmed = role.trim();
         if (trimmed.startsWith("ROLE_")) {
             trimmed = trimmed.substring("ROLE_".length());
-        }
-        if (trimmed.startsWith("SCOPE_")) {
-            trimmed = trimmed.substring("SCOPE_".length());
         }
         String authority = "ROLE_" + trimmed;
         return new SimpleGrantedAuthority(authority);

@@ -103,6 +103,8 @@ class EnterpriseCockpitAuthPlanDocsTest {
         assertTrue(normalized.contains("not logged") || normalized.contains("logs"));
         assertTrue(normalized.contains("not put in urls") || normalized.contains("not placed in urls"));
         assertTrue(normalized.contains("oauth2 login"));
+        assertTrue(normalized.contains("scope") && normalized.contains("scp"));
+        assertTrue(normalized.contains("not app roles") || normalized.contains("not promoted to app roles"));
         assertTrue(normalized.contains("not production iam certification"));
     }
 

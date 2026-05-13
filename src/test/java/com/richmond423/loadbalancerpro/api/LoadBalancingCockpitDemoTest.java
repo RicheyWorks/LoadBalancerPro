@@ -311,16 +311,17 @@ class LoadBalancingCockpitDemoTest {
         assertFalse(normalized.contains("fonts.gstatic"));
         assertFalse(normalized.contains("localstorage"));
         assertFalse(normalized.contains("sessionstorage"));
+        assertFalse(normalized.contains("document.cookie"));
+        assertFalse(normalized.contains("console.log"));
+        assertFalse(normalized.contains("apikey="));
+        assertFalse(normalized.contains("api-key="));
         assertFalse(normalized.contains("date.now"));
         assertFalse(normalized.contains("new date"));
         assertFalse(normalized.contains("math.random"));
         assertFalse(normalized.contains("randomuuid"));
         assertFalse(normalized.contains("crypto.randomuuid"));
-        assertFalse(normalized.contains("x-api-key"));
         assertFalse(normalized.contains("bearer"));
         assertFalse(normalized.contains("authorization"));
-        assertFalse(normalized.contains("type=\"password\""));
-        assertFalse(normalized.contains("password"));
         assertFalse(normalized.contains("access key"));
         assertFalse(normalized.contains("secret key"));
         assertFalse(normalized.contains("data-action=\"admin"));
@@ -366,6 +367,19 @@ class LoadBalancingCockpitDemoTest {
         assertFalse(normalized.contains("fake evidence"));
         assertTrue(countOccurrences(normalized, "cloudmanager") <= 2,
                 "CloudManager may appear only in safety limitation text");
+        assertTrue(page.contains("id=\"operator-api-key\""));
+        assertTrue(page.contains("id=\"operator-token-status\""));
+        assertTrue(page.contains("data-action=\"set-operator-token\""));
+        assertTrue(page.contains("data-action=\"clear-operator-token\""));
+        assertTrue(page.contains("let operatorApiKey = \"\""));
+        assertTrue(page.contains("operatorAuthHeaders"));
+        assertTrue(page.contains("\"X-API-Key\""));
+        assertTrue(page.contains("<API_KEY>"));
+        assertTrue(page.contains("operatorApiKey ? { \"X-API-Key\": operatorApiKey } : {}"));
+        assertTrue(page.contains("operatorTokenInput.value = \"\""));
+        assertTrue(normalized.contains("page memory only"));
+        assertTrue(normalized.contains("cleared on refresh or navigation"));
+        assertTrue(normalized.contains("written to browser storage"));
     }
 
     @Test

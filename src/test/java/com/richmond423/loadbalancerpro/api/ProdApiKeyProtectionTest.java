@@ -227,11 +227,41 @@ class ProdApiKeyProtectionTest {
     }
 
     @Test
-    void prodProfileKeepsOpenApiDocsPublic() throws Exception {
+    void prodProfileProtectsOpenApiDocsWithoutApiKey() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(not(containsString(API_KEY))))
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.error", is("unauthorized")))
+                .andExpect(jsonPath("$.path", is("/v3/api-docs")));
+    }
+
+    @Test
+    void prodProfileAllowsOpenApiDocsWithCorrectApiKey() throws Exception {
+        mockMvc.perform(get("/v3/api-docs").header("X-API-Key", API_KEY))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.openapi").exists());
+    }
+
+    @Test
+    void prodProfileProtectsSwaggerUiWithoutApiKey() throws Exception {
+        mockMvc.perform(get("/swagger-ui.html"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(not(containsString(API_KEY))))
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.error", is("unauthorized")))
+                .andExpect(jsonPath("$.path", is("/swagger-ui.html")));
+    }
+
+    @Test
+    void prodProfileAllowsSwaggerUiWithCorrectApiKey() throws Exception {
+        mockMvc.perform(get("/swagger-ui/index.html").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Swagger UI")))
+                .andExpect(content().string(not(containsString(API_KEY))));
     }
 
     private static org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder allocationRequest() {

@@ -1,10 +1,12 @@
 package com.richmond423.loadbalancerpro.api;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -141,6 +143,31 @@ class CloudSandboxProfileConfigurationTest {
         mockMvc.perform(get("/api/lase/shadow").header("X-API-Key", API_KEY))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.summary.totalEvaluations").isNumber());
+    }
+
+    @Test
+    void cloudSandboxProfileProtectsOpenApiDocsAndSwaggerUi() throws Exception {
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.path", is("/v3/api-docs")));
+
+        mockMvc.perform(get("/swagger-ui.html"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.path", is("/swagger-ui.html")));
+    }
+
+    @Test
+    void cloudSandboxProfileAllowsOpenApiDocsWithCorrectApiKey() throws Exception {
+        mockMvc.perform(get("/v3/api-docs").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.openapi").exists());
+
+        mockMvc.perform(get("/swagger-ui/index.html").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Swagger UI")));
     }
 
     private static org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder allocationRequest() {

@@ -690,6 +690,24 @@
           <input id="base-url" aria-label="Base URL" value="http://localhost:8080">
           <button id="same-origin" type="button" class="secondary">Use same origin</button>
         </div>
+        <div class="grid" style="margin-top: 14px;">
+          <div>
+            <label for="operator-api-key">Operator API key</label>
+            <input id="operator-api-key" aria-label="Operator API key" type="password" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="summary-card" aria-live="polite">
+            <strong>Operator token status</strong>
+            <span id="operator-token-status" class="badge">Not configured</span>
+            <p class="postman-note">
+              Stored in page memory only; cleared on refresh or navigation; never displayed, copied into URLs,
+              written to browser storage, or sent before the operator configures it.
+            </p>
+          </div>
+        </div>
+        <div class="actions" style="margin-top: 10px;">
+          <button data-action="set-operator-token" type="button">Set token</button>
+          <button data-action="clear-operator-token" type="button" class="secondary">Clear token</button>
+        </div>
         <div class="status-grid" aria-label="Cockpit status">
           <div class="status-box">
             <strong>Health / readiness</strong>
@@ -1293,7 +1311,7 @@
           <li>No external scripts/CDNs.</li>
           <li>API server required for browser/Postman demo.</li>
           <li>No server-side report writing or runtime transcript storage.</li>
-          <li>No secret fields, login inputs, admin controls, release controls, or ruleset controls.</li>
+          <li>No real secrets, persistent credential storage, admin controls, release controls, or ruleset controls.</li>
         </ul>
       </div>
     </section>
@@ -1567,8 +1585,11 @@
     };
 
     const baseUrlInput = document.getElementById("base-url");
+    const operatorTokenInput = document.getElementById("operator-api-key");
+    const operatorTokenStatus = document.getElementById("operator-token-status");
     const copyStatus = document.getElementById("copy-status");
     let selectedScenarioId = "normal-load";
+    let operatorApiKey = "";
     let previousScenarioSnapshot = null;
     let latestScenarioSnapshot = null;
     let lastActionLabel = "idle";
@@ -1714,6 +1735,44 @@
       return baseUrl() + path;
     }
 
+    function operatorAuthHeaders() {
+      return operatorApiKey ? { "X-API-Key": operatorApiKey } : {};
+    }
+
+    function curlAuthHeader() {
+      return operatorApiKey ? " -H \"X-API-Key: <API_KEY>\"" : "";
+    }
+
+    function jsonCurlHeaders() {
+      return " -H \"Content-Type: application/json\"" + curlAuthHeader();
+    }
+
+    function refreshOperatorTokenStatus() {
+      operatorTokenStatus.textContent = operatorApiKey ? "Configured for this page session" : "Not configured";
+      operatorTokenStatus.className = operatorApiKey ? "badge passed" : "badge";
+    }
+
+    function refreshAuthSensitiveCopyBlocks() {
+      refreshCurlSnippets();
+      refreshMatrixCopyBlocks();
+      refreshReplayCopyBlocks();
+      refreshWalkthroughSummary();
+    }
+
+    function setOperatorToken() {
+      operatorApiKey = operatorTokenInput.value.trim();
+      operatorTokenInput.value = "";
+      refreshOperatorTokenStatus();
+      refreshAuthSensitiveCopyBlocks();
+    }
+
+    function clearOperatorToken() {
+      operatorApiKey = "";
+      operatorTokenInput.value = "";
+      refreshOperatorTokenStatus();
+      refreshAuthSensitiveCopyBlocks();
+    }
+
     function unavailable(section, path, message) {
       return {
         status: "Not available in current API",
@@ -1741,7 +1800,7 @@
     function requestOptions(body) {
       return {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: Object.assign({ "Content-Type": "application/json" }, operatorAuthHeaders()),
         body: JSON.stringify(body)
       };
     }
@@ -2107,11 +2166,11 @@
       return scenarioGallery.map((scenario) => [
         "# " + scenario.label,
         "curl -fsS -X POST " + apiUrl("/api/routing/compare")
-          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.routingRequest) + "'",
+          + jsonCurlHeaders() + " --data '" + JSON.stringify(scenario.routingRequest) + "'",
         "curl -fsS -X POST " + apiUrl("/api/allocate/capacity-aware")
-          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.allocationRequest) + "'",
+          + jsonCurlHeaders() + " --data '" + JSON.stringify(scenario.allocationRequest) + "'",
         "curl -fsS -X POST " + apiUrl("/api/allocate/evaluate")
-          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.evaluationRequest) + "'"
+          + jsonCurlHeaders() + " --data '" + JSON.stringify(scenario.evaluationRequest) + "'"
       ].join("\n")).join("\n\n");
     }
 
@@ -2340,11 +2399,11 @@
       return [baseline, comparison].map((scenario) => [
         "# " + scenario.label,
         "curl -fsS -X POST " + apiUrl("/api/routing/compare")
-          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.routingRequest) + "'",
+          + jsonCurlHeaders() + " --data '" + JSON.stringify(scenario.routingRequest) + "'",
         "curl -fsS -X POST " + apiUrl("/api/allocate/capacity-aware")
-          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.allocationRequest) + "'",
+          + jsonCurlHeaders() + " --data '" + JSON.stringify(scenario.allocationRequest) + "'",
         "curl -fsS -X POST " + apiUrl("/api/allocate/evaluate")
-          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.evaluationRequest) + "'"
+          + jsonCurlHeaders() + " --data '" + JSON.stringify(scenario.evaluationRequest) + "'"
       ].join("\n")).join("\n\n");
     }
 
@@ -3600,24 +3659,24 @@
         "curl -fsS " + apiUrl("/api/health"),
         "curl -fsS " + apiUrl("/actuator/health/readiness"),
         "curl -fsS -X POST " + apiUrl("/api/allocate/capacity-aware")
-          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.allocationRequest) + "'",
+          + jsonCurlHeaders() + " --data '" + JSON.stringify(scenario.allocationRequest) + "'",
         "curl -fsS -X POST " + apiUrl("/api/allocate/evaluate")
-          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.evaluationRequest) + "'",
+          + jsonCurlHeaders() + " --data '" + JSON.stringify(scenario.evaluationRequest) + "'",
         "curl -fsS -X POST " + apiUrl("/api/routing/compare")
-          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.routingRequest) + "'"
+          + jsonCurlHeaders() + " --data '" + JSON.stringify(scenario.routingRequest) + "'"
       ].join("\n\n");
       outputs.explanationCurl.textContent = [
         "# Explanation-focused routing response with real reason, scores, and selected server fields",
         "curl -fsS -X POST " + apiUrl("/api/routing/compare")
-          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.routingRequest) + "'",
+          + jsonCurlHeaders() + " --data '" + JSON.stringify(scenario.routingRequest) + "'",
         "",
         "# Explanation-focused allocation response with real allocations and unallocated load",
         "curl -fsS -X POST " + apiUrl("/api/allocate/capacity-aware")
-          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.allocationRequest) + "'",
+          + jsonCurlHeaders() + " --data '" + JSON.stringify(scenario.allocationRequest) + "'",
         "",
         "# Explanation-focused evaluation response with real load-shedding and remediationPlan fields",
         "curl -fsS -X POST " + apiUrl("/api/allocate/evaluate")
-          + " -H \"Content-Type: application/json\" --data '" + JSON.stringify(scenario.evaluationRequest) + "'"
+          + jsonCurlHeaders() + " --data '" + JSON.stringify(scenario.evaluationRequest) + "'"
       ].join("\n");
     }
 
@@ -4039,7 +4098,11 @@
         setActionButtonBusy(button, true);
         setActionStatus(actionLabel, true);
         try {
-          if (action === "health") {
+          if (action === "set-operator-token") {
+            setOperatorToken();
+          } else if (action === "clear-operator-token") {
+            clearOperatorToken();
+          } else if (action === "health") {
             await checkHealth();
           } else if (action === "readiness") {
             await checkReadiness();
@@ -4145,6 +4208,7 @@
     renderScenarioGallery();
     populateReplaySelectors();
     loadSelectedScenario();
+    refreshOperatorTokenStatus();
     refreshMatrixCopyBlocks();
     refreshReplayCopyBlocks();
     renderGuidedWalkthrough();

@@ -197,6 +197,8 @@ class OAuth2AuthorizationTest {
                 .andExpect(jsonPath("$.plannedEvidenceJson", is("private-network-live-validation.json")))
                 .andExpect(jsonPath("$.auditTrail.auditTrailWritten", is(false)))
                 .andExpect(jsonPath("$.status", is("BLOCKED_BY_GATE")))
+                .andExpect(jsonPath("$.gateStatus", is("NOT_ENABLED")))
+                .andExpect(jsonPath("$.allowedByGate", is(false)))
                 .andExpect(jsonPath("$.gate.gateStatus", is("NOT_ENABLED")));
     }
 

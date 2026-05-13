@@ -230,6 +230,8 @@ class ProdApiKeyProtectionTest {
                 .andExpect(jsonPath("$.trafficExecution", is("traffic execution is not wired in this release")))
                 .andExpect(jsonPath("$.auditTrail.auditTrailWritten", is(false)))
                 .andExpect(jsonPath("$.status", is("BLOCKED_BY_GATE")))
+                .andExpect(jsonPath("$.gateStatus", is("NOT_ENABLED")))
+                .andExpect(jsonPath("$.allowedByGate", is(false)))
                 .andExpect(jsonPath("$.gate.gateStatus", is("NOT_ENABLED")))
                 .andExpect(jsonPath("$.reasonCodes[0]", is("LIVE_VALIDATION_DISABLED")));
     }

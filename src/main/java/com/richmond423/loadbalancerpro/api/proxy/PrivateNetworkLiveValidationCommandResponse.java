@@ -8,6 +8,8 @@ public record PrivateNetworkLiveValidationCommandResponse(
         boolean executable,
         boolean trafficExecuted,
         String status,
+        String gateStatus,
+        boolean allowedByGate,
         String message,
         String requestPath,
         boolean evidenceRequested,
@@ -56,6 +58,8 @@ public record PrivateNetworkLiveValidationCommandResponse(
                 : trafficExecution;
         auditTrail = auditTrail == null ? AuditTrailContract.planned(false) : auditTrail;
         gate = gate == null ? PrivateNetworkLiveValidationStatusResponse.from(new ReverseProxyProperties()) : gate;
+        gateStatus = gate.gateStatus();
+        allowedByGate = gate.allowedByGate();
         reasonCodes = reasonCodes == null ? List.of() : List.copyOf(reasonCodes);
         reasons = reasons == null ? List.of() : List.copyOf(reasons);
     }
@@ -89,6 +93,8 @@ public record PrivateNetworkLiveValidationCommandResponse(
                     false,
                     false,
                     "BLOCKED_BY_GATE",
+                    gate.gateStatus(),
+                    gate.allowedByGate(),
                     "private-network live validation command is blocked by the offline gate; "
                             + NOT_WIRED_MESSAGE,
                     safeRequestPath,
@@ -112,6 +118,8 @@ public record PrivateNetworkLiveValidationCommandResponse(
                 false,
                 false,
                 "NOT_IMPLEMENTED",
+                gate.gateStatus(),
+                gate.allowedByGate(),
                 NOT_WIRED_MESSAGE,
                 safeRequestPath,
                 request.evidenceRequestedFlag(),
@@ -143,6 +151,8 @@ public record PrivateNetworkLiveValidationCommandResponse(
                 false,
                 false,
                 "INVALID_REQUEST",
+                gate.gateStatus(),
+                gate.allowedByGate(),
                 "private-network live validation command request is invalid; " + NOT_WIRED_MESSAGE,
                 "",
                 evidenceRequested,

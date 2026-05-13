@@ -73,6 +73,8 @@ class ReverseProxyDisabledTest {
                 .andExpect(jsonPath("$.executable").value(false))
                 .andExpect(jsonPath("$.trafficExecuted").value(false))
                 .andExpect(jsonPath("$.status").value("BLOCKED_BY_GATE"))
+                .andExpect(jsonPath("$.gateStatus").value("NOT_ENABLED"))
+                .andExpect(jsonPath("$.allowedByGate").value(false))
                 .andExpect(jsonPath("$.message")
                         .value("private-network live validation command is blocked by the offline gate; "
                                 + "traffic execution is not wired in this release"))

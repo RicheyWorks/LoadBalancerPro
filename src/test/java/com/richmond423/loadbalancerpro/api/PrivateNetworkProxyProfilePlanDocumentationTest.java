@@ -18,6 +18,7 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
     private static final Path PLAN = Path.of("docs/PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md");
     private static final Path DRY_RUN = Path.of("docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md");
     private static final Path LIVE_GATE = Path.of("docs/PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md");
+    private static final Path API_CONTRACTS = Path.of("docs/API_CONTRACTS.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path LIVE_PROXY_CONTAINMENT = Path.of("docs/LIVE_PROXY_CONTAINMENT.md");
     private static final Path RUNBOOK = Path.of("docs/OPERATIONS_RUNBOOK.md");
@@ -202,6 +203,8 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(gate.contains("GET /api/proxy/status"));
         assertTrue(gate.contains("POST /api/proxy/private-network-live-validation"));
         assertTrue(gate.contains("privateNetworkLiveValidation"));
+        assertTrue(gate.contains("gateStatus"));
+        assertTrue(gate.contains("allowedByGate"));
         assertTrue(gate.contains("trafficExecuted=false"));
         assertTrue(gate.contains("evidenceWritten=false"));
         assertTrue(gate.contains("evidenceEligible"));
@@ -212,6 +215,8 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(gate.contains("auditTrail.auditTrailWritten=false"));
         assertTrue(gate.contains("target/proxy-evidence/private-network-live-validation-audit.jsonl"));
         assertTrue(gate.contains("NOT_IMPLEMENTED"));
+        assertTrue(gate.contains("## Status And Reason Codes"));
+        assertTrue(gate.contains("LIVE_VALIDATION_EXECUTION_NOT_WIRED"));
         assertTrue(gate.contains("traffic execution is not wired in this release"));
         assertTrue(gate.contains("traffic not executed by this report"));
         assertTrue(normalized.contains("report-only view of the offline gate"));
@@ -223,6 +228,38 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(gate.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md"));
         assertTrue(gate.contains("LIVE_PROXY_CONTAINMENT.md"));
         assertTrue(gate.contains("REVIEWER_TRUST_MAP.md"));
+    }
+
+    @Test
+    void privateNetworkLiveValidationDocsDefineSharedStatusAndReasonCodes() throws Exception {
+        String gate = read(LIVE_GATE);
+        String contracts = read(API_CONTRACTS);
+
+        assertTrue(contracts.contains("top-level `gateStatus`"));
+        assertTrue(contracts.contains("top-level `allowedByGate`"));
+        assertTrue(contracts.contains("nested offline `gate` details"));
+        assertTrue(contracts.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
+
+        for (String expected : List.of(
+                "`NOT_ENABLED`",
+                "`BLOCKED`",
+                "`ALLOWED`",
+                "`INVALID_REQUEST`",
+                "`BLOCKED_BY_GATE`",
+                "`NOT_IMPLEMENTED`",
+                "`LIVE_VALIDATION_DISABLED`",
+                "`OPERATOR_APPROVAL_REQUIRED`",
+                "`CONFIG_VALIDATION_REQUIRED`",
+                "`PROXY_ENABLED_REQUIRED`",
+                "`BACKEND_URL_REQUIRED`",
+                "`BACKEND_CLASSIFIER_REJECTED`",
+                "`PROXY_CONFIGURATION_REQUIRED`",
+                "`GATE_BLOCKED`",
+                "`ALLOWED_BY_GATE`",
+                "`INVALID_REQUEST_PATH`",
+                "`LIVE_VALIDATION_EXECUTION_NOT_WIRED`")) {
+            assertTrue(gate.contains(expected), "live gate docs should define " + expected);
+        }
     }
 
     @Test

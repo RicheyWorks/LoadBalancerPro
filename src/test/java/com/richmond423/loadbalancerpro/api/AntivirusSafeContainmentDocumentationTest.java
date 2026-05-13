@@ -121,6 +121,7 @@ class AntivirusSafeContainmentDocumentationTest {
 
         assertTrue(readme.contains("[`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md)"));
         assertTrue(readme.contains("[`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md)"));
+        assertTrue(readme.contains("REVIEWER_TRUST_MAP.md#local-proxy-evidence-export"));
         assertTrue(readme.contains("source-visible local-only smoke harness that is dry-run safe by default"));
     }
 
@@ -192,7 +193,9 @@ class AntivirusSafeContainmentDocumentationTest {
 
     @Test
     void localProxyEvidenceExportPathIsIgnoredAndSourceVisible() throws Exception {
-        String combinedDocs = read(LIVE_PROXY_DOC) + "\n" + read(RUNBOOK) + "\n" + read(TRUST_MAP);
+        String combinedDocs = read(README) + "\n" + read(LIVE_PROXY_DOC) + "\n" + read(RUNBOOK)
+                + "\n" + read(TRUST_MAP);
+        String normalizedDocs = combinedDocs.toLowerCase(Locale.ROOT);
         String testSource = read(LOCAL_PROXY_EVIDENCE_EXPORT_TEST);
 
         assertTrue(PROXY_EVIDENCE_MARKDOWN.startsWith(Path.of("target")),
@@ -206,6 +209,12 @@ class AntivirusSafeContainmentDocumentationTest {
         assertTrue(combinedDocs.contains("target/proxy-evidence/local-proxy-evidence.json"));
         assertTrue(combinedDocs.contains("redacted"));
         assertTrue(combinedDocs.contains("prod API-key boundary"));
+        assertTrue(combinedDocs.contains("mvn -Dtest=LocalProxyEvidenceExportTest test"));
+        assertTrue(normalizedDocs.contains("ignored `target/` output"));
+        assertTrue(normalizedDocs.contains("do not write api keys or secrets"));
+        assertTrue(normalizedDocs.contains("loopback/local-only jdk `httpserver`"));
+        assertTrue(normalizedDocs.contains("prod api-key `401`/`200` boundary"));
+        assertTrue(normalizedDocs.contains("do not add external network behavior"));
         assertTrue(testSource.contains("Path.of(\"target\", \"proxy-evidence\")"));
         assertTrue(testSource.contains("Files.createDirectories(EVIDENCE_DIR)"));
         assertTrue(testSource.contains("Files.writeString(MARKDOWN_EVIDENCE"));

@@ -84,6 +84,7 @@ class ReviewerTrustMapDocumentationTest {
                 "LocalOnlyRealBackendProxyValidationTest",
                 "LocalProxyEvidenceExportTest",
                 "target/proxy-evidence/local-proxy-evidence.md",
+                "target/proxy-evidence/local-proxy-evidence.json",
                 "PROXY_STRATEGY_DEMO_LAB.md",
                 "PROXY_DEMO_STACK.md",
                 "PROXY_DEMO_FIXTURE_LAUNCHER.md",
@@ -110,6 +111,33 @@ class ReviewerTrustMapDocumentationTest {
                 RELEASE_DRY_RUN, REAL_BACKEND_EXAMPLES, TESTING_COVERAGE)) {
             assertTrue(read(doc).contains("REVIEWER_TRUST_MAP.md"), doc + " should link to trust map");
         }
+    }
+
+    @Test
+    void localProxyEvidenceExportRecipeIsConciseAndSafetyBounded() throws Exception {
+        String trustMap = read(TRUST_MAP);
+        String readme = read(README);
+        String runbook = read(RUNBOOK);
+        String recipe = section(trustMap, "### Local Proxy Evidence Export", "### Release-Readiness Review");
+        String normalized = recipe.toLowerCase(Locale.ROOT);
+
+        assertTrue(recipe.contains("mvn -Dtest=LocalProxyEvidenceExportTest test"));
+        assertTrue(recipe.contains("target/proxy-evidence/local-proxy-evidence.md"));
+        assertTrue(recipe.contains("target/proxy-evidence/local-proxy-evidence.json"));
+        assertTrue(normalized.contains("markdown file is the human review path"));
+        assertTrue(normalized.contains("json file is the structured evidence path"));
+        assertTrue(normalized.contains("loopback/local-only jdk `httpserver`"));
+        assertTrue(recipe.contains("/proxy/**"));
+        assertTrue(normalized.contains("backend receipt"));
+        assertTrue(normalized.contains("forwarded status/body/header proof"));
+        assertTrue(normalized.contains("prod api-key `401`/`200` boundary"));
+        assertTrue(normalized.contains("ignored `target/` output"));
+        assertTrue(normalized.contains("not tracked docs"));
+        assertTrue(normalized.contains("do not write api keys or secrets"));
+        assertTrue(normalized.contains("do not add external network behavior"));
+        assertTrue(recipe.contains("apiKeyRedacted=\"<REDACTED>\""));
+        assertTrue(readme.contains("REVIEWER_TRUST_MAP.md#local-proxy-evidence-export"));
+        assertTrue(runbook.contains("REVIEWER_TRUST_MAP.md#local-proxy-evidence-export"));
     }
 
     @Test
@@ -224,6 +252,14 @@ class ReviewerTrustMapDocumentationTest {
 
     private static void assertNoCloudManagerConstruction(Path source, String text) {
         assertFalse(CLOUD_MANAGER_CONSTRUCTION.matcher(text).find(), source + " must not construct CloudManager");
+    }
+
+    private static String section(String text, String startHeading, String endHeading) {
+        int start = text.indexOf(startHeading);
+        assertTrue(start >= 0, "missing section start: " + startHeading);
+        int end = text.indexOf(endHeading, start + startHeading.length());
+        assertTrue(end > start, "missing section end: " + endHeading);
+        return text.substring(start, end);
     }
 
     private static String read(Path path) throws IOException {

@@ -42,6 +42,8 @@ Future implementation should validate each configured backend URL before startup
 
 URLs with user info, query strings, fragments, blank hosts, unsupported schemes, public addresses, wildcard domains, or ambiguous resolution should fail closed during startup or explicit reload validation.
 
+First implementation primitive: `ProxyBackendUrlClassifier` is a source-visible Java helper for offline classification only. It classifies literal `http`/`https` backend URLs as loopback allowed, private-network allowed, public-network rejected, invalid rejected, unsupported-scheme rejected, user-info rejected, or ambiguous-host rejected. It does not resolve DNS, perform reachability checks, scan ports, discover hosts, or wire private-network validation into runtime startup, reload, scripts, Postman, or smoke execution.
+
 ## API-Key And OAuth2 Expectations
 
 Private-network validation must preserve the existing access boundary:
@@ -86,7 +88,7 @@ Before any runtime implementation, add or preserve static tests that prove the p
 Runtime validation should progress in this order:
 
 1. Keep CI on loopback-only JUnit/JDK `HttpServer` evidence.
-2. Add pure Java unit tests for any URL classification helper before it is wired into runtime.
+2. Add pure Java unit tests for `ProxyBackendUrlClassifier` before it is wired into runtime.
 3. Add startup/reload validation tests for allowed and rejected backend URLs.
 4. Add a dry-run-only private-network profile recipe that prints intended validation inputs without sending traffic.
 5. Add opt-in private-network live smoke only after a separate reviewed task approves the exact environment gate and operator-provided URLs.
@@ -96,7 +98,7 @@ No test should scan ports, discover hosts, require public DNS, require live clou
 ## Rollout Plan
 
 1. Design and guard: this plan plus static documentation tests only.
-2. Classify: source-visible Java validation helper with focused unit tests, no behavior change until wired in.
+2. Classify: source-visible Java `ProxyBackendUrlClassifier` with focused unit tests, no behavior change until wired in.
 3. Gate: opt-in profile properties and explicit failure messages for unsupported hosts.
 4. Evidence: redacted Markdown/JSON under ignored `target/` output.
 5. Smoke: dry-run first, then separately approved private-network live smoke with operator-provided URLs only.

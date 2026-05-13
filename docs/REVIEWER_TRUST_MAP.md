@@ -121,7 +121,7 @@ Run `mvn -Dtest=LocalProxyEvidenceExportTest test`, then inspect `target/proxy-e
 - Live/proxy validation is opt-in, defaults to localhost or private-network backends, and does not use port scanning, persistence mechanisms, scheduled tasks, service installation, credential storage, or hidden background agents.
 - Local real-backend proxy validation uses source-visible Maven/JUnit and JDK loopback fixtures, not native helper tools or downloaded servers.
 - Local proxy evidence export writes redacted reviewer Markdown/JSON only under ignored `target/proxy-evidence/`.
-- Future private-network proxy validation must follow [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md): explicit operator-provided backend URLs only, local/private-network allowlisting, no discovery or scanning, no secret persistence, and no private-network live execution until separately approved.
+- Future private-network proxy validation must follow [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md): explicit operator-provided backend URLs only, local/private-network allowlisting, offline `ProxyBackendUrlClassifier` review, no DNS or reachability checks, no discovery or scanning, no secret persistence, and no private-network live execution until separately approved.
 - The Postman smoke harness is source-visible PowerShell and remains dry-run safe unless `-Package` is explicitly passed.
 - Workflow artifacts are not GitHub Release assets.
 - Proxy/demo/status/docs paths do not construct or mutate `CloudManager`.

@@ -10,6 +10,8 @@ Default validation should use localhost or private-network backends. Prefer loop
 
 Real-backend tests should be deterministic, documented, and low-risk. They should name the exact backend class, host pattern, ports, profile, expected HTTP status, and cleanup behavior. They should avoid public internet targets unless a future task explicitly approves that scope.
 
+The current automated real-backend validation path is the source-visible Maven test `LocalOnlyRealBackendProxyValidationTest`. It starts JDK `HttpServer` fixtures on `127.0.0.1` using Java-assigned ephemeral loopback ports, opts proxy mode in through test properties, proves status/body/header forwarding through `/proxy/**`, and checks a configured-unavailable backend fails closed without calling the fixture. It does not scan ports, install tools, persist state, store secrets, or call external networks.
+
 ## Containment Rules
 
 - Live/proxy mode is opt-in and must not become the default profile behavior.

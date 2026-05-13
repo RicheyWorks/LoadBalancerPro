@@ -37,6 +37,16 @@ This status field does not call `PrivateNetworkLiveValidationExecutor`, does not
 
 The command contract is protected by the same production boundaries as other proxy mutations: prod/cloud-sandbox API-key mode requires `X-API-Key`, and OAuth2 mode requires the configured allocation role. It rejects unsafe request paths before returning a gate result, does not echo raw suspicious path input, does not call `PrivateNetworkLiveValidationExecutor`, does not write evidence, and does not send private-LAN or public traffic. The expected not-wired response message is `traffic execution is not wired in this release`.
 
+The response also documents the future evidence contract without producing runtime evidence. It returns `trafficExecution="traffic execution is not wired in this release"`, `redactionRequired=true`, and planned ignored output names:
+
+- `plannedEvidenceDirectory="target/proxy-evidence/"`;
+- `plannedEvidenceMarkdown="private-network-live-validation.md"`;
+- `plannedEvidenceJson="private-network-live-validation.json"`;
+- `auditTrail.auditTrailWritten=false`;
+- `auditTrail.plannedAuditTrail="target/proxy-evidence/private-network-live-validation-audit.jsonl"`.
+
+`evidenceEligible` and `auditTrail.auditTrailEligible` only describe whether the current request and offline gate are shaped for future evidence after a separately approved execution-wiring task. They do not mean traffic will run in this release.
+
 ## Allowed Backend Model
 
 The future runtime live path may target only explicit backend URLs that the operator provides in configuration or reload payloads. It must not expand hostnames, CIDR ranges, IP ranges, service names, wildcard patterns, inventory files, or environment-specific discovery into target lists.
@@ -91,6 +101,10 @@ Evidence must never include raw API keys, bearer tokens, credentials, private ho
 
 Evidence must stay summary-only: record the validation path, safe proof labels, status, bounded timeout, redacted auth boundary, and loopback-only scope; do not write `Authorization`, `X-API-Key`, cookie, token, redirect target, raw backend URL, or broader private-LAN validation claims.
 
+The current command endpoint has an evidence and audit trail contract only. It names the planned Markdown, JSON, and JSONL audit outputs under ignored `target/proxy-evidence/`, requires redaction, and keeps `evidenceWritten=false` plus `auditTrail.auditTrailWritten=false` for every response.
+
+Combined planned command paths are `target/proxy-evidence/private-network-live-validation.md`, `target/proxy-evidence/private-network-live-validation.json`, and `target/proxy-evidence/private-network-live-validation-audit.jsonl`. These are contract names only; the runtime command does not create them.
+
 Current loopback-only executor proof writes:
 
 - `target/proxy-evidence/private-network-live-loopback-validation.md`;
@@ -126,16 +140,22 @@ The current executor is not called from app startup, Postman, smoke scripts, or 
 
 Before any future runtime/private-LAN live validation is added beyond the current loopback-only test proof, the PR must prove:
 
+- explicit owner approval for execution wiring is present in the task;
 - explicit property enablement is required and default-off;
 - explicit `operator-approved=true` approval is required;
+- `loadbalancerpro.proxy.private-network-validation.enabled=true` is required;
+- `loadbalancerpro.proxy.enabled=true` is required;
 - backend URLs are operator-provided literals only;
 - every backend passes `ProxyBackendUrlClassifier` before activation;
+- request paths pass `PrivateNetworkLiveValidationRequestPathValidator`;
 - DNS resolution is not used;
 - discovery and scanning are not used;
 - public internet targets fail closed;
 - timeout is bounded and documented;
+- exactly one validation request is sent per command;
 - no persistence, service installation, scheduled tasks, hidden agents, or credential storage is added;
 - generated evidence is redacted and written only under ignored `target/` output;
+- command audit trail output is redacted and written only under ignored `target/` output;
 - prod API-key boundary proof or OAuth2 boundary proof is included;
 - reload failure preserves the last-known-good active config;
 - local/private-only tests are deterministic and source-visible;

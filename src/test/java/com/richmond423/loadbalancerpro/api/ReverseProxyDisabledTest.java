@@ -78,6 +78,13 @@ class ReverseProxyDisabledTest {
                                 + "traffic execution is not wired in this release"))
                 .andExpect(jsonPath("$.requestPath").value("/health"))
                 .andExpect(jsonPath("$.evidenceWritten").value(false))
+                .andExpect(jsonPath("$.evidenceEligible").value(false))
+                .andExpect(jsonPath("$.plannedEvidenceDirectory").value("target/proxy-evidence/"))
+                .andExpect(jsonPath("$.plannedEvidenceMarkdown").value("private-network-live-validation.md"))
+                .andExpect(jsonPath("$.plannedEvidenceJson").value("private-network-live-validation.json"))
+                .andExpect(jsonPath("$.redactionRequired").value(true))
+                .andExpect(jsonPath("$.trafficExecution").value("traffic execution is not wired in this release"))
+                .andExpect(jsonPath("$.auditTrail.auditTrailWritten").value(false))
                 .andExpect(jsonPath("$.gate.gateStatus").value("NOT_ENABLED"))
                 .andExpect(jsonPath("$.reasonCodes[0]").value("LIVE_VALIDATION_DISABLED"));
     }

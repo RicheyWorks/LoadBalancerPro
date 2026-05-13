@@ -84,6 +84,28 @@ class EnterpriseCockpitAuthPlanDocsTest {
         }
     }
 
+    @Test
+    void docsDocumentImplementedApiKeySwaggerGatingAndMemoryOnlyCockpitToken() throws Exception {
+        String combined = read(PLAN) + "\n" + read(API_SECURITY) + "\n" + read(API_CONTRACTS)
+                + "\n" + read(OPERATIONS_RUNBOOK) + "\n" + read(README);
+        String normalized = combined.toLowerCase(Locale.ROOT);
+
+        assertTrue(combined.contains("/v3/api-docs"));
+        assertTrue(combined.contains("/swagger-ui.html"));
+        assertTrue(combined.contains("/swagger-ui/**"));
+        assertTrue(combined.contains("X-API-Key"));
+        assertTrue(normalized.contains("prod/cloud-sandbox api-key mode"));
+        assertTrue(normalized.contains("local/default"));
+        assertTrue(normalized.contains("memory-only"));
+        assertTrue(combined.contains("localStorage"));
+        assertTrue(combined.contains("sessionStorage"));
+        assertTrue(combined.contains("<API_KEY>"));
+        assertTrue(normalized.contains("not logged") || normalized.contains("logs"));
+        assertTrue(normalized.contains("not put in urls") || normalized.contains("not placed in urls"));
+        assertTrue(normalized.contains("oauth2 login"));
+        assertTrue(normalized.contains("not production iam certification"));
+    }
+
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");
         return Files.readString(path, StandardCharsets.UTF_8);

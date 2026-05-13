@@ -80,7 +80,8 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
         return isProtectedApiMutation(request)
                 || isProtectedLaseObservability(request)
                 || isProtectedProxyStatus(request)
-                || isProtectedProxyRequest(request);
+                || isProtectedProxyRequest(request)
+                || isProtectedOpenApiDocs(request);
     }
 
     private static boolean isProtectedApiMutation(HttpServletRequest request) {
@@ -100,6 +101,14 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
     private static boolean isProtectedProxyRequest(HttpServletRequest request) {
         String requestUri = request.getRequestURI();
         return "/proxy".equals(requestUri) || requestUri.startsWith("/proxy/");
+    }
+
+    private static boolean isProtectedOpenApiDocs(HttpServletRequest request) {
+        String requestUri = request.getRequestURI();
+        return "/v3/api-docs".equals(requestUri)
+                || requestUri.startsWith("/v3/api-docs/")
+                || "/swagger-ui.html".equals(requestUri)
+                || requestUri.startsWith("/swagger-ui/");
     }
 
     private static boolean constantTimeEquals(byte[] expected, byte[] actual) {

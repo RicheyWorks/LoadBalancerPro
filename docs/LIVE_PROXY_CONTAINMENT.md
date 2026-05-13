@@ -16,6 +16,8 @@ For reviewer-readable export, `LocalProxyEvidenceExportTest` uses the same sourc
 
 For the future path beyond loopback, [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md) defines the private-network profile guardrails: explicit operator-provided backend URLs only, local/private-network allowlisting, no discovery or scanning, no secret persistence, redacted ignored evidence, and a current opt-in configuration-validation gate only. That gate fails unsafe URLs before startup or explicit reload succeeds, but it does not add live private-network execution, DNS resolution, reachability checks, script execution, Postman execution, or smoke behavior.
 
+The dry-run-only reviewer recipe in [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](PRIVATE_NETWORK_PROXY_DRY_RUN.md) exercises that gate with deterministic classifier samples and writes `target/proxy-evidence/private-network-validation-dry-run.md` plus `target/proxy-evidence/private-network-validation-dry-run.json`. It is source-visible Maven/JUnit evidence only: no backend is started, no traffic is sent, no DNS or reachability check runs, no port scan occurs, and no API key or secret is written.
+
 ## Containment Rules
 
 - Live/proxy mode is opt-in and must not become the default profile behavior.

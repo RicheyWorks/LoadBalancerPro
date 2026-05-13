@@ -1,7 +1,7 @@
 # LoadBalancerPro SBOM Guide
 
-Date: 2026-05-04
-Branch: `feature/v1.9.0-release-attestations`
+Date: 2026-05-13
+Branch: `codex/evidence-documentation-refresh`
 Verification commands: `mvn -q test`, `mvn -q -DskipTests package`, `mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -Dcyclonedx.skipAttach=true`
 
 ## Purpose and Scope
@@ -31,8 +31,8 @@ It does not prove:
 - Dependencies are free of vulnerabilities or malicious code.
 - Transitive dependencies have been reviewed by humans.
 - Runtime container OS packages are fully represented by the Maven SBOM.
-- Docker base images are immutable or digest-pinned.
-- GitHub Actions are commit-SHA pinned.
+- Docker base images remain vulnerability-free. Digest pinning is verified separately through `Dockerfile` review and Trivy.
+- GitHub Actions are commit-SHA pinned. Action pinning is verified separately through workflow review.
 - The Maven repository, CI runner, developer workstation, or artifact registry is trusted.
 - TLS, IAM, firewalling, rate limiting, egress controls, or secret rotation are correctly deployed.
 
@@ -61,7 +61,7 @@ The CI SBOM artifact is component inventory only. Trivy image scanning and GitHu
 
 ## Release Artifact SBOM Bundle
 
-The tag-triggered Release Artifacts workflow publishes a versioned GitHub Actions artifact bundle for semantic version tags such as `v1.6.1`.
+The Release Artifacts workflow publishes a versioned GitHub Release asset set for semantic version tags such as `v2.4.2`, and also uploads the same deterministic bundle as a GitHub Actions artifact. Manual `workflow_dispatch` runs are non-publishing dry runs: they build and upload a `loadbalancerpro-release-${version}-dry-run` Actions artifact but skip attestations and GitHub Release publication.
 
 Before upload, the workflow verifies that the Git tag version matches the Maven project version. For example, tag `v1.6.1` must match Maven project version `1.6.1`. If the versions differ, the workflow fails before creating release artifacts.
 
@@ -72,7 +72,7 @@ The release artifact bundle uses deterministic names:
 - `LoadBalancerPro-${version}-bom.xml`
 - `LoadBalancerPro-${version}-SHA256SUMS.txt`
 
-The uploaded artifact is named `loadbalancerpro-release-${version}` and is retained for 90 days. These are GitHub Actions artifacts, not GitHub Release assets. Generated JAR and SBOM files remain build outputs and are not committed to the repository.
+The GitHub Release assets and backup Actions artifact use the same deterministic names. The uploaded Actions artifact is named `loadbalancerpro-release-${version}` for tag publish runs and is retained for 90 days. Generated JAR and SBOM files remain build outputs and are not committed to the repository.
 
 The checksum file contains SHA-256 hashes for the release JAR and both SBOM files. After downloading and extracting the artifact bundle, Linux/macOS users can verify the files with:
 
@@ -82,7 +82,7 @@ sha256sum -c LoadBalancerPro-${version}-SHA256SUMS.txt
 
 Checksums help verify downloaded artifact integrity against the checksum file. They do not prove who built the artifact, replace signatures or attestations, or prove dependencies are vulnerability-free.
 
-The workflow creates GitHub artifact attestations for release JAR build provenance and for the JAR/SBOM JSON relationship. The SBOM XML file and SHA256SUMS file are included in the release artifact bundle but are not separately attested in this first attestation slice.
+On publish-mode tag runs, the workflow creates GitHub artifact attestations for release JAR build provenance and for the JAR/SBOM JSON relationship before publishing or verifying GitHub Release assets. The SBOM XML file and SHA256SUMS file are included in the release bundle but are not separately attested.
 
 GitHub artifact attestations help consumers verify where and how the attested release JAR was built and which SBOM JSON file was associated with it. They are not PGP signing, notarization, vulnerability scanning, or production-readiness proof.
 

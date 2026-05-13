@@ -9,6 +9,7 @@ LoadBalancerPro is a Java 17 / Spring Boot load-balancing simulator and operator
 - API-key and OAuth2 deployment boundaries for protected proxy/status surfaces where those modes are configured.
 - Proxy status, metrics, retry/cooldown counters, reload status, and read-only browser status review.
 - Release-free evidence through CI artifacts, local smoke scripts, SBOM output, packaged-jar inspection, and Docker runtime smoke checks.
+- Semantic-tag release evidence through deterministic GitHub Release JAR/SBOM/checksum assets, SHA-256 verification, and GitHub artifact attestations.
 - Guarded cloud behavior where live mutation is disabled by default and isolated behind explicit `CloudManager` guardrails.
 
 ## Fastest Evaluation Path

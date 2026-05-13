@@ -215,9 +215,9 @@ Suggested next hardening action: Add a release checklist that requires confirmin
 
 ### Supply-Chain/Dependency Posture
 
-Score: 58/100.
+Score: 74/100.
 
-Why this score: CI release gates, dependency review, and current dependency/build posture are documented, and the Maven test suite provides broad behavioral regression coverage after dependency changes. Phase 6A added `evidence/SUPPLY_CHAIN_EVIDENCE.md` as a factual baseline. The score remains conservative because no SBOM/CycloneDX tooling, OWASP dependency-check report, digest pinning, GitHub Actions SHA pinning, automated dependency management, or dependency triage workflow has been added yet.
+Why this score: CI release gates, dependency review, Dependabot, pinned GitHub Actions, digest-pinned Docker base images, CycloneDX SBOM workflow artifacts, Trivy image scanning, CodeQL SAST, semantic-tag GitHub Release assets, SHA-256 checksum verification, and GitHub artifact attestations are documented and exercised by the current workflows. The score remains conservative because there is no OWASP dependency-check report, release/container PGP-style signing, container registry publication/signing, mature accepted dependency-risk workflow, or formal SAST triage register.
 
 Evidence references:
 
@@ -226,18 +226,18 @@ Evidence references:
 - `evidence/RESIDUAL_RISKS.md`
 - `evidence/SUPPLY_CHAIN_EVIDENCE.md`
 
-Residual risks preventing a higher score: Dependency/supply-chain drift is explicitly tracked as `RR-010`. The supply-chain evidence page is documentation, not a generated SBOM or vulnerability scan. No SBOM/CycloneDX evidence, OWASP dependency-check report, dependency audit cadence, automated dependency update workflow, or accepted dependency-risk process is currently in place.
+Residual risks preventing a higher score: Dependency/supply-chain drift is explicitly tracked as `RR-010`. The supply-chain evidence page summarizes generated workflow evidence, but it is not itself a vulnerability scan or independent audit. OWASP dependency-check, dependency audit cadence, accepted dependency-risk process, static-analysis triage, and signing/container publication decisions remain future work.
 
-Suggested next hardening action: Add SBOM/CycloneDX evidence, define dependency audit cadence, document accepted dependency risks, and consider digest/SHA pinning after the triage process exists.
+Suggested next hardening action: Define dependency audit cadence, document accepted dependency risks, review CodeQL findings through a triage register, and decide whether container signing or release signing is needed for any future distribution channel.
 
 ## How to Raise the Score
 
 Practical next actions:
 
-- Add strict API required-field DTO hardening for ambiguous primitive numeric fields.
 - Run live AWS sandbox validation outside default CI using disposable resources and documented guardrails.
-- Add SBOM/CycloneDX evidence to the evidence set.
 - Define dependency audit cadence and accepted dependency-risk documentation.
+- Add static-analysis triage expectations for CodeQL findings.
+- Decide whether release signing or container signing is needed for future distribution channels.
 - Add optional PIT mutation testing for high-value safety and routing logic.
 - Add optional property-based tests for routing algorithms and allocation invariants.
 - Add optional chaos/SLO validation for replay/lab scenarios before making operational reliability claims.

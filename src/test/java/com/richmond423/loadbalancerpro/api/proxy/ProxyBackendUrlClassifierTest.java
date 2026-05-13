@@ -25,6 +25,8 @@ class ProxyBackendUrlClassifierTest {
             "src/main/java/com/richmond423/loadbalancerpro/api/proxy/ProxyBackendUrlClassifier.java");
     private static final Path ROUTE_PLANNER_SOURCE = Path.of(
             "src/main/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyRoutePlanner.java");
+    private static final Path LIVE_GATE_SOURCE = Path.of(
+            "src/main/java/com/richmond423/loadbalancerpro/api/proxy/PrivateNetworkLiveValidationGate.java");
 
     @Test
     void loopbackHostsAndAddressesAreAllowed() {
@@ -108,7 +110,8 @@ class ProxyBackendUrlClassifierTest {
 
     @Test
     void classifierSourceStaysOfflineAndDoesNotResolveOrProbe() throws Exception {
-        String source = read(CLASSIFIER_SOURCE) + "\n" + read(ROUTE_PLANNER_SOURCE);
+        String source = read(CLASSIFIER_SOURCE) + "\n" + read(ROUTE_PLANNER_SOURCE)
+                + "\n" + read(LIVE_GATE_SOURCE);
 
         for (String forbidden : new String[] {
                 "InetAddress",
@@ -124,7 +127,7 @@ class ProxyBackendUrlClassifierTest {
 
     @Test
     void helperIsWiredOnlyIntoPrivateNetworkConfigurationValidation() throws Exception {
-        Set<Path> allowedSources = Set.of(CLASSIFIER_SOURCE, ROUTE_PLANNER_SOURCE);
+        Set<Path> allowedSources = Set.of(CLASSIFIER_SOURCE, ROUTE_PLANNER_SOURCE, LIVE_GATE_SOURCE);
 
         try (Stream<Path> sources = Files.walk(Path.of("src/main/java"))) {
             for (Path source : sources
@@ -132,7 +135,8 @@ class ProxyBackendUrlClassifierTest {
                     .toList()) {
                 boolean containsClassifier = read(source).contains("ProxyBackendUrlClassifier");
                 assertEquals(allowedSources.contains(source), containsClassifier,
-                        source + " must only reference classifier from the offline helper or config validation");
+                        source + " must only reference classifier from the offline helper, config validation, "
+                                + "or the offline live gate skeleton");
             }
         }
     }

@@ -21,8 +21,28 @@ class EnterpriseProxyConfigurationTest {
         contextRunner.run(context -> {
             assertThat(context).hasNotFailed();
             assertThat(context).doesNotHaveBean(ReverseProxyService.class);
-            assertThat(context.getBean(ReverseProxyProperties.class).isEnabled()).isFalse();
+            ReverseProxyProperties properties = context.getBean(ReverseProxyProperties.class);
+            assertThat(properties.isEnabled()).isFalse();
+            assertThat(properties.getPrivateNetworkValidation().isEnabled()).isFalse();
+            assertThat(properties.getPrivateNetworkLiveValidation().isEnabled()).isFalse();
+            assertThat(properties.getPrivateNetworkLiveValidation().isOperatorApproved()).isFalse();
         });
+    }
+
+    @Test
+    void privateNetworkLiveValidationPropertiesBindButDoNotStartProxyByThemselves() {
+        contextRunner.withPropertyValues(
+                        "loadbalancerpro.proxy.private-network-live-validation.enabled=true",
+                        "loadbalancerpro.proxy.private-network-live-validation.operator-approved=true")
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).doesNotHaveBean(ReverseProxyService.class);
+                    ReverseProxyProperties properties = context.getBean(ReverseProxyProperties.class);
+                    assertThat(properties.isEnabled()).isFalse();
+                    assertThat(properties.getPrivateNetworkValidation().isEnabled()).isFalse();
+                    assertThat(properties.getPrivateNetworkLiveValidation().isEnabled()).isTrue();
+                    assertThat(properties.getPrivateNetworkLiveValidation().isOperatorApproved()).isTrue();
+                });
     }
 
     @Test
@@ -33,6 +53,8 @@ class EnterpriseProxyConfigurationTest {
                     assertThat(context).hasSingleBean(ReverseProxyService.class);
                     ReverseProxyProperties properties = context.getBean(ReverseProxyProperties.class);
                     assertThat(properties.isEnabled()).isTrue();
+                    assertThat(properties.getPrivateNetworkLiveValidation().isEnabled()).isFalse();
+                    assertThat(properties.getPrivateNetworkLiveValidation().isOperatorApproved()).isFalse();
                     assertThat(properties.getRoutes()).containsKey("api");
                     assertThat(properties.getRoutes().get("api").getPathPrefix()).isEqualTo("/api");
                     assertThat(properties.getRoutes().get("api").getTargets()).hasSize(2);

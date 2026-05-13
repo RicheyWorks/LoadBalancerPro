@@ -17,6 +17,7 @@ public class ReverseProxyProperties {
     private Duration requestTimeout = Duration.ofSeconds(2);
     private long maxRequestBytes = 65_536;
     private PrivateNetworkValidation privateNetworkValidation = new PrivateNetworkValidation();
+    private PrivateNetworkLiveValidation privateNetworkLiveValidation = new PrivateNetworkLiveValidation();
     private HealthCheck healthCheck = new HealthCheck();
     private Retry retry = new Retry();
     private Cooldown cooldown = new Cooldown();
@@ -63,6 +64,16 @@ public class ReverseProxyProperties {
         this.privateNetworkValidation = privateNetworkValidation == null
                 ? new PrivateNetworkValidation()
                 : privateNetworkValidation;
+    }
+
+    public PrivateNetworkLiveValidation getPrivateNetworkLiveValidation() {
+        return privateNetworkLiveValidation;
+    }
+
+    public void setPrivateNetworkLiveValidation(PrivateNetworkLiveValidation privateNetworkLiveValidation) {
+        this.privateNetworkLiveValidation = privateNetworkLiveValidation == null
+                ? new PrivateNetworkLiveValidation()
+                : privateNetworkLiveValidation;
     }
 
     public HealthCheck getHealthCheck() {
@@ -255,6 +266,27 @@ public class ReverseProxyProperties {
 
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
+        }
+    }
+
+    public static final class PrivateNetworkLiveValidation {
+        private boolean enabled = false;
+        private boolean operatorApproved = false;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public boolean isOperatorApproved() {
+            return operatorApproved;
+        }
+
+        public void setOperatorApproved(boolean operatorApproved) {
+            this.operatorApproved = operatorApproved;
         }
     }
 

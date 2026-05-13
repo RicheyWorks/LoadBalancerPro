@@ -1,6 +1,6 @@
 # Private-Network Live Validation Gate
 
-This is a design gate for a future private-network live validation path. It does not implement live private-network execution, does not send traffic, does not change proxy request routing, and does not change default/local/demo behavior.
+This is a design gate for a future private-network live validation path. The current implementation adds default-off live gate properties and the offline `PrivateNetworkLiveValidationGate` decision helper, but it does not implement live private-network traffic execution, does not send traffic, does not change proxy request routing, and does not change default/local/demo behavior.
 
 Use this after [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md), [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](PRIVATE_NETWORK_PROXY_DRY_RUN.md), [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md), and [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md). The current safe path remains the dry-run command:
 
@@ -10,18 +10,18 @@ mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test
 
 ## Approval Gate
 
-Private-network live validation must not be added by default or implied by existing proxy mode. A future implementation must require all of these before any private-network request is sent:
+Private-network live validation must not be added by default or implied by existing proxy mode. The implemented offline gate evaluates the same approval requirements a future traffic executor must satisfy before any private-network request is sent:
 
 - an explicit reviewed task approving live private-network validation;
 - `loadbalancerpro.proxy.enabled=true`;
 - `loadbalancerpro.proxy.private-network-validation.enabled=true`;
-- a future default-false live flag such as `loadbalancerpro.proxy.private-network-live-validation.enabled=true`;
-- a future operator approval value such as `loadbalancerpro.proxy.private-network-live-validation.operator-approval=I_ACCEPT_LOCAL_PRIVATE_BACKEND_TRAFFIC`;
+- `loadbalancerpro.proxy.private-network-live-validation.enabled=true`, defaulting to `false`;
+- `loadbalancerpro.proxy.private-network-live-validation.operator-approved=true`, defaulting to `false`;
 - operator-provided literal backend URLs only;
 - passing `ProxyBackendUrlClassifier` results for every backend before activation;
 - prod/cloud-sandbox API-key or OAuth2 boundary proof for protected proxy/status/reload surfaces.
 
-If any gate is missing, malformed, ambiguous, or rejected, the future live validation path must fail closed before sending traffic and before making the candidate config active.
+If any gate is missing, malformed, ambiguous, or rejected, the offline gate returns not-enabled or blocked. A future live validation path must fail closed before sending traffic and before making the candidate config active.
 
 ## Allowed Backend Model
 
@@ -75,12 +75,26 @@ Generated evidence must be Markdown or JSON under ignored `target/` output, for 
 
 Evidence must never include raw API keys, bearer tokens, credentials, private hostnames marked for redaction, request secrets, release assets, or files copied from `release-downloads/`.
 
+## Current Implemented Gate
+
+Implemented source-visible pieces:
+
+- default-false properties in `application.properties`:
+  - `loadbalancerpro.proxy.private-network-live-validation.enabled=false`;
+  - `loadbalancerpro.proxy.private-network-live-validation.operator-approved=false`;
+- `PrivateNetworkLiveValidationGate`, which evaluates configuration only and returns allowed, not-enabled, or blocked results;
+- focused tests proving missing flags, missing operator approval, disabled config validation, disabled proxy mode, and classifier-rejected targets fail closed;
+- focused tests proving loopback/private literal targets can pass the offline gate without any backend listener running;
+- source guards proving the gate does not use DNS, reachability, socket, probe, discovery, or scanning APIs.
+
+The current gate is not called from app startup, Postman, smoke scripts, or a private-network traffic executor. It is a prerequisite for future live validation, not live execution.
+
 ## Implementation Checklist
 
-Before any future live private-network validation implementation is added, the PR must prove:
+Before any future live private-network traffic executor is added, the PR must prove:
 
 - explicit property enablement is required and default-off;
-- explicit operator approval is required;
+- explicit `operator-approved=true` approval is required;
 - backend URLs are operator-provided literals only;
 - every backend passes `ProxyBackendUrlClassifier` before activation;
 - DNS resolution is not used;
@@ -95,19 +109,19 @@ Before any future live private-network validation implementation is added, the P
 - Postman and smoke paths remain dry-run-only by default;
 - no native tooling, downloaded helper binaries, release assets, or `release-downloads/` mutation is introduced.
 
-## Required Tests Before Implementation
+## Required Tests Before Traffic Execution
 
-The future implementation PR must include focused tests for:
+The future traffic-execution PR must include focused tests for:
 
 - default-off behavior for every live-validation flag;
-- missing approval token fails closed before traffic;
+- missing operator approval fails closed before traffic;
 - classifier-rejected URLs fail before traffic;
 - allowed loopback/private literal URLs pass config validation;
 - bounded timeout and controlled failure reporting;
 - redacted ignored evidence output;
 - prod API-key `401`/`200` or OAuth2 unauthorized/authorized boundary;
-- no DNS, discovery, scanning, reachability, or socket-probe APIs in the live validation path;
+- no DNS, discovery, scanning, reachability, or socket-probe APIs in the live traffic path;
 - no Postman or smoke private-network live execution by default;
 - no native tooling, persistence, service install, scheduled tasks, secret persistence, release actions, or `release-downloads/` mutation.
 
-Until those gates and tests are implemented in a separate approved task, private-network validation remains config-only plus dry-run evidence.
+Until a separate approved task adds and tests a bounded traffic executor, private-network live traffic execution remains unimplemented. The current state is config validation, dry-run evidence, and an offline live gate decision helper only.

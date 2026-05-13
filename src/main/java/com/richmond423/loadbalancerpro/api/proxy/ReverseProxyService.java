@@ -843,6 +843,8 @@ public class ReverseProxyService {
         copy.setRequestTimeout(source.getRequestTimeout());
         copy.setMaxRequestBytes(source.getMaxRequestBytes());
         copy.setPrivateNetworkValidation(copyPrivateNetworkValidation(source.getPrivateNetworkValidation()));
+        copy.setPrivateNetworkLiveValidation(copyPrivateNetworkLiveValidation(
+                source.getPrivateNetworkLiveValidation()));
         copy.setHealthCheck(copyHealthCheck(source.getHealthCheck()));
         copy.setRetry(copyRetry(source.getRetry()));
         copy.setCooldown(copyCooldown(source.getCooldown()));
@@ -896,6 +898,18 @@ public class ReverseProxyService {
             return copy;
         }
         copy.setEnabled(source.isEnabled());
+        return copy;
+    }
+
+    private static ReverseProxyProperties.PrivateNetworkLiveValidation copyPrivateNetworkLiveValidation(
+            ReverseProxyProperties.PrivateNetworkLiveValidation source) {
+        ReverseProxyProperties.PrivateNetworkLiveValidation copy =
+                new ReverseProxyProperties.PrivateNetworkLiveValidation();
+        if (source == null) {
+            return copy;
+        }
+        copy.setEnabled(source.isEnabled());
+        copy.setOperatorApproved(source.isOperatorApproved());
         return copy;
     }
 

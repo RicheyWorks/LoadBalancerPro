@@ -297,7 +297,7 @@ Triage:
 sum by (path, reason) (rate(allocation_validation_failures_count_total[5m]))
 ```
 
-2. Check whether failures are malformed JSON, validation failures, unsupported media type, wrong method, or payload-size enforcement.
+2. Check whether failures are malformed JSON, validation failures, unsupported media type, wrong method, or payload-size enforcement. Allocation/evaluation clients must send explicit `requestedLoad`, `servers`, and per-server `id`, `cpuUsage`, `memoryUsage`, `diskUsage`, `capacity`, `weight`, and `healthy` values; omitted required fields are rejected instead of defaulted to `0`, `0.0`, or `false`.
 
 3. Confirm responses do not include stack traces, exception class names, credentials, request bodies, or cloud details.
 

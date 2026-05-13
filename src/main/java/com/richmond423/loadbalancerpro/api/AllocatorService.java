@@ -172,7 +172,8 @@ public class AllocatorService {
         if (request == null) {
             throw new IllegalArgumentException("Request body is required");
         }
-        if (request.requestedLoad() < 0 || !Double.isFinite(request.requestedLoad())) {
+        if (request.requestedLoad() == null || request.requestedLoad() < 0
+                || !Double.isFinite(request.requestedLoad())) {
             throw new IllegalArgumentException("requestedLoad must be a finite non-negative number");
         }
         if (request.servers() == null || request.servers().isEmpty()) {
@@ -184,7 +185,8 @@ public class AllocatorService {
         if (request == null) {
             throw new IllegalArgumentException("Request body is required");
         }
-        if (request.requestedLoad() < 0 || !Double.isFinite(request.requestedLoad())) {
+        if (request.requestedLoad() == null || request.requestedLoad() < 0
+                || !Double.isFinite(request.requestedLoad())) {
             throw new IllegalArgumentException("requestedLoad must be a finite non-negative number");
         }
         if (request.servers() == null || request.servers().isEmpty()) {
@@ -206,8 +208,8 @@ public class AllocatorService {
 
     private static double averageHealthyCapacity(List<ServerInput> servers) {
         return servers.stream()
-                .filter(ServerInput::healthy)
-                .mapToDouble(ServerInput::capacity)
+                .filter(AllocatorService::isHealthy)
+                .mapToDouble(server -> server.capacity())
                 .average()
                 .orElse(0.0);
     }
@@ -220,15 +222,19 @@ public class AllocatorService {
 
     private static int healthyServerCount(List<ServerInput> servers) {
         return (int) servers.stream()
-                .filter(ServerInput::healthy)
+                .filter(AllocatorService::isHealthy)
                 .count();
     }
 
     private static double totalHealthyCapacity(List<ServerInput> servers) {
         return servers.stream()
-                .filter(ServerInput::healthy)
-                .mapToDouble(ServerInput::capacity)
+                .filter(AllocatorService::isHealthy)
+                .mapToDouble(server -> server.capacity())
                 .sum();
+    }
+
+    private static boolean isHealthy(ServerInput server) {
+        return Boolean.TRUE.equals(server.healthy());
     }
 
     private static String resolveStrategy(String strategy) {

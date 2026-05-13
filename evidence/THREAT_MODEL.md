@@ -116,7 +116,7 @@ Run `mvn -q test` to execute the regression suite.
 
 ## Residual Risks
 
-- Primitive numeric DTO fields may default to `0.0` when omitted; this is documented as a future hardening decision rather than silently claimed as fixed.
+- Allocation and read-only evaluation DTOs reject omitted enterprise-required load, server telemetry, capacity, weight, and health fields instead of silently defaulting JSON omissions to `0`, `0.0`, or `false`.
 - Real AWS validation and IAM boundary verification are outside default CI.
 - Redaction is pattern-based and is not a full DLP system.
 - OTLP private-endpoint validation is heuristic and does not prove collector security.
@@ -144,6 +144,6 @@ See `evidence/RESIDUAL_RISKS.md` for the standing residual-risk register.
 - Add broader safe-envelope tests for less-common framework-generated API errors.
 - Require or test fixed `lbp-sandbox-` prefix enforcement for cloud-sandbox live mutation if sandbox operators are not fully trusted.
 - Add explicit replay tests that mock or block CloudManager construction when replay internals evolve.
-- Convert ambiguous primitive numeric DTO fields to nullable validated fields in a separate compatibility-aware change.
+- Keep future API request DTO fields nullable and explicitly validated when omission would alter security, capacity, or routing semantics.
 - Add dependency/SBOM scanning evidence and document any accepted dependency risks.
 - Add a deployment hardening guide covering TLS, IAM, firewalling, rate limiting, secret rotation, OAuth issuer operations, and collector security.

@@ -10,8 +10,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record AllocationEvaluationRequest(
+        @NotNull(message = "requestedLoad is required")
         @DecimalMin(value = "0.0", inclusive = true, message = "requestedLoad must be non-negative")
-        double requestedLoad,
+        Double requestedLoad,
 
         @Valid
         @NotNull(message = "servers is required")

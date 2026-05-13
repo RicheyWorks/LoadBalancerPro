@@ -19,6 +19,7 @@ class EnterpriseCockpitAuthPlanDocsTest {
     private static final Path API_SECURITY = Path.of("docs/API_SECURITY.md");
     private static final Path API_CONTRACTS = Path.of("docs/API_CONTRACTS.md");
     private static final Path OPERATIONS_RUNBOOK = Path.of("docs/OPERATIONS_RUNBOOK.md");
+    private static final Path RESIDUAL_RISKS = Path.of("evidence/RESIDUAL_RISKS.md");
 
     private static final Pattern REAL_LOOKING_SECRET = Pattern.compile(
             "(?i)(AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{20,}"
@@ -106,6 +107,22 @@ class EnterpriseCockpitAuthPlanDocsTest {
         assertTrue(normalized.contains("scope") && normalized.contains("scp"));
         assertTrue(normalized.contains("not app roles") || normalized.contains("not promoted to app roles"));
         assertTrue(normalized.contains("not production iam certification"));
+    }
+
+    @Test
+    void docsDocumentDtoOmissionValidation() throws Exception {
+        String combined = read(API_CONTRACTS) + "\n" + read(OPERATIONS_RUNBOOK) + "\n" + read(RESIDUAL_RISKS);
+        String normalized = combined.toLowerCase(Locale.ROOT);
+
+        for (String expected : List.of("requestedLoad", "cpuUsage", "memoryUsage", "diskUsage",
+                "capacity", "weight", "healthy")) {
+            assertTrue(combined.contains(expected), "docs should name required DTO field " + expected);
+        }
+        assertTrue(normalized.contains("omitted required"));
+        assertTrue(normalized.contains("instead of default"));
+        assertTrue(normalized.contains("0.0") && normalized.contains("false"));
+        assertTrue(combined.contains("HTTP 400"));
+        assertTrue(combined.contains("Mitigated"));
     }
 
     private static String read(Path path) throws IOException {

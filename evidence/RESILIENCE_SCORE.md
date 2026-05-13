@@ -158,7 +158,7 @@ Evidence references:
 - `evidence/SAFETY_INVARIANTS.md`
 - `evidence/RESIDUAL_RISKS.md`
 
-Residual risks preventing a higher score: Primitive numeric DTO fields can default to `0.0` when omitted. Not every possible framework-generated 404/405/415/proxy-level error surface is claimed to have identical safe-envelope behavior. Very large hostile files and future schema changes remain review areas.
+Residual risks preventing a higher score: Not every possible framework-generated 404/405/415/proxy-level error surface is claimed to have identical safe-envelope behavior. Very large hostile files and future schema changes remain review areas. Allocation/evaluation request DTO omission has been hardened so required load, server telemetry, capacity, weight, and health fields fail validation instead of defaulting.
 
 Suggested next hardening action: Add strict required-field DTO validation and broaden contract tests for less-common framework-generated error surfaces.
 

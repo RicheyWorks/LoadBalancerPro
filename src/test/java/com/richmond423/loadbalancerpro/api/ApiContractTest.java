@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -141,11 +142,15 @@ class ApiContractTest {
         assertPathRequestSchemaAndOkResponse(docs, "/api/remediation/report", "RemediationReportRequest");
 
         assertSchemaProperties(docs, "AllocationRequest", "requestedLoad", "servers");
+        assertSchemaRequired(docs, "AllocationRequest", "requestedLoad", "servers");
         assertSchemaProperties(docs, "AllocationResponse", "allocations", "unallocatedLoad",
                 "recommendedAdditionalServers", "scalingSimulation");
         assertSchemaProperties(docs, "AllocationEvaluationRequest", "requestedLoad", "servers",
                 "strategy", "priority", "currentInFlightRequestCount", "concurrencyLimit",
                 "queueDepth", "observedP95LatencyMillis", "observedErrorRate");
+        assertSchemaRequired(docs, "AllocationEvaluationRequest", "requestedLoad", "servers");
+        assertSchemaRequired(docs, "ServerInput", "id", "cpuUsage", "memoryUsage", "diskUsage",
+                "capacity", "weight", "healthy");
         assertSchemaProperties(docs, "AllocationEvaluationResponse", "strategy", "allocations",
                 "acceptedLoad", "rejectedLoad", "unallocatedLoad", "recommendedAdditionalServers",
                 "scalingSimulation", "loadShedding", "metricsPreview", "readOnly", "remediationPlan",
@@ -366,6 +371,20 @@ class ApiContractTest {
         for (String property : properties) {
             assertFalse(schemaProperties.path(property).isMissingNode(),
                     () -> schemaName + " should expose property " + property);
+        }
+    }
+
+    private static void assertSchemaRequired(JsonNode docs, String schemaName, String... properties) {
+        JsonNode requiredProperties = required(docs, "/components/schemas/" + schemaName + "/required");
+        for (String property : properties) {
+            boolean present = false;
+            for (JsonNode requiredProperty : requiredProperties) {
+                if (property.equals(requiredProperty.asText())) {
+                    present = true;
+                    break;
+                }
+            }
+            assertTrue(present, () -> schemaName + " should require property " + property);
         }
     }
 

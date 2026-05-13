@@ -143,11 +143,15 @@ public class OperatorRemediationPlanner {
     }
 
     private static int healthyServerCount(List<ServerInput> servers) {
-        return (int) servers.stream().filter(ServerInput::healthy).count();
+        return (int) servers.stream().filter(OperatorRemediationPlanner::isHealthy).count();
     }
 
     private static int unhealthyServerCount(List<ServerInput> servers) {
-        return (int) servers.stream().filter(server -> !server.healthy()).count();
+        return (int) servers.stream().filter(server -> !isHealthy(server)).count();
+    }
+
+    private static boolean isHealthy(ServerInput server) {
+        return Boolean.TRUE.equals(server.healthy());
     }
 
     private static boolean isLoadShed(LoadSheddingEvaluation loadShedding) {

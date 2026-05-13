@@ -18,6 +18,8 @@ For the future path beyond loopback, [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](P
 
 The dry-run-only reviewer recipe in [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](PRIVATE_NETWORK_PROXY_DRY_RUN.md) exercises that gate with deterministic classifier samples and writes `target/proxy-evidence/private-network-validation-dry-run.md` plus `target/proxy-evidence/private-network-validation-dry-run.json`. It is source-visible Maven/JUnit evidence only: no backend is started, no traffic is sent, no DNS or reachability check runs, no port scan occurs, and no API key or secret is written.
 
+Before any private-network live validation is implemented, [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md) must define and pass review for the exact default-off live flags, explicit operator approval, classifier validation, timeout behavior, evidence redaction, abort behavior, and fail-closed tests. Until that separate approval happens, private-network validation remains config-only plus dry-run evidence.
+
 ## Containment Rules
 
 - Live/proxy mode is opt-in and must not become the default profile behavior.

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 class PrivateNetworkProxyProfilePlanDocumentationTest {
     private static final Path PLAN = Path.of("docs/PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md");
     private static final Path DRY_RUN = Path.of("docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md");
+    private static final Path LIVE_GATE = Path.of("docs/PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path LIVE_PROXY_CONTAINMENT = Path.of("docs/LIVE_PROXY_CONTAINMENT.md");
     private static final Path RUNBOOK = Path.of("docs/OPERATIONS_RUNBOOK.md");
@@ -73,6 +74,7 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("startup and explicit proxy reload validation use that classifier"));
         assertTrue(normalized.contains("unsafe backend urls fail closed"));
         assertTrue(plan.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md"));
+        assertTrue(plan.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
         assertTrue(plan.contains("target/proxy-evidence/private-network-validation-dry-run.md"));
         assertTrue(plan.contains("target/proxy-evidence/private-network-validation-dry-run.json"));
         assertTrue(normalized.contains("does not resolve dns"));
@@ -146,9 +148,104 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("opt-in private-network live smoke only after a separate reviewed task"));
         assertTrue(normalized.contains("implemented dry-run-only private-network profile recipe"));
         assertTrue(normalized.contains("without sending traffic"));
+        assertTrue(normalized.contains("satisfy the live validation gate design"));
+        assertTrue(normalized.contains("before any private-network traffic is implemented"));
         assertTrue(normalized.contains("no test should scan ports, discover hosts, require public dns"));
         assertTrue(normalized.contains("download servers"));
         assertTrue(normalized.contains("write secrets"));
+    }
+
+    @Test
+    void privateNetworkLiveValidationGateExistsAndIsDesignOnly() throws Exception {
+        String gate = read(LIVE_GATE);
+        String normalized = gate.toLowerCase(Locale.ROOT);
+
+        assertTrue(gate.contains("# Private-Network Live Validation Gate"));
+        assertTrue(normalized.contains("design gate"));
+        assertTrue(normalized.contains("does not implement live private-network execution"));
+        assertTrue(normalized.contains("does not send traffic"));
+        assertTrue(normalized.contains("does not change proxy request routing"));
+        assertTrue(normalized.contains("does not change default/local/demo behavior"));
+        assertTrue(normalized.contains("private-network validation remains config-only plus dry-run evidence"));
+        assertTrue(gate.contains("PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md"));
+        assertTrue(gate.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md"));
+        assertTrue(gate.contains("LIVE_PROXY_CONTAINMENT.md"));
+        assertTrue(gate.contains("REVIEWER_TRUST_MAP.md"));
+    }
+
+    @Test
+    void privateNetworkLiveValidationGateRequiresExplicitApprovalAndDefaultOffFlags() throws Exception {
+        String gate = read(LIVE_GATE);
+        String normalized = gate.toLowerCase(Locale.ROOT);
+
+        assertTrue(normalized.contains("explicit reviewed task approving live private-network validation"));
+        assertTrue(gate.contains("loadbalancerpro.proxy.enabled=true"));
+        assertTrue(gate.contains("loadbalancerpro.proxy.private-network-validation.enabled=true"));
+        assertTrue(gate.contains("loadbalancerpro.proxy.private-network-live-validation.enabled=true"));
+        assertTrue(gate.contains(
+                "loadbalancerpro.proxy.private-network-live-validation.operator-approval="
+                        + "I_ACCEPT_LOCAL_PRIVATE_BACKEND_TRAFFIC"));
+        assertTrue(normalized.contains("future default-false live flag"));
+        assertTrue(normalized.contains("future operator approval"));
+        assertTrue(normalized.contains("operator-provided literal backend urls only"));
+        assertTrue(normalized.contains("passing `proxybackendurlclassifier` results"));
+        assertTrue(normalized.contains("prod/cloud-sandbox api-key or oauth2 boundary proof"));
+        assertTrue(normalized.contains("fail closed before sending traffic"));
+        assertTrue(normalized.contains("before making the candidate config active"));
+    }
+
+    @Test
+    void privateNetworkLiveValidationGatePreservesContainmentBoundaries() throws Exception {
+        String gate = read(LIVE_GATE);
+        String normalized = gate.toLowerCase(Locale.ROOT);
+
+        for (String expected : List.of(
+                "no dns resolution",
+                "inetaddress.getbyname",
+                "reachability checks",
+                "socket probes",
+                "host discovery",
+                "subnet scanning",
+                "port scanning",
+                "public-network validation",
+                "no postman private-network live execution by default",
+                "no smoke private-network live execution by default",
+                "no persistence",
+                "service installation",
+                "scheduled tasks",
+                "credential storage",
+                "secret persistence",
+                "no native executables",
+                "native-image",
+                "launch4j",
+                "jpackage",
+                "downloaded servers",
+                "vendored binaries",
+                "release-downloads/")) {
+            assertTrue(normalized.contains(expected), "live gate should preserve boundary: " + expected);
+        }
+    }
+
+    @Test
+    void privateNetworkLiveValidationGateDefinesFailureEvidenceAndTestRequirements() throws Exception {
+        String gate = read(LIVE_GATE);
+        String normalized = gate.toLowerCase(Locale.ROOT);
+
+        assertTrue(normalized.contains("invalid or rejected backend urls fail before traffic"));
+        assertTrue(normalized.contains("missing operator approval fails before traffic"));
+        assertTrue(normalized.contains("failed classifier validation fails before traffic"));
+        assertTrue(normalized.contains("controlled failure"));
+        assertTrue(normalized.contains("explicit reload failure preserves the last-known-good active config"));
+        assertTrue(normalized.contains("abort must stop validation promptly"));
+        assertTrue(normalized.contains("generated evidence must be markdown or json under ignored `target/` output"));
+        assertTrue(normalized.contains("must never include raw api keys"));
+        assertTrue(normalized.contains("bearer tokens"));
+        assertTrue(normalized.contains("private hostnames marked for redaction"));
+        assertTrue(normalized.contains("default-off behavior for every live-validation flag"));
+        assertTrue(normalized.contains("missing approval token fails closed before traffic"));
+        assertTrue(normalized.contains("bounded timeout and controlled failure reporting"));
+        assertTrue(normalized.contains("redacted ignored evidence output"));
+        assertTrue(normalized.contains("no postman or smoke private-network live execution by default"));
     }
 
     @Test
@@ -157,6 +254,7 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         String normalized = recipe.toLowerCase(Locale.ROOT);
 
         assertTrue(recipe.contains("# Private-Network Proxy Dry Run"));
+        assertTrue(recipe.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
         assertTrue(recipe.contains("mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test"));
         assertTrue(recipe.contains("loadbalancerpro.proxy.private-network-validation.enabled=true"));
         assertTrue(recipe.contains("target/proxy-evidence/private-network-validation-dry-run.md"));
@@ -184,6 +282,9 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("not tracked documentation artifacts"));
         assertTrue(normalized.contains("must not contain api keys"));
         assertTrue(normalized.contains("does not add live private-network traffic"));
+        assertTrue(normalized.contains("explicit operator approval"));
+        assertTrue(normalized.contains("future default-off live flags"));
+        assertTrue(normalized.contains("continued no-dns/no-discovery/no-scanning rules"));
     }
 
     @Test
@@ -212,16 +313,22 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
 
         assertTrue(trustMap.contains("PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md"));
         assertTrue(trustMap.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md"));
+        assertTrue(trustMap.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
         assertTrue(liveProxyContainment.contains("PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md"));
         assertTrue(liveProxyContainment.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md"));
+        assertTrue(liveProxyContainment.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
         assertTrue(runbook.contains("PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md"));
         assertTrue(runbook.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md"));
+        assertTrue(runbook.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
         assertTrue(normalized.contains("explicit operator-provided backend urls only"));
         assertTrue(normalized.contains("local/private-network allowlisting"));
         assertTrue(normalized.contains("offline `proxybackendurlclassifier` review"));
         assertTrue(normalized.contains("opt-in startup/reload configuration validation"));
         assertTrue(normalized.contains("configuration-only at this stage"));
         assertTrue(normalized.contains("config-only classifier evidence without traffic"));
+        assertTrue(normalized.contains("explicit operator approval before live traffic"));
+        assertTrue(normalized.contains("default-off live flags"));
+        assertTrue(normalized.contains("fail-closed reload/startup behavior"));
         assertTrue(normalized.contains("target/proxy-evidence/private-network-validation-dry-run.md"));
         assertTrue(normalized.contains("target/proxy-evidence/private-network-validation-dry-run.json"));
         assertTrue(normalized.contains("no dns or reachability checks"));

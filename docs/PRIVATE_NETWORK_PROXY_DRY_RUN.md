@@ -4,7 +4,7 @@ Use this recipe when a reviewer or operator wants to see how the future private-
 
 This is config-validation-only. It uses the source-visible Java `ProxyBackendUrlClassifier`, runs under Maven/JUnit, writes ignored evidence under `target/`, and does not start private-network smoke, Postman execution, Docker, external services, downloaded tools, DNS resolution, reachability checks, socket probes, port scanning, or live proxy forwarding.
 
-Start with [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md), [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md), and [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md) for the surrounding safety boundaries.
+Start with [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md), [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md), [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md), and [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md) for the surrounding safety boundaries.
 
 ## Focused Command
 
@@ -54,3 +54,5 @@ The JSON evidence is the structured review path. It records the same labels and 
 Rejected inputs represent fail-closed configuration validation failures. With `loadbalancerpro.proxy.private-network-validation.enabled=true`, unsafe backend URLs fail before startup or explicit proxy reload can make them active. Existing tests continue to prove that rejected reload configuration preserves the last-known-good active config.
 
 The default property remains `loadbalancerpro.proxy.private-network-validation.enabled=false`; this dry run does not change default/local/demo forwarding behavior and does not add live private-network traffic.
+
+Before any future private-network live validation is implemented, [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md) must be satisfied. That gate requires explicit operator approval, future default-off live flags, classifier approval for every literal backend URL, bounded timeout behavior, redacted ignored `target/` evidence, API-key/OAuth2 boundary proof, and continued no-DNS/no-discovery/no-scanning rules.

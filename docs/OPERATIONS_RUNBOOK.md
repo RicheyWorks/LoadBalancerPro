@@ -4,6 +4,8 @@ This runbook is for degraded allocation, load-shedding, validation-failure, and 
 
 Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md). Use [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) when you need copyable local, API-key, OAuth2, proxy-loopback, or container startup recipes, use [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) for local-only Docker build/run guidance, then use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) for the local-only packaged-jar and proxy-loopback smoke path.
 
+For the enterprise cockpit auth, operator UX, and Swagger/OpenAPI gating plan, see [`ENTERPRISE_COCKPIT_AUTH_PLAN.md`](ENTERPRISE_COCKPIT_AUTH_PLAN.md).
+
 ## First Checks
 
 1. Confirm the running version:

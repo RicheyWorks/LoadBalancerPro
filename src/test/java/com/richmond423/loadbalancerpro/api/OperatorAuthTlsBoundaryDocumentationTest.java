@@ -54,6 +54,8 @@ class OperatorAuthTlsBoundaryDocumentationTest {
         assertTrue(apiSecurity.contains(
                 "In prod and cloud-sandbox profiles it also protects `/proxy/**` and "
                         + "`GET /api/proxy/status`"));
+        assertTrue(apiSecurity.contains(
+                "The checked-in Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod`"));
         assertTrue(reverseProxyMode.contains("## Auth And TLS Boundary"));
         assertTrue(reverseProxyMode.contains("Local/default API-key mode stays demo-friendly"));
         assertTrue(reverseProxyMode.contains(

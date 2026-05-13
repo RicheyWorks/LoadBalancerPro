@@ -10,6 +10,8 @@ For the enterprise cockpit auth, operator UX, and Swagger/OpenAPI gating plan/cu
 
 For a deterministic Postman runbook across local/demo and prod API-key modes, import the files documented in [`POSTMAN_COLLECTION.md`](POSTMAN_COLLECTION.md). Keep `apiKey` as a local Postman placeholder value only. The source-visible smoke script is dry-run safe by default: run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\postman-enterprise-lab-safe-smoke.ps1 -DryRun`, then `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\postman-enterprise-lab-safe-smoke.ps1 -Package -EvidenceDir target\postman-enterprise-lab-smoke` only when local ports are available. The evidence redacts the API key as `<REDACTED>`, uses no real secrets, does not require Newman, does not implement OAuth2, and does not mutate cloud state.
 
+Container/default deployment mode is protected by the prod API-key profile because the checked-in Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod`. Set `LOADBALANCERPRO_API_KEY` through the runtime environment or deployment secret system before expecting protected API, proxy, OpenAPI, or Swagger requests to succeed. Local developer mode remains intentionally permissive for source-checkout demos; do not expose local/demo mode on public interfaces.
+
 ## First Checks
 
 1. Confirm the running version:

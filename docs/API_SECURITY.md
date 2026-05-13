@@ -10,7 +10,9 @@ For placeholder-only Postman review of local/demo and prod API-key boundaries, u
 
 ## Authentication Posture
 
-The local/default profile keeps API routes convenient for development and automated tests. Production-like deployments should use the `prod` or `cloud-sandbox` profile with API-key mode or OAuth2 mode configured.
+The local/default profile keeps API routes convenient for development and automated tests. Local developer mode is intentionally permissive and must not be exposed on public interfaces. Production-like deployments should use the `prod` or `cloud-sandbox` profile with API-key mode or OAuth2 mode configured.
+
+The checked-in Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod`, so container/default deployment mode is protected by the prod API-key profile. Provide `LOADBALANCERPRO_API_KEY` through the operator's runtime secret/config system for protected prod container usage; do not bake API keys or OAuth2 tokens into the image.
 
 API-key mode protects mutation-style API routes with the `X-API-Key` header, including the non-executing `POST /api/proxy/private-network-live-validation` command contract. In prod and cloud-sandbox profiles it also protects `/proxy/**` and `GET /api/proxy/status` so proxy forwarding/status surfaces fail closed when the key is missing or wrong. The same prod/cloud-sandbox API-key boundary also gates `/v3/api-docs`, `/v3/api-docs/**`, `/swagger-ui.html`, and `/swagger-ui/**`. Local/default Swagger/OpenAPI remains public for developer usability. API-key mode is suitable for demos and compatibility testing, but it is not a full enterprise identity model. OAuth2 mode provides bearer-token validation and role checks when issuer or JWK settings are supplied.
 

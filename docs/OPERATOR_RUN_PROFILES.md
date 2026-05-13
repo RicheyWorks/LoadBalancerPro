@@ -1,6 +1,6 @@
 # Operator Run Profiles
 
-Use this guide when you want the shortest safe path from "which mode should I run?" to a copyable command. It packages the existing local, packaged-jar, API-key, OAuth2, proxy-loopback, and container paths without changing defaults.
+Use this guide when you want the shortest safe path from "which mode should I run?" to a copyable command. It packages the existing local, packaged-jar, API-key, OAuth2, proxy-loopback, and container paths without changing source-checkout developer defaults.
 
 Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md). Use this page as the execution hub after you know which evidence path you want.
 
@@ -8,9 +8,11 @@ After choosing a profile, use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.m
 
 ## Start Here
 
-The local demo remains the easiest mode. It keeps browser review pages available, uses local-friendly CORS defaults, keeps live AWS mutation off, and keeps proxy mode disabled unless you explicitly enable a proxy profile or imported proxy config.
+The local demo remains the easiest source-checkout mode. It keeps browser review pages available, uses local-friendly CORS defaults, keeps live AWS mutation off, and keeps proxy mode disabled unless you explicitly enable a proxy profile or imported proxy config. Local developer mode is intentionally permissive; do not expose local/demo mode on public interfaces.
 
 The prod and cloud-sandbox profiles are opt-in boundaries for controlled validation. In API-key mode, they require `X-API-Key` for protected mutation routes, `/proxy/**`, and `GET /api/proxy/status`. OAuth2 mode is available when an issuer or JWK set is configured.
+
+Container/default deployment mode is protected by the prod API-key profile. The checked-in Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod`, and operators provide `LOADBALANCERPRO_API_KEY` at run time for protected API, proxy, OpenAPI, and Swagger review.
 
 Proxy mode is lightweight and optional. It forwards to configured upstreams only when `loadbalancerpro.proxy.enabled=true`; the default `src/main/resources/application.properties` keeps `loadbalancerpro.proxy.enabled=false`.
 
@@ -26,7 +28,7 @@ This guide does not claim production readiness, gateway hardening, security cert
 | cloud-sandbox API-key boundary | Dry-run sandbox-profile validation with API-key boundary | `LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY`, `--spring.profiles.active=cloud-sandbox` | Disabled | Same API-key boundary as prod; cloud live mutation remains off by default | Terminate TLS at trusted edge before non-local exposure | Local/private only | `curl -i http://127.0.0.1:8080/api/proxy/status` then `curl -i -H "X-API-Key: $LOADBALANCERPRO_API_KEY" http://127.0.0.1:8080/api/proxy/status` | Sandbox profile starts dry-run and protected surfaces require API key | Live AWS behavior, IAM proof, or sandbox cleanup correctness |
 | OAuth2 mode | App-native JWT role-check validation | `loadbalancerpro.auth.mode=oauth2` plus loopback issuer or JWK set config | Disabled unless explicitly enabled elsewhere | Bearer token required; configured allocation role defaults to `operator` for protected allocation/routing and proxy surfaces | Terminate TLS externally; do not send real tokens over plain shared networks | Private/demo review only | `curl -i -H "Authorization: Bearer CHANGE_ME_LOCAL_TOKEN" http://127.0.0.1:8080/api/proxy/status` | OAuth2 mode wiring and role boundary can be validated with a configured local identity/JWK source | Identity-provider operation, key rotation, or end-to-end encryption |
 | proxy-enabled loopback validation | Real HTTP forwarding to local/private backends | `--spring.config.import=optional:file:docs/examples/operator-run-profiles/proxy-loopback.properties` | Explicitly enabled by imported example | Local/default mode is demo-friendly unless combined with prod or OAuth2 settings | Loopback HTTP only; terminate TLS externally before exposure | `http://localhost:8080/proxy-status.html` | `curl -i http://127.0.0.1:8080/proxy/api/health` and `curl -s http://127.0.0.1:8080/api/proxy/status` | Configured route/target forwarding and status visibility | Production gateway behavior, throughput, public ingress safety, or TLS |
-| container run | Validate Dockerfile-based local runtime | `docker build -t loadbalancerpro:local .` then loopback-bound `docker run` | Disabled | Same as selected app profile; default container command uses local defaults | Container port is HTTP; terminate TLS externally | `http://localhost:8080/` when mapped to loopback | `curl -fsS http://127.0.0.1:8080/api/health` | Container image can start and answer health on loopback | Kubernetes, Helm, Compose, registry publishing, or production runtime posture |
+| container run | Validate Dockerfile-based protected runtime | `docker build -t loadbalancerpro:local .`, then loopback-bound `docker run` with `LOADBALANCERPRO_API_KEY` | Disabled | Dockerfile defaults to `SPRING_PROFILES_ACTIVE=prod`; protected API mutations, `/proxy/**`, OpenAPI, and Swagger require `X-API-Key` | Container port is HTTP; terminate TLS externally | `http://localhost:8080/` when mapped to loopback | `curl -fsS http://127.0.0.1:8080/api/health`, then `curl -i http://127.0.0.1:8080/v3/api-docs` should return 401 without a key | Container image can start with prod API-key protection and answer health on loopback | Kubernetes, Helm, Compose, registry publishing, full identity, secret rotation, or production runtime posture |
 
 ## Copyable Recipes
 
@@ -133,22 +135,32 @@ The repository has a Dockerfile. There is no checked-in compose file, so keep th
 
 ```bash
 docker build -t loadbalancerpro:local .
-docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 loadbalancerpro:local
+docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY loadbalancerpro:local
 curl -fsS http://127.0.0.1:8080/api/health
+curl -i http://127.0.0.1:8080/v3/api-docs
 ```
 
-Prod API-key boundary in a local container:
+Expected boundary: the default container uses the prod API-key profile. The unauthenticated OpenAPI request returns HTTP 401, protected POST routes require `X-API-Key`, and the health endpoint remains public for health checks.
+
+Explicit local/demo behavior in a loopback-bound container:
+
+```bash
+docker run --rm --name loadbalancerpro-local-demo \
+  -p 127.0.0.1:8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=local \
+  loadbalancerpro:local
+```
+
+Prod API-key boundary in a local container, using the same Dockerfile default profile:
 
 ```bash
 docker run --rm --name loadbalancerpro-prod \
   -p 127.0.0.1:8080:8080 \
   -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY \
-  loadbalancerpro:local \
-  --server.address=0.0.0.0 \
-  --spring.profiles.active=prod
+  loadbalancerpro:local
 ```
 
-Do not bake secrets into the image. Keep container examples loopback-bound unless a reviewed deployment edge supplies TLS, access control, logging, and rate limits.
+Do not bake secrets into the image. Keep container examples loopback-bound unless a reviewed deployment edge supplies TLS, access control, logging, and rate limits. Do not expose local/demo mode on public interfaces.
 
 ## Example Config Files
 

@@ -45,6 +45,9 @@ class ReadmeVisibilityDocumentationTest {
         assertTrue(readme.contains("http://localhost:8080/"));
         assertTrue(readme.contains("http://localhost:8080/load-balancing-cockpit.html"));
         assertTrue(readme.contains("docs/REVIEWER_TRUST_MAP.md#reviewer-demo-path"));
+        assertTrue(readme.contains("The Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod`"));
+        assertTrue(readme.contains("Docker mode starts the prod API-key profile by default"));
+        assertTrue(readme.contains("Local developer mode is intentionally permissive"));
     }
 
     @Test

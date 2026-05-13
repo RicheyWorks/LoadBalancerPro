@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.api;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -59,5 +61,24 @@ class ReverseProxyDisabledTest {
                 .andExpect(jsonPath("$.reload.configReloadSupported").value(false))
                 .andExpect(jsonPath("$.reload.activeConfigGeneration").value(0))
                 .andExpect(jsonPath("$.reload.lastReloadStatus").value("unsupported"));
+    }
+
+    @Test
+    void privateNetworkLiveValidationCommandReportsBlockedDefaultsWithoutExecution() throws Exception {
+        mockMvc.perform(post("/api/proxy/private-network-live-validation")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"requestPath\":\"/health\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accepted").value(false))
+                .andExpect(jsonPath("$.executable").value(false))
+                .andExpect(jsonPath("$.trafficExecuted").value(false))
+                .andExpect(jsonPath("$.status").value("BLOCKED_BY_GATE"))
+                .andExpect(jsonPath("$.message")
+                        .value("private-network live validation command is blocked by the offline gate; "
+                                + "traffic execution is not wired in this release"))
+                .andExpect(jsonPath("$.requestPath").value("/health"))
+                .andExpect(jsonPath("$.evidenceWritten").value(false))
+                .andExpect(jsonPath("$.gate.gateStatus").value("NOT_ENABLED"))
+                .andExpect(jsonPath("$.reasonCodes[0]").value("LIVE_VALIDATION_DISABLED"));
     }
 }

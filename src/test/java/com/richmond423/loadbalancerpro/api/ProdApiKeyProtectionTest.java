@@ -55,6 +55,13 @@ class ProdApiKeyProtectionTest {
               ]
             }
             """;
+    private static final String LIVE_VALIDATION_COMMAND_BODY = """
+            {
+              "requestPath": "/health",
+              "evidenceRequested": true,
+              "operatorAcknowledged": true
+            }
+            """;
 
     @Autowired
     private MockMvc mockMvc;
@@ -193,6 +200,34 @@ class ProdApiKeyProtectionTest {
     }
 
     @Test
+    void prodProfileProtectsPrivateNetworkLiveValidationCommandWithoutApiKey() throws Exception {
+        mockMvc.perform(privateNetworkLiveValidationCommandRequest())
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.error", is("unauthorized")))
+                .andExpect(jsonPath("$.path", is("/api/proxy/private-network-live-validation")));
+    }
+
+    @Test
+    void prodProfileReturnsNotExecutedCommandWithCorrectApiKeyWithoutLeakingSecret() throws Exception {
+        mockMvc.perform(privateNetworkLiveValidationCommandRequest().header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString(API_KEY))))
+                .andExpect(content().string(not(containsString("X-API-Key"))))
+                .andExpect(content().string(not(containsString("Authorization"))))
+                .andExpect(content().string(not(containsString("Bearer"))))
+                .andExpect(content().string(not(containsString("Cookie"))))
+                .andExpect(jsonPath("$.accepted", is(false)))
+                .andExpect(jsonPath("$.executable", is(false)))
+                .andExpect(jsonPath("$.trafficExecuted", is(false)))
+                .andExpect(jsonPath("$.evidenceWritten", is(false)))
+                .andExpect(jsonPath("$.status", is("BLOCKED_BY_GATE")))
+                .andExpect(jsonPath("$.gate.gateStatus", is("NOT_ENABLED")))
+                .andExpect(jsonPath("$.reasonCodes[0]", is("LIVE_VALIDATION_DISABLED")));
+    }
+
+    @Test
     void prodProfileProtectsProxyForwardingSurfaceWithoutApiKey() throws Exception {
         mockMvc.perform(get("/proxy/demo"))
                 .andExpect(status().isUnauthorized())
@@ -274,5 +309,12 @@ class ProdApiKeyProtectionTest {
         return post("/api/routing/compare")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ROUTING_REQUEST_BODY);
+    }
+
+    private static org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+            privateNetworkLiveValidationCommandRequest() {
+        return post("/api/proxy/private-network-live-validation")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(LIVE_VALIDATION_COMMAND_BODY);
     }
 }

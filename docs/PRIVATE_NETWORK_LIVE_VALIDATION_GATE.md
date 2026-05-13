@@ -31,6 +31,12 @@ If any gate is missing, malformed, ambiguous, or rejected, the offline gate retu
 
 This status field does not call `PrivateNetworkLiveValidationExecutor`, does not send validation traffic, and does not perform DNS resolution, discovery, scanning, reachability checks, redirect following, or public/private-LAN probing. It reuses the existing proxy status boundary: prod/cloud-sandbox API-key mode requires `X-API-Key`, OAuth2 mode requires the configured allocation role, and no API keys, bearer tokens, cookies, credentials, or sensitive headers are returned.
 
+## Command Contract Surface
+
+`POST /api/proxy/private-network-live-validation` is a non-executing operator command contract. It validates a minimal request shape (`requestPath`, optional `evidenceRequested`, and optional operator acknowledgement), evaluates the same offline gate, and returns structured `INVALID_REQUEST`, `BLOCKED_BY_GATE`, or `NOT_IMPLEMENTED` responses with `accepted=false`, `executable=false`, `trafficExecuted=false`, and `evidenceWritten=false`.
+
+The command contract is protected by the same production boundaries as other proxy mutations: prod/cloud-sandbox API-key mode requires `X-API-Key`, and OAuth2 mode requires the configured allocation role. It rejects unsafe request paths before returning a gate result, does not echo raw suspicious path input, does not call `PrivateNetworkLiveValidationExecutor`, does not write evidence, and does not send private-LAN or public traffic. The expected not-wired response message is `traffic execution is not wired in this release`.
+
 ## Allowed Backend Model
 
 The future runtime live path may target only explicit backend URLs that the operator provides in configuration or reload payloads. It must not expand hostnames, CIDR ranges, IP ranges, service names, wildcard patterns, inventory files, or environment-specific discovery into target lists.
@@ -102,6 +108,7 @@ Implemented source-visible pieces:
 - `PrivateNetworkLiveValidationGate`, which evaluates configuration only and returns allowed, not-enabled, or blocked results;
 - `PrivateNetworkLiveValidationExecutor`, a bounded primitive that requires an allowed gate result, uses the already-classified normalized backend URL, validates a relative request path, delegates exactly one request to an injected transport, and returns structured success, blocked, invalid-request, or failed results;
 - `GET /api/proxy/status.privateNetworkLiveValidation`, a report-only gate visibility field that returns flags, classifier decisions, reason codes, and a fixed no-traffic message without invoking the executor;
+- `POST /api/proxy/private-network-live-validation`, a protected command contract that validates request shape and offline gate status while always returning not-executed/not-wired responses;
 - request-path hardening that rejects null/blank input, absolute URLs, scheme-relative paths, query strings, fragments, traversal segments, encoded traversal, encoded control characters, raw control characters, and backslashes before transport;
 - request/response header hardening that propagates only allowlisted deterministic validation headers and captures only allowlisted response summary headers;
 - redirect hardening proving loopback redirects are reported as `302` without following public `Location` targets;

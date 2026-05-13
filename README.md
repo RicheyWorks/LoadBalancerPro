@@ -16,6 +16,12 @@ LoadBalancerPro is designed to show how a load-balancing system can grow from an
 
 For reviewers and recruiters, the useful signal is not a single flashy demo. It is the combination of conservative defaults, explicit guardrails, repeatable local validation, CI-published artifacts, and documentation that distinguishes implemented behavior from roadmap work.
 
+## Start Here For Reviewers
+
+Use [`REVIEWER_TRUST_MAP.md#reviewer-demo-path`](docs/REVIEWER_TRUST_MAP.md#reviewer-demo-path) for the shortest safe proof path, then use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) for a quick screen-share script.
+
+The reviewer path shows how to generate local proxy evidence with `mvn -Dtest=LocalProxyEvidenceExportTest test`, private-network config-only dry-run evidence with `mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test`, Postman and operator smoke dry-runs with source-visible PowerShell scripts, and CI/CodeQL evidence from GitHub checks. Evidence is written under ignored `target/` output, secrets are redacted, and live private-network validation remains intentionally unimplemented until a separate approved gate is satisfied.
+
 ## Evaluate In 5 Minutes
 
 1. Read [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) for the short positioning and limitation summary.

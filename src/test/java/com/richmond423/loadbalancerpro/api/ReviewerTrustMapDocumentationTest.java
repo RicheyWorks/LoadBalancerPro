@@ -67,6 +67,7 @@ class ReviewerTrustMapDocumentationTest {
 
         assertTrue(trustMap.contains("# Reviewer Trust Map"));
         assertTrue(trustMap.contains("## Start Here"));
+        assertTrue(trustMap.contains("## Reviewer Demo Path"));
         assertTrue(trustMap.contains("## Evidence Matrix"));
         assertTrue(trustMap.contains("## Recommended Reviewer Flows"));
         assertTrue(trustMap.contains("## Safety Boundaries"));
@@ -97,6 +98,8 @@ class ReviewerTrustMapDocumentationTest {
                 "target/proxy-evidence/private-network-validation-dry-run.md",
                 "target/proxy-evidence/private-network-validation-dry-run.json",
                 "PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md",
+                "operator-run-profiles-smoke.ps1",
+                "postman-enterprise-lab-safe-smoke.ps1",
                 "PROXY_STRATEGY_DEMO_LAB.md",
                 "PROXY_DEMO_STACK.md",
                 "PROXY_DEMO_FIXTURE_LAUNCHER.md",
@@ -115,6 +118,54 @@ class ReviewerTrustMapDocumentationTest {
                 "zero skipped tests")) {
             assertTrue(trustMap.contains(expected), "trust map should mention " + expected);
         }
+    }
+
+    @Test
+    void reviewerDemoPathAnswersFastDemoQuestionsAndLocksEvidenceFiles() throws Exception {
+        String trustMap = read(TRUST_MAP);
+        String readme = read(README);
+        String demoPath = section(trustMap, "## Reviewer Demo Path", "## Evidence Matrix");
+        String normalized = demoPath.toLowerCase(Locale.ROOT);
+
+        assertTrue(normalized.contains("about five minutes"));
+        assertTrue(normalized.contains("what this project is"));
+        assertTrue(normalized.contains("java/spring load-balancing simulator"));
+        assertTrue(normalized.contains("operator-focused proxy foundation"));
+        assertTrue(normalized.contains("what can be proven quickly"));
+        assertTrue(demoPath.contains("mvn spring-boot:run"));
+        assertTrue(demoPath.contains("http://localhost:8080/"));
+        assertTrue(demoPath.contains("http://localhost:8080/load-balancing-cockpit.html"));
+        assertTrue(demoPath.contains("mvn -Dtest=LocalProxyEvidenceExportTest test"));
+        assertTrue(demoPath.contains("target/proxy-evidence/local-proxy-evidence.md"));
+        assertTrue(demoPath.contains("target/proxy-evidence/local-proxy-evidence.json"));
+        assertTrue(demoPath.contains("mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test"));
+        assertTrue(demoPath.contains("target/proxy-evidence/private-network-validation-dry-run.md"));
+        assertTrue(demoPath.contains("target/proxy-evidence/private-network-validation-dry-run.json"));
+        assertTrue(demoPath.contains("operator-run-profiles-smoke.ps1 -DryRun"));
+        assertTrue(demoPath.contains("postman-enterprise-lab-safe-smoke.ps1 -DryRun"));
+        assertTrue(demoPath.contains("CI, CodeQL, Dependency Review"));
+        assertTrue(demoPath.contains("jacoco-coverage-report"));
+        assertTrue(demoPath.contains("packaged-artifact-smoke"));
+        assertTrue(demoPath.contains("loadbalancerpro-sbom"));
+        assertTrue(normalized.contains("generated evidence is ignored `target/` output"));
+        assertTrue(normalized.contains("loopback/local-only jdk `httpserver` fixtures"));
+        assertTrue(normalized.contains("config-validation-only and sends no traffic"));
+        assertTrue(normalized.contains("api keys, bearer tokens, credentials, and secrets are redacted or not written"));
+        assertTrue(normalized.contains("no dns resolution"));
+        assertTrue(normalized.contains("reachability checks"));
+        assertTrue(normalized.contains("discovery"));
+        assertTrue(normalized.contains("subnet scanning"));
+        assertTrue(normalized.contains("port scanning"));
+        assertTrue(normalized.contains("no native tooling"));
+        assertTrue(normalized.contains("downloaded helper binaries"));
+        assertTrue(normalized.contains("service installation"));
+        assertTrue(normalized.contains("scheduled tasks"));
+        assertTrue(normalized.contains("persistence"));
+        assertTrue(normalized.contains("release assets"));
+        assertTrue(normalized.contains("release-downloads/"));
+        assertTrue(normalized.contains("live private-network validation is not implemented yet"));
+        assertTrue(demoPath.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
+        assertTrue(readme.contains("REVIEWER_TRUST_MAP.md#reviewer-demo-path"));
     }
 
     @Test

@@ -36,6 +36,7 @@ class ReadmeVisibilityDocumentationTest {
         String readme = read(README);
 
         assertTrue(readme.contains("## Why This Project Matters"));
+        assertTrue(readme.contains("## Start Here For Reviewers"));
         assertTrue(readme.contains("## Evaluate In 5 Minutes"));
         assertTrue(readme.contains("## Enterprise-Style Operator Foundation"));
         assertTrue(readme.contains("## Coverage And Evidence"));
@@ -43,6 +44,7 @@ class ReadmeVisibilityDocumentationTest {
         assertTrue(readme.toLowerCase(Locale.ROOT).contains("enterprise-style operator foundation"));
         assertTrue(readme.contains("http://localhost:8080/"));
         assertTrue(readme.contains("http://localhost:8080/load-balancing-cockpit.html"));
+        assertTrue(readme.contains("docs/REVIEWER_TRUST_MAP.md#reviewer-demo-path"));
     }
 
     @Test
@@ -53,6 +55,7 @@ class ReadmeVisibilityDocumentationTest {
                 "docs/EXECUTIVE_SUMMARY.md",
                 "docs/DEMO_WALKTHROUGH.md",
                 "docs/REVIEWER_TRUST_MAP.md",
+                "docs/REVIEWER_TRUST_MAP.md#reviewer-demo-path",
                 "docs/OPERATOR_RUN_PROFILES.md",
                 "docs/DEPLOYMENT_SMOKE_KIT.md",
                 "docs/CONTAINER_DEPLOYMENT.md",
@@ -60,6 +63,21 @@ class ReadmeVisibilityDocumentationTest {
                 "docs/DEPLOYMENT_HARDENING_GUIDE.md")) {
             assertTrue(readme.contains(expected), "README should link to " + expected);
         }
+    }
+
+    @Test
+    void readmeReviewerStartPathNamesSafeEvidenceCommandsAndBoundaries() throws Exception {
+        String readme = read(README);
+        String normalized = readme.toLowerCase(Locale.ROOT);
+
+        assertTrue(readme.contains("mvn -Dtest=LocalProxyEvidenceExportTest test"));
+        assertTrue(readme.contains("mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test"));
+        assertTrue(readme.contains("postman"));
+        assertTrue(readme.contains("operator smoke dry-runs"));
+        assertTrue(readme.contains("CI/CodeQL evidence"));
+        assertTrue(normalized.contains("ignored `target/` output"));
+        assertTrue(normalized.contains("secrets are redacted"));
+        assertTrue(normalized.contains("live private-network validation remains intentionally unimplemented"));
     }
 
     @Test
@@ -92,6 +110,17 @@ class ReadmeVisibilityDocumentationTest {
         assertTrue(demoWalkthrough.contains("60 to 90 second"));
         assertTrue(demoWalkthrough.contains("load-balancing-cockpit.html"));
         assertTrue(demoWalkthrough.contains("operator-run-profiles-smoke.ps1"));
+        assertTrue(demoWalkthrough.contains("postman-enterprise-lab-safe-smoke.ps1"));
+        assertTrue(demoWalkthrough.contains("mvn -Dtest=LocalProxyEvidenceExportTest test"));
+        assertTrue(demoWalkthrough.contains("mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test"));
+        assertTrue(demoWalkthrough.contains("target/proxy-evidence/local-proxy-evidence.md"));
+        assertTrue(demoWalkthrough.contains("target/proxy-evidence/local-proxy-evidence.json"));
+        assertTrue(demoWalkthrough.contains("target/proxy-evidence/private-network-validation-dry-run.md"));
+        assertTrue(demoWalkthrough.contains("target/proxy-evidence/private-network-validation-dry-run.json"));
+        assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT).contains("live private-network validation is not implemented yet"));
+        assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT).contains("should not contain api keys"));
+        assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT).contains("dns resolution"));
+        assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT).contains("release-downloads/"));
         assertTrue(trustMap.contains("EXECUTIVE_SUMMARY.md"));
         assertTrue(trustMap.contains("DEMO_WALKTHROUGH.md"));
     }

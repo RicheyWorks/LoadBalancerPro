@@ -35,6 +35,31 @@ Recommended first paths:
 - I want to understand JavaFX: start with [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md). JavaFX is optional.
 - I want to understand the repository/package naming split: start with [`PACKAGE_NAMING.md`](PACKAGE_NAMING.md).
 
+## Reviewer Demo Path
+
+Use this path when a reviewer wants to understand the project and verify the current evidence story in about five minutes without enabling live private-network behavior.
+
+What this project is: LoadBalancerPro is a Java/Spring load-balancing simulator and operator-focused proxy foundation with guarded cloud boundaries, local browser demos, source-visible proxy evidence, API-key/OAuth2 deployment boundaries, and CI-published testing artifacts.
+
+What can be proven quickly:
+
+1. Local cockpit behavior: run `mvn spring-boot:run`, then open `http://localhost:8080/` and `http://localhost:8080/load-balancing-cockpit.html`.
+2. Local proxy forwarding evidence: run `mvn -Dtest=LocalProxyEvidenceExportTest test`, then inspect `target/proxy-evidence/local-proxy-evidence.md` and `target/proxy-evidence/local-proxy-evidence.json`.
+3. Private-network profile dry-run evidence: run `mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test`, then inspect `target/proxy-evidence/private-network-validation-dry-run.md` and `target/proxy-evidence/private-network-validation-dry-run.json`.
+4. Operator run-profile dry-run: run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\operator-run-profiles-smoke.ps1 -DryRun`.
+5. Postman safe smoke dry-run: run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\postman-enterprise-lab-safe-smoke.ps1 -DryRun`.
+6. CI evidence: inspect the latest successful CI, CodeQL, Dependency Review, `jacoco-coverage-report`, `packaged-artifact-smoke`, and `loadbalancerpro-sbom` artifacts.
+
+Safety boundaries preserved by this path:
+
+- generated evidence is ignored `target/` output and is not tracked documentation;
+- local proxy evidence uses loopback/local-only JDK `HttpServer` fixtures;
+- private-network evidence is config-validation-only and sends no traffic;
+- API keys, bearer tokens, credentials, and secrets are redacted or not written;
+- no DNS resolution, reachability checks, discovery, subnet scanning, or port scanning are used;
+- no native tooling, downloaded helper binaries, service installation, scheduled tasks, persistence, release assets, or `release-downloads/` mutation are introduced;
+- live private-network validation is not implemented yet and remains blocked on [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md).
+
 ## Evidence Matrix
 
 | Reviewer question | Evidence source | Primary doc | Runtime path or artifact | What it proves | What it does not prove |

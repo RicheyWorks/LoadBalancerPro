@@ -25,6 +25,7 @@ class ReverseProxyObservabilityHardeningTest {
     private static final Path STATUS_UI_DOC = Path.of("docs/PROXY_OPERATOR_STATUS_UI.md");
     private static final Path RUNBOOK = Path.of("docs/OPERATIONS_RUNBOOK.md");
     private static final Path SMOKE_DOC = Path.of("docs/DEPLOYMENT_SMOKE_KIT.md");
+    private static final Path API_CONTRACTS = Path.of("docs/API_CONTRACTS.md");
     private static final Pattern CLOUD_MANAGER_CONSTRUCTION =
             Pattern.compile("new\\s+" + "CloudManager\\s*\\(|" + "CloudManager\\s*\\(");
     private static final Pattern RELEASE_COMMAND =
@@ -37,6 +38,7 @@ class ReverseProxyObservabilityHardeningTest {
 
         assertTrue(response.contains("ObservabilitySummary"));
         assertTrue(response.contains("SecurityBoundaryStatus"));
+        assertTrue(response.contains("PrivateNetworkLiveValidationStatusResponse"));
         assertTrue(response.contains("routeCount"));
         assertTrue(response.contains("backendTargetCount"));
         assertTrue(response.contains("cooldownActiveBackendCount"));
@@ -86,6 +88,7 @@ class ReverseProxyObservabilityHardeningTest {
         String statusUi = read(STATUS_UI_DOC);
         String runbook = read(RUNBOOK);
         String smoke = read(SMOKE_DOC);
+        String contracts = read(API_CONTRACTS);
 
         assertTrue(healthMetrics.contains("observability"));
         assertTrue(healthMetrics.contains("route count"));
@@ -99,6 +102,9 @@ class ReverseProxyObservabilityHardeningTest {
         assertTrue(smoke.contains("proxy.observability.startup"));
         assertTrue(smoke.contains("proxy.forward.retryable_status"));
         assertTrue(healthMetrics.contains("No external telemetry"));
+        assertTrue(contracts.contains("privateNetworkLiveValidation"));
+        assertTrue(contracts.contains("trafficExecuted=false"));
+        assertTrue(contracts.contains("does not call the live executor or send validation traffic"));
     }
 
     @Test

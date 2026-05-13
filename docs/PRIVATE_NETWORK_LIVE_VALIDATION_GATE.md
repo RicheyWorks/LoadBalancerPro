@@ -7,6 +7,7 @@ Use this after [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](PRIVATE_NETWORK_PROXY_P
 ```bash
 mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test
 mvn -Dtest=PrivateNetworkLiveValidationExecutorTest test
+curl -fsS http://127.0.0.1:8080/api/proxy/status
 ```
 
 ## Approval Gate
@@ -23,6 +24,12 @@ Private-network live validation must not be added by default or implied by exist
 - prod/cloud-sandbox API-key or OAuth2 boundary proof for protected proxy/status/reload surfaces.
 
 If any gate is missing, malformed, ambiguous, or rejected, the offline gate returns not-enabled or blocked. The current executor requires an allowed gate result before delegating to its supplied transport. A future runtime/private-LAN live validation path must fail closed before sending traffic and before making the candidate config active.
+
+## Status Report Surface
+
+`GET /api/proxy/status` includes `privateNetworkLiveValidation` as a report-only view of the offline gate. It shows the live-validation flag, operator-approved flag, config-validation flag, proxy enabled state, classifier status for configured backend literals, gate status, reason codes, `trafficExecuted=false`, and `trafficExecution="traffic not executed by this report"`. Backend literals are classified for visibility even when missing flags keep the gate blocked or not enabled.
+
+This status field does not call `PrivateNetworkLiveValidationExecutor`, does not send validation traffic, and does not perform DNS resolution, discovery, scanning, reachability checks, redirect following, or public/private-LAN probing. It reuses the existing proxy status boundary: prod/cloud-sandbox API-key mode requires `X-API-Key`, OAuth2 mode requires the configured allocation role, and no API keys, bearer tokens, cookies, credentials, or sensitive headers are returned.
 
 ## Allowed Backend Model
 
@@ -94,6 +101,7 @@ Implemented source-visible pieces:
   - `loadbalancerpro.proxy.private-network-live-validation.operator-approved=false`;
 - `PrivateNetworkLiveValidationGate`, which evaluates configuration only and returns allowed, not-enabled, or blocked results;
 - `PrivateNetworkLiveValidationExecutor`, a bounded primitive that requires an allowed gate result, uses the already-classified normalized backend URL, validates a relative request path, delegates exactly one request to an injected transport, and returns structured success, blocked, invalid-request, or failed results;
+- `GET /api/proxy/status.privateNetworkLiveValidation`, a report-only gate visibility field that returns flags, classifier decisions, reason codes, and a fixed no-traffic message without invoking the executor;
 - request-path hardening that rejects null/blank input, absolute URLs, scheme-relative paths, query strings, fragments, traversal segments, encoded traversal, encoded control characters, raw control characters, and backslashes before transport;
 - request/response header hardening that propagates only allowlisted deterministic validation headers and captures only allowlisted response summary headers;
 - redirect hardening proving loopback redirects are reported as `302` without following public `Location` targets;

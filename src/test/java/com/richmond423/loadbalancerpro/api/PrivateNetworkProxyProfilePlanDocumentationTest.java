@@ -199,6 +199,13 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("allowlisted deterministic validation request headers"));
         assertTrue(normalized.contains("allowlisted response summary headers"));
         assertTrue(normalized.contains("reports redirects without following them"));
+        assertTrue(gate.contains("GET /api/proxy/status"));
+        assertTrue(gate.contains("privateNetworkLiveValidation"));
+        assertTrue(gate.contains("trafficExecuted=false"));
+        assertTrue(gate.contains("traffic not executed by this report"));
+        assertTrue(normalized.contains("report-only view of the offline gate"));
+        assertTrue(normalized.contains("does not call `privatenetworklivevalidationexecutor`"));
+        assertTrue(normalized.contains("does not send validation traffic"));
         assertTrue(gate.contains("PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md"));
         assertTrue(gate.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md"));
         assertTrue(gate.contains("LIVE_PROXY_CONTAINMENT.md"));
@@ -225,6 +232,8 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("requires an allowed gate result"));
         assertTrue(normalized.contains("fail closed before sending traffic"));
         assertTrue(normalized.contains("before making the candidate config active"));
+        assertTrue(normalized.contains("status field does not call"));
+        assertTrue(normalized.contains("existing proxy status boundary"));
     }
 
     @Test
@@ -382,6 +391,9 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("target/proxy-evidence/private-network-validation-dry-run.json"));
         assertTrue(normalized.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
         assertTrue(normalized.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
+        assertTrue(normalized.contains("/api/proxy/status.privatenetworklivevalidation"));
+        assertTrue(normalized.contains("trafficexecuted=false"));
+        assertTrue(normalized.contains("report-only gate visibility"));
         assertTrue(normalized.contains("no dns or reachability checks"));
         assertTrue(normalized.contains("no discovery or scanning"));
         assertTrue(normalized.contains("no secret persistence"));

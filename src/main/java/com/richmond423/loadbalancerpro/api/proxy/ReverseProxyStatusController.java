@@ -83,6 +83,7 @@ public class ReverseProxyStatusController {
                 metricsSnapshot,
                 ReverseProxyStatusSummaries.observability(false, routes, upstreams, metricsSnapshot),
                 ReverseProxyStatusSummaries.controllerNotAvailableSecurityBoundary(),
+                PrivateNetworkLiveValidationStatusResponse.from(properties),
                 reloadNotSupported()));
     }
 
@@ -123,6 +124,7 @@ public class ReverseProxyStatusController {
                 ReverseProxyStatusSummaries.observability(response.proxyEnabled(), response.routes(),
                         response.upstreams(), response.metrics()),
                 ReverseProxyStatusSummaries.securityBoundary(environment, configuredApiKey),
+                response.privateNetworkLiveValidation(),
                 response.reload());
     }
 

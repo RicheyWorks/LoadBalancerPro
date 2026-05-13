@@ -99,6 +99,7 @@ class ReviewerTrustMapDocumentationTest {
                 "target/proxy-evidence/private-network-validation-dry-run.json",
                 "PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md",
                 "PrivateNetworkLiveValidationExecutorTest",
+                "/api/proxy/status.privateNetworkLiveValidation",
                 "target/proxy-evidence/private-network-live-loopback-validation.md",
                 "target/proxy-evidence/private-network-live-loopback-validation.json",
                 "operator-run-profiles-smoke.ps1",
@@ -147,6 +148,8 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("mvn -Dtest=PrivateNetworkLiveValidationExecutorTest test"));
         assertTrue(demoPath.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
         assertTrue(demoPath.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
+        assertTrue(demoPath.contains("/api/proxy/status.privateNetworkLiveValidation"));
+        assertTrue(demoPath.contains("trafficExecuted=false"));
         assertTrue(demoPath.contains("operator-run-profiles-smoke.ps1 -DryRun"));
         assertTrue(demoPath.contains("postman-enterprise-lab-safe-smoke.ps1 -DryRun"));
         assertTrue(demoPath.contains("CI, CodeQL, Dependency Review"));
@@ -158,6 +161,8 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("config-validation-only and sends no traffic"));
         assertTrue(normalized.contains("sends one bounded junit-only request"));
         assertTrue(normalized.contains("not startup, postman, smoke, or proxy-routing execution"));
+        assertTrue(normalized.contains("private-network live gate status is report-only"));
+        assertTrue(normalized.contains("does not call `privatenetworklivevalidationexecutor` or send traffic"));
         assertTrue(normalized.contains("rejects unsafe validation paths before transport"));
         assertTrue(normalized.contains("allowlists validation headers"));
         assertTrue(normalized.contains("allowlists response summary headers"));
@@ -311,8 +316,12 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("offline decision helper"));
         assertTrue(recipe.contains("PrivateNetworkLiveValidationExecutor"));
         assertTrue(recipe.contains("PrivateNetworkLiveValidationExecutorTest"));
+        assertTrue(recipe.contains("/api/proxy/status.privateNetworkLiveValidation"));
+        assertTrue(recipe.contains("trafficExecuted=false"));
         assertTrue(recipe.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
         assertTrue(recipe.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
+        assertTrue(normalized.contains("status/report-only gate visibility"));
+        assertTrue(normalized.contains("without calling the executor or sending validation traffic"));
         assertTrue(normalized.contains("bounded executor primitive"));
         assertTrue(normalized.contains("requires an allowed gate result"));
         assertTrue(normalized.contains("broader runtime/private-lan live traffic execution is not implemented yet"));

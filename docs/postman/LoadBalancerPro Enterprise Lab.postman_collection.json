@@ -1,0 +1,812 @@
+{
+  "info": {
+    "name": "LoadBalancerPro Enterprise Lab",
+    "description": "Deterministic localhost-only lab requests for evaluating LoadBalancerPro across local/demo and prod API-key modes. Protected prod-like requests use placeholder X-API-Key variables only. The collection does not include OAuth2 tokens, public endpoints, cloud mutation requests, release operations, tags, rulesets, or real secrets.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Local / Demo Health",
+      "description": "Developer-friendly local/default checks. OpenAPI and Swagger are intentionally public in local/default mode.",
+      "item": [
+        {
+          "name": "GET Local Landing Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET API Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Actuator Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Local OpenAPI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v3/api-docs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v3",
+                "api-docs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Local Swagger UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/swagger-ui/index.html",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "swagger-ui",
+                "index.html"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Prod API-Key Boundary",
+      "description": "Run these against prod or cloud-sandbox API-key mode to demonstrate PR #98 behavior. Missing-key requests should return HTTP 401. With-key requests use the placeholder {{apiKey}} only.",
+      "item": [
+        {
+          "name": "GET Prod OpenAPI Without API Key",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v3/api-docs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v3",
+                "api-docs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Prod OpenAPI With API Key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v3/api-docs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v3",
+                "api-docs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Prod Swagger UI Without API Key",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/swagger-ui/index.html",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "swagger-ui",
+                "index.html"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Prod Swagger UI With API Key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/swagger-ui/index.html",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "swagger-ui",
+                "index.html"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Protected Routing Without API Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"strategies\":[\"ROUND_ROBIN\"],\"servers\":[{\"serverId\":\"edge-a\",\"healthy\":true,\"inFlightRequestCount\":2,\"configuredCapacity\":100.0,\"estimatedConcurrencyLimit\":100.0,\"weight\":1.0,\"averageLatencyMillis\":20.0,\"p95LatencyMillis\":40.0,\"p99LatencyMillis\":80.0,\"recentErrorRate\":0.0,\"queueDepth\":1},{\"serverId\":\"edge-b\",\"healthy\":true,\"inFlightRequestCount\":4,\"configuredCapacity\":100.0,\"estimatedConcurrencyLimit\":100.0,\"weight\":1.0,\"averageLatencyMillis\":22.0,\"p95LatencyMillis\":44.0,\"p99LatencyMillis\":88.0,\"recentErrorRate\":0.0,\"queueDepth\":2}]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/routing/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routing",
+                "compare"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Protected Routing With API Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"strategies\":[\"ROUND_ROBIN\"],\"servers\":[{\"serverId\":\"edge-a\",\"healthy\":true,\"inFlightRequestCount\":2,\"configuredCapacity\":100.0,\"estimatedConcurrencyLimit\":100.0,\"weight\":1.0,\"averageLatencyMillis\":20.0,\"p95LatencyMillis\":40.0,\"p99LatencyMillis\":80.0,\"recentErrorRate\":0.0,\"queueDepth\":1},{\"serverId\":\"edge-b\",\"healthy\":true,\"inFlightRequestCount\":4,\"configuredCapacity\":100.0,\"estimatedConcurrencyLimit\":100.0,\"weight\":1.0,\"averageLatencyMillis\":22.0,\"p95LatencyMillis\":44.0,\"p99LatencyMillis\":88.0,\"recentErrorRate\":0.0,\"queueDepth\":2}]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/routing/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routing",
+                "compare"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Routing Lab",
+      "description": "Cockpit-equivalent request-level strategy comparison using synthetic server telemetry. The header keeps the same request usable in prod API-key mode; local/default mode ignores it.",
+      "item": [
+        {
+          "name": "POST Compare All Supported Strategies",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"strategies\":[\"TAIL_LATENCY_POWER_OF_TWO\",\"WEIGHTED_LEAST_LOAD\",\"WEIGHTED_LEAST_CONNECTIONS\",\"WEIGHTED_ROUND_ROBIN\",\"ROUND_ROBIN\"],\"servers\":[{\"serverId\":\"edge-alpha\",\"healthy\":true,\"inFlightRequestCount\":5,\"configuredCapacity\":100.0,\"estimatedConcurrencyLimit\":100.0,\"weight\":2.0,\"averageLatencyMillis\":20.0,\"p95LatencyMillis\":40.0,\"p99LatencyMillis\":80.0,\"recentErrorRate\":0.01,\"queueDepth\":1,\"networkAwareness\":{\"timeoutRate\":0.0,\"retryRate\":0.0,\"connectionFailureRate\":0.0,\"latencyJitterMillis\":4.0,\"recentErrorBurst\":false,\"requestTimeoutCount\":0,\"sampleSize\":120}},{\"serverId\":\"edge-beta\",\"healthy\":true,\"inFlightRequestCount\":28,\"configuredCapacity\":100.0,\"estimatedConcurrencyLimit\":100.0,\"weight\":4.0,\"averageLatencyMillis\":24.0,\"p95LatencyMillis\":52.0,\"p99LatencyMillis\":96.0,\"recentErrorRate\":0.02,\"queueDepth\":3,\"networkAwareness\":{\"timeoutRate\":0.01,\"retryRate\":0.01,\"connectionFailureRate\":0.0,\"latencyJitterMillis\":7.0,\"recentErrorBurst\":false,\"requestTimeoutCount\":1,\"sampleSize\":120}},{\"serverId\":\"edge-drain\",\"healthy\":false,\"inFlightRequestCount\":1,\"configuredCapacity\":100.0,\"estimatedConcurrencyLimit\":100.0,\"weight\":5.0,\"averageLatencyMillis\":12.0,\"p95LatencyMillis\":20.0,\"p99LatencyMillis\":40.0,\"recentErrorRate\":0.0,\"queueDepth\":0}]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/routing/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routing",
+                "compare"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Strategy Variable Sample",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"strategies\":[\"{{strategy}}\"],\"servers\":[{\"serverId\":\"edge-standard\",\"healthy\":true,\"inFlightRequestCount\":5,\"configuredCapacity\":100.0,\"estimatedConcurrencyLimit\":100.0,\"weight\":1.0,\"averageLatencyMillis\":16.0,\"p95LatencyMillis\":30.0,\"p99LatencyMillis\":60.0,\"recentErrorRate\":0.0,\"queueDepth\":1},{\"serverId\":\"edge-weighted\",\"healthy\":true,\"inFlightRequestCount\":12,\"configuredCapacity\":100.0,\"estimatedConcurrencyLimit\":100.0,\"weight\":4.0,\"averageLatencyMillis\":18.0,\"p95LatencyMillis\":34.0,\"p99LatencyMillis\":70.0,\"recentErrorRate\":0.0,\"queueDepth\":2}]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/routing/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "routing",
+                "compare"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Allocation / Evaluation Lab",
+      "description": "Read-only/advisory allocation and evaluation requests used by the browser cockpit. These do not mutate cloud state.",
+      "item": [
+        {
+          "name": "POST Capacity-Aware Allocation Normal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"requestedLoad\":90.0,\"servers\":[{\"id\":\"edge-normal-a\",\"cpuUsage\":25.0,\"memoryUsage\":30.0,\"diskUsage\":20.0,\"capacity\":120.0,\"weight\":3.0,\"healthy\":true},{\"id\":\"edge-normal-b\",\"cpuUsage\":35.0,\"memoryUsage\":32.0,\"diskUsage\":24.0,\"capacity\":100.0,\"weight\":2.0,\"healthy\":true},{\"id\":\"edge-normal-c\",\"cpuUsage\":42.0,\"memoryUsage\":38.0,\"diskUsage\":28.0,\"capacity\":90.0,\"weight\":1.0,\"healthy\":true}]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/allocate/capacity-aware",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allocate",
+                "capacity-aware"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Capacity-Aware Allocation Overload",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"requestedLoad\":240.0,\"servers\":[{\"id\":\"edge-overload-a\",\"cpuUsage\":70.0,\"memoryUsage\":65.0,\"diskUsage\":55.0,\"capacity\":100.0,\"weight\":2.0,\"healthy\":true},{\"id\":\"edge-overload-b\",\"cpuUsage\":78.0,\"memoryUsage\":72.0,\"diskUsage\":60.0,\"capacity\":90.0,\"weight\":1.0,\"healthy\":true},{\"id\":\"edge-overload-drain\",\"cpuUsage\":20.0,\"memoryUsage\":25.0,\"diskUsage\":20.0,\"capacity\":120.0,\"weight\":4.0,\"healthy\":false}]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/allocate/capacity-aware",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allocate",
+                "capacity-aware"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Load-Shedding Evaluation Overload",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"requestedLoad\":240.0,\"strategy\":\"CAPACITY_AWARE\",\"priority\":\"BACKGROUND\",\"currentInFlightRequestCount\":135,\"concurrencyLimit\":100,\"queueDepth\":64,\"observedP95LatencyMillis\":340.0,\"observedErrorRate\":0.19,\"servers\":[{\"id\":\"edge-overload-a\",\"cpuUsage\":70.0,\"memoryUsage\":65.0,\"diskUsage\":55.0,\"capacity\":100.0,\"weight\":2.0,\"healthy\":true},{\"id\":\"edge-overload-b\",\"cpuUsage\":78.0,\"memoryUsage\":72.0,\"diskUsage\":60.0,\"capacity\":90.0,\"weight\":1.0,\"healthy\":true},{\"id\":\"edge-overload-drain\",\"cpuUsage\":20.0,\"memoryUsage\":25.0,\"diskUsage\":20.0,\"capacity\":120.0,\"weight\":4.0,\"healthy\":false}]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/allocate/evaluate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allocate",
+                "evaluate"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Scenario Replay Lab",
+      "description": "Read-only deterministic incident replay fixtures. These replay synthetic server state transitions only and do not mutate cloud state.",
+      "item": [
+        {
+          "name": "POST Replay Normal Baseline",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"scenarioId\":\"normal-baseline\",\"servers\":[{\"id\":\"green\",\"cpuUsage\":20.0,\"memoryUsage\":20.0,\"diskUsage\":20.0,\"capacity\":100.0,\"weight\":1.0,\"healthy\":true},{\"id\":\"blue\",\"cpuUsage\":20.0,\"memoryUsage\":20.0,\"diskUsage\":20.0,\"capacity\":100.0,\"weight\":1.0,\"healthy\":true}],\"steps\":[{\"stepId\":\"allocate-normal\",\"type\":\"ALLOCATE\",\"requestedLoad\":50.0,\"strategy\":\"CAPACITY_AWARE\"},{\"stepId\":\"evaluate-normal\",\"type\":\"EVALUATE\",\"requestedLoad\":40.0,\"strategy\":\"PREDICTIVE\",\"priority\":\"USER\"},{\"stepId\":\"route-normal\",\"type\":\"ROUTE\",\"routingStrategies\":[\"ROUND_ROBIN\"]}]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/scenarios/replay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "scenarios",
+                "replay"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Replay Overload Scale Recommendation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"scenarioId\":\"overload-scale-recommendation\",\"servers\":[{\"id\":\"primary\",\"cpuUsage\":30.0,\"memoryUsage\":30.0,\"diskUsage\":30.0,\"capacity\":100.0,\"weight\":1.0,\"healthy\":true},{\"id\":\"fallback\",\"cpuUsage\":70.0,\"memoryUsage\":70.0,\"diskUsage\":70.0,\"capacity\":100.0,\"weight\":1.0,\"healthy\":true}],\"steps\":[{\"stepId\":\"overload-check\",\"type\":\"OVERLOAD\",\"requestedLoad\":150.0,\"strategy\":\"CAPACITY_AWARE\",\"priority\":\"BACKGROUND\",\"currentInFlightRequestCount\":95,\"concurrencyLimit\":100,\"queueDepth\":25,\"observedP95LatencyMillis\":300.0,\"observedErrorRate\":0.2}]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/scenarios/replay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "scenarios",
+                "replay"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Remediation Report Lab",
+      "description": "Deterministic advisory report exports from an existing evaluation response. Reports are read-only and do not execute remediation.",
+      "item": [
+        {
+          "name": "POST Markdown Remediation Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"format\":\"MARKDOWN\",\"reportId\":\"postman-overload-lab\",\"title\":\"Postman Overload Review\",\"evaluation\":{\"strategy\":\"CAPACITY_AWARE\",\"allocations\":{\"primary\":70.0,\"fallback\":30.0},\"acceptedLoad\":100.0,\"rejectedLoad\":50.0,\"unallocatedLoad\":50.0,\"recommendedAdditionalServers\":1,\"scalingSimulation\":{\"recommendedAdditionalServers\":1,\"reason\":\"Unallocated load exceeds available capacity; simulated scale-up recommended.\",\"simulatedOnly\":true},\"loadShedding\":{\"priority\":\"BACKGROUND\",\"action\":\"SHED\",\"reason\":\"Background load should be shed under overload pressure.\",\"targetId\":\"allocation-evaluation\",\"currentInFlightRequestCount\":95,\"concurrencyLimit\":100,\"queueDepth\":25,\"utilization\":0.95,\"observedP95LatencyMillis\":300.0,\"observedErrorRate\":0.2},\"metricsPreview\":{\"strategy\":\"CAPACITY_AWARE\",\"evaluatedHealthyServerCount\":2,\"acceptedLoad\":100.0,\"rejectedLoad\":50.0,\"unallocatedLoad\":50.0,\"recommendedAdditionalServers\":1,\"metricNames\":[\"allocation.requests.count\",\"allocation.accepted.load\",\"allocation.rejected.load\",\"allocation.unallocated.load\"],\"emitted\":false},\"readOnly\":true,\"remediationPlan\":{\"status\":\"OVERLOADED\",\"generatedFrom\":\"allocation-evaluation\",\"advisoryOnly\":true,\"readOnly\":true,\"cloudMutation\":false,\"recommendations\":[{\"rank\":1,\"action\":\"SCALE_UP\",\"priority\":\"HIGH\",\"reason\":\"CAPACITY_DEFICIT\",\"serverCount\":1,\"loadAmount\":50.0,\"executable\":false,\"message\":\"Scale up by the simulated additional server count to cover unallocated load.\"},{\"rank\":2,\"action\":\"SHED_LOAD\",\"priority\":\"MEDIUM\",\"reason\":\"LOW_PRIORITY_LOAD_SHED\",\"serverCount\":null,\"loadAmount\":50.0,\"executable\":false,\"message\":\"Shed, defer, or queue low-priority work until capacity pressure clears.\"}]},\"decisionReason\":\"Read-only evaluation accepted 100.000 load and left 50.000 load unallocated; background load shed.\"}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/remediation/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "remediation",
+                "report"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST JSON Remediation Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"format\":\"JSON\",\"reportId\":\"postman-overload-json\",\"title\":\"Postman JSON Export\",\"evaluation\":{\"strategy\":\"CAPACITY_AWARE\",\"allocations\":{\"primary\":70.0,\"fallback\":30.0},\"acceptedLoad\":100.0,\"rejectedLoad\":50.0,\"unallocatedLoad\":50.0,\"recommendedAdditionalServers\":1,\"scalingSimulation\":{\"recommendedAdditionalServers\":1,\"reason\":\"Unallocated load exceeds available capacity; simulated scale-up recommended.\",\"simulatedOnly\":true},\"loadShedding\":{\"priority\":\"BACKGROUND\",\"action\":\"SHED\",\"reason\":\"Background load should be shed under overload pressure.\",\"targetId\":\"allocation-evaluation\",\"currentInFlightRequestCount\":95,\"concurrencyLimit\":100,\"queueDepth\":25,\"utilization\":0.95,\"observedP95LatencyMillis\":300.0,\"observedErrorRate\":0.2},\"metricsPreview\":{\"strategy\":\"CAPACITY_AWARE\",\"evaluatedHealthyServerCount\":2,\"acceptedLoad\":100.0,\"rejectedLoad\":50.0,\"unallocatedLoad\":50.0,\"recommendedAdditionalServers\":1,\"metricNames\":[\"allocation.requests.count\",\"allocation.accepted.load\",\"allocation.rejected.load\",\"allocation.unallocated.load\"],\"emitted\":false},\"readOnly\":true,\"remediationPlan\":{\"status\":\"OVERLOADED\",\"generatedFrom\":\"allocation-evaluation\",\"advisoryOnly\":true,\"readOnly\":true,\"cloudMutation\":false,\"recommendations\":[{\"rank\":1,\"action\":\"SCALE_UP\",\"priority\":\"HIGH\",\"reason\":\"CAPACITY_DEFICIT\",\"serverCount\":1,\"loadAmount\":50.0,\"executable\":false,\"message\":\"Scale up by the simulated additional server count to cover unallocated load.\"}]},\"decisionReason\":\"Read-only evaluation accepted 100.000 load and left 50.000 load unallocated; background load shed.\"}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/remediation/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "remediation",
+                "report"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Proxy Operator Lab",
+      "description": "Proxy status is read-only. The reload example is process-local and operator-controlled; review before running and use only with local/private loopback proxy mode.",
+      "item": [
+        {
+          "name": "GET Proxy Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/proxy/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proxy",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Proxy Reload Example - Review Before Running",
+          "description": "This validates and swaps process-local proxy route config only when proxy mode is enabled. It uses loopback placeholder upstreams and must not be used as a batch smoke unless local reload is intended.",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"enabled\":true,\"strategy\":\"ROUND_ROBIN\",\"routes\":{\"lab\":{\"pathPrefix\":\"/lab\",\"strategy\":\"ROUND_ROBIN\",\"targets\":[{\"id\":\"loopback-lab-a\",\"url\":\"http://127.0.0.1:18082\",\"healthy\":true,\"weight\":1.0}]}}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/proxy/reload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proxy",
+                "reload"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Evidence / Offline Tooling Pointers",
+      "description": "Evidence training APIs are packaged local onboarding aids. Offline CLI evidence workflows remain documented separately and are not faked as HTTP endpoints here.",
+      "item": [
+        {
+          "name": "GET Evidence Training Onboarding",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/onboarding",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "onboarding"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Evidence Scorecards",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Strict Zero Drift Scorecard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards/strict-zero-drift-pass",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards",
+                "strict-zero-drift-pass"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Strict Zero Drift Answer Template",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards/strict-zero-drift-pass/answer-template",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards",
+                "strict-zero-drift-pass",
+                "answer-template"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Grade Placeholder Scorecard Answers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"operator\":\"operator-postman-lab\",\"answers\":[{\"exerciseName\":\"strict-zero-drift-pass\",\"decision\":\"PASS\",\"reason\":\"Synthetic local evidence package preserved expected files\",\"action\":\"continue handoff\",\"notes\":\"Use placeholders only; do not paste secrets or real incident data into committed examples.\"}]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence-training/scorecards/grade",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "evidence-training",
+                "scorecards",
+                "grade"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "<API_KEY>",
+      "type": "string"
+    },
+    {
+      "key": "profile",
+      "value": "local",
+      "type": "string"
+    },
+    {
+      "key": "strategy",
+      "value": "WEIGHTED_LEAST_CONNECTIONS",
+      "type": "string"
+    },
+    {
+      "key": "scenarioName",
+      "value": "normal-baseline",
+      "type": "string"
+    },
+    {
+      "key": "reportFormat",
+      "value": "MARKDOWN",
+      "type": "string"
+    }
+  ]
+}

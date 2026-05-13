@@ -6,6 +6,8 @@ Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST
 
 For the enterprise cockpit auth, operator UX, and Swagger/OpenAPI gating plan/current phase, see [`ENTERPRISE_COCKPIT_AUTH_PLAN.md`](ENTERPRISE_COCKPIT_AUTH_PLAN.md).
 
+For a deterministic Postman runbook across local/demo and prod API-key modes, import the files documented in [`POSTMAN_COLLECTION.md`](POSTMAN_COLLECTION.md). Keep `apiKey` as a local Postman placeholder value only.
+
 ## First Checks
 
 1. Confirm the running version:

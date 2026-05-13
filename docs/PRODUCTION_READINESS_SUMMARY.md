@@ -1,0 +1,67 @@
+# Production Readiness Summary
+
+This summary is the reviewer-facing snapshot for LoadBalancerPro after the enterprise-production-candidate hardening line. It says what is ready for controlled production-like review, what remains outside scope, and which evidence proves each claim.
+
+Current label: production-candidate for controlled enterprise demo/reviewer usage. Not release-ready distribution by itself, not production certification, and not approval for unmanaged public traffic.
+
+## Production-Candidate Status
+
+| Area | Current status | Evidence |
+| --- | --- | --- |
+| Auth boundary | Local/default mode is intentionally permissive for developer demos. Container/default deployment uses the `prod` profile. Prod/cloud-sandbox API-key mode is deny-by-default for non-`OPTIONS` `/api/**`, with `GET /api/health` as the explicit public API exception. `/proxy/**`, `/api/proxy/status`, `/v3/api-docs`, and Swagger UI are protected in prod/cloud-sandbox API-key mode. | [`API_SECURITY.md`](API_SECURITY.md), [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md), [`../evidence/SECURITY_POSTURE.md`](../evidence/SECURITY_POSTURE.md) |
+| OAuth2 role claims | OAuth2 mode validates JWTs through Spring Security. Application roles come from dedicated `roles`, `role`, `authorities`, or `realm_access.roles` claims. Standard `scope` and `scp` claims do not grant `ROLE_operator` or `ROLE_admin`; missing or ambiguous role claims fail closed for role-required routes. | [`IDP_CLAIM_MAPPING_EXAMPLES.md`](IDP_CLAIM_MAPPING_EXAMPLES.md), [`API_SECURITY.md`](API_SECURITY.md), `OAuth2AuthorizationTest` |
+| DTO validation | Enterprise-required allocation and evaluation fields reject omitted JSON values instead of silently defaulting to `0`, `0.0`, or `false`. | [`API_CONTRACTS.md`](API_CONTRACTS.md), [`OPERATIONS_RUNBOOK.md`](OPERATIONS_RUNBOOK.md), `AllocatorControllerTest`, `ApiContractTest` |
+| Container default | The checked-in Dockerfile defaults to `SPRING_PROFILES_ACTIVE=prod`. Operators must provide `LOADBALANCERPRO_API_KEY` at runtime for protected prod container use. Local/demo override is documented as loopback/private only. | [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md), [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md) |
+| Supply-chain evidence | CI covers tests, package, smoke, Docker runtime checks, Dependency Review, Trivy, and CycloneDX SBOM artifacts. CodeQL runs as a separate Java/Kotlin SAST workflow. Semantic-tag release workflow produces deterministic JAR/SBOM/checksum GitHub Release assets and GitHub artifact attestations. | [`../evidence/SUPPLY_CHAIN_EVIDENCE.md`](../evidence/SUPPLY_CHAIN_EVIDENCE.md), [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md), [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md) |
+| Dependency/SAST triage | CodeQL, Dependency Review, Trivy, SBOM, and dependency findings have an owner/rationale workflow with severity handling, accepted-risk and false-positive templates, remediation targets, and a high/critical no-silent-dismissal rule. | [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](DEPENDENCY_SAST_RISK_WORKFLOW.md) |
+| Release evidence gate | Production-candidate and release-ready labels have a checklist that separates automated checks from manual operator verification. | [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md) |
+
+## Current Validation Posture
+
+Use the latest successful PR and `main` checks as the source of truth for a specific commit. Required reviewer evidence includes CI, CodeQL, Dependency Review, package, smoke, SBOM, and Trivy results for that commit.
+
+This summary branch is docs/static-test only. Its local validation target is:
+
+- Focused summary/docs tests pass.
+- `mvn -q clean test` reports 1,217 tests with 0 failures, 0 errors, and 0 skips after the summary guard test is included.
+- `mvn -q verify` passes.
+- `mvn -q -DskipTests package` passes.
+- Operator run-profile and Postman enterprise lab dry-runs pass without external network, cloud credentials, release actions, or `release-downloads/` mutation.
+- `git diff --check` passes.
+
+Future branches should update this summary or point to the latest PR report if the test count or evidence posture changes.
+
+## What Is Not Release-Ready Yet
+
+- No container image is published to a registry.
+- No container signing, cosign signature, registry attestation, rollback policy, or retention policy is implemented.
+- No PGP-style release artifact signing, notarization, Maven Central publication, or package-manager distribution exists.
+- No production TLS, IAM, firewall, WAF, managed ingress, rate limiting, monitoring, log retention, backup, incident response, or secret-rotation implementation is provided by the application.
+- No real enterprise IdP tenant configuration, tenant IDs, client secrets, real JWTs, or browser login/session UX is included.
+- No live AWS sandbox validation is part of the default Maven/CI evidence.
+- No production SLO, benchmark, chaos validation, compliance certification, or legal chain-of-custody claim is made.
+- `release-downloads/` remains manual and must not be mutated by normal docs, tests, smoke scripts, or PR review.
+
+## Reviewer Go/No-Go
+
+Use a controlled production-like demo or reviewer evaluation when:
+
+- The exact commit has passing CI, CodeQL, Dependency Review, Trivy, package, smoke, and SBOM evidence.
+- The production-candidate evidence gate is complete.
+- Any non-fixed dependency or SAST finding has an owner decision under the risk workflow.
+- Container use stays local/private or behind a trusted deployment edge, with `prod` profile and runtime API key configured.
+- Local/default mode is not exposed on public interfaces.
+
+Do not call the build release-ready until semantic-tag release evidence is produced and verified for the exact version being distributed. Do not call the container path release-ready until the container signing/publication decision record is completed and implemented in a separate approved change.
+
+## Evidence Index
+
+- Reviewer navigation: [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md)
+- Security posture: [`../evidence/SECURITY_POSTURE.md`](../evidence/SECURITY_POSTURE.md)
+- Supply-chain posture: [`../evidence/SUPPLY_CHAIN_EVIDENCE.md`](../evidence/SUPPLY_CHAIN_EVIDENCE.md)
+- Test posture: [`../evidence/TEST_EVIDENCE.md`](../evidence/TEST_EVIDENCE.md)
+- Residual risks: [`../evidence/RESIDUAL_RISKS.md`](../evidence/RESIDUAL_RISKS.md)
+- Deployment hardening: [`DEPLOYMENT_HARDENING_GUIDE.md`](DEPLOYMENT_HARDENING_GUIDE.md)
+- Container signing decision: [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md)
+- IdP claim examples: [`IDP_CLAIM_MAPPING_EXAMPLES.md`](IDP_CLAIM_MAPPING_EXAMPLES.md)
+- Dependency/SAST workflow: [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](DEPENDENCY_SAST_RISK_WORKFLOW.md)

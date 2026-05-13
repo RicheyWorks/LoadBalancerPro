@@ -8,7 +8,7 @@ The API and CLI are safe by default: allocation endpoints do not call AWS, CLI c
 
 JavaFX UI support is optional. API, proxy, CLI, Java fixture launcher, and static browser workflows do not require JavaFX; desktop UI deployment remains platform-sensitive and separate from the Spring API/proxy operator path. See [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md).
 
-For a concise non-technical overview, start with [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). For evidence navigation, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md). For a guided local demo path, use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md). For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md), [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md), and the config-only [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md) recipe.
+For a concise non-technical overview, start with [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). For the reviewer-ready production-candidate snapshot, use [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md). For evidence navigation, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md). For a guided local demo path, use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md). For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md), [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md), and the config-only [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md) recipe.
 
 ## Why This Project Matters
 
@@ -165,6 +165,7 @@ Roadmap backlog:
 The release evidence set lives in [`evidence/`](evidence/):
 
 - [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) provides a short public-facing overview, evaluation path, and limitations summary.
+- [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md) summarizes the current production-candidate posture, current validation posture, release/container signing limits, remaining production risks, and evidence links.
 - [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) gives a 60 to 90 second local demo outline for the root page, cockpit, API-key boundary, proxy-loopback, observability, and container path.
 - [`HARDENING_AUDIT_001.md`](evidence/HARDENING_AUDIT_001.md) captures the formal hardening audit results.
 - [`SECURITY_POSTURE.md`](evidence/SECURITY_POSTURE.md) summarizes current auth, telemetry, cloud, replay, LASE, and input/API posture.

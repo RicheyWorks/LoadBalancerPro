@@ -21,6 +21,7 @@ Related evidence:
 - `evidence/THREAT_MODEL.md`
 - `evidence/SBOM_GUIDE.md`
 - `docs/DEPENDENCY_SAST_RISK_WORKFLOW.md`
+- `docs/PRODUCTION_READINESS_SUMMARY.md`
 
 ## Current Dependency Posture
 

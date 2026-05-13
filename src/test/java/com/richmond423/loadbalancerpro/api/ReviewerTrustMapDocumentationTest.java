@@ -163,7 +163,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("persistence"));
         assertTrue(normalized.contains("release assets"));
         assertTrue(normalized.contains("release-downloads/"));
-        assertTrue(normalized.contains("live private-network validation is not implemented yet"));
+        assertTrue(normalized.contains("live private-network traffic execution is not implemented yet"));
         assertTrue(demoPath.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
         assertTrue(readme.contains("REVIEWER_TRUST_MAP.md#reviewer-demo-path"));
     }
@@ -257,9 +257,14 @@ class ReviewerTrustMapDocumentationTest {
         String gateNormalized = gate.toLowerCase(Locale.ROOT);
 
         assertTrue(recipe.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
-        assertTrue(normalized.contains("live validation is not implemented yet"));
+        assertTrue(normalized.contains("offline decision helper"));
+        assertTrue(normalized.contains("live private-network traffic execution is not implemented yet"));
         assertTrue(normalized.contains("separate approved task"));
-        assertTrue(normalized.contains("future default-off live flags"));
+        assertTrue(normalized.contains("default properties"));
+        assertTrue(recipe.contains("loadbalancerpro.proxy.private-network-live-validation.enabled=false"));
+        assertTrue(recipe.contains("loadbalancerpro.proxy.private-network-live-validation.operator-approved=false"));
+        assertTrue(recipe.contains("loadbalancerpro.proxy.private-network-live-validation.enabled=true"));
+        assertTrue(recipe.contains("loadbalancerpro.proxy.private-network-live-validation.operator-approved=true"));
         assertTrue(normalized.contains("explicit operator approval"));
         assertTrue(normalized.contains("operator-provided literal backend urls"));
         assertTrue(normalized.contains("proxybackendurlclassifier"));
@@ -276,8 +281,10 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("no secret persistence"));
         assertTrue(normalized.contains("fail-closed startup/reload behavior"));
         assertTrue(gate.contains("loadbalancerpro.proxy.private-network-live-validation.enabled=true"));
-        assertTrue(gate.contains("I_ACCEPT_LOCAL_PRIVATE_BACKEND_TRAFFIC"));
-        assertTrue(gateNormalized.contains("private-network validation remains config-only plus dry-run evidence"));
+        assertTrue(gate.contains("loadbalancerpro.proxy.private-network-live-validation.enabled=false"));
+        assertTrue(gate.contains("loadbalancerpro.proxy.private-network-live-validation.operator-approved=true"));
+        assertTrue(gate.contains("loadbalancerpro.proxy.private-network-live-validation.operator-approved=false"));
+        assertTrue(gateNormalized.contains("private-network live traffic execution remains unimplemented"));
         assertTrue(readme.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md")
                 || readme.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
         assertTrue(runbook.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
@@ -323,7 +330,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(trustMap.contains("explicit operator-provided backend URLs only"));
         assertTrue(trustMap.contains("dry-run-only evidence under ignored `target/`"));
         assertTrue(trustMap.contains("explicit operator approval before live traffic"));
-        assertTrue(trustMap.contains("no private-network live execution until separately approved"));
+        assertTrue(trustMap.contains("no private-network live traffic execution until separately approved"));
     }
 
     @Test

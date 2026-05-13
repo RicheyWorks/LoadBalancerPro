@@ -117,7 +117,8 @@ class ReadmeVisibilityDocumentationTest {
         assertTrue(demoWalkthrough.contains("target/proxy-evidence/local-proxy-evidence.json"));
         assertTrue(demoWalkthrough.contains("target/proxy-evidence/private-network-validation-dry-run.md"));
         assertTrue(demoWalkthrough.contains("target/proxy-evidence/private-network-validation-dry-run.json"));
-        assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT).contains("live private-network validation is not implemented yet"));
+        assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT)
+                .contains("live private-network traffic execution is not implemented yet"));
         assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT).contains("should not contain api keys"));
         assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT).contains("dns resolution"));
         assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT).contains("release-downloads/"));

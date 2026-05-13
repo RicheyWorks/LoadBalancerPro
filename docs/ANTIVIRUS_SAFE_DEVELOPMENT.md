@@ -6,7 +6,7 @@ This policy does not change production runtime behavior. It sets the default dev
 
 ## Safe Default Artifacts
 
-Prefer these artifact types for this project:
+Prefer these source-visible artifact types for this project:
 
 - Java source.
 - Maven tests.

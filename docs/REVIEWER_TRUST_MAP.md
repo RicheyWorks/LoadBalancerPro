@@ -111,6 +111,7 @@ Recommended first paths:
 - `release-downloads/` remains manual and explicit only.
 - Development tooling avoids native executable wrappers, installers, packers, self-extracting archives, and vendored third-party binaries unless explicitly approved.
 - Live/proxy validation is opt-in, defaults to localhost or private-network backends, and does not use port scanning, persistence mechanisms, scheduled tasks, service installation, credential storage, or hidden background agents.
+- The Postman smoke harness is source-visible PowerShell and remains dry-run safe unless `-Package` is explicitly passed.
 - Workflow artifacts are not GitHub Release assets.
 - Proxy/demo/status/docs paths do not construct or mutate `CloudManager`.
 - Real-backend examples use loopback/private placeholders and must not include secrets or public upstream URLs.

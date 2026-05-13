@@ -23,6 +23,7 @@ class AntivirusSafeContainmentDocumentationTest {
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path GITIGNORE = Path.of(".gitignore");
     private static final Path DOCKERIGNORE = Path.of(".dockerignore");
+    private static final Path SCRATCH_SMOKE_FILE = Path.of("scripts", "smoke", "tmp-test" + "-file.txt");
     private static final Pattern UNKNOWN_BINARY_INSTRUCTION = Pattern.compile(
             "(?i)\\b(native-image|launch4j|jpackage|self-extracting|unknown binaries?|"
                     + "generated executables?|native wrappers?)\\b");
@@ -68,6 +69,7 @@ class AntivirusSafeContainmentDocumentationTest {
             assertTrue(doc.contains(expected), "antivirus doc should mention " + expected);
         }
 
+        assertTrue(doc.contains("source-visible artifact types"));
         assertTrue(doc.contains("Quarantine unknown detections"));
         assertTrue(doc.contains("Do not whitelist unknown files"));
         assertTrue(doc.contains("Do not restore unknown quarantined files"));
@@ -103,6 +105,18 @@ class AntivirusSafeContainmentDocumentationTest {
 
         assertTrue(readme.contains("[`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md)"));
         assertTrue(readme.contains("[`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md)"));
+        assertTrue(readme.contains("source-visible local-only smoke harness that is dry-run safe by default"));
+    }
+
+    @Test
+    void postmanSmokeHarnessIsDocumentedAsSourceVisibleAndDryRunSafeByDefault() throws Exception {
+        String combined = read(README) + "\n" + read(RUNBOOK) + "\n" + read(POSTMAN_DOC) + "\n" + read(TRUST_MAP);
+        String normalized = combined.toLowerCase(Locale.ROOT);
+
+        assertTrue(normalized.contains("source-visible"));
+        assertTrue(normalized.contains("dry-run safe"));
+        assertTrue(combined.contains("postman-enterprise-lab-safe-smoke.ps1"));
+        assertTrue(combined.contains("-Package"));
     }
 
     @Test
@@ -134,6 +148,11 @@ class AntivirusSafeContainmentDocumentationTest {
         assertTrue(combined.contains("release-downloads/"));
         assertTrue(combined.toLowerCase(Locale.ROOT).contains("explicit"));
         assertFalse(combined.toLowerCase(Locale.ROOT).contains("copy generated files into `release-downloads/`"));
+    }
+
+    @Test
+    void scratchSmokeTempFilesAreAbsent() {
+        assertFalse(Files.exists(SCRATCH_SMOKE_FILE), SCRATCH_SMOKE_FILE + " must not be committed or present");
     }
 
     private static String read(Path path) throws IOException {

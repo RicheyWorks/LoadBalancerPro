@@ -37,6 +37,7 @@ class PostmanLocalSmokeHarnessTest {
         assertTrue(script.contains("[int]$ProdPort"));
         assertTrue(script.contains("[string]$ApiKey"));
         assertTrue(script.contains("[string]$EvidenceDir"));
+        assertTrue(script.contains("if ($DryRun -or -not $Package)"));
         assertTrue(script.contains("Find-ExecutableJar"));
         assertTrue(script.contains("Start-OrReuseApp"));
         assertTrue(script.contains("Write-SmokeEvidence"));

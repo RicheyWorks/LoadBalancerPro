@@ -29,7 +29,7 @@ The environment contains placeholders only. It has no generated export timestamp
 
 ## Local Smoke Harness
 
-The local-only Postman-aligned smoke harness validates the collection's critical 200/401 expectations without requiring Newman or adding project dependencies.
+The source-visible local-only Postman-aligned smoke harness validates the collection's critical 200/401 expectations without requiring Newman, native tools, or additional project dependencies. Running the script without `-Package`, or with `-DryRun`, performs a dry run only.
 
 Dry-run:
 

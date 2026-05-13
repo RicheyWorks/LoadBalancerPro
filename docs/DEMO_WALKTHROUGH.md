@@ -41,6 +41,28 @@ Dry-run smoke:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\operator-run-profiles-smoke.ps1 -DryRun
 ```
 
+Postman safe smoke dry-run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\postman-enterprise-lab-safe-smoke.ps1 -DryRun
+```
+
+Local proxy evidence export:
+
+```bash
+mvn -Dtest=LocalProxyEvidenceExportTest test
+```
+
+Output: `target/proxy-evidence/local-proxy-evidence.md` and `target/proxy-evidence/local-proxy-evidence.json`.
+
+Private-network validation dry-run evidence:
+
+```bash
+mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test
+```
+
+Output: `target/proxy-evidence/private-network-validation-dry-run.md` and `target/proxy-evidence/private-network-validation-dry-run.json`.
+
 Container build, local only:
 
 ```bash
@@ -53,5 +75,8 @@ docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 loadbalancerp
 - The project is not a managed gateway, compliance proof, certification outcome, or benchmark result.
 - No fixed coverage percentage is claimed in docs; inspect a generated JaCoCo report or CI log for exact run-specific numbers.
 - Proxy mode is optional and disabled by default.
+- Private-network validation is config-only plus dry-run evidence; live private-network validation is not implemented yet.
+- Generated proxy evidence is ignored `target/` output and should not contain API keys, bearer tokens, credentials, or secrets.
+- Safe proof paths do not use DNS resolution, discovery, subnet scanning, port scanning, native tooling, release assets, or `release-downloads/` mutation.
 - TLS termination and public ingress controls belong to the deployment boundary.
 - Demo paths do not construct or mutate `CloudManager`, do not mutate cloud state, and do not publish release assets.

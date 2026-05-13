@@ -28,11 +28,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.richmond423.loadbalancerpro.api.PrivateNetworkEvidenceRedactor;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 
 class PrivateNetworkLiveValidationExecutorTest {
+    private static final ObjectMapper JSON = new ObjectMapper();
     private static final Path EXECUTOR_SOURCE = Path.of(
             "src/main/java/com/richmond423/loadbalancerpro/api/proxy/PrivateNetworkLiveValidationExecutor.java");
     private static final Path GATE_SOURCE = Path.of(
@@ -100,6 +104,7 @@ class PrivateNetworkLiveValidationExecutorTest {
             String markdown = read(MARKDOWN_EVIDENCE);
             String json = read(JSON_EVIDENCE);
             String combined = markdown + "\n" + json;
+            JsonNode evidence = JSON.readTree(json);
             assertAll(
                     () -> assertTrue(markdown.contains("# Private-Network Live Loopback Validation")),
                     () -> assertTrue(markdown.contains("loopbackOnly=true")),
@@ -122,6 +127,34 @@ class PrivateNetworkLiveValidationExecutorTest {
                     () -> assertTrue(json.contains("\"postmanExecution\": false")),
                     () -> assertTrue(json.contains("\"smokeExecution\": false")),
                     () -> assertTrue(json.contains("\"releaseDownloadsMutated\": false")),
+                    () -> assertEquals("PrivateNetworkLiveValidationExecutorTest",
+                            evidence.path("generatedBy").asText()),
+                    () -> assertEquals("target/proxy-evidence", evidence.path("evidenceOutputScope").asText()),
+                    () -> assertEquals("target/proxy-evidence/private-network-live-loopback-validation.md",
+                            evidence.path("markdownEvidence").asText()),
+                    () -> assertEquals("target/proxy-evidence/private-network-live-loopback-validation.json",
+                            evidence.path("jsonEvidence").asText()),
+                    () -> assertTrue(evidence.path("loopbackOnly").asBoolean()),
+                    () -> assertTrue(evidence.path("trafficSent").asBoolean()),
+                    () -> assertEquals(1, evidence.path("requestCount").asInt()),
+                    () -> assertEquals(2000, evidence.path("boundedTimeoutMs").asInt()),
+                    () -> assertEquals("ALLOWED", evidence.path("gateStatus").asText()),
+                    () -> assertEquals("LOOPBACK_ALLOWED", evidence.path("classifierStatus").asText()),
+                    () -> assertEquals("upstreams[0].loopback-live", evidence.path("backendLabel").asText()),
+                    () -> assertEquals("/live-validation/proof", evidence.path("requestPath").asText()),
+                    () -> assertEquals(200, evidence.path("responseStatus").asInt()),
+                    () -> assertEquals("private-live-loopback-ok", evidence.path("responseBodyLabel").asText()),
+                    () -> assertEquals("<REDACTED>", evidence.path("apiKeyRedacted").asText()),
+                    () -> assertFalse(evidence.path("broaderPrivateLanValidation").asBoolean()),
+                    () -> assertTrue(evidence.path("safety").path("junitOnly").asBoolean()),
+                    () -> assertTrue(evidence.path("safety").path("ignoredTargetOutput").asBoolean()),
+                    () -> assertFalse(evidence.path("safety").path("dnsResolution").asBoolean()),
+                    () -> assertFalse(evidence.path("safety").path("discovery").asBoolean()),
+                    () -> assertFalse(evidence.path("safety").path("portScanning").asBoolean()),
+                    () -> assertFalse(evidence.path("safety").path("postmanExecution").asBoolean()),
+                    () -> assertFalse(evidence.path("safety").path("smokeExecution").asBoolean()),
+                    () -> assertFalse(evidence.path("safety").path("releaseDownloadsMutated").asBoolean()),
+                    () -> assertFalse(evidence.path("safety").path("secretPersisted").asBoolean()),
                     () -> assertFalse(combined.contains(API_KEY_SENTINEL)),
                     () -> assertFalse(combined.contains(AUTH_HEADER_SENTINEL)),
                     () -> assertFalse(combined.contains(COOKIE_SENTINEL)),
@@ -134,6 +167,15 @@ class PrivateNetworkLiveValidationExecutorTest {
                     () -> assertFalse(combined.contains("Cookie")),
                     () -> assertFalse(combined.contains("Set-Cookie")),
                     () -> assertFalse(combined.contains("release-" + "downloads")));
+            PrivateNetworkEvidenceRedactor.assertNoSensitiveEvidence(
+                    combined,
+                    API_KEY_SENTINEL,
+                    AUTH_HEADER_SENTINEL,
+                    COOKIE_SENTINEL,
+                    TOKEN_SENTINEL,
+                    PUBLIC_REDIRECT_LOCATION,
+                    backend.baseUrl(),
+                    "release-" + "downloads");
         }
     }
 

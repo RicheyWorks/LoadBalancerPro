@@ -26,6 +26,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterAll;
@@ -45,6 +47,7 @@ import org.springframework.test.web.servlet.MvcResult;
 })
 @AutoConfigureMockMvc
 class LocalProxyEvidenceExportTest {
+    private static final ObjectMapper JSON = new ObjectMapper();
     private static final String API_KEY = "TEST_PROXY_EVIDENCE_KEY";
     private static final String RELEASE_DOWNLOADS_PATH = "release-" + "downloads";
     private static final Path EVIDENCE_DIR = Path.of("target", "proxy-evidence");
@@ -124,6 +127,7 @@ class LocalProxyEvidenceExportTest {
 
         String markdown = Files.readString(MARKDOWN_EVIDENCE, StandardCharsets.UTF_8);
         String json = Files.readString(JSON_EVIDENCE, StandardCharsets.UTF_8);
+        JsonNode evidence = JSON.readTree(json);
         assertAll(
                 () -> assertTrue(markdown.contains("Local Proxy Evidence")),
                 () -> assertTrue(markdown.contains("backend started on loopback")),
@@ -142,6 +146,35 @@ class LocalProxyEvidenceExportTest {
                 () -> assertTrue(json.contains("\"authenticatedStatusRequestStatus\": 200")),
                 () -> assertTrue(json.contains("\"backendReceived\": true")),
                 () -> assertTrue(json.contains("\"apiKeyRedacted\": \"<REDACTED>\"")),
+                () -> assertEquals("LocalProxyEvidenceExportTest", evidence.path("generatedBy").asText()),
+                () -> assertEquals("target/proxy-evidence", evidence.path("evidenceOutputScope").asText()),
+                () -> assertEquals("evidence-local-backend", evidence.path("backend").path("id").asText()),
+                () -> assertEquals("127.0.0.1", evidence.path("backend").path("host").asText()),
+                () -> assertEquals("java-assigned-ephemeral",
+                        evidence.path("backend").path("portPolicy").asText()),
+                () -> assertTrue(evidence.path("backend").path("startedOnLoopback").asBoolean()),
+                () -> assertEquals("POST", evidence.path("proxyRequest").path("method").asText()),
+                () -> assertEquals("/proxy/evidence/review?trace=local-only",
+                        evidence.path("proxyRequest").path("pathAndQuery").asText()),
+                () -> assertTrue(evidence.path("backendRequest").path("backendReceived").asBoolean()),
+                () -> assertEquals("/evidence/review?trace=local-only",
+                        evidence.path("backendRequest").path("pathAndQuery").asText()),
+                () -> assertEquals(202, evidence.path("proxyResponse").path("status").asInt()),
+                () -> assertTrue(evidence.path("securityBoundary").path("prodApiKeyMode").asBoolean()),
+                () -> assertEquals(401,
+                        evidence.path("securityBoundary").path("missingProxyApiKeyStatus").asInt()),
+                () -> assertEquals(401,
+                        evidence.path("securityBoundary").path("missingStatusApiKeyStatus").asInt()),
+                () -> assertEquals(200,
+                        evidence.path("securityBoundary").path("authenticatedStatusRequestStatus").asInt()),
+                () -> assertEquals("<REDACTED>",
+                        evidence.path("securityBoundary").path("apiKeyRedacted").asText()),
+                () -> assertTrue(evidence.path("safety").path("loopbackOnly").asBoolean()),
+                () -> assertTrue(evidence.path("safety").path("sourceVisible").asBoolean()),
+                () -> assertFalse(evidence.path("safety").path("nativeTools").asBoolean()),
+                () -> assertFalse(evidence.path("safety").path("downloads").asBoolean()),
+                () -> assertFalse(evidence.path("safety").path("portScanning").asBoolean()),
+                () -> assertFalse(evidence.path("safety").path("persistence").asBoolean()),
                 () -> assertFalse(markdown.contains(API_KEY)),
                 () -> assertFalse(json.contains(API_KEY)),
                 () -> assertFalse(markdown.contains("http://127.0.0.1:")),
@@ -149,6 +182,11 @@ class LocalProxyEvidenceExportTest {
                 () -> assertFalse(markdown.contains(RELEASE_DOWNLOADS_PATH)),
                 () -> assertFalse(json.contains(RELEASE_DOWNLOADS_PATH))
         );
+        PrivateNetworkEvidenceRedactor.assertNoSensitiveEvidence(
+                markdown + "\n" + json,
+                API_KEY,
+                RELEASE_DOWNLOADS_PATH,
+                "http://127.0.0.1:");
     }
 
     private static void writeEvidence(MvcResult missingProxyKey,

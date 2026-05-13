@@ -18,9 +18,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.richmond423.loadbalancerpro.api.PrivateNetworkEvidenceRedactor;
 import org.junit.jupiter.api.Test;
 
 class PrivateNetworkProxyDryRunEvidenceTest {
+    private static final ObjectMapper JSON = new ObjectMapper();
     private static final Path APPLICATION_PROPERTIES = Path.of("src/main/resources/application.properties");
     private static final Path EVIDENCE_DIR = Path.of("target", "proxy-evidence");
     private static final Path MARKDOWN_EVIDENCE =
@@ -61,6 +65,7 @@ class PrivateNetworkProxyDryRunEvidenceTest {
         String markdown = Files.readString(MARKDOWN_EVIDENCE, StandardCharsets.UTF_8);
         String json = Files.readString(JSON_EVIDENCE, StandardCharsets.UTF_8);
         String combined = markdown + "\n" + json;
+        JsonNode evidence = JSON.readTree(json);
 
         assertAll(
                 () -> assertTrue(markdown.contains("# Private-Network Validation Dry Run")),
@@ -97,6 +102,30 @@ class PrivateNetworkProxyDryRunEvidenceTest {
                 () -> assertTrue(json.contains("\"status\": \"PUBLIC_NETWORK_REJECTED\"")),
                 () -> assertTrue(json.contains("\"status\": \"AMBIGUOUS_HOST_REJECTED\"")),
                 () -> assertTrue(json.contains("\"status\": \"USERINFO_REJECTED\"")),
+                () -> assertEquals("PrivateNetworkProxyDryRunEvidenceTest",
+                        evidence.path("generatedBy").asText()),
+                () -> assertEquals("target/proxy-evidence",
+                        evidence.path("evidenceOutputScope").asText()),
+                () -> assertEquals("target/proxy-evidence/private-network-validation-dry-run.md",
+                        evidence.path("markdownEvidence").asText()),
+                () -> assertEquals("target/proxy-evidence/private-network-validation-dry-run.json",
+                        evidence.path("jsonEvidence").asText()),
+                () -> assertEquals(VALIDATION_FLAG + "=true",
+                        evidence.path("recipeProperty").asText()),
+                () -> assertTrue(evidence.path("dryRunOnly").asBoolean()),
+                () -> assertFalse(evidence.path("trafficSent").asBoolean()),
+                () -> assertFalse(evidence.path("dnsResolution").asBoolean()),
+                () -> assertFalse(evidence.path("reachabilityChecks").asBoolean()),
+                () -> assertFalse(evidence.path("portScanning").asBoolean()),
+                () -> assertFalse(evidence.path("postmanExecution").asBoolean()),
+                () -> assertFalse(evidence.path("smokeExecution").asBoolean()),
+                () -> assertFalse(evidence.path("apiKeyPersisted").asBoolean()),
+                () -> assertFalse(evidence.path("secretPersisted").asBoolean()),
+                () -> assertFalse(evidence.path("releaseDownloadsMutated").asBoolean()),
+                () -> assertTrue(evidence.path("failClosedBeforeActiveConfig").asBoolean()),
+                () -> assertTrue(evidence.path("samples").isArray()),
+                () -> assertEquals(samples.size(), evidence.path("samples").size()),
+                () -> assertSamplesHaveExpectedShape(evidence.path("samples")),
                 () -> assertFalse(combined.contains(API_KEY_SENTINEL)),
                 () -> assertFalse(combined.contains("pass@")),
                 () -> assertFalse(combined.contains("user:pass")),
@@ -104,6 +133,12 @@ class PrivateNetworkProxyDryRunEvidenceTest {
                 () -> assertFalse(combined.contains("Authorization")),
                 () -> assertFalse(combined.contains("Bearer")),
                 () -> assertFalse(combined.contains("release-" + "downloads")));
+        PrivateNetworkEvidenceRedactor.assertNoSensitiveEvidence(
+                combined,
+                API_KEY_SENTINEL,
+                "pass@",
+                "user:pass",
+                "release-" + "downloads");
     }
 
     @Test
@@ -223,6 +258,16 @@ class PrivateNetworkProxyDryRunEvidenceTest {
                 }
                 """);
         return builder.toString();
+    }
+
+    private static void assertSamplesHaveExpectedShape(JsonNode samples) {
+        for (JsonNode sample : samples) {
+            assertTrue(sample.hasNonNull("label"));
+            assertTrue(sample.hasNonNull("renderedUrl"));
+            assertTrue(sample.hasNonNull("status"));
+            assertTrue(sample.hasNonNull("allowed"));
+            assertTrue(sample.path("allowed").isBoolean());
+        }
     }
 
     private static String jsonEscape(String value) {

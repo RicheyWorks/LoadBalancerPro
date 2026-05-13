@@ -361,6 +361,39 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
     }
 
     @Test
+    void privateNetworkLiveValidationGateLocksFinalPreExecutionChecklist() throws Exception {
+        String gate = read(LIVE_GATE);
+        String normalized = gate.toLowerCase(Locale.ROOT);
+
+        assertTrue(gate.contains("## Final Pre-Execution Checklist"));
+        assertTrue(normalized.contains("not-implemented-yet marker for runtime/private-lan live validation"));
+        assertTrue(normalized.contains("explicit owner-approved task that authorizes executor wiring"));
+
+        for (String expected : List.of(
+                "explicit owner approval for execution wiring is present in the task",
+                "loadbalancerpro.proxy.private-network-live-validation.enabled=true",
+                "remains default-off",
+                "loadbalancerpro.proxy.private-network-live-validation.operator-approved=true",
+                "loadbalancerpro.proxy.private-network-validation.enabled=true",
+                "loadbalancerpro.proxy.enabled=true",
+                "operator-provided literals only",
+                "classifier-approved literal loopback/private url",
+                "privatenetworklivevalidationrequestpathvalidator",
+                "bounded timeout behavior is documented and tested",
+                "exactly one validation request is sent per command",
+                "dns resolution is not used",
+                "discovery and scanning are not used",
+                "redirect-following is not used",
+                "public internet targets fail closed",
+                "redacted and written only under ignored `target/` output",
+                "prod api-key boundary proof and oauth2 boundary proof",
+                "postman and smoke paths remain dry-run-only by default",
+                "no native tooling, downloaded helper binaries, release assets, or `release-downloads/` mutation")) {
+            assertTrue(normalized.contains(expected), "final checklist should lock: " + expected);
+        }
+    }
+
+    @Test
     void privateNetworkDryRunRecipeIsConfigOnlyAndEvidenceBounded() throws Exception {
         String recipe = read(DRY_RUN);
         String normalized = recipe.toLowerCase(Locale.ROOT);

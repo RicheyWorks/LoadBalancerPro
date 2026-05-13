@@ -161,27 +161,28 @@ Implemented source-visible pieces:
 
 The current executor is not called from app startup, Postman, smoke scripts, or proxy routing. The only traffic proof in this sprint is JUnit-only loopback traffic. Broader private-LAN live validation remains a future separately approved task.
 
-## Implementation Checklist
+## Final Pre-Execution Checklist
 
-Before any future runtime/private-LAN live validation is added beyond the current loopback-only test proof, the PR must prove:
+This is the not-implemented-yet marker for runtime/private-LAN live validation. Before any future runtime/private-LAN live validation is added beyond the current loopback-only test proof, the PR must prove every item below and cite the explicit owner-approved task that authorizes executor wiring:
 
 - explicit owner approval for execution wiring is present in the task;
-- explicit property enablement is required and default-off;
-- explicit `operator-approved=true` approval is required;
-- `loadbalancerpro.proxy.private-network-validation.enabled=true` is required;
-- `loadbalancerpro.proxy.enabled=true` is required;
+- the live flag `loadbalancerpro.proxy.private-network-live-validation.enabled=true` is required and remains default-off;
+- the operator approval flag `loadbalancerpro.proxy.private-network-live-validation.operator-approved=true` is required and remains default-off;
+- the config validation flag `loadbalancerpro.proxy.private-network-validation.enabled=true` is required;
+- the proxy flag `loadbalancerpro.proxy.enabled=true` is required;
 - backend URLs are operator-provided literals only;
-- every backend passes `ProxyBackendUrlClassifier` before activation;
+- every backend is a classifier-approved literal loopback/private URL before activation;
 - request paths pass `PrivateNetworkLiveValidationRequestPathValidator`;
+- bounded timeout behavior is documented and tested;
+- exactly one validation request is sent per command;
 - DNS resolution is not used;
 - discovery and scanning are not used;
+- redirect-following is not used;
 - public internet targets fail closed;
-- timeout is bounded and documented;
-- exactly one validation request is sent per command;
 - no persistence, service installation, scheduled tasks, hidden agents, or credential storage is added;
 - generated evidence is redacted and written only under ignored `target/` output;
 - command audit trail output is redacted and written only under ignored `target/` output;
-- prod API-key boundary proof or OAuth2 boundary proof is included;
+- prod API-key boundary proof and OAuth2 boundary proof are included or explicitly preserved with focused tests;
 - reload failure preserves the last-known-good active config;
 - local/private-only tests are deterministic and source-visible;
 - Postman and smoke paths remain dry-run-only by default;

@@ -53,6 +53,20 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("must not expand hostnames, cidr ranges, ip ranges, or service names"));
         assertTrue(normalized.contains("unsupported schemes, public addresses, wildcard domains"));
         assertTrue(normalized.contains("fail closed"));
+        assertTrue(plan.contains("ProxyBackendUrlClassifier"));
+        assertTrue(normalized.contains("offline classification only"));
+        assertTrue(normalized.contains("loopback allowed"));
+        assertTrue(normalized.contains("private-network allowed"));
+        assertTrue(normalized.contains("public-network rejected"));
+        assertTrue(normalized.contains("invalid rejected"));
+        assertTrue(normalized.contains("unsupported-scheme rejected"));
+        assertTrue(normalized.contains("user-info rejected"));
+        assertTrue(normalized.contains("ambiguous-host rejected"));
+        assertTrue(normalized.contains("does not resolve dns"));
+        assertTrue(normalized.contains("perform reachability checks"));
+        assertTrue(normalized.contains("scan ports"));
+        assertTrue(normalized.contains("discover hosts"));
+        assertTrue(normalized.contains("wire private-network validation into runtime startup"));
     }
 
     @Test
@@ -134,6 +148,8 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(runbook.contains("PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md"));
         assertTrue(normalized.contains("explicit operator-provided backend urls only"));
         assertTrue(normalized.contains("local/private-network allowlisting"));
+        assertTrue(normalized.contains("offline `proxybackendurlclassifier` review"));
+        assertTrue(normalized.contains("no dns or reachability checks"));
         assertTrue(normalized.contains("no discovery or scanning"));
         assertTrue(normalized.contains("no secret persistence"));
         assertTrue(normalized.contains("no private-network live execution until separately approved"));

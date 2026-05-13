@@ -76,10 +76,14 @@ Recommended first paths:
 1. Read [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md) for the forwarding contract.
 2. Read [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](REVERSE_PROXY_HEALTH_AND_METRICS.md) and [`REVERSE_PROXY_RESILIENCE.md`](REVERSE_PROXY_RESILIENCE.md) for active health, counters, retries, and cooldowns.
 3. Run [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md) or [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md) for loopback selected-upstream evidence.
-4. Run `mvn -Dtest=LocalProxyEvidenceExportTest test` when you want ignored Markdown/JSON evidence under `target/proxy-evidence/`.
+4. Use the focused [Local Proxy Evidence Export](#local-proxy-evidence-export) recipe when you want ignored Markdown/JSON evidence under `target/proxy-evidence/`.
 5. Use [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) to adapt the same verification model to local/private HTTP services.
 6. Read the auth/TLS boundary in [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md#auth-and-tls-boundary) before exposing proxy mode beyond loopback.
 7. Verify status through `/proxy-status.html` and `/api/proxy/status`.
+
+### Local Proxy Evidence Export
+
+Run `mvn -Dtest=LocalProxyEvidenceExportTest test`, then inspect `target/proxy-evidence/local-proxy-evidence.md` and `target/proxy-evidence/local-proxy-evidence.json`. The Markdown file is the human review path: it shows the loopback/local-only JDK `HttpServer` fixture, the `/proxy/**` request, backend receipt, forwarded status/body/header proof, and prod API-key `401`/`200` boundary. The JSON file is the structured evidence path: it records the same proof labels, `loopbackOnly=true`, `apiKeyRedacted="<REDACTED>"`, and no native tools/downloads/scanning/persistence/service installation. The files are generated under ignored `target/` output, are not tracked docs, do not write API keys or secrets, and do not add external network behavior.
 
 ### Release-Readiness Review
 

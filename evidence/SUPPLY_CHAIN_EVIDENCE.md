@@ -1,7 +1,7 @@
 # LoadBalancerPro Supply Chain Evidence
 
-Date: 2026-05-04
-Branch: `feature/v1.9.0-release-attestations`
+Date: 2026-05-13
+Branch: `codex/evidence-documentation-refresh`
 Verification commands: `mvn -q test`, `mvn -q -DskipTests package`, `mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -Dcyclonedx.skipAttach=true`
 
 ## Purpose and Scope
@@ -25,15 +25,16 @@ Related evidence:
 
 LoadBalancerPro is a Java 17 Maven project with Spring Boot, AWS SDK v2, Spring Security/OAuth2, Micrometer telemetry libraries, JavaFX GUI support, JSON parsing utilities, caching, Reactor, and test dependencies.
 
-The project currently uses Maven dependency management for the largest framework families and pins build plugins directly in `pom.xml`. CI runs dependency resolution, tests, packaging, smoke checks, CycloneDX SBOM generation, Docker image build/runtime checks, Trivy image scanning, and GitHub dependency review for pull requests. A separate CodeQL workflow provides a Java/Kotlin static-analysis baseline with a manual Maven build. A separate tag-triggered release artifact workflow builds the executable JAR, generates CycloneDX SBOM JSON/XML, verifies Git tag and Maven version alignment, generates SHA-256 checksums, creates GitHub artifact attestations for release JAR provenance and the JAR/SBOM JSON relationship, and uploads deterministic GitHub Actions artifacts.
+The project currently uses Maven dependency management for the largest framework families and pins build plugins directly in `pom.xml`. CI runs dependency resolution, tests, packaging, smoke checks, CycloneDX SBOM generation, Docker image build/runtime checks, Trivy image scanning, and GitHub dependency review for pull requests. A separate CodeQL workflow provides a Java/Kotlin static-analysis baseline with a manual Maven build. A separate release artifact workflow has two modes: semantic tag pushes publish release assets, while manual `workflow_dispatch` runs are non-publishing dry runs. Tag runs build the executable JAR, generate CycloneDX SBOM JSON/XML, verify Git tag and Maven version alignment, generate and verify SHA-256 checksums, create GitHub artifact attestations for release JAR provenance and the JAR/SBOM JSON relationship, publish deterministic GitHub Release assets, verify the release asset names, and upload a deterministic GitHub Actions artifact bundle as backup evidence.
 
-This posture provides useful regression and review evidence, but it is not yet a full supply-chain provenance program because there is no PGP-style release artifact signing, container signing, GitHub Release asset publication policy, or mature accepted dependency-risk workflow. CycloneDX SBOM generation is documented in `evidence/SBOM_GUIDE.md` and runs in CI/release workflows without adding a CycloneDX plugin to `pom.xml`. GitHub artifact attestations provide release provenance evidence, not signing, notarization, vulnerability proof, or production-readiness proof. CodeQL is a SAST baseline, not a complete security review or production-readiness proof.
+This posture provides useful regression and review evidence, but it is not yet a full supply-chain provenance program because there is no PGP-style release artifact signing, container signing, registry image publication/signing, mature accepted dependency-risk workflow, or formal SAST triage register. CycloneDX SBOM generation is documented in `evidence/SBOM_GUIDE.md` and runs in CI/release workflows without adding a CycloneDX plugin to `pom.xml`. GitHub artifact attestations provide release provenance evidence, not signing, notarization, vulnerability proof, or production-readiness proof. CodeQL is a SAST baseline, not a complete security review or production-readiness proof.
 
 ## BOM-Managed Dependencies
 
 The following dependency families are centrally managed in `pom.xml`:
 
 - Spring Boot dependency BOM: `${spring-boot.version}`.
+- Netty BOM: `${netty.version}`.
 - AWS SDK v2 BOM: `${aws-sdk-v2.version}`.
 
 Spring Boot BOM-managed areas include Spring Web, Actuator, Security, OAuth2 Resource Server, Validation, Micrometer versions provided through the Boot dependency ecosystem, Reactor, test dependencies, and Log4j versions where Boot management applies.
@@ -64,9 +65,11 @@ Some dependencies use explicit versions outside the Spring Boot or AWS BOMs, inc
 
 The following Maven build plugins are pinned in `pom.xml`:
 
-- `maven-compiler-plugin` `3.11.0`
-- `maven-surefire-plugin` `3.1.2`
-- `maven-jar-plugin` `3.3.0`
+- `maven-compiler-plugin` `3.15.0`
+- `maven-surefire-plugin` `3.5.5`
+- `exec-maven-plugin` `3.5.0`
+- `jacoco-maven-plugin` `${jacoco.version}` (`0.8.13` at this evidence refresh)
+- `maven-jar-plugin` `3.5.0`
 - `spring-boot-maven-plugin` `${spring-boot.version}`
 
 Pinned plugins reduce implicit build drift, but they do not replace vulnerability review, plugin update review, or build provenance evidence.
@@ -90,25 +93,28 @@ The repository also includes `.trivyignore`, documented as empty-by-default. All
 
 ## Release Artifact Provenance Checks
 
-The tag-triggered Release Artifacts workflow is separate from CI and CodeQL. It runs only on semantic version tags matching `v*.*.*` and does not run on normal branch pushes or pull requests. Semantic release tags matching `v*.*.*` require Maven/app metadata alignment before push because the workflow intentionally fails on tag/Maven version mismatches.
+The Release Artifacts workflow is separate from CI and CodeQL. On semantic version tag pushes matching `v*.*.*`, it publishes GitHub Release assets. On manual `workflow_dispatch`, it is a dry run: it resolves a version, builds the same deterministic artifact bundle, and uploads a GitHub Actions artifact named with `-dry-run`, but it does not run the attestation or GitHub Release publication steps. Semantic release tags matching `v*.*.*` require Maven/app metadata alignment before upload because the workflow intentionally fails on tag/Maven version mismatches.
 
 Current release artifact workflow behavior includes:
 
 - Extracting the release version from the Git tag.
+- Resolving a dry-run version from `workflow_dispatch` input or Maven project metadata when manually dispatched.
 - Reading the Maven project version with Maven help tooling.
-- Failing before artifact upload if the Git tag version and Maven project version differ.
+- Failing before artifact upload if the resolved release version and Maven project version differ.
 - Building the executable JAR with `mvn -B -DskipTests package`.
 - Running lightweight packaged-JAR smoke checks, including `--version`, `--lase-demo=healthy`, and safe invalid-scenario handling.
 - Generating CycloneDX SBOM JSON/XML through direct `org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom` invocation.
 - Generating and verifying a SHA-256 checksum file for the release JAR and SBOM files.
-- Creating GitHub artifact attestations for release JAR build provenance and for the JAR/SBOM JSON relationship.
-- Uploading deterministic GitHub Actions artifacts:
+- On publish-mode tag runs only, creating GitHub artifact attestations for release JAR build provenance and for the JAR/SBOM JSON relationship.
+- On publish-mode tag runs only, creating or updating the matching GitHub Release after refusing draft/prerelease releases and unexpected existing asset names.
+- On publish-mode tag runs only, verifying the GitHub Release contains exactly the expected asset names.
+- Uploading deterministic GitHub Actions artifacts in both publish and dry-run modes:
   - `LoadBalancerPro-${version}.jar`
   - `LoadBalancerPro-${version}-bom.json`
   - `LoadBalancerPro-${version}-bom.xml`
   - `LoadBalancerPro-${version}-SHA256SUMS.txt`
 
-The uploaded artifact bundle is named `loadbalancerpro-release-${version}` and is retained for 90 days. The checksum file helps verify downloaded artifact integrity against the uploaded checksum file. GitHub artifact attestations help consumers verify where and how the release JAR was built and which SBOM JSON file was associated with it. This is GitHub Actions artifact publication plus GitHub artifact attestation. It is not GitHub Release asset publication, PGP signing, notarization, vulnerability scanning, or a production-readiness claim.
+The uploaded GitHub Actions artifact bundle is named `loadbalancerpro-release-${version}` for tag publish runs or `loadbalancerpro-release-${version}-dry-run` for manual dry runs, and is retained for 90 days. The GitHub Release assets on tag runs use the same deterministic JAR/SBOM/checksum filenames. The checksum file helps verify downloaded artifact integrity against the uploaded checksum file. GitHub artifact attestations help consumers verify where and how the release JAR was built and which SBOM JSON file was associated with it. This is GitHub Release asset publication, GitHub Actions artifact publication, and GitHub artifact attestation. It is not PGP signing, notarization, vulnerability scanning, container signing, Maven Central publication, or a production-readiness claim.
 
 ## Current Automation And Pinning
 
@@ -132,9 +138,9 @@ Known gaps as of this evidence pass:
 - There is no formal dependency update cadence or accepted dependency-risk register beyond the residual risk entry in `evidence/RESIDUAL_RISKS.md`.
 - First CodeQL findings still need baseline review and triage before CodeQL is treated as a mature release blocker.
 - No formal static-analysis triage register exists yet.
-- No release artifact signing exists beyond GitHub artifact attestations.
+- GitHub Release assets exist for semantic tag runs, but no release artifact signing exists beyond GitHub artifact attestations.
 - No container signing exists yet.
-- No GitHub Release asset publication policy exists yet.
+- No registry image publication exists yet.
 - No registry or release image signing policy exists yet.
 
 ## Higher-Sensitivity Dependency Areas

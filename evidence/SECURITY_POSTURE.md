@@ -80,11 +80,11 @@ Revisit this disposition if cookie/session authentication, credentialed CORS, or
 
 - A separate tag-triggered Release Artifacts workflow builds the executable JAR and CycloneDX SBOM JSON/XML for semantic version tags.
 - The workflow fails before upload if the Git tag version and Maven project version do not match.
-- Release artifacts are uploaded as GitHub Actions artifacts with deterministic names and a SHA-256 checksum file.
+- Release artifacts are published as deterministic GitHub Release assets on semantic tag runs and also uploaded as GitHub Actions artifacts with deterministic names and a SHA-256 checksum file.
 - Checksums support downloaded artifact integrity checks against the uploaded checksum file, but they do not prove builder identity or replace signatures or attestations.
 - GitHub artifact attestations provide build provenance evidence for the release JAR and the JAR/SBOM JSON relationship.
 - Attestations help consumers verify where and how the attested artifact was built, but they are not PGP signing, notarization, vulnerability scanning, or production-readiness proof.
-- This is release evidence, not GitHub Release asset publication, release signing beyond GitHub artifact attestations, container signing, or a production-readiness claim.
+- This is release evidence and GitHub Release asset publication, not release signing beyond GitHub artifact attestations, container signing, Maven Central publication, or a production-readiness claim.
 
 ## What Is Verified By Tests
 

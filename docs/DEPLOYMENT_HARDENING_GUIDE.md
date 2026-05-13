@@ -145,7 +145,7 @@ Before exposing LoadBalancerPro beyond a local demo:
 - [ ] OTLP and Prometheus exposure is reviewed.
 - [ ] Cloud live flags are reviewed.
 - [ ] AWS credentials are absent unless a reviewed sandbox run requires them.
-- [ ] Release artifact bundle, checksum file, and attestation evidence are reviewed.
+- [ ] Release artifact bundle, GitHub Release assets, checksum file, and attestation evidence are reviewed when deploying from a semantic release tag.
 - [ ] Rollback plan is identified.
 - [ ] Logs and metrics retention expectations are known.
 - [ ] Incident response owner is identified.
@@ -163,7 +163,7 @@ This guide does not provide:
 - Terraform.
 - Docker Compose.
 - Live AWS validation.
-- GitHub Release asset publishing.
+- Ad hoc release publication. GitHub Release assets are published only by the separate semantic-tag Release Artifacts workflow, not by normal docs, tests, smoke scripts, or deployment review.
 - Container signing.
 - Production certification.
 

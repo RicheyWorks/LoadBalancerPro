@@ -12,6 +12,8 @@ Real-backend tests should be deterministic, documented, and low-risk. They shoul
 
 The current automated real-backend validation path is the source-visible Maven test `LocalOnlyRealBackendProxyValidationTest`. It starts JDK `HttpServer` fixtures on `127.0.0.1` using Java-assigned ephemeral loopback ports, opts proxy mode in through test properties, proves status/body/header forwarding through `/proxy/**`, and checks a configured-unavailable backend fails closed without calling the fixture. It does not scan ports, install tools, persist state, store secrets, or call external networks.
 
+For reviewer-readable export, `LocalProxyEvidenceExportTest` uses the same source-visible loopback pattern and writes sanitized Markdown and JSON to `target/proxy-evidence/local-proxy-evidence.md` and `target/proxy-evidence/local-proxy-evidence.json`. The generated evidence shows the loopback backend start policy, proxied `/proxy/**` request, backend receipt, forwarding response status/body/headers, and prod API-key boundary checks with the key redacted. The files stay under ignored Maven build output and are not tracked documentation artifacts.
+
 ## Containment Rules
 
 - Live/proxy mode is opt-in and must not become the default profile behavior.

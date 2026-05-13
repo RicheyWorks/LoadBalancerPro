@@ -40,6 +40,56 @@ class EnterpriseProxyConfigurationTest {
     }
 
     @Test
+    void privateNetworkValidationIsOptInSoExistingProxyUrlValidationRemainsUnchanged() {
+        contextRunner.withPropertyValues(
+                        validSingleTargetRouteProperties("http://example.com:18081"))
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).hasSingleBean(ReverseProxyService.class);
+                    assertThat(context.getBean(ReverseProxyProperties.class)
+                            .getPrivateNetworkValidation().isEnabled()).isFalse();
+                });
+    }
+
+    @Test
+    void privateNetworkValidationAcceptsLoopbackAndPrivateLiteralTargets() {
+        contextRunner.withPropertyValues(
+                        "loadbalancerpro.proxy.private-network-validation.enabled=true",
+                        "loadbalancerpro.proxy.enabled=true",
+                        "loadbalancerpro.proxy.routes.api.path-prefix=/api",
+                        "loadbalancerpro.proxy.routes.api.targets[0].id=local-a",
+                        "loadbalancerpro.proxy.routes.api.targets[0].url=http://127.0.0.1:18081",
+                        "loadbalancerpro.proxy.routes.api.targets[0].weight=1",
+                        "loadbalancerpro.proxy.routes.api.targets[1].id=private-a",
+                        "loadbalancerpro.proxy.routes.api.targets[1].url=http://10.1.2.3:18082",
+                        "loadbalancerpro.proxy.routes.api.targets[1].weight=1")
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).hasSingleBean(ReverseProxyService.class);
+                    assertThat(context.getBean(ReverseProxyProperties.class)
+                            .getPrivateNetworkValidation().isEnabled()).isTrue();
+                });
+    }
+
+    @Test
+    void privateNetworkValidationRejectsPublicIpAndDomainTargets() {
+        assertPrivateNetworkValidationRejects("http://8.8.8.8:18081", "PUBLIC_NETWORK_REJECTED");
+        assertPrivateNetworkValidationRejects("http://example.com:18081", "AMBIGUOUS_HOST_REJECTED");
+    }
+
+    @Test
+    void privateNetworkValidationRejectsUserInfoAndUnsupportedSchemes() {
+        assertPrivateNetworkValidationRejects("http://user:pass@127.0.0.1:18081", "USERINFO_REJECTED");
+        assertPrivateNetworkValidationRejects("ftp://127.0.0.1:18081", "UNSUPPORTED_SCHEME_REJECTED");
+    }
+
+    @Test
+    void privateNetworkValidationFailsClosedOnMalformedAndAmbiguousTargets() {
+        assertPrivateNetworkValidationRejects("http://[bad", "INVALID_REJECTED");
+        assertPrivateNetworkValidationRejects("http://010.000.000.001:18081", "AMBIGUOUS_HOST_REJECTED");
+    }
+
+    @Test
     void enabledProxyWithNoRoutesOrLegacyUpstreamsFailsClearly() {
         contextRunner.withPropertyValues("loadbalancerpro.proxy.enabled=true")
                 .run(context -> assertStartupFailureContains(context.getStartupFailure(),
@@ -129,6 +179,30 @@ class EnterpriseProxyConfigurationTest {
                 "loadbalancerpro.proxy.routes.api.targets[1].url=http://127.0.0.1:18082",
                 "loadbalancerpro.proxy.routes.api.targets[1].weight=1"
         };
+    }
+
+    private static String[] validSingleTargetRouteProperties(String url) {
+        return new String[] {
+                "loadbalancerpro.proxy.enabled=true",
+                "loadbalancerpro.proxy.routes.api.path-prefix=/api",
+                "loadbalancerpro.proxy.routes.api.strategy=ROUND_ROBIN",
+                "loadbalancerpro.proxy.routes.api.targets[0].id=operator-target",
+                "loadbalancerpro.proxy.routes.api.targets[0].url=" + url,
+                "loadbalancerpro.proxy.routes.api.targets[0].weight=1"
+        };
+    }
+
+    private void assertPrivateNetworkValidationRejects(String url, String expectedStatus) {
+        contextRunner.withPropertyValues(privateNetworkValidationSingleTargetRouteProperties(url))
+                .run(context -> assertStartupFailureContains(context.getStartupFailure(), expectedStatus));
+    }
+
+    private static String[] privateNetworkValidationSingleTargetRouteProperties(String url) {
+        String[] routeProperties = validSingleTargetRouteProperties(url);
+        String[] properties = new String[routeProperties.length + 1];
+        properties[0] = "loadbalancerpro.proxy.private-network-validation.enabled=true";
+        System.arraycopy(routeProperties, 0, properties, 1, routeProperties.length);
+        return properties;
     }
 
     private static void assertStartupFailureContains(Throwable startupFailure, String expectedMessage) {

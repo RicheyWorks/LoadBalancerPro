@@ -34,6 +34,8 @@ The status response is read-only. For operator-configured routes, verify the exp
 
 For proxy mode outside loopback-only local demos, confirm `/proxy/**`, `GET /api/proxy/status`, and `/proxy-status.html` sit behind the expected access-control boundary. Prod or cloud-sandbox API-key mode requires `X-API-Key` for proxy forwarding/status, OAuth2 mode requires the configured allocation role, and TLS termination remains a deployment responsibility at a trusted reverse proxy, ingress, managed load balancer, platform edge, or service mesh.
 
+The private-network proxy path is configuration-only at this stage. `loadbalancerpro.proxy.private-network-validation.enabled=true` validates explicit backend URL literals during startup or proxy reload and fails closed for public, ambiguous, unsupported, malformed, or user-info URLs. It does not start private-network smoke, discover hosts, resolve DNS, run reachability checks, scan ports, or send traffic by itself.
+
 For generated API documentation, local/default mode keeps `/v3/api-docs` and Swagger UI public for developer review. Prod or cloud-sandbox API-key mode requires `X-API-Key` for `/v3/api-docs`, `/v3/api-docs/**`, `/swagger-ui.html`, and `/swagger-ui/**` by default. Use Postman or curl with the configured header for prod-like API-key reviews; do not make Actuator metrics or Prometheus public to compensate for gated docs.
 
 If a proxy config reload was attempted, inspect `/api/proxy/status.reload` before sending more traffic. A successful reload increments `activeConfigGeneration` and updates active route/backend counts. A failed reload reports `lastReloadValidationErrors` and keeps the last known-good config active; treat the failure as a config correction task rather than a reason to restart blindly.

@@ -139,6 +139,34 @@ class ReverseProxyConfigReloadTest {
     }
 
     @Test
+    void privateNetworkValidationRejectsUnsafeReloadAndPreservesLastKnownGoodConfig() throws Exception {
+        mockMvc.perform(post("/api/proxy/reload")
+                        .header("X-API-Key", API_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(unsafePrivateNetworkValidationReloadBody()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(not(containsString(API_KEY))))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.status").value("failure"))
+                .andExpect(jsonPath("$.activeConfigGeneration").value(1))
+                .andExpect(jsonPath("$.validationErrors[0]").value(containsString("PUBLIC_NETWORK_REJECTED")));
+
+        mockMvc.perform(get("/api/proxy/status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.routes[0].targetIds[0]").value("startup-backend"))
+                .andExpect(jsonPath("$.reload.activeConfigGeneration").value(1))
+                .andExpect(jsonPath("$.reload.lastReloadStatus").value("failure"))
+                .andExpect(jsonPath("$.reload.lastReloadValidationErrors[0]")
+                        .value(containsString("PUBLIC_NETWORK_REJECTED")));
+
+        mockMvc.perform(get("/proxy/startup?step=after-rejected-reload"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-LoadBalancerPro-Upstream", "startup-backend"))
+                .andExpect(content().string(containsString(
+                        "startup-backend GET /startup?step=after-rejected-reload")));
+    }
+
+    @Test
     void reloadEndpointRejectsUnauthenticatedMutationEvenInLocalProfile() throws Exception {
         mockMvc.perform(post("/api/proxy/reload")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -169,6 +197,31 @@ class ReverseProxyConfigReloadTest {
                   }
                 }
                 """.formatted(RELOADED_BACKEND.baseUrl());
+    }
+
+    private static String unsafePrivateNetworkValidationReloadBody() {
+        return """
+                {
+                  "enabled": true,
+                  "strategy": "ROUND_ROBIN",
+                  "privateNetworkValidation": {
+                    "enabled": true
+                  },
+                  "routes": {
+                    "api": {
+                      "pathPrefix": "/api",
+                      "targets": [
+                        {
+                          "id": "public-backend",
+                          "url": "http://8.8.8.8:18081",
+                          "healthy": true,
+                          "weight": 1.0
+                        }
+                      ]
+                    }
+                  }
+                }
+                """;
     }
 
     private static String invalidReloadBody() {

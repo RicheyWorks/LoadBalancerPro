@@ -14,7 +14,7 @@ The current automated real-backend validation path is the source-visible Maven t
 
 For reviewer-readable export, `LocalProxyEvidenceExportTest` uses the same source-visible loopback pattern and writes sanitized Markdown and JSON to `target/proxy-evidence/local-proxy-evidence.md` and `target/proxy-evidence/local-proxy-evidence.json`. The generated evidence shows the loopback backend start policy, proxied `/proxy/**` request, backend receipt, forwarding response status/body/headers, and prod API-key boundary checks with the key redacted. The files stay under ignored Maven build output and are not tracked documentation artifacts.
 
-For the future path beyond loopback, [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md) defines the design-only private-network profile guardrails: explicit operator-provided backend URLs only, local/private-network allowlisting, no discovery or scanning, no secret persistence, redacted ignored evidence, and no runtime behavior change until a separate reviewed implementation task.
+For the future path beyond loopback, [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md) defines the private-network profile guardrails: explicit operator-provided backend URLs only, local/private-network allowlisting, no discovery or scanning, no secret persistence, redacted ignored evidence, and a current opt-in configuration-validation gate only. That gate fails unsafe URLs before startup or explicit reload succeeds, but it does not add live private-network execution, DNS resolution, reachability checks, script execution, Postman execution, or smoke behavior.
 
 ## Containment Rules
 

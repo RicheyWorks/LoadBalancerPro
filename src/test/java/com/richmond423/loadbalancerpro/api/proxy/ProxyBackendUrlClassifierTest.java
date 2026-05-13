@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,8 @@ import org.junit.jupiter.api.Test;
 class ProxyBackendUrlClassifierTest {
     private static final Path CLASSIFIER_SOURCE = Path.of(
             "src/main/java/com/richmond423/loadbalancerpro/api/proxy/ProxyBackendUrlClassifier.java");
+    private static final Path ROUTE_PLANNER_SOURCE = Path.of(
+            "src/main/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyRoutePlanner.java");
 
     @Test
     void loopbackHostsAndAddressesAreAllowed() {
@@ -105,7 +108,7 @@ class ProxyBackendUrlClassifierTest {
 
     @Test
     void classifierSourceStaysOfflineAndDoesNotResolveOrProbe() throws Exception {
-        String source = read(CLASSIFIER_SOURCE);
+        String source = read(CLASSIFIER_SOURCE) + "\n" + read(ROUTE_PLANNER_SOURCE);
 
         for (String forbidden : new String[] {
                 "InetAddress",
@@ -120,14 +123,16 @@ class ProxyBackendUrlClassifierTest {
     }
 
     @Test
-    void helperIsNotWiredIntoRuntimeProxyYet() throws Exception {
+    void helperIsWiredOnlyIntoPrivateNetworkConfigurationValidation() throws Exception {
+        Set<Path> allowedSources = Set.of(CLASSIFIER_SOURCE, ROUTE_PLANNER_SOURCE);
+
         try (Stream<Path> sources = Files.walk(Path.of("src/main/java"))) {
             for (Path source : sources
                     .filter(path -> path.toString().endsWith(".java"))
-                    .filter(path -> !path.equals(CLASSIFIER_SOURCE))
                     .toList()) {
-                assertFalse(read(source).contains("ProxyBackendUrlClassifier"),
-                        source + " must not wire classifier into runtime yet");
+                boolean containsClassifier = read(source).contains("ProxyBackendUrlClassifier");
+                assertEquals(allowedSources.contains(source), containsClassifier,
+                        source + " must only reference classifier from the offline helper or config validation");
             }
         }
     }

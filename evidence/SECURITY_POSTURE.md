@@ -2,12 +2,14 @@
 
 This document summarizes the current security and safety posture for the portfolio release evidence set. It is evidence for the lab implementation, not a claim of complete production security.
 
+For the concise reviewer-facing production-candidate snapshot, see `docs/PRODUCTION_READINESS_SUMMARY.md`.
+
 Audited baseline: `loadbalancerpro-clean` at `daa4817e9b0c937919dedc8340209e3d9338edff` after PR #39. The 2026-05-07 API key/security audit found no source-hardening requirement; this document records the current evidence posture and deployment caveats.
 
 ## Auth/RBAC Posture
 
 - Local/default mode remains demo-open for API usage and does not require an API key.
-- Prod and cloud-sandbox API-key mode protect `POST`/`PUT`/`PATCH` requests under `/api/**` and `GET /api/lase/**` with `X-API-Key`, while keeping `/api/health` public.
+- Prod and cloud-sandbox API-key mode require `X-API-Key` for non-`OPTIONS` `/api/**` requests by default, while keeping `GET /api/health` public as the explicit API exception.
 - OAuth2 mode is explicit opt-in, validates JWTs through Spring Security resource-server support, fails startup without issuer or JWK configuration, gates Swagger/OpenAPI by default, requires the allocation role for routing/allocation routes, and requires observer/operator-style roles for LASE shadow access.
 - CORS preflight supports the documented browser flow, including `Authorization`, without bypassing protected routes.
 

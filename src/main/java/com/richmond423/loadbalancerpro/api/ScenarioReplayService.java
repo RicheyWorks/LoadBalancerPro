@@ -197,7 +197,7 @@ public class ScenarioReplayService {
         double weight = server.weight() > 0.0 ? server.weight() : 1.0;
         return new RoutingServerStateInput(
                 server.id(),
-                server.healthy(),
+                Boolean.TRUE.equals(server.healthy()),
                 inFlightRequestCount,
                 capacity,
                 capacity,
@@ -205,7 +205,7 @@ public class ScenarioReplayService {
                 averageLatencyMillis,
                 p95LatencyMillis,
                 p99LatencyMillis,
-                server.healthy() ? 0.0 : 0.20,
+                Boolean.TRUE.equals(server.healthy()) ? 0.0 : 0.20,
                 queueDepth,
                 null);
     }

@@ -229,13 +229,13 @@ Residual risk or limitation: Documentation can drift from implementation. New fe
 
 ## Residual Risks
 
-The standing residual-risk register is `evidence/RESIDUAL_RISKS.md`. The most relevant residuals for these invariants are:
+The standing residual-risk register is `evidence/RESIDUAL_RISKS.md`. The most relevant residuals and recently mitigated items for these invariants are:
 
 - Real AWS validation is outside default CI and must run only in disposable, explicitly guarded sandbox infrastructure.
 - Production TLS, IAM, firewalling, external rate limiting, secret rotation, deployment identity, log retention, and collector access controls remain deployment responsibilities.
 - OTLP private endpoint validation is heuristic and does not prove collector trust or network security.
 - Redaction is pattern-based and not full DLP.
-- Primitive numeric DTO fields can default to `0.0` when omitted from JSON input.
+- Allocation/evaluation request DTOs reject omitted enterprise-required fields instead of silently defaulting JSON omissions to `0`, `0.0`, or `false`.
 - Cloud-sandbox fixed-prefix enforcement should be strengthened if operators can override prefixes in an untrusted environment.
 - Not every possible framework-generated error surface is claimed to have identical safe-envelope behavior.
 
@@ -247,4 +247,4 @@ The standing residual-risk register is `evidence/RESIDUAL_RISKS.md`. The most re
 - Add mutation testing or architecture tests that forbid replay/evaluation packages from depending on CloudManager or AWS clients.
 - Add API contract tests for less-common framework-generated errors such as all 404/405/415 variants.
 - Add deployment evidence templates for TLS, IAM, firewall, rate limiting, secret rotation, OAuth issuer operations, and collector security.
-- Consider nullable validated DTO fields for omitted numeric input in a compatibility-aware hardening change.
+- Keep nullable validated DTO fields for required request input, and apply the same omission-review rule to future API request DTOs.

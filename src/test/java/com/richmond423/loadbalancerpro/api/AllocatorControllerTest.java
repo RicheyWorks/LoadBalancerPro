@@ -712,8 +712,8 @@ class AllocatorControllerTest {
     }
 
     @Test
-    void missingRequestedLoadCurrentlyDefaultsToZero() throws Exception {
-        mockMvc.perform(post("/api/allocate/capacity-aware")
+    void allocationRejectsOmittedRequestedLoadWithSafeValidationShape() throws Exception {
+        String responseBody = mockMvc.perform(post("/api/allocate/capacity-aware")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -730,17 +730,61 @@ class AllocatorControllerTest {
                                   ]
                                 }
                                 """))
-                .andExpect(status().isOk())
+                .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.allocations.api-1", closeTo(0.0, 0.01)))
-                .andExpect(jsonPath("$.unallocatedLoad", closeTo(0.0, 0.01)))
-                .andExpect(jsonPath("$.recommendedAdditionalServers", is(0)))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error", is("validation_failed")))
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.path", is("/api/allocate/capacity-aware")))
+                .andExpect(jsonPath("$.details").isArray())
+                .andExpect(jsonPath("$.trace").doesNotExist())
+                .andExpect(jsonPath("$.exception").doesNotExist())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertTrue(responseBody.contains("requestedLoad"), "omitted requestedLoad must be named in validation output");
+        assertFalse(responseBody.contains("stackTrace"), "validation output must not expose stack traces");
     }
 
     @Test
-    void missingServerNumericFieldCurrentlyDefaultsToZero() throws Exception {
-        mockMvc.perform(post("/api/allocate/capacity-aware")
+    void evaluationRejectsOmittedRequestedLoadWithSafeValidationShape() throws Exception {
+        String responseBody = mockMvc.perform(post("/api/allocate/evaluate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "strategy": "CAPACITY_AWARE",
+                                  "servers": [
+                                    {
+                                      "id": "api-1",
+                                      "cpuUsage": 10.0,
+                                      "memoryUsage": 20.0,
+                                      "diskUsage": 30.0,
+                                      "capacity": 100.0,
+                                      "weight": 1.0,
+                                      "healthy": true
+                                    }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error", is("validation_failed")))
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.path", is("/api/allocate/evaluate")))
+                .andExpect(jsonPath("$.details").isArray())
+                .andExpect(jsonPath("$.trace").doesNotExist())
+                .andExpect(jsonPath("$.exception").doesNotExist())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertTrue(responseBody.contains("requestedLoad"), "omitted requestedLoad must be named in validation output");
+        assertFalse(responseBody.contains("stackTrace"), "validation output must not expose stack traces");
+    }
+
+    @Test
+    void allocationRejectsOmittedServerNumericFieldWithSafeValidationShape() throws Exception {
+        String responseBody = mockMvc.perform(post("/api/allocate/capacity-aware")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -757,11 +801,83 @@ class AllocatorControllerTest {
                                   ]
                                 }
                                 """))
-                .andExpect(status().isOk())
+                .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.allocations.api-1").isNumber())
-                .andExpect(jsonPath("$.unallocatedLoad").isNumber())
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error", is("validation_failed")))
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.path", is("/api/allocate/capacity-aware")))
+                .andExpect(jsonPath("$.details").isArray())
+                .andExpect(jsonPath("$.trace").doesNotExist())
+                .andExpect(jsonPath("$.exception").doesNotExist())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertTrue(responseBody.contains("cpuUsage"), "omitted cpuUsage must be named in validation output");
+        assertFalse(responseBody.contains("stackTrace"), "validation output must not expose stack traces");
+    }
+
+    @Test
+    void allocationRejectsOmittedServerHealthFlagWithSafeValidationShape() throws Exception {
+        String responseBody = mockMvc.perform(post("/api/allocate/capacity-aware")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "requestedLoad": 10.0,
+                                  "servers": [
+                                    {
+                                      "id": "api-1",
+                                      "cpuUsage": 10.0,
+                                      "memoryUsage": 20.0,
+                                      "diskUsage": 30.0,
+                                      "capacity": 100.0,
+                                      "weight": 1.0
+                                    }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error", is("validation_failed")))
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.path", is("/api/allocate/capacity-aware")))
+                .andExpect(jsonPath("$.details").isArray())
+                .andExpect(jsonPath("$.trace").doesNotExist())
+                .andExpect(jsonPath("$.exception").doesNotExist())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertTrue(responseBody.contains("healthy"), "omitted healthy flag must be named in validation output");
+        assertFalse(responseBody.contains("stackTrace"), "validation output must not expose stack traces");
+    }
+
+    @Test
+    void allocationAcceptsExplicitZeroRequestedLoadAndServerTelemetry() throws Exception {
+        mockMvc.perform(post("/api/allocate/capacity-aware")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "requestedLoad": 0.0,
+                                  "servers": [
+                                    {
+                                      "id": "api-1",
+                                      "cpuUsage": 0.0,
+                                      "memoryUsage": 0.0,
+                                      "diskUsage": 0.0,
+                                      "capacity": 0.0,
+                                      "weight": 0.0,
+                                      "healthy": true
+                                    }
+                                  ]
+                                }
+                """))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.allocations").isMap())
+        .andExpect(jsonPath("$.unallocatedLoad", closeTo(0.0, 0.01)))
+        .andExpect(jsonPath("$.recommendedAdditionalServers", is(0)))
+        .andExpect(jsonPath("$.error").doesNotExist());
     }
 
     @Test

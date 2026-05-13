@@ -42,7 +42,7 @@ mvn -q test
 - Allocation API validation rejects malformed JSON, invalid server fields, negative load, empty server lists, and oversized request bodies with safe JSON envelopes.
 - Safe error envelopes avoid stack traces and exception-class leakage.
 - CSV/JSON import tests cover malformed rows, unexpected fields, non-finite values, empty input, trailing JSON data, and CSV formula-injection handling.
-- Primitive DTO numeric-field omission remains documented as a residual risk rather than claimed fixed.
+- Allocation/evaluation DTO omission coverage verifies omitted `requestedLoad`, server telemetry, capacity, weight, and health fields fail validation instead of defaulting to `0`, `0.0`, or `false`.
 
 ## Current Evidence Set
 

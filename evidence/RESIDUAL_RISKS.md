@@ -33,7 +33,7 @@ Reference evidence:
 
 | Risk ID | Risk name | Severity | Likelihood | Owner | Status |
 | --- | --- | --- | --- | --- | --- |
-| RR-001 | Primitive DTO numeric defaults | Medium | Medium | Future Work | Needs Future Hardening |
+| RR-001 | Primitive DTO numeric defaults | Medium | Low | App | Mitigated |
 | RR-002 | Real AWS validation outside default CI | High | Medium | Operator | Accepted |
 | RR-003 | Pattern-based redaction limits | Medium | Medium | App | Mitigated |
 | RR-004 | Heuristic OTLP private endpoint validation | High | Medium | Deployment | Mitigated |
@@ -53,14 +53,14 @@ Reference evidence:
 
 ### RR-001: Primitive DTO Numeric Defaults
 
-- Description: Some primitive numeric DTO fields can default to `0.0` when omitted from JSON input.
+- Description: Allocation and read-only evaluation DTOs previously allowed omitted primitive fields to default to `0.0` or `false`.
 - Severity: Medium.
-- Likelihood: Medium.
-- Current mitigation: The behavior is documented as residual risk instead of claimed fixed; malformed, negative, non-finite, and dangerous numeric inputs have focused coverage in core paths.
-- Evidence/tests: `evidence/TEST_EVIDENCE.md` documents primitive DTO numeric omission as residual. `evidence/SAFETY_INVARIANTS.md` lists nullable validated DTO fields as a future formalization opportunity.
-- Owner: Future Work.
-- Status: Needs Future Hardening.
-- Recommended next action: In a compatibility-aware branch, convert ambiguous primitive fields to nullable validated fields where API behavior should reject missing numeric input.
+- Likelihood: Low.
+- Current mitigation: Enterprise-required allocation request fields now use nullable validated DTO fields, so omitted `requestedLoad`, server telemetry, capacity, weight, and health fields fail validation with HTTP 400 instead of defaulting.
+- Evidence/tests: `AllocatorControllerTest` covers omitted top-level load, omitted evaluation load, omitted server telemetry, and omitted health flag failures. `ApiContractTest` asserts the required fields remain present in generated OpenAPI schemas.
+- Owner: App.
+- Status: Mitigated.
+- Recommended next action: Keep new request DTO fields nullable and explicitly validated when omission would change API semantics.
 
 ### RR-002: Real AWS Validation Outside Default CI
 

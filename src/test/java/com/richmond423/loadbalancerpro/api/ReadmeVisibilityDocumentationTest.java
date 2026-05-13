@@ -72,12 +72,13 @@ class ReadmeVisibilityDocumentationTest {
 
         assertTrue(readme.contains("mvn -Dtest=LocalProxyEvidenceExportTest test"));
         assertTrue(readme.contains("mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test"));
+        assertTrue(readme.contains("mvn -Dtest=PrivateNetworkLiveValidationExecutorTest test"));
         assertTrue(readme.contains("postman"));
         assertTrue(readme.contains("operator smoke dry-runs"));
         assertTrue(readme.contains("CI/CodeQL evidence"));
         assertTrue(normalized.contains("ignored `target/` output"));
         assertTrue(normalized.contains("secrets are redacted"));
-        assertTrue(normalized.contains("live private-network validation remains intentionally unimplemented"));
+        assertTrue(normalized.contains("runtime private-lan live validation remains intentionally unimplemented"));
     }
 
     @Test
@@ -113,12 +114,15 @@ class ReadmeVisibilityDocumentationTest {
         assertTrue(demoWalkthrough.contains("postman-enterprise-lab-safe-smoke.ps1"));
         assertTrue(demoWalkthrough.contains("mvn -Dtest=LocalProxyEvidenceExportTest test"));
         assertTrue(demoWalkthrough.contains("mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test"));
+        assertTrue(demoWalkthrough.contains("mvn -Dtest=PrivateNetworkLiveValidationExecutorTest test"));
         assertTrue(demoWalkthrough.contains("target/proxy-evidence/local-proxy-evidence.md"));
         assertTrue(demoWalkthrough.contains("target/proxy-evidence/local-proxy-evidence.json"));
         assertTrue(demoWalkthrough.contains("target/proxy-evidence/private-network-validation-dry-run.md"));
         assertTrue(demoWalkthrough.contains("target/proxy-evidence/private-network-validation-dry-run.json"));
+        assertTrue(demoWalkthrough.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
+        assertTrue(demoWalkthrough.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
         assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT)
-                .contains("live private-network traffic execution is not implemented yet"));
+                .contains("runtime private-lan live traffic execution is not implemented yet"));
         assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT).contains("should not contain api keys"));
         assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT).contains("dns resolution"));
         assertTrue(demoWalkthrough.toLowerCase(Locale.ROOT).contains("release-downloads/"));

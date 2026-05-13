@@ -26,10 +26,16 @@ class AntivirusSafeContainmentDocumentationTest {
             Path.of("src/test/java/com/richmond423/loadbalancerpro/api/LocalOnlyRealBackendProxyValidationTest.java");
     private static final Path LOCAL_PROXY_EVIDENCE_EXPORT_TEST =
             Path.of("src/test/java/com/richmond423/loadbalancerpro/api/LocalProxyEvidenceExportTest.java");
+    private static final Path PRIVATE_NETWORK_LIVE_EXECUTOR_TEST = Path.of(
+            "src/test/java/com/richmond423/loadbalancerpro/api/proxy/PrivateNetworkLiveValidationExecutorTest.java");
     private static final Path PROXY_EVIDENCE_MARKDOWN =
             Path.of("target", "proxy-evidence", "local-proxy-evidence.md");
     private static final Path PROXY_EVIDENCE_JSON =
             Path.of("target", "proxy-evidence", "local-proxy-evidence.json");
+    private static final Path LIVE_LOOPBACK_EVIDENCE_MARKDOWN =
+            Path.of("target", "proxy-evidence", "private-network-live-loopback-validation.md");
+    private static final Path LIVE_LOOPBACK_EVIDENCE_JSON =
+            Path.of("target", "proxy-evidence", "private-network-live-loopback-validation.json");
     private static final Path GITIGNORE = Path.of(".gitignore");
     private static final Path DOCKERIGNORE = Path.of(".dockerignore");
     private static final Path SCRATCH_SMOKE_FILE = Path.of("scripts", "smoke", "tmp-test" + "-file.txt");
@@ -111,8 +117,13 @@ class AntivirusSafeContainmentDocumentationTest {
         assertTrue(doc.contains("target/proxy-evidence/local-proxy-evidence.md"));
         assertTrue(doc.contains("target/proxy-evidence/local-proxy-evidence.json"));
         assertTrue(doc.contains("PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md"));
+        assertTrue(doc.contains("PrivateNetworkLiveValidationExecutorTest"));
+        assertTrue(doc.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
+        assertTrue(doc.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
         assertTrue(normalized.contains("explicit operator-provided backend urls only"));
         assertTrue(normalized.contains("no discovery or scanning"));
+        assertTrue(normalized.contains("junit-only loopback proof"));
+        assertTrue(normalized.contains("not wired into app startup, postman, smoke scripts, or proxy routing"));
         assertTrue(doc.contains("Java-assigned ephemeral loopback ports"));
         assertTrue(normalized.contains("does not scan ports"));
         assertTrue(normalized.contains("does not"));
@@ -245,6 +256,47 @@ class AntivirusSafeContainmentDocumentationTest {
         assertTrue(testSource.contains("X-LoadBalancerPro-Strategy"));
         assertTrue(testSource.contains("X-Local-Proxy-Evidence"));
         assertTrue(testSource.contains("portPolicy\": \"java-assigned-ephemeral\""));
+    }
+
+    @Test
+    void privateNetworkLiveLoopbackProofIsIgnoredRedactedAndSourceVisible() throws Exception {
+        String combinedDocs = read(README) + "\n" + read(LIVE_PROXY_DOC) + "\n" + read(RUNBOOK)
+                + "\n" + read(TRUST_MAP);
+        String normalizedDocs = combinedDocs.toLowerCase(Locale.ROOT);
+        String testSource = read(PRIVATE_NETWORK_LIVE_EXECUTOR_TEST);
+
+        assertTrue(LIVE_LOOPBACK_EVIDENCE_MARKDOWN.startsWith(Path.of("target")),
+                LIVE_LOOPBACK_EVIDENCE_MARKDOWN + " should remain under ignored Maven build output");
+        assertTrue(LIVE_LOOPBACK_EVIDENCE_JSON.startsWith(Path.of("target")),
+                LIVE_LOOPBACK_EVIDENCE_JSON + " should remain under ignored Maven build output");
+        assertTrue(read(GITIGNORE).contains("target/"),
+                ".gitignore should keep generated live loopback evidence untracked");
+        assertTrue(combinedDocs.contains("PrivateNetworkLiveValidationExecutorTest"));
+        assertTrue(combinedDocs.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
+        assertTrue(combinedDocs.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
+        assertTrue(combinedDocs.contains("mvn -Dtest=PrivateNetworkLiveValidationExecutorTest test"));
+        assertTrue(normalizedDocs.contains("junit-only loopback proof"));
+        assertTrue(normalizedDocs.contains("one bounded"));
+        assertTrue(normalizedDocs.contains("ignored `target/` evidence"));
+        assertTrue(normalizedDocs.contains("do not write api keys or secrets")
+                || normalizedDocs.contains("secrets are redacted"));
+        assertTrue(normalizedDocs.contains("not called by app startup, postman, smoke scripts, or proxy routing")
+                || normalizedDocs.contains("not wired into app startup, postman, smoke scripts, or proxy routing"));
+        assertTrue(testSource.contains("com.sun.net.httpserver.HttpServer"));
+        assertTrue(testSource.contains("InetAddress.getLoopbackAddress()"));
+        assertTrue(testSource.contains("new InetSocketAddress(InetAddress.getLoopbackAddress(), 0)"));
+        assertTrue(testSource.contains("HttpClient"));
+        assertTrue(testSource.contains("Path.of(\"target\", \"proxy-evidence\")"));
+        assertTrue(testSource.contains("private-network-live-loopback-validation.md"));
+        assertTrue(testSource.contains("private-network-live-loopback-validation.json"));
+        assertTrue(testSource.contains("\"apiKeyRedacted\": \"<REDACTED>\""));
+        assertTrue(testSource.contains("assertFalse(combined.contains(API_KEY_SENTINEL))"));
+        assertTrue(testSource.contains("assertFalse(combined.contains(backend.baseUrl()))"));
+        assertTrue(testSource.contains("\"dnsResolution\": false"));
+        assertTrue(testSource.contains("\"discovery\": false"));
+        assertTrue(testSource.contains("\"portScanning\": false"));
+        assertTrue(testSource.contains("\"postmanExecution\": false"));
+        assertTrue(testSource.contains("\"smokeExecution\": false"));
     }
 
     @Test

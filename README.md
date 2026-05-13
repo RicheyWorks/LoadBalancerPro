@@ -20,7 +20,7 @@ For reviewers and recruiters, the useful signal is not a single flashy demo. It 
 
 Use [`REVIEWER_TRUST_MAP.md#reviewer-demo-path`](docs/REVIEWER_TRUST_MAP.md#reviewer-demo-path) for the shortest safe proof path, then use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) for a quick screen-share script.
 
-The reviewer path shows how to generate local proxy evidence with `mvn -Dtest=LocalProxyEvidenceExportTest test`, private-network config-only dry-run evidence with `mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test`, Postman and operator smoke dry-runs with source-visible PowerShell scripts, and CI/CodeQL evidence from GitHub checks. Evidence is written under ignored `target/` output, secrets are redacted, and live private-network validation remains intentionally unimplemented until a separate approved gate is satisfied.
+The reviewer path shows how to generate local proxy evidence with `mvn -Dtest=LocalProxyEvidenceExportTest test`, private-network config-only dry-run evidence with `mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test`, loopback-only live gate proof with `mvn -Dtest=PrivateNetworkLiveValidationExecutorTest test`, Postman and operator smoke dry-runs with source-visible PowerShell scripts, and CI/CodeQL evidence from GitHub checks. Evidence is written under ignored `target/` output, secrets are redacted, and runtime private-LAN live validation remains intentionally unimplemented until a separate approved gate is satisfied.
 
 ## Evaluate In 5 Minutes
 

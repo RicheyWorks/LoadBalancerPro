@@ -36,11 +36,13 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
 
         assertTrue(plan.contains("# Private-Network Proxy Profile Plan"));
         assertTrue(normalized.contains("design and rollout plan"));
-        assertTrue(normalized.contains("opt-in configuration-validation primitive"));
-        assertTrue(normalized.contains("offline default-off live gate primitive"));
-        assertTrue(normalized.contains("does not add private-network live traffic execution"));
-        assertTrue(normalized.contains("does not change proxy request routing"));
-        assertTrue(normalized.contains("does not change the current local-only evidence path"));
+        assertTrue(normalized.contains("opt-in configuration validation"));
+        assertTrue(normalized.contains("default-off live gate primitive"));
+        assertTrue(normalized.contains("junit-only loopback live executor proof"));
+        assertTrue(normalized.contains("does not add runtime private-network live execution"));
+        assertTrue(normalized.contains("postman/smoke live execution"));
+        assertTrue(normalized.contains("proxy request-routing changes"));
+        assertTrue(normalized.contains("default/local/demo behavior changes"));
         assertFalse(PUBLIC_EXTERNAL_URL.matcher(plan).find(), "plan must not introduce public URL targets");
     }
 
@@ -83,13 +85,20 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("scan ports"));
         assertTrue(normalized.contains("discover hosts"));
         assertTrue(normalized.contains("change default/local/demo behavior"));
+        assertTrue(normalized.contains("add runtime private-network live execution"));
         assertTrue(plan.contains("PrivateNetworkLiveValidationGate"));
         assertTrue(plan.contains("loadbalancerpro.proxy.private-network-live-validation.enabled=true"));
         assertTrue(plan.contains("loadbalancerpro.proxy.private-network-live-validation.operator-approved=true"));
         assertTrue(normalized.contains("offline decision gate"));
         assertTrue(normalized.contains("default to `false`"));
-        assertTrue(normalized.contains("does not send traffic"));
-        assertTrue(normalized.contains("script, postman, or smoke execution"));
+        assertTrue(plan.contains("PrivateNetworkLiveValidationExecutor"));
+        assertTrue(normalized.contains("bounded primitive"));
+        assertTrue(normalized.contains("requires an allowed gate result"));
+        assertTrue(normalized.contains("junit-only loopback traffic"));
+        assertTrue(normalized.contains("jdk `httpserver`"));
+        assertTrue(plan.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
+        assertTrue(plan.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
+        assertTrue(normalized.contains("broader private-lan live validation remains gated and unimplemented"));
     }
 
     @Test
@@ -155,9 +164,10 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("opt-in private-network live smoke only after a separate reviewed task"));
         assertTrue(normalized.contains("implemented dry-run-only private-network profile recipe"));
         assertTrue(normalized.contains("without sending traffic"));
-        assertTrue(normalized.contains("implemented offline live gate"));
-        assertTrue(normalized.contains("satisfy the remaining live validation gate tests"));
-        assertTrue(normalized.contains("before any private-network traffic is implemented"));
+        assertTrue(normalized.contains("implemented live gate"));
+        assertTrue(normalized.contains("disconnected from startup, postman, smoke, and proxy routing"));
+        assertTrue(normalized.contains("junit-only `privatenetworklivevalidationexecutortest`"));
+        assertTrue(normalized.contains("broader opt-in private-network live smoke only after a separate reviewed task"));
         assertTrue(normalized.contains("no test should scan ports, discover hosts, require public dns"));
         assertTrue(normalized.contains("download servers"));
         assertTrue(normalized.contains("write secrets"));
@@ -172,11 +182,15 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("design gate"));
         assertTrue(gate.contains("PrivateNetworkLiveValidationGate"));
         assertTrue(normalized.contains("default-off live gate properties"));
-        assertTrue(normalized.contains("does not implement live private-network traffic execution"));
-        assertTrue(normalized.contains("does not send traffic"));
-        assertTrue(normalized.contains("does not change proxy request routing"));
-        assertTrue(normalized.contains("does not change default/local/demo behavior"));
-        assertTrue(normalized.contains("offline live gate decision helper only"));
+        assertTrue(gate.contains("PrivateNetworkLiveValidationExecutor"));
+        assertTrue(normalized.contains("bounded"));
+        assertTrue(normalized.contains("junit-only loopback proof"));
+        assertTrue(normalized.contains("does not wire private-network live validation into app startup"));
+        assertTrue(normalized.contains("postman"));
+        assertTrue(normalized.contains("smoke scripts"));
+        assertTrue(normalized.contains("proxy request routing"));
+        assertTrue(normalized.contains("default/local/demo behavior"));
+        assertTrue(normalized.contains("broader private-lan live validation remains gated and unimplemented"));
         assertTrue(gate.contains("PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md"));
         assertTrue(gate.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md"));
         assertTrue(gate.contains("LIVE_PROXY_CONTAINMENT.md"));
@@ -200,6 +214,7 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("operator-provided literal backend urls only"));
         assertTrue(normalized.contains("passing `proxybackendurlclassifier` results"));
         assertTrue(normalized.contains("prod/cloud-sandbox api-key or oauth2 boundary proof"));
+        assertTrue(normalized.contains("requires an allowed gate result"));
         assertTrue(normalized.contains("fail closed before sending traffic"));
         assertTrue(normalized.contains("before making the candidate config active"));
     }
@@ -248,6 +263,8 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("explicit reload failure preserves the last-known-good active config"));
         assertTrue(normalized.contains("abort must stop validation promptly"));
         assertTrue(normalized.contains("generated evidence must be markdown or json under ignored `target/` output"));
+        assertTrue(gate.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
+        assertTrue(gate.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
         assertTrue(normalized.contains("must never include raw api keys"));
         assertTrue(normalized.contains("bearer tokens"));
         assertTrue(normalized.contains("private hostnames marked for redaction"));
@@ -340,13 +357,17 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("explicit operator approval before live traffic"));
         assertTrue(normalized.contains("default-off live gate properties"));
         assertTrue(normalized.contains("privatenetworklivevalidationgate"));
+        assertTrue(normalized.contains("privatenetworklivevalidationexecutor"));
+        assertTrue(normalized.contains("junit-only loopback"));
         assertTrue(normalized.contains("fail-closed reload/startup behavior"));
         assertTrue(normalized.contains("target/proxy-evidence/private-network-validation-dry-run.md"));
         assertTrue(normalized.contains("target/proxy-evidence/private-network-validation-dry-run.json"));
+        assertTrue(normalized.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
+        assertTrue(normalized.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
         assertTrue(normalized.contains("no dns or reachability checks"));
         assertTrue(normalized.contains("no discovery or scanning"));
         assertTrue(normalized.contains("no secret persistence"));
-        assertTrue(normalized.contains("no private-network live traffic execution until separately approved"));
+        assertTrue(normalized.contains("runtime/private-lan live traffic execution"));
     }
 
     @Test
@@ -355,8 +376,12 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
 
         assertFalse(combined.contains("private-network-validation"),
                 "smoke/Postman paths must not add private-network validation execution");
+        assertFalse(combined.contains("private-network-live-validation"),
+                "smoke/Postman paths must not add private-network live execution");
         assertFalse(combined.contains("ProxyBackendUrlClassifier"),
                 "smoke/Postman paths must not invoke the Java classifier directly");
+        assertFalse(combined.contains("PrivateNetworkLiveValidationExecutor"),
+                "smoke/Postman paths must not invoke the live executor directly");
     }
 
     private static String read(Path path) throws IOException {

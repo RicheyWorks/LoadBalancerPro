@@ -1,6 +1,6 @@
 # Private-Network Proxy Profile Plan
 
-This is a design and rollout plan for a future controlled private-network proxy validation profile. It now includes an opt-in configuration-validation primitive and an offline default-off live gate primitive, but it does not add private-network live traffic execution, does not change proxy request routing, and does not change the current local-only evidence path.
+This is a design and rollout plan for a future controlled private-network proxy validation profile. It now includes opt-in configuration validation, a default-off live gate primitive, and a JUnit-only loopback live executor proof. It does not add runtime private-network live execution, public-network behavior, Postman/smoke live execution, proxy request-routing changes, or default/local/demo behavior changes.
 
 Use this plan after reviewing [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md), [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](PRIVATE_NETWORK_PROXY_DRY_RUN.md), [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md), [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md), and [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
 
@@ -42,7 +42,7 @@ Future implementation should validate each configured backend URL before startup
 
 URLs with user info, query strings, fragments, blank hosts, unsupported schemes, public addresses, wildcard domains, or ambiguous resolution should fail closed during startup or explicit reload validation.
 
-Implemented configuration primitive: `ProxyBackendUrlClassifier` is a source-visible Java helper for offline classification only. It classifies literal `http`/`https` backend URLs as loopback allowed, private-network allowed, public-network rejected, invalid rejected, unsupported-scheme rejected, user-info rejected, or ambiguous-host rejected. When `loadbalancerpro.proxy.private-network-validation.enabled=true`, startup and explicit proxy reload validation use that classifier so unsafe backend URLs fail closed before becoming an active config. The gate does not resolve DNS, perform reachability checks, scan ports, discover hosts, change default/local/demo behavior, add private-network live traffic execution, or add script, Postman, or smoke execution. The dry-run-only reviewer recipe in [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](PRIVATE_NETWORK_PROXY_DRY_RUN.md) generates ignored Markdown/JSON evidence from classifier samples without sending traffic. The implemented `PrivateNetworkLiveValidationGate` adds an offline decision gate requiring `loadbalancerpro.proxy.private-network-live-validation.enabled=true`, `loadbalancerpro.proxy.private-network-live-validation.operator-approved=true`, enabled config validation, enabled proxy mode, and classifier-approved literal backend URLs. The live gate properties default to `false`; the helper only returns allowed, not-enabled, or blocked and does not send traffic. A future traffic executor must satisfy [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md) before any private-network traffic is implemented.
+Implemented configuration primitive: `ProxyBackendUrlClassifier` is a source-visible Java helper for offline classification only. It classifies literal `http`/`https` backend URLs as loopback allowed, private-network allowed, public-network rejected, invalid rejected, unsupported-scheme rejected, user-info rejected, or ambiguous-host rejected. When `loadbalancerpro.proxy.private-network-validation.enabled=true`, startup and explicit proxy reload validation use that classifier so unsafe backend URLs fail closed before becoming an active config. The gate does not resolve DNS, perform reachability checks, scan ports, discover hosts, change default/local/demo behavior, add runtime private-network live execution, or add script, Postman, or smoke execution. The dry-run-only reviewer recipe in [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](PRIVATE_NETWORK_PROXY_DRY_RUN.md) generates ignored Markdown/JSON evidence from classifier samples without sending traffic. The implemented `PrivateNetworkLiveValidationGate` adds an offline decision gate requiring `loadbalancerpro.proxy.private-network-live-validation.enabled=true`, `loadbalancerpro.proxy.private-network-live-validation.operator-approved=true`, enabled config validation, enabled proxy mode, and classifier-approved literal backend URLs. The live gate properties default to `false`. The implemented `PrivateNetworkLiveValidationExecutor` is a bounded primitive that requires an allowed gate result before delegating exactly one request to an injected transport. Its current proof is JUnit-only loopback traffic against a JDK `HttpServer`, with redacted ignored evidence at `target/proxy-evidence/private-network-live-loopback-validation.md` and `target/proxy-evidence/private-network-live-loopback-validation.json`. Broader private-LAN live validation remains gated and unimplemented.
 
 ## API-Key And OAuth2 Expectations
 
@@ -83,7 +83,7 @@ If active health checks are enabled, probes remain bounded to each explicitly co
 
 ## Test Strategy
 
-Before any live private-network execution, add or preserve static tests that prove the plan is linked and keeps the no-scanning, no-persistence, no-native-tooling, no-secret-persistence, and no-release boundaries.
+Before any broader private-network execution outside loopback-only tests, add or preserve static tests that prove the plan is linked and keeps the no-scanning, no-persistence, no-native-tooling, no-secret-persistence, and no-release boundaries.
 
 Runtime validation should progress in this order:
 
@@ -91,9 +91,9 @@ Runtime validation should progress in this order:
 2. Add pure Java unit tests for `ProxyBackendUrlClassifier` before it is wired into runtime.
 3. Add startup/reload validation tests for allowed and rejected backend URLs.
 4. Use the implemented dry-run-only private-network profile recipe to write ignored Markdown/JSON evidence from intended validation inputs without sending traffic.
-5. Keep the implemented offline live gate in [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md) default-off and disconnected from traffic execution.
-6. Satisfy the remaining live validation gate tests before any private-network traffic executor is implemented.
-7. Add opt-in private-network live smoke only after a separate reviewed task approves the exact environment gate and operator-provided URLs.
+5. Keep the implemented live gate in [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md) default-off and disconnected from startup, Postman, smoke, and proxy routing.
+6. Use the implemented JUnit-only `PrivateNetworkLiveValidationExecutorTest` for bounded loopback proof and ignored redacted evidence only.
+7. Add broader opt-in private-network live smoke only after a separate reviewed task approves the exact environment gate and operator-provided URLs.
 
 No test should scan ports, discover hosts, require public DNS, require live cloud resources, download servers, or write secrets.
 
@@ -103,7 +103,8 @@ No test should scan ports, discover hosts, require public DNS, require live clou
 2. Classify: source-visible Java `ProxyBackendUrlClassifier` with focused unit tests.
 3. Gate: opt-in configuration validation properties and explicit failure messages for unsupported hosts, without live private-network execution.
 4. Evidence: implemented dry-run Markdown/JSON output under ignored `target/proxy-evidence/private-network-validation-dry-run.md` and `target/proxy-evidence/private-network-validation-dry-run.json`.
-5. Live gate skeleton: implemented default-off properties and an offline `PrivateNetworkLiveValidationGate` decision helper, with no traffic execution.
-6. Traffic executor: separately review and test bounded live validation before any private-network request can be sent.
-7. Smoke: dry-run first, then separately approved private-network live smoke with operator-provided URLs only.
-8. Review: merge only with CI, CodeQL, docs/static tests, security tests, and existing smoke dry-runs passing.
+5. Live gate skeleton: implemented default-off properties and an offline `PrivateNetworkLiveValidationGate` decision helper.
+6. Loopback proof: implemented `PrivateNetworkLiveValidationExecutor` and `PrivateNetworkLiveValidationExecutorTest` for one bounded JUnit-only loopback request with redacted ignored evidence.
+7. Runtime private-LAN execution: separately review and test before any non-loopback private-network request can be sent.
+8. Smoke: dry-run first, then separately approved private-network live smoke with operator-provided URLs only.
+9. Review: merge only with CI, CodeQL, docs/static tests, security tests, and existing smoke dry-runs passing.

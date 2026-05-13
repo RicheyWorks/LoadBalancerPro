@@ -235,19 +235,36 @@ class OAuth2AuthorizationTest {
     }
 
     @Test
-    void oauth2ModeAllowsOperatorFromScopeStringClaim() throws Exception {
+    void oauth2ModeRejectsOperatorScopeStringAsApplicationRole() throws Exception {
         mockMvc.perform(allocationRequest().header(HttpHeaders.AUTHORIZATION, "Bearer scope-operator-token"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.allocations.api-1").isNumber())
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.path", is("/api/allocate/capacity-aware")));
     }
 
     @Test
-    void oauth2ModeAllowsOperatorFromScpArrayClaim() throws Exception {
+    void oauth2ModeRejectsOperatorScpArrayAsApplicationRole() throws Exception {
         mockMvc.perform(allocationRequest().header(HttpHeaders.AUTHORIZATION, "Bearer scp-operator-token"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.allocations.api-1").isNumber())
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.path", is("/api/allocate/capacity-aware")));
+    }
+
+    @Test
+    void oauth2ModeRejectsScopePrefixedAuthoritiesAsApplicationRole() throws Exception {
+        mockMvc.perform(allocationRequest()
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer scope-authorities-operator-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.path", is("/api/allocate/capacity-aware")));
+    }
+
+    @Test
+    void oauth2ModeRejectsMissingRoleClaimsForRoleRequiredRoutes() throws Exception {
+        mockMvc.perform(allocationRequest().header(HttpHeaders.AUTHORIZATION, "Bearer no-role-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.path", is("/api/allocate/capacity-aware")));
     }
 
     @Test
@@ -424,6 +441,36 @@ class OAuth2AuthorizationTest {
         }
     }
 
+    @Nested
+    @NestedTestConfiguration(NestedTestConfiguration.EnclosingConfiguration.OVERRIDE)
+    @SpringBootTest(properties = {
+            "spring.profiles.active=prod",
+            "loadbalancerpro.auth.mode=oauth2",
+            "loadbalancerpro.auth.oauth2.jwk-set-uri=https://auth.example.test/.well-known/jwks.json",
+            "loadbalancerpro.auth.required-role.allocation=admin"
+    })
+    @AutoConfigureMockMvc
+    @Import(JwtDecoderTestConfiguration.class)
+    class AdminRequiredRoleOverrideTests {
+        @Autowired
+        private MockMvc adminRoleMockMvc;
+
+        @Test
+        void adminScopeDoesNotGrantConfiguredAdminRole() throws Exception {
+            adminRoleMockMvc.perform(allocationRequest()
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer scope-admin-token"))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.status", is(403)))
+                    .andExpect(jsonPath("$.path", is("/api/allocate/capacity-aware")));
+
+            adminRoleMockMvc.perform(allocationRequest()
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer roles-admin-token"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.allocations.api-1").isNumber())
+                    .andExpect(jsonPath("$.error").doesNotExist());
+        }
+    }
+
     private static org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder allocationRequest() {
         return post("/api/allocate/capacity-aware")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -458,6 +505,11 @@ class OAuth2AuthorizationTest {
                 case "authorities-operator-token" -> jwt(token, Map.of("authorities", List.of("operator")));
                 case "scope-operator-token" -> jwt(token, Map.of("scope", "operator observer"));
                 case "scp-operator-token" -> jwt(token, Map.of("scp", List.of("operator", "observer")));
+                case "scope-authorities-operator-token" -> jwt(token,
+                        Map.of("authorities", List.of("SCOPE_operator")));
+                case "no-role-token" -> jwt(token, Map.of("aud", List.of("loadbalancerpro")));
+                case "scope-admin-token" -> jwt(token, Map.of("scope", "admin"));
+                case "roles-admin-token" -> jwt(token, Map.of("roles", List.of("admin")));
                 case "realm-operator-token" -> jwt(token,
                         Map.of("realm_access", Map.of("roles", List.of("operator"))));
                 case "realm-observer-token" -> jwt(token,

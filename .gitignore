@@ -9,6 +9,7 @@ cloud_manager.log
 cli.config
 *.local
 *.local.*
+release-downloads/
 
 # IDE/editor files
 .idea/

@@ -2,7 +2,7 @@
 
 Use this guide when you want a local-only container path for the same Spring Boot service that the packaged-jar smoke kit validates. It keeps image building, container running, API-key checks, and proxy caveats in one place without changing application defaults.
 
-Start with [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) when choosing a run mode. Use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) for the packaged-jar smoke path before adapting these container commands.
+Start with [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) when choosing a run mode. Use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) for the packaged-jar smoke path before adapting these container commands. Use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](ANTIVIRUS_SAFE_DEVELOPMENT.md) for safe local artifact and tooling defaults, and [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md) before adapting proxy validation to real local/private backends.
 
 ## What It Proves
 

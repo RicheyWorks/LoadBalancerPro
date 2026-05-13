@@ -4,6 +4,7 @@
 
 - This began as a plan/audit document and now tracks the first prod API-key runtime hardening phase.
 - Runtime behavior changed in the prod API-key cockpit hardening sprint: prod/cloud-sandbox API-key mode gates OpenAPI/Swagger with `X-API-Key`, and the cockpit can attach a memory-only operator API key to protected POST calls.
+- The Postman enterprise lab collection now gives operators a placeholder-only way to evaluate local/demo and prod API-key boundaries without adding runtime behavior.
 - This is enterprise-demo hardening guidance, not production IAM certification.
 - This document describes target operator authentication and OpenAPI gating behavior. It does not implement OAuth2 login, persistent browser token storage, reverse-proxy identity trust, production SSO, or IAM certification.
 
@@ -104,8 +105,9 @@ Recommended phases:
 - Phase 1: docs + route matrix. Completed in the enterprise cockpit auth plan sprint.
 - Phase 2: gate Swagger in prod API-key mode. Completed for prod/cloud-sandbox API-key mode.
 - Phase 3: add cockpit memory-only operator token support for API-key mode. Completed for cockpit protected POST calls.
-- Phase 4: add OAuth2/OIDC cockpit workflow.
-- Phase 5: document a reverse-proxy SSO reference deployment.
+- Phase 4: add deterministic Postman enterprise lab coverage for local/demo and prod API-key evaluation. Completed with placeholder-only collection/environment docs.
+- Phase 5: add OAuth2/OIDC cockpit workflow.
+- Phase 6: document a reverse-proxy SSO reference deployment.
 
 ## Required Tests
 

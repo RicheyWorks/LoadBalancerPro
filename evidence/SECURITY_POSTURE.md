@@ -73,6 +73,7 @@ Revisit this disposition if cookie/session authentication, credentialed CORS, or
 
 - A separate CodeQL workflow provides Java/Kotlin static-analysis coverage with manual Maven build mode.
 - CodeQL is treated as a SAST baseline, not a complete security review, independent audit, or production-readiness claim.
+- CodeQL, Dependency Review, Trivy, SBOM, and dependency findings use the owner/rationale workflow in `docs/DEPENDENCY_SAST_RISK_WORKFLOW.md` before a non-fixed finding is accepted for a production-candidate or release-ready claim.
 - The earlier disabled-CSRF finding is addressed by scoped CSRF configuration for the current stateless JSON/no-cookie API design; if GitHub still shows the historical alert before fresh analysis, use the current security configuration and `docs/API_SECURITY.md#csrf-disposition` as the review record.
 - Findings involving CloudManager/AWS guardrails, auth, request validation, deserialization, file parsing, command execution, or telemetry redaction should receive priority review.
 

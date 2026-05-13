@@ -40,7 +40,7 @@ The reviewer path shows how to generate local proxy evidence with `mvn -Dtest=Lo
 
 ## Coverage And Evidence
 
-CI publishes `jacoco-coverage-report`, `packaged-artifact-smoke`, and `loadbalancerpro-sbom` workflow artifacts for reviewer inspection. The README intentionally does not claim a fixed coverage percentage; inspect the generated JaCoCo report or the CI `Summarize JaCoCo coverage` log step for the exact numbers from a specific run. [`TESTING_COVERAGE.md`](docs/TESTING_COVERAGE.md) and [`CI_ARTIFACT_CONSUMER_GUIDE.md`](docs/CI_ARTIFACT_CONSUMER_GUIDE.md) explain how to review those artifacts without creating tags, GitHub Releases, or release assets.
+CI publishes `jacoco-coverage-report`, `packaged-artifact-smoke`, and `loadbalancerpro-sbom` workflow artifacts for reviewer inspection. The README intentionally does not claim a fixed coverage percentage; inspect the generated JaCoCo report or the CI `Summarize JaCoCo coverage` log step for the exact numbers from a specific run. [`TESTING_COVERAGE.md`](docs/TESTING_COVERAGE.md) and [`CI_ARTIFACT_CONSUMER_GUIDE.md`](docs/CI_ARTIFACT_CONSUMER_GUIDE.md) explain how to review those artifacts without creating tags, GitHub Releases, or release assets. [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](docs/DEPENDENCY_SAST_RISK_WORKFLOW.md) explains how CodeQL, Dependency Review, Trivy, SBOM, and dependency findings get owners, severity decisions, rationale, review dates, and follow-up.
 
 ## Try the Web Cockpit
 
@@ -175,6 +175,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`RESIDUAL_RISKS.md`](evidence/RESIDUAL_RISKS.md) tracks ranked residual risks with owners, status, evidence, and next actions.
 - [`RESILIENCE_SCORE.md`](evidence/RESILIENCE_SCORE.md) provides a conservative evidence-backed resilience scorecard.
 - [`SUPPLY_CHAIN_EVIDENCE.md`](evidence/SUPPLY_CHAIN_EVIDENCE.md) records current dependency and supply-chain evidence, gaps, and future hardening options.
+- [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](docs/DEPENDENCY_SAST_RISK_WORKFLOW.md) documents CodeQL, Dependency Review, Trivy, SBOM, and dependency finding ownership, severity handling, accepted-risk rationale, false-positive rationale, remediation targets, and evidence locations.
 - [`SBOM_GUIDE.md`](evidence/SBOM_GUIDE.md) documents manual CycloneDX SBOM generation, CI-published SBOM artifacts, and tag-triggered release JAR/SBOM/checksum artifact bundles.
 - [`RELEASE_ARTIFACT_EVIDENCE.md`](evidence/RELEASE_ARTIFACT_EVIDENCE.md) documents release artifact bundle, SHA-256 checksum, and GitHub attestation evidence.
 - [`PERFORMANCE_BASELINE.md`](evidence/PERFORMANCE_BASELINE.md) provides a conservative local performance baseline template with no production SLO claims.

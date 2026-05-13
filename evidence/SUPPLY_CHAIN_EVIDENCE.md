@@ -20,6 +20,7 @@ Related evidence:
 - `evidence/TEST_EVIDENCE.md`
 - `evidence/THREAT_MODEL.md`
 - `evidence/SBOM_GUIDE.md`
+- `docs/DEPENDENCY_SAST_RISK_WORKFLOW.md`
 
 ## Current Dependency Posture
 
@@ -27,7 +28,7 @@ LoadBalancerPro is a Java 17 Maven project with Spring Boot, AWS SDK v2, Spring 
 
 The project currently uses Maven dependency management for the largest framework families and pins build plugins directly in `pom.xml`. CI runs dependency resolution, tests, packaging, smoke checks, CycloneDX SBOM generation, Docker image build/runtime checks, Trivy image scanning, and GitHub dependency review for pull requests. A separate CodeQL workflow provides a Java/Kotlin static-analysis baseline with a manual Maven build. A separate release artifact workflow has two modes: semantic tag pushes publish release assets, while manual `workflow_dispatch` runs are non-publishing dry runs. Tag runs build the executable JAR, generate CycloneDX SBOM JSON/XML, verify Git tag and Maven version alignment, generate and verify SHA-256 checksums, create GitHub artifact attestations for release JAR provenance and the JAR/SBOM JSON relationship, publish deterministic GitHub Release assets, verify the release asset names, and upload a deterministic GitHub Actions artifact bundle as backup evidence.
 
-This posture provides useful regression and review evidence, but it is not yet a full supply-chain provenance program because there is no PGP-style release artifact signing, container signing, registry image publication/signing, mature accepted dependency-risk workflow, or formal SAST triage register. CycloneDX SBOM generation is documented in `evidence/SBOM_GUIDE.md` and runs in CI/release workflows without adding a CycloneDX plugin to `pom.xml`. GitHub artifact attestations provide release provenance evidence, not signing, notarization, vulnerability proof, or production-readiness proof. CodeQL is a SAST baseline, not a complete security review or production-readiness proof.
+This posture provides useful regression and review evidence, but it is not yet a full supply-chain provenance program because there is no PGP-style release artifact signing, container signing, registry image publication/signing, populated dependency-risk register, or populated SAST triage register. `docs/DEPENDENCY_SAST_RISK_WORKFLOW.md` now defines the owner, severity, accepted-risk, false-positive, remediation-target, and evidence workflow for future CodeQL, Dependency Review, Trivy, SBOM, and dependency findings. CycloneDX SBOM generation is documented in `evidence/SBOM_GUIDE.md` and runs in CI/release workflows without adding a CycloneDX plugin to `pom.xml`. GitHub artifact attestations provide release provenance evidence, not signing, notarization, vulnerability proof, or production-readiness proof. CodeQL is a SAST baseline, not a complete security review or production-readiness proof.
 
 ## BOM-Managed Dependencies
 
@@ -135,9 +136,9 @@ Known gaps as of this evidence pass:
 - CI dependency tree output is generated but not captured as durable evidence.
 - Some direct dependency versions are explicit and outside the Spring Boot or AWS BOMs.
 - `log4j-core` is a direct dependency and should remain review-sensitive.
-- There is no formal dependency update cadence or accepted dependency-risk register beyond the residual risk entry in `evidence/RESIDUAL_RISKS.md`.
-- First CodeQL findings still need baseline review and triage before CodeQL is treated as a mature release blocker.
-- No formal static-analysis triage register exists yet.
+- There is no populated dependency-risk register beyond the residual risk entry in `evidence/RESIDUAL_RISKS.md`.
+- First CodeQL findings still need baseline review using `docs/DEPENDENCY_SAST_RISK_WORKFLOW.md` before CodeQL is treated as a mature release blocker.
+- No populated static-analysis triage register exists yet.
 - GitHub Release assets exist for semantic tag runs, but no release artifact signing exists beyond GitHub artifact attestations.
 - No container signing exists yet.
 - No registry image publication exists yet.
@@ -166,6 +167,7 @@ Review this evidence and the dependency posture:
 - After GitHub Actions workflow or action-version changes.
 - After adding SBOM, dependency-check, Dependabot, Renovate, digest pinning, or action SHA pinning.
 - After changing CodeQL/SAST workflow behavior, artifact attestations, release signing, or container signing.
+- After accepting, dismissing, or deferring a CodeQL, Dependency Review, Trivy, SBOM, or dependency finding.
 - Before describing a revision as production-candidate or release-ready; use `docs/PRODUCTION_CANDIDATE_EVIDENCE_GATE.md` for the required CI, CodeQL, Dependency Review, Trivy, SBOM, checksum, attestation, release-asset, digest-pinning, no-secret, no-`release-downloads/`, and no-native-binary evidence checks.
 
 ## Future Hardening Options
@@ -174,10 +176,10 @@ Practical next steps, in conservative order:
 
 - Keep CI SBOM artifact generation stable and review generated artifacts during release preparation.
 - Review tag-triggered release artifact bundles and checksum files after release tags and keep tag/Maven version alignment mandatory.
-- Review the first CodeQL findings and document triage expectations before making SAST a hard release blocker.
-- Define a dependency update cadence and dependency-risk triage process.
+- Review the first CodeQL findings through `docs/DEPENDENCY_SAST_RISK_WORKFLOW.md` before making SAST a hard release blocker.
+- Define a dependency update cadence and keep accepted dependency risks visible through the workflow and residual-risk register.
 - Capture dependency tree output as durable release evidence if future release evidence needs it.
-- Document accepted dependency risks with owner, severity, expiry, and follow-up action.
+- Document accepted dependency risks with owner, severity, rationale, expiry, and follow-up action.
 - Review GitHub artifact attestation records after semantic release tags and document verification expectations for consumers.
 - Consider attesting checksum or SBOM XML artifacts separately if that provides useful audit evidence.
 - Add container signing after registry and image naming decisions are made.

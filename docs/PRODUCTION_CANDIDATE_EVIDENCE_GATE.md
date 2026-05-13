@@ -43,7 +43,7 @@ Reviewers or operators must still verify these items before making a production-
 - Confirm no secrets, API keys, bearer tokens, credentials, or tenant-specific values are committed or persisted in evidence.
 - Confirm `release-downloads/` was not mutated unless a separate explicit release-evidence task approved that path.
 - Confirm no native executables, installers, wrappers, launch4j, jpackage, native-image outputs, self-extracting archives, or vendored third-party binaries were introduced.
-- Confirm any accepted dependency or SAST risk has owner, severity, rationale, expiry or review date, and remediation follow-up.
+- Confirm any accepted dependency or SAST risk follows [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](DEPENDENCY_SAST_RISK_WORKFLOW.md) with owner, severity, rationale, expiry or review date, and remediation follow-up.
 
 ## Production-Candidate Checklist
 
@@ -106,4 +106,5 @@ Stop the release-readiness claim if any of these are true:
 - Test posture: [`../evidence/TEST_EVIDENCE.md`](../evidence/TEST_EVIDENCE.md).
 - Security posture: [`../evidence/SECURITY_POSTURE.md`](../evidence/SECURITY_POSTURE.md).
 - Deployment caveats: [`DEPLOYMENT_HARDENING_GUIDE.md`](DEPLOYMENT_HARDENING_GUIDE.md).
+- Dependency/SAST findings: [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](DEPENDENCY_SAST_RISK_WORKFLOW.md).
 - Reviewer navigation: [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).

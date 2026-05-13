@@ -222,6 +222,13 @@ class ProdApiKeyProtectionTest {
                 .andExpect(jsonPath("$.executable", is(false)))
                 .andExpect(jsonPath("$.trafficExecuted", is(false)))
                 .andExpect(jsonPath("$.evidenceWritten", is(false)))
+                .andExpect(jsonPath("$.evidenceEligible", is(false)))
+                .andExpect(jsonPath("$.plannedEvidenceDirectory", is("target/proxy-evidence/")))
+                .andExpect(jsonPath("$.plannedEvidenceMarkdown", is("private-network-live-validation.md")))
+                .andExpect(jsonPath("$.plannedEvidenceJson", is("private-network-live-validation.json")))
+                .andExpect(jsonPath("$.redactionRequired", is(true)))
+                .andExpect(jsonPath("$.trafficExecution", is("traffic execution is not wired in this release")))
+                .andExpect(jsonPath("$.auditTrail.auditTrailWritten", is(false)))
                 .andExpect(jsonPath("$.status", is("BLOCKED_BY_GATE")))
                 .andExpect(jsonPath("$.gate.gateStatus", is("NOT_ENABLED")))
                 .andExpect(jsonPath("$.reasonCodes[0]", is("LIVE_VALIDATION_DISABLED")));

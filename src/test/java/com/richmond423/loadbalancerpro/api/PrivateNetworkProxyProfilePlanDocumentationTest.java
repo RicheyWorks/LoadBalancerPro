@@ -204,6 +204,13 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(gate.contains("privateNetworkLiveValidation"));
         assertTrue(gate.contains("trafficExecuted=false"));
         assertTrue(gate.contains("evidenceWritten=false"));
+        assertTrue(gate.contains("evidenceEligible"));
+        assertTrue(gate.contains("plannedEvidenceDirectory=\"target/proxy-evidence/\""));
+        assertTrue(gate.contains("plannedEvidenceMarkdown=\"private-network-live-validation.md\""));
+        assertTrue(gate.contains("plannedEvidenceJson=\"private-network-live-validation.json\""));
+        assertTrue(gate.contains("redactionRequired=true"));
+        assertTrue(gate.contains("auditTrail.auditTrailWritten=false"));
+        assertTrue(gate.contains("target/proxy-evidence/private-network-live-validation-audit.jsonl"));
         assertTrue(gate.contains("NOT_IMPLEMENTED"));
         assertTrue(gate.contains("traffic execution is not wired in this release"));
         assertTrue(gate.contains("traffic not executed by this report"));
@@ -288,6 +295,11 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("explicit reload failure preserves the last-known-good active config"));
         assertTrue(normalized.contains("abort must stop validation promptly"));
         assertTrue(normalized.contains("generated evidence must be markdown or json under ignored `target/` output"));
+        assertTrue(gate.contains("target/proxy-evidence/private-network-live-validation.md"));
+        assertTrue(gate.contains("target/proxy-evidence/private-network-live-validation.json"));
+        assertTrue(gate.contains("target/proxy-evidence/private-network-live-validation-audit.jsonl"));
+        assertTrue(normalized.contains("command endpoint has an evidence and audit trail contract only"));
+        assertTrue(normalized.contains("keeps `evidencewritten=false` plus `audittrail.audittrailwritten=false`"));
         assertTrue(gate.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
         assertTrue(gate.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
         assertTrue(normalized.contains("must never include raw api keys"));
@@ -305,6 +317,10 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("bounded timeout and controlled failure reporting"));
         assertTrue(normalized.contains("redacted ignored evidence output"));
         assertTrue(normalized.contains("no postman or smoke private-network live execution by default"));
+        assertTrue(normalized.contains("explicit owner approval for execution wiring"));
+        assertTrue(normalized.contains("request paths pass `privatenetworklivevalidationrequestpathvalidator`"));
+        assertTrue(normalized.contains("exactly one validation request is sent per command"));
+        assertTrue(normalized.contains("command audit trail output is redacted and written only under ignored `target/` output"));
     }
 
     @Test
@@ -403,6 +419,10 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("post /api/proxy/private-network-live-validation"));
         assertTrue(normalized.contains("trafficexecuted=false"));
         assertTrue(normalized.contains("evidencewritten=false"));
+        assertTrue(normalized.contains("target/proxy-evidence/private-network-live-validation.md"));
+        assertTrue(normalized.contains("target/proxy-evidence/private-network-live-validation.json"));
+        assertTrue(normalized.contains("target/proxy-evidence/private-network-live-validation-audit.jsonl"));
+        assertTrue(normalized.contains("audittrail.audittrailwritten=false"));
         assertTrue(normalized.contains("not-wired"));
         assertTrue(normalized.contains("report-only gate visibility"));
         assertTrue(normalized.contains("command contract"));

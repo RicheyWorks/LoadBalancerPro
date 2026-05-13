@@ -4,7 +4,7 @@ public record PrivateNetworkLiveValidationCommandRequest(
         String requestPath,
         Boolean evidenceRequested,
         Boolean operatorAcknowledged,
-    String operatorAcknowledgement) {
+        String operatorAcknowledgement) {
     public PrivateNetworkLiveValidationCommandRequest {
         requestPath = requestPath == null ? "" : requestPath;
         evidenceRequested = Boolean.TRUE.equals(evidenceRequested);

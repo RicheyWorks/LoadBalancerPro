@@ -12,17 +12,49 @@ public record PrivateNetworkLiveValidationCommandResponse(
         String requestPath,
         boolean evidenceRequested,
         boolean evidenceWritten,
+        boolean evidenceEligible,
+        String plannedEvidenceDirectory,
+        String plannedEvidenceMarkdown,
+        String plannedEvidenceJson,
+        boolean redactionRequired,
+        String trafficExecution,
+        AuditTrailContract auditTrail,
         boolean operatorAcknowledged,
         PrivateNetworkLiveValidationStatusResponse gate,
         List<String> reasonCodes,
         List<String> reasons) {
     private static final String NOT_WIRED_MESSAGE =
             "traffic execution is not wired in this release";
+    static final String PLANNED_EVIDENCE_DIRECTORY = "target/proxy-evidence/";
+    static final String PLANNED_EVIDENCE_MARKDOWN = "private-network-live-validation.md";
+    static final String PLANNED_EVIDENCE_JSON = "private-network-live-validation.json";
+    private static final String PLANNED_AUDIT_TRAIL =
+            "target/proxy-evidence/private-network-live-validation-audit.jsonl";
+    private static final List<String> PLANNED_AUDIT_FIELDS = List.of(
+            "requestPath",
+            "gateStatus",
+            "reasonCodes",
+            "trafficExecuted",
+            "evidenceWritten",
+            "redactionRequired");
 
     public PrivateNetworkLiveValidationCommandResponse {
         status = status == null ? "" : status;
         message = message == null ? "" : message;
         requestPath = requestPath == null ? "" : requestPath;
+        plannedEvidenceDirectory = plannedEvidenceDirectory == null || plannedEvidenceDirectory.isBlank()
+                ? PLANNED_EVIDENCE_DIRECTORY
+                : plannedEvidenceDirectory;
+        plannedEvidenceMarkdown = plannedEvidenceMarkdown == null || plannedEvidenceMarkdown.isBlank()
+                ? PLANNED_EVIDENCE_MARKDOWN
+                : plannedEvidenceMarkdown;
+        plannedEvidenceJson = plannedEvidenceJson == null || plannedEvidenceJson.isBlank()
+                ? PLANNED_EVIDENCE_JSON
+                : plannedEvidenceJson;
+        trafficExecution = trafficExecution == null || trafficExecution.isBlank()
+                ? NOT_WIRED_MESSAGE
+                : trafficExecution;
+        auditTrail = auditTrail == null ? AuditTrailContract.planned(false) : auditTrail;
         gate = gate == null ? PrivateNetworkLiveValidationStatusResponse.from(new ReverseProxyProperties()) : gate;
         reasonCodes = reasonCodes == null ? List.of() : List.copyOf(reasonCodes);
         reasons = reasons == null ? List.of() : List.copyOf(reasons);
@@ -62,6 +94,13 @@ public record PrivateNetworkLiveValidationCommandResponse(
                     safeRequestPath,
                     request.evidenceRequestedFlag(),
                     false,
+                    false,
+                    PLANNED_EVIDENCE_DIRECTORY,
+                    PLANNED_EVIDENCE_MARKDOWN,
+                    PLANNED_EVIDENCE_JSON,
+                    true,
+                    NOT_WIRED_MESSAGE,
+                    AuditTrailContract.planned(false),
                     request.operatorAcknowledgedFlag(),
                     gate,
                     reasonCodes,
@@ -77,6 +116,13 @@ public record PrivateNetworkLiveValidationCommandResponse(
                 safeRequestPath,
                 request.evidenceRequestedFlag(),
                 false,
+                request.evidenceRequestedFlag(),
+                PLANNED_EVIDENCE_DIRECTORY,
+                PLANNED_EVIDENCE_MARKDOWN,
+                PLANNED_EVIDENCE_JSON,
+                true,
+                NOT_WIRED_MESSAGE,
+                AuditTrailContract.planned(true),
                 request.operatorAcknowledgedFlag(),
                 gate,
                 List.of("LIVE_VALIDATION_EXECUTION_NOT_WIRED"),
@@ -101,9 +147,33 @@ public record PrivateNetworkLiveValidationCommandResponse(
                 "",
                 evidenceRequested,
                 false,
+                false,
+                PLANNED_EVIDENCE_DIRECTORY,
+                PLANNED_EVIDENCE_MARKDOWN,
+                PLANNED_EVIDENCE_JSON,
+                true,
+                NOT_WIRED_MESSAGE,
+                AuditTrailContract.planned(false),
                 operatorAcknowledged,
                 gate,
                 reasonCodes,
                 reasons);
+    }
+
+    public record AuditTrailContract(
+            boolean auditTrailEligible,
+            boolean auditTrailWritten,
+            String plannedAuditTrail,
+            List<String> plannedFields) {
+        public AuditTrailContract {
+            plannedAuditTrail = plannedAuditTrail == null || plannedAuditTrail.isBlank()
+                    ? PLANNED_AUDIT_TRAIL
+                    : plannedAuditTrail;
+            plannedFields = plannedFields == null ? List.of() : List.copyOf(plannedFields);
+        }
+
+        static AuditTrailContract planned(boolean eligible) {
+            return new AuditTrailContract(eligible, false, PLANNED_AUDIT_TRAIL, PLANNED_AUDIT_FIELDS);
+        }
     }
 }

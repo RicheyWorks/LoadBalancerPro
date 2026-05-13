@@ -80,6 +80,18 @@ class PrivateNetworkLiveValidationCommandContractTest {
                 .andExpect(jsonPath("$.requestPath", is("/health")))
                 .andExpect(jsonPath("$.evidenceRequested", is(true)))
                 .andExpect(jsonPath("$.evidenceWritten", is(false)))
+                .andExpect(jsonPath("$.evidenceEligible", is(true)))
+                .andExpect(jsonPath("$.plannedEvidenceDirectory", is("target/proxy-evidence/")))
+                .andExpect(jsonPath("$.plannedEvidenceMarkdown", is("private-network-live-validation.md")))
+                .andExpect(jsonPath("$.plannedEvidenceJson", is("private-network-live-validation.json")))
+                .andExpect(jsonPath("$.redactionRequired", is(true)))
+                .andExpect(jsonPath("$.trafficExecution", is("traffic execution is not wired in this release")))
+                .andExpect(jsonPath("$.auditTrail.auditTrailEligible", is(true)))
+                .andExpect(jsonPath("$.auditTrail.auditTrailWritten", is(false)))
+                .andExpect(jsonPath("$.auditTrail.plannedAuditTrail",
+                        is("target/proxy-evidence/private-network-live-validation-audit.jsonl")))
+                .andExpect(jsonPath("$.auditTrail.plannedFields[0]", is("requestPath")))
+                .andExpect(jsonPath("$.auditTrail.plannedFields[3]", is("trafficExecuted")))
                 .andExpect(jsonPath("$.operatorAcknowledged", is(true)))
                 .andExpect(jsonPath("$.gate.allowedByGate", is(true)))
                 .andExpect(jsonPath("$.gate.gateStatus", is("ALLOWED")))
@@ -105,6 +117,16 @@ class PrivateNetworkLiveValidationCommandContractTest {
         assertFalse(response.executable());
         assertFalse(response.trafficExecuted());
         assertFalse(response.evidenceWritten());
+        assertFalse(response.evidenceEligible());
+        assertTrue(response.plannedEvidenceDirectory().equals("target/proxy-evidence/"));
+        assertTrue(response.plannedEvidenceMarkdown().equals("private-network-live-validation.md"));
+        assertTrue(response.plannedEvidenceJson().equals("private-network-live-validation.json"));
+        assertTrue(response.redactionRequired());
+        assertTrue(response.trafficExecution().equals("traffic execution is not wired in this release"));
+        assertFalse(response.auditTrail().auditTrailEligible());
+        assertFalse(response.auditTrail().auditTrailWritten());
+        assertTrue(response.auditTrail().plannedAuditTrail()
+                .equals("target/proxy-evidence/private-network-live-validation-audit.jsonl"));
         assertTrue(response.reasonCodes().contains("LIVE_VALIDATION_DISABLED"));
         assertTrue(response.message().contains("traffic execution is not wired in this release"));
         assertTrue(response.gate().gateStatus().equals("NOT_ENABLED"));
@@ -137,6 +159,14 @@ class PrivateNetworkLiveValidationCommandContractTest {
                 .andExpect(jsonPath("$.status", is("INVALID_REQUEST")))
                 .andExpect(jsonPath("$.requestPath", is("")))
                 .andExpect(jsonPath("$.evidenceWritten", is(false)))
+                .andExpect(jsonPath("$.evidenceEligible", is(false)))
+                .andExpect(jsonPath("$.plannedEvidenceDirectory", is("target/proxy-evidence/")))
+                .andExpect(jsonPath("$.plannedEvidenceMarkdown", is("private-network-live-validation.md")))
+                .andExpect(jsonPath("$.plannedEvidenceJson", is("private-network-live-validation.json")))
+                .andExpect(jsonPath("$.redactionRequired", is(true)))
+                .andExpect(jsonPath("$.trafficExecution", is("traffic execution is not wired in this release")))
+                .andExpect(jsonPath("$.auditTrail.auditTrailEligible", is(false)))
+                .andExpect(jsonPath("$.auditTrail.auditTrailWritten", is(false)))
                 .andExpect(jsonPath("$.operatorAcknowledged", is(true)))
                 .andExpect(jsonPath("$.reasonCodes[0]", is("INVALID_REQUEST_PATH")))
                 .andExpect(content().string(not(containsString("SHOULD_NOT_ECHO"))))
@@ -153,6 +183,9 @@ class PrivateNetworkLiveValidationCommandContractTest {
                 .andExpect(jsonPath("$.trafficExecuted", is(false)))
                 .andExpect(jsonPath("$.status", is("INVALID_REQUEST")))
                 .andExpect(jsonPath("$.requestPath", is("")))
+                .andExpect(jsonPath("$.evidenceEligible", is(false)))
+                .andExpect(jsonPath("$.evidenceWritten", is(false)))
+                .andExpect(jsonPath("$.auditTrail.auditTrailWritten", is(false)))
                 .andExpect(jsonPath("$.reasonCodes[0]", is("INVALID_REQUEST")));
     }
 
@@ -166,6 +199,14 @@ class PrivateNetworkLiveValidationCommandContractTest {
 
         assertTrue(commandSources.contains("traffic execution is not wired in this release"));
         assertTrue(commandSources.contains("trafficExecuted"));
+        assertTrue(commandSources.contains("evidenceEligible"));
+        assertTrue(commandSources.contains("plannedEvidenceDirectory"));
+        assertTrue(commandSources.contains("plannedEvidenceMarkdown"));
+        assertTrue(commandSources.contains("plannedEvidenceJson"));
+        assertTrue(commandSources.contains("redactionRequired"));
+        assertTrue(commandSources.contains("AuditTrailContract"));
+        assertTrue(commandSources.contains("target/proxy-evidence/"));
+        assertTrue(commandSources.contains("private-network-live-validation-audit.jsonl"));
         assertTrue(commandSources.contains("@PostMapping(\"/private-network-live-validation\")"));
         assertTrue(serviceSource.contains("privateNetworkLiveValidationCommand"));
         assertFalse(commandSources.contains("PrivateNetworkLiveValidationExecutor"),

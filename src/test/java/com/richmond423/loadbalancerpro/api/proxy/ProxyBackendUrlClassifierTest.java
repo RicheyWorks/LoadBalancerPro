@@ -27,6 +27,9 @@ class ProxyBackendUrlClassifierTest {
             "src/main/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyRoutePlanner.java");
     private static final Path LIVE_GATE_SOURCE = Path.of(
             "src/main/java/com/richmond423/loadbalancerpro/api/proxy/PrivateNetworkLiveValidationGate.java");
+    private static final Path LIVE_STATUS_REPORT_SOURCE = Path.of(
+            "src/main/java/com/richmond423/loadbalancerpro/api/proxy/"
+                    + "PrivateNetworkLiveValidationStatusResponse.java");
 
     @Test
     void loopbackHostsAndAddressesAreAllowed() {
@@ -127,7 +130,8 @@ class ProxyBackendUrlClassifierTest {
 
     @Test
     void helperIsWiredOnlyIntoPrivateNetworkConfigurationValidation() throws Exception {
-        Set<Path> allowedSources = Set.of(CLASSIFIER_SOURCE, ROUTE_PLANNER_SOURCE, LIVE_GATE_SOURCE);
+        Set<Path> allowedSources = Set.of(CLASSIFIER_SOURCE, ROUTE_PLANNER_SOURCE, LIVE_GATE_SOURCE,
+                LIVE_STATUS_REPORT_SOURCE);
 
         try (Stream<Path> sources = Files.walk(Path.of("src/main/java"))) {
             for (Path source : sources
@@ -136,7 +140,7 @@ class ProxyBackendUrlClassifierTest {
                 boolean containsClassifier = read(source).contains("ProxyBackendUrlClassifier");
                 assertEquals(allowedSources.contains(source), containsClassifier,
                         source + " must only reference classifier from the offline helper, config validation, "
-                                + "or the offline live gate skeleton");
+                                + "offline live gate skeleton, or report-only live gate status DTO");
             }
         }
     }

@@ -13,6 +13,7 @@ public record ReverseProxyStatusResponse(
         ReverseProxyMetricsSnapshot metrics,
         ObservabilitySummary observability,
         SecurityBoundaryStatus securityBoundary,
+        PrivateNetworkLiveValidationStatusResponse privateNetworkLiveValidation,
         ReloadStatus reload) {
 
     public record HealthCheckStatus(

@@ -243,6 +243,7 @@ public class ReverseProxyService {
                 ReverseProxyStatusSummaries.observability(properties.isEnabled(), routeStatuses, upstreamStatuses,
                         metricsSnapshot),
                 ReverseProxyStatusSummaries.controllerNotAvailableSecurityBoundary(),
+                PrivateNetworkLiveValidationStatusResponse.from(properties),
                 reloadStatusSnapshot(config));
     }
 

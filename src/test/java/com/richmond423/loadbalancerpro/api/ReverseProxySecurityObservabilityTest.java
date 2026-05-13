@@ -40,6 +40,11 @@ class ReverseProxySecurityObservabilityTest {
                 .andExpect(jsonPath("$.securityBoundary.authMode", is("api-key")))
                 .andExpect(jsonPath("$.securityBoundary.apiKeyConfigured", is(true)))
                 .andExpect(jsonPath("$.securityBoundary.proxyStatusProtected", is(true)))
-                .andExpect(jsonPath("$.securityBoundary.proxyForwardingProtected", is(true)));
+                .andExpect(jsonPath("$.securityBoundary.proxyForwardingProtected", is(true)))
+                .andExpect(jsonPath("$.privateNetworkLiveValidation.gateStatus", is("NOT_ENABLED")))
+                .andExpect(jsonPath("$.privateNetworkLiveValidation.allowedByGate", is(false)))
+                .andExpect(jsonPath("$.privateNetworkLiveValidation.trafficExecuted", is(false)))
+                .andExpect(jsonPath("$.privateNetworkLiveValidation.trafficExecution",
+                        is("traffic not executed by this report")));
     }
 }

@@ -85,6 +85,7 @@ class ReviewerTrustMapDocumentationTest {
                 "LocalProxyEvidenceExportTest",
                 "target/proxy-evidence/local-proxy-evidence.md",
                 "target/proxy-evidence/local-proxy-evidence.json",
+                "PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md",
                 "PROXY_STRATEGY_DEMO_LAB.md",
                 "PROXY_DEMO_STACK.md",
                 "PROXY_DEMO_FIXTURE_LAUNCHER.md",
@@ -176,6 +177,8 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(trustMap.contains("`release-downloads/` remains manual and explicit only."));
         assertTrue(trustMap.contains("Workflow artifacts are not GitHub Release assets."));
         assertTrue(trustMap.contains("do not construct or mutate `CloudManager`"));
+        assertTrue(trustMap.contains("explicit operator-provided backend URLs only"));
+        assertTrue(trustMap.contains("no private-network live execution until separately approved"));
     }
 
     @Test

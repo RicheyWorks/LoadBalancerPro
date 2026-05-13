@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 class AntivirusSafeContainmentDocumentationTest {
     private static final Path ANTIVIRUS_DOC = Path.of("docs/ANTIVIRUS_SAFE_DEVELOPMENT.md");
     private static final Path LIVE_PROXY_DOC = Path.of("docs/LIVE_PROXY_CONTAINMENT.md");
+    private static final Path PRIVATE_NETWORK_PROXY_PLAN = Path.of("docs/PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md");
     private static final Path README = Path.of("README.md");
     private static final Path RUNBOOK = Path.of("docs/OPERATIONS_RUNBOOK.md");
     private static final Path CONTAINER_DOC = Path.of("docs/CONTAINER_DEPLOYMENT.md");
@@ -109,6 +110,9 @@ class AntivirusSafeContainmentDocumentationTest {
         assertTrue(doc.contains("LocalProxyEvidenceExportTest"));
         assertTrue(doc.contains("target/proxy-evidence/local-proxy-evidence.md"));
         assertTrue(doc.contains("target/proxy-evidence/local-proxy-evidence.json"));
+        assertTrue(doc.contains("PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md"));
+        assertTrue(normalized.contains("explicit operator-provided backend urls only"));
+        assertTrue(normalized.contains("no discovery or scanning"));
         assertTrue(doc.contains("Java-assigned ephemeral loopback ports"));
         assertTrue(normalized.contains("does not scan ports"));
         assertTrue(normalized.contains("does not"));
@@ -161,7 +165,8 @@ class AntivirusSafeContainmentDocumentationTest {
         assertTrue(read(DOCKERIGNORE).contains("release-downloads/"),
                 ".dockerignore should keep release-downloads out of Docker build context");
 
-        String combined = read(ANTIVIRUS_DOC) + "\n" + read(LIVE_PROXY_DOC) + "\n" + read(TRUST_MAP);
+        String combined = read(ANTIVIRUS_DOC) + "\n" + read(LIVE_PROXY_DOC) + "\n" + read(TRUST_MAP)
+                + "\n" + read(PRIVATE_NETWORK_PROXY_PLAN);
         assertTrue(combined.contains("release-downloads/"));
         assertTrue(combined.toLowerCase(Locale.ROOT).contains("explicit"));
         assertFalse(combined.toLowerCase(Locale.ROOT).contains("copy generated files into `release-downloads/`"));

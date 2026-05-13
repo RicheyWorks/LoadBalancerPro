@@ -60,6 +60,9 @@ class OAuth2AuthorizationTest {
     private static final String ROUTING_REQUEST_BODY = """
             {"servers":[{"serverId":"green","healthy":true,"inFlightRequestCount":1,"averageLatencyMillis":10.0,"p95LatencyMillis":20.0,"p99LatencyMillis":30.0,"recentErrorRate":0.0}]}
             """;
+    private static final String LIVE_VALIDATION_COMMAND_BODY = """
+            {"requestPath":"/health","operatorAcknowledged":true}
+            """;
 
     @Autowired
     private MockMvc mockMvc;
@@ -167,6 +170,29 @@ class OAuth2AuthorizationTest {
                 .andExpect(jsonPath("$.securityBoundary.authMode", is("oauth2")))
                 .andExpect(jsonPath("$.securityBoundary.proxyStatusProtected", is(true)))
                 .andExpect(jsonPath("$.securityBoundary.proxyForwardingProtected", is(true)));
+    }
+
+    @Test
+    void oauth2ModeRequiresOperatorRoleForPrivateNetworkLiveValidationCommand() throws Exception {
+        mockMvc.perform(privateNetworkLiveValidationCommandRequest())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.path", is("/api/proxy/private-network-live-validation")));
+
+        mockMvc.perform(privateNetworkLiveValidationCommandRequest()
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer observer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.path", is("/api/proxy/private-network-live-validation")));
+
+        mockMvc.perform(privateNetworkLiveValidationCommandRequest()
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accepted", is(false)))
+                .andExpect(jsonPath("$.executable", is(false)))
+                .andExpect(jsonPath("$.trafficExecuted", is(false)))
+                .andExpect(jsonPath("$.status", is("BLOCKED_BY_GATE")))
+                .andExpect(jsonPath("$.gate.gateStatus", is("NOT_ENABLED")));
     }
 
     @Test
@@ -401,6 +427,13 @@ class OAuth2AuthorizationTest {
         return post("/api/routing/compare")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ROUTING_REQUEST_BODY);
+    }
+
+    private static org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+            privateNetworkLiveValidationCommandRequest() {
+        return post("/api/proxy/private-network-live-validation")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(LIVE_VALIDATION_COMMAND_BODY);
     }
 
     @TestConfiguration

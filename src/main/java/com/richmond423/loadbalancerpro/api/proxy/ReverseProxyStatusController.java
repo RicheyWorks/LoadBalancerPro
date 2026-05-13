@@ -111,6 +111,16 @@ public class ReverseProxyStatusController {
                 .body(response);
     }
 
+    @PostMapping("/private-network-live-validation")
+    public ResponseEntity<PrivateNetworkLiveValidationCommandResponse> privateNetworkLiveValidationCommand(
+            @RequestBody(required = false) PrivateNetworkLiveValidationCommandRequest request) {
+        ReverseProxyService service = reverseProxyService.getIfAvailable();
+        PrivateNetworkLiveValidationCommandResponse response = service == null
+                ? PrivateNetworkLiveValidationCommandResponse.from(properties, request)
+                : service.privateNetworkLiveValidationCommand(request);
+        return ResponseEntity.status(commandHttpStatus(response)).body(response);
+    }
+
     private ReverseProxyStatusResponse decorate(ReverseProxyStatusResponse response) {
         return new ReverseProxyStatusResponse(
                 response.proxyEnabled(),
@@ -261,6 +271,10 @@ public class ReverseProxyStatusController {
                 0,
                 errors,
                 reloadNotSupported());
+    }
+
+    private static HttpStatus commandHttpStatus(PrivateNetworkLiveValidationCommandResponse response) {
+        return "INVALID_REQUEST".equals(response.status()) ? HttpStatus.BAD_REQUEST : HttpStatus.OK;
     }
 
     private static ReverseProxyStatusResponse.ReloadStatus reloadNotSupported() {

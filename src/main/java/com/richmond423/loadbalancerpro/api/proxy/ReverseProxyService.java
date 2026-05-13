@@ -247,6 +247,11 @@ public class ReverseProxyService {
                 reloadStatusSnapshot(config));
     }
 
+    PrivateNetworkLiveValidationCommandResponse privateNetworkLiveValidationCommand(
+            PrivateNetworkLiveValidationCommandRequest request) {
+        return PrivateNetworkLiveValidationCommandResponse.from(activeConfig.get().properties(), request);
+    }
+
     synchronized ReverseProxyReloadResponse reload(ReverseProxyProperties candidateProperties) {
         Instant attemptedAt = Instant.now(clock);
         ActiveProxyConfig previousConfig = activeConfig.get();

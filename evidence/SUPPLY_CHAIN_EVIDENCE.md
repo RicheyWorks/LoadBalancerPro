@@ -166,6 +166,7 @@ Review this evidence and the dependency posture:
 - After GitHub Actions workflow or action-version changes.
 - After adding SBOM, dependency-check, Dependabot, Renovate, digest pinning, or action SHA pinning.
 - After changing CodeQL/SAST workflow behavior, artifact attestations, release signing, or container signing.
+- Before describing a revision as production-candidate or release-ready; use `docs/PRODUCTION_CANDIDATE_EVIDENCE_GATE.md` for the required CI, CodeQL, Dependency Review, Trivy, SBOM, checksum, attestation, release-asset, digest-pinning, no-secret, no-`release-downloads/`, and no-native-binary evidence checks.
 
 ## Future Hardening Options
 
@@ -192,7 +193,7 @@ This document does not prove:
 - GitHub Actions are immune to tag movement or action supply-chain compromise.
 - The Maven repository, CI runner, Docker registry, or developer workstation is trusted.
 - Uploaded SBOM artifacts prove artifact provenance or runtime integrity.
-- Uploaded release artifact bundles or checksum files are PGP-signed, notarized, or published as GitHub Release assets.
+- Uploaded release artifact bundles or checksum files are PGP-signed, notarized, or production-certified.
 - GitHub artifact attestations prove dependency safety, production readiness, or artifact notarization.
 - Checksums prove who built the artifacts or that dependencies are vulnerability-free.
 - CodeQL results prove the absence of vulnerabilities or replace human review.

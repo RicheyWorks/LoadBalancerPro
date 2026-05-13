@@ -12,6 +12,8 @@ Deployment operators remain responsible for TLS, IAM, network policy, secrets, m
 
 For the concise profile matrix and copyable local/API-key/OAuth2/proxy-loopback/container recipes, use [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) before adapting deployment-specific controls. For local-only Docker build/run guidance, use [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md).
 
+Before calling a revision production-candidate or release-ready, complete [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md). The gate records which CI/release checks are automated today and which items still require manual operator verification.
+
 ## Deployment Posture Summary
 
 The local/default profile is for development, CI smoke tests, and demos. It intentionally favors convenient local behavior such as localhost browser access, public health checks, local Actuator visibility, and no live AWS mutation by default.
@@ -146,6 +148,7 @@ Before exposing LoadBalancerPro beyond a local demo:
 - [ ] Cloud live flags are reviewed.
 - [ ] AWS credentials are absent unless a reviewed sandbox run requires them.
 - [ ] Release artifact bundle, GitHub Release assets, checksum file, and attestation evidence are reviewed when deploying from a semantic release tag.
+- [ ] Production-candidate evidence gate is complete for the source revision being deployed.
 - [ ] Rollback plan is identified.
 - [ ] Logs and metrics retention expectations are known.
 - [ ] Incident response owner is identified.

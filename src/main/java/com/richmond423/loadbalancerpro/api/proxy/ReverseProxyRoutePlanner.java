@@ -17,6 +17,8 @@ final class ReverseProxyRoutePlanner {
     static final String LEGACY_ROUTE_NAME = "legacy-upstreams";
 
     private static final Pattern ROUTE_NAME = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]{0,63}");
+    private static final String PRIVATE_NETWORK_VALIDATION_FLAG =
+            "loadbalancerpro.proxy.private-network-validation.enabled";
 
     private ReverseProxyRoutePlanner() {
     }
@@ -29,6 +31,7 @@ final class ReverseProxyRoutePlanner {
             return List.of();
         }
 
+        boolean privateNetworkValidationEnabled = properties.getPrivateNetworkValidation().isEnabled();
         if (!properties.getRoutes().isEmpty()) {
             List<ConfiguredRoute> routes = new ArrayList<>();
             for (Map.Entry<String, ReverseProxyProperties.Route> entry : properties.getRoutes().entrySet()) {
@@ -48,7 +51,8 @@ final class ReverseProxyRoutePlanner {
                     throw new IllegalStateException(
                             "loadbalancerpro.proxy.routes." + routeName + ".targets must contain at least one target");
                 }
-                validateTargets(targets, "loadbalancerpro.proxy.routes." + routeName + ".targets");
+                validateTargets(targets, "loadbalancerpro.proxy.routes." + routeName + ".targets",
+                        privateNetworkValidationEnabled);
                 routes.add(new ConfiguredRoute(routeName, pathPrefix, strategyId, strategy, List.copyOf(targets)));
             }
             return List.copyOf(routes);
@@ -61,7 +65,7 @@ final class ReverseProxyRoutePlanner {
         }
         RoutingStrategyId strategyId = strategyId(properties.getStrategy(), "loadbalancerpro.proxy.strategy");
         RoutingStrategy strategy = strategy(registry, strategyId);
-        validateTargets(upstreams, "loadbalancerpro.proxy.upstreams");
+        validateTargets(upstreams, "loadbalancerpro.proxy.upstreams", privateNetworkValidationEnabled);
         return List.of(new ConfiguredRoute(
                 LEGACY_ROUTE_NAME, "/", strategyId, strategy, List.copyOf(upstreams)));
     }
@@ -117,7 +121,9 @@ final class ReverseProxyRoutePlanner {
                         "Proxy routing strategy is not registered: " + strategyId.externalName()));
     }
 
-    private static void validateTargets(List<ReverseProxyProperties.Upstream> targets, String fieldPrefix) {
+    private static void validateTargets(List<ReverseProxyProperties.Upstream> targets,
+                                        String fieldPrefix,
+                                        boolean privateNetworkValidationEnabled) {
         Set<String> ids = new LinkedHashSet<>();
         for (int index = 0; index < targets.size(); index++) {
             ReverseProxyProperties.Upstream target = targets.get(index);
@@ -129,15 +135,24 @@ final class ReverseProxyRoutePlanner {
             if (!ids.add(id)) {
                 throw new IllegalStateException(fieldPrefix + " contains duplicate target id: " + id);
             }
-            validateTargetUrl(target.getUrl(), targetPrefix + ".url");
+            validateTargetUrl(target.getUrl(), targetPrefix + ".url", privateNetworkValidationEnabled);
             if (!Double.isFinite(target.getWeight()) || target.getWeight() <= 0.0) {
                 throw new IllegalStateException(targetPrefix + ".weight must be finite and greater than 0");
             }
         }
     }
 
-    private static URI validateTargetUrl(String value, String fieldName) {
+    private static URI validateTargetUrl(String value, String fieldName, boolean privateNetworkValidationEnabled) {
         String url = requireNonBlank(value, fieldName);
+        if (privateNetworkValidationEnabled) {
+            ProxyBackendUrlClassifier.Classification classification = ProxyBackendUrlClassifier.classify(url);
+            if (!classification.allowed()) {
+                throw new IllegalStateException(fieldName
+                        + " must be loopback or private-network when " + PRIVATE_NETWORK_VALIDATION_FLAG
+                        + "=true; classifier status=" + classification.status()
+                        + "; reason=" + classification.reason());
+            }
+        }
         URI uri;
         try {
             uri = URI.create(url);

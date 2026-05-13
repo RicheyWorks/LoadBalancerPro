@@ -16,6 +16,7 @@ public class ReverseProxyProperties {
     private String strategy = "ROUND_ROBIN";
     private Duration requestTimeout = Duration.ofSeconds(2);
     private long maxRequestBytes = 65_536;
+    private PrivateNetworkValidation privateNetworkValidation = new PrivateNetworkValidation();
     private HealthCheck healthCheck = new HealthCheck();
     private Retry retry = new Retry();
     private Cooldown cooldown = new Cooldown();
@@ -52,6 +53,16 @@ public class ReverseProxyProperties {
 
     public void setMaxRequestBytes(long maxRequestBytes) {
         this.maxRequestBytes = maxRequestBytes;
+    }
+
+    public PrivateNetworkValidation getPrivateNetworkValidation() {
+        return privateNetworkValidation;
+    }
+
+    public void setPrivateNetworkValidation(PrivateNetworkValidation privateNetworkValidation) {
+        this.privateNetworkValidation = privateNetworkValidation == null
+                ? new PrivateNetworkValidation()
+                : privateNetworkValidation;
     }
 
     public HealthCheck getHealthCheck() {
@@ -232,6 +243,18 @@ public class ReverseProxyProperties {
 
         public void setQueueDepth(Integer queueDepth) {
             this.queueDepth = queueDepth;
+        }
+    }
+
+    public static final class PrivateNetworkValidation {
+        private boolean enabled = false;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
     }
 

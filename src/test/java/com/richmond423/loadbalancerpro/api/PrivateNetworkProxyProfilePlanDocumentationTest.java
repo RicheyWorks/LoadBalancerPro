@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,8 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path LIVE_PROXY_CONTAINMENT = Path.of("docs/LIVE_PROXY_CONTAINMENT.md");
     private static final Path RUNBOOK = Path.of("docs/OPERATIONS_RUNBOOK.md");
+    private static final Path SMOKE_SCRIPTS = Path.of("scripts/smoke");
+    private static final Path POSTMAN_DOCS = Path.of("docs/postman");
 
     private static final Pattern PUBLIC_EXTERNAL_URL =
             Pattern.compile("https?://(?!127\\.0\\.0\\.1(?::|/|$)|localhost(?::|/|$))[^\\s\"'`]+");
@@ -28,9 +31,10 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         String normalized = plan.toLowerCase(Locale.ROOT);
 
         assertTrue(plan.contains("# Private-Network Proxy Profile Plan"));
-        assertTrue(normalized.contains("design-only plan"));
-        assertTrue(normalized.contains("does not implement runtime behavior"));
+        assertTrue(normalized.contains("design and rollout plan"));
+        assertTrue(normalized.contains("opt-in configuration-validation primitive"));
         assertTrue(normalized.contains("does not add private-network live execution"));
+        assertTrue(normalized.contains("does not change proxy request routing"));
         assertTrue(normalized.contains("does not change the current local-only evidence path"));
         assertFalse(PUBLIC_EXTERNAL_URL.matcher(plan).find(), "plan must not introduce public URL targets");
     }
@@ -62,11 +66,15 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("unsupported-scheme rejected"));
         assertTrue(normalized.contains("user-info rejected"));
         assertTrue(normalized.contains("ambiguous-host rejected"));
+        assertTrue(plan.contains("loadbalancerpro.proxy.private-network-validation.enabled=true"));
+        assertTrue(normalized.contains("startup and explicit proxy reload validation use that classifier"));
+        assertTrue(normalized.contains("unsafe backend urls fail closed"));
         assertTrue(normalized.contains("does not resolve dns"));
         assertTrue(normalized.contains("perform reachability checks"));
         assertTrue(normalized.contains("scan ports"));
         assertTrue(normalized.contains("discover hosts"));
-        assertTrue(normalized.contains("wire private-network validation into runtime startup"));
+        assertTrue(normalized.contains("change default/local/demo behavior"));
+        assertTrue(normalized.contains("script, postman, or smoke execution"));
     }
 
     @Test
@@ -149,14 +157,37 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("explicit operator-provided backend urls only"));
         assertTrue(normalized.contains("local/private-network allowlisting"));
         assertTrue(normalized.contains("offline `proxybackendurlclassifier` review"));
+        assertTrue(normalized.contains("opt-in startup/reload configuration validation"));
+        assertTrue(normalized.contains("configuration-only at this stage"));
         assertTrue(normalized.contains("no dns or reachability checks"));
         assertTrue(normalized.contains("no discovery or scanning"));
         assertTrue(normalized.contains("no secret persistence"));
         assertTrue(normalized.contains("no private-network live execution until separately approved"));
     }
 
+    @Test
+    void privateNetworkValidationIsNotAddedToSmokeOrPostmanExecution() throws Exception {
+        String combined = readTree(SMOKE_SCRIPTS) + "\n" + readTree(POSTMAN_DOCS);
+
+        assertFalse(combined.contains("private-network-validation"),
+                "smoke/Postman paths must not add private-network validation execution");
+        assertFalse(combined.contains("ProxyBackendUrlClassifier"),
+                "smoke/Postman paths must not invoke the Java classifier directly");
+    }
+
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");
         return Files.readString(path, StandardCharsets.UTF_8);
+    }
+
+    private static String readTree(Path root) throws IOException {
+        assertTrue(Files.exists(root), root + " should exist");
+        StringBuilder content = new StringBuilder();
+        try (Stream<Path> paths = Files.walk(root)) {
+            for (Path path : paths.filter(Files::isRegularFile).toList()) {
+                content.append(read(path)).append('\n');
+            }
+        }
+        return content.toString();
     }
 }

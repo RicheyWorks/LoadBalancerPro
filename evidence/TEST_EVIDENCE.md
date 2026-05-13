@@ -49,3 +49,4 @@ mvn -q test
 - [Hardening Audit 001](HARDENING_AUDIT_001.md)
 - [Security Posture](SECURITY_POSTURE.md)
 - [Residual Risks](RESIDUAL_RISKS.md)
+- [Production-Candidate Evidence Gate](../docs/PRODUCTION_CANDIDATE_EVIDENCE_GATE.md)

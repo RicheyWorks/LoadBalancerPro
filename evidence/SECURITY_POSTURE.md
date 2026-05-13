@@ -85,6 +85,7 @@ Revisit this disposition if cookie/session authentication, credentialed CORS, or
 - GitHub artifact attestations provide build provenance evidence for the release JAR and the JAR/SBOM JSON relationship.
 - Attestations help consumers verify where and how the attested artifact was built, but they are not PGP signing, notarization, vulnerability scanning, or production-readiness proof.
 - This is release evidence and GitHub Release asset publication, not release signing beyond GitHub artifact attestations, container signing, Maven Central publication, or a production-readiness claim.
+- Use `docs/PRODUCTION_CANDIDATE_EVIDENCE_GATE.md` before describing a revision as production-candidate or release-ready; it separates automated CI/release checks from manual operator verification.
 
 ## What Is Verified By Tests
 

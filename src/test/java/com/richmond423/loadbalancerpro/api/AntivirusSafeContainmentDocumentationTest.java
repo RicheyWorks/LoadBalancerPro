@@ -21,6 +21,8 @@ class AntivirusSafeContainmentDocumentationTest {
     private static final Path CONTAINER_DOC = Path.of("docs/CONTAINER_DEPLOYMENT.md");
     private static final Path POSTMAN_DOC = Path.of("docs/POSTMAN_COLLECTION.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
+    private static final Path LOCAL_REAL_BACKEND_PROXY_TEST =
+            Path.of("src/test/java/com/richmond423/loadbalancerpro/api/LocalOnlyRealBackendProxyValidationTest.java");
     private static final Path GITIGNORE = Path.of(".gitignore");
     private static final Path DOCKERIGNORE = Path.of(".dockerignore");
     private static final Path SCRATCH_SMOKE_FILE = Path.of("scripts", "smoke", "tmp-test" + "-file.txt");
@@ -97,6 +99,11 @@ class AntivirusSafeContainmentDocumentationTest {
         assertTrue(normalized.contains("no hidden background agents"));
         assertTrue(normalized.contains("deterministic, documented, and low-risk"));
         assertTrue(normalized.contains("production/cloud behavior must remain explicit and security-gated"));
+        assertTrue(doc.contains("LocalOnlyRealBackendProxyValidationTest"));
+        assertTrue(doc.contains("Java-assigned ephemeral loopback ports"));
+        assertTrue(normalized.contains("does not scan ports"));
+        assertTrue(normalized.contains("does not"));
+        assertTrue(normalized.contains("call external networks"));
     }
 
     @Test
@@ -153,6 +160,50 @@ class AntivirusSafeContainmentDocumentationTest {
     @Test
     void scratchSmokeTempFilesAreAbsent() {
         assertFalse(Files.exists(SCRATCH_SMOKE_FILE), SCRATCH_SMOKE_FILE + " must not be committed or present");
+    }
+
+    @Test
+    void localOnlyRealBackendProxyValidationPathIsDocumentedAndSourceVisible() throws Exception {
+        String combinedDocs = read(LIVE_PROXY_DOC) + "\n" + read(RUNBOOK) + "\n" + read(TRUST_MAP);
+        String testSource = read(LOCAL_REAL_BACKEND_PROXY_TEST);
+
+        assertTrue(combinedDocs.contains("LocalOnlyRealBackendProxyValidationTest"));
+        assertTrue(combinedDocs.contains("source-visible"));
+        assertTrue(combinedDocs.contains("JDK loopback"));
+        assertTrue(combinedDocs.contains("Java-assigned ephemeral"));
+        assertTrue(combinedDocs.contains("configured-unavailable backend fails closed"));
+        assertTrue(testSource.contains("com.sun.net.httpserver.HttpServer"));
+        assertTrue(testSource.contains("InetAddress.getLoopbackAddress()"));
+        assertTrue(testSource.contains("new InetSocketAddress(InetAddress.getLoopbackAddress(), 0)"));
+        assertTrue(testSource.contains("loadbalancerpro.proxy.enabled"));
+        assertTrue(testSource.contains("loadbalancerpro.proxy.routes.unavailable"));
+        assertTrue(testSource.contains("X-LoadBalancerPro-Upstream"));
+        assertTrue(testSource.contains("X-LoadBalancerPro-Strategy"));
+    }
+
+    @Test
+    void localOnlyRealBackendProxyValidationPathAvoidsUnsafeArtifactsAndInstructions() throws Exception {
+        String testSource = read(LOCAL_REAL_BACKEND_PROXY_TEST).toLowerCase(Locale.ROOT);
+
+        assertFalse(Pattern.compile("(?i)\\.(exe|dll|msi|bin)\\b").matcher(testSource).find(),
+                LOCAL_REAL_BACKEND_PROXY_TEST + " should not reference native binary file extensions");
+        for (String forbidden : List.of(
+                "native-image",
+                "launch4j",
+                "jpackage",
+                "installer",
+                "self-extracting",
+                "release-downloads",
+                "scheduled task",
+                "service install",
+                "localstorage",
+                "sessionstorage",
+                "downloaded helper",
+                "port scan")) {
+            assertFalse(testSource.contains(forbidden),
+                    LOCAL_REAL_BACKEND_PROXY_TEST + " should not contain unsafe proxy validation pattern: "
+                            + forbidden);
+        }
     }
 
     private static String read(Path path) throws IOException {

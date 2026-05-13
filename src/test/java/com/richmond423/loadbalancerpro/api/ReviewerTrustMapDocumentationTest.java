@@ -81,6 +81,7 @@ class ReviewerTrustMapDocumentationTest {
                 "REVERSE_PROXY_HEALTH_AND_METRICS.md",
                 "REVERSE_PROXY_RESILIENCE.md",
                 "PROXY_OPERATOR_STATUS_UI.md",
+                "LocalOnlyRealBackendProxyValidationTest",
                 "PROXY_STRATEGY_DEMO_LAB.md",
                 "PROXY_DEMO_STACK.md",
                 "PROXY_DEMO_FIXTURE_LAUNCHER.md",

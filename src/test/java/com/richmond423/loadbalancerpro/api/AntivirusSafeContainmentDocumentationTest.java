@@ -23,6 +23,12 @@ class AntivirusSafeContainmentDocumentationTest {
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path LOCAL_REAL_BACKEND_PROXY_TEST =
             Path.of("src/test/java/com/richmond423/loadbalancerpro/api/LocalOnlyRealBackendProxyValidationTest.java");
+    private static final Path LOCAL_PROXY_EVIDENCE_EXPORT_TEST =
+            Path.of("src/test/java/com/richmond423/loadbalancerpro/api/LocalProxyEvidenceExportTest.java");
+    private static final Path PROXY_EVIDENCE_MARKDOWN =
+            Path.of("target", "proxy-evidence", "local-proxy-evidence.md");
+    private static final Path PROXY_EVIDENCE_JSON =
+            Path.of("target", "proxy-evidence", "local-proxy-evidence.json");
     private static final Path GITIGNORE = Path.of(".gitignore");
     private static final Path DOCKERIGNORE = Path.of(".dockerignore");
     private static final Path SCRATCH_SMOKE_FILE = Path.of("scripts", "smoke", "tmp-test" + "-file.txt");
@@ -100,6 +106,9 @@ class AntivirusSafeContainmentDocumentationTest {
         assertTrue(normalized.contains("deterministic, documented, and low-risk"));
         assertTrue(normalized.contains("production/cloud behavior must remain explicit and security-gated"));
         assertTrue(doc.contains("LocalOnlyRealBackendProxyValidationTest"));
+        assertTrue(doc.contains("LocalProxyEvidenceExportTest"));
+        assertTrue(doc.contains("target/proxy-evidence/local-proxy-evidence.md"));
+        assertTrue(doc.contains("target/proxy-evidence/local-proxy-evidence.json"));
         assertTrue(doc.contains("Java-assigned ephemeral loopback ports"));
         assertTrue(normalized.contains("does not scan ports"));
         assertTrue(normalized.contains("does not"));
@@ -182,6 +191,49 @@ class AntivirusSafeContainmentDocumentationTest {
     }
 
     @Test
+    void localProxyEvidenceExportPathIsIgnoredAndSourceVisible() throws Exception {
+        String combinedDocs = read(LIVE_PROXY_DOC) + "\n" + read(RUNBOOK) + "\n" + read(TRUST_MAP);
+        String testSource = read(LOCAL_PROXY_EVIDENCE_EXPORT_TEST);
+
+        assertTrue(PROXY_EVIDENCE_MARKDOWN.startsWith(Path.of("target")),
+                PROXY_EVIDENCE_MARKDOWN + " should remain under ignored Maven build output");
+        assertTrue(PROXY_EVIDENCE_JSON.startsWith(Path.of("target")),
+                PROXY_EVIDENCE_JSON + " should remain under ignored Maven build output");
+        assertTrue(read(GITIGNORE).contains("target/"),
+                ".gitignore should keep generated proxy evidence untracked");
+        assertTrue(combinedDocs.contains("LocalProxyEvidenceExportTest"));
+        assertTrue(combinedDocs.contains("target/proxy-evidence/local-proxy-evidence.md"));
+        assertTrue(combinedDocs.contains("target/proxy-evidence/local-proxy-evidence.json"));
+        assertTrue(combinedDocs.contains("redacted"));
+        assertTrue(combinedDocs.contains("prod API-key boundary"));
+        assertTrue(testSource.contains("Path.of(\"target\", \"proxy-evidence\")"));
+        assertTrue(testSource.contains("Files.createDirectories(EVIDENCE_DIR)"));
+        assertTrue(testSource.contains("Files.writeString(MARKDOWN_EVIDENCE"));
+        assertTrue(testSource.contains("Files.writeString(JSON_EVIDENCE"));
+        assertTrue(testSource.contains("\"apiKeyRedacted\": \"<REDACTED>\""));
+        assertTrue(testSource.contains("assertFalse(markdown.contains(API_KEY))"));
+        assertTrue(testSource.contains("assertFalse(json.contains(API_KEY))"));
+    }
+
+    @Test
+    void localProxyEvidenceExportUsesLoopbackAndPreservesApiKeyBoundary() throws Exception {
+        String testSource = read(LOCAL_PROXY_EVIDENCE_EXPORT_TEST);
+
+        assertTrue(testSource.contains("com.sun.net.httpserver.HttpServer"));
+        assertTrue(testSource.contains("InetAddress.getLoopbackAddress()"));
+        assertTrue(testSource.contains("new InetSocketAddress(InetAddress.getLoopbackAddress(), 0)"));
+        assertTrue(testSource.contains("return \"http://127.0.0.1:\""));
+        assertTrue(testSource.contains("spring.profiles.active=prod"));
+        assertTrue(testSource.contains("loadbalancerpro.api.key=TEST_PROXY_EVIDENCE_KEY"));
+        assertTrue(testSource.contains("X-API-Key"));
+        assertTrue(testSource.contains("status().isUnauthorized()"));
+        assertTrue(testSource.contains("X-LoadBalancerPro-Upstream"));
+        assertTrue(testSource.contains("X-LoadBalancerPro-Strategy"));
+        assertTrue(testSource.contains("X-Local-Proxy-Evidence"));
+        assertTrue(testSource.contains("portPolicy\": \"java-assigned-ephemeral\""));
+    }
+
+    @Test
     void localOnlyRealBackendProxyValidationPathAvoidsUnsafeArtifactsAndInstructions() throws Exception {
         String testSource = read(LOCAL_REAL_BACKEND_PROXY_TEST).toLowerCase(Locale.ROOT);
 
@@ -202,6 +254,31 @@ class AntivirusSafeContainmentDocumentationTest {
                 "port scan")) {
             assertFalse(testSource.contains(forbidden),
                     LOCAL_REAL_BACKEND_PROXY_TEST + " should not contain unsafe proxy validation pattern: "
+                            + forbidden);
+        }
+    }
+
+    @Test
+    void localProxyEvidenceExportAvoidsUnsafeArtifactsAndExternalTargets() throws Exception {
+        String testSource = read(LOCAL_PROXY_EVIDENCE_EXPORT_TEST);
+        String normalized = testSource.toLowerCase(Locale.ROOT);
+
+        assertFalse(Pattern.compile("(?i)\\.(exe|dll|msi|bin)\\b").matcher(testSource).find(),
+                LOCAL_PROXY_EVIDENCE_EXPORT_TEST + " should not reference native binary file extensions");
+        assertFalse(Pattern.compile("(?i)https?://(?!127\\.0\\.0\\.1)").matcher(testSource).find(),
+                LOCAL_PROXY_EVIDENCE_EXPORT_TEST + " should not introduce external HTTP targets");
+        for (String forbidden : List.of(
+                "native-image",
+                "launch4j",
+                "jpackage",
+                "installer",
+                "self-extracting",
+                "release-downloads",
+                "localstorage",
+                "sessionstorage",
+                "port scan")) {
+            assertFalse(normalized.contains(forbidden),
+                    LOCAL_PROXY_EVIDENCE_EXPORT_TEST + " should not contain unsafe evidence export pattern: "
                             + forbidden);
         }
     }

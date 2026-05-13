@@ -19,7 +19,7 @@ Recommended first paths:
 
 - I want the shortest public-facing overview: start with [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md), then use [`DEMO_WALKTHROUGH.md`](DEMO_WALKTHROUGH.md) for a local demo script.
 - I want to verify tests and coverage: start with [`TESTING_COVERAGE.md`](TESTING_COVERAGE.md), then inspect the `jacoco-coverage-report` workflow artifact and CI skipped-test log output.
-- I want to verify real HTTP proxy behavior: start with [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md), [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](REVERSE_PROXY_HEALTH_AND_METRICS.md), [`REVERSE_PROXY_RESILIENCE.md`](REVERSE_PROXY_RESILIENCE.md), [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md), and the source-visible `LocalOnlyRealBackendProxyValidationTest`.
+- I want to verify real HTTP proxy behavior: start with [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md), [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](REVERSE_PROXY_HEALTH_AND_METRICS.md), [`REVERSE_PROXY_RESILIENCE.md`](REVERSE_PROXY_RESILIENCE.md), [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md), the source-visible `LocalOnlyRealBackendProxyValidationTest`, and the reviewer export from `LocalProxyEvidenceExportTest` under `target/proxy-evidence/local-proxy-evidence.md`.
 - I want to run local proxy demos: start with [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md), [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md), and [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md).
 - I want to adapt proxy mode to local/private backends: start with [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md).
 - I want to choose the right run profile: start with [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) for local demo, packaged jar, prod API-key, cloud-sandbox API-key, OAuth2, proxy-loopback, and container recipes.
@@ -40,7 +40,7 @@ Recommended first paths:
 | --- | --- | --- | --- | --- | --- |
 | Are tests and skipped-test checks visible? | CI Surefire parsing and coverage docs | [`TESTING_COVERAGE.md`](TESTING_COVERAGE.md) | CI logs, `target/surefire-reports`, `jacoco-coverage-report` | CI reports zero skipped tests and publishes coverage output for inspection | Complete behavioral proof for every deployment condition |
 | Is JaCoCo coverage available? | GitHub Actions workflow artifact | [`TESTING_COVERAGE.md`](TESTING_COVERAGE.md) | `jacoco-coverage-report` | Reviewers can inspect HTML/XML/CSV coverage output | A coverage threshold or quality guarantee by itself |
-| Does proxy forwarding have a documented contract? | Reverse proxy docs and loopback tests | [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md), `LocalOnlyRealBackendProxyValidationTest` | `/proxy/**`, `X-LoadBalancerPro-Upstream`, `X-LoadBalancerPro-Strategy` | Optional proxy mode forwards real local HTTP traffic when explicitly enabled, including source-visible JUnit evidence with JDK loopback backends on Java-assigned ephemeral ports | A managed gateway or internet-edge deployment claim |
+| Does proxy forwarding have a documented contract? | Reverse proxy docs, loopback tests, and ignored evidence export | [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md), `LocalOnlyRealBackendProxyValidationTest`, `LocalProxyEvidenceExportTest` | `/proxy/**`, `X-LoadBalancerPro-Upstream`, `X-LoadBalancerPro-Strategy`, `target/proxy-evidence/local-proxy-evidence.md` | Optional proxy mode forwards real local HTTP traffic when explicitly enabled, including source-visible JUnit evidence with JDK loopback backends on Java-assigned ephemeral ports and redacted local evidence export | A managed gateway or internet-edge deployment claim |
 | Are antivirus-safe development and live/proxy containment documented? | Static policy docs and guard tests | [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](ANTIVIRUS_SAFE_DEVELOPMENT.md), [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md) | Java source, Maven tests, Spring Boot JARs, PowerShell scripts, Postman JSON, Markdown docs, Dockerfile/docs, GitHub Actions | Future tooling and proxy validation have safe default artifact types, avoided native/binary patterns, opt-in live mode, localhost/private-network defaults, and no persistence/port-scanning/service-install behavior | Approval to add native binaries, public scanning, hidden agents, service installation, or production exposure |
 | Are proxy health, metrics, and reload status visible? | Status endpoint and operator page | [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](REVERSE_PROXY_HEALTH_AND_METRICS.md), [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md) | `/api/proxy/status`, `/proxy-status.html` | Health, counters, selected upstream, route/backend summary, boundary mode, reload generation/status, and status JSON can be reviewed read-only | Durable monitoring, alerting, distributed config, or reset/admin controls |
 | Is the proxy auth/TLS boundary explicit? | Security config, docs, and boundary tests | [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md#auth-and-tls-boundary), [`API_SECURITY.md`](API_SECURITY.md) | `/proxy/**`, `/api/proxy/status`, `/proxy-status.html` | Prod API-key mode and OAuth2 mode have documented access behavior, while TLS termination is a deployment responsibility | A complete identity system, TLS implementation, or public exposure approval |
@@ -76,9 +76,10 @@ Recommended first paths:
 1. Read [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md) for the forwarding contract.
 2. Read [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](REVERSE_PROXY_HEALTH_AND_METRICS.md) and [`REVERSE_PROXY_RESILIENCE.md`](REVERSE_PROXY_RESILIENCE.md) for active health, counters, retries, and cooldowns.
 3. Run [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md) or [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md) for loopback selected-upstream evidence.
-4. Use [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) to adapt the same verification model to local/private HTTP services.
-5. Read the auth/TLS boundary in [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md#auth-and-tls-boundary) before exposing proxy mode beyond loopback.
-6. Verify status through `/proxy-status.html` and `/api/proxy/status`.
+4. Run `mvn -Dtest=LocalProxyEvidenceExportTest test` when you want ignored Markdown/JSON evidence under `target/proxy-evidence/`.
+5. Use [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md) to adapt the same verification model to local/private HTTP services.
+6. Read the auth/TLS boundary in [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md#auth-and-tls-boundary) before exposing proxy mode beyond loopback.
+7. Verify status through `/proxy-status.html` and `/api/proxy/status`.
 
 ### Release-Readiness Review
 
@@ -112,6 +113,7 @@ Recommended first paths:
 - Development tooling avoids native executable wrappers, installers, packers, self-extracting archives, and vendored third-party binaries unless explicitly approved.
 - Live/proxy validation is opt-in, defaults to localhost or private-network backends, and does not use port scanning, persistence mechanisms, scheduled tasks, service installation, credential storage, or hidden background agents.
 - Local real-backend proxy validation uses source-visible Maven/JUnit and JDK loopback fixtures, not native helper tools or downloaded servers.
+- Local proxy evidence export writes redacted reviewer Markdown/JSON only under ignored `target/proxy-evidence/`.
 - The Postman smoke harness is source-visible PowerShell and remains dry-run safe unless `-Package` is explicitly passed.
 - Workflow artifacts are not GitHub Release assets.
 - Proxy/demo/status/docs paths do not construct or mutate `CloudManager`.

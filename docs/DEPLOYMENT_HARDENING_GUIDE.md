@@ -14,6 +14,8 @@ For the concise profile matrix and copyable local/API-key/OAuth2/proxy-loopback/
 
 Before calling a revision production-candidate or release-ready, complete [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md). The gate records which CI/release checks are automated today and which items still require manual operator verification.
 
+Before proposing registry publication, release image tags, container signing, or container attestations, complete [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md).
+
 ## Deployment Posture Summary
 
 The local/default profile is for development, CI smoke tests, and demos. It intentionally favors convenient local behavior such as localhost browser access, public health checks, local Actuator visibility, and no live AWS mutation by default.
@@ -168,6 +170,7 @@ This guide does not provide:
 - Live AWS validation.
 - Ad hoc release publication. GitHub Release assets are published only by the separate semantic-tag Release Artifacts workflow, not by normal docs, tests, smoke scripts, or deployment review.
 - Container signing.
+- Container registry publication or signing; those require the focused decision gate in [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md).
 - Production certification.
 
 Treat this guide as deployment hardening guidance for an enterprise-demo repository. A real production deployment needs infrastructure-specific design, review, testing, monitoring, and incident response.

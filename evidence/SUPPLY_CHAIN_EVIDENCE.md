@@ -181,6 +181,7 @@ Practical next steps, in conservative order:
 - Review GitHub artifact attestation records after semantic release tags and document verification expectations for consumers.
 - Consider attesting checksum or SBOM XML artifacts separately if that provides useful audit evidence.
 - Add container signing after registry and image naming decisions are made.
+- Use `docs/CONTAINER_SIGNING_DECISION_RECORD.md` before adding registry publication, release image tags, container signing, container attestations, vulnerability scan evidence publication, rollback, or retention policy.
 - Consider OWASP dependency-check after a triage and false-positive handling process exists.
 
 ## What This Evidence Does Not Prove

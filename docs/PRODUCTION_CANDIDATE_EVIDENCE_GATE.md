@@ -38,6 +38,7 @@ Reviewers or operators must still verify these items before making a production-
 - Confirm Trivy did not report unresolved fixed high/critical findings.
 - Confirm `mvn -q clean test`, `mvn -q verify`, and `mvn -q -DskipTests package` passed locally when local Maven is trusted and available.
 - Confirm the container/default run path uses the prod profile and requires an operator-provided API key.
+- Confirm container registry publication and signing remain deferred unless `CONTAINER_SIGNING_DECISION_RECORD.md` has been completed in a separate focused change.
 - Confirm Docker base image references are pinned by digest.
 - Confirm no secrets, API keys, bearer tokens, credentials, or tenant-specific values are committed or persisted in evidence.
 - Confirm `release-downloads/` was not mutated unless a separate explicit release-evidence task approved that path.

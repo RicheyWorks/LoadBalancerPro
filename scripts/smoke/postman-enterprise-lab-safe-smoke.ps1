@@ -255,19 +255,22 @@ function Invoke-PostmanEnterpriseLabSmoke {
     Assert-HttpStatus -Profile "local" -Name "Actuator health allowed" -Url "$localBase/actuator/health" -Expected 200
     Assert-HttpStatus -Profile "local" -Name "OpenAPI allowed" -Url "$localBase/v3/api-docs" -Expected 200
     Assert-HttpStatus -Profile "local" -Name "Swagger allowed" -Url "$localBase/swagger-ui/index.html" -Expected 200
+    Assert-HttpStatus -Profile "local" -Name "Evidence onboarding allowed" -Url "$localBase/api/evidence-training/onboarding" -Expected 200
 
     Assert-HttpStatus -Profile "prod" -Name "OpenAPI missing key gated" -Url "$prodBase/v3/api-docs" -Expected 401
     Assert-HttpStatus -Profile "prod" -Name "OpenAPI wrong key gated" -Url "$prodBase/v3/api-docs" -Expected 401 -HeaderApiKey $WrongApiKey
     Assert-HttpStatus -Profile "prod" -Name "OpenAPI correct key allowed" -Url "$prodBase/v3/api-docs" -Expected 200 -HeaderApiKey $ApiKey
     Assert-HttpStatus -Profile "prod" -Name "Swagger missing key gated" -Url "$prodBase/swagger-ui/index.html" -Expected 401
+    Assert-HttpStatus -Profile "prod" -Name "evidence onboarding missing key gated" -Url "$prodBase/api/evidence-training/onboarding" -Expected 401
+    Assert-HttpStatus -Profile "prod" -Name "evidence onboarding correct key allowed" -Url "$prodBase/api/evidence-training/onboarding" -Expected 200 -HeaderApiKey $ApiKey
     Assert-HttpStatus -Profile "prod" -Name "routing missing key gated" -Url "$prodBase/api/routing/compare" -Expected 401 -Method "POST" -Body $routingBody
     Assert-HttpStatus -Profile "prod" -Name "routing wrong key gated" -Url "$prodBase/api/routing/compare" -Expected 401 -Method "POST" -HeaderApiKey $WrongApiKey -Body $routingBody
     Assert-HttpStatus -Profile "prod" -Name "routing correct key allowed" -Url "$prodBase/api/routing/compare" -Expected 200 -Method "POST" -HeaderApiKey $ApiKey -Body $routingBody
     Assert-HttpStatus -Profile "prod" -Name "evaluation missing key gated" -Url "$prodBase/api/allocate/evaluate" -Expected 401 -Method "POST" -Body $evaluationBody
     Assert-HttpStatus -Profile "prod" -Name "evaluation wrong key gated" -Url "$prodBase/api/allocate/evaluate" -Expected 401 -Method "POST" -HeaderApiKey $WrongApiKey -Body $evaluationBody
     Assert-HttpStatus -Profile "prod" -Name "evaluation correct key allowed" -Url "$prodBase/api/allocate/evaluate" -Expected 200 -Method "POST" -HeaderApiKey $ApiKey -Body $evaluationBody
-    Assert-HttpStatus -Profile "prod" -Name "actuator metrics not public" -Url "$prodBase/actuator/metrics" -Expected 401
-    Assert-HttpStatus -Profile "prod" -Name "actuator Prometheus not public" -Url "$prodBase/actuator/prometheus" -Expected 401
+    Assert-HttpStatus -Profile "prod" -Name "actuator metrics not exposed" -Url "$prodBase/actuator/metrics" -Expected 404
+    Assert-HttpStatus -Profile "prod" -Name "actuator Prometheus not exposed" -Url "$prodBase/actuator/prometheus" -Expected 404
 
     Write-SmokeEvidence -Path $EvidenceDir
     Write-Host "Postman enterprise lab smoke completed."

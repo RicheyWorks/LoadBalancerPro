@@ -78,7 +78,7 @@ docker build -t loadbalancerpro:local .
 docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY loadbalancerpro:local
 ```
 
-The Dockerfile defaults to the prod API-key profile. Health and the root page remain reachable for local review, while protected API mutations, OpenAPI, Swagger, and proxy routes require `X-API-Key`. Use `-e SPRING_PROFILES_ACTIVE=local` only for an explicitly loopback-bound local/demo container.
+The Dockerfile defaults to the prod API-key profile. Health and the root page remain reachable for local review, while `/api/**`, OpenAPI, Swagger, and proxy routes require `X-API-Key` except for `GET /api/health` and unauthenticated `OPTIONS` preflight requests. Use `-e SPRING_PROFILES_ACTIVE=local` only for an explicitly loopback-bound local/demo container.
 
 ## Limitations To Say Out Loud
 

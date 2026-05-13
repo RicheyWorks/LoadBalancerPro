@@ -22,7 +22,7 @@ The environment contains placeholders only. It has no generated export timestamp
 ## Safe Run Order
 
 - Use `Local / Demo Health` for the default/local profile. `/v3/api-docs` and Swagger UI are expected to remain public there.
-- Use `Prod API-Key Boundary` after starting the app in prod or cloud-sandbox API-key mode. Missing-key OpenAPI, Swagger, and protected POST requests should return HTTP 401. With-key requests send `X-API-Key: {{apiKey}}`.
+- Use `Prod API-Key Boundary` after starting the app in prod or cloud-sandbox API-key mode. Missing-key OpenAPI, Swagger, and `/api/**` requests should return HTTP 401 except for `GET /api/health` and unauthenticated `OPTIONS` preflight requests. With-key requests send `X-API-Key: {{apiKey}}`.
 - Use `Routing Lab`, `Allocation / Evaluation Lab`, `Scenario Replay Lab`, and `Remediation Report Lab` for cockpit-equivalent API exploration. These requests are deterministic, synthetic, and advisory.
 - Use `Proxy Operator Lab` carefully. `GET /api/proxy/status` is read-only. The reload example is process-local and operator-controlled; run it only when proxy mode is enabled and local reload is intended.
 - Use `Evidence / Offline Tooling Pointers` for packaged evidence training APIs. Offline CLI evidence workflows remain documented separately and are not faked as HTTP endpoints.
@@ -49,7 +49,7 @@ Optional sanitized evidence export:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\postman-enterprise-lab-safe-smoke.ps1 -Package -EvidenceDir target\postman-enterprise-lab-smoke
 ```
 
-The live harness starts or reuses loopback local/demo and prod API-key profiles, verifies local root/health/OpenAPI/Swagger HTTP 200 behavior, verifies prod missing-key and wrong-key HTTP 401 behavior for OpenAPI/Swagger/protected POSTs, verifies the configured test `X-API-Key` succeeds, and checks that Actuator metrics and Prometheus are not public in prod. Evidence files are sanitized Markdown and sanitized JSON summaries. The configured API key is always rendered as `<REDACTED>` in output and evidence.
+The live harness starts or reuses loopback local/demo and prod API-key profiles, verifies local root/health/OpenAPI/Swagger HTTP 200 behavior, verifies prod missing-key and wrong-key HTTP 401 behavior for OpenAPI/Swagger and representative `/api/**` routes, verifies the configured test `X-API-Key` succeeds, and checks that Actuator metrics and Prometheus are not public in prod. Evidence files are sanitized Markdown and sanitized JSON summaries. The configured API key is always rendered as `<REDACTED>` in output and evidence.
 
 ## Security Notes
 

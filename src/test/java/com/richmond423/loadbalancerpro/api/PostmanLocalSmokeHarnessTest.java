@@ -55,6 +55,7 @@ class PostmanLocalSmokeHarnessTest {
         assertTrue(script.contains("/actuator/health"));
         assertTrue(script.contains("/v3/api-docs"));
         assertTrue(script.contains("/swagger-ui/index.html"));
+        assertTrue(script.contains("/api/evidence-training/onboarding"));
         assertTrue(script.contains("/api/routing/compare"));
         assertTrue(script.contains("/api/allocate/evaluate"));
         assertTrue(script.contains("/actuator/metrics"));
@@ -63,14 +64,17 @@ class PostmanLocalSmokeHarnessTest {
         assertTrue(script.contains("OpenAPI wrong key gated"));
         assertTrue(script.contains("OpenAPI correct key allowed"));
         assertTrue(script.contains("Swagger missing key gated"));
+        assertTrue(script.contains("Evidence onboarding allowed"));
+        assertTrue(script.contains("evidence onboarding missing key gated"));
+        assertTrue(script.contains("evidence onboarding correct key allowed"));
         assertTrue(script.contains("routing missing key gated"));
         assertTrue(script.contains("routing wrong key gated"));
         assertTrue(script.contains("routing correct key allowed"));
         assertTrue(script.contains("evaluation missing key gated"));
         assertTrue(script.contains("evaluation wrong key gated"));
         assertTrue(script.contains("evaluation correct key allowed"));
-        assertTrue(script.contains("actuator metrics not public"));
-        assertTrue(script.contains("actuator Prometheus not public"));
+        assertTrue(script.contains("actuator metrics not exposed"));
+        assertTrue(script.contains("actuator Prometheus not exposed"));
     }
 
     @Test

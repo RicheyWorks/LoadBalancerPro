@@ -86,4 +86,16 @@ class LocalProfileConfigurationTest {
                 .andExpect(jsonPath("$.allocations.api-1").isNumber())
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
+
+    @Test
+    void localProfileKeepsReadOnlyTrainingApiPublicForDemos() throws Exception {
+        mockMvc.perform(get("/api/evidence-training/onboarding"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+
+        mockMvc.perform(get("/api/evidence-training/templates"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray());
+    }
 }

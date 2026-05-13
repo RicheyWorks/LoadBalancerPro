@@ -77,25 +77,18 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
         if ("OPTIONS".equals(request.getMethod())) {
             return false;
         }
-        return isProtectedApiMutation(request)
-                || isProtectedLaseObservability(request)
-                || isProtectedProxyStatus(request)
+        return isProtectedApiSurface(request)
                 || isProtectedProxyRequest(request)
                 || isProtectedOpenApiDocs(request);
     }
 
-    private static boolean isProtectedApiMutation(HttpServletRequest request) {
-        String method = request.getMethod();
-        return request.getRequestURI().startsWith("/api/")
-                && ("POST".equals(method) || "PUT".equals(method) || "PATCH".equals(method));
+    private static boolean isProtectedApiSurface(HttpServletRequest request) {
+        String requestUri = request.getRequestURI();
+        return requestUri.startsWith("/api/") && !isPublicApiException(request);
     }
 
-    private static boolean isProtectedLaseObservability(HttpServletRequest request) {
-        return "GET".equals(request.getMethod()) && request.getRequestURI().startsWith("/api/lase/");
-    }
-
-    private static boolean isProtectedProxyStatus(HttpServletRequest request) {
-        return "GET".equals(request.getMethod()) && "/api/proxy/status".equals(request.getRequestURI());
+    private static boolean isPublicApiException(HttpServletRequest request) {
+        return "GET".equals(request.getMethod()) && "/api/health".equals(request.getRequestURI());
     }
 
     private static boolean isProtectedProxyRequest(HttpServletRequest request) {

@@ -79,11 +79,15 @@ class ContainerDeploymentDocumentationTest {
         assertTrue(guide.contains("-e SPRING_PROFILES_ACTIVE=local"));
         assertTrue(guide.contains("LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY"));
         assertTrue(guide.contains("Container/default deployment mode is protected by the prod API-key profile"));
+        assertTrue(guide.contains("The explicit public API exceptions are `GET /api/health` and unauthenticated "
+                + "`OPTIONS` preflight requests"));
         assertTrue(guide.contains("curl -i http://127.0.0.1:8080/api/proxy/status"));
         assertTrue(guide.contains("curl -i http://127.0.0.1:8080/v3/api-docs"));
         assertTrue(guide.contains("curl -i -H \"X-API-Key: CHANGE_ME_LOCAL_API_KEY\""));
         assertTrue(guide.contains("Missing `X-API-Key` returns HTTP 401"));
         assertTrue(guide.contains("OpenAPI/Swagger routes return HTTP 401 without `X-API-Key`"));
+        assertTrue(guide.contains("Read-only `/api/**` routes such as `/api/evidence-training/onboarding` also "
+                + "return HTTP 401 without `X-API-Key`"));
         assertTrue(guide.contains("Proxy forwarding remains disabled unless `loadbalancerpro.proxy.enabled=true`"));
         assertTrue(guide.contains("host.docker.internal"));
         assertTrue(guide.contains("Do not publish this image to Docker Hub, GHCR, ECR, or any registry"));

@@ -45,15 +45,17 @@ class OperatorAuthTlsBoundaryDocumentationTest {
         String reverseProxyMode = read(REVERSE_PROXY_MODE);
 
         assertTrue(readme.contains(
-                "protects API mutation/allocation endpoints, `/proxy/**`, and `GET /api/proxy/status` "
-                        + "with the `X-API-Key` header"));
+                "protects `/api/**`, `/proxy/**`, OpenAPI, and Swagger with the `X-API-Key` header"));
         assertTrue(readme.contains(
                 "requires the `operator` role for allocation endpoints, `/proxy/**`, and "
                         + "`GET /api/proxy/status`"));
 
         assertTrue(apiSecurity.contains(
-                "In prod and cloud-sandbox profiles it also protects `/proxy/**` and "
-                        + "`GET /api/proxy/status`"));
+                "API-key mode protects `/api/**` with the `X-API-Key` header by default in prod and "
+                        + "cloud-sandbox profiles"));
+        assertTrue(apiSecurity.contains(
+                "The explicit public prod/cloud-sandbox API exceptions are `GET /api/health` and "
+                        + "unauthenticated `OPTIONS` preflight requests"));
         assertTrue(apiSecurity.contains(
                 "The checked-in Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod`"));
         assertTrue(reverseProxyMode.contains("## Auth And TLS Boundary"));

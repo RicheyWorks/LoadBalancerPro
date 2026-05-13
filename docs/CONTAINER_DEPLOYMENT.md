@@ -9,7 +9,7 @@ Start with [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) when choosing 
 - The checked-in `Dockerfile` can build a local image from the repository.
 - The image starts the packaged application as a non-root user.
 - The checked-in Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod` for protected container startup.
-- Container/default deployment mode is protected by the prod API-key profile for protected API, proxy, OpenAPI, and Swagger routes.
+- Container/default deployment mode is protected by the prod API-key profile for `/api/**`, proxy, OpenAPI, and Swagger routes. The explicit public API exceptions are `GET /api/health` and unauthenticated `OPTIONS` preflight requests.
 - The default container command keeps proxy mode disabled unless explicitly overridden.
 - A loopback-bound published port can answer `/api/health` and the root landing page.
 - Prod API-key mode can be exercised with placeholder local secrets passed at run time.
@@ -85,6 +85,7 @@ Expected boundary:
 
 - Missing `X-API-Key` returns HTTP 401 for protected proxy/status surfaces.
 - OpenAPI/Swagger routes return HTTP 401 without `X-API-Key`.
+- Read-only `/api/**` routes such as `/api/evidence-training/onboarding` also return HTTP 401 without `X-API-Key`.
 - The placeholder `X-API-Key` returns the read-only proxy status response.
 - Proxy forwarding remains disabled unless `loadbalancerpro.proxy.enabled=true` is provided through explicit configuration.
 
@@ -124,6 +125,7 @@ Expected boundary:
 
 - Missing `X-API-Key` returns HTTP 401 for protected proxy/status surfaces.
 - OpenAPI/Swagger routes return HTTP 401 without `X-API-Key`.
+- Read-only `/api/**` routes such as `/api/evidence-training/onboarding` also return HTTP 401 without `X-API-Key`.
 - The placeholder `X-API-Key` returns the read-only proxy status response.
 - Proxy forwarding remains disabled unless `loadbalancerpro.proxy.enabled=true` is provided through explicit configuration.
 

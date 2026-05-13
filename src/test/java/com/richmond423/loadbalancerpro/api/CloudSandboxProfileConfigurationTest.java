@@ -107,6 +107,19 @@ class CloudSandboxProfileConfigurationTest {
     }
 
     @Test
+    void cloudSandboxProfileProtectsReadOnlyApiByDefault() throws Exception {
+        mockMvc.perform(get("/api/evidence-training/onboarding"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.path", is("/api/evidence-training/onboarding")));
+
+        mockMvc.perform(get("/api/evidence-training/templates").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
     void cloudSandboxProfileRejectsMutationWithoutApiKey() throws Exception {
         mockMvc.perform(allocationRequest())
                 .andExpect(status().isUnauthorized())

@@ -155,11 +155,11 @@ Reference evidence:
 - Description: Maven dependencies, transitive dependencies, build plugins, and GitHub Actions can drift or introduce vulnerabilities over time.
 - Severity: High.
 - Likelihood: Medium.
-- Current mitigation: CI release gates, dependency review, Dependabot, pinned GitHub Actions, pinned Docker digests, CI SBOM artifacts, tag-triggered JAR/SBOM/checksum release artifact bundles, GitHub artifact attestations for release JAR provenance and the JAR/SBOM JSON relationship, Trivy image scanning, and CodeQL SAST baseline coverage are documented. The release artifact workflow validates Git tag and Maven project version alignment before upload. The test suite exercises core behavior after changes.
-- Evidence/tests: README documents CI dependency review and release gates. `evidence/SUPPLY_CHAIN_EVIDENCE.md` records SBOM, release artifact, checksum, artifact attestation, Trivy, dependency review, Dependabot, pinning, and CodeQL baseline controls.
+- Current mitigation: CI release gates, dependency review, Dependabot, pinned GitHub Actions, pinned Docker digests, CI SBOM artifacts, tag-triggered JAR/SBOM/checksum release artifact bundles, GitHub artifact attestations for release JAR provenance and the JAR/SBOM JSON relationship, Trivy image scanning, CodeQL SAST baseline coverage, and the dependency/SAST owner workflow are documented. The release artifact workflow validates Git tag and Maven project version alignment before upload. The test suite exercises core behavior after changes.
+- Evidence/tests: README documents CI dependency review and release gates. `evidence/SUPPLY_CHAIN_EVIDENCE.md` records SBOM, release artifact, checksum, artifact attestation, Trivy, dependency review, Dependabot, pinning, and CodeQL baseline controls. `docs/DEPENDENCY_SAST_RISK_WORKFLOW.md` records the owner, severity, accepted-risk, false-positive, remediation-target, and evidence workflow for non-fixed findings.
 - Owner: App.
 - Status: Needs Future Hardening.
-- Recommended next action: Review initial CodeQL findings, define dependency/static-analysis triage expectations, document accepted dependency risks, review generated release artifact bundles, checksum files, and attestation records after tags, and review dependencies before release tags.
+- Recommended next action: Review initial CodeQL findings through the dependency/SAST workflow, keep accepted risks visible with owner/severity/expiry/follow-up, review generated release artifact bundles, checksum files, and attestation records after tags, and review dependencies before release tags.
 
 ### RR-011: Framework-Generated Error Surface Review
 

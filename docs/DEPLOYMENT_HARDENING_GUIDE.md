@@ -14,6 +14,8 @@ For the concise profile matrix and copyable local/API-key/OAuth2/proxy-loopback/
 
 Before calling a revision production-candidate or release-ready, complete [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md). The gate records which CI/release checks are automated today and which items still require manual operator verification.
 
+When CodeQL, Dependency Review, Trivy, SBOM review, or dependency review reports a finding, use [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](DEPENDENCY_SAST_RISK_WORKFLOW.md) before accepting, dismissing, or deferring it. The workflow requires owner, severity, rationale, expiry or review date, and follow-up evidence for non-fixed findings.
+
 Before proposing registry publication, release image tags, container signing, or container attestations, complete [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md).
 
 ## Deployment Posture Summary
@@ -151,6 +153,7 @@ Before exposing LoadBalancerPro beyond a local demo:
 - [ ] AWS credentials are absent unless a reviewed sandbox run requires them.
 - [ ] Release artifact bundle, GitHub Release assets, checksum file, and attestation evidence are reviewed when deploying from a semantic release tag.
 - [ ] Production-candidate evidence gate is complete for the source revision being deployed.
+- [ ] CodeQL, Dependency Review, Trivy, SBOM, or dependency findings have owner decisions under the dependency/SAST risk workflow.
 - [ ] Rollback plan is identified.
 - [ ] Logs and metrics retention expectations are known.
 - [ ] Incident response owner is identified.

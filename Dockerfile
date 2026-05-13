@@ -24,6 +24,8 @@ RUN apt-get update \
 
 COPY --from=build --chown=loadbalancer:loadbalancer /workspace/app.jar app.jar
 
+ENV SPRING_PROFILES_ACTIVE=prod
+
 USER loadbalancer:loadbalancer
 
 EXPOSE 8080

@@ -1,6 +1,6 @@
 # Executive Summary
 
-LoadBalancerPro is a Java 17 / Spring Boot load-balancing simulator and operator-focused proxy foundation. It demonstrates routing strategy comparison, local reverse-proxy validation, guarded cloud boundaries, API-key/OAuth2 deployment modes, reload/status observability, CI evidence artifacts, and a local-only container path without changing the safe default posture.
+LoadBalancerPro is a Java 17 / Spring Boot load-balancing simulator and operator-focused proxy foundation. It demonstrates routing strategy comparison, local reverse-proxy validation, guarded cloud boundaries, API-key/OAuth2 deployment modes, reload/status observability, CI evidence artifacts, and a local-only container path whose default runtime profile is protected while source-checkout local mode stays convenient.
 
 ## What It Demonstrates
 

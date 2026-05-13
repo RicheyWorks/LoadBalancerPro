@@ -18,6 +18,8 @@ The local/default profile is for development, CI smoke tests, and demos. It inte
 
 The `prod` profile is production-like, but it is not complete production readiness. It narrows Actuator exposure by default, uses explicit CORS configuration, keeps live AWS disabled, and protects allocation/routing mutation-style routes when a hardened auth mode is configured.
 
+The checked-in Dockerfile defaults containers to `SPRING_PROFILES_ACTIVE=prod`, so container/default deployment mode uses the prod API-key boundary unless an operator explicitly overrides the profile. Keep `LOADBALANCERPRO_API_KEY` in runtime secret/config management, and use `-e SPRING_PROFILES_ACTIVE=local` only for loopback-bound local/demo containers. Do not expose local/demo mode on public interfaces.
+
 The `cloud-sandbox` profile is controlled validation only. It is dry-run by default, constrained around sandbox expectations, and intended for mocked or disposable cloud-sandbox validation.
 
 Live AWS is disabled by default. Do not enable live mutation without a separate sandbox-specific plan, disposable resources, reviewed IAM boundaries, and explicit operator approval.

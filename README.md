@@ -293,7 +293,7 @@ mvn package
 java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 curl http://127.0.0.1:18080/api/health
 docker build -t loadbalancerpro:local .
-docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 loadbalancerpro:local
+docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY loadbalancerpro:local
 ```
 
 ## Local Load-Test Evidence
@@ -605,13 +605,13 @@ The Docker build is self-contained and creates the packaged JAR inside the build
 
 The build and runtime base images are pinned by digest for reproducibility. Treat digest refreshes as supply-chain changes: update the digest intentionally, rebuild the image, run the container health smoke, and review the vulnerability scan before merging.
 
-Run the API for a local demo:
+Run the API in the protected default container profile:
 
 ```bash
-docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 loadbalancerpro:local
+docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY loadbalancerpro:local
 ```
 
-The container binds the Spring Boot process to `0.0.0.0` inside the container so Docker port publishing works predictably. The command above binds the published host port to `127.0.0.1` for local-only access.
+The Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod`, so container/default deployment mode is protected by the prod API-key profile. `LOADBALANCERPRO_API_KEY` is operator-provided at run time; do not bake real secrets into the image. The container binds the Spring Boot process to `0.0.0.0` inside the container so Docker port publishing works predictably. The command above binds the published host port to `127.0.0.1` for local-only access.
 
 Verify the API health endpoint:
 
@@ -622,12 +622,12 @@ curl -fsS http://127.0.0.1:8080/api/health
 For detached runs, Docker also evaluates the image healthcheck:
 
 ```bash
-docker run --rm -d --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 loadbalancerpro:local
+docker run --rm -d --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY loadbalancerpro:local
 docker inspect --format='{{.State.Health.Status}}' loadbalancerpro-demo
 docker stop loadbalancerpro-demo
 ```
 
-Docker mode starts the local/demo-safe API and does not require AWS credentials. Pass cloud settings only through your runtime secret/config system, do not bake credentials into the image, and enable live AWS behavior only with the explicit CloudManager guardrails described below.
+Docker mode starts the prod API-key profile by default and does not require AWS credentials. Protected API mutations, `/proxy/**`, `GET /api/proxy/status`, OpenAPI, and Swagger require `X-API-Key`; `/api/health` remains public for health checks. Local developer mode is intentionally permissive for source-checkout demos and can be selected explicitly with `-e SPRING_PROFILES_ACTIVE=local`, but do not expose local/demo mode on public interfaces. Pass cloud settings only through your runtime secret/config system, do not bake credentials into the image, and enable live AWS behavior only with the explicit CloudManager guardrails described below.
 
 ## REST API
 

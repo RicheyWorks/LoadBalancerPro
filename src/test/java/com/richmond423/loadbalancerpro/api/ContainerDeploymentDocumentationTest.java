@@ -54,7 +54,9 @@ class ContainerDeploymentDocumentationTest {
         assertTrue(dockerfile.contains("USER loadbalancer:loadbalancer"));
         assertTrue(dockerfile.contains("HEALTHCHECK"));
         assertTrue(dockerfile.contains("http://127.0.0.1:8080/api/health"));
+        assertTrue(dockerfile.contains("ENV SPRING_PROFILES_ACTIVE=prod"));
         assertTrue(dockerfile.contains("CMD [\"--server.address=0.0.0.0\"]"));
+        assertFalse(dockerfile.contains("--spring.profiles.active=local"));
         assertFalse(dockerfile.contains("LOADBALANCERPRO_API_KEY"));
         assertFalse(dockerfile.contains("CHANGE_ME_LOCAL_API_KEY"));
         assertFalse(dockerfile.contains("loadbalancerpro.proxy.enabled=true"));
@@ -71,10 +73,17 @@ class ContainerDeploymentDocumentationTest {
         assertTrue(guide.contains("-p 127.0.0.1:8080:8080"));
         assertTrue(guide.contains("curl -fsS http://127.0.0.1:8080/api/health"));
         assertTrue(guide.contains("curl -fsS http://127.0.0.1:8080/"));
+        assertTrue(guide.contains("The checked-in Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod`"));
+        assertTrue(guide.contains("Local developer mode is intentionally permissive"));
+        assertTrue(guide.contains("Do not expose local/demo mode on public interfaces"));
+        assertTrue(guide.contains("-e SPRING_PROFILES_ACTIVE=local"));
         assertTrue(guide.contains("LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY"));
+        assertTrue(guide.contains("Container/default deployment mode is protected by the prod API-key profile"));
         assertTrue(guide.contains("curl -i http://127.0.0.1:8080/api/proxy/status"));
+        assertTrue(guide.contains("curl -i http://127.0.0.1:8080/v3/api-docs"));
         assertTrue(guide.contains("curl -i -H \"X-API-Key: CHANGE_ME_LOCAL_API_KEY\""));
         assertTrue(guide.contains("Missing `X-API-Key` returns HTTP 401"));
+        assertTrue(guide.contains("OpenAPI/Swagger routes return HTTP 401 without `X-API-Key`"));
         assertTrue(guide.contains("Proxy forwarding remains disabled unless `loadbalancerpro.proxy.enabled=true`"));
         assertTrue(guide.contains("host.docker.internal"));
         assertTrue(guide.contains("Do not publish this image to Docker Hub, GHCR, ECR, or any registry"));

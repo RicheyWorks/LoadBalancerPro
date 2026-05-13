@@ -23,7 +23,7 @@ Recommended first paths:
 - I want to run local proxy demos: start with [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md), [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md), and [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md).
 - I want to adapt proxy mode to local/private backends: start with [`REAL_BACKEND_PROXY_EXAMPLES.md`](REAL_BACKEND_PROXY_EXAMPLES.md).
 - I want to choose the right run profile: start with [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) for local demo, packaged jar, prod API-key, cloud-sandbox API-key, OAuth2, proxy-loopback, and container recipes.
-- I want to build and run the app in a local container: start with [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) for Docker build/run recipes, API-key checks, proxy-loopback caveats, and no-registry-publish boundaries.
+- I want to build and run the app in a local container: start with [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) for Docker build/run recipes, prod API-key default protection, local/demo override caveats, proxy-loopback caveats, and no-registry-publish boundaries.
 - I want one local smoke path for the packaged jar, API-key boundary, and proxy-loopback recipe: start with [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md).
 - I want to verify the proxy auth/TLS boundary: start with [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md#auth-and-tls-boundary), then check [`API_SECURITY.md`](API_SECURITY.md) and [`OPERATIONS_RUNBOOK.md`](OPERATIONS_RUNBOOK.md).
 - I want to verify antivirus-safe tooling and live/proxy containment: start with [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](ANTIVIRUS_SAFE_DEVELOPMENT.md) and [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md).
@@ -162,6 +162,7 @@ Read [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION
 ## Safety Boundaries
 
 - Proxy is disabled by default.
+- Container/default deployment mode is protected by the prod API-key profile; provide `LOADBALANCERPRO_API_KEY` at run time for protected prod container usage.
 - JavaFX is optional and not required for API, proxy, static browser, artifact, or operator smoke paths.
 - Release-free docs do not create tags, GitHub Releases, or release assets.
 - `release-downloads/` remains manual and explicit only.
@@ -174,7 +175,7 @@ Read [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION
 - Workflow artifacts are not GitHub Release assets.
 - Proxy/demo/status/docs paths do not construct or mutate `CloudManager`.
 - Real-backend examples use loopback/private placeholders and must not include secrets or public upstream URLs.
-- Local/default proxy demos are not a security boundary; prod API-key and OAuth2 modes document app-level proxy access checks, while TLS termination and public ingress controls remain deployment responsibilities.
+- Local/default proxy demos are not a security boundary; local developer mode is intentionally permissive and must not be exposed on public interfaces. Prod API-key and OAuth2 modes document app-level proxy access checks, while TLS termination and public ingress controls remain deployment responsibilities.
 - No production gateway claim, performance benchmark claim, certification claim, legal compliance claim, identity claim, or security guarantee is made by the proxy/operator docs.
 
 ## Current Limitations

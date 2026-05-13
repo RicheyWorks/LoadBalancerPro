@@ -98,6 +98,9 @@ class ReviewerTrustMapDocumentationTest {
                 "target/proxy-evidence/private-network-validation-dry-run.md",
                 "target/proxy-evidence/private-network-validation-dry-run.json",
                 "PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md",
+                "PrivateNetworkLiveValidationExecutorTest",
+                "target/proxy-evidence/private-network-live-loopback-validation.md",
+                "target/proxy-evidence/private-network-live-loopback-validation.json",
                 "operator-run-profiles-smoke.ps1",
                 "postman-enterprise-lab-safe-smoke.ps1",
                 "PROXY_STRATEGY_DEMO_LAB.md",
@@ -141,6 +144,9 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test"));
         assertTrue(demoPath.contains("target/proxy-evidence/private-network-validation-dry-run.md"));
         assertTrue(demoPath.contains("target/proxy-evidence/private-network-validation-dry-run.json"));
+        assertTrue(demoPath.contains("mvn -Dtest=PrivateNetworkLiveValidationExecutorTest test"));
+        assertTrue(demoPath.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
+        assertTrue(demoPath.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
         assertTrue(demoPath.contains("operator-run-profiles-smoke.ps1 -DryRun"));
         assertTrue(demoPath.contains("postman-enterprise-lab-safe-smoke.ps1 -DryRun"));
         assertTrue(demoPath.contains("CI, CodeQL, Dependency Review"));
@@ -150,6 +156,8 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("generated evidence is ignored `target/` output"));
         assertTrue(normalized.contains("loopback/local-only jdk `httpserver` fixtures"));
         assertTrue(normalized.contains("config-validation-only and sends no traffic"));
+        assertTrue(normalized.contains("sends one bounded junit-only request"));
+        assertTrue(normalized.contains("not startup, postman, smoke, or proxy-routing execution"));
         assertTrue(normalized.contains("api keys, bearer tokens, credentials, and secrets are redacted or not written"));
         assertTrue(normalized.contains("no dns resolution"));
         assertTrue(normalized.contains("reachability checks"));
@@ -163,7 +171,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("persistence"));
         assertTrue(normalized.contains("release assets"));
         assertTrue(normalized.contains("release-downloads/"));
-        assertTrue(normalized.contains("live private-network traffic execution is not implemented yet"));
+        assertTrue(normalized.contains("broader private-lan live traffic execution is not implemented yet"));
         assertTrue(demoPath.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
         assertTrue(readme.contains("REVIEWER_TRUST_MAP.md#reviewer-demo-path"));
     }
@@ -258,7 +266,13 @@ class ReviewerTrustMapDocumentationTest {
 
         assertTrue(recipe.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
         assertTrue(normalized.contains("offline decision helper"));
-        assertTrue(normalized.contains("live private-network traffic execution is not implemented yet"));
+        assertTrue(recipe.contains("PrivateNetworkLiveValidationExecutor"));
+        assertTrue(recipe.contains("PrivateNetworkLiveValidationExecutorTest"));
+        assertTrue(recipe.contains("target/proxy-evidence/private-network-live-loopback-validation.md"));
+        assertTrue(recipe.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
+        assertTrue(normalized.contains("bounded executor primitive"));
+        assertTrue(normalized.contains("requires an allowed gate result"));
+        assertTrue(normalized.contains("broader runtime/private-lan live traffic execution is not implemented yet"));
         assertTrue(normalized.contains("separate approved task"));
         assertTrue(normalized.contains("default properties"));
         assertTrue(recipe.contains("loadbalancerpro.proxy.private-network-live-validation.enabled=false"));
@@ -280,11 +294,12 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("no native tooling"));
         assertTrue(normalized.contains("no secret persistence"));
         assertTrue(normalized.contains("fail-closed startup/reload behavior"));
+        assertTrue(normalized.contains("current live traffic proof is limited"));
         assertTrue(gate.contains("loadbalancerpro.proxy.private-network-live-validation.enabled=true"));
         assertTrue(gate.contains("loadbalancerpro.proxy.private-network-live-validation.enabled=false"));
         assertTrue(gate.contains("loadbalancerpro.proxy.private-network-live-validation.operator-approved=true"));
         assertTrue(gate.contains("loadbalancerpro.proxy.private-network-live-validation.operator-approved=false"));
-        assertTrue(gateNormalized.contains("private-network live traffic execution remains unimplemented"));
+        assertTrue(gateNormalized.contains("private-network live traffic outside the junit loopback proof remains unimplemented"));
         assertTrue(readme.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md")
                 || readme.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
         assertTrue(runbook.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
@@ -330,7 +345,8 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(trustMap.contains("explicit operator-provided backend URLs only"));
         assertTrue(trustMap.contains("dry-run-only evidence under ignored `target/`"));
         assertTrue(trustMap.contains("explicit operator approval before live traffic"));
-        assertTrue(trustMap.contains("no private-network live traffic execution until separately approved"));
+        assertTrue(trustMap.contains("loopback-only executor proof under JUnit"));
+        assertTrue(trustMap.contains("no runtime/private-LAN live traffic execution until separately approved"));
     }
 
     @Test

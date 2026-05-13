@@ -64,6 +64,7 @@ public final class PrivateNetworkLiveValidationGate {
                 ProxyBackendUrlClassifier.classify(target.url());
         return new BackendDecision(
                 target.label(),
+                classification.normalizedUrl(),
                 classification.status(),
                 classification.reason(),
                 classification.allowed());
@@ -139,9 +140,14 @@ public final class PrivateNetworkLiveValidationGate {
 
     public record BackendDecision(
             String label,
+            String normalizedUrl,
             ProxyBackendUrlClassifier.Status status,
             String reason,
             boolean allowed) {
+        public BackendDecision {
+            normalizedUrl = normalizedUrl == null ? "" : normalizedUrl;
+            reason = reason == null ? "" : reason;
+        }
     }
 
     private record TargetReference(String label, String url) {

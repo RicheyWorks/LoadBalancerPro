@@ -63,6 +63,14 @@ mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test
 
 Output: `target/proxy-evidence/private-network-validation-dry-run.md` and `target/proxy-evidence/private-network-validation-dry-run.json`.
 
+Private-network live loopback proof:
+
+```bash
+mvn -Dtest=PrivateNetworkLiveValidationExecutorTest test
+```
+
+Output: `target/proxy-evidence/private-network-live-loopback-validation.md` and `target/proxy-evidence/private-network-live-loopback-validation.json`.
+
 Container build, local only:
 
 ```bash
@@ -75,7 +83,7 @@ docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 loadbalancerp
 - The project is not a managed gateway, compliance proof, certification outcome, or benchmark result.
 - No fixed coverage percentage is claimed in docs; inspect a generated JaCoCo report or CI log for exact run-specific numbers.
 - Proxy mode is optional and disabled by default.
-- Private-network validation is config-only plus dry-run evidence plus an offline default-off live gate; live private-network traffic execution is not implemented yet.
+- Private-network validation is config-only plus dry-run evidence plus a default-off live gate with JUnit-only loopback proof; runtime private-LAN live traffic execution is not implemented yet.
 - Generated proxy evidence is ignored `target/` output and should not contain API keys, bearer tokens, credentials, or secrets.
 - Safe proof paths do not use DNS resolution, discovery, subnet scanning, port scanning, native tooling, release assets, or `release-downloads/` mutation.
 - TLS termination and public ingress controls belong to the deployment boundary.

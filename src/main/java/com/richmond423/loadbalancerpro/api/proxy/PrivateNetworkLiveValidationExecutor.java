@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Bounded executor primitive for future private-network live validation.
@@ -23,6 +24,14 @@ public final class PrivateNetworkLiveValidationExecutor {
     public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(2);
     public static final Duration MAX_TIMEOUT = Duration.ofSeconds(2);
     private static final int BODY_SNIPPET_LIMIT = 4_096;
+    private static final Map<String, String> ALLOWED_REQUEST_HEADERS = Map.of(
+            "x-loadbalancerpro-live-validation", "X-LoadBalancerPro-Live-Validation",
+            "x-reviewer-trace", "X-Reviewer-Trace",
+            "accept", "Accept");
+    private static final Set<String> ALLOWED_RESPONSE_HEADERS = Set.of(
+            "content-type",
+            "x-private-network-live-proof",
+            "x-loadbalancerpro-live-validation-result");
 
     private final PrivateNetworkLiveValidationGate gate;
     private final Transport transport;
@@ -42,9 +51,10 @@ public final class PrivateNetworkLiveValidationExecutor {
             return Result.blocked(gateResult.status(), gateResult.reasons(), timeout);
         }
 
-        ValidationRequest normalizedRequest = request == null
-                ? ValidationRequest.get("/")
-                : request;
+        if (request == null) {
+            return Result.invalidRequest(List.of("validation request is required"), timeout);
+        }
+        ValidationRequest normalizedRequest = request;
         String invalidRequestReason = invalidRequestReason(normalizedRequest.pathAndQuery());
         if (!invalidRequestReason.isBlank()) {
             return Result.invalidRequest(List.of(invalidRequestReason), timeout);
@@ -99,6 +109,12 @@ public final class PrivateNetworkLiveValidationExecutor {
         if (pathAndQuery == null || pathAndQuery.isBlank()) {
             return "validation request path must not be blank";
         }
+        if (containsControlCharacter(pathAndQuery)) {
+            return "validation request path must not contain control characters";
+        }
+        if (pathAndQuery.contains("\\")) {
+            return "validation request path must not contain backslash characters";
+        }
         URI uri;
         try {
             uri = URI.create(pathAndQuery);
@@ -111,8 +127,27 @@ public final class PrivateNetworkLiveValidationExecutor {
         if (uri.getRawFragment() != null) {
             return "validation request path must not include a fragment";
         }
-        if (uri.getRawPath() == null || !uri.getRawPath().startsWith("/")) {
+        if (uri.getRawQuery() != null) {
+            return "validation request path must not include a query string";
+        }
+        String rawPath = uri.getRawPath();
+        String decodedPath = uri.getPath();
+        if (rawPath == null || !rawPath.startsWith("/")) {
             return "validation request path must start with /";
+        }
+        if (rawPath.startsWith("//")) {
+            return "validation request path must not start with //";
+        }
+        if (rawPath.contains("\\") || decodedPath.contains("\\")) {
+            return "validation request path must not contain backslash characters";
+        }
+        if (containsControlCharacter(decodedPath)) {
+            return "validation request path must not contain encoded control characters";
+        }
+        if (containsEncodedTraversalToken(rawPath)
+                || containsTraversalSegment(rawPath)
+                || containsTraversalSegment(decodedPath)) {
+            return "validation request path must not contain traversal segments";
         }
         return "";
     }
@@ -146,7 +181,7 @@ public final class PrivateNetworkLiveValidationExecutor {
             method = method == null || method.isBlank()
                     ? "GET"
                     : method.trim().toUpperCase(Locale.ROOT);
-            pathAndQuery = pathAndQuery == null || pathAndQuery.isBlank() ? "/" : pathAndQuery.trim();
+            pathAndQuery = pathAndQuery == null ? "" : pathAndQuery;
             headers = copyHeaders(headers);
             body = body == null ? "" : body;
         }
@@ -180,7 +215,7 @@ public final class PrivateNetworkLiveValidationExecutor {
             Map<String, List<String>> headers,
             String body) {
         public AttemptResponse {
-            headers = copyHeaderLists(headers);
+            headers = copyResponseHeaderLists(headers);
             body = body == null ? "" : body;
         }
     }
@@ -197,7 +232,7 @@ public final class PrivateNetworkLiveValidationExecutor {
         public Result {
             backendLabel = backendLabel == null ? "" : backendLabel;
             requestUri = requestUri == null ? "" : requestUri;
-            headers = copyHeaderLists(headers);
+            headers = copyResponseHeaderLists(headers);
             bodySnippet = bodySnippet == null ? "" : bodySnippet;
             reasons = reasons == null ? List.of() : List.copyOf(reasons);
             timeout = boundedTimeout(timeout);
@@ -246,21 +281,29 @@ public final class PrivateNetworkLiveValidationExecutor {
         }
         Map<String, String> copy = new LinkedHashMap<>();
         headers.forEach((name, value) -> {
-            if (name != null && !name.isBlank() && value != null) {
-                copy.put(name, value);
+            String normalizedName = normalizedHeaderName(name);
+            String canonicalName = ALLOWED_REQUEST_HEADERS.get(normalizedName);
+            if (canonicalName != null && isSafeHeaderValue(value)) {
+                copy.put(canonicalName, value);
             }
         });
         return Map.copyOf(copy);
     }
 
-    private static Map<String, List<String>> copyHeaderLists(Map<String, List<String>> headers) {
+    private static Map<String, List<String>> copyResponseHeaderLists(Map<String, List<String>> headers) {
         if (headers == null || headers.isEmpty()) {
             return Map.of();
         }
         Map<String, List<String>> copy = new LinkedHashMap<>();
         headers.forEach((name, values) -> {
-            if (name != null && !name.isBlank() && values != null) {
-                copy.put(name, List.copyOf(values));
+            String normalizedName = normalizedHeaderName(name);
+            if (ALLOWED_RESPONSE_HEADERS.contains(normalizedName) && values != null) {
+                List<String> safeValues = values.stream()
+                        .filter(PrivateNetworkLiveValidationExecutor::isSafeHeaderValue)
+                        .toList();
+                if (!safeValues.isEmpty()) {
+                    copy.put(normalizedName, List.copyOf(safeValues));
+                }
             }
         });
         return Map.copyOf(copy);
@@ -274,5 +317,31 @@ public final class PrivateNetworkLiveValidationExecutor {
             copy.addAll(reasons);
         }
         return List.copyOf(copy);
+    }
+
+    private static String normalizedHeaderName(String name) {
+        return name == null ? "" : name.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private static boolean isSafeHeaderValue(String value) {
+        return value != null && !containsControlCharacter(value);
+    }
+
+    private static boolean containsControlCharacter(String value) {
+        return value.chars().anyMatch(character -> character < 0x20 || character == 0x7f);
+    }
+
+    private static boolean containsEncodedTraversalToken(String rawPath) {
+        String normalized = rawPath.toLowerCase(Locale.ROOT);
+        return normalized.contains("%2e") || normalized.contains("%2f") || normalized.contains("%5c");
+    }
+
+    private static boolean containsTraversalSegment(String path) {
+        for (String segment : path.split("/", -1)) {
+            if (".".equals(segment) || "..".equals(segment)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

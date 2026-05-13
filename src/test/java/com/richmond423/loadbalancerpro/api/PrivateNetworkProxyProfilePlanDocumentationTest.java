@@ -191,6 +191,14 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("proxy request routing"));
         assertTrue(normalized.contains("default/local/demo behavior"));
         assertTrue(normalized.contains("broader private-lan live validation remains gated and unimplemented"));
+        assertTrue(normalized.contains("null, blank, absolute, scheme-relative, query-string, fragment, traversal"));
+        assertTrue(normalized.contains("encoded traversal"));
+        assertTrue(normalized.contains("encoded control-character"));
+        assertTrue(normalized.contains("raw control-character"));
+        assertTrue(normalized.contains("backslash paths fail closed before transport"));
+        assertTrue(normalized.contains("allowlisted deterministic validation request headers"));
+        assertTrue(normalized.contains("allowlisted response summary headers"));
+        assertTrue(normalized.contains("reports redirects without following them"));
         assertTrue(gate.contains("PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md"));
         assertTrue(gate.contains("PRIVATE_NETWORK_PROXY_DRY_RUN.md"));
         assertTrue(gate.contains("LIVE_PROXY_CONTAINMENT.md"));
@@ -267,6 +275,13 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(gate.contains("target/proxy-evidence/private-network-live-loopback-validation.json"));
         assertTrue(normalized.contains("must never include raw api keys"));
         assertTrue(normalized.contains("bearer tokens"));
+        assertTrue(normalized.contains("authorization"));
+        assertTrue(normalized.contains("x-api-key"));
+        assertTrue(normalized.contains("cookie"));
+        assertTrue(normalized.contains("token"));
+        assertTrue(normalized.contains("redirect target"));
+        assertTrue(normalized.contains("raw backend url"));
+        assertTrue(normalized.contains("broader private-lan validation claims"));
         assertTrue(normalized.contains("private hostnames marked for redaction"));
         assertTrue(normalized.contains("default-off behavior for every live-validation flag"));
         assertTrue(normalized.contains("missing operator approval fails closed before traffic"));
@@ -359,6 +374,9 @@ class PrivateNetworkProxyProfilePlanDocumentationTest {
         assertTrue(normalized.contains("privatenetworklivevalidationgate"));
         assertTrue(normalized.contains("privatenetworklivevalidationexecutor"));
         assertTrue(normalized.contains("junit-only loopback"));
+        assertTrue(normalized.contains("rejects unsafe validation paths before transport"));
+        assertTrue(normalized.contains("allowlists validation request/response summary headers"));
+        assertTrue(normalized.contains("reports redirects without following public `location` targets"));
         assertTrue(normalized.contains("fail-closed reload/startup behavior"));
         assertTrue(normalized.contains("target/proxy-evidence/private-network-validation-dry-run.md"));
         assertTrue(normalized.contains("target/proxy-evidence/private-network-validation-dry-run.json"));

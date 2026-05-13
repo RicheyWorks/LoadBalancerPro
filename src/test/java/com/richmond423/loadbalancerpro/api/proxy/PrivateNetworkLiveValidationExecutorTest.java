@@ -47,6 +47,10 @@ class PrivateNetworkLiveValidationExecutorTest {
     private static final Path JSON_EVIDENCE =
             EVIDENCE_DIR.resolve("private-network-live-loopback-validation.json");
     private static final String API_KEY_SENTINEL = "TEST_PRIVATE_NETWORK_LIVE_API_KEY";
+    private static final String AUTH_HEADER_SENTINEL = "Bearer TEST_PRIVATE_NETWORK_LIVE_BEARER_TOKEN";
+    private static final String COOKIE_SENTINEL = "SESSION=TEST_PRIVATE_NETWORK_LIVE_COOKIE";
+    private static final String TOKEN_SENTINEL = "TEST_PRIVATE_NETWORK_LIVE_TOKEN";
+    private static final String PUBLIC_REDIRECT_LOCATION = "http://public.example/live-validation-redirect";
 
     @Test
     void executesOneLoopbackRequestAndExportsRedactedEvidence() throws Exception {
@@ -66,7 +70,7 @@ class PrivateNetworkLiveValidationExecutorTest {
             PrivateNetworkLiveValidationExecutor.ValidationRequest request =
                     new PrivateNetworkLiveValidationExecutor.ValidationRequest(
                             "GET",
-                            "/live-validation/proof?mode=loopback",
+                            "/live-validation/proof",
                             Map.of(
                                     "X-LoadBalancerPro-Live-Validation", "loopback-only",
                                     "X-Reviewer-Trace", "private-network-live-loopback"),
@@ -81,7 +85,7 @@ class PrivateNetworkLiveValidationExecutorTest {
             assertEquals(requestsBefore + 1, backend.requestCount());
             CapturedRequest captured = backend.lastRequest();
             assertEquals("GET", captured.method());
-            assertEquals("/live-validation/proof?mode=loopback", captured.pathAndQuery());
+            assertEquals("/live-validation/proof", captured.pathAndQuery());
             assertEquals("loopback-only", captured.liveValidationHeader());
             assertEquals("private-network-live-loopback", captured.reviewerTraceHeader());
             assertEquals(200, result.statusCode());
@@ -111,6 +115,7 @@ class PrivateNetworkLiveValidationExecutorTest {
                     () -> assertTrue(json.contains("\"requestCount\": 1")),
                     () -> assertTrue(json.contains("\"boundedTimeoutMs\": 2000")),
                     () -> assertTrue(json.contains("\"apiKeyRedacted\": \"<REDACTED>\"")),
+                    () -> assertTrue(json.contains("\"broaderPrivateLanValidation\": false")),
                     () -> assertTrue(json.contains("\"dnsResolution\": false")),
                     () -> assertTrue(json.contains("\"discovery\": false")),
                     () -> assertTrue(json.contains("\"portScanning\": false")),
@@ -118,10 +123,16 @@ class PrivateNetworkLiveValidationExecutorTest {
                     () -> assertTrue(json.contains("\"smokeExecution\": false")),
                     () -> assertTrue(json.contains("\"releaseDownloadsMutated\": false")),
                     () -> assertFalse(combined.contains(API_KEY_SENTINEL)),
+                    () -> assertFalse(combined.contains(AUTH_HEADER_SENTINEL)),
+                    () -> assertFalse(combined.contains(COOKIE_SENTINEL)),
+                    () -> assertFalse(combined.contains(TOKEN_SENTINEL)),
+                    () -> assertFalse(combined.contains(PUBLIC_REDIRECT_LOCATION)),
                     () -> assertFalse(combined.contains(backend.baseUrl())),
                     () -> assertFalse(combined.contains("X-API-Key")),
                     () -> assertFalse(combined.contains("Authorization")),
                     () -> assertFalse(combined.contains("Bearer")),
+                    () -> assertFalse(combined.contains("Cookie")),
+                    () -> assertFalse(combined.contains("Set-Cookie")),
                     () -> assertFalse(combined.contains("release-" + "downloads")));
         }
     }
@@ -144,21 +155,145 @@ class PrivateNetworkLiveValidationExecutorTest {
     }
 
     @Test
-    void invalidValidationRequestDoesNotInvokeTransport() {
+    void invalidValidationRequestsDoNotInvokeTransport() {
+        List<InvalidRequestCase> cases = List.of(
+                new InvalidRequestCase(null, "validation request is required"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest("GET", null, Map.of(), ""),
+                        "validation request path must not be blank"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest("GET", "", Map.of(), ""),
+                        "validation request path must not be blank"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest("GET", " ", Map.of(), ""),
+                        "validation request path must not be blank"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest(
+                                "GET", "http://127.0.0.1:18081/bad", Map.of(), ""),
+                        "validation request path must be relative"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest(
+                                "GET", "//public.example/bad", Map.of(), ""),
+                        "validation request path must be relative"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest(
+                                "GET", "/safe/../private", Map.of(), ""),
+                        "validation request path must not contain traversal segments"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest(
+                                "GET", "/safe/%2e%2e/private", Map.of(), ""),
+                        "validation request path must not contain traversal segments"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest(
+                                "GET", "/safe/%2f/private", Map.of(), ""),
+                        "validation request path must not contain traversal segments"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest(
+                                "GET", "/safe\\private", Map.of(), ""),
+                        "validation request path must not contain backslash characters"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest(
+                                "GET", "/live-validation/proof#fragment", Map.of(), ""),
+                        "validation request path must not include a fragment"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest(
+                                "GET", "/live-validation/proof?token=" + TOKEN_SENTINEL, Map.of(), ""),
+                        "validation request path must not include a query string"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest(
+                                "GET", "/live-validation/proof\r\nX-Injected: true", Map.of(), ""),
+                        "validation request path must not contain control characters"),
+                new InvalidRequestCase(
+                        new PrivateNetworkLiveValidationExecutor.ValidationRequest(
+                                "GET", "/live-validation/%0dproof", Map.of(), ""),
+                        "validation request path must not contain encoded control characters"));
+
+        for (InvalidRequestCase requestCase : cases) {
+            ReverseProxyProperties properties = propertiesWithTarget("local", "http://127.0.0.1:18081");
+            enableAllLiveGateFlags(properties);
+            CountingTransport transport = new CountingTransport();
+            PrivateNetworkLiveValidationExecutor executor = new PrivateNetworkLiveValidationExecutor(
+                    new PrivateNetworkLiveValidationGate(), transport, Duration.ofSeconds(2));
+
+            PrivateNetworkLiveValidationExecutor.Result result =
+                    executor.executeFirstAllowed(properties, requestCase.request());
+
+            assertEquals(INVALID_REQUEST, result.status(), requestCase.reason());
+            assertEquals(0, transport.count(), requestCase.reason());
+            assertTrue(result.reasons().contains(requestCase.reason()),
+                    () -> "path=" + requestCase.pathForMessage()
+                            + ", expected=" + requestCase.reason()
+                            + ", actual=" + result.reasons());
+        }
+    }
+
+    @Test
+    void validationHeadersAndResponseHeadersAreSafetyFiltered() {
         ReverseProxyProperties properties = propertiesWithTarget("local", "http://127.0.0.1:18081");
         enableAllLiveGateFlags(properties);
-        CountingTransport transport = new CountingTransport();
+        CapturingTransport transport = new CapturingTransport(new PrivateNetworkLiveValidationExecutor.AttemptResponse(
+                200,
+                Map.of(
+                        "Content-Type", List.of("text/plain; charset=utf-8"),
+                        "X-Private-Network-Live-Proof", List.of("loopback-only"),
+                        "Location", List.of(PUBLIC_REDIRECT_LOCATION),
+                        "Set-Cookie", List.of(COOKIE_SENTINEL),
+                        "Authorization", List.of(AUTH_HEADER_SENTINEL),
+                        "X-API-Key", List.of(API_KEY_SENTINEL)),
+                "header-filter-ok"));
         PrivateNetworkLiveValidationExecutor executor = new PrivateNetworkLiveValidationExecutor(
                 new PrivateNetworkLiveValidationGate(), transport, Duration.ofSeconds(2));
 
         PrivateNetworkLiveValidationExecutor.Result result =
                 executor.executeFirstAllowed(properties,
                         new PrivateNetworkLiveValidationExecutor.ValidationRequest(
-                                "GET", "http://127.0.0.1:18081/bad", Map.of(), ""));
+                                "GET",
+                                "/live-validation/proof",
+                                Map.of(
+                                        "X-LoadBalancerPro-Live-Validation", "loopback-only",
+                                        "X-Reviewer-Trace", "private-network-live-loopback",
+                                        "Authorization", AUTH_HEADER_SENTINEL,
+                                        "X-API-Key", API_KEY_SENTINEL,
+                                        "Cookie", COOKIE_SENTINEL,
+                                        "X-Auth-Token", TOKEN_SENTINEL),
+                                ""));
 
-        assertEquals(INVALID_REQUEST, result.status());
-        assertEquals(0, transport.count());
-        assertTrue(result.reasons().contains("validation request path must be relative"));
+        assertEquals(SUCCESS, result.status());
+        assertEquals(1, transport.count());
+        Map<String, String> sentHeaders = transport.lastAttempt().headers();
+        assertEquals("loopback-only", sentHeaders.get("X-LoadBalancerPro-Live-Validation"));
+        assertEquals("private-network-live-loopback", sentHeaders.get("X-Reviewer-Trace"));
+        assertFalse(sentHeaders.containsKey("Authorization"));
+        assertFalse(sentHeaders.containsKey("X-API-Key"));
+        assertFalse(sentHeaders.containsKey("Cookie"));
+        assertFalse(sentHeaders.containsKey("X-Auth-Token"));
+        assertTrue(result.headers().containsKey("content-type"));
+        assertTrue(result.headers().containsKey("x-private-network-live-proof"));
+        assertFalse(result.headers().containsKey("location"));
+        assertFalse(result.headers().containsKey("set-cookie"));
+        assertFalse(result.headers().containsKey("authorization"));
+        assertFalse(result.headers().containsKey("x-api-key"));
+    }
+
+    @Test
+    void loopbackRedirectIsReportedWithoutFollowingPublicLocation() throws Exception {
+        try (LiveLoopbackBackend backend = LiveLoopbackBackend.startRedirect()) {
+            ReverseProxyProperties properties = propertiesWithTarget("loopback-redirect", backend.baseUrl());
+            enableAllLiveGateFlags(properties);
+            PrivateNetworkLiveValidationExecutor executor = new PrivateNetworkLiveValidationExecutor(
+                    new PrivateNetworkLiveValidationGate(), new LoopbackHttpTransport(), Duration.ofSeconds(2));
+
+            PrivateNetworkLiveValidationExecutor.Result result =
+                    executor.executeFirstAllowed(properties,
+                            PrivateNetworkLiveValidationExecutor.ValidationRequest.get("/redirect-proof"));
+
+            assertEquals(SUCCESS, result.status());
+            assertEquals(302, result.statusCode());
+            assertEquals(1, backend.requestCount());
+            assertEquals("/redirect-proof", backend.lastRequest().pathAndQuery());
+            assertFalse(result.headers().containsKey("location"));
+            assertFalse(result.bodySnippet().contains(PUBLIC_REDIRECT_LOCATION));
+        }
     }
 
     @Test
@@ -181,6 +316,13 @@ class PrivateNetworkLiveValidationExecutorTest {
         assertFalse(combined.contains("private-network-live-validation"));
         assertFalse(combined.contains("PrivateNetworkLiveValidationExecutor"));
         assertFalse(combined.contains("private-network-live-loopback-validation"));
+
+        String testSource = read(Path.of(
+                "src/test/java/com/richmond423/loadbalancerpro/api/proxy/PrivateNetworkLiveValidationExecutorTest.java"));
+        assertFalse(testSource.contains("http://10" + "."));
+        assertFalse(testSource.contains("http://192" + ".168."));
+        assertFalse(testSource.contains("http://172" + ".16."));
+        assertFalse(testSource.contains("http://172" + ".31."));
     }
 
     @Test
@@ -254,9 +396,11 @@ class PrivateNetworkLiveValidationExecutorTest {
                 "- responseStatus=`" + result.statusCode() + "`",
                 "- responseHeader `X-Private-Network-Live-Proof`: `loopback-only`",
                 "- responseBodyLabel=`private-live-loopback-ok`",
+                "- broaderPrivateLanValidation=false",
                 "- API key value: `<REDACTED>`",
                 "- Safety: JUnit-only, JDK HttpServer loopback fixture, ignored target output, "
-                        + "no Postman execution, no smoke execution, no discovery, no scanning",
+                        + "no Postman execution, no smoke execution, no discovery, no scanning, "
+                        + "no broader private-LAN execution",
                 "");
 
         String json = """
@@ -276,6 +420,7 @@ class PrivateNetworkLiveValidationExecutorTest {
                   "responseStatus": %d,
                   "responseBodyLabel": "private-live-loopback-ok",
                   "apiKeyRedacted": "<REDACTED>",
+                  "broaderPrivateLanValidation": false,
                   "safety": {
                     "junitOnly": true,
                     "ignoredTargetOutput": true,
@@ -330,6 +475,14 @@ class PrivateNetworkLiveValidationExecutorTest {
             String reviewerTraceHeader) {
     }
 
+    private record InvalidRequestCase(
+            PrivateNetworkLiveValidationExecutor.ValidationRequest request,
+            String reason) {
+        private String pathForMessage() {
+            return request == null ? "<null>" : request.pathAndQuery();
+        }
+    }
+
     private static final class LoopbackHttpTransport implements PrivateNetworkLiveValidationExecutor.Transport {
         private final HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(2))
@@ -369,23 +522,60 @@ class PrivateNetworkLiveValidationExecutorTest {
         }
     }
 
+    private static final class CapturingTransport implements PrivateNetworkLiveValidationExecutor.Transport {
+        private final AtomicInteger count = new AtomicInteger();
+        private final AtomicReference<PrivateNetworkLiveValidationExecutor.Attempt> lastAttempt =
+                new AtomicReference<>();
+        private final PrivateNetworkLiveValidationExecutor.AttemptResponse response;
+
+        private CapturingTransport(PrivateNetworkLiveValidationExecutor.AttemptResponse response) {
+            this.response = response;
+        }
+
+        @Override
+        public PrivateNetworkLiveValidationExecutor.AttemptResponse send(
+                PrivateNetworkLiveValidationExecutor.Attempt attempt) {
+            count.incrementAndGet();
+            lastAttempt.set(attempt);
+            return response;
+        }
+
+        private int count() {
+            return count.get();
+        }
+
+        private PrivateNetworkLiveValidationExecutor.Attempt lastAttempt() {
+            return lastAttempt.get();
+        }
+    }
+
     private static final class LiveLoopbackBackend implements AutoCloseable {
         private final HttpServer server;
         private final ExecutorService executor;
+        private final boolean redirect;
         private final AtomicInteger requestCount = new AtomicInteger();
         private final AtomicReference<CapturedRequest> lastRequest = new AtomicReference<>();
 
-        private LiveLoopbackBackend(HttpServer server, ExecutorService executor) {
+        private LiveLoopbackBackend(HttpServer server, ExecutorService executor, boolean redirect) {
             this.server = server;
             this.executor = executor;
+            this.redirect = redirect;
         }
 
         private static LiveLoopbackBackend start() {
+            return start(false);
+        }
+
+        private static LiveLoopbackBackend startRedirect() {
+            return start(true);
+        }
+
+        private static LiveLoopbackBackend start(boolean redirect) {
             try {
                 HttpServer server = HttpServer.create(
                         new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
                 ExecutorService executor = Executors.newSingleThreadExecutor();
-                LiveLoopbackBackend backend = new LiveLoopbackBackend(server, executor);
+                LiveLoopbackBackend backend = new LiveLoopbackBackend(server, executor, redirect);
                 server.createContext("/", backend::handle);
                 server.setExecutor(executor);
                 server.start();
@@ -418,10 +608,22 @@ class PrivateNetworkLiveValidationExecutorTest {
                     liveValidationHeader == null ? "" : liveValidationHeader,
                     reviewerTraceHeader == null ? "" : reviewerTraceHeader));
 
+            if (redirect) {
+                String responseBody = "redirect-not-followed";
+                byte[] response = responseBody.getBytes(StandardCharsets.UTF_8);
+                exchange.getResponseHeaders().set("Location", PUBLIC_REDIRECT_LOCATION);
+                exchange.getResponseHeaders().set("Set-Cookie", COOKIE_SENTINEL);
+                exchange.sendResponseHeaders(302, response.length);
+                exchange.getResponseBody().write(response);
+                exchange.close();
+                return;
+            }
+
             String responseBody = "private-live-loopback-ok";
             byte[] response = responseBody.getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
             exchange.getResponseHeaders().set("X-Private-Network-Live-Proof", "loopback-only");
+            exchange.getResponseHeaders().set("Set-Cookie", COOKIE_SENTINEL);
             exchange.sendResponseHeaders(200, response.length);
             exchange.getResponseBody().write(response);
             exchange.close();

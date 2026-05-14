@@ -8,6 +8,9 @@ Current label: production-candidate for controlled enterprise demo/reviewer usag
 
 LoadBalancerPro's next identity is **LoadBalancerPro Enterprise Lab**: Enterprise Adaptive Routing Lab first, Production Gateway Candidate second. The lab track owns controlled scenario running, deterministic replay, LASE shadow/recommend/active-experiment comparison, policy gates, scorecards, process-local lab metrics, measured local performance evidence, mocked auth proof, evidence export, and SRE walkthroughs. The gateway-candidate track owns optional future proxy/runtime hardening, config reload, production-grade metrics, rate limiting, canary/shadow mode, rollback, signed container distribution later, and deployment guides later. See [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md), [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](CONTROLLED_ACTIVE_LASE_POLICY_GATE.md), [`ENTERPRISE_AUTH_PROOF_LANE.md`](ENTERPRISE_AUTH_PROOF_LANE.md), and [`NEXT_GOAL_PROMPTS.md`](NEXT_GOAL_PROMPTS.md).
 
+The current enterprise-readiness audit is [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md). Its verdict is Enterprise Lab ready and production gateway not certified.
+The reviewer-ready trust-hardening sprint packet is [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md); it strengthens governance evidence and selects a future gated path without changing production certification status.
+
 ## Production-Candidate Status
 
 | Area | Current status | Evidence |
@@ -65,6 +68,8 @@ The `v2.5.0` JAR/docs-first release evidence is produced and verified for the ex
 ## Evidence Index
 
 - Reviewer navigation: [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md)
+- Enterprise readiness audit: [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md)
+- Trust-hardening sprint packet: [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md)
 - Product charter: [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md)
 - Product roadmap: [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md)
 - Next goal prompts: [`NEXT_GOAL_PROMPTS.md`](NEXT_GOAL_PROMPTS.md)

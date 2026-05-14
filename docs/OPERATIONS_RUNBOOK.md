@@ -361,6 +361,14 @@ The evidence policy training lab batch-runs the packaged walkthrough examples an
 
 Evidence training scorecards grade packaged-example operator answers locally. They produce deterministic Markdown or JSON reports, can fail a script with `--fail-on-score-below`, do not start the API server, and do not construct or mutate `CloudManager`.
 
+The adaptive-routing experiment harness compares baseline vs shadow vs opt-in influence using deterministic local fixtures. Run it with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\adaptive-routing-experiment.ps1 -Package
+```
+
+It writes `target/adaptive-routing-experiments/adaptive-routing-experiment.md` and `target/adaptive-routing-experiments/adaptive-routing-experiment-metadata.json`. The harness runs `--adaptive-routing-experiment=all`, keeps default behavior unchanged, treats active influence as an explicit local feature flag style comparison, and performs no live cloud mutation, API server startup, release action, container publication, or external network call.
+
 ## Test And Coverage Evidence
 
 For reviewer-facing test evidence, use [`TESTING_COVERAGE.md`](TESTING_COVERAGE.md). GitHub CI is the source of truth when a local workstation cannot resolve Maven dependencies because of Java trust-store or PKIX issues.

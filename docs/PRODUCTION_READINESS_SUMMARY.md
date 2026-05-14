@@ -60,6 +60,7 @@ The `v2.5.0` JAR/docs-first release evidence is produced and verified for the ex
 
 - Reviewer navigation: [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md)
 - SRE demo highlights: [`SRE_DEMO_HIGHLIGHTS.md`](SRE_DEMO_HIGHLIGHTS.md)
+- Adaptive-routing experiment evidence: run `scripts/smoke/adaptive-routing-experiment.ps1 -Package` and inspect ignored output under `target/adaptive-routing-experiments/`; it compares baseline vs shadow vs opt-in influence while keeping default behavior unchanged.
 - Security posture: [`../evidence/SECURITY_POSTURE.md`](../evidence/SECURITY_POSTURE.md)
 - Supply-chain posture: [`../evidence/SUPPLY_CHAIN_EVIDENCE.md`](../evidence/SUPPLY_CHAIN_EVIDENCE.md)
 - Test posture: [`../evidence/TEST_EVIDENCE.md`](../evidence/TEST_EVIDENCE.md)

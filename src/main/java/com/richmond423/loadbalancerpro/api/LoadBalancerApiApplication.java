@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.api;
 
 import com.richmond423.loadbalancerpro.cli.AdaptiveRoutingExperimentCommand;
+import com.richmond423.loadbalancerpro.cli.EnterpriseLabWorkflowCommand;
 import com.richmond423.loadbalancerpro.cli.LaseDemoCommand;
 import com.richmond423.loadbalancerpro.cli.LaseReplayCommand;
 import org.springframework.boot.SpringApplication;
@@ -24,6 +25,14 @@ public class LoadBalancerApiApplication {
                 }
                 return;
             }
+            EnterpriseLabWorkflowCommand.Result labWorkflowResult =
+                    EnterpriseLabWorkflowCommand.runIfRequested(args, System.out, System.err);
+            if (labWorkflowResult.requested()) {
+                if (labWorkflowResult.exitCode() != 0) {
+                    System.exit(labWorkflowResult.exitCode());
+                }
+                return;
+            }
             LaseReplayCommand.Result replayResult = LaseReplayCommand.runIfRequested(args, System.out, System.err);
             if (replayResult.requested()) {
                 if (replayResult.exitCode() != 0) {
@@ -43,6 +52,7 @@ public class LoadBalancerApiApplication {
     static boolean shouldStartApi(String[] args) {
         return !isVersionRequested(args)
                 && !AdaptiveRoutingExperimentCommand.isRequested(args)
+                && !EnterpriseLabWorkflowCommand.isRequested(args)
                 && !LaseDemoCommand.isRequested(args)
                 && !LaseReplayCommand.isRequested(args);
     }

@@ -18,7 +18,7 @@ LoadBalancerPro is designed to show how a load-balancing system can grow from an
 
 For reviewers and recruiters, the useful signal is not a single flashy demo. It is the combination of conservative defaults, explicit guardrails, repeatable local validation, CI-published artifacts, and documentation that distinguishes implemented behavior from roadmap work.
 
-The next product push is not "make the demo bigger." It is to turn the repository into an Enterprise Adaptive Routing Lab with deterministic scenario workflows, scorecards, observability packs, measured local performance evidence, mock IdP proof, and gated future container/live-sandbox paths.
+The current product push has started that Enterprise Adaptive Routing Lab path with first-class lab scenario APIs, deterministic lab runs, bounded in-memory run storage, scorecards, ignored `target/` evidence export, and a no-dependency browser lab page. The next pushes should add stronger policy gates, observability packs, measured local performance evidence, mock IdP proof, and gated future container/live-sandbox paths.
 
 ## Start Here For Reviewers
 
@@ -31,10 +31,11 @@ Use [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md
 ## Evaluate In 5 Minutes
 
 1. Read [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) for the short positioning and limitation summary.
-2. Run `mvn spring-boot:run`, then open [`http://localhost:8080/`](http://localhost:8080/) and [`http://localhost:8080/load-balancing-cockpit.html`](http://localhost:8080/load-balancing-cockpit.html).
-3. Use [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEPLOYMENT_SMOKE_KIT.md) to validate the packaged jar, API-key boundary, and proxy-loopback recipe on localhost.
-4. Use [`OPERATOR_RUN_PROFILES.md`](docs/OPERATOR_RUN_PROFILES.md) when choosing local demo, packaged jar, prod API-key, cloud-sandbox API-key, OAuth2, proxy-loopback, or container modes.
-5. Use [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md) for the local-only Docker build/run path, and [`API_SECURITY.md`](docs/API_SECURITY.md) plus [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md) before exposing any operator surface beyond a trusted environment.
+2. Run `mvn spring-boot:run`, then open [`http://localhost:8080/`](http://localhost:8080/), [`http://localhost:8080/enterprise-lab.html`](http://localhost:8080/enterprise-lab.html), and [`http://localhost:8080/load-balancing-cockpit.html`](http://localhost:8080/load-balancing-cockpit.html).
+3. Use `GET /api/lab/scenarios` and `POST /api/lab/runs` to list deterministic scenarios, run baseline/shadow/opt-in influence comparisons, and inspect scorecards. Run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-workflow.ps1 -Package` to export ignored evidence under `target/enterprise-lab-runs/`.
+4. Use [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEPLOYMENT_SMOKE_KIT.md) to validate the packaged jar, API-key boundary, and proxy-loopback recipe on localhost.
+5. Use [`OPERATOR_RUN_PROFILES.md`](docs/OPERATOR_RUN_PROFILES.md) when choosing local demo, packaged jar, prod API-key, cloud-sandbox API-key, OAuth2, proxy-loopback, or container modes.
+6. Use [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md) for the local-only Docker build/run path, and [`API_SECURITY.md`](docs/API_SECURITY.md) plus [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md) before exposing any operator surface beyond a trusted environment.
 
 ## Enterprise-Style Operator Foundation
 
@@ -149,7 +150,9 @@ The LoadBalancer Adaptive Systems Engine (LASE) is the north-star direction for 
 
 The internal telemetry-driven routing foundation now exists through immutable server state vectors, deterministic score calculation, power-of-two candidate sampling, and routing decision explanations. `POST /api/allocate/evaluate` exposes an optional `laseShadow` summary when `loadbalancerpro.lase.shadow.enabled=true`; it reports LASE signals considered, including tail latency, queue depth, error rate, adaptive concurrency, load shedding, shadow autoscaling, and failure scenario checks. This integration is shadow-only, does not alter live allocation, and keeps active LASE influence out of default/local behavior.
 
-Planned LASE work includes adaptive concurrency limits, load shedding and priority classes, shadow autoscaling, failure scenario simulation, richer tail-latency-aware routing, and cloud-safety simulation. These are roadmap items, not claims of fully implemented production behavior.
+The first Enterprise Lab workflow exposes this foundation as a reviewer-facing product surface: `GET /api/lab/scenarios`, `GET /api/lab/scenarios/{id}`, `POST /api/lab/runs`, `GET /api/lab/runs`, and `GET /api/lab/runs/{runId}`. Runs compare baseline allocation, LASE shadow recommendation, and opt-in influence output across deterministic fixtures; they are process-local, bounded, in-memory, and labeled as lab evidence only / not production activation. The static browser page at `/enterprise-lab.html` lists scenarios, runs lab comparisons, and renders scorecards without external CDN dependencies or browser secret persistence. The PowerShell smoke path `scripts/smoke/enterprise-lab-workflow.ps1 -Package` writes scenario catalog JSON, run JSON, Markdown summary, and metadata only under ignored `target/enterprise-lab-runs/`.
+
+Planned LASE work includes stronger controlled-active policy gates, observability packs, measured local performance baselines, mock IdP proof, richer tail-latency-aware routing, and cloud-safety simulation. These are roadmap items, not claims of fully implemented production behavior.
 
 Roadmap backlog:
 

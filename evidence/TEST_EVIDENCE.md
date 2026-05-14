@@ -29,6 +29,7 @@ mvn -q test
 - Sensitive-looking failure text is redacted while useful non-sensitive context is preserved.
 - Control characters are neutralized in stored failure reasons.
 - Adaptive-routing experiment tests cover deterministic fixtures, shadow-only default behavior, opt-in influence comparison output, stale-signal guardrails, all-unhealthy degradation, CLI mode selection, and ignored `target/adaptive-routing-experiments/` evidence generation safety.
+- Enterprise Lab workflow tests cover stable scenario catalog metadata, unique scenario ids, deterministic run output, bounded process-local in-memory run retention, scorecard counts, prod API-key protection for `/api/lab/**`, source-visible evidence export safety under ignored `target/enterprise-lab-runs/`, browser lab page content, and smoke-script publish-command exclusions.
 
 ## Replay/Cloud Isolation Tests
 

@@ -29,6 +29,7 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
             "/api/allocate/",
             "/api/routing/",
             "/api/scenarios/replay",
+            "/api/lab/",
             "/api/remediation",
             "/api/proxy/",
             "/api/lase/shadow");
@@ -135,6 +136,9 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
         }
         if (uri.startsWith("/api/scenarios/replay")) {
             return "api-scenarios-replay";
+        }
+        if (uri.startsWith("/api/lab/")) {
+            return "api-lab";
         }
         if (uri.startsWith("/api/remediation")) {
             return "api-remediation";

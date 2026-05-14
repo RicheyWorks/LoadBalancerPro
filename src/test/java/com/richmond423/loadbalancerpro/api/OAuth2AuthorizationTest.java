@@ -63,6 +63,9 @@ class OAuth2AuthorizationTest {
     private static final String LIVE_VALIDATION_COMMAND_BODY = """
             {"requestPath":"/health","operatorAcknowledged":true}
             """;
+    private static final String ENTERPRISE_LAB_RUN_BODY = """
+            {"mode":"shadow","scenarioIds":["normal-balanced-load"]}
+            """;
 
     @Autowired
     private MockMvc mockMvc;
@@ -200,6 +203,50 @@ class OAuth2AuthorizationTest {
                 .andExpect(jsonPath("$.gateStatus", is("NOT_ENABLED")))
                 .andExpect(jsonPath("$.allowedByGate", is(false)))
                 .andExpect(jsonPath("$.gate.gateStatus", is("NOT_ENABLED")));
+    }
+
+    @Test
+    void oauth2ModeAllowsReadRolesForLabScenarioCatalog() throws Exception {
+        mockMvc.perform(get("/api/lab/scenarios"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.path", is("/api/lab/scenarios")));
+
+        mockMvc.perform(get("/api/lab/scenarios").header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count", is(10)))
+                .andExpect(jsonPath("$.scenarios[0].scenarioId", is("normal-balanced-load")));
+
+        mockMvc.perform(get("/api/lab/scenarios/stale-signal")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer observer-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.scenarioId", is("stale-signal")));
+    }
+
+    @Test
+    void oauth2ModeRequiresOperatorRoleForLabRuns() throws Exception {
+        mockMvc.perform(post("/api/lab/runs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ENTERPRISE_LAB_RUN_BODY))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.path", is("/api/lab/runs")));
+
+        mockMvc.perform(post("/api/lab/runs")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ENTERPRISE_LAB_RUN_BODY))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.path", is("/api/lab/runs")));
+
+        mockMvc.perform(post("/api/lab/runs")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ENTERPRISE_LAB_RUN_BODY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mode", is("shadow")))
+                .andExpect(jsonPath("$.scorecard.totalScenarios", is(1)));
     }
 
     @Test

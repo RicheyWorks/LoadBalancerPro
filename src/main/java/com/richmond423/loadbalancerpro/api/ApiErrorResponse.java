@@ -52,6 +52,10 @@ public record ApiErrorResponse(int status, String error, String message, String 
                 path, Instant.now().toString(), List.of());
     }
 
+    public static ApiErrorResponse notFound(String message, String path) {
+        return new ApiErrorResponse(404, "not_found", message, path, Instant.now().toString(), List.of());
+    }
+
     public static ApiErrorResponse methodNotAllowed(String path) {
         return new ApiErrorResponse(405, "method_not_allowed",
                 "HTTP method is not supported for this endpoint",

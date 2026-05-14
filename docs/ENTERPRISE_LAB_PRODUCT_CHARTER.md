@@ -46,6 +46,8 @@ The lab should grow around:
 - evidence export under ignored `target/` paths;
 - SRE walkthroughs that show what changed, what did not change, and why.
 
+The first implemented lab workflow now provides `GET /api/lab/scenarios`, `POST /api/lab/runs`, bounded process-local in-memory run storage, deterministic run summaries, scorecards, ignored `target/enterprise-lab-runs/` evidence export through a source-visible smoke script, and `/enterprise-lab.html` for browser review. This is lab evidence only; it is not production traffic activation.
+
 Lab evidence can support product review and design decisions. It must not be presented as proof that an unmanaged production deployment is safe.
 
 ## Track 2: Production Gateway Candidate
@@ -104,7 +106,7 @@ Production Gateway Candidate means "candidate architecture and evidence lane." I
 ## Next Product Milestones
 
 1. Truth and identity alignment: keep this charter, roadmap, and evidence scorecards consistent.
-2. Adaptive Routing Lab workflow: scenario/runs surface, deterministic summaries, scorecards, browser lab page, and ignored run evidence.
+2. Adaptive Routing Lab workflow hardening: richer scenario scorecards, reviewer exports, and lab-page polish on top of the first `/api/lab/**` slice.
 3. Controlled active LASE policy gate: off, shadow, recommend, and active-experiment modes with audit events and rollback reasons.
 4. Observability packs: Prometheus/Grafana dashboard JSON, alerts, SLO templates, and local evidence generation.
 5. Measured performance baseline: stable fixtures and source-visible scripts under ignored `target/performance-baseline/`.

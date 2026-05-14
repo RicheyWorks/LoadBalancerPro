@@ -13,6 +13,11 @@ LoadBalancerPro exposes a small set of calculation-only API contracts for demos,
 - `POST /api/proxy/private-network-live-validation`
 - `POST /api/scenarios/replay`
 - `POST /api/remediation/report`
+- `GET /api/lab/scenarios`
+- `GET /api/lab/scenarios/{id}`
+- `POST /api/lab/runs`
+- `GET /api/lab/runs`
+- `GET /api/lab/runs/{runId}`
 - `GET /api/evidence-training/onboarding`
 - `GET /api/evidence-training/templates`
 - `GET /api/evidence-training/examples`
@@ -36,7 +41,13 @@ Allocation responses expose an `allocations` map, `unallocatedLoad`, `recommende
 
 Read-only evaluation responses expose `acceptedLoad`, `rejectedLoad`, `unallocatedLoad`, `scalingSimulation`, `loadShedding`, `metricsPreview`, `laseShadow`, and `remediationPlan`. The evaluation endpoint is recommendation-only: `readOnly` is `true`, `metricsPreview.emitted` is `false`, `remediationPlan.advisoryOnly` is `true`, and the endpoint must not construct `CloudManager`. By default, `laseShadow.enabled=false` and live allocation behavior is unchanged. When `loadbalancerpro.lase.shadow.enabled=true`, `POST /api/allocate/evaluate` returns a shadow-only `laseShadow` summary with signals considered, including tail latency, queue depth, error rate, adaptive concurrency, load shedding, shadow autoscaling, and failure scenario checks. Shadow mode may record an observation and a recommended server/action for review, but it does not alter live allocation.
 
-The adaptive-routing experiment harness is intentionally outside the HTTP API contract. Run `--adaptive-routing-experiment=all` through `scripts/smoke/adaptive-routing-experiment.ps1 -Package` to generate ignored `target/adaptive-routing-experiments/` evidence comparing baseline vs shadow vs opt-in influence. The default runtime/API behavior remains unchanged, and opt-in influence exists only as deterministic local experiment output.
+The Enterprise Lab workflow promotes deterministic adaptive-routing experiments into a safe HTTP API contract. `GET /api/lab/scenarios` returns stable scenario metadata: scenario id, display name, category, description, signals involved, expected guardrails, supported modes, influence-safety flag, deterministic fixture version, strategy, requested load, server count, and replay event count. `GET /api/lab/scenarios/{id}` returns one scenario or a stable `404 not_found` envelope. Scenario responses do not include environment data, API keys, bearer tokens, cloud credentials, or host discovery output.
+
+`POST /api/lab/runs` accepts a scenario id list, `mode` of `shadow`, `influence`, or `all`, and optional detail-level text. Missing scenario ids default to the full deterministic catalog. The service enforces a maximum number of scenarios per run and a bounded process-local in-memory retained-run set; it does not add a database, durable production storage, cloud mutation, or external network calls. Run responses include a deterministic run id, fixed lab timestamp, selected scenario ids, baseline allocation/selected backend, shadow recommendation, opt-in influence result, guardrail reason, explanation, scorecard, safety notes, storage mode, and bounds. `GET /api/lab/runs` returns bounded summaries, and `GET /api/lab/runs/{runId}` returns one retained run or a stable `404 not_found` envelope. The scorecard reports total scenarios, baseline-vs-shadow differences, baseline-vs-influence differences, guardrail-blocked influence count, unsafe/all-unhealthy blocked count, stale/conflicting signal blocked count, explanation coverage, deterministic fixture count, mode used, and final recommendation `lab evidence only / not production activation`.
+
+Prod/cloud-sandbox API-key mode protects `/api/lab/**` through the existing deny-by-default non-`OPTIONS` `/api/**` boundary. OAuth2 mode allows read access to `GET /api/lab/scenarios` and `GET /api/lab/scenarios/{id}` for configured read roles, while lab run creation and retained-run lookup use the allocation role. Local/default mode remains intentionally convenient for loopback demos. The optional process-local rate limiter includes the `/api/lab/` surface when enabled and does not weaken API-key or OAuth2 requirements.
+
+The prior CLI experiment harness remains available as an offline comparison path. Run `--adaptive-routing-experiment=all` through `scripts/smoke/adaptive-routing-experiment.ps1 -Package` to generate ignored `target/adaptive-routing-experiments/` evidence. Run `scripts/smoke/enterprise-lab-workflow.ps1 -Package` to generate the Enterprise Lab scenario catalog JSON, lab run JSON, Markdown scorecard summary, and metadata under ignored `target/enterprise-lab-runs/`. The default runtime allocation behavior remains unchanged, and opt-in influence exists only as deterministic lab output unless a future approved policy gate promotes it.
 
 Routing comparison responses expose `requestedStrategies`, `candidateCount`, `timestamp`, and a `results` array. Each result exposes the strategy id, status, selected server id when one is available, the strategy reason, considered candidates, and score map when the strategy reports scores. A no-healthy-server comparison still returns a controlled result with `chosenServerId` set to `null`, empty candidate/scores collections, and an explanatory reason.
 

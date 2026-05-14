@@ -13,6 +13,7 @@ This sprint strengthens reviewer trust and governance evidence without changing 
 - A narrow documentation and static-guardrail update that makes the current evidence path easier to inspect.
 - A future gated path selector for container distribution and signing work that still requires separate approval.
 - The follow-on container decision/evidence packet is [`CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md`](CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md).
+- The no-publish/no-sign dry-run verification packet is [`CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md`](CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md).
 
 ## What Is Proven
 

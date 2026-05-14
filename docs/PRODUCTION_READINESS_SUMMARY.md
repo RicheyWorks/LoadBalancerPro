@@ -11,6 +11,7 @@ LoadBalancerPro's next identity is **LoadBalancerPro Enterprise Lab**: Enterpris
 The current enterprise-readiness audit is [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md). Its verdict is Enterprise Lab ready and production gateway not certified.
 The reviewer-ready trust-hardening sprint packet is [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md); it strengthens governance evidence and selects a future gated path without changing production certification status.
 The future gated container distribution/signing lane is [`CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md`](CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md); it prepares reviewer evidence expectations without publishing or signing containers.
+The no-publish/no-sign container dry-run verification lane is [`CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md`](CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md); it plans local image identity, SBOM, scan, and future signing-verification evidence without changing certification status.
 
 ## Production-Candidate Status
 
@@ -94,6 +95,7 @@ The `v2.5.0` JAR/docs-first release evidence is produced and verified for the ex
 - Release readiness decision summary: [`RELEASE_READINESS_DECISION_SUMMARY.md`](RELEASE_READINESS_DECISION_SUMMARY.md)
 - Container signing decision: [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md)
 - Container distribution/signing evidence lane: [`CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md`](CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md)
+- Container signing dry-run verification lane: [`CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md`](CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md)
 - Container registry/signing rollout: [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md)
 - IdP claim examples: [`IDP_CLAIM_MAPPING_EXAMPLES.md`](IDP_CLAIM_MAPPING_EXAMPLES.md)
 - Dependency/SAST workflow: [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](DEPENDENCY_SAST_RISK_WORKFLOW.md)

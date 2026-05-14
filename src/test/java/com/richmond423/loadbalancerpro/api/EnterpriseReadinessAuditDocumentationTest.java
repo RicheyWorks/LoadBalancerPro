@@ -18,6 +18,8 @@ class EnterpriseReadinessAuditDocumentationTest {
     private static final Path SPRINT_PACKET = Path.of("docs/ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md");
     private static final Path CONTAINER_EVIDENCE_LANE =
             Path.of("docs/CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md");
+    private static final Path CONTAINER_DRY_RUN_LANE =
+            Path.of("docs/CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md");
     private static final Path README = Path.of("README.md");
     private static final Path EXECUTIVE_SUMMARY = Path.of("docs/EXECUTIVE_SUMMARY.md");
     private static final Path PRODUCTION_SUMMARY = Path.of("docs/PRODUCTION_READINESS_SUMMARY.md");
@@ -28,6 +30,7 @@ class EnterpriseReadinessAuditDocumentationTest {
             AUDIT,
             SPRINT_PACKET,
             CONTAINER_EVIDENCE_LANE,
+            CONTAINER_DRY_RUN_LANE,
             EXECUTIVE_SUMMARY,
             PRODUCTION_SUMMARY,
             TRUST_MAP,
@@ -44,6 +47,7 @@ class EnterpriseReadinessAuditDocumentationTest {
             "signed image published",
             "registry publish complete",
             "registry publication complete",
+            "dry-run signed successfully",
             "real tenant proof complete",
             "real idp proof complete",
             "live cloud validated",
@@ -150,6 +154,27 @@ class EnterpriseReadinessAuditDocumentationTest {
     }
 
     @Test
+    void containerSigningDryRunLaneDocumentsNoPublishNoSignBoundaries() throws Exception {
+        String lane = read(CONTAINER_DRY_RUN_LANE);
+
+        for (String expected : List.of(
+                "dry-run verification lane",
+                "No container is published",
+                "No container is signed",
+                "not production certified",
+                "not enterprise-production ready",
+                "No registry credentials, signing keys, or secrets are required",
+                "future examples only",
+                "not run in this sprint",
+                "No registry publish",
+                "No signing",
+                "git diff --check",
+                "docker build -t loadbalancerpro:dry-run .")) {
+            assertTrue(lane.contains(expected), "container dry-run lane should mention " + expected);
+        }
+    }
+
+    @Test
     void currentReviewerEntryPointsLinkEnterpriseReadinessAudit() throws Exception {
         for (Path path : List.of(README, EXECUTIVE_SUMMARY, PRODUCTION_SUMMARY, TRUST_MAP, SECURITY_POSTURE)) {
             assertTrue(read(path).contains("ENTERPRISE_READINESS_AUDIT.md"),
@@ -170,6 +195,14 @@ class EnterpriseReadinessAuditDocumentationTest {
         for (Path path : List.of(AUDIT, SPRINT_PACKET, PRODUCTION_SUMMARY, TRUST_MAP)) {
             assertTrue(read(path).contains("CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md"),
                     path + " should link the container distribution/signing evidence lane");
+        }
+    }
+
+    @Test
+    void currentReviewerEntryPointsLinkContainerDryRunLane() throws Exception {
+        for (Path path : List.of(CONTAINER_EVIDENCE_LANE, AUDIT, SPRINT_PACKET, PRODUCTION_SUMMARY, TRUST_MAP)) {
+            assertTrue(read(path).contains("CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md"),
+                    path + " should link the container signing dry-run verification lane");
         }
     }
 

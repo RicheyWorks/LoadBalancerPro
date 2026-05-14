@@ -144,14 +144,14 @@ Generate a local checksum.
 Windows PowerShell:
 
 ```powershell
-Get-FileHash -Algorithm SHA256 .\target\LoadBalancerPro-2.4.2.jar
+Get-FileHash -Algorithm SHA256 .\target\LoadBalancerPro-2.5.0.jar
 ```
 
 Unix:
 
 ```bash
-sha256sum target/LoadBalancerPro-2.4.2.jar
-shasum -a 256 target/LoadBalancerPro-2.4.2.jar
+sha256sum target/LoadBalancerPro-2.5.0.jar
+shasum -a 256 target/LoadBalancerPro-2.5.0.jar
 ```
 
 Compare the local digest to:

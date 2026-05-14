@@ -7,7 +7,7 @@ LoadBalancerPro ships curated offline evidence handoff policy templates for comm
 List packaged templates:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --list-policy-templates
+java -jar target/LoadBalancerPro-2.5.0.jar --list-policy-templates
 ```
 
 When the local Spring Boot API is running, the same template catalog is also exposed for GUI-facing clients and Postman:
@@ -22,7 +22,7 @@ These routes are read-only discovery surfaces. They do not construct `CloudManag
 Export a template:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --export-policy-template regulated-handoff \
   --policy-output regulated-handoff.json
 ```
@@ -30,14 +30,14 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 Validate a policy file:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --validate-policy regulated-handoff.json
 ```
 
 Run a catalog diff with a packaged template:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --diff-inventory sender-catalog.json receiver-catalog.json \
   --policy-template regulated-handoff \
   --policy-report-format markdown \
@@ -82,13 +82,13 @@ For concrete sender/receiver catalog pairs and expected `PASS`, `WARN`, and `FAI
 Packaged examples can be listed, exported, and dry-run fully offline:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --list-policy-examples
+java -jar target/LoadBalancerPro-2.5.0.jar --list-policy-examples
 
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --export-policy-example regulated-handoff-fail \
   --example-output-dir walkthrough/regulated-fail
 
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --walkthrough-policy-example regulated-handoff-fail \
   --example-output-dir walkthrough/regulated-fail \
   --policy-report-format json \
@@ -98,7 +98,7 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 To run every packaged PASS/WARN/FAIL walkthrough in one deterministic practice pass:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --run-policy-training-lab \
   --training-lab-format markdown
 ```
@@ -108,12 +108,12 @@ The training lab compares each actual policy decision to its packaged expected d
 To grade operator answers against those examples without mutating cloud state:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --list-training-scorecards
+java -jar target/LoadBalancerPro-2.5.0.jar --list-training-scorecards
 
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --print-training-scorecard regulated-handoff-fail
 
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --grade-training-scorecard scorecard-answers.json \
   --scorecard-format json \
   --fail-on-score-below 80

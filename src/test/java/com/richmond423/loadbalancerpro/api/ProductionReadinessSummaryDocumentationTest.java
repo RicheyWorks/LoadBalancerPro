@@ -68,7 +68,7 @@ class ProductionReadinessSummaryDocumentationTest {
         String normalized = summary.toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
-                "1,217 tests",
+                "1,242 tests",
                 "0 failures, 0 errors, and 0 skips",
                 "mvn -q verify",
                 "mvn -q -DskipTests package",

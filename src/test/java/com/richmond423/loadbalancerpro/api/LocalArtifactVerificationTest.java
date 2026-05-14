@@ -46,9 +46,9 @@ class LocalArtifactVerificationTest {
         assertTrue(doc.contains("does not touch `release-downloads/`"));
         assertTrue(doc.contains("mvn -B -DskipTests package"));
         assertTrue(doc.contains("Get-FileHash -Algorithm SHA256"));
-        assertTrue(doc.contains("sha256sum target/LoadBalancerPro-2.4.2.jar"));
-        assertTrue(doc.contains("shasum -a 256 target/LoadBalancerPro-2.4.2.jar"));
-        assertTrue(doc.contains("jar tf target/LoadBalancerPro-2.4.2.jar"));
+        assertTrue(doc.contains("sha256sum target/LoadBalancerPro-2.5.0.jar"));
+        assertTrue(doc.contains("shasum -a 256 target/LoadBalancerPro-2.5.0.jar"));
+        assertTrue(doc.contains("jar tf target/LoadBalancerPro-2.5.0.jar"));
         assertTrue(doc.contains("META-INF/MANIFEST.MF"));
         assertTrue(doc.contains("BOOT-INF/classes/static/proxy-status.html"));
         assertTrue(doc.contains("BOOT-INF/classes/static/load-balancing-cockpit.html"));
@@ -56,7 +56,7 @@ class LocalArtifactVerificationTest {
         assertTrue(doc.contains("BOOT-INF/classes/application-proxy-demo-weighted-round-robin.properties"));
         assertTrue(doc.contains("BOOT-INF/classes/application-proxy-demo-failover.properties"));
         assertTrue(doc.contains("BOOT-INF/classes/com/richmond423/loadbalancerpro/demo/ProxyDemoFixtureLauncher.class"));
-        assertTrue(doc.contains("java -jar target/LoadBalancerPro-2.4.2.jar"));
+        assertTrue(doc.contains("java -jar target/LoadBalancerPro-2.5.0.jar"));
         assertTrue(doc.contains("compile exec:java"));
         assertTrue(doc.contains("ProxyDemoFixtureLauncher"));
         assertTrue(doc.contains("packaged-artifact-smoke"));

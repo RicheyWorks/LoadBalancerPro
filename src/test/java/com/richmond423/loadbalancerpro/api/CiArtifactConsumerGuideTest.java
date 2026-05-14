@@ -45,8 +45,8 @@ class CiArtifactConsumerGuideTest {
 
         assertTrue(guide.contains("Compare Local And CI SHA-256"));
         assertTrue(guide.contains("Get-FileHash -Algorithm SHA256"));
-        assertTrue(guide.contains("sha256sum target/LoadBalancerPro-2.4.2.jar"));
-        assertTrue(guide.contains("shasum -a 256 target/LoadBalancerPro-2.4.2.jar"));
+        assertTrue(guide.contains("sha256sum target/LoadBalancerPro-2.5.0.jar"));
+        assertTrue(guide.contains("shasum -a 256 target/LoadBalancerPro-2.5.0.jar"));
         assertTrue(guide.contains("artifact-sha256.txt"));
         assertTrue(guide.contains("A local rebuild may differ"));
         assertTrue(guide.contains("Release Candidate Checklist"));

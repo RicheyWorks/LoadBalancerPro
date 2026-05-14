@@ -260,7 +260,7 @@ The exporter is read-only and advisory. It formats supplied results only; it doe
 Saved replay or evaluation responses can also be exported offline with the remediation report CLI:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --remediation-report \
   --input saved-replay.json \
   --format json \

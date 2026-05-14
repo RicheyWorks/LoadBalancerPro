@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-JAR_PATH="target/LoadBalancerPro-2.4.2.jar"
+JAR_PATH="target/LoadBalancerPro-2.5.0.jar"
 BUILD="false"
 
 usage() {
@@ -11,11 +11,11 @@ LoadBalancerPro local artifact verification
 Usage:
   scripts/local-artifact-verify.sh
   scripts/local-artifact-verify.sh --build
-  scripts/local-artifact-verify.sh --jar target/LoadBalancerPro-2.4.2.jar
+  scripts/local-artifact-verify.sh --jar target/LoadBalancerPro-2.5.0.jar
 
 Options:
   --build       Run mvn -B -DskipTests package before verification.
-  --jar PATH    Jar path to inspect. Default: target/LoadBalancerPro-2.4.2.jar.
+  --jar PATH    Jar path to inspect. Default: target/LoadBalancerPro-2.5.0.jar.
   -h, --help    Show this help.
 USAGE
 }

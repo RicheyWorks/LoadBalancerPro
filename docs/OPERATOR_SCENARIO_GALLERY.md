@@ -19,7 +19,7 @@ mvn spring-boot:run
 Or run the packaged JAR on the Postman default port:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
 ```
 
 Then verify:

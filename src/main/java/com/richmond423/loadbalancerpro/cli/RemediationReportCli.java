@@ -49,7 +49,7 @@ public final class RemediationReportCli {
     private static final String LIST_TRAINING_SCORECARDS_FLAG = "--list-training-scorecards";
     private static final String PRINT_TRAINING_SCORECARD_FLAG = "--print-training-scorecard";
     private static final String GRADE_TRAINING_SCORECARD_FLAG = "--grade-training-scorecard";
-    private static final String APP_VERSION = "2.4.2";
+    private static final String APP_VERSION = "2.5.0";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private RemediationReportCli() {
@@ -495,9 +495,9 @@ public final class RemediationReportCli {
 
         builder.append("## Dry-Run Commands").append(System.lineSeparator()).append(System.lineSeparator());
         builder.append("```bash").append(System.lineSeparator());
-        builder.append("java -jar target/LoadBalancerPro-2.4.2.jar --diff-inventory before.json after.json ")
+        builder.append("java -jar target/LoadBalancerPro-2.5.0.jar --diff-inventory before.json after.json ")
                 .append("--diff-format markdown").append(System.lineSeparator());
-        builder.append("java -jar target/LoadBalancerPro-2.4.2.jar --diff-inventory before.json after.json ")
+        builder.append("java -jar target/LoadBalancerPro-2.5.0.jar --diff-inventory before.json after.json ")
                 .append("--policy-template ").append(example.templateName())
                 .append(" --policy-report-format markdown").append(System.lineSeparator());
         builder.append("```").append(System.lineSeparator()).append(System.lineSeparator());

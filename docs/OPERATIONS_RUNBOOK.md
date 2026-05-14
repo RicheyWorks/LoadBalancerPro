@@ -2,7 +2,7 @@
 
 This runbook is for degraded allocation, load-shedding, validation-failure, and observability incidents in LoadBalancerPro. It assumes the service is running in a trusted environment and that release and cloud-safety guardrails remain enabled.
 
-Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), the concise production-candidate snapshot in [`PRODUCTION_READINESS_SUMMARY.md`](PRODUCTION_READINESS_SUMMARY.md), the release-free current-main packet in [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md), and the human decision packet in [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md). Use [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) when you need copyable local, API-key, OAuth2, proxy-loopback, or container startup recipes, use [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) for local-only Docker build/run guidance, then use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) for the local-only packaged-jar and proxy-loopback smoke path.
+Start reviewer evidence navigation with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), the concise production-candidate snapshot in [`PRODUCTION_READINESS_SUMMARY.md`](PRODUCTION_READINESS_SUMMARY.md), the release-free current-main packet in [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md), the human decision packet in [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md), the v2.5.0 notes in [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md), and the exact-version hard stop in [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md). Use [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) when you need copyable local, API-key, OAuth2, proxy-loopback, or container startup recipes, use [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) for local-only Docker build/run guidance, then use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) for the local-only packaged-jar and proxy-loopback smoke path.
 
 For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](ANTIVIRUS_SAFE_DEVELOPMENT.md). For live/proxy validation containment, use [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md) before expanding beyond localhost or private-network backends. For the future private-network profile path, use [`PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md`](PRIVATE_NETWORK_PROXY_PROFILE_PLAN.md), the config-only [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](PRIVATE_NETWORK_PROXY_DRY_RUN.md) recipe, and [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md) before any live private-network execution.
 
@@ -118,7 +118,7 @@ The report exporter formats an existing evaluation or scenario replay response. 
 For offline handoff or post-incident analysis, save the evaluation or replay JSON and run the remediation report CLI without starting the API server:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --remediation-report \
   --input saved-evaluation.json \
   --format markdown \
@@ -130,7 +130,7 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 Attach both `incident-report.md` and `incident-report.manifest.json` to the incident ticket when integrity evidence is needed. Re-verify the bundle offline with:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --verify-manifest incident-report.manifest.json
 ```
 
@@ -139,7 +139,7 @@ The manifest is SHA-256 checksum evidence only. It detects missing or changed fi
 For a portable ticket attachment, export a ZIP bundle instead:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --input saved-evaluation.json \
   --format markdown \
   --bundle incident-bundle.zip \
@@ -154,7 +154,7 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 Verify the bundle later without starting the API server:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --verify-bundle incident-bundle.zip
 ```
 
@@ -165,7 +165,7 @@ Use `--redact` or `--redact-file` before sharing incident evidence outside the i
 Use `--audit-log` when the offline CLI action should be chained into a local operator evidence trail. Audit entries are JSON Lines with SHA-256 `entryHash` and `previousEntryHash` fields. Verify the chain later with:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --verify-audit-log incident-audit.jsonl
 ```
 
@@ -174,7 +174,7 @@ The local audit log detects changed entries, malformed entries, sequence gaps, d
 Inventory the local evidence directory before handoff:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --inventory incident-evidence \
   --inventory-format markdown \
   --verify-inventory \
@@ -188,7 +188,7 @@ The inventory detects bundles, manifests, audit logs, redaction summaries, repor
 Compare sender and receiver inventories during handoff:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --diff-inventory sender-catalog.json receiver-catalog.json \
   --diff-format markdown \
   --fail-on-drift \
@@ -200,7 +200,7 @@ The diff reports added, removed, checksum-changed, verification-status-drifted, 
 Evaluate the handoff delta against a local policy when some drift is expected:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --diff-inventory sender-catalog.json receiver-catalog.json \
   --policy-template regulated-handoff \
   --policy-report-format markdown \
@@ -215,9 +215,9 @@ Use `STRICT` policies for zero-drift handoffs and `ALLOWLIST` policies when expe
 For operator training or a dry-run before a real handoff, list and export packaged examples:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --list-policy-examples
+java -jar target/LoadBalancerPro-2.5.0.jar --list-policy-examples
 
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --walkthrough-policy-example receiver-redaction-warn \
   --example-output-dir walkthrough/receiver-redaction \
   --policy-report-format markdown
@@ -228,7 +228,7 @@ The walkthrough exports synthetic `before.json`, `after.json`, and `expected-dec
 To practice the entire packaged policy matrix in one offline command:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --run-policy-training-lab \
   --training-lab-format markdown \
   --training-lab-output evidence-policy-training-lab.md
@@ -239,12 +239,12 @@ Use `--training-lab-export-dir walkthrough/all-examples` when the operator also 
 To grade an operator's decision, reason, action, and optional remediation note against packaged answer keys:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --list-training-scorecards
+java -jar target/LoadBalancerPro-2.5.0.jar --list-training-scorecards
 
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --print-training-scorecard regulated-handoff-fail
 
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --grade-training-scorecard scorecard-answers.json \
   --scorecard-format markdown \
   --scorecard-output scorecard-report.md \
@@ -273,7 +273,7 @@ Open `http://localhost:8080/routing-demo.html` for the first-party routing decis
 
 Open `http://localhost:8080/load-balancing-cockpit.html` for the unified load-balancing cockpit, or run the `Unified Load-Balancing Cockpit` folder in the same Postman collection. This page reuses existing calculation-only routes for allocation, routing comparison, overload/load-shedding evaluation, and advisory remediation-plan hints. In prod/cloud-sandbox API-key mode, use the cockpit's operator API-key control before running `/api/**` actions; the entered key stays in page memory only, is cleared on refresh/navigation, is not written to `localStorage` or `sessionStorage`, is not logged or placed in URLs, and copyable curl snippets use `<API_KEY>` rather than the entered value. Public local/default calls continue to work without configuring a token. The `Cockpit Navigation & Readiness` section provides a section index, current-panel orientation, in-memory readiness badges, and a deterministic copyable readiness summary. The `Operator Guided Walkthrough` section steps reviewers through scenario selection, endpoint execution, raw JSON review, explanation drill-down, comparison matrix generation, replay comparison, API contract trace verification, and review packet handoff with in-memory checklist state and panel highlights. The `Scenario Gallery` section adds normal load, overload pressure, all-unhealthy degradation, and recovery/capacity-restored payloads so an operator can compare real endpoint output across safe synthetic scenarios. The `Operator Comparison Matrix` section runs all packaged scenarios in deterministic order and summarizes routing, selected outcomes, allocation pressure, load-shedding, remediation hints, explanation rationale, and deltas in one copyable table. The `Operator Replay Mode` section replays a selected baseline/comparison scenario pair, highlights changed routing, allocation, overload, remediation, rationale, and error-state fields, and produces a copyable deterministic reviewer note without backend writes or browser storage. The `Operator Review Packet` section assembles current scenario, matrix, replay, drill-down, API contract trace, endpoint, payload, raw JSON reference, and safety notes into one copyable and printable browser handoff. The `API Contract Trace` section maps visible cockpit claims to endpoint paths, request payload sources, raw response sources, displayed raw fields, derived client labels, unavailable fields, and mutation/safety notes. The `Explanation Drill-Down` section adds routing strategy explanation, allocation capacity math, overload reason breakdowns, remediation rationale, and scenario delta explanation using real response fields plus clearly labeled derivations from visible request/response fields. Run the `Operator Scenario Gallery` and `Operator Explanation Drill-Down` Postman folders for matching request-by-request parity. It shows unsupported sections as `Not available in current API` instead of fabricating results. It is local/operator review only, not certification, not benchmark proof, not legal compliance proof, and not identity proof.
 
-For real local HTTP forwarding tests, enable the optional `/proxy/**` mode with `loadbalancerpro.proxy.enabled=true` and configured loopback upstreams. The proxy removes the `/proxy` prefix, forwards method/path/query/body/safe headers, reuses the request-level routing strategy registry, skips upstreams configured with `healthy=false`, and returns `X-LoadBalancerPro-Upstream` plus `X-LoadBalancerPro-Strategy` response headers. Optional active health checks can be enabled with `loadbalancerpro.proxy.health-check.enabled=true`; probe responses with 2xx/3xx are treated as healthy, failing probes mark the upstream unavailable for selection, and `GET /api/proxy/status` reports read-only local counters and effective health. Optional bounded retries and process-local cooldown can be enabled with `loadbalancerpro.proxy.retry.*` and `loadbalancerpro.proxy.cooldown.*`; retries are off by default, non-idempotent retries require explicit opt-in, and cooldown state is memory-only. Open `http://localhost:8080/proxy-status.html` for the read-only browser status view of those fields, counters, retry/cooldown state, raw JSON, and local demo curl commands. Use [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md) for the single Windows/Unix quick-start path with checked-in demo profiles, the Java fixture launcher, startup commands, curl verification, status-page review, cleanup, and troubleshooting. Use [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md) for launcher arguments, fixture health toggles, method/path/query echo behavior, and no-cloud boundaries. Use [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md) for the Maven exec launcher command, packaged-jar API startup, JavaFX optional note, and copy/adapt real-backend example property files. Use [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) if you specifically want the optional desktop UI; API, proxy, and static browser operator paths do not require JavaFX. Use [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md) for release-free packaged-jar, static-resource, profile, and status-page smoke checks. Use [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md) for release-free local checksum and jar manifest/resource verification after packaging; the same checks are also uploaded by CI as the `packaged-artifact-smoke` workflow artifact. Use [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md) to download JaCoCo coverage, packaged smoke, and SBOM workflow artifacts and compare local-vs-CI SHA-256 evidence without publishing a release. Use [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md) for the release-free go/no-go packet that combines CI artifacts, local verification, SBOM review, packaged jar smoke evidence, proxy status UI checks, and demo stack commands. Use [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md) to choose between packaged jar, Maven exec, Spring profile, proxy demo stack, status page, CI artifact, local verification, smoke helper, and optional JavaFX desktop paths. Use [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md) as the hard stop before any future release action is separately approved. Use [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md) for deterministic `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover recipes that verify selected-upstream behavior through real forwarded HTTP headers. See [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md), [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](REVERSE_PROXY_HEALTH_AND_METRICS.md), [`REVERSE_PROXY_RESILIENCE.md`](REVERSE_PROXY_RESILIENCE.md), and [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md). Keep this mode loopback-bound or behind trusted private controls unless deployment-specific auth, TLS, ingress, and rate limits are in place. It is not a production gateway or benchmark.
+For real local HTTP forwarding tests, enable the optional `/proxy/**` mode with `loadbalancerpro.proxy.enabled=true` and configured loopback upstreams. The proxy removes the `/proxy` prefix, forwards method/path/query/body/safe headers, reuses the request-level routing strategy registry, skips upstreams configured with `healthy=false`, and returns `X-LoadBalancerPro-Upstream` plus `X-LoadBalancerPro-Strategy` response headers. Optional active health checks can be enabled with `loadbalancerpro.proxy.health-check.enabled=true`; probe responses with 2xx/3xx are treated as healthy, failing probes mark the upstream unavailable for selection, and `GET /api/proxy/status` reports read-only local counters and effective health. Optional bounded retries and process-local cooldown can be enabled with `loadbalancerpro.proxy.retry.*` and `loadbalancerpro.proxy.cooldown.*`; retries are off by default, non-idempotent retries require explicit opt-in, and cooldown state is memory-only. Open `http://localhost:8080/proxy-status.html` for the read-only browser status view of those fields, counters, retry/cooldown state, raw JSON, and local demo curl commands. Use [`PROXY_DEMO_STACK.md`](PROXY_DEMO_STACK.md) for the single Windows/Unix quick-start path with checked-in demo profiles, the Java fixture launcher, startup commands, curl verification, status-page review, cleanup, and troubleshooting. Use [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md) for launcher arguments, fixture health toggles, method/path/query echo behavior, and no-cloud boundaries. Use [`OPERATOR_PACKAGING.md`](OPERATOR_PACKAGING.md) for the Maven exec launcher command, packaged-jar API startup, JavaFX optional note, and copy/adapt real-backend example property files. Use [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md) if you specifically want the optional desktop UI; API, proxy, and static browser operator paths do not require JavaFX. Use [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](OPERATOR_DISTRIBUTION_SMOKE_KIT.md) for release-free packaged-jar, static-resource, profile, and status-page smoke checks. Use [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md) for release-free local checksum and jar manifest/resource verification after packaging; the same checks are also uploaded by CI as the `packaged-artifact-smoke` workflow artifact. Use [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md) to download JaCoCo coverage, packaged smoke, and SBOM workflow artifacts and compare local-vs-CI SHA-256 evidence without publishing a release. Use [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md) for the release-free go/no-go packet that combines CI artifacts, local verification, SBOM review, packaged jar smoke evidence, proxy status UI checks, and demo stack commands. Use [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md) and [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) for the prepared v2.5.0 release notes and exact-version authorization gate. Use [`OPERATOR_INSTALL_RUN_MATRIX.md`](OPERATOR_INSTALL_RUN_MATRIX.md) to choose between packaged jar, Maven exec, Spring profile, proxy demo stack, status page, CI artifact, local verification, smoke helper, and optional JavaFX desktop paths. Use [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md) as the hard stop before any future release action is separately approved. Use [`PROXY_STRATEGY_DEMO_LAB.md`](PROXY_STRATEGY_DEMO_LAB.md) for deterministic `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover recipes that verify selected-upstream behavior through real forwarded HTTP headers. See [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md), [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](REVERSE_PROXY_HEALTH_AND_METRICS.md), [`REVERSE_PROXY_RESILIENCE.md`](REVERSE_PROXY_RESILIENCE.md), and [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md). Keep this mode loopback-bound or behind trusted private controls unless deployment-specific auth, TLS, ingress, and rate limits are in place. It is not a production gateway or benchmark.
 
 For automated reviewer evidence without starting external services, run `mvn -Dtest=LocalOnlyRealBackendProxyValidationTest,LocalProxyEvidenceExportTest test`. These source-visible JUnit paths start only JDK loopback `HttpServer` fixtures on Java-assigned ephemeral ports, prove real forwarding status/body/header behavior, verify a configured-unavailable backend fails closed, and confirm the prod API-key boundary. For the shortest export-only recipe, see [`REVIEWER_TRUST_MAP.md#local-proxy-evidence-export`](REVIEWER_TRUST_MAP.md#local-proxy-evidence-export). `LocalProxyEvidenceExportTest` also writes redacted Markdown/JSON to `target/proxy-evidence/local-proxy-evidence.md` and `target/proxy-evidence/local-proxy-evidence.json`, which are ignored Maven build outputs rather than tracked docs. The path does not add native tools, port scanning, persistence, service installation, scheduled tasks, credential storage, or external network calls.
 

@@ -55,6 +55,18 @@ function Get-LatestSemanticRef {
     return ""
 }
 
+function ConvertFrom-SemanticRef {
+    param([string]$Ref)
+
+    if ([string]::IsNullOrWhiteSpace($Ref)) {
+        return ""
+    }
+    if ($Ref -notmatch "^v(\d+\.\d+\.\d+)$") {
+        throw "Semantic ref must be in vMAJOR.MINOR.PATCH form. Got: $Ref"
+    }
+    return $Matches[1]
+}
+
 function Get-NextMinorVersion {
     param([string]$Version)
 
@@ -139,8 +151,13 @@ $statusLines = Invoke-GitRead @("status", "--short")
 $workingTree = if ($statusLines.Count -eq 0) { "clean" } else { "dirty" }
 $projectVersion = Read-ProjectVersion
 $latestRef = Get-LatestSemanticRef
+$latestVersion = ConvertFrom-SemanticRef -Ref $latestRef
 $resolvedRecommendation = if ([string]::IsNullOrWhiteSpace($RecommendedVersion)) {
-    Get-NextMinorVersion -Version $projectVersion
+    if (-not [string]::IsNullOrWhiteSpace($latestVersion) -and $projectVersion -ne $latestVersion) {
+        $projectVersion
+    } else {
+        Get-NextMinorVersion -Version $projectVersion
+    }
 } else {
     $RecommendedVersion.TrimStart("v")
 }

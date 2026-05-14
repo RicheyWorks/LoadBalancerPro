@@ -64,7 +64,7 @@ Expected output includes `PASS:`, `WARN:`, and `FAIL:` lines. A clear smoke fail
 The script starts:
 
 ```text
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 ```
 
 It verifies:

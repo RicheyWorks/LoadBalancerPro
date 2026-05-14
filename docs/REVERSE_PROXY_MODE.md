@@ -11,7 +11,7 @@ For copyable run profiles that combine local demo, prod API-key, cloud-sandbox A
 Start the API with proxy mode enabled and two local upstreams:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --server.address=127.0.0.1 \
   --server.port=8080 \
   --loadbalancerpro.proxy.enabled=true \

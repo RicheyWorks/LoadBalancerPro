@@ -8,7 +8,7 @@ The API and CLI are safe by default: allocation endpoints do not call AWS, CLI c
 
 JavaFX UI support is optional. API, proxy, CLI, Java fixture launcher, and static browser workflows do not require JavaFX; desktop UI deployment remains platform-sensitive and separate from the Spring API/proxy operator path. See [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md).
 
-For a concise non-technical overview, start with [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). For the reviewer-ready production-candidate snapshot, use [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md). For evidence navigation, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md). For release-candidate rehearsal without publishing, use [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](docs/RELEASE_CANDIDATE_DRY_RUN_PACKET.md) and [`RELEASE_INTENT_REVIEW.md`](docs/RELEASE_INTENT_REVIEW.md). For a guided local demo path, use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md). For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md), [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md), and the config-only [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md) recipe.
+For a concise non-technical overview, start with [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). For the reviewer-ready production-candidate snapshot, use [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md). For evidence navigation, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md). For release-candidate rehearsal without publishing, use [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](docs/RELEASE_CANDIDATE_DRY_RUN_PACKET.md), [`RELEASE_INTENT_REVIEW.md`](docs/RELEASE_INTENT_REVIEW.md), [`RELEASE_NOTES_v2.5.0.md`](docs/RELEASE_NOTES_v2.5.0.md), and [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](docs/V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md). For a guided local demo path, use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md). For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md), [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md), and the config-only [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md) recipe.
 
 ## Why This Project Matters
 
@@ -71,6 +71,7 @@ The web cockpit is the quickest first look at LoadBalancerPro. It uses existing 
 
 ## Current Release Evidence
 
+- `v2.5.0` is prepared as the next JAR/docs-first enterprise readiness release intent. It is not tagged or published by this repository state; review [`docs/RELEASE_NOTES_v2.5.0.md`](docs/RELEASE_NOTES_v2.5.0.md), [`docs/RELEASE_INTENT_REVIEW.md`](docs/RELEASE_INTENT_REVIEW.md), and [`docs/V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](docs/V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) before any future explicit release authorization.
 - `v2.4.2` is the dependency-maintenance release baseline for `org.json:json` and AWS SDK v2 BOM updates. Future semantic version tags publish GitHub Release assets through the release-artifacts workflow; see [`docs/RELEASE_PROCESS.md`](docs/RELEASE_PROCESS.md).
 - [`docs/V2_4_2_DEPENDENCY_MAINTENANCE_RELEASE.md`](docs/V2_4_2_DEPENDENCY_MAINTENANCE_RELEASE.md) summarizes the v2.4.2 dependency scope and safety posture.
 - [`docs/V2_4_0_RELEASE_ARTIFACT_EVIDENCE.md`](docs/V2_4_0_RELEASE_ARTIFACT_EVIDENCE.md) records the v2.4.0 release artifact, checksum, SBOM, and attestation evidence.
@@ -79,6 +80,7 @@ The web cockpit is the quickest first look at LoadBalancerPro. It uses existing 
 
 ## Release Timeline
 
+- `v2.5.0`: prepared JAR/docs-first enterprise readiness release intent covering container prod defaults, prod API-key deny-by-default, OAuth2 dedicated role claims, DTO omitted-field validation, release dry-run packets, evidence gates, risk workflow, and container rollout planning. Not tagged or published in this release-prep PR.
 - `v2.4.2`: dependency maintenance for `org.json:json` and AWS SDK v2 BOM updates.
 - `v2.4.1`: compatibility maintenance after the namespace migration, including deprecated-shim caller cleanup, cloud metrics wrapper refactor, and README/CODEOWNERS/docs polish.
 - `v2.4.0`: package namespace migration to `com.richmond423.loadbalancerpro.*` and Maven `groupId` `com.richmond423`.
@@ -220,6 +222,8 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](docs/RELEASE_CANDIDATE_DRY_RUN_PACKET.md) is the current reviewer packet for recording commit, test/verify/package, SBOM, checksum, security gate, smoke, and publication-boundary evidence under ignored `target/release-candidate-dry-run/`.
 - [`RELEASE_INTENT_REVIEW.md`](docs/RELEASE_INTENT_REVIEW.md) prepares the human decision for the recommended `v2.5.0` JAR/docs-first release path without creating tags, GitHub Releases, release assets, registry images, or signatures.
 - [`RELEASE_READINESS_DECISION_SUMMARY.md`](docs/RELEASE_READINESS_DECISION_SUMMARY.md) summarizes the recommended `v2.5.0` JAR/docs-first human decision and the deferred container distribution path.
+- [`RELEASE_NOTES_v2.5.0.md`](docs/RELEASE_NOTES_v2.5.0.md) drafts reviewer-ready v2.5.0 notes for enterprise readiness changes, validation evidence, known limits, and the JAR/docs-first distribution recommendation.
+- [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](docs/V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) is the exact-version hard stop before any future `v2.5.0` tag, GitHub Release, asset upload, container publication, or signing action.
 - [`OPERATOR_INSTALL_RUN_MATRIX.md`](docs/OPERATOR_INSTALL_RUN_MATRIX.md) gives Windows and Unix command paths for packaged jar, Maven exec, Spring profiles, proxy demo stack, fixture launcher, status pages, CI artifacts, and smoke helpers.
 - [`RELEASE_INTENT_CHECKLIST.md`](docs/RELEASE_INTENT_CHECKLIST.md) adds the explicit release-intent hard stop before any future tag, release, upload, ruleset, or `release-downloads/` action is considered.
 - [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md) documents JavaFX desktop UI scope, platform caveats, launch guidance, troubleshooting, and why API/proxy/operator paths do not require JavaFX.
@@ -276,7 +280,7 @@ Use `mvn clean package` when you want to remove stale local build artifacts befo
 Run the packaged API locally:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 ```
 
 Verify the health endpoint:
@@ -296,7 +300,7 @@ mvn spring-boot:run
 ```bash
 mvn test
 mvn package
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 curl http://127.0.0.1:18080/api/health
 docker build -t loadbalancerpro:local .
 docker run --rm --name loadbalancerpro-demo -p 127.0.0.1:8080:8080 -e LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY loadbalancerpro:local
@@ -310,7 +314,7 @@ Start the local/demo API first:
 
 ```bash
 mvn package
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 ```
 
 The commands below use `hey` against `127.0.0.1` only and do not require AWS credentials, live cloud resources, or CloudManager configuration.
@@ -364,7 +368,7 @@ The default/local profile is for development, CI smoke tests, and portfolio demo
 Run the local/demo profile explicitly:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 ```
 
 The `prod` profile is an explicit opt-in production-like starting point, not full production readiness. It keeps `cloud.liveMode=false`, does not require AWS credentials just to start, exposes only Actuator health/info by default, leaves browser CORS origins empty unless configured through `LOADBALANCERPRO_CORS_ALLOWED_ORIGINS`, and protects `/api/**`, `/proxy/**`, OpenAPI, and Swagger with the `X-API-Key` header when `loadbalancerpro.auth.mode=api-key` is active. The explicit public prod API-key exceptions are `GET /api/health` and unauthenticated `OPTIONS` preflight requests; Actuator health/info exposure is configured separately by profile.
@@ -374,7 +378,7 @@ Run the production-like profile locally for validation:
 ```bash
 LOADBALANCERPRO_API_KEY=replace-with-random-local-test-value \
 LOADBALANCERPRO_CORS_ALLOWED_ORIGINS=https://app.example.com \
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=prod
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=prod
 ```
 
 Call protected prod-profile API endpoints with the configured key:
@@ -413,7 +417,7 @@ Run the sandbox profile locally:
 
 ```bash
 LOADBALANCERPRO_API_KEY=replace-with-random-local-test-value \
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=cloud-sandbox
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=cloud-sandbox
 ```
 
 Sandbox defaults remain fail-closed:
@@ -472,7 +476,7 @@ Example local validation behind a trusted proxy configuration:
 ```bash
 LOADBALANCERPRO_API_KEY=replace-with-random-deployment-secret \
 SERVER_FORWARD_HEADERS_STRATEGY=framework \
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=prod
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=prod
 ```
 
 The API key is passed through `LOADBALANCERPRO_API_KEY`, mapped to `loadbalancerpro.api.key`, and is never documented as a real value. Rotate it outside the application and avoid logging request headers at the proxy.
@@ -483,7 +487,7 @@ The packaged JAR can print deterministic, synthetic LASE evaluation reports with
 
 ```bash
 mvn package
-java -jar target/LoadBalancerPro-2.4.2.jar --lase-demo=healthy
+java -jar target/LoadBalancerPro-2.5.0.jar --lase-demo=healthy
 ```
 
 This is a safe internal control-plane demo only. It is recommendation-only, uses synthetic inputs, does not touch live AWS resources, does not call `CloudManager`, does not mutate real routing state, does not require the API server, does not require AWS credentials, and does not require network access.
@@ -491,14 +495,14 @@ This is a safe internal control-plane demo only. It is recommendation-only, uses
 Available demo commands:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --lase-demo
-java -jar target/LoadBalancerPro-2.4.2.jar --lase-demo=all
-java -jar target/LoadBalancerPro-2.4.2.jar --lase-demo=healthy
-java -jar target/LoadBalancerPro-2.4.2.jar --lase-demo=overloaded
-java -jar target/LoadBalancerPro-2.4.2.jar --lase-demo=error-storm
-java -jar target/LoadBalancerPro-2.4.2.jar --lase-demo=partial-outage
-java -jar target/LoadBalancerPro-2.4.2.jar --lase-demo=low-sample
-java -jar target/LoadBalancerPro-2.4.2.jar --lase-demo=invalid-name
+java -jar target/LoadBalancerPro-2.5.0.jar --lase-demo
+java -jar target/LoadBalancerPro-2.5.0.jar --lase-demo=all
+java -jar target/LoadBalancerPro-2.5.0.jar --lase-demo=healthy
+java -jar target/LoadBalancerPro-2.5.0.jar --lase-demo=overloaded
+java -jar target/LoadBalancerPro-2.5.0.jar --lase-demo=error-storm
+java -jar target/LoadBalancerPro-2.5.0.jar --lase-demo=partial-outage
+java -jar target/LoadBalancerPro-2.5.0.jar --lase-demo=low-sample
+java -jar target/LoadBalancerPro-2.5.0.jar --lase-demo=invalid-name
 ```
 
 `--lase-demo` and `--lase-demo=all` print every scenario. Named scenarios print only that scenario. Invalid names fail safely with exit code `2`, print valid scenario names, and do not emit a raw stack trace.
@@ -538,7 +542,7 @@ Saved LASE shadow events can be replayed locally from JSON Lines without startin
 
 ```bash
 mvn package
-java -jar target/LoadBalancerPro-2.4.2.jar --lase-replay=shadow-events.jsonl
+java -jar target/LoadBalancerPro-2.5.0.jar --lase-replay=shadow-events.jsonl
 ```
 
 Replay mode is offline, read-only, and deterministic for a fixed input file. It does not change routing, does not call `CloudManager`, does not touch AWS resources, does not parse PCAP files, does not use Wireshark, does not open sockets, and does not require network access or AWS credentials. It evaluates previously saved shadow-observability records only; it is not a durable production telemetry store.

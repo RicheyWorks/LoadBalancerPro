@@ -122,7 +122,7 @@ Maven exec fixture launcher:
   mvn -q -DskipTests compile exec:java "-Dexec.mainClass=com.richmond423.loadbalancerpro.demo.ProxyDemoFixtureLauncher" "-Dexec.args=--mode round-robin"
 
 Packaged jar startup:
-  java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=$PORT --spring.profiles.active=local
+  java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=$PORT --spring.profiles.active=local
 
 Proxy status checks:
   curl -fsS http://127.0.0.1:$PORT/api/health

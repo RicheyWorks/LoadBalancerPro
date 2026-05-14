@@ -15,7 +15,7 @@ mvn -B -DskipTests package
 Start the local API on the Postman default port:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
 ```
 
 During development, the existing Maven startup path is also available:

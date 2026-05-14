@@ -4,7 +4,7 @@ This page gives reviewers the current two-track decision after the release-inten
 
 ## Recommended Next Human Decision
 
-Proceed with a JAR/docs-first release-intent decision for `v2.5.0` only after a separate explicit release authorization and a version-alignment PR. Do not create a semantic tag, GitHub Release, release assets, registry image, or container signature from this summary.
+Proceed with a JAR/docs-first release-intent decision for `v2.5.0` only after this release-prep alignment is merged, checks are green, dry-run evidence is reviewed, and a separate explicit release authorization is given. Do not create a semantic tag, GitHub Release, release assets, registry image, or container signature from this summary.
 
 ## Exact Version Recommendation
 
@@ -23,7 +23,7 @@ JAR/docs-first is sufficient when distribution means:
 - GitHub artifact attestations from the semantic-tag Release Artifacts workflow;
 - reviewer/operator docs and dry-run evidence.
 
-Use [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md) for the human release decision and [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md) for local dry-run evidence.
+Use [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md) for the human release decision, [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md) for local dry-run evidence, [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md) for reviewer-ready release notes, and [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) for the hard stop before any real release action.
 
 ## Option 2: Container Distribution Later
 

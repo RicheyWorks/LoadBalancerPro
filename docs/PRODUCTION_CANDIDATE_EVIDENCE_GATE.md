@@ -4,7 +4,7 @@ Use this gate before describing a LoadBalancerPro build as production-candidate 
 
 This gate assumes the deployment still needs environment-specific TLS, IAM, network policy, secret storage, monitoring, incident response, rollback, and operator approval. It also assumes local/demo mode remains intentionally permissive and must not be exposed publicly.
 
-For a source-visible local packet that records commit, build/test/package, SBOM, checksum, smoke, security gate, and publication-boundary evidence under ignored `target/release-candidate-dry-run/`, use [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md). For the follow-on human decision packet for the recommended `v2.5.0` JAR/docs-first release path, use [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md).
+For a source-visible local packet that records commit, build/test/package, SBOM, checksum, smoke, security gate, and publication-boundary evidence under ignored `target/release-candidate-dry-run/`, use [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md). For the follow-on human decision packet for the recommended `v2.5.0` JAR/docs-first release path, use [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md), [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md), and [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md).
 
 ## Gate Levels
 

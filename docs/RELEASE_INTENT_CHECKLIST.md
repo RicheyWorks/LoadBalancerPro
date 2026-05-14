@@ -2,6 +2,8 @@
 
 Use this checklist before anyone intentionally invokes a future release process for LoadBalancerPro. This checklist does not create a release. It is a decision gate for review readiness, not a publishing procedure.
 
+For the prepared `v2.5.0` JAR/docs-first release intent, complete the exact-version gate in [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) after reviewing [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md) and the generated dry-run evidence.
+
 ## Preconditions
 
 Complete and record these checks before considering release publication:

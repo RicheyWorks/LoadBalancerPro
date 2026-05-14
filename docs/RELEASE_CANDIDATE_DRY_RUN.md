@@ -82,7 +82,7 @@ Use [`LOCAL_ARTIFACT_VERIFICATION.md`](LOCAL_ARTIFACT_VERIFICATION.md) when loca
 Checklist:
 
 - Local jar was built or an operator explicitly cited CI as source of truth because local Maven is blocked.
-- Local SHA-256 was generated for `target/LoadBalancerPro-2.4.2.jar` when a local jar exists.
+- Local SHA-256 was generated for `target/LoadBalancerPro-2.5.0.jar` when a local jar exists.
 - `jar tf` output was inspected for required static pages, demo profiles, and `ProxyDemoFixtureLauncher.class`.
 - Local SHA-256 was compared with CI SHA-256 only for the same artifact or a controlled rebuild context.
 - Any checksum mismatch was documented with build context notes rather than treated as automatic failure.

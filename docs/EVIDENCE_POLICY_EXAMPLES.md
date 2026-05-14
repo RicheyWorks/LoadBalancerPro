@@ -29,19 +29,19 @@ Each packaged example exports `before.json`, `after.json`, and an `expected-deci
 List packaged examples:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --list-policy-examples
+java -jar target/LoadBalancerPro-2.5.0.jar --list-policy-examples
 ```
 
 Print a compact summary:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --print-policy-example receiver-redaction-warn
+java -jar target/LoadBalancerPro-2.5.0.jar --print-policy-example receiver-redaction-warn
 ```
 
 Export a training pair:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --export-policy-example receiver-redaction-warn \
   --example-output-dir walkthrough/receiver-redaction
 ```
@@ -51,7 +51,7 @@ The export writes `before.json`, `after.json`, and `expected-decision.json`. Exi
 Run the full dry-run walkthrough:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --walkthrough-policy-example receiver-redaction-warn \
   --example-output-dir walkthrough/receiver-redaction \
   --policy-report-format markdown
@@ -62,7 +62,7 @@ The walkthrough exports the packaged example, runs the evidence catalog diff, ev
 Run every packaged walkthrough as a one-command offline training lab:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --run-policy-training-lab \
   --training-lab-format markdown
 ```
@@ -70,7 +70,7 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 For automation or operator onboarding records, emit JSON or write the transcript to a file:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --run-policy-training-lab \
   --training-lab-format json \
   --training-lab-output policy-training-lab.json
@@ -83,9 +83,9 @@ The training lab loads all packaged examples, runs the same diff and policy eval
 Scorecards grade operator-submitted decisions against the same packaged examples without starting the API server:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --list-training-scorecards
+java -jar target/LoadBalancerPro-2.5.0.jar --list-training-scorecards
 
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --print-training-scorecard receiver-redaction-warn
 ```
 
@@ -109,13 +109,13 @@ Use this answers shape for offline practice:
 Grade answers as Markdown or JSON:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --grade-training-scorecard scorecard-answers.json \
   --scorecard-format markdown \
   --scorecard-output scorecard-report.md \
   --fail-on-score-below 80
 
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --grade-training-scorecard scorecard-answers.json \
   --scorecard-format json \
   --scorecard-output scorecard-report.json
@@ -143,12 +143,12 @@ The grade route evaluates submitted answer JSON in memory and returns determinis
 After exporting, operators can also run the underlying commands directly:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --diff-inventory walkthrough/receiver-redaction/before.json \
                    walkthrough/receiver-redaction/after.json \
   --diff-format markdown
 
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --diff-inventory walkthrough/receiver-redaction/before.json \
                    walkthrough/receiver-redaction/after.json \
   --policy-template receiver-redaction \
@@ -160,7 +160,7 @@ java -jar target/LoadBalancerPro-2.4.2.jar \
 Strict zero-drift final check:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --diff-inventory src/test/resources/evidence-policy-examples/strict-zero-drift/before.json \
                    src/test/resources/evidence-policy-examples/strict-zero-drift/after.json \
   --policy-template strict-zero-drift \
@@ -172,7 +172,7 @@ Expected decision: `PASS`.
 Strict zero-drift with checksum drift:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --diff-inventory src/test/resources/evidence-policy-examples/strict-zero-drift/before.json \
                    src/test/resources/evidence-policy-examples/strict-zero-drift/after-drift.json \
   --policy-template strict-zero-drift \
@@ -185,7 +185,7 @@ Expected decision: `FAIL`; the command exits non-zero when `--fail-on-policy-fai
 Receiver redaction handoff:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --diff-inventory src/test/resources/evidence-policy-examples/receiver-redaction/before.json \
                    src/test/resources/evidence-policy-examples/receiver-redaction/after.json \
   --policy-template receiver-redaction \
@@ -197,7 +197,7 @@ Expected decision: `WARN`.
 Audit append handoff:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --diff-inventory src/test/resources/evidence-policy-examples/audit-append/before.json \
                    src/test/resources/evidence-policy-examples/audit-append/after.json \
   --policy-template audit-append \
@@ -209,7 +209,7 @@ Expected decision: `WARN`.
 Regulated handoff clean path:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --diff-inventory src/test/resources/evidence-policy-examples/regulated-handoff/before.json \
                    src/test/resources/evidence-policy-examples/regulated-handoff/after.json \
   --policy-template regulated-handoff \
@@ -222,7 +222,7 @@ Expected decision: `PASS`.
 Regulated handoff with missing bundle:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --diff-inventory src/test/resources/evidence-policy-examples/regulated-handoff/before.json \
                    src/test/resources/evidence-policy-examples/regulated-handoff/after-missing-bundle.json \
   --policy-template regulated-handoff \
@@ -235,7 +235,7 @@ Expected decision: `FAIL`; missing core evidence should stop the handoff.
 Investigation working-copy handoff:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --diff-inventory src/test/resources/evidence-policy-examples/investigation-working-copy/before.json \
                    src/test/resources/evidence-policy-examples/investigation-working-copy/after.json \
   --policy-template investigation-working-copy \

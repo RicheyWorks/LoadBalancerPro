@@ -7,15 +7,17 @@ Use this packet after the release-candidate dry-run packet and before any separa
 ## Current Source And Version State
 
 - Current commit under review: record the exact value from `git rev-parse HEAD` in the generated review packet.
-- Current Maven project version: `2.4.2`.
+- Current Maven project version: `2.5.0`.
 - Latest immutable release tag observed for this line: `v2.4.2`.
 - Recommended exact next release version: `v2.5.0`.
 - Recommended release type: JAR/docs-first minor release.
 - Container distribution status: deferred; registry publication and container signing are not part of this release intent.
 - Two-track decision summary: [`RELEASE_READINESS_DECISION_SUMMARY.md`](RELEASE_READINESS_DECISION_SUMMARY.md).
+- Draft release notes: [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md).
+- Final release authorization checklist: [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md).
 - Container rollout gate if image distribution becomes required: [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md).
 
-Do not push `v2.5.0` until a separate version-alignment PR updates Maven/runtime/docs metadata to `2.5.0` and its checks pass. The release artifact workflow intentionally fails semantic tag runs when the tag version and Maven project version differ.
+Do not push `v2.5.0` or create any release assets from this review. This release-prep branch aligns Maven/runtime/docs metadata to `2.5.0`; after it merges, a separate explicit release authorization is still required before any real semantic tag or GitHub Release action. The release artifact workflow intentionally fails semantic tag runs when the tag version and Maven project version differ.
 
 ## Version Recommendation
 
@@ -48,7 +50,7 @@ mvn -q clean test
 mvn -q verify
 mvn -q -DskipTests package
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\release-candidate-dry-run-packet.ps1 -Package
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\release-intent-review.ps1 -DryRun
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\release-intent-review.ps1 -DryRun -RecommendedVersion 2.5.0
 git diff --check
 ```
 
@@ -70,8 +72,10 @@ Reviewers should collect or inspect:
 - `target/release-candidate-dry-run/LoadBalancerPro-*-SHA256SUMS.txt`
 - `target/release-intent-review/release-intent-review.md`
 - `target/release-intent-review/release-intent-review.json`
+- [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md)
+- [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md)
 - the latest matching `main` CI, CodeQL, Dependency Review, Trivy, package, smoke, and SBOM evidence;
-- the Release Artifacts workflow dry-run bundle for `2.5.0` after the version-alignment PR is merged.
+- the Release Artifacts workflow dry-run bundle for `2.5.0` after this release-prep alignment merges.
 
 The generated `target/` evidence is ignored build output and must not be committed.
 
@@ -114,18 +118,19 @@ Before approving a real release action, confirm:
 | Item | Required state |
 | --- | --- |
 | Recommended version | `v2.5.0` accepted |
-| Version alignment PR | Maven/runtime/docs metadata updated to `2.5.0` and merged |
+| Version alignment PR | Maven/runtime/docs metadata updated to `2.5.0`, checks passed, and merged |
 | Exact commit | Recorded in release-intent output |
 | Full tests and verify | Passed |
 | Package | Passed |
 | Release-candidate packet | Generated and reviewed |
 | Release-intent packet | Generated and reviewed |
+| Release notes | [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md) reviewed |
+| Release authorization checklist | [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) completed |
 | CI and CodeQL | Latest matching commit successful |
 | Dependency Review and Trivy | Successful or owner-approved non-blocking findings |
 | SBOM and checksums | Generated and verified |
 | Artifact attestation expectation | Understood as semantic-tag workflow output only |
 | Container decision | JAR/docs-first accepted; no container distribution required now |
-| Release notes | Draft reviewed |
 | Explicit release authorization | Provided in a separate request before any real release action |
 | Publication boundary | No tag, GitHub Release, release assets, registry image, or container signature created by this review |
 

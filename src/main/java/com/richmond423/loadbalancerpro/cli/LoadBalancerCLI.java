@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public class LoadBalancerCLI {
     private static final Logger logger = LogManager.getLogger(LoadBalancerCLI.class);
-    private static final String VERSION = "2.4.2";
+    private static final String VERSION = "2.5.0";
 
     public static void main(String[] args) {
         RemediationReportCli.Result reportResult = RemediationReportCli.runIfRequested(args, System.out, System.err);

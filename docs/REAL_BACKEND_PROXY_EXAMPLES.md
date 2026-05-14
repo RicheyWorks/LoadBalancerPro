@@ -52,7 +52,7 @@ You can use your own service, a small internal test app, or the Java fixture lau
 Use `application-proxy-real-backend-round-robin-example.properties` for explicit strategy-named review, or the legacy compatibility file `application-proxy-real-backend-example.properties`.
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-round-robin-example.properties
+java -jar target/LoadBalancerPro-2.5.0.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-round-robin-example.properties
 ```
 
 Send repeated requests through the proxy:
@@ -77,7 +77,7 @@ Open `http://localhost:8080/proxy-status.html` and confirm the proxy is enabled,
 Use `application-proxy-operator-routes-example.properties` when you want the first operator-configured route foundation instead of the legacy global upstream list.
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-operator-routes-example.properties
+java -jar target/LoadBalancerPro-2.5.0.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-operator-routes-example.properties
 ```
 
 The example keeps proxy mode disabled in the default app and enables it only in this imported file:
@@ -105,7 +105,7 @@ Verify `/api/proxy/status` reports the `api` route, `/api` path prefix, selected
 Use `application-proxy-real-backend-weighted-example.properties` when one local service should receive a higher share of selected requests.
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-weighted-example.properties
+java -jar target/LoadBalancerPro-2.5.0.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-weighted-example.properties
 ```
 
 The example sets `local-api-a` weight to `3.0` and `local-api-b` weight to `1.0`. Send a short request sequence:
@@ -131,7 +131,7 @@ Treat the headers and `/api/proxy/status` counters as selected-upstream evidence
 Use `application-proxy-real-backend-failover-example.properties` when your local services expose `GET /health`.
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-failover-example.properties
+java -jar target/LoadBalancerPro-2.5.0.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-failover-example.properties
 ```
 
 With both services healthy, requests can select either backend. Then stop one service or make its `/health` endpoint return a failing status. Send another request:
@@ -154,7 +154,7 @@ The `healthy=false` upstream setting remains a hard disable. Do not use health r
 Use `application-proxy-real-backend-resilience-example.properties` when you want local retry/cooldown evidence against services you control.
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-resilience-example.properties
+java -jar target/LoadBalancerPro-2.5.0.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-resilience-example.properties
 ```
 
 This example enables bounded `GET`/`HEAD` retries and process-local cooldown:

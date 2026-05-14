@@ -60,7 +60,7 @@ mvn -B -DskipTests package
 The expected executable jar path is:
 
 ```text
-target/LoadBalancerPro-2.4.2.jar
+target/LoadBalancerPro-2.5.0.jar
 ```
 
 Windows helper:
@@ -80,7 +80,7 @@ bash scripts/operator-distribution-smoke.sh --package
 Start the packaged jar on a loopback-only port:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
 ```
 
 Then check:
@@ -135,7 +135,7 @@ mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=proxy-
 Or with the packaged jar:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --spring.profiles.active=proxy-demo-round-robin
+java -jar target/LoadBalancerPro-2.5.0.jar --spring.profiles.active=proxy-demo-round-robin
 ```
 
 Then verify:
@@ -165,7 +165,7 @@ docs/examples/proxy/application-proxy-real-backend-failover-example.properties
 Example import command:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-example.properties
+java -jar target/LoadBalancerPro-2.5.0.jar --spring.config.import=optional:file:docs/examples/proxy/application-proxy-real-backend-example.properties
 ```
 
 The example upstreams are loopback placeholders:
@@ -184,15 +184,15 @@ After packaging, verify static resources are inside the jar:
 Windows PowerShell:
 
 ```powershell
-jar tf target\LoadBalancerPro-2.4.2.jar | Select-String "BOOT-INF/classes/static/proxy-status.html"
-jar tf target\LoadBalancerPro-2.4.2.jar | Select-String "BOOT-INF/classes/static/load-balancing-cockpit.html"
+jar tf target\LoadBalancerPro-2.5.0.jar | Select-String "BOOT-INF/classes/static/proxy-status.html"
+jar tf target\LoadBalancerPro-2.5.0.jar | Select-String "BOOT-INF/classes/static/load-balancing-cockpit.html"
 ```
 
 Unix shell:
 
 ```bash
-jar tf target/LoadBalancerPro-2.4.2.jar | grep 'BOOT-INF/classes/static/proxy-status.html'
-jar tf target/LoadBalancerPro-2.4.2.jar | grep 'BOOT-INF/classes/static/load-balancing-cockpit.html'
+jar tf target/LoadBalancerPro-2.5.0.jar | grep 'BOOT-INF/classes/static/proxy-status.html'
+jar tf target/LoadBalancerPro-2.5.0.jar | grep 'BOOT-INF/classes/static/load-balancing-cockpit.html'
 ```
 
 The proxy operator status page uses `GET /api/proxy/status` as its status source.

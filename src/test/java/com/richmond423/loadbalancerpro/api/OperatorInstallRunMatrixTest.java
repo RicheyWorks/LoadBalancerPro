@@ -34,7 +34,7 @@ class OperatorInstallRunMatrixTest {
         assertTrue(matrix.contains("# Operator Install Run Matrix"));
         assertTrue(matrix.contains("Windows command"));
         assertTrue(matrix.contains("Unix command"));
-        assertTrue(matrix.contains("java -jar target/LoadBalancerPro-2.4.2.jar"));
+        assertTrue(matrix.contains("java -jar target/LoadBalancerPro-2.5.0.jar"));
         assertTrue(matrix.contains("exec:java"));
         assertTrue(matrix.contains("spring-boot:run"));
         assertTrue(matrix.contains("ProxyDemoFixtureLauncher"));

@@ -100,10 +100,10 @@ The grade response includes `scorecardVersion`, `totalExercises`, `totalScore`, 
 The API server is optional for CLI workflows. Operators can still use:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --list-policy-templates
-java -jar target/LoadBalancerPro-2.4.2.jar --list-policy-examples
-java -jar target/LoadBalancerPro-2.4.2.jar --list-training-scorecards
-java -jar target/LoadBalancerPro-2.4.2.jar --grade-training-scorecard scorecard-answers.json
+java -jar target/LoadBalancerPro-2.5.0.jar --list-policy-templates
+java -jar target/LoadBalancerPro-2.5.0.jar --list-policy-examples
+java -jar target/LoadBalancerPro-2.5.0.jar --list-training-scorecards
+java -jar target/LoadBalancerPro-2.5.0.jar --grade-training-scorecard scorecard-answers.json
 ```
 
 ## Browser Parity

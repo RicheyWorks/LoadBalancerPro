@@ -23,7 +23,7 @@ This guide does not claim production readiness, gateway hardening, security cert
 | Profile/mode | Intended use | Required flags/env vars | Proxy default | Auth boundary | TLS assumption | Cockpit access | Status/proxy verification command | What it proves | What it does not prove |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | local demo | Fastest source checkout demo and browser review | `mvn spring-boot:run` or `--spring.profiles.active=local` | Disabled | Demo-friendly local API-key mode; not a security boundary | Loopback HTTP only; terminate TLS externally before shared exposure | `http://localhost:8080/` and `http://localhost:8080/load-balancing-cockpit.html` | `curl -fsS http://127.0.0.1:8080/api/health` | App starts locally with static pages and health endpoint | Public exposure safety, identity, TLS, or gateway readiness |
-| packaged jar local | Validate the built executable jar | `mvn -B -DskipTests package`, then `java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=8080` | Disabled | Same as local demo unless another profile is selected | Loopback HTTP only | Same cockpit URLs | `curl -fsS http://127.0.0.1:8080/api/health` | Packaged jar can start and serve local API/static resources | Release asset publication or signed provenance |
+| packaged jar local | Validate the built executable jar | `mvn -B -DskipTests package`, then `java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080` | Disabled | Same as local demo unless another profile is selected | Loopback HTTP only | Same cockpit URLs | `curl -fsS http://127.0.0.1:8080/api/health` | Packaged jar can start and serve local API/static resources | Release asset publication or signed provenance |
 | prod API-key boundary | Local production-like API-key validation | `LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY`, `--spring.profiles.active=prod` | Disabled | `X-API-Key` protects `/api/**`, `/proxy/**`, OpenAPI, and Swagger by default; public API exceptions are `GET /api/health` and unauthenticated `OPTIONS` | Terminate TLS at trusted edge before non-local exposure | Local only unless intentionally routed through a trusted edge | `curl -i http://127.0.0.1:8080/api/proxy/status` then `curl -i -H "X-API-Key: $LOADBALANCERPRO_API_KEY" http://127.0.0.1:8080/api/proxy/status` | API-key fail-closed boundary for protected surfaces | Full identity, secret rotation, public readiness, or TLS |
 | cloud-sandbox API-key boundary | Dry-run sandbox-profile validation with API-key boundary | `LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY`, `--spring.profiles.active=cloud-sandbox` | Disabled | Same API-key boundary as prod; cloud live mutation remains off by default | Terminate TLS at trusted edge before non-local exposure | Local/private only | `curl -i http://127.0.0.1:8080/api/proxy/status` then `curl -i -H "X-API-Key: $LOADBALANCERPRO_API_KEY" http://127.0.0.1:8080/api/proxy/status` | Sandbox profile starts dry-run and protected surfaces require API key | Live AWS behavior, IAM proof, or sandbox cleanup correctness |
 | OAuth2 mode | App-native JWT role-check validation | `loadbalancerpro.auth.mode=oauth2` plus loopback issuer or JWK set config | Disabled unless explicitly enabled elsewhere | Bearer token required; configured allocation role defaults to `operator` for protected allocation/routing and proxy surfaces | Terminate TLS externally; do not send real tokens over plain shared networks | Private/demo review only | `curl -i -H "Authorization: Bearer CHANGE_ME_LOCAL_TOKEN" http://127.0.0.1:8080/api/proxy/status` | OAuth2 mode wiring and role boundary can be validated with a configured local identity/JWK source | Identity-provider operation, key rotation, or end-to-end encryption |
@@ -46,7 +46,7 @@ Packaged local demo variant:
 
 ```bash
 mvn -B -DskipTests package
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
 curl -fsS http://127.0.0.1:8080/api/health
 ```
 
@@ -56,7 +56,7 @@ PowerShell:
 
 ```powershell
 $env:LOADBALANCERPRO_API_KEY="CHANGE_ME_LOCAL_API_KEY"
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=prod
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=prod
 curl.exe -i http://127.0.0.1:8080/api/proxy/status
 curl.exe -i -H "X-API-Key: $env:LOADBALANCERPRO_API_KEY" http://127.0.0.1:8080/api/proxy/status
 curl.exe -i http://127.0.0.1:8080/proxy/demo
@@ -67,7 +67,7 @@ Unix shell:
 
 ```bash
 export LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=prod
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=prod
 curl -i http://127.0.0.1:8080/api/proxy/status
 curl -i -H "X-API-Key: $LOADBALANCERPRO_API_KEY" http://127.0.0.1:8080/api/proxy/status
 curl -i http://127.0.0.1:8080/proxy/demo
@@ -80,7 +80,7 @@ Expected boundary: the unauthenticated status/proxy calls return HTTP 401 in pro
 
 ```bash
 export LOADBALANCERPRO_API_KEY=CHANGE_ME_LOCAL_API_KEY
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=cloud-sandbox
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=cloud-sandbox
 curl -i http://127.0.0.1:8080/api/proxy/status
 curl -i -H "X-API-Key: $LOADBALANCERPRO_API_KEY" http://127.0.0.1:8080/api/proxy/status
 ```
@@ -92,7 +92,7 @@ Cloud-sandbox remains dry-run by default and does not require AWS credentials ju
 Use OAuth2 only when you have a real or local test issuer/JWK source configured. This recipe uses loopback placeholders and is not a working identity provider by itself:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --server.address=127.0.0.1 \
   --server.port=8080 \
   --spring.profiles.active=prod \
@@ -115,7 +115,7 @@ Expected boundary: missing or invalid bearer tokens return HTTP 401, and authent
 Start two local HTTP services on loopback, or use the Java fixture launcher documented in [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](PROXY_DEMO_FIXTURE_LAUNCHER.md). Then import the explicit proxy-loopback example:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar \
+java -jar target/LoadBalancerPro-2.5.0.jar \
   --server.address=127.0.0.1 \
   --server.port=8080 \
   --spring.config.import=optional:file:docs/examples/operator-run-profiles/proxy-loopback.properties

@@ -1,5 +1,5 @@
 param(
-    [string]$JarPath = "target/LoadBalancerPro-2.4.2.jar",
+    [string]$JarPath = "target/LoadBalancerPro-2.5.0.jar",
     [switch]$Build
 )
 

@@ -35,7 +35,7 @@ Use it when you specifically want to explore the desktop simulator experience. D
 For normal API/proxy work, do not launch JavaFX. Start the API or proxy using the operator docs instead:
 
 ```bash
-java -jar target/LoadBalancerPro-2.4.2.jar --server.address=127.0.0.1 --server.port=8080
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080
 ```
 
 If you intentionally want to try the desktop UI, use the CLI entry point and choose the interactive `Launch GUI` option:

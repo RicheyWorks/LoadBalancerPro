@@ -45,7 +45,7 @@ class OperatorDistributionSmokeKitTest {
         assertTrue(doc.contains("# Operator Distribution Smoke Kit"));
         assertTrue(doc.contains("No tags, releases, or assets are created"));
         assertTrue(doc.contains("mvn -B -DskipTests package"));
-        assertTrue(doc.contains("java -jar target/LoadBalancerPro-2.4.2.jar"));
+        assertTrue(doc.contains("java -jar target/LoadBalancerPro-2.5.0.jar"));
         assertTrue(doc.contains("compile exec:java"));
         assertTrue(doc.contains("ProxyDemoFixtureLauncher"));
         assertTrue(doc.contains("/proxy-status.html"));

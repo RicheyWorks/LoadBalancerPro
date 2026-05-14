@@ -1,7 +1,7 @@
 # LoadBalancerPro Supply Chain Evidence
 
 Date: 2026-05-13
-Branch: `codex/evidence-documentation-refresh`
+Branch: `codex/v2.5.0-post-release-verification`
 Verification commands: `mvn -q test`, `mvn -q -DskipTests package`, `mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=all -DoutputDirectory=target -DoutputName=bom -Dcyclonedx.skipAttach=true`
 
 ## Purpose and Scope
@@ -22,6 +22,7 @@ Related evidence:
 - `evidence/SBOM_GUIDE.md`
 - `docs/DEPENDENCY_SAST_RISK_WORKFLOW.md`
 - `docs/PRODUCTION_READINESS_SUMMARY.md`
+- `docs/V2_5_0_POST_RELEASE_VERIFICATION.md`
 
 ## Current Dependency Posture
 
@@ -117,6 +118,19 @@ Current release artifact workflow behavior includes:
   - `LoadBalancerPro-${version}-SHA256SUMS.txt`
 
 The uploaded GitHub Actions artifact bundle is named `loadbalancerpro-release-${version}` for tag publish runs or `loadbalancerpro-release-${version}-dry-run` for manual dry runs, and is retained for 90 days. The GitHub Release assets on tag runs use the same deterministic JAR/SBOM/checksum filenames. The checksum file helps verify downloaded artifact integrity against the uploaded checksum file. GitHub artifact attestations help consumers verify where and how the release JAR was built and which SBOM JSON file was associated with it. This is GitHub Release asset publication, GitHub Actions artifact publication, and GitHub artifact attestation. It is not PGP signing, notarization, vulnerability scanning, container signing, Maven Central publication, or a production-readiness claim.
+
+## Latest Verified Release
+
+`v2.5.0` is the latest verified JAR/docs-first release. The exact tag points to commit `4cc03750be5479d9f8f88f8ef8014e05a8dc587a`, and the Release Artifacts workflow completed successfully at <https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/25838247936>.
+
+The published GitHub Release is <https://github.com/RicheyWorks/LoadBalancerPro/releases/tag/v2.5.0>. The workflow-defined assets were verified as the exact expected set:
+
+- `LoadBalancerPro-2.5.0.jar`
+- `LoadBalancerPro-2.5.0-bom.json`
+- `LoadBalancerPro-2.5.0-bom.xml`
+- `LoadBalancerPro-2.5.0-SHA256SUMS.txt`
+
+Checksum verification passed for the downloaded JAR, SBOM JSON, and SBOM XML assets. SBOM JSON/XML assets are present. GitHub artifact attestation verification passed for the release JAR provenance, and the release workflow's JAR/SBOM attestation step completed successfully. Container publication and container signing were not performed.
 
 ## Current Automation And Pinning
 

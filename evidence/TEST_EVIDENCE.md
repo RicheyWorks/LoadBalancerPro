@@ -50,3 +50,14 @@ mvn -q test
 - [Security Posture](SECURITY_POSTURE.md)
 - [Residual Risks](RESIDUAL_RISKS.md)
 - [Production-Candidate Evidence Gate](../docs/PRODUCTION_CANDIDATE_EVIDENCE_GATE.md)
+- [v2.5.0 Post-Release Verification](../docs/V2_5_0_POST_RELEASE_VERIFICATION.md)
+
+## v2.5.0 Release Verification Evidence
+
+- Exact release tag `v2.5.0` points to commit `4cc03750be5479d9f8f88f8ef8014e05a8dc587a`.
+- Release Artifacts workflow run `25838247936` completed successfully.
+- Expected assets were verified: `LoadBalancerPro-2.5.0.jar`, `LoadBalancerPro-2.5.0-bom.json`, `LoadBalancerPro-2.5.0-bom.xml`, and `LoadBalancerPro-2.5.0-SHA256SUMS.txt`.
+- SHA-256 checksum verification passed for the downloaded JAR and SBOM assets.
+- SBOM JSON/XML assets are present.
+- GitHub artifact attestation verification passed for the release JAR provenance, and the release workflow's JAR/SBOM attestation step completed successfully.
+- Container publication and container signing remain deferred.

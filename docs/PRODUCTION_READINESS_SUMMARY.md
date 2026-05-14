@@ -2,7 +2,7 @@
 
 This summary is the reviewer-facing snapshot for LoadBalancerPro after the enterprise-production-candidate hardening line. It says what is ready for controlled production-like review, what remains outside scope, and which evidence proves each claim.
 
-Current label: production-candidate for controlled enterprise demo/reviewer usage. Not release-ready distribution by itself, not production certification, and not approval for unmanaged public traffic.
+Current label: production-candidate for controlled enterprise demo/reviewer usage, with a verified `v2.5.0` JAR/docs-first GitHub Release. This is not production certification and not approval for unmanaged public traffic.
 
 ## Production-Candidate Status
 
@@ -14,11 +14,11 @@ Current label: production-candidate for controlled enterprise demo/reviewer usag
 | Container default | The checked-in Dockerfile defaults to `SPRING_PROFILES_ACTIVE=prod`. Operators must provide `LOADBALANCERPRO_API_KEY` at runtime for protected prod container use. Local/demo override is documented as loopback/private only. | [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md), [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md) |
 | Supply-chain evidence | CI covers tests, package, smoke, Docker runtime checks, Dependency Review, Trivy, and CycloneDX SBOM artifacts. CodeQL runs as a separate Java/Kotlin SAST workflow. Semantic-tag release workflow produces deterministic JAR/SBOM/checksum GitHub Release assets and GitHub artifact attestations. | [`../evidence/SUPPLY_CHAIN_EVIDENCE.md`](../evidence/SUPPLY_CHAIN_EVIDENCE.md), [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md), [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md) |
 | Dependency/SAST triage | CodeQL, Dependency Review, Trivy, SBOM, and dependency findings have an owner/rationale workflow with severity handling, accepted-risk and false-positive templates, remediation targets, and a high/critical no-silent-dismissal rule. | [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](DEPENDENCY_SAST_RISK_WORKFLOW.md) |
-| Release evidence gate | Production-candidate and release-ready labels have a checklist that separates automated checks from manual operator verification. The release-candidate dry-run packet records commit, build/test/package, SBOM, checksum, smoke, security gate, and publication-boundary evidence without publishing. The release-intent review prepares the recommended `v2.5.0` JAR/docs-first human decision, release notes, and authorization checklist without creating tags, GitHub Releases, release assets, registry images, or signatures. | [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md), [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md), [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md), [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md), [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) |
+| Release evidence gate | Production-candidate and release-ready labels have a checklist that separates automated checks from manual operator verification. The release-candidate dry-run packet records commit, build/test/package, SBOM, checksum, smoke, security gate, and publication-boundary evidence without publishing. The authorized `v2.5.0` JAR/docs-first release is now verified with exact tag, exact commit, workflow success, expected assets, checksum pass, SBOM JSON/XML presence, and artifact attestation status. | [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md), [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md), [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md), [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md), [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) |
 
 ## Current Validation Posture
 
-Use the latest successful PR and `main` checks as the source of truth for a specific commit. Required reviewer evidence includes CI, CodeQL, Dependency Review, package, smoke, SBOM, and Trivy results for that commit. The two-track release decision is summarized in [`RELEASE_READINESS_DECISION_SUMMARY.md`](RELEASE_READINESS_DECISION_SUMMARY.md): JAR/docs-first can proceed only after this `v2.5.0` alignment merges, dry-run evidence is reviewed, and explicit release authorization is given, while container distribution remains deferred to [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md).
+Use the latest successful PR and `main` checks as the source of truth for a specific commit. Required reviewer evidence includes CI, CodeQL, Dependency Review, package, smoke, SBOM, and Trivy results for that commit. The two-track release decision is summarized in [`RELEASE_READINESS_DECISION_SUMMARY.md`](RELEASE_READINESS_DECISION_SUMMARY.md): `v2.5.0` is released as JAR/docs-first with verified assets, while container distribution remains deferred to [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md).
 
 This summary branch is docs/static-test only. Its local validation target is:
 
@@ -29,9 +29,9 @@ This summary branch is docs/static-test only. Its local validation target is:
 - Operator run-profile and Postman enterprise lab dry-runs pass without external network, cloud credentials, release actions, or `release-downloads/` mutation.
 - `git diff --check` passes.
 
-Future branches should update this summary or point to the latest PR report if the test count or evidence posture changes.
+Future branches should update this summary or point to the latest PR report if the test count, release evidence, or evidence posture changes.
 
-## What Is Not Release-Ready Yet
+## What Is Not Production-Certified Or Container-Ready Yet
 
 - No container image is published to a registry.
 - No container signing, cosign signature, registry attestation, rollback policy, or retention policy is implemented.
@@ -52,7 +52,7 @@ Use a controlled production-like demo or reviewer evaluation when:
 - Container use stays local/private or behind a trusted deployment edge, with `prod` profile and runtime API key configured.
 - Local/default mode is not exposed on public interfaces.
 
-Do not call the build release-ready until semantic-tag release evidence is produced and verified for the exact version being distributed. Do not call the container path release-ready until the container signing/publication decision record is completed and implemented in a separate approved change.
+The `v2.5.0` JAR/docs-first release evidence is produced and verified for the exact version being distributed. Do not call the container path release-ready until the container signing/publication decision record is completed and implemented in a separate approved change. Do not treat the JAR/docs-first release as production deployment certification.
 
 ## Evidence Index
 
@@ -65,6 +65,7 @@ Do not call the build release-ready until semantic-tag release evidence is produ
 - Release-candidate dry-run packet: [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md)
 - Release-intent review: [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md)
 - v2.5.0 release notes: [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md)
+- v2.5.0 post-release verification: [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md)
 - v2.5.0 authorization checklist: [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md)
 - Release readiness decision summary: [`RELEASE_READINESS_DECISION_SUMMARY.md`](RELEASE_READINESS_DECISION_SUMMARY.md)
 - Container signing decision: [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md)

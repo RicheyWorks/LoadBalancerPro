@@ -307,7 +307,7 @@ sum by (path, reason) (rate(allocation_validation_failures_count_total[5m]))
 
 4. If failures come from a known client deployment, validate that client payloads still match the OpenAPI contract and examples.
 
-5. If failures appear abusive, rate limit at the gateway or reverse proxy. Keep app-level labels bounded and do not add request-specific metric labels.
+5. If failures appear abusive, enable the optional process-local API limiter for a controlled demo or single-instance review with `loadbalancerpro.api.rate-limit.enabled=true`, then still rate limit at the gateway or reverse proxy for shared or public deployments. The app limiter covers allocation, routing, scenario replay, remediation, proxy control/status, LASE shadow observability, and `/proxy/**` surfaces; it returns structured `429 rate_limited` JSON and `Retry-After` without logging API keys or bearer tokens. It is not a replacement for distributed edge quotas. Keep app-level labels bounded and do not add request-specific metric labels.
 
 ## No Healthy Servers Or All-Unhealthy Input
 

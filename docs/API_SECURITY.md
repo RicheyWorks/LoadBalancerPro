@@ -26,9 +26,11 @@ CSRF token enforcement is not required for those stateless header-auth API/proxy
 
 ## Rate-Limit Posture
 
-The application currently uses validation, request-size limits, structured errors, and cloud-safety boundaries as app-level protections. It does not provide a distributed app-native rate limiter, and it does not depend on Redis, a database, or an external queue for throttling.
+The application uses validation, request-size limits, structured errors, cloud-safety boundaries, and an optional process-local API rate limiter as app-level protections. The optional limiter is disabled by default with `loadbalancerpro.api.rate-limit.enabled=false` so local/demo workflows stay convenient. When enabled, it applies a token bucket to allocation, routing, scenario replay, remediation, proxy control/status, LASE shadow observability, and `/proxy/**` surfaces while leaving `GET /api/health` and unauthenticated `OPTIONS` preflight outside the bucket.
 
-Apply rate limiting at the edge for shared or public deployments. A reasonable first policy is to limit POST requests to allocation, evaluation, and routing endpoints per client identity or source IP, with stricter limits for repeated `400`, `401`, `413`, and `415` outcomes.
+Configure the optional process-local limiter with `loadbalancerpro.api.rate-limit.capacity`, `loadbalancerpro.api.rate-limit.refill-tokens`, and `loadbalancerpro.api.rate-limit.refill-period`. `loadbalancerpro.api.rate-limit.trust-forwarded-for` defaults to `false`; enable it only behind a trusted ingress that sanitizes `X-Forwarded-For`. The limiter returns structured `429 rate_limited` JSON plus a `Retry-After` header and must not log or persist API keys, bearer tokens, request bodies, or credentials.
+
+This is not a distributed quota system and does not depend on Redis, a database, or an external queue for throttling. Apply rate limiting at the edge for shared or public deployments. A reasonable first edge policy is to limit POST requests to allocation, evaluation, and routing endpoints per client identity or source IP, with stricter limits for repeated `400`, `401`, `413`, `415`, and `429` outcomes.
 
 ## Abuse-Resistance Guarantees
 

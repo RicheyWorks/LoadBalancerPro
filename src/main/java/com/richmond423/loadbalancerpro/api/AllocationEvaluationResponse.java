@@ -12,6 +12,7 @@ public record AllocationEvaluationResponse(
         ScalingSimulationResult scalingSimulation,
         LoadSheddingEvaluation loadShedding,
         AllocationEvaluationMetricsPreview metricsPreview,
+        LaseAllocationShadowSummary laseShadow,
         boolean readOnly,
         RemediationPlan remediationPlan,
         String decisionReason) {

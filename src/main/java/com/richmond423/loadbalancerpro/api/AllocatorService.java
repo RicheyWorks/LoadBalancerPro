@@ -16,6 +16,7 @@ import com.richmond423.loadbalancerpro.core.LoadSheddingConfig;
 import com.richmond423.loadbalancerpro.core.LoadSheddingDecision;
 import com.richmond423.loadbalancerpro.core.LoadSheddingPolicy;
 import com.richmond423.loadbalancerpro.core.LoadSheddingSignal;
+import com.richmond423.loadbalancerpro.core.LaseShadowAdvisor;
 import com.richmond423.loadbalancerpro.core.LaseShadowEventLog;
 import com.richmond423.loadbalancerpro.core.LaseShadowObservabilitySnapshot;
 import com.richmond423.loadbalancerpro.core.RequestPriority;
@@ -77,6 +78,7 @@ public class AllocatorService {
                 signalFor(request, acceptedLoad, rejectedLoad),
                 DEFAULT_LOAD_SHEDDING_CONFIG);
         LoadSheddingEvaluation loadShedding = toLoadSheddingEvaluation(loadSheddingDecision);
+        LaseAllocationShadowSummary laseShadow = evaluateLaseShadow(strategy, servers, request.requestedLoad(), result);
         AllocationEvaluationMetricsPreview metricsPreview = new AllocationEvaluationMetricsPreview(
                 strategy,
                 healthyServerCount(request.servers()),
@@ -96,6 +98,7 @@ public class AllocatorService {
                 simulation,
                 loadShedding,
                 metricsPreview,
+                laseShadow,
                 true,
                 remediationPlanner.planForEvaluation(
                         acceptedLoad,
@@ -153,6 +156,22 @@ public class AllocatorService {
 
     private LoadBalancer createLoadBalancer() {
         return new LoadBalancer(laseShadowEnabled, laseShadowEventLog);
+    }
+
+    private LaseAllocationShadowSummary evaluateLaseShadow(
+            String strategy, List<Server> servers, double requestedLoad, LoadDistributionResult result) {
+        if (!laseShadowEnabled) {
+            return LaseAllocationShadowSummary.disabled();
+        }
+        try {
+            return new LaseShadowAdvisor(true, laseShadowEventLog)
+                    .observe(strategy, servers, requestedLoad, result)
+                    .map(LaseAllocationShadowSummary::observed)
+                    .orElseGet(() -> LaseAllocationShadowSummary.failSafe(
+                            "LASE shadow observation did not produce a report."));
+        } catch (RuntimeException exception) {
+            return LaseAllocationShadowSummary.failSafe("LASE shadow observation failed safely.");
+        }
     }
 
     private static ScalingSimulationResult simulateScaling(

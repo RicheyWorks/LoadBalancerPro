@@ -333,7 +333,8 @@ class ServerTest {
         }
 
         executor.shutdown();
-        executor.awaitTermination(5, TimeUnit.SECONDS);
+        assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS),
+                "Concurrent metric update tasks should finish before final consistency assertions!");
 
         double cpu = server.getCpuUsage();
         double mem = server.getMemoryUsage();

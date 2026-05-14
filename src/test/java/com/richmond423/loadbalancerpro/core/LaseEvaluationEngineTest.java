@@ -209,6 +209,48 @@ class LaseEvaluationEngineTest {
     }
 
     @Test
+    void conflictingNetworkSignalsCanOutweighLowerLatencyCandidateDeterministically() {
+        ServerStateVector fastButRisky = new ServerStateVector(
+                "fast-but-risky",
+                true,
+                1,
+                100.0,
+                100.0,
+                10.0,
+                20.0,
+                30.0,
+                0.0,
+                0,
+                new NetworkAwarenessSignal("fast-but-risky", 1.0, 1.0, 1.0,
+                        100.0, true, 10, 100, NOW),
+                NOW);
+        ServerStateVector slowerButClean = new ServerStateVector(
+                "slower-but-clean",
+                true,
+                1,
+                100.0,
+                100.0,
+                80.0,
+                100.0,
+                140.0,
+                0.0,
+                0,
+                NetworkAwarenessSignal.neutral("slower-but-clean", NOW),
+                NOW);
+        LaseEvaluationInput input = input("conflicting-signals", RequestPriority.USER,
+                List.of(fastButRisky, slowerButClean), 10, healthyFeedback(), normalSheddingSignal(),
+                normalAutoscalingSignal(), normalFailureSignal(FailureScenarioType.TRAFFIC_SPIKE));
+
+        LaseEvaluationReport report = engine(7).evaluate(input, CONFIG);
+
+        assertEquals("slower-but-clean", report.routingDecision().chosenServer().orElseThrow().serverId());
+        assertTrue(report.routingDecision().explanation().scores().get("fast-but-risky")
+                > report.routingDecision().explanation().scores().get("slower-but-clean"));
+        assertTrue(report.routingDecision().explanation().reason().contains("slower-but-clean"));
+        assertTrue(report.summary().contains("conflicting-signals"));
+    }
+
+    @Test
     void lowSampleSummaryReflectsConservativeInsufficientSampleBehavior() {
         LaseEvaluationInput input = input("low-sample", RequestPriority.USER, healthyCandidates(),
                 10,

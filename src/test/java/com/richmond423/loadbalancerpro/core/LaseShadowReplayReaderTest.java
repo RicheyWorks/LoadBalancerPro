@@ -39,6 +39,32 @@ class LaseShadowReplayReaderTest {
     }
 
     @Test
+    void blankLinesAndRepeatedEvaluationsPreserveReplayOrder() throws Exception {
+        LaseShadowReplayReader reader = new LaseShadowReplayReader();
+        Path replayFile = tempDir.resolve("ordered-replay.jsonl");
+        Files.writeString(replayFile, System.lineSeparator()
+                + reader.toJsonLine(LaseShadowReplayRecord.fromEvent(
+                        event("eval-repeat", "S1", "S1", "HOLD", true)))
+                + System.lineSeparator()
+                + "   "
+                + System.lineSeparator()
+                + reader.toJsonLine(LaseShadowReplayRecord.fromEvent(
+                        event("eval-repeat", "S1", "S2", "SCALE_UP", false)))
+                + System.lineSeparator()
+                + reader.toJsonLine(LaseShadowReplayRecord.fromEvent(
+                        event("eval-final", "S2", "S2", "HOLD", true))));
+
+        List<LaseShadowReplayRecord> records = reader.readAll(replayFile);
+
+        assertEquals(3, records.size());
+        assertEquals("eval-repeat", records.get(0).event().evaluationId());
+        assertEquals("HOLD", records.get(0).event().recommendedAction());
+        assertEquals("eval-repeat", records.get(1).event().evaluationId());
+        assertEquals("SCALE_UP", records.get(1).event().recommendedAction());
+        assertEquals("eval-final", records.get(2).event().evaluationId());
+    }
+
+    @Test
     void emptyFileReturnsNoRecords() throws Exception {
         Path replayFile = tempDir.resolve("empty.jsonl");
         Files.writeString(replayFile, "");

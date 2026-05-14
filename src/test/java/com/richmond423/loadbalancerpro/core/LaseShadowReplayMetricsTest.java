@@ -82,6 +82,25 @@ class LaseShadowReplayMetricsTest {
     }
 
     @Test
+    void outOfOrderStaleReplayEventsUseTimestampRangeAndKeepCounts() {
+        LaseShadowReplayMetrics metrics = new LaseShadowReplayEngine().evaluate(List.of(
+                LaseShadowReplayRecord.fromEvent(event("stale-late", THIRD, "SCALE_UP", 30.0, 4.0,
+                        false, false, null, signal("S3", 0.30, 0.20, 0.10, 15.0, true, 3))),
+                LaseShadowReplayRecord.fromEvent(event("stale-first", FIRST, "HOLD", 10.0, 1.0,
+                        true, false, null, signal("S1", 0.0, 0.0, 0.0, 0.0, false, 0))),
+                LaseShadowReplayRecord.fromEvent(event("stale-middle", SECOND, "SCALE_UP", 20.0, 2.0,
+                        false, false, null, signal("S2", 0.10, 0.10, 0.05, 5.0, false, 1)))
+        ));
+
+        assertEquals(3, metrics.totalEvents());
+        assertEquals(FIRST, metrics.firstEventTimestamp());
+        assertEquals(THIRD, metrics.latestEventTimestamp());
+        assertEquals(Map.of("SCALE_UP", 2L, "HOLD", 1L), metrics.recommendationCounts());
+        assertEquals(1, metrics.agreementCount());
+        assertEquals(0.05, metrics.networkSummary().averageConnectionFailureRate(), 0.001);
+    }
+
+    @Test
     void evaluatesReplayFileThroughStreamingReader() throws Exception {
         LaseShadowReplayReader reader = new LaseShadowReplayReader();
         Path replayFile = tempDir.resolve("shadow-events.jsonl");

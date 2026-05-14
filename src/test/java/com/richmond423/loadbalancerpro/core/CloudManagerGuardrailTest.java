@@ -12,7 +12,9 @@ import software.amazon.awssdk.services.autoscaling.model.DescribeAutoScalingGrou
 import software.amazon.awssdk.services.autoscaling.model.TagDescription;
 import software.amazon.awssdk.services.autoscaling.model.UpdateAutoScalingGroupRequest;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
+import software.amazon.awssdk.services.cloudwatch.model.Datapoint;
 import software.amazon.awssdk.services.cloudwatch.model.GetMetricStatisticsRequest;
+import software.amazon.awssdk.services.cloudwatch.model.GetMetricStatisticsResponse;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.CreateTagsRequest;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
@@ -21,6 +23,7 @@ import software.amazon.awssdk.services.ec2.model.InstanceStateName;
 import software.amazon.awssdk.services.ec2.model.Reservation;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -29,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -85,6 +89,62 @@ class CloudManagerGuardrailTest {
 
         assertTrue(callbackResult.get(), "Dry-run scaling should complete locally.");
         verify(autoScaling, never()).updateAutoScalingGroup(any(UpdateAutoScalingGroupRequest.class));
+    }
+
+    @Test
+    void liveMetricFetchDefaultsToZeroForEmptyCloudWatchDatapoints() {
+        CloudWatchClient cloudWatch = mock(CloudWatchClient.class);
+        CloudConfig config = liveConfigWithAccountGuardrails(
+                CLOUD_ENVIRONMENT_PROPERTY, DEPLOY_ENVIRONMENT,
+                CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+        when(cloudWatch.getMetricStatistics(any(GetMetricStatisticsRequest.class)))
+                .thenReturn(GetMetricStatisticsResponse.builder().build());
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, cloudWatch, null, null);
+
+        double value = manager.getCloudMetric("i-empty", "CPUUtilization");
+
+        assertEquals(0.0, value, 0.0);
+        verify(cloudWatch).getMetricStatistics(any(GetMetricStatisticsRequest.class));
+        manager.shutdown();
+    }
+
+    @Test
+    void liveMetricFetchDefaultsToZeroForNullDatapointsAndNullAverages() {
+        CloudWatchClient cloudWatch = mock(CloudWatchClient.class);
+        GetMetricStatisticsResponse nullDatapoints = mock(GetMetricStatisticsResponse.class);
+        CloudConfig config = liveConfigWithAccountGuardrails(
+                CLOUD_ENVIRONMENT_PROPERTY, DEPLOY_ENVIRONMENT,
+                CLOUD_ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_CURRENT_AWS_ACCOUNT_ID_PROPERTY, ALLOWED_ACCOUNT_ID,
+                CLOUD_ALLOWED_REGIONS_PROPERTY, "us-east-1");
+        when(nullDatapoints.datapoints()).thenReturn(null);
+        when(cloudWatch.getMetricStatistics(any(GetMetricStatisticsRequest.class)))
+                .thenReturn(nullDatapoints)
+                .thenReturn(GetMetricStatisticsResponse.builder()
+                        .datapoints(Datapoint.builder().build())
+                        .build());
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, cloudWatch, null, null);
+
+        double nullDatapointValue = manager.getCloudMetric("i-null-datapoints", "CPUUtilization");
+        double nullAverageValue = manager.getCloudMetric("i-null-average", "CPUUtilization");
+
+        assertEquals(0.0, nullDatapointValue, 0.0);
+        assertEquals(0.0, nullAverageValue, 0.0);
+        verify(cloudWatch, org.mockito.Mockito.times(2))
+                .getMetricStatistics(any(GetMetricStatisticsRequest.class));
+        manager.shutdown();
+    }
+
+    @Test
+    void zeroCopyLogWritesAreSerializedBecauseCloudManagerUsesParallelBackgroundPaths() throws Exception {
+        int modifiers = CloudManager.class
+                .getDeclaredMethod("logZeroCopy", String.class, Object[].class)
+                .getModifiers();
+
+        assertTrue(Modifier.isSynchronized(modifiers),
+                "CloudManager zero-copy logging must be serialized across metric and background worker paths.");
     }
 
     @Test

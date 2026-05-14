@@ -164,8 +164,16 @@
     </section>
     <section>
       <h2>Observability</h2>
-      <p>Metrics are process-local and lab-grade. Dashboard, alert, and SLO templates live under <code>docs/observability/</code>.</p>
+      <p>Metrics are process-local and lab-grade. Dashboard, alert, SLO, performance baseline, and auth proof references live under <code>docs/observability/</code>, <code>evidence/PERFORMANCE_BASELINE.md</code>, and <code>docs/ENTERPRISE_AUTH_PROOF_LANE.md</code>.</p>
       <div id="metrics">No lab metrics loaded yet.</div>
+    </section>
+    <section>
+      <h2>Proof Lanes</h2>
+      <p>Run local/package scripts for latency and identity proof. Evidence stays under ignored <code>target/performance-baseline/</code> and <code>target/enterprise-auth-proof/</code>; neither lane claims production SLOs or real tenant certification.</p>
+      <ul>
+        <li>Performance: deterministic loopback fixtures, latency/error-rate summaries, warning-only thresholds.</li>
+        <li>Auth: mocked IdP/JWKS role claims, scope-only denial, token lifetime and key-rotation examples.</li>
+      </ul>
     </section>
   </div>
 
@@ -199,7 +207,11 @@ curl -fsS http://127.0.0.1:8080/api/lab/metrics/prometheus
 
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-workflow.ps1 -Package
 
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-observability-pack.ps1 -Package</pre>
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-observability-pack.ps1 -Package
+
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\performance-baseline.ps1 -Package
+
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-auth-proof.ps1 -Package</pre>
   </section>
 </main>
 <script>

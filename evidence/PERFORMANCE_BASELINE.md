@@ -1,151 +1,142 @@
 # LoadBalancerPro Performance Baseline
 
-Date: not captured yet
+Date: generated locally by script
 
-Status: template/unmeasured. No measured results are included yet.
+Status: measured-lane ready. Committed docs do not include fixed measured numbers, but the source-visible local runner generates measured loopback evidence under ignored `target/performance-baseline/`.
 
 ## Purpose And Scope
 
-This document is a template for repeatable local benchmark evidence for LoadBalancerPro.
+This document defines repeatable local benchmark evidence for LoadBalancerPro.
 
-It is local evidence only. It is not a production SLO, production SLA, production capacity-planning result, universal performance claim, high-availability proof, or proof of cloud or live AWS performance.
+It is local evidence only. It is not a production SLO, production SLA, production capacity-planning result, universal performance claim, high-availability proof, production performance certification, or proof of cloud or live AWS performance.
 
-No measured results are included yet because the preferred `hey` load-test tool was not available in the planning and implementation environment for this slice.
+No measured numbers are committed in this document because local latency varies by workstation, Java version, OS, background load, and JIT state. Generate fresh evidence for the commit under review.
 
-Future measured work should use stable request fixtures, a source-visible script, ignored output under `target/performance-baseline/`, local deterministic or loopback-only execution where possible, and no live/private-network dependency.
+Measured work uses stable request fixtures, a source-visible script, ignored output under `target/performance-baseline/`, local loopback-only execution, and no live/private-network dependency.
 
-The Enterprise Lab observability pack is complementary evidence, not a replacement for this baseline. Its process-local lab counters, dashboard JSON, alert examples, and SLO templates help reviewers inspect adaptive-routing behavior, but they do not provide latency, throughput, capacity, availability, or production SLO measurements.
+The Enterprise Lab observability pack is complementary evidence, not a replacement for this baseline. Its process-local lab counters, dashboard JSON, alert examples, and SLO templates help reviewers inspect adaptive-routing behavior, but they do not provide production latency, throughput, capacity, availability, or production SLO measurements.
 
 ## Environment Metadata
 
 | Field | Value |
 | --- | --- |
-| Date | not captured yet |
-| Commit/tag | not captured yet |
-| Machine/CPU/RAM | not captured yet |
-| OS | not captured yet |
-| Java version | not captured yet |
-| Maven version | not captured yet |
-| Docker version | not used / not captured yet |
+| Date | captured in `target/performance-baseline/performance-report.json` |
+| Commit/tag | captured in `target/performance-baseline/performance-report.json` |
+| Machine/CPU/RAM | OS and Java captured; CPU/RAM remain operator notes |
+| OS | captured in `target/performance-baseline/performance-report.json` |
+| Java version | captured in `target/performance-baseline/performance-report.json` |
+| Maven version | not captured by the current script |
+| Docker version | not used |
 | Spring profile | `local` |
-| Packaged JAR or Docker | packaged JAR planned |
-| Background load notes | not captured yet |
+| Packaged JAR or Docker | packaged JAR local loopback |
+| Background load notes | operator note; not inferred by the script |
 
 Record environment details before comparing runs. Local background load, OS, JDK, Maven, CPU, memory, and loopback behavior can materially affect results.
 
 ## Build And Startup Commands
 
-Build and start the local packaged JAR:
+Dry-run the plan:
 
 ```powershell
-mvn -q test
-mvn -q -DskipTests package
-java -jar target/LoadBalancerPro-${version}.jar --server.address=127.0.0.1 --server.port=18080 --spring.profiles.active=local
-curl http://127.0.0.1:18080/api/health
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\performance-baseline.ps1 -DryRun
 ```
 
-Bind to `127.0.0.1` and use the `local` profile for this baseline. The local baseline does not require AWS credentials, live cloud resources, Docker Compose, Kubernetes, Terraform, or external services.
+Generate the local packaged-JAR baseline:
 
-## Endpoint Baseline Plan
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\performance-baseline.ps1 -Package
+```
 
-Baseline these local endpoints:
+Use a different loopback port if needed:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\performance-baseline.ps1 -Package -Port 19681
+```
+
+The script starts the app on `127.0.0.1` with the `local` profile. The local baseline does not require AWS credentials, live cloud resources, Docker Compose, Kubernetes, Terraform, Prometheus, Grafana, a real IdP, or external services.
+
+## Deterministic Fixture Catalog
+
+The fixture catalog lives at `docs/performance/performance-fixtures.json` and covers:
 
 - `GET /api/health`
-- `POST /api/allocate/capacity-aware`
-- `POST /api/allocate/predictive`
+- `POST /api/allocate/evaluate`
 - `POST /api/routing/compare`
+- `GET /api/lab/scenarios`
+- `POST /api/lab/runs`
+- `GET /api/lab/policy`
+- `GET /api/lab/metrics`
+- `GET /enterprise-lab.html`
 
-Use existing local example payloads where available:
+Fixtures use deterministic local payloads. They do not call live cloud resources, external services, private networks, public upstreams, registry endpoints, release endpoints, or real IdP tenants.
 
-- `examples/capacity-aware-request.json`
-- `examples/predictive-request.json`
+## Measurement Method
 
-Routing comparison can use the README request body or a future `examples/routing-compare-request.json`. Do not fake routing comparison results if no stable request file exists.
+The checked-in runner uses PowerShell `Invoke-WebRequest` and `System.Diagnostics.Stopwatch` to avoid requiring external benchmark binaries. It records:
 
-## Load Tool Guidance
-
-`hey` is preferred when installed because it reports latency distribution and supports duration-based tests with `-z`, fixed request counts with `-n`, and concurrency with `-c`.
-
-`hey` was not available during this planning and implementation environment.
-
-Manual `curl` smoke checks verify startup and endpoint reachability only. They are not latency baselines.
-
-No measured results are included until a supported tool is available.
-
-## Example Commands
-
-Health endpoint:
-
-```powershell
-hey -z 30s -c 10 http://127.0.0.1:18080/api/health
-```
-
-Capacity-aware allocation:
-
-```powershell
-hey -z 30s -c 10 -m POST -H "Content-Type: application/json" -D examples/capacity-aware-request.json http://127.0.0.1:18080/api/allocate/capacity-aware
-```
-
-Predictive allocation:
-
-```powershell
-hey -z 30s -c 10 -m POST -H "Content-Type: application/json" -D examples/predictive-request.json http://127.0.0.1:18080/api/allocate/predictive
-```
-
-Routing comparison:
-
-```powershell
-hey -z 30s -c 10 -m POST -H "Content-Type: application/json" -D examples/routing-compare-request.json http://127.0.0.1:18080/api/routing/compare
-```
-
-Only run the routing comparison command after a stable routing comparison request file exists. Until then, use the README body in a temporary local file that is not committed, or record routing comparison as not captured yet.
-
-## Metrics To Record
-
-Record:
-
-- requests/sec
+- request count
+- success count
+- error count
+- error rate
+- min latency
+- max latency
+- average latency
 - p50 latency
 - p95 latency
 - p99 latency
-- fastest response
-- slowest response
-- non-2xx/3xx count or error rate
-- command duration
-- concurrency
-- warmup and background-load notes
+- status counts
+- warning-only threshold evaluation
+- environment metadata
 
-Prefer a short warmup pass before recording results, or state clearly that the recorded run includes cold endpoint or JIT effects.
+This is intentionally modest. It is a local product evidence lane, not a replacement for production load testing.
+
+## Evidence Files
+
+The runner writes:
+
+- `target/performance-baseline/performance-report.json`
+- `target/performance-baseline/performance-dashboard.json`
+- `target/performance-baseline/performance-threshold-results.json`
+- `target/performance-baseline/performance-summary.md`
+- `target/performance-baseline/performance-evidence-manifest.json`
+
+`performance-dashboard.json` is the compact dashboard-ready output. It uses stable field names such as `fixtureId`, `category`, `requestCount`, `successCount`, `errorCount`, `errorRatePercent`, `averageLatencyMillis`, `p50LatencyMillis`, `p95LatencyMillis`, `p99LatencyMillis`, and `thresholdStatus`.
+
+## Regression Thresholds
+
+`docs/performance/performance-thresholds.example.json` defines warning-only thresholds. Threshold warnings are intentionally not CI performance gates because CI latency can be noisy. Operators can compare `performance-threshold-results.json` across local runs and decide whether a warning requires investigation.
+
+Thresholds must not be treated as production SLOs, customer SLAs, capacity commitments, or deployment certification.
 
 ## Result Tables
 
 ### Health Endpoint
 
-| Command | Duration | Concurrency | Requests/sec | p50 | p95 | p99 | Error rate | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| not captured yet | TBD | TBD | TBD | TBD | TBD | TBD | TBD | `hey` unavailable in implementation environment |
+| Fixture | Requests | p50 | p95 | p99 | Error rate | Notes |
+| --- | ---: | --- | --- | --- | --- | --- |
+| generated locally | see `target/performance-baseline/performance-report.json` | generated locally | generated locally | generated locally | generated locally | local/lab-grade only |
 
-### Capacity-Aware Allocation
+### Allocation Evaluation
 
-| Command | Duration | Concurrency | Requests/sec | p50 | p95 | p99 | Error rate | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| not captured yet | TBD | TBD | TBD | TBD | TBD | TBD | TBD | `hey` unavailable in implementation environment |
-
-### Predictive Allocation
-
-| Command | Duration | Concurrency | Requests/sec | p50 | p95 | p99 | Error rate | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| not captured yet | TBD | TBD | TBD | TBD | TBD | TBD | TBD | `hey` unavailable in implementation environment |
+| Fixture | Requests | p50 | p95 | p99 | Error rate | Notes |
+| --- | ---: | --- | --- | --- | --- | --- |
+| generated locally | see `target/performance-baseline/performance-report.json` | generated locally | generated locally | generated locally | generated locally | local/lab-grade only |
 
 ### Routing Comparison
 
-| Command | Duration | Concurrency | Requests/sec | p50 | p95 | p99 | Error rate | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| not captured yet | TBD | TBD | TBD | TBD | TBD | TBD | TBD | stable request file not committed yet; `hey` unavailable |
+| Fixture | Requests | p50 | p95 | p99 | Error rate | Notes |
+| --- | ---: | --- | --- | --- | --- | --- |
+| generated locally | see `target/performance-baseline/performance-report.json` | generated locally | generated locally | generated locally | generated locally | local/lab-grade only |
+
+### Enterprise Lab And Observability
+
+| Fixture | Requests | p50 | p95 | p99 | Error rate | Notes |
+| --- | ---: | --- | --- | --- | --- | --- |
+| generated locally | see `target/performance-baseline/performance-report.json` | generated locally | generated locally | generated locally | generated locally | local/lab-grade only |
 
 ## Interpretation Guidance
 
-Compare only similar machines, JDK versions, OS versions, Spring profiles, and request payloads.
+Compare only similar machines, JDK versions, OS versions, Spring profiles, fixture versions, and background-load conditions.
 
 Percentiles matter because averages hide tail behavior. Local loopback results do not represent networked or cloud deployments.
 
@@ -165,17 +156,16 @@ Do not claim:
 - replacement for managed load balancers
 - universal benchmark
 - production readiness
+- production performance certification
+- real user traffic capacity
 
 ## Future Work
 
 Possible later additions:
 
-- add `examples/routing-compare-request.json` if useful
-- add `scripts/performance-baseline.ps1`
-- add `scripts/performance-baseline.sh`
-- write Markdown/JSON evidence under `target/performance-baseline/`
-- add static checks that measured claims require committed evidence references
-- add CI artifact upload for benchmark evidence
-- consider `k6` or JMeter later only if needed
+- add CI artifact upload for optional benchmark evidence without turning it into a gate;
+- add richer dashboard import docs after a real monitoring target is selected;
+- add production benchmark design after deployment topology, traffic model, SLOs, ingress, TLS, IAM, and monitoring ownership are decided;
+- consider `k6` or JMeter later only if needed and only through source-visible scripts.
 
 Keep future performance work conservative until benchmark tooling, request payloads, and review expectations are stable.

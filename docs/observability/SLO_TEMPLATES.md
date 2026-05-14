@@ -8,6 +8,7 @@ These SLOs are templates for the Enterprise Lab and future Production Gateway Ca
 | --- | --- | --- | --- |
 | Lab API availability | 99% successful local lab requests during a review session | `/api/lab/metrics`, smoke output | Local/demo or authenticated prod-like review only. |
 | Evidence generation success | 100% successful observability evidence script runs for a release review | `target/enterprise-lab-observability/observability-summary.md` | Evidence remains ignored and local. |
+| Performance baseline generation success | 100% successful local performance evidence script runs for a comparable review machine | `target/performance-baseline/performance-summary.md` and `performance-dashboard.json` | Local/lab-grade only; not a production performance SLO. |
 | Deterministic run consistency | Same scenario catalog count and stable scorecard fields across repeated package runs | Enterprise Lab workflow smoke and observability pack smoke | Does not imply production traffic performance. |
 | Explanation coverage | 100% scenario explanations in deterministic lab runs | `loadbalancerpro_lab_explanations_total` and run scorecards | Review output for stale/conflicting/all-unhealthy cases. |
 

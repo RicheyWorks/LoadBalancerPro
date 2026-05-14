@@ -47,7 +47,7 @@ The lab should grow around:
 - evidence export under ignored `target/` paths;
 - SRE walkthroughs that show what changed, what did not change, and why.
 
-The first implemented lab workflow now provides `GET /api/lab/scenarios`, `POST /api/lab/runs`, bounded process-local in-memory run storage, deterministic run summaries, scorecards, protected `GET /api/lab/metrics` and `GET /api/lab/metrics/prometheus`, ignored `target/enterprise-lab-runs/` and `target/enterprise-lab-observability/` evidence export through source-visible smoke scripts, and `/enterprise-lab.html` for browser review. This is lab evidence only; it is not production traffic activation or production SLO certification.
+The first implemented lab workflow now provides `GET /api/lab/scenarios`, `POST /api/lab/runs`, bounded process-local in-memory run storage, deterministic run summaries, scorecards, protected `GET /api/lab/metrics` and `GET /api/lab/metrics/prometheus`, ignored `target/enterprise-lab-runs/`, `target/enterprise-lab-observability/`, `target/performance-baseline/`, and `target/enterprise-auth-proof/` evidence export through source-visible smoke scripts, and `/enterprise-lab.html` for browser review. This is lab evidence only; it is not production traffic activation, production SLO certification, or real enterprise tenant certification.
 
 Lab evidence can support product review and design decisions. It must not be presented as proof that an unmanaged production deployment is safe.
 
@@ -78,7 +78,7 @@ Production Gateway Candidate means "candidate architecture and evidence lane." I
 | SBOM/checksum/attestation release evidence | Vulnerability-free or signed-container distribution. |
 | Dry-run cloud guardrails | Real account IAM, budget, teardown, or live-cloud safety. |
 | Process-local lab metrics and SLO templates | Production SLO certification, centralized monitoring, or scaling limits. |
-| Local performance templates | Production SLOs or scaling limits. |
+| Local measured performance baselines | Production SLOs, scaling limits, real traffic capacity, or certification. |
 
 ## Release Posture
 
@@ -111,7 +111,7 @@ Production Gateway Candidate means "candidate architecture and evidence lane." I
 2. Adaptive Routing Lab workflow hardening: richer scenario scorecards, reviewer exports, and lab-page polish on top of the first `/api/lab/**` slice.
 3. Controlled active LASE policy gate follow-through: richer audit review, policy dashboards, and rollback evidence on top of implemented off, shadow, recommend, and active-experiment modes.
 4. Observability packs follow-through: keep the Grafana JSON, alert examples, SLO templates, protected lab metrics endpoints, and `target/enterprise-lab-observability/` evidence aligned as scenarios and policy gates grow.
-5. Measured performance baseline: stable fixtures and source-visible scripts under ignored `target/performance-baseline/`.
-6. Enterprise auth proof lane: mock IdP/JWKS fixture mode, role lifecycle examples, and local proof without real tenant secrets.
+5. Measured performance baseline follow-through: keep `docs/performance/performance-fixtures.json`, warning-only thresholds, `scripts/smoke/performance-baseline.ps1`, and ignored `target/performance-baseline/` evidence aligned as lab APIs evolve.
+6. Enterprise auth proof lane follow-through: keep `docs/ENTERPRISE_AUTH_PROOF_LANE.md`, mock IdP/JWKS fixtures, role lifecycle examples, and ignored `target/enterprise-auth-proof/` evidence aligned until a real tenant proof sprint is authorized.
 7. Container distribution readiness: registry decision, immutable tag/digest policy, Trivy evidence, signing plan, rollback, retention, and credential-handling gates.
 8. Disposable live sandbox lab: explicit AWS sandbox plan, IAM templates, budget guardrails, teardown, and no default CI live calls.

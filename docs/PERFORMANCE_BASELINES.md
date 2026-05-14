@@ -2,6 +2,8 @@
 
 LoadBalancerPro uses CI-safe performance smoke tests to catch major regressions in the calculation-heavy API paths. These tests are not microbenchmarks, production capacity claims, or service-level objectives.
 
+For reviewer-facing measured local loopback evidence, use [`../evidence/PERFORMANCE_BASELINE.md`](../evidence/PERFORMANCE_BASELINE.md) and `scripts/smoke/performance-baseline.ps1 -Package`. That lane writes latency/error-rate summaries, warning-only threshold results, and dashboard-ready JSON under ignored `target/performance-baseline/`.
+
 ## Covered Paths
 
 The performance baseline suite covers:

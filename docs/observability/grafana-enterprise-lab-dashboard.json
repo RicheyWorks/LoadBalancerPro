@@ -202,17 +202,53 @@
     },
     {
       "id": 10,
+      "type": "table",
+      "title": "Performance Baseline P95 Latency",
+      "datasource": "${datasource}",
+      "targets": [
+        {
+          "expr": "loadbalancerpro_lab_performance_p95_latency_millis",
+          "legendFormat": "{{fixtureId}}"
+        }
+      ],
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      }
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Performance Baseline Error Rate",
+      "datasource": "${datasource}",
+      "targets": [
+        {
+          "expr": "loadbalancerpro_lab_performance_error_rate_percent",
+          "legendFormat": "{{fixtureId}}"
+        }
+      ],
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 28
+      }
+    },
+    {
+      "id": 12,
       "type": "text",
       "title": "Lab-Grade Evidence Note",
       "options": {
         "mode": "markdown",
-        "content": "This dashboard is a reviewer/operator template for process-local Enterprise Lab metrics. It does not prove production deployment certification, real IdP tenant behavior, production TLS/IAM/ingress/monitoring, or container publication/signing."
+        "content": "This dashboard is a reviewer/operator template for process-local Enterprise Lab metrics and imported target/performance-baseline/ evidence. It does not prove production deployment certification, real IdP tenant behavior, production TLS/IAM/ingress/monitoring, production SLO compliance, or container publication/signing."
       },
       "gridPos": {
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 35
       }
     }
   ]

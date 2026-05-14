@@ -64,3 +64,12 @@ groups:
         annotations:
           summary: No Enterprise Lab evidence runs observed recently.
           description: Regenerate ignored target evidence before reviewer walkthroughs or release-intent review.
+      - alert: LoadBalancerProPerformanceBaselineWarning
+        expr: loadbalancerpro_lab_performance_threshold_warning_total > 0
+        for: 0m
+        labels:
+          severity: info
+          scope: lab-grade-template
+        annotations:
+          summary: Local performance baseline produced a warning-level threshold result.
+          description: Compare target/performance-baseline/performance-threshold-results.json against a similar local machine before treating this as a regression.

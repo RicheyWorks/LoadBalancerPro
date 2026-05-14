@@ -95,6 +95,8 @@ Overall Status, Goal Status, Dashboard pack, Alerts, SLO templates, Evidence pat
 
 ## 4. Measured Performance Baseline
 
+Status note: the first measured local performance baseline lane now exists with deterministic fixtures, warning-only thresholds, a source-visible PowerShell runner, and ignored `target/performance-baseline/` evidence generation. Use the prompt below only for future expansion such as CI artifact publishing, richer fixtures, or production benchmark design after deployment topology is approved.
+
 ```text
 /goal Replace the unmeasured performance baseline template with a safe measured local baseline path using stable fixtures, a source-visible script, ignored target/performance-baseline/ output, and honest lab-only interpretation.
 
@@ -124,6 +126,8 @@ Overall Status, Goal Status, Fixture set, Script path, Evidence path, Measuremen
 ```
 
 ## 5. Enterprise Auth Proof Lane
+
+Status note: the first mocked enterprise auth proof lane now exists with `docs/ENTERPRISE_AUTH_PROOF_LANE.md`, synthetic mock IdP/JWKS fixtures, `EnterpriseAuthProofLaneTest`, and ignored `target/enterprise-auth-proof/` evidence generation. Use the prompt below only for future expansion such as a real local JWKS server fixture, browser OAuth2 UX, or tenant-specific validation after explicit approval.
 
 ```text
 /goal Build an enterprise auth proof lane using mock IdP/JWKS fixtures and local tokens so reviewers can verify dedicated role claims, scope-only denial, missing-role fail-closed behavior, and key-rotation guidance without real tenant secrets.

@@ -17,6 +17,18 @@ The Enterprise Lab adds lab-grade, process-local observability for controlled ad
 
 The lab metrics are bounded, process-local, and intended for reviewer evidence. They are not centralized monitoring, durable audit storage, production capacity evidence, or production SLO proof.
 
+## Performance Baseline Evidence
+
+The measured performance baseline lane complements the observability pack with local loopback latency and error-rate evidence:
+
+- `docs/performance/performance-fixtures.json` defines deterministic local fixtures for health, allocation evaluation, routing comparison, Enterprise Lab scenarios/runs, policy status, lab metrics, and the browser lab page.
+- `docs/performance/performance-thresholds.example.json` defines warning-only regression thresholds. These thresholds are not production SLOs and are not brittle CI performance gates.
+- `scripts/smoke/performance-baseline.ps1 -Package` starts the packaged JAR on `127.0.0.1` with the `local` profile and writes ignored evidence under `target/performance-baseline/`.
+- `target/performance-baseline/performance-report.json` records request count, success count, error count, min/max/average latency, p50, p95, p99, status counts, threshold warnings, commit, Java version, OS, and project version.
+- `target/performance-baseline/performance-dashboard.json` is dashboard-ready compact output for local evidence review.
+
+These numbers are lab/local only. They are not production SLO certification, customer SLA evidence, cloud capacity planning, or real user traffic proof.
+
 ## Metric Catalog
 
 | Metric | Type | Labels | Meaning |
@@ -122,6 +134,8 @@ Evaluation usage note: `POST /api/allocate/evaluate` is read-only and does not e
 | Scaling pressure | `sum by (strategy) (rate(allocation_scaling_recommended_servers_sum[5m]))` | Is simulated scale-up being recommended repeatedly? |
 | Healthy server count | `sum by (strategy) (rate(allocation_server_count_sum[5m])) / clamp_min(sum by (strategy) (rate(allocation_server_count_count[5m])), 1)` | Are allocations being made with too few healthy servers? |
 | Cloud guardrail denials | `sum by (source, reason) (rate(cloud_scale_denied_count_total[5m]))` | Are cloud mutation guardrails blocking unsafe changes? |
+| Performance p95 latency | Import `target/performance-baseline/performance-dashboard.json` or map `p95LatencyMillis` by `fixtureId` | Did a comparable local fixture show a warning-level tail-latency regression? |
+| Performance error rate | Import `target/performance-baseline/performance-dashboard.json` or map `errorRatePercent` by `fixtureId` | Did a local fixture produce non-zero errors in a comparable run? |
 
 Keep dashboard variables bounded. Strategy, path, source, decision, and reason are acceptable. Do not template dashboards by server ID, request ID, hostname, raw client IP, user ID, or cloud resource ID.
 

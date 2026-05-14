@@ -91,11 +91,17 @@ With `loadbalancerpro.auth.required-role.allocation=admin`, allocation/routing/p
 
 ## Local Mock Validation
 
-Use the existing mocked-resource-server tests to validate claim behavior without a real IdP, real JWK set, tenant secrets, or live network calls:
+Use the existing mocked-resource-server tests and Enterprise Auth Proof Lane to validate claim behavior without a real IdP, real JWK set, tenant secrets, or live network calls:
 
 ```bash
 mvn -q "-Dtest=OAuth2AuthorizationTest" test
 ```
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-auth-proof.ps1 -Package
+```
+
+The proof script writes ignored reviewer evidence under `target/enterprise-auth-proof/`. For token lifetime, issuer/audience, and key-rotation guidance, see [`ENTERPRISE_AUTH_PROOF_LANE.md`](ENTERPRISE_AUTH_PROOF_LANE.md).
 
 The test fixture uses synthetic bearer token names such as:
 

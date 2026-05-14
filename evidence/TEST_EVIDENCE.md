@@ -32,6 +32,8 @@ mvn -q test
 - Enterprise Lab workflow tests cover stable scenario catalog metadata, unique scenario ids, deterministic run output, bounded process-local in-memory run retention, bounded audit-event retention, scorecard counts, prod API-key protection for `/api/lab/**`, source-visible evidence export safety under ignored `target/enterprise-lab-runs/`, browser lab page content, and smoke-script publish-command exclusions.
 - Controlled active LASE policy tests cover `off`, `shadow`, `recommend`, and `active-experiment` modes; safe default and invalid-config fail-closed behavior; health, eligibility, capacity, freshness, conflict, all-unhealthy, rollback, and bounded-context gates; audit-event redaction and bounds; `/api/lab/policy` and `/api/lab/audit-events` auth boundaries; and ignored `target/controlled-adaptive-routing/` smoke evidence safety.
 - Enterprise Lab observability tests cover process-local counters for lab runs, scenarios, policy decisions by mode, recommendations, active-experiment changes, guardrail blocks, rollback/fail-closed events, audit retention/drops, explanation coverage, and rate-limit interactions; protected `/api/lab/metrics` and `/api/lab/metrics/prometheus` JSON/text output; prod API-key and OAuth2 boundaries; dashboard JSON parsing; alert template names; SLO template honesty; browser page metrics content; and ignored `target/enterprise-lab-observability/` smoke evidence safety.
+- Performance baseline tests cover the deterministic fixture catalog, stable fixture IDs, valid local endpoint payloads, warning-only threshold config, source-visible script safety, and ignored `target/performance-baseline/` evidence output. The performance lane records local loopback latency/error-rate summaries and dashboard-ready JSON without claiming production SLOs.
+- Enterprise auth proof tests cover synthetic mock IdP/JWKS fixtures, dedicated `roles` and `realm_access.roles` access, `scope`/`scp` denial, missing and ambiguous role-claim fail-closed behavior, expired-token rejection, wrong-issuer rejection, wrong-audience rejection, script safety, and ignored `target/enterprise-auth-proof/` evidence output without real tenant secrets.
 
 ## Replay/Cloud Isolation Tests
 
@@ -58,6 +60,8 @@ mvn -q test
 - [Enterprise Lab Observability Dashboard](../docs/observability/grafana-enterprise-lab-dashboard.json)
 - [Enterprise Lab Alert Examples](../docs/observability/enterprise-lab-alerts.yml)
 - [Enterprise Lab SLO Templates](../docs/observability/SLO_TEMPLATES.md)
+- [Performance Baseline](PERFORMANCE_BASELINE.md)
+- [Enterprise Auth Proof Lane](../docs/ENTERPRISE_AUTH_PROOF_LANE.md)
 
 ## v2.5.0 Release Verification Evidence
 

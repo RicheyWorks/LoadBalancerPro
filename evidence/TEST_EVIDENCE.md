@@ -31,6 +31,7 @@ mvn -q test
 - Adaptive-routing experiment tests cover deterministic fixtures, shadow-only default behavior, recommend/active-experiment comparison output, stale-signal guardrails, all-unhealthy degradation, CLI mode selection, rollback reasons, policy decisions, and ignored `target/adaptive-routing-experiments/` evidence generation safety.
 - Enterprise Lab workflow tests cover stable scenario catalog metadata, unique scenario ids, deterministic run output, bounded process-local in-memory run retention, bounded audit-event retention, scorecard counts, prod API-key protection for `/api/lab/**`, source-visible evidence export safety under ignored `target/enterprise-lab-runs/`, browser lab page content, and smoke-script publish-command exclusions.
 - Controlled active LASE policy tests cover `off`, `shadow`, `recommend`, and `active-experiment` modes; safe default and invalid-config fail-closed behavior; health, eligibility, capacity, freshness, conflict, all-unhealthy, rollback, and bounded-context gates; audit-event redaction and bounds; `/api/lab/policy` and `/api/lab/audit-events` auth boundaries; and ignored `target/controlled-adaptive-routing/` smoke evidence safety.
+- Enterprise Lab observability tests cover process-local counters for lab runs, scenarios, policy decisions by mode, recommendations, active-experiment changes, guardrail blocks, rollback/fail-closed events, audit retention/drops, explanation coverage, and rate-limit interactions; protected `/api/lab/metrics` and `/api/lab/metrics/prometheus` JSON/text output; prod API-key and OAuth2 boundaries; dashboard JSON parsing; alert template names; SLO template honesty; browser page metrics content; and ignored `target/enterprise-lab-observability/` smoke evidence safety.
 
 ## Replay/Cloud Isolation Tests
 
@@ -54,6 +55,9 @@ mvn -q test
 - [Residual Risks](RESIDUAL_RISKS.md)
 - [Production-Candidate Evidence Gate](../docs/PRODUCTION_CANDIDATE_EVIDENCE_GATE.md)
 - [v2.5.0 Post-Release Verification](../docs/V2_5_0_POST_RELEASE_VERIFICATION.md)
+- [Enterprise Lab Observability Dashboard](../docs/observability/grafana-enterprise-lab-dashboard.json)
+- [Enterprise Lab Alert Examples](../docs/observability/enterprise-lab-alerts.yml)
+- [Enterprise Lab SLO Templates](../docs/observability/SLO_TEMPLATES.md)
 
 ## v2.5.0 Release Verification Evidence
 

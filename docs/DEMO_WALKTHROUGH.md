@@ -20,14 +20,14 @@ Keep the demo local. Do not use cloud credentials, public upstreams, real secret
 ## 60 To 90 Second Talk Track
 
 1. Start at the root landing page and say that LoadBalancerPro Enterprise Lab is an Enterprise Adaptive Routing Lab first and a Production Gateway Candidate second.
-2. Open the Enterprise Lab page and list deterministic scenarios through `GET /api/lab/scenarios`. Run a small lab comparison through `POST /api/lab/runs`, then point to the scorecard, guardrail reasons, rollback reasons, policy audit events, and `lab evidence only / not production activation` recommendation.
+2. Open the Enterprise Lab page and list deterministic scenarios through `GET /api/lab/scenarios`. Run a small lab comparison through `POST /api/lab/runs`, then point to the scorecard, guardrail reasons, rollback reasons, policy audit events, lab metrics, and `lab evidence only / not production activation` recommendation.
 3. Open the cockpit and run the packaged local scenarios. Point out routing comparisons, allocation pressure, overload/load-shedding signals, raw JSON, and copyable curl snippets.
 4. Mention that `/proxy/**` is optional and disabled by default. Operators can configure local/private backend targets through application configuration.
 5. Show [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) and [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) as the copyable validation path for packaged jar, API-key boundary, and proxy-loopback checks.
 6. If security posture matters, open [`API_SECURITY.md`](API_SECURITY.md) and explain that prod/cloud-sandbox API-key modes protect proxy/status and `/api/lab/**` surfaces, while TLS termination remains a deployment responsibility.
 7. If adaptive-routing posture matters, run `POST /api/allocate/evaluate` with `loadbalancerpro.lase.shadow.enabled=true` and point to the response `laseShadow` block. It is shadow-only, lists signals considered such as tail latency, queue depth, and adaptive concurrency, and explicitly says it does not alter live allocation.
 8. If adaptive-routing product value matters, open [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](CONTROLLED_ACTIVE_LASE_POLICY_GATE.md), then run the Enterprise Lab workflow smoke, the controlled active policy smoke, or the adaptive-routing experiment harness to compare baseline vs shadow vs recommend vs active-experiment with default behavior unchanged and no live cloud mutation.
-9. If observability matters, open `/proxy-status.html` or [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md) and point to route/backend counts, status summaries, retry/cooldown counters, and reload status.
+9. If observability matters, open `/enterprise-lab.html`, call `GET /api/lab/metrics` and `GET /api/lab/metrics/prometheus`, then point to process-local lab counters, dashboard JSON, alert examples, and SLO templates under `docs/observability/`. For proxy-specific observability, open `/proxy-status.html` or [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md) and point to route/backend counts, status summaries, retry/cooldown counters, and reload status.
 10. If packaging matters, open [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) and explain the local-only Docker build/run path with no registry publish.
 11. Close with [`SRE_DEMO_HIGHLIGHTS.md`](SRE_DEMO_HIGHLIGHTS.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), `jacoco-coverage-report`, `packaged-artifact-smoke`, and `loadbalancerpro-sbom` as the evidence trail.
 
@@ -75,6 +75,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\controlled-a
 
 Output: `target/controlled-adaptive-routing/controlled-adaptive-routing-policy-summary.md`, `target/controlled-adaptive-routing/controlled-adaptive-routing-policy-metadata.json`, and per-mode Enterprise Lab evidence directories. The command exercises `off`, `shadow`, `recommend`, and `active-experiment`, includes guardrail-blocked and rollback/fail-closed scenarios, and writes ignored evidence only under `target/`.
 
+Enterprise Lab observability evidence:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-observability-pack.ps1 -Package
+```
+
+Output: `target/enterprise-lab-observability/lab-metrics.json`, `target/enterprise-lab-observability/lab-metrics.prom`, `target/enterprise-lab-observability/observability-summary.md`, and `target/enterprise-lab-observability/observability-evidence-manifest.json`. Pair the output with `docs/observability/grafana-enterprise-lab-dashboard.json`, `docs/observability/enterprise-lab-alerts.yml`, and `docs/observability/SLO_TEMPLATES.md`. The command writes ignored evidence only under `target/`, uses local/package mode, and requires no live Prometheus, Grafana, cloud, or private-network service.
+
 Local proxy evidence export:
 
 ```bash
@@ -118,4 +126,4 @@ The Dockerfile defaults to the prod API-key profile. Health and the root page re
 - Safe proof paths do not use DNS resolution, discovery, subnet scanning, port scanning, native tooling, release assets, or `release-downloads/` mutation.
 - TLS termination and public ingress controls belong to the deployment boundary.
 - Demo paths do not construct or mutate `CloudManager`, do not mutate cloud state, and do not publish release assets.
-- Enterprise Lab runs are process-local and bounded; retained runs and audit events are in memory, evidence export writes only under ignored `target/`, and scorecards are lab-grade evidence rather than production activation.
+- Enterprise Lab runs are process-local and bounded; retained runs, audit events, and lab metrics are in memory, evidence export writes only under ignored `target/`, and scorecards/SLO templates are lab-grade evidence rather than production activation or production SLO certification.

@@ -3,6 +3,9 @@ package com.richmond423.loadbalancerpro.api;
 import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyAuditEvent;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyAuditLog;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPrometheusFormatter;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingObservabilityMetrics;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingObservabilitySnapshot;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabRun;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabRunService;
@@ -15,6 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -97,6 +101,16 @@ public class EnterpriseLabController {
                 "audit events contain policy decisions and guardrails only; no secrets or production certification");
     }
 
+    @GetMapping("/metrics")
+    public AdaptiveRoutingObservabilitySnapshot metrics() {
+        return runService.observabilitySnapshot();
+    }
+
+    @GetMapping(value = "/metrics/prometheus", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String prometheusMetrics() {
+        return AdaptiveRoutingPrometheusFormatter.format(runService.observabilitySnapshot());
+    }
+
     public record EnterpriseLabScenarioCatalogResponse(
             int count,
             List<EnterpriseLabScenarioMetadata> scenarios,
@@ -128,7 +142,9 @@ public class EnterpriseLabController {
     @Configuration
     static class EnterpriseLabConfiguration {
         @Bean
-        EnterpriseLabRunService enterpriseLabRunService(AdaptiveRoutingPolicyAuditLog policyAuditLog) {
+        EnterpriseLabRunService enterpriseLabRunService(
+                AdaptiveRoutingPolicyAuditLog policyAuditLog,
+                AdaptiveRoutingObservabilityMetrics observabilityMetrics) {
             return new EnterpriseLabRunService(
                     new com.richmond423.loadbalancerpro.lab.EnterpriseLabScenarioCatalogService(),
                     new com.richmond423.loadbalancerpro.core.AdaptiveRoutingExperimentService(),
@@ -136,7 +152,8 @@ public class EnterpriseLabController {
                             java.time.ZoneOffset.UTC),
                     EnterpriseLabRunService.DEFAULT_MAX_RETAINED_RUNS,
                     EnterpriseLabRunService.DEFAULT_MAX_SCENARIOS_PER_RUN,
-                    policyAuditLog);
+                    policyAuditLog,
+                    observabilityMetrics);
         }
     }
 }

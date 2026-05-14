@@ -51,6 +51,8 @@ class PostmanEnterpriseLabCollectionTest {
             "/api/lab/runs",
             "/api/lab/policy",
             "/api/lab/audit-events",
+            "/api/lab/metrics",
+            "/api/lab/metrics/prometheus",
             "/api/proxy/status",
             "/api/proxy/reload",
             "/api/evidence-training/onboarding",
@@ -205,6 +207,8 @@ class PostmanEnterpriseLabCollectionTest {
         assertTrue(doc.contains("<API_KEY>"));
         assertTrue(doc.contains("GET /api/lab/policy"));
         assertTrue(doc.contains("GET /api/lab/audit-events"));
+        assertTrue(doc.contains("GET /api/lab/metrics"));
+        assertTrue(doc.contains("GET /api/lab/metrics/prometheus"));
         assertTrue(normalized.contains("no real secrets"));
         assertTrue(normalized.contains("cloud state"));
         assertTrue(normalized.contains("oauth2"));

@@ -63,6 +63,8 @@ Overall Status, Goal Status, Policy modes, Default behavior, Audit output, Rollb
 
 ## 3. Observability Packs
 
+Status note: the first observability pack now exists with protected lab metrics endpoints, dashboard JSON, alert examples, SLO templates, and `target/enterprise-lab-observability/` evidence generation. Use the prompt below only for a future expansion such as production-rollout alignment, dashboard import polish, or measured performance integration.
+
 ```text
 /goal Add LoadBalancerPro Enterprise Lab observability packs with dashboard JSON, alert examples, SLO templates, and local evidence generation while keeping claims lab-grade and source-visible.
 
@@ -77,10 +79,10 @@ Run standard git state and tag verification commands from the roadmap.
 
 Checkpoints:
 1. Audit current metrics, proxy status, actuator/Prometheus docs, and evidence.
-2. Add dashboard JSON examples for lab metrics and proxy/routing surfaces.
-3. Add alert examples that distinguish local lab thresholds from production thresholds.
-4. Add SLO templates marked as templates.
-5. Add source-visible local evidence generation under target/observability-pack/.
+2. Extend or refine dashboard JSON examples for lab metrics and proxy/routing surfaces.
+3. Extend alert examples that distinguish local lab thresholds from production thresholds.
+4. Extend SLO templates marked as templates.
+5. Extend source-visible local evidence generation under target/enterprise-lab-observability/.
 6. Add static tests for dashboard links, no production SLO overclaiming, and no secrets.
 7. Validate.
 

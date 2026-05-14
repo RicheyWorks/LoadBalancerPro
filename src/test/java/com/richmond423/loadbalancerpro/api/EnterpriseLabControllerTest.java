@@ -181,4 +181,30 @@ class EnterpriseLabControllerTest {
         org.junit.jupiter.api.Assertions.assertFalse(audit.contains("bearer "));
         org.junit.jupiter.api.Assertions.assertFalse(audit.contains("password"));
     }
+
+    @Test
+    void metricsEndpointsExposeLabGradeProcessLocalCounters() throws Exception {
+        mockMvc.perform(post("/api/lab/runs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mode\":\"shadow\",\"scenarioIds\":[\"normal-balanced-load\"]}"))
+                .andExpect(status().isOk());
+
+        String metrics = mockMvc.perform(get("/api/lab/metrics"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.labRunsCreated").isNumber())
+                .andExpect(jsonPath("$.labScenariosExecuted").isNumber())
+                .andExpect(jsonPath("$.policyDecisionsByMode.shadow").isNumber())
+                .andExpect(jsonPath("$.warning", containsString("lab-grade")))
+                .andReturn().getResponse().getContentAsString().toLowerCase();
+
+        org.junit.jupiter.api.Assertions.assertFalse(metrics.contains("x-api-key"));
+        org.junit.jupiter.api.Assertions.assertFalse(metrics.contains("bearer "));
+        org.junit.jupiter.api.Assertions.assertFalse(metrics.contains("password"));
+
+        mockMvc.perform(get("/api/lab/metrics/prometheus"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
+                .andExpect(content().string(containsString("loadbalancerpro_lab_runs_total")))
+                .andExpect(content().string(containsString("loadbalancerpro_lase_policy_decisions_total")));
+    }
 }

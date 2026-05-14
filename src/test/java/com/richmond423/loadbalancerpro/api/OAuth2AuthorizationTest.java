@@ -276,6 +276,20 @@ class OAuth2AuthorizationTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.storageMode", is("process-local bounded audit log")));
+
+        mockMvc.perform(get("/api/lab/metrics"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/lab/metrics")));
+
+        mockMvc.perform(get("/api/lab/metrics")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.path", is("/api/lab/metrics")));
+
+        mockMvc.perform(get("/api/lab/metrics")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.warning", containsString("lab-grade")));
     }
 
     @Test

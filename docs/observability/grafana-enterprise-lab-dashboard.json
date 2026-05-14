@@ -1,0 +1,219 @@
+{
+  "title": "LoadBalancerPro Enterprise Lab Observability",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "tags": [
+    "loadbalancerpro",
+    "enterprise-lab",
+    "lab-grade"
+  ],
+  "timezone": "browser",
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {
+          "text": "Prometheus",
+          "value": "Prometheus"
+        }
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Lab Runs Created",
+      "datasource": "${datasource}",
+      "targets": [
+        {
+          "expr": "loadbalancerpro_lab_runs_total",
+          "legendFormat": "runs"
+        }
+      ],
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Scenarios Executed",
+      "datasource": "${datasource}",
+      "targets": [
+        {
+          "expr": "loadbalancerpro_lab_scenarios_executed_total",
+          "legendFormat": "scenarios"
+        }
+      ],
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Policy Decisions By Mode",
+      "datasource": "${datasource}",
+      "targets": [
+        {
+          "expr": "sum by (mode) (increase(loadbalancerpro_lase_policy_decisions_total[5m]))",
+          "legendFormat": "{{mode}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Recommendations Vs Active Changes",
+      "datasource": "${datasource}",
+      "targets": [
+        {
+          "expr": "increase(loadbalancerpro_lase_policy_recommendations_total[5m])",
+          "legendFormat": "recommendations"
+        },
+        {
+          "expr": "increase(loadbalancerpro_lase_policy_active_changes_total[5m])",
+          "legendFormat": "active changes"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      }
+    },
+    {
+      "id": 5,
+      "type": "bargauge",
+      "title": "Guardrail Blocks By Reason",
+      "datasource": "${datasource}",
+      "targets": [
+        {
+          "expr": "sum by (reason) (loadbalancerpro_lase_policy_guardrail_blocks_total)",
+          "legendFormat": "{{reason}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Rollback And Fail-Closed Events",
+      "datasource": "${datasource}",
+      "targets": [
+        {
+          "expr": "loadbalancerpro_lase_policy_rollback_total",
+          "legendFormat": "rollback"
+        }
+      ],
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 12
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Audit Event Retention And Drops",
+      "datasource": "${datasource}",
+      "targets": [
+        {
+          "expr": "loadbalancerpro_lase_policy_audit_events_retained_total",
+          "legendFormat": "retained"
+        },
+        {
+          "expr": "loadbalancerpro_lase_policy_audit_events_dropped_total",
+          "legendFormat": "dropped"
+        }
+      ],
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 12
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Rate Limit Events",
+      "datasource": "${datasource}",
+      "targets": [
+        {
+          "expr": "sum by (surface) (increase(loadbalancerpro_api_rate_limit_events_total[5m]))",
+          "legendFormat": "{{surface}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "API Health And Prod Boundary Status",
+      "datasource": "${datasource}",
+      "targets": [
+        {
+          "expr": "up{job=\"loadbalancerpro\"}",
+          "legendFormat": "scrape up"
+        },
+        {
+          "expr": "loadbalancerpro_lab_observability_info",
+          "legendFormat": "lab observability"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      }
+    },
+    {
+      "id": 10,
+      "type": "text",
+      "title": "Lab-Grade Evidence Note",
+      "options": {
+        "mode": "markdown",
+        "content": "This dashboard is a reviewer/operator template for process-local Enterprise Lab metrics. It does not prove production deployment certification, real IdP tenant behavior, production TLS/IAM/ingress/monitoring, or container publication/signing."
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      }
+    }
+  ]
+}

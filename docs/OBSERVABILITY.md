@@ -4,6 +4,19 @@ LoadBalancerPro emits domain metrics for allocation, overload, validation, parsi
 
 This document describes the stable operator signals. It does not require Prometheus, Grafana, OpenTelemetry, Docker, cloud credentials, or any external service to run tests.
 
+## Enterprise Lab Observability Pack
+
+The Enterprise Lab adds lab-grade, process-local observability for controlled adaptive-routing review. These signals are separate from production Prometheus exposure and remain protected by the existing `/api/**` boundary in prod/cloud-sandbox API-key mode:
+
+- `GET /api/lab/metrics` returns JSON counters for lab runs, scenarios executed, policy decisions by mode, recommendations, active-experiment changes, guardrail blocks by reason, rollback/fail-closed events, audit retention/drops, explanation coverage, and rate-limit interactions.
+- `GET /api/lab/metrics/prometheus` returns the same process-local counters as deterministic Prometheus-style sample text for local evidence and dashboard review.
+- `scripts/smoke/enterprise-lab-observability-pack.ps1 -Package` writes metrics JSON, Prometheus-style text, Markdown summary, and a manifest under ignored `target/enterprise-lab-observability/`.
+- `docs/observability/grafana-enterprise-lab-dashboard.json` is a source-visible dashboard template with placeholder datasource configuration and no secrets.
+- `docs/observability/enterprise-lab-alerts.yml` contains alert-rule examples only.
+- `docs/observability/SLO_TEMPLATES.md` contains lab and future production-gateway SLO templates; it does not claim production SLO certification.
+
+The lab metrics are bounded, process-local, and intended for reviewer evidence. They are not centralized monitoring, durable audit storage, production capacity evidence, or production SLO proof.
+
 ## Metric Catalog
 
 | Metric | Type | Labels | Meaning |

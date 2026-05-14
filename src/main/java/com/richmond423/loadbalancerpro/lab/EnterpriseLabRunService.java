@@ -3,6 +3,8 @@ package com.richmond423.loadbalancerpro.lab;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingExperimentResult;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingExperimentScenario;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingExperimentService;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingObservabilityMetrics;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingObservabilitySnapshot;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyAuditEvent;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyAuditLog;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyMode;
@@ -36,14 +38,21 @@ public final class EnterpriseLabRunService {
     private final int maxRetainedRuns;
     private final int maxScenariosPerRun;
     private final AdaptiveRoutingPolicyAuditLog policyAuditLog;
+    private final AdaptiveRoutingObservabilityMetrics observabilityMetrics;
     private final AtomicLong runSequence = new AtomicLong();
     private final Map<String, EnterpriseLabRun> retainedRuns = new LinkedHashMap<>();
     private final ArrayDeque<String> retainedRunOrder = new ArrayDeque<>();
 
     public EnterpriseLabRunService() {
+        this(new AdaptiveRoutingObservabilityMetrics());
+    }
+
+    private EnterpriseLabRunService(AdaptiveRoutingObservabilityMetrics observabilityMetrics) {
         this(new EnterpriseLabScenarioCatalogService(), new AdaptiveRoutingExperimentService(),
                 DEFAULT_CLOCK, DEFAULT_MAX_RETAINED_RUNS, DEFAULT_MAX_SCENARIOS_PER_RUN,
-                new AdaptiveRoutingPolicyAuditLog(AdaptiveRoutingPolicyAuditLog.DEFAULT_MAX_EVENTS, DEFAULT_CLOCK));
+                new AdaptiveRoutingPolicyAuditLog(AdaptiveRoutingPolicyAuditLog.DEFAULT_MAX_EVENTS, DEFAULT_CLOCK,
+                        observabilityMetrics),
+                observabilityMetrics);
     }
 
     public EnterpriseLabRunService(EnterpriseLabScenarioCatalogService scenarioCatalogService,
@@ -52,13 +61,28 @@ public final class EnterpriseLabRunService {
                                    int maxRetainedRuns,
                                    int maxScenariosPerRun,
                                    AdaptiveRoutingPolicyAuditLog policyAuditLog) {
+        this(scenarioCatalogService, experimentService, clock, maxRetainedRuns, maxScenariosPerRun,
+                policyAuditLog, new AdaptiveRoutingObservabilityMetrics());
+    }
+
+    public EnterpriseLabRunService(EnterpriseLabScenarioCatalogService scenarioCatalogService,
+                                   AdaptiveRoutingExperimentService experimentService,
+                                   Clock clock,
+                                   int maxRetainedRuns,
+                                   int maxScenariosPerRun,
+                                   AdaptiveRoutingPolicyAuditLog policyAuditLog,
+                                   AdaptiveRoutingObservabilityMetrics observabilityMetrics) {
         this.scenarioCatalogService = scenarioCatalogService;
         this.experimentService = experimentService;
         this.clock = clock;
         this.maxRetainedRuns = Math.max(1, maxRetainedRuns);
         this.maxScenariosPerRun = Math.max(1, maxScenariosPerRun);
+        this.observabilityMetrics = observabilityMetrics == null
+                ? new AdaptiveRoutingObservabilityMetrics()
+                : observabilityMetrics;
         this.policyAuditLog = policyAuditLog == null
-                ? new AdaptiveRoutingPolicyAuditLog(AdaptiveRoutingPolicyAuditLog.DEFAULT_MAX_EVENTS, clock)
+                ? new AdaptiveRoutingPolicyAuditLog(
+                        AdaptiveRoutingPolicyAuditLog.DEFAULT_MAX_EVENTS, clock, this.observabilityMetrics)
                 : policyAuditLog;
     }
 
@@ -97,6 +121,7 @@ public final class EnterpriseLabRunService {
                 "process-local in-memory bounded store",
                 maxRetainedRuns,
                 maxScenariosPerRun);
+        observabilityMetrics.recordLabRun(mode.wireValue(), results.size(), scorecard.explanationCoverageCount());
         retain(run);
         return run;
     }
@@ -144,6 +169,10 @@ public final class EnterpriseLabRunService {
 
     public List<AdaptiveRoutingPolicyAuditEvent> policyAuditEvents() {
         return policyAuditLog.snapshot();
+    }
+
+    public AdaptiveRoutingObservabilitySnapshot observabilitySnapshot() {
+        return observabilityMetrics.snapshot();
     }
 
     private void retain(EnterpriseLabRun run) {

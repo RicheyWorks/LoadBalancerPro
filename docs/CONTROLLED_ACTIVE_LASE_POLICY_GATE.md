@@ -61,11 +61,13 @@ Audit events are bounded in memory, do not persist secrets, and are exposed thro
 The protected Enterprise Lab status endpoints are:
 
 - `GET /api/lab/policy`;
-- `GET /api/lab/audit-events`.
+- `GET /api/lab/audit-events`;
+- `GET /api/lab/metrics`;
+- `GET /api/lab/metrics/prometheus`.
 
 Prod/cloud-sandbox API-key mode protects these endpoints through the existing `/api/**` deny-by-default boundary. OAuth2 mode uses the existing allocation-role boundary. Local/default mode remains convenient for loopback lab review.
 
-Status output reports the configured mode, effective mode, active-experiment flag, allowed modes, retained audit event count, and the latest guardrail reason when present. It also warns that active-experiment is lab evidence only and not production certification.
+Status output reports the configured mode, effective mode, active-experiment flag, allowed modes, retained audit event count, and the latest guardrail reason when present. Metrics output reports process-local counters for lab runs, scenarios, policy decisions, recommendations, active-experiment changes, guardrail blocks, rollback/fail-closed events, audit retention/drops, explanation coverage, and rate-limit interactions. It also warns that active-experiment and lab metrics are lab evidence only and not production certification.
 
 ## Evidence
 
@@ -77,9 +79,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\controlled-a
 
 The script writes JSON and Markdown evidence under ignored `target/controlled-adaptive-routing/` output. It exercises `off`, `shadow`, `recommend`, `active-experiment`, guardrail-blocked scenarios, and rollback/fail-closed behavior. It does not call live cloud, private-network targets, release commands, container publication, registries, or `release-downloads/`.
 
+Run the observability pack after packaging when reviewing metrics, dashboards, alerts, and SLO templates:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-observability-pack.ps1 -Package
+```
+
+The observability script writes metrics JSON, Prometheus-style sample text, a Markdown summary, and a manifest under ignored `target/enterprise-lab-observability/`. The related reviewer assets are `docs/observability/grafana-enterprise-lab-dashboard.json`, `docs/observability/enterprise-lab-alerts.yml`, and `docs/observability/SLO_TEMPLATES.md`.
+
 ## Limitations
 
 - Audit events are process-local and bounded, not centralized append-only storage.
+- Lab metrics are process-local and bounded, not centralized Prometheus or long-term observability storage.
 - Active-experiment is lab/evaluation behavior, not a distributed production control plane.
 - No production TLS, IAM, ingress, monitoring, incident-response, or rollback automation is provided by this policy gate alone.
 - No live cloud/private-network validation is part of this evidence path.

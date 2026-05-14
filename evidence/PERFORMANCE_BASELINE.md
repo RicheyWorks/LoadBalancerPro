@@ -14,6 +14,8 @@ No measured results are included yet because the preferred `hey` load-test tool 
 
 Future measured work should use stable request fixtures, a source-visible script, ignored output under `target/performance-baseline/`, local deterministic or loopback-only execution where possible, and no live/private-network dependency.
 
+The Enterprise Lab observability pack is complementary evidence, not a replacement for this baseline. Its process-local lab counters, dashboard JSON, alert examples, and SLO templates help reviewers inspect adaptive-routing behavior, but they do not provide latency, throughput, capacity, availability, or production SLO measurements.
+
 ## Environment Metadata
 
 | Field | Value |

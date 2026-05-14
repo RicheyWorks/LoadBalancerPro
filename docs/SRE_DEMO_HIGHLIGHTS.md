@@ -4,7 +4,7 @@ Use this page as the concise reviewer or portfolio walkthrough for LoadBalancerP
 
 ## Fast Story
 
-LoadBalancerPro Enterprise Lab is a Java/Spring lab for adaptive-routing scenarios, deterministic replay, LASE shadow/recommend/active-experiment comparison, controlled policy gates, scorecards, evidence export, SRE walkthroughs, and a bounded Production Gateway Candidate track. Review [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md), and [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](CONTROLLED_ACTIVE_LASE_POLICY_GATE.md) when the question is where the product goes next.
+LoadBalancerPro Enterprise Lab is a Java/Spring lab for adaptive-routing scenarios, deterministic replay, LASE shadow/recommend/active-experiment comparison, controlled policy gates, scorecards, process-local lab metrics, evidence export, SRE walkthroughs, and a bounded Production Gateway Candidate track. Review [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md), [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](CONTROLLED_ACTIVE_LASE_POLICY_GATE.md), and the observability pack under [`observability/`](observability/) when the question is where the product goes next.
 
 The current implementation has guarded cloud boundaries, deterministic adaptive-routing evidence, optional local proxy forwarding, and release evidence that a reviewer can inspect without trusting hidden infrastructure.
 
@@ -19,7 +19,8 @@ The strongest SRE/product-value thread is:
 7. LASE shadow mode can explain the adaptive-routing signals considered for `POST /api/allocate/evaluate` without altering live allocation.
 8. The Enterprise Lab workflow turns those signals into a reviewer-facing scenario catalog, run API, scorecard, evidence export, and browser lab page while remaining process-local and bounded.
 9. The controlled active LASE policy gate adds `off`, `shadow`, `recommend`, and `active-experiment` modes with health, eligibility, capacity, freshness, conflict, rollback, and bounded-context gates.
-10. Cloud mutation remains behind explicit dry-run, intent, prefix, ownership, account/region, and capacity guardrails.
+10. The observability pack adds protected `/api/lab/metrics` and `/api/lab/metrics/prometheus`, dashboard JSON, alert examples, SLO templates, and ignored local evidence under `target/enterprise-lab-observability/`.
+11. Cloud mutation remains behind explicit dry-run, intent, prefix, ownership, account/region, and capacity guardrails.
 
 ## Release Proof
 
@@ -74,10 +75,11 @@ The adaptive-routing foundation has moved from a demo foundation toward observab
 - `laseShadow` is shadow-only, lists signals considered, records observation status, reports recommended server/action when available, and states that it does not alter live allocation
 - `GET /api/lase/shadow` exposes bounded process-local observability for recent shadow events
 - the adaptive-routing experiment harness compares baseline vs shadow vs active-experiment across deterministic fixtures, keeps default behavior unchanged, and writes ignored review evidence under `target/adaptive-routing-experiments/`
-- the Enterprise Lab workflow exposes `GET /api/lab/scenarios`, `POST /api/lab/runs`, `GET /api/lab/policy`, `GET /api/lab/audit-events`, bounded in-memory run retrieval, scorecards, `/enterprise-lab.html`, and ignored evidence export under `target/enterprise-lab-runs/`
+- the Enterprise Lab workflow exposes `GET /api/lab/scenarios`, `POST /api/lab/runs`, `GET /api/lab/policy`, `GET /api/lab/audit-events`, `GET /api/lab/metrics`, `GET /api/lab/metrics/prometheus`, bounded in-memory run retrieval, scorecards, process-local lab metrics, `/enterprise-lab.html`, and ignored evidence export under `target/enterprise-lab-runs/`
 - the controlled active policy gate records audit events and rollback reasons while keeping `active-experiment` explicit, guarded, and not enabled by default
+- the observability pack exposes lab-grade counters for lab runs, scenarios, policy decisions by mode, recommendations, active-experiment changes, guardrail blocks, rollback/fail-closed events, audit retention/drops, explanation coverage, and rate-limit interactions without claiming production SLOs
 
-Evidence links: [`API_CONTRACTS.md`](API_CONTRACTS.md), [`SCENARIO_SIMULATION.md`](SCENARIO_SIMULATION.md), and `LaseAllocationShadowIntegrationTest`.
+Evidence links: [`API_CONTRACTS.md`](API_CONTRACTS.md), [`SCENARIO_SIMULATION.md`](SCENARIO_SIMULATION.md), [`observability/grafana-enterprise-lab-dashboard.json`](observability/grafana-enterprise-lab-dashboard.json), [`observability/enterprise-lab-alerts.yml`](observability/enterprise-lab-alerts.yml), [`observability/SLO_TEMPLATES.md`](observability/SLO_TEMPLATES.md), and `LaseAllocationShadowIntegrationTest`.
 
 Run the local experiment harness after packaging with:
 
@@ -103,6 +105,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\controlled-a
 
 The script writes `target/controlled-adaptive-routing/controlled-adaptive-routing-policy-summary.md`, `target/controlled-adaptive-routing/controlled-adaptive-routing-policy-metadata.json`, and per-mode lab evidence. It exercises `off`, `shadow`, `recommend`, `active-experiment`, guardrail-blocked cases, and rollback/fail-closed behavior without live cloud, external network, release, tag, asset, container, registry, or `release-downloads/` operations.
 
+Run the Enterprise Lab observability pack after packaging with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-observability-pack.ps1 -Package
+```
+
+The script writes `target/enterprise-lab-observability/lab-metrics.json`, `target/enterprise-lab-observability/lab-metrics.prom`, `target/enterprise-lab-observability/observability-summary.md`, and a manifest. Pair that output with the dashboard JSON, alert examples, and SLO templates. These are lab-grade/process-local observability artifacts, not production monitoring or production SLO certification.
+
 ## Walkthrough
 
 For a short interviewer walkthrough:
@@ -114,14 +124,16 @@ For a short interviewer walkthrough:
 5. Open `/enterprise-lab.html` or run `scripts/smoke/enterprise-lab-workflow.ps1 -Package`, then show the scenario catalog, lab run scorecard, policy audit events, rollback reasons, and ignored `target/enterprise-lab-runs/` evidence.
 6. Run or describe the adaptive-routing experiment harness and show the baseline vs shadow vs active-experiment matrix under `target/adaptive-routing-experiments/`.
 7. Run or describe `scripts/smoke/controlled-adaptive-routing-policy.ps1 -Package`, then show `target/controlled-adaptive-routing/` as the reproducible policy-gate evidence.
-8. Open [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md) to show release evidence, SBOM, checksums, and attestation posture.
-9. Close with the current limits below so the review stays honest.
+8. Run or describe `scripts/smoke/enterprise-lab-observability-pack.ps1 -Package`, then show the metrics JSON, Prometheus-style sample, dashboard JSON, alert examples, and SLO templates.
+9. Open [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md) to show release evidence, SBOM, checksums, and attestation posture.
+10. Close with the current limits below so the review stays honest.
 
 ## Honest Remaining Risks
 
 - This is not production deployment certification.
 - No real enterprise IdP tenant proof is included.
 - Production TLS, IAM, ingress, monitoring, log retention, WAF, distributed rate limiting, backup, and incident-response operations are deployment-owner responsibilities.
+- Lab metrics are process-local and lab-grade; production observability, retention, paging, and SLO certification remain future deployment work.
 - Container registry publication and container signing are deferred.
 - Active-experiment LASE influence is explicit, guarded, bounded, and lab/evaluation-grade; it is not a distributed production control plane or production deployment certification.
 - Live cloud sandbox validation is outside the default Maven/CI evidence.

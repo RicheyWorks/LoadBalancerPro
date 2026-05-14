@@ -356,17 +356,74 @@ jobs:
           docker inspect "$CONTAINER_NAME"
           exit 1
 
+      - name: Capture container dry-run evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          EVIDENCE_DIR="target/container-dry-run-evidence"
+          IMAGE_TAG="loadbalancerpro:ci"
+          SOURCE_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          WORKFLOW_SHA="${GITHUB_SHA}"
+          DRY_RUN_TAG="loadbalancerpro:ci-dry-run-${SOURCE_SHA}"
+          mkdir -p "$EVIDENCE_DIR"
+
+          docker tag "$IMAGE_TAG" "$DRY_RUN_TAG"
+          docker version > "$EVIDENCE_DIR/docker-version.txt"
+          docker image inspect "$DRY_RUN_TAG" > "$EVIDENCE_DIR/image-inspect.json"
+          docker image history --no-trunc "$DRY_RUN_TAG" > "$EVIDENCE_DIR/image-history.txt"
+          docker image ls loadbalancerpro > "$EVIDENCE_DIR/image-list.txt"
+          docker image inspect "$DRY_RUN_TAG" --format '{{.Id}}' > "$EVIDENCE_DIR/image-id.txt"
+          docker image inspect "$DRY_RUN_TAG" --format '{{json .RepoDigests}}' > "$EVIDENCE_DIR/repo-digests.json"
+          docker image inspect "$DRY_RUN_TAG" --format '{{json .Config.Labels}}' > "$EVIDENCE_DIR/image-labels.json"
+          docker image inspect "$DRY_RUN_TAG" --format '{{json .Config.Entrypoint}}' > "$EVIDENCE_DIR/image-entrypoint.json"
+          docker image inspect "$DRY_RUN_TAG" --format '{{json .Config.Cmd}}' > "$EVIDENCE_DIR/image-cmd.json"
+          docker image inspect "$DRY_RUN_TAG" --format '{{json .Config.ExposedPorts}}' > "$EVIDENCE_DIR/image-exposed-ports.json"
+
+          {
+            echo "# Container Dry-Run Evidence"
+            echo ""
+            echo "- Source commit SHA: ${SOURCE_SHA}"
+            echo "- Workflow SHA: ${WORKFLOW_SHA}"
+            echo "- Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "- Source image tag: \`${IMAGE_TAG}\`"
+            echo "- Local dry-run image tag: \`${DRY_RUN_TAG}\`"
+            echo "- Docker runtime smoke: passed before this evidence was captured."
+            echo "- Trivy scan: see \`trivy-summary.txt\` when the scan step completes."
+            echo "- Evidence directory: \`${EVIDENCE_DIR}\`"
+            echo "- Artifact name: \`container-dry-run-evidence-no-publish-no-sign\`"
+            echo ""
+            echo "## Boundary"
+            echo ""
+            echo "- No container was published."
+            echo "- No container was signed."
+            echo "- No registry login was performed."
+            echo "- No registry credentials were used."
+            echo "- No release, tag, or GitHub Release was created."
+            echo "- This is local-only image evidence, not production certification."
+          } > "$EVIDENCE_DIR/dry-run-summary.md"
+
       - name: Scan Docker image
         # aquasecurity/trivy-action@0.36.0
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           image-ref: loadbalancerpro:ci
           format: table
+          output: target/container-dry-run-evidence/trivy-summary.txt
           vuln-type: os,library
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           trivyignores: .trivyignore
           exit-code: '1'
+
+      - name: Upload container dry-run evidence
+        if: always() && hashFiles('target/container-dry-run-evidence/**') != ''
+        # actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: container-dry-run-evidence-no-publish-no-sign
+          path: target/container-dry-run-evidence
+          retention-days: 30
 
   dependency-review:
     name: Dependency Review

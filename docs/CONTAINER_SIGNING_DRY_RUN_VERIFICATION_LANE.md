@@ -77,6 +77,47 @@ docker image rm loadbalancerpro:dry-run
 
 Do not run `docker push`, registry login, signing commands, release commands, tag commands, live cloud commands, or private-network validation as part of this lane.
 
+## CI Dry-Run Evidence Artifact
+
+The normal CI workflow now uploads a no-publish/no-sign dry-run evidence artifact after the local Docker runtime smoke passes and the local image scan step runs.
+
+- Artifact name: `container-dry-run-evidence-no-publish-no-sign`.
+- Evidence directory in CI: `target/container-dry-run-evidence/`.
+- Source image tag: `loadbalancerpro:ci`.
+- Local dry-run image tag: `loadbalancerpro:ci-dry-run-<source-commit-sha>`.
+
+Expected evidence files:
+
+- `dry-run-summary.md`
+- `docker-version.txt`
+- `image-inspect.json`
+- `image-history.txt`
+- `image-list.txt`
+- `image-id.txt`
+- `repo-digests.json`
+- `image-labels.json`
+- `image-entrypoint.json`
+- `image-cmd.json`
+- `image-exposed-ports.json`
+- `trivy-summary.txt`
+
+What the artifact proves:
+
+- CI built a local container image from the checked-in Dockerfile.
+- CI ran the loopback-bound Docker runtime smoke before evidence capture.
+- CI captured local image identity, configuration, history, and Docker environment details.
+- CI recorded both the source commit SHA and the workflow SHA so pull-request merge refs are reviewable without ambiguity.
+- CI ran the configured Trivy image scan and stored its table output when the scan step completed.
+
+What the artifact does not prove:
+
+- It does not prove registry publication.
+- It does not prove container signing.
+- It does not prove registry attestation, published digest retention, or rollback readiness.
+- It does not prove production certification, production SLO/SLA behavior, live cloud validation, private-network validation, or real tenant proof.
+
+The artifact is local-only image evidence. No registry login is performed, no registry credentials are used, no container is published, no container is signed, and no release, tag, or GitHub Release is created.
+
 ## Dry-Run Image Identity Evidence
 
 For local review, capture:
@@ -151,9 +192,9 @@ Use this template for future local dry-run evidence. Store generated evidence un
 
 ## CI Integration Recommendation
 
-A future safe CI dry-run job may be useful, but this sprint does not add it.
+The current CI artifact lane captures reviewer-visible pre-publish/pre-sign evidence without registry login, registry push, signing, release creation, or secrets.
 
-Recommended future job shape:
+Future improvements may add image SBOM output or richer scan summaries, but must preserve this shape:
 
 - build a local image;
 - inspect the local image;

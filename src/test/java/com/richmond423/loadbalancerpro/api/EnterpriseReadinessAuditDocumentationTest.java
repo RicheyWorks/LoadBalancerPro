@@ -20,6 +20,7 @@ class EnterpriseReadinessAuditDocumentationTest {
             Path.of("docs/CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md");
     private static final Path CONTAINER_DRY_RUN_LANE =
             Path.of("docs/CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md");
+    private static final Path CI_WORKFLOW = Path.of(".github/workflows/ci.yml");
     private static final Path README = Path.of("README.md");
     private static final Path EXECUTIVE_SUMMARY = Path.of("docs/EXECUTIVE_SUMMARY.md");
     private static final Path PRODUCTION_SUMMARY = Path.of("docs/PRODUCTION_READINESS_SUMMARY.md");
@@ -43,6 +44,9 @@ class EnterpriseReadinessAuditDocumentationTest {
             "production-certified gateway",
             "container signing complete",
             "container signing is complete",
+            "signed container artifact",
+            "signed image artifact",
+            "registry-published artifact",
             "signed container published",
             "signed image published",
             "registry publish complete",
@@ -164,6 +168,13 @@ class EnterpriseReadinessAuditDocumentationTest {
                 "not production certified",
                 "not enterprise-production ready",
                 "No registry credentials, signing keys, or secrets are required",
+                "CI Dry-Run Evidence Artifact",
+                "container-dry-run-evidence-no-publish-no-sign",
+                "target/container-dry-run-evidence/",
+                "dry-run-summary.md",
+                "trivy-summary.txt",
+                "No registry login is performed",
+                "no registry credentials are used",
                 "future examples only",
                 "not run in this sprint",
                 "No registry publish",
@@ -172,6 +183,49 @@ class EnterpriseReadinessAuditDocumentationTest {
                 "docker build -t loadbalancerpro:dry-run .")) {
             assertTrue(lane.contains(expected), "container dry-run lane should mention " + expected);
         }
+    }
+
+    @Test
+    void ciWorkflowUploadsContainerDryRunEvidenceWithoutPublishSignLogin() throws Exception {
+        String workflow = read(CI_WORKFLOW);
+        String normalized = workflow.toLowerCase(Locale.ROOT);
+
+        for (String expected : List.of(
+                "Capture container dry-run evidence",
+                "target/container-dry-run-evidence",
+                "SOURCE_SHA",
+                "WORKFLOW_SHA",
+                "loadbalancerpro:ci-dry-run-${SOURCE_SHA}",
+                "Source commit SHA",
+                "Workflow SHA",
+                "docker image inspect",
+                "image-inspect.json",
+                "image-history.txt",
+                "image-list.txt",
+                "image-id.txt",
+                "repo-digests.json",
+                "dry-run-summary.md",
+                "trivy-summary.txt",
+                "Upload container dry-run evidence",
+                "container-dry-run-evidence-no-publish-no-sign",
+                "No container was published",
+                "No container was signed",
+                "No registry login was performed",
+                "No registry credentials were used")) {
+            assertTrue(workflow.contains(expected), "CI workflow should mention " + expected);
+        }
+
+        for (String forbidden : List.of(
+                "docker push",
+                "docker login",
+                "cosign sign",
+                "cosign attest",
+                "gh release",
+                "git tag")) {
+            assertFalse(normalized.contains(forbidden), "CI workflow must not perform " + forbidden);
+        }
+
+        assertNoUnsafeAffirmativeClaims(CI_WORKFLOW, workflow);
     }
 
     @Test

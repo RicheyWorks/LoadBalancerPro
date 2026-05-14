@@ -343,6 +343,23 @@ class LaseShadowAdvisorTest {
     }
 
     @Test
+    void allUnhealthyShadowObservationRecordsAdvisoryNoCandidateEvent() {
+        LaseShadowEventLog eventLog = new LaseShadowEventLog(10);
+        LaseShadowAdvisor advisor = deterministicAdvisor(true, eventLog);
+
+        Optional<LaseEvaluationReport> report = advisor.observe("CAPACITY_AWARE", unhealthyServers(), 80.0,
+                new LoadDistributionResult(Map.of(), 80.0));
+
+        assertTrue(report.isPresent());
+        assertTrue(report.orElseThrow().routingDecision().chosenServer().isEmpty());
+        LaseShadowEvent event = eventLog.snapshot().recentEvents().get(0);
+        assertNull(event.recommendedServerId());
+        assertNull(event.agreedWithRouting());
+        assertFalse(event.failSafe());
+        assertTrue(event.reason().contains("no eligible server"));
+    }
+
+    @Test
     void disabledLoadBalancerAdvisorLeavesNoShadowReport() {
         LoadBalancer balancer = balancerWithServers();
         balancer.setLaseShadowAdvisorForTesting(LaseShadowAdvisor.disabled());
@@ -393,6 +410,16 @@ class LaseShadowAdvisorTest {
         first.setCapacity(80.0);
         Server second = new Server("S2", 10.0, 10.0, 10.0);
         second.setCapacity(100.0);
+        return List.of(first, second);
+    }
+
+    private static List<Server> unhealthyServers() {
+        Server first = new Server("S1", 95.0, 90.0, 85.0);
+        first.setCapacity(80.0);
+        first.setHealthy(false);
+        Server second = new Server("S2", 99.0, 95.0, 90.0);
+        second.setCapacity(100.0);
+        second.setHealthy(false);
         return List.of(first, second);
     }
 

@@ -4,7 +4,7 @@ This packet is the reviewer/operator path for proving what the current `main` re
 
 This is not a release procedure. It does not create tags, GitHub Releases, release assets, registry images, container signatures, cloud resources, or files under `release-downloads/`.
 
-Use this packet with [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md), [`PRODUCTION_READINESS_SUMMARY.md`](PRODUCTION_READINESS_SUMMARY.md), [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md), and [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md).
+Use this packet with [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md), [`PRODUCTION_READINESS_SUMMARY.md`](PRODUCTION_READINESS_SUMMARY.md), [`RELEASE_CANDIDATE_DRY_RUN.md`](RELEASE_CANDIDATE_DRY_RUN.md), [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md), and [`RELEASE_INTENT_CHECKLIST.md`](RELEASE_INTENT_CHECKLIST.md).
 
 ## Output Location
 
@@ -99,6 +99,8 @@ Registry publication and container signing become required if distribution depen
 - Credential handling plan.
 
 No container publication or container signing is performed by this dry-run packet.
+
+After this packet is generated, use [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md) to prepare the human decision for the recommended next JAR/docs-first semantic release without creating tags, GitHub Releases, release assets, registry images, or signatures.
 
 ## Remaining Release Blockers
 

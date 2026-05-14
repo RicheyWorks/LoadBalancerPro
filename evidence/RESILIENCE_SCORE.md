@@ -6,7 +6,7 @@ Verification command: `mvn -q test`
 
 ## Disclaimer
 
-This is an internal evidence-backed engineering scorecard for LoadBalancerPro as an enterprise-demo SRE/control-plane lab. It is not a certification, not a guarantee of production security, and not formal verification.
+This is an internal evidence-backed engineering scorecard for LoadBalancerPro Enterprise Lab as an enterprise-demo SRE/control-plane and adaptive-routing lab. It is not a certification, not a guarantee of production security, and not formal verification.
 
 Scores are based on the current tests, evidence documents, and known residual risks. They should change when implementation, tests, deployment assumptions, or residual risks change.
 
@@ -62,7 +62,7 @@ This score means the project has strong lab coverage with meaningful residual ri
 
 Score: 84/100.
 
-Why this score: Prod/cloud-sandbox API-key behavior, OAuth2 fail-closed startup, RBAC route checks, Swagger/OpenAPI gating in OAuth2 mode, health access, CORS preflight behavior, and auth-before-size behavior are covered by focused tests and evidence. OAuth2 role mapping handles common JWT claim shapes.
+Why this score: Prod/cloud-sandbox API-key behavior, OAuth2 fail-closed startup, RBAC route checks, Swagger/OpenAPI gating, health access, CORS preflight behavior, and auth-before-size behavior are covered by focused tests and evidence. OAuth2 application roles come from dedicated `roles`, `role`, `authorities`, and `realm_access.roles` claims; standard `scope` and `scp` claims do not grant application roles.
 
 Evidence references:
 
@@ -215,9 +215,9 @@ Suggested next hardening action: Add a release checklist that requires confirmin
 
 ### Supply-Chain/Dependency Posture
 
-Score: 74/100.
+Score: 58/100.
 
-Why this score: CI release gates, dependency review, Dependabot, pinned GitHub Actions, digest-pinned Docker base images, CycloneDX SBOM workflow artifacts, Trivy image scanning, CodeQL SAST, semantic-tag GitHub Release assets, SHA-256 checksum verification, and GitHub artifact attestations are documented and exercised by the current workflows. The score remains conservative because there is no OWASP dependency-check report, release/container PGP-style signing, container registry publication/signing, mature accepted dependency-risk workflow, or formal SAST triage register.
+Why this score: CI release gates, dependency review, Dependabot, pinned GitHub Actions, digest-pinned Docker base images, CycloneDX SBOM workflow artifacts, Trivy image scanning, CodeQL SAST, semantic-tag GitHub Release assets, SHA-256 checksum verification, and GitHub artifact attestations are documented and exercised by the current workflows. The score remains deliberately moderate because the posture is evidence-rich but not independently audited, there is no OWASP dependency-check report, no release/container PGP-style signing, no published/signed container image, no populated long-term accepted-risk register, and no formal SAST triage register.
 
 Evidence references:
 

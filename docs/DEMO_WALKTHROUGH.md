@@ -1,6 +1,6 @@
 # Demo Walkthrough
 
-Use this outline for a 60 to 90 second local demo or short screen recording. It is a script, not a requirement to publish a video.
+Use this outline for a 60 to 90 second local demo or short screen recording. It is a script, not a requirement to publish a video. For the product identity behind the demo, start with [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md) and [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md).
 
 ## Setup
 
@@ -18,7 +18,7 @@ Keep the demo local. Do not use cloud credentials, public upstreams, real secret
 
 ## 60 To 90 Second Talk Track
 
-1. Start at the root landing page and say that LoadBalancerPro is a Java/Spring load-balancing simulator with an operator-focused lightweight proxy foundation.
+1. Start at the root landing page and say that LoadBalancerPro Enterprise Lab is an Enterprise Adaptive Routing Lab first and a Production Gateway Candidate second.
 2. Open the cockpit and run the packaged local scenarios. Point out routing comparisons, allocation pressure, overload/load-shedding signals, raw JSON, and copyable curl snippets.
 3. Mention that `/proxy/**` is optional and disabled by default. Operators can configure local/private backend targets through application configuration.
 4. Show [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) and [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) as the copyable validation path for packaged jar, API-key boundary, and proxy-loopback checks.

@@ -1,10 +1,12 @@
 # SRE Demo Highlights
 
-Use this page as the concise reviewer or portfolio walkthrough for LoadBalancerPro after the verified `v2.5.0` JAR/docs-first release and the adaptive-routing hardening sprint. It is a demo guide, not production certification.
+Use this page as the concise reviewer or portfolio walkthrough for LoadBalancerPro Enterprise Lab after the verified `v2.5.0` JAR/docs-first release and the adaptive-routing hardening sprint. It is a demo guide, not production certification.
 
 ## Fast Story
 
-LoadBalancerPro is a Java/Spring load-balancing simulator with guarded cloud boundaries, deterministic adaptive-routing evidence, optional local proxy forwarding, and release evidence that a reviewer can inspect without trusting hidden infrastructure.
+LoadBalancerPro Enterprise Lab is a Java/Spring lab for adaptive-routing scenarios, deterministic replay, LASE shadow/influence comparison, policy gates, scorecards, evidence export, SRE walkthroughs, and a bounded Production Gateway Candidate track. Review [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md) and [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md) when the question is where the product goes next.
+
+The current implementation has guarded cloud boundaries, deterministic adaptive-routing evidence, optional local proxy forwarding, and release evidence that a reviewer can inspect without trusting hidden infrastructure.
 
 The strongest SRE/product-value thread is:
 

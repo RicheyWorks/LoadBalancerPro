@@ -165,7 +165,7 @@ Roadmap backlog:
 The release evidence set lives in [`evidence/`](evidence/):
 
 - [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) provides a short public-facing overview, evaluation path, and limitations summary.
-- [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md) summarizes the current production-candidate posture, current validation posture, release/container signing limits, remaining production risks, and evidence links.
+- [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md) summarizes the current production-candidate posture, current validation posture, release/container signing limits, remaining production risks, and evidence links. [`RELEASE_READINESS_DECISION_SUMMARY.md`](docs/RELEASE_READINESS_DECISION_SUMMARY.md) gives the two-track JAR/docs-first versus deferred container distribution decision.
 - [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) gives a 60 to 90 second local demo outline for the root page, cockpit, API-key boundary, proxy-loopback, observability, and container path.
 - [`HARDENING_AUDIT_001.md`](evidence/HARDENING_AUDIT_001.md) captures the formal hardening audit results.
 - [`SECURITY_POSTURE.md`](evidence/SECURITY_POSTURE.md) summarizes current auth, telemetry, cloud, replay, LASE, and input/API posture.
@@ -190,7 +190,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`OPERATOR_RUN_PROFILES.md`](docs/OPERATOR_RUN_PROFILES.md) is the execution hub for local demo, packaged jar, prod API-key, cloud-sandbox API-key, OAuth2, proxy-loopback, and container run recipes.
 - [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEPLOYMENT_SMOKE_KIT.md) gives a local-only smoke path for the packaged jar, prod API-key boundary, and proxy-loopback recipe.
 - [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md) documents local-only Docker build/run recipes, API-key boundary checks, proxy-loopback caveats, and the no-registry-publish boundary.
-- [`CONTAINER_SIGNING_DECISION_RECORD.md`](docs/CONTAINER_SIGNING_DECISION_RECORD.md) records the current no-registry/no-container-signing posture and the future decision gate for registry target, image tag policy, immutable digest pinning, signing/attestation approach, vulnerability scan evidence, rollback, and retention.
+- [`CONTAINER_SIGNING_DECISION_RECORD.md`](docs/CONTAINER_SIGNING_DECISION_RECORD.md) records the current no-registry/no-container-signing posture and the future decision gate for registry target, image tag policy, immutable digest pinning, signing/attestation approach, vulnerability scan evidence, rollback, and retention. [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](docs/CONTAINER_REGISTRY_SIGNING_ROLLOUT.md) turns that gate into a concrete future rollout plan.
 - [`SECRET_MANAGEMENT_GUIDE.md`](docs/SECRET_MANAGEMENT_GUIDE.md) documents secret categories, storage guidance, leakage paths, rotation, and sanitized examples.
 - [`OPERATIONS_GUIDE.md`](docs/OPERATIONS_GUIDE.md) documents startup checks, health verification, monitoring, incident response, rollback, and release evidence review guidance.
 - [`LOAD_SHEDDING.md`](docs/LOAD_SHEDDING.md) documents public allocation overload semantics, load shedding, advisory remediation plans, metrics, and cloud-safety guarantees.
@@ -219,6 +219,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`RELEASE_CANDIDATE_DRY_RUN.md`](docs/RELEASE_CANDIDATE_DRY_RUN.md) ties CI artifacts, local verification, SBOM review, packaged jar smoke evidence, proxy status UI, and demo stack commands into one release-free go/no-go packet with a placeholder-only review template.
 - [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](docs/RELEASE_CANDIDATE_DRY_RUN_PACKET.md) is the current reviewer packet for recording commit, test/verify/package, SBOM, checksum, security gate, smoke, and publication-boundary evidence under ignored `target/release-candidate-dry-run/`.
 - [`RELEASE_INTENT_REVIEW.md`](docs/RELEASE_INTENT_REVIEW.md) prepares the human decision for the recommended `v2.5.0` JAR/docs-first release path without creating tags, GitHub Releases, release assets, registry images, or signatures.
+- [`RELEASE_READINESS_DECISION_SUMMARY.md`](docs/RELEASE_READINESS_DECISION_SUMMARY.md) summarizes the recommended `v2.5.0` JAR/docs-first human decision and the deferred container distribution path.
 - [`OPERATOR_INSTALL_RUN_MATRIX.md`](docs/OPERATOR_INSTALL_RUN_MATRIX.md) gives Windows and Unix command paths for packaged jar, Maven exec, Spring profiles, proxy demo stack, fixture launcher, status pages, CI artifacts, and smoke helpers.
 - [`RELEASE_INTENT_CHECKLIST.md`](docs/RELEASE_INTENT_CHECKLIST.md) adds the explicit release-intent hard stop before any future tag, release, upload, ruleset, or `release-downloads/` action is considered.
 - [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md) documents JavaFX desktop UI scope, platform caveats, launch guidance, troubleshooting, and why API/proxy/operator paths do not require JavaFX.
@@ -598,7 +599,7 @@ The Trivy allowlist file is `.trivyignore`. Keep it empty unless a finding has b
 
 The repository includes a multi-stage `Dockerfile` that builds the packaged Spring Boot JAR and runs it from a Java 17 JRE image as a non-root user. The runtime image includes `curl` for the Docker `HEALTHCHECK`.
 
-For the consolidated local-only container deployment path, including prod API-key boundary checks and proxy-loopback caveats, see [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md). For the current no-registry/no-container-signing posture and future publication/signing gate, see [`CONTAINER_SIGNING_DECISION_RECORD.md`](docs/CONTAINER_SIGNING_DECISION_RECORD.md).
+For the consolidated local-only container deployment path, including prod API-key boundary checks and proxy-loopback caveats, see [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md). For the current no-registry/no-container-signing posture, future publication/signing gate, and rollout plan, see [`CONTAINER_SIGNING_DECISION_RECORD.md`](docs/CONTAINER_SIGNING_DECISION_RECORD.md) and [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](docs/CONTAINER_REGISTRY_SIGNING_ROLLOUT.md).
 
 Build the image:
 

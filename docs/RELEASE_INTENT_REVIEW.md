@@ -12,6 +12,8 @@ Use this packet after the release-candidate dry-run packet and before any separa
 - Recommended exact next release version: `v2.5.0`.
 - Recommended release type: JAR/docs-first minor release.
 - Container distribution status: deferred; registry publication and container signing are not part of this release intent.
+- Two-track decision summary: [`RELEASE_READINESS_DECISION_SUMMARY.md`](RELEASE_READINESS_DECISION_SUMMARY.md).
+- Container rollout gate if image distribution becomes required: [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md).
 
 Do not push `v2.5.0` until a separate version-alignment PR updates Maven/runtime/docs metadata to `2.5.0` and its checks pass. The release artifact workflow intentionally fails semantic tag runs when the tag version and Maven project version differ.
 
@@ -103,6 +105,7 @@ Use this outline for the real release PR or release notes:
 - If a GitHub Release is created with unexpected assets, stop and perform a separate repair review using the release process and checksum evidence.
 - If a deployment consumes the JAR directly, rollback should select the last known-good released JAR and checksum evidence.
 - If container distribution later becomes required, use immutable image digests and the container rollout plan before treating images as release artifacts.
+- Use [`RELEASE_READINESS_DECISION_SUMMARY.md`](RELEASE_READINESS_DECISION_SUMMARY.md) to choose between JAR/docs-first release intent and the deferred container rollout path.
 
 ## Final Human Approval Checklist
 

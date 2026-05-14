@@ -11,6 +11,8 @@ This is a **future gated** lane for container distribution and signing evidence.
 
 The lane is documentation and guardrail work only. It prepares reviewer-visible evidence expectations for a later approved implementation sprint.
 
+For the no-publish/no-sign dry-run verification path that can run before approval, use [`CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md`](CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md).
+
 ## Purpose
 
 This lane prepares future reviewer-visible distribution trust evidence for:

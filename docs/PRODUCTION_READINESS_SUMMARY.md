@@ -18,7 +18,7 @@ Current label: production-candidate for controlled enterprise demo/reviewer usag
 
 ## Current Validation Posture
 
-Use the latest successful PR and `main` checks as the source of truth for a specific commit. Required reviewer evidence includes CI, CodeQL, Dependency Review, package, smoke, SBOM, and Trivy results for that commit.
+Use the latest successful PR and `main` checks as the source of truth for a specific commit. Required reviewer evidence includes CI, CodeQL, Dependency Review, package, smoke, SBOM, and Trivy results for that commit. The two-track release decision is summarized in [`RELEASE_READINESS_DECISION_SUMMARY.md`](RELEASE_READINESS_DECISION_SUMMARY.md): JAR/docs-first can proceed after explicit release authorization and version alignment, while container distribution remains deferred to [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md).
 
 This summary branch is docs/static-test only. Its local validation target is:
 
@@ -64,6 +64,8 @@ Do not call the build release-ready until semantic-tag release evidence is produ
 - Deployment hardening: [`DEPLOYMENT_HARDENING_GUIDE.md`](DEPLOYMENT_HARDENING_GUIDE.md)
 - Release-candidate dry-run packet: [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md)
 - Release-intent review: [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md)
+- Release readiness decision summary: [`RELEASE_READINESS_DECISION_SUMMARY.md`](RELEASE_READINESS_DECISION_SUMMARY.md)
 - Container signing decision: [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md)
+- Container registry/signing rollout: [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md)
 - IdP claim examples: [`IDP_CLAIM_MAPPING_EXAMPLES.md`](IDP_CLAIM_MAPPING_EXAMPLES.md)
 - Dependency/SAST workflow: [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](DEPENDENCY_SAST_RISK_WORKFLOW.md)

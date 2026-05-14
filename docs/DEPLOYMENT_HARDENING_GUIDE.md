@@ -18,7 +18,7 @@ Use [`PRODUCTION_READINESS_SUMMARY.md`](PRODUCTION_READINESS_SUMMARY.md) for the
 
 When CodeQL, Dependency Review, Trivy, SBOM review, or dependency review reports a finding, use [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](DEPENDENCY_SAST_RISK_WORKFLOW.md) before accepting, dismissing, or deferring it. The workflow requires owner, severity, rationale, expiry or review date, and follow-up evidence for non-fixed findings.
 
-Before proposing registry publication, release image tags, container signing, or container attestations, complete [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md).
+Before proposing registry publication, release image tags, container signing, or container attestations, complete [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md) and [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md).
 
 ## Deployment Posture Summary
 
@@ -175,7 +175,7 @@ This guide does not provide:
 - Live AWS validation.
 - Ad hoc release publication. GitHub Release assets are published only by the separate semantic-tag Release Artifacts workflow, not by normal docs, tests, smoke scripts, or deployment review.
 - Container signing.
-- Container registry publication or signing; those require the focused decision gate in [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md).
+- Container registry publication or signing; those require the focused decision gate in [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md) and rollout plan in [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md).
 - Production certification.
 
 Treat this guide as deployment hardening guidance for an enterprise-demo repository. A real production deployment needs infrastructure-specific design, review, testing, monitoring, and incident response.

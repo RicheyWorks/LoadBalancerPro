@@ -2,6 +2,8 @@
 
 Status: deferred, documented gate required before implementation.
 
+For the concrete future implementation plan covering registry choice, image naming, tag/digest policy, signing/attestation options, vulnerability scan evidence, credential handling, rollback, retention, promotion, and approvals, use [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md).
+
 Use this record before proposing any container registry publication, release image tagging, container signing, or container attestation path. It is documentation only. It does not publish images, push to a registry, create tags, create GitHub Releases, mutate release assets, add secrets, or change workflows.
 
 ## Current Container Posture
@@ -74,6 +76,7 @@ Stop before publication or signing if any of these are true:
 ## Related Evidence
 
 - [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md)
+- [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md)
 - [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md)
 - [`DEPLOYMENT_HARDENING_GUIDE.md`](DEPLOYMENT_HARDENING_GUIDE.md)
 - [`../evidence/SUPPLY_CHAIN_EVIDENCE.md`](../evidence/SUPPLY_CHAIN_EVIDENCE.md)

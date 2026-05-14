@@ -4,7 +4,7 @@ Use this guide when you want a local-only container path for the same Spring Boo
 
 Start with [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) when choosing a run mode. Use [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) for the packaged-jar smoke path before adapting these container commands. Use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](ANTIVIRUS_SAFE_DEVELOPMENT.md) for safe local artifact and tooling defaults, and [`LIVE_PROXY_CONTAINMENT.md`](LIVE_PROXY_CONTAINMENT.md) before adapting proxy validation to real local/private backends.
 
-For the current no-registry-publish posture and the future decision gate for registry target, image tag policy, immutable digest pinning, signing/attestation approach, vulnerability scan evidence, rollback, and retention policy, see [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md).
+For the current no-registry-publish posture and the future decision gate for registry target, image tag policy, immutable digest pinning, signing/attestation approach, vulnerability scan evidence, rollback, and retention policy, see [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md) and [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md).
 
 ## What It Proves
 
@@ -21,7 +21,7 @@ For the current no-registry-publish posture and the future decision gate for reg
 
 - Public ingress safety, identity lifecycle, TLS termination, rate limiting, high availability, vulnerability management, or environment-specific operations.
 - Kubernetes, Helm, Compose, cloud deployment, registry publication, image signing, or release asset publication.
-- Container registry publication, release image naming, cosign/container signing, and container attestation remain deferred until the decision gate in [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md) is satisfied.
+- Container registry publication, release image naming, cosign/container signing, and container attestation remain deferred until the decision gate in [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md) and the rollout gates in [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md) are satisfied.
 - Throughput, capacity, SLO, compliance, or managed gateway suitability.
 
 ## Prerequisites

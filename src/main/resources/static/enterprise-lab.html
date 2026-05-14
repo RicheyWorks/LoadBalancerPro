@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoadBalancerPro Enterprise Lab</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #5f6b7a;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --accent: #1d6f8f;
+      --accent-dark: #15506b;
+      --warn: #8a4b08;
+      --bg: #f6f7f9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    header {
+      padding: 28px clamp(18px, 5vw, 56px);
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+    main {
+      display: grid;
+      gap: 18px;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 22px clamp(14px, 4vw, 28px) 48px;
+    }
+    h1, h2 { margin: 0; line-height: 1.18; }
+    h1 { font-size: clamp(2rem, 4vw, 3.2rem); }
+    h2 { font-size: 1.2rem; }
+    p { line-height: 1.55; color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: end;
+    }
+    label {
+      display: grid;
+      gap: 5px;
+      min-width: 190px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    select, input {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+    button {
+      border: 0;
+      border-radius: 6px;
+      background: var(--accent);
+      color: #fff;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+    button:hover { background: var(--accent-dark); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 9px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: #394454; }
+    pre {
+      overflow: auto;
+      max-height: 420px;
+      padding: 12px;
+      border-radius: 6px;
+      background: #101820;
+      color: #edf5ff;
+      font-size: 0.86rem;
+    }
+    .note {
+      border-left: 4px solid var(--warn);
+      padding-left: 12px;
+      color: var(--warn);
+    }
+    .pill {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 8px;
+      margin: 2px;
+      color: #344255;
+      background: #f8fafc;
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>LoadBalancerPro Enterprise Lab</h1>
+  <p>Enterprise Adaptive Routing Lab first, Production Gateway Candidate second. This page lists deterministic scenarios, runs lab-grade comparisons, and shows scorecards as lab evidence only / not production activation.</p>
+</header>
+<main>
+  <section>
+    <h2>Lab Controls</h2>
+    <p class="note">Local/demo mode is intentionally convenient. In prod or cloud-sandbox API-key mode, the APIs below require <code>X-API-Key</code>; the key is kept in page memory only and is never stored.</p>
+    <div class="toolbar">
+      <label>API key for protected profiles
+        <input id="apiKey" type="password" autocomplete="off" placeholder="Optional X-API-Key">
+      </label>
+      <label>Run mode
+        <select id="mode">
+          <option value="all">all</option>
+          <option value="shadow">shadow</option>
+          <option value="influence">influence</option>
+        </select>
+      </label>
+      <button id="loadScenarios" type="button">List Scenarios</button>
+      <button id="runAll" type="button">Run Selected</button>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section>
+      <h2>Scenario Catalog</h2>
+      <div id="scenarios">No scenario catalog loaded yet.</div>
+    </section>
+    <section>
+      <h2>Scorecard</h2>
+      <div id="scorecard">Run a lab scenario to see scorecard output.</div>
+    </section>
+  </div>
+
+  <section>
+    <h2>Run Output</h2>
+    <pre id="output">No lab run yet.</pre>
+  </section>
+
+  <section>
+    <h2>Copyable Commands</h2>
+    <p>Evidence export writes only to ignored <code>target/enterprise-lab-runs/</code> paths.</p>
+    <pre>curl -fsS http://127.0.0.1:8080/api/lab/scenarios
+
+curl -fsS -X POST http://127.0.0.1:8080/api/lab/runs \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: &lt;API_KEY&gt;" \
+  -d '{"mode":"all","scenarioIds":["normal-balanced-load","tail-latency-pressure"]}'
+
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-workflow.ps1 -Package</pre>
+  </section>
+</main>
+<script>
+  const scenariosEl = document.getElementById("scenarios");
+  const scorecardEl = document.getElementById("scorecard");
+  const outputEl = document.getElementById("output");
+  const selectedScenarioIds = new Set();
+
+  function headers() {
+    const headers = { "Accept": "application/json" };
+    const key = document.getElementById("apiKey").value.trim();
+    if (key) {
+      headers["X-API-Key"] = key;
+    }
+    return headers;
+  }
+
+  async function requestJson(path, options = {}) {
+    const response = await fetch(path, {
+      ...options,
+      headers: { ...headers(), ...(options.headers || {}) }
+    });
+    const body = await response.json().catch(() => ({ error: "not_json", status: response.status }));
+    if (!response.ok) {
+      throw new Error(`${response.status} ${body.error || "request_failed"}: ${body.message || path}`);
+    }
+    return body;
+  }
+
+  function renderScenarios(catalog) {
+    selectedScenarioIds.clear();
+    const rows = catalog.scenarios.map((scenario) => {
+      selectedScenarioIds.add(scenario.scenarioId);
+      return `<tr>
+        <td><label><input type="checkbox" data-scenario="${scenario.scenarioId}" checked> ${scenario.displayName}</label></td>
+        <td>${scenario.category}</td>
+        <td>${scenario.signalsInvolved.map(signal => `<span class="pill">${signal}</span>`).join(" ")}</td>
+        <td>${scenario.expectedGuardrails.join("; ")}</td>
+      </tr>`;
+    }).join("");
+    scenariosEl.innerHTML = `<table><thead><tr><th>Scenario</th><th>Category</th><th>Signals</th><th>Guardrails</th></tr></thead><tbody>${rows}</tbody></table>`;
+    scenariosEl.querySelectorAll("input[data-scenario]").forEach((input) => {
+      input.addEventListener("change", () => {
+        if (input.checked) {
+          selectedScenarioIds.add(input.dataset.scenario);
+        } else {
+          selectedScenarioIds.delete(input.dataset.scenario);
+        }
+      });
+    });
+  }
+
+  function renderScorecard(scorecard) {
+    scorecardEl.innerHTML = `<table><tbody>
+      <tr><th>Total scenarios</th><td>${scorecard.totalScenarios}</td></tr>
+      <tr><th>Baseline vs shadow differences</th><td>${scorecard.baselineVsShadowDifferences}</td></tr>
+      <tr><th>Baseline vs influence differences</th><td>${scorecard.baselineVsInfluenceDifferences}</td></tr>
+      <tr><th>Guardrail-blocked influence</th><td>${scorecard.guardrailBlockedInfluenceCount}</td></tr>
+      <tr><th>Unsafe/all-unhealthy blocked</th><td>${scorecard.unsafeAllUnhealthyBlockedCount}</td></tr>
+      <tr><th>Stale/conflicting blocked</th><td>${scorecard.staleConflictingSignalBlockedCount}</td></tr>
+      <tr><th>Explanation coverage</th><td>${scorecard.explanationCoverage}</td></tr>
+      <tr><th>Recommendation</th><td>${scorecard.finalRecommendation}</td></tr>
+    </tbody></table>`;
+  }
+
+  document.getElementById("loadScenarios").addEventListener("click", async () => {
+    try {
+      const catalog = await requestJson("/api/lab/scenarios");
+      renderScenarios(catalog);
+      outputEl.textContent = JSON.stringify(catalog, null, 2);
+    } catch (error) {
+      outputEl.textContent = error.message;
+    }
+  });
+
+  document.getElementById("runAll").addEventListener("click", async () => {
+    try {
+      const run = await requestJson("/api/lab/runs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: document.getElementById("mode").value,
+          scenarioIds: Array.from(selectedScenarioIds)
+        })
+      });
+      renderScorecard(run.scorecard);
+      outputEl.textContent = JSON.stringify(run, null, 2);
+    } catch (error) {
+      outputEl.textContent = error.message;
+    }
+  });
+</script>
+</body>
+</html>

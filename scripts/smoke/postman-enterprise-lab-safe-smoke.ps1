@@ -68,6 +68,7 @@ function Invoke-SmokeRequest {
         Method = $Method
         TimeoutSec = 5
         ErrorAction = "Stop"
+        UseBasicParsing = $true
     }
 
     if ($HeaderApiKey) {
@@ -93,7 +94,7 @@ function Invoke-SmokeRequest {
 function Wait-ForLocalHttp {
     param([string]$Url)
 
-    for ($attempt = 1; $attempt -le 30; $attempt++) {
+    for ($attempt = 1; $attempt -le 90; $attempt++) {
         try {
             $status = Invoke-SmokeRequest -Url $Url
             if ($status -ge 200 -and $status -lt 500) {
@@ -237,6 +238,7 @@ function Invoke-PostmanEnterpriseLabSmoke {
         Write-Host "Environment: $EnvironmentPath"
         Write-Host "Local profile port: $LocalPort"
         Write-Host "Prod API-key profile port: $ProdPort"
+        Write-Host "Enterprise Lab API checks: /api/lab/scenarios and /api/lab/runs"
         Write-Host "API key: <REDACTED>"
         Write-Host "Live command: powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\postman-enterprise-lab-safe-smoke.ps1 -Package"
         return
@@ -247,8 +249,9 @@ function Invoke-PostmanEnterpriseLabSmoke {
 
     $localBase = "http://127.0.0.1:$LocalPort"
     $prodBase = "http://127.0.0.1:$ProdPort"
-    $routingBody = '{"strategy":"ROUND_ROBIN","requestId":"postman-smoke","servers":[{"id":"a","healthy":true,"activeConnections":0,"weight":1},{"id":"b","healthy":true,"activeConnections":0,"weight":1}]}'
-    $evaluationBody = '{"totalLoad":10,"servers":[{"id":"a","capacity":10,"currentLoad":2,"healthy":true},{"id":"b","capacity":10,"currentLoad":2,"healthy":true}]}'
+    $routingBody = '{"strategies":["ROUND_ROBIN"],"servers":[{"serverId":"edge-a","healthy":true,"inFlightRequestCount":2,"configuredCapacity":100.0,"estimatedConcurrencyLimit":100.0,"weight":1.0,"averageLatencyMillis":20.0,"p95LatencyMillis":40.0,"p99LatencyMillis":80.0,"recentErrorRate":0.0,"queueDepth":1},{"serverId":"edge-b","healthy":true,"inFlightRequestCount":4,"configuredCapacity":100.0,"estimatedConcurrencyLimit":100.0,"weight":1.0,"averageLatencyMillis":22.0,"p95LatencyMillis":44.0,"p99LatencyMillis":88.0,"recentErrorRate":0.0,"queueDepth":2}]}'
+    $evaluationBody = '{"requestedLoad":150.0,"strategy":"CAPACITY_AWARE","priority":"BACKGROUND","currentInFlightRequestCount":95,"concurrencyLimit":100,"queueDepth":25,"observedP95LatencyMillis":300.0,"observedErrorRate":0.20,"servers":[{"id":"primary","cpuUsage":30.0,"memoryUsage":30.0,"diskUsage":30.0,"capacity":100.0,"weight":1.0,"healthy":true},{"id":"fallback","cpuUsage":70.0,"memoryUsage":70.0,"diskUsage":70.0,"capacity":100.0,"weight":1.0,"healthy":true},{"id":"failed","cpuUsage":0.0,"memoryUsage":0.0,"diskUsage":0.0,"capacity":500.0,"weight":10.0,"healthy":false}]}'
+    $labRunBody = '{"mode":"all","scenarioIds":["normal-balanced-load","tail-latency-pressure","stale-signal"]}'
 
     Assert-HttpStatus -Profile "local" -Name "Root allowed" -Url "$localBase/" -Expected 200
     Assert-HttpStatus -Profile "local" -Name "Health allowed" -Url "$localBase/api/health" -Expected 200
@@ -256,6 +259,8 @@ function Invoke-PostmanEnterpriseLabSmoke {
     Assert-HttpStatus -Profile "local" -Name "OpenAPI allowed" -Url "$localBase/v3/api-docs" -Expected 200
     Assert-HttpStatus -Profile "local" -Name "Swagger allowed" -Url "$localBase/swagger-ui/index.html" -Expected 200
     Assert-HttpStatus -Profile "local" -Name "Evidence onboarding allowed" -Url "$localBase/api/evidence-training/onboarding" -Expected 200
+    Assert-HttpStatus -Profile "local" -Name "Enterprise Lab scenarios allowed" -Url "$localBase/api/lab/scenarios" -Expected 200
+    Assert-HttpStatus -Profile "local" -Name "Enterprise Lab run allowed" -Url "$localBase/api/lab/runs" -Expected 200 -Method "POST" -Body $labRunBody
 
     Assert-HttpStatus -Profile "prod" -Name "OpenAPI missing key gated" -Url "$prodBase/v3/api-docs" -Expected 401
     Assert-HttpStatus -Profile "prod" -Name "OpenAPI wrong key gated" -Url "$prodBase/v3/api-docs" -Expected 401 -HeaderApiKey $WrongApiKey
@@ -269,6 +274,10 @@ function Invoke-PostmanEnterpriseLabSmoke {
     Assert-HttpStatus -Profile "prod" -Name "evaluation missing key gated" -Url "$prodBase/api/allocate/evaluate" -Expected 401 -Method "POST" -Body $evaluationBody
     Assert-HttpStatus -Profile "prod" -Name "evaluation wrong key gated" -Url "$prodBase/api/allocate/evaluate" -Expected 401 -Method "POST" -HeaderApiKey $WrongApiKey -Body $evaluationBody
     Assert-HttpStatus -Profile "prod" -Name "evaluation correct key allowed" -Url "$prodBase/api/allocate/evaluate" -Expected 200 -Method "POST" -HeaderApiKey $ApiKey -Body $evaluationBody
+    Assert-HttpStatus -Profile "prod" -Name "Enterprise Lab scenarios missing key gated" -Url "$prodBase/api/lab/scenarios" -Expected 401
+    Assert-HttpStatus -Profile "prod" -Name "Enterprise Lab scenarios correct key allowed" -Url "$prodBase/api/lab/scenarios" -Expected 200 -HeaderApiKey $ApiKey
+    Assert-HttpStatus -Profile "prod" -Name "Enterprise Lab run missing key gated" -Url "$prodBase/api/lab/runs" -Expected 401 -Method "POST" -Body $labRunBody
+    Assert-HttpStatus -Profile "prod" -Name "Enterprise Lab run correct key allowed" -Url "$prodBase/api/lab/runs" -Expected 200 -Method "POST" -HeaderApiKey $ApiKey -Body $labRunBody
     Assert-HttpStatus -Profile "prod" -Name "actuator metrics not exposed" -Url "$prodBase/actuator/metrics" -Expected 404
     Assert-HttpStatus -Profile "prod" -Name "actuator Prometheus not exposed" -Url "$prodBase/actuator/prometheus" -Expected 404
 

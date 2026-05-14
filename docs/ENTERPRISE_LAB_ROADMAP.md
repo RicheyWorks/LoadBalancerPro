@@ -35,15 +35,26 @@ Acceptance criteria:
 
 Purpose: make adaptive-routing experiments feel like a product workflow instead of a collection of scattered scripts and tests.
 
-Candidate surfaces:
+Implemented first slice:
 
-- `/api/lab/scenarios` or an equivalent scenario surface;
-- `/api/lab/runs` or an equivalent run surface;
-- deterministic scenario summaries;
-- scorecards for baseline, shadow, recommend, and active-experiment modes;
-- browser lab page;
-- memory or ignored-file run storage first;
-- evidence export under `target/adaptive-routing-lab/`.
+- `GET /api/lab/scenarios`;
+- `GET /api/lab/scenarios/{id}`;
+- `POST /api/lab/runs`;
+- `GET /api/lab/runs`;
+- `GET /api/lab/runs/{runId}`;
+- deterministic scenario summaries and run results;
+- scorecards for baseline, shadow, and explicit opt-in influence comparison;
+- `/enterprise-lab.html` browser lab page;
+- bounded process-local in-memory run storage, with memory or ignored-file run storage first as the durable product rule;
+- source-visible evidence export to `target/enterprise-lab-runs/`.
+
+Next candidate improvements:
+
+- scorecard severity labels;
+- richer reviewer comparison tables;
+- optional ignored-file run archive under `target/` only;
+- stricter JSON schema documentation;
+- integration into controlled active LASE policy gates.
 
 Acceptance criteria:
 
@@ -53,6 +64,7 @@ Acceptance criteria:
 - no live cloud mutation, release action, external network call, or private-network discovery occurs.
 - prod/cloud-sandbox auth boundaries apply to any runtime API surface.
 - docs explain local/demo usage, prod restrictions, and remaining limitations.
+- evidence export writes only ignored `target/` files and never mutates `release-downloads/`.
 
 ## P1: Controlled Active LASE Policy Gate
 

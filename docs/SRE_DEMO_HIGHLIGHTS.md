@@ -17,7 +17,8 @@ The strongest SRE/product-value thread is:
 5. Required DTO fields reject omitted JSON instead of silently defaulting to `0`, `0.0`, or `false`.
 6. Optional process-local rate limiting can protect allocation, routing, replay, remediation, proxy, and LASE shadow surfaces in single-instance demos; distributed edge rate limiting remains required for shared or public deployments.
 7. LASE shadow mode can explain the adaptive-routing signals considered for `POST /api/allocate/evaluate` without altering live allocation.
-8. Cloud mutation remains behind explicit dry-run, intent, prefix, ownership, account/region, and capacity guardrails.
+8. The Enterprise Lab workflow turns those signals into a reviewer-facing scenario catalog, run API, scorecard, evidence export, and browser lab page while remaining process-local and bounded.
+9. Cloud mutation remains behind explicit dry-run, intent, prefix, ownership, account/region, and capacity guardrails.
 
 ## Release Proof
 
@@ -72,6 +73,7 @@ The adaptive-routing foundation has moved from a demo foundation toward observab
 - `laseShadow` is shadow-only, lists signals considered, records observation status, reports recommended server/action when available, and states that it does not alter live allocation
 - `GET /api/lase/shadow` exposes bounded process-local observability for recent shadow events
 - the adaptive-routing experiment harness compares baseline vs shadow vs opt-in influence across deterministic fixtures, keeps default behavior unchanged, and writes ignored review evidence under `target/adaptive-routing-experiments/`
+- the Enterprise Lab workflow exposes `GET /api/lab/scenarios`, `POST /api/lab/runs`, bounded in-memory run retrieval, scorecards, `/enterprise-lab.html`, and ignored evidence export under `target/enterprise-lab-runs/`
 - active LASE influence over live allocation remains future work and is intentionally not enabled by default
 
 Evidence links: [`API_CONTRACTS.md`](API_CONTRACTS.md), [`SCENARIO_SIMULATION.md`](SCENARIO_SIMULATION.md), and `LaseAllocationShadowIntegrationTest`.
@@ -84,6 +86,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\adaptive-rou
 
 The script runs `--adaptive-routing-experiment=all`, records shadow-only and opt-in influence comparison output, and performs no live cloud mutation, API server startup, release action, container publication, or external network call. The opt-in influence path is a feature flag style experiment mode in the CLI output only; it is not a production routing control.
 
+Run the Enterprise Lab workflow evidence export after packaging with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-workflow.ps1 -Package
+```
+
+The script runs `--enterprise-lab-workflow=all`, writes scenario catalog JSON, run JSON, Markdown scorecard summary, and metadata under `target/enterprise-lab-runs/`, and performs no CloudManager, live cloud, external network, release, tag, asset, container, registry, or `release-downloads/` operation.
+
 ## Walkthrough
 
 For a short interviewer walkthrough:
@@ -92,9 +102,10 @@ For a short interviewer walkthrough:
 2. Run the local cockpit and show allocation pressure, routing comparison, remediation hints, and raw JSON.
 3. Show the protected-prod/container posture in [`API_SECURITY.md`](API_SECURITY.md) or [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md).
 4. Run or describe `POST /api/allocate/evaluate` with `loadbalancerpro.lase.shadow.enabled=true` and point to the `laseShadow` explanation.
-5. Run or describe the adaptive-routing experiment harness and show the baseline vs shadow vs opt-in influence matrix under `target/adaptive-routing-experiments/`.
-6. Open [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md) to show release evidence, SBOM, checksums, and attestation posture.
-7. Close with the current limits below so the review stays honest.
+5. Open `/enterprise-lab.html` or run `scripts/smoke/enterprise-lab-workflow.ps1 -Package`, then show the scenario catalog, lab run scorecard, guardrail-blocked influence counts, and ignored `target/enterprise-lab-runs/` evidence.
+6. Run or describe the adaptive-routing experiment harness and show the baseline vs shadow vs opt-in influence matrix under `target/adaptive-routing-experiments/`.
+7. Open [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md) to show release evidence, SBOM, checksums, and attestation posture.
+8. Close with the current limits below so the review stays honest.
 
 ## Honest Remaining Risks
 

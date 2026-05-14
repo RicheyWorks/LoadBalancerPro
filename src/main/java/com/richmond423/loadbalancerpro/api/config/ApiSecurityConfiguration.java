@@ -90,6 +90,9 @@ public class ApiSecurityConfiguration {
                     authorize.requestMatchers(HttpMethod.POST, "/api/proxy/private-network-live-validation")
                             .hasRole(allocationRole);
                     authorize.requestMatchers("/proxy", "/proxy/**").hasRole(allocationRole);
+                    authorize.requestMatchers(HttpMethod.GET, "/api/lab/scenarios", "/api/lab/scenarios/**")
+                            .hasAnyRole(readRoles);
+                    authorize.requestMatchers("/api/lab/**").hasRole(allocationRole);
                     authorize.requestMatchers(HttpMethod.POST, "/api/routing/**").hasRole(allocationRole);
                     authorize.requestMatchers(HttpMethod.POST, "/api/allocate/**").hasRole(allocationRole);
                     authorize.requestMatchers(HttpMethod.PUT, "/api/allocate/**").hasRole(allocationRole);

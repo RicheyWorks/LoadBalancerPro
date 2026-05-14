@@ -10,6 +10,7 @@ LoadBalancerPro's next identity is **LoadBalancerPro Enterprise Lab**: Enterpris
 
 The current enterprise-readiness audit is [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md). Its verdict is Enterprise Lab ready and production gateway not certified.
 The reviewer-ready trust-hardening sprint packet is [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md); it strengthens governance evidence and selects a future gated path without changing production certification status.
+The repo-side manual governance hardening packet is [`MANUAL_GITHUB_GOVERNANCE_HARDENING.md`](MANUAL_GITHUB_GOVERNANCE_HARDENING.md); it documents CODEOWNERS coverage and recommended settings without mutating GitHub settings.
 The future gated container distribution/signing lane is [`CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md`](CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md); it prepares reviewer evidence expectations without publishing or signing containers.
 The no-publish/no-sign container dry-run verification lane is [`CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md`](CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md); it plans local image identity, SBOM, scan, and future signing-verification evidence without changing certification status.
 
@@ -72,6 +73,7 @@ The `v2.5.0` JAR/docs-first release evidence is produced and verified for the ex
 - Reviewer navigation: [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md)
 - Enterprise readiness audit: [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md)
 - Trust-hardening sprint packet: [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md)
+- Manual GitHub governance hardening: [`MANUAL_GITHUB_GOVERNANCE_HARDENING.md`](MANUAL_GITHUB_GOVERNANCE_HARDENING.md)
 - Product charter: [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md)
 - Product roadmap: [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md)
 - Next goal prompts: [`NEXT_GOAL_PROMPTS.md`](NEXT_GOAL_PROMPTS.md)

@@ -104,6 +104,8 @@ Remaining gap: the current pull-request rule does not require an approving revie
 
 Recommended action: require at least one approving review, require CODEOWNERS review for sensitive paths, consider stale-review dismissal for security-sensitive changes, and decide whether strict required status checks are needed. The sprint packet in [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md) keeps this as a manual GitHub settings change required and does not mutate repository settings.
 
+Repo-side ownership and manual settings guidance are prepared in [`MANUAL_GITHUB_GOVERNANCE_HARDENING.md`](MANUAL_GITHUB_GOVERNANCE_HARDENING.md); applying those settings still requires a separate manual GitHub settings change.
+
 ### 2. Production Controls Remain External
 
 The app does not provide production TLS, WAF, managed ingress, enterprise IAM lifecycle, distributed rate limiting, centralized logs, retention, alerting, backup, incident response, or secret rotation.

@@ -84,6 +84,8 @@ manual GitHub settings change required.
 
 This document does not mutate repository settings. The risk of not applying the settings is that a maintainer mistake could bypass the intended review depth even when CI and CodeQL exist. The risk of applying stale-review dismissal too aggressively is that low-risk documentation and evidence-only PRs may churn on harmless rebases, creating review fatigue and slower maintenance. Use stale-review dismissal deliberately for security-sensitive paths if the team accepts that tradeoff.
 
+Repo-side CODEOWNERS coverage and manual governance recommendations are tracked in [`MANUAL_GITHUB_GOVERNANCE_HARDENING.md`](MANUAL_GITHUB_GOVERNANCE_HARDENING.md).
+
 ## No-Overclaim Rules
 
 Docs must not claim:

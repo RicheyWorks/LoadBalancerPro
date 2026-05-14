@@ -1,12 +1,22 @@
+# Repo-side ownership map for reviewer governance.
+# GitHub CODEOWNERS review enforcement still requires a manual repository
+# ruleset/settings change; this file alone does not activate that setting.
+
 * @RicheyWorks
+
+/.github/ @RicheyWorks
+/.github/workflows/ @RicheyWorks
+/.github/CODEOWNERS @RicheyWorks
+/src/main/ @RicheyWorks
+/src/test/ @RicheyWorks
+/docs/ @RicheyWorks
+/evidence/ @RicheyWorks
+/Dockerfile @RicheyWorks
+/pom.xml @RicheyWorks
+/README.md @RicheyWorks
 
 /src/main/java/com/richmond423/loadbalancerpro/core/CloudManager.java @RicheyWorks
 /src/main/java/com/richmond423/loadbalancerpro/api/ @RicheyWorks
 /src/main/java/com/richmond423/loadbalancerpro/core/RoutingStrategy*.java @RicheyWorks
 /src/main/java/com/richmond423/loadbalancerpro/core/*Routing*.java @RicheyWorks
 /src/main/java/com/richmond423/loadbalancerpro/core/*Strategy.java @RicheyWorks
-/Dockerfile @RicheyWorks
-/.github/workflows/ @RicheyWorks
-/pom.xml @RicheyWorks
-/evidence/ @RicheyWorks
-/docs/ @RicheyWorks

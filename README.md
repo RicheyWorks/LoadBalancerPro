@@ -14,6 +14,7 @@ For the product identity, start with [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](docs/
 
 For the current enterprise-readiness verdict and lab-transition decision, use [`ENTERPRISE_READINESS_AUDIT.md`](docs/ENTERPRISE_READINESS_AUDIT.md): Enterprise Lab ready, production gateway not certified.
 For the trust-hardening sprint packet and reviewer-ready governance plan, use [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](docs/ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md).
+For repo-side manual governance hardening guidance, use [`MANUAL_GITHUB_GOVERNANCE_HARDENING.md`](docs/MANUAL_GITHUB_GOVERNANCE_HARDENING.md).
 
 ## Why This Project Matters
 
@@ -182,6 +183,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) provides a short public-facing overview, evaluation path, and limitations summary.
 - [`ENTERPRISE_READINESS_AUDIT.md`](docs/ENTERPRISE_READINESS_AUDIT.md) records the current enterprise-readiness audit, GitHub ruleset/alert snapshot, and decision to present the project as Enterprise Lab first.
 - [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](docs/ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md) records the reviewer-ready Enterprise Lab trust-hardening sprint packet, governance readiness plan, no-overclaim rules, and future gated path decision.
+- [`MANUAL_GITHUB_GOVERNANCE_HARDENING.md`](docs/MANUAL_GITHUB_GOVERNANCE_HARDENING.md) records repo-side CODEOWNERS coverage and manual GitHub governance recommendations without changing repository settings.
 - [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md) summarizes the current production-candidate posture, current validation posture, release/container signing limits, remaining production risks, and evidence links. [`RELEASE_READINESS_DECISION_SUMMARY.md`](docs/RELEASE_READINESS_DECISION_SUMMARY.md) gives the two-track JAR/docs-first versus deferred container distribution decision.
 - [`SRE_DEMO_HIGHLIGHTS.md`](docs/SRE_DEMO_HIGHLIGHTS.md) gives a reviewer-ready product-value one-pager covering the verified `v2.5.0` release, guardrail depth, CloudManager safety, replay/LASE testing, optional rate limiting, and honest remaining risks.
 - [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](docs/CONTROLLED_ACTIVE_LASE_POLICY_GATE.md) documents the `off`, `shadow`, `recommend`, and `active-experiment` policy modes, guardrails, audit events, rollback reasons, status endpoints, and ignored evidence path.

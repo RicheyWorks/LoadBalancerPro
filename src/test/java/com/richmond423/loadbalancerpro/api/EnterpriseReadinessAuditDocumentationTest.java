@@ -20,7 +20,10 @@ class EnterpriseReadinessAuditDocumentationTest {
             Path.of("docs/CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md");
     private static final Path CONTAINER_DRY_RUN_LANE =
             Path.of("docs/CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md");
+    private static final Path GOVERNANCE_HARDENING =
+            Path.of("docs/MANUAL_GITHUB_GOVERNANCE_HARDENING.md");
     private static final Path CI_WORKFLOW = Path.of(".github/workflows/ci.yml");
+    private static final Path CODEOWNERS = Path.of(".github/CODEOWNERS");
     private static final Path README = Path.of("README.md");
     private static final Path EXECUTIVE_SUMMARY = Path.of("docs/EXECUTIVE_SUMMARY.md");
     private static final Path PRODUCTION_SUMMARY = Path.of("docs/PRODUCTION_READINESS_SUMMARY.md");
@@ -32,6 +35,7 @@ class EnterpriseReadinessAuditDocumentationTest {
             SPRINT_PACKET,
             CONTAINER_EVIDENCE_LANE,
             CONTAINER_DRY_RUN_LANE,
+            GOVERNANCE_HARDENING,
             EXECUTIVE_SUMMARY,
             PRODUCTION_SUMMARY,
             TRUST_MAP,
@@ -42,6 +46,13 @@ class EnterpriseReadinessAuditDocumentationTest {
             "enterprise-production-ready",
             "production certified gateway",
             "production-certified gateway",
+            "governance settings applied",
+            "codeowners review required",
+            "one approving review required",
+            "branch protection fully hardened",
+            "ruleset fully hardened",
+            "enterprise governance complete",
+            "production governance certified",
             "container signing complete",
             "container signing is complete",
             "signed container artifact",
@@ -229,6 +240,50 @@ class EnterpriseReadinessAuditDocumentationTest {
     }
 
     @Test
+    void manualGovernanceHardeningDocumentsRepoSideBoundaries() throws Exception {
+        String governance = read(GOVERNANCE_HARDENING);
+
+        for (String expected : List.of(
+                "repo-side governance hardening",
+                "does not mutate GitHub settings",
+                "manual settings",
+                "Required approving review count is `0`",
+                "CODEOWNERS review is not enforced",
+                "not production certified",
+                "not enterprise-production ready",
+                "This is a recommended target state, not applied in this sprint",
+                "No GitHub settings mutation in this sprint",
+                "No ruleset mutation in this sprint",
+                "No branch protection mutation in this sprint")) {
+            assertTrue(governance.contains(expected), "governance hardening doc should mention " + expected);
+        }
+
+        assertNoUnsafeAffirmativeClaims(GOVERNANCE_HARDENING, governance);
+    }
+
+    @Test
+    void codeownersCoversSensitiveGovernancePaths() throws Exception {
+        String codeowners = read(CODEOWNERS);
+
+        for (String expected : List.of(
+                "/.github/",
+                "/.github/workflows/",
+                "/.github/CODEOWNERS",
+                "/src/main/",
+                "/src/test/",
+                "/docs/",
+                "/evidence/",
+                "/Dockerfile",
+                "/pom.xml",
+                "/README.md")) {
+            assertTrue(codeowners.contains(expected), "CODEOWNERS should cover " + expected);
+        }
+
+        assertTrue(codeowners.contains("@RicheyWorks"), "CODEOWNERS should use the repository owner");
+        assertTrue(codeowners.contains("this file alone does not activate that setting"));
+    }
+
+    @Test
     void currentReviewerEntryPointsLinkEnterpriseReadinessAudit() throws Exception {
         for (Path path : List.of(README, EXECUTIVE_SUMMARY, PRODUCTION_SUMMARY, TRUST_MAP, SECURITY_POSTURE)) {
             assertTrue(read(path).contains("ENTERPRISE_READINESS_AUDIT.md"),
@@ -257,6 +312,14 @@ class EnterpriseReadinessAuditDocumentationTest {
         for (Path path : List.of(CONTAINER_EVIDENCE_LANE, AUDIT, SPRINT_PACKET, PRODUCTION_SUMMARY, TRUST_MAP)) {
             assertTrue(read(path).contains("CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md"),
                     path + " should link the container signing dry-run verification lane");
+        }
+    }
+
+    @Test
+    void currentReviewerEntryPointsLinkManualGovernanceHardening() throws Exception {
+        for (Path path : List.of(README, AUDIT, SPRINT_PACKET, PRODUCTION_SUMMARY, TRUST_MAP)) {
+            assertTrue(read(path).contains("MANUAL_GITHUB_GOVERNANCE_HARDENING.md"),
+                    path + " should link the manual GitHub governance hardening packet");
         }
     }
 

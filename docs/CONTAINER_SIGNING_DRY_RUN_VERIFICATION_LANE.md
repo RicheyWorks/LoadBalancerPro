@@ -84,7 +84,7 @@ The normal CI workflow now uploads a no-publish/no-sign dry-run evidence artifac
 - Artifact name: `container-dry-run-evidence-no-publish-no-sign`.
 - Evidence directory in CI: `target/container-dry-run-evidence/`.
 - Source image tag: `loadbalancerpro:ci`.
-- Local dry-run image tag: `loadbalancerpro:ci-dry-run-${GITHUB_SHA}`.
+- Local dry-run image tag: `loadbalancerpro:ci-dry-run-<source-commit-sha>`.
 
 Expected evidence files:
 
@@ -106,6 +106,7 @@ What the artifact proves:
 - CI built a local container image from the checked-in Dockerfile.
 - CI ran the loopback-bound Docker runtime smoke before evidence capture.
 - CI captured local image identity, configuration, history, and Docker environment details.
+- CI recorded both the source commit SHA and the workflow SHA so pull-request merge refs are reviewable without ambiguity.
 - CI ran the configured Trivy image scan and stored its table output when the scan step completed.
 
 What the artifact does not prove:

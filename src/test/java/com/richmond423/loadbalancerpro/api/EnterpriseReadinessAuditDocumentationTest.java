@@ -193,7 +193,11 @@ class EnterpriseReadinessAuditDocumentationTest {
         for (String expected : List.of(
                 "Capture container dry-run evidence",
                 "target/container-dry-run-evidence",
-                "loadbalancerpro:ci-dry-run-${GITHUB_SHA}",
+                "SOURCE_SHA",
+                "WORKFLOW_SHA",
+                "loadbalancerpro:ci-dry-run-${SOURCE_SHA}",
+                "Source commit SHA",
+                "Workflow SHA",
                 "docker image inspect",
                 "image-inspect.json",
                 "image-history.txt",

@@ -131,7 +131,7 @@ flowchart TD
 - Core load-balancing engine: `com.richmond423.loadbalancerpro.core.LoadBalancer`, `com.richmond423.loadbalancerpro.core.Server`, and related strategy/result types model server health, capacity, weighted distribution, predictive allocation, and failure handling.
 - LASE telemetry/scoring/routing foundation: `com.richmond423.loadbalancerpro.core.ServerStateVector`, `com.richmond423.loadbalancerpro.core.ServerScoreCalculator`, `com.richmond423.loadbalancerpro.core.RoutingDecision`, and `com.richmond423.loadbalancerpro.core.TailLatencyPowerOfTwoStrategy` provide an internal foundation for tail-latency-aware, queue-aware, explainable routing decisions. This foundation is intentionally not wired into the public allocation flows yet.
 - ServerMonitor / health monitoring: `com.richmond423.loadbalancerpro.core.ServerMonitor` tracks local and mocked cloud health paths, emits health events, and coordinates with load balancer state without requiring real cloud resources in the default test suite.
-- API layer: the Spring Boot API exposes calculation-only allocation endpoints, request validation, browser CORS behavior, security headers, request-size limits, structured error envelopes, Swagger/OpenAPI docs, and Actuator health/metrics endpoints.
+- API layer: the Spring Boot API exposes calculation-only allocation endpoints, request validation, browser CORS behavior, security headers, request-size limits, an optional process-local rate limiter, structured error envelopes, Swagger/OpenAPI docs, and Actuator health/metrics endpoints.
 - CLI workflow: `com.richmond423.loadbalancerpro.cli.LoadBalancerCLI` provides interactive local workflows and optional cloud integration while retaining ownership of monitor lifecycle cleanup.
 - CSV/JSON import/export utilities: parser and utility code validate schema, reject malformed input, neutralize CSV injection risk, and keep import/export contracts aligned.
 - CloudManager / AWS safety boundary: `com.richmond423.loadbalancerpro.core.CloudManager` is the only AWS mutation boundary. Live ASG creation, scaling, registration, and deletion paths are guarded, dry-run by default, and covered with mocked AWS clients.
@@ -466,7 +466,7 @@ Recommended deployment boundary:
 - Terminate TLS at a trusted reverse proxy or ingress such as nginx, Traefik, or a managed load balancer.
 - Keep the app bound to a private interface or container network; expose only the proxy publicly.
 - Configure the proxy to pass `Forwarded` or `X-Forwarded-*` headers, then enable `server.forward-headers-strategy=framework` through deployment config or by uncommenting the documented prod-profile setting.
-- Add external rate limiting and request filtering at the proxy or gateway layer.
+- Add external rate limiting and request filtering at the proxy or gateway layer. The optional process-local app limiter is disabled by default and is a single-instance guardrail, not a distributed quota system.
 - Keep `/proxy/**`, `/api/proxy/status`, and `/proxy-status.html` behind deployment-level access control and TLS termination before exposing proxy mode beyond localhost or a trusted private network.
 - Keep `/actuator/health` and `/actuator/info` behind private networking, firewall rules, or deployment-specific auth when running outside a local demo.
 - Send logs and metrics to your normal monitoring stack, with retention and access controls appropriate for operational data.

@@ -32,6 +32,12 @@ public record ApiErrorResponse(int status, String error, String message, String 
                 path, Instant.now().toString(), List.of());
     }
 
+    public static ApiErrorResponse rateLimited(String path, long retryAfterSeconds) {
+        return new ApiErrorResponse(429, "rate_limited",
+                "Request rate limit exceeded; retry after " + retryAfterSeconds + " seconds",
+                path, Instant.now().toString(), List.of());
+    }
+
     public static ApiErrorResponse unauthorized(String path) {
         return unauthorized(path, "Valid API key required for this endpoint");
     }

@@ -43,7 +43,7 @@ Implemented first slice:
 - `GET /api/lab/runs`;
 - `GET /api/lab/runs/{runId}`;
 - deterministic scenario summaries and run results;
-- scorecards for baseline, shadow, and explicit opt-in influence comparison;
+- scorecards for baseline, shadow, recommend, and explicit active-experiment comparison;
 - `/enterprise-lab.html` browser lab page;
 - bounded process-local in-memory run storage, with memory or ignored-file run storage first as the durable product rule;
 - source-visible evidence export to `target/enterprise-lab-runs/`.
@@ -54,7 +54,7 @@ Next candidate improvements:
 - richer reviewer comparison tables;
 - optional ignored-file run archive under `target/` only;
 - stricter JSON schema documentation;
-- integration into controlled active LASE policy gates.
+- richer integration into controlled active LASE policy evidence.
 
 Acceptance criteria:
 
@@ -70,6 +70,18 @@ Acceptance criteria:
 
 Purpose: create the policy language and guardrails needed before any LASE influence can move beyond shadow comparison.
 
+Implemented first slice:
+
+- `off`, `shadow`, `recommend`, and `active-experiment` modes;
+- safe default of `off`;
+- `active-experiment` disabled unless `loadbalancerpro.lase.policy.active-experiment-enabled=true`;
+- health, eligibility, capacity, freshness, conflict, all-unhealthy, rollback, and bounded-context gates;
+- policy result model with baseline, recommendation, final decision, guardrail reasons, rollback reason, and explanation summary;
+- bounded process-local audit events;
+- protected `GET /api/lab/policy` and `GET /api/lab/audit-events` endpoints;
+- `/enterprise-lab.html` policy status and audit-event display;
+- ignored evidence output under `target/controlled-adaptive-routing/`.
+
 Modes:
 
 - `off`;
@@ -79,7 +91,7 @@ Modes:
 
 Required guardrails:
 
-- safe default of `off` or `shadow`;
+- safe default of `off`;
 - explicit opt-in for `recommend` and `active-experiment`;
 - audit events for mode, scenario, reason, and operator-visible decision;
 - rollback reasons;
@@ -92,7 +104,15 @@ Acceptance criteria:
 - mode names and allowed transitions are documented.
 - ambiguous or unsafe policy configuration fails closed.
 - recommendation output is explainable and deterministic.
-- active-experiment mode is not presented as production traffic control.
+- active-experiment mode is explicit, bounded, guarded, and not presented as production traffic control.
+
+Next candidate improvements:
+
+- compact policy/audit dashboard panels;
+- severity labels for guardrail reasons;
+- exportable Markdown audit event tables;
+- mock operator-acceptance flow for recommend mode;
+- distributed control-plane design before any production gateway promotion.
 
 ## P1: Observability Packs
 

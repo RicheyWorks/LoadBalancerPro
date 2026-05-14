@@ -8,11 +8,12 @@ public record EnterpriseLabRunSummary(
         Instant createdAt,
         String mode,
         List<String> selectedScenarioIds,
+        int policyAuditEventCount,
         EnterpriseLabScorecard scorecard) {
 
     public static EnterpriseLabRunSummary from(EnterpriseLabRun run) {
         return new EnterpriseLabRunSummary(run.runId(), run.createdAt(), run.mode(),
-                run.selectedScenarioIds(), run.scorecard());
+                run.selectedScenarioIds(), run.policyAuditEvents().size(), run.scorecard());
     }
 }
 

@@ -1,7 +1,7 @@
 param(
     [switch]$DryRun,
     [switch]$Package,
-    [string]$Mode = "all",
+    [string]$Mode = "shadow",
     [string]$OutputDir = "target/enterprise-lab-runs"
 )
 

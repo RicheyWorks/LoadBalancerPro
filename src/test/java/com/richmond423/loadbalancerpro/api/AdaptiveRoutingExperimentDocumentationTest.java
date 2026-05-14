@@ -45,7 +45,7 @@ class AdaptiveRoutingExperimentDocumentationTest {
 
         for (String expected : List.of(
                 "adaptive-routing experiment harness",
-                "baseline vs shadow vs opt-in influence",
+                "baseline vs shadow vs active-experiment",
                 "default behavior unchanged",
                 "feature flag",
                 "target/adaptive-routing-experiments/",

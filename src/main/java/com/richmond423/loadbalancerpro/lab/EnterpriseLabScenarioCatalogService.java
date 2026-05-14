@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public final class EnterpriseLabScenarioCatalogService {
     public static final String FIXTURE_VERSION = "adaptive-routing-fixtures-v1";
-    private static final List<String> SUPPORTED_MODES = List.of("shadow", "influence", "all");
+    private static final List<String> SUPPORTED_MODES = EnterpriseLabMode.wireValues();
 
     private final List<AdaptiveRoutingExperimentScenario> scenarios;
     private final Map<String, AdaptiveRoutingExperimentScenario> scenariosById;
@@ -97,17 +97,17 @@ public final class EnterpriseLabScenarioCatalogService {
             return List.of("all-unhealthy scenarios fail closed", "no live cloud mutation is executed");
         }
         if (pressure.contains("conflicting")) {
-            return List.of("conflicting signals require explanation", "influence remains experiment-only");
+            return List.of("conflicting signals block active-experiment influence", "recommendation remains explainable");
         }
         if (pressure.contains("zero")) {
             return List.of("zero or edge metrics remain deterministic", "no-op allocation is allowed");
         }
-        return List.of("influence is opt-in and experiment-only", "default allocation behavior is unchanged");
+        return List.of("active-experiment is opt-in and guarded", "default allocation behavior is unchanged");
     }
 
     private static boolean safeForInfluenceExperiment(AdaptiveRoutingExperimentScenario scenario) {
         String pressure = scenario.expectedPressure().toLowerCase(Locale.ROOT);
-        return scenario.signalsFresh() && !pressure.contains("all unhealthy");
+        return scenario.signalsFresh() && !pressure.contains("all unhealthy") && !pressure.contains("conflicting");
     }
 
     private static String category(String expectedPressure) {

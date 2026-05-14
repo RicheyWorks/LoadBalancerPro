@@ -59,6 +59,8 @@ class LaseAllocationShadowIntegrationTest {
                 .andExpect(jsonPath("$.laseShadow.mode", is("shadow-only")))
                 .andExpect(jsonPath("$.laseShadow.observationRecorded", is(true)))
                 .andExpect(jsonPath("$.laseShadow.alteredLiveDecision", is(false)))
+                .andExpect(jsonPath("$.lasePolicy.mode", is("off")))
+                .andExpect(jsonPath("$.lasePolicy.changed", is(false)))
                 .andExpect(jsonPath("$.laseShadow.recommendedServerId", is("api-1")))
                 .andExpect(jsonPath("$.laseShadow.recommendedAction").isString())
                 .andExpect(jsonPath("$.laseShadow.signalsConsidered", hasItem("tail latency")))

@@ -4,7 +4,7 @@ Use this page as the concise reviewer or portfolio walkthrough for LoadBalancerP
 
 ## Fast Story
 
-LoadBalancerPro Enterprise Lab is a Java/Spring lab for adaptive-routing scenarios, deterministic replay, LASE shadow/influence comparison, policy gates, scorecards, evidence export, SRE walkthroughs, and a bounded Production Gateway Candidate track. Review [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md) and [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md) when the question is where the product goes next.
+LoadBalancerPro Enterprise Lab is a Java/Spring lab for adaptive-routing scenarios, deterministic replay, LASE shadow/recommend/active-experiment comparison, controlled policy gates, scorecards, evidence export, SRE walkthroughs, and a bounded Production Gateway Candidate track. Review [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md), and [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](CONTROLLED_ACTIVE_LASE_POLICY_GATE.md) when the question is where the product goes next.
 
 The current implementation has guarded cloud boundaries, deterministic adaptive-routing evidence, optional local proxy forwarding, and release evidence that a reviewer can inspect without trusting hidden infrastructure.
 
@@ -18,7 +18,8 @@ The strongest SRE/product-value thread is:
 6. Optional process-local rate limiting can protect allocation, routing, replay, remediation, proxy, and LASE shadow surfaces in single-instance demos; distributed edge rate limiting remains required for shared or public deployments.
 7. LASE shadow mode can explain the adaptive-routing signals considered for `POST /api/allocate/evaluate` without altering live allocation.
 8. The Enterprise Lab workflow turns those signals into a reviewer-facing scenario catalog, run API, scorecard, evidence export, and browser lab page while remaining process-local and bounded.
-9. Cloud mutation remains behind explicit dry-run, intent, prefix, ownership, account/region, and capacity guardrails.
+9. The controlled active LASE policy gate adds `off`, `shadow`, `recommend`, and `active-experiment` modes with health, eligibility, capacity, freshness, conflict, rollback, and bounded-context gates.
+10. Cloud mutation remains behind explicit dry-run, intent, prefix, ownership, account/region, and capacity guardrails.
 
 ## Release Proof
 
@@ -72,9 +73,9 @@ The adaptive-routing foundation has moved from a demo foundation toward observab
 - `POST /api/allocate/evaluate` now includes a `laseShadow` block when `loadbalancerpro.lase.shadow.enabled=true`
 - `laseShadow` is shadow-only, lists signals considered, records observation status, reports recommended server/action when available, and states that it does not alter live allocation
 - `GET /api/lase/shadow` exposes bounded process-local observability for recent shadow events
-- the adaptive-routing experiment harness compares baseline vs shadow vs opt-in influence across deterministic fixtures, keeps default behavior unchanged, and writes ignored review evidence under `target/adaptive-routing-experiments/`
-- the Enterprise Lab workflow exposes `GET /api/lab/scenarios`, `POST /api/lab/runs`, bounded in-memory run retrieval, scorecards, `/enterprise-lab.html`, and ignored evidence export under `target/enterprise-lab-runs/`
-- active LASE influence over live allocation remains future work and is intentionally not enabled by default
+- the adaptive-routing experiment harness compares baseline vs shadow vs active-experiment across deterministic fixtures, keeps default behavior unchanged, and writes ignored review evidence under `target/adaptive-routing-experiments/`
+- the Enterprise Lab workflow exposes `GET /api/lab/scenarios`, `POST /api/lab/runs`, `GET /api/lab/policy`, `GET /api/lab/audit-events`, bounded in-memory run retrieval, scorecards, `/enterprise-lab.html`, and ignored evidence export under `target/enterprise-lab-runs/`
+- the controlled active policy gate records audit events and rollback reasons while keeping `active-experiment` explicit, guarded, and not enabled by default
 
 Evidence links: [`API_CONTRACTS.md`](API_CONTRACTS.md), [`SCENARIO_SIMULATION.md`](SCENARIO_SIMULATION.md), and `LaseAllocationShadowIntegrationTest`.
 
@@ -84,7 +85,7 @@ Run the local experiment harness after packaging with:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\adaptive-routing-experiment.ps1 -Package
 ```
 
-The script runs `--adaptive-routing-experiment=all`, records shadow-only and opt-in influence comparison output, and performs no live cloud mutation, API server startup, release action, container publication, or external network call. The opt-in influence path is a feature flag style experiment mode in the CLI output only; it is not a production routing control.
+The script runs `--adaptive-routing-experiment=all`, records shadow, recommend, and active-experiment comparison output, and performs no live cloud mutation, API server startup, release action, container publication, or external network call. The active-experiment path is guarded experiment output only; it is not production routing control.
 
 Run the Enterprise Lab workflow evidence export after packaging with:
 
@@ -92,7 +93,15 @@ Run the Enterprise Lab workflow evidence export after packaging with:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-workflow.ps1 -Package
 ```
 
-The script runs `--enterprise-lab-workflow=all`, writes scenario catalog JSON, run JSON, Markdown scorecard summary, and metadata under `target/enterprise-lab-runs/`, and performs no CloudManager, live cloud, external network, release, tag, asset, container, registry, or `release-downloads/` operation.
+The script defaults to `--enterprise-lab-workflow=shadow`, writes scenario catalog JSON, run JSON, Markdown scorecard summary, audit-event summaries, and metadata under `target/enterprise-lab-runs/`, and performs no CloudManager, live cloud, external network, release, tag, asset, container, registry, or `release-downloads/` operation. Use the controlled policy smoke for the explicit all-mode run that includes `active-experiment`.
+
+Run the controlled active policy evidence export after packaging with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\controlled-adaptive-routing-policy.ps1 -Package
+```
+
+The script writes `target/controlled-adaptive-routing/controlled-adaptive-routing-policy-summary.md`, `target/controlled-adaptive-routing/controlled-adaptive-routing-policy-metadata.json`, and per-mode lab evidence. It exercises `off`, `shadow`, `recommend`, `active-experiment`, guardrail-blocked cases, and rollback/fail-closed behavior without live cloud, external network, release, tag, asset, container, registry, or `release-downloads/` operations.
 
 ## Walkthrough
 
@@ -102,10 +111,11 @@ For a short interviewer walkthrough:
 2. Run the local cockpit and show allocation pressure, routing comparison, remediation hints, and raw JSON.
 3. Show the protected-prod/container posture in [`API_SECURITY.md`](API_SECURITY.md) or [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md).
 4. Run or describe `POST /api/allocate/evaluate` with `loadbalancerpro.lase.shadow.enabled=true` and point to the `laseShadow` explanation.
-5. Open `/enterprise-lab.html` or run `scripts/smoke/enterprise-lab-workflow.ps1 -Package`, then show the scenario catalog, lab run scorecard, guardrail-blocked influence counts, and ignored `target/enterprise-lab-runs/` evidence.
-6. Run or describe the adaptive-routing experiment harness and show the baseline vs shadow vs opt-in influence matrix under `target/adaptive-routing-experiments/`.
-7. Open [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md) to show release evidence, SBOM, checksums, and attestation posture.
-8. Close with the current limits below so the review stays honest.
+5. Open `/enterprise-lab.html` or run `scripts/smoke/enterprise-lab-workflow.ps1 -Package`, then show the scenario catalog, lab run scorecard, policy audit events, rollback reasons, and ignored `target/enterprise-lab-runs/` evidence.
+6. Run or describe the adaptive-routing experiment harness and show the baseline vs shadow vs active-experiment matrix under `target/adaptive-routing-experiments/`.
+7. Run or describe `scripts/smoke/controlled-adaptive-routing-policy.ps1 -Package`, then show `target/controlled-adaptive-routing/` as the reproducible policy-gate evidence.
+8. Open [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md) to show release evidence, SBOM, checksums, and attestation posture.
+9. Close with the current limits below so the review stays honest.
 
 ## Honest Remaining Risks
 
@@ -113,5 +123,5 @@ For a short interviewer walkthrough:
 - No real enterprise IdP tenant proof is included.
 - Production TLS, IAM, ingress, monitoring, log retention, WAF, distributed rate limiting, backup, and incident-response operations are deployment-owner responsibilities.
 - Container registry publication and container signing are deferred.
-- Active LASE influence over live allocation is future-gated; current production integration is shadow-only and experiment influence is local/opt-in only.
+- Active-experiment LASE influence is explicit, guarded, bounded, and lab/evaluation-grade; it is not a distributed production control plane or production deployment certification.
 - Live cloud sandbox validation is outside the default Maven/CI evidence.

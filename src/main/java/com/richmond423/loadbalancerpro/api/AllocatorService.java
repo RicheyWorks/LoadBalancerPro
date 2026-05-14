@@ -4,11 +4,20 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyAuditLog;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyDecision;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyEngine;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyInput;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyMode;
 import com.richmond423.loadbalancerpro.core.DomainMetrics;
+import com.richmond423.loadbalancerpro.core.LaseEvaluationReport;
 import com.richmond423.loadbalancerpro.core.LoadDistributionEvaluator;
 import com.richmond423.loadbalancerpro.core.LoadBalancer;
 import com.richmond423.loadbalancerpro.core.LoadDistributionResult;
@@ -46,9 +55,21 @@ public class AllocatorService {
     private final LoadDistributionEvaluator loadDistributionEvaluator = new LoadDistributionEvaluator();
     private final LoadSheddingPolicy loadSheddingPolicy = new LoadSheddingPolicy();
     private final OperatorRemediationPlanner remediationPlanner = new OperatorRemediationPlanner();
+    private final AdaptiveRoutingPolicyProperties policyProperties;
+    private final AdaptiveRoutingPolicyAuditLog policyAuditLog;
+    private final AdaptiveRoutingPolicyEngine policyEngine = new AdaptiveRoutingPolicyEngine();
 
     public AllocatorService(Environment environment) {
+        this(environment, new AdaptiveRoutingPolicyProperties(), new AdaptiveRoutingPolicyAuditLog());
+    }
+
+    @Autowired
+    public AllocatorService(Environment environment,
+                            AdaptiveRoutingPolicyProperties policyProperties,
+                            AdaptiveRoutingPolicyAuditLog policyAuditLog) {
         this.laseShadowEnabled = resolveLaseShadowEnabled(environment);
+        this.policyProperties = policyProperties == null ? new AdaptiveRoutingPolicyProperties() : policyProperties;
+        this.policyAuditLog = policyAuditLog == null ? new AdaptiveRoutingPolicyAuditLog() : policyAuditLog;
     }
 
     public AllocationResponse capacityAware(AllocationRequest request) {
@@ -78,7 +99,27 @@ public class AllocatorService {
                 signalFor(request, acceptedLoad, rejectedLoad),
                 DEFAULT_LOAD_SHEDDING_CONFIG);
         LoadSheddingEvaluation loadShedding = toLoadSheddingEvaluation(loadSheddingDecision);
-        LaseAllocationShadowSummary laseShadow = evaluateLaseShadow(strategy, servers, request.requestedLoad(), result);
+        AdaptiveRoutingPolicyMode policyMode = policyProperties.resolvedMode();
+        LaseObservation laseObservation = observeLase(strategy, servers, request.requestedLoad(), result,
+                laseShadowEnabled || policyMode != AdaptiveRoutingPolicyMode.OFF);
+        LaseAllocationShadowSummary laseShadow = laseObservation.toSummary(laseShadowEnabled
+                || policyMode != AdaptiveRoutingPolicyMode.OFF);
+        AdaptiveRoutingPolicyDecision lasePolicy = policyEngine.decide(new AdaptiveRoutingPolicyInput(
+                "allocation-evaluation",
+                policyMode,
+                servers,
+                request.requestedLoad(),
+                selectedBackend(result.allocations()),
+                laseObservation.recommendedServerId(),
+                laseObservation.recommendedAction(),
+                laseObservation.report().isPresent(),
+                true,
+                false,
+                policyMode == AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT
+                        && policyProperties.isActiveExperimentEnabled(),
+                laseObservation.summary(),
+                laseObservation.failureReason()));
+        policyAuditLog.record(lasePolicy);
         AllocationEvaluationMetricsPreview metricsPreview = new AllocationEvaluationMetricsPreview(
                 strategy,
                 healthyServerCount(request.servers()),
@@ -99,6 +140,7 @@ public class AllocatorService {
                 loadShedding,
                 metricsPreview,
                 laseShadow,
+                lasePolicy,
                 true,
                 remediationPlanner.planForEvaluation(
                         acceptedLoad,
@@ -158,19 +200,17 @@ public class AllocatorService {
         return new LoadBalancer(laseShadowEnabled, laseShadowEventLog);
     }
 
-    private LaseAllocationShadowSummary evaluateLaseShadow(
-            String strategy, List<Server> servers, double requestedLoad, LoadDistributionResult result) {
-        if (!laseShadowEnabled) {
-            return LaseAllocationShadowSummary.disabled();
+    private LaseObservation observeLase(
+            String strategy, List<Server> servers, double requestedLoad, LoadDistributionResult result,
+            boolean enabled) {
+        if (!enabled) {
+            return LaseObservation.disabled();
         }
         try {
-            return new LaseShadowAdvisor(true, laseShadowEventLog)
-                    .observe(strategy, servers, requestedLoad, result)
-                    .map(LaseAllocationShadowSummary::observed)
-                    .orElseGet(() -> LaseAllocationShadowSummary.failSafe(
-                            "LASE shadow observation did not produce a report."));
+            return LaseObservation.observed(new LaseShadowAdvisor(true, laseShadowEventLog)
+                    .observe(strategy, servers, requestedLoad, result));
         } catch (RuntimeException exception) {
-            return LaseAllocationShadowSummary.failSafe("LASE shadow observation failed safely.");
+            return LaseObservation.failed("LASE shadow observation failed safely.");
         }
     }
 
@@ -237,6 +277,16 @@ public class AllocatorService {
         return allocations.values().stream()
                 .mapToDouble(value -> Math.max(0.0, value))
                 .sum();
+    }
+
+    private static String selectedBackend(Map<String, Double> allocations) {
+        return allocations.entrySet().stream()
+                .filter(entry -> entry.getValue() != null && entry.getValue() > 0.0)
+                .sorted(Map.Entry.<String, Double>comparingByValue().reversed()
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
     }
 
     private static int healthyServerCount(List<ServerInput> servers) {
@@ -332,5 +382,47 @@ public class AllocatorService {
                     .formatted(acceptedLoad, rejectedLoad, loadSheddingDecision.reason());
         }
         return "Read-only evaluation accepted the requested load; " + loadSheddingDecision.reason();
+    }
+
+    private record LaseObservation(Optional<LaseEvaluationReport> report, String failureReason) {
+        private static LaseObservation disabled() {
+            return new LaseObservation(Optional.empty(), null);
+        }
+
+        private static LaseObservation observed(Optional<LaseEvaluationReport> report) {
+            return new LaseObservation(report == null ? Optional.empty() : report, null);
+        }
+
+        private static LaseObservation failed(String reason) {
+            return new LaseObservation(Optional.empty(), reason);
+        }
+
+        private LaseAllocationShadowSummary toSummary(boolean enabled) {
+            if (!enabled) {
+                return LaseAllocationShadowSummary.disabled();
+            }
+            if (failureReason != null) {
+                return LaseAllocationShadowSummary.failSafe(failureReason);
+            }
+            return report.map(LaseAllocationShadowSummary::observed)
+                    .orElseGet(() -> LaseAllocationShadowSummary.failSafe(
+                            "LASE shadow observation did not produce a report."));
+        }
+
+        private String recommendedServerId() {
+            return report.flatMap(value -> value.routingDecision().chosenServer()
+                    .map(server -> server.serverId())
+                    .or(() -> value.routingDecision().explanation().chosenServerId()))
+                    .orElse(null);
+        }
+
+        private String recommendedAction() {
+            return report.map(value -> value.autoscalingRecommendation().action().name())
+                    .orElse(null);
+        }
+
+        private String summary() {
+            return report.map(LaseEvaluationReport::summary).orElse(null);
+        }
     }
 }

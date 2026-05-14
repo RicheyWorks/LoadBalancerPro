@@ -593,6 +593,141 @@
       ]
     },
     {
+      "name": "Enterprise Lab Workflow",
+      "description": "Deterministic Enterprise Lab scenario, run, policy, and audit checks. Requests use placeholder X-API-Key so the same folder can be run in local/demo or prod API-key mode.",
+      "item": [
+        {
+          "name": "GET Enterprise Lab Scenarios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lab/scenarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lab",
+                "scenarios"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Enterprise Lab Scenario Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lab/scenarios/tail-latency-pressure",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lab",
+                "scenarios",
+                "tail-latency-pressure"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Enterprise Lab Run Recommend",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"mode\":\"recommend\",\"scenarioIds\":[\"normal-balanced-load\",\"tail-latency-pressure\"],\"detailLevel\":\"summary\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/lab/runs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lab",
+                "runs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Enterprise Lab Policy Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lab/policy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lab",
+                "policy"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Enterprise Lab Audit Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lab/audit-events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lab",
+                "audit-events"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Proxy Operator Lab",
       "description": "Proxy status is read-only. The reload example is process-local and operator-controlled; review before running and use only with local/private loopback proxy mode.",
       "item": [

@@ -60,5 +60,24 @@ class EnterpriseLabProdApiKeyProtectionTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.runId", is("lab-run-0001")));
     }
+
+    @Test
+    void prodApiKeyModeProtectsPolicyStatusAndAuditEvents() throws Exception {
+        mockMvc.perform(get("/api/lab/policy"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/lab/policy")));
+
+        mockMvc.perform(get("/api/lab/policy").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.currentMode", is("off")));
+
+        mockMvc.perform(get("/api/lab/audit-events"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/lab/audit-events")));
+
+        mockMvc.perform(get("/api/lab/audit-events").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.storageMode", is("process-local bounded audit log")));
+    }
 }
 

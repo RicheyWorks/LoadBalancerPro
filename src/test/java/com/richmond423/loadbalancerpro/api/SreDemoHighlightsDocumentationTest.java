@@ -53,7 +53,9 @@ class SreDemoHighlightsDocumentationTest {
                 "`laseShadow`",
                 "shadow-only",
                 "does not alter live allocation",
-                "active LASE influence over live allocation remains future work",
+                "controlled active LASE policy gate",
+                "`active-experiment` explicit, guarded, and not enabled by default",
+                "target/controlled-adaptive-routing/",
                 "not production deployment certification",
                 "No real enterprise IdP tenant proof")) {
             assertTrue(highlights.contains(expected), "highlights page should mention " + expected);

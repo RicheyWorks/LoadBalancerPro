@@ -19,6 +19,7 @@ class EnterpriseLabProductAlignmentDocumentationTest {
     private static final Path README = Path.of("README.md");
     private static final Path CHARTER = Path.of("docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md");
     private static final Path ROADMAP = Path.of("docs/ENTERPRISE_LAB_ROADMAP.md");
+    private static final Path POLICY_GATE = Path.of("docs/CONTROLLED_ACTIVE_LASE_POLICY_GATE.md");
     private static final Path NEXT_GOALS = Path.of("docs/NEXT_GOAL_PROMPTS.md");
     private static final Path PRODUCTION_SUMMARY = Path.of("docs/PRODUCTION_READINESS_SUMMARY.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
@@ -41,8 +42,8 @@ class EnterpriseLabProductAlignmentDocumentationTest {
                 "Production Gateway Candidate",
                 "controlled scenario running",
                 "deterministic replay",
-                "LASE shadow and opt-in influence comparison",
-                "policy-gate design",
+                "LASE `off`/`shadow`/`recommend`/`active-experiment` comparison",
+                "implemented policy gates",
                 "scorecards",
                 "evidence export",
                 "SRE walkthroughs",
@@ -89,6 +90,26 @@ class EnterpriseLabProductAlignmentDocumentationTest {
     }
 
     @Test
+    void controlledPolicyGateDocExistsAndCapturesSafeModes() throws Exception {
+        String policy = read(POLICY_GATE);
+
+        for (String expected : List.of(
+                "# Controlled Active LASE Policy Gate",
+                "`off`",
+                "`shadow`",
+                "`recommend`",
+                "`active-experiment`",
+                "loadbalancerpro.lase.policy.mode=off",
+                "loadbalancerpro.lase.policy.active-experiment-enabled=false",
+                "GET /api/lab/policy",
+                "GET /api/lab/audit-events",
+                "target/controlled-adaptive-routing/",
+                "not production deployment certification")) {
+            assertTrue(policy.contains(expected), "policy gate doc should mention " + expected);
+        }
+    }
+
+    @Test
     void reviewerEntryPointsLinkCharterRoadmapAndNextGoalPrompts() throws Exception {
         for (Path path : List.of(README, PRODUCTION_SUMMARY, TRUST_MAP, SRE_HIGHLIGHTS, DEMO_WALKTHROUGH, RUNBOOK)) {
             String doc = read(path);
@@ -96,6 +117,11 @@ class EnterpriseLabProductAlignmentDocumentationTest {
                     path + " should link the product charter");
             assertTrue(doc.contains("ENTERPRISE_LAB_ROADMAP.md"),
                     path + " should link the roadmap");
+        }
+
+        for (Path path : List.of(README, PRODUCTION_SUMMARY, TRUST_MAP, SRE_HIGHLIGHTS, DEMO_WALKTHROUGH, RUNBOOK)) {
+            assertTrue(read(path).contains("CONTROLLED_ACTIVE_LASE_POLICY_GATE.md"),
+                    path + " should link the controlled policy gate");
         }
 
         for (Path path : List.of(README, PRODUCTION_SUMMARY, TRUST_MAP, RUNBOOK)) {

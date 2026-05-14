@@ -16,7 +16,7 @@ class AdaptiveRoutingExperimentServiceTest {
         assertEquals("shadow", report.mode());
         assertFalse(report.activeInfluenceEnabled());
         assertEquals(10, report.results().size());
-        assertTrue(report.safetyNotes().stream().anyMatch(note -> note.contains("Default mode is shadow-only")));
+        assertTrue(report.safetyNotes().stream().anyMatch(note -> note.contains("shadow-only")));
         for (AdaptiveRoutingExperimentResult result : report.results()) {
             assertFalse(result.activeInfluenceEnabled());
             assertFalse(result.resultChanged(), result.scenarioName());
@@ -31,16 +31,18 @@ class AdaptiveRoutingExperimentServiceTest {
     void influenceModeCanChangeOnlyExperimentOutputWhenFreshRecommendationDiffers() {
         AdaptiveRoutingExperimentReport report = new AdaptiveRoutingExperimentService().runCatalog(true);
 
-        assertEquals("influence", report.mode());
+        assertEquals("active-experiment", report.mode());
         assertTrue(report.activeInfluenceEnabled());
         assertTrue(report.results().stream().anyMatch(AdaptiveRoutingExperimentResult::resultChanged),
-                "at least one deterministic fixture should demonstrate opt-in influenced output");
+                "at least one deterministic fixture should demonstrate active-experiment output");
         AdaptiveRoutingExperimentResult changed = report.results().stream()
                 .filter(AdaptiveRoutingExperimentResult::resultChanged)
                 .findFirst()
                 .orElseThrow();
-        assertTrue(changed.guardrailReason().contains("experiment-only opt-in"));
+        assertTrue(changed.guardrailReason().contains("policy gates passed"));
         assertTrue(changed.explanation().contains("Opt-in influence preferred LASE-recommended backend"));
+        assertTrue(changed.rollbackReason().contains("operator can return policy mode"));
+        assertEquals("active-experiment", changed.policyDecision().mode());
     }
 
     @Test
@@ -49,12 +51,32 @@ class AdaptiveRoutingExperimentServiceTest {
 
         AdaptiveRoutingExperimentResult stale = result(report, "stale-signal");
         assertFalse(stale.resultChanged());
-        assertEquals("stale signal", stale.guardrailReason());
+        assertTrue(stale.guardrailReason().contains("stale signal"));
+        assertTrue(stale.rollbackReason().contains("baseline retained"));
 
         AdaptiveRoutingExperimentResult allUnhealthy = result(report, "all-unhealthy-degradation");
         assertFalse(allUnhealthy.resultChanged());
         assertNotNull(allUnhealthy.guardrailReason());
+        assertTrue(allUnhealthy.guardrailReason().contains("all backends unhealthy"));
         assertTrue(allUnhealthy.baselineAllocations().values().stream().allMatch(value -> value == 0.0));
+    }
+
+    @Test
+    void offAndRecommendModesKeepBaselineAsFinalDecision() {
+        AdaptiveRoutingExperimentService service = new AdaptiveRoutingExperimentService();
+
+        AdaptiveRoutingExperimentReport off = service.runCatalog(AdaptiveRoutingPolicyMode.OFF);
+        AdaptiveRoutingExperimentReport recommend = service.runCatalog(AdaptiveRoutingPolicyMode.RECOMMEND);
+
+        assertEquals("off", off.mode());
+        assertTrue(off.results().stream().noneMatch(AdaptiveRoutingExperimentResult::resultChanged));
+        assertTrue(off.results().stream().allMatch(result ->
+                result.policyDecision().guardrailReasons().contains("policy mode off")));
+
+        assertEquals("recommend", recommend.mode());
+        assertTrue(recommend.results().stream().noneMatch(AdaptiveRoutingExperimentResult::resultChanged));
+        assertTrue(recommend.results().stream().anyMatch(result ->
+                result.policyDecision().rollbackReason().contains("recommendation is accepted")));
     }
 
     @Test

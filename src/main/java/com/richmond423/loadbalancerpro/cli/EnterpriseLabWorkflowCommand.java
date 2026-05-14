@@ -41,7 +41,7 @@ public final class EnterpriseLabWorkflowCommand {
         Objects.requireNonNull(err, "err cannot be null");
 
         try {
-            EnterpriseLabMode mode = EnterpriseLabMode.from(selectedMode(args).orElse("all"));
+            EnterpriseLabMode mode = EnterpriseLabMode.from(selectedMode(args).orElse("shadow"));
             Path outputDirectory = selectedOutput(args).orElse(DEFAULT_OUTPUT);
             EnterpriseLabRunService runService = new EnterpriseLabRunService();
             EnterpriseLabRun run = runService.run(null, mode.wireValue(), "summary");
@@ -74,7 +74,7 @@ public final class EnterpriseLabWorkflowCommand {
                 .filter(Objects::nonNull)
                 .filter(arg -> arg.equals(FLAG) || arg.startsWith(FLAG + "="))
                 .findFirst()
-                .map(arg -> arg.equals(FLAG) ? "all" : arg.substring((FLAG + "=").length()));
+                .map(arg -> arg.equals(FLAG) ? "shadow" : arg.substring((FLAG + "=").length()));
     }
 
     private static Optional<Path> selectedOutput(String[] args) {

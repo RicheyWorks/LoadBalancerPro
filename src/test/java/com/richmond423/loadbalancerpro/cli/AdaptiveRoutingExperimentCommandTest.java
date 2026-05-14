@@ -21,7 +21,7 @@ class AdaptiveRoutingExperimentCommandTest {
         assertTrue(run.output().contains("Mode: `shadow`"));
         assertTrue(run.output().contains("Active LASE influence enabled: `false`"));
         assertTrue(run.output().contains("normal-balanced-load"));
-        assertTrue(run.output().contains("Default mode is shadow-only"));
+        assertTrue(run.output().contains("shadow-only"));
         assertTrue(run.output().contains("No CloudManager"));
         assertFalse(run.output().contains("Started LoadBalancerApiApplication"));
         assertTrue(run.error().isBlank());
@@ -32,9 +32,9 @@ class AdaptiveRoutingExperimentCommandTest {
         CapturedRun run = runExperiment("--adaptive-routing-experiment=influence");
 
         assertEquals(0, run.result().exitCode());
-        assertTrue(run.output().contains("Mode: `influence`"));
+        assertTrue(run.output().contains("Mode: `active-experiment`"));
         assertTrue(run.output().contains("Active LASE influence enabled: `true`"));
-        assertTrue(run.output().contains("experiment-only opt-in"));
+        assertTrue(run.output().contains("policy gates passed"));
     }
 
     @Test
@@ -42,8 +42,10 @@ class AdaptiveRoutingExperimentCommandTest {
         CapturedRun run = runExperiment("--adaptive-routing-experiment=all");
 
         assertEquals(0, run.result().exitCode());
+        assertTrue(run.output().contains("Mode: `off`"));
         assertTrue(run.output().contains("Mode: `shadow`"));
-        assertTrue(run.output().contains("Mode: `influence`"));
+        assertTrue(run.output().contains("Mode: `recommend`"));
+        assertTrue(run.output().contains("Mode: `active-experiment`"));
     }
 
     @Test
@@ -53,7 +55,7 @@ class AdaptiveRoutingExperimentCommandTest {
         assertEquals(2, run.result().exitCode());
         assertTrue(run.output().isBlank());
         assertTrue(run.error().contains("Invalid adaptive routing experiment mode"));
-        assertTrue(run.error().contains("shadow, influence, all"));
+        assertTrue(run.error().contains("off, shadow, recommend, active-experiment, all"));
     }
 
     @Test

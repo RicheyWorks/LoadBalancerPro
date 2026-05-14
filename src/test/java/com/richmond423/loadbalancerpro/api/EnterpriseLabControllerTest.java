@@ -32,12 +32,13 @@ class EnterpriseLabControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.count", is(10)))
                 .andExpect(jsonPath("$.deterministicFixtureVersion", is("adaptive-routing-fixtures-v1")))
-                .andExpect(jsonPath("$.supportedModes[0]", is("shadow")))
-                .andExpect(jsonPath("$.supportedModes[1]", is("influence")))
-                .andExpect(jsonPath("$.supportedModes[2]", is("all")))
+                .andExpect(jsonPath("$.supportedModes[0]", is("off")))
+                .andExpect(jsonPath("$.supportedModes[1]", is("shadow")))
+                .andExpect(jsonPath("$.supportedModes[2]", is("recommend")))
+                .andExpect(jsonPath("$.supportedModes[3]", is("active-experiment")))
                 .andExpect(jsonPath("$.scenarios[0].scenarioId", is("normal-balanced-load")))
                 .andExpect(jsonPath("$.scenarios[0].signalsInvolved[0]", is("request")))
-                .andExpect(jsonPath("$.scenarios[0].expectedGuardrails[0]", containsString("influence")))
+                .andExpect(jsonPath("$.scenarios[0].expectedGuardrails[0]", containsString("active-experiment")))
                 .andExpect(jsonPath("$.scenarios[0].safeForInfluenceExperiment", is(true)));
     }
 
@@ -64,7 +65,7 @@ class EnterpriseLabControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {
-                                      "mode": "all",
+                                      "mode": "active-experiment",
                                       "scenarioIds": [
                                         "normal-balanced-load",
                                         "tail-latency-pressure",
@@ -74,12 +75,14 @@ class EnterpriseLabControllerTest {
                                     """))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.runId").isString())
-                    .andExpect(jsonPath("$.mode", is("all")))
+                    .andExpect(jsonPath("$.mode", is("active-experiment")))
                     .andExpect(jsonPath("$.activeInfluenceEnabled", is(true)))
                     .andExpect(jsonPath("$.selectedScenarioIds[0]", is("normal-balanced-load")))
                     .andExpect(jsonPath("$.scorecard.totalScenarios", is(3)))
                     .andExpect(jsonPath("$.scorecard.finalRecommendation",
-                            is("lab evidence only / not production activation")))
+                            is("controlled active-experiment evidence only / not production activation")))
+                    .andExpect(jsonPath("$.policyAuditEvents[0].mode").isString())
+                    .andExpect(jsonPath("$.results[0].policyDecision.mode").isString())
                     .andExpect(jsonPath("$.storageMode", containsString("process-local")))
                     .andExpect(jsonPath("$.results[0].baselineSelectedBackend").isString())
                     .andReturn().getResponse().getContentAsString();
@@ -94,11 +97,20 @@ class EnterpriseLabControllerTest {
                     .andExpect(jsonPath("$.count").isNumber())
                     .andReturn().getResponse().getContentAsString();
 
-            org.junit.jupiter.api.Assertions.assertTrue(response.contains("lab evidence only"));
+            org.junit.jupiter.api.Assertions.assertTrue(response.contains("not production activation"));
             org.junit.jupiter.api.Assertions.assertTrue(listResponse.contains(runId));
             org.junit.jupiter.api.Assertions.assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "Enterprise Lab runs must not construct CloudManager or call AWS paths.");
         }
+    }
+
+    @Test
+    void noBodyRunDefaultsToShadowMode() throws Exception {
+        mockMvc.perform(post("/api/lab/runs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mode", is("shadow")))
+                .andExpect(jsonPath("$.activeInfluenceEnabled", is(false)))
+                .andExpect(jsonPath("$.results[0].resultChanged", is(false)));
     }
 
     @Test
@@ -114,7 +126,7 @@ class EnterpriseLabControllerTest {
 
         mockMvc.perform(post("/api/lab/runs")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"mode\":\"all\",\"scenarioIds\":[\"missing-scenario\"]}"))
+                        .content("{\"mode\":\"active-experiment\",\"scenarioIds\":[\"missing-scenario\"]}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", containsString("Unknown enterprise lab scenario")));
 
@@ -138,5 +150,35 @@ class EnterpriseLabControllerTest {
         org.junit.jupiter.api.Assertions.assertFalse(response.contains("credential"));
         org.junit.jupiter.api.Assertions.assertFalse(response.contains("release-downloads"));
         org.junit.jupiter.api.Assertions.assertFalse(response.contains("password"));
+    }
+
+    @Test
+    void policyStatusAndAuditEndpointsAreLocalReadableAndSecretFree() throws Exception {
+        mockMvc.perform(get("/api/lab/policy"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.configuredMode", is("off")))
+                .andExpect(jsonPath("$.currentMode", is("off")))
+                .andExpect(jsonPath("$.activeExperimentEnabled", is(false)))
+                .andExpect(jsonPath("$.allowedModes[0]", is("off")))
+                .andExpect(jsonPath("$.allowedModes[3]", is("active-experiment")))
+                .andExpect(jsonPath("$.warning", containsString("not production certification")));
+
+        mockMvc.perform(post("/api/lab/runs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mode\":\"recommend\",\"scenarioIds\":[\"tail-latency-pressure\"]}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mode", is("recommend")))
+                .andExpect(jsonPath("$.results[0].resultChanged", is(false)))
+                .andExpect(jsonPath("$.results[0].rollbackReason", containsString("recommendation")));
+
+        String audit = mockMvc.perform(get("/api/lab/audit-events"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").isNumber())
+                .andExpect(jsonPath("$.events[0].mode").isString())
+                .andReturn().getResponse().getContentAsString().toLowerCase();
+
+        org.junit.jupiter.api.Assertions.assertFalse(audit.contains("x-api-key"));
+        org.junit.jupiter.api.Assertions.assertFalse(audit.contains("bearer "));
+        org.junit.jupiter.api.Assertions.assertFalse(audit.contains("password"));
     }
 }

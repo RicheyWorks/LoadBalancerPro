@@ -1,10 +1,10 @@
 # LoadBalancerPro v2.5.0 Release Notes
 
-These notes prepare the future `v2.5.0` JAR/docs-first release decision. This document does not create a tag, GitHub Release, release assets, registry image, or container signature.
+These notes describe the completed `v2.5.0` JAR/docs-first release. [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md) records the exact tag, commit, release workflow, verified asset set, checksum verification, SBOM JSON/XML presence, and artifact attestation status. This document does not create or mutate tags, GitHub Releases, release assets, registry images, or container signatures.
 
 ## Summary
 
-`v2.5.0` is the recommended minor release after the `v2.4.2` dependency-maintenance baseline. The release intent is enterprise readiness hardening for production-like review while preserving local developer convenience.
+`v2.5.0` is the minor release after the `v2.4.2` dependency-maintenance baseline. The release scope is enterprise readiness hardening for production-like review while preserving local developer convenience.
 
 Recommended distribution: JAR/docs-first.
 
@@ -32,9 +32,9 @@ Container registry publication and container signing remain deferred to [`CONTAI
 - OAuth2 integrations must map application roles through dedicated role claims such as `roles`, `role`, `authorities`, or `realm_access.roles`.
 - Requests that omit enterprise-required allocation or evaluation fields should expect validation errors instead of defaulted numeric or boolean values.
 
-## Artifacts Expected After Future Authorization
+## Verified Release Artifacts
 
-After a separate explicit release authorization and semantic tag workflow run, the JAR/docs-first release path is expected to produce:
+The authorized semantic-tag Release Artifacts workflow produced and verified:
 
 - `LoadBalancerPro-2.5.0.jar`
 - `LoadBalancerPro-2.5.0-bom.json`
@@ -43,11 +43,13 @@ After a separate explicit release authorization and semantic tag workflow run, t
 - GitHub artifact attestations from the semantic-tag Release Artifacts workflow
 - GitHub Release assets produced by the approved workflow run
 
+The release tag is `v2.5.0` and the release commit is `4cc03750be5479d9f8f88f8ef8014e05a8dc587a`.
+
 No native installer, wrapper, launch4j, jpackage, native-image, self-extracting archive, vendored binary, Maven Central publication, registry image, Helm chart, Kubernetes manifest, Terraform module, or container signature is included in this release intent.
 
-## Validation Evidence To Review
+## Validation Evidence
 
-Before a human release decision, reviewers should inspect:
+The release evidence includes:
 
 - `mvn -q clean test`
 - `mvn -q verify`
@@ -59,6 +61,7 @@ Before a human release decision, reviewers should inspect:
 - `target/release-intent-review/release-intent-review.json`
 - latest matching CI, CodeQL, Dependency Review, Trivy, package, smoke, and SBOM evidence
 - [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md)
+- [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md)
 
 Generated `target/` evidence is ignored local output and must not be committed.
 
@@ -70,8 +73,8 @@ Generated `target/` evidence is ignored local output and must not be committed.
 - No production TLS, IAM, ingress, WAF, rate limiting, secret rotation, backup, incident response, SLO, or compliance approval is provided by the application.
 - Container publication, container signing, registry attestations, image rollback, and image retention remain future-gated.
 - GitHub artifact attestations are provenance evidence from the release workflow, not PGP signing, notarization, vulnerability proof, or production certification.
-- `release-downloads/` is not required for this release-prep review and must remain untouched unless a separate approved verification task requires it.
+- `release-downloads/` is ignored local verification output and must not be committed.
 
 ## Release Boundary
 
-This preparation sprint does not create tags, GitHub Releases, release assets, registry images, container signatures, secrets, external services, or `release-downloads/` evidence. A future operator must provide explicit release authorization for exact tag `v2.5.0` and exact commit after reviewing the dry-run packet, release-intent packet, release notes, SBOM, checksums, CI, CodeQL, Dependency Review, Trivy, and rollback/withdrawal plan.
+The completed release created only the authorized tag `v2.5.0` and the workflow-defined GitHub Release assets. It did not publish registry images, sign containers, push to registries, add secrets, add external services, or change runtime behavior.

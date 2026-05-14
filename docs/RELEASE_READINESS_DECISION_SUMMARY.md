@@ -4,9 +4,11 @@ This page gives reviewers the current two-track decision after the release-inten
 
 ## Recommended Next Human Decision
 
-Proceed with a JAR/docs-first release-intent decision for `v2.5.0` only after this release-prep alignment is merged, checks are green, dry-run evidence is reviewed, and a separate explicit release authorization is given. Do not create a semantic tag, GitHub Release, release assets, registry image, or container signature from this summary.
+`v2.5.0` has completed the JAR/docs-first release path. Review [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md) for the exact tag, exact commit, release workflow, asset verification, checksum verification, SBOM JSON/XML presence, artifact attestation verification, and deferred container publication/signing status. The next human decision is whether the GitHub Release JAR/docs bundle is sufficient for distribution, or whether container distribution now needs a separately approved registry/signing implementation.
 
 ## Exact Version Recommendation
+
+Released exact version: `v2.5.0`.
 
 Recommended exact release version: `v2.5.0`.
 
@@ -23,7 +25,7 @@ JAR/docs-first is sufficient when distribution means:
 - GitHub artifact attestations from the semantic-tag Release Artifacts workflow;
 - reviewer/operator docs and dry-run evidence.
 
-Use [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md) for the human release decision, [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md) for local dry-run evidence, [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md) for reviewer-ready release notes, and [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) for the hard stop before any real release action.
+Use [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md) for reviewer-ready release notes, [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md) for completed release evidence, [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md) for the pre-release decision record, and [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) as the historical exact-version authorization gate that preceded the release.
 
 ## Option 2: Container Distribution Later
 
@@ -41,4 +43,4 @@ No real enterprise IdP tenant, live AWS sandbox validation, container registry p
 
 ## Current Recommendation
 
-Choose JAR/docs-first for the next release if reviewers only need the executable JAR and evidence bundle. Defer container distribution until a focused implementation PR completes the registry/signing rollout gates.
+Use the `v2.5.0` JAR/docs-first GitHub Release when reviewers only need the executable JAR and evidence bundle. Defer container distribution until a focused implementation PR completes the registry/signing rollout gates.

@@ -1,0 +1,145 @@
+{
+  "fixtureVersion": "enterprise-lab-performance-fixtures-v1",
+  "profile": "local",
+  "warmupRequests": 2,
+  "measuredRequests": 8,
+  "timeoutSeconds": 5,
+  "safety": "Loopback-only local/package fixtures. No live cloud, private-network probing, external services, secrets, release actions, or container publication.",
+  "fixtures": [
+    {
+      "id": "health-status",
+      "displayName": "API health",
+      "category": "baseline",
+      "method": "GET",
+      "path": "/api/health",
+      "expectedStatus": 200
+    },
+    {
+      "id": "allocation-evaluation",
+      "displayName": "Read-only allocation evaluation",
+      "category": "allocation",
+      "method": "POST",
+      "path": "/api/allocate/evaluate",
+      "expectedStatus": 200,
+      "body": {
+        "requestedLoad": 150.0,
+        "strategy": "CAPACITY_AWARE",
+        "priority": "BACKGROUND",
+        "currentInFlightRequestCount": 95,
+        "concurrencyLimit": 100,
+        "queueDepth": 25,
+        "observedP95LatencyMillis": 300.0,
+        "observedErrorRate": 0.2,
+        "servers": [
+          {
+            "id": "primary",
+            "cpuUsage": 30.0,
+            "memoryUsage": 30.0,
+            "diskUsage": 30.0,
+            "capacity": 100.0,
+            "weight": 1.0,
+            "healthy": true
+          },
+          {
+            "id": "fallback",
+            "cpuUsage": 70.0,
+            "memoryUsage": 70.0,
+            "diskUsage": 70.0,
+            "capacity": 100.0,
+            "weight": 1.0,
+            "healthy": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "routing-comparison",
+      "displayName": "Routing comparison",
+      "category": "routing",
+      "method": "POST",
+      "path": "/api/routing/compare",
+      "expectedStatus": 200,
+      "body": {
+        "strategies": [
+          "TAIL_LATENCY_POWER_OF_TWO",
+          "WEIGHTED_LEAST_LOAD"
+        ],
+        "servers": [
+          {
+            "serverId": "green",
+            "healthy": true,
+            "inFlightRequestCount": 5,
+            "configuredCapacity": 100.0,
+            "estimatedConcurrencyLimit": 100.0,
+            "averageLatencyMillis": 20.0,
+            "p95LatencyMillis": 40.0,
+            "p99LatencyMillis": 80.0,
+            "recentErrorRate": 0.01,
+            "queueDepth": 1
+          },
+          {
+            "serverId": "blue",
+            "healthy": true,
+            "inFlightRequestCount": 75,
+            "configuredCapacity": 100.0,
+            "estimatedConcurrencyLimit": 100.0,
+            "averageLatencyMillis": 35.0,
+            "p95LatencyMillis": 120.0,
+            "p99LatencyMillis": 220.0,
+            "recentErrorRate": 0.15,
+            "queueDepth": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "lab-scenarios-list",
+      "displayName": "Enterprise Lab scenario catalog",
+      "category": "enterprise-lab",
+      "method": "GET",
+      "path": "/api/lab/scenarios",
+      "expectedStatus": 200
+    },
+    {
+      "id": "lab-run-small-shadow",
+      "displayName": "Enterprise Lab small shadow run",
+      "category": "enterprise-lab",
+      "method": "POST",
+      "path": "/api/lab/runs",
+      "expectedStatus": 200,
+      "body": {
+        "mode": "shadow",
+        "scenarioIds": [
+          "normal-balanced-load",
+          "tail-latency-pressure",
+          "stale-signal"
+        ],
+        "detailLevel": "summary"
+      }
+    },
+    {
+      "id": "controlled-policy-status",
+      "displayName": "Controlled policy status",
+      "category": "controlled-policy",
+      "method": "GET",
+      "path": "/api/lab/policy",
+      "expectedStatus": 200
+    },
+    {
+      "id": "lab-metrics",
+      "displayName": "Enterprise Lab metrics",
+      "category": "observability",
+      "method": "GET",
+      "path": "/api/lab/metrics",
+      "expectedStatus": 200
+    },
+    {
+      "id": "enterprise-lab-page",
+      "displayName": "Enterprise Lab browser page",
+      "category": "browser",
+      "method": "GET",
+      "path": "/enterprise-lab.html",
+      "expectedStatus": 200
+    }
+  ]
+}

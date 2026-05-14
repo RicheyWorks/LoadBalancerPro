@@ -27,7 +27,8 @@ Keep the demo local. Do not use cloud credentials, public upstreams, real secret
 6. If security posture matters, open [`API_SECURITY.md`](API_SECURITY.md) and explain that prod/cloud-sandbox API-key modes protect proxy/status and `/api/lab/**` surfaces, while TLS termination remains a deployment responsibility.
 7. If adaptive-routing posture matters, run `POST /api/allocate/evaluate` with `loadbalancerpro.lase.shadow.enabled=true` and point to the response `laseShadow` block. It is shadow-only, lists signals considered such as tail latency, queue depth, and adaptive concurrency, and explicitly says it does not alter live allocation.
 8. If adaptive-routing product value matters, open [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](CONTROLLED_ACTIVE_LASE_POLICY_GATE.md), then run the Enterprise Lab workflow smoke, the controlled active policy smoke, or the adaptive-routing experiment harness to compare baseline vs shadow vs recommend vs active-experiment with default behavior unchanged and no live cloud mutation.
-9. If observability matters, open `/enterprise-lab.html`, call `GET /api/lab/metrics` and `GET /api/lab/metrics/prometheus`, then point to process-local lab counters, dashboard JSON, alert examples, and SLO templates under `docs/observability/`. For proxy-specific observability, open `/proxy-status.html` or [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md) and point to route/backend counts, status summaries, retry/cooldown counters, and reload status.
+9. If observability matters, open `/enterprise-lab.html`, call `GET /api/lab/metrics` and `GET /api/lab/metrics/prometheus`, then point to process-local lab counters, dashboard JSON, alert examples, SLO templates under `docs/observability/`, and the local performance baseline under `target/performance-baseline/`. For proxy-specific observability, open `/proxy-status.html` or [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md) and point to route/backend counts, status summaries, retry/cooldown counters, and reload status.
+10. If enterprise auth matters, open [`ENTERPRISE_AUTH_PROOF_LANE.md`](ENTERPRISE_AUTH_PROOF_LANE.md), then run the proof script to show dedicated role-claim access, scope-only denial, missing/ambiguous claim denial, token lifetime rejection, issuer/audience rejection, and synthetic key-rotation examples without real tenant secrets.
 10. If packaging matters, open [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) and explain the local-only Docker build/run path with no registry publish.
 11. Close with [`SRE_DEMO_HIGHLIGHTS.md`](SRE_DEMO_HIGHLIGHTS.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), `jacoco-coverage-report`, `packaged-artifact-smoke`, and `loadbalancerpro-sbom` as the evidence trail.
 
@@ -83,6 +84,22 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-l
 
 Output: `target/enterprise-lab-observability/lab-metrics.json`, `target/enterprise-lab-observability/lab-metrics.prom`, `target/enterprise-lab-observability/observability-summary.md`, and `target/enterprise-lab-observability/observability-evidence-manifest.json`. Pair the output with `docs/observability/grafana-enterprise-lab-dashboard.json`, `docs/observability/enterprise-lab-alerts.yml`, and `docs/observability/SLO_TEMPLATES.md`. The command writes ignored evidence only under `target/`, uses local/package mode, and requires no live Prometheus, Grafana, cloud, or private-network service.
 
+Performance baseline evidence:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\performance-baseline.ps1 -Package
+```
+
+Output: `target/performance-baseline/performance-report.json`, `target/performance-baseline/performance-dashboard.json`, `target/performance-baseline/performance-threshold-results.json`, `target/performance-baseline/performance-summary.md`, and `target/performance-baseline/performance-evidence-manifest.json`. The results are local loopback evidence only, not production SLO or capacity proof.
+
+Enterprise auth proof evidence:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-auth-proof.ps1 -Package
+```
+
+Output: `target/enterprise-auth-proof/enterprise-auth-proof-results.json`, `target/enterprise-auth-proof/mock-idp-jwks-fixture-summary.json`, `target/enterprise-auth-proof/enterprise-auth-proof-summary.md`, and `target/enterprise-auth-proof/enterprise-auth-proof-manifest.json`. The proof uses mocked-resource-server tests and synthetic role-claim fixtures only; it is not real tenant certification.
+
 Local proxy evidence export:
 
 ```bash
@@ -126,4 +143,4 @@ The Dockerfile defaults to the prod API-key profile. Health and the root page re
 - Safe proof paths do not use DNS resolution, discovery, subnet scanning, port scanning, native tooling, release assets, or `release-downloads/` mutation.
 - TLS termination and public ingress controls belong to the deployment boundary.
 - Demo paths do not construct or mutate `CloudManager`, do not mutate cloud state, and do not publish release assets.
-- Enterprise Lab runs are process-local and bounded; retained runs, audit events, and lab metrics are in memory, evidence export writes only under ignored `target/`, and scorecards/SLO templates are lab-grade evidence rather than production activation or production SLO certification.
+- Enterprise Lab runs are process-local and bounded; retained runs, audit events, lab metrics, performance baselines, and auth proof evidence write only under ignored `target/`, and scorecards/SLO templates are lab-grade evidence rather than production activation, production SLO certification, or real tenant certification.

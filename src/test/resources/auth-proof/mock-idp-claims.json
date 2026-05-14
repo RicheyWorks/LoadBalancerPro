@@ -1,0 +1,109 @@
+{
+  "fixtureVersion": "enterprise-auth-proof-lane-v1",
+  "issuer": "https://idp.example.test/tenant",
+  "audience": "loadbalancerpro-api",
+  "jwksMode": "mocked-test-only",
+  "safety": "Synthetic test fixture only. No real tenant IDs, client IDs, private keys, client secrets, refresh tokens, production JWTs, or live IdP calls.",
+  "keys": [
+    {
+      "kid": "test-key-a",
+      "use": "sig",
+      "status": "current"
+    },
+    {
+      "kid": "test-key-b",
+      "use": "sig",
+      "status": "rotation-example"
+    }
+  ],
+  "tokens": [
+    {
+      "name": "proof-role-operator-key-a",
+      "kid": "test-key-a",
+      "claims": {
+        "sub": "proof-operator-a",
+        "roles": [
+          "operator"
+        ]
+      },
+      "expected": "operator routes allowed"
+    },
+    {
+      "name": "proof-role-operator-key-b",
+      "kid": "test-key-b",
+      "claims": {
+        "sub": "proof-operator-b",
+        "realm_access": {
+          "roles": [
+            "operator"
+          ]
+        }
+      },
+      "expected": "operator routes allowed after key rotation"
+    },
+    {
+      "name": "proof-scope-only-operator",
+      "kid": "test-key-a",
+      "claims": {
+        "sub": "proof-scope-only",
+        "scope": "operator observer"
+      },
+      "expected": "operator routes forbidden"
+    },
+    {
+      "name": "proof-missing-role",
+      "kid": "test-key-a",
+      "claims": {
+        "sub": "proof-missing-role"
+      },
+      "expected": "operator routes forbidden"
+    },
+    {
+      "name": "proof-ambiguous-scope-authorities",
+      "kid": "test-key-a",
+      "claims": {
+        "sub": "proof-ambiguous",
+        "authorities": [
+          "SCOPE_operator"
+        ],
+        "scp": [
+          "operator"
+        ]
+      },
+      "expected": "operator routes forbidden"
+    },
+    {
+      "name": "proof-expired-token",
+      "kid": "test-key-a",
+      "claims": {
+        "sub": "proof-expired",
+        "roles": [
+          "operator"
+        ]
+      },
+      "expected": "request unauthorized"
+    },
+    {
+      "name": "proof-wrong-issuer",
+      "kid": "test-key-a",
+      "claims": {
+        "sub": "proof-wrong-issuer",
+        "roles": [
+          "operator"
+        ]
+      },
+      "expected": "request unauthorized"
+    },
+    {
+      "name": "proof-wrong-audience",
+      "kid": "test-key-a",
+      "claims": {
+        "sub": "proof-wrong-audience",
+        "roles": [
+          "operator"
+        ]
+      },
+      "expected": "request unauthorized"
+    }
+  ]
+}

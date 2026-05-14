@@ -1,0 +1,24 @@
+{
+  "thresholdVersion": "enterprise-lab-performance-thresholds-v1",
+  "mode": "warning-only",
+  "safety": "Thresholds are local regression warnings for comparable loopback runs. They are not production SLOs or capacity targets.",
+  "defaults": {
+    "p95WarningMillis": 750.0,
+    "p99WarningMillis": 1200.0,
+    "errorRateWarningPercent": 0.0
+  },
+  "fixtures": [
+    {
+      "id": "health-status",
+      "p95WarningMillis": 500.0,
+      "p99WarningMillis": 900.0,
+      "errorRateWarningPercent": 0.0
+    },
+    {
+      "id": "enterprise-lab-page",
+      "p95WarningMillis": 900.0,
+      "p99WarningMillis": 1500.0,
+      "errorRateWarningPercent": 0.0
+    }
+  ]
+}

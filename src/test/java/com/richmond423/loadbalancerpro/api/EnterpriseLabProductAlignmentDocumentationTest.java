@@ -174,16 +174,20 @@ class EnterpriseLabProductAlignmentDocumentationTest {
     }
 
     @Test
-    void performanceBaselineIsClearlyUnmeasured() throws Exception {
+    void performanceBaselineIsClearlyLocalMeasuredLaneOnly() throws Exception {
         String baseline = read(PERFORMANCE_BASELINE);
         String normalized = baseline.toLowerCase(Locale.ROOT);
 
-        assertTrue(baseline.contains("Status: template/unmeasured. No measured results are included yet."));
+        assertTrue(baseline.contains("Status: measured-lane ready."));
         assertTrue(baseline.contains("target/performance-baseline/"));
         assertTrue(baseline.contains("no live/private-network dependency"));
+        assertTrue(baseline.contains("scripts\\smoke\\performance-baseline.ps1")
+                || baseline.contains("scripts/smoke/performance-baseline.ps1"));
+        assertTrue(baseline.contains("performance-dashboard.json"));
         assertTrue(baseline.contains("Do not claim:"));
         assertFalse(normalized.contains("measured production slo"));
         assertFalse(normalized.contains("production capacity proven"));
+        assertFalse(normalized.contains("production performance certification is complete"));
     }
 
     @Test

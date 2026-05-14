@@ -4,7 +4,7 @@ Use this page as the concise reviewer or portfolio walkthrough for LoadBalancerP
 
 ## Fast Story
 
-LoadBalancerPro Enterprise Lab is a Java/Spring lab for adaptive-routing scenarios, deterministic replay, LASE shadow/recommend/active-experiment comparison, controlled policy gates, scorecards, process-local lab metrics, evidence export, SRE walkthroughs, and a bounded Production Gateway Candidate track. Review [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md), [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](CONTROLLED_ACTIVE_LASE_POLICY_GATE.md), and the observability pack under [`observability/`](observability/) when the question is where the product goes next.
+LoadBalancerPro Enterprise Lab is a Java/Spring lab for adaptive-routing scenarios, deterministic replay, LASE shadow/recommend/active-experiment comparison, controlled policy gates, scorecards, process-local lab metrics, measured local performance evidence, mocked enterprise auth proof, SRE walkthroughs, and a bounded Production Gateway Candidate track. Review [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md), [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](CONTROLLED_ACTIVE_LASE_POLICY_GATE.md), [`ENTERPRISE_AUTH_PROOF_LANE.md`](ENTERPRISE_AUTH_PROOF_LANE.md), and the observability pack under [`observability/`](observability/) when the question is where the product goes next.
 
 The current implementation has guarded cloud boundaries, deterministic adaptive-routing evidence, optional local proxy forwarding, and release evidence that a reviewer can inspect without trusting hidden infrastructure.
 
@@ -20,6 +20,8 @@ The strongest SRE/product-value thread is:
 8. The Enterprise Lab workflow turns those signals into a reviewer-facing scenario catalog, run API, scorecard, evidence export, and browser lab page while remaining process-local and bounded.
 9. The controlled active LASE policy gate adds `off`, `shadow`, `recommend`, and `active-experiment` modes with health, eligibility, capacity, freshness, conflict, rollback, and bounded-context gates.
 10. The observability pack adds protected `/api/lab/metrics` and `/api/lab/metrics/prometheus`, dashboard JSON, alert examples, SLO templates, and ignored local evidence under `target/enterprise-lab-observability/`.
+11. The performance baseline lane adds deterministic local fixtures, latency/error-rate summaries, warning-only thresholds, and dashboard-ready output under `target/performance-baseline/`.
+12. The enterprise auth proof lane adds mocked IdP/JWKS claim fixtures and ignored evidence under `target/enterprise-auth-proof/`, proving dedicated role claims and scope-only denial without real tenant secrets.
 11. Cloud mutation remains behind explicit dry-run, intent, prefix, ownership, account/region, and capacity guardrails.
 
 ## Release Proof
@@ -79,7 +81,7 @@ The adaptive-routing foundation has moved from a demo foundation toward observab
 - the controlled active policy gate records audit events and rollback reasons while keeping `active-experiment` explicit, guarded, and not enabled by default
 - the observability pack exposes lab-grade counters for lab runs, scenarios, policy decisions by mode, recommendations, active-experiment changes, guardrail blocks, rollback/fail-closed events, audit retention/drops, explanation coverage, and rate-limit interactions without claiming production SLOs
 
-Evidence links: [`API_CONTRACTS.md`](API_CONTRACTS.md), [`SCENARIO_SIMULATION.md`](SCENARIO_SIMULATION.md), [`observability/grafana-enterprise-lab-dashboard.json`](observability/grafana-enterprise-lab-dashboard.json), [`observability/enterprise-lab-alerts.yml`](observability/enterprise-lab-alerts.yml), [`observability/SLO_TEMPLATES.md`](observability/SLO_TEMPLATES.md), and `LaseAllocationShadowIntegrationTest`.
+Evidence links: [`API_CONTRACTS.md`](API_CONTRACTS.md), [`SCENARIO_SIMULATION.md`](SCENARIO_SIMULATION.md), [`ENTERPRISE_AUTH_PROOF_LANE.md`](ENTERPRISE_AUTH_PROOF_LANE.md), [`../evidence/PERFORMANCE_BASELINE.md`](../evidence/PERFORMANCE_BASELINE.md), [`observability/grafana-enterprise-lab-dashboard.json`](observability/grafana-enterprise-lab-dashboard.json), [`observability/enterprise-lab-alerts.yml`](observability/enterprise-lab-alerts.yml), [`observability/SLO_TEMPLATES.md`](observability/SLO_TEMPLATES.md), and `LaseAllocationShadowIntegrationTest`.
 
 Run the local experiment harness after packaging with:
 
@@ -113,6 +115,22 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-l
 
 The script writes `target/enterprise-lab-observability/lab-metrics.json`, `target/enterprise-lab-observability/lab-metrics.prom`, `target/enterprise-lab-observability/observability-summary.md`, and a manifest. Pair that output with the dashboard JSON, alert examples, and SLO templates. These are lab-grade/process-local observability artifacts, not production monitoring or production SLO certification.
 
+Run the local performance baseline after packaging with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\performance-baseline.ps1 -Package
+```
+
+The script writes `target/performance-baseline/performance-report.json`, `target/performance-baseline/performance-dashboard.json`, `target/performance-baseline/performance-threshold-results.json`, and a Markdown summary. These are local loopback results only, not production capacity or SLO evidence.
+
+Run the enterprise auth proof lane after packaging with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-auth-proof.ps1 -Package
+```
+
+The script writes `target/enterprise-auth-proof/enterprise-auth-proof-results.json`, `target/enterprise-auth-proof/mock-idp-jwks-fixture-summary.json`, and a Markdown summary. It proves dedicated role-claim behavior and scope-only denial with synthetic fixtures, not real enterprise tenant validation.
+
 ## Walkthrough
 
 For a short interviewer walkthrough:
@@ -133,7 +151,8 @@ For a short interviewer walkthrough:
 - This is not production deployment certification.
 - No real enterprise IdP tenant proof is included.
 - Production TLS, IAM, ingress, monitoring, log retention, WAF, distributed rate limiting, backup, and incident-response operations are deployment-owner responsibilities.
-- Lab metrics are process-local and lab-grade; production observability, retention, paging, and SLO certification remain future deployment work.
+- Lab metrics and performance baselines are process-local/lab-grade; production observability, retention, paging, capacity planning, and SLO certification remain future deployment work.
+- Enterprise auth proof is mocked and local; real IdP tenant validation, browser login/session UX, and production SSO certification remain future deployment work.
 - Container registry publication and container signing are deferred.
 - Active-experiment LASE influence is explicit, guarded, bounded, and lab/evaluation-grade; it is not a distributed production control plane or production deployment certification.
 - Live cloud sandbox validation is outside the default Maven/CI evidence.

@@ -27,6 +27,8 @@ class EnterpriseLabWorkflowDocumentationTest {
     private static final Path TRUST = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path RUNBOOK = Path.of("docs/OPERATIONS_RUNBOOK.md");
     private static final Path TEST_EVIDENCE = Path.of("evidence/TEST_EVIDENCE.md");
+    private static final Path PERFORMANCE_BASELINE = Path.of("evidence/PERFORMANCE_BASELINE.md");
+    private static final Path AUTH_PROOF = Path.of("docs/ENTERPRISE_AUTH_PROOF_LANE.md");
     private static final Path PAGE = Path.of("src/main/resources/static/enterprise-lab.html");
     private static final Path INDEX = Path.of("src/main/resources/static/index.html");
     private static final Path SCRIPT = Path.of("scripts/smoke/enterprise-lab-workflow.ps1");
@@ -41,7 +43,8 @@ class EnterpriseLabWorkflowDocumentationTest {
     @Test
     void labWorkflowDocsExposeScenarioRunScorecardEvidenceAndBoundaries() throws Exception {
         String docs = read(README) + read(API_CONTRACTS) + read(CHARTER) + read(ROADMAP) + read(POLICY_GATE)
-                + read(DEMO) + read(SRE) + read(TRUST) + read(RUNBOOK) + read(TEST_EVIDENCE);
+                + read(DEMO) + read(SRE) + read(TRUST) + read(RUNBOOK) + read(TEST_EVIDENCE)
+                + read(PERFORMANCE_BASELINE) + read(AUTH_PROOF);
 
         for (String expected : List.of(
                 "GET /api/lab/scenarios",
@@ -55,9 +58,13 @@ class EnterpriseLabWorkflowDocumentationTest {
                 "target/enterprise-lab-runs/",
                 "target/controlled-adaptive-routing/",
                 "target/enterprise-lab-observability/",
+                "target/performance-baseline/",
+                "target/enterprise-auth-proof/",
                 "grafana-enterprise-lab-dashboard.json",
                 "enterprise-lab-alerts.yml",
                 "SLO_TEMPLATES.md",
+                "performance-baseline.ps1",
+                "enterprise-auth-proof.ps1",
                 "scorecard",
                 "baseline",
                 "shadow",
@@ -105,6 +112,9 @@ class EnterpriseLabWorkflowDocumentationTest {
                 "Policy Status",
                 "Audit Events",
                 "Observability",
+                "Proof Lanes",
+                "target/performance-baseline/",
+                "target/enterprise-auth-proof/",
                 "target/enterprise-lab-runs/")) {
             assertTrue(page.contains(expected), "browser page should mention " + expected);
         }
@@ -231,6 +241,8 @@ class EnterpriseLabWorkflowDocumentationTest {
                 "Audit Event Retention And Drops",
                 "Rate Limit Events",
                 "API Health And Prod Boundary Status",
+                "Performance Baseline P95 Latency",
+                "Performance Baseline Error Rate",
                 "Lab-Grade Evidence Note")) {
             assertTrue(dashboard.contains(expected), "dashboard should mention " + expected);
         }
@@ -243,6 +255,7 @@ class EnterpriseLabWorkflowDocumentationTest {
                 "LoadBalancerProRateLimitEvents",
                 "LoadBalancerProMissingLabMetrics",
                 "LoadBalancerProStaleEvidenceGeneration",
+                "LoadBalancerProPerformanceBaselineWarning",
                 "lab-grade-template")) {
             assertTrue(alerts.contains(expected), "alerts should mention " + expected);
         }
@@ -251,6 +264,7 @@ class EnterpriseLabWorkflowDocumentationTest {
                 "Lab Workflow SLO Templates",
                 "Controlled Adaptive-Routing SLO Templates",
                 "Future Production Gateway Candidate SLO Templates",
+                "Performance baseline generation success",
                 "current metrics are lab-grade/process-local",
                 "No production SLO certification is claimed")) {
             assertTrue(slos.contains(expected), "SLO templates should mention " + expected);

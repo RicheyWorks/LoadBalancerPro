@@ -28,7 +28,7 @@ Acceptance criteria:
 - `docs/ENTERPRISE_LAB_ROADMAP.md` exists and is linked from reviewer entry points.
 - OAuth role evidence states that `scope` and `scp` claims do not grant application roles.
 - resilience score summary and detailed sections agree.
-- performance baseline evidence is marked template/unmeasured unless measured output exists.
+- performance baseline evidence is marked local/lab-grade and points measured output to ignored `target/performance-baseline/`.
 - no docs claim production deployment certification.
 
 ## P1: Adaptive Routing Lab Workflow
@@ -148,6 +148,15 @@ Acceptance criteria:
 
 Purpose: replace the current unmeasured performance template with repeatable local evidence.
 
+Implemented first slice:
+
+- deterministic fixture catalog at `docs/performance/performance-fixtures.json`;
+- warning-only threshold template at `docs/performance/performance-thresholds.example.json`;
+- source-visible local/package runner `scripts/smoke/performance-baseline.ps1`;
+- ignored evidence output under `target/performance-baseline/`;
+- latency, error-rate, and dashboard-ready JSON/Markdown summaries;
+- local/lab-grade scope statement that avoids production SLO or capacity claims.
+
 Scope:
 
 - stable request fixtures;
@@ -166,6 +175,14 @@ Acceptance criteria:
 ## P2: Enterprise Auth Proof Lane
 
 Purpose: make OAuth2 role-claim hardening demonstrable without real tenant secrets.
+
+Implemented first slice:
+
+- `docs/ENTERPRISE_AUTH_PROOF_LANE.md`;
+- mock IdP/JWKS claim fixture at `src/test/resources/auth-proof/mock-idp-claims.json`;
+- source-visible proof script `scripts/smoke/enterprise-auth-proof.ps1`;
+- ignored evidence output under `target/enterprise-auth-proof/`;
+- test-backed proof for dedicated role claims, scope-only denial, missing/ambiguous claims, expired token rejection, wrong issuer/audience rejection, and synthetic key-rotation examples.
 
 Scope:
 

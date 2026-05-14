@@ -17,6 +17,7 @@ import software.amazon.awssdk.services.autoscaling.model.DescribeAutoScalingGrou
 import software.amazon.awssdk.services.autoscaling.model.LaunchTemplateSpecification;
 import software.amazon.awssdk.services.autoscaling.model.UpdateAutoScalingGroupRequest;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
+import software.amazon.awssdk.services.cloudwatch.model.Datapoint;
 import software.amazon.awssdk.services.cloudwatch.model.Dimension;
 import software.amazon.awssdk.services.cloudwatch.model.GetMetricStatisticsRequest;
 import software.amazon.awssdk.services.cloudwatch.model.GetMetricStatisticsResponse;
@@ -381,9 +382,21 @@ public class CloudManager {
             .build();
         GetMetricStatisticsResponse result = executeWithRetry(() -> awsClients.cloudWatch().getMetricStatistics(request),
                                                             "fetch CloudWatch metric " + metricName + " for " + instanceId, null);
-        double value = result != null && !result.datapoints().isEmpty() ?
-                       validateMetric(result.datapoints().get(0).average()) : 0.0;
+        double value = firstAverageMetricValue(result);
         return new MetricCacheEntry(value, System.currentTimeMillis());
+    }
+
+    private double firstAverageMetricValue(GetMetricStatisticsResponse result) {
+        if (result == null || result.datapoints() == null || result.datapoints().isEmpty()) {
+            return 0.0;
+        }
+        return result.datapoints().stream()
+                .filter(Objects::nonNull)
+                .map(Datapoint::average)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .map(this::validateMetric)
+                .orElse(0.0);
     }
 
     private double validateMetric(double value) {
@@ -688,7 +701,7 @@ public class CloudManager {
         return defaultValue;
     }
 
-    private void logZeroCopy(String message, Object... args) {
+    private synchronized void logZeroCopy(String message, Object... args) {
         String formattedMessage = formatLogMessage(message, args);
         if (logChannel != null && logChannel.isOpen()) {
             try {

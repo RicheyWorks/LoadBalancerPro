@@ -69,9 +69,18 @@ The adaptive-routing foundation has moved from a demo foundation toward observab
 - `POST /api/allocate/evaluate` now includes a `laseShadow` block when `loadbalancerpro.lase.shadow.enabled=true`
 - `laseShadow` is shadow-only, lists signals considered, records observation status, reports recommended server/action when available, and states that it does not alter live allocation
 - `GET /api/lase/shadow` exposes bounded process-local observability for recent shadow events
+- the adaptive-routing experiment harness compares baseline vs shadow vs opt-in influence across deterministic fixtures, keeps default behavior unchanged, and writes ignored review evidence under `target/adaptive-routing-experiments/`
 - active LASE influence over live allocation remains future work and is intentionally not enabled by default
 
 Evidence links: [`API_CONTRACTS.md`](API_CONTRACTS.md), [`SCENARIO_SIMULATION.md`](SCENARIO_SIMULATION.md), and `LaseAllocationShadowIntegrationTest`.
+
+Run the local experiment harness after packaging with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\adaptive-routing-experiment.ps1 -Package
+```
+
+The script runs `--adaptive-routing-experiment=all`, records shadow-only and opt-in influence comparison output, and performs no live cloud mutation, API server startup, release action, container publication, or external network call. The opt-in influence path is a feature flag style experiment mode in the CLI output only; it is not a production routing control.
 
 ## Walkthrough
 
@@ -81,8 +90,9 @@ For a short interviewer walkthrough:
 2. Run the local cockpit and show allocation pressure, routing comparison, remediation hints, and raw JSON.
 3. Show the protected-prod/container posture in [`API_SECURITY.md`](API_SECURITY.md) or [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md).
 4. Run or describe `POST /api/allocate/evaluate` with `loadbalancerpro.lase.shadow.enabled=true` and point to the `laseShadow` explanation.
-5. Open [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md) to show release evidence, SBOM, checksums, and attestation posture.
-6. Close with the current limits below so the review stays honest.
+5. Run or describe the adaptive-routing experiment harness and show the baseline vs shadow vs opt-in influence matrix under `target/adaptive-routing-experiments/`.
+6. Open [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md) to show release evidence, SBOM, checksums, and attestation posture.
+7. Close with the current limits below so the review stays honest.
 
 ## Honest Remaining Risks
 
@@ -90,5 +100,5 @@ For a short interviewer walkthrough:
 - No real enterprise IdP tenant proof is included.
 - Production TLS, IAM, ingress, monitoring, log retention, WAF, distributed rate limiting, backup, and incident-response operations are deployment-owner responsibilities.
 - Container registry publication and container signing are deferred.
-- Active LASE influence over live allocation is future-gated; current integration is shadow-only.
+- Active LASE influence over live allocation is future-gated; current production integration is shadow-only and experiment influence is local/opt-in only.
 - Live cloud sandbox validation is outside the default Maven/CI evidence.

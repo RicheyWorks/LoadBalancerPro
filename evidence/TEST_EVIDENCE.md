@@ -28,6 +28,7 @@ mvn -q test
 - Evaluator failures are captured as fail-safe shadow events.
 - Sensitive-looking failure text is redacted while useful non-sensitive context is preserved.
 - Control characters are neutralized in stored failure reasons.
+- Adaptive-routing experiment tests cover deterministic fixtures, shadow-only default behavior, opt-in influence comparison output, stale-signal guardrails, all-unhealthy degradation, CLI mode selection, and ignored `target/adaptive-routing-experiments/` evidence generation safety.
 
 ## Replay/Cloud Isolation Tests
 

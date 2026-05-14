@@ -724,6 +724,53 @@
               ]
             }
           }
+        },
+        {
+          "name": "GET Enterprise Lab Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lab/metrics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lab",
+                "metrics"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Enterprise Lab Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lab/metrics/prometheus",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lab",
+                "metrics",
+                "prometheus"
+              ]
+            }
+          }
         }
       ]
     },

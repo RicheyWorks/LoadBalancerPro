@@ -10,8 +10,8 @@ LoadBalancerPro Enterprise Lab.
 
 ## What It Is
 
-- An Enterprise Adaptive Routing Lab for controlled scenario running, deterministic replay, LASE `off`/`shadow`/`recommend`/`active-experiment` comparison, implemented policy gates, scorecards, evidence export, and SRE walkthroughs.
-- A Production Gateway Candidate for optional future runtime proxy/gateway work, hardened auth, config reload, metrics, rate limiting, canary or shadow mode, rollback, deployment guides, and signed container distribution later.
+- An Enterprise Adaptive Routing Lab for controlled scenario running, deterministic replay, LASE `off`/`shadow`/`recommend`/`active-experiment` comparison, implemented policy gates, scorecards, process-local lab metrics, evidence export, and SRE walkthroughs.
+- A Production Gateway Candidate for optional future runtime proxy/gateway work, hardened auth, config reload, production-grade metrics, rate limiting, canary or shadow mode, rollback, deployment guides, and signed container distribution later.
 - A reviewer-friendly evidence system: release notes, post-release verification, SBOM/checksum/attestation posture, static documentation guardrails, and ignored local evidence outputs under `target/`.
 - A product-development track that keeps lab proof, runtime safety, and future deployment responsibilities separate.
 
@@ -43,10 +43,11 @@ The lab should grow around:
 - LASE shadow-only, recommend, and active-experiment comparison;
 - controlled policy gates before any active decision promotion;
 - scorecards that explain baseline, shadow, recommendation, and active-experiment outcomes;
+- protected lab-grade metrics for lab runs, scenarios, policy decisions, guardrails, rollback/fail-closed events, audit retention, and rate-limit interactions;
 - evidence export under ignored `target/` paths;
 - SRE walkthroughs that show what changed, what did not change, and why.
 
-The first implemented lab workflow now provides `GET /api/lab/scenarios`, `POST /api/lab/runs`, bounded process-local in-memory run storage, deterministic run summaries, scorecards, ignored `target/enterprise-lab-runs/` evidence export through a source-visible smoke script, and `/enterprise-lab.html` for browser review. This is lab evidence only; it is not production traffic activation.
+The first implemented lab workflow now provides `GET /api/lab/scenarios`, `POST /api/lab/runs`, bounded process-local in-memory run storage, deterministic run summaries, scorecards, protected `GET /api/lab/metrics` and `GET /api/lab/metrics/prometheus`, ignored `target/enterprise-lab-runs/` and `target/enterprise-lab-observability/` evidence export through source-visible smoke scripts, and `/enterprise-lab.html` for browser review. This is lab evidence only; it is not production traffic activation or production SLO certification.
 
 Lab evidence can support product review and design decisions. It must not be presented as proof that an unmanaged production deployment is safe.
 
@@ -76,6 +77,7 @@ Production Gateway Candidate means "candidate architecture and evidence lane." I
 | API-key and OAuth2 route tests | Complete enterprise IAM deployment. |
 | SBOM/checksum/attestation release evidence | Vulnerability-free or signed-container distribution. |
 | Dry-run cloud guardrails | Real account IAM, budget, teardown, or live-cloud safety. |
+| Process-local lab metrics and SLO templates | Production SLO certification, centralized monitoring, or scaling limits. |
 | Local performance templates | Production SLOs or scaling limits. |
 
 ## Release Posture
@@ -108,7 +110,7 @@ Production Gateway Candidate means "candidate architecture and evidence lane." I
 1. Truth and identity alignment: keep this charter, roadmap, and evidence scorecards consistent.
 2. Adaptive Routing Lab workflow hardening: richer scenario scorecards, reviewer exports, and lab-page polish on top of the first `/api/lab/**` slice.
 3. Controlled active LASE policy gate follow-through: richer audit review, policy dashboards, and rollback evidence on top of implemented off, shadow, recommend, and active-experiment modes.
-4. Observability packs: Prometheus/Grafana dashboard JSON, alerts, SLO templates, and local evidence generation.
+4. Observability packs follow-through: keep the Grafana JSON, alert examples, SLO templates, protected lab metrics endpoints, and `target/enterprise-lab-observability/` evidence aligned as scenarios and policy gates grow.
 5. Measured performance baseline: stable fixtures and source-visible scripts under ignored `target/performance-baseline/`.
 6. Enterprise auth proof lane: mock IdP/JWKS fixture mode, role lifecycle examples, and local proof without real tenant secrets.
 7. Container distribution readiness: registry decision, immutable tag/digest policy, Trivy evidence, signing plan, rollback, retention, and credential-handling gates.

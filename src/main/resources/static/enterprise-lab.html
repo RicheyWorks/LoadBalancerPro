@@ -144,6 +144,7 @@
       <button id="loadScenarios" type="button">List Scenarios</button>
       <button id="runAll" type="button">Run Selected</button>
       <button id="loadPolicy" type="button">Policy Status</button>
+      <button id="loadMetrics" type="button">Metrics</button>
     </div>
   </section>
 
@@ -160,6 +161,11 @@
     <section>
       <h2>Scorecard</h2>
       <div id="scorecard">Run a lab scenario to see scorecard output.</div>
+    </section>
+    <section>
+      <h2>Observability</h2>
+      <p>Metrics are process-local and lab-grade. Dashboard, alert, and SLO templates live under <code>docs/observability/</code>.</p>
+      <div id="metrics">No lab metrics loaded yet.</div>
     </section>
   </div>
 
@@ -187,7 +193,13 @@ curl -fsS http://127.0.0.1:8080/api/lab/policy
 
 curl -fsS http://127.0.0.1:8080/api/lab/audit-events
 
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-workflow.ps1 -Package</pre>
+curl -fsS http://127.0.0.1:8080/api/lab/metrics
+
+curl -fsS http://127.0.0.1:8080/api/lab/metrics/prometheus
+
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-workflow.ps1 -Package
+
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-observability-pack.ps1 -Package</pre>
   </section>
 </main>
 <script>
@@ -195,6 +207,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-l
   const scorecardEl = document.getElementById("scorecard");
   const policyEl = document.getElementById("policy");
   const auditEl = document.getElementById("audit");
+  const metricsEl = document.getElementById("metrics");
   const outputEl = document.getElementById("output");
   const selectedScenarioIds = new Set();
 
@@ -285,6 +298,26 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-l
     auditEl.innerHTML = `<table><thead><tr><th>Event</th><th>Mode</th><th>Baseline</th><th>Recommendation</th><th>Final</th><th>Changed</th><th>Guardrails</th><th>Rollback</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
 
+  function renderMetrics(metrics) {
+    const guardrails = Object.entries(metrics.guardrailBlocksByReason || {})
+      .map(([reason, count]) => `<span class="pill">${reason}: ${count}</span>`)
+      .join(" ") || "none";
+    const modes = Object.entries(metrics.policyDecisionsByMode || {})
+      .map(([mode, count]) => `<span class="pill">${mode}: ${count}</span>`)
+      .join(" ") || "none";
+    metricsEl.innerHTML = `<table><tbody>
+      <tr><th>Lab runs</th><td>${metrics.labRunsCreated}</td></tr>
+      <tr><th>Scenarios executed</th><td>${metrics.labScenariosExecuted}</td></tr>
+      <tr><th>Recommendations</th><td>${metrics.recommendationsProduced}</td></tr>
+      <tr><th>Active changes allowed</th><td>${metrics.activeExperimentChangesAllowed}</td></tr>
+      <tr><th>Rollback/fail-closed</th><td>${metrics.rollbackFailClosedEvents}</td></tr>
+      <tr><th>Audit retained/dropped</th><td>${metrics.auditEventsRetained} / ${metrics.auditEventsDropped}</td></tr>
+      <tr><th>Modes</th><td>${modes}</td></tr>
+      <tr><th>Guardrails</th><td>${guardrails}</td></tr>
+      <tr><th>Warning</th><td>${metrics.warning}</td></tr>
+    </tbody></table>`;
+  }
+
   document.getElementById("loadScenarios").addEventListener("click", async () => {
     try {
       const catalog = await requestJson("/api/lab/scenarios");
@@ -307,6 +340,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-l
       });
       renderScorecard(run.scorecard);
       renderAudit({ events: run.policyAuditEvents || [] });
+      const metrics = await requestJson("/api/lab/metrics");
+      renderMetrics(metrics);
       outputEl.textContent = JSON.stringify(run, null, 2);
     } catch (error) {
       outputEl.textContent = error.message;
@@ -317,9 +352,22 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-l
     try {
       const policy = await requestJson("/api/lab/policy");
       const audit = await requestJson("/api/lab/audit-events");
+      const metrics = await requestJson("/api/lab/metrics");
       renderPolicy(policy);
       renderAudit(audit);
-      outputEl.textContent = JSON.stringify({ policy, audit }, null, 2);
+      renderMetrics(metrics);
+      outputEl.textContent = JSON.stringify({ policy, audit, metrics }, null, 2);
+    } catch (error) {
+      outputEl.textContent = error.message;
+    }
+  });
+
+  document.getElementById("loadMetrics").addEventListener("click", async () => {
+    try {
+      const metrics = await requestJson("/api/lab/metrics");
+      const prometheus = await fetch("/api/lab/metrics/prometheus", { headers: headers() }).then(response => response.text());
+      renderMetrics(metrics);
+      outputEl.textContent = JSON.stringify(metrics, null, 2) + "\n\n--- prometheus ---\n" + prometheus;
     } catch (error) {
       outputEl.textContent = error.message;
     }

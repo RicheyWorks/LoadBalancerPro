@@ -118,19 +118,29 @@ Next candidate improvements:
 
 Purpose: give reviewers and operators a local evidence pack for dashboards, alerts, and SLO thinking without inventing production claims.
 
-Scope:
+Implemented first slice:
 
+- protected `GET /api/lab/metrics` and `GET /api/lab/metrics/prometheus` endpoints for process-local lab counters;
+- counters for lab runs, scenarios executed, policy decisions by mode, recommendations, active-experiment changes, guardrail blocks, rollback/fail-closed events, audit retention/drops, explanation coverage, and rate-limit interactions;
 - Prometheus/Grafana dashboard JSON;
 - alert examples;
 - SLO templates;
-- local evidence generation;
+- local evidence generation under `target/enterprise-lab-observability/`;
 - lab-grade measured claims only.
+
+Next candidate improvements:
+
+- production rollout decision for centralized metrics, scrape authentication, and retention;
+- dashboard import walkthrough once a real monitoring target is selected;
+- measured performance baseline integration after local benchmark evidence exists;
+- distributed audit-event export design before production gateway promotion.
 
 Acceptance criteria:
 
 - dashboard JSON is source-visible and checked for required panels.
 - alert examples distinguish lab thresholds from production thresholds.
 - SLO templates are marked as templates until production requirements exist.
+- lab metrics remain process-local, bounded, and protected by the same prod/cloud-sandbox `/api/**` boundary.
 - evidence output writes only under ignored `target/` paths.
 - no external telemetry service or secret is required.
 

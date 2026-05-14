@@ -1,0 +1,66 @@
+groups:
+  - name: loadbalancerpro-enterprise-lab-examples
+    rules:
+      - alert: LoadBalancerProActiveExperimentUnexpectedlyEnabled
+        expr: increase(loadbalancerpro_lase_policy_active_changes_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          scope: lab-grade-template
+        annotations:
+          summary: Active-experiment produced a changed decision.
+          description: Confirm the run was explicitly authorized for lab/evaluation use and not presented as production traffic control.
+      - alert: LoadBalancerProHighGuardrailBlockRate
+        expr: sum(increase(loadbalancerpro_lase_policy_guardrail_blocks_total[10m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          scope: lab-grade-template
+        annotations:
+          summary: Guardrail block volume is high.
+          description: Review stale, conflicting, all-unhealthy, capacity, and bounded-context guardrail reasons.
+      - alert: LoadBalancerProRollbackFailClosedEvents
+        expr: increase(loadbalancerpro_lase_policy_rollback_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          scope: lab-grade-template
+        annotations:
+          summary: Rollback or fail-closed events observed.
+          description: Verify the final decision retained baseline behavior and inspect rollback reasons in audit evidence.
+      - alert: LoadBalancerProAuditEventDrops
+        expr: increase(loadbalancerpro_lase_policy_audit_events_dropped_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: info
+          scope: lab-grade-template
+        annotations:
+          summary: Process-local audit retention dropped older events.
+          description: Increase max audit retention for longer lab sessions or export evidence more frequently.
+      - alert: LoadBalancerProRateLimitEvents
+        expr: sum(increase(loadbalancerpro_api_rate_limit_events_total[5m])) > 0
+        for: 0m
+        labels:
+          severity: info
+          scope: lab-grade-template
+        annotations:
+          summary: API rate-limit events observed.
+          description: Confirm request bursts are intentional and do not hide failed lab verification.
+      - alert: LoadBalancerProMissingLabMetrics
+        expr: absent(loadbalancerpro_lab_observability_info)
+        for: 10m
+        labels:
+          severity: warning
+          scope: lab-grade-template
+        annotations:
+          summary: Lab observability metrics are absent.
+          description: Confirm the protected metrics endpoint is reachable only through the intended local or authenticated boundary.
+      - alert: LoadBalancerProStaleEvidenceGeneration
+        expr: increase(loadbalancerpro_lab_runs_total[24h]) == 0
+        for: 24h
+        labels:
+          severity: info
+          scope: lab-grade-template
+        annotations:
+          summary: No Enterprise Lab evidence runs observed recently.
+          description: Regenerate ignored target evidence before reviewer walkthroughs or release-intent review.

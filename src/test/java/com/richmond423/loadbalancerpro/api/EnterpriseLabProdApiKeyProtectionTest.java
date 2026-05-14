@@ -1,8 +1,10 @@
 package com.richmond423.loadbalancerpro.api;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -78,6 +80,25 @@ class EnterpriseLabProdApiKeyProtectionTest {
         mockMvc.perform(get("/api/lab/audit-events").header("X-API-Key", API_KEY))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.storageMode", is("process-local bounded audit log")));
+    }
+
+    @Test
+    void prodApiKeyModeProtectsLabMetricsEndpoints() throws Exception {
+        mockMvc.perform(get("/api/lab/metrics"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/lab/metrics")));
+
+        mockMvc.perform(get("/api/lab/metrics").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.warning", containsString("lab-grade")));
+
+        mockMvc.perform(get("/api/lab/metrics/prometheus"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/lab/metrics/prometheus")));
+
+        mockMvc.perform(get("/api/lab/metrics/prometheus").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("loadbalancerpro_lab_runs_total")));
     }
 }
 

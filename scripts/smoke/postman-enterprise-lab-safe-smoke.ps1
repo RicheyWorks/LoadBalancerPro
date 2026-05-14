@@ -238,7 +238,7 @@ function Invoke-PostmanEnterpriseLabSmoke {
         Write-Host "Environment: $EnvironmentPath"
         Write-Host "Local profile port: $LocalPort"
         Write-Host "Prod API-key profile port: $ProdPort"
-        Write-Host "Enterprise Lab API checks: /api/lab/scenarios, /api/lab/runs, /api/lab/policy, and /api/lab/audit-events"
+        Write-Host "Enterprise Lab API checks: /api/lab/scenarios, /api/lab/runs, /api/lab/policy, /api/lab/audit-events, /api/lab/metrics, and /api/lab/metrics/prometheus"
         Write-Host "API key: <REDACTED>"
         Write-Host "Live command: powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\postman-enterprise-lab-safe-smoke.ps1 -Package"
         return
@@ -263,6 +263,8 @@ function Invoke-PostmanEnterpriseLabSmoke {
     Assert-HttpStatus -Profile "local" -Name "Enterprise Lab run allowed" -Url "$localBase/api/lab/runs" -Expected 200 -Method "POST" -Body $labRunBody
     Assert-HttpStatus -Profile "local" -Name "Enterprise Lab policy status allowed" -Url "$localBase/api/lab/policy" -Expected 200
     Assert-HttpStatus -Profile "local" -Name "Enterprise Lab audit events allowed" -Url "$localBase/api/lab/audit-events" -Expected 200
+    Assert-HttpStatus -Profile "local" -Name "Enterprise Lab metrics allowed" -Url "$localBase/api/lab/metrics" -Expected 200
+    Assert-HttpStatus -Profile "local" -Name "Enterprise Lab Prometheus metrics allowed" -Url "$localBase/api/lab/metrics/prometheus" -Expected 200
 
     Assert-HttpStatus -Profile "prod" -Name "OpenAPI missing key gated" -Url "$prodBase/v3/api-docs" -Expected 401
     Assert-HttpStatus -Profile "prod" -Name "OpenAPI wrong key gated" -Url "$prodBase/v3/api-docs" -Expected 401 -HeaderApiKey $WrongApiKey
@@ -284,6 +286,10 @@ function Invoke-PostmanEnterpriseLabSmoke {
     Assert-HttpStatus -Profile "prod" -Name "Enterprise Lab policy correct key allowed" -Url "$prodBase/api/lab/policy" -Expected 200 -HeaderApiKey $ApiKey
     Assert-HttpStatus -Profile "prod" -Name "Enterprise Lab audit missing key gated" -Url "$prodBase/api/lab/audit-events" -Expected 401
     Assert-HttpStatus -Profile "prod" -Name "Enterprise Lab audit correct key allowed" -Url "$prodBase/api/lab/audit-events" -Expected 200 -HeaderApiKey $ApiKey
+    Assert-HttpStatus -Profile "prod" -Name "Enterprise Lab metrics missing key gated" -Url "$prodBase/api/lab/metrics" -Expected 401
+    Assert-HttpStatus -Profile "prod" -Name "Enterprise Lab metrics correct key allowed" -Url "$prodBase/api/lab/metrics" -Expected 200 -HeaderApiKey $ApiKey
+    Assert-HttpStatus -Profile "prod" -Name "Enterprise Lab Prometheus metrics missing key gated" -Url "$prodBase/api/lab/metrics/prometheus" -Expected 401
+    Assert-HttpStatus -Profile "prod" -Name "Enterprise Lab Prometheus metrics correct key allowed" -Url "$prodBase/api/lab/metrics/prometheus" -Expected 200 -HeaderApiKey $ApiKey
     Assert-HttpStatus -Profile "prod" -Name "actuator metrics not exposed" -Url "$prodBase/actuator/metrics" -Expected 404
     Assert-HttpStatus -Profile "prod" -Name "actuator Prometheus not exposed" -Url "$prodBase/actuator/prometheus" -Expected 404
 

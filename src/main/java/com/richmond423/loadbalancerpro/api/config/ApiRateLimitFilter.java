@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richmond423.loadbalancerpro.api.ApiErrorResponse;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingObservabilityMetrics;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,6 +43,7 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     private final long refillPeriodMillis;
     private final boolean trustForwardedFor;
     private final Clock clock;
+    private final AdaptiveRoutingObservabilityMetrics observabilityMetrics;
     private final ConcurrentMap<String, TokenBucket> buckets = new ConcurrentHashMap<>();
 
     @Autowired
@@ -52,12 +54,21 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
                               @Value("${loadbalancerpro.api.rate-limit.refill-period:PT1M}")
                               Duration refillPeriod,
                               @Value("${loadbalancerpro.api.rate-limit.trust-forwarded-for:false}")
-                              boolean trustForwardedFor) {
-        this(objectMapper, enabled, capacity, refillTokens, refillPeriod, trustForwardedFor, Clock.systemUTC());
+                              boolean trustForwardedFor,
+                              AdaptiveRoutingObservabilityMetrics observabilityMetrics) {
+        this(objectMapper, enabled, capacity, refillTokens, refillPeriod, trustForwardedFor, Clock.systemUTC(),
+                observabilityMetrics);
     }
 
     ApiRateLimitFilter(ObjectMapper objectMapper, boolean enabled, int capacity, int refillTokens,
                        Duration refillPeriod, boolean trustForwardedFor, Clock clock) {
+        this(objectMapper, enabled, capacity, refillTokens, refillPeriod, trustForwardedFor, clock,
+                new AdaptiveRoutingObservabilityMetrics());
+    }
+
+    ApiRateLimitFilter(ObjectMapper objectMapper, boolean enabled, int capacity, int refillTokens,
+                       Duration refillPeriod, boolean trustForwardedFor, Clock clock,
+                       AdaptiveRoutingObservabilityMetrics observabilityMetrics) {
         this.objectMapper = objectMapper;
         this.enabled = enabled;
         this.capacity = Math.max(1, capacity);
@@ -65,6 +76,9 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
         this.refillPeriodMillis = Math.max(1L, refillPeriod.toMillis());
         this.trustForwardedFor = trustForwardedFor;
         this.clock = clock;
+        this.observabilityMetrics = observabilityMetrics == null
+                ? new AdaptiveRoutingObservabilityMetrics()
+                : observabilityMetrics;
     }
 
     @Override
@@ -83,6 +97,7 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
             return;
         }
 
+        observabilityMetrics.recordRateLimited(surfaceKey(request));
         writeRateLimited(request, response, bucket.retryAfterSeconds(nowMillis));
     }
 

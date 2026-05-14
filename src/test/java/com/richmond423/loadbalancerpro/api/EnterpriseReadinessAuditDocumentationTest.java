@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 class EnterpriseReadinessAuditDocumentationTest {
     private static final Path AUDIT = Path.of("docs/ENTERPRISE_READINESS_AUDIT.md");
     private static final Path SPRINT_PACKET = Path.of("docs/ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md");
+    private static final Path CONTAINER_EVIDENCE_LANE =
+            Path.of("docs/CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md");
     private static final Path README = Path.of("README.md");
     private static final Path EXECUTIVE_SUMMARY = Path.of("docs/EXECUTIVE_SUMMARY.md");
     private static final Path PRODUCTION_SUMMARY = Path.of("docs/PRODUCTION_READINESS_SUMMARY.md");
@@ -25,6 +27,7 @@ class EnterpriseReadinessAuditDocumentationTest {
             README,
             AUDIT,
             SPRINT_PACKET,
+            CONTAINER_EVIDENCE_LANE,
             EXECUTIVE_SUMMARY,
             PRODUCTION_SUMMARY,
             TRUST_MAP,
@@ -37,6 +40,10 @@ class EnterpriseReadinessAuditDocumentationTest {
             "production-certified gateway",
             "container signing complete",
             "container signing is complete",
+            "signed container published",
+            "signed image published",
+            "registry publish complete",
+            "registry publication complete",
             "real tenant proof complete",
             "real idp proof complete",
             "live cloud validated",
@@ -123,6 +130,26 @@ class EnterpriseReadinessAuditDocumentationTest {
     }
 
     @Test
+    void containerDistributionSigningEvidenceLaneDocumentsFutureGatedBoundaries() throws Exception {
+        String lane = read(CONTAINER_EVIDENCE_LANE);
+
+        for (String expected : List.of(
+                "future gated",
+                "No container signing is performed by this sprint",
+                "not production certified",
+                "not enterprise-production ready",
+                "pending approval",
+                "not executed in this sprint",
+                "No registry publish in this sprint",
+                "No signing in this sprint",
+                "GitHub Container Registry",
+                "Sigstore/cosign keyless signing",
+                "Current Local-Only Verification")) {
+            assertTrue(lane.contains(expected), "container evidence lane should mention " + expected);
+        }
+    }
+
+    @Test
     void currentReviewerEntryPointsLinkEnterpriseReadinessAudit() throws Exception {
         for (Path path : List.of(README, EXECUTIVE_SUMMARY, PRODUCTION_SUMMARY, TRUST_MAP, SECURITY_POSTURE)) {
             assertTrue(read(path).contains("ENTERPRISE_READINESS_AUDIT.md"),
@@ -135,6 +162,14 @@ class EnterpriseReadinessAuditDocumentationTest {
         for (Path path : List.of(README, AUDIT, PRODUCTION_SUMMARY, TRUST_MAP)) {
             assertTrue(read(path).contains("ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md"),
                     path + " should link the trust hardening sprint packet");
+        }
+    }
+
+    @Test
+    void currentReviewerEntryPointsLinkContainerEvidenceLane() throws Exception {
+        for (Path path : List.of(AUDIT, SPRINT_PACKET, PRODUCTION_SUMMARY, TRUST_MAP)) {
+            assertTrue(read(path).contains("CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md"),
+                    path + " should link the container distribution/signing evidence lane");
         }
     }
 

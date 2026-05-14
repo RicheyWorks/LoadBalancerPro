@@ -12,6 +12,7 @@ This sprint strengthens reviewer trust and governance evidence without changing 
 - A reviewer-readiness and governance-evidence sprint.
 - A narrow documentation and static-guardrail update that makes the current evidence path easier to inspect.
 - A future gated path selector for container distribution and signing work that still requires separate approval.
+- The follow-on container decision/evidence packet is [`CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md`](CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md).
 
 ## What Is Proven
 
@@ -98,6 +99,8 @@ Use candidate, planned, future, or requires approval for unexecuted tracks.
 ## Next Gate Decision Record
 
 Recommended next lane: **Container distribution/signing lane**.
+
+The reviewer-ready decision/evidence packet for that lane is [`CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md`](CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md).
 
 Rationale:
 

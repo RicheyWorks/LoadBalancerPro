@@ -126,7 +126,7 @@ Recommended action: keep live validation out of default CI. If needed, add a dis
 
 The Dockerfile and CI runtime smoke are strong local/container evidence, but there is no registry image, cosign signature, registry attestation, retention policy, or rollback policy.
 
-Recommended action: keep container use local/private until `docs/CONTAINER_REGISTRY_SIGNING_ROLLOUT.md` is implemented through a separate approved change.
+Recommended action: keep container use local/private until the reviewer-ready lane in [`CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md`](CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md) and `docs/CONTAINER_REGISTRY_SIGNING_ROLLOUT.md` are implemented through a separate approved change.
 
 ### 6. Evidence Can Drift
 

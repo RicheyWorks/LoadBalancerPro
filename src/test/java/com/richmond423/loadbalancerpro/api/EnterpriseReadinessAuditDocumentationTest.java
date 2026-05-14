@@ -1,0 +1,186 @@
+package com.richmond423.loadbalancerpro.api;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
+
+import org.junit.jupiter.api.Test;
+
+class EnterpriseReadinessAuditDocumentationTest {
+    private static final Path AUDIT = Path.of("docs/ENTERPRISE_READINESS_AUDIT.md");
+    private static final Path SPRINT_PACKET = Path.of("docs/ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md");
+    private static final Path README = Path.of("README.md");
+    private static final Path EXECUTIVE_SUMMARY = Path.of("docs/EXECUTIVE_SUMMARY.md");
+    private static final Path PRODUCTION_SUMMARY = Path.of("docs/PRODUCTION_READINESS_SUMMARY.md");
+    private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
+    private static final Path SECURITY_POSTURE = Path.of("evidence/SECURITY_POSTURE.md");
+    private static final List<Path> PUBLIC_READINESS_DOCS = List.of(
+            README,
+            AUDIT,
+            SPRINT_PACKET,
+            EXECUTIVE_SUMMARY,
+            PRODUCTION_SUMMARY,
+            TRUST_MAP,
+            SECURITY_POSTURE);
+    private static final List<String> UNSAFE_AFFIRMATIVE_CLAIMS = List.of(
+            "enterprise production ready",
+            "enterprise-production ready",
+            "enterprise-production-ready",
+            "production certified gateway",
+            "production-certified gateway",
+            "container signing complete",
+            "container signing is complete",
+            "real tenant proof complete",
+            "real idp proof complete",
+            "live cloud validated",
+            "live aws validated",
+            "production slo certified",
+            "production sla certified");
+    private static final Pattern NEGATED_BOUNDARY =
+            Pattern.compile("\\b(?:not|no|without)\\s+[a-z0-9\\-/ ]{0,80}$");
+    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+
+    @Test
+    void auditRefreshesEnterpriseReadinessForCurrentLabIdentity() throws Exception {
+        String audit = read(AUDIT);
+
+        for (String expected : List.of(
+                "Date: 2026-05-14",
+                "LoadBalancerPro Enterprise Lab",
+                "Enterprise Lab ready",
+                "Production Gateway Candidate",
+                "main",
+                "11c60ce621357a76ca946ddfb8729a38b2f149a1",
+                "2.5.0",
+                "Protect main",
+                "Build, Test, Package, Smoke",
+                "Analyze Java (java-kotlin)",
+                "Open Dependabot alerts: `0`",
+                "Open code-scanning alerts: `0`",
+                "Open secret-scanning alerts: `0`",
+                "requires `0` approving reviews",
+                "Container Distribution Is Deferred",
+                "Final Readiness Call")) {
+            assertTrue(audit.contains(expected), "audit should mention " + expected);
+        }
+    }
+
+    @Test
+    void auditDoesNotOverclaimProductionReadiness() throws Exception {
+        String normalized = read(AUDIT).toLowerCase(Locale.ROOT);
+
+        for (String forbidden : List.of(
+                "enterprise production ready",
+                "production gateway certified",
+                "production deployment certified",
+                "certification proof",
+                "real tenant proof complete",
+                "container signing is complete",
+                "published registry image")) {
+            assertFalse(normalized.contains(forbidden), "audit must not overclaim: " + forbidden);
+        }
+
+        assertTrue(normalized.contains("not enterprise-production ready"));
+        assertTrue(normalized.contains("not ready to be sold, documented, or operated as a production enterprise gateway"));
+    }
+
+    @Test
+    void sprintPacketDocumentsTrustHardeningBoundariesAndNextGate() throws Exception {
+        String packet = read(SPRINT_PACKET);
+
+        for (String expected : List.of(
+                "Enterprise Lab ready",
+                "not production certified",
+                "not enterprise-production ready",
+                "reviewer-ready Enterprise Lab",
+                "manual GitHub settings change required",
+                "future gated path",
+                "Container distribution/signing lane",
+                "This sprint does not execute the lane",
+                "No registry publish in this sprint",
+                "No signing in this sprint",
+                "No live AWS validation",
+                "mvn -q test",
+                "mvn -q -DskipTests package",
+                "git diff --check",
+                "No release, registry, cloud, private-network, or ruleset mutation happened")) {
+            assertTrue(packet.contains(expected), "sprint packet should mention " + expected);
+        }
+    }
+
+    @Test
+    void publicReadinessDocsRejectUnsafeAffirmativeClaims() throws Exception {
+        for (Path path : PUBLIC_READINESS_DOCS) {
+            assertNoUnsafeAffirmativeClaims(path, read(path));
+        }
+    }
+
+    @Test
+    void currentReviewerEntryPointsLinkEnterpriseReadinessAudit() throws Exception {
+        for (Path path : List.of(README, EXECUTIVE_SUMMARY, PRODUCTION_SUMMARY, TRUST_MAP, SECURITY_POSTURE)) {
+            assertTrue(read(path).contains("ENTERPRISE_READINESS_AUDIT.md"),
+                    path + " should link the current enterprise readiness audit");
+        }
+    }
+
+    @Test
+    void currentReviewerEntryPointsLinkTrustHardeningSprintPacket() throws Exception {
+        for (Path path : List.of(README, AUDIT, PRODUCTION_SUMMARY, TRUST_MAP)) {
+            assertTrue(read(path).contains("ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md"),
+                    path + " should link the trust hardening sprint packet");
+        }
+    }
+
+    @Test
+    void securityPostureUsesCurrentAuditAnchorAndPolicyLanguage() throws Exception {
+        String posture = read(SECURITY_POSTURE);
+
+        assertTrue(posture.contains("Current audit anchor: `main`"));
+        assertTrue(posture.contains("docs/ENTERPRISE_READINESS_AUDIT.md"));
+        assertTrue(posture.contains("## LASE Policy Posture"));
+        assertTrue(posture.contains("LASE policy defaults to `off`"));
+        assertTrue(posture.contains("active-experiment` is explicit, guarded, bounded, audited"));
+        assertFalse(posture.contains("Audited baseline: `loadbalancerpro-clean`"));
+        assertFalse(posture.contains("LASE remains advisory/shadow-only."));
+    }
+
+    private static String read(Path path) throws IOException {
+        assertTrue(Files.exists(path), path + " should exist");
+        return Files.readString(path, StandardCharsets.UTF_8);
+    }
+
+    private static void assertNoUnsafeAffirmativeClaims(Path path, String content) {
+        String[] lines = content.split("\\R", -1);
+        for (int index = 0; index < lines.length; index++) {
+            String normalized = normalizeForClaimSearch(lines[index]);
+            for (String forbidden : UNSAFE_AFFIRMATIVE_CLAIMS) {
+                int start = normalized.indexOf(forbidden);
+                if (start >= 0 && !isHonestNegativeBoundary(normalized, start)) {
+                    assertFalse(true, path + ":" + (index + 1) + " must not affirm unsafe claim: " + forbidden);
+                }
+            }
+        }
+    }
+
+    private static String normalizeForClaimSearch(String line) {
+        return WHITESPACE.matcher(line.toLowerCase(Locale.ROOT)).replaceAll(" ").trim();
+    }
+
+    private static boolean isHonestNegativeBoundary(String line, int forbiddenStart) {
+        // Guard rejects affirmative overclaims while allowing truthful disclaimers such as
+        // "not production certified" or "not enterprise-production ready".
+        String prefix = line.substring(0, forbiddenStart);
+        if (NEGATED_BOUNDARY.matcher(prefix).find()) {
+            return true;
+        }
+        String trimmed = line.trim();
+        return trimmed.startsWith("no ") || trimmed.startsWith("- no ");
+    }
+}

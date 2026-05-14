@@ -1,8 +1,8 @@
 # Executive Summary
 
-LoadBalancerPro is a Java 17 / Spring Boot load-balancing simulator and operator-focused proxy foundation. It demonstrates routing strategy comparison, local reverse-proxy validation, guarded cloud boundaries, API-key/OAuth2 deployment modes, reload/status observability, CI evidence artifacts, and a local-only container path whose default runtime profile is protected while source-checkout local mode stays convenient.
+LoadBalancerPro is now positioned as **LoadBalancerPro Enterprise Lab**: a Java 17 / Spring Boot adaptive-routing lab, load-balancing simulator, and operator-focused proxy foundation. It demonstrates routing strategy comparison, local reverse-proxy validation, guarded cloud boundaries, API-key/OAuth2 deployment modes, reload/status observability, CI evidence artifacts, and a local-only container path whose default runtime profile is protected while source-checkout local mode stays convenient.
 
-For the reviewer-ready production-candidate snapshot, including auth boundary status, validation posture, release/container signing limits, and evidence links, see [`PRODUCTION_READINESS_SUMMARY.md`](PRODUCTION_READINESS_SUMMARY.md).
+For the current enterprise-readiness verdict and lab-transition decision, see [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md). For the reviewer-ready production-candidate snapshot, including auth boundary status, validation posture, release/container signing limits, and evidence links, see [`PRODUCTION_READINESS_SUMMARY.md`](PRODUCTION_READINESS_SUMMARY.md).
 
 ## What It Demonstrates
 
@@ -12,6 +12,7 @@ For the reviewer-ready production-candidate snapshot, including auth boundary st
 - Proxy status, metrics, retry/cooldown counters, reload status, and read-only browser status review.
 - Release-free evidence through CI artifacts, local smoke scripts, SBOM output, packaged-jar inspection, and Docker runtime smoke checks.
 - Semantic-tag release evidence through deterministic GitHub Release JAR/SBOM/checksum assets, SHA-256 verification, and GitHub artifact attestations.
+- An enterprise-readiness audit that calls the project Enterprise Lab ready while keeping production gateway certification out of scope.
 - A [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md) checklist that separates automated CI/release controls from manual operator verification before any release-ready claim.
 - Guarded cloud behavior where live mutation is disabled by default and isolated behind explicit `CloudManager` guardrails.
 

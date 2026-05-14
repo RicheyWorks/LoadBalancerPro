@@ -4,7 +4,7 @@ This document summarizes the current security and safety posture for the portfol
 
 For the concise reviewer-facing production-candidate snapshot, see `docs/PRODUCTION_READINESS_SUMMARY.md`.
 
-Audited baseline: `loadbalancerpro-clean` at `daa4817e9b0c937919dedc8340209e3d9338edff` after PR #39. The 2026-05-07 API key/security audit found no source-hardening requirement; this document records the current evidence posture and deployment caveats.
+Current audit anchor: `main` at `11c60ce621357a76ca946ddfb8729a38b2f149a1`, refreshed on 2026-05-14 for the Enterprise Lab transition audit in `docs/ENTERPRISE_READINESS_AUDIT.md`. Older historical audit notes can still mention `loadbalancerpro-clean`; this document records the current evidence posture and deployment caveats.
 
 ## Auth/RBAC Posture
 
@@ -56,10 +56,11 @@ Revisit this disposition if cookie/session authentication, credentialed CORS, or
 - Replay reports summarize shadow recommendations and do not promote recommendations into live cloud mutation.
 - Malformed replay inputs fail safely and avoid exposing raw replay content in errors.
 
-## LASE Shadow Posture
+## LASE Policy Posture
 
-- LASE remains advisory/shadow-only.
-- Shadow recommendations do not alter allocation responses or execute cloud mutation paths.
+- LASE policy defaults to `off`.
+- `shadow` and `recommend` outputs remain non-mutating and do not execute cloud mutation paths.
+- `active-experiment` is explicit, guarded, bounded, audited, and lab/evaluation-grade rather than production traffic control.
 - Shadow failure reasons are sanitized and redacted before stored observability output and related warning logs.
 - Fail-safe events keep useful context where possible while redacting token/API-key/bearer-shaped values.
 

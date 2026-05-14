@@ -51,6 +51,7 @@ public final class EnterpriseLabEvidenceExporter {
                 "gitCommit", gitCommit == null || gitCommit.isBlank() ? "unknown" : gitCommit.trim(),
                 "runId", run.runId(),
                 "mode", run.mode(),
+                "policyAuditEventCount", run.policyAuditEvents().size(),
                 "outputDirectory", safeOutputDirectory.toString(),
                 "safety", "ignored target/ evidence only; no secrets, release actions, container publication, live cloud, or private-network execution"));
 
@@ -76,6 +77,8 @@ public final class EnterpriseLabEvidenceExporter {
         builder.append("- Mode: `").append(run.mode()).append('`').append(System.lineSeparator());
         builder.append("- Scenario count: `").append(run.scorecard().totalScenarios()).append('`').append(System.lineSeparator());
         builder.append("- Storage: ").append(run.storageMode()).append(System.lineSeparator());
+        builder.append("- Policy audit events: `").append(run.policyAuditEvents().size()).append('`')
+                .append(System.lineSeparator());
         builder.append("- Final recommendation: ").append(run.scorecard().finalRecommendation()).append(System.lineSeparator());
         builder.append("- Safety: lab-grade evidence, not production gateway activation").append(System.lineSeparator());
         builder.append(System.lineSeparator());
@@ -94,9 +97,9 @@ public final class EnterpriseLabEvidenceExporter {
                 .append(System.lineSeparator());
         builder.append(System.lineSeparator());
         builder.append("## Scenario Matrix").append(System.lineSeparator()).append(System.lineSeparator());
-        builder.append("| Scenario | Category | Baseline | Shadow recommendation | Influence | Changed | Guardrail |")
+        builder.append("| Scenario | Category | Baseline | Recommendation | Final | Mode | Changed | Guardrail | Rollback |")
                 .append(System.lineSeparator());
-        builder.append("| --- | --- | --- | --- | --- | --- | --- |").append(System.lineSeparator());
+        builder.append("| --- | --- | --- | --- | --- | --- | --- | --- | --- |").append(System.lineSeparator());
         Map<String, EnterpriseLabScenarioMetadata> metadataById = scenarios.stream()
                 .collect(Collectors.toMap(EnterpriseLabScenarioMetadata::scenarioId, metadata -> metadata));
         run.results().forEach(result -> {
@@ -112,14 +115,41 @@ public final class EnterpriseLabEvidenceExporter {
                     .append(" / ")
                     .append(display(result.shadowRecommendedAction()))
                     .append(" | ")
-                    .append(display(result.influencedSelectedBackend()))
+                    .append(display(result.policyDecision().finalDecision()))
+                    .append(" | ")
+                    .append(result.policyDecision().mode())
                     .append(" | ")
                     .append(result.resultChanged())
                     .append(" | ")
                     .append(escape(result.guardrailReason()))
+                    .append(" | ")
+                    .append(escape(result.rollbackReason()))
                     .append(" |")
                     .append(System.lineSeparator());
         });
+        builder.append(System.lineSeparator());
+        builder.append("## Policy Audit Events").append(System.lineSeparator()).append(System.lineSeparator());
+        builder.append("| Event | Mode | Baseline | Recommendation | Final | Changed | Guardrails | Rollback |")
+                .append(System.lineSeparator());
+        builder.append("| --- | --- | --- | --- | --- | --- | --- | --- |").append(System.lineSeparator());
+        run.policyAuditEvents().forEach(event -> builder.append("| ")
+                .append(event.eventId())
+                .append(" | ")
+                .append(event.mode())
+                .append(" | ")
+                .append(display(event.baselineDecision()))
+                .append(" | ")
+                .append(display(event.recommendation()))
+                .append(" | ")
+                .append(display(event.finalDecision()))
+                .append(" | ")
+                .append(event.changed())
+                .append(" | ")
+                .append(escape(String.join("; ", event.guardrailReasons())))
+                .append(" | ")
+                .append(escape(event.rollbackReason()))
+                .append(" |")
+                .append(System.lineSeparator()));
         builder.append(System.lineSeparator());
         builder.append("## Safety Notes").append(System.lineSeparator()).append(System.lineSeparator());
         run.safetyNotes().forEach(note -> builder.append("- ").append(note).append(System.lineSeparator()));

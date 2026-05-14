@@ -1,5 +1,9 @@
 package com.richmond423.loadbalancerpro.api;
 
+import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyAuditEvent;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyAuditLog;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabRun;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabRunService;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabRunSummary;
@@ -23,9 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/lab")
 public class EnterpriseLabController {
     private final EnterpriseLabRunService runService;
+    private final AdaptiveRoutingPolicyProperties policyProperties;
 
-    public EnterpriseLabController(EnterpriseLabRunService runService) {
+    public EnterpriseLabController(EnterpriseLabRunService runService,
+                                   AdaptiveRoutingPolicyProperties policyProperties) {
         this.runService = runService;
+        this.policyProperties = policyProperties;
     }
 
     @GetMapping("/scenarios")
@@ -35,7 +42,7 @@ public class EnterpriseLabController {
                 scenarios.size(),
                 scenarios,
                 "adaptive-routing-fixtures-v1",
-                List.of("shadow", "influence", "all"),
+                List.of("off", "shadow", "recommend", "active-experiment"),
                 "lab evidence only / not production activation");
     }
 
@@ -51,7 +58,7 @@ public class EnterpriseLabController {
     @PostMapping("/runs")
     public EnterpriseLabRun createRun(@RequestBody(required = false) EnterpriseLabRunRequest request) {
         EnterpriseLabRunRequest safeRequest = request == null
-                ? new EnterpriseLabRunRequest(null, "all", "summary")
+                ? new EnterpriseLabRunRequest(null, null, "summary")
                 : request;
         return runService.run(safeRequest.scenarioIds(), safeRequest.mode(), safeRequest.detailLevel());
     }
@@ -75,6 +82,21 @@ public class EnterpriseLabController {
                                 request.getRequestURI())));
     }
 
+    @GetMapping("/policy")
+    public AdaptiveRoutingPolicyStatus policy() {
+        return runService.policyStatus(policyProperties.getMode(), policyProperties.isActiveExperimentEnabled());
+    }
+
+    @GetMapping("/audit-events")
+    public EnterpriseLabAuditEventListResponse auditEvents() {
+        List<AdaptiveRoutingPolicyAuditEvent> events = runService.policyAuditEvents();
+        return new EnterpriseLabAuditEventListResponse(
+                events.size(),
+                events,
+                "process-local bounded audit log",
+                "audit events contain policy decisions and guardrails only; no secrets or production certification");
+    }
+
     public record EnterpriseLabScenarioCatalogResponse(
             int count,
             List<EnterpriseLabScenarioMetadata> scenarios,
@@ -96,11 +118,25 @@ public class EnterpriseLabController {
             int maxRetainedRuns) {
     }
 
+    public record EnterpriseLabAuditEventListResponse(
+            int count,
+            List<AdaptiveRoutingPolicyAuditEvent> events,
+            String storageMode,
+            String warning) {
+    }
+
     @Configuration
     static class EnterpriseLabConfiguration {
         @Bean
-        EnterpriseLabRunService enterpriseLabRunService() {
-            return new EnterpriseLabRunService();
+        EnterpriseLabRunService enterpriseLabRunService(AdaptiveRoutingPolicyAuditLog policyAuditLog) {
+            return new EnterpriseLabRunService(
+                    new com.richmond423.loadbalancerpro.lab.EnterpriseLabScenarioCatalogService(),
+                    new com.richmond423.loadbalancerpro.core.AdaptiveRoutingExperimentService(),
+                    java.time.Clock.fixed(java.time.Instant.parse("2026-05-14T00:00:00Z"),
+                            java.time.ZoneOffset.UTC),
+                    EnterpriseLabRunService.DEFAULT_MAX_RETAINED_RUNS,
+                    EnterpriseLabRunService.DEFAULT_MAX_SCENARIOS_PER_RUN,
+                    policyAuditLog);
         }
     }
 }

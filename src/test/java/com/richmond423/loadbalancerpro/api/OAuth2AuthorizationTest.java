@@ -250,6 +250,35 @@ class OAuth2AuthorizationTest {
     }
 
     @Test
+    void oauth2ModeRequiresOperatorRoleForLabPolicyStatusAndAuditEvents() throws Exception {
+        mockMvc.perform(get("/api/lab/policy"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.path", is("/api/lab/policy")));
+
+        mockMvc.perform(get("/api/lab/policy")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.path", is("/api/lab/policy")));
+
+        mockMvc.perform(get("/api/lab/policy")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.currentMode", is("off")));
+
+        mockMvc.perform(get("/api/lab/audit-events")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.path", is("/api/lab/audit-events")));
+
+        mockMvc.perform(get("/api/lab/audit-events")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.storageMode", is("process-local bounded audit log")));
+    }
+
+    @Test
     void oauth2ModeProtectsProxyForwardingSurface() throws Exception {
         mockMvc.perform(get("/proxy/demo"))
                 .andExpect(status().isUnauthorized())

@@ -46,6 +46,11 @@ class PostmanEnterpriseLabCollectionTest {
             "/api/allocate/evaluate",
             "/api/scenarios/replay",
             "/api/remediation/report",
+            "/api/lab/scenarios",
+            "/api/lab/scenarios/tail-latency-pressure",
+            "/api/lab/runs",
+            "/api/lab/policy",
+            "/api/lab/audit-events",
             "/api/proxy/status",
             "/api/proxy/reload",
             "/api/evidence-training/onboarding",
@@ -102,6 +107,7 @@ class PostmanEnterpriseLabCollectionTest {
                 "Allocation / Evaluation Lab",
                 "Scenario Replay Lab",
                 "Remediation Report Lab",
+                "Enterprise Lab Workflow",
                 "Proxy Operator Lab",
                 "Evidence / Offline Tooling Pointers"), folderNames);
 
@@ -197,6 +203,8 @@ class PostmanEnterpriseLabCollectionTest {
         assertTrue(doc.contains("OpenAPI"));
         assertTrue(doc.contains("X-API-Key"));
         assertTrue(doc.contains("<API_KEY>"));
+        assertTrue(doc.contains("GET /api/lab/policy"));
+        assertTrue(doc.contains("GET /api/lab/audit-events"));
         assertTrue(normalized.contains("no real secrets"));
         assertTrue(normalized.contains("cloud state"));
         assertTrue(normalized.contains("oauth2"));

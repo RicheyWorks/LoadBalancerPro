@@ -28,8 +28,9 @@ mvn -q test
 - Evaluator failures are captured as fail-safe shadow events.
 - Sensitive-looking failure text is redacted while useful non-sensitive context is preserved.
 - Control characters are neutralized in stored failure reasons.
-- Adaptive-routing experiment tests cover deterministic fixtures, shadow-only default behavior, opt-in influence comparison output, stale-signal guardrails, all-unhealthy degradation, CLI mode selection, and ignored `target/adaptive-routing-experiments/` evidence generation safety.
-- Enterprise Lab workflow tests cover stable scenario catalog metadata, unique scenario ids, deterministic run output, bounded process-local in-memory run retention, scorecard counts, prod API-key protection for `/api/lab/**`, source-visible evidence export safety under ignored `target/enterprise-lab-runs/`, browser lab page content, and smoke-script publish-command exclusions.
+- Adaptive-routing experiment tests cover deterministic fixtures, shadow-only default behavior, recommend/active-experiment comparison output, stale-signal guardrails, all-unhealthy degradation, CLI mode selection, rollback reasons, policy decisions, and ignored `target/adaptive-routing-experiments/` evidence generation safety.
+- Enterprise Lab workflow tests cover stable scenario catalog metadata, unique scenario ids, deterministic run output, bounded process-local in-memory run retention, bounded audit-event retention, scorecard counts, prod API-key protection for `/api/lab/**`, source-visible evidence export safety under ignored `target/enterprise-lab-runs/`, browser lab page content, and smoke-script publish-command exclusions.
+- Controlled active LASE policy tests cover `off`, `shadow`, `recommend`, and `active-experiment` modes; safe default and invalid-config fail-closed behavior; health, eligibility, capacity, freshness, conflict, all-unhealthy, rollback, and bounded-context gates; audit-event redaction and bounds; `/api/lab/policy` and `/api/lab/audit-events` auth boundaries; and ignored `target/controlled-adaptive-routing/` smoke evidence safety.
 
 ## Replay/Cloud Isolation Tests
 

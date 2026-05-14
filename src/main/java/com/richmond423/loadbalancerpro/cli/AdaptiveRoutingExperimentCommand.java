@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.cli;
 
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingExperimentReportFormatter;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingExperimentService;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyMode;
 
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -12,7 +13,8 @@ import java.util.Optional;
 
 public final class AdaptiveRoutingExperimentCommand {
     private static final String FLAG = "--adaptive-routing-experiment";
-    private static final List<String> VALID_MODES = List.of("shadow", "influence", "all");
+    private static final List<String> VALID_MODES = List.of(
+            "off", "shadow", "recommend", "active-experiment", "influence", "all");
 
     private AdaptiveRoutingExperimentCommand() {
     }
@@ -41,7 +43,7 @@ public final class AdaptiveRoutingExperimentCommand {
         String mode = selectedMode(args).orElse("shadow");
         if (!VALID_MODES.contains(mode)) {
             err.println("Invalid adaptive routing experiment mode: " + mode);
-            err.println("Valid values: shadow, influence, all");
+            err.println("Valid values: off, shadow, recommend, active-experiment, all");
             return new Result(true, 2);
         }
 
@@ -49,17 +51,21 @@ public final class AdaptiveRoutingExperimentCommand {
             out.println("=== LoadBalancerPro Adaptive Routing Experiment ===");
             out.println("Mode: deterministic local experiment harness.");
             out.println("Safety: no API server, no live cloud mutation, no external network, no release action.");
-            out.println("Default posture: shadow-only; active LASE influence is explicit opt-in for experiment output.");
+            out.println("Default posture: off/shadow-first; active-experiment LASE influence is explicit opt-in for experiment output.");
             AdaptiveRoutingExperimentService service = new AdaptiveRoutingExperimentService();
             AdaptiveRoutingExperimentReportFormatter formatter = new AdaptiveRoutingExperimentReportFormatter();
             if ("all".equals(mode)) {
                 out.println();
-                out.println(formatter.format(service.runCatalog(false)));
+                out.println(formatter.format(service.runCatalog(AdaptiveRoutingPolicyMode.OFF)));
                 out.println();
-                out.println(formatter.format(service.runCatalog(true)));
+                out.println(formatter.format(service.runCatalog(AdaptiveRoutingPolicyMode.SHADOW)));
+                out.println();
+                out.println(formatter.format(service.runCatalog(AdaptiveRoutingPolicyMode.RECOMMEND)));
+                out.println();
+                out.println(formatter.format(service.runCatalog(AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT)));
             } else {
                 out.println();
-                out.println(formatter.format(service.runCatalog("influence".equals(mode))));
+                out.println(formatter.format(service.runCatalog(AdaptiveRoutingPolicyMode.from(mode))));
             }
             return new Result(true, 0);
         } catch (RuntimeException e) {

@@ -3,6 +3,10 @@ package com.richmond423.loadbalancerpro.lab;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingExperimentResult;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingExperimentScenario;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingExperimentService;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyAuditEvent;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyAuditLog;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyMode;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyStatus;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -22,7 +26,7 @@ public final class EnterpriseLabRunService {
     private static final Clock DEFAULT_CLOCK = Clock.fixed(Instant.parse("2026-05-14T00:00:00Z"), ZoneOffset.UTC);
     private static final List<String> SAFETY_NOTES = List.of(
             "Enterprise Lab runs are deterministic, process-local, and bounded.",
-            "Default behavior remains shadow-first; active influence is experiment output only.",
+            "Default behavior remains off/shadow-first; active-experiment influence is explicit lab output only.",
             "No CloudManager, cloud access, external network, release, tag, asset, container, or registry action is used.",
             "Run storage is process-local memory; evidence export writes only under ignored target/ paths.");
 
@@ -31,25 +35,31 @@ public final class EnterpriseLabRunService {
     private final Clock clock;
     private final int maxRetainedRuns;
     private final int maxScenariosPerRun;
+    private final AdaptiveRoutingPolicyAuditLog policyAuditLog;
     private final AtomicLong runSequence = new AtomicLong();
     private final Map<String, EnterpriseLabRun> retainedRuns = new LinkedHashMap<>();
     private final ArrayDeque<String> retainedRunOrder = new ArrayDeque<>();
 
     public EnterpriseLabRunService() {
         this(new EnterpriseLabScenarioCatalogService(), new AdaptiveRoutingExperimentService(),
-                DEFAULT_CLOCK, DEFAULT_MAX_RETAINED_RUNS, DEFAULT_MAX_SCENARIOS_PER_RUN);
+                DEFAULT_CLOCK, DEFAULT_MAX_RETAINED_RUNS, DEFAULT_MAX_SCENARIOS_PER_RUN,
+                new AdaptiveRoutingPolicyAuditLog(AdaptiveRoutingPolicyAuditLog.DEFAULT_MAX_EVENTS, DEFAULT_CLOCK));
     }
 
-    EnterpriseLabRunService(EnterpriseLabScenarioCatalogService scenarioCatalogService,
-                            AdaptiveRoutingExperimentService experimentService,
-                            Clock clock,
-                            int maxRetainedRuns,
-                            int maxScenariosPerRun) {
+    public EnterpriseLabRunService(EnterpriseLabScenarioCatalogService scenarioCatalogService,
+                                   AdaptiveRoutingExperimentService experimentService,
+                                   Clock clock,
+                                   int maxRetainedRuns,
+                                   int maxScenariosPerRun,
+                                   AdaptiveRoutingPolicyAuditLog policyAuditLog) {
         this.scenarioCatalogService = scenarioCatalogService;
         this.experimentService = experimentService;
         this.clock = clock;
         this.maxRetainedRuns = Math.max(1, maxRetainedRuns);
         this.maxScenariosPerRun = Math.max(1, maxScenariosPerRun);
+        this.policyAuditLog = policyAuditLog == null
+                ? new AdaptiveRoutingPolicyAuditLog(AdaptiveRoutingPolicyAuditLog.DEFAULT_MAX_EVENTS, clock)
+                : policyAuditLog;
     }
 
     public List<EnterpriseLabScenarioMetadata> listScenarioMetadata() {
@@ -64,10 +74,13 @@ public final class EnterpriseLabRunService {
         EnterpriseLabMode mode = EnterpriseLabMode.from(modeValue);
         List<AdaptiveRoutingExperimentScenario> selectedScenarios =
                 scenarioCatalogService.resolveScenarios(scenarioIds, maxScenariosPerRun);
-        boolean activeInfluenceEnabled = mode.activeInfluenceEnabled();
+        boolean activeInfluenceEnabled = mode.policyMode() == AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT;
         List<AdaptiveRoutingExperimentResult> results = selectedScenarios.stream()
                 .sorted(Comparator.comparing(AdaptiveRoutingExperimentScenario::name))
-                .map(scenario -> experimentService.evaluate(scenario, activeInfluenceEnabled))
+                .map(scenario -> experimentService.evaluate(scenario, mode.policyMode()))
+                .toList();
+        List<AdaptiveRoutingPolicyAuditEvent> policyAuditEvents = results.stream()
+                .map(result -> policyAuditLog.record(result.policyDecision()))
                 .toList();
         EnterpriseLabScorecard scorecard = scorecard(results, mode);
         String runId = "lab-run-%04d".formatted(runSequence.incrementAndGet());
@@ -78,6 +91,7 @@ public final class EnterpriseLabRunService {
                 activeInfluenceEnabled,
                 results.stream().map(AdaptiveRoutingExperimentResult::scenarioName).toList(),
                 results,
+                policyAuditEvents,
                 scorecard,
                 SAFETY_NOTES,
                 "process-local in-memory bounded store",
@@ -108,6 +122,28 @@ public final class EnterpriseLabRunService {
 
     public int maxScenariosPerRun() {
         return maxScenariosPerRun;
+    }
+
+    public AdaptiveRoutingPolicyStatus policyStatus(String configuredMode, boolean activeExperimentEnabled) {
+        AdaptiveRoutingPolicyMode configured = AdaptiveRoutingPolicyMode.fromOrOff(configuredMode);
+        AdaptiveRoutingPolicyMode current = configured == AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT
+                && !activeExperimentEnabled ? AdaptiveRoutingPolicyMode.OFF : configured;
+        String lastGuardrail = policyAuditLog.lastEvent()
+                .map(event -> String.join("; ", event.guardrailReasons()))
+                .orElse("no policy decisions recorded yet");
+        return new AdaptiveRoutingPolicyStatus(
+                configured.wireValue(),
+                current.wireValue(),
+                activeExperimentEnabled,
+                AdaptiveRoutingPolicyMode.wireValues(),
+                policyAuditLog.size(),
+                policyAuditLog.maxEvents(),
+                lastGuardrail,
+                "active-experiment is explicit, bounded, auditable lab evidence; it is not production certification");
+    }
+
+    public List<AdaptiveRoutingPolicyAuditEvent> policyAuditEvents() {
+        return policyAuditLog.snapshot();
     }
 
     private void retain(EnterpriseLabRun run) {
@@ -159,15 +195,24 @@ public final class EnterpriseLabRunService {
                 explanationCoverage + "/" + results.size(),
                 results.size(),
                 mode.wireValue(),
-                "lab evidence only / not production activation",
+                mode.policyMode() == AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT
+                        ? "controlled active-experiment evidence only / not production activation"
+                        : "lab evidence only / not production activation",
                 true);
     }
 
     private static boolean isInfluenceGuardrail(AdaptiveRoutingExperimentResult result) {
         String guardrail = result.guardrailReason().toLowerCase();
         return guardrail.contains("default shadow")
+                || guardrail.contains("policy mode off")
+                || guardrail.contains("shadow mode")
+                || guardrail.contains("recommend mode")
                 || guardrail.contains("stale")
+                || guardrail.contains("conflicting")
+                || guardrail.contains("capacity constraints")
+                || guardrail.contains("all backends")
                 || guardrail.contains("unavailable")
+                || guardrail.contains("no lase")
                 || guardrail.contains("no shadow")
                 || guardrail.contains("baseline already");
     }

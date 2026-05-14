@@ -135,17 +135,24 @@
       </label>
       <label>Run mode
         <select id="mode">
-          <option value="all">all</option>
+          <option value="off">off</option>
           <option value="shadow">shadow</option>
-          <option value="influence">influence</option>
+          <option value="recommend">recommend</option>
+          <option value="active-experiment">active-experiment</option>
         </select>
       </label>
       <button id="loadScenarios" type="button">List Scenarios</button>
       <button id="runAll" type="button">Run Selected</button>
+      <button id="loadPolicy" type="button">Policy Status</button>
     </div>
   </section>
 
   <div class="grid">
+    <section>
+      <h2>Policy Gate</h2>
+      <p><strong>off</strong> keeps baseline final. <strong>shadow</strong> observes only. <strong>recommend</strong> explains a recommendation while baseline stays final. <strong>active-experiment</strong> can change lab output only when health, eligibility, capacity, freshness, conflict, rollback, and bounded-context gates pass.</p>
+      <div id="policy">Policy status not loaded yet.</div>
+    </section>
     <section>
       <h2>Scenario Catalog</h2>
       <div id="scenarios">No scenario catalog loaded yet.</div>
@@ -162,6 +169,11 @@
   </section>
 
   <section>
+    <h2>Audit Events</h2>
+    <div id="audit">No policy audit events loaded yet.</div>
+  </section>
+
+  <section>
     <h2>Copyable Commands</h2>
     <p>Evidence export writes only to ignored <code>target/enterprise-lab-runs/</code> paths.</p>
     <pre>curl -fsS http://127.0.0.1:8080/api/lab/scenarios
@@ -169,7 +181,11 @@
 curl -fsS -X POST http://127.0.0.1:8080/api/lab/runs \
   -H "Content-Type: application/json" \
   -H "X-API-Key: &lt;API_KEY&gt;" \
-  -d '{"mode":"all","scenarioIds":["normal-balanced-load","tail-latency-pressure"]}'
+  -d '{"mode":"recommend","scenarioIds":["normal-balanced-load","tail-latency-pressure"]}'
+
+curl -fsS http://127.0.0.1:8080/api/lab/policy
+
+curl -fsS http://127.0.0.1:8080/api/lab/audit-events
 
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-workflow.ps1 -Package</pre>
   </section>
@@ -177,6 +193,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-l
 <script>
   const scenariosEl = document.getElementById("scenarios");
   const scorecardEl = document.getElementById("scorecard");
+  const policyEl = document.getElementById("policy");
+  const auditEl = document.getElementById("audit");
   const outputEl = document.getElementById("output");
   const selectedScenarioIds = new Set();
 
@@ -233,8 +251,38 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-l
       <tr><th>Unsafe/all-unhealthy blocked</th><td>${scorecard.unsafeAllUnhealthyBlockedCount}</td></tr>
       <tr><th>Stale/conflicting blocked</th><td>${scorecard.staleConflictingSignalBlockedCount}</td></tr>
       <tr><th>Explanation coverage</th><td>${scorecard.explanationCoverage}</td></tr>
+      <tr><th>Mode used</th><td>${scorecard.modeUsed}</td></tr>
       <tr><th>Recommendation</th><td>${scorecard.finalRecommendation}</td></tr>
     </tbody></table>`;
+  }
+
+  function renderPolicy(policy) {
+    policyEl.innerHTML = `<table><tbody>
+      <tr><th>Configured mode</th><td>${policy.configuredMode}</td></tr>
+      <tr><th>Current mode</th><td>${policy.currentMode}</td></tr>
+      <tr><th>Active-experiment enabled</th><td>${policy.activeExperimentEnabled}</td></tr>
+      <tr><th>Retained audit events</th><td>${policy.retainedAuditEventCount} / ${policy.maxRetainedAuditEvents}</td></tr>
+      <tr><th>Last guardrail</th><td>${policy.lastGuardrailReason}</td></tr>
+      <tr><th>Warning</th><td>${policy.warning}</td></tr>
+    </tbody></table>`;
+  }
+
+  function renderAudit(audit) {
+    if (!audit.events.length) {
+      auditEl.textContent = "No policy audit events recorded yet.";
+      return;
+    }
+    const rows = audit.events.slice(-8).map((event) => `<tr>
+      <td>${event.eventId}</td>
+      <td>${event.mode}</td>
+      <td>${event.baselineDecision || "none"}</td>
+      <td>${event.recommendation || "none"}</td>
+      <td>${event.finalDecision || "none"}</td>
+      <td>${event.changed}</td>
+      <td>${event.guardrailReasons.join("; ")}</td>
+      <td>${event.rollbackReason}</td>
+    </tr>`).join("");
+    auditEl.innerHTML = `<table><thead><tr><th>Event</th><th>Mode</th><th>Baseline</th><th>Recommendation</th><th>Final</th><th>Changed</th><th>Guardrails</th><th>Rollback</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
 
   document.getElementById("loadScenarios").addEventListener("click", async () => {
@@ -258,7 +306,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-l
         })
       });
       renderScorecard(run.scorecard);
+      renderAudit({ events: run.policyAuditEvents || [] });
       outputEl.textContent = JSON.stringify(run, null, 2);
+    } catch (error) {
+      outputEl.textContent = error.message;
+    }
+  });
+
+  document.getElementById("loadPolicy").addEventListener("click", async () => {
+    try {
+      const policy = await requestJson("/api/lab/policy");
+      const audit = await requestJson("/api/lab/audit-events");
+      renderPolicy(policy);
+      renderAudit(audit);
+      outputEl.textContent = JSON.stringify({ policy, audit }, null, 2);
     } catch (error) {
       outputEl.textContent = error.message;
     }

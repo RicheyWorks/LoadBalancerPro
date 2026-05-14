@@ -10,7 +10,7 @@ LoadBalancerPro Enterprise Lab.
 
 ## What It Is
 
-- An Enterprise Adaptive Routing Lab for controlled scenario running, deterministic replay, LASE shadow and opt-in influence comparison, policy-gate design, scorecards, evidence export, and SRE walkthroughs.
+- An Enterprise Adaptive Routing Lab for controlled scenario running, deterministic replay, LASE `off`/`shadow`/`recommend`/`active-experiment` comparison, implemented policy gates, scorecards, evidence export, and SRE walkthroughs.
 - A Production Gateway Candidate for optional future runtime proxy/gateway work, hardened auth, config reload, metrics, rate limiting, canary or shadow mode, rollback, deployment guides, and signed container distribution later.
 - A reviewer-friendly evidence system: release notes, post-release verification, SBOM/checksum/attestation posture, static documentation guardrails, and ignored local evidence outputs under `target/`.
 - A product-development track that keeps lab proof, runtime safety, and future deployment responsibilities separate.
@@ -40,8 +40,8 @@ The lab should grow around:
 
 - controlled scenario runner surfaces;
 - deterministic replay and repeated-event ordering;
-- LASE shadow-only and opt-in influence comparison;
-- policy gates before any active decision promotion;
+- LASE shadow-only, recommend, and active-experiment comparison;
+- controlled policy gates before any active decision promotion;
 - scorecards that explain baseline, shadow, recommendation, and active-experiment outcomes;
 - evidence export under ignored `target/` paths;
 - SRE walkthroughs that show what changed, what did not change, and why.
@@ -71,7 +71,7 @@ Production Gateway Candidate means "candidate architecture and evidence lane." I
 | Lab evidence can show | It does not prove |
 | --- | --- |
 | Deterministic scenario behavior | Capacity for real traffic. |
-| Shadow/recommendation explanations | Approval to steer live traffic. |
+| Shadow/recommendation/active-experiment explanations | Approval to steer unmanaged production traffic. |
 | Local proxy loopback forwarding | Internet-edge gateway safety. |
 | API-key and OAuth2 route tests | Complete enterprise IAM deployment. |
 | SBOM/checksum/attestation release evidence | Vulnerability-free or signed-container distribution. |
@@ -92,7 +92,7 @@ Production Gateway Candidate means "candidate architecture and evidence lane." I
 - Container/default startup uses the protected `prod` profile and requires operator-provided API-key configuration for protected routes.
 - No live private-network or cloud validation runs by default.
 - Cloud mutation stays behind dry-run defaults, explicit operator intent, prefix/ownership/account/region/capacity guardrails, and separate live approval.
-- Adaptive-routing influence over runtime allocation remains controlled: default behavior is unchanged, shadow evidence is safe, and opt-in influence is a local experiment comparison unless a future policy gate promotes it.
+- Adaptive-routing influence over runtime allocation remains controlled: default behavior is unchanged, `shadow` and `recommend` are non-mutating, and `active-experiment` is explicit, bounded, guarded, audited, and lab/evaluation-grade rather than production deployment certification.
 
 ## Current Limitations
 
@@ -107,7 +107,7 @@ Production Gateway Candidate means "candidate architecture and evidence lane." I
 
 1. Truth and identity alignment: keep this charter, roadmap, and evidence scorecards consistent.
 2. Adaptive Routing Lab workflow hardening: richer scenario scorecards, reviewer exports, and lab-page polish on top of the first `/api/lab/**` slice.
-3. Controlled active LASE policy gate: off, shadow, recommend, and active-experiment modes with audit events and rollback reasons.
+3. Controlled active LASE policy gate follow-through: richer audit review, policy dashboards, and rollback evidence on top of implemented off, shadow, recommend, and active-experiment modes.
 4. Observability packs: Prometheus/Grafana dashboard JSON, alerts, SLO templates, and local evidence generation.
 5. Measured performance baseline: stable fixtures and source-visible scripts under ignored `target/performance-baseline/`.
 6. Enterprise auth proof lane: mock IdP/JWKS fixture mode, role lifecycle examples, and local proof without real tenant secrets.

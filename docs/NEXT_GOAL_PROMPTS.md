@@ -35,7 +35,7 @@ Overall Status, Goal Status, Branch, PRs opened/merged, Final main, Final diverg
 ## 2. Controlled Active LASE Policy Gate
 
 ```text
-/goal Add a controlled LASE policy gate for off, shadow, recommend, and active-experiment modes. Keep default behavior unchanged and make any influence explicit, auditable, reversible, and local/experiment-scoped unless separately approved.
+/goal Extend the controlled LASE policy gate for off, shadow, recommend, and active-experiment modes with richer operator review, severity labels, and recommendation-acceptance evidence. Keep default behavior unchanged and keep any influence explicit, auditable, reversible, and local/experiment-scoped unless separately approved.
 
 Automation mode:
 Work autonomously through audit, implementation, tests, docs, PR, merge, and main resync.
@@ -47,11 +47,11 @@ Preflight:
 Run the standard repo state commands, confirm main is synced, confirm v2.5.0 tag target, and confirm no tracked changes.
 
 Checkpoints:
-1. Audit existing LASE shadow, adaptive experiment, allocation evaluation, policy config, and docs.
-2. Define mode semantics and fail-closed config validation.
-3. Add policy decision/audit model for mode, scenario, signals, recommendation, change/no-change reason, and rollback reason.
-4. Add tests proving off/shadow defaults preserve allocation, recommend does not mutate, and active-experiment changes only expected local experiment outcomes.
-5. Update docs and reviewer flows.
+1. Audit existing policy engine, lab runs, allocation evaluation, policy config, audit events, smoke evidence, and docs.
+2. Add reviewer severity labels for guardrail and rollback reasons.
+3. Add optional mock operator-acceptance evidence for recommend mode without changing production defaults.
+4. Add tests proving off/shadow defaults preserve allocation, recommend does not mutate by default, and active-experiment changes only expected local experiment outcomes.
+5. Update docs, status output, and reviewer flows.
 6. Validate all tests and safe smoke dry-runs.
 
 Validation:

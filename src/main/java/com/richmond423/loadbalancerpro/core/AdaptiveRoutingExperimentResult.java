@@ -24,7 +24,9 @@ public record AdaptiveRoutingExperimentResult(
         double influencedUnallocatedLoad,
         boolean resultChanged,
         String explanation,
-        String guardrailReason) {
+        String guardrailReason,
+        String rollbackReason,
+        AdaptiveRoutingPolicyDecision policyDecision) {
 
     public AdaptiveRoutingExperimentResult {
         scenarioName = requireNonBlank(scenarioName, "scenarioName");
@@ -36,6 +38,10 @@ public record AdaptiveRoutingExperimentResult(
         influencedAllocations = immutableCopy(influencedAllocations);
         explanation = requireNonBlank(explanation, "explanation");
         guardrailReason = requireNonBlank(guardrailReason, "guardrailReason");
+        rollbackReason = requireNonBlank(rollbackReason, "rollbackReason");
+        if (policyDecision == null) {
+            policyDecision = AdaptiveRoutingPolicyDecision.disabled(scenarioName, baselineSelectedBackend);
+        }
     }
 
     private static Map<String, Double> immutableCopy(Map<String, Double> values) {

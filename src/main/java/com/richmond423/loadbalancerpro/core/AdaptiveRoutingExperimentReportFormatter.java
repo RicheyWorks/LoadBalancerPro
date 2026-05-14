@@ -16,7 +16,7 @@ public final class AdaptiveRoutingExperimentReportFormatter {
             builder.append("- Safety: ").append(note).append(System.lineSeparator());
         }
         builder.append(System.lineSeparator());
-        builder.append("| Scenario | Baseline backend | Shadow recommendation | Influence enabled | Influenced backend | Changed | Guardrail |")
+        builder.append("| Scenario | Baseline backend | Shadow recommendation | Policy mode | Final backend | Changed | Guardrail |")
                 .append(System.lineSeparator());
         builder.append("| --- | --- | --- | --- | --- | --- | --- |").append(System.lineSeparator());
         for (AdaptiveRoutingExperimentResult result : report.results()) {
@@ -29,7 +29,7 @@ public final class AdaptiveRoutingExperimentReportFormatter {
                     .append(" / ")
                     .append(display(result.shadowRecommendedAction()))
                     .append(" | ")
-                    .append(result.activeInfluenceEnabled())
+                    .append(result.policyDecision().mode())
                     .append(" | ")
                     .append(display(result.influencedSelectedBackend()))
                     .append(" | ")
@@ -68,6 +68,9 @@ public final class AdaptiveRoutingExperimentReportFormatter {
                 .append(System.lineSeparator());
         builder.append("- Explanation: ").append(result.explanation()).append(System.lineSeparator());
         builder.append("- Guardrail: ").append(result.guardrailReason()).append(System.lineSeparator());
+        builder.append("- Rollback reason: ").append(result.rollbackReason()).append(System.lineSeparator());
+        builder.append("- Policy final decision: ").append(display(result.policyDecision().finalDecision()))
+                .append(System.lineSeparator());
         builder.append("- Shadow summary: ").append(result.shadowSummary()).append(System.lineSeparator())
                 .append(System.lineSeparator());
     }

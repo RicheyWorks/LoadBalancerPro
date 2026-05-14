@@ -18,7 +18,7 @@ LoadBalancerPro is designed to show how a load-balancing system can grow from an
 
 For reviewers and recruiters, the useful signal is not a single flashy demo. It is the combination of conservative defaults, explicit guardrails, repeatable local validation, CI-published artifacts, and documentation that distinguishes implemented behavior from roadmap work.
 
-The current product push has started that Enterprise Adaptive Routing Lab path with first-class lab scenario APIs, deterministic lab runs, bounded in-memory run storage, scorecards, ignored `target/` evidence export, and a no-dependency browser lab page. The next pushes should add stronger policy gates, observability packs, measured local performance evidence, mock IdP proof, and gated future container/live-sandbox paths.
+The current product push has moved that Enterprise Adaptive Routing Lab path into a controlled adaptive-routing slice: first-class lab scenario APIs, deterministic lab runs, bounded in-memory run storage, scorecards, ignored `target/` evidence export, a no-dependency browser lab page, and an explicit LASE policy gate with `off`, `shadow`, `recommend`, and `active-experiment` modes. The next pushes should add observability packs, measured local performance evidence, mock IdP proof, and gated future container/live-sandbox paths.
 
 ## Start Here For Reviewers
 
@@ -32,7 +32,7 @@ Use [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md
 
 1. Read [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) for the short positioning and limitation summary.
 2. Run `mvn spring-boot:run`, then open [`http://localhost:8080/`](http://localhost:8080/), [`http://localhost:8080/enterprise-lab.html`](http://localhost:8080/enterprise-lab.html), and [`http://localhost:8080/load-balancing-cockpit.html`](http://localhost:8080/load-balancing-cockpit.html).
-3. Use `GET /api/lab/scenarios` and `POST /api/lab/runs` to list deterministic scenarios, run baseline/shadow/opt-in influence comparisons, and inspect scorecards. Run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-workflow.ps1 -Package` to export ignored evidence under `target/enterprise-lab-runs/`.
+3. Use `GET /api/lab/scenarios`, `POST /api/lab/runs`, `GET /api/lab/policy`, and `GET /api/lab/audit-events` to list deterministic scenarios, run baseline/shadow/recommend/active-experiment comparisons, inspect scorecards, and review policy audit events. Run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-workflow.ps1 -Package` to export ignored lab evidence under `target/enterprise-lab-runs/`, or run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\controlled-adaptive-routing-policy.ps1 -Package` to export controlled policy evidence under `target/controlled-adaptive-routing/`.
 4. Use [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEPLOYMENT_SMOKE_KIT.md) to validate the packaged jar, API-key boundary, and proxy-loopback recipe on localhost.
 5. Use [`OPERATOR_RUN_PROFILES.md`](docs/OPERATOR_RUN_PROFILES.md) when choosing local demo, packaged jar, prod API-key, cloud-sandbox API-key, OAuth2, proxy-loopback, or container modes.
 6. Use [`CONTAINER_DEPLOYMENT.md`](docs/CONTAINER_DEPLOYMENT.md) for the local-only Docker build/run path, and [`API_SECURITY.md`](docs/API_SECURITY.md) plus [`DEPLOYMENT_HARDENING_GUIDE.md`](docs/DEPLOYMENT_HARDENING_GUIDE.md) before exposing any operator surface beyond a trusted environment.
@@ -74,7 +74,7 @@ The web cockpit is the quickest first look at LoadBalancerPro. It uses existing 
 - It is not production-certified infrastructure, a managed cloud load balancer, or a replacement for provider-native load-balancing services.
 - It does not mutate live AWS resources unless live mode, operator intent, account/region/capacity guardrails, and dry-run opt-out are all configured explicitly.
 - It does not claim production SLOs, unmanaged internet exposure readiness, complete identity/authorization, or production-grade secret rotation.
-- LASE routing and shadow-advisor features are demo/research-grade foundations unless a section explicitly says a behavior is wired into public allocation flows.
+- LASE routing and shadow-advisor features remain lab/evaluation-grade unless a section explicitly says a behavior is wired into a controlled policy path. `active-experiment` is explicit, guarded, and not a default production traffic mode.
 
 ## Current Release Evidence
 
@@ -97,7 +97,7 @@ The web cockpit is the quickest first look at LoadBalancerPro. It uses existing 
 
 ## Architecture Overview
 
-The diagram shows the project boundaries: user entry points, core routing logic, shadow-only LASE analysis, guarded cloud integration, runtime health checks, and release evidence.
+The diagram shows the project boundaries: user entry points, core routing logic, shadow and controlled-policy LASE analysis, guarded cloud integration, runtime health checks, and release evidence.
 
 ```mermaid
 flowchart TD
@@ -136,7 +136,7 @@ flowchart TD
 ```
 
 - Core load-balancing engine: `com.richmond423.loadbalancerpro.core.LoadBalancer`, `com.richmond423.loadbalancerpro.core.Server`, and related strategy/result types model server health, capacity, weighted distribution, predictive allocation, and failure handling.
-- LASE telemetry/scoring/routing foundation: `com.richmond423.loadbalancerpro.core.ServerStateVector`, `com.richmond423.loadbalancerpro.core.ServerScoreCalculator`, `com.richmond423.loadbalancerpro.core.RoutingDecision`, and `com.richmond423.loadbalancerpro.core.TailLatencyPowerOfTwoStrategy` provide an internal foundation for tail-latency-aware, queue-aware, explainable routing decisions. This foundation is intentionally not wired into the public allocation flows yet.
+- LASE telemetry/scoring/routing foundation: `com.richmond423.loadbalancerpro.core.ServerStateVector`, `com.richmond423.loadbalancerpro.core.ServerScoreCalculator`, `com.richmond423.loadbalancerpro.core.RoutingDecision`, `com.richmond423.loadbalancerpro.core.TailLatencyPowerOfTwoStrategy`, and the controlled `AdaptiveRoutingPolicyEngine` provide a foundation for tail-latency-aware, queue-aware, explainable routing decisions. Default allocation behavior remains unchanged; any active-experiment influence is explicit, bounded, audited, and lab/evaluation-grade.
 - ServerMonitor / health monitoring: `com.richmond423.loadbalancerpro.core.ServerMonitor` tracks local and mocked cloud health paths, emits health events, and coordinates with load balancer state without requiring real cloud resources in the default test suite.
 - API layer: the Spring Boot API exposes calculation-only allocation endpoints, request validation, browser CORS behavior, security headers, request-size limits, an optional process-local rate limiter, structured error envelopes, Swagger/OpenAPI docs, and Actuator health/metrics endpoints.
 - CLI workflow: `com.richmond423.loadbalancerpro.cli.LoadBalancerCLI` provides interactive local workflows and optional cloud integration while retaining ownership of monitor lifecycle cleanup.
@@ -148,11 +148,11 @@ flowchart TD
 
 The LoadBalancer Adaptive Systems Engine (LASE) is the north-star direction for this repository: a research-grade adaptive systems engine for telemetry-driven routing, overload protection, failure modeling, cloud-safety simulation, and explainable load-balancing decisions.
 
-The internal telemetry-driven routing foundation now exists through immutable server state vectors, deterministic score calculation, power-of-two candidate sampling, and routing decision explanations. `POST /api/allocate/evaluate` exposes an optional `laseShadow` summary when `loadbalancerpro.lase.shadow.enabled=true`; it reports LASE signals considered, including tail latency, queue depth, error rate, adaptive concurrency, load shedding, shadow autoscaling, and failure scenario checks. This integration is shadow-only, does not alter live allocation, and keeps active LASE influence out of default/local behavior.
+The internal telemetry-driven routing foundation now exists through immutable server state vectors, deterministic score calculation, power-of-two candidate sampling, routing decision explanations, and a controlled active policy gate. `POST /api/allocate/evaluate` exposes an optional `laseShadow` summary when `loadbalancerpro.lase.shadow.enabled=true` and a `lasePolicy` decision summary for the controlled gate. The policy defaults to `off`; `shadow` and `recommend` do not alter the final allocation, and `active-experiment` requires explicit enablement plus health, eligibility, capacity, freshness, conflict, rollback, and bounded-context gates before it can alter experiment output.
 
-The first Enterprise Lab workflow exposes this foundation as a reviewer-facing product surface: `GET /api/lab/scenarios`, `GET /api/lab/scenarios/{id}`, `POST /api/lab/runs`, `GET /api/lab/runs`, and `GET /api/lab/runs/{runId}`. Runs compare baseline allocation, LASE shadow recommendation, and opt-in influence output across deterministic fixtures; they are process-local, bounded, in-memory, and labeled as lab evidence only / not production activation. The static browser page at `/enterprise-lab.html` lists scenarios, runs lab comparisons, and renders scorecards without external CDN dependencies or browser secret persistence. The PowerShell smoke path `scripts/smoke/enterprise-lab-workflow.ps1 -Package` writes scenario catalog JSON, run JSON, Markdown summary, and metadata only under ignored `target/enterprise-lab-runs/`.
+The first Enterprise Lab workflow exposes this foundation as a reviewer-facing product surface: `GET /api/lab/scenarios`, `GET /api/lab/scenarios/{id}`, `POST /api/lab/runs`, `GET /api/lab/runs`, `GET /api/lab/runs/{runId}`, `GET /api/lab/policy`, and `GET /api/lab/audit-events`. Runs compare baseline allocation, LASE shadow recommendation, recommend-mode output, and explicit active-experiment output across deterministic fixtures; they are process-local, bounded, in-memory, and labeled as lab evidence only / not production activation. The static browser page at `/enterprise-lab.html` lists scenarios, runs lab comparisons, renders scorecards, and shows policy/audit status without external CDN dependencies or browser secret persistence. The PowerShell smoke path `scripts/smoke/enterprise-lab-workflow.ps1 -Package` writes scenario catalog JSON, run JSON, Markdown summary, and metadata only under ignored `target/enterprise-lab-runs/`. The policy-gate smoke path `scripts/smoke/controlled-adaptive-routing-policy.ps1 -Package` writes controlled adaptive-routing evidence under ignored `target/controlled-adaptive-routing/`.
 
-Planned LASE work includes stronger controlled-active policy gates, observability packs, measured local performance baselines, mock IdP proof, richer tail-latency-aware routing, and cloud-safety simulation. These are roadmap items, not claims of fully implemented production behavior.
+Planned LASE work includes observability packs, measured local performance baselines, mock IdP proof, richer tail-latency-aware routing, and cloud-safety simulation. Controlled active policy gating now exists as a bounded Enterprise Lab capability, not a production traffic-control certification.
 
 Roadmap backlog:
 
@@ -178,6 +178,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) provides a short public-facing overview, evaluation path, and limitations summary.
 - [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md) summarizes the current production-candidate posture, current validation posture, release/container signing limits, remaining production risks, and evidence links. [`RELEASE_READINESS_DECISION_SUMMARY.md`](docs/RELEASE_READINESS_DECISION_SUMMARY.md) gives the two-track JAR/docs-first versus deferred container distribution decision.
 - [`SRE_DEMO_HIGHLIGHTS.md`](docs/SRE_DEMO_HIGHLIGHTS.md) gives a reviewer-ready product-value one-pager covering the verified `v2.5.0` release, guardrail depth, CloudManager safety, replay/LASE testing, optional rate limiting, and honest remaining risks.
+- [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](docs/CONTROLLED_ACTIVE_LASE_POLICY_GATE.md) documents the `off`, `shadow`, `recommend`, and `active-experiment` policy modes, guardrails, audit events, rollback reasons, status endpoints, and ignored evidence path.
 - [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) gives a 60 to 90 second local demo outline for the root page, cockpit, API-key boundary, proxy-loopback, observability, and container path.
 - [`HARDENING_AUDIT_001.md`](evidence/HARDENING_AUDIT_001.md) captures the formal hardening audit results.
 - [`SECURITY_POSTURE.md`](evidence/SECURITY_POSTURE.md) summarizes current auth, telemetry, cloud, replay, LASE, and input/API posture.
@@ -657,6 +658,8 @@ Run the Spring Boot API, then call:
 ```text
 GET  /api/health
 GET  /api/lase/shadow
+GET  /api/lab/policy
+GET  /api/lab/audit-events
 GET  /api/evidence-training/onboarding
 GET  /api/evidence-training/templates
 GET  /api/evidence-training/examples
@@ -836,6 +839,8 @@ If `strategies` is omitted, the endpoint defaults to the registered routing stra
 `GET /api/lase/shadow` returns the bounded in-memory LASE Shadow Advisor observability snapshot: aggregate shadow-evaluation counts, fail-safe counts, recommendation counts, agreement rate, and recent events. The endpoint is shadow-only: it reports what the internal LASE advisor observed or recommended after normal allocation decisions, and it does not change routing, allocation, CloudManager, AWS, or cloud-scaling behavior. Agreement rate currently means the LASE recommended server matched the top server selected by the normal allocation result when both values are comparable.
 
 The shadow snapshot also includes application-layer network-awareness signals for LASE evaluation: `timeoutRate`, `retryRate`, `connectionFailureRate`, `latencyJitterMillis`, `recentErrorBurst`, `requestTimeoutCount`, `sampleSize`, and `networkRiskScore`. These are shadow/evaluation signals only. They do not use Wireshark, PCAP parsing, sockets, packet capture, or external network collectors, and they do not change live routing or cloud behavior.
+
+`GET /api/lab/policy` reports the controlled active LASE policy gate: configured/effective mode, active-experiment enablement, allowed modes, retained audit event count, latest guardrail reason, and the safety note that active-experiment is lab evidence only. `GET /api/lab/audit-events` returns bounded process-local decision events with mode, baseline, recommendation, final decision, changed flag, guardrail reasons, rollback reason, and explanation summary. Prod/cloud-sandbox API-key and OAuth2 boundaries apply through `/api/lab/**`.
 
 In the local/default profile, `POST /api/routing/compare`, evidence-training onboarding routes, and Swagger/OpenAPI work without an API key for local demos. In the `prod` and `cloud-sandbox` profiles using `loadbalancerpro.auth.mode=api-key`, `/api/**` is deny-by-default and requires the configured `X-API-Key`. The explicit public prod/cloud-sandbox API-key exceptions are `GET /api/health` and unauthenticated `OPTIONS` preflight requests. In OAuth2 mode, `POST /api/routing/**` requires the configured allocation role, which defaults to `operator`; other `/api/**` routes require a valid authenticated token, with `GET /api/lase/shadow` requiring an `observer` or `operator` role. `/proxy/**`, GET `/api/proxy/status`, `/v3/api-docs`, and Swagger UI require `X-API-Key` in prod/cloud-sandbox API-key mode and an authenticated token in OAuth2 mode.
 

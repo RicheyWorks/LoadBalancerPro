@@ -6,6 +6,7 @@ import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -13,7 +14,7 @@ import java.util.Random;
 
 public final class AdaptiveRoutingExperimentService {
     public static final String MODE_SHADOW = "shadow";
-    public static final String MODE_INFLUENCE = "influence";
+    public static final String MODE_INFLUENCE = "active-experiment";
     private static final Clock EXPERIMENT_CLOCK = Clock.fixed(
             Instant.parse("2026-05-14T00:00:00Z"), ZoneOffset.UTC);
     private static final long ROUTING_SEED = 23L;
@@ -33,26 +34,37 @@ public final class AdaptiveRoutingExperimentService {
 
     private final AdaptiveRoutingExperimentFixtureCatalog fixtureCatalog;
     private final LoadDistributionEvaluator loadDistributionEvaluator;
+    private final AdaptiveRoutingPolicyEngine policyEngine;
 
     public AdaptiveRoutingExperimentService() {
-        this(new AdaptiveRoutingExperimentFixtureCatalog(), new LoadDistributionEvaluator());
+        this(new AdaptiveRoutingExperimentFixtureCatalog(), new LoadDistributionEvaluator(),
+                new AdaptiveRoutingPolicyEngine());
     }
 
     AdaptiveRoutingExperimentService(
             AdaptiveRoutingExperimentFixtureCatalog fixtureCatalog,
-            LoadDistributionEvaluator loadDistributionEvaluator) {
+            LoadDistributionEvaluator loadDistributionEvaluator,
+            AdaptiveRoutingPolicyEngine policyEngine) {
         this.fixtureCatalog = Objects.requireNonNull(fixtureCatalog, "fixtureCatalog cannot be null");
         this.loadDistributionEvaluator = Objects.requireNonNull(loadDistributionEvaluator,
                 "loadDistributionEvaluator cannot be null");
+        this.policyEngine = Objects.requireNonNull(policyEngine, "policyEngine cannot be null");
     }
 
     public AdaptiveRoutingExperimentReport runCatalog(boolean activeInfluenceEnabled) {
+        AdaptiveRoutingPolicyMode mode = activeInfluenceEnabled
+                ? AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT
+                : AdaptiveRoutingPolicyMode.SHADOW;
+        return runCatalog(mode);
+    }
+
+    public AdaptiveRoutingExperimentReport runCatalog(AdaptiveRoutingPolicyMode mode) {
         List<AdaptiveRoutingExperimentResult> results = fixtureCatalog.createAll().stream()
-                .map(scenario -> evaluate(scenario, activeInfluenceEnabled))
+                .map(scenario -> evaluate(scenario, mode))
                 .toList();
         return new AdaptiveRoutingExperimentReport(
-                activeInfluenceEnabled ? MODE_INFLUENCE : MODE_SHADOW,
-                activeInfluenceEnabled,
+                mode.wireValue(),
+                mode.activeInfluenceAllowed(),
                 results,
                 SAFETY_NOTES);
     }
@@ -60,14 +72,22 @@ public final class AdaptiveRoutingExperimentService {
     public AdaptiveRoutingExperimentResult evaluate(
             AdaptiveRoutingExperimentScenario scenario,
             boolean activeInfluenceEnabled) {
+        return evaluate(scenario, activeInfluenceEnabled
+                ? AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT
+                : AdaptiveRoutingPolicyMode.SHADOW);
+    }
+
+    public AdaptiveRoutingExperimentResult evaluate(
+            AdaptiveRoutingExperimentScenario scenario,
+            AdaptiveRoutingPolicyMode mode) {
         Objects.requireNonNull(scenario, "scenario cannot be null");
+        AdaptiveRoutingPolicyMode safeMode = mode == null ? AdaptiveRoutingPolicyMode.OFF : mode;
         List<Server> servers = scenario.servers().stream()
                 .map(AdaptiveRoutingExperimentService::toServer)
                 .toList();
         LoadDistributionResult baseline = baseline(scenario, servers);
         Optional<LaseEvaluationReport> shadowReport = deterministicShadowAdvisor()
                 .observe(scenario.strategy(), servers, scenario.requestedLoad(), baseline);
-        InfluenceResult influence = influencedResult(scenario, servers, baseline, shadowReport, activeInfluenceEnabled);
         String recommendedBackend = shadowReport.flatMap(this::recommendedServerId).orElse(null);
         String recommendedAction = shadowReport
                 .map(report -> report.autoscalingRecommendation().action().name())
@@ -75,6 +95,21 @@ public final class AdaptiveRoutingExperimentService {
         String shadowSummary = shadowReport
                 .map(LaseEvaluationReport::summary)
                 .orElse("LASE shadow did not produce a recommendation for this scenario.");
+        AdaptiveRoutingPolicyDecision policyDecision = policyEngine.decide(new AdaptiveRoutingPolicyInput(
+                scenario.name(),
+                safeMode,
+                servers,
+                scenario.requestedLoad(),
+                selectedBackend(baseline.allocations()),
+                recommendedBackend,
+                recommendedAction,
+                shadowReport.isPresent(),
+                scenario.signalsFresh(),
+                isConflictingSignal(scenario),
+                safeMode == AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT,
+                shadowSummary,
+                null));
+        InfluenceResult influence = influencedResult(scenario, servers, baseline, policyDecision);
 
         return new AdaptiveRoutingExperimentResult(
                 scenario.name(),
@@ -89,13 +124,15 @@ public final class AdaptiveRoutingExperimentService {
                 recommendedBackend,
                 recommendedAction,
                 shadowSummary,
-                activeInfluenceEnabled,
+                safeMode.activeInfluenceAllowed(),
                 selectedBackend(influence.allocations()),
                 influence.allocations(),
                 influence.unallocatedLoad(),
                 influence.changed(),
                 influence.explanation(),
-                influence.guardrailReason());
+                influence.guardrailReason(),
+                policyDecision.rollbackReason(),
+                policyDecision);
     }
 
     private LoadDistributionResult baseline(AdaptiveRoutingExperimentScenario scenario, List<Server> servers) {
@@ -109,37 +146,20 @@ public final class AdaptiveRoutingExperimentService {
             AdaptiveRoutingExperimentScenario scenario,
             List<Server> servers,
             LoadDistributionResult baseline,
-            Optional<LaseEvaluationReport> shadowReport,
-            boolean activeInfluenceEnabled) {
-        if (!activeInfluenceEnabled) {
-            return unchanged(baseline,
-                    "Active influence disabled; experiment stays shadow-only.",
-                    "default shadow-only mode");
+            AdaptiveRoutingPolicyDecision policyDecision) {
+        if (!policyDecision.changed() || !policyDecision.influenceAllowed()) {
+            return unchanged(baseline, policyDecision.explanationSummary(),
+                    String.join("; ", policyDecision.guardrailReasons()));
         }
-        if (!scenario.signalsFresh()) {
-            return unchanged(baseline,
-                    "Active influence refused stale LASE signal; baseline allocation kept.",
-                    "stale signal");
-        }
-        Optional<String> recommendedServerId = shadowReport.flatMap(this::recommendedServerId);
-        if (recommendedServerId.isEmpty()) {
-            return unchanged(baseline,
-                    "Active influence found no LASE backend recommendation; baseline allocation kept.",
-                    "no shadow recommendation");
-        }
+        String recommendedServerId = policyDecision.recommendedDecision();
         Optional<Server> recommendedServer = servers.stream()
                 .filter(Server::isHealthy)
-                .filter(server -> recommendedServerId.get().equals(server.getServerId()))
+                .filter(server -> recommendedServerId.equals(server.getServerId()))
                 .findFirst();
         if (recommendedServer.isEmpty()) {
             return unchanged(baseline,
-                    "Active influence recommendation was not a healthy backend; baseline allocation kept.",
+                    "Active experiment failed closed after policy allowed influence but backend lookup failed.",
                     "recommended backend unavailable");
-        }
-        if (recommendedServerId.get().equals(selectedBackend(baseline.allocations()))) {
-            return unchanged(baseline,
-                    "Active influence agreed with baseline selected backend; allocation kept.",
-                    "baseline already matches LASE recommendation");
         }
 
         LoadDistributionResult influenced = preferRecommendedBackend(
@@ -148,10 +168,10 @@ public final class AdaptiveRoutingExperimentService {
                 || Double.compare(baseline.unallocatedLoad(), influenced.unallocatedLoad()) != 0;
         String explanation = changed
                 ? "Opt-in influence preferred LASE-recommended backend %s for experiment output only."
-                        .formatted(recommendedServerId.get())
+                        .formatted(recommendedServerId)
                 : "Opt-in influence produced the same allocation as baseline.";
         String guardrail = changed
-                ? "experiment-only opt-in; no live allocation path changed"
+                ? "active-experiment policy gates passed; lab evidence only"
                 : "influence matched baseline";
         return new InfluenceResult(influenced.allocations(), influenced.unallocatedLoad(), changed, explanation, guardrail);
     }
@@ -191,6 +211,10 @@ public final class AdaptiveRoutingExperimentService {
         return report.routingDecision().chosenServer()
                 .map(ServerStateVector::serverId)
                 .or(() -> report.routingDecision().explanation().chosenServerId());
+    }
+
+    private static boolean isConflictingSignal(AdaptiveRoutingExperimentScenario scenario) {
+        return scenario.expectedPressure().toLowerCase(Locale.ROOT).contains("conflicting");
     }
 
     private static String selectedBackend(Map<String, Double> allocations) {

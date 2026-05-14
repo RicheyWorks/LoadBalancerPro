@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.lab;
 
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingExperimentResult;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyAuditEvent;
 
 import java.time.Instant;
 import java.util.List;
@@ -12,6 +13,7 @@ public record EnterpriseLabRun(
         boolean activeInfluenceEnabled,
         List<String> selectedScenarioIds,
         List<AdaptiveRoutingExperimentResult> results,
+        List<AdaptiveRoutingPolicyAuditEvent> policyAuditEvents,
         EnterpriseLabScorecard scorecard,
         List<String> safetyNotes,
         String storageMode,
@@ -24,6 +26,7 @@ public record EnterpriseLabRun(
         mode = requireNonBlank(mode, "mode");
         selectedScenarioIds = List.copyOf(selectedScenarioIds == null ? List.of() : selectedScenarioIds);
         results = List.copyOf(results == null ? List.of() : results);
+        policyAuditEvents = List.copyOf(policyAuditEvents == null ? List.of() : policyAuditEvents);
         safetyNotes = List.copyOf(safetyNotes == null ? List.of() : safetyNotes);
         storageMode = requireNonBlank(storageMode, "storageMode");
     }

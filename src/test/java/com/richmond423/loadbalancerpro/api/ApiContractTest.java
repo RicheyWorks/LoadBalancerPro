@@ -153,7 +153,7 @@ class ApiContractTest {
                 "capacity", "weight", "healthy");
         assertSchemaProperties(docs, "AllocationEvaluationResponse", "strategy", "allocations",
                 "acceptedLoad", "rejectedLoad", "unallocatedLoad", "recommendedAdditionalServers",
-                "scalingSimulation", "loadShedding", "metricsPreview", "readOnly", "remediationPlan",
+                "scalingSimulation", "loadShedding", "metricsPreview", "lasePolicy", "readOnly", "remediationPlan",
                 "decisionReason");
         assertSchemaProperties(docs, "RemediationPlan", "status", "generatedFrom", "advisoryOnly",
                 "readOnly", "cloudMutation", "recommendations");

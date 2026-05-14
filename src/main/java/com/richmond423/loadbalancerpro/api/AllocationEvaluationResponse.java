@@ -13,6 +13,7 @@ public record AllocationEvaluationResponse(
         LoadSheddingEvaluation loadShedding,
         AllocationEvaluationMetricsPreview metricsPreview,
         LaseAllocationShadowSummary laseShadow,
+        com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyDecision lasePolicy,
         boolean readOnly,
         RemediationPlan remediationPlan,
         String decisionReason) {

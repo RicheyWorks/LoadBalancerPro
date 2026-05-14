@@ -18,6 +18,7 @@ class EnterpriseLabWorkflowDocumentationTest {
     private static final Path API_CONTRACTS = Path.of("docs/API_CONTRACTS.md");
     private static final Path CHARTER = Path.of("docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md");
     private static final Path ROADMAP = Path.of("docs/ENTERPRISE_LAB_ROADMAP.md");
+    private static final Path POLICY_GATE = Path.of("docs/CONTROLLED_ACTIVE_LASE_POLICY_GATE.md");
     private static final Path DEMO = Path.of("docs/DEMO_WALKTHROUGH.md");
     private static final Path SRE = Path.of("docs/SRE_DEMO_HIGHLIGHTS.md");
     private static final Path TRUST = Path.of("docs/REVIEWER_TRUST_MAP.md");
@@ -26,23 +27,33 @@ class EnterpriseLabWorkflowDocumentationTest {
     private static final Path PAGE = Path.of("src/main/resources/static/enterprise-lab.html");
     private static final Path INDEX = Path.of("src/main/resources/static/index.html");
     private static final Path SCRIPT = Path.of("scripts/smoke/enterprise-lab-workflow.ps1");
+    private static final Path POLICY_SCRIPT = Path.of("scripts/smoke/controlled-adaptive-routing-policy.ps1");
     private static final Path POSTMAN_SMOKE = Path.of("scripts/smoke/postman-enterprise-lab-safe-smoke.ps1");
 
     @Test
     void labWorkflowDocsExposeScenarioRunScorecardEvidenceAndBoundaries() throws Exception {
-        String docs = read(README) + read(API_CONTRACTS) + read(CHARTER) + read(ROADMAP)
+        String docs = read(README) + read(API_CONTRACTS) + read(CHARTER) + read(ROADMAP) + read(POLICY_GATE)
                 + read(DEMO) + read(SRE) + read(TRUST) + read(RUNBOOK) + read(TEST_EVIDENCE);
 
         for (String expected : List.of(
                 "GET /api/lab/scenarios",
                 "POST /api/lab/runs",
                 "GET /api/lab/runs/{runId}",
+                "GET /api/lab/policy",
+                "GET /api/lab/audit-events",
                 "/enterprise-lab.html",
                 "target/enterprise-lab-runs/",
+                "target/controlled-adaptive-routing/",
                 "scorecard",
                 "baseline",
                 "shadow",
-                "opt-in influence",
+                "recommend",
+                "active-experiment",
+                "guardrail",
+                "rollback",
+                "audit events",
+                "loadbalancerpro.lase.policy.mode",
+                "loadbalancerpro.lase.policy.active-experiment-enabled",
                 "process-local",
                 "bounded",
                 "in-memory",
@@ -67,11 +78,16 @@ class EnterpriseLabWorkflowDocumentationTest {
                 "LoadBalancerPro Enterprise Lab",
                 "/api/lab/scenarios",
                 "/api/lab/runs",
+                "/api/lab/policy",
+                "/api/lab/audit-events",
                 "X-API-Key",
                 "&lt;API_KEY&gt;",
                 "lab evidence only",
                 "not production activation",
                 "scorecard",
+                "active-experiment",
+                "Policy Status",
+                "Audit Events",
                 "target/enterprise-lab-runs/")) {
             assertTrue(page.contains(expected), "browser page should mention " + expected);
         }
@@ -86,6 +102,39 @@ class EnterpriseLabWorkflowDocumentationTest {
                 "cosign sign",
                 "gh release")) {
             assertFalse(normalized.contains(prohibited), "browser page must not include " + prohibited);
+        }
+    }
+
+    @Test
+    void controlledPolicySmokeScriptWritesOnlyIgnoredTargetEvidenceAndAvoidsPublishCommands() throws Exception {
+        String script = read(POLICY_SCRIPT);
+        String normalized = script.toLowerCase(Locale.ROOT);
+
+        for (String expected : List.of(
+                "target/controlled-adaptive-routing",
+                "--enterprise-lab-workflow=$mode",
+                "off",
+                "shadow",
+                "recommend",
+                "active-experiment",
+                "Assert-OutputUnderTarget",
+                "Assert-NoSecretValues",
+                "controlled-adaptive-routing-policy-summary.md",
+                "controlled-adaptive-routing-policy-metadata.json")) {
+            assertTrue(script.contains(expected), "policy script should mention " + expected);
+        }
+
+        for (String prohibited : List.of(
+                "git clean",
+                "git tag",
+                "git push",
+                "gh release create",
+                "gh release upload",
+                "gh release delete",
+                "docker push",
+                "cosign sign",
+                "release-downloads")) {
+            assertFalse(normalized.contains(prohibited), "policy script must not include " + prohibited);
         }
     }
 
@@ -128,10 +177,14 @@ class EnterpriseLabWorkflowDocumentationTest {
         for (String expected : List.of(
                 "/api/lab/scenarios",
                 "/api/lab/runs",
+                "/api/lab/policy",
+                "/api/lab/audit-events",
                 "Enterprise Lab scenarios missing key gated",
                 "Enterprise Lab scenarios correct key allowed",
                 "Enterprise Lab run missing key gated",
                 "Enterprise Lab run correct key allowed",
+                "Enterprise Lab policy missing key gated",
+                "Enterprise Lab audit correct key allowed",
                 "<REDACTED>")) {
             assertTrue(script.contains(expected), "Postman smoke should mention " + expected);
         }
@@ -141,8 +194,8 @@ class EnterpriseLabWorkflowDocumentationTest {
 
     @Test
     void docsAndScriptsDoNotEmbedRealSecretLookingValues() throws Exception {
-        String combined = read(README) + read(API_CONTRACTS) + read(DEMO) + read(SRE)
-                + read(TRUST) + read(RUNBOOK) + read(SCRIPT) + read(PAGE);
+        String combined = read(README) + read(API_CONTRACTS) + read(POLICY_GATE) + read(DEMO) + read(SRE)
+                + read(TRUST) + read(RUNBOOK) + read(SCRIPT) + read(POLICY_SCRIPT) + read(PAGE);
 
         assertFalse(looksLikeEmbeddedSecret(combined),
                 "Enterprise Lab docs/scripts must use placeholders instead of secret-looking values");

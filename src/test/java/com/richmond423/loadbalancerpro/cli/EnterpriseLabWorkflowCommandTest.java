@@ -22,6 +22,7 @@ class EnterpriseLabWorkflowCommandTest {
 
         assertEquals(0, run.result().exitCode());
         assertTrue(run.output().contains("LoadBalancerPro Enterprise Lab Workflow"));
+        assertTrue(run.output().contains("Mode: active-experiment"));
         assertTrue(run.output().contains("Scenario catalog JSON"));
         assertTrue(run.output().contains("Safety: ignored target/ evidence only"));
         assertTrue(Files.exists(output.resolve("enterprise-lab-scenario-catalog.json")));
@@ -46,6 +47,17 @@ class EnterpriseLabWorkflowCommandTest {
         assertTrue(EnterpriseLabWorkflowCommand.isRequested(new String[]{"--enterprise-lab-workflow=all"}));
         assertFalse(EnterpriseLabWorkflowCommand.isRequested(new String[]{"--adaptive-routing-experiment=all"}));
         assertFalse(EnterpriseLabWorkflowCommand.isRequested(new String[]{"--server.port=18080"}));
+    }
+
+    @Test
+    void bareWorkflowFlagDefaultsToShadowMode() {
+        Path output = Path.of("target", "enterprise-lab-command-default-test");
+        CapturedRun run = runCommand("--enterprise-lab-workflow",
+                "--enterprise-lab-output=" + output);
+
+        assertEquals(0, run.result().exitCode());
+        assertTrue(run.output().contains("Mode: shadow"));
+        assertFalse(run.output().contains("Mode: active-experiment"));
     }
 
     private CapturedRun runCommand(String... args) {

@@ -168,6 +168,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 
 - [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) provides a short public-facing overview, evaluation path, and limitations summary.
 - [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md) summarizes the current production-candidate posture, current validation posture, release/container signing limits, remaining production risks, and evidence links. [`RELEASE_READINESS_DECISION_SUMMARY.md`](docs/RELEASE_READINESS_DECISION_SUMMARY.md) gives the two-track JAR/docs-first versus deferred container distribution decision.
+- [`SRE_DEMO_HIGHLIGHTS.md`](docs/SRE_DEMO_HIGHLIGHTS.md) gives a reviewer-ready product-value one-pager covering the verified `v2.5.0` release, guardrail depth, CloudManager safety, replay/LASE testing, optional rate limiting, and honest remaining risks.
 - [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) gives a 60 to 90 second local demo outline for the root page, cockpit, API-key boundary, proxy-loopback, observability, and container path.
 - [`HARDENING_AUDIT_001.md`](evidence/HARDENING_AUDIT_001.md) captures the formal hardening audit results.
 - [`SECURITY_POSTURE.md`](evidence/SECURITY_POSTURE.md) summarizes current auth, telemetry, cloud, replay, LASE, and input/API posture.

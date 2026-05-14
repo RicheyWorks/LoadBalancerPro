@@ -256,7 +256,7 @@ public class Server {
         return json.optBoolean("cloudInstance", false) ? ServerType.CLOUD : ServerType.ONSITE;
     }
 
-    public void updateMetrics(double cpu, double mem, double disk) {
+    public synchronized void updateMetrics(double cpu, double mem, double disk) {
         double oldCpu = cpuUsage;
         double oldMem = memoryUsage;
         double oldDisk = diskUsage;

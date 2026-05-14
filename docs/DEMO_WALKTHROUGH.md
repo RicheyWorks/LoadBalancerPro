@@ -23,9 +23,10 @@ Keep the demo local. Do not use cloud credentials, public upstreams, real secret
 3. Mention that `/proxy/**` is optional and disabled by default. Operators can configure local/private backend targets through application configuration.
 4. Show [`OPERATOR_RUN_PROFILES.md`](OPERATOR_RUN_PROFILES.md) and [`DEPLOYMENT_SMOKE_KIT.md`](DEPLOYMENT_SMOKE_KIT.md) as the copyable validation path for packaged jar, API-key boundary, and proxy-loopback checks.
 5. If security posture matters, open [`API_SECURITY.md`](API_SECURITY.md) and explain that prod/cloud-sandbox API-key modes protect proxy/status surfaces, while TLS termination remains a deployment responsibility.
-6. If observability matters, open `/proxy-status.html` or [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md) and point to route/backend counts, status summaries, retry/cooldown counters, and reload status.
-7. If packaging matters, open [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) and explain the local-only Docker build/run path with no registry publish.
-8. Close with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), `jacoco-coverage-report`, `packaged-artifact-smoke`, and `loadbalancerpro-sbom` as the evidence trail.
+6. If adaptive-routing posture matters, run `POST /api/allocate/evaluate` with `loadbalancerpro.lase.shadow.enabled=true` and point to the response `laseShadow` block. It is shadow-only, lists signals considered such as tail latency, queue depth, and adaptive concurrency, and explicitly says it does not alter live allocation.
+7. If observability matters, open `/proxy-status.html` or [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md) and point to route/backend counts, status summaries, retry/cooldown counters, and reload status.
+8. If packaging matters, open [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md) and explain the local-only Docker build/run path with no registry publish.
+9. Close with [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), `jacoco-coverage-report`, `packaged-artifact-smoke`, and `loadbalancerpro-sbom` as the evidence trail.
 
 ## Optional Command Clips
 

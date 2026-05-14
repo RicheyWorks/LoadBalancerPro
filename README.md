@@ -141,7 +141,7 @@ flowchart TD
 
 The LoadBalancer Adaptive Systems Engine (LASE) is the north-star direction for this repository: a research-grade adaptive systems engine for telemetry-driven routing, overload protection, failure modeling, cloud-safety simulation, and explainable load-balancing decisions.
 
-The internal telemetry-driven routing foundation now exists through immutable server state vectors, deterministic score calculation, power-of-two candidate sampling, and routing decision explanations. It is deliberately kept internal until the existing allocation behavior can be integrated safely.
+The internal telemetry-driven routing foundation now exists through immutable server state vectors, deterministic score calculation, power-of-two candidate sampling, and routing decision explanations. `POST /api/allocate/evaluate` exposes an optional `laseShadow` summary when `loadbalancerpro.lase.shadow.enabled=true`; it reports LASE signals considered, including tail latency, queue depth, error rate, adaptive concurrency, load shedding, shadow autoscaling, and failure scenario checks. This integration is shadow-only, does not alter live allocation, and keeps active LASE influence out of default/local behavior.
 
 Planned LASE work includes adaptive concurrency limits, load shedding and priority classes, shadow autoscaling, failure scenario simulation, richer tail-latency-aware routing, and cloud-safety simulation. These are roadmap items, not claims of fully implemented production behavior.
 

@@ -14,7 +14,7 @@ Current label: production-candidate for controlled enterprise demo/reviewer usag
 | Container default | The checked-in Dockerfile defaults to `SPRING_PROFILES_ACTIVE=prod`. Operators must provide `LOADBALANCERPRO_API_KEY` at runtime for protected prod container use. Local/demo override is documented as loopback/private only. | [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md), [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md) |
 | Supply-chain evidence | CI covers tests, package, smoke, Docker runtime checks, Dependency Review, Trivy, and CycloneDX SBOM artifacts. CodeQL runs as a separate Java/Kotlin SAST workflow. Semantic-tag release workflow produces deterministic JAR/SBOM/checksum GitHub Release assets and GitHub artifact attestations. | [`../evidence/SUPPLY_CHAIN_EVIDENCE.md`](../evidence/SUPPLY_CHAIN_EVIDENCE.md), [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md), [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md) |
 | Dependency/SAST triage | CodeQL, Dependency Review, Trivy, SBOM, and dependency findings have an owner/rationale workflow with severity handling, accepted-risk and false-positive templates, remediation targets, and a high/critical no-silent-dismissal rule. | [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](DEPENDENCY_SAST_RISK_WORKFLOW.md) |
-| Release evidence gate | Production-candidate and release-ready labels have a checklist that separates automated checks from manual operator verification. The release-candidate dry-run packet records commit, build/test/package, SBOM, checksum, smoke, security gate, and publication-boundary evidence without publishing. | [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md), [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md) |
+| Release evidence gate | Production-candidate and release-ready labels have a checklist that separates automated checks from manual operator verification. The release-candidate dry-run packet records commit, build/test/package, SBOM, checksum, smoke, security gate, and publication-boundary evidence without publishing. The release-intent review prepares the recommended `v2.5.0` JAR/docs-first human decision without creating tags, GitHub Releases, release assets, registry images, or signatures. | [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md), [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md), [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md) |
 
 ## Current Validation Posture
 
@@ -63,6 +63,7 @@ Do not call the build release-ready until semantic-tag release evidence is produ
 - Residual risks: [`../evidence/RESIDUAL_RISKS.md`](../evidence/RESIDUAL_RISKS.md)
 - Deployment hardening: [`DEPLOYMENT_HARDENING_GUIDE.md`](DEPLOYMENT_HARDENING_GUIDE.md)
 - Release-candidate dry-run packet: [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md)
+- Release-intent review: [`RELEASE_INTENT_REVIEW.md`](RELEASE_INTENT_REVIEW.md)
 - Container signing decision: [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md)
 - IdP claim examples: [`IDP_CLAIM_MAPPING_EXAMPLES.md`](IDP_CLAIM_MAPPING_EXAMPLES.md)
 - Dependency/SAST workflow: [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](DEPENDENCY_SAST_RISK_WORKFLOW.md)

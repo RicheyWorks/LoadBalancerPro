@@ -1,14 +1,16 @@
 # LoadBalancerPro
 
-LoadBalancerPro is a Java 17 / Spring Boot load-balancing simulator and cloud-safety demo with guarded AWS mutation paths, hardened API contracts, robust import/export handling, CLI workflows, observability endpoints, CI release gates, Docker runtime hardening, and broad mocked/default test coverage with CI-published JaCoCo artifacts.
+LoadBalancerPro is becoming **LoadBalancerPro Enterprise Lab**: a Java 17 / Spring Boot lab for adaptive-routing scenarios, deterministic replay, LASE shadow/influence comparison, policy gates, scorecards, evidence export, SRE walkthroughs, and a carefully bounded Production Gateway Candidate track.
 
-It is built as a polished portfolio and enterprise-demo system: the code demonstrates production-minded boundaries, tests, packaging, and cloud guardrails, but it is not a drop-in production cloud load balancer.
+Its primary identity is **Enterprise Adaptive Routing Lab**. Its secondary identity is **Production Gateway Candidate** for future optional proxy/runtime hardening, deployment guides, and signed container distribution if that path is explicitly approved later.
+
+It is built as a polished portfolio and enterprise-demo system: the code demonstrates production-minded boundaries, tests, packaging, and cloud guardrails, but it is not a drop-in production cloud load balancer or a live enterprise gateway.
 
 The API and CLI are safe by default: allocation endpoints do not call AWS, CLI cloud integration is disabled unless requested, Docker/local runs do not require AWS credentials, and cloud mutation stays disabled unless every live-mode guardrail is configured explicitly.
 
 JavaFX UI support is optional. API, proxy, CLI, Java fixture launcher, and static browser workflows do not require JavaFX; desktop UI deployment remains platform-sensitive and separate from the Spring API/proxy operator path. See [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md).
 
-For a concise non-technical overview, start with [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). For the reviewer-ready production-candidate snapshot, use [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md). For evidence navigation, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md). For the verified `v2.5.0` release, use [`V2_5_0_POST_RELEASE_VERIFICATION.md`](docs/V2_5_0_POST_RELEASE_VERIFICATION.md) and [`RELEASE_NOTES_v2.5.0.md`](docs/RELEASE_NOTES_v2.5.0.md). For release-candidate rehearsal without publishing, use [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](docs/RELEASE_CANDIDATE_DRY_RUN_PACKET.md), [`RELEASE_INTENT_REVIEW.md`](docs/RELEASE_INTENT_REVIEW.md), and [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](docs/V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md). For a guided local demo path, use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md). For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md), [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md), and the config-only [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md) recipe.
+For the product identity, start with [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md), then use [`ENTERPRISE_LAB_ROADMAP.md`](docs/ENTERPRISE_LAB_ROADMAP.md) and [`NEXT_GOAL_PROMPTS.md`](docs/NEXT_GOAL_PROMPTS.md) for the next product pushes. For a concise non-technical overview, start with [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). For the reviewer-ready production-candidate snapshot, use [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md). For evidence navigation, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md). For the verified `v2.5.0` release, use [`V2_5_0_POST_RELEASE_VERIFICATION.md`](docs/V2_5_0_POST_RELEASE_VERIFICATION.md) and [`RELEASE_NOTES_v2.5.0.md`](docs/RELEASE_NOTES_v2.5.0.md). For release-candidate rehearsal without publishing, use [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](docs/RELEASE_CANDIDATE_DRY_RUN_PACKET.md), [`RELEASE_INTENT_REVIEW.md`](docs/RELEASE_INTENT_REVIEW.md), and [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](docs/V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md). For a guided local demo path, use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md). For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md), [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md), and the config-only [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md) recipe.
 
 ## Why This Project Matters
 
@@ -16,11 +18,15 @@ LoadBalancerPro is designed to show how a load-balancing system can grow from an
 
 For reviewers and recruiters, the useful signal is not a single flashy demo. It is the combination of conservative defaults, explicit guardrails, repeatable local validation, CI-published artifacts, and documentation that distinguishes implemented behavior from roadmap work.
 
+The next product push is not "make the demo bigger." It is to turn the repository into an Enterprise Adaptive Routing Lab with deterministic scenario workflows, scorecards, observability packs, measured local performance evidence, mock IdP proof, and gated future container/live-sandbox paths.
+
 ## Start Here For Reviewers
 
 Use [`REVIEWER_TRUST_MAP.md#reviewer-demo-path`](docs/REVIEWER_TRUST_MAP.md#reviewer-demo-path) for the shortest safe proof path, then use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) for a quick screen-share script.
 
 The reviewer path shows how to generate local proxy evidence with `mvn -Dtest=LocalProxyEvidenceExportTest test`, private-network config-only dry-run evidence with `mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test`, loopback-only live gate proof with `mvn -Dtest=PrivateNetworkLiveValidationExecutorTest test`, Postman and operator smoke dry-runs with source-visible PowerShell scripts, and CI/CodeQL evidence from GitHub checks. Evidence is written under ignored `target/` output, secrets are redacted, and runtime private-LAN live validation remains intentionally unimplemented until a separate approved gate is satisfied.
+
+Use [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md) first when the review question is "what is this becoming?" Use [`ENTERPRISE_LAB_ROADMAP.md`](docs/ENTERPRISE_LAB_ROADMAP.md) when the review question is "what should be built next?"
 
 ## Evaluate In 5 Minutes
 

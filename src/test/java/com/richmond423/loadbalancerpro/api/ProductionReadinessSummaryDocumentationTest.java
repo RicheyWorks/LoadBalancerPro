@@ -68,8 +68,8 @@ class ProductionReadinessSummaryDocumentationTest {
         String normalized = summary.toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
-                "1,242 tests",
                 "0 failures, 0 errors, and 0 skips",
+                "Surefire reports for the exact test count",
                 "mvn -q verify",
                 "mvn -q -DskipTests package",
                 "Operator run-profile and Postman enterprise lab dry-runs",

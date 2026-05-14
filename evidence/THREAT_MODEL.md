@@ -6,7 +6,7 @@ Verification command: `mvn -q test`
 
 ## Purpose and Scope
 
-This document describes LoadBalancerPro as an enterprise-demo SRE/control-plane lab. It is intended to make the project's security posture, safety boundaries, test evidence, and residual risks explicit. It is not a production certification, penetration test, SOC 2 control mapping, or assurance that a deployment is secure without proper infrastructure controls.
+This document describes LoadBalancerPro Enterprise Lab as an enterprise-demo SRE/control-plane and adaptive-routing lab. It is intended to make the project's security posture, safety boundaries, test evidence, product identity, and residual risks explicit. It is not a production certification, penetration test, SOC 2 control mapping, or assurance that a deployment is secure without proper infrastructure controls.
 
 The scope covers the Spring API, API-key and OAuth2 authorization modes, LASE shadow recommendations, replay/evaluation behavior, cloud sandbox and live-mutation gates, telemetry and actuator exposure, CSV/JSON import paths, and README/evidence claims.
 
@@ -65,9 +65,9 @@ Telemetry supports Prometheus/demo behavior locally and guarded OTLP metrics exp
 | ID | Scenario | Existing mitigations and evidence | Residual risk or follow-up |
 | --- | --- | --- | --- |
 | T1 | Unauthorized allocation mutation | Production-oriented API-key mode protects mutation routes, OAuth2 mode requires authenticated roles, and tests cover missing/invalid OAuth tokens and operator access. See `evidence/SECURITY_POSTURE.md`, `evidence/TEST_EVIDENCE.md`, and `evidence/HARDENING_AUDIT_001.md`. | Local/default remains intentionally convenient and must not be exposed as production. |
-| T2 | OAuth role confusion or bad claim mapping | OAuth authority extraction recognizes common role shapes including `role`, `roles`, `authorities`, `scope`, `scp`, and `realm_access.roles`; route tests distinguish observer from operator. | Deployment still owns issuer trust, token lifetime, key rotation, and user lifecycle controls. |
+| T2 | OAuth role confusion or bad claim mapping | OAuth authority extraction grants application roles only from dedicated role claims: `roles`, `role`, `authorities`, and `realm_access.roles`. Standard OAuth2 `scope` and `scp` claims do not grant LoadBalancerPro application roles, and route tests distinguish observer/operator grants from scope-only denial. | Deployment still owns issuer trust, token lifetime, key rotation, and user lifecycle controls. |
 | T3 | API-key spelling or configuration alias weakening protection | API-key mode remains the default hardened compatibility mode, and current tests cover default API-key behavior plus an explicit `API_KEY` enum-style spelling. | If `api_key` snake-case spelling is intended as a supported external contract, broader alias regression tests should be added and kept documented. |
-| T4 | Swagger/OpenAPI exposure in strong-auth mode | OAuth2 mode gates OpenAPI by default and tests cover `/v3/api-docs` access policy. README/evidence documents public docs as a deployment choice, not an entitlement. | API-key mode may intentionally leave docs public for demo use; production deployments should gate or disable docs when appropriate. |
+| T4 | Swagger/OpenAPI exposure in strong-auth mode | Prod/cloud-sandbox API-key mode and OAuth2 mode gate `/v3/api-docs`, `/v3/api-docs/**`, `/swagger-ui.html`, and `/swagger-ui/**` by default. README/evidence documents local public docs as developer convenience, not a deployment entitlement. | Production deployments should also apply environment-level ingress, TLS, and access-control policy around generated docs. |
 | T5 | Request-size/auth ordering bypass | OAuth tests prove unauthenticated oversized protected mutation requests return 401 before size rejection, while authenticated oversized requests can receive 413. API-key filter ordering is documented in the hardening evidence. | Keep both auth modes under regression when filter order changes. |
 | T6 | Telemetry endpoint leaking operational metadata | OTLP metrics export is disabled by default, startup summary is sanitized, and documentation warns that telemetry can expose service names, route names, errors, latency, host/runtime details, and operational patterns. | Collector trust, network isolation, TLS, IAM, and retention policy remain deployment responsibilities. |
 | T7 | Public OTLP collector misconfiguration | OTLP guardrails reject public endpoints by default and require an explicit property override to allow them. Tests cover private IP, localhost, and public endpoint behavior. | Private endpoint detection is heuristic and does not prove the collector is secure. |
@@ -81,9 +81,9 @@ Telemetry supports Prometheus/demo behavior locally and guarded OTLP metrics exp
 
 ## Existing Mitigations
 
-- API-key mode remains the default production-compatible behavior for protected mutation routes.
+- API-key mode remains the default production-compatible behavior for protected non-`OPTIONS` `/api/**` routes.
 - OAuth2 mode is opt-in and fails closed when issuer/JWK configuration is missing.
-- OAuth2 role mapping normalizes common JWT claim shapes into route-check authorities.
+- OAuth2 role mapping uses dedicated role claims only; `scope` and `scp` claims do not become route-check authorities.
 - `/api/health` remains public while mutation and selected observability routes are protected by mode.
 - Swagger/OpenAPI is gated by default in OAuth2 mode.
 - CORS preflight supports the `Authorization` header for protected methods.

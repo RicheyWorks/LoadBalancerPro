@@ -2,6 +2,8 @@
 
 Date: not captured yet
 
+Status: template/unmeasured. No measured results are included yet.
+
 ## Purpose And Scope
 
 This document is a template for repeatable local benchmark evidence for LoadBalancerPro.
@@ -9,6 +11,8 @@ This document is a template for repeatable local benchmark evidence for LoadBala
 It is local evidence only. It is not a production SLO, production SLA, production capacity-planning result, universal performance claim, high-availability proof, or proof of cloud or live AWS performance.
 
 No measured results are included yet because the preferred `hey` load-test tool was not available in the planning and implementation environment for this slice.
+
+Future measured work should use stable request fixtures, a source-visible script, ignored output under `target/performance-baseline/`, local deterministic or loopback-only execution where possible, and no live/private-network dependency.
 
 ## Environment Metadata
 
@@ -167,6 +171,8 @@ Possible later additions:
 - add `examples/routing-compare-request.json` if useful
 - add `scripts/performance-baseline.ps1`
 - add `scripts/performance-baseline.sh`
+- write Markdown/JSON evidence under `target/performance-baseline/`
+- add static checks that measured claims require committed evidence references
 - add CI artifact upload for benchmark evidence
 - consider `k6` or JMeter later only if needed
 

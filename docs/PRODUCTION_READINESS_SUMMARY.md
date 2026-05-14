@@ -4,6 +4,10 @@ This summary is the reviewer-facing snapshot for LoadBalancerPro after the enter
 
 Current label: production-candidate for controlled enterprise demo/reviewer usage, with a verified `v2.5.0` JAR/docs-first GitHub Release. This is not production certification and not approval for unmanaged public traffic.
 
+## Product Identity
+
+LoadBalancerPro's next identity is **LoadBalancerPro Enterprise Lab**: Enterprise Adaptive Routing Lab first, Production Gateway Candidate second. The lab track owns controlled scenario running, deterministic replay, LASE shadow/influence comparison, policy gates, scorecards, evidence export, and SRE walkthroughs. The gateway-candidate track owns optional future proxy/runtime hardening, config reload, metrics, rate limiting, canary/shadow mode, rollback, signed container distribution later, and deployment guides later. See [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md), and [`NEXT_GOAL_PROMPTS.md`](NEXT_GOAL_PROMPTS.md).
+
 ## Production-Candidate Status
 
 | Area | Current status | Evidence |
@@ -13,7 +17,7 @@ Current label: production-candidate for controlled enterprise demo/reviewer usag
 | DTO validation | Enterprise-required allocation and evaluation fields reject omitted JSON values instead of silently defaulting to `0`, `0.0`, or `false`. | [`API_CONTRACTS.md`](API_CONTRACTS.md), [`OPERATIONS_RUNBOOK.md`](OPERATIONS_RUNBOOK.md), `AllocatorControllerTest`, `ApiContractTest` |
 | Container default | The checked-in Dockerfile defaults to `SPRING_PROFILES_ACTIVE=prod`. Operators must provide `LOADBALANCERPRO_API_KEY` at runtime for protected prod container use. Local/demo override is documented as loopback/private only. | [`CONTAINER_DEPLOYMENT.md`](CONTAINER_DEPLOYMENT.md), [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md) |
 | API abuse guardrails | App-level validation, request-size limits, safe error envelopes, and an optional process-local rate limiter protect the main demo/control surfaces. The limiter is disabled by default for local/demo convenience, can be enabled with `loadbalancerpro.api.rate-limit.enabled=true`, returns `429 rate_limited` with `Retry-After`, and covers allocation, routing, scenario replay, remediation, proxy, and LASE shadow surfaces. Distributed edge rate limiting is still required for shared or public deployments. | [`API_SECURITY.md`](API_SECURITY.md), [`OPERATIONS_RUNBOOK.md`](OPERATIONS_RUNBOOK.md), `ApiRateLimitFilterTest`, `ApiRateLimitIntegrationTest` |
-| Adaptive-routing shadow evidence | `POST /api/allocate/evaluate` now exposes an optional `laseShadow` response summary when `loadbalancerpro.lase.shadow.enabled=true`. It lists signals considered, including tail latency, queue depth, and adaptive concurrency, records shadow-only observation evidence, and states that it does not alter live allocation. Active LASE influence remains future work and is not enabled by default. | [`API_CONTRACTS.md`](API_CONTRACTS.md), [`DEMO_WALKTHROUGH.md`](DEMO_WALKTHROUGH.md), `LaseAllocationShadowIntegrationTest` |
+| Adaptive-routing lab evidence | `POST /api/allocate/evaluate` exposes an optional `laseShadow` response summary when `loadbalancerpro.lase.shadow.enabled=true`. It lists signals considered, including tail latency, queue depth, and adaptive concurrency, records shadow-only observation evidence, and states that it does not alter live allocation. The adaptive-routing experiment harness compares baseline, shadow, and explicit opt-in influence outcomes under ignored local evidence; default runtime allocation behavior remains unchanged. | [`API_CONTRACTS.md`](API_CONTRACTS.md), [`DEMO_WALKTHROUGH.md`](DEMO_WALKTHROUGH.md), [`SRE_DEMO_HIGHLIGHTS.md`](SRE_DEMO_HIGHLIGHTS.md), `LaseAllocationShadowIntegrationTest` |
 | Supply-chain evidence | CI covers tests, package, smoke, Docker runtime checks, Dependency Review, Trivy, and CycloneDX SBOM artifacts. CodeQL runs as a separate Java/Kotlin SAST workflow. Semantic-tag release workflow produces deterministic JAR/SBOM/checksum GitHub Release assets and GitHub artifact attestations. | [`../evidence/SUPPLY_CHAIN_EVIDENCE.md`](../evidence/SUPPLY_CHAIN_EVIDENCE.md), [`CI_ARTIFACT_CONSUMER_GUIDE.md`](CI_ARTIFACT_CONSUMER_GUIDE.md), [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md) |
 | Dependency/SAST triage | CodeQL, Dependency Review, Trivy, SBOM, and dependency findings have an owner/rationale workflow with severity handling, accepted-risk and false-positive templates, remediation targets, and a high/critical no-silent-dismissal rule. | [`DEPENDENCY_SAST_RISK_WORKFLOW.md`](DEPENDENCY_SAST_RISK_WORKFLOW.md) |
 | Release evidence gate | Production-candidate and release-ready labels have a checklist that separates automated checks from manual operator verification. The release-candidate dry-run packet records commit, build/test/package, SBOM, checksum, smoke, security gate, and publication-boundary evidence without publishing. The authorized `v2.5.0` JAR/docs-first release is now verified with exact tag, exact commit, workflow success, expected assets, checksum pass, SBOM JSON/XML presence, and artifact attestation status. | [`PRODUCTION_CANDIDATE_EVIDENCE_GATE.md`](PRODUCTION_CANDIDATE_EVIDENCE_GATE.md), [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](RELEASE_CANDIDATE_DRY_RUN_PACKET.md), [`RELEASE_NOTES_v2.5.0.md`](RELEASE_NOTES_v2.5.0.md), [`V2_5_0_POST_RELEASE_VERIFICATION.md`](V2_5_0_POST_RELEASE_VERIFICATION.md), [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md) |
@@ -25,7 +29,7 @@ Use the latest successful PR and `main` checks as the source of truth for a spec
 This summary branch is docs/static-test only. Its local validation target is:
 
 - Focused summary/docs tests pass.
-- `mvn -q clean test` reports 1,242 tests with 0 failures, 0 errors, and 0 skips after the v2.5.0 release-alignment guard test is included.
+- `mvn -q clean test` passes with 0 failures, 0 errors, and 0 skips; use Surefire reports for the exact test count for the commit under review.
 - `mvn -q verify` passes.
 - `mvn -q -DskipTests package` passes.
 - Operator run-profile and Postman enterprise lab dry-runs pass without external network, cloud credentials, release actions, or `release-downloads/` mutation.
@@ -59,6 +63,9 @@ The `v2.5.0` JAR/docs-first release evidence is produced and verified for the ex
 ## Evidence Index
 
 - Reviewer navigation: [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md)
+- Product charter: [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md)
+- Product roadmap: [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md)
+- Next goal prompts: [`NEXT_GOAL_PROMPTS.md`](NEXT_GOAL_PROMPTS.md)
 - SRE demo highlights: [`SRE_DEMO_HIGHLIGHTS.md`](SRE_DEMO_HIGHLIGHTS.md)
 - Adaptive-routing experiment evidence: run `scripts/smoke/adaptive-routing-experiment.ps1 -Package` and inspect ignored output under `target/adaptive-routing-experiments/`; it compares baseline vs shadow vs opt-in influence while keeping default behavior unchanged.
 - Security posture: [`../evidence/SECURITY_POSTURE.md`](../evidence/SECURITY_POSTURE.md)

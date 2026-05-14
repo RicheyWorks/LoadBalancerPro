@@ -4,7 +4,7 @@ Use this map when you want to review LoadBalancerPro evidence without opening ev
 
 ## Start Here
 
-LoadBalancerPro is a Java/Spring load-balancing simulator and API project with guarded cloud boundaries, optional static browser review pages, optional lightweight reverse proxy mode, operator-configured route/target examples, packaged local proxy demos, release-free artifact checks, and CI-published workflow evidence.
+LoadBalancerPro is now positioned as **LoadBalancerPro Enterprise Lab**: Enterprise Adaptive Routing Lab first, Production Gateway Candidate second. It remains a Java/Spring load-balancing simulator and API project with guarded cloud boundaries, optional static browser review pages, optional lightweight reverse proxy mode, operator-configured route/target examples, packaged local proxy demos, release-free artifact checks, and CI-published workflow evidence.
 
 What it is not claiming:
 
@@ -17,6 +17,7 @@ What it is not claiming:
 
 Recommended first paths:
 
+- I want to know what this product is becoming: start with [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), then use [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md) and [`NEXT_GOAL_PROMPTS.md`](NEXT_GOAL_PROMPTS.md).
 - I want the shortest public-facing overview: start with [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md), then use [`PRODUCTION_READINESS_SUMMARY.md`](PRODUCTION_READINESS_SUMMARY.md) for the production-candidate snapshot, [`SRE_DEMO_HIGHLIGHTS.md`](SRE_DEMO_HIGHLIGHTS.md) for the product-value/guardrail one-pager, and [`DEMO_WALKTHROUGH.md`](DEMO_WALKTHROUGH.md) for a local demo script.
 - I want to verify tests and coverage: start with [`TESTING_COVERAGE.md`](TESTING_COVERAGE.md), then inspect the `jacoco-coverage-report` workflow artifact and CI skipped-test log output.
 - I want to verify real HTTP proxy behavior: start with [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md), [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](REVERSE_PROXY_HEALTH_AND_METRICS.md), [`REVERSE_PROXY_RESILIENCE.md`](REVERSE_PROXY_RESILIENCE.md), [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md), the source-visible `LocalOnlyRealBackendProxyValidationTest`, and the reviewer export from `LocalProxyEvidenceExportTest` under `target/proxy-evidence/local-proxy-evidence.md`.
@@ -47,7 +48,7 @@ Recommended first paths:
 
 Use this path when a reviewer wants to understand the project and verify the current evidence story in about five minutes without enabling live private-network behavior.
 
-What this project is: LoadBalancerPro is a Java/Spring load-balancing simulator and operator-focused proxy foundation with guarded cloud boundaries, local browser demos, source-visible proxy evidence, API-key/OAuth2 deployment boundaries, and CI-published testing artifacts.
+What this project is: LoadBalancerPro Enterprise Lab is a Java/Spring load-balancing simulator and operator-focused proxy foundation with guarded cloud boundaries, local browser demos, source-visible proxy evidence, API-key/OAuth2 deployment boundaries, deterministic adaptive-routing experiment evidence, and CI-published testing artifacts.
 
 What can be proven quickly:
 
@@ -78,6 +79,7 @@ Safety boundaries preserved by this path:
 
 | Reviewer question | Evidence source | Primary doc | Runtime path or artifact | What it proves | What it does not prove |
 | --- | --- | --- | --- | --- | --- |
+| What is the product identity after the demo phase? | Product charter and roadmap | [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md), [`NEXT_GOAL_PROMPTS.md`](NEXT_GOAL_PROMPTS.md) | Enterprise Adaptive Routing Lab, Production Gateway Candidate, P0/P1/P2/P3 roadmap, acceptance criteria, paste-ready next goals | Reviewers can see the next identity, split lab evidence from production deployment, and pick a concrete next product goal | Production deployment certification, live gateway readiness, or implemented future roadmap features |
 | Are tests and skipped-test checks visible? | CI Surefire parsing and coverage docs | [`TESTING_COVERAGE.md`](TESTING_COVERAGE.md) | CI logs, `target/surefire-reports`, `jacoco-coverage-report` | CI reports zero skipped tests and publishes coverage output for inspection | Complete behavioral proof for every deployment condition |
 | Is JaCoCo coverage available? | GitHub Actions workflow artifact | [`TESTING_COVERAGE.md`](TESTING_COVERAGE.md) | `jacoco-coverage-report` | Reviewers can inspect HTML/XML/CSV coverage output | A coverage threshold or quality guarantee by itself |
 | Does proxy forwarding have a documented contract? | Reverse proxy docs, loopback tests, and ignored evidence export | [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md), `LocalOnlyRealBackendProxyValidationTest`, `LocalProxyEvidenceExportTest` | `/proxy/**`, `X-LoadBalancerPro-Upstream`, `X-LoadBalancerPro-Strategy`, `target/proxy-evidence/local-proxy-evidence.md` | Optional proxy mode forwards real local HTTP traffic when explicitly enabled, including source-visible JUnit evidence with JDK loopback backends on Java-assigned ephemeral ports and redacted local evidence export | A managed gateway or internet-edge deployment claim |

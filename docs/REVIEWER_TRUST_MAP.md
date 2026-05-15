@@ -56,6 +56,19 @@ Recommended first paths:
 - I want to understand JavaFX: start with [`JAVAFX_OPTIONAL_UI.md`](JAVAFX_OPTIONAL_UI.md). JavaFX is optional.
 - I want to understand the repository/package naming split: start with [`PACKAGE_NAMING.md`](PACKAGE_NAMING.md).
 
+## Evidence Page Navigation
+
+| Page | Reviewer question it answers | Local API/path reference |
+| --- | --- | --- |
+| `/enterprise-lab-reviewer.html` | What is the posture and readiness summary? | `GET /api/enterprise-lab/reviewer-summary` |
+| `/operator-evidence-dashboard.html` | Where are local/CI evidence paths, smoke outputs, and verification commands? | `GET /api/enterprise-lab/operator-evidence-summary` |
+| `/evidence-timeline.html` | How do evidence stages and run templates compare across repeated runs? | `GET /api/enterprise-lab/evidence-timeline` |
+| `/evidence-export-packet.html` | How do I copy, download, print, and share-check the reviewer handoff packet? | `GET /api/enterprise-lab/evidence-export-packet` |
+
+Recommended reviewer path: Start with Reviewer Dashboard. Check Operator Evidence Dashboard. Review Evidence Timeline. Open Evidence Export Packet. Copy/download/print packet. Use Share Checklist before sending. Verify not-proven boundaries.
+
+These pages are browser-local/static/read-only reviewer surfaces. They do not upload packets, create server-side exports or PDFs, mutate GitHub settings, publish or sign containers, or certify production use.
+
 ## Reviewer Demo Path
 
 Use this path when a reviewer wants to understand the project and verify the current evidence story in about five minutes without enabling live private-network behavior.

@@ -330,6 +330,33 @@ class EnterpriseReadinessAuditDocumentationTest {
     }
 
     @Test
+    void reviewerTrustMapDocumentsEvidencePageNavigationPath() throws Exception {
+        String trustMap = read(TRUST_MAP);
+
+        for (String expected : List.of(
+                "Evidence Page Navigation",
+                "/enterprise-lab-reviewer.html",
+                "/operator-evidence-dashboard.html",
+                "/evidence-timeline.html",
+                "/evidence-export-packet.html",
+                "GET /api/enterprise-lab/reviewer-summary",
+                "GET /api/enterprise-lab/operator-evidence-summary",
+                "GET /api/enterprise-lab/evidence-timeline",
+                "GET /api/enterprise-lab/evidence-export-packet",
+                "Recommended reviewer path",
+                "Start with Reviewer Dashboard",
+                "Use Share Checklist before sending",
+                "Verify not-proven boundaries",
+                "browser-local/static/read-only reviewer surfaces")) {
+            assertTrue(trustMap.contains(expected), "trust map should document navigation item " + expected);
+        }
+
+        assertFalse(trustMap.toLowerCase(Locale.ROOT).contains("server-side export complete"));
+        assertFalse(trustMap.toLowerCase(Locale.ROOT).contains("packet uploaded"));
+        assertNoUnsafeAffirmativeClaims(TRUST_MAP, trustMap);
+    }
+
+    @Test
     void codeownersCoversSensitiveGovernancePaths() throws Exception {
         String codeowners = read(CODEOWNERS);
 

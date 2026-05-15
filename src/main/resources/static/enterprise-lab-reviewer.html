@@ -280,6 +280,46 @@
       font-size: 0.9rem;
     }
 
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .summary-item {
+      min-height: 74px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .summary-item strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 0.9rem;
+    }
+
+    .summary-item span {
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .summary-item.ready span {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .summary-item.blocked span {
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    .summary-output {
+      margin-top: 12px;
+    }
+
     .path-list code {
       color: #1f3b66;
     }
@@ -314,6 +354,35 @@
     </div>
     <div class="panel-body">
       <p>This page is a static reviewer dashboard. It makes evidence easier to inspect, but it does not create release artifacts, mutate GitHub settings, publish containers, sign containers, perform cloud validation, or certify production use.</p>
+    </div>
+  </section>
+
+  <section class="panel artifact" aria-labelledby="live-summary-title">
+    <div class="panel-head">
+      <h2 id="live-summary-title">Live Local Summary</h2>
+      <span id="summary-api-status" class="compact">Loading local API summary</span>
+    </div>
+    <div class="panel-body">
+      <p class="compact">Read-only local endpoint: <code>/api/enterprise-lab/reviewer-summary</code>. Static content below remains the fallback if the running app API is unavailable.</p>
+      <div class="summary-grid" aria-live="polite">
+        <div class="summary-item" id="summary-posture">
+          <strong>Posture</strong>
+          <span>Static dashboard fallback available.</span>
+        </div>
+        <div class="summary-item" id="summary-artifact">
+          <strong>CI Artifact</strong>
+          <span><code>container-dry-run-evidence-no-publish-no-sign</code></span>
+        </div>
+        <div class="summary-item" id="summary-evidence">
+          <strong>Evidence Paths</strong>
+          <span>Readiness, trust map, security posture, governance, and container evidence docs.</span>
+        </div>
+        <div class="summary-item" id="summary-boundary">
+          <strong>Not Proven</strong>
+          <span>No production certification, registry publication, signing, live cloud validation, real tenant proof, or production SLO/SLA proof.</span>
+        </div>
+      </div>
+      <pre id="summary-output" class="summary-output">Local reviewer summary has not loaded yet.</pre>
     </div>
   </section>
 
@@ -452,6 +521,12 @@
 
 <script>
   const statusEl = document.getElementById("copy-status");
+  const summaryStatusEl = document.getElementById("summary-api-status");
+  const summaryOutputEl = document.getElementById("summary-output");
+  const summaryPostureEl = document.getElementById("summary-posture");
+  const summaryArtifactEl = document.getElementById("summary-artifact");
+  const summaryEvidenceEl = document.getElementById("summary-evidence");
+  const summaryBoundaryEl = document.getElementById("summary-boundary");
 
   async function copyText(text) {
     if (navigator.clipboard && window.isSecureContext) {
@@ -481,6 +556,85 @@
       }
     });
   });
+
+  function setSummaryItem(element, title, value, state) {
+    element.classList.remove("ready", "blocked");
+    if (state) {
+      element.classList.add(state);
+    }
+    element.innerHTML = `<strong>${title}</strong><span>${value}</span>`;
+  }
+
+  function formatList(values) {
+    return Array.isArray(values) && values.length > 0 ? values.join(", ") : "Unavailable";
+  }
+
+  function renderSummary(summary) {
+    const posture = summary.posture || {};
+    const artifact = summary.ciArtifact || {};
+    const evidence = summary.evidence || {};
+    const boundaries = summary.boundaries || {};
+
+    setSummaryItem(
+      summaryPostureEl,
+      "Posture",
+      posture.enterpriseLabReady && posture.reviewerReadyEnterpriseLab
+        ? "Enterprise Lab ready; reviewer-ready Enterprise Lab"
+        : "Review posture unavailable",
+      posture.enterpriseLabReady ? "ready" : "blocked"
+    );
+    setSummaryItem(
+      summaryArtifactEl,
+      "CI Artifact",
+      `${artifact.name || "Unavailable"}<br><code>${artifact.evidenceDirectory || "target/container-dry-run-evidence/"}</code>`,
+      "ready"
+    );
+    setSummaryItem(
+      summaryEvidenceEl,
+      "Evidence Paths",
+      [
+        evidence.readinessAuditPath,
+        evidence.reviewerTrustMapPath,
+        evidence.securityPosturePath,
+        evidence.governanceHardeningPath
+      ].filter(Boolean).join("<br>"),
+      "ready"
+    );
+    setSummaryItem(
+      summaryBoundaryEl,
+      "Not Proven",
+      formatList(summary.notProven),
+      boundaries.noRegistryPublishClaim && boundaries.noContainerSigningClaim ? "ready" : "blocked"
+    );
+
+    summaryOutputEl.textContent = [
+      `Summary source: ${summary.dashboard && summary.dashboard.source ? summary.dashboard.source : "local summary"}`,
+      `Summary version: ${summary.dashboard && summary.dashboard.summaryVersion ? summary.dashboard.summaryVersion : "unknown"}`,
+      `Dashboard path: ${summary.dashboard && summary.dashboard.pagePath ? summary.dashboard.pagePath : "/enterprise-lab-reviewer.html"}`,
+      `Verification commands: ${formatList(summary.verificationCommands)}`,
+      `Artifact proves: ${formatList(artifact.proves)}`,
+      `Artifact does not prove: ${formatList(artifact.doesNotProve)}`
+    ].join("\n");
+    summaryStatusEl.textContent = "Local API summary loaded";
+  }
+
+  async function loadReviewerSummary() {
+    try {
+      const response = await fetch("/api/enterprise-lab/reviewer-summary", {
+        headers: { "Accept": "application/json" },
+        cache: "no-store"
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      renderSummary(await response.json());
+    } catch (error) {
+      summaryStatusEl.textContent = "Static fallback active";
+      summaryOutputEl.textContent = "Local reviewer summary API is unavailable. Use the static evidence paths and commands on this page.";
+    }
+  }
+
+  loadReviewerSummary();
 </script>
 </body>
 </html>

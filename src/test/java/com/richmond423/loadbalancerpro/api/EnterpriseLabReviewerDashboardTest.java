@@ -1,10 +1,12 @@
 package com.richmond423.loadbalancerpro.api;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
@@ -54,6 +56,8 @@ class EnterpriseLabReviewerDashboardTest {
         String page = read(DASHBOARD);
 
         for (String expected : List.of(
+                "/api/enterprise-lab/reviewer-summary",
+                "Live Local Summary",
                 "container-dry-run-evidence-no-publish-no-sign",
                 "target/container-dry-run-evidence/",
                 "docs/ENTERPRISE_READINESS_AUDIT.md",
@@ -73,6 +77,68 @@ class EnterpriseLabReviewerDashboardTest {
                 "mvn -B package",
                 "git diff --check")) {
             assertTrue(page.contains(expected), "reviewer dashboard should mention " + expected);
+        }
+    }
+
+    @Test
+    void reviewerSummaryApiReturnsDeterministicLocalBoundaryMetadata() throws Exception {
+        String response = mockMvc.perform(get("/api/enterprise-lab/reviewer-summary"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.posture.enterpriseLabReady", is(true)))
+                .andExpect(jsonPath("$.posture.reviewerReadyEnterpriseLab", is(true)))
+                .andExpect(jsonPath("$.posture.productionCertified", is(false)))
+                .andExpect(jsonPath("$.posture.enterpriseProductionReady", is(false)))
+                .andExpect(jsonPath("$.boundaries.noRegistryPublishClaim", is(true)))
+                .andExpect(jsonPath("$.boundaries.noContainerSigningClaim", is(true)))
+                .andExpect(jsonPath("$.boundaries.noLiveCloudValidationClaim", is(true)))
+                .andExpect(jsonPath("$.boundaries.noRealTenantProofClaim", is(true)))
+                .andExpect(jsonPath("$.boundaries.noProductionSloSlaProof", is(true)))
+                .andExpect(jsonPath("$.boundaries.governancePreparedRepoSideOnly", is(true)))
+                .andExpect(jsonPath("$.evidence.readinessAuditPath",
+                        is("docs/ENTERPRISE_READINESS_AUDIT.md")))
+                .andExpect(jsonPath("$.evidence.reviewerTrustMapPath",
+                        is("docs/REVIEWER_TRUST_MAP.md")))
+                .andExpect(jsonPath("$.evidence.productionReadinessSummaryPath",
+                        is("docs/PRODUCTION_READINESS_SUMMARY.md")))
+                .andExpect(jsonPath("$.evidence.securityPosturePath",
+                        is("evidence/SECURITY_POSTURE.md")))
+                .andExpect(jsonPath("$.evidence.governanceHardeningPath",
+                        is("docs/MANUAL_GITHUB_GOVERNANCE_HARDENING.md")))
+                .andExpect(jsonPath("$.evidence.containerDistributionSigningLanePath",
+                        is("docs/CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md")))
+                .andExpect(jsonPath("$.evidence.containerSigningDryRunLanePath",
+                        is("docs/CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md")))
+                .andExpect(jsonPath("$.ciArtifact.name",
+                        is("container-dry-run-evidence-no-publish-no-sign")))
+                .andExpect(jsonPath("$.ciArtifact.evidenceDirectory",
+                        is("target/container-dry-run-evidence/")))
+                .andExpect(jsonPath("$.ciArtifact.proves[0]", is("local-only image identity evidence")))
+                .andExpect(jsonPath("$.ciArtifact.doesNotProve[0]", is("registry publication")))
+                .andExpect(jsonPath("$.verificationCommands[0]", is("mvn -q test")))
+                .andExpect(jsonPath("$.verificationCommands[1]", is("mvn -q -DskipTests package")))
+                .andExpect(jsonPath("$.verificationCommands[2]", is("mvn -B package")))
+                .andExpect(jsonPath("$.verificationCommands[3]", is("git diff --check")))
+                .andExpect(jsonPath("$.dashboard.pagePath", is("/enterprise-lab-reviewer.html")))
+                .andExpect(jsonPath("$.dashboard.summaryVersion", is("local-reviewer-summary-v1")))
+                .andReturn().getResponse().getContentAsString().toLowerCase(Locale.ROOT);
+
+        for (String unsafe : List.of(
+                "production certified gateway",
+                "enterprise production ready",
+                "live cloud validated",
+                "real tenant proof complete",
+                "signed container published",
+                "registry publish complete",
+                "container signing complete",
+                "governance settings applied",
+                "docker push",
+                "docker login",
+                "cosign sign",
+                "cosign attest",
+                "gh release",
+                "git tag")) {
+            assertFalse(response.contains(unsafe), "reviewer summary API must not include " + unsafe);
         }
     }
 

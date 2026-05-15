@@ -72,6 +72,18 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Sample request editor/viewer"));
         assertTrue(page.contains("Results table/cards"));
         assertTrue(page.contains("Why this server?"));
+        assertTrue(page.contains("Routing Proof Summary"));
+        assertTrue(page.contains("Selected strategy"));
+        assertTrue(page.contains("Selected backend/server"));
+        assertTrue(page.contains("Key input signals"));
+        assertTrue(page.contains("Fallback/degradation"));
+        assertTrue(page.contains("Local/demo boundary"));
+        assertTrue(page.contains("What this proves"));
+        assertTrue(page.contains("What this does not prove"));
+        assertTrue(page.contains("Copy proof summary"));
+        assertTrue(page.contains("Copy proof commands"));
+        assertTrue(page.contains("proof-summary-output"));
+        assertTrue(page.contains("proof-commands"));
         assertTrue(page.contains("Copy curl"));
         assertTrue(page.contains("Copy payload"));
         assertTrue(page.contains("Copy summary"));
@@ -85,6 +97,33 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("WEIGHTED_ROUND_ROBIN"));
         assertTrue(page.contains("ROUND_ROBIN"));
         assertFalse(page.contains("RESPONSE_TIME"));
+    }
+
+    @Test
+    void routingDemoProofSummaryContainsLocalCommandsAndNotProvenBoundaries() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("mvn spring-boot:run"));
+        assertTrue(page.contains("curl -fsS http://localhost:8080/api/health"));
+        assertTrue(page.contains("curl -fsS http://localhost:8080/actuator/health/readiness"));
+        assertTrue(page.contains("curl -fsS -X POST http://localhost:8080/api/routing/compare"));
+        assertTrue(page.contains("--data-binary @routing-compare-request.json"));
+        assertTrue(page.contains("same-origin local API"));
+        assertTrue(page.contains("synthetic request payloads"));
+        assertTrue(page.contains("browser-only summaries"));
+        assertTrue(page.contains("selectedStrategy: "));
+        assertTrue(page.contains("selectedBackend: "));
+        assertTrue(page.contains("keyInputSignals: "));
+        assertTrue(page.contains("fallbackDegradationBoundary: "));
+        assertTrue(page.contains("localOnlyDemoBoundary: same-origin local API"));
+        assertTrue(normalized.contains("no production deployment proof"));
+        assertTrue(normalized.contains("no service-level agreement, service-level objective, or real tenant evidence"));
+        assertTrue(normalized.contains("no live cloud validation, registry publication, or container signing evidence"));
+        assertTrue(normalized.contains("no service-level agreement or service-level objective evidence"));
+        assertTrue(normalized.contains("no registry publication or container signing evidence"));
+        assertTrue(normalized.contains("runtimeReportWritten: false".toLowerCase(Locale.ROOT)));
+        assertTrue(normalized.contains("externalServices: false".toLowerCase(Locale.ROOT)));
     }
 
     @Test

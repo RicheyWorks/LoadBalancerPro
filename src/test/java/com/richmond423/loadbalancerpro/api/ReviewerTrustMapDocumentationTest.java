@@ -108,6 +108,8 @@ class ReviewerTrustMapDocumentationTest {
                 "PROXY_STRATEGY_DEMO_LAB.md",
                 "PROXY_DEMO_STACK.md",
                 "PROXY_DEMO_FIXTURE_LAUNCHER.md",
+                "routing-demo.html",
+                "Routing Proof Summary",
                 "REAL_BACKEND_PROXY_EXAMPLES.md",
                 "OPERATOR_INSTALL_RUN_MATRIX.md",
                 "OPERATOR_PACKAGING.md",
@@ -139,7 +141,13 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("what can be proven quickly"));
         assertTrue(demoPath.contains("mvn spring-boot:run"));
         assertTrue(demoPath.contains("http://localhost:8080/"));
+        assertTrue(demoPath.contains("http://localhost:8080/routing-demo.html"));
         assertTrue(demoPath.contains("http://localhost:8080/load-balancing-cockpit.html"));
+        assertTrue(demoPath.contains("Routing Proof Summary"));
+        assertTrue(demoPath.contains("selected strategy/backend"));
+        assertTrue(demoPath.contains("visible input signals"));
+        assertTrue(demoPath.contains("local verification commands"));
+        assertTrue(demoPath.contains("explicit not-proven boundaries"));
         assertTrue(demoPath.contains("mvn -Dtest=LocalProxyEvidenceExportTest test"));
         assertTrue(demoPath.contains("target/proxy-evidence/local-proxy-evidence.md"));
         assertTrue(demoPath.contains("target/proxy-evidence/local-proxy-evidence.json"));

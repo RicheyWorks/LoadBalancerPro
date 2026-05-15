@@ -227,7 +227,7 @@
 
     .quick {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 16px;
       margin-top: 22px;
     }
@@ -343,6 +343,7 @@
         <span>LoadBalancerPro</span>
       </div>
       <nav class="nav" aria-label="Primary">
+        <a href="/enterprise-lab-reviewer.html">Reviewer Dashboard</a>
         <a href="/load-balancing-cockpit.html">Web Cockpit</a>
         <a href="/enterprise-lab.html">Enterprise Lab</a>
         <a href="/routing-demo.html">Routing Demo</a>
@@ -360,7 +361,8 @@
           scenario-gallery, replay, and API-trace flows against the existing Spring Boot endpoints.
         </p>
         <div class="actions" aria-label="Launch actions">
-          <a class="button primary" href="/load-balancing-cockpit.html">Open Web Cockpit</a>
+          <a class="button primary" href="/enterprise-lab-reviewer.html">Open Reviewer Dashboard</a>
+          <a class="button" href="/load-balancing-cockpit.html">Open Web Cockpit</a>
           <a class="button" href="/enterprise-lab.html">Open Enterprise Lab</a>
           <a class="button" href="/routing-demo.html">Open Routing Demo</a>
           <a class="button" href="/api/health">Check API Health</a>
@@ -400,6 +402,13 @@
     </section>
 
     <section class="quick" aria-label="Quick links">
+      <article class="panel">
+        <span class="tag green">Reviewer</span>
+        <h2>Enterprise Lab Reviewer Dashboard</h2>
+        <p>One static page for readiness posture, evidence paths, CI dry-run artifact meaning, and safety boundaries.</p>
+        <a href="/enterprise-lab-reviewer.html">Open `/enterprise-lab-reviewer.html`</a>
+      </article>
+
       <article class="panel">
         <span class="tag blue">Primary</span>
         <h2>Web Cockpit</h2>

@@ -24,6 +24,8 @@ class EnterpriseReadinessAuditDocumentationTest {
             Path.of("docs/MANUAL_GITHUB_GOVERNANCE_HARDENING.md");
     private static final Path CI_WORKFLOW = Path.of(".github/workflows/ci.yml");
     private static final Path CODEOWNERS = Path.of(".github/CODEOWNERS");
+    private static final Path REVIEWER_DASHBOARD =
+            Path.of("src/main/resources/static/enterprise-lab-reviewer.html");
     private static final Path README = Path.of("README.md");
     private static final Path EXECUTIVE_SUMMARY = Path.of("docs/EXECUTIVE_SUMMARY.md");
     private static final Path PRODUCTION_SUMMARY = Path.of("docs/PRODUCTION_READINESS_SUMMARY.md");
@@ -36,6 +38,7 @@ class EnterpriseReadinessAuditDocumentationTest {
             CONTAINER_EVIDENCE_LANE,
             CONTAINER_DRY_RUN_LANE,
             GOVERNANCE_HARDENING,
+            REVIEWER_DASHBOARD,
             EXECUTIVE_SUMMARY,
             PRODUCTION_SUMMARY,
             TRUST_MAP,

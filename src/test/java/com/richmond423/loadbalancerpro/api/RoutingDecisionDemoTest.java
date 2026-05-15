@@ -84,6 +84,15 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Copy proof commands"));
         assertTrue(page.contains("proof-summary-output"));
         assertTrue(page.contains("proof-commands"));
+        assertTrue(page.contains("Scenario Comparison"));
+        assertTrue(page.contains("Previous scenario"));
+        assertTrue(page.contains("Current scenario"));
+        assertTrue(page.contains("Selected strategy change"));
+        assertTrue(page.contains("Selected backend/server change"));
+        assertTrue(page.contains("Key input signal changes"));
+        assertTrue(page.contains("Degradation/recovery explanation"));
+        assertTrue(page.contains("Copy scenario comparison"));
+        assertTrue(page.contains("scenario-comparison-output"));
         assertTrue(page.contains("Copy curl"));
         assertTrue(page.contains("Copy payload"));
         assertTrue(page.contains("Copy summary"));
@@ -124,6 +133,37 @@ class RoutingDecisionDemoTest {
         assertTrue(normalized.contains("no registry publication or container signing evidence"));
         assertTrue(normalized.contains("runtimeReportWritten: false".toLowerCase(Locale.ROOT)));
         assertTrue(normalized.contains("externalServices: false".toLowerCase(Locale.ROOT)));
+    }
+
+    @Test
+    void routingDemoScenarioComparisonContainsLocalOnlyBoundariesAndCopyableDeltas() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("Packaged normal-load baseline"));
+        assertTrue(page.contains("Current request editor payload"));
+        assertTrue(page.contains("previousScenario: "));
+        assertTrue(page.contains("currentScenario: "));
+        assertTrue(page.contains("selectedStrategyChange: "));
+        assertTrue(page.contains("selectedBackendChange: "));
+        assertTrue(page.contains("keyInputSignalChanges: "));
+        assertTrue(page.contains("degradationRecoveryExplanation: "));
+        assertTrue(page.contains("localOnlyDemoBoundary: browser-local comparison"));
+        assertTrue(page.contains("No primary strategy change"));
+        assertTrue(page.contains("Selected backend changed after compare"));
+        assertTrue(page.contains("candidates "));
+        assertTrue(page.contains("healthy "));
+        assertTrue(page.contains("unhealthy "));
+        assertTrue(page.contains("inFlight "));
+        assertTrue(page.contains("maxP95LatencyMs "));
+        assertTrue(page.contains("Degradation pressure increased"));
+        assertTrue(page.contains("Recovery visible"));
+        assertTrue(page.contains("same-origin local API results only"));
+        assertTrue(normalized.contains("browser-local comparison of synthetic payloads"));
+        assertTrue(normalized.contains("no production traffic"));
+        assertTrue(normalized.contains("no live cloud validation"));
+        assertTrue(normalized.contains("no real tenant data"));
+        assertTrue(normalized.contains("no upload, share endpoint, or server-side export/pdf/zip generation"));
     }
 
     @Test

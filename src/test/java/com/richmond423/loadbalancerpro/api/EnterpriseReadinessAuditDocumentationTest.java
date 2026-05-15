@@ -28,6 +28,8 @@ class EnterpriseReadinessAuditDocumentationTest {
             Path.of("src/main/resources/static/enterprise-lab-reviewer.html");
     private static final Path OPERATOR_EVIDENCE_DASHBOARD =
             Path.of("src/main/resources/static/operator-evidence-dashboard.html");
+    private static final Path EVIDENCE_TIMELINE =
+            Path.of("src/main/resources/static/evidence-timeline.html");
     private static final Path README = Path.of("README.md");
     private static final Path EXECUTIVE_SUMMARY = Path.of("docs/EXECUTIVE_SUMMARY.md");
     private static final Path PRODUCTION_SUMMARY = Path.of("docs/PRODUCTION_READINESS_SUMMARY.md");
@@ -42,6 +44,7 @@ class EnterpriseReadinessAuditDocumentationTest {
             GOVERNANCE_HARDENING,
             REVIEWER_DASHBOARD,
             OPERATOR_EVIDENCE_DASHBOARD,
+            EVIDENCE_TIMELINE,
             EXECUTIVE_SUMMARY,
             PRODUCTION_SUMMARY,
             TRUST_MAP,
@@ -265,6 +268,31 @@ class EnterpriseReadinessAuditDocumentationTest {
         }
 
         assertNoUnsafeAffirmativeClaims(GOVERNANCE_HARDENING, governance);
+    }
+
+    @Test
+    void evidenceTimelineDocumentsHistoryViewWithoutProductionClaims() throws Exception {
+        String timeline = read(EVIDENCE_TIMELINE);
+
+        for (String expected : List.of(
+                "Evidence Timeline / History View",
+                "Local/CI evidence timeline",
+                "not production certified",
+                "not enterprise-production ready",
+                "target/enterprise-lab-runs/",
+                "target/container-dry-run-evidence/",
+                "container-dry-run-evidence-no-publish-no-sign",
+                "/operator-evidence-dashboard.html",
+                "/enterprise-lab-reviewer.html",
+                "/api/enterprise-lab/operator-evidence-summary",
+                "/api/enterprise-lab/reviewer-summary",
+                "generated evidence should not be committed",
+                "no registry publish",
+                "no container signing")) {
+            assertTrue(timeline.contains(expected), "evidence timeline should mention " + expected);
+        }
+
+        assertNoUnsafeAffirmativeClaims(EVIDENCE_TIMELINE, timeline);
     }
 
     @Test

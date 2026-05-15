@@ -245,6 +245,13 @@
       align-items: start;
     }
 
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
     .copy-status {
       min-height: 22px;
       margin-top: 8px;
@@ -275,6 +282,11 @@
 
       .copy-row {
         grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        align-items: stretch;
+        flex-direction: column;
       }
     }
   </style>
@@ -379,6 +391,7 @@
       <span class="compact">Reviewer handoff packet</span>
     </div>
     <div class="panel-body">
+      <p class="compact">Download is generated locally in your browser. The server does not create files, export artifacts, or receive packet contents.</p>
       <div class="copy-row">
         <pre id="packet-template">## Evidence Export Packet
 
@@ -413,8 +426,14 @@
   - no GitHub governance settings applied by repo files alone
 - Residual risks:
 - Follow-up gates:
-- Reviewer notes:</pre>
-        <button type="button" data-copy-target="packet-template">Copy</button>
+- Reviewer notes:
+
+Safety note: do not include secrets/tokens/private keys in this packet.</pre>
+        <div class="button-group" aria-label="Evidence packet local actions">
+          <button type="button" id="download-markdown-packet">Download Markdown packet</button>
+          <button type="button" id="download-json-packet">Download JSON packet</button>
+          <button type="button" id="copy-markdown-packet">Copy Markdown packet</button>
+        </div>
       </div>
       <div id="copy-status" class="copy-status" role="status" aria-live="polite"></div>
     </div>
@@ -480,6 +499,13 @@
   const summaryPathsEl = document.getElementById("summary-paths");
   const summaryArtifactEl = document.getElementById("summary-artifact");
   const summaryBoundaryEl = document.getElementById("summary-boundary");
+  const packetTemplateEl = document.getElementById("packet-template");
+  const markdownDownloadButton = document.getElementById("download-markdown-packet");
+  const jsonDownloadButton = document.getElementById("download-json-packet");
+  const markdownCopyButton = document.getElementById("copy-markdown-packet");
+  const MARKDOWN_PACKET_FILENAME = "loadbalancerpro-evidence-packet.md";
+  const JSON_PACKET_FILENAME = "loadbalancerpro-evidence-packet.json";
+  let latestPacketSummary = null;
 
   async function copyText(text) {
     if (navigator.clipboard && window.isSecureContext) {
@@ -498,19 +524,6 @@
     textArea.remove();
   }
 
-  document.querySelectorAll("button[data-copy-target]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const target = document.getElementById(button.getAttribute("data-copy-target"));
-      const text = target ? target.textContent : "";
-      try {
-        await copyText(text);
-        copyStatusEl.textContent = "Copied evidence export packet template";
-      } catch (error) {
-        copyStatusEl.textContent = "Copy failed. Select the template text manually.";
-      }
-    });
-  });
-
   function setSummaryItem(element, title, value) {
     element.classList.add("ready");
     element.replaceChildren();
@@ -525,7 +538,229 @@
     return Array.isArray(values) && values.length > 0 ? values.join(", ") : "Unavailable";
   }
 
+  function fallbackPacketSummary() {
+    return {
+      dashboardPath: "/evidence-export-packet.html",
+      timelinePath: "/evidence-timeline.html",
+      operatorDashboardPath: "/operator-evidence-dashboard.html",
+      reviewerDashboardPath: "/enterprise-lab-reviewer.html",
+      apiLinks: [
+        "/api/enterprise-lab/evidence-timeline",
+        "/api/enterprise-lab/operator-evidence-summary",
+        "/api/enterprise-lab/reviewer-summary"
+      ],
+      packetSections: [
+        "project/version/commit",
+        "reviewer/date",
+        "local verification commands",
+        "Enterprise Lab smoke result",
+        "evidence paths",
+        "CI dry-run artifact",
+        "dashboard/API links checked",
+        "proof summary",
+        "not-proven boundaries",
+        "residual risks",
+        "follow-up gates"
+      ],
+      evidencePaths: {
+        enterpriseLabRuns: "target/enterprise-lab-runs/",
+        containerDryRunEvidence: "target/container-dry-run-evidence/",
+        generatedOutputBoundary: "generated target output remains ignored and should not be committed"
+      },
+      ciArtifact: {
+        name: "container-dry-run-evidence-no-publish-no-sign",
+        evidenceDirectory: "target/container-dry-run-evidence/"
+      },
+      verificationCommands: [
+        "mvn -q test",
+        "mvn -q -DskipTests package",
+        "mvn -B package",
+        "git diff --check",
+        "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\smoke\\enterprise-lab-workflow.ps1 -Package"
+      ],
+      packetTemplateFields: [
+        "Packet label",
+        "Commit SHA",
+        "Branch",
+        "Reviewer",
+        "Date",
+        "Commands run",
+        "Test/package result",
+        "Smoke result",
+        "Evidence paths",
+        "CI artifact name",
+        "Dashboard links checked",
+        "Proof summary",
+        "Not-proven boundaries",
+        "Residual risks",
+        "Follow-up gates"
+      ],
+      proves: [
+        "reviewer packet can be assembled from existing local/CI evidence",
+        "evidence locations are known",
+        "verification commands are explicit",
+        "repeated evidence runs can be summarized consistently"
+      ],
+      doesNotProve: [
+        "production certification",
+        "live cloud validation",
+        "private-network production validation",
+        "real tenant/IdP proof",
+        "registry publication",
+        "container signing",
+        "production SLO/SLA proof",
+        "GitHub governance enforcement by repo files alone"
+      ],
+      safetyBoundaries: [
+        "browser-local download generation only",
+        "server does not create files",
+        "no secrets, tokens, or private keys belong in the packet",
+        "no external calls, process execution, or secret reads are needed",
+        "generated evidence under target/ remains ignored output"
+      ]
+    };
+  }
+
+  function currentPacketSummary() {
+    return latestPacketSummary || fallbackPacketSummary();
+  }
+
+  function listLines(values, indent = "") {
+    return Array.isArray(values) && values.length > 0
+      ? values.map((value) => `${indent}- ${value}`).join("\n")
+      : `${indent}- Unavailable`;
+  }
+
+  function buildMarkdownPacket(summary) {
+    const paths = summary.evidencePaths || {};
+    const artifact = summary.ciArtifact || {};
+    const apiLinks = summary.apiLinks || [
+      "/api/enterprise-lab/evidence-timeline",
+      "/api/enterprise-lab/operator-evidence-summary",
+      "/api/enterprise-lab/reviewer-summary"
+    ];
+    return [
+      packetTemplateEl.textContent.trim(),
+      "",
+      "## Local Download Metadata",
+      "",
+      "- Download source: browser-local Blob download",
+      "- Server-side file generation: none",
+      `- Markdown filename: ${MARKDOWN_PACKET_FILENAME}`,
+      `- JSON filename: ${JSON_PACKET_FILENAME}`,
+      "",
+      "## Verification Commands",
+      "",
+      listLines(summary.verificationCommands),
+      "",
+      "## Evidence Paths",
+      "",
+      `- Enterprise Lab smoke evidence: ${paths.enterpriseLabRuns || "target/enterprise-lab-runs/"}`,
+      `- Container dry-run evidence: ${paths.containerDryRunEvidence || "target/container-dry-run-evidence/"}`,
+      `- Generated output boundary: ${paths.generatedOutputBoundary || "generated target output remains ignored and should not be committed"}`,
+      "",
+      "## CI Artifact",
+      "",
+      `- Name: ${artifact.name || "container-dry-run-evidence-no-publish-no-sign"}`,
+      `- Evidence directory: ${artifact.evidenceDirectory || "target/container-dry-run-evidence/"}`,
+      "",
+      "## Dashboard And API Links Checked",
+      "",
+      listLines([
+        summary.dashboardPath || "/evidence-export-packet.html",
+        summary.timelinePath || "/evidence-timeline.html",
+        summary.operatorDashboardPath || "/operator-evidence-dashboard.html",
+        summary.reviewerDashboardPath || "/enterprise-lab-reviewer.html",
+        ...apiLinks
+      ]),
+      "",
+      "## Proof Summary",
+      "",
+      listLines(summary.proves),
+      "",
+      "## Not-Proven Boundaries",
+      "",
+      listLines(summary.doesNotProve),
+      "",
+      "## Safety Boundaries",
+      "",
+      listLines(summary.safetyBoundaries),
+      "",
+      "Safety note: do not include secrets/tokens/private keys in this packet."
+    ].join("\n");
+  }
+
+  function buildJsonPacket(summary) {
+    return JSON.stringify({
+      packetLabel: "",
+      commitSha: "",
+      branch: "",
+      reviewer: "",
+      date: "",
+      commandsRun: summary.verificationCommands || [],
+      testPackageResult: "",
+      smokeResult: "",
+      evidencePaths: summary.evidencePaths || {},
+      ciArtifact: summary.ciArtifact || {},
+      dashboardLinksChecked: [
+        summary.dashboardPath || "/evidence-export-packet.html",
+        summary.timelinePath || "/evidence-timeline.html",
+        summary.operatorDashboardPath || "/operator-evidence-dashboard.html",
+        summary.reviewerDashboardPath || "/enterprise-lab-reviewer.html"
+      ],
+      apiLinksChecked: summary.apiLinks || [
+        "/api/enterprise-lab/evidence-timeline",
+        "/api/enterprise-lab/operator-evidence-summary",
+        "/api/enterprise-lab/reviewer-summary"
+      ],
+      proofSummary: summary.proves || [],
+      notProvenBoundaries: summary.doesNotProve || [],
+      residualRisks: [],
+      followUpGates: [],
+      reviewerNotes: "",
+      safetyNote: "do not include secrets/tokens/private keys",
+      downloadBoundary: "generated locally in your browser; server does not create files"
+    }, null, 2);
+  }
+
+  function downloadText(filename, content, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.rel = "noopener";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function setStatus(message) {
+    copyStatusEl.textContent = message;
+  }
+
+  markdownDownloadButton.addEventListener("click", () => {
+    downloadText(MARKDOWN_PACKET_FILENAME, buildMarkdownPacket(currentPacketSummary()), "text/markdown;charset=utf-8");
+    setStatus(`Prepared ${MARKDOWN_PACKET_FILENAME} locally in your browser`);
+  });
+
+  jsonDownloadButton.addEventListener("click", () => {
+    downloadText(JSON_PACKET_FILENAME, buildJsonPacket(currentPacketSummary()), "application/json;charset=utf-8");
+    setStatus(`Prepared ${JSON_PACKET_FILENAME} locally in your browser`);
+  });
+
+  markdownCopyButton.addEventListener("click", async () => {
+    try {
+      await copyText(buildMarkdownPacket(currentPacketSummary()));
+      setStatus("Copied Markdown evidence packet");
+    } catch (error) {
+      setStatus("Copy failed. Select the template text manually.");
+    }
+  });
+
   function renderEvidenceExportPacket(summary) {
+    latestPacketSummary = summary;
     const paths = summary.evidencePaths || {};
     const artifact = summary.ciArtifact || {};
     const sections = Array.isArray(summary.packetSections) ? summary.packetSections : [];

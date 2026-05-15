@@ -318,6 +318,8 @@ class EnterpriseReadinessAuditDocumentationTest {
                 "/api/enterprise-lab/reviewer-summary",
                 "generated evidence should not be committed",
                 "do not include secrets/tokens/private keys",
+                "Reviewer Packet Share Checklist",
+                "server does not send, upload, or create share artifacts",
                 "no registry publish",
                 "no container signing",
                 "no actual export file generation")) {

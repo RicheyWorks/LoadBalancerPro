@@ -118,6 +118,31 @@ class EvidenceExportPacketViewTest {
     }
 
     @Test
+    void evidenceExportPacketProvidesBrowserLocalPrintStyles() throws Exception {
+        String page = read(EXPORT_PACKET);
+
+        for (String expected : List.of(
+                "@media print",
+                "Print / Save as PDF",
+                "window.print",
+                "handled by your browser",
+                "server does not create PDF files",
+                "Download Markdown packet",
+                "Download JSON packet",
+                "Copy Markdown packet",
+                "Blob",
+                "URL.createObjectURL",
+                "not production certified",
+                "not enterprise-production ready",
+                "no registry publish",
+                "no container signing",
+                "no live cloud validation",
+                "no real tenant/IdP proof")) {
+            assertTrue(page.contains(expected), "browser-local print support should include " + expected);
+        }
+    }
+
+    @Test
     void evidenceExportPacketApiReturnsDeterministicLocalPacketMetadata() throws Exception {
         String response = mockMvc.perform(get("/api/enterprise-lab/evidence-export-packet"))
                 .andExpect(status().isOk())
@@ -206,6 +231,9 @@ class EvidenceExportPacketViewTest {
         String controller = read(EXPORT_PACKET_CONTROLLER);
 
         for (String prohibited : List.of(
+                "PDFBox",
+                "iText",
+                "PdfWriter",
                 "Files.write",
                 "FileOutputStream",
                 "ZipOutputStream",

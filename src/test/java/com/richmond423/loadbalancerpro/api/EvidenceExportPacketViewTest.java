@@ -40,6 +40,8 @@ class EvidenceExportPacketViewTest {
     private static final Path INDEX = Path.of("src/main/resources/static/index.html");
     private static final Path README = Path.of("README.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
+    private static final List<Path> MAJOR_EVIDENCE_PAGES =
+            List.of(REVIEWER_DASHBOARD, OPERATOR_DASHBOARD, TIMELINE, EXPORT_PACKET);
 
     @Autowired
     private MockMvc mockMvc;
@@ -170,6 +172,69 @@ class EvidenceExportPacketViewTest {
                 "/evidence-export-packet.html")) {
             assertTrue(page.contains(expected), "reviewer share checklist should include " + expected);
         }
+    }
+
+    @Test
+    void majorEvidencePagesExposeConsistentReviewerNavigation() throws Exception {
+        List<String> evidencePages = List.of(
+                "/enterprise-lab-reviewer.html",
+                "/operator-evidence-dashboard.html",
+                "/evidence-timeline.html",
+                "/evidence-export-packet.html");
+        List<String> localApiPaths = List.of(
+                "/api/enterprise-lab/reviewer-summary",
+                "/api/enterprise-lab/operator-evidence-summary",
+                "/api/enterprise-lab/evidence-timeline",
+                "/api/enterprise-lab/evidence-export-packet");
+        List<String> reviewerPathSteps = List.of(
+                "Evidence Navigation",
+                "Recommended reviewer path",
+                "Start with Reviewer Dashboard",
+                "Check Operator Evidence Dashboard",
+                "Review Evidence Timeline",
+                "Open Evidence Export Packet",
+                "Copy/download/print packet",
+                "Use Share Checklist before sending",
+                "Verify not-proven boundaries");
+
+        for (Path pagePath : MAJOR_EVIDENCE_PAGES) {
+            String page = read(pagePath);
+            String normalized = page.toLowerCase(Locale.ROOT);
+            for (String expected : evidencePages) {
+                assertTrue(page.contains(expected), pagePath + " should link " + expected);
+            }
+            for (String expected : localApiPaths) {
+                assertTrue(page.contains(expected), pagePath + " should list local API path " + expected);
+            }
+            for (String expected : reviewerPathSteps) {
+                assertTrue(page.contains(expected), pagePath + " should include reviewer path step " + expected);
+            }
+            for (String boundary : List.of(
+                    "not production certified",
+                    "not enterprise-production ready",
+                    "no registry publish",
+                    "no container signing")) {
+                assertTrue(normalized.contains(boundary), pagePath + " should preserve boundary " + boundary);
+            }
+            for (String prohibited : List.of(
+                    "upload endpoint",
+                    "share endpoint",
+                    "server-side share endpoint",
+                    "server-side export complete",
+                    "server creates pdf")) {
+                assertFalse(normalized.contains(prohibited), pagePath + " must not introduce " + prohibited);
+            }
+        }
+
+        String index = read(INDEX);
+        for (String expected : evidencePages) {
+            assertTrue(index.contains(expected), "root page should link " + expected);
+        }
+
+        String trustMap = read(TRUST_MAP);
+        assertTrue(trustMap.contains("Evidence Page Navigation"));
+        assertTrue(trustMap.contains("Recommended reviewer path"));
+        assertTrue(trustMap.contains("Use Share Checklist before sending"));
     }
 
     @Test

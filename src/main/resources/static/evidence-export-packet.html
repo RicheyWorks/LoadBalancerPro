@@ -527,22 +527,31 @@
 
     <section class="panel" aria-labelledby="links-title">
       <div class="panel-head">
-        <h2 id="links-title">Evidence Links And Paths</h2>
+        <h2 id="links-title">Evidence Navigation</h2>
+        <span class="compact">reviewer path and local API references</span>
       </div>
       <div class="panel-body">
-        <ul class="path-list">
-          <li><a href="/evidence-timeline.html"><code>/evidence-timeline.html</code></a></li>
-          <li><a href="/operator-evidence-dashboard.html"><code>/operator-evidence-dashboard.html</code></a></li>
-          <li><a href="/enterprise-lab-reviewer.html"><code>/enterprise-lab-reviewer.html</code></a></li>
-          <li><code>/api/enterprise-lab/evidence-timeline</code></li>
-          <li><code>/api/enterprise-lab/operator-evidence-summary</code></li>
-          <li><code>/api/enterprise-lab/reviewer-summary</code></li>
-          <li><code>docs/REVIEWER_TRUST_MAP.md</code></li>
-          <li><code>docs/ENTERPRISE_READINESS_AUDIT.md</code></li>
-          <li><code>docs/MANUAL_GITHUB_GOVERNANCE_HARDENING.md</code></li>
-          <li><code>docs/CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md</code></li>
-          <li><code>docs/CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md</code></li>
-        </ul>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <strong>Reviewer Dashboard</strong>
+            <span><a href="/enterprise-lab-reviewer.html"><code>/enterprise-lab-reviewer.html</code></a><br>Purpose: posture and readiness summary.</span>
+          </div>
+          <div class="summary-item">
+            <strong>Operator Evidence Dashboard</strong>
+            <span><a href="/operator-evidence-dashboard.html"><code>/operator-evidence-dashboard.html</code></a><br>Purpose: local/CI evidence map.</span>
+          </div>
+          <div class="summary-item">
+            <strong>Evidence Timeline</strong>
+            <span><a href="/evidence-timeline.html"><code>/evidence-timeline.html</code></a><br>Purpose: evidence stages and run template.</span>
+          </div>
+          <div class="summary-item">
+            <strong>Evidence Export Packet</strong>
+            <span><a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a><br>Purpose: copy/download/print/share checklist.</span>
+          </div>
+        </div>
+        <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
+        <p class="compact"><strong>Recommended reviewer path:</strong> Start with Reviewer Dashboard. Check Operator Evidence Dashboard. Review Evidence Timeline. Open Evidence Export Packet. Copy/download/print packet. Use Share Checklist before sending. Verify not-proven boundaries.</p>
+        <p class="compact"><strong>Reference docs:</strong> <code>docs/REVIEWER_TRUST_MAP.md</code>, <code>docs/ENTERPRISE_READINESS_AUDIT.md</code>, <code>docs/MANUAL_GITHUB_GOVERNANCE_HARDENING.md</code>, <code>docs/CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md</code>, and <code>docs/CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md</code>.</p>
       </div>
     </section>
   </div>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Evidence Timeline / History View</title>
+  <title>Evidence Export Packet</title>
   <style>
     :root {
       color-scheme: light;
@@ -176,105 +176,38 @@
       padding: 14px;
     }
 
-    .timeline {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: 10px;
-    }
-
-    .timeline li {
-      display: grid;
-      grid-template-columns: 32px minmax(0, 1fr);
-      gap: 10px;
-      align-items: start;
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #ffffff;
-    }
-
-    .step {
-      display: inline-grid;
-      place-items: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 999px;
-      background: var(--blue);
-      color: #ffffff;
-      font-weight: 700;
-      font-size: 0.85rem;
-    }
-
     .path-list,
-    .plain-list {
+    .plain-list,
+    .check-list {
       margin: 0;
       padding-left: 19px;
     }
 
     .path-list li,
-    .plain-list li {
+    .plain-list li,
+    .check-list li {
       margin: 8px 0;
       line-height: 1.45;
-    }
-
-    .proven {
-      border-left: 5px solid var(--green);
-    }
-
-    .not-proven {
-      border-left: 5px solid var(--red);
-    }
-
-    .notice {
-      border-left: 5px solid var(--amber);
-      background: var(--soft-amber);
-    }
-
-    .artifact {
-      border-left: 5px solid var(--blue);
-      background: var(--soft-blue);
-    }
-
-    .template {
-      border-left: 5px solid var(--green);
-      background: var(--soft-green);
-    }
-
-    .compact {
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-
-    .copy-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 10px;
-      align-items: center;
-      margin: 10px 0;
-    }
-
-    .copy-status {
-      min-height: 20px;
-      margin-top: 8px;
-      color: var(--green);
-      font-size: 0.92rem;
-      font-weight: 700;
     }
 
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
+      gap: 10px;
       margin: 12px 0;
     }
 
     .summary-item {
-      padding: 12px;
+      min-height: 86px;
       border: 1px solid var(--line);
       border-radius: 8px;
+      padding: 10px;
       background: #ffffff;
+    }
+
+    .summary-item.ready {
+      border-color: #b8dccb;
+      background: var(--soft-green);
     }
 
     .summary-item strong,
@@ -283,13 +216,50 @@
     }
 
     .summary-item span {
-      margin-top: 7px;
+      margin-top: 6px;
       color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .template {
+      border-left: 4px solid var(--blue);
+    }
+
+    .notice {
+      border-left: 4px solid var(--amber);
+      background: var(--soft-amber);
+    }
+
+    .proven {
+      border-left: 4px solid var(--green);
+    }
+
+    .not-proven {
+      border-left: 4px solid var(--red);
+    }
+
+    .copy-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .copy-status {
+      min-height: 22px;
+      margin-top: 8px;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .compact {
+      color: var(--muted);
+      font-size: 0.9rem;
       line-height: 1.45;
     }
 
     .summary-output {
-      margin-top: 12px;
+      min-height: 120px;
     }
 
     @media (max-width: 820px) {
@@ -311,10 +281,11 @@
 </head>
 <body>
 <header>
-  <h1>Evidence Timeline / History View</h1>
-  <p class="lead">Local/CI evidence timeline. Not production certified. Not enterprise-production ready. This view organizes evidence stages, generated run locations, CI dry-run artifact metadata, and repeatable run templates without claiming live history or production status.</p>
-  <div class="badges" aria-label="Evidence timeline posture">
-    <span class="badge">local/CI evidence timeline</span>
+  <h1>Evidence Export Packet</h1>
+  <p class="lead">Reviewer handoff packet. Local/CI evidence only. Not production certified. Not enterprise-production ready. This page provides a copyable handoff checklist and packet template without creating files, releases, signatures, registry publications, or production claims.</p>
+  <div class="badges" aria-label="Evidence export packet posture">
+    <span class="badge">reviewer handoff packet</span>
+    <span class="badge">local/CI evidence only</span>
     <span class="badge">not production certified</span>
     <span class="badge">not enterprise-production ready</span>
     <span class="badge">no registry publish</span>
@@ -323,27 +294,27 @@
 </header>
 
 <main>
-  <section class="panel notice" aria-labelledby="scope-title">
+  <section class="panel notice" aria-labelledby="purpose-title">
     <div class="panel-head">
-      <h2 id="scope-title">Scope Boundary</h2>
+      <h2 id="purpose-title">Packet Purpose</h2>
     </div>
     <div class="panel-body">
-      <p>This page is a read-only evidence navigation surface. It does not create releases, publish containers, sign containers, mutate cloud resources, mutate GitHub settings, scan arbitrary filesystem locations, or certify production use.</p>
-      <p class="compact">Use <a href="/operator-evidence-dashboard.html"><code>/operator-evidence-dashboard.html</code></a> for the operator evidence map, <a href="/enterprise-lab-reviewer.html"><code>/enterprise-lab-reviewer.html</code></a> for the reviewer trust narrative, and <a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a> for the reviewer handoff packet.</p>
+      <p>This is a human-readable handoff packet template. It gathers existing evidence paths, verification commands, dashboard links, CI dry-run artifact metadata, governance references, and not-proven boundaries into one reviewer-facing surface.</p>
+      <p class="compact">It does not export secrets, generate files, create a release artifact, publish anything, sign anything, mutate cloud resources, mutate GitHub settings, or certify production use.</p>
     </div>
   </section>
 
-  <section class="panel artifact" aria-labelledby="summary-title">
+  <section class="panel" aria-labelledby="summary-title">
     <div class="panel-head">
-      <h2 id="summary-title">Live Local Timeline Summary</h2>
-      <span id="timeline-summary-status" class="compact">Loading local API summary</span>
+      <h2 id="summary-title">Live Local Packet Summary</h2>
+      <span id="packet-summary-status" class="compact">Loading local API summary</span>
     </div>
     <div class="panel-body">
-      <p class="compact">Read-only local endpoint: <code>/api/enterprise-lab/evidence-timeline</code>. The static timeline below remains available if the running app API is unavailable.</p>
+      <p class="compact">Read-only local endpoint: <code>/api/enterprise-lab/evidence-export-packet</code>. The static packet template below remains available if the running app API is unavailable.</p>
       <div class="summary-grid" aria-live="polite">
-        <div class="summary-item" id="summary-stage-count">
-          <strong>Evidence Stages</strong>
-          <span>Source docs, Maven, package/JAR, smoke, CI dry-run artifact, reviewer summary, operator summary, and future gated evidence.</span>
+        <div class="summary-item" id="summary-sections">
+          <strong>Packet Sections</strong>
+          <span>Project, reviewer, commands, smoke, artifact, links, proof summary, residual risks, and gates.</span>
         </div>
         <div class="summary-item" id="summary-paths">
           <strong>Evidence Paths</strong>
@@ -358,40 +329,45 @@
           <span>No production certification, no registry publish, no container signing, no live cloud validation, no real tenant proof, and no production SLO/SLA proof.</span>
         </div>
       </div>
-      <pre id="timeline-summary-output" class="summary-output">Local evidence timeline summary has not loaded yet.</pre>
+      <pre id="packet-summary-output" class="summary-output">Local evidence export packet summary has not loaded yet.</pre>
     </div>
   </section>
 
   <div class="layout">
-    <section class="panel" aria-labelledby="stages-title">
+    <section class="panel" aria-labelledby="contents-title">
       <div class="panel-head">
-        <h2 id="stages-title">Evidence Stages</h2>
+        <h2 id="contents-title">Packet Contents</h2>
       </div>
       <div class="panel-body">
-        <ol class="timeline">
-          <li><span class="step">1</span><span><strong>Source readiness docs</strong><br><code>docs/ENTERPRISE_READINESS_AUDIT.md</code> and <code>docs/REVIEWER_TRUST_MAP.md</code>.</span></li>
-          <li><span class="step">2</span><span><strong>Maven verification</strong><br><code>mvn -q test</code> for local and CI test evidence.</span></li>
-          <li><span class="step">3</span><span><strong>Package/JAR verification</strong><br><code>mvn -q -DskipTests package</code>, <code>mvn -B package</code>, and packaged static resource checks.</span></li>
-          <li><span class="step">4</span><span><strong>Enterprise Lab smoke run</strong><br><code>scripts/smoke/enterprise-lab-workflow.ps1 -Package</code> writes ignored evidence under <code>target/enterprise-lab-runs/</code>.</span></li>
-          <li><span class="step">5</span><span><strong>CI dry-run container artifact</strong><br><code>container-dry-run-evidence-no-publish-no-sign</code> captures <code>target/container-dry-run-evidence/</code> as a workflow artifact.</span></li>
-          <li><span class="step">6</span><span><strong>Reviewer dashboard summary</strong><br><a href="/enterprise-lab-reviewer.html"><code>/enterprise-lab-reviewer.html</code></a> and <code>/api/enterprise-lab/reviewer-summary</code>.</span></li>
-          <li><span class="step">7</span><span><strong>Operator evidence summary</strong><br><a href="/operator-evidence-dashboard.html"><code>/operator-evidence-dashboard.html</code></a> and <code>/api/enterprise-lab/operator-evidence-summary</code>.</span></li>
-          <li><span class="step">8</span><span><strong>Future gated publish/signing evidence, not executed</strong><br>Future registry and signing evidence remains approval-gated and outside this view.</span></li>
-        </ol>
+        <ul class="check-list">
+          <li>Project, version, commit SHA, branch, reviewer, and date fields.</li>
+          <li>Local verification commands: <code>mvn -q test</code>, <code>mvn -q -DskipTests package</code>, <code>mvn -B package</code>, and <code>git diff --check</code>.</li>
+          <li>Enterprise Lab smoke command: <code>scripts/smoke/enterprise-lab-workflow.ps1 -Package</code>.</li>
+          <li>Smoke evidence path: <code>target/enterprise-lab-runs/</code>.</li>
+          <li>CI dry-run artifact: <code>container-dry-run-evidence-no-publish-no-sign</code>.</li>
+          <li>Container dry-run evidence path: <code>target/container-dry-run-evidence/</code>.</li>
+          <li>Dashboard links, governance packet link, container evidence docs, proof summary, residual risks, and follow-up gates.</li>
+        </ul>
       </div>
     </section>
 
-    <section class="panel artifact" aria-labelledby="locations-title">
+    <section class="panel" aria-labelledby="links-title">
       <div class="panel-head">
-        <h2 id="locations-title">Evidence Run Locations</h2>
+        <h2 id="links-title">Evidence Links And Paths</h2>
       </div>
       <div class="panel-body">
         <ul class="path-list">
-          <li><strong>Enterprise Lab smoke evidence:</strong> <code>target/enterprise-lab-runs/</code>.</li>
-          <li><strong>Container dry-run evidence:</strong> <code>target/container-dry-run-evidence/</code>.</li>
-          <li><strong>GitHub Actions artifact:</strong> <code>container-dry-run-evidence-no-publish-no-sign</code>.</li>
-          <li><strong>Generated output boundary:</strong> generated evidence should not be committed.</li>
-          <li><strong>Status boundary:</strong> the local app does not claim real-time GitHub status.</li>
+          <li><a href="/evidence-timeline.html"><code>/evidence-timeline.html</code></a></li>
+          <li><a href="/operator-evidence-dashboard.html"><code>/operator-evidence-dashboard.html</code></a></li>
+          <li><a href="/enterprise-lab-reviewer.html"><code>/enterprise-lab-reviewer.html</code></a></li>
+          <li><code>/api/enterprise-lab/evidence-timeline</code></li>
+          <li><code>/api/enterprise-lab/operator-evidence-summary</code></li>
+          <li><code>/api/enterprise-lab/reviewer-summary</code></li>
+          <li><code>docs/REVIEWER_TRUST_MAP.md</code></li>
+          <li><code>docs/ENTERPRISE_READINESS_AUDIT.md</code></li>
+          <li><code>docs/MANUAL_GITHUB_GOVERNANCE_HARDENING.md</code></li>
+          <li><code>docs/CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md</code></li>
+          <li><code>docs/CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md</code></li>
         </ul>
       </div>
     </section>
@@ -399,40 +375,62 @@
 
   <section class="panel template" aria-labelledby="template-title">
     <div class="panel-head">
-      <h2 id="template-title">Evidence Run Template</h2>
-      <span class="compact">Copyable Markdown</span>
+      <h2 id="template-title">Copyable Markdown Packet Template</h2>
+      <span class="compact">Reviewer handoff packet</span>
     </div>
     <div class="panel-body">
       <div class="copy-row">
-        <pre id="run-template">## Evidence Run
+        <pre id="packet-template">## Evidence Export Packet
 
-- run label:
-- commit SHA:
-- branch:
-- commands run:
-- result:
-- evidence directory:
-- CI artifact name:
-- proof summary:
-- not-proven boundaries:
-- reviewer notes:</pre>
-        <button type="button" data-copy-target="run-template">Copy</button>
+- Packet label:
+- Commit SHA:
+- Branch:
+- Reviewer:
+- Date:
+- Commands run:
+- Test/package result:
+- Smoke result:
+- Evidence paths:
+  - target/enterprise-lab-runs/
+  - target/container-dry-run-evidence/
+- CI artifact name: container-dry-run-evidence-no-publish-no-sign
+- Dashboard links checked:
+  - /evidence-timeline.html
+  - /operator-evidence-dashboard.html
+  - /enterprise-lab-reviewer.html
+  - /api/enterprise-lab/evidence-timeline
+  - /api/enterprise-lab/operator-evidence-summary
+  - /api/enterprise-lab/reviewer-summary
+- Proof summary:
+- Not-proven boundaries:
+  - no production certification
+  - no live cloud validation
+  - no private-network production validation
+  - no real tenant/IdP proof
+  - no registry publish
+  - no container signing
+  - no production SLO/SLA proof
+  - no GitHub governance settings applied by repo files alone
+- Residual risks:
+- Follow-up gates:
+- Reviewer notes:</pre>
+        <button type="button" data-copy-target="packet-template">Copy</button>
       </div>
       <div id="copy-status" class="copy-status" role="status" aria-live="polite"></div>
     </div>
   </section>
 
-  <section class="grid" aria-label="Timeline conclusions">
+  <section class="grid" aria-label="Packet conclusions">
     <article class="panel proven">
       <div class="panel-head">
         <h2>What This Proves</h2>
       </div>
       <div class="panel-body">
         <ul class="plain-list">
-          <li>Evidence categories are organized into a repeatable local/CI review model.</li>
-          <li>Local/CI proof paths are documented for Maven, package/JAR, smoke, and dry-run container evidence.</li>
-          <li>Repeated runs can be compared manually with the evidence run template.</li>
-          <li>Dashboard links help reviewers find evidence without treating ignored output as source truth.</li>
+          <li>Reviewer packet content can be assembled from existing local/CI evidence.</li>
+          <li>Evidence locations are known and repeatable.</li>
+          <li>Verification commands are explicit.</li>
+          <li>Repeated evidence runs can be summarized consistently for handoff.</li>
         </ul>
       </div>
     </article>
@@ -457,19 +455,18 @@
     </article>
   </section>
 
-  <section class="panel" aria-labelledby="navigation-title">
+  <section class="panel notice" aria-labelledby="safety-title">
     <div class="panel-head">
-      <h2 id="navigation-title">Navigation</h2>
+      <h2 id="safety-title">Safety Notes</h2>
     </div>
     <div class="panel-body">
       <ul class="plain-list">
-        <li><a href="/operator-evidence-dashboard.html"><code>/operator-evidence-dashboard.html</code></a></li>
-        <li><a href="/enterprise-lab-reviewer.html"><code>/enterprise-lab-reviewer.html</code></a></li>
-        <li><a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a></li>
-        <li><code>/api/enterprise-lab/operator-evidence-summary</code></li>
-        <li><code>/api/enterprise-lab/reviewer-summary</code></li>
-        <li><code>docs/REVIEWER_TRUST_MAP.md</code></li>
-        <li><code>docs/ENTERPRISE_READINESS_AUDIT.md</code></li>
+        <li>Generated evidence under <code>target/</code> should remain ignored.</li>
+        <li>generated evidence should not be committed.</li>
+        <li>do not include secrets/tokens/private keys in exported packet notes.</li>
+        <li>Do not publish or sign anything without separate maintainer approval.</li>
+        <li>Do not mutate cloud or GitHub settings from this packet.</li>
+        <li>This packet is a template and checklist only; it performs no actual export file generation.</li>
       </ul>
     </div>
   </section>
@@ -477,9 +474,9 @@
 
 <script>
   const copyStatusEl = document.getElementById("copy-status");
-  const summaryStatusEl = document.getElementById("timeline-summary-status");
-  const summaryOutputEl = document.getElementById("timeline-summary-output");
-  const summaryStageCountEl = document.getElementById("summary-stage-count");
+  const summaryStatusEl = document.getElementById("packet-summary-status");
+  const summaryOutputEl = document.getElementById("packet-summary-output");
+  const summarySectionsEl = document.getElementById("summary-sections");
   const summaryPathsEl = document.getElementById("summary-paths");
   const summaryArtifactEl = document.getElementById("summary-artifact");
   const summaryBoundaryEl = document.getElementById("summary-boundary");
@@ -507,7 +504,7 @@
       const text = target ? target.textContent : "";
       try {
         await copyText(text);
-        copyStatusEl.textContent = "Copied evidence run template";
+        copyStatusEl.textContent = "Copied evidence export packet template";
       } catch (error) {
         copyStatusEl.textContent = "Copy failed. Select the template text manually.";
       }
@@ -528,11 +525,11 @@
     return Array.isArray(values) && values.length > 0 ? values.join(", ") : "Unavailable";
   }
 
-  function renderEvidenceTimeline(summary) {
+  function renderEvidenceExportPacket(summary) {
     const paths = summary.evidencePaths || {};
     const artifact = summary.ciArtifact || {};
-    const stages = Array.isArray(summary.evidenceStages) ? summary.evidenceStages : [];
-    setSummaryItem(summaryStageCountEl, "Evidence Stages", `${stages.length || 8} deterministic timeline stages`);
+    const sections = Array.isArray(summary.packetSections) ? summary.packetSections : [];
+    setSummaryItem(summarySectionsEl, "Packet Sections", `${sections.length || 11} deterministic handoff sections`);
     setSummaryItem(
       summaryPathsEl,
       "Evidence Paths",
@@ -546,10 +543,13 @@
     setSummaryItem(summaryBoundaryEl, "Not Proven", formatList(summary.doesNotProve));
 
     summaryOutputEl.textContent = [
-      `Dashboard path: ${summary.dashboardPath || "/evidence-timeline.html"}`,
+      `Dashboard path: ${summary.dashboardPath || "/evidence-export-packet.html"}`,
+      `Timeline path: ${summary.timelinePath || "/evidence-timeline.html"}`,
       `Operator dashboard: ${summary.operatorDashboardPath || "/operator-evidence-dashboard.html"}`,
       `Reviewer dashboard: ${summary.reviewerDashboardPath || "/enterprise-lab-reviewer.html"}`,
-      `Run template fields: ${formatList(summary.runTemplateFields)}`,
+      `Packet sections: ${formatList(summary.packetSections)}`,
+      `Verification commands: ${formatList(summary.verificationCommands)}`,
+      `Template fields: ${formatList(summary.packetTemplateFields)}`,
       `Proves: ${formatList(summary.proves)}`,
       `Does not prove: ${formatList(summary.doesNotProve)}`,
       `Safety boundaries: ${formatList(summary.safetyBoundaries)}`
@@ -557,23 +557,23 @@
     summaryStatusEl.textContent = "Local API summary loaded";
   }
 
-  async function loadEvidenceTimeline() {
+  async function loadEvidenceExportPacket() {
     try {
-      const response = await fetch("/api/enterprise-lab/evidence-timeline", {
+      const response = await fetch("/api/enterprise-lab/evidence-export-packet", {
         headers: { "Accept": "application/json" },
         cache: "no-store"
       });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      renderEvidenceTimeline(await response.json());
+      renderEvidenceExportPacket(await response.json());
     } catch (error) {
       summaryStatusEl.textContent = "Static fallback active";
-      summaryOutputEl.textContent = "Local evidence timeline API is unavailable. Use the static stages, paths, and run template on this page.";
+      summaryOutputEl.textContent = "Local evidence export packet API is unavailable. Use the static handoff checklist and packet template on this page.";
     }
   }
 
-  loadEvidenceTimeline();
+  loadEvidenceExportPacket();
 </script>
 </body>
 </html>

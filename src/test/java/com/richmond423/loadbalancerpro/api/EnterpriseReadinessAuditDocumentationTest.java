@@ -30,6 +30,8 @@ class EnterpriseReadinessAuditDocumentationTest {
             Path.of("src/main/resources/static/operator-evidence-dashboard.html");
     private static final Path EVIDENCE_TIMELINE =
             Path.of("src/main/resources/static/evidence-timeline.html");
+    private static final Path EVIDENCE_EXPORT_PACKET =
+            Path.of("src/main/resources/static/evidence-export-packet.html");
     private static final Path README = Path.of("README.md");
     private static final Path EXECUTIVE_SUMMARY = Path.of("docs/EXECUTIVE_SUMMARY.md");
     private static final Path PRODUCTION_SUMMARY = Path.of("docs/PRODUCTION_READINESS_SUMMARY.md");
@@ -45,6 +47,7 @@ class EnterpriseReadinessAuditDocumentationTest {
             REVIEWER_DASHBOARD,
             OPERATOR_EVIDENCE_DASHBOARD,
             EVIDENCE_TIMELINE,
+            EVIDENCE_EXPORT_PACKET,
             EXECUTIVE_SUMMARY,
             PRODUCTION_SUMMARY,
             TRUST_MAP,
@@ -293,6 +296,35 @@ class EnterpriseReadinessAuditDocumentationTest {
         }
 
         assertNoUnsafeAffirmativeClaims(EVIDENCE_TIMELINE, timeline);
+    }
+
+    @Test
+    void evidenceExportPacketDocumentsReviewerHandoffWithoutProductionClaims() throws Exception {
+        String packet = read(EVIDENCE_EXPORT_PACKET);
+
+        for (String expected : List.of(
+                "Evidence Export Packet",
+                "Reviewer handoff packet",
+                "not production certified",
+                "not enterprise-production ready",
+                "target/enterprise-lab-runs/",
+                "target/container-dry-run-evidence/",
+                "container-dry-run-evidence-no-publish-no-sign",
+                "/evidence-timeline.html",
+                "/operator-evidence-dashboard.html",
+                "/enterprise-lab-reviewer.html",
+                "/api/enterprise-lab/evidence-timeline",
+                "/api/enterprise-lab/operator-evidence-summary",
+                "/api/enterprise-lab/reviewer-summary",
+                "generated evidence should not be committed",
+                "do not include secrets/tokens/private keys",
+                "no registry publish",
+                "no container signing",
+                "no actual export file generation")) {
+            assertTrue(packet.contains(expected), "evidence export packet should mention " + expected);
+        }
+
+        assertNoUnsafeAffirmativeClaims(EVIDENCE_EXPORT_PACKET, packet);
     }
 
     @Test

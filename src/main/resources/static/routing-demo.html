@@ -398,6 +398,49 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       </div>
     </section>
 
+    <section id="scenario-comparison-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Scenario Comparison</h2>
+        <div class="actions">
+          <button class="copy" type="button" data-copy-target="scenario-comparison-output">Copy scenario comparison</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="proof-grid" aria-label="Scenario comparison cards">
+          <div class="proof-card">
+            <strong>Previous scenario</strong>
+            <p id="scenario-previous-name">Packaged normal-load baseline.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Current scenario</strong>
+            <p id="scenario-current-name">Current request editor payload.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected strategy change</strong>
+            <p id="scenario-strategy-change">Run Compare strategies to compare requested strategy order.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected backend/server change</strong>
+            <p id="scenario-backend-change">Run Compare strategies to compare selected backend/server output.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Key input signal changes</strong>
+            <p id="scenario-signal-change">Load or edit a scenario to compare health, load, latency, errors, and queue pressure.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Degradation/recovery explanation</strong>
+            <p id="scenario-degradation-change">The baseline keeps one unhealthy backend visible so reviewers can compare degradation or recovery edits.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Local/demo-only boundary</strong>
+            <p>Browser-local comparison of synthetic payloads and same-origin local API results only; no production traffic, live cloud validation, real tenant data, uploads, or server-side export/PDF/ZIP generation.</p>
+          </div>
+        </div>
+        <h3 style="margin-top: 14px;">Copyable scenario comparison</h3>
+        <pre id="scenario-comparison-output">Run Compare strategies or edit the sample payload to generate scenario comparison text.</pre>
+      </div>
+    </section>
+
     <div class="grid" style="margin-top: 16px;">
       <section class="panel">
         <div class="panel-head">
@@ -587,13 +630,22 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       readiness: document.getElementById("readiness-output"),
       routing: document.getElementById("routing-output"),
       summary: document.getElementById("summary-output"),
-      proofSummary: document.getElementById("proof-summary-output")
+      proofSummary: document.getElementById("proof-summary-output"),
+      scenarioComparison: document.getElementById("scenario-comparison-output")
     };
     const proofFields = {
       strategy: document.getElementById("proof-strategy"),
       backend: document.getElementById("proof-backend"),
       signals: document.getElementById("proof-signals"),
       degradation: document.getElementById("proof-degradation")
+    };
+    const scenarioFields = {
+      previous: document.getElementById("scenario-previous-name"),
+      current: document.getElementById("scenario-current-name"),
+      strategy: document.getElementById("scenario-strategy-change"),
+      backend: document.getElementById("scenario-backend-change"),
+      signals: document.getElementById("scenario-signal-change"),
+      degradation: document.getElementById("scenario-degradation-change")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -796,6 +848,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       outputs.summary.textContent = lines.join("\n");
       setBadge("summary-badge", results.length > 0 ? "passed" : "warning", results.length > 0 ? "Ready" : "Waiting");
       renderProofSummary();
+      renderScenarioComparison();
     }
 
     function currentRequestPayload() {
@@ -810,6 +863,161 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const payload = currentRequestPayload();
       const servers = payload && Array.isArray(payload.servers) ? payload.servers : [];
       return servers.find((server) => server.serverId === serverId) || null;
+    }
+
+    function numericSignal(value) {
+      const number = Number(value || 0);
+      return Number.isFinite(number) ? number : 0;
+    }
+
+    function scenarioMetrics(payload) {
+      const servers = payload && Array.isArray(payload.servers) ? payload.servers : [];
+      const strategies = payload && Array.isArray(payload.strategies) ? payload.strategies : [];
+      const unhealthyServers = servers
+        .filter((server) => server.healthy === false)
+        .map((server) => server.serverId || "unnamed");
+      const healthyCount = servers.length - unhealthyServers.length;
+      const totalInFlight = servers.reduce((sum, server) => sum + numericSignal(server.inFlightRequestCount), 0);
+      const totalQueueDepth = servers.reduce((sum, server) => sum + numericSignal(server.queueDepth), 0);
+      const maxP95Latency = servers.reduce((max, server) => Math.max(max, numericSignal(server.p95LatencyMillis)), 0);
+      const maxErrorRate = servers.reduce((max, server) => Math.max(max, numericSignal(server.recentErrorRate)), 0);
+      return {
+        strategies,
+        primaryStrategy: strategies[0] || "No strategy requested",
+        serverCount: servers.length,
+        healthyCount,
+        unhealthyServers,
+        totalInFlight,
+        totalQueueDepth,
+        maxP95Latency,
+        maxErrorRate
+      };
+    }
+
+    function scenarioName(metrics) {
+      if (metrics.serverCount === 0) {
+        return "No candidate servers";
+      }
+      if (metrics.healthyCount === 0 && metrics.unhealthyServers.length > 0) {
+        return "All backends unhealthy";
+      }
+      if (metrics.unhealthyServers.length > 0 && metrics.healthyCount > 0) {
+        if (metrics.totalInFlight >= 40 || metrics.maxP95Latency >= 80 || metrics.totalQueueDepth >= 6) {
+          return "Overload pressure with unhealthy candidate";
+        }
+        return "Normal load with unhealthy drain candidate";
+      }
+      if (metrics.healthyCount > 0 && metrics.maxErrorRate <= 0.02 && metrics.maxP95Latency <= 60) {
+        return "Recovery/healthy-only scenario";
+      }
+      return "Custom reviewer scenario";
+    }
+
+    function strategyChangeSummary(previousMetrics, currentMetrics) {
+      const previousStrategy = previousMetrics.primaryStrategy;
+      const currentStrategy = currentMetrics.primaryStrategy;
+      const added = currentMetrics.strategies
+        .filter((strategy) => !previousMetrics.strategies.includes(strategy));
+      const removed = previousMetrics.strategies
+        .filter((strategy) => !currentMetrics.strategies.includes(strategy));
+      const parts = previousStrategy === currentStrategy
+        ? ["No primary strategy change: " + currentStrategy + " remains first requested strategy."]
+        : ["Primary strategy changed from " + previousStrategy + " to " + currentStrategy + "."];
+      if (added.length > 0) {
+        parts.push("Added strategies: " + added.join(", ") + ".");
+      }
+      if (removed.length > 0) {
+        parts.push("Removed strategies: " + removed.join(", ") + ".");
+      }
+      return parts.join(" ");
+    }
+
+    function backendChangeSummary(results) {
+      const baselineBackend = "edge-alpha";
+      if (results.length === 0) {
+        return "Run Compare strategies to see selected backend/server change against packaged baseline expectation " + baselineBackend + ".";
+      }
+      const primary = results[0];
+      const selectedBackend = primary.chosenServerId || "No server selected";
+      if (selectedBackend === baselineBackend) {
+        return "No selected backend change after compare: " + baselineBackend + " remains selected for the primary strategy.";
+      }
+      return "Selected backend changed after compare from " + baselineBackend + " to " + selectedBackend
+        + " for the primary strategy. Reason: " + (primary.reason || "no explanation returned") + ".";
+    }
+
+    function signalChangeSummary(previousMetrics, currentMetrics) {
+      return [
+        "candidates " + previousMetrics.serverCount + " -> " + currentMetrics.serverCount,
+        "healthy " + previousMetrics.healthyCount + " -> " + currentMetrics.healthyCount,
+        "unhealthy " + previousMetrics.unhealthyServers.length + " -> " + currentMetrics.unhealthyServers.length,
+        "inFlight " + previousMetrics.totalInFlight + " -> " + currentMetrics.totalInFlight,
+        "maxP95LatencyMs " + previousMetrics.maxP95Latency + " -> " + currentMetrics.maxP95Latency,
+        "maxErrorRate " + previousMetrics.maxErrorRate + " -> " + currentMetrics.maxErrorRate,
+        "queueDepth " + previousMetrics.totalQueueDepth + " -> " + currentMetrics.totalQueueDepth
+      ].join("; ") + ".";
+    }
+
+    function degradationChangeSummary(previousMetrics, currentMetrics) {
+      if (currentMetrics.serverCount === 0) {
+        return "No candidates are visible in the current payload; this is a controlled validation boundary, not routing proof.";
+      }
+      if (currentMetrics.healthyCount === 0 && currentMetrics.unhealthyServers.length > 0) {
+        return "Degradation boundary increased: every visible backend is unhealthy, so reviewers should expect no healthy backend selection.";
+      }
+      if (currentMetrics.unhealthyServers.length > previousMetrics.unhealthyServers.length) {
+        return "Degradation pressure increased: more unhealthy backends are visible and healthy alternatives should be preferred when present.";
+      }
+      if (currentMetrics.unhealthyServers.length < previousMetrics.unhealthyServers.length) {
+        return "Recovery visible: fewer unhealthy backends than the packaged baseline are present.";
+      }
+      if (currentMetrics.totalInFlight > previousMetrics.totalInFlight
+          || currentMetrics.maxP95Latency > previousMetrics.maxP95Latency
+          || currentMetrics.totalQueueDepth > previousMetrics.totalQueueDepth) {
+        return "Load pressure increased while health posture stayed comparable; compare selected backend and reason fields for the routing response.";
+      }
+      return "Same degradation boundary as packaged baseline: edge-drain remains unhealthy and should not be selected while healthy alternatives exist.";
+    }
+
+    function renderScenarioComparison() {
+      const currentPayload = currentRequestPayload();
+      const previousMetrics = scenarioMetrics(sampleScenario);
+      const currentMetrics = scenarioMetrics(currentPayload);
+      const results = lastRoutingBody && Array.isArray(lastRoutingBody.results)
+        ? lastRoutingBody.results
+        : [];
+      const previousName = "Packaged normal-load baseline";
+      const currentName = scenarioName(currentMetrics);
+      const strategySummary = strategyChangeSummary(previousMetrics, currentMetrics);
+      const backendSummary = backendChangeSummary(results);
+      const signalSummary = signalChangeSummary(previousMetrics, currentMetrics);
+      const degradationSummary = degradationChangeSummary(previousMetrics, currentMetrics);
+
+      scenarioFields.previous.textContent = previousName + ".";
+      scenarioFields.current.textContent = currentName + ".";
+      scenarioFields.strategy.textContent = strategySummary;
+      scenarioFields.backend.textContent = backendSummary;
+      scenarioFields.signals.textContent = signalSummary;
+      scenarioFields.degradation.textContent = degradationSummary;
+
+      outputs.scenarioComparison.textContent = [
+        "# Routing Scenario Comparison",
+        "",
+        "previousScenario: " + previousName,
+        "currentScenario: " + currentName,
+        "selectedStrategyChange: " + strategySummary,
+        "selectedBackendChange: " + backendSummary,
+        "keyInputSignalChanges: " + signalSummary,
+        "degradationRecoveryExplanation: " + degradationSummary,
+        "localOnlyDemoBoundary: browser-local comparison of synthetic payloads and same-origin local API results only",
+        "",
+        "## Not Proven",
+        "- no production traffic proof",
+        "- no live cloud validation evidence",
+        "- no real tenant data or tenant behavior evidence",
+        "- no service-level agreement or service-level objective evidence",
+        "- no upload, share endpoint, or server-side export/PDF/ZIP generation"
+      ].join("\n");
     }
 
     function formatServerSignals(server) {

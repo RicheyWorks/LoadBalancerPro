@@ -110,6 +110,7 @@ class ReviewerTrustMapDocumentationTest {
                 "PROXY_DEMO_FIXTURE_LAUNCHER.md",
                 "routing-demo.html",
                 "Routing Proof Summary",
+                "Scenario Comparison",
                 "REAL_BACKEND_PROXY_EXAMPLES.md",
                 "OPERATOR_INSTALL_RUN_MATRIX.md",
                 "OPERATOR_PACKAGING.md",
@@ -144,8 +145,11 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("http://localhost:8080/routing-demo.html"));
         assertTrue(demoPath.contains("http://localhost:8080/load-balancing-cockpit.html"));
         assertTrue(demoPath.contains("Routing Proof Summary"));
+        assertTrue(demoPath.contains("Scenario Comparison"));
         assertTrue(demoPath.contains("selected strategy/backend"));
-        assertTrue(demoPath.contains("visible input signals"));
+        assertTrue(demoPath.contains("scenario-to-scenario what-changed notes"));
+        assertTrue(demoPath.contains("visible input signal deltas"));
+        assertTrue(demoPath.contains("degradation/recovery notes"));
         assertTrue(demoPath.contains("local verification commands"));
         assertTrue(demoPath.contains("explicit not-proven boundaries"));
         assertTrue(demoPath.contains("mvn -Dtest=LocalProxyEvidenceExportTest test"));
@@ -201,6 +205,35 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("broader private-lan live traffic execution is not implemented yet"));
         assertTrue(demoPath.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
         assertTrue(readme.contains("REVIEWER_TRUST_MAP.md#reviewer-demo-path"));
+    }
+
+    @Test
+    void routingDemoScenarioComparisonTrustMapEntryIsDiscoverableAndBounded() throws Exception {
+        String trustMap = read(TRUST_MAP);
+        String matrix = section(trustMap, "## Evidence Matrix", "## Recommended Reviewer Flows");
+        String normalized = matrix.toLowerCase(Locale.ROOT);
+
+        assertTrue(matrix.contains("How do routing proof scenarios compare?"));
+        assertTrue(matrix.contains("/routing-demo.html"));
+        assertTrue(matrix.contains("RoutingDecisionDemoTest"));
+        assertTrue(matrix.contains("Routing Proof Summary"));
+        assertTrue(matrix.contains("Scenario Comparison"));
+        assertTrue(matrix.contains("previous/current scenario names"));
+        assertTrue(matrix.contains("selected strategy/backend delta"));
+        assertTrue(matrix.contains("input signal deltas"));
+        assertTrue(matrix.contains("degradation/recovery notes"));
+        assertTrue(matrix.contains("copyable local reviewer summary"));
+        assertTrue(normalized.contains("packaged normal-load baseline"));
+        assertTrue(normalized.contains("edited local demo payloads"));
+        assertTrue(normalized.contains("same-origin local api responses"));
+        assertTrue(normalized.contains("browser-local copy text"));
+        assertTrue(normalized.contains("production deployment certification"));
+        assertTrue(normalized.contains("live cloud validation"));
+        assertTrue(normalized.contains("real tenant traffic proof"));
+        assertTrue(normalized.contains("production sla/slo evidence"));
+        assertTrue(normalized.contains("server-side export/share artifact creation"));
+        assertTrue(normalized.contains("registry publication"));
+        assertTrue(normalized.contains("container signing"));
     }
 
     @Test

@@ -29,6 +29,8 @@ import org.springframework.test.web.servlet.MockMvc;
 class EvidenceExportPacketViewTest {
     private static final Path EXPORT_PACKET =
             Path.of("src/main/resources/static/evidence-export-packet.html");
+    private static final Path EXPORT_PACKET_CONTROLLER =
+            Path.of("src/main/java/com/richmond423/loadbalancerpro/api/EnterpriseLabEvidenceExportPacketController.java");
     private static final Path TIMELINE =
             Path.of("src/main/resources/static/evidence-timeline.html");
     private static final Path OPERATOR_DASHBOARD =
@@ -86,8 +88,32 @@ class EvidenceExportPacketViewTest {
                 "no container signing",
                 "generated evidence should not be committed",
                 "do not include secrets/tokens/private keys",
+                "Download is generated locally in your browser",
+                "The server does not create files",
                 "no actual export file generation")) {
             assertTrue(page.contains(expected), "evidence export packet should mention " + expected);
+        }
+    }
+
+    @Test
+    void evidenceExportPacketProvidesBrowserLocalMarkdownAndJsonDownloads() throws Exception {
+        String page = read(EXPORT_PACKET);
+
+        for (String expected : List.of(
+                "Download Markdown packet",
+                "Download JSON packet",
+                "Copy Markdown packet",
+                "Blob",
+                "URL.createObjectURL",
+                "loadbalancerpro-evidence-packet.md",
+                "loadbalancerpro-evidence-packet.json",
+                "generated locally in your browser",
+                "server does not create files",
+                "do not include secrets/tokens/private keys",
+                "buildMarkdownPacket",
+                "buildJsonPacket",
+                "downloadText")) {
+            assertTrue(page.contains(expected), "browser-local packet download should include " + expected);
         }
     }
 
@@ -173,6 +199,24 @@ class EvidenceExportPacketViewTest {
 
         assertTrue(normalized.contains("fetch(\"/api/enterprise-lab/evidence-export-packet\""),
                 "evidence export packet should fetch the same-origin local summary endpoint");
+    }
+
+    @Test
+    void evidenceExportPacketControllerDoesNotGenerateServerSideFiles() throws Exception {
+        String controller = read(EXPORT_PACKET_CONTROLLER);
+
+        for (String prohibited : List.of(
+                "Files.write",
+                "FileOutputStream",
+                "ZipOutputStream",
+                "createFile",
+                "writeString",
+                "ProcessBuilder",
+                "Runtime.getRuntime",
+                "System.getenv")) {
+            assertFalse(controller.contains(prohibited),
+                    "evidence export packet API must not include server-side export behavior: " + prohibited);
+        }
     }
 
     @Test

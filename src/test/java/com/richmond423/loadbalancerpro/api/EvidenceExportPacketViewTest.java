@@ -143,6 +143,36 @@ class EvidenceExportPacketViewTest {
     }
 
     @Test
+    void evidenceExportPacketProvidesReviewerShareChecklistWithoutUploadBehavior() throws Exception {
+        String page = read(EXPORT_PACKET);
+
+        for (String expected : List.of(
+                "Reviewer Packet Share Checklist",
+                "Markdown packet copied or downloaded",
+                "JSON packet downloaded",
+                "PDF/print copy generated through browser",
+                "Evidence timeline link included",
+                "Operator evidence dashboard link included",
+                "Reviewer dashboard link included",
+                "CI dry-run artifact name included",
+                "Verification commands included",
+                "Not-proven boundaries included",
+                "no secrets/tokens/private keys included",
+                "do not claim production certification",
+                "do not claim registry publish",
+                "do not claim container signing",
+                "server does not send, upload, or create share artifacts",
+                "server does not create PDF files",
+                "Generated target evidence should not be committed",
+                "/enterprise-lab-reviewer.html",
+                "/operator-evidence-dashboard.html",
+                "/evidence-timeline.html",
+                "/evidence-export-packet.html")) {
+            assertTrue(page.contains(expected), "reviewer share checklist should include " + expected);
+        }
+    }
+
+    @Test
     void evidenceExportPacketApiReturnsDeterministicLocalPacketMetadata() throws Exception {
         String response = mockMvc.perform(get("/api/enterprise-lab/evidence-export-packet"))
                 .andExpect(status().isOk())
@@ -217,6 +247,12 @@ class EvidenceExportPacketViewTest {
                 "localstorage",
                 "sessionstorage",
                 "cdn.",
+                "mailto:",
+                "navigator.share",
+                "sendbeacon",
+                "upload endpoint",
+                "share endpoint",
+                "server-side share endpoint",
                 "http://",
                 "https://")) {
             assertFalse(normalized.contains(prohibited), "evidence export packet must not include " + prohibited);

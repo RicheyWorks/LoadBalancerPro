@@ -221,6 +221,38 @@
       line-height: 1.4;
     }
 
+    .checklist-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .share-checklist {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .share-checklist li {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 8px;
+      align-items: start;
+      padding: 7px 0;
+      border-bottom: 1px solid #edf1f6;
+    }
+
+    .share-checklist li:last-child {
+      border-bottom: 0;
+    }
+
+    .share-checklist input {
+      width: 16px;
+      height: 16px;
+      margin: 2px 0 0;
+      accent-color: var(--blue);
+    }
+
     .template {
       border-left: 4px solid var(--blue);
     }
@@ -271,6 +303,10 @@
 
     @media (max-width: 820px) {
       .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .checklist-columns {
         grid-template-columns: 1fr;
       }
     }
@@ -378,6 +414,7 @@
       .layout,
       .grid,
       .summary-grid,
+      .checklist-columns,
       .copy-row {
         display: block;
       }
@@ -562,6 +599,71 @@ Safety note: do not include secrets/tokens/private keys in this packet.</pre>
         </div>
       </div>
       <div id="copy-status" class="copy-status" role="status" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="panel notice" aria-labelledby="share-checklist-title">
+    <div class="panel-head">
+      <h2 id="share-checklist-title">Reviewer Packet Share Checklist</h2>
+      <span class="compact">browser-local/static guidance</span>
+    </div>
+    <div class="panel-body">
+      <p class="compact">Use this local checklist before sharing the packet. The server does not send, upload, or create share artifacts. The server does not create PDF files.</p>
+      <div class="checklist-columns">
+        <div>
+          <h3>Share Package Contents</h3>
+          <ul class="share-checklist">
+            <li><input type="checkbox" aria-label="Markdown packet copied or downloaded"><span>Markdown packet copied or downloaded.</span></li>
+            <li><input type="checkbox" aria-label="JSON packet downloaded"><span>JSON packet downloaded if machine-readable review is needed.</span></li>
+            <li><input type="checkbox" aria-label="PDF print copy generated through browser"><span>PDF/print copy generated through browser print/save-as-PDF if needed.</span></li>
+            <li><input type="checkbox" aria-label="Evidence timeline link included"><span>Evidence timeline link included: <code>/evidence-timeline.html</code>.</span></li>
+            <li><input type="checkbox" aria-label="Operator evidence dashboard link included"><span>Operator evidence dashboard link included: <code>/operator-evidence-dashboard.html</code>.</span></li>
+            <li><input type="checkbox" aria-label="Reviewer dashboard link included"><span>Reviewer dashboard link included: <code>/enterprise-lab-reviewer.html</code>.</span></li>
+            <li><input type="checkbox" aria-label="CI dry-run artifact name included"><span>CI dry-run artifact name included: <code>container-dry-run-evidence-no-publish-no-sign</code>.</span></li>
+            <li><input type="checkbox" aria-label="Evidence paths included"><span>Evidence paths included: <code>target/enterprise-lab-runs/</code> and <code>target/container-dry-run-evidence/</code>.</span></li>
+            <li><input type="checkbox" aria-label="Verification commands included"><span>Verification commands included.</span></li>
+            <li><input type="checkbox" aria-label="Not-proven boundaries included"><span>Not-proven boundaries included.</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Verification Before Sharing</h3>
+          <ul class="share-checklist">
+            <li><input type="checkbox" aria-label="Maven test result recorded"><span><code>mvn -q test</code> result recorded.</span></li>
+            <li><input type="checkbox" aria-label="Maven skip tests package result recorded"><span><code>mvn -q -DskipTests package</code> result recorded.</span></li>
+            <li><input type="checkbox" aria-label="Maven batch package result recorded"><span><code>mvn -B package</code> result recorded.</span></li>
+            <li><input type="checkbox" aria-label="Git diff check result recorded"><span><code>git diff --check</code> result recorded.</span></li>
+            <li><input type="checkbox" aria-label="Enterprise Lab smoke result recorded"><span>Enterprise Lab smoke result recorded.</span></li>
+            <li><input type="checkbox" aria-label="Generated evidence remains under ignored target paths"><span>generated evidence remains under ignored target paths.</span></li>
+            <li><input type="checkbox" aria-label="No secrets tokens private keys included"><span>no secrets/tokens/private keys included.</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Boundary Confirmations</h3>
+          <ul class="share-checklist">
+            <li><input type="checkbox" aria-label="Do not claim production certification"><span>do not claim production certification.</span></li>
+            <li><input type="checkbox" aria-label="Do not claim enterprise production readiness"><span>do not claim enterprise-production readiness.</span></li>
+            <li><input type="checkbox" aria-label="Do not claim registry publish"><span>do not claim registry publish.</span></li>
+            <li><input type="checkbox" aria-label="Do not claim container signing"><span>do not claim container signing.</span></li>
+            <li><input type="checkbox" aria-label="Do not claim live cloud validation"><span>do not claim live cloud validation.</span></li>
+            <li><input type="checkbox" aria-label="Do not claim real tenant IdP proof"><span>do not claim real tenant/IdP proof.</span></li>
+            <li><input type="checkbox" aria-label="Do not claim production SLO SLA proof"><span>do not claim production SLO/SLA proof.</span></li>
+            <li><input type="checkbox" aria-label="Do not claim GitHub governance settings are applied"><span>do not claim GitHub governance settings are applied by repo files alone.</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Recipient Review Steps</h3>
+          <ul class="share-checklist">
+            <li><input type="checkbox" aria-label="Recipient opens reviewer dashboard"><span>Recipient opens <code>/enterprise-lab-reviewer.html</code>.</span></li>
+            <li><input type="checkbox" aria-label="Recipient opens operator evidence dashboard"><span>Recipient opens <code>/operator-evidence-dashboard.html</code>.</span></li>
+            <li><input type="checkbox" aria-label="Recipient opens evidence timeline"><span>Recipient opens <code>/evidence-timeline.html</code>.</span></li>
+            <li><input type="checkbox" aria-label="Recipient opens evidence export packet"><span>Recipient opens <code>/evidence-export-packet.html</code>.</span></li>
+            <li><input type="checkbox" aria-label="Recipient inspects Markdown JSON packet"><span>Recipient inspects Markdown/JSON packet.</span></li>
+            <li><input type="checkbox" aria-label="Recipient compares packet against CI artifact and evidence paths"><span>Recipient compares packet against CI artifact and local evidence paths.</span></li>
+            <li><input type="checkbox" aria-label="Recipient verifies not proven boundaries"><span>Recipient verifies not-proven boundaries.</span></li>
+          </ul>
+        </div>
+      </div>
+      <p class="compact">The checklist is browser-local/static guidance. Do not include secrets/tokens/private keys in shared packets. Generated target evidence should not be committed.</p>
     </div>
   </section>
 

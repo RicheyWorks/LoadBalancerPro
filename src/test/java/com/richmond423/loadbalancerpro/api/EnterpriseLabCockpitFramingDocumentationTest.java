@@ -117,6 +117,13 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("Unknown signals include missing local fields, unavailable API responses, exact scoring not exposed by the API"));
         assertTrue(framing.contains("The investigation playbook should guide reviewers to inspect the Signal Interpretation Guide, Decision Chain Trace, Scenario Comparison, Evidence Associations, and Export Packet"));
         assertTrue(framing.contains("Decision trace depth remains controlled lab evidence for pre-production routing validation."));
+        assertTrue(framing.contains("## Alternative Candidate Evidence"));
+        assertTrue(framing.contains("compares the selected backend against non-selected candidates using visible controlled lab response data only"));
+        assertTrue(framing.contains("Known candidate signals are fields present in the local lab request payload or same-origin routing comparison response."));
+        assertTrue(framing.contains("Unknown or unexposed candidate signals include missing candidate fields"));
+        assertTrue(framing.contains("The cockpit must not invent hidden scoring."));
+        assertTrue(framing.contains("reviewers should record that the candidate reason is unknown or only partially explainable"));
+        assertTrue(framing.contains("Alternative candidate evidence remains controlled lab evidence for pre-production routing validation."));
         assertTrue(framing.contains("## How to Investigate Surprising Lab Decisions"));
         assertTrue(framing.contains("If the backend changed unexpectedly"));
         assertTrue(framing.contains("If all candidates are unhealthy"));

@@ -67,7 +67,8 @@ class ReviewerTrustMapDocumentationTest {
 
         assertTrue(trustMap.contains("# Reviewer Trust Map"));
         assertTrue(trustMap.contains("## Start Here"));
-        assertTrue(trustMap.contains("## Reviewer Demo Path"));
+        assertTrue(trustMap.contains("## Enterprise Lab Cockpit, Not a Demo"));
+        assertTrue(trustMap.contains("## Reviewer Lab Review Path"));
         assertTrue(trustMap.contains("## Evidence Matrix"));
         assertTrue(trustMap.contains("## Recommended Reviewer Flows"));
         assertTrue(trustMap.contains("## Safety Boundaries"));
@@ -143,12 +144,12 @@ class ReviewerTrustMapDocumentationTest {
     void reviewerDemoPathAnswersFastDemoQuestionsAndLocksEvidenceFiles() throws Exception {
         String trustMap = read(TRUST_MAP);
         String readme = read(README);
-        String demoPath = section(trustMap, "## Reviewer Demo Path", "## Evidence Matrix");
+        String demoPath = section(trustMap, "## Reviewer Lab Review Path", "## Evidence Matrix");
         String normalized = demoPath.toLowerCase(Locale.ROOT);
 
         assertTrue(normalized.contains("about five minutes"));
         assertTrue(normalized.contains("what this project is"));
-        assertTrue(normalized.contains("java/spring load-balancing simulator"));
+        assertTrue(normalized.contains("enterprise lab cockpit"));
         assertTrue(normalized.contains("operator-focused proxy foundation"));
         assertTrue(normalized.contains("what can be proven quickly"));
         assertTrue(demoPath.contains("mvn spring-boot:run"));
@@ -230,7 +231,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("release-downloads/"));
         assertTrue(normalized.contains("broader private-lan live traffic execution is not implemented yet"));
         assertTrue(demoPath.contains("PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md"));
-        assertTrue(readme.contains("REVIEWER_TRUST_MAP.md#reviewer-demo-path"));
+        assertTrue(readme.contains("REVIEWER_TRUST_MAP.md#reviewer-lab-review-path"));
     }
 
     @Test
@@ -300,7 +301,7 @@ class ReviewerTrustMapDocumentationTest {
         String normalized = section.toLowerCase(Locale.ROOT);
 
         assertTrue(section.contains("strict Enterprise Lab proof cockpit"));
-        assertTrue(section.contains("not a casual demo page"));
+        assertTrue(section.contains("It is not a demo"));
         assertTrue(section.contains("active lab scenario"));
         assertTrue(section.contains("routing comparison request status"));
         assertTrue(section.contains("selected strategy"));
@@ -337,7 +338,7 @@ class ReviewerTrustMapDocumentationTest {
     @Test
     void routingCockpitEvidenceAssociationsTrustMapSectionIsDiscoverableAndBounded() throws Exception {
         String trustMap = read(TRUST_MAP);
-        String section = section(trustMap, "### Cockpit Evidence Associations", "## Reviewer Demo Path");
+        String section = section(trustMap, "### Cockpit Evidence Associations", "## Reviewer Lab Review Path");
         String normalized = section.toLowerCase(Locale.ROOT);
 
         assertTrue(section.contains("Cockpit Evidence Associations"));
@@ -371,7 +372,7 @@ class ReviewerTrustMapDocumentationTest {
     @Test
     void routingCockpitReviewerWorkflowTrustMapSectionIsDiscoverableAndBounded() throws Exception {
         String trustMap = read(TRUST_MAP);
-        String section = section(trustMap, "### Routing Cockpit Reviewer Workflow", "## Reviewer Demo Path");
+        String section = section(trustMap, "### Routing Cockpit Reviewer Workflow", "## Reviewer Lab Review Path");
         String normalized = section.toLowerCase(Locale.ROOT);
 
         assertTrue(section.contains("Routing Cockpit Reviewer Workflow"));

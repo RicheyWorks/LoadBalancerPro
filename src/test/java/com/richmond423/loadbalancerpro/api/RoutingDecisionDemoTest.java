@@ -335,9 +335,11 @@ class RoutingDecisionDemoTest {
         String normalized = page.toLowerCase(Locale.ROOT);
 
         assertTrue(page.contains("id=\"enterprise-lab-cockpit-monitor-panel\""));
+        assertTrue(page.contains("<title>LoadBalancerPro Enterprise Lab Routing Cockpit</title>"));
         assertTrue(page.contains("Enterprise Lab Cockpit Monitor"));
         assertTrue(page.contains("This is lab-bounded proof, not production monitoring."));
-        assertTrue(page.contains("It is an Enterprise Lab proof cockpit, not a casual demo page or production monitoring surface."));
+        assertTrue(page.contains("Enterprise Lab Routing Cockpit - controlled pre-production routing validation, not a demo."));
+        assertTrue(page.contains("It is an Enterprise Lab proof cockpit, not a production monitoring surface."));
         assertTrue(page.contains("data-copy-target=\"lab-monitor-output\""));
         assertTrue(page.contains("# Enterprise Lab Cockpit Monitor Explanation"));
         assertTrue(page.contains("activeLabScenario: "));

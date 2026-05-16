@@ -4,16 +4,26 @@ Use this map when you want to review LoadBalancerPro evidence without opening ev
 
 ## Start Here
 
-LoadBalancerPro is now positioned as **LoadBalancerPro Enterprise Lab**: Enterprise Adaptive Routing Lab first, Production Gateway Candidate second. It remains a Java/Spring load-balancing simulator and API project with guarded cloud boundaries, optional static browser review pages, optional lightweight reverse proxy mode, operator-configured route/target examples, packaged local proxy demos, release-free artifact checks, and CI-published workflow evidence.
+LoadBalancerPro is now positioned as **LoadBalancerPro Enterprise Lab**: Enterprise Adaptive Routing Lab first, Production Gateway Candidate second. It is an Enterprise Lab Cockpit and API project with guarded cloud boundaries, optional static browser review pages, optional lightweight reverse proxy mode, operator-configured route/target examples, packaged local proxy lab paths, release-free artifact checks, and CI-published workflow evidence.
+
+## Enterprise Lab Cockpit, Not a Demo
+
+LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
+
+The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibility, and reviewer/operator explanations. It does not claim production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, production telemetry, or production monitoring proof.
+
+The cockpit is controlled lab validation. It monitors local lab routing evidence, answers reviewer/operator how-questions, associates routing decisions with evidence pages, supports reviewer handoff, and does not certify production behavior.
+
+See [`ENTERPRISE_LAB_COCKPIT_FRAMING.md`](ENTERPRISE_LAB_COCKPIT_FRAMING.md) for the overt product framing and naming guidance. Route names such as `/routing-demo.html` may remain for compatibility; the product identity is Enterprise Lab Cockpit.
 
 What it is not claiming:
 
 - It is not a managed cloud load balancer.
 - It is not a production gateway, TLS terminator, WebSocket proxy, WAF, identity system, legal compliance proof, or certification outcome.
-- It does not treat short local demo sequences as performance benchmark evidence.
+- It does not treat short local lab sequences as performance benchmark evidence.
 - Release-free review docs do not create tags, GitHub Releases, or release assets.
 - `release-downloads/` remains manual and explicit only.
-- Proxy, demo, artifact, and docs review paths do not construct or mutate `CloudManager`.
+- Proxy, lab, artifact, and docs review paths do not construct or mutate `CloudManager`.
 
 Recommended first paths:
 
@@ -25,7 +35,7 @@ Recommended first paths:
 - I want the current enterprise-readiness verdict: start with [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), then use [`PRODUCTION_READINESS_SUMMARY.md`](PRODUCTION_READINESS_SUMMARY.md) for the production-candidate snapshot.
 - I want the reviewer-ready trust-hardening sprint packet: start with [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md).
 - I want to review repo-side governance ownership and manual settings recommendations: start with [`MANUAL_GITHUB_GOVERNANCE_HARDENING.md`](MANUAL_GITHUB_GOVERNANCE_HARDENING.md).
-- I want the shortest public-facing overview: start with [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md), then use [`PRODUCTION_READINESS_SUMMARY.md`](PRODUCTION_READINESS_SUMMARY.md) for the production-candidate snapshot, [`SRE_DEMO_HIGHLIGHTS.md`](SRE_DEMO_HIGHLIGHTS.md) for the product-value/guardrail one-pager, and [`DEMO_WALKTHROUGH.md`](DEMO_WALKTHROUGH.md) for a local demo script.
+- I want the shortest public-facing overview: start with [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md), then use [`PRODUCTION_READINESS_SUMMARY.md`](PRODUCTION_READINESS_SUMMARY.md) for the production-candidate snapshot, [`SRE_DEMO_HIGHLIGHTS.md`](SRE_DEMO_HIGHLIGHTS.md) for the product-value/guardrail one-pager, and [`DEMO_WALKTHROUGH.md`](DEMO_WALKTHROUGH.md) for the legacy-named local reviewer script.
 - I want to verify tests and coverage: start with [`TESTING_COVERAGE.md`](TESTING_COVERAGE.md), then inspect the `jacoco-coverage-report` workflow artifact and CI skipped-test log output.
 - I want to verify real HTTP proxy behavior: start with [`REVERSE_PROXY_MODE.md`](REVERSE_PROXY_MODE.md), [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](REVERSE_PROXY_HEALTH_AND_METRICS.md), [`REVERSE_PROXY_RESILIENCE.md`](REVERSE_PROXY_RESILIENCE.md), [`PROXY_OPERATOR_STATUS_UI.md`](PROXY_OPERATOR_STATUS_UI.md), the source-visible `LocalOnlyRealBackendProxyValidationTest`, and the reviewer export from `LocalProxyEvidenceExportTest` under `target/proxy-evidence/local-proxy-evidence.md`.
 - I want to inspect request-level routing decisions: open `/routing-demo.html` and use the Enterprise Lab Cockpit Monitor, How This Routing Decision Was Made, What This Lab Needs to Monitor, How to Reproduce and Explain This Lab Proof, How to Read Lab Edge Cases, Reviewer Workflow Checklist, Evidence Associations, Association Legend, Routing Proof Summary, Scenario Comparison, Reviewer Confidence Signals, and Evidence Navigation reviewer path for selected scenario-to-decision mapping, selected strategy/backend, scenario-to-scenario what-changed notes, visible input signal deltas, unhealthy-candidate degradation/recovery notes, local verification commands, routing-to-evidence dashboard links, copyable lab monitor explanation, copyable association summary, an end-to-end reviewer walkthrough, and explicit not-proven limits.
@@ -79,7 +89,7 @@ Reviewer Confidence Signals on the routing page summarize local repeatability, d
 
 ### Enterprise Lab Cockpit Monitoring and How-Question Guide
 
-Use `/routing-demo.html` as a strict Enterprise Lab proof cockpit, not a casual demo page. The cockpit monitors active lab scenario, routing comparison request status, selected strategy, selected backend/server, backend health state, visible latency/load/active connection/capacity/weight-style signals, scenario delta state, degradation/fallback/recovery state, evidence association path, reviewer handoff readiness, local lab boundary, and production proof gaps.
+Use `/routing-demo.html` as the legacy route for the strict Enterprise Lab proof cockpit. It is not a demo. The cockpit monitors active lab scenario, routing comparison request status, selected strategy, selected backend/server, backend health state, visible latency/load/active connection/capacity/weight-style signals, scenario delta state, degradation/fallback/recovery state, evidence association path, reviewer handoff readiness, local lab boundary, and production proof gaps.
 
 The how-question panels answer how the selected backend was chosen, how strategy choice influenced the result, how visible lab input signals affect the proof, how unchanged backend/changed signals and changed backend/same strategy cases should be interpreted, how unhealthy/degraded/recovery states are represented, how to reproduce and explain the local lab proof, and how evidence pages support reviewer handoff. The copyable lab monitor explanation is browser-local text only and is bounded to controlled lab evidence, same-origin local API responses, visible page state, static evidence links, and no telemetry.
 
@@ -91,11 +101,11 @@ Use the Evidence Associations panel on `/routing-demo.html` to connect selected 
 
 The Association Legend keeps the proof language readable: scenario = controlled lab input state, strategy = selected routing method, backend/server = selected local candidate from the lab response, signals = controlled lab metrics used for explanation, and evidence pages = reviewer navigation aids, not production certification. This association map does not prove production traffic, production telemetry, live cloud behavior, real tenant behavior, registry publication, container signing, or production certification.
 
-## Reviewer Demo Path
+## Reviewer Lab Review Path
 
 Use this path when a reviewer wants to understand the project and verify the current evidence story in about five minutes without enabling live private-network behavior.
 
-What this project is: LoadBalancerPro Enterprise Lab is a Java/Spring load-balancing simulator and operator-focused proxy foundation with guarded cloud boundaries, local browser demos, source-visible proxy evidence, API-key/OAuth2 deployment boundaries, deterministic adaptive-routing experiment evidence, and CI-published testing artifacts.
+What this project is: LoadBalancerPro Enterprise Lab is an Enterprise Lab Cockpit and operator-focused proxy foundation with guarded cloud boundaries, local browser lab surfaces, source-visible proxy evidence, API-key/OAuth2 deployment boundaries, deterministic adaptive-routing experiment evidence, and CI-published testing artifacts.
 
 What can be proven quickly:
 

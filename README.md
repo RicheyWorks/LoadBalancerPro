@@ -1,16 +1,61 @@
 # LoadBalancerPro
 
+## Enterprise Lab Cockpit, Not a Demo
+
+LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
+
+It is not a casual demo, toy, mockup, playground, or sample-only page. It is built for controlled pre-production routing validation, reviewer/operator "how" questions, controlled lab evidence, local reproducibility, and explicit proof boundaries.
+
+The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibility, and reviewer/operator explanations. It does not claim production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, production telemetry, or production monitoring proof.
+
+## What the Enterprise Lab Cockpit Monitors
+
+- Active lab scenario.
+- Routing comparison request state.
+- Selected strategy.
+- Selected backend/server.
+- Backend health.
+- Visible latency, load, connection, capacity, and weight-style signals where exposed by the local lab response.
+- Degradation, fallback, and recovery state.
+- Scenario-to-scenario delta.
+- Evidence association path.
+- Reviewer handoff readiness.
+- Local lab proof boundary.
+- Production proof gaps.
+
+## What the Enterprise Lab Cockpit Answers
+
+- How routing decisions are made from the visible controlled lab response.
+- How strategies affect backend selection.
+- How input signals influence outcomes.
+- How unhealthy, degraded, and recovery states are interpreted.
+- How scenario changes affect decisions.
+- How evidence pages support reviewer handoff.
+- How lab proof is reproduced locally.
+- What is proven in the lab.
+- What remains not proven for production.
+
+## Enterprise Lab Cockpit Navigation
+
+- Legacy route name: [`/routing-demo.html`](http://localhost:8080/routing-demo.html). Product identity: Enterprise Lab routing cockpit.
+- Reviewer dashboard: [`/enterprise-lab-reviewer.html`](http://localhost:8080/enterprise-lab-reviewer.html).
+- Operator evidence dashboard: [`/operator-evidence-dashboard.html`](http://localhost:8080/operator-evidence-dashboard.html).
+- Evidence timeline: [`/evidence-timeline.html`](http://localhost:8080/evidence-timeline.html).
+- Evidence export packet: [`/evidence-export-packet.html`](http://localhost:8080/evidence-export-packet.html).
+- Reviewer trust map: [`docs/REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
+- Framing guide: [`docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md`](docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md).
+
 LoadBalancerPro is becoming **LoadBalancerPro Enterprise Lab**: a Java 17 / Spring Boot lab for adaptive-routing scenarios, deterministic replay, LASE shadow/influence comparison, policy gates, scorecards, evidence export, SRE walkthroughs, and a carefully bounded Production Gateway Candidate track.
 
 Its primary identity is **Enterprise Adaptive Routing Lab**. Its secondary identity is **Production Gateway Candidate** for future optional proxy/runtime hardening, deployment guides, and signed container distribution if that path is explicitly approved later.
 
-It is built as a polished portfolio and enterprise-demo system: the code demonstrates production-minded boundaries, tests, packaging, and cloud guardrails, but it is not a drop-in production cloud load balancer or a live enterprise gateway.
+It is built as a polished Enterprise Lab cockpit system: the code demonstrates production-minded boundaries, tests, packaging, and cloud guardrails, but it is not a drop-in production cloud load balancer or a live enterprise gateway.
 
 The API and CLI are safe by default: allocation endpoints do not call AWS, CLI cloud integration is disabled unless requested, Docker/local runs do not require AWS credentials, and cloud mutation stays disabled unless every live-mode guardrail is configured explicitly.
 
 JavaFX UI support is optional. API, proxy, CLI, Java fixture launcher, and static browser workflows do not require JavaFX; desktop UI deployment remains platform-sensitive and separate from the Spring API/proxy operator path. See [`JAVAFX_OPTIONAL_UI.md`](docs/JAVAFX_OPTIONAL_UI.md).
 
-For the product identity, start with [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md), then use [`ENTERPRISE_LAB_ROADMAP.md`](docs/ENTERPRISE_LAB_ROADMAP.md) and [`NEXT_GOAL_PROMPTS.md`](docs/NEXT_GOAL_PROMPTS.md) for the next product pushes. For a concise non-technical overview, start with [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). For the reviewer-ready production-candidate snapshot, use [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md). For evidence navigation, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md). For measured local performance evidence, use [`PERFORMANCE_BASELINE.md`](evidence/PERFORMANCE_BASELINE.md) and `scripts/smoke/performance-baseline.ps1`. For the mocked enterprise auth proof lane, use [`ENTERPRISE_AUTH_PROOF_LANE.md`](docs/ENTERPRISE_AUTH_PROOF_LANE.md). For the verified `v2.5.0` release, use [`V2_5_0_POST_RELEASE_VERIFICATION.md`](docs/V2_5_0_POST_RELEASE_VERIFICATION.md) and [`RELEASE_NOTES_v2.5.0.md`](docs/RELEASE_NOTES_v2.5.0.md). For release-candidate rehearsal without publishing, use [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](docs/RELEASE_CANDIDATE_DRY_RUN_PACKET.md), [`RELEASE_INTENT_REVIEW.md`](docs/RELEASE_INTENT_REVIEW.md), and [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](docs/V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md). For a guided local demo path, use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md). For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md), [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md), and the config-only [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md) recipe.
+For the product identity, start with [`ENTERPRISE_LAB_COCKPIT_FRAMING.md`](docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md) and [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md), then use [`ENTERPRISE_LAB_ROADMAP.md`](docs/ENTERPRISE_LAB_ROADMAP.md) and [`NEXT_GOAL_PROMPTS.md`](docs/NEXT_GOAL_PROMPTS.md) for the next product pushes. For a concise non-technical overview, start with [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). For the reviewer-ready production-candidate snapshot, use [`PRODUCTION_READINESS_SUMMARY.md`](docs/PRODUCTION_READINESS_SUMMARY.md). For evidence navigation, start with [`REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md). For measured local performance evidence, use [`PERFORMANCE_BASELINE.md`](evidence/PERFORMANCE_BASELINE.md) and `scripts/smoke/performance-baseline.ps1`. For the mocked enterprise auth proof lane, use [`ENTERPRISE_AUTH_PROOF_LANE.md`](docs/ENTERPRISE_AUTH_PROOF_LANE.md). For the verified `v2.5.0` release, use [`V2_5_0_POST_RELEASE_VERIFICATION.md`](docs/V2_5_0_POST_RELEASE_VERIFICATION.md) and [`RELEASE_NOTES_v2.5.0.md`](docs/RELEASE_NOTES_v2.5.0.md). For release-candidate rehearsal without publishing, use [`RELEASE_CANDIDATE_DRY_RUN_PACKET.md`](docs/RELEASE_CANDIDATE_DRY_RUN_PACKET.md), [`RELEASE_INTENT_REVIEW.md`](docs/RELEASE_INTENT_REVIEW.md), and [`V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md`](docs/V2_5_0_RELEASE_AUTHORIZATION_CHECKLIST.md). For a guided local reviewer walkthrough, use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) as a legacy-named script. For repository tooling containment, use [`ANTIVIRUS_SAFE_DEVELOPMENT.md`](docs/ANTIVIRUS_SAFE_DEVELOPMENT.md), [`LIVE_PROXY_CONTAINMENT.md`](docs/LIVE_PROXY_CONTAINMENT.md), and the config-only [`PRIVATE_NETWORK_PROXY_DRY_RUN.md`](docs/PRIVATE_NETWORK_PROXY_DRY_RUN.md) recipe.
 
 For the current enterprise-readiness verdict and lab-transition decision, use [`ENTERPRISE_READINESS_AUDIT.md`](docs/ENTERPRISE_READINESS_AUDIT.md): Enterprise Lab ready, production gateway not certified.
 For the trust-hardening sprint packet and reviewer-ready governance plan, use [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](docs/ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md).
@@ -27,7 +72,7 @@ The current product push has moved that Enterprise Adaptive Routing Lab path int
 
 ## Start Here For Reviewers
 
-Use [`REVIEWER_TRUST_MAP.md#reviewer-demo-path`](docs/REVIEWER_TRUST_MAP.md#reviewer-demo-path) for the shortest safe proof path, then use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) for a quick screen-share script.
+Use [`REVIEWER_TRUST_MAP.md#reviewer-lab-review-path`](docs/REVIEWER_TRUST_MAP.md#reviewer-lab-review-path) for the shortest safe proof path, then use [`DEMO_WALKTHROUGH.md`](docs/DEMO_WALKTHROUGH.md) for a quick screen-share script.
 
 The reviewer path shows how to generate local proxy evidence with `mvn -Dtest=LocalProxyEvidenceExportTest test`, private-network config-only dry-run evidence with `mvn -Dtest=PrivateNetworkProxyDryRunEvidenceTest test`, loopback-only live gate proof with `mvn -Dtest=PrivateNetworkLiveValidationExecutorTest test`, Postman and operator smoke dry-runs with source-visible PowerShell scripts, and CI/CodeQL evidence from GitHub checks. Evidence is written under ignored `target/` output, secrets are redacted, and runtime private-LAN live validation remains intentionally unimplemented until a separate approved gate is satisfied.
 
@@ -36,7 +81,7 @@ Use [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md
 ## Evaluate In 5 Minutes
 
 1. Read [`EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md) for the short positioning and limitation summary.
-2. Run `mvn spring-boot:run`, then open [`http://localhost:8080/`](http://localhost:8080/), [`http://localhost:8080/enterprise-lab-reviewer.html`](http://localhost:8080/enterprise-lab-reviewer.html), [`http://localhost:8080/operator-evidence-dashboard.html`](http://localhost:8080/operator-evidence-dashboard.html), [`http://localhost:8080/evidence-timeline.html`](http://localhost:8080/evidence-timeline.html), [`http://localhost:8080/evidence-export-packet.html`](http://localhost:8080/evidence-export-packet.html), [`http://localhost:8080/enterprise-lab.html`](http://localhost:8080/enterprise-lab.html), and [`http://localhost:8080/load-balancing-cockpit.html`](http://localhost:8080/load-balancing-cockpit.html).
+2. Run `mvn spring-boot:run`, then open [`http://localhost:8080/`](http://localhost:8080/), [`http://localhost:8080/routing-demo.html`](http://localhost:8080/routing-demo.html) as the legacy route for the Enterprise Lab routing cockpit, [`http://localhost:8080/enterprise-lab-reviewer.html`](http://localhost:8080/enterprise-lab-reviewer.html), [`http://localhost:8080/operator-evidence-dashboard.html`](http://localhost:8080/operator-evidence-dashboard.html), [`http://localhost:8080/evidence-timeline.html`](http://localhost:8080/evidence-timeline.html), [`http://localhost:8080/evidence-export-packet.html`](http://localhost:8080/evidence-export-packet.html), [`http://localhost:8080/enterprise-lab.html`](http://localhost:8080/enterprise-lab.html), and [`http://localhost:8080/load-balancing-cockpit.html`](http://localhost:8080/load-balancing-cockpit.html).
 3. Use `GET /api/lab/scenarios`, `POST /api/lab/runs`, `GET /api/lab/policy`, and `GET /api/lab/audit-events` to list deterministic scenarios, run baseline/shadow/recommend/active-experiment comparisons, inspect scorecards, and review policy audit events. Run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-lab-workflow.ps1 -Package` to export ignored lab evidence under `target/enterprise-lab-runs/`, or run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\controlled-adaptive-routing-policy.ps1 -Package` to export controlled policy evidence under `target/controlled-adaptive-routing/`.
 4. Run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\performance-baseline.ps1 -Package` for local loopback latency/error-rate evidence under `target/performance-baseline/`, then run `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-auth-proof.ps1 -Package` for mocked OAuth2 role-claim proof under `target/enterprise-auth-proof/`.
 5. Use [`DEPLOYMENT_SMOKE_KIT.md`](docs/DEPLOYMENT_SMOKE_KIT.md) to validate the packaged jar, API-key boundary, and proxy-loopback recipe on localhost.
@@ -49,7 +94,7 @@ Use [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md
 - Prod/cloud-sandbox API-key modes protect `/proxy/**` and `GET /api/proxy/status`; OAuth2 mode is documented where configured.
 - Proxy status, metrics, retry/cooldown counters, reload status, and the read-only `/proxy-status.html` page expose operator diagnostics without adding external telemetry vendors.
 - The deployment smoke kit validates packaged-jar startup, API-key behavior, and proxy-loopback forwarding locally; CI also builds and smoke-tests the Docker runtime.
-- The project keeps release, cloud, and `CloudManager` mutation boundaries explicit so demo evidence does not become a hidden production or release claim.
+- The project keeps release, cloud, and `CloudManager` mutation boundaries explicit so lab evidence does not become a hidden production or release claim.
 
 ## Coverage And Evidence
 
@@ -65,7 +110,7 @@ mvn spring-boot:run
 
 Then open [`http://localhost:8080/`](http://localhost:8080/) for the app landing page, [`http://localhost:8080/enterprise-lab-reviewer.html`](http://localhost:8080/enterprise-lab-reviewer.html) for the reviewer dashboard, [`http://localhost:8080/operator-evidence-dashboard.html`](http://localhost:8080/operator-evidence-dashboard.html) for the operator evidence dashboard, [`http://localhost:8080/evidence-timeline.html`](http://localhost:8080/evidence-timeline.html) for the evidence timeline/history view, [`http://localhost:8080/evidence-export-packet.html`](http://localhost:8080/evidence-export-packet.html) for the reviewer handoff packet, or [`http://localhost:8080/load-balancing-cockpit.html`](http://localhost:8080/load-balancing-cockpit.html) for the cockpit.
 
-The web cockpit is the quickest first look at LoadBalancerPro. It uses existing health, allocation, evaluation, and routing comparison endpoints with synthetic local inputs, keeps output in the browser, and preserves the existing cockpit URL. For routing-only review, open [`http://localhost:8080/routing-demo.html`](http://localhost:8080/routing-demo.html). This is a simulator/operator review surface, not managed cloud load-balancing infrastructure; proxy mode remains optional and disabled by default unless explicitly enabled.
+The web cockpit is the quickest first look at LoadBalancerPro. It uses existing health, allocation, evaluation, and routing comparison endpoints with controlled local inputs, keeps output in the browser, and preserves the existing cockpit URLs. Legacy route name: [`/routing-demo.html`](http://localhost:8080/routing-demo.html). Product identity: Enterprise Lab routing cockpit. This is a local lab reviewer/operator surface, not managed cloud load-balancing infrastructure; proxy mode remains optional and disabled by default unless explicitly enabled.
 
 ## What This Project Demonstrates
 
@@ -175,7 +220,7 @@ Roadmap backlog:
 - Default tests use mocks for cloud-facing behavior and do not create, modify, or delete real AWS resources.
 - Docker and local API runs do not require AWS credentials by default.
 - Live AWS behavior requires explicit configuration, operator intent, capacity/account/region guardrails, and dry-run opt-out.
-- This repository is intended as a portfolio/enterprise-demo implementation, not production cloud infrastructure ready to operate unmanaged traffic.
+- This repository is intended as a portfolio/Enterprise Lab cockpit implementation, not production cloud infrastructure ready to operate unmanaged traffic.
 
 ## Evidence and Hardening
 
@@ -228,7 +273,7 @@ The release evidence set lives in [`evidence/`](evidence/):
 - [`EVIDENCE_POLICY_TEMPLATES.md`](docs/EVIDENCE_POLICY_TEMPLATES.md) documents packaged local evidence handoff policy templates for zero-drift, receiver-redaction, audit-append, regulated-review, and active-investigation profiles.
 - [`EVIDENCE_POLICY_EXAMPLES.md`](docs/EVIDENCE_POLICY_EXAMPLES.md) documents packaged synthetic sender/receiver catalog examples, expected policy decisions, offline CLI walkthrough commands, the batch training lab, and scorecard answer-key grading for packaged evidence handoff templates.
 - [`POSTMAN_EVIDENCE_TRAINING.md`](docs/POSTMAN_EVIDENCE_TRAINING.md) documents the API/Postman onboarding surface for policy templates, examples, scorecards, answer templates, and deterministic in-memory grading.
-- [`POSTMAN_ROUTING_DEMO.md`](docs/POSTMAN_ROUTING_DEMO.md) documents the browser/Postman routing decision demo for safe request-level strategy comparison.
+- [`POSTMAN_ROUTING_DEMO.md`](docs/POSTMAN_ROUTING_DEMO.md) documents the Enterprise Lab routing cockpit legacy route and Postman parity path for safe request-level strategy comparison.
 - [`REVERSE_PROXY_MODE.md`](docs/REVERSE_PROXY_MODE.md) documents the optional lightweight `/proxy/**` mode for forwarding real local HTTP traffic through existing routing concepts.
 - [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](docs/REVERSE_PROXY_HEALTH_AND_METRICS.md) documents optional active proxy health checks, read-only local counters, and a two-backend loopback demo fixture.
 - [`REVERSE_PROXY_RESILIENCE.md`](docs/REVERSE_PROXY_RESILIENCE.md) documents optional bounded retries, process-local cooldown state, and retry/cooldown status counters for local proxy demos.
@@ -480,7 +525,7 @@ Live sandbox mutation is denied unless the sandbox environment, account allow-li
 
 ## Production Deployment Considerations
 
-LoadBalancerPro is designed as a portfolio/enterprise-demo system. The `prod` profile is a safer deployment starting point, not a complete production security system.
+LoadBalancerPro is designed as a portfolio/Enterprise Lab cockpit system. The `prod` profile is a safer deployment starting point, not a complete production security system.
 
 Recommended deployment boundary:
 
@@ -711,7 +756,7 @@ The allocation APIs are calculation-only. Scaling recommendations are simulation
 
 Optional lightweight reverse proxy mode is available at `/proxy/**` when `loadbalancerpro.proxy.enabled=true`. It forwards real HTTP requests to configured local or simulated upstreams, removes the `/proxy` prefix, preserves the method, path suffix, query string, request body, safe headers, upstream status, and upstream body, and adds `X-LoadBalancerPro-Upstream` plus `X-LoadBalancerPro-Strategy` response headers. The first operator-configured proxy foundation supports named `loadbalancerpro.proxy.routes.<routeName>` entries with path prefixes, per-route strategy selection, and route-specific backend targets without editing Java code; the legacy global upstream list remains supported for existing demos. It reuses the request-level routing strategy registry and skips upstreams configured with `healthy=false`. Optional active health checks can dynamically skip failing local upstreams, optional bounded retries can select another eligible upstream for configured idempotent methods, optional process-local cooldown can temporarily skip repeatedly failing upstreams, and `GET /api/proxy/status` exposes read-only process-local forwarding/failure/retry/cooldown/status-class counters plus effective health state. Open `http://localhost:8080/proxy-status.html` for a no-dependency read-only browser view of that status JSON, upstream table, counters, retry/cooldown state, and local demo curl commands. In prod or cloud-sandbox API-key mode, `/proxy/**` and `GET /api/proxy/status` require `X-API-Key`; in OAuth2 mode they require the configured allocation role, which defaults to `operator`. Local/default API-key mode stays demo-friendly, so keep proxy mode loopback-bound or behind trusted private controls unless deployment-level access control and TLS termination are in place. Strategy-specific local recipes now cover `ROUND_ROBIN`, `WEIGHTED_ROUND_ROBIN`, and health-aware failover selected-upstream evidence with loopback backends only; [`PROXY_DEMO_STACK.md`](docs/PROXY_DEMO_STACK.md) is the single quick-start path for Windows PowerShell, Unix shell, checked-in demo profiles, the Java `ProxyDemoFixtureLauncher`, startup commands, curl verification, status-page review, cleanup, and troubleshooting. [`OPERATOR_PACKAGING.md`](docs/OPERATOR_PACKAGING.md) adds a one-command Maven exec fixture launcher recipe, packaged-jar proxy startup examples, and copy/adapt real-backend property examples under `docs/examples/proxy`. [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](docs/OPERATOR_DISTRIBUTION_SMOKE_KIT.md) adds release-free smoke checks for packaged jar startup, Maven exec launcher readiness, proxy profiles, real-backend examples, and packaged static resources. [`LOCAL_ARTIFACT_VERIFICATION.md`](docs/LOCAL_ARTIFACT_VERIFICATION.md) adds release-free local and CI SHA-256, `jar tf`, manifest/resource, static page, demo profile, and launcher-class verification commands, including the `packaged-artifact-smoke` workflow artifact. [`CI_ARTIFACT_CONSUMER_GUIDE.md`](docs/CI_ARTIFACT_CONSUMER_GUIDE.md) shows how to consume JaCoCo, packaged artifact smoke, and SBOM workflow artifacts without creating release assets. [`RELEASE_CANDIDATE_DRY_RUN.md`](docs/RELEASE_CANDIDATE_DRY_RUN.md) turns those checks into one release-free go/no-go packet. The mode is disabled by default, retries and cooldown are disabled by default, non-idempotent retries require explicit opt-in, it does not construct `CloudManager`, does not mutate cloud state, does not persist metrics or cooldown state, and is not a production gateway, benchmark, certification, legal compliance proof, identity proof, TLS terminator, or WebSocket proxy. See [`REVERSE_PROXY_MODE.md`](docs/REVERSE_PROXY_MODE.md), [`REVERSE_PROXY_HEALTH_AND_METRICS.md`](docs/REVERSE_PROXY_HEALTH_AND_METRICS.md), [`REVERSE_PROXY_RESILIENCE.md`](docs/REVERSE_PROXY_RESILIENCE.md), [`PROXY_OPERATOR_STATUS_UI.md`](docs/PROXY_OPERATOR_STATUS_UI.md), [`PROXY_STRATEGY_DEMO_LAB.md`](docs/PROXY_STRATEGY_DEMO_LAB.md), [`PROXY_DEMO_STACK.md`](docs/PROXY_DEMO_STACK.md), [`PROXY_DEMO_FIXTURE_LAUNCHER.md`](docs/PROXY_DEMO_FIXTURE_LAUNCHER.md), [`OPERATOR_PACKAGING.md`](docs/OPERATOR_PACKAGING.md), [`OPERATOR_DISTRIBUTION_SMOKE_KIT.md`](docs/OPERATOR_DISTRIBUTION_SMOKE_KIT.md), [`LOCAL_ARTIFACT_VERIFICATION.md`](docs/LOCAL_ARTIFACT_VERIFICATION.md), [`CI_ARTIFACT_CONSUMER_GUIDE.md`](docs/CI_ARTIFACT_CONSUMER_GUIDE.md), and [`RELEASE_CANDIDATE_DRY_RUN.md`](docs/RELEASE_CANDIDATE_DRY_RUN.md).
 
-Open `http://localhost:8080/routing-demo.html` for the no-dependency browser routing demo. It calls `/api/health`, Actuator readiness, and the existing `/api/routing/compare` endpoint; loads a deterministic synthetic routing scenario; displays the selected server and reason per strategy; preserves raw JSON; and provides copyable curl, request payload, and normalized response-summary blocks. Import `postman/LoadBalancerPro.postman_collection.json` and run the `Routing Decision Demo` folder for Postman parity. The routing demo is local/operator review only, not certification, not benchmark proof, not legal compliance proof, and not identity proof.
+Open `http://localhost:8080/routing-demo.html` for the Enterprise Lab routing cockpit legacy route. It calls `/api/health`, Actuator readiness, and the existing `/api/routing/compare` endpoint; loads a deterministic controlled lab routing scenario; displays the selected server and reason per strategy; preserves raw JSON; and provides copyable curl, request payload, normalized response-summary blocks, and reviewer/operator proof notes. Import `postman/LoadBalancerPro.postman_collection.json` and run the legacy `Routing Decision Demo` folder for Postman parity. The routing cockpit is local/operator lab review only, not certification, not benchmark proof, not legal compliance proof, and not identity proof.
 
 Open `http://localhost:8080/load-balancing-cockpit.html` for the unified no-dependency load-balancing cockpit. It calls `/api/health`, Actuator readiness, `POST /api/allocate/capacity-aware`, `POST /api/allocate/evaluate`, and `POST /api/routing/compare` with deterministic synthetic inputs. The operator API-key control is memory-only: protected cockpit `/api/**` calls include `X-API-Key` only after the operator configures it, the key clears on refresh/navigation, it is not written to `localStorage` or `sessionStorage`, it is not logged or placed in URLs, and copyable curl snippets use `<API_KEY>` instead of the entered value. The page shows allocation output, routing decisions, overload/load-shedding signals, advisory remediation-plan hints, raw JSON, copyable curl snippets, copyable payloads, and a side-by-side summary. The `Cockpit Navigation & Readiness` panel adds a section index, current-panel orientation, in-memory readiness badges, and a deterministic readiness summary without adding API behavior. The `Scenario Gallery` lets reviewers load normal load, overload pressure, all-unhealthy degradation, and recovery/capacity-restored scenarios, run the same real endpoints, compare what changed, and copy scenario summaries. The `Operator Comparison Matrix` runs all packaged scenarios in deterministic order and summarizes routing selections, allocation pressure, overload/load-shedding action, remediation hints, rationale, and deltas in one copyable table without score or benchmark claims. The `Operator Replay Mode` lets reviewers pick baseline/comparison scenario pairs, replay them in order, highlight before/after routing, allocation, overload, remediation, rationale, and error-state differences, and copy a deterministic reviewer note without backend writes or browser storage. The `Operator Review Packet` assembles selected scenario, matrix, replay, explanation, API contract trace, endpoint, payload, raw JSON reference, and safety sections into one copyable and printable client-side handoff without generated runtime files. The `API Contract Trace` maps visible cockpit panels to endpoint paths, request payload sources, raw response sources, displayed raw fields, derived client labels, unavailable fields, and mutation/safety notes. The `Explanation Drill-Down` area adds routing strategy explanation, allocation capacity math, overload reason breakdowns, remediation rationale, scenario delta explanation, and copyable operator rationale; any supporting math is labeled as derived from visible request/response fields when exact internal scores or thresholds are not exposed. Import `postman/LoadBalancerPro.postman_collection.json` and run the `Unified Load-Balancing Cockpit`, `Operator Scenario Gallery`, or `Operator Explanation Drill-Down` folder for matching Postman requests. Unsupported sections are shown as unavailable instead of being fabricated. The cockpit is local/operator review only, not certification, not benchmark proof, not legal compliance proof, and not identity proof.
 

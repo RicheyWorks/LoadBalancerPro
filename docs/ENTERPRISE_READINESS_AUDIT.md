@@ -6,6 +6,14 @@ This audit refreshes the older May 2026 enterprise-readiness notes for the curre
 
 It supersedes the stale branch/version snapshot in the earlier audit. Historical planning docs can still mention `loadbalancerpro-clean` or earlier versions, but the current reviewer entry points should use `main`, `v2.5.0`, and the Enterprise Lab framing.
 
+## Enterprise Lab Cockpit Framing
+
+LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
+
+The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibility, and reviewer/operator explanations. It does not claim production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, production telemetry, or production monitoring proof.
+
+Use [`ENTERPRISE_LAB_COCKPIT_FRAMING.md`](ENTERPRISE_LAB_COCKPIT_FRAMING.md) for the explicit cockpit identity, what the lab cockpit monitors, what it answers, and the route-name compatibility guidance.
+
 ## Scope
 
 - Repository: `RicheyWorks/LoadBalancerPro`

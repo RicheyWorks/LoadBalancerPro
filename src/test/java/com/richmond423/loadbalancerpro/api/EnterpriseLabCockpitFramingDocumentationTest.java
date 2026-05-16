@@ -110,6 +110,13 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("## Monitored Proof Chain"));
         assertTrue(framing.contains("controlled lab scenario -> visible input signals -> selected strategy -> selected backend/server -> comparison delta -> evidence association -> reviewer handoff"));
         assertTrue(framing.contains("This monitoring depth is reviewer-facing interpretation for controlled pre-production routing validation."));
+        assertTrue(framing.contains("## Decision Trace Depth"));
+        assertTrue(framing.contains("why the selected backend appears to have won using only visible controlled lab response data"));
+        assertTrue(framing.contains("The cockpit may explain why alternatives were not selected only when visible signal comparison supports that interpretation."));
+        assertTrue(framing.contains("Known signals are the fields visible in the local lab request and same-origin routing comparison response."));
+        assertTrue(framing.contains("Unknown signals include missing local fields, unavailable API responses, exact scoring not exposed by the API"));
+        assertTrue(framing.contains("The investigation playbook should guide reviewers to inspect the Signal Interpretation Guide, Decision Chain Trace, Scenario Comparison, Evidence Associations, and Export Packet"));
+        assertTrue(framing.contains("Decision trace depth remains controlled lab evidence for pre-production routing validation."));
         assertTrue(framing.contains("## How to Investigate Surprising Lab Decisions"));
         assertTrue(framing.contains("If the backend changed unexpectedly"));
         assertTrue(framing.contains("If all candidates are unhealthy"));

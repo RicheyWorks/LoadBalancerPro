@@ -53,6 +53,18 @@ controlled lab scenario -> visible input signals -> selected strategy -> selecte
 
 This monitoring depth is reviewer-facing interpretation for controlled pre-production routing validation. It does not add production telemetry, production monitoring, live-cloud validation, real-tenant validation, registry operations, signing, or server-side export behavior.
 
+## Decision Trace Depth
+
+Decision trace depth explains why the selected backend appears to have won using only visible controlled lab response data: selected strategy, selected backend/server, returned reason text, candidate health, latency, load/connection pressure, capacity, weight, and scenario delta fields when those fields are exposed.
+
+The cockpit may explain why alternatives were not selected only when visible signal comparison supports that interpretation. If the local lab response does not expose enough data, the correct reviewer note is that non-selected candidate reasons are unknown or only partially explainable. The cockpit must not invent hidden scoring, hidden production weights, or exact production scoring.
+
+Known signals are the fields visible in the local lab request and same-origin routing comparison response. Unknown signals include missing local fields, unavailable API responses, exact scoring not exposed by the API, hidden production weighting, production telemetry, production monitoring, live-cloud behavior, and real-tenant behavior.
+
+The investigation playbook should guide reviewers to inspect the Signal Interpretation Guide, Decision Chain Trace, Scenario Comparison, Evidence Associations, and Export Packet when a backend changes unexpectedly, does not change despite signal changes, changes under the same strategy, stays the same after a strategy change, or all candidates are unhealthy/degraded.
+
+Decision trace depth remains controlled lab evidence for pre-production routing validation. It does not prove production traffic behavior, production telemetry, production monitoring, production certification, SLA/SLO achievement, live-cloud execution, real-tenant behavior, registry publication, container signing, or governance application.
+
 ## How to Investigate Surprising Lab Decisions
 
 - If the backend changed unexpectedly, inspect the selected strategy, candidate health, visible latency/load/connection pressure, capacity/weight fields, scenario comparison delta, and returned reason text.

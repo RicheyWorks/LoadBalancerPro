@@ -111,6 +111,12 @@ class ReviewerTrustMapDocumentationTest {
                 "PROXY_DEMO_FIXTURE_LAUNCHER.md",
                 "routing-demo.html",
                 "Enterprise Lab Cockpit Monitor",
+                "Decision Chain Trace",
+                "Why This Backend Was Selected",
+                "Why Other Candidates Were Not Selected",
+                "Known vs Unknown Signals",
+                "Investigation Playbook",
+                "copyable decision trace explanation",
                 "How This Routing Decision Was Made",
                 "What This Lab Needs to Monitor",
                 "How to Reproduce and Explain This Lab Proof",
@@ -157,6 +163,11 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("http://localhost:8080/routing-demo.html"));
         assertTrue(demoPath.contains("http://localhost:8080/load-balancing-cockpit.html"));
         assertTrue(demoPath.contains("Enterprise Lab Cockpit Monitor"));
+        assertTrue(demoPath.contains("Decision Chain Trace"));
+        assertTrue(demoPath.contains("Why This Backend Was Selected"));
+        assertTrue(demoPath.contains("Why Other Candidates Were Not Selected"));
+        assertTrue(demoPath.contains("Known vs Unknown Signals"));
+        assertTrue(demoPath.contains("Investigation Playbook"));
         assertTrue(demoPath.contains("How This Routing Decision Was Made"));
         assertTrue(demoPath.contains("What This Lab Needs to Monitor"));
         assertTrue(demoPath.contains("How to Reproduce and Explain This Lab Proof"));
@@ -172,9 +183,12 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("selected strategy/backend"));
         assertTrue(demoPath.contains("scenario-to-scenario what-changed notes"));
         assertTrue(demoPath.contains("visible input signal deltas"));
+        assertTrue(demoPath.contains("known versus unknown signals"));
+        assertTrue(demoPath.contains("alternative-candidate limits"));
         assertTrue(demoPath.contains("degradation/recovery notes"));
         assertTrue(demoPath.contains("local verification commands"));
         assertTrue(demoPath.contains("routing-to-evidence dashboard links"));
+        assertTrue(demoPath.contains("copyable decision trace explanation"));
         assertTrue(demoPath.contains("copyable lab monitor explanation"));
         assertTrue(demoPath.contains("copyable evidence association summary"));
         assertTrue(demoPath.contains("copyable end-to-end reviewer walkthrough"));
@@ -242,11 +256,19 @@ class ReviewerTrustMapDocumentationTest {
 
         assertTrue(matrix.contains("How should a reviewer walk the routing cockpit end-to-end?"));
         assertTrue(matrix.contains("How do routing decisions connect to reviewer evidence pages?"));
+        assertTrue(matrix.contains("Why did this backend win, and why not the alternatives?"));
         assertTrue(matrix.contains("How do routing proof scenarios compare?"));
         assertTrue(matrix.contains("How does the Enterprise Lab cockpit monitor and explain routing proof?"));
         assertTrue(matrix.contains("/routing-demo.html"));
         assertTrue(matrix.contains("RoutingDecisionDemoTest"));
         assertTrue(matrix.contains("Enterprise Lab Cockpit Monitor"));
+        assertTrue(matrix.contains("Why This Backend Was Selected"));
+        assertTrue(matrix.contains("Why Other Candidates Were Not Selected"));
+        assertTrue(matrix.contains("Known vs Unknown Signals"));
+        assertTrue(matrix.contains("Investigation Playbook"));
+        assertTrue(matrix.contains("Decision Trace Cards"));
+        assertTrue(matrix.contains("Reviewer Questions Answered"));
+        assertTrue(matrix.contains("copyable decision trace explanation"));
         assertTrue(matrix.contains("How This Routing Decision Was Made"));
         assertTrue(matrix.contains("What This Lab Needs to Monitor"));
         assertTrue(matrix.contains("How to Reproduce and Explain This Lab Proof"));
@@ -280,6 +302,10 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("edited local lab payloads"));
         assertTrue(normalized.contains("same-origin local api responses"));
         assertTrue(normalized.contains("browser-local copy text"));
+        assertTrue(normalized.contains("visible known signals from unknown/unexposed signals"));
+        assertTrue(normalized.contains("alternatives are not explainable"));
+        assertTrue(normalized.contains("exact production scoring"));
+        assertTrue(normalized.contains("hidden production weights"));
         assertTrue(normalized.contains("production telemetry proof"));
         assertTrue(normalized.contains("governance-applied proof"));
         assertTrue(normalized.contains("upload/share endpoint behavior"));
@@ -338,7 +364,7 @@ class ReviewerTrustMapDocumentationTest {
     @Test
     void routingCockpitEvidenceAssociationsTrustMapSectionIsDiscoverableAndBounded() throws Exception {
         String trustMap = read(TRUST_MAP);
-        String section = section(trustMap, "### Cockpit Evidence Associations", "## Reviewer Lab Review Path");
+        String section = section(trustMap, "### Cockpit Evidence Associations", "### Cockpit Decision Trace Depth");
         String normalized = section.toLowerCase(Locale.ROOT);
 
         assertTrue(section.contains("Cockpit Evidence Associations"));
@@ -370,9 +396,32 @@ class ReviewerTrustMapDocumentationTest {
     }
 
     @Test
+    void routingCockpitDecisionTraceDepthTrustMapSectionIsDiscoverableAndBounded() throws Exception {
+        String trustMap = read(TRUST_MAP);
+        String section = section(trustMap, "### Cockpit Decision Trace Depth", "## Reviewer Lab Review Path");
+        String normalized = section.toLowerCase(Locale.ROOT);
+
+        assertTrue(section.contains("Cockpit Decision Trace Depth"));
+        assertTrue(section.contains("/routing-demo.html"));
+        assertTrue(section.contains("why the selected backend appears favored"));
+        assertTrue(section.contains("why alternatives may not be explainable"));
+        assertTrue(section.contains("which visible lab signals are known"));
+        assertTrue(section.contains("which signals are unknown or unavailable"));
+        assertTrue(section.contains("surprising controlled lab outcomes"));
+        assertTrue(section.contains("copyable decision trace explanation"));
+        assertTrue(normalized.contains("browser-local text only"));
+        assertTrue(normalized.contains("does not expose hidden scoring"));
+        assertTrue(normalized.contains("production telemetry"));
+        assertTrue(normalized.contains("production monitoring"));
+        assertTrue(normalized.contains("production certification"));
+        assertTrue(normalized.contains("upload/share endpoints"));
+        assertTrue(normalized.contains("server-side export behavior"));
+    }
+
+    @Test
     void routingCockpitReviewerWorkflowTrustMapSectionIsDiscoverableAndBounded() throws Exception {
         String trustMap = read(TRUST_MAP);
-        String section = section(trustMap, "### Routing Cockpit Reviewer Workflow", "## Reviewer Lab Review Path");
+        String section = section(trustMap, "### Routing Cockpit Reviewer Workflow", "### Enterprise Lab Cockpit Monitoring and How-Question Guide");
         String normalized = section.toLowerCase(Locale.ROOT);
 
         assertTrue(section.contains("Routing Cockpit Reviewer Workflow"));

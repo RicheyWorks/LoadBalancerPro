@@ -842,7 +842,7 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
           </div>
           <div class="proof-card">
             <strong>Factor contribution boundary</strong>
-            <p>ServerScoreCalculator factor contribution contract extraction has begun for current local calculator components; API/cockpit rendering remains future unless exposed by the API, and no score weights are retuned.</p>
+            <p>ServerScoreCalculator factor contribution contract extraction has begun for current local calculator components, and candidate summaries can attach those explanations to selected and non-selected candidate vectors; API/cockpit rendering remains future unless exposed by the API, and no score weights are retuned.</p>
           </div>
           <div class="proof-card">
             <strong>Replay and what-if boundary</strong>
@@ -881,7 +881,7 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
           </div>
           <div class="proof-card">
             <strong>Factor contribution availability</strong>
-            <p id="decision-vector-factor-contribution">Internal calculator contribution contract started; not exposed in this cockpit response unless the API returns contribution fields.</p>
+            <p id="decision-vector-factor-contribution">Internal calculator contribution and candidate summary contracts started; not exposed in this cockpit response unless the API returns contribution fields.</p>
           </div>
           <div class="proof-card">
             <strong>Replay readiness</strong>
@@ -904,7 +904,7 @@ candidateVectors: selected and non-selected candidate vectors are derived from v
 knownSignals: run Compare strategies to populate visible lab signals
 unknownSignals: exact scoring not exposed; hidden routing internals not inferred; production telemetry not claimed; production monitoring not claimed
 exactScoringAvailability: not exposed unless the API returns exact scoring fields
-factorContributionAvailability: internal calculator contribution contract started; not exposed in this cockpit response unless the API returns contribution fields
+factorContributionAvailability: internal calculator contribution and candidate summary contracts started; not exposed in this cockpit response unless the API returns contribution fields
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
 structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented
@@ -2869,7 +2869,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const exactScoringAvailability =
         "not exposed unless the API returns exact scoring fields; hidden scoring is not inferred.";
       const factorContributionAvailability =
-        "internal calculator contribution contract started for current local calculator components; not exposed in this cockpit response unless factor contribution fields are exposed by the API.";
+        "internal calculator contribution and candidate summary contracts started for current local calculator components; not exposed in this cockpit response unless factor contribution fields are exposed by the API.";
       const replayReadiness =
         "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
       const evidencePath = evidenceNavigationPath();

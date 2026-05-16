@@ -68,6 +68,27 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(resultProperties, "/reason/type").asText());
         assertEquals("array", required(resultProperties, "/candidateServersConsidered/type").asText());
         assertEquals("object", required(resultProperties, "/scores/type").asText());
+        assertRef(required(resultProperties, "/decisionVector"), "#/components/schemas/RoutingDecisionVectorResponse");
+
+        JsonNode vectorProperties = required(docs,
+                "/components/schemas/RoutingDecisionVectorResponse/properties");
+        assertEquals("boolean", required(vectorProperties, "/readOnly/type").asText());
+        assertEquals("string", required(vectorProperties, "/localLabResponsePath/type").asText());
+        assertEquals("string", required(vectorProperties, "/selectedStrategy/type").asText());
+        assertEquals("string", required(vectorProperties, "/selectedBackend/type").asText());
+        assertEquals("array", required(vectorProperties, "/candidateSummaries/type").asText());
+        assertRef(required(vectorProperties, "/candidateSummaries/items"),
+                "#/components/schemas/CandidateDecisionVectorResponse");
+        assertRef(required(vectorProperties, "/selectedCandidateVector"),
+                "#/components/schemas/CandidateDecisionVectorResponse");
+
+        JsonNode candidateProperties = required(docs,
+                "/components/schemas/CandidateDecisionVectorResponse/properties");
+        assertEquals("string", required(candidateProperties, "/candidateId/type").asText());
+        assertEquals("boolean", required(candidateProperties, "/selected/type").asText());
+        assertEquals("array", required(candidateProperties, "/factorContributions/type").asText());
+        assertRef(required(candidateProperties, "/factorContributions/items"),
+                "#/components/schemas/ScoreFactorContributionResponse");
     }
 
     private JsonNode openApiDocs() throws Exception {

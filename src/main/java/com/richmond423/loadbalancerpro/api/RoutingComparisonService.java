@@ -10,6 +10,7 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.Set;
 
+import com.richmond423.loadbalancerpro.core.CandidateFactorContributionSummary;
 import com.richmond423.loadbalancerpro.core.NetworkAwarenessSignal;
 import com.richmond423.loadbalancerpro.core.RoutingComparisonEngine;
 import com.richmond423.loadbalancerpro.core.RoutingComparisonReport;
@@ -18,13 +19,28 @@ import com.richmond423.loadbalancerpro.core.RoutingDecision;
 import com.richmond423.loadbalancerpro.core.RoutingDecisionExplanation;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyId;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
+import com.richmond423.loadbalancerpro.core.ServerScoreCalculator;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RoutingComparisonService {
+    private static final String LOCAL_LAB_RESPONSE_PATH = "/api/routing/compare";
+    private static final String DECISION_ID_NOT_EXPOSED =
+            "not exposed by this read-only local lab response";
+    private static final String FACTOR_CONTRIBUTION_AVAILABILITY =
+            "exposed for current ServerScoreCalculator components through read-only controlled lab response data; "
+                    + "hidden scoring is not inferred and exact production scoring is not claimed.";
+    private static final String REPLAY_READINESS =
+            "future/not implemented; read-only Decision Vector exposure does not execute replay.";
+    private static final String WHAT_IF_READINESS =
+            "future/not implemented; read-only Decision Vector exposure does not execute what-if experiments.";
+    private static final String STRUCTURED_LOGGING_READINESS =
+            "future/not implemented; this response is not persistent structured decision logging.";
+
     private final RoutingStrategyRegistry registry;
     private final RoutingComparisonEngine engine;
+    private final ServerScoreCalculator scoreCalculator;
     private final Clock clock;
 
     public RoutingComparisonService() {
@@ -35,6 +51,7 @@ public class RoutingComparisonService {
         this.registry = registry;
         this.clock = clock;
         this.engine = new RoutingComparisonEngine(registry, clock);
+        this.scoreCalculator = new ServerScoreCalculator();
     }
 
     public RoutingComparisonResponse compare(RoutingComparisonRequest request) {
@@ -45,7 +62,7 @@ public class RoutingComparisonService {
         List<RoutingStrategyId> strategyIds = resolveStrategies(request.strategies());
         List<ServerStateVector> candidates = toCandidates(request.servers(), timestamp);
         RoutingComparisonReport report = engine.compare(candidates, strategyIds);
-        return toResponse(report);
+        return toResponse(report, candidates);
     }
 
     private List<RoutingStrategyId> resolveStrategies(List<String> requestedStrategies) {
@@ -133,36 +150,114 @@ public class RoutingComparisonService {
                 timestamp);
     }
 
-    private RoutingComparisonResponse toResponse(RoutingComparisonReport report) {
+    private RoutingComparisonResponse toResponse(RoutingComparisonReport report, List<ServerStateVector> candidates) {
         return new RoutingComparisonResponse(
                 report.requestedStrategies().stream().map(RoutingStrategyId::externalName).toList(),
                 report.candidateCount(),
                 report.timestamp(),
-                report.results().stream().map(this::toResultResponse).toList());
+                report.results().stream().map(result -> toResultResponse(result, candidates)).toList());
     }
 
-    private RoutingComparisonResultResponse toResultResponse(RoutingComparisonResult result) {
+    private RoutingComparisonResultResponse toResultResponse(RoutingComparisonResult result,
+                                                             List<ServerStateVector> candidates) {
         return result.decision()
-                .map(decision -> successfulResultResponse(result, decision))
+                .map(decision -> successfulResultResponse(result, decision, candidates))
                 .orElseGet(() -> new RoutingComparisonResultResponse(
                         result.strategyId().externalName(),
                         result.status().name(),
                         null,
                         result.reason(),
                         List.of(),
-                        Map.of()));
+                        Map.of(),
+                        null));
     }
 
     private RoutingComparisonResultResponse successfulResultResponse(
-            RoutingComparisonResult result, RoutingDecision decision) {
+            RoutingComparisonResult result, RoutingDecision decision, List<ServerStateVector> candidates) {
         RoutingDecisionExplanation explanation = decision.explanation();
+        String selectedServerId = explanation.chosenServerId().orElse(null);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
-                explanation.chosenServerId().orElse(null),
+                selectedServerId,
                 result.reason(),
                 explanation.candidateServersConsidered(),
-                explanation.scores());
+                explanation.scores(),
+                decisionVector(result.strategyId(), selectedServerId, candidates));
+    }
+
+    private RoutingDecisionVectorResponse decisionVector(RoutingStrategyId strategyId,
+                                                        String selectedServerId,
+                                                        List<ServerStateVector> candidates) {
+        if (selectedServerId == null || selectedServerId.isBlank()) {
+            return null;
+        }
+        List<CandidateFactorContributionSummary> summaries = CandidateFactorContributionSummary.fromCandidates(
+                candidates,
+                selectedServerId,
+                scoreCalculator,
+                explanationNotes(strategyId, selectedServerId, candidates));
+        List<CandidateDecisionVectorResponse> candidateVectors = summaries.stream()
+                .map(CandidateDecisionVectorResponse::from)
+                .toList();
+        CandidateDecisionVectorResponse selectedCandidate = candidateVectors.stream()
+                .filter(CandidateDecisionVectorResponse::selected)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("selected candidate vector is missing"));
+        List<CandidateDecisionVectorResponse> nonSelectedCandidates = candidateVectors.stream()
+                .filter(candidate -> !candidate.selected())
+                .toList();
+        List<String> knownVisibleSignals = candidateVectors.stream()
+                .flatMap(candidate -> candidate.knownVisibleSignals().stream())
+                .distinct()
+                .toList();
+        List<String> unknownOrUnexposedSignals = candidateVectors.stream()
+                .flatMap(candidate -> candidate.unknownOrUnexposedSignals().stream())
+                .distinct()
+                .toList();
+        List<String> selectedVsAlternativeNotes = candidateVectors.stream()
+                .map(CandidateDecisionVectorResponse::selectedVsAlternativeExplanationNote)
+                .toList();
+        return new RoutingDecisionVectorResponse(
+                true,
+                LOCAL_LAB_RESPONSE_PATH,
+                DECISION_ID_NOT_EXPOSED,
+                strategyId.externalName(),
+                selectedServerId,
+                candidates.size(),
+                candidateVectors,
+                selectedCandidate,
+                nonSelectedCandidates,
+                knownVisibleSignals,
+                unknownOrUnexposedSignals,
+                selectedCandidate.exactnessBoundary(),
+                selectedVsAlternativeNotes,
+                selectedCandidate.labProofBoundary(),
+                selectedCandidate.productionNotProvenBoundary(),
+                FACTOR_CONTRIBUTION_AVAILABILITY,
+                REPLAY_READINESS,
+                WHAT_IF_READINESS,
+                STRUCTURED_LOGGING_READINESS);
+    }
+
+    private Map<String, String> explanationNotes(RoutingStrategyId strategyId,
+                                                 String selectedServerId,
+                                                 List<ServerStateVector> candidates) {
+        Map<String, String> notes = new java.util.LinkedHashMap<>();
+        for (ServerStateVector candidate : candidates) {
+            if (candidate.serverId().equals(selectedServerId)) {
+                notes.put(candidate.serverId(), "Selected by " + strategyId.externalName()
+                        + "; factor contributions expose current calculator components for controlled lab review "
+                        + "without changing routing behavior or claiming exact production scoring.");
+            } else if (!candidate.healthy()) {
+                notes.put(candidate.serverId(), "Non-selected candidate; visible unhealthy state cautions against "
+                        + "selection, and hidden scoring is not inferred.");
+            } else {
+                notes.put(candidate.serverId(), "Non-selected candidate; compare visible factor contributions, "
+                        + "returned reason text, and unknown signals without inventing hidden scoring.");
+            }
+        }
+        return notes;
     }
 
     private static void validateLatencyOrdering(double averageLatencyMillis,

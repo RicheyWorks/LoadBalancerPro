@@ -817,7 +817,7 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
       <div class="panel-head">
         <h2>Decision Vector Foundation</h2>
         <div class="actions">
-          <button class="copy" type="button" data-copy-target="decision-vector-summary-output">Copy Decision Vector summary</button>
+          <button class="copy" type="button" data-copy-target="decision-vector-summary-output">Copy structured decision vector summary</button>
         </div>
       </div>
       <div class="panel-body">
@@ -842,7 +842,11 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
           </div>
           <div class="proof-card">
             <strong>Factor contribution boundary</strong>
-            <p>ServerScoreCalculator factor contribution contract extraction has begun for current local calculator components, and candidate summaries can attach those explanations to selected and non-selected candidate vectors; API/cockpit rendering remains future unless exposed by the API, and no score weights are retuned.</p>
+            <p>ServerScoreCalculator factor contribution contract extraction has begun for current local calculator components, and the read-only comparison response can expose those summaries for selected and non-selected candidate vectors; no score weights are retuned.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Read-only API exposure</strong>
+            <p>The same-origin <code>/api/routing/compare</code> response can return <code>results[].decisionVector</code> as additive controlled lab data; if it is absent, static lab guidance remains available.</p>
           </div>
           <div class="proof-card">
             <strong>Replay and what-if boundary</strong>
@@ -884,6 +888,10 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-factor-contribution">Internal calculator contribution and candidate summary contracts started; not exposed in this cockpit response unless the API returns contribution fields.</p>
           </div>
           <div class="proof-card">
+            <strong>Read-only exposure</strong>
+            <p id="decision-vector-readonly-exposure">Decision Vector data is unavailable in this response; static lab guidance remains available.</p>
+          </div>
+          <div class="proof-card">
             <strong>Replay readiness</strong>
             <p id="decision-vector-replay-readiness">Planned future contract readiness; replay execution and what-if execution are not implemented here.</p>
           </div>
@@ -905,6 +913,7 @@ knownSignals: run Compare strategies to populate visible lab signals
 unknownSignals: exact scoring not exposed; hidden routing internals not inferred; production telemetry not claimed; production monitoring not claimed
 exactScoringAvailability: not exposed unless the API returns exact scoring fields
 factorContributionAvailability: internal calculator contribution and candidate summary contracts started; not exposed in this cockpit response unless the API returns contribution fields
+readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
 structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented
@@ -1829,6 +1838,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       unknownSignals: document.getElementById("decision-vector-unknown-signals"),
       scoringAvailability: document.getElementById("decision-vector-scoring-availability"),
       factorContribution: document.getElementById("decision-vector-factor-contribution"),
+      readOnlyExposure: document.getElementById("decision-vector-readonly-exposure"),
       replayReadiness: document.getElementById("decision-vector-replay-readiness")
     };
     const requestJson = document.getElementById("request-json");
@@ -2851,27 +2861,75 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         ? lastRoutingBody.results
         : [];
       const primary = results.length > 0 ? results[0] : null;
-      const selectedStrategy = primary && primary.strategyId ? primary.strategyId : "not run";
-      const selectedBackend = primary && primary.chosenServerId ? primary.chosenServerId : "not run";
+      const decisionVector = primary && primary.decisionVector && typeof primary.decisionVector === "object"
+        ? primary.decisionVector
+        : null;
+      const selectedStrategy = decisionVector && decisionVector.selectedStrategy
+        ? decisionVector.selectedStrategy
+        : (primary && primary.strategyId ? primary.strategyId : "not run");
+      const selectedBackend = decisionVector && decisionVector.selectedBackend
+        ? decisionVector.selectedBackend
+        : (primary && primary.chosenServerId ? primary.chosenServerId : "not run");
       const selectedServer = primary && primary.chosenServerId ? selectedServerDetails(primary.chosenServerId) : null;
       const alternatives = nonSelectedCandidates(currentPayload, selectedServer);
-      const knownSignals = knownVisibleSignalsSummary(selectedServer, results);
-      const unknownSignals = unknownSignalSummary(selectedServer, results);
-      const candidateCount = servers.length > 0
+      const knownSignals = decisionVector && Array.isArray(decisionVector.knownVisibleSignals)
+          && decisionVector.knownVisibleSignals.length > 0
+        ? decisionVector.knownVisibleSignals.slice(0, 8).join("; ")
+        : knownVisibleSignalsSummary(selectedServer, results);
+      const unknownSignals = decisionVector && Array.isArray(decisionVector.unknownOrUnexposedSignals)
+          && decisionVector.unknownOrUnexposedSignals.length > 0
+        ? decisionVector.unknownOrUnexposedSignals.join("; ")
+        : unknownSignalSummary(selectedServer, results);
+      const candidateCount = decisionVector && Number.isFinite(Number(decisionVector.candidateCount))
+        ? decisionVector.candidateCount + " candidate backend(s) in the read-only Decision Vector response."
+        : (servers.length > 0
         ? servers.length + " visible candidate backend(s) in the controlled lab payload."
-        : "No candidate backend list is visible yet; load a controlled lab scenario.";
-      const candidateVectors = selectedServer
+        : "No candidate backend list is visible yet; load a controlled lab scenario.");
+      const selectedVectorId = decisionVector && decisionVector.selectedCandidateVector
+        ? decisionVector.selectedCandidateVector.candidateId
+        : null;
+      const nonSelectedVectorIds = decisionVector && Array.isArray(decisionVector.nonSelectedCandidateVectors)
+        ? decisionVector.nonSelectedCandidateVectors.map((candidate) => candidate.candidateId).filter(Boolean)
+        : [];
+      const candidateVectors = decisionVector
+        ? "selectedCandidateVector=" + (selectedVectorId || selectedBackend)
+          + "; nonSelectedCandidateVectors="
+          + (nonSelectedVectorIds.length > 0 ? nonSelectedVectorIds.join(", ") : "none exposed")
+          + "; candidateSummaries="
+          + (Array.isArray(decisionVector.candidateSummaries) ? decisionVector.candidateSummaries.length : 0)
+          + "; source=read-only /api/routing/compare decisionVector field."
+        : (selectedServer
         ? "selectedCandidateVector=" + candidateName(selectedServer)
           + "; nonSelectedCandidateVectors="
           + (alternatives.length > 0 ? alternatives.map(candidateName).join(", ") : "none visible")
           + "; candidate vectors use visible local lab payload fields only."
-        : "Candidate vectors are pending selected backend mapping; visible local lab payload fields remain available for review.";
-      const exactScoringAvailability =
-        "not exposed unless the API returns exact scoring fields; hidden scoring is not inferred.";
-      const factorContributionAvailability =
-        "internal calculator contribution and candidate summary contracts started for current local calculator components; not exposed in this cockpit response unless factor contribution fields are exposed by the API.";
-      const replayReadiness =
-        "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
+        : "Candidate vectors are pending selected backend mapping; visible local lab payload fields remain available for review.");
+      const exactScoringAvailability = decisionVector && decisionVector.exactnessBoundary
+        ? decisionVector.exactnessBoundary
+        : "not exposed unless the API returns exact scoring fields; hidden scoring is not inferred.";
+      const factorContributionAvailability = decisionVector && decisionVector.factorContributionAvailability
+        ? decisionVector.factorContributionAvailability
+        : "internal calculator contribution and candidate summary contracts started for current local calculator components; not exposed in this cockpit response unless factor contribution fields are exposed by the API.";
+      const readOnlyExposure = decisionVector
+        ? "Read-only Decision Vector data returned by /api/routing/compare; response fields are additive and preserve existing routing comparison fields."
+        : "Decision Vector data is unavailable in this response; static lab guidance remains available.";
+      const selectedContributionCount = decisionVector && decisionVector.selectedCandidateVector
+          && Array.isArray(decisionVector.selectedCandidateVector.factorContributions)
+        ? decisionVector.selectedCandidateVector.factorContributions.length
+        : 0;
+      const candidateContributionSummary = decisionVector
+        ? "selectedCandidateFactorContributions=" + selectedContributionCount
+          + "; knownVsUnknownSignals exposed in read-only candidate vectors."
+        : "candidate factor contribution summaries are unavailable in this response; static lab guidance remains available.";
+      const replayReadiness = decisionVector && decisionVector.replayReadiness
+        ? decisionVector.replayReadiness
+        : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
+      const whatIfReadiness = decisionVector && decisionVector.whatIfReadiness
+        ? decisionVector.whatIfReadiness
+        : "planned future contract; what-if execution is not implemented";
+      const structuredLoggingReadiness = decisionVector && decisionVector.structuredDecisionLoggingReadiness
+        ? decisionVector.structuredDecisionLoggingReadiness
+        : "planned future contract; structured decision logging is not implemented";
       const evidencePath = evidenceNavigationPath();
       const notProven =
         "No production traffic proof, production telemetry proof, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication proof, container signing proof, governance-applied proof, exact production scoring proof, or production certification claim.";
@@ -2883,12 +2941,13 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       decisionVectorFields.unknownSignals.textContent = unknownSignals;
       decisionVectorFields.scoringAvailability.textContent = exactScoringAvailability;
       decisionVectorFields.factorContribution.textContent = factorContributionAvailability;
+      decisionVectorFields.readOnlyExposure.textContent = readOnlyExposure;
       decisionVectorFields.replayReadiness.textContent = replayReadiness;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
         "",
-        "decisionIdOrLabRunId: not exposed; browser-local controlled lab summary only",
+        "decisionIdOrLabRunId: " + (decisionVector && decisionVector.decisionIdOrLabRunId ? decisionVector.decisionIdOrLabRunId : "not exposed; browser-local controlled lab summary only"),
         "selectedStrategy: " + selectedStrategy,
         "selectedBackend: " + selectedBackend,
         "candidateCount: " + candidateCount,
@@ -2897,10 +2956,12 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "unknownSignals: " + unknownSignals,
         "exactScoringAvailability: " + exactScoringAvailability,
         "factorContributionAvailability: " + factorContributionAvailability,
+        "candidateFactorContributionSummary: " + candidateContributionSummary,
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
+        "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,
-        "whatIfReadiness: planned future contract; what-if execution is not implemented",
-        "structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented",
+        "whatIfReadiness: " + whatIfReadiness,
+        "structuredDecisionLoggingReadiness: " + structuredLoggingReadiness,
         "evidenceAssociationPath: " + evidencePath,
         "",
         "labProofBoundary: controlled lab evidence, same-origin local API response data, visible request payload fields, and browser-local interpretation",

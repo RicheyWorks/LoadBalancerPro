@@ -134,8 +134,9 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("non-selected candidate vectors"));
         assertTrue(framing.contains("ServerScoreCalculator factor contribution extraction is additive"));
         assertTrue(framing.contains("candidate factor contribution summaries can attach those calculator explanations to selected and non-selected candidate vectors"));
-        assertTrue(framing.contains("API/cockpit contribution rendering remains future/not implemented"));
-        assertTrue(framing.contains("replay and what-if execution remain future/not implemented"));
+        assertTrue(framing.contains("The read-only `/api/routing/compare` response can expose `results[].decisionVector`"));
+        assertTrue(framing.contains("preserving existing fields, routing behavior, scoring behavior, and strategy weights"));
+        assertTrue(framing.contains("Replay and what-if execution remain future/not implemented"));
         assertTrue(framing.contains("## How to Investigate Surprising Lab Decisions"));
         assertTrue(framing.contains("If the backend changed unexpectedly"));
         assertTrue(framing.contains("If all candidates are unhealthy"));

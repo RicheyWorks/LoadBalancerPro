@@ -524,8 +524,12 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(section.contains("Candidate Decision Vector"));
         assertTrue(section.contains("fallback text when non-selection cannot be explained from visible data"));
         assertTrue(normalized.contains("prevents hidden scoring invention"));
+        assertTrue(section.contains("ServerScoreCalculator factor contribution contract"));
+        assertTrue(normalized.contains("additive extraction for existing local calculator components"));
+        assertTrue(normalized.contains("preserves score values"));
+        assertTrue(normalized.contains("does not retune strategy weights"));
         assertTrue(normalized.contains("future/not implemented roadmap items"));
-        assertTrue(normalized.contains("factor contribution analysis"));
+        assertTrue(normalized.contains("api/cockpit rendering"));
         assertTrue(normalized.contains("decision replay"));
         assertTrue(normalized.contains("what-if experiments"));
         assertTrue(normalized.contains("structured decision logging"));

@@ -84,6 +84,58 @@ Factor Contribution is a future extension unless the API explicitly exposes cont
 
 The placeholder must keep `contributionValue` and `weight` unavailable until real fields exist. Exact production scoring is not claimed, and hidden scoring must not be inferred.
 
+## From Decision Vector to Factor Contributions
+
+Factor contributions are the next explainability layer under the Decision Vector. The current
+`ServerScoreCalculator` factor contribution contract is additive and explains existing scoring
+components such as p95 latency, p99 latency, average latency, in-flight pressure, queue pressure,
+recent error rate, network-awareness risk signals, health penalty, and capacity-basis interpretation.
+
+This contract is deliberately narrow:
+
+- It explains current calculator components; it does not retune weights.
+- It preserves existing score values and routing selection behavior.
+- It marks visible state fields that do not contribute to this calculator, such as server weight, instead of inventing hidden weighting.
+- It keeps hidden routing internals and production scoring unavailable unless explicitly exposed.
+- It does not claim production scoring proof, production telemetry proof, production monitoring proof, or production certification.
+- It does not implement decision replay, what-if experiments, or structured decision logging.
+- Future cockpit rendering can consume factor contributions once an API or Decision Vector payload exposes them.
+
+The contribution contract makes future factor analysis safer by tying every explanation entry to
+existing calculator logic, an exact local-lab contribution value when available, an exactness marker,
+and a boundary note. Unknown factors stay unknown instead of being inferred.
+
+Candidate vectors can later attach contribution entries like this when the Decision Vector payload
+exposes them. This is a contract shape and documentation example, not a new runtime API field:
+
+```json
+{
+  "candidateId": "edge-alpha",
+  "selected": true,
+  "factorContributions": [
+    {
+      "factorName": "p95LatencyMillis",
+      "rawValueDescription": "p95LatencyMillis=60.000000",
+      "weightDescription": "P95_WEIGHT=0.450000",
+      "direction": "WEAKENS_SELECTION",
+      "contributionValue": 27.0,
+      "exactness": "EXACT_FROM_CALCULATOR",
+      "explanationText": "p95 latency contribution = p95LatencyMillis * P95_WEIGHT.",
+      "boundaryNote": "Exact for the current local calculator component only; not production scoring proof."
+    },
+    {
+      "factorName": "hiddenRoutingInternals",
+      "rawValueDescription": "not exposed by this calculator contract",
+      "direction": "UNKNOWN",
+      "contributionValue": "notExposed",
+      "exactness": "NOT_EXPOSED",
+      "explanationText": "Hidden routing internals are not inferred.",
+      "boundaryNote": "Exact production scoring is not claimed."
+    }
+  ]
+}
+```
+
 ## How It Answers Why This Backend
 
 The Decision Vector answers "why this backend?" by showing:

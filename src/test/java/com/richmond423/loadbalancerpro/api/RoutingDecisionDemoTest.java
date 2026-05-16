@@ -656,7 +656,8 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("A structured explanation object for one controlled lab routing decision"));
         assertTrue(page.contains("One backend/server record with selected true/false state"));
         assertTrue(page.contains("Known signals come from the local lab request or same-origin comparison response"));
-        assertTrue(page.contains("Factor contribution analysis is a future extension unless implemented and exposed by the API"));
+        assertTrue(page.contains("ServerScoreCalculator factor contribution contract extraction has begun"));
+        assertTrue(page.contains("no score weights are retuned"));
         assertTrue(page.contains("Decision replay, what-if experiments, and structured decision logging should build on this contract later"));
         assertTrue(page.contains("data-copy-target=\"decision-vector-summary-output\""));
         assertTrue(page.contains("id=\"decision-vector-selected-strategy\""));
@@ -678,7 +679,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented"));
         assertTrue(page.contains("labProofBoundary: controlled lab evidence"));
         assertTrue(page.contains("copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"));
-        assertTrue(normalized.contains("future extension / not implemented"));
+        assertTrue(normalized.contains("internal calculator contribution contract started"));
         assertTrue(normalized.contains("no production traffic proof"));
         assertTrue(normalized.contains("no production telemetry proof"));
         assertTrue(normalized.contains("no exact production scoring proof"));

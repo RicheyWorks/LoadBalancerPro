@@ -26,12 +26,14 @@ class EnterpriseLabDecisionReplayWhatIfPlanDocumentationTest {
         assertTrue(plan.contains("## Current State After Decision Vector Exposure"));
         assertTrue(plan.contains("## Planned Replay Input Model"));
         assertTrue(plan.contains("## Planned What-If Mutation Model"));
+        assertTrue(plan.contains("## Contract Fixture Lane"));
         assertTrue(plan.contains("## Safe What-If Questions"));
         assertTrue(plan.contains("## Exactness Boundaries"));
         assertTrue(plan.contains("## Why Replay Is Not Production Proof"));
         assertTrue(plan.contains("## Safety Boundaries"));
         assertTrue(plan.contains("## Future Implementation Phases"));
-        assertTrue(plan.contains("This sprint completes phase 1 only."));
+        assertTrue(plan.contains("PR #180 completed this planning phase."));
+        assertTrue(plan.contains("The current contract fixture lane is a phase 2 seed only."));
     }
 
     @Test
@@ -43,6 +45,8 @@ class EnterpriseLabDecisionReplayWhatIfPlanDocumentationTest {
         assertTrue(plan.contains("It does not execute replay."));
         assertTrue(plan.contains("It does not execute what-if experiments."));
         assertTrue(plan.contains("It does not create a replay endpoint."));
+        assertTrue(plan.contains("fixture-only contract seed"));
+        assertTrue(plan.contains("do not expose an endpoint"));
         assertTrue(plan.contains("No live replay endpoint exists."));
         assertTrue(plan.contains("No `/api/routing/replay`, `/api/routing/what-if`, or `/api/routing/decision-replay` endpoint is added."));
         assertTrue(plan.contains("No production traffic replay is implemented."));
@@ -134,6 +138,9 @@ class EnterpriseLabDecisionReplayWhatIfPlanDocumentationTest {
 
         assertTrue(trustMap.contains("### Decision Replay / What-If Plan"));
         assertTrue(trustMap.contains("ENTERPRISE_LAB_DECISION_REPLAY_WHAT_IF_PLAN.md"));
+        assertTrue(trustMap.contains("fixture-only contract seed"));
+        assertTrue(trustMap.contains("src/test/resources/enterprise-lab/decision-replay/"));
+        assertTrue(trustMap.contains("EnterpriseLabDecisionReplayContractFixtureTest"));
         assertTrue(trustMap.contains("planned/not implemented"));
         assertTrue(trustMap.contains("no live replay endpoint"));
         assertTrue(trustMap.contains("no `/api/routing/replay`"));

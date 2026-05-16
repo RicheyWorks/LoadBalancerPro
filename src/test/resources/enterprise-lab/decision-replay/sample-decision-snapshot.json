@@ -1,0 +1,131 @@
+{
+  "snapshotVersion": "enterprise-lab-decision-snapshot-v1",
+  "fixtureSnapshotId": "decision-replay-fixture-snapshot-001",
+  "capturedAt": "2026-01-01T00:00:00Z",
+  "strategy": "weighted-response-time",
+  "selectedBackend": {
+    "backendId": "edge-alpha",
+    "displayName": "Edge Alpha",
+    "healthy": true
+  },
+  "candidates": [
+    {
+      "backendId": "edge-alpha",
+      "selected": true,
+      "healthy": true,
+      "signals": {
+        "p95LatencyMs": 42,
+        "currentLoad": 0.41,
+        "recentErrorRate": 0.01,
+        "configuredCapacity": 100
+      }
+    },
+    {
+      "backendId": "edge-beta",
+      "selected": false,
+      "healthy": true,
+      "signals": {
+        "p95LatencyMs": 118,
+        "currentLoad": 0.38,
+        "recentErrorRate": 0.01,
+        "configuredCapacity": 100
+      }
+    },
+    {
+      "backendId": "edge-drain",
+      "selected": false,
+      "healthy": false,
+      "signals": {
+        "p95LatencyMs": 35,
+        "currentLoad": 0.12,
+        "recentErrorRate": 0.00,
+        "configuredCapacity": 100
+      }
+    }
+  ],
+  "decisionVector": {
+    "schemaVersion": "decision-vector-v1",
+    "selectedStrategy": "weighted-response-time",
+    "selectedBackendId": "edge-alpha",
+    "candidateBackendIds": [
+      "edge-alpha",
+      "edge-beta",
+      "edge-drain"
+    ],
+    "knownSignals": [
+      "health",
+      "p95LatencyMs",
+      "currentLoad",
+      "recentErrorRate",
+      "configuredCapacity"
+    ],
+    "unknownSignals": [
+      "productionTraffic",
+      "productionTelemetry",
+      "hiddenStrategyInternals",
+      "realTenantBehavior",
+      "liveCloudBehavior"
+    ],
+    "replayReadiness": "fixture-only contract seed; replay execution is planned/not implemented",
+    "whatIfReadiness": "fixture-only contract seed; what-if execution is planned/not implemented"
+  },
+  "factorContributions": [
+    {
+      "backendId": "edge-alpha",
+      "factor": "health",
+      "direction": "supports-selection",
+      "summary": "Healthy candidate remains eligible in the controlled lab fixture."
+    },
+    {
+      "backendId": "edge-alpha",
+      "factor": "p95LatencyMs",
+      "direction": "supports-selection",
+      "summary": "Lower visible p95 latency supports the selected backend in this fixture."
+    },
+    {
+      "backendId": "edge-beta",
+      "factor": "p95LatencyMs",
+      "direction": "weakens-selection",
+      "summary": "Higher visible p95 latency makes this candidate less plausible in this fixture."
+    },
+    {
+      "backendId": "edge-drain",
+      "factor": "health",
+      "direction": "blocks-selection",
+      "summary": "Unhealthy candidates remain ineligible in this fixture."
+    }
+  ],
+  "knownSignals": [
+    "health",
+    "p95LatencyMs",
+    "currentLoad",
+    "recentErrorRate",
+    "configuredCapacity"
+  ],
+  "unknownSignals": [
+    "productionTraffic",
+    "productionTelemetry",
+    "hiddenStrategyInternals",
+    "realTenantBehavior",
+    "liveCloudBehavior"
+  ],
+  "exactnessBoundaries": [
+    "Exact only for this static controlled-lab fixture.",
+    "Exact only for visible fixture fields.",
+    "Not exact for production traffic behavior.",
+    "Not exact for production telemetry, live cloud behavior, real tenant behavior, SLA/SLO proof, or production certification."
+  ],
+  "notProductionProof": {
+    "labOnly": true,
+    "productionTrafficReplay": false,
+    "realBackendMutation": false,
+    "externalStorage": false,
+    "externalTelemetry": false,
+    "liveCloudProof": false,
+    "realTenantProof": false,
+    "slaSloProof": false,
+    "productionCertification": false,
+    "registryPublication": false,
+    "containerSigning": false
+  }
+}

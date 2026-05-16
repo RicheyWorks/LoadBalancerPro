@@ -110,6 +110,8 @@ class ReviewerTrustMapDocumentationTest {
                 "PROXY_DEMO_FIXTURE_LAUNCHER.md",
                 "routing-demo.html",
                 "Reviewer Workflow Checklist",
+                "Evidence Associations",
+                "Association Legend",
                 "Routing Proof Summary",
                 "Scenario Comparison",
                 "Reviewer Confidence Signals",
@@ -148,16 +150,20 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("http://localhost:8080/routing-demo.html"));
         assertTrue(demoPath.contains("http://localhost:8080/load-balancing-cockpit.html"));
         assertTrue(demoPath.contains("Reviewer Workflow Checklist"));
+        assertTrue(demoPath.contains("Evidence Associations"));
+        assertTrue(demoPath.contains("Association Legend"));
         assertTrue(demoPath.contains("Routing Proof Summary"));
         assertTrue(demoPath.contains("Scenario Comparison"));
         assertTrue(demoPath.contains("Reviewer Confidence Signals"));
         assertTrue(demoPath.contains("Evidence Navigation reviewer path"));
+        assertTrue(demoPath.contains("selected scenario-to-decision mapping"));
         assertTrue(demoPath.contains("selected strategy/backend"));
         assertTrue(demoPath.contains("scenario-to-scenario what-changed notes"));
         assertTrue(demoPath.contains("visible input signal deltas"));
         assertTrue(demoPath.contains("degradation/recovery notes"));
         assertTrue(demoPath.contains("local verification commands"));
         assertTrue(demoPath.contains("routing-to-evidence dashboard links"));
+        assertTrue(demoPath.contains("copyable evidence association summary"));
         assertTrue(demoPath.contains("copyable end-to-end reviewer walkthrough"));
         assertTrue(demoPath.contains("explicit not-proven boundaries"));
         assertTrue(demoPath.contains("mvn -Dtest=LocalProxyEvidenceExportTest test"));
@@ -222,14 +228,23 @@ class ReviewerTrustMapDocumentationTest {
         String normalized = matrix.toLowerCase(Locale.ROOT);
 
         assertTrue(matrix.contains("How should a reviewer walk the routing cockpit end-to-end?"));
+        assertTrue(matrix.contains("How do routing decisions connect to reviewer evidence pages?"));
         assertTrue(matrix.contains("How do routing proof scenarios compare?"));
         assertTrue(matrix.contains("/routing-demo.html"));
         assertTrue(matrix.contains("RoutingDecisionDemoTest"));
         assertTrue(matrix.contains("Reviewer Workflow Checklist"));
+        assertTrue(matrix.contains("Evidence Associations"));
+        assertTrue(matrix.contains("Association Legend"));
         assertTrue(matrix.contains("Routing Proof Summary"));
         assertTrue(matrix.contains("Scenario Comparison"));
         assertTrue(matrix.contains("Reviewer Confidence Signals"));
         assertTrue(matrix.contains("Evidence Navigation reviewer path"));
+        assertTrue(matrix.contains("copyable evidence association summary"));
+        assertTrue(matrix.contains("selected scenario-to-decision mapping"));
+        assertTrue(matrix.contains("selected strategy/backend mapping"));
+        assertTrue(matrix.contains("key input signal mapping"));
+        assertTrue(matrix.contains("scenario comparison delta"));
+        assertTrue(matrix.contains("export packet handoff link"));
         assertTrue(matrix.contains("previous/current scenario names"));
         assertTrue(matrix.contains("selected strategy/backend delta"));
         assertTrue(matrix.contains("input signal deltas"));
@@ -240,6 +255,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("reviewer/operator/timeline/export packet pages"));
         assertTrue(normalized.contains("sample scenario to routing comparison"));
         assertTrue(normalized.contains("evidence dashboards, timeline, and evidence export packet"));
+        assertTrue(normalized.contains("without adding server-side exports or external calls"));
         assertTrue(normalized.contains("packaged normal-load baseline"));
         assertTrue(normalized.contains("edited local demo payloads"));
         assertTrue(normalized.contains("same-origin local api responses"));
@@ -253,6 +269,39 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("server-side export/share artifact creation"));
         assertTrue(normalized.contains("registry publication"));
         assertTrue(normalized.contains("container signing"));
+    }
+
+    @Test
+    void routingCockpitEvidenceAssociationsTrustMapSectionIsDiscoverableAndBounded() throws Exception {
+        String trustMap = read(TRUST_MAP);
+        String section = section(trustMap, "### Cockpit Evidence Associations", "## Reviewer Demo Path");
+        String normalized = section.toLowerCase(Locale.ROOT);
+
+        assertTrue(section.contains("Cockpit Evidence Associations"));
+        assertTrue(section.contains("/routing-demo.html"));
+        assertTrue(section.contains("Evidence Associations panel"));
+        assertTrue(section.contains("selected scenario -> routing decision"));
+        assertTrue(section.contains("selected strategy/backend"));
+        assertTrue(section.contains("key input signals"));
+        assertTrue(section.contains("scenario comparison delta"));
+        assertTrue(section.contains("supporting evidence pages"));
+        assertTrue(section.contains("export packet/reviewer handoff"));
+        assertTrue(section.contains("copyable evidence association summary"));
+        assertTrue(section.contains("Association Legend"));
+        assertTrue(section.contains("scenario = demo input state"));
+        assertTrue(section.contains("strategy = selected routing method"));
+        assertTrue(section.contains("backend/server = selected local candidate from the sample response"));
+        assertTrue(section.contains("signals = local/demo metrics used for explanation"));
+        assertTrue(section.contains("evidence pages = reviewer navigation aids, not production certification"));
+        assertTrue(normalized.contains("browser-local text only"));
+        assertTrue(normalized.contains("same-origin local api results"));
+        assertTrue(normalized.contains("static evidence page links"));
+        assertTrue(normalized.contains("does not prove production traffic"));
+        assertTrue(normalized.contains("live cloud behavior"));
+        assertTrue(normalized.contains("real tenant behavior"));
+        assertTrue(normalized.contains("registry publication"));
+        assertTrue(normalized.contains("container signing"));
+        assertTrue(normalized.contains("production certification"));
     }
 
     @Test

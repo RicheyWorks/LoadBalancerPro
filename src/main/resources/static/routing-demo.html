@@ -419,6 +419,96 @@
       </div>
     </section>
 
+    <section id="evidence-associations-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Evidence Associations</h2>
+        <div class="actions">
+          <button class="copy" type="button" data-copy-target="evidence-association-output">Copy evidence association summary</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="proof-grid" aria-label="Evidence association map">
+          <div class="proof-card">
+            <strong>Selected scenario -> routing decision</strong>
+            <p id="association-scenario-decision">Load the sample scenario and run Compare strategies to associate the visible scenario with a local routing decision.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Routing decision -> selected strategy</strong>
+            <p id="association-strategy">Run Compare strategies to identify the selected routing strategy.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Routing decision -> selected backend/server</strong>
+            <p id="association-backend">Run Compare strategies to identify the selected backend/server.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected backend/server -> key input signals</strong>
+            <p id="association-signals">Run Compare strategies to connect the selected backend/server to visible local/demo metrics.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Scenario comparison -> what changed</strong>
+            <p id="association-delta">Run Compare strategies to connect scenario deltas to routing evidence.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Routing proof summary -> supporting evidence pages</strong>
+            <p id="association-evidence-pages">
+              Supporting local pages:
+              <a href="/enterprise-lab-reviewer.html"><code>/enterprise-lab-reviewer.html</code></a>,
+              <a href="/operator-evidence-dashboard.html"><code>/operator-evidence-dashboard.html</code></a>,
+              <a href="/evidence-timeline.html"><code>/evidence-timeline.html</code></a>.
+            </p>
+          </div>
+          <div class="proof-card">
+            <strong>Evidence pages -> export packet / reviewer handoff</strong>
+            <p id="association-handoff">
+              Finish at <a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a>
+              for browser-local copy, download, print, and reviewer handoff.
+            </p>
+          </div>
+        </div>
+        <p class="postman-note">
+          Association boundary: local/demo evidence only; no production traffic proof, no live cloud proof,
+          no real tenant proof, no registry publication proof, no container signing proof, and no production certification claim.
+        </p>
+        <p class="postman-note">
+          Copy boundary: this association summary is assembled in the browser from visible page state only;
+          no upload/share endpoint, no server-side export/PDF/ZIP generation, and no external calls.
+        </p>
+        <h3 style="margin-top: 14px;">Copyable evidence association summary</h3>
+        <pre id="evidence-association-output">Load the sample scenario and run Compare strategies to generate an evidence association summary.</pre>
+      </div>
+    </section>
+
+    <section id="association-legend-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Association Legend</h2>
+        <span class="muted">How to read this proof without turning demo evidence into a production claim.</span>
+      </div>
+      <div class="panel-body">
+        <div class="proof-grid" aria-label="Association legend cards">
+          <div class="proof-card">
+            <strong>scenario = demo input state</strong>
+            <p>The current request editor payload is the synthetic local state under review.</p>
+          </div>
+          <div class="proof-card">
+            <strong>strategy = selected routing method</strong>
+            <p>The first routing comparison result identifies the method returned by the local compare endpoint.</p>
+          </div>
+          <div class="proof-card">
+            <strong>backend/server = selected local candidate from the sample response</strong>
+            <p>The selected backend/server is a local candidate in the visible request and response pair.</p>
+          </div>
+          <div class="proof-card">
+            <strong>signals = local/demo metrics used for explanation</strong>
+            <p>Signals are visible health, load, latency, error, queue, and network-awareness fields.</p>
+          </div>
+          <div class="proof-card">
+            <strong>evidence pages = reviewer navigation aids, not production certification</strong>
+            <p>Evidence pages connect review steps and handoff text; they do not certify production behavior.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="routing-evidence-navigation-panel" class="panel" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Evidence Navigation</h2>
@@ -773,7 +863,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       summary: document.getElementById("summary-output"),
       proofSummary: document.getElementById("proof-summary-output"),
       scenarioComparison: document.getElementById("scenario-comparison-output"),
-      reviewerWalkthrough: document.getElementById("reviewer-walkthrough-output")
+      reviewerWalkthrough: document.getElementById("reviewer-walkthrough-output"),
+      evidenceAssociation: document.getElementById("evidence-association-output")
     };
     const proofFields = {
       strategy: document.getElementById("proof-strategy"),
@@ -788,6 +879,15 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       backend: document.getElementById("scenario-backend-change"),
       signals: document.getElementById("scenario-signal-change"),
       degradation: document.getElementById("scenario-degradation-change")
+    };
+    const associationFields = {
+      scenarioDecision: document.getElementById("association-scenario-decision"),
+      strategy: document.getElementById("association-strategy"),
+      backend: document.getElementById("association-backend"),
+      signals: document.getElementById("association-signals"),
+      delta: document.getElementById("association-delta"),
+      evidencePages: document.getElementById("association-evidence-pages"),
+      handoff: document.getElementById("association-handoff")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -991,6 +1091,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       setBadge("summary-badge", results.length > 0 ? "passed" : "warning", results.length > 0 ? "Ready" : "Waiting");
       renderProofSummary();
       renderScenarioComparison();
+      renderEvidenceAssociations();
       renderReviewerWalkthrough();
     }
 
@@ -1284,6 +1385,77 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "- no registry publication proof",
         "- no container signing proof",
         "- no service-level agreement or service-level objective evidence"
+      ].join("\n");
+    }
+
+    function evidenceNavigationPath() {
+      return "/routing-demo.html -> /enterprise-lab-reviewer.html -> /operator-evidence-dashboard.html -> /evidence-timeline.html -> /evidence-export-packet.html";
+    }
+
+    function renderEvidenceAssociations() {
+      const currentPayload = currentRequestPayload();
+      const currentMetrics = scenarioMetrics(currentPayload);
+      const currentScenario = scenarioName(currentMetrics);
+      const results = lastRoutingBody && Array.isArray(lastRoutingBody.results)
+        ? lastRoutingBody.results
+        : [];
+      const primary = results.length > 0 ? results[0] : null;
+      const selectedStrategy = primary && primary.strategyId ? primary.strategyId : "not run";
+      const selectedBackend = primary && primary.chosenServerId ? primary.chosenServerId : "not run";
+      const routingDecision = primary
+        ? (primary.status || "unknown") + " decision selecting " + selectedBackend
+        : "not run; run Compare strategies to generate a local routing decision";
+      const reason = primary && primary.reason ? primary.reason : "No routing reason is available until Compare strategies runs.";
+      const inputSignals = proofFields.signals.textContent || "Run Compare strategies to summarize visible request fields.";
+      const comparisonDelta = scenarioFields.signals.textContent || "Run Compare strategies to compare scenario deltas.";
+      const degradationDelta = scenarioFields.degradation.textContent || "Run Compare strategies to compare degradation or recovery notes.";
+      const evidencePath = evidenceNavigationPath();
+
+      associationFields.scenarioDecision.textContent = currentScenario + " -> " + routingDecision + ".";
+      associationFields.strategy.textContent = routingDecision + " -> strategy " + selectedStrategy + ".";
+      associationFields.backend.textContent = routingDecision + " -> backend/server " + selectedBackend + ".";
+      associationFields.signals.textContent = selectedBackend + " -> " + inputSignals;
+      associationFields.delta.textContent = comparisonDelta + " " + degradationDelta;
+      associationFields.evidencePages.innerHTML =
+        "Routing Proof Summary supports the local evidence path: "
+        + "<a href=\"/enterprise-lab-reviewer.html\"><code>/enterprise-lab-reviewer.html</code></a>, "
+        + "<a href=\"/operator-evidence-dashboard.html\"><code>/operator-evidence-dashboard.html</code></a>, "
+        + "<a href=\"/evidence-timeline.html\"><code>/evidence-timeline.html</code></a>.";
+      associationFields.handoff.innerHTML =
+        "Evidence pages finish at <a href=\"/evidence-export-packet.html\"><code>/evidence-export-packet.html</code></a> "
+        + "for browser-local copy, download, print, and reviewer handoff.";
+
+      outputs.evidenceAssociation.textContent = [
+        "# Cockpit Evidence Association Summary",
+        "",
+        "currentScenario: " + currentScenario,
+        "routingDecision: " + routingDecision,
+        "selectedStrategy: " + selectedStrategy,
+        "selectedBackend: " + selectedBackend,
+        "routingReason: " + reason,
+        "keyInputSignals: " + inputSignals,
+        "scenarioComparisonDelta: " + comparisonDelta,
+        "degradationRecoveryExplanation: " + degradationDelta,
+        "evidenceNavigationPath: " + evidencePath,
+        "",
+        "associationMap:",
+        "- selected scenario -> routing decision: " + currentScenario + " -> " + routingDecision,
+        "- routing decision -> selected strategy: " + selectedStrategy,
+        "- routing decision -> selected backend/server: " + selectedBackend,
+        "- selected backend/server -> key input signals: " + inputSignals,
+        "- scenario comparison -> what changed: " + comparisonDelta,
+        "- routing proof summary -> supporting evidence pages: /enterprise-lab-reviewer.html, /operator-evidence-dashboard.html, /evidence-timeline.html",
+        "- evidence pages -> export packet / reviewer handoff: /evidence-export-packet.html",
+        "",
+        "copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls",
+        "",
+        "notProven:",
+        "- no production traffic proof",
+        "- no live cloud proof",
+        "- no real tenant proof",
+        "- no registry publication proof",
+        "- no container signing proof",
+        "- no production certification claim"
       ].join("\n");
     }
 

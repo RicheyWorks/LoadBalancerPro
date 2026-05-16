@@ -236,6 +236,10 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Run routing comparison"));
         assertTrue(page.contains("Run load-shedding preview"));
         assertTrue(page.contains("Run remediation hints"));
+        assertTrue(page.contains("request-level evidence associations"));
+        assertTrue(page.contains("href=\"/routing-demo.html\""));
+        assertTrue(page.contains("reviewer handoff"));
+        assertTrue(page.contains("href=\"/evidence-export-packet.html\""));
         assertTrue(page.contains("Not available in current API"));
         assertTrue(page.contains("Explanation Drill-Down"));
         assertTrue(page.contains("Routing Strategy Explanation"));

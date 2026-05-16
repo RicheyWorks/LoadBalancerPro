@@ -100,6 +100,22 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Same-origin API usage"));
         assertTrue(page.contains("Static browser-only notes/copy actions"));
         assertTrue(page.contains("Not-production-certified boundary"));
+        assertTrue(page.contains("Evidence Associations"));
+        assertTrue(page.contains("Copy evidence association summary"));
+        assertTrue(page.contains("evidence-association-output"));
+        assertTrue(page.contains("Selected scenario -> routing decision"));
+        assertTrue(page.contains("Routing decision -> selected strategy"));
+        assertTrue(page.contains("Routing decision -> selected backend/server"));
+        assertTrue(page.contains("Selected backend/server -> key input signals"));
+        assertTrue(page.contains("Scenario comparison -> what changed"));
+        assertTrue(page.contains("Routing proof summary -> supporting evidence pages"));
+        assertTrue(page.contains("Evidence pages -> export packet / reviewer handoff"));
+        assertTrue(page.contains("Association Legend"));
+        assertTrue(page.contains("scenario = demo input state"));
+        assertTrue(page.contains("strategy = selected routing method"));
+        assertTrue(page.contains("backend/server = selected local candidate from the sample response"));
+        assertTrue(page.contains("signals = local/demo metrics used for explanation"));
+        assertTrue(page.contains("evidence pages = reviewer navigation aids, not production certification"));
         assertTrue(page.contains("Scenario Comparison"));
         assertTrue(page.contains("Previous scenario"));
         assertTrue(page.contains("Current scenario"));
@@ -288,6 +304,98 @@ class RoutingDecisionDemoTest {
         assertFalse(normalized.contains("registry published"));
         assertFalse(normalized.contains("signed container"));
         assertFalse(normalized.contains("governance-applied"));
+    }
+
+    @Test
+    void routingDemoEvidenceAssociationsMapProofToEvidencePath() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("id=\"evidence-associations-panel\""));
+        assertTrue(page.contains("aria-label=\"Evidence association map\""));
+        assertTrue(page.contains("data-copy-target=\"evidence-association-output\""));
+        assertTrue(page.contains("id=\"association-scenario-decision\""));
+        assertTrue(page.contains("id=\"association-strategy\""));
+        assertTrue(page.contains("id=\"association-backend\""));
+        assertTrue(page.contains("id=\"association-signals\""));
+        assertTrue(page.contains("id=\"association-delta\""));
+        assertTrue(page.contains("id=\"association-evidence-pages\""));
+        assertTrue(page.contains("id=\"association-handoff\""));
+        assertTrue(page.contains("Selected scenario -> routing decision"));
+        assertTrue(page.contains("Routing decision -> selected strategy"));
+        assertTrue(page.contains("Routing decision -> selected backend/server"));
+        assertTrue(page.contains("Selected backend/server -> key input signals"));
+        assertTrue(page.contains("Scenario comparison -> what changed"));
+        assertTrue(page.contains("Routing proof summary -> supporting evidence pages"));
+        assertTrue(page.contains("Evidence pages -> export packet / reviewer handoff"));
+        assertTrue(page.contains("/enterprise-lab-reviewer.html"));
+        assertTrue(page.contains("/operator-evidence-dashboard.html"));
+        assertTrue(page.contains("/evidence-timeline.html"));
+        assertTrue(page.contains("/evidence-export-packet.html"));
+        assertTrue(normalized.contains("association boundary: local/demo evidence only"));
+        assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no live cloud proof"));
+        assertTrue(normalized.contains("no real tenant proof"));
+        assertTrue(normalized.contains("no registry publication proof"));
+        assertTrue(normalized.contains("no container signing proof"));
+        assertTrue(normalized.contains("no production certification claim"));
+        assertTrue(normalized.contains("no upload/share endpoint"));
+        assertTrue(normalized.contains("no server-side export/pdf/zip generation"));
+        assertTrue(normalized.contains("no external calls"));
+    }
+
+    @Test
+    void routingDemoEvidenceAssociationSummaryIsBrowserLocalAndBounded() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("# Cockpit Evidence Association Summary"));
+        assertTrue(page.contains("currentScenario: "));
+        assertTrue(page.contains("routingDecision: "));
+        assertTrue(page.contains("selectedStrategy: "));
+        assertTrue(page.contains("selectedBackend: "));
+        assertTrue(page.contains("routingReason: "));
+        assertTrue(page.contains("keyInputSignals: "));
+        assertTrue(page.contains("scenarioComparisonDelta: "));
+        assertTrue(page.contains("degradationRecoveryExplanation: "));
+        assertTrue(page.contains("evidenceNavigationPath: "));
+        assertTrue(page.contains("associationMap:"));
+        assertTrue(page.contains("- selected scenario -> routing decision: "));
+        assertTrue(page.contains("- routing decision -> selected strategy: "));
+        assertTrue(page.contains("- routing decision -> selected backend/server: "));
+        assertTrue(page.contains("- selected backend/server -> key input signals: "));
+        assertTrue(page.contains("- scenario comparison -> what changed: "));
+        assertTrue(page.contains("- routing proof summary -> supporting evidence pages: /enterprise-lab-reviewer.html, /operator-evidence-dashboard.html, /evidence-timeline.html"));
+        assertTrue(page.contains("- evidence pages -> export packet / reviewer handoff: /evidence-export-packet.html"));
+        assertTrue(page.contains("copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls"));
+        assertTrue(page.contains("notProven:"));
+        assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no live cloud proof"));
+        assertTrue(normalized.contains("no real tenant proof"));
+        assertTrue(normalized.contains("no registry publication proof"));
+        assertTrue(normalized.contains("no container signing proof"));
+        assertTrue(normalized.contains("no production certification claim"));
+    }
+
+    @Test
+    void routingDemoAssociationLegendExplainsProofTermsWithoutCertificationClaim() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("id=\"association-legend-panel\""));
+        assertTrue(page.contains("aria-label=\"Association legend cards\""));
+        assertTrue(page.contains("scenario = demo input state"));
+        assertTrue(page.contains("strategy = selected routing method"));
+        assertTrue(page.contains("backend/server = selected local candidate from the sample response"));
+        assertTrue(page.contains("signals = local/demo metrics used for explanation"));
+        assertTrue(page.contains("evidence pages = reviewer navigation aids, not production certification"));
+        assertTrue(normalized.contains("synthetic local state under review"));
+        assertTrue(normalized.contains("method returned by the local compare endpoint"));
+        assertTrue(normalized.contains("local candidate in the visible request and response pair"));
+        assertTrue(normalized.contains("visible health, load, latency, error, queue, and network-awareness fields"));
+        assertTrue(normalized.contains("do not certify production behavior"));
+        assertFalse(normalized.contains("production certified"));
+        assertFalse(normalized.contains("certified for production"));
     }
 
     @Test

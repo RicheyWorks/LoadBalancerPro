@@ -293,11 +293,11 @@
 </head>
 <body>
   <header>
-    <h1>Routing Decision Demo</h1>
+    <h1>Enterprise Lab Routing Proof Cockpit</h1>
     <p class="intro">
-      Compare LoadBalancerPro request-level routing strategies with safe packaged sample telemetry,
-      inspect selected servers, and copy a deterministic browser summary. This page calls the existing
-      local API only.
+      Monitor controlled lab routing decisions, inspect selected strategies and backends, trace visible
+      lab signals, and copy bounded reviewer explanations. This cockpit uses same-origin local APIs only.
+      It is an Enterprise Lab proof cockpit, not a casual demo page or production monitoring surface.
     </p>
     <p id="copy-status" class="copy-status">Copy status: idle.</p>
   </header>
@@ -305,13 +305,13 @@
   <main>
     <section class="panel">
       <div class="panel-head">
-        <h2>Demo controls</h2>
+        <h2>Lab controls</h2>
         <div class="actions">
           <button data-action="health" type="button">Check health</button>
           <button data-action="readiness" type="button">Check readiness</button>
-          <button data-action="load-sample" type="button">Load sample scenario</button>
+          <button data-action="load-sample" type="button">Load lab scenario</button>
           <button data-action="compare" type="button">Compare strategies</button>
-          <button data-action="reset" type="button" class="secondary">Reset demo</button>
+          <button data-action="reset" type="button" class="secondary">Reset lab</button>
         </div>
       </div>
       <div class="panel-body">
@@ -320,13 +320,13 @@
           <input id="base-url" aria-label="Base URL" value="http://localhost:8080">
           <button id="same-origin" class="secondary" type="button">Use same origin</button>
         </div>
-        <div class="status-grid" aria-label="Demo status">
+        <div class="status-grid" aria-label="Enterprise Lab cockpit status">
           <div class="status-box">
             <strong>Health / readiness</strong>
             <span id="health-badge" class="badge">Not run</span>
           </div>
           <div class="status-box">
-            <strong>Sample scenario</strong>
+            <strong>Lab scenario</strong>
             <span id="sample-badge" class="badge">Not run</span>
           </div>
           <div class="status-box">
@@ -341,6 +341,79 @@
       </div>
     </section>
 
+    <section id="enterprise-lab-cockpit-monitor-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Enterprise Lab Cockpit Monitor</h2>
+        <div class="actions">
+          <button class="copy" type="button" data-copy-target="lab-monitor-output">Copy lab monitor explanation</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="muted">
+          Strict local lab monitor for controlled scenario validation, reviewer trust, operator interpretation,
+          and pre-production evidence review. This is lab-bounded proof, not production monitoring.
+        </p>
+        <div class="proof-grid" aria-label="Enterprise Lab cockpit monitor cards">
+          <div class="proof-card">
+            <strong>Active lab scenario</strong>
+            <p id="lab-monitor-scenario">No previous lab scenario has been captured yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Routing comparison request status</strong>
+            <p id="lab-monitor-request-status">Run Compare strategies to capture local lab API status.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected strategy</strong>
+            <p id="lab-monitor-strategy">Not run.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected backend/server</strong>
+            <p id="lab-monitor-backend">Not run.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Backend health state</strong>
+            <p id="lab-monitor-health-state">Run Compare strategies to inspect selected backend health state.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Visible latency/load/connection/capacity signals</strong>
+            <p id="lab-monitor-signals">Run Compare strategies to summarize visible lab signals.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Scenario delta state</strong>
+            <p id="lab-monitor-delta">Run Compare strategies to compare lab scenario deltas.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Degradation/fallback/recovery state</strong>
+            <p id="lab-monitor-degradation">Static reviewer guidance remains available before a lab run.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Evidence association path</strong>
+            <p id="lab-monitor-evidence-path">
+              /routing-demo.html -> /enterprise-lab-reviewer.html -> /operator-evidence-dashboard.html -> /evidence-timeline.html -> /evidence-export-packet.html
+            </p>
+          </div>
+          <div class="proof-card">
+            <strong>Reviewer handoff readiness</strong>
+            <p id="lab-monitor-handoff">Reviewer packet handoff is browser-local; run the lab comparison before treating the proof note as ready.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Local lab boundary</strong>
+            <p>Controlled lab evidence only: same-origin local API responses, visible local payloads, and browser-local copy actions.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Production proof gaps</strong>
+            <p>No production traffic proof, production telemetry proof, live cloud proof, real tenant proof, SLA/SLO proof, registry publication proof, container signing proof, or production certification claim.</p>
+          </div>
+        </div>
+        <p class="postman-note">
+          Copy boundary: the lab monitor explanation is assembled in the browser from visible local lab state only;
+          no server-side export/PDF/ZIP generation, no upload/share endpoint, no external calls, and no telemetry.
+        </p>
+        <h3 style="margin-top: 14px;">Copyable lab monitor explanation</h3>
+        <pre id="lab-monitor-output">No previous lab scenario has been captured yet. Load a controlled lab scenario and run Compare strategies to generate the lab monitor explanation.</pre>
+      </div>
+    </section>
+
     <section id="reviewer-workflow-checklist-panel" class="panel" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Reviewer Workflow Checklist</h2>
@@ -351,8 +424,8 @@
       <div class="panel-body">
         <div class="proof-grid" aria-label="Reviewer workflow checklist cards">
           <div class="proof-card">
-            <strong>1. Load sample scenario</strong>
-            <p>Start with the packaged synthetic scenario so routing inputs are repeatable for review.</p>
+            <strong>1. Load controlled lab scenario</strong>
+            <p>Start with the packaged controlled lab scenario so routing inputs are repeatable for review.</p>
           </div>
           <div class="proof-card">
             <strong>2. Run routing comparison</strong>
@@ -384,7 +457,7 @@
           no server-side export/PDF/ZIP generation, and no external services.
         </p>
         <h3 style="margin-top: 14px;">Copyable end-to-end reviewer walkthrough</h3>
-        <pre id="reviewer-walkthrough-output">Load the sample scenario and run Compare strategies to generate the end-to-end reviewer walkthrough.</pre>
+        <pre id="reviewer-walkthrough-output">Load the controlled lab scenario and run Compare strategies to generate the end-to-end reviewer walkthrough.</pre>
       </div>
     </section>
 
@@ -397,10 +470,10 @@
         <div class="proof-grid" aria-label="Reviewer confidence signal cards">
           <div class="proof-card">
             <strong>Local repeatability</strong>
-            <p>The page uses localhost commands and packaged synthetic inputs so reviewers can rerun the same local workflow.</p>
+            <p>The page uses localhost commands and packaged controlled lab inputs so reviewers can rerun the same local workflow.</p>
           </div>
           <div class="proof-card">
-            <strong>Deterministic sample scenarios</strong>
+            <strong>Deterministic lab scenarios</strong>
             <p>Packaged server names, weights, health states, load, and latency fields make the baseline scenario inspectable.</p>
           </div>
           <div class="proof-card">
@@ -413,7 +486,7 @@
           </div>
           <div class="proof-card">
             <strong>Not-production-certified boundary</strong>
-            <p>Local/demo evidence only: no production traffic proof, no live cloud proof, no real tenant proof, no registry publication proof, and no container signing proof.</p>
+            <p>Controlled lab evidence only: no production traffic proof, no production telemetry proof, no live cloud proof, no real tenant proof, no registry publication proof, and no container signing proof.</p>
           </div>
         </div>
       </div>
@@ -430,7 +503,7 @@
         <div class="proof-grid" aria-label="Evidence association map">
           <div class="proof-card">
             <strong>Selected scenario -> routing decision</strong>
-            <p id="association-scenario-decision">Load the sample scenario and run Compare strategies to associate the visible scenario with a local routing decision.</p>
+            <p id="association-scenario-decision">Load the controlled lab scenario and run Compare strategies to associate the visible lab scenario with a local routing decision.</p>
           </div>
           <div class="proof-card">
             <strong>Routing decision -> selected strategy</strong>
@@ -442,7 +515,7 @@
           </div>
           <div class="proof-card">
             <strong>Selected backend/server -> key input signals</strong>
-            <p id="association-signals">Run Compare strategies to connect the selected backend/server to visible local/demo metrics.</p>
+            <p id="association-signals">Run Compare strategies to connect the selected backend/server to visible controlled lab metrics.</p>
           </div>
           <div class="proof-card">
             <strong>Scenario comparison -> what changed</strong>
@@ -466,7 +539,7 @@
           </div>
         </div>
         <p class="postman-note">
-          Association boundary: local/demo evidence only; no production traffic proof, no live cloud proof,
+          Association boundary: controlled lab evidence only; no production traffic proof, no production telemetry proof, no live cloud proof,
           no real tenant proof, no registry publication proof, no container signing proof, and no production certification claim.
         </p>
         <p class="postman-note">
@@ -474,62 +547,158 @@
           no upload/share endpoint, no server-side export/PDF/ZIP generation, and no external calls.
         </p>
         <h3 style="margin-top: 14px;">Copyable evidence association summary</h3>
-        <pre id="evidence-association-output">Static guidance remains available before running a scenario. Evidence links are available even before running a scenario. Load the sample scenario and run Compare strategies to generate an evidence association summary.</pre>
+        <pre id="evidence-association-output">Static reviewer guidance remains available before a lab run. Evidence links remain available before a lab run, but they do not certify production behavior. Load the controlled lab scenario and run Compare strategies to generate an evidence association summary.</pre>
       </div>
     </section>
 
     <section id="reviewer-how-to-panel" class="panel" style="margin-top: 16px;">
       <div class="panel-head">
-        <h2>How This Proof Works</h2>
-        <span class="muted">Reviewer/operator answers for common routing-proof questions.</span>
+        <h2>How This Routing Decision Was Made</h2>
+        <span class="muted">Reviewer/operator answers for controlled lab routing-proof questions.</span>
       </div>
       <div class="panel-body">
-        <div class="proof-grid" aria-label="Reviewer how-to explanation cards">
+        <div class="proof-grid" aria-label="How this routing decision was made cards">
           <div class="proof-card">
-            <strong>How the selected strategy affects the selected backend</strong>
-            <p>The first returned strategy is the primary local comparison result; its routing rule ranks the visible candidate servers and returns the selected backend/server plus reason text.</p>
+            <strong>How was the selected backend chosen?</strong>
+            <p>The first returned comparison result is the primary controlled lab decision. It names the selected backend/server, includes returned reason text, and should be read against the visible candidate list.</p>
           </div>
           <div class="proof-card">
-            <strong>How input signals influence the routing proof</strong>
-            <p>Health, in-flight load, configured weight/capacity, p95 latency, error rate, queue depth, and network-awareness fields are summarized from the visible payload so reviewers can inspect why a backend was preferred or avoided.</p>
+            <strong>How did the selected strategy influence the decision?</strong>
+            <p>The selected strategy applies its routing behavior to visible local lab candidates; exact production scoring is not claimed unless exposed by the API.</p>
           </div>
           <div class="proof-card">
-            <strong>How scenario comparison deltas are summarized</strong>
-            <p>Deltas are browser-local summaries comparing packaged baseline metrics against the current editor payload: candidate count, healthy/unhealthy count, total in-flight load, max p95 latency, max error rate, and queue depth.</p>
+            <strong>How did visible input signals influence the proof?</strong>
+            <p>The cockpit explains visible input signals from the local lab response: backend health, latency, load, active connections, capacity, weight, error rate, queue depth, and network-awareness fields when present.</p>
           </div>
           <div class="proof-card">
-            <strong>How degradation, unhealthy, and recovery states are represented</strong>
-            <p>Unhealthy backends are counted from <code>healthy=false</code>; all-unhealthy payloads are called out as a degradation boundary, while fewer unhealthy backends than the baseline are described as recovery.</p>
+            <strong>How should reviewers interpret close candidates?</strong>
+            <p>If multiple candidates appear close, compare returned reason text and visible signals; the cockpit explains observable lab evidence and does not invent hidden scoring.</p>
           </div>
           <div class="proof-card">
-            <strong>How to reproduce the same proof locally</strong>
-            <p>Run <code>mvn spring-boot:run</code>, open this page, load the sample scenario, run Compare strategies, and compare the visible response with the copyable curl and proof notes.</p>
+            <strong>How should unchanged backend with changed signals be read?</strong>
+            <p>The selected backend is unchanged, but visible lab signals changed; review the strategy reason and signal deltas before treating the result as equivalent.</p>
           </div>
           <div class="proof-card">
-            <strong>How evidence pages relate to the proof</strong>
-            <p>The routing page explains the request-level decision; reviewer, operator, timeline, and export packet pages provide navigation, evidence locations, history context, and handoff text.</p>
+            <strong>How should changed backend with same strategy be read?</strong>
+            <p>Backend changed but strategy stayed the same: visible health, load, latency, queue, capacity, or weight shifts can change which candidate the same strategy prefers.</p>
           </div>
           <div class="proof-card">
-            <strong>How the copied association summary should be used</strong>
-            <p>Use the copied association summary as a reviewer note that points to visible local proof and evidence pages; it is not an audit artifact created by the server.</p>
+            <strong>How should changed strategy with same backend be read?</strong>
+            <p>Strategy changed but backend stayed the same: multiple strategies can still prefer the same controlled lab candidate.</p>
           </div>
           <div class="proof-card">
-            <strong>How local/demo proof differs from production proof</strong>
-            <p>Local/demo proof uses synthetic payloads, same-origin local API responses, and browser-local notes; it does not prove production traffic, live cloud behavior, real tenant behavior, registry publication, container signing, or production certification.</p>
+            <strong>How are unhealthy/degraded backends represented?</strong>
+            <p>Unhealthy backends are counted from <code>healthy=false</code>; all-unhealthy payloads are treated as a degradation boundary, not production proof.</p>
+          </div>
+          <div class="proof-card">
+            <strong>How does recovery change the evidence story?</strong>
+            <p>Recovery is represented when visible lab inputs show fewer unhealthy candidates or reduced pressure compared with the packaged baseline; it remains controlled lab evidence.</p>
+          </div>
+          <div class="proof-card">
+            <strong>What can this controlled lab run prove?</strong>
+            <p>It can prove local reproducibility, same-origin compare API behavior, visible routing explanation, local scenario deltas, evidence association path, and browser-local reviewer handoff text.</p>
+          </div>
+          <div class="proof-card">
+            <strong>What can it not prove for production?</strong>
+            <p>It does not prove production traffic, production telemetry, live cloud behavior, real tenant behavior, SLA/SLO, registry publication, container signing, or production certification.</p>
           </div>
         </div>
-        <h3 style="margin-top: 14px;">Edge-case reading guide</h3>
+        <h3 style="margin-top: 14px;">What This Lab Needs to Monitor</h3>
+        <div class="proof-grid" aria-label="Enterprise Lab monitoring checklist cards">
+          <div class="proof-card">
+            <strong>Backend health and availability</strong>
+            <p>Monitor healthy/unhealthy state, selected backend availability, and whether alternatives were avoided because they were unhealthy or degraded.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Latency, load, active connection, capacity, and weight signals</strong>
+            <p>Monitor p95 latency, in-flight load, queue depth, configured capacity, estimated concurrency, and weight when exposed by the local lab payload.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Overload, degradation, fallback, and recovery markers</strong>
+            <p>Monitor whether all backends are unhealthy, whether fallback guidance is visible, and whether scenario deltas show recovery from the baseline.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected strategy and selected backend/server</strong>
+            <p>Monitor the returned strategy/backend pair plus alternatives and reason text where the same-origin local API exposes it.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Scenario-to-scenario changes</strong>
+            <p>Monitor previous/current lab scenario names, strategy changes, backend changes, input signal changes, and degradation/recovery explanations.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Reproducibility, evidence association, and reviewer handoff</strong>
+            <p>Monitor whether reproduction steps, evidence association links, timeline, and export packet handoff are ready for reviewer use.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Production proof gaps</strong>
+            <p>These are the signals a lab cockpit should monitor before production claims are possible; this page does not claim live production telemetry exists.</p>
+          </div>
+        </div>
+        <h3 style="margin-top: 14px;">How Strategy Choice Matters</h3>
+        <div class="proof-grid" aria-label="How strategy choice matters cards">
+          <div class="proof-card">
+            <strong>Strategy affects routing behavior</strong>
+            <p>Strategy choice can alter how visible lab candidates are evaluated, but exact production scoring is not claimed unless exposed by the API.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Backend may remain unchanged when strategy changes</strong>
+            <p>The same backend can remain preferred if multiple strategies still select the same healthy local lab candidate.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Backend may change when signals change under the same strategy</strong>
+            <p>The same strategy can select a different backend when visible lab signals shift enough to change the preferred candidate.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Controlled lab guidance, not production certification</strong>
+            <p>Cockpit explanations are controlled lab guidance and reviewer evidence, not production certification.</p>
+          </div>
+        </div>
+        <h3 style="margin-top: 14px;">How Evidence Supports the Decision</h3>
+        <div class="proof-grid" aria-label="How evidence supports the decision cards">
+          <div class="proof-card">
+            <strong>Routing Proof Summary shows the immediate controlled lab decision</strong>
+            <p>It shows selected strategy, selected backend/server, visible input signals, and local lab boundary for the current comparison.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Scenario Comparison shows controlled lab input changes</strong>
+            <p>It summarizes previous/current lab scenario names, strategy/backend deltas, signal deltas, and degradation or recovery notes.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Evidence Associations connect proof to reviewer pages</strong>
+            <p>Associations connect routing proof to reviewer dashboard, operator evidence dashboard, evidence timeline, and export packet handoff.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Timeline and export packet support local reviewer handoff</strong>
+            <p>The timeline shows evidence flow/history, and the export packet is a local reviewer handoff, not server-generated certification.</p>
+          </div>
+        </div>
+        <h3 style="margin-top: 14px;">How to Reproduce and Explain This Lab Proof</h3>
+        <ol>
+          <li>Choose or load a controlled lab scenario.</li>
+          <li>Run routing comparison against the same-origin local <code>/api/routing/compare</code> endpoint.</li>
+          <li>Inspect selected strategy and selected backend/server.</li>
+          <li>Inspect visible input signals: health, latency, load, active connections, capacity, weight, errors, queue depth, and network-awareness fields when present.</li>
+          <li>Compare scenario deltas for strategy/backend changes, signal changes, and degradation/recovery interpretation.</li>
+          <li>Read lab edge-case and fallback guidance.</li>
+          <li>Follow evidence association links to reviewer dashboard, operator evidence dashboard, evidence timeline, and evidence export packet.</li>
+          <li>Copy proof, walkthrough, association, and lab monitor summaries from visible browser text.</li>
+          <li>Open timeline/export packet, then print/copy/export the browser-local reviewer packet.</li>
+          <li>Record what is proven in the lab and what is not proven for production.</li>
+        </ol>
+        <h3 style="margin-top: 14px;">How to Read Lab Edge Cases</h3>
         <ul>
-          <li>No previous scenario has been captured yet; the packaged normal-load baseline remains the static reference.</li>
-          <li>Same scenario run twice or unchanged from baseline: strategy order and input signal totals should read as unchanged.</li>
-          <li>Selected backend unchanged but signals changed: review the strategy reason and visible scores/signals before treating the decision as equivalent.</li>
+          <li>Page loaded before interaction: static reviewer guidance remains available before a lab run.</li>
+          <li>No previous lab scenario has been captured yet.</li>
+          <li>Same lab scenario run twice or unchanged from baseline: strategy order and input signal totals should read as unchanged.</li>
+          <li>The selected backend is unchanged, but visible lab signals changed.</li>
+          <li>Backend changed but strategy stayed the same: visible lab signal deltas likely changed which candidate the same strategy preferred.</li>
           <li>Strategy changed but backend stayed the same: the selected backend can remain preferred under multiple routing methods.</li>
-          <li>Backend changed but strategy stayed the same: input signal deltas likely changed which candidate the same strategy preferred.</li>
-          <li>All unhealthy/degraded scenario: every visible backend is unhealthy, so the page should show a degradation boundary instead of production proof.</li>
-          <li>Missing or empty comparison response: Local API returned an empty comparison response; static guidance remains available.</li>
-          <li>API error or unavailable local server: Local API response unavailable; static guidance remains available.</li>
-          <li>Copy-to-clipboard failure fallback: Copy failed; select the visible text and copy manually.</li>
-          <li>Static page loaded without prior interaction: static guidance and evidence links remain available before running a scenario.</li>
+          <li>All backends unhealthy/degraded: every visible backend is unhealthy, so treat the result as a degradation boundary instead of production proof.</li>
+          <li>Empty comparison response: The local lab API returned an empty comparison response; static reviewer guidance remains available.</li>
+          <li>Local API unavailable/error: The local lab API response is unavailable; static reviewer guidance remains available.</li>
+          <li>Clipboard copy failure: Copy failed; use the visible lab explanation as the fallback.</li>
+          <li>Evidence links available before running a scenario: Evidence links remain available before a lab run, but they do not certify production behavior.</li>
+          <li>Reviewer packet available as local/browser handoff, not server certification.</li>
         </ul>
       </div>
     </section>
@@ -537,24 +706,24 @@
     <section id="association-legend-panel" class="panel" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Association Legend</h2>
-        <span class="muted">How to read this proof without turning demo evidence into a production claim.</span>
+        <span class="muted">How to read this proof without turning controlled lab evidence into a production claim.</span>
       </div>
       <div class="panel-body">
         <div class="proof-grid" aria-label="Association legend cards">
           <div class="proof-card">
-            <strong>scenario = demo input state</strong>
-            <p>The current request editor payload is the synthetic local state under review.</p>
+            <strong>scenario = controlled lab input state</strong>
+            <p>The current request editor payload is the synthetic local lab state under review.</p>
           </div>
           <div class="proof-card">
             <strong>strategy = selected routing method</strong>
             <p>The first routing comparison result identifies the method returned by the local compare endpoint.</p>
           </div>
           <div class="proof-card">
-            <strong>backend/server = selected local candidate from the sample response</strong>
+            <strong>backend/server = selected local candidate from the lab response</strong>
             <p>The selected backend/server is a local candidate in the visible request and response pair.</p>
           </div>
           <div class="proof-card">
-            <strong>signals = local/demo metrics used for explanation</strong>
+            <strong>signals = controlled lab metrics used for explanation</strong>
             <p>Signals are visible health, load, latency, error, queue, and network-awareness fields.</p>
           </div>
           <div class="proof-card">
@@ -568,7 +737,7 @@
     <section id="routing-evidence-navigation-panel" class="panel" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Evidence Navigation</h2>
-        <span class="muted">Where to go next after routing proof review across local static evidence pages.</span>
+        <span class="muted">Where to go next after controlled lab routing proof review across local static evidence pages.</span>
       </div>
       <div class="panel-body">
         <div class="proof-grid" aria-label="Routing evidence navigation links">
@@ -584,7 +753,7 @@
             <strong>2. Compare cockpit context</strong>
             <p>
               <a href="/load-balancing-cockpit.html"><code>/load-balancing-cockpit.html</code></a><br>
-              Open the existing cockpit page for broader static load-balancing demo context.
+              Open the existing cockpit page for broader static load-balancing lab context.
             </p>
           </div>
           <div class="proof-card">
@@ -617,12 +786,12 @@
           </div>
         </div>
         <p class="postman-note">
-          Reviewer path after routing proof review: inspect the Enterprise Lab reviewer dashboard,
+          Reviewer path after controlled lab routing proof review: inspect the Enterprise Lab reviewer dashboard,
           check the Operator evidence dashboard, review the Evidence timeline, then export/copy/print
           the reviewer packet from the Evidence export packet page.
         </p>
         <p class="postman-note">
-          Boundary: local/demo evidence only; no production traffic proof, no live cloud proof,
+          Boundary: controlled lab evidence only; no production traffic proof, no production telemetry proof, no live cloud proof,
           no real tenant proof, no registry publication proof, and no container signing proof.
         </p>
       </div>
@@ -652,11 +821,11 @@
           </div>
           <div class="proof-card">
             <strong>Fallback/degradation</strong>
-            <p id="proof-degradation">The sample includes an unhealthy candidate so reviewers can verify it is not selected.</p>
+            <p id="proof-degradation">The controlled lab payload includes an unhealthy candidate so reviewers can verify it is not selected.</p>
           </div>
           <div class="proof-card">
-            <strong>Local/demo boundary</strong>
-            <p>Same-origin local API calls, synthetic request payloads, browser-only summaries, and no external services.</p>
+            <strong>Local lab boundary</strong>
+            <p>Same-origin local API calls, controlled lab request payloads, browser-only summaries, and no external services.</p>
           </div>
           <div class="proof-card">
             <strong>What this proves</strong>
@@ -719,12 +888,12 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
             <p id="scenario-degradation-change">The baseline keeps one unhealthy backend visible so reviewers can compare degradation or recovery edits.</p>
           </div>
           <div class="proof-card">
-            <strong>Local/demo-only boundary</strong>
-            <p>Browser-local comparison of synthetic payloads and same-origin local API results only; no production traffic, live cloud validation, real tenant data, uploads, or server-side export/PDF/ZIP generation.</p>
+            <strong>Local lab-only boundary</strong>
+            <p>Browser-local comparison of controlled lab payloads and same-origin local API results only; no production traffic, production telemetry, live cloud validation, real tenant data, uploads, or server-side export/PDF/ZIP generation.</p>
           </div>
         </div>
         <h3 style="margin-top: 14px;">Copyable scenario comparison</h3>
-        <pre id="scenario-comparison-output">Run Compare strategies or edit the sample payload to generate scenario comparison text.</pre>
+        <pre id="scenario-comparison-output">Run Compare strategies or edit the controlled lab payload to generate scenario comparison text.</pre>
       </div>
     </section>
 
@@ -825,17 +994,17 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       </div>
       <div class="panel-body">
         <ul class="safety-list">
-          <li>Local/operator demo only.</li>
+          <li>Local Enterprise Lab cockpit only.</li>
           <li>Not certification.</li>
           <li>Not benchmark proof.</li>
           <li>Not legal compliance proof.</li>
           <li>Not identity proof.</li>
           <li>No cloud mutation.</li>
-          <li>No CloudManager required for routing demo.</li>
+          <li>No CloudManager required for routing lab cockpit.</li>
           <li>No external services/dependencies.</li>
           <li>No external scripts/CDNs.</li>
-          <li>API server required for browser/Postman demo.</li>
-          <li>No runtime reports or demo transcripts are written.</li>
+          <li>API server required for browser/Postman lab review.</li>
+          <li>No runtime reports or lab transcripts are written.</li>
           <li>No secret fields, login inputs, release controls, ruleset controls, or cloud-control buttons.</li>
         </ul>
       </div>
@@ -920,7 +1089,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       proofSummary: document.getElementById("proof-summary-output"),
       scenarioComparison: document.getElementById("scenario-comparison-output"),
       reviewerWalkthrough: document.getElementById("reviewer-walkthrough-output"),
-      evidenceAssociation: document.getElementById("evidence-association-output")
+      evidenceAssociation: document.getElementById("evidence-association-output"),
+      labMonitor: document.getElementById("lab-monitor-output")
     };
     const proofFields = {
       strategy: document.getElementById("proof-strategy"),
@@ -944,6 +1114,18 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       delta: document.getElementById("association-delta"),
       evidencePages: document.getElementById("association-evidence-pages"),
       handoff: document.getElementById("association-handoff")
+    };
+    const labMonitorFields = {
+      scenario: document.getElementById("lab-monitor-scenario"),
+      requestStatus: document.getElementById("lab-monitor-request-status"),
+      strategy: document.getElementById("lab-monitor-strategy"),
+      backend: document.getElementById("lab-monitor-backend"),
+      healthState: document.getElementById("lab-monitor-health-state"),
+      signals: document.getElementById("lab-monitor-signals"),
+      delta: document.getElementById("lab-monitor-delta"),
+      degradation: document.getElementById("lab-monitor-degradation"),
+      evidencePath: document.getElementById("lab-monitor-evidence-path"),
+      handoff: document.getElementById("lab-monitor-handoff")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -1032,8 +1214,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         payload = JSON.parse(requestJson.value);
       } catch (error) {
         lastRoutingBody = null;
-        lastRoutingError = "Malformed sample request JSON; static guidance remains available.";
-        renderJson(outputs.routing, { error: "Malformed sample request JSON." });
+        lastRoutingError = "Malformed lab request JSON; static reviewer guidance remains available.";
+        renderJson(outputs.routing, { error: "Malformed lab request JSON." });
         setBadge("compare-badge", "failed", "Failed");
         renderSummary();
         return;
@@ -1052,9 +1234,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         lastRoutingBody = body;
         const results = body && Array.isArray(body.results) ? body.results : [];
         if (!response.ok) {
-          lastRoutingError = "Local API returned HTTP " + response.status + "; static guidance remains available.";
+          lastRoutingError = "Local lab API returned HTTP " + response.status + "; static reviewer guidance remains available.";
         } else if (results.length === 0) {
-          lastRoutingError = "Local API returned an empty comparison response; static guidance remains available.";
+          lastRoutingError = "The local lab API returned an empty comparison response; static reviewer guidance remains available.";
         } else {
           lastRoutingError = "";
         }
@@ -1063,7 +1245,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         setBadge("compare-badge", response.ok ? "passed" : "warning", response.ok ? "Passed" : "Warning");
       } catch (error) {
         lastRoutingBody = null;
-        lastRoutingError = "Local API response unavailable; static guidance remains available. " + String(error.message || error);
+        lastRoutingError = "The local lab API response is unavailable; static reviewer guidance remains available. " + String(error.message || error);
         renderJson(outputs.routing, { error: lastRoutingError });
         renderResults(null);
         setBadge("compare-badge", "failed", "Failed");
@@ -1080,7 +1262,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         cell.colSpan = 4;
         cell.className = "muted";
         cell.textContent = lastRoutingError
-          || "No routing comparison result is available. Local API response unavailable; static guidance remains available.";
+          || "No routing comparison result is available. The local lab API response is unavailable; static reviewer guidance remains available.";
         row.appendChild(cell);
         resultRows.appendChild(row);
         return;
@@ -1119,9 +1301,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         ? lastRoutingBody.results
         : [];
       const lines = [
-        "# Routing Decision Browser Demo",
+        "# Enterprise Lab Routing Proof Cockpit",
         "",
-        "mode: local browser same-origin demo",
+        "mode: local browser same-origin controlled lab",
         "endpoint: POST /api/routing/compare",
         "strategies: TAIL_LATENCY_POWER_OF_TWO, WEIGHTED_LEAST_LOAD, WEIGHTED_LEAST_CONNECTIONS, WEIGHTED_ROUND_ROBIN, ROUND_ROBIN",
         "",
@@ -1130,7 +1312,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
 
       if (results.length === 0) {
         lines.push("- NOT_RUN: Run Compare strategies to populate selected server output.");
-        lines.push("- fallback: " + (lastRoutingError || "No previous scenario has been captured yet; static guidance remains available."));
+        lines.push("- fallback: " + (lastRoutingError || "No previous lab scenario has been captured yet; static reviewer guidance remains available."));
       } else {
         results.forEach((result) => {
           lines.push("- " + result.strategyId + ": "
@@ -1142,7 +1324,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       lines.push(
         "",
         "## Safety",
-        "- local/operator demo only",
+        "- local Enterprise Lab cockpit only",
         "- not certification",
         "- not benchmark proof",
         "- not legal compliance proof",
@@ -1163,6 +1345,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       renderScenarioComparison();
       renderEvidenceAssociations();
       renderReviewerWalkthrough();
+      renderLabMonitorExplanation();
     }
 
     function currentRequestPayload() {
@@ -1242,7 +1425,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         ? ["No primary strategy change: " + currentStrategy + " remains first requested strategy."]
         : ["Primary strategy changed from " + previousStrategy + " to " + currentStrategy + "."];
       if (sameAsBaseline) {
-        parts.push("Same scenario run twice or unchanged from baseline: strategy order matches the packaged sample.");
+        parts.push("Same lab scenario run twice or unchanged from baseline: strategy order matches the packaged lab scenario.");
       }
       if (added.length > 0) {
         parts.push("Added strategies: " + added.join(", ") + ".");
@@ -1257,7 +1440,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const baselineBackend = "edge-alpha";
       if (results.length === 0) {
         return lastRoutingError
-          || "No previous scenario has been captured yet; run Compare strategies to see selected backend/server change against packaged baseline expectation " + baselineBackend + ".";
+          || "No previous lab scenario has been captured yet; run Compare strategies to see selected backend/server change against packaged lab baseline expectation " + baselineBackend + ".";
       }
       const primary = results[0];
       const selectedBackend = primary.chosenServerId || "No server selected";
@@ -1301,11 +1484,11 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "queueDepth " + previousMetrics.totalQueueDepth + " -> " + currentMetrics.totalQueueDepth
       ].join("; ") + ".";
       if (sameAsBaseline) {
-        return "Same scenario run twice or unchanged from baseline: strategy order and input signal totals should read as unchanged. " + summary;
+        return "Same lab scenario run twice or unchanged from baseline: strategy order and input signal totals should read as unchanged. " + summary;
       }
       const primary = results.length > 0 ? results[0] : null;
       if (primary && primary.chosenServerId === "edge-alpha" && metricsChanged(previousMetrics, currentMetrics)) {
-        return "Selected backend unchanged but signals changed: review the strategy reason and visible scores/signals before treating the decision as equivalent. " + summary;
+        return "The selected backend is unchanged, but visible lab signals changed. Review the strategy reason and visible scores/signals before treating the controlled lab decision as equivalent. " + summary;
       }
       return summary;
     }
@@ -1321,14 +1504,14 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         return "Degradation pressure increased: more unhealthy backends are visible and healthy alternatives should be preferred when present.";
       }
       if (currentMetrics.unhealthyServers.length < previousMetrics.unhealthyServers.length) {
-        return "Recovery visible: fewer unhealthy backends than the packaged baseline are present.";
+        return "Recovery visible: fewer unhealthy backends than the packaged lab baseline are present.";
       }
       if (currentMetrics.totalInFlight > previousMetrics.totalInFlight
           || currentMetrics.maxP95Latency > previousMetrics.maxP95Latency
           || currentMetrics.totalQueueDepth > previousMetrics.totalQueueDepth) {
         return "Load pressure increased while health posture stayed comparable; compare selected backend and reason fields for the routing response.";
       }
-      return "Same degradation boundary as packaged baseline: edge-drain remains unhealthy and should not be selected while healthy alternatives exist.";
+      return "Same degradation boundary as packaged lab baseline: edge-drain remains unhealthy and should not be selected while healthy alternatives exist.";
     }
 
     function renderScenarioComparison() {
@@ -1340,8 +1523,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         ? lastRoutingBody.results
         : [];
       const previousName = results.length === 0
-        ? "No previous scenario has been captured yet; packaged normal-load baseline remains the static reference"
-        : "Packaged normal-load baseline";
+        ? "No previous lab scenario has been captured yet; packaged normal-load lab baseline remains the static reference"
+        : "Packaged normal-load lab baseline";
       const currentName = scenarioName(currentMetrics);
       const strategySummary = strategyChangeSummary(previousMetrics, currentMetrics, sameAsBaseline);
       const backendSummary = backendChangeSummary(results, previousMetrics, currentMetrics);
@@ -1364,8 +1547,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "selectedBackendChange: " + backendSummary,
         "keyInputSignalChanges: " + signalSummary,
         "degradationRecoveryExplanation: " + degradationSummary,
-        "emptyOrUnavailableFallback: " + (lastRoutingError || "Local API response available when comparison results are present; static guidance remains available before running a scenario."),
-        "localOnlyDemoBoundary: browser-local comparison of synthetic payloads and same-origin local API results only",
+        "emptyOrUnavailableFallback: " + (lastRoutingError || "Local lab API response available when comparison results are present; static reviewer guidance remains available before running a lab scenario."),
+        "localLabBoundary: browser-local comparison of controlled lab payloads and same-origin local API results only",
         "",
         "## Not Proven",
         "- no production traffic proof",
@@ -1404,15 +1587,15 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       if (results.length === 0) {
         proofFields.strategy.textContent = "Not run.";
         proofFields.backend.textContent = "Not run.";
-        proofFields.signals.textContent = "Run Compare strategies to summarize visible request fields. Static guidance remains available before running a scenario.";
+        proofFields.signals.textContent = "Run Compare strategies to summarize visible lab request fields. Static reviewer guidance remains available before running a lab scenario.";
         proofFields.degradation.textContent =
-          "The sample includes an unhealthy candidate so reviewers can verify it is not selected. " + (lastRoutingError || "No previous scenario has been captured yet.");
+          "The controlled lab scenario includes an unhealthy candidate so reviewers can verify it is not selected. " + (lastRoutingError || "No previous lab scenario has been captured yet.");
         outputs.proofSummary.textContent = [
           "# Routing Proof Summary",
           "",
           "status: not run",
           "nextStep: run Compare strategies",
-          "fallback: " + (lastRoutingError || "Static page loaded without prior interaction; static guidance and evidence links remain available before running a scenario."),
+          "fallback: " + (lastRoutingError || "Static page loaded without prior interaction; static reviewer guidance and evidence links remain available before running a lab scenario."),
           "localOnly: true",
           "externalServices: false",
           "runtimeReportWritten: false"
@@ -1432,7 +1615,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         + " was returned with reason: " + (primary.reason || "no explanation returned") + ".";
       const degradationSummary =
         "Result statuses: " + statuses
-        + ". The packaged sample keeps edge-drain unhealthy so a reviewer can verify it is excluded.";
+        + ". The packaged lab scenario keeps edge-drain unhealthy so a reviewer can verify it is excluded.";
 
       proofFields.strategy.textContent = primary.strategyId || "No strategy returned.";
       proofFields.backend.textContent = selectedBackend;
@@ -1449,7 +1632,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "strategyEffectOnBackend: " + strategyEffectSummary,
         "keyInputSignals: " + signalSummary,
         "fallbackDegradationBoundary: " + degradationSummary,
-        "localOnlyDemoBoundary: same-origin local API, synthetic payloads, browser-only summary, no external services",
+        "localLabBoundary: same-origin local API, controlled lab payloads, browser-only summary, no external services",
         "",
         "## Not Proven",
         "- no production deployment proof",
@@ -1467,14 +1650,14 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const primary = results.length > 0 ? results[0] : null;
       const selectedStrategy = primary && primary.strategyId ? primary.strategyId : "not run";
       const selectedBackend = primary && primary.chosenServerId ? primary.chosenServerId : "not run";
-      const proofSignals = proofFields.signals.textContent || "Run Compare strategies to summarize visible request fields.";
+      const proofSignals = proofFields.signals.textContent || "Run Compare strategies to summarize visible lab request fields.";
       const scenarioSignals = scenarioFields.signals.textContent || "Run Compare strategies to compare input signals.";
 
       outputs.reviewerWalkthrough.textContent = [
         "# End-to-End Routing Reviewer Walkthrough",
         "",
         "workflowChecklist:",
-        "1. load sample scenario",
+        "1. load controlled lab scenario",
         "2. run routing comparison",
         "3. inspect Routing Proof Summary",
         "4. compare scenario deltas",
@@ -1502,7 +1685,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "- no real tenant proof",
         "- no registry publication proof",
         "- no container signing proof",
-        "- no service-level agreement or service-level objective evidence"
+        "- no service-level agreement or service-level objective evidence",
+        "- no production telemetry proof"
       ].join("\n");
     }
 
@@ -1523,8 +1707,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const routingDecision = primary
         ? (primary.status || "unknown") + " decision selecting " + selectedBackend
         : (lastRoutingError || "not run; run Compare strategies to generate a local routing decision");
-      const reason = primary && primary.reason ? primary.reason : "No routing reason is available until Compare strategies runs. Local API response unavailable; static guidance remains available if the local server is not running.";
-      const inputSignals = proofFields.signals.textContent || "Run Compare strategies to summarize visible request fields.";
+      const reason = primary && primary.reason ? primary.reason : "No routing reason is available until Compare strategies runs. The local lab API response is unavailable; static reviewer guidance remains available if the local server is not running.";
+      const inputSignals = proofFields.signals.textContent || "Run Compare strategies to summarize visible lab request fields.";
       const comparisonDelta = scenarioFields.signals.textContent || "Run Compare strategies to compare scenario deltas.";
       const degradationDelta = scenarioFields.degradation.textContent || "Run Compare strategies to compare degradation or recovery notes.";
       const evidencePath = evidenceNavigationPath();
@@ -1572,11 +1756,91 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "",
         "notProven:",
         "- no production traffic proof",
+        "- no production telemetry proof",
         "- no live cloud proof",
         "- no real tenant proof",
         "- no registry publication proof",
         "- no container signing proof",
         "- no production certification claim"
+      ].join("\n");
+    }
+
+    function renderLabMonitorExplanation() {
+      const currentPayload = currentRequestPayload();
+      const currentMetrics = scenarioMetrics(currentPayload);
+      const currentScenario = scenarioName(currentMetrics);
+      const results = lastRoutingBody && Array.isArray(lastRoutingBody.results)
+        ? lastRoutingBody.results
+        : [];
+      const primary = results.length > 0 ? results[0] : null;
+      const selectedStrategy = primary && primary.strategyId ? primary.strategyId : "not run";
+      const selectedBackend = primary && primary.chosenServerId ? primary.chosenServerId : "not run";
+      const selectedServer = primary && primary.chosenServerId ? selectedServerDetails(primary.chosenServerId) : null;
+      const backendHealthState = selectedServer
+        ? "healthy=" + Boolean(selectedServer.healthy) + "; availability="
+          + (selectedServer.healthy ? "available in controlled lab payload" : "unhealthy/degraded in controlled lab payload")
+        : "No selected backend health state yet; run Compare strategies.";
+      const visibleSignals = selectedServer
+        ? formatServerSignals(selectedServer)
+        : (proofFields.signals.textContent || "Run Compare strategies to summarize visible lab signals.");
+      const requestStatus = results.length > 0
+        ? "Local lab comparison completed with " + results.length + " strategy result(s)."
+        : (lastRoutingError || "Not run; static reviewer guidance remains available.");
+      const scenarioDelta = scenarioFields.signals.textContent || "Run Compare strategies to compare lab scenario deltas.";
+      const degradationState = scenarioFields.degradation.textContent || "Static reviewer guidance remains available before a lab run.";
+      const evidencePath = evidenceNavigationPath();
+      const edgeCaseState = results.length > 0
+        ? degradationState
+        : (lastRoutingError || "No previous lab scenario has been captured yet.");
+      const handoffStatus = results.length > 0
+        ? "Reviewer handoff ready for browser-local copy/print/export packet review."
+        : "Reviewer handoff is not ready until a local lab comparison runs.";
+
+      labMonitorFields.scenario.textContent = currentScenario + (results.length > 0
+        ? "."
+        : "; No previous lab scenario has been captured yet.");
+      labMonitorFields.requestStatus.textContent = requestStatus;
+      labMonitorFields.strategy.textContent = selectedStrategy;
+      labMonitorFields.backend.textContent = selectedBackend;
+      labMonitorFields.healthState.textContent = backendHealthState;
+      labMonitorFields.signals.textContent = visibleSignals;
+      labMonitorFields.delta.textContent = scenarioDelta;
+      labMonitorFields.degradation.textContent = degradationState;
+      labMonitorFields.evidencePath.textContent = evidencePath;
+      labMonitorFields.handoff.textContent = handoffStatus;
+
+      outputs.labMonitor.textContent = [
+        "# Enterprise Lab Cockpit Monitor Explanation",
+        "",
+        "activeLabScenario: " + currentScenario,
+        "routingComparisonStatus: " + requestStatus,
+        "selectedStrategy: " + selectedStrategy,
+        "selectedBackend: " + selectedBackend,
+        "backendHealthState: " + backendHealthState,
+        "visibleInputSignals: " + visibleSignals,
+        "scenarioComparisonState: " + scenarioDelta,
+        "edgeCaseState: " + edgeCaseState,
+        "evidenceAssociationPath: " + evidencePath,
+        "",
+        "reproductionSteps:",
+        "1. choose or load a controlled lab scenario",
+        "2. run routing comparison against the same-origin local API",
+        "3. inspect selected strategy, selected backend/server, and visible input signals",
+        "4. compare scenario deltas and edge-case guidance",
+        "5. follow reviewer/operator/timeline/export evidence links",
+        "6. copy proof, walkthrough, association, and lab monitor summaries as browser-local reviewer notes",
+        "7. print/copy/export the browser-local reviewer packet from /evidence-export-packet.html",
+        "",
+        "fallbackGuidance:",
+        "- No previous lab scenario has been captured yet.",
+        "- The selected backend is unchanged, but visible lab signals changed.",
+        "- The local lab API response is unavailable; static reviewer guidance remains available.",
+        "- Copy failed; use the visible lab explanation as the fallback.",
+        "- Evidence links remain available before a lab run, but they do not certify production behavior.",
+        "",
+        "labProofBoundaries: controlled lab evidence from local payloads, same-origin local API responses, visible browser text, and static evidence links",
+        "productionNotProven: no production traffic proof; no production telemetry proof; no live cloud proof; no real tenant proof; no SLA/SLO proof; no registry publication proof; no container signing proof; no production certification claim",
+        "copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"
       ].join("\n");
     }
 
@@ -1608,7 +1872,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           throw new Error("Clipboard unavailable");
         }
       } catch (error) {
-        copyStatus.textContent = "Copy failed; select the visible text and copy manually. Browser clipboard permission may be unavailable.";
+        copyStatus.textContent = "Copy failed; use the visible lab explanation as the fallback. Browser clipboard permission may be unavailable.";
       }
     }
 

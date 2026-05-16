@@ -75,6 +75,14 @@ The cockpit must not invent hidden scoring. If visible signal comparison does no
 
 Alternative candidate evidence remains controlled lab evidence for pre-production routing validation. It does not prove production traffic behavior, production telemetry proof, production monitoring proof, production certification, exact production scoring, live-cloud execution, real-tenant behavior, SLA/SLO achievement, registry publication, container signing, or governance application.
 
+## Decision Vector Contract
+
+[`ENTERPRISE_LAB_DECISION_VECTOR.md`](ENTERPRISE_LAB_DECISION_VECTOR.md) defines the structured explanation contract for one controlled lab routing decision. It turns final selected-backend outcomes into structured decision evidence: selected strategy, selected backend/server, candidate backend list, selected candidate vector, non-selected candidate vectors, visible candidate signals, known signals, unknown or unexposed signals, degradation/fallback indicators, reason categories, selected-vs-alternative notes, exact scoring availability or absence, factor contribution availability or absence, replay readiness, lab proof boundary, and production not-proven boundary.
+
+The Candidate Decision Vector describes one visible backend/server with candidate id/name, selected true/false state, health state, latency signal, load or active connection pressure signal, capacity or weight signal when exposed, degradation warning, visible support signals, visible caution signals, unknown signals, why selected or why not selected when explainable, and fallback text when the candidate cannot be explained from visible data.
+
+The Decision Vector contract keeps unknowns explicit. Exact production scoring is not claimed unless exposed by the API, hidden scoring must not be inferred, factor contribution values remain future/not implemented unless implemented and exposed, replay and what-if execution remain future/not implemented, and structured decision logging remains future/not implemented.
+
 ## How to Investigate Surprising Lab Decisions
 
 - If the backend changed unexpectedly, inspect the selected strategy, candidate health, visible latency/load/connection pressure, capacity/weight fields, scenario comparison delta, and returned reason text.

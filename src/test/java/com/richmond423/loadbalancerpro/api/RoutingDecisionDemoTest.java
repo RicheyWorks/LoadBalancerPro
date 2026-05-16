@@ -641,6 +641,56 @@ class RoutingDecisionDemoTest {
     }
 
     @Test
+    void routingDemoDecisionVectorFoundationIsStructuredLocalAndBounded() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("id=\"decision-vector-foundation-panel\""));
+        assertTrue(page.contains("Decision Vector Foundation"));
+        assertTrue(page.contains("Structured Decision Evidence"));
+        assertTrue(page.contains("controlled lab Decision Vector contract"));
+        assertTrue(page.contains("visible lab signals, unknown signals remain explicit"));
+        assertTrue(page.contains("unknown signals remain explicit"));
+        assertTrue(page.contains("hidden scoring is not invented"));
+        assertTrue(page.contains("exact production scoring is not claimed unless exposed by the API"));
+        assertTrue(page.contains("A structured explanation object for one controlled lab routing decision"));
+        assertTrue(page.contains("One backend/server record with selected true/false state"));
+        assertTrue(page.contains("Known signals come from the local lab request or same-origin comparison response"));
+        assertTrue(page.contains("Factor contribution analysis is a future extension unless implemented and exposed by the API"));
+        assertTrue(page.contains("Decision replay, what-if experiments, and structured decision logging should build on this contract later"));
+        assertTrue(page.contains("data-copy-target=\"decision-vector-summary-output\""));
+        assertTrue(page.contains("id=\"decision-vector-selected-strategy\""));
+        assertTrue(page.contains("id=\"decision-vector-selected-backend\""));
+        assertTrue(page.contains("id=\"decision-vector-candidate-count\""));
+        assertTrue(page.contains("id=\"decision-vector-known-signals\""));
+        assertTrue(page.contains("id=\"decision-vector-unknown-signals\""));
+        assertTrue(page.contains("id=\"decision-vector-scoring-availability\""));
+        assertTrue(page.contains("id=\"decision-vector-factor-contribution\""));
+        assertTrue(page.contains("id=\"decision-vector-replay-readiness\""));
+        assertTrue(page.contains("# Decision Vector Foundation"));
+        assertTrue(page.contains("decisionIdOrLabRunId: "));
+        assertTrue(page.contains("candidateVectors: "));
+        assertTrue(page.contains("selectedVsAlternativeExplanationNotes: "));
+        assertTrue(page.contains("exactScoringAvailability: "));
+        assertTrue(page.contains("factorContributionAvailability: "));
+        assertTrue(page.contains("replayReadiness: "));
+        assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
+        assertTrue(page.contains("structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented"));
+        assertTrue(page.contains("labProofBoundary: controlled lab evidence"));
+        assertTrue(page.contains("copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"));
+        assertTrue(normalized.contains("future extension / not implemented"));
+        assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no production telemetry proof"));
+        assertTrue(normalized.contains("no exact production scoring proof"));
+        assertFalse(normalized.contains("hidden scoring is available"));
+        assertFalse(normalized.contains("exact production scoring is claimed"));
+        assertFalse(normalized.contains("replay execution is implemented"));
+        assertFalse(normalized.contains("what-if execution is implemented"));
+        assertFalse(normalized.contains("server-side decision vector export"));
+        assertFalse(normalized.contains("sendbeacon"));
+    }
+
+    @Test
     void routingDemoSurprisingDecisionGuideDirectsReviewerInvestigation() throws Exception {
         String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
         String normalized = page.toLowerCase(Locale.ROOT);

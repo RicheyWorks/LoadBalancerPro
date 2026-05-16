@@ -813,6 +813,107 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
       </div>
     </section>
 
+    <section id="decision-vector-foundation-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Decision Vector Foundation</h2>
+        <div class="actions">
+          <button class="copy" type="button" data-copy-target="decision-vector-summary-output">Copy Decision Vector summary</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="muted">
+          Structured Decision Evidence moves the Enterprise Lab Cockpit from final outcome explanation toward a
+          controlled lab Decision Vector contract for explainable, replay-ready routing analysis. Selected and alternative
+          candidates are interpreted from visible lab signals, unknown signals remain explicit, hidden scoring is not invented,
+          and exact production scoring is not claimed unless exposed by the API.
+        </p>
+        <div class="proof-grid" aria-label="Decision Vector foundation cards">
+          <div class="proof-card">
+            <strong>Decision Vector</strong>
+            <p>A structured explanation object for one controlled lab routing decision: strategy, selected backend, candidate vectors, known signals, unknown signals, and proof boundaries.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Candidate Decision Vector</strong>
+            <p>One backend/server record with selected true/false state, visible health, latency, load/connection pressure, capacity/weight signals, support notes, caution notes, and unknown fields.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Known vs unknown separation</strong>
+            <p>Known signals come from the local lab request or same-origin comparison response; unknown or unexposed signals stay marked as investigation items.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Factor contribution boundary</strong>
+            <p>Factor contribution analysis is a future extension unless implemented and exposed by the API; contribution values and weights remain unavailable for now.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Replay and what-if boundary</strong>
+            <p>Decision replay, what-if experiments, and structured decision logging should build on this contract later; this page does not execute those future workflows.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Production proof boundary</strong>
+            <p>Controlled lab explainability only: no production traffic proof, no production telemetry proof, no live-cloud proof, no real-tenant proof, and no production certification claim.</p>
+          </div>
+        </div>
+        <h3 style="margin-top: 14px;">Browser-Local Decision Vector Summary</h3>
+        <div class="proof-grid" aria-label="Browser-local Decision Vector summary">
+          <div class="proof-card">
+            <strong>Selected strategy</strong>
+            <p id="decision-vector-selected-strategy">Not run.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected backend/server</strong>
+            <p id="decision-vector-selected-backend">Not run.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Candidate count</strong>
+            <p id="decision-vector-candidate-count">Load a controlled lab scenario to count visible candidates.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Known visible signals</strong>
+            <p id="decision-vector-known-signals">Run Compare strategies to populate known visible lab signals.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Unknown/unexposed signals</strong>
+            <p id="decision-vector-unknown-signals">Exact scoring, hidden routing internals, and production telemetry are not inferred.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Exact scoring availability</strong>
+            <p id="decision-vector-scoring-availability">Not exposed unless the API returns exact scoring fields.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Factor contribution availability</strong>
+            <p id="decision-vector-factor-contribution">Future extension / not implemented unless exposed by the API.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Replay readiness</strong>
+            <p id="decision-vector-replay-readiness">Planned future contract readiness; replay execution and what-if execution are not implemented here.</p>
+          </div>
+        </div>
+        <p class="postman-note">
+          Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
+          no upload/share endpoint, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
+        </p>
+        <h3 style="margin-top: 14px;">Copyable Decision Vector summary</h3>
+        <pre id="decision-vector-summary-output"># Decision Vector Foundation
+
+status: waiting for local lab comparison
+decisionIdOrLabRunId: not exposed; browser-local controlled lab summary only
+selectedStrategy: not run
+selectedBackend: not run
+candidateCount: load a controlled lab scenario to count visible candidates
+candidateVectors: selected and non-selected candidate vectors are derived from visible local lab payload fields only
+knownSignals: run Compare strategies to populate visible lab signals
+unknownSignals: exact scoring not exposed; hidden routing internals not inferred; production telemetry not claimed; production monitoring not claimed
+exactScoringAvailability: not exposed unless the API returns exact scoring fields
+factorContributionAvailability: future extension / not implemented unless exposed by the API
+replayReadiness: planned future contract; replay execution is not implemented
+whatIfReadiness: planned future contract; what-if execution is not implemented
+structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented
+evidenceAssociationPath: /routing-demo.html -> /enterprise-lab-reviewer.html -> /operator-evidence-dashboard.html -> /evidence-timeline.html -> /evidence-export-packet.html
+productionNotProven: no production traffic proof; no production telemetry proof; no live-cloud proof; no real-tenant proof; no SLA/SLO proof; no registry publication proof; no container signing proof; no governance-applied proof; no exact production scoring proof; no production certification claim
+copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry</pre>
+      </div>
+    </section>
+
     <section id="known-unknown-signals-panel" class="panel" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Known vs Unknown Signals</h2>
@@ -1629,7 +1730,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       labMonitor: document.getElementById("lab-monitor-output"),
       monitoredDecisionChain: document.getElementById("monitored-decision-chain-output"),
       decisionTraceExplanation: document.getElementById("decision-trace-explanation-output"),
-      alternativeCandidateEvidence: document.getElementById("alternative-candidate-evidence-output")
+      alternativeCandidateEvidence: document.getElementById("alternative-candidate-evidence-output"),
+      decisionVector: document.getElementById("decision-vector-summary-output")
     };
     const proofFields = {
       strategy: document.getElementById("proof-strategy"),
@@ -1718,6 +1820,16 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       cardCaution: document.getElementById("candidate-evidence-card-caution"),
       cardUnknown: document.getElementById("candidate-evidence-card-unknown"),
       cardNextStep: document.getElementById("candidate-evidence-card-next-step")
+    };
+    const decisionVectorFields = {
+      selectedStrategy: document.getElementById("decision-vector-selected-strategy"),
+      selectedBackend: document.getElementById("decision-vector-selected-backend"),
+      candidateCount: document.getElementById("decision-vector-candidate-count"),
+      knownSignals: document.getElementById("decision-vector-known-signals"),
+      unknownSignals: document.getElementById("decision-vector-unknown-signals"),
+      scoringAvailability: document.getElementById("decision-vector-scoring-availability"),
+      factorContribution: document.getElementById("decision-vector-factor-contribution"),
+      replayReadiness: document.getElementById("decision-vector-replay-readiness")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -1942,6 +2054,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       renderDecisionChainTrace();
       renderDecisionTraceDepth();
       renderAlternativeCandidateEvidence();
+      renderDecisionVectorFoundation();
     }
 
     function currentRequestPayload() {
@@ -2726,6 +2839,71 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "candidateComparisonLimits: " + limits,
         "evidenceAssociationPath: " + evidencePath,
         "",
+        "productionNotProven: " + notProven,
+        "copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"
+      ].join("\n");
+    }
+
+    function renderDecisionVectorFoundation() {
+      const currentPayload = currentRequestPayload();
+      const servers = currentPayload && Array.isArray(currentPayload.servers) ? currentPayload.servers : [];
+      const results = lastRoutingBody && Array.isArray(lastRoutingBody.results)
+        ? lastRoutingBody.results
+        : [];
+      const primary = results.length > 0 ? results[0] : null;
+      const selectedStrategy = primary && primary.strategyId ? primary.strategyId : "not run";
+      const selectedBackend = primary && primary.chosenServerId ? primary.chosenServerId : "not run";
+      const selectedServer = primary && primary.chosenServerId ? selectedServerDetails(primary.chosenServerId) : null;
+      const alternatives = nonSelectedCandidates(currentPayload, selectedServer);
+      const knownSignals = knownVisibleSignalsSummary(selectedServer, results);
+      const unknownSignals = unknownSignalSummary(selectedServer, results);
+      const candidateCount = servers.length > 0
+        ? servers.length + " visible candidate backend(s) in the controlled lab payload."
+        : "No candidate backend list is visible yet; load a controlled lab scenario.";
+      const candidateVectors = selectedServer
+        ? "selectedCandidateVector=" + candidateName(selectedServer)
+          + "; nonSelectedCandidateVectors="
+          + (alternatives.length > 0 ? alternatives.map(candidateName).join(", ") : "none visible")
+          + "; candidate vectors use visible local lab payload fields only."
+        : "Candidate vectors are pending selected backend mapping; visible local lab payload fields remain available for review.";
+      const exactScoringAvailability =
+        "not exposed unless the API returns exact scoring fields; hidden scoring is not inferred.";
+      const factorContributionAvailability =
+        "future extension / not implemented unless factor contribution fields are exposed by the API.";
+      const replayReadiness =
+        "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
+      const evidencePath = evidenceNavigationPath();
+      const notProven =
+        "No production traffic proof, production telemetry proof, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication proof, container signing proof, governance-applied proof, exact production scoring proof, or production certification claim.";
+
+      decisionVectorFields.selectedStrategy.textContent = selectedStrategy;
+      decisionVectorFields.selectedBackend.textContent = selectedBackend;
+      decisionVectorFields.candidateCount.textContent = candidateCount;
+      decisionVectorFields.knownSignals.textContent = knownSignals;
+      decisionVectorFields.unknownSignals.textContent = unknownSignals;
+      decisionVectorFields.scoringAvailability.textContent = exactScoringAvailability;
+      decisionVectorFields.factorContribution.textContent = factorContributionAvailability;
+      decisionVectorFields.replayReadiness.textContent = replayReadiness;
+
+      outputs.decisionVector.textContent = [
+        "# Decision Vector Foundation",
+        "",
+        "decisionIdOrLabRunId: not exposed; browser-local controlled lab summary only",
+        "selectedStrategy: " + selectedStrategy,
+        "selectedBackend: " + selectedBackend,
+        "candidateCount: " + candidateCount,
+        "candidateVectors: " + candidateVectors,
+        "knownSignals: " + knownSignals,
+        "unknownSignals: " + unknownSignals,
+        "exactScoringAvailability: " + exactScoringAvailability,
+        "factorContributionAvailability: " + factorContributionAvailability,
+        "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
+        "replayReadiness: " + replayReadiness,
+        "whatIfReadiness: planned future contract; what-if execution is not implemented",
+        "structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented",
+        "evidenceAssociationPath: " + evidencePath,
+        "",
+        "labProofBoundary: controlled lab evidence, same-origin local API response data, visible request payload fields, and browser-local interpretation",
         "productionNotProven: " + notProven,
         "copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"
       ].join("\n");

@@ -64,6 +64,7 @@ class ReadmeVisibilityDocumentationTest {
                 "docs/REVIEWER_TRUST_MAP.md",
                 "docs/REVIEWER_TRUST_MAP.md#reviewer-lab-review-path",
                 "docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md",
+                "docs/ENTERPRISE_LAB_DECISION_VECTOR.md",
                 "docs/OPERATOR_RUN_PROFILES.md",
                 "docs/DEPLOYMENT_SMOKE_KIT.md",
                 "docs/CONTAINER_DEPLOYMENT.md",

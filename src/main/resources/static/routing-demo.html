@@ -610,6 +610,208 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
       </div>
     </section>
 
+    <section id="backend-selection-depth-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Why This Backend Was Selected</h2>
+        <div class="actions">
+          <button class="copy" type="button" data-copy-target="decision-trace-explanation-output">Copy decision trace explanation</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="muted">
+          Reviewer-facing interpretation from visible lab signal data only. The cockpit uses the controlled lab response,
+          returned reason text, and visible candidate fields; exact production scoring is not claimed unless exposed by the API.
+        </p>
+        <div class="proof-grid" aria-label="Selected backend decision trace cards">
+          <div class="proof-card">
+            <strong>Selected backend/server</strong>
+            <p id="decision-trace-selected-backend">Run Compare strategies to identify the selected backend/server from the controlled lab response.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected strategy</strong>
+            <p id="decision-trace-selected-strategy">Run Compare strategies to identify which strategy produced the selected backend.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Visible health signal</strong>
+            <p id="decision-trace-health-signal">Known after a local lab response maps the selected backend to the visible request payload.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Visible latency signal</strong>
+            <p id="decision-trace-latency-signal">Known when p95, p99, or average latency fields are exposed by the local lab payload.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Visible load/connection pressure signal</strong>
+            <p id="decision-trace-pressure-signal">Known when in-flight request count or queue depth fields are exposed by the local lab payload.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Visible capacity/weight signal</strong>
+            <p id="decision-trace-capacity-signal">Known when configured capacity, estimated concurrency limit, or weight fields are exposed.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Reviewer-facing reason summary</strong>
+            <p id="decision-trace-reason-summary">Run Compare strategies to capture the local lab reason returned with the selected backend.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Exact scoring boundary</strong>
+            <p>Exact production scoring is not claimed unless exposed by the API; this cockpit explains visible lab signal interpretation only.</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 14px;">Decision Trace Cards</h3>
+        <div class="proof-grid" aria-label="Decision trace summary cards">
+          <div class="proof-card">
+            <strong>Selected backend</strong>
+            <p id="decision-trace-card-backend">Waiting for local lab comparison.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Leading visible signal</strong>
+            <p id="decision-trace-card-leading-signal">Run Compare strategies to identify the leading visible signal.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Alternate candidate note</strong>
+            <p id="decision-trace-card-alternative">Alternative candidate explanation is pending local lab response data.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Unknown signal note</strong>
+            <p id="decision-trace-card-unknown">Exact scoring is not exposed until the API returns that data.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Investigation next step</strong>
+            <p id="decision-trace-card-next-step">Inspect Signal Interpretation Guide, Scenario Comparison, Evidence Associations, and the Export Packet.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="alternative-candidate-depth-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Why Other Candidates Were Not Selected</h2>
+        <span class="muted">Visible signal comparison only; hidden scoring is not invented.</span>
+      </div>
+      <div class="panel-body">
+        <p class="muted">
+          The cockpit explains alternatives only when visible local lab signals support it. When the local response
+          does not expose enough detail, reviewers should treat non-selected candidate reasons as unknown.
+        </p>
+        <div class="proof-grid" aria-label="Alternative candidate trace cards">
+          <div class="proof-card">
+            <strong>Visible comparison summary</strong>
+            <p id="decision-trace-alternative-summary">Run Compare strategies to compare visible candidate health, latency, pressure, capacity, and weight signals.</p>
+          </div>
+          <div class="proof-card">
+            <strong>All-unhealthy/degraded handling</strong>
+            <p id="decision-trace-degraded-alternatives">If all candidates are unhealthy, treat the result as a degradation boundary, not production proof.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Unknown alternative reason fallback</strong>
+            <p>When a selected backend is known but non-selected candidate reasons are not exposed, record that the alternatives cannot be fully explained from available data.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="known-unknown-signals-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Known vs Unknown Signals</h2>
+        <span class="muted">Separates visible controlled lab evidence from unavailable or unexposed data.</span>
+      </div>
+      <div class="panel-body">
+        <div class="proof-grid" aria-label="Known and unknown signal cards">
+          <div class="proof-card">
+            <strong>Known visible lab signals</strong>
+            <p id="decision-trace-known-signals">Known signals are populated from the local request payload and comparison response after Compare strategies runs.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Missing or unavailable signals</strong>
+            <p id="decision-trace-unknown-signals">Exact scoring, hidden production weights, production telemetry, and unavailable local API data are not inferred.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Local API unavailable state</strong>
+            <p id="decision-trace-api-state">Static reviewer guidance remains available when the same-origin local API response is unavailable.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Reviewer interpretation boundary</strong>
+            <p>Use controlled lab evidence for pre-production validation. Do not infer production certification, production telemetry, or production monitoring from this page.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="decision-investigation-playbook-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Investigation Playbook</h2>
+        <span class="muted">Reviewer/operator prompts for surprising controlled lab outcomes.</span>
+      </div>
+      <div class="panel-body">
+        <div class="proof-grid" aria-label="Decision trace investigation playbook">
+          <div class="proof-card">
+            <strong>Backend changed unexpectedly</strong>
+            <p>Check whether visible health, latency, load/connection pressure, capacity/weight, strategy order, or returned reason text changed.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Backend did not change despite signal changes</strong>
+            <p>Compare close candidates, returned reason text, and scenario deltas before treating unchanged selection as unexplained.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Strategy changed but backend stayed the same</strong>
+            <p>Multiple strategies can prefer the same candidate in controlled lab evidence; inspect the selected strategy and visible signal guide.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Backend changed while strategy stayed the same</strong>
+            <p>Inspect signal deltas and candidate health first; visible signal comparison may explain the change without hidden scoring.</p>
+          </div>
+          <div class="proof-card">
+            <strong>All candidates unhealthy/degraded</strong>
+            <p>Treat all-unhealthy output as a fallback/degradation boundary and do not convert it into production readiness evidence.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Local API unavailable</strong>
+            <p>The local lab API response is unavailable; static reviewer guidance and evidence links remain available, but decision trace depth is incomplete.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Copied handoff text unavailable</strong>
+            <p>Use visible page text as the fallback if clipboard permissions fail; no upload, share endpoint, or server-side export is implied.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Evidence pages before or after lab run</strong>
+            <p>Evidence pages remain available before and after a lab run; inspect Signal Interpretation Guide, Decision Chain Trace, Scenario Comparison, Evidence Associations, and Export Packet.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reviewer-questions-answered-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Reviewer Questions Answered</h2>
+        <span class="muted">Decision trace checklist for local lab review.</span>
+      </div>
+      <div class="panel-body">
+        <div class="checklist" aria-label="Reviewer questions answered checklist">
+          <label><input type="checkbox" checked disabled> Why this backend?</label>
+          <label><input type="checkbox" checked disabled> Why not the others?</label>
+          <label><input type="checkbox" checked disabled> What changed?</label>
+          <label><input type="checkbox" checked disabled> What is known?</label>
+          <label><input type="checkbox" checked disabled> What is unknown?</label>
+          <label><input type="checkbox" checked disabled> What evidence supports this?</label>
+          <label><input type="checkbox" checked disabled> What remains not proven?</label>
+        </div>
+        <h3 style="margin-top: 14px;">Copyable decision trace explanation</h3>
+        <pre id="decision-trace-explanation-output"># Decision Trace Explanation
+
+status: waiting for local lab comparison
+selectedBackend: not run
+selectedStrategy: not run
+knownVisibleSignals: run Compare strategies to populate visible lab signals
+unknownSignals: exact scoring not exposed; production telemetry not claimed; production monitoring not claimed
+whySelectedBackendAppearsFavored: waiting for controlled lab response
+whyAlternativesWereNotSelected: alternatives cannot be explained until visible local lab signals are available
+investigationGuidance: inspect Signal Interpretation Guide, Decision Chain Trace, Scenario Comparison, Evidence Associations, and Export Packet
+evidenceAssociationPath: /routing-demo.html -> /enterprise-lab-reviewer.html -> /operator-evidence-dashboard.html -> /evidence-timeline.html -> /evidence-export-packet.html
+productionNotProven: no production traffic proof; no production telemetry proof; no live-cloud proof; no real-tenant proof; no SLA/SLO proof; no registry publication proof; no container signing proof; no governance-applied proof; no production certification claim
+copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry</pre>
+      </div>
+    </section>
+
     <section id="surprising-decision-investigation-panel" class="panel" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>How to Investigate a Surprising Decision</h2>
@@ -1322,7 +1524,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       reviewerWalkthrough: document.getElementById("reviewer-walkthrough-output"),
       evidenceAssociation: document.getElementById("evidence-association-output"),
       labMonitor: document.getElementById("lab-monitor-output"),
-      monitoredDecisionChain: document.getElementById("monitored-decision-chain-output")
+      monitoredDecisionChain: document.getElementById("monitored-decision-chain-output"),
+      decisionTraceExplanation: document.getElementById("decision-trace-explanation-output")
     };
     const proofFields = {
       strategy: document.getElementById("proof-strategy"),
@@ -1377,6 +1580,25 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       evidence: document.getElementById("decision-chain-evidence"),
       handoff: document.getElementById("decision-chain-handoff"),
       notProven: document.getElementById("decision-chain-not-proven")
+    };
+    const decisionTraceDepthFields = {
+      selectedBackend: document.getElementById("decision-trace-selected-backend"),
+      selectedStrategy: document.getElementById("decision-trace-selected-strategy"),
+      healthSignal: document.getElementById("decision-trace-health-signal"),
+      latencySignal: document.getElementById("decision-trace-latency-signal"),
+      pressureSignal: document.getElementById("decision-trace-pressure-signal"),
+      capacitySignal: document.getElementById("decision-trace-capacity-signal"),
+      reasonSummary: document.getElementById("decision-trace-reason-summary"),
+      alternativeSummary: document.getElementById("decision-trace-alternative-summary"),
+      degradedAlternatives: document.getElementById("decision-trace-degraded-alternatives"),
+      knownSignals: document.getElementById("decision-trace-known-signals"),
+      unknownSignals: document.getElementById("decision-trace-unknown-signals"),
+      apiState: document.getElementById("decision-trace-api-state"),
+      cardBackend: document.getElementById("decision-trace-card-backend"),
+      cardLeadingSignal: document.getElementById("decision-trace-card-leading-signal"),
+      cardAlternative: document.getElementById("decision-trace-card-alternative"),
+      cardUnknown: document.getElementById("decision-trace-card-unknown"),
+      cardNextStep: document.getElementById("decision-trace-card-next-step")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -1599,6 +1821,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       renderLabMonitorExplanation();
       renderMonitorStatusCards();
       renderDecisionChainTrace();
+      renderDecisionTraceDepth();
     }
 
     function currentRequestPayload() {
@@ -2121,6 +2344,231 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       }
       parts.push("exact production scoring is not claimed; this is visible lab signal interpretation derived from the local comparison response");
       return parts.join("; ") + ".";
+    }
+
+    function hasVisibleSignal(server, key) {
+      return Boolean(server) && Object.prototype.hasOwnProperty.call(server, key)
+        && server[key] !== null && server[key] !== undefined;
+    }
+
+    function visibleSignalValue(server, key, fallback) {
+      return hasVisibleSignal(server, key) ? server[key] : fallback;
+    }
+
+    function knownVisibleSignalsSummary(selectedServer, results) {
+      if (!selectedServer || results.length === 0) {
+        return "No completed local lab comparison is available yet; known visible lab signals remain pending.";
+      }
+      return [
+        "selectedBackendHealthy=" + visibleSignalValue(selectedServer, "healthy", "unknown"),
+        "averageLatencyMillis=" + visibleSignalValue(selectedServer, "averageLatencyMillis", "unknown"),
+        "p95LatencyMillis=" + visibleSignalValue(selectedServer, "p95LatencyMillis", "unknown"),
+        "p99LatencyMillis=" + visibleSignalValue(selectedServer, "p99LatencyMillis", "unknown"),
+        "inFlightRequestCount=" + visibleSignalValue(selectedServer, "inFlightRequestCount", "unknown"),
+        "queueDepth=" + visibleSignalValue(selectedServer, "queueDepth", "unknown"),
+        "configuredCapacity=" + visibleSignalValue(selectedServer, "configuredCapacity", "unknown"),
+        "estimatedConcurrencyLimit=" + visibleSignalValue(selectedServer, "estimatedConcurrencyLimit", "unknown"),
+        "weight=" + visibleSignalValue(selectedServer, "weight", "unknown"),
+        "recentErrorRate=" + visibleSignalValue(selectedServer, "recentErrorRate", "unknown")
+      ].join("; ") + ".";
+    }
+
+    function unknownSignalSummary(selectedServer, results) {
+      const missing = [];
+      if (!selectedServer || results.length === 0) {
+        return (lastRoutingError || "Local lab comparison has not completed")
+          + "; exact scoring is not exposed; hidden production weights, production telemetry, and production monitoring are not claimed.";
+      }
+      [
+        ["averageLatencyMillis", "average latency"],
+        ["p95LatencyMillis", "p95 latency"],
+        ["p99LatencyMillis", "p99 latency"],
+        ["inFlightRequestCount", "in-flight request count"],
+        ["queueDepth", "queue depth"],
+        ["configuredCapacity", "configured capacity"],
+        ["estimatedConcurrencyLimit", "estimated concurrency limit"],
+        ["weight", "weight"],
+        ["recentErrorRate", "recent error rate"]
+      ].forEach(([key, label]) => {
+        if (!hasVisibleSignal(selectedServer, key)) {
+          missing.push(label);
+        }
+      });
+      const missingText = missing.length > 0
+        ? "Missing or unavailable visible signals for selected backend: " + missing.join(", ") + "."
+        : "The common visible selected-backend signals are present in the local lab payload.";
+      return missingText
+        + " Exact scoring is not exposed unless the API returns it; hidden production weights, production telemetry, and production monitoring are not claimed.";
+    }
+
+    function leadingVisibleSignal(selectedServer, currentMetrics, results) {
+      if (!selectedServer || results.length === 0) {
+        return lastRoutingError || "Run Compare strategies to identify a leading visible lab signal.";
+      }
+      if (selectedServer.healthy === false) {
+        return "Selected backend is unhealthy in the visible lab payload; investigate as a degradation/fallback boundary.";
+      }
+      if (currentMetrics.healthyCount === 0 && currentMetrics.unhealthyServers.length > 0) {
+        return "All candidates are unhealthy; selected output, if any, is a degradation boundary.";
+      }
+      const p95 = numericSignal(selectedServer.p95LatencyMillis);
+      const inFlight = numericSignal(selectedServer.inFlightRequestCount);
+      const queueDepth = numericSignal(selectedServer.queueDepth);
+      const capacity = numericSignal(selectedServer.configuredCapacity);
+      const weight = numericSignal(selectedServer.weight);
+      if (p95 > 0 && p95 <= 60) {
+        return "Latency appears favorable: selected backend p95LatencyMillis=" + p95 + ".";
+      }
+      if (inFlight === 0 && queueDepth === 0) {
+        return "Load/connection pressure appears low: inFlight=0 and queueDepth=0.";
+      }
+      if (capacity > 0 || weight > 0) {
+        return "Capacity/weight is visible: configuredCapacity=" + capacity + ", weight=" + weight + ".";
+      }
+      return "Returned reason text is the leading explanation; no stronger visible signal is exposed.";
+    }
+
+    function alternativeCandidateSummary(selectedServer, currentPayload, currentMetrics, results) {
+      const servers = currentPayload && Array.isArray(currentPayload.servers) ? currentPayload.servers : [];
+      if (results.length === 0) {
+        return lastRoutingError
+          || "Alternatives cannot be explained until the controlled lab response returns selected backend data.";
+      }
+      if (servers.length === 0) {
+        return "No candidate backend list is visible in the local lab payload, so alternatives cannot be explained from available data.";
+      }
+      if (currentMetrics.healthyCount === 0 && currentMetrics.unhealthyServers.length > 0) {
+        return "All visible candidates are unhealthy/degraded; treat non-selection as degradation/fallback handling, not production proof.";
+      }
+      if (!selectedServer) {
+        return "Selected backend is known from the response, but matching request-payload details are unavailable; non-selected candidate reasons are unknown.";
+      }
+      const alternatives = servers.filter((server) => server.serverId !== selectedServer.serverId);
+      if (alternatives.length === 0) {
+        return "Only the selected backend is visible in the local lab payload; alternative candidate reasons are not exposed.";
+      }
+      const selectedP95 = numericSignal(selectedServer.p95LatencyMillis);
+      const selectedInFlight = numericSignal(selectedServer.inFlightRequestCount);
+      const selectedQueue = numericSignal(selectedServer.queueDepth);
+      const selectedCapacity = numericSignal(selectedServer.configuredCapacity);
+      const selectedWeight = numericSignal(selectedServer.weight);
+      return alternatives.map((server) => {
+        const notes = [];
+        if (server.healthy === false) {
+          notes.push("degraded/unhealthy visible state");
+        }
+        if (selectedP95 > 0 && numericSignal(server.p95LatencyMillis) >= selectedP95) {
+          notes.push("equal or higher p95 latency");
+        }
+        if (numericSignal(server.inFlightRequestCount) >= selectedInFlight
+            && numericSignal(server.queueDepth) >= selectedQueue) {
+          notes.push("equal or higher load/connection pressure");
+        }
+        if ((selectedCapacity > 0 && numericSignal(server.configuredCapacity) <= selectedCapacity)
+            || (selectedWeight > 0 && numericSignal(server.weight) <= selectedWeight)) {
+          notes.push("capacity/weight did not visibly exceed selected backend");
+        }
+        const reason = notes.length > 0
+          ? "visible signal comparison suggests " + notes.join(", ")
+          : "visible signals alone do not fully explain non-selection; rely on returned reason text or treat candidate reason as unknown";
+        return (server.serverId || "unnamed candidate") + ": " + reason;
+      }).join("; ") + ".";
+    }
+
+    function selectedBackendReasonSummary(primary, selectedServer, currentMetrics, results) {
+      if (!primary || results.length === 0) {
+        return lastRoutingError
+          || "No selected backend has been returned yet; run Compare strategies to produce a controlled lab response.";
+      }
+      return "Selected backend/server " + (primary.chosenServerId || "No server selected")
+        + " appears favored by strategy " + (primary.strategyId || "unknown strategy")
+        + " using visible lab signal data. Reviewer-facing reason summary: "
+        + (primary.reason || "no explanation returned")
+        + ". Known visible signals: " + knownVisibleSignalsSummary(selectedServer, results)
+        + " " + visibleSignalInterpretation(selectedServer, currentMetrics, results);
+    }
+
+    function investigationGuidanceSummary(results) {
+      if (results.length === 0) {
+        return lastRoutingError
+          || "Run Compare strategies, then inspect Signal Interpretation Guide, Decision Chain Trace, Scenario Comparison, Evidence Associations, and Export Packet.";
+      }
+      return "For surprising outcomes, inspect Signal Interpretation Guide, Decision Chain Trace, Scenario Comparison, Evidence Associations, and Export Packet; compare selected backend reason text with known and unknown signal lists before escalating.";
+    }
+
+    function renderDecisionTraceDepth() {
+      const currentPayload = currentRequestPayload();
+      const currentMetrics = scenarioMetrics(currentPayload);
+      const results = lastRoutingBody && Array.isArray(lastRoutingBody.results)
+        ? lastRoutingBody.results
+        : [];
+      const primary = results.length > 0 ? results[0] : null;
+      const selectedStrategy = primary && primary.strategyId ? primary.strategyId : "not run";
+      const selectedBackend = primary && primary.chosenServerId ? primary.chosenServerId : "not run";
+      const selectedServer = primary && primary.chosenServerId ? selectedServerDetails(primary.chosenServerId) : null;
+      const knownSignals = knownVisibleSignalsSummary(selectedServer, results);
+      const unknownSignals = unknownSignalSummary(selectedServer, results);
+      const whySelected = selectedBackendReasonSummary(primary, selectedServer, currentMetrics, results);
+      const whyAlternatives = alternativeCandidateSummary(selectedServer, currentPayload, currentMetrics, results);
+      const leadingSignal = leadingVisibleSignal(selectedServer, currentMetrics, results);
+      const apiState = results.length > 0
+        ? "Local lab API response available; decision trace depth is populated from same-origin response data."
+        : (lastRoutingError || "Static page loaded before interaction; local lab API response is not available yet.");
+      const degradedAlternatives = currentMetrics.healthyCount === 0 && currentMetrics.unhealthyServers.length > 0
+        ? "All visible candidates are unhealthy/degraded; treat the result as a fallback/degradation boundary, not production proof."
+        : "All-unhealthy handling is available if every visible candidate is degraded.";
+      const investigation = investigationGuidanceSummary(results);
+      const evidencePath = evidenceNavigationPath();
+      const notProven = "No production traffic proof, production telemetry proof, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication proof, container signing proof, governance-applied proof, or production certification claim.";
+
+      decisionTraceDepthFields.selectedBackend.textContent =
+        "selectedBackend=" + selectedBackend + "; selected from controlled lab response only.";
+      decisionTraceDepthFields.selectedStrategy.textContent =
+        "selectedStrategy=" + selectedStrategy + "; strategy influence is interpreted from visible returned reason text and local payload signals.";
+      decisionTraceDepthFields.healthSignal.textContent = selectedServer
+        ? "visible health signal: healthy=" + visibleSignalValue(selectedServer, "healthy", "unknown") + "."
+        : "Visible health signal is unknown until the selected backend maps to the local lab payload.";
+      decisionTraceDepthFields.latencySignal.textContent = selectedServer
+        ? "visible latency signal: averageLatencyMillis=" + visibleSignalValue(selectedServer, "averageLatencyMillis", "unknown")
+          + "; p95LatencyMillis=" + visibleSignalValue(selectedServer, "p95LatencyMillis", "unknown")
+          + "; p99LatencyMillis=" + visibleSignalValue(selectedServer, "p99LatencyMillis", "unknown") + "."
+        : "Visible latency signal is unknown until local lab data is available.";
+      decisionTraceDepthFields.pressureSignal.textContent = selectedServer
+        ? "visible load/connection pressure signal: inFlightRequestCount=" + visibleSignalValue(selectedServer, "inFlightRequestCount", "unknown")
+          + "; queueDepth=" + visibleSignalValue(selectedServer, "queueDepth", "unknown") + "."
+        : "Visible load/connection pressure signal is unknown until local lab data is available.";
+      decisionTraceDepthFields.capacitySignal.textContent = selectedServer
+        ? "visible capacity/weight signal: configuredCapacity=" + visibleSignalValue(selectedServer, "configuredCapacity", "unknown")
+          + "; estimatedConcurrencyLimit=" + visibleSignalValue(selectedServer, "estimatedConcurrencyLimit", "unknown")
+          + "; weight=" + visibleSignalValue(selectedServer, "weight", "unknown") + "."
+        : "Visible capacity/weight signal is unknown until local lab data is available.";
+      decisionTraceDepthFields.reasonSummary.textContent = whySelected;
+      decisionTraceDepthFields.alternativeSummary.textContent = whyAlternatives;
+      decisionTraceDepthFields.degradedAlternatives.textContent = degradedAlternatives;
+      decisionTraceDepthFields.knownSignals.textContent = knownSignals;
+      decisionTraceDepthFields.unknownSignals.textContent = unknownSignals;
+      decisionTraceDepthFields.apiState.textContent = apiState;
+      decisionTraceDepthFields.cardBackend.textContent = selectedBackend;
+      decisionTraceDepthFields.cardLeadingSignal.textContent = leadingSignal;
+      decisionTraceDepthFields.cardAlternative.textContent = whyAlternatives;
+      decisionTraceDepthFields.cardUnknown.textContent = unknownSignals;
+      decisionTraceDepthFields.cardNextStep.textContent = investigation;
+
+      outputs.decisionTraceExplanation.textContent = [
+        "# Decision Trace Explanation",
+        "",
+        "selectedBackend: " + selectedBackend,
+        "selectedStrategy: " + selectedStrategy,
+        "knownVisibleSignals: " + knownSignals,
+        "unknownSignals: " + unknownSignals,
+        "whySelectedBackendAppearsFavored: " + whySelected,
+        "whyAlternativesWereNotSelected: " + whyAlternatives,
+        "investigationGuidance: " + investigation,
+        "evidenceAssociationPath: " + evidencePath,
+        "",
+        "productionNotProven: " + notProven,
+        "copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"
+      ].join("\n");
     }
 
     function renderMonitorStatusCards() {

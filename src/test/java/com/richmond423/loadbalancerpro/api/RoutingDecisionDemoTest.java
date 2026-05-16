@@ -469,6 +469,101 @@ class RoutingDecisionDemoTest {
     }
 
     @Test
+    void routingDemoDecisionTraceDepthExplainsSelectedBackendAndAlternatives() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("id=\"backend-selection-depth-panel\""));
+        assertTrue(page.contains("Why This Backend Was Selected"));
+        assertTrue(page.contains("Copy decision trace explanation"));
+        assertTrue(page.contains("data-copy-target=\"decision-trace-explanation-output\""));
+        assertTrue(page.contains("Reviewer-facing interpretation from visible lab signal data only."));
+        assertTrue(page.contains("controlled lab response"));
+        assertTrue(page.contains("exact production scoring is not claimed unless exposed by the API"));
+        assertTrue(page.contains("id=\"decision-trace-selected-backend\""));
+        assertTrue(page.contains("id=\"decision-trace-selected-strategy\""));
+        assertTrue(page.contains("id=\"decision-trace-health-signal\""));
+        assertTrue(page.contains("id=\"decision-trace-latency-signal\""));
+        assertTrue(page.contains("id=\"decision-trace-pressure-signal\""));
+        assertTrue(page.contains("id=\"decision-trace-capacity-signal\""));
+        assertTrue(page.contains("id=\"decision-trace-reason-summary\""));
+        assertTrue(page.contains("Why Other Candidates Were Not Selected"));
+        assertTrue(page.contains("Visible signal comparison only; hidden scoring is not invented"));
+        assertTrue(page.contains("visible signal comparison suggests"));
+        assertTrue(page.contains("alternatives cannot be fully explained from available data"));
+        assertTrue(page.contains("selected backend is known but non-selected candidate reasons are not exposed"));
+        assertTrue(normalized.contains("all-unhealthy/degraded handling"));
+        assertFalse(normalized.contains("exact production scoring is claimed"));
+        assertFalse(normalized.contains("hidden production scoring is available"));
+        assertFalse(normalized.contains("production monitoring proof"));
+    }
+
+    @Test
+    void routingDemoKnownUnknownSignalsAndInvestigationPlaybookStayLabBounded() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("id=\"known-unknown-signals-panel\""));
+        assertTrue(page.contains("Known vs Unknown Signals"));
+        assertTrue(page.contains("Known visible lab signals"));
+        assertTrue(page.contains("Missing or unavailable signals"));
+        assertTrue(page.contains("Exact scoring, hidden production weights, production telemetry, and unavailable local API data are not inferred."));
+        assertTrue(page.contains("Local API unavailable state"));
+        assertTrue(page.contains("Use controlled lab evidence for pre-production validation."));
+        assertTrue(page.contains("id=\"decision-investigation-playbook-panel\""));
+        assertTrue(page.contains("Investigation Playbook"));
+        assertTrue(page.contains("Backend changed unexpectedly"));
+        assertTrue(page.contains("Backend did not change despite signal changes"));
+        assertTrue(page.contains("Strategy changed but backend stayed the same"));
+        assertTrue(page.contains("Backend changed while strategy stayed the same"));
+        assertTrue(page.contains("All candidates unhealthy/degraded"));
+        assertTrue(page.contains("Copied handoff text unavailable"));
+        assertTrue(page.contains("Evidence pages before or after lab run"));
+        assertTrue(page.contains("Signal Interpretation Guide, Decision Chain Trace, Scenario Comparison, Evidence Associations, and Export Packet"));
+        assertTrue(normalized.contains("no upload, share endpoint, or server-side export is implied"));
+        assertFalse(normalized.contains("production telemetry is available"));
+        assertFalse(normalized.contains("production monitoring proof"));
+        assertFalse(normalized.contains("server-side decision trace export"));
+    }
+
+    @Test
+    void routingDemoDecisionTraceCopyAndStretchCardsAreBrowserLocal() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("Decision Trace Cards"));
+        assertTrue(page.contains("aria-label=\"Decision trace summary cards\""));
+        assertTrue(page.contains("id=\"decision-trace-card-backend\""));
+        assertTrue(page.contains("id=\"decision-trace-card-leading-signal\""));
+        assertTrue(page.contains("id=\"decision-trace-card-alternative\""));
+        assertTrue(page.contains("id=\"decision-trace-card-unknown\""));
+        assertTrue(page.contains("id=\"decision-trace-card-next-step\""));
+        assertTrue(page.contains("Reviewer Questions Answered"));
+        assertTrue(page.contains("Why this backend?"));
+        assertTrue(page.contains("Why not the others?"));
+        assertTrue(page.contains("What is known?"));
+        assertTrue(page.contains("What is unknown?"));
+        assertTrue(page.contains("What remains not proven?"));
+        assertTrue(page.contains("# Decision Trace Explanation"));
+        assertTrue(page.contains("selectedBackend: "));
+        assertTrue(page.contains("selectedStrategy: "));
+        assertTrue(page.contains("knownVisibleSignals: "));
+        assertTrue(page.contains("unknownSignals: "));
+        assertTrue(page.contains("whySelectedBackendAppearsFavored: "));
+        assertTrue(page.contains("whyAlternativesWereNotSelected: "));
+        assertTrue(page.contains("investigationGuidance: "));
+        assertTrue(page.contains("evidenceAssociationPath: /routing-demo.html -> /enterprise-lab-reviewer.html -> /operator-evidence-dashboard.html -> /evidence-timeline.html -> /evidence-export-packet.html"));
+        assertTrue(page.contains("copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"));
+        assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no production telemetry proof"));
+        assertTrue(normalized.contains("no governance-applied proof"));
+        assertTrue(normalized.contains("no production certification claim"));
+        assertFalse(normalized.contains("upload endpoint"));
+        assertFalse(normalized.contains("server-side export endpoint"));
+        assertFalse(normalized.contains("sendbeacon"));
+    }
+
+    @Test
     void routingDemoSurprisingDecisionGuideDirectsReviewerInvestigation() throws Exception {
         String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
         String normalized = page.toLowerCase(Locale.ROOT);

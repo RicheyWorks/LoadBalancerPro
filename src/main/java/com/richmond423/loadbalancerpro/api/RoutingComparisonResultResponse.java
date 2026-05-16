@@ -9,5 +9,6 @@ public record RoutingComparisonResultResponse(
         String chosenServerId,
         String reason,
         List<String> candidateServersConsidered,
-        Map<String, Double> scores) {
+        Map<String, Double> scores,
+        RoutingDecisionVectorResponse decisionVector) {
 }

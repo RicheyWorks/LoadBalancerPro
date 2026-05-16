@@ -41,7 +41,7 @@ One Decision Vector represents one controlled lab routing decision. The contract
 | `reasonCategories` | Reviewer-facing categories such as health, latency, load pressure, capacity/weight, degradation, recovery, or unknown. |
 | `selectedVsAlternativeNotes` | Notes explaining why the selected backend appears favored and why alternatives appear weakened when visible data supports it. |
 | `exactScoringAvailability` | `notExposed` unless the API explicitly returns exact scoring. |
-| `factorContributionAvailability` | `futureNotImplemented` unless factor contribution fields are actually implemented and exposed. |
+| `factorContributionAvailability` | Exposed only when the local lab response returns current calculator contribution fields; otherwise mark as unavailable. |
 | `replayReadiness` | Contract readiness for future replay; replay execution remains future/not implemented until built. |
 | `labProofBoundary` | Controlled lab evidence, local reproducibility, same-origin local API responses, and browser-local interpretation. |
 | `productionNotProvenBoundary` | No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof. |
@@ -69,7 +69,10 @@ Candidate vectors must not infer hidden routing internals. If visible signals do
 
 ## Factor Contribution Placeholder Contract
 
-Factor Contribution is a future extension unless the API explicitly exposes contribution data. The placeholder shape should be:
+Factor Contribution is a future extension unless the API explicitly exposes contribution data. The read-only
+`/api/routing/compare` response can now expose current `ServerScoreCalculator` contribution entries under
+`results[].decisionVector.candidateSummaries[].factorContributions`; fields beyond those current calculator
+components remain unavailable unless a later sprint implements them. The contract shape is:
 
 | Field | Meaning |
 | --- | --- |
@@ -82,7 +85,7 @@ Factor Contribution is a future extension unless the API explicitly exposes cont
 | `confidenceNote` | Reviewer-facing confidence note for the factor. |
 | `explanationText` | Human-readable local lab interpretation. |
 
-The placeholder must keep `contributionValue` and `weight` unavailable until real fields exist. Exact production scoring is not claimed, and hidden scoring must not be inferred.
+The placeholder must keep unavailable fields unavailable until real fields exist. Exact production scoring is not claimed, and hidden scoring must not be inferred.
 
 ## From Decision Vector to Factor Contributions
 
@@ -157,10 +160,11 @@ Selected-vs-alternative reasoning should use only visible/exposed contribution d
 text, and controlled lab signals. Unknown or unavailable candidate signals remain explicit investigation
 items, and hidden scoring must not be invented.
 
-This sprint does not implement a runtime Decision Vector API field, decision replay, what-if execution,
-strategy plugin explainability, structured decision logging, production telemetry, production monitoring, or
-production scoring proof. Future cockpit rendering can consume candidate contribution summaries once an API
-or explicit Decision Vector payload exposes them.
+The read-only `/api/routing/compare` response can expose candidate contribution summaries through
+`results[].decisionVector` without changing scoring behavior, strategy weights, selected backend outcomes,
+or existing response fields. This does not implement decision replay, what-if execution, strategy plugin
+explainability, structured decision logging, production telemetry, production monitoring, or production
+scoring proof.
 
 Representative candidate vector attachment shape:
 
@@ -184,6 +188,82 @@ Representative candidate vector attachment shape:
     "labProofBoundary": "controlled lab evidence only",
     "productionNotProvenBoundary": "no production scoring proof, telemetry proof, monitoring proof, or certification"
   }
+}
+```
+
+## Read-only Decision Vector Exposure
+
+`POST /api/routing/compare` exposes the Decision Vector through the additive
+`results[].decisionVector` field for successful controlled lab routing results. This is the local lab
+response path the Enterprise Lab Cockpit can consume; it is read-only and preserves existing
+`requestedStrategies`, `candidateCount`, `timestamp`, result status, selected backend, reason, candidate
+list, and score fields.
+
+The read-only field includes:
+
+- `selectedStrategy` and `selectedBackend` for the strategy result.
+- `candidateSummaries` for selected and non-selected candidates.
+- `selectedCandidateVector` and `nonSelectedCandidateVectors`.
+- `knownVisibleSignals` and `unknownOrUnexposedSignals`.
+- Current calculator `factorContributions` where the contract exposes them.
+- Exactness, lab proof, and production not-proven boundaries.
+- Replay, what-if, and structured logging readiness marked future/not implemented.
+
+The exposure is additive controlled lab explainability only. It does not change routing selection,
+score calculation, strategy weights, route/proxy behavior, or existing API response fields.
+It does not claim production telemetry, production monitoring, production certification, exact production scoring,
+completed replay, or completed what-if experiments.
+
+Example response snippet:
+
+```json
+{
+  "results": [
+    {
+      "strategyId": "TAIL_LATENCY_POWER_OF_TWO",
+      "status": "SUCCESS",
+      "chosenServerId": "edge-alpha",
+      "decisionVector": {
+        "readOnly": true,
+        "localLabResponsePath": "/api/routing/compare",
+        "decisionIdOrLabRunId": "not exposed by this read-only local lab response",
+        "selectedStrategy": "TAIL_LATENCY_POWER_OF_TWO",
+        "selectedBackend": "edge-alpha",
+        "candidateCount": 3,
+        "candidateSummaries": [
+          {
+            "candidateId": "edge-alpha",
+            "selected": true,
+            "knownVisibleSignals": ["healthState=true", "p95LatencyMillis=40.000000"],
+            "unknownOrUnexposedSignals": [
+              "hidden routing internals not exposed",
+              "exact production scoring not exposed",
+              "production telemetry not exposed"
+            ],
+            "factorContributions": [
+              {
+                "factorName": "p95LatencyMillis",
+                "direction": "WEAKENS_SELECTION",
+                "contributionValue": 18.0,
+                "exactness": "EXACT_FROM_CALCULATOR",
+                "boundaryNote": "Tail latency is an exact current calculator input, not production telemetry proof."
+              },
+              {
+                "factorName": "hiddenRoutingInternals",
+                "direction": "UNKNOWN",
+                "contributionValue": null,
+                "exactness": "NOT_EXPOSED",
+                "boundaryNote": "Exact production scoring is not claimed; this contract explains current local calculator components only."
+              }
+            ]
+          }
+        ],
+        "factorContributionAvailability": "exposed for current ServerScoreCalculator components through read-only controlled lab response data; hidden scoring is not inferred and exact production scoring is not claimed.",
+        "replayReadiness": "future/not implemented; read-only Decision Vector exposure does not execute replay.",
+        "whatIfReadiness": "future/not implemented; read-only Decision Vector exposure does not execute what-if experiments."
+      }
+    }
+  ]
 }
 ```
 
@@ -303,7 +383,7 @@ This example is static documentation, not an implemented runtime endpoint or ser
     }
   ],
   "exactScoringAvailability": "notExposedUnlessReturnedByApi",
-  "factorContributionAvailability": "futureNotImplementedUnlessExposedByApi",
+  "factorContributionAvailability": "exposedForCurrentCalculatorComponentsWhenReturnedByApi",
   "factorContributionPlaceholder": [
     {
       "factorName": "p95LatencyMillis",

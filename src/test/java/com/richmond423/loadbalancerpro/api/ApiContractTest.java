@@ -169,7 +169,21 @@ class ApiContractTest {
         assertSchemaProperties(docs, "RoutingComparisonResponse", "requestedStrategies", "candidateCount",
                 "timestamp", "results");
         assertSchemaProperties(docs, "RoutingComparisonResultResponse", "strategyId", "status",
-                "chosenServerId", "reason", "candidateServersConsidered", "scores");
+                "chosenServerId", "reason", "candidateServersConsidered", "scores", "decisionVector");
+        assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
+                "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
+                "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
+                "knownVisibleSignals", "unknownOrUnexposedSignals", "exactnessBoundary",
+                "selectedVsAlternativeExplanationNotes", "labProofBoundary", "productionNotProvenBoundary",
+                "factorContributionAvailability", "replayReadiness", "whatIfReadiness",
+                "structuredDecisionLoggingReadiness");
+        assertSchemaProperties(docs, "CandidateDecisionVectorResponse", "candidateId", "selected",
+                "knownVisibleSignals", "unknownOrUnexposedSignals", "factorContributions",
+                "selectedVsAlternativeExplanationNote", "exactnessBoundary", "labProofBoundary",
+                "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "ScoreFactorContributionResponse", "factorName", "rawValueDescription",
+                "weightDescription", "direction", "contributionDescription", "contributionValue",
+                "exactness", "explanationText", "boundaryNote");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -280,6 +294,13 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].candidateServersConsidered[1]", is("blue")))
                 .andExpect(jsonPath("$.results[0].scores.green").isNumber())
                 .andExpect(jsonPath("$.results[0].scores.blue").isNumber())
+                .andExpect(jsonPath("$.results[0].decisionVector.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionVector.localLabResponsePath", is("/api/routing/compare")))
+                .andExpect(jsonPath("$.results[0].decisionVector.selectedStrategy", is("TAIL_LATENCY_POWER_OF_TWO")))
+                .andExpect(jsonPath("$.results[0].decisionVector.selectedBackend", is("green")))
+                .andExpect(jsonPath("$.results[0].decisionVector.candidateCount", is(2)))
+                .andExpect(jsonPath("$.results[0].decisionVector.selectedCandidateVector.candidateId", is("green")))
+                .andExpect(jsonPath("$.results[0].decisionVector.nonSelectedCandidateVectors[0].candidateId", is("blue")))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -310,6 +331,7 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].chosenServerId", nullValue()))
                 .andExpect(jsonPath("$.results[0].candidateServersConsidered").isEmpty())
                 .andExpect(jsonPath("$.results[0].scores").isEmpty())
+                .andExpect(jsonPath("$.results[0].decisionVector", nullValue()))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

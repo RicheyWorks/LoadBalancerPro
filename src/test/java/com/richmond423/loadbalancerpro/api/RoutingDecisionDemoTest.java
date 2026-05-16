@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.api;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -657,8 +658,11 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("One backend/server record with selected true/false state"));
         assertTrue(page.contains("Known signals come from the local lab request or same-origin comparison response"));
         assertTrue(page.contains("ServerScoreCalculator factor contribution contract extraction has begun"));
-        assertTrue(page.contains("candidate summaries can attach those explanations to selected and non-selected candidate vectors"));
+        assertTrue(page.contains("read-only comparison response can expose those summaries for selected and non-selected candidate vectors"));
         assertTrue(page.contains("no score weights are retuned"));
+        assertTrue(page.contains("The same-origin <code>/api/routing/compare</code> response can return <code>results[].decisionVector</code>"));
+        assertTrue(page.contains("Decision Vector data is unavailable in this response; static lab guidance remains available."));
+        assertTrue(page.contains("Copy structured decision vector summary"));
         assertTrue(page.contains("Decision replay, what-if experiments, and structured decision logging should build on this contract later"));
         assertTrue(page.contains("data-copy-target=\"decision-vector-summary-output\""));
         assertTrue(page.contains("id=\"decision-vector-selected-strategy\""));
@@ -668,6 +672,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("id=\"decision-vector-unknown-signals\""));
         assertTrue(page.contains("id=\"decision-vector-scoring-availability\""));
         assertTrue(page.contains("id=\"decision-vector-factor-contribution\""));
+        assertTrue(page.contains("id=\"decision-vector-readonly-exposure\""));
         assertTrue(page.contains("id=\"decision-vector-replay-readiness\""));
         assertTrue(page.contains("# Decision Vector Foundation"));
         assertTrue(page.contains("decisionIdOrLabRunId: "));
@@ -675,6 +680,8 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("selectedVsAlternativeExplanationNotes: "));
         assertTrue(page.contains("exactScoringAvailability: "));
         assertTrue(page.contains("factorContributionAvailability: "));
+        assertTrue(page.contains("candidateFactorContributionSummary: "));
+        assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
         assertTrue(page.contains("structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented"));
@@ -976,7 +983,15 @@ class RoutingDecisionDemoTest {
                     .andExpect(jsonPath("$.results[0].chosenServerId", is("edge-weighted")))
                     .andExpect(jsonPath("$.results[0].reason", containsString("weighted least-connections")))
                     .andExpect(jsonPath("$.results[0].scores.edge-standard", is(5.0)))
-                    .andExpect(jsonPath("$.results[0].scores.edge-weighted", is(3.0)));
+                    .andExpect(jsonPath("$.results[0].scores.edge-weighted", is(3.0)))
+                    .andExpect(jsonPath("$.results[0].decisionVector.readOnly", is(true)))
+                    .andExpect(jsonPath("$.results[0].decisionVector.localLabResponsePath", is("/api/routing/compare")))
+                    .andExpect(jsonPath("$.results[0].decisionVector.selectedStrategy", is("WEIGHTED_LEAST_CONNECTIONS")))
+                    .andExpect(jsonPath("$.results[0].decisionVector.selectedBackend", is("edge-weighted")))
+                    .andExpect(jsonPath("$.results[0].decisionVector.candidateCount", is(2)))
+                    .andExpect(jsonPath("$.results[0].decisionVector.selectedCandidateVector.candidateId", is("edge-weighted")))
+                    .andExpect(jsonPath("$.results[0].decisionVector.unknownOrUnexposedSignals",
+                            hasItem("hidden routing internals not exposed")));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "routing demo comparison must not construct CloudManager");

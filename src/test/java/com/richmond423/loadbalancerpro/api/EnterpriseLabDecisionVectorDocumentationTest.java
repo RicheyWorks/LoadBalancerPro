@@ -82,7 +82,8 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("## Candidate Factor Contribution Integration"));
         assertTrue(doc.contains("CandidateFactorContributionSummary"));
         assertTrue(doc.contains("selected and non-selected candidates carry the same contribution summary shape"));
-        assertTrue(doc.contains("This sprint does not implement a runtime Decision Vector API field"));
+        assertTrue(doc.contains("The read-only `/api/routing/compare` response can expose candidate contribution summaries through"));
+        assertTrue(doc.contains("`results[].decisionVector`"));
         assertTrue(doc.contains("\"factorContributionSummary\""));
         assertTrue(doc.contains("It does not implement decision replay, what-if experiments, or structured decision logging."));
         assertTrue(doc.contains("\"factorContributions\""));
@@ -110,10 +111,16 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         }
 
         assertTrue(doc.contains("## Static Example Decision Vector Payload"));
-        assertTrue(doc.contains("\"factorContributionAvailability\": \"futureNotImplementedUnlessExposedByApi\""));
+        assertTrue(doc.contains("\"factorContributionAvailability\": \"exposedForCurrentCalculatorComponentsWhenReturnedByApi\""));
         assertTrue(doc.contains("\"replayReadiness\": \"plannedFutureContract; replay execution is not implemented\""));
         assertTrue(doc.contains("\"whatIfReadiness\": \"plannedFutureContract; what-if execution is not implemented\""));
         assertTrue(doc.contains("\"structuredDecisionLoggingReadiness\": \"plannedFutureContract; structured logging is not implemented\""));
+        assertTrue(doc.contains("## Read-only Decision Vector Exposure"));
+        assertTrue(doc.contains("`POST /api/routing/compare` exposes the Decision Vector through the additive"));
+        assertTrue(doc.contains("`results[].decisionVector` field"));
+        assertTrue(doc.contains("preserves existing"));
+        assertTrue(doc.contains("`requestedStrategies`, `candidateCount`, `timestamp`, result status"));
+        assertTrue(doc.contains("\"localLabResponsePath\": \"/api/routing/compare\""));
         assertFalse(normalized.contains("factor contribution analysis is implemented"));
         assertFalse(normalized.contains("decision replay is implemented"));
         assertFalse(normalized.contains("what-if experiments are implemented"));
@@ -149,8 +156,11 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("Candidate Decision Vector"));
         assertTrue(page.contains("Known vs unknown separation"));
         assertTrue(page.contains("ServerScoreCalculator factor contribution contract extraction has begun"));
-        assertTrue(page.contains("candidate summaries can attach those explanations to selected and non-selected candidate vectors"));
+        assertTrue(page.contains("read-only comparison response can expose those summaries for selected and non-selected candidate vectors"));
         assertTrue(page.contains("no score weights are retuned"));
+        assertTrue(page.contains("The same-origin <code>/api/routing/compare</code> response can return <code>results[].decisionVector</code>"));
+        assertTrue(page.contains("Decision Vector data is unavailable in this response; static lab guidance remains available."));
+        assertTrue(page.contains("Copy structured decision vector summary"));
         assertTrue(page.contains("Decision replay, what-if experiments, and structured decision logging should build on this contract later"));
         assertTrue(page.contains("id=\"decision-vector-selected-strategy\""));
         assertTrue(page.contains("id=\"decision-vector-selected-backend\""));
@@ -159,12 +169,15 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("id=\"decision-vector-unknown-signals\""));
         assertTrue(page.contains("id=\"decision-vector-scoring-availability\""));
         assertTrue(page.contains("id=\"decision-vector-factor-contribution\""));
+        assertTrue(page.contains("id=\"decision-vector-readonly-exposure\""));
         assertTrue(page.contains("id=\"decision-vector-replay-readiness\""));
         assertTrue(page.contains("# Decision Vector Foundation"));
         assertTrue(page.contains("decisionIdOrLabRunId: "));
         assertTrue(page.contains("candidateVectors: "));
         assertTrue(page.contains("exactScoringAvailability: "));
         assertTrue(page.contains("factorContributionAvailability: "));
+        assertTrue(page.contains("candidateFactorContributionSummary: "));
+        assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("internal calculator contribution and candidate summary contracts started"));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));

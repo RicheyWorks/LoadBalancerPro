@@ -205,7 +205,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("routing-to-evidence dashboard links"));
         assertTrue(demoPath.contains("copyable decision trace explanation"));
         assertTrue(demoPath.contains("copyable alternative candidate evidence"));
-        assertTrue(demoPath.contains("copyable Decision Vector summary"));
+        assertTrue(demoPath.contains("copyable structured Decision Vector summary"));
         assertTrue(demoPath.contains("copyable lab monitor explanation"));
         assertTrue(demoPath.contains("copyable evidence association summary"));
         assertTrue(demoPath.contains("copyable end-to-end reviewer walkthrough"));
@@ -296,7 +296,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("Decision Trace Cards"));
         assertTrue(matrix.contains("Reviewer Questions Answered"));
         assertTrue(matrix.contains("copyable alternative candidate evidence"));
-        assertTrue(matrix.contains("copyable Decision Vector summary"));
+        assertTrue(matrix.contains("copyable structured Decision Vector summary"));
         assertTrue(matrix.contains("copyable decision trace explanation"));
         assertTrue(matrix.contains("How This Routing Decision Was Made"));
         assertTrue(matrix.contains("What This Lab Needs to Monitor"));
@@ -315,7 +315,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("selected strategy/backend mapping"));
         assertTrue(matrix.contains("selected-vs-non-selected candidate language"));
         assertTrue(matrix.contains("selected and non-selected candidate vectors"));
-        assertTrue(matrix.contains("factor contribution placeholder"));
+        assertTrue(matrix.contains("factor contribution entries for current calculator components"));
         assertTrue(matrix.contains("replay readiness"));
         assertTrue(matrix.contains("what-if readiness"));
         assertTrue(matrix.contains("known candidate signals"));
@@ -341,7 +341,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("visible known signals from unknown/unexposed signals"));
         assertTrue(normalized.contains("compare visible selected and non-selected candidate signals"));
         assertTrue(normalized.contains("controlled lab contract"));
-        assertTrue(normalized.contains("future factor contribution analysis"));
+        assertTrue(normalized.contains("factor contribution entries for current calculator components"));
         assertTrue(normalized.contains("decision replay"));
         assertTrue(normalized.contains("what-if experiments"));
         assertTrue(normalized.contains("structured decision logging"));
@@ -531,7 +531,8 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("preserves score values"));
         assertTrue(normalized.contains("does not retune strategy weights"));
         assertTrue(normalized.contains("future/not implemented roadmap items"));
-        assertTrue(normalized.contains("api/cockpit rendering"));
+        assertTrue(normalized.contains("read-only `/api/routing/compare` response"));
+        assertTrue(normalized.contains("results[].decisionvector"));
         assertTrue(normalized.contains("decision replay"));
         assertTrue(normalized.contains("what-if experiments"));
         assertTrue(normalized.contains("structured decision logging"));

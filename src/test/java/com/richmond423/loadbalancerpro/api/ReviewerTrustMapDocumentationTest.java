@@ -115,6 +115,8 @@ class ReviewerTrustMapDocumentationTest {
                 "Why This Backend Was Selected",
                 "Why Other Candidates Were Not Selected",
                 "Alternative Candidate Evidence",
+                "Decision Vector Foundation",
+                "ENTERPRISE_LAB_DECISION_VECTOR.md",
                 "Candidate Comparison Limits",
                 "Candidate Evidence Cards",
                 "Candidate Review Questions",
@@ -172,6 +174,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("Why This Backend Was Selected"));
         assertTrue(demoPath.contains("Why Other Candidates Were Not Selected"));
         assertTrue(demoPath.contains("Alternative Candidate Evidence"));
+        assertTrue(demoPath.contains("Decision Vector Foundation"));
         assertTrue(demoPath.contains("Candidate Comparison Limits"));
         assertTrue(demoPath.contains("Candidate Evidence Cards"));
         assertTrue(demoPath.contains("Candidate Review Questions"));
@@ -191,6 +194,8 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("selected scenario-to-decision mapping"));
         assertTrue(demoPath.contains("selected strategy/backend"));
         assertTrue(demoPath.contains("selected-vs-non-selected candidate comparison"));
+        assertTrue(demoPath.contains("structured decision evidence"));
+        assertTrue(demoPath.contains("known versus unknown signal handling"));
         assertTrue(demoPath.contains("scenario-to-scenario what-changed notes"));
         assertTrue(demoPath.contains("visible input signal deltas"));
         assertTrue(demoPath.contains("known versus unknown signals"));
@@ -200,6 +205,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("routing-to-evidence dashboard links"));
         assertTrue(demoPath.contains("copyable decision trace explanation"));
         assertTrue(demoPath.contains("copyable alternative candidate evidence"));
+        assertTrue(demoPath.contains("copyable Decision Vector summary"));
         assertTrue(demoPath.contains("copyable lab monitor explanation"));
         assertTrue(demoPath.contains("copyable evidence association summary"));
         assertTrue(demoPath.contains("copyable end-to-end reviewer walkthrough"));
@@ -269,6 +275,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("How do routing decisions connect to reviewer evidence pages?"));
         assertTrue(matrix.contains("Why did this backend win, and why not the alternatives?"));
         assertTrue(matrix.contains("How can reviewers compare selected and non-selected candidates?"));
+        assertTrue(matrix.contains("What structured contract supports replayable routing explainability?"));
         assertTrue(matrix.contains("How do routing proof scenarios compare?"));
         assertTrue(matrix.contains("How does the Enterprise Lab cockpit monitor and explain routing proof?"));
         assertTrue(matrix.contains("/routing-demo.html"));
@@ -277,6 +284,10 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("Why This Backend Was Selected"));
         assertTrue(matrix.contains("Why Other Candidates Were Not Selected"));
         assertTrue(matrix.contains("Alternative Candidate Evidence"));
+        assertTrue(matrix.contains("Decision Vector Foundation"));
+        assertTrue(matrix.contains("Structured Decision Evidence"));
+        assertTrue(matrix.contains("EnterpriseLabDecisionVectorDocumentationTest"));
+        assertTrue(matrix.contains("Candidate Decision Vector"));
         assertTrue(matrix.contains("Candidate Comparison Limits"));
         assertTrue(matrix.contains("Candidate Evidence Cards"));
         assertTrue(matrix.contains("Candidate Review Questions"));
@@ -285,6 +296,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("Decision Trace Cards"));
         assertTrue(matrix.contains("Reviewer Questions Answered"));
         assertTrue(matrix.contains("copyable alternative candidate evidence"));
+        assertTrue(matrix.contains("copyable Decision Vector summary"));
         assertTrue(matrix.contains("copyable decision trace explanation"));
         assertTrue(matrix.contains("How This Routing Decision Was Made"));
         assertTrue(matrix.contains("What This Lab Needs to Monitor"));
@@ -302,6 +314,10 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("selected scenario-to-decision mapping"));
         assertTrue(matrix.contains("selected strategy/backend mapping"));
         assertTrue(matrix.contains("selected-vs-non-selected candidate language"));
+        assertTrue(matrix.contains("selected and non-selected candidate vectors"));
+        assertTrue(matrix.contains("factor contribution placeholder"));
+        assertTrue(matrix.contains("replay readiness"));
+        assertTrue(matrix.contains("what-if readiness"));
         assertTrue(matrix.contains("known candidate signals"));
         assertTrue(matrix.contains("unknown or unexposed candidate signals"));
         assertTrue(matrix.contains("key input signal mapping"));
@@ -324,6 +340,13 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("browser-local copy text"));
         assertTrue(normalized.contains("visible known signals from unknown/unexposed signals"));
         assertTrue(normalized.contains("compare visible selected and non-selected candidate signals"));
+        assertTrue(normalized.contains("controlled lab contract"));
+        assertTrue(normalized.contains("future factor contribution analysis"));
+        assertTrue(normalized.contains("decision replay"));
+        assertTrue(normalized.contains("what-if experiments"));
+        assertTrue(normalized.contains("structured decision logging"));
+        assertTrue(normalized.contains("strategy plugin explainability"));
+        assertTrue(normalized.contains("data center signal modeling"));
         assertTrue(normalized.contains("without inventing hidden scoring"));
         assertTrue(normalized.contains("alternatives are not explainable"));
         assertTrue(normalized.contains("exact production scoring"));
@@ -443,7 +466,7 @@ class ReviewerTrustMapDocumentationTest {
     @Test
     void routingCockpitAlternativeCandidateEvidenceTrustMapSectionIsDiscoverableAndBounded() throws Exception {
         String trustMap = read(TRUST_MAP);
-        String section = section(trustMap, "### Alternative Candidate Evidence", "## Reviewer Lab Review Path");
+        String section = section(trustMap, "### Alternative Candidate Evidence", "### Decision Vector Contract");
         String normalized = section.toLowerCase(Locale.ROOT);
 
         assertTrue(section.contains("Alternative Candidate Evidence"));
@@ -473,6 +496,47 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("production certification"));
         assertTrue(normalized.contains("live-cloud behavior"));
         assertTrue(normalized.contains("real tenant behavior"));
+        assertTrue(normalized.contains("upload/share endpoints"));
+        assertTrue(normalized.contains("server-side export/pdf/zip generation"));
+    }
+
+    @Test
+    void routingCockpitDecisionVectorTrustMapSectionIsDiscoverableAndBounded() throws Exception {
+        String trustMap = read(TRUST_MAP);
+        String section = section(trustMap, "### Decision Vector Contract", "## Reviewer Lab Review Path");
+        String normalized = section.toLowerCase(Locale.ROOT);
+
+        assertTrue(section.contains("Decision Vector Contract"));
+        assertTrue(section.contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
+        assertTrue(section.contains("Decision Vector Foundation"));
+        assertTrue(section.contains("/routing-demo.html"));
+        assertTrue(section.contains("structured contract behind the cockpit explanation"));
+        assertTrue(section.contains("selected strategy"));
+        assertTrue(section.contains("selected backend/server"));
+        assertTrue(section.contains("candidate backend list"));
+        assertTrue(section.contains("selected candidate vector"));
+        assertTrue(section.contains("non-selected candidate vectors"));
+        assertTrue(section.contains("known signals"));
+        assertTrue(section.contains("unknown or unexposed signals"));
+        assertTrue(section.contains("exact scoring availability or absence"));
+        assertTrue(section.contains("factor contribution availability or absence"));
+        assertTrue(section.contains("replay readiness"));
+        assertTrue(section.contains("Candidate Decision Vector"));
+        assertTrue(section.contains("fallback text when non-selection cannot be explained from visible data"));
+        assertTrue(normalized.contains("prevents hidden scoring invention"));
+        assertTrue(normalized.contains("future/not implemented roadmap items"));
+        assertTrue(normalized.contains("factor contribution analysis"));
+        assertTrue(normalized.contains("decision replay"));
+        assertTrue(normalized.contains("what-if experiments"));
+        assertTrue(normalized.contains("structured decision logging"));
+        assertTrue(normalized.contains("strategy plugin explainability"));
+        assertTrue(normalized.contains("rack/zone/topology modeling"));
+        assertTrue(normalized.contains("correlated failure modeling"));
+        assertTrue(normalized.contains("live interrogation mode"));
+        assertTrue(normalized.contains("does not claim exact production scoring"));
+        assertTrue(normalized.contains("production telemetry"));
+        assertTrue(normalized.contains("production monitoring"));
+        assertTrue(normalized.contains("production certification"));
         assertTrue(normalized.contains("upload/share endpoints"));
         assertTrue(normalized.contains("server-side export/pdf/zip generation"));
     }

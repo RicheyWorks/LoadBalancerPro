@@ -16,6 +16,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
     private static final Path README = Path.of("README.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path FRAMING = Path.of("docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md");
+    private static final Path DECISION_VECTOR = Path.of("docs/ENTERPRISE_LAB_DECISION_VECTOR.md");
     private static final Path AUDIT = Path.of("docs/ENTERPRISE_READINESS_AUDIT.md");
     private static final Path PRODUCTION_SUMMARY = Path.of("docs/PRODUCTION_READINESS_SUMMARY.md");
     private static final Path TRUST_HARDENING = Path.of("docs/ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md");
@@ -25,6 +26,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
             README,
             TRUST_MAP,
             FRAMING,
+            DECISION_VECTOR,
             AUDIT,
             PRODUCTION_SUMMARY,
             TRUST_HARDENING,
@@ -73,7 +75,8 @@ class EnterpriseLabCockpitFramingDocumentationTest {
                 "http://localhost:8080/evidence-timeline.html",
                 "http://localhost:8080/evidence-export-packet.html",
                 "docs/REVIEWER_TRUST_MAP.md",
-                "docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md")) {
+                "docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md",
+                "docs/ENTERPRISE_LAB_DECISION_VECTOR.md")) {
             assertTrue(readme.contains(expected), "README should link or name " + expected);
         }
     }
@@ -124,6 +127,13 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("The cockpit must not invent hidden scoring."));
         assertTrue(framing.contains("reviewers should record that the candidate reason is unknown or only partially explainable"));
         assertTrue(framing.contains("Alternative candidate evidence remains controlled lab evidence for pre-production routing validation."));
+        assertTrue(framing.contains("## Decision Vector Contract"));
+        assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
+        assertTrue(framing.contains("structured explanation contract for one controlled lab routing decision"));
+        assertTrue(framing.contains("selected candidate vector"));
+        assertTrue(framing.contains("non-selected candidate vectors"));
+        assertTrue(framing.contains("factor contribution values remain future/not implemented"));
+        assertTrue(framing.contains("replay and what-if execution remain future/not implemented"));
         assertTrue(framing.contains("## How to Investigate Surprising Lab Decisions"));
         assertTrue(framing.contains("If the backend changed unexpectedly"));
         assertTrue(framing.contains("If all candidates are unhealthy"));
@@ -159,6 +169,9 @@ class EnterpriseLabCockpitFramingDocumentationTest {
             assertTrue(read(path).contains("ENTERPRISE_LAB_COCKPIT_FRAMING.md"),
                     path + " should link the Enterprise Lab cockpit framing doc");
         }
+        assertTrue(read(README).contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
+        assertTrue(read(TRUST_MAP).contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
+        assertTrue(read(FRAMING).contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
     }
 
     @Test

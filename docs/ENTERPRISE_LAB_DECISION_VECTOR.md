@@ -1,0 +1,227 @@
+# Enterprise Lab Decision Vector Contract
+
+LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
+
+The Enterprise Lab Decision Vector is the structured explanation object for one controlled lab routing decision. It turns a final selected-backend outcome into replayable, explainable, and testable local lab evidence without claiming production telemetry, production monitoring, exact production scoring, or production certification.
+
+## Why the Lab Needs It
+
+The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so future work can add factor contribution analysis, decision replay, what-if experiments, structured decision logging, strategy plugin explainability, and data center signal modeling without inventing hidden scoring.
+
+A Decision Vector differs from a simple reason string because it separates:
+
+- The selected strategy and selected backend/server.
+- The full candidate backend list visible to the controlled lab run.
+- The selected candidate vector.
+- Non-selected candidate vectors.
+- Known visible signals from unknown or unexposed signals.
+- Degradation, fallback, and recovery indicators.
+- Selected-vs-alternative explanation notes.
+- Exact scoring availability or absence.
+- Factor contribution availability or absence.
+- Replay readiness and future replay gaps.
+- Lab proof boundaries and production not-proven boundaries.
+
+## Decision Vector Fields
+
+One Decision Vector represents one controlled lab routing decision. The contract should include these fields when available:
+
+| Field | Meaning |
+| --- | --- |
+| `decisionId` or `labRunId` | Stable decision id or lab run id when exposed; otherwise mark as not exposed. |
+| `selectedStrategy` | Strategy returned by the local lab comparison response. |
+| `selectedBackend` | Backend/server selected by the controlled lab response. |
+| `candidateBackends` | Candidate backend list visible in the local lab request or response. |
+| `selectedCandidateVector` | Candidate Decision Vector for the selected backend/server. |
+| `nonSelectedCandidateVectors` | Candidate Decision Vectors for visible non-selected backends. |
+| `visibleCandidateSignals` | Health, latency, load, connection pressure, capacity, weight, error, queue, and network-awareness fields when exposed. |
+| `knownSignals` | Signals visible in the local lab request or same-origin comparison response. |
+| `unknownSignals` | Missing, unavailable, or unexposed fields; exact scoring and hidden internals must stay unknown unless the API exposes them. |
+| `degradationFallbackIndicators` | Unhealthy, overloaded, empty, unavailable, fallback, or recovery markers visible in the controlled lab evidence. |
+| `reasonCategories` | Reviewer-facing categories such as health, latency, load pressure, capacity/weight, degradation, recovery, or unknown. |
+| `selectedVsAlternativeNotes` | Notes explaining why the selected backend appears favored and why alternatives appear weakened when visible data supports it. |
+| `exactScoringAvailability` | `notExposed` unless the API explicitly returns exact scoring. |
+| `factorContributionAvailability` | `futureNotImplemented` unless factor contribution fields are actually implemented and exposed. |
+| `replayReadiness` | Contract readiness for future replay; replay execution remains future/not implemented until built. |
+| `labProofBoundary` | Controlled lab evidence, local reproducibility, same-origin local API responses, and browser-local interpretation. |
+| `productionNotProvenBoundary` | No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof. |
+
+## Candidate Decision Vector
+
+A Candidate Decision Vector represents one backend/server in the controlled lab decision. It should include these fields when visible:
+
+| Field | Meaning |
+| --- | --- |
+| `candidateId` or `candidateName` | Backend/server id from the controlled lab payload or response. |
+| `selected` | `true` for the selected candidate, `false` for non-selected candidates. |
+| `healthState` | Visible healthy/unhealthy/degraded state. |
+| `latencySignal` | Average, p95, p99, or related latency fields when exposed. |
+| `loadOrConnectionPressureSignal` | In-flight request count, active connection count, queue depth, or pressure fields when exposed. |
+| `capacityOrWeightSignal` | Configured capacity, estimated concurrency limit, weight, or related fields when exposed. |
+| `degradationWarning` | Unhealthy, overloaded, draining, empty, unavailable, or fallback warning when visible. |
+| `visibleSupportSignals` | Signals that visibly support the candidate. |
+| `visibleCautionSignals` | Signals that visibly weaken or caution against the candidate. |
+| `unknownSignals` | Candidate fields not exposed by the controlled lab response. |
+| `selectionExplanation` | Why the candidate was selected or why it was not selected when visible data supports that explanation. |
+| `fallbackExplanation` | Text such as `Candidate reason is unknown from visible data` when non-selection cannot be explained without hidden scoring. |
+
+Candidate vectors must not infer hidden routing internals. If visible signals do not explain a non-selected candidate, the vector should mark the reason as unknown and send reviewers to the investigation playbook.
+
+## Factor Contribution Placeholder Contract
+
+Factor Contribution is a future extension unless the API explicitly exposes contribution data. The placeholder shape should be:
+
+| Field | Meaning |
+| --- | --- |
+| `factorName` | Health, latency, load pressure, capacity, weight, error, queue, topology, or another exposed factor. |
+| `rawValue` | Raw value from the local lab response when available. |
+| `normalizedValue` | Normalized value when implemented and exposed. |
+| `direction` | `supports`, `weakens`, `neutral`, or `unknown`. |
+| `contributionValue` | Future/not implemented unless contribution values are exposed. |
+| `weight` | Future/not implemented unless factor weights are exposed. |
+| `confidenceNote` | Reviewer-facing confidence note for the factor. |
+| `explanationText` | Human-readable local lab interpretation. |
+
+The placeholder must keep `contributionValue` and `weight` unavailable until real fields exist. Exact production scoring is not claimed, and hidden scoring must not be inferred.
+
+## How It Answers Why This Backend
+
+The Decision Vector answers "why this backend?" by showing:
+
+- Which controlled lab scenario was used.
+- Which strategy selected the backend.
+- Which backend/server was selected.
+- Which visible candidate signals support the selected backend.
+- Which visible candidate signals caution against non-selected candidates.
+- Which fields are unknown or unexposed.
+- Which explanation notes are supported by visible data.
+- Which explanation gaps remain investigation items.
+
+If a candidate appears weakened by unhealthy state, higher visible latency, higher visible load/connection pressure, or lower capacity/weight where those fields are exposed, the vector can record that visible signal comparison. If the local lab response does not expose enough information, the vector must say that the candidate reason is unknown from visible data.
+
+## Replay, What-If, Logging, and Plugin Roadmap
+
+The Decision Vector is a foundation for future work. These roadmap items are future/not implemented unless a later sprint adds and verifies them:
+
+- Factor contribution analysis: future/not implemented.
+- Decision replay: future/not implemented.
+- What-if experiments: future/not implemented.
+- Structured decision logging: future/not implemented.
+- Strategy plugin explainability: future/not implemented.
+- Rack, zone, and topology modeling: future/not implemented.
+- Correlated failure modeling: future/not implemented.
+- Live interrogation mode: future/not implemented.
+
+Decision Vector data should make those paths safer by keeping known signals, unknown signals, exact scoring availability, and production proof boundaries explicit.
+
+## Static Example Decision Vector Payload
+
+This example is static documentation, not an implemented runtime endpoint or server-side export.
+
+```json
+{
+  "decisionId": "not-exposed-in-current-local-lab-response",
+  "labRunId": "browser-local-controlled-lab-run",
+  "selectedStrategy": "TAIL_LATENCY_POWER_OF_TWO",
+  "selectedBackend": "edge-alpha",
+  "candidateBackends": ["edge-alpha", "edge-beta", "edge-drain"],
+  "selectedCandidateVector": {
+    "candidateId": "edge-alpha",
+    "selected": true,
+    "healthState": "healthy",
+    "latencySignal": {
+      "p95LatencyMillis": 42,
+      "known": true
+    },
+    "loadOrConnectionPressureSignal": {
+      "inFlightRequestCount": 12,
+      "queueDepth": 1,
+      "known": true
+    },
+    "capacityOrWeightSignal": {
+      "configuredCapacity": 100,
+      "weight": 5,
+      "known": true
+    },
+    "visibleSupportSignals": ["healthy state", "lower visible p95 latency", "lower visible queue depth"],
+    "visibleCautionSignals": [],
+    "unknownSignals": ["exact scoring", "hidden routing internals", "production telemetry"],
+    "selectionExplanation": "Visible controlled lab signals support the selected backend.",
+    "fallbackExplanation": "Not needed for selected candidate."
+  },
+  "nonSelectedCandidateVectors": [
+    {
+      "candidateId": "edge-beta",
+      "selected": false,
+      "healthState": "healthy",
+      "latencySignal": {
+        "p95LatencyMillis": 52,
+        "known": true
+      },
+      "loadOrConnectionPressureSignal": {
+        "inFlightRequestCount": 28,
+        "queueDepth": 3,
+        "known": true
+      },
+      "capacityOrWeightSignal": {
+        "configuredCapacity": 100,
+        "weight": 4,
+        "known": true
+      },
+      "visibleSupportSignals": ["healthy state"],
+      "visibleCautionSignals": ["higher visible p95 latency", "higher visible load/connection pressure"],
+      "unknownSignals": ["exact scoring", "hidden routing internals"],
+      "selectionExplanation": "Visible signal comparison suggests the candidate was weaker than the selected backend.",
+      "fallbackExplanation": "Use returned reason text if visible signals are insufficient."
+    },
+    {
+      "candidateId": "edge-drain",
+      "selected": false,
+      "healthState": "unhealthy",
+      "latencySignal": {
+        "p95LatencyMillis": 20,
+        "known": true
+      },
+      "loadOrConnectionPressureSignal": {
+        "inFlightRequestCount": 1,
+        "queueDepth": 0,
+        "known": true
+      },
+      "capacityOrWeightSignal": {
+        "configuredCapacity": 100,
+        "weight": 5,
+        "known": true
+      },
+      "visibleSupportSignals": ["low visible latency"],
+      "visibleCautionSignals": ["unhealthy state"],
+      "unknownSignals": ["exact scoring", "hidden routing internals"],
+      "selectionExplanation": "Visible unhealthy state cautions against selection.",
+      "fallbackExplanation": "Candidate reason is unknown from visible data if health state is not enough to explain non-selection."
+    }
+  ],
+  "exactScoringAvailability": "notExposedUnlessReturnedByApi",
+  "factorContributionAvailability": "futureNotImplementedUnlessExposedByApi",
+  "factorContributionPlaceholder": [
+    {
+      "factorName": "p95LatencyMillis",
+      "rawValue": 42,
+      "normalizedValue": "futureNotImplemented",
+      "direction": "supports",
+      "contributionValue": "futureNotImplemented",
+      "weight": "futureNotImplemented",
+      "confidenceNote": "Reviewer-facing lab interpretation only.",
+      "explanationText": "Lower visible latency supports the selected backend in the controlled lab response."
+    }
+  ],
+  "replayReadiness": "plannedFutureContract; replay execution is not implemented",
+  "whatIfReadiness": "plannedFutureContract; what-if execution is not implemented",
+  "structuredDecisionLoggingReadiness": "plannedFutureContract; structured logging is not implemented",
+  "productionNotProvenBoundary": "No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof."
+}
+```
+
+## Production Not-Proven Boundaries
+
+The Decision Vector contract is controlled lab explainability. It does not change live routing behavior, does not add production telemetry, does not add production monitoring, does not generate server-side files, and does not claim production certification.
+
+It does not prove production traffic behavior, live-cloud behavior, real-tenant behavior, SLA/SLO achievement, registry publication, container signing, governance application, exact production scoring, completed factor contribution analysis, completed replay, completed what-if experiments, completed strategy plugin explainability, or production readiness.

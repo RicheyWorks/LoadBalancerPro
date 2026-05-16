@@ -109,6 +109,12 @@ class ReviewerTrustMapDocumentationTest {
                 "PROXY_DEMO_STACK.md",
                 "PROXY_DEMO_FIXTURE_LAUNCHER.md",
                 "routing-demo.html",
+                "Enterprise Lab Cockpit Monitor",
+                "How This Routing Decision Was Made",
+                "What This Lab Needs to Monitor",
+                "How to Reproduce and Explain This Lab Proof",
+                "How to Read Lab Edge Cases",
+                "copyable lab monitor explanation",
                 "Reviewer Workflow Checklist",
                 "Evidence Associations",
                 "Association Legend",
@@ -149,6 +155,11 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("http://localhost:8080/"));
         assertTrue(demoPath.contains("http://localhost:8080/routing-demo.html"));
         assertTrue(demoPath.contains("http://localhost:8080/load-balancing-cockpit.html"));
+        assertTrue(demoPath.contains("Enterprise Lab Cockpit Monitor"));
+        assertTrue(demoPath.contains("How This Routing Decision Was Made"));
+        assertTrue(demoPath.contains("What This Lab Needs to Monitor"));
+        assertTrue(demoPath.contains("How to Reproduce and Explain This Lab Proof"));
+        assertTrue(demoPath.contains("How to Read Lab Edge Cases"));
         assertTrue(demoPath.contains("Reviewer Workflow Checklist"));
         assertTrue(demoPath.contains("Evidence Associations"));
         assertTrue(demoPath.contains("Association Legend"));
@@ -163,6 +174,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("degradation/recovery notes"));
         assertTrue(demoPath.contains("local verification commands"));
         assertTrue(demoPath.contains("routing-to-evidence dashboard links"));
+        assertTrue(demoPath.contains("copyable lab monitor explanation"));
         assertTrue(demoPath.contains("copyable evidence association summary"));
         assertTrue(demoPath.contains("copyable end-to-end reviewer walkthrough"));
         assertTrue(demoPath.contains("explicit not-proven boundaries"));
@@ -230,8 +242,15 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("How should a reviewer walk the routing cockpit end-to-end?"));
         assertTrue(matrix.contains("How do routing decisions connect to reviewer evidence pages?"));
         assertTrue(matrix.contains("How do routing proof scenarios compare?"));
+        assertTrue(matrix.contains("How does the Enterprise Lab cockpit monitor and explain routing proof?"));
         assertTrue(matrix.contains("/routing-demo.html"));
         assertTrue(matrix.contains("RoutingDecisionDemoTest"));
+        assertTrue(matrix.contains("Enterprise Lab Cockpit Monitor"));
+        assertTrue(matrix.contains("How This Routing Decision Was Made"));
+        assertTrue(matrix.contains("What This Lab Needs to Monitor"));
+        assertTrue(matrix.contains("How to Reproduce and Explain This Lab Proof"));
+        assertTrue(matrix.contains("How to Read Lab Edge Cases"));
+        assertTrue(matrix.contains("copyable lab monitor explanation"));
         assertTrue(matrix.contains("Reviewer Workflow Checklist"));
         assertTrue(matrix.contains("Evidence Associations"));
         assertTrue(matrix.contains("Association Legend"));
@@ -253,13 +272,15 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("copyable local reviewer summary"));
         assertTrue(matrix.contains("copyable end-to-end reviewer walkthrough"));
         assertTrue(matrix.contains("reviewer/operator/timeline/export packet pages"));
-        assertTrue(normalized.contains("sample scenario to routing comparison"));
+        assertTrue(normalized.contains("controlled lab scenario to routing comparison"));
         assertTrue(normalized.contains("evidence dashboards, timeline, and evidence export packet"));
         assertTrue(normalized.contains("without adding server-side exports or external calls"));
-        assertTrue(normalized.contains("packaged normal-load baseline"));
-        assertTrue(normalized.contains("edited local demo payloads"));
+        assertTrue(normalized.contains("packaged normal-load lab baseline"));
+        assertTrue(normalized.contains("edited local lab payloads"));
         assertTrue(normalized.contains("same-origin local api responses"));
         assertTrue(normalized.contains("browser-local copy text"));
+        assertTrue(normalized.contains("production telemetry proof"));
+        assertTrue(normalized.contains("governance-applied proof"));
         assertTrue(normalized.contains("upload/share endpoint behavior"));
         assertTrue(normalized.contains("server-side export/pdf/zip generation"));
         assertTrue(normalized.contains("production deployment certification"));
@@ -269,6 +290,48 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("server-side export/share artifact creation"));
         assertTrue(normalized.contains("registry publication"));
         assertTrue(normalized.contains("container signing"));
+    }
+
+    @Test
+    void enterpriseLabCockpitMonitoringTrustMapSectionIsStrictAndBounded() throws Exception {
+        String trustMap = read(TRUST_MAP);
+        String section = section(trustMap, "### Enterprise Lab Cockpit Monitoring and How-Question Guide",
+                "### Cockpit Evidence Associations");
+        String normalized = section.toLowerCase(Locale.ROOT);
+
+        assertTrue(section.contains("strict Enterprise Lab proof cockpit"));
+        assertTrue(section.contains("not a casual demo page"));
+        assertTrue(section.contains("active lab scenario"));
+        assertTrue(section.contains("routing comparison request status"));
+        assertTrue(section.contains("selected strategy"));
+        assertTrue(section.contains("selected backend/server"));
+        assertTrue(section.contains("backend health state"));
+        assertTrue(section.contains("visible latency/load/active connection/capacity/weight-style signals"));
+        assertTrue(section.contains("scenario delta state"));
+        assertTrue(section.contains("degradation/fallback/recovery state"));
+        assertTrue(section.contains("evidence association path"));
+        assertTrue(section.contains("reviewer handoff readiness"));
+        assertTrue(section.contains("local lab boundary"));
+        assertTrue(section.contains("production proof gaps"));
+        assertTrue(section.contains("how the selected backend was chosen"));
+        assertTrue(section.contains("how strategy choice influenced the result"));
+        assertTrue(section.contains("how visible lab input signals affect the proof"));
+        assertTrue(section.contains("how to reproduce and explain the local lab proof"));
+        assertTrue(section.contains("copyable lab monitor explanation"));
+        assertTrue(normalized.contains("browser-local text only"));
+        assertTrue(normalized.contains("same-origin local api responses"));
+        assertTrue(normalized.contains("no telemetry"));
+        assertTrue(normalized.contains("does not prove production traffic"));
+        assertTrue(normalized.contains("production telemetry"));
+        assertTrue(normalized.contains("live cloud behavior"));
+        assertTrue(normalized.contains("real tenant behavior"));
+        assertTrue(normalized.contains("sla/slo achievement"));
+        assertTrue(normalized.contains("registry publication"));
+        assertTrue(normalized.contains("container signing"));
+        assertTrue(normalized.contains("governance-applied status"));
+        assertTrue(normalized.contains("production certification"));
+        assertTrue(normalized.contains("does not create upload/share endpoints"));
+        assertTrue(normalized.contains("server-side export/pdf/zip files"));
     }
 
     @Test
@@ -288,15 +351,16 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(section.contains("export packet/reviewer handoff"));
         assertTrue(section.contains("copyable evidence association summary"));
         assertTrue(section.contains("Association Legend"));
-        assertTrue(section.contains("scenario = demo input state"));
+        assertTrue(section.contains("scenario = controlled lab input state"));
         assertTrue(section.contains("strategy = selected routing method"));
-        assertTrue(section.contains("backend/server = selected local candidate from the sample response"));
-        assertTrue(section.contains("signals = local/demo metrics used for explanation"));
+        assertTrue(section.contains("backend/server = selected local candidate from the lab response"));
+        assertTrue(section.contains("signals = controlled lab metrics used for explanation"));
         assertTrue(section.contains("evidence pages = reviewer navigation aids, not production certification"));
         assertTrue(normalized.contains("browser-local text only"));
         assertTrue(normalized.contains("same-origin local api results"));
         assertTrue(normalized.contains("static evidence page links"));
         assertTrue(normalized.contains("does not prove production traffic"));
+        assertTrue(normalized.contains("production telemetry"));
         assertTrue(normalized.contains("live cloud behavior"));
         assertTrue(normalized.contains("real tenant behavior"));
         assertTrue(normalized.contains("registry publication"));
@@ -312,7 +376,7 @@ class ReviewerTrustMapDocumentationTest {
 
         assertTrue(section.contains("Routing Cockpit Reviewer Workflow"));
         assertTrue(section.contains("/routing-demo.html"));
-        assertTrue(section.contains("load sample scenario"));
+        assertTrue(section.contains("load controlled lab scenario"));
         assertTrue(section.contains("run routing comparison"));
         assertTrue(section.contains("inspect Routing Proof Summary"));
         assertTrue(section.contains("compare scenario deltas"));
@@ -321,7 +385,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(section.contains("export/print packet from `/evidence-export-packet.html`"));
         assertTrue(section.contains("Reviewer Confidence Signals"));
         assertTrue(normalized.contains("local repeatability"));
-        assertTrue(normalized.contains("deterministic sample scenarios"));
+        assertTrue(normalized.contains("deterministic lab scenarios"));
         assertTrue(normalized.contains("same-origin api usage"));
         assertTrue(normalized.contains("static browser-only notes/copy actions"));
         assertTrue(normalized.contains("not-production-certified boundary"));
@@ -329,6 +393,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("no upload/share endpoint"));
         assertTrue(normalized.contains("no server-side export/pdf/zip generation"));
         assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no production telemetry proof"));
         assertTrue(normalized.contains("no live cloud proof"));
         assertTrue(normalized.contains("no real tenant proof"));
         assertTrue(normalized.contains("no registry publication proof"));

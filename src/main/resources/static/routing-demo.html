@@ -419,6 +419,152 @@
       </div>
     </section>
 
+    <section id="evidence-associations-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Evidence Associations</h2>
+        <div class="actions">
+          <button class="copy" type="button" data-copy-target="evidence-association-output">Copy evidence association summary</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="proof-grid" aria-label="Evidence association map">
+          <div class="proof-card">
+            <strong>Selected scenario -> routing decision</strong>
+            <p id="association-scenario-decision">Load the sample scenario and run Compare strategies to associate the visible scenario with a local routing decision.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Routing decision -> selected strategy</strong>
+            <p id="association-strategy">Run Compare strategies to identify the selected routing strategy.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Routing decision -> selected backend/server</strong>
+            <p id="association-backend">Run Compare strategies to identify the selected backend/server.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected backend/server -> key input signals</strong>
+            <p id="association-signals">Run Compare strategies to connect the selected backend/server to visible local/demo metrics.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Scenario comparison -> what changed</strong>
+            <p id="association-delta">Run Compare strategies to connect scenario deltas to routing evidence.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Routing proof summary -> supporting evidence pages</strong>
+            <p id="association-evidence-pages">
+              Supporting local pages:
+              <a href="/enterprise-lab-reviewer.html"><code>/enterprise-lab-reviewer.html</code></a>,
+              <a href="/operator-evidence-dashboard.html"><code>/operator-evidence-dashboard.html</code></a>,
+              <a href="/evidence-timeline.html"><code>/evidence-timeline.html</code></a>.
+            </p>
+          </div>
+          <div class="proof-card">
+            <strong>Evidence pages -> export packet / reviewer handoff</strong>
+            <p id="association-handoff">
+              Finish at <a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a>
+              for browser-local copy, download, print, and reviewer handoff.
+            </p>
+          </div>
+        </div>
+        <p class="postman-note">
+          Association boundary: local/demo evidence only; no production traffic proof, no live cloud proof,
+          no real tenant proof, no registry publication proof, no container signing proof, and no production certification claim.
+        </p>
+        <p class="postman-note">
+          Copy boundary: this association summary is assembled in the browser from visible page state only;
+          no upload/share endpoint, no server-side export/PDF/ZIP generation, and no external calls.
+        </p>
+        <h3 style="margin-top: 14px;">Copyable evidence association summary</h3>
+        <pre id="evidence-association-output">Static guidance remains available before running a scenario. Evidence links are available even before running a scenario. Load the sample scenario and run Compare strategies to generate an evidence association summary.</pre>
+      </div>
+    </section>
+
+    <section id="reviewer-how-to-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>How This Proof Works</h2>
+        <span class="muted">Reviewer/operator answers for common routing-proof questions.</span>
+      </div>
+      <div class="panel-body">
+        <div class="proof-grid" aria-label="Reviewer how-to explanation cards">
+          <div class="proof-card">
+            <strong>How the selected strategy affects the selected backend</strong>
+            <p>The first returned strategy is the primary local comparison result; its routing rule ranks the visible candidate servers and returns the selected backend/server plus reason text.</p>
+          </div>
+          <div class="proof-card">
+            <strong>How input signals influence the routing proof</strong>
+            <p>Health, in-flight load, configured weight/capacity, p95 latency, error rate, queue depth, and network-awareness fields are summarized from the visible payload so reviewers can inspect why a backend was preferred or avoided.</p>
+          </div>
+          <div class="proof-card">
+            <strong>How scenario comparison deltas are summarized</strong>
+            <p>Deltas are browser-local summaries comparing packaged baseline metrics against the current editor payload: candidate count, healthy/unhealthy count, total in-flight load, max p95 latency, max error rate, and queue depth.</p>
+          </div>
+          <div class="proof-card">
+            <strong>How degradation, unhealthy, and recovery states are represented</strong>
+            <p>Unhealthy backends are counted from <code>healthy=false</code>; all-unhealthy payloads are called out as a degradation boundary, while fewer unhealthy backends than the baseline are described as recovery.</p>
+          </div>
+          <div class="proof-card">
+            <strong>How to reproduce the same proof locally</strong>
+            <p>Run <code>mvn spring-boot:run</code>, open this page, load the sample scenario, run Compare strategies, and compare the visible response with the copyable curl and proof notes.</p>
+          </div>
+          <div class="proof-card">
+            <strong>How evidence pages relate to the proof</strong>
+            <p>The routing page explains the request-level decision; reviewer, operator, timeline, and export packet pages provide navigation, evidence locations, history context, and handoff text.</p>
+          </div>
+          <div class="proof-card">
+            <strong>How the copied association summary should be used</strong>
+            <p>Use the copied association summary as a reviewer note that points to visible local proof and evidence pages; it is not an audit artifact created by the server.</p>
+          </div>
+          <div class="proof-card">
+            <strong>How local/demo proof differs from production proof</strong>
+            <p>Local/demo proof uses synthetic payloads, same-origin local API responses, and browser-local notes; it does not prove production traffic, live cloud behavior, real tenant behavior, registry publication, container signing, or production certification.</p>
+          </div>
+        </div>
+        <h3 style="margin-top: 14px;">Edge-case reading guide</h3>
+        <ul>
+          <li>No previous scenario has been captured yet; the packaged normal-load baseline remains the static reference.</li>
+          <li>Same scenario run twice or unchanged from baseline: strategy order and input signal totals should read as unchanged.</li>
+          <li>Selected backend unchanged but signals changed: review the strategy reason and visible scores/signals before treating the decision as equivalent.</li>
+          <li>Strategy changed but backend stayed the same: the selected backend can remain preferred under multiple routing methods.</li>
+          <li>Backend changed but strategy stayed the same: input signal deltas likely changed which candidate the same strategy preferred.</li>
+          <li>All unhealthy/degraded scenario: every visible backend is unhealthy, so the page should show a degradation boundary instead of production proof.</li>
+          <li>Missing or empty comparison response: Local API returned an empty comparison response; static guidance remains available.</li>
+          <li>API error or unavailable local server: Local API response unavailable; static guidance remains available.</li>
+          <li>Copy-to-clipboard failure fallback: Copy failed; select the visible text and copy manually.</li>
+          <li>Static page loaded without prior interaction: static guidance and evidence links remain available before running a scenario.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="association-legend-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Association Legend</h2>
+        <span class="muted">How to read this proof without turning demo evidence into a production claim.</span>
+      </div>
+      <div class="panel-body">
+        <div class="proof-grid" aria-label="Association legend cards">
+          <div class="proof-card">
+            <strong>scenario = demo input state</strong>
+            <p>The current request editor payload is the synthetic local state under review.</p>
+          </div>
+          <div class="proof-card">
+            <strong>strategy = selected routing method</strong>
+            <p>The first routing comparison result identifies the method returned by the local compare endpoint.</p>
+          </div>
+          <div class="proof-card">
+            <strong>backend/server = selected local candidate from the sample response</strong>
+            <p>The selected backend/server is a local candidate in the visible request and response pair.</p>
+          </div>
+          <div class="proof-card">
+            <strong>signals = local/demo metrics used for explanation</strong>
+            <p>Signals are visible health, load, latency, error, queue, and network-awareness fields.</p>
+          </div>
+          <div class="proof-card">
+            <strong>evidence pages = reviewer navigation aids, not production certification</strong>
+            <p>Evidence pages connect review steps and handoff text; they do not certify production behavior.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="routing-evidence-navigation-panel" class="panel" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Evidence Navigation</h2>
@@ -773,7 +919,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       summary: document.getElementById("summary-output"),
       proofSummary: document.getElementById("proof-summary-output"),
       scenarioComparison: document.getElementById("scenario-comparison-output"),
-      reviewerWalkthrough: document.getElementById("reviewer-walkthrough-output")
+      reviewerWalkthrough: document.getElementById("reviewer-walkthrough-output"),
+      evidenceAssociation: document.getElementById("evidence-association-output")
     };
     const proofFields = {
       strategy: document.getElementById("proof-strategy"),
@@ -789,11 +936,21 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       signals: document.getElementById("scenario-signal-change"),
       degradation: document.getElementById("scenario-degradation-change")
     };
+    const associationFields = {
+      scenarioDecision: document.getElementById("association-scenario-decision"),
+      strategy: document.getElementById("association-strategy"),
+      backend: document.getElementById("association-backend"),
+      signals: document.getElementById("association-signals"),
+      delta: document.getElementById("association-delta"),
+      evidencePages: document.getElementById("association-evidence-pages"),
+      handoff: document.getElementById("association-handoff")
+    };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
     const copyStatus = document.getElementById("copy-status");
     const resultRows = document.getElementById("result-rows");
     let lastRoutingBody = null;
+    let lastRoutingError = "";
 
     function sameOriginBaseUrl() {
       return window.location.origin || "http://localhost:8080";
@@ -874,6 +1031,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       try {
         payload = JSON.parse(requestJson.value);
       } catch (error) {
+        lastRoutingBody = null;
+        lastRoutingError = "Malformed sample request JSON; static guidance remains available.";
         renderJson(outputs.routing, { error: "Malformed sample request JSON." });
         setBadge("compare-badge", "failed", "Failed");
         renderSummary();
@@ -891,12 +1050,21 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         });
         const body = await parseResponse(response);
         lastRoutingBody = body;
+        const results = body && Array.isArray(body.results) ? body.results : [];
+        if (!response.ok) {
+          lastRoutingError = "Local API returned HTTP " + response.status + "; static guidance remains available.";
+        } else if (results.length === 0) {
+          lastRoutingError = "Local API returned an empty comparison response; static guidance remains available.";
+        } else {
+          lastRoutingError = "";
+        }
         renderJson(outputs.routing, body);
         renderResults(body);
         setBadge("compare-badge", response.ok ? "passed" : "warning", response.ok ? "Passed" : "Warning");
       } catch (error) {
         lastRoutingBody = null;
-        renderJson(outputs.routing, { error: String(error.message || error) });
+        lastRoutingError = "Local API response unavailable; static guidance remains available. " + String(error.message || error);
+        renderJson(outputs.routing, { error: lastRoutingError });
         renderResults(null);
         setBadge("compare-badge", "failed", "Failed");
       }
@@ -911,7 +1079,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         const cell = document.createElement("td");
         cell.colSpan = 4;
         cell.className = "muted";
-        cell.textContent = "No routing comparison result is available. The endpoint may be unavailable or the request failed validation.";
+        cell.textContent = lastRoutingError
+          || "No routing comparison result is available. Local API response unavailable; static guidance remains available.";
         row.appendChild(cell);
         resultRows.appendChild(row);
         return;
@@ -961,6 +1130,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
 
       if (results.length === 0) {
         lines.push("- NOT_RUN: Run Compare strategies to populate selected server output.");
+        lines.push("- fallback: " + (lastRoutingError || "No previous scenario has been captured yet; static guidance remains available."));
       } else {
         results.forEach((result) => {
           lines.push("- " + result.strategyId + ": "
@@ -991,6 +1161,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       setBadge("summary-badge", results.length > 0 ? "passed" : "warning", results.length > 0 ? "Ready" : "Waiting");
       renderProofSummary();
       renderScenarioComparison();
+      renderEvidenceAssociations();
       renderReviewerWalkthrough();
     }
 
@@ -1056,7 +1227,11 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       return "Custom reviewer scenario";
     }
 
-    function strategyChangeSummary(previousMetrics, currentMetrics) {
+    function sameScenarioAsBaseline(payload) {
+      return JSON.stringify(normalizedValue(payload)) === JSON.stringify(normalizedValue(sampleScenario));
+    }
+
+    function strategyChangeSummary(previousMetrics, currentMetrics, sameAsBaseline) {
       const previousStrategy = previousMetrics.primaryStrategy;
       const currentStrategy = currentMetrics.primaryStrategy;
       const added = currentMetrics.strategies
@@ -1066,6 +1241,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const parts = previousStrategy === currentStrategy
         ? ["No primary strategy change: " + currentStrategy + " remains first requested strategy."]
         : ["Primary strategy changed from " + previousStrategy + " to " + currentStrategy + "."];
+      if (sameAsBaseline) {
+        parts.push("Same scenario run twice or unchanged from baseline: strategy order matches the packaged sample.");
+      }
       if (added.length > 0) {
         parts.push("Added strategies: " + added.join(", ") + ".");
       }
@@ -1075,22 +1253,45 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       return parts.join(" ");
     }
 
-    function backendChangeSummary(results) {
+    function backendChangeSummary(results, previousMetrics, currentMetrics) {
       const baselineBackend = "edge-alpha";
       if (results.length === 0) {
-        return "Run Compare strategies to see selected backend/server change against packaged baseline expectation " + baselineBackend + ".";
+        return lastRoutingError
+          || "No previous scenario has been captured yet; run Compare strategies to see selected backend/server change against packaged baseline expectation " + baselineBackend + ".";
       }
       const primary = results[0];
       const selectedBackend = primary.chosenServerId || "No server selected";
+      const strategyChanged = previousMetrics.primaryStrategy !== currentMetrics.primaryStrategy;
       if (selectedBackend === baselineBackend) {
+        if (strategyChanged) {
+          return "Strategy changed but backend stayed the same: " + selectedBackend
+            + " remains selected even though the primary strategy changed from "
+            + previousMetrics.primaryStrategy + " to " + currentMetrics.primaryStrategy
+            + ". Reason: " + (primary.reason || "no explanation returned") + ".";
+        }
         return "No selected backend change after compare: " + baselineBackend + " remains selected for the primary strategy.";
+      }
+      if (!strategyChanged) {
+        return "Backend changed but strategy stayed the same: the primary strategy "
+          + currentMetrics.primaryStrategy + " selected " + selectedBackend
+          + " instead of " + baselineBackend + ". Reason: " + (primary.reason || "no explanation returned") + ".";
       }
       return "Selected backend changed after compare from " + baselineBackend + " to " + selectedBackend
         + " for the primary strategy. Reason: " + (primary.reason || "no explanation returned") + ".";
     }
 
-    function signalChangeSummary(previousMetrics, currentMetrics) {
-      return [
+    function metricsChanged(previousMetrics, currentMetrics) {
+      return previousMetrics.serverCount !== currentMetrics.serverCount
+        || previousMetrics.healthyCount !== currentMetrics.healthyCount
+        || previousMetrics.unhealthyServers.length !== currentMetrics.unhealthyServers.length
+        || previousMetrics.totalInFlight !== currentMetrics.totalInFlight
+        || previousMetrics.maxP95Latency !== currentMetrics.maxP95Latency
+        || previousMetrics.maxErrorRate !== currentMetrics.maxErrorRate
+        || previousMetrics.totalQueueDepth !== currentMetrics.totalQueueDepth;
+    }
+
+    function signalChangeSummary(previousMetrics, currentMetrics, results, sameAsBaseline) {
+      const summary = [
         "candidates " + previousMetrics.serverCount + " -> " + currentMetrics.serverCount,
         "healthy " + previousMetrics.healthyCount + " -> " + currentMetrics.healthyCount,
         "unhealthy " + previousMetrics.unhealthyServers.length + " -> " + currentMetrics.unhealthyServers.length,
@@ -1099,6 +1300,14 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "maxErrorRate " + previousMetrics.maxErrorRate + " -> " + currentMetrics.maxErrorRate,
         "queueDepth " + previousMetrics.totalQueueDepth + " -> " + currentMetrics.totalQueueDepth
       ].join("; ") + ".";
+      if (sameAsBaseline) {
+        return "Same scenario run twice or unchanged from baseline: strategy order and input signal totals should read as unchanged. " + summary;
+      }
+      const primary = results.length > 0 ? results[0] : null;
+      if (primary && primary.chosenServerId === "edge-alpha" && metricsChanged(previousMetrics, currentMetrics)) {
+        return "Selected backend unchanged but signals changed: review the strategy reason and visible scores/signals before treating the decision as equivalent. " + summary;
+      }
+      return summary;
     }
 
     function degradationChangeSummary(previousMetrics, currentMetrics) {
@@ -1126,14 +1335,17 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const currentPayload = currentRequestPayload();
       const previousMetrics = scenarioMetrics(sampleScenario);
       const currentMetrics = scenarioMetrics(currentPayload);
+      const sameAsBaseline = sameScenarioAsBaseline(currentPayload);
       const results = lastRoutingBody && Array.isArray(lastRoutingBody.results)
         ? lastRoutingBody.results
         : [];
-      const previousName = "Packaged normal-load baseline";
+      const previousName = results.length === 0
+        ? "No previous scenario has been captured yet; packaged normal-load baseline remains the static reference"
+        : "Packaged normal-load baseline";
       const currentName = scenarioName(currentMetrics);
-      const strategySummary = strategyChangeSummary(previousMetrics, currentMetrics);
-      const backendSummary = backendChangeSummary(results);
-      const signalSummary = signalChangeSummary(previousMetrics, currentMetrics);
+      const strategySummary = strategyChangeSummary(previousMetrics, currentMetrics, sameAsBaseline);
+      const backendSummary = backendChangeSummary(results, previousMetrics, currentMetrics);
+      const signalSummary = signalChangeSummary(previousMetrics, currentMetrics, results, sameAsBaseline);
       const degradationSummary = degradationChangeSummary(previousMetrics, currentMetrics);
 
       scenarioFields.previous.textContent = previousName + ".";
@@ -1152,6 +1364,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "selectedBackendChange: " + backendSummary,
         "keyInputSignalChanges: " + signalSummary,
         "degradationRecoveryExplanation: " + degradationSummary,
+        "emptyOrUnavailableFallback: " + (lastRoutingError || "Local API response available when comparison results are present; static guidance remains available before running a scenario."),
         "localOnlyDemoBoundary: browser-local comparison of synthetic payloads and same-origin local API results only",
         "",
         "## Not Proven",
@@ -1191,14 +1404,15 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       if (results.length === 0) {
         proofFields.strategy.textContent = "Not run.";
         proofFields.backend.textContent = "Not run.";
-        proofFields.signals.textContent = "Run Compare strategies to summarize visible request fields.";
+        proofFields.signals.textContent = "Run Compare strategies to summarize visible request fields. Static guidance remains available before running a scenario.";
         proofFields.degradation.textContent =
-          "The sample includes an unhealthy candidate so reviewers can verify it is not selected.";
+          "The sample includes an unhealthy candidate so reviewers can verify it is not selected. " + (lastRoutingError || "No previous scenario has been captured yet.");
         outputs.proofSummary.textContent = [
           "# Routing Proof Summary",
           "",
           "status: not run",
           "nextStep: run Compare strategies",
+          "fallback: " + (lastRoutingError || "Static page loaded without prior interaction; static guidance and evidence links remain available before running a scenario."),
           "localOnly: true",
           "externalServices: false",
           "runtimeReportWritten: false"
@@ -1212,6 +1426,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const signalSummary = formatServerSignals(selectedServer);
       const statuses = results.map((result) =>
         result.strategyId + "=" + (result.status || "UNKNOWN")).join("; ");
+      const strategyEffectSummary =
+        "Selected strategy affects backend selection by applying " + (primary.strategyId || "the returned strategy")
+        + " to visible candidate signals; selected backend " + selectedBackend
+        + " was returned with reason: " + (primary.reason || "no explanation returned") + ".";
       const degradationSummary =
         "Result statuses: " + statuses
         + ". The packaged sample keeps edge-drain unhealthy so a reviewer can verify it is excluded.";
@@ -1228,6 +1446,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "selectedBackend: " + selectedBackend,
         "status: " + (primary.status || "unknown"),
         "reason: " + (primary.reason || "No explanation returned."),
+        "strategyEffectOnBackend: " + strategyEffectSummary,
         "keyInputSignals: " + signalSummary,
         "fallbackDegradationBoundary: " + degradationSummary,
         "localOnlyDemoBoundary: same-origin local API, synthetic payloads, browser-only summary, no external services",
@@ -1287,8 +1506,83 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       ].join("\n");
     }
 
+    function evidenceNavigationPath() {
+      return "/routing-demo.html -> /enterprise-lab-reviewer.html -> /operator-evidence-dashboard.html -> /evidence-timeline.html -> /evidence-export-packet.html";
+    }
+
+    function renderEvidenceAssociations() {
+      const currentPayload = currentRequestPayload();
+      const currentMetrics = scenarioMetrics(currentPayload);
+      const currentScenario = scenarioName(currentMetrics);
+      const results = lastRoutingBody && Array.isArray(lastRoutingBody.results)
+        ? lastRoutingBody.results
+        : [];
+      const primary = results.length > 0 ? results[0] : null;
+      const selectedStrategy = primary && primary.strategyId ? primary.strategyId : "not run";
+      const selectedBackend = primary && primary.chosenServerId ? primary.chosenServerId : "not run";
+      const routingDecision = primary
+        ? (primary.status || "unknown") + " decision selecting " + selectedBackend
+        : (lastRoutingError || "not run; run Compare strategies to generate a local routing decision");
+      const reason = primary && primary.reason ? primary.reason : "No routing reason is available until Compare strategies runs. Local API response unavailable; static guidance remains available if the local server is not running.";
+      const inputSignals = proofFields.signals.textContent || "Run Compare strategies to summarize visible request fields.";
+      const comparisonDelta = scenarioFields.signals.textContent || "Run Compare strategies to compare scenario deltas.";
+      const degradationDelta = scenarioFields.degradation.textContent || "Run Compare strategies to compare degradation or recovery notes.";
+      const evidencePath = evidenceNavigationPath();
+      const reviewerUse =
+        "Use the copied association summary as a reviewer note that points to visible local proof and evidence pages; it is not an audit artifact created by the server.";
+
+      associationFields.scenarioDecision.textContent = currentScenario + " -> " + routingDecision + ".";
+      associationFields.strategy.textContent = routingDecision + " -> strategy " + selectedStrategy + ".";
+      associationFields.backend.textContent = routingDecision + " -> backend/server " + selectedBackend + ".";
+      associationFields.signals.textContent = selectedBackend + " -> " + inputSignals;
+      associationFields.delta.textContent = comparisonDelta + " " + degradationDelta;
+      associationFields.evidencePages.innerHTML =
+        "Routing Proof Summary supports the local evidence path: "
+        + "<a href=\"/enterprise-lab-reviewer.html\"><code>/enterprise-lab-reviewer.html</code></a>, "
+        + "<a href=\"/operator-evidence-dashboard.html\"><code>/operator-evidence-dashboard.html</code></a>, "
+        + "<a href=\"/evidence-timeline.html\"><code>/evidence-timeline.html</code></a>.";
+      associationFields.handoff.innerHTML =
+        "Evidence pages finish at <a href=\"/evidence-export-packet.html\"><code>/evidence-export-packet.html</code></a> "
+        + "for browser-local copy, download, print, and reviewer handoff.";
+
+      outputs.evidenceAssociation.textContent = [
+        "# Cockpit Evidence Association Summary",
+        "",
+        "currentScenario: " + currentScenario,
+        "routingDecision: " + routingDecision,
+        "selectedStrategy: " + selectedStrategy,
+        "selectedBackend: " + selectedBackend,
+        "routingReason: " + reason,
+        "keyInputSignals: " + inputSignals,
+        "scenarioComparisonDelta: " + comparisonDelta,
+        "degradationRecoveryExplanation: " + degradationDelta,
+        "evidenceNavigationPath: " + evidencePath,
+        "reviewerUse: " + reviewerUse,
+        "",
+        "associationMap:",
+        "- selected scenario -> routing decision: " + currentScenario + " -> " + routingDecision,
+        "- routing decision -> selected strategy: " + selectedStrategy,
+        "- routing decision -> selected backend/server: " + selectedBackend,
+        "- selected backend/server -> key input signals: " + inputSignals,
+        "- scenario comparison -> what changed: " + comparisonDelta,
+        "- routing proof summary -> supporting evidence pages: /enterprise-lab-reviewer.html, /operator-evidence-dashboard.html, /evidence-timeline.html",
+        "- evidence pages -> export packet / reviewer handoff: /evidence-export-packet.html",
+        "",
+        "copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls",
+        "",
+        "notProven:",
+        "- no production traffic proof",
+        "- no live cloud proof",
+        "- no real tenant proof",
+        "- no registry publication proof",
+        "- no container signing proof",
+        "- no production certification claim"
+      ].join("\n");
+    }
+
     function resetDemo() {
       lastRoutingBody = null;
+      lastRoutingError = "";
       outputs.health.textContent = "{}";
       outputs.readiness.textContent = "{}";
       outputs.routing.textContent = "{}";
@@ -1314,7 +1608,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           throw new Error("Clipboard unavailable");
         }
       } catch (error) {
-        copyStatus.textContent = "Copy failed; select the visible text and copy manually.";
+        copyStatus.textContent = "Copy failed; select the visible text and copy manually. Browser clipboard permission may be unavailable.";
       }
     }
 

@@ -56,7 +56,7 @@ class RoutingDecisionDemoTest {
         mockMvc.perform(get("/routing-demo.html"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
-                .andExpect(content().string(containsString("Routing Decision Demo")))
+                .andExpect(content().string(containsString("Enterprise Lab Routing Proof Cockpit")))
                 .andExpect(content().string(containsString("data-action=\"compare\"")))
                 .andExpect(content().string(containsString("/api/routing/compare")));
     }
@@ -77,7 +77,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Selected backend/server"));
         assertTrue(page.contains("Key input signals"));
         assertTrue(page.contains("Fallback/degradation"));
-        assertTrue(page.contains("Local/demo boundary"));
+        assertTrue(page.contains("Local lab boundary"));
         assertTrue(page.contains("What this proves"));
         assertTrue(page.contains("What this does not prove"));
         assertTrue(page.contains("Copy proof summary"));
@@ -85,9 +85,16 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("proof-summary-output"));
         assertTrue(page.contains("proof-commands"));
         assertTrue(page.contains("Reviewer Workflow Checklist"));
+        assertTrue(page.contains("Enterprise Lab Cockpit Monitor"));
+        assertTrue(page.contains("Copy lab monitor explanation"));
+        assertTrue(page.contains("lab-monitor-output"));
+        assertTrue(page.contains("How This Routing Decision Was Made"));
+        assertTrue(page.contains("What This Lab Needs to Monitor"));
+        assertTrue(page.contains("How to Reproduce and Explain This Lab Proof"));
+        assertTrue(page.contains("How to Read Lab Edge Cases"));
         assertTrue(page.contains("Copy end-to-end reviewer walkthrough"));
         assertTrue(page.contains("reviewer-walkthrough-output"));
-        assertTrue(page.contains("Load sample scenario"));
+        assertTrue(page.contains("Load lab scenario"));
         assertTrue(page.contains("Run routing comparison"));
         assertTrue(page.contains("Inspect Routing Proof Summary"));
         assertTrue(page.contains("Compare scenario deltas"));
@@ -96,7 +103,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Export/print packet from evidence export page"));
         assertTrue(page.contains("Reviewer Confidence Signals"));
         assertTrue(page.contains("Local repeatability"));
-        assertTrue(page.contains("Deterministic sample scenarios"));
+        assertTrue(page.contains("Deterministic lab scenarios"));
         assertTrue(page.contains("Same-origin API usage"));
         assertTrue(page.contains("Static browser-only notes/copy actions"));
         assertTrue(page.contains("Not-production-certified boundary"));
@@ -110,21 +117,16 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Scenario comparison -> what changed"));
         assertTrue(page.contains("Routing proof summary -> supporting evidence pages"));
         assertTrue(page.contains("Evidence pages -> export packet / reviewer handoff"));
-        assertTrue(page.contains("How This Proof Works"));
-        assertTrue(page.contains("How the selected strategy affects the selected backend"));
-        assertTrue(page.contains("How input signals influence the routing proof"));
-        assertTrue(page.contains("How scenario comparison deltas are summarized"));
-        assertTrue(page.contains("How degradation, unhealthy, and recovery states are represented"));
-        assertTrue(page.contains("How to reproduce the same proof locally"));
-        assertTrue(page.contains("How evidence pages relate to the proof"));
-        assertTrue(page.contains("How the copied association summary should be used"));
-        assertTrue(page.contains("How local/demo proof differs from production proof"));
-        assertTrue(page.contains("Edge-case reading guide"));
+        assertTrue(page.contains("How was the selected backend chosen?"));
+        assertTrue(page.contains("How did the selected strategy influence the decision?"));
+        assertTrue(page.contains("How did visible input signals influence the proof?"));
+        assertTrue(page.contains("How Strategy Choice Matters"));
+        assertTrue(page.contains("How Evidence Supports the Decision"));
         assertTrue(page.contains("Association Legend"));
-        assertTrue(page.contains("scenario = demo input state"));
+        assertTrue(page.contains("scenario = controlled lab input state"));
         assertTrue(page.contains("strategy = selected routing method"));
-        assertTrue(page.contains("backend/server = selected local candidate from the sample response"));
-        assertTrue(page.contains("signals = local/demo metrics used for explanation"));
+        assertTrue(page.contains("backend/server = selected local candidate from the lab response"));
+        assertTrue(page.contains("signals = controlled lab metrics used for explanation"));
         assertTrue(page.contains("evidence pages = reviewer navigation aids, not production certification"));
         assertTrue(page.contains("Scenario Comparison"));
         assertTrue(page.contains("Previous scenario"));
@@ -143,18 +145,18 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("/evidence-timeline.html"));
         assertTrue(page.contains("/evidence-export-packet.html"));
         assertTrue(page.contains("Reviewer path"));
-        assertTrue(page.contains("Where to go next after routing proof review"));
+        assertTrue(page.contains("Where to go next after controlled lab routing proof review"));
         assertTrue(page.contains("Next: Enterprise Lab reviewer dashboard"));
         assertTrue(page.contains("Next: Operator evidence dashboard"));
         assertTrue(page.contains("Next: Evidence timeline"));
         assertTrue(page.contains("Finish: Evidence export packet"));
-        assertTrue(page.contains("after routing proof review"));
+        assertTrue(page.contains("after controlled lab routing proof review"));
         assertTrue(page.contains("Copy curl"));
         assertTrue(page.contains("Copy payload"));
         assertTrue(page.contains("Copy summary"));
         assertTrue(page.contains("Copy raw response"));
-        assertTrue(page.contains("Reset demo"));
-        assertTrue(page.contains("Load sample scenario"));
+        assertTrue(page.contains("Reset lab"));
+        assertTrue(page.contains("Load lab scenario"));
         assertTrue(page.contains("Compare strategies"));
         assertTrue(page.contains("TAIL_LATENCY_POWER_OF_TWO"));
         assertTrue(page.contains("WEIGHTED_LEAST_LOAD"));
@@ -175,18 +177,19 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("curl -fsS -X POST http://localhost:8080/api/routing/compare"));
         assertTrue(page.contains("--data-binary @routing-compare-request.json"));
         assertTrue(page.contains("same-origin local API"));
-        assertTrue(page.contains("synthetic request payloads"));
+        assertTrue(page.contains("controlled lab payloads"));
         assertTrue(page.contains("browser-only summaries"));
         assertTrue(page.contains("selectedStrategy: "));
         assertTrue(page.contains("selectedBackend: "));
         assertTrue(page.contains("keyInputSignals: "));
         assertTrue(page.contains("fallbackDegradationBoundary: "));
-        assertTrue(page.contains("localOnlyDemoBoundary: same-origin local API"));
+        assertTrue(page.contains("localLabBoundary: same-origin local API"));
         assertTrue(normalized.contains("no production deployment proof"));
         assertTrue(normalized.contains("no service-level agreement, service-level objective, or real tenant evidence"));
         assertTrue(normalized.contains("no live cloud validation, registry publication, or container signing evidence"));
         assertTrue(normalized.contains("no service-level agreement or service-level objective evidence"));
         assertTrue(normalized.contains("no registry publication or container signing evidence"));
+        assertTrue(normalized.contains("no production telemetry proof"));
         assertTrue(normalized.contains("runtimeReportWritten: false".toLowerCase(Locale.ROOT)));
         assertTrue(normalized.contains("externalServices: false".toLowerCase(Locale.ROOT)));
     }
@@ -205,11 +208,11 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("keyInputSignalChanges: "));
         assertTrue(page.contains("degradationRecoveryExplanation: "));
         assertTrue(page.contains("emptyOrUnavailableFallback: "));
-        assertTrue(page.contains("localOnlyDemoBoundary: browser-local comparison"));
+        assertTrue(page.contains("localLabBoundary: browser-local comparison"));
         assertTrue(page.contains("No primary strategy change"));
-        assertTrue(page.contains("Same scenario run twice or unchanged from baseline"));
-        assertTrue(page.contains("No previous scenario has been captured yet"));
-        assertTrue(page.contains("Selected backend unchanged but signals changed"));
+        assertTrue(page.contains("Same lab scenario run twice or unchanged from baseline"));
+        assertTrue(page.contains("No previous lab scenario has been captured yet"));
+        assertTrue(page.contains("The selected backend is unchanged, but visible lab signals changed"));
         assertTrue(page.contains("Strategy changed but backend stayed the same"));
         assertTrue(page.contains("Backend changed but strategy stayed the same"));
         assertTrue(page.contains("Selected backend changed after compare"));
@@ -221,8 +224,9 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Degradation pressure increased"));
         assertTrue(page.contains("Recovery visible"));
         assertTrue(page.contains("same-origin local API results only"));
-        assertTrue(normalized.contains("browser-local comparison of synthetic payloads"));
+        assertTrue(normalized.contains("browser-local comparison of controlled lab payloads"));
         assertTrue(normalized.contains("no production traffic"));
+        assertTrue(normalized.contains("production telemetry"));
         assertTrue(normalized.contains("no live cloud validation"));
         assertTrue(normalized.contains("no real tenant data"));
         assertTrue(normalized.contains("no upload, share endpoint, or server-side export/pdf/zip generation"));
@@ -234,19 +238,20 @@ class RoutingDecisionDemoTest {
         String normalized = page.toLowerCase(Locale.ROOT);
 
         assertTrue(page.contains("id=\"routing-evidence-navigation-panel\""));
-        assertTrue(page.contains("Where to go next after routing proof review across local static evidence pages."));
+        assertTrue(page.contains("Where to go next after controlled lab routing proof review across local static evidence pages."));
         assertTrue(page.contains("Use Routing Proof Summary and Scenario Comparison"));
         assertTrue(page.contains("Review Enterprise Lab posture"));
         assertTrue(page.contains("Check operator evidence locations"));
         assertTrue(page.contains("Compare local and CI evidence stages"));
         assertTrue(page.contains("Use the browser-local packet page"));
-        assertTrue(page.contains("Reviewer path after routing proof review"));
+        assertTrue(page.contains("Reviewer path after controlled lab routing proof review"));
         assertTrue(page.contains("inspect the Enterprise Lab reviewer dashboard"));
         assertTrue(page.contains("check the Operator evidence dashboard"));
         assertTrue(page.contains("review the Evidence timeline"));
         assertTrue(page.contains("Evidence export packet page"));
-        assertTrue(normalized.contains("local/demo evidence only"));
+        assertTrue(normalized.contains("controlled lab evidence only"));
         assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no production telemetry proof"));
         assertTrue(normalized.contains("no live cloud proof"));
         assertTrue(normalized.contains("no real tenant proof"));
         assertTrue(normalized.contains("registry publication proof"));
@@ -270,7 +275,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("data-copy-target=\"reviewer-walkthrough-output\""));
         assertTrue(page.contains("# End-to-End Routing Reviewer Walkthrough"));
         assertTrue(page.contains("workflowChecklist:"));
-        assertTrue(page.contains("1. load sample scenario"));
+        assertTrue(page.contains("1. load controlled lab scenario"));
         assertTrue(page.contains("2. run routing comparison"));
         assertTrue(page.contains("3. inspect Routing Proof Summary"));
         assertTrue(page.contains("4. compare scenario deltas"));
@@ -287,6 +292,7 @@ class RoutingDecisionDemoTest {
         assertTrue(normalized.contains("no server-side export/pdf/zip generation"));
         assertTrue(normalized.contains("no external services"));
         assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no production telemetry proof"));
         assertTrue(normalized.contains("no live cloud proof"));
         assertTrue(normalized.contains("no real tenant proof"));
         assertTrue(normalized.contains("no registry publication proof"));
@@ -302,16 +308,17 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("id=\"reviewer-confidence-signals-panel\""));
         assertTrue(page.contains("aria-label=\"Reviewer confidence signal cards\""));
         assertTrue(page.contains("Local repeatability"));
-        assertTrue(page.contains("Deterministic sample scenarios"));
+        assertTrue(page.contains("Deterministic lab scenarios"));
         assertTrue(page.contains("Same-origin API usage"));
         assertTrue(page.contains("Static browser-only notes/copy actions"));
         assertTrue(page.contains("Not-production-certified boundary"));
-        assertTrue(normalized.contains("packaged synthetic inputs"));
+        assertTrue(normalized.contains("packaged controlled lab inputs"));
         assertTrue(normalized.contains("packaged server names, weights, health states, load, and latency fields"));
         assertTrue(normalized.contains("browser calls target local app paths"));
         assertTrue(normalized.contains("do not create server-side files"));
-        assertTrue(normalized.contains("local/demo evidence only"));
+        assertTrue(normalized.contains("controlled lab evidence only"));
         assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no production telemetry proof"));
         assertTrue(normalized.contains("no live cloud proof"));
         assertTrue(normalized.contains("no real tenant proof"));
         assertTrue(normalized.contains("no registry publication proof"));
@@ -320,6 +327,44 @@ class RoutingDecisionDemoTest {
         assertFalse(normalized.contains("registry published"));
         assertFalse(normalized.contains("signed container"));
         assertFalse(normalized.contains("governance-applied"));
+    }
+
+    @Test
+    void routingDemoEnterpriseLabMonitorExplainsSignalsBoundariesAndCopyText() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("id=\"enterprise-lab-cockpit-monitor-panel\""));
+        assertTrue(page.contains("Enterprise Lab Cockpit Monitor"));
+        assertTrue(page.contains("This is lab-bounded proof, not production monitoring."));
+        assertTrue(page.contains("It is an Enterprise Lab proof cockpit, not a casual demo page or production monitoring surface."));
+        assertTrue(page.contains("data-copy-target=\"lab-monitor-output\""));
+        assertTrue(page.contains("# Enterprise Lab Cockpit Monitor Explanation"));
+        assertTrue(page.contains("activeLabScenario: "));
+        assertTrue(page.contains("routingComparisonStatus: "));
+        assertTrue(page.contains("selectedStrategy: "));
+        assertTrue(page.contains("selectedBackend: "));
+        assertTrue(page.contains("backendHealthState: "));
+        assertTrue(page.contains("visibleInputSignals: "));
+        assertTrue(page.contains("scenarioComparisonState: "));
+        assertTrue(page.contains("edgeCaseState: "));
+        assertTrue(page.contains("evidenceAssociationPath: "));
+        assertTrue(page.contains("reproductionSteps:"));
+        assertTrue(page.contains("labProofBoundaries: controlled lab evidence"));
+        assertTrue(page.contains("productionNotProven: no production traffic proof; no production telemetry proof; no live cloud proof; no real tenant proof; no SLA/SLO proof; no registry publication proof; no container signing proof; no production certification claim"));
+        assertTrue(page.contains("copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"));
+        assertTrue(page.contains("Evidence links remain available before a lab run, but they do not certify production behavior."));
+        assertTrue(page.contains("No previous lab scenario has been captured yet."));
+        assertTrue(page.contains("The local lab API response is unavailable; static reviewer guidance remains available."));
+        assertTrue(page.contains("Copy failed; use the visible lab explanation as the fallback."));
+        assertTrue(normalized.contains("backend health state"));
+        assertTrue(normalized.contains("visible latency/load/connection/capacity signals"));
+        assertTrue(normalized.contains("scenario delta state"));
+        assertTrue(normalized.contains("degradation/fallback/recovery state"));
+        assertTrue(normalized.contains("reviewer handoff readiness"));
+        assertFalse(normalized.contains("production monitoring proof"));
+        assertFalse(normalized.contains("live production telemetry is available"));
+        assertFalse(normalized.contains("server-side lab monitor export"));
     }
 
     @Test
@@ -348,8 +393,9 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("/operator-evidence-dashboard.html"));
         assertTrue(page.contains("/evidence-timeline.html"));
         assertTrue(page.contains("/evidence-export-packet.html"));
-        assertTrue(normalized.contains("association boundary: local/demo evidence only"));
+        assertTrue(normalized.contains("association boundary: controlled lab evidence only"));
         assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no production telemetry proof"));
         assertTrue(normalized.contains("no live cloud proof"));
         assertTrue(normalized.contains("no real tenant proof"));
         assertTrue(normalized.contains("no registry publication proof"));
@@ -387,6 +433,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls"));
         assertTrue(page.contains("notProven:"));
         assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no production telemetry proof"));
         assertTrue(normalized.contains("no live cloud proof"));
         assertTrue(normalized.contains("no real tenant proof"));
         assertTrue(normalized.contains("no registry publication proof"));
@@ -400,23 +447,31 @@ class RoutingDecisionDemoTest {
         String normalized = page.toLowerCase(Locale.ROOT);
 
         assertTrue(page.contains("id=\"reviewer-how-to-panel\""));
-        assertTrue(page.contains("aria-label=\"Reviewer how-to explanation cards\""));
-        assertTrue(page.contains("The first returned strategy is the primary local comparison result"));
-        assertTrue(page.contains("its routing rule ranks the visible candidate servers"));
-        assertTrue(page.contains("Health, in-flight load, configured weight/capacity, p95 latency, error rate, queue depth, and network-awareness fields"));
-        assertTrue(page.contains("Deltas are browser-local summaries comparing packaged baseline metrics against the current editor payload"));
-        assertTrue(page.contains("candidate count, healthy/unhealthy count, total in-flight load, max p95 latency, max error rate, and queue depth"));
+        assertTrue(page.contains("aria-label=\"How this routing decision was made cards\""));
+        assertTrue(page.contains("How was the selected backend chosen?"));
+        assertTrue(page.contains("The first returned comparison result is the primary controlled lab decision"));
+        assertTrue(page.contains("How did the selected strategy influence the decision?"));
+        assertTrue(page.contains("exact production scoring is not claimed unless exposed by the API"));
+        assertTrue(page.contains("How did visible input signals influence the proof?"));
+        assertTrue(page.contains("backend health, latency, load, active connections, capacity, weight, error rate, queue depth, and network-awareness fields"));
+        assertTrue(page.contains("If multiple candidates appear close, compare returned reason text and visible signals"));
+        assertTrue(page.contains("What This Lab Needs to Monitor"));
+        assertTrue(page.contains("Monitor healthy/unhealthy state, selected backend availability"));
+        assertTrue(page.contains("Monitor p95 latency, in-flight load, queue depth, configured capacity, estimated concurrency, and weight"));
         assertTrue(page.contains("Unhealthy backends are counted from <code>healthy=false</code>"));
-        assertTrue(page.contains("all-unhealthy payloads are called out as a degradation boundary"));
-        assertTrue(page.contains("fewer unhealthy backends than the baseline are described as recovery"));
-        assertTrue(page.contains("Run <code>mvn spring-boot:run</code>"));
-        assertTrue(page.contains("reviewer, operator, timeline, and export packet pages provide navigation"));
-        assertTrue(page.contains("Use the copied association summary as a reviewer note"));
-        assertTrue(page.contains("it is not an audit artifact created by the server"));
-        assertTrue(page.contains("Local/demo proof uses synthetic payloads, same-origin local API responses, and browser-local notes"));
+        assertTrue(page.contains("all-unhealthy payloads are treated as a degradation boundary"));
+        assertTrue(page.contains("Recovery is represented when visible lab inputs show fewer unhealthy candidates"));
+        assertTrue(page.contains("How to Reproduce and Explain This Lab Proof"));
+        assertTrue(page.contains("Run routing comparison against the same-origin local <code>/api/routing/compare</code> endpoint"));
+        assertTrue(page.contains("Follow evidence association links to reviewer dashboard, operator evidence dashboard, evidence timeline, and evidence export packet"));
+        assertTrue(page.contains("How Strategy Choice Matters"));
+        assertTrue(page.contains("How Evidence Supports the Decision"));
+        assertTrue(page.contains("Timeline and export packet support local reviewer handoff"));
         assertTrue(normalized.contains("does not prove production traffic"));
+        assertTrue(normalized.contains("production telemetry"));
         assertTrue(normalized.contains("live cloud behavior"));
         assertTrue(normalized.contains("real tenant behavior"));
+        assertTrue(normalized.contains("sla/slo"));
         assertTrue(normalized.contains("registry publication"));
         assertTrue(normalized.contains("container signing"));
         assertTrue(normalized.contains("production certification"));
@@ -427,24 +482,24 @@ class RoutingDecisionDemoTest {
         String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
         String normalized = page.toLowerCase(Locale.ROOT);
 
-        assertTrue(page.contains("No previous scenario has been captured yet; the packaged normal-load baseline remains the static reference."));
-        assertTrue(page.contains("Same scenario run twice or unchanged from baseline: strategy order and input signal totals should read as unchanged."));
-        assertTrue(page.contains("Selected backend unchanged but signals changed: review the strategy reason and visible scores/signals before treating the decision as equivalent."));
+        assertTrue(page.contains("No previous lab scenario has been captured yet; packaged normal-load lab baseline remains the static reference"));
+        assertTrue(page.contains("Same lab scenario run twice or unchanged from baseline: strategy order and input signal totals should read as unchanged."));
+        assertTrue(page.contains("The selected backend is unchanged, but visible lab signals changed."));
         assertTrue(page.contains("Strategy changed but backend stayed the same: the selected backend can remain preferred under multiple routing methods."));
-        assertTrue(page.contains("Backend changed but strategy stayed the same: input signal deltas likely changed which candidate the same strategy preferred."));
-        assertTrue(page.contains("All unhealthy/degraded scenario: every visible backend is unhealthy, so the page should show a degradation boundary instead of production proof."));
-        assertTrue(page.contains("Missing or empty comparison response: Local API returned an empty comparison response; static guidance remains available."));
-        assertTrue(page.contains("API error or unavailable local server: Local API response unavailable; static guidance remains available."));
-        assertTrue(page.contains("Copy-to-clipboard failure fallback: Copy failed; select the visible text and copy manually."));
-        assertTrue(page.contains("Static page loaded without prior interaction: static guidance and evidence links remain available before running a scenario."));
-        assertTrue(page.contains("Local API returned HTTP "));
-        assertTrue(page.contains("Local API returned an empty comparison response; static guidance remains available."));
-        assertTrue(page.contains("Local API response unavailable; static guidance remains available."));
-        assertTrue(page.contains("Malformed sample request JSON; static guidance remains available."));
-        assertTrue(page.contains("Static page loaded without prior interaction; static guidance and evidence links remain available before running a scenario."));
+        assertTrue(page.contains("Backend changed but strategy stayed the same: visible lab signal deltas likely changed which candidate the same strategy preferred."));
+        assertTrue(page.contains("All backends unhealthy/degraded: every visible backend is unhealthy, so treat the result as a degradation boundary instead of production proof."));
+        assertTrue(page.contains("Empty comparison response: The local lab API returned an empty comparison response; static reviewer guidance remains available."));
+        assertTrue(page.contains("Local API unavailable/error: The local lab API response is unavailable; static reviewer guidance remains available."));
+        assertTrue(page.contains("Clipboard copy failure: Copy failed; use the visible lab explanation as the fallback."));
+        assertTrue(page.contains("Page loaded before interaction: static reviewer guidance remains available before a lab run."));
+        assertTrue(page.contains("Local lab API returned HTTP "));
+        assertTrue(page.contains("The local lab API returned an empty comparison response; static reviewer guidance remains available."));
+        assertTrue(page.contains("The local lab API response is unavailable; static reviewer guidance remains available."));
+        assertTrue(page.contains("Malformed lab request JSON; static reviewer guidance remains available."));
+        assertTrue(page.contains("Static page loaded without prior interaction; static reviewer guidance and evidence links remain available before running a lab scenario."));
         assertTrue(page.contains("Browser clipboard permission may be unavailable."));
-        assertTrue(page.contains("Evidence links are available even before running a scenario."));
-        assertTrue(normalized.contains("browser-local summaries"));
+        assertTrue(page.contains("Evidence links remain available before a lab run, but they do not certify production behavior."));
+        assertTrue(normalized.contains("browser-local copy"));
         assertTrue(normalized.contains("no upload/share endpoint"));
         assertTrue(normalized.contains("no server-side export/pdf/zip generation"));
         assertFalse(normalized.contains("server-side association export"));
@@ -458,12 +513,12 @@ class RoutingDecisionDemoTest {
 
         assertTrue(page.contains("id=\"association-legend-panel\""));
         assertTrue(page.contains("aria-label=\"Association legend cards\""));
-        assertTrue(page.contains("scenario = demo input state"));
+        assertTrue(page.contains("scenario = controlled lab input state"));
         assertTrue(page.contains("strategy = selected routing method"));
-        assertTrue(page.contains("backend/server = selected local candidate from the sample response"));
-        assertTrue(page.contains("signals = local/demo metrics used for explanation"));
+        assertTrue(page.contains("backend/server = selected local candidate from the lab response"));
+        assertTrue(page.contains("signals = controlled lab metrics used for explanation"));
         assertTrue(page.contains("evidence pages = reviewer navigation aids, not production certification"));
-        assertTrue(normalized.contains("synthetic local state under review"));
+        assertTrue(normalized.contains("synthetic local lab state under review"));
         assertTrue(normalized.contains("method returned by the local compare endpoint"));
         assertTrue(normalized.contains("local candidate in the visible request and response pair"));
         assertTrue(normalized.contains("visible health, load, latency, error, queue, and network-awareness fields"));
@@ -478,17 +533,17 @@ class RoutingDecisionDemoTest {
         String normalized = page.toLowerCase(Locale.ROOT);
 
         assertTrue(page.contains("Postman parity: run the <strong>Routing Decision Demo</strong> folder"));
-        assertTrue(normalized.contains("local/operator demo only"));
+        assertTrue(normalized.contains("local enterprise lab cockpit only"));
         assertTrue(normalized.contains("not certification"));
         assertTrue(normalized.contains("not benchmark proof"));
         assertTrue(normalized.contains("not legal compliance proof"));
         assertTrue(normalized.contains("not identity proof"));
         assertTrue(normalized.contains("no cloud mutation"));
-        assertTrue(normalized.contains("no cloudmanager required for routing demo"));
+        assertTrue(normalized.contains("no cloudmanager required for routing lab cockpit"));
         assertTrue(normalized.contains("no external services/dependencies"));
         assertTrue(normalized.contains("no external scripts/cdns"));
-        assertTrue(normalized.contains("api server required for browser/postman demo"));
-        assertTrue(normalized.contains("no runtime reports or demo transcripts are written"));
+        assertTrue(normalized.contains("api server required for browser/postman lab review"));
+        assertTrue(normalized.contains("no runtime reports or lab transcripts are written"));
     }
 
     @Test

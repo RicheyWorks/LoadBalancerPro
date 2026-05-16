@@ -107,6 +107,13 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("## What the Cockpit Monitors"));
         assertTrue(framing.contains("## What Questions It Answers"));
         assertTrue(framing.contains("## Controlled Lab Proof Chain"));
+        assertTrue(framing.contains("## Monitored Proof Chain"));
+        assertTrue(framing.contains("controlled lab scenario -> visible input signals -> selected strategy -> selected backend/server -> comparison delta -> evidence association -> reviewer handoff"));
+        assertTrue(framing.contains("This monitoring depth is reviewer-facing interpretation for controlled pre-production routing validation."));
+        assertTrue(framing.contains("## How to Investigate Surprising Lab Decisions"));
+        assertTrue(framing.contains("If the backend changed unexpectedly"));
+        assertTrue(framing.contains("If all candidates are unhealthy"));
+        assertTrue(framing.contains("the monitored decision chain is incomplete"));
         assertTrue(framing.contains("## Evidence Association Model"));
         assertTrue(framing.contains("## Reviewer Handoff Flow"));
         assertTrue(framing.contains("## Production Not-Proven Boundaries"));

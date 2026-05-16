@@ -110,6 +110,16 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Scenario comparison -> what changed"));
         assertTrue(page.contains("Routing proof summary -> supporting evidence pages"));
         assertTrue(page.contains("Evidence pages -> export packet / reviewer handoff"));
+        assertTrue(page.contains("How This Proof Works"));
+        assertTrue(page.contains("How the selected strategy affects the selected backend"));
+        assertTrue(page.contains("How input signals influence the routing proof"));
+        assertTrue(page.contains("How scenario comparison deltas are summarized"));
+        assertTrue(page.contains("How degradation, unhealthy, and recovery states are represented"));
+        assertTrue(page.contains("How to reproduce the same proof locally"));
+        assertTrue(page.contains("How evidence pages relate to the proof"));
+        assertTrue(page.contains("How the copied association summary should be used"));
+        assertTrue(page.contains("How local/demo proof differs from production proof"));
+        assertTrue(page.contains("Edge-case reading guide"));
         assertTrue(page.contains("Association Legend"));
         assertTrue(page.contains("scenario = demo input state"));
         assertTrue(page.contains("strategy = selected routing method"));
@@ -194,8 +204,14 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("selectedBackendChange: "));
         assertTrue(page.contains("keyInputSignalChanges: "));
         assertTrue(page.contains("degradationRecoveryExplanation: "));
+        assertTrue(page.contains("emptyOrUnavailableFallback: "));
         assertTrue(page.contains("localOnlyDemoBoundary: browser-local comparison"));
         assertTrue(page.contains("No primary strategy change"));
+        assertTrue(page.contains("Same scenario run twice or unchanged from baseline"));
+        assertTrue(page.contains("No previous scenario has been captured yet"));
+        assertTrue(page.contains("Selected backend unchanged but signals changed"));
+        assertTrue(page.contains("Strategy changed but backend stayed the same"));
+        assertTrue(page.contains("Backend changed but strategy stayed the same"));
         assertTrue(page.contains("Selected backend changed after compare"));
         assertTrue(page.contains("candidates "));
         assertTrue(page.contains("healthy "));
@@ -359,6 +375,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("scenarioComparisonDelta: "));
         assertTrue(page.contains("degradationRecoveryExplanation: "));
         assertTrue(page.contains("evidenceNavigationPath: "));
+        assertTrue(page.contains("reviewerUse: "));
         assertTrue(page.contains("associationMap:"));
         assertTrue(page.contains("- selected scenario -> routing decision: "));
         assertTrue(page.contains("- routing decision -> selected strategy: "));
@@ -375,6 +392,63 @@ class RoutingDecisionDemoTest {
         assertTrue(normalized.contains("no registry publication proof"));
         assertTrue(normalized.contains("no container signing proof"));
         assertTrue(normalized.contains("no production certification claim"));
+    }
+
+    @Test
+    void routingDemoHowToAndEdgeCasesAreExplicitReviewerGuidance() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("id=\"reviewer-how-to-panel\""));
+        assertTrue(page.contains("aria-label=\"Reviewer how-to explanation cards\""));
+        assertTrue(page.contains("The first returned strategy is the primary local comparison result"));
+        assertTrue(page.contains("its routing rule ranks the visible candidate servers"));
+        assertTrue(page.contains("Health, in-flight load, configured weight/capacity, p95 latency, error rate, queue depth, and network-awareness fields"));
+        assertTrue(page.contains("Deltas are browser-local summaries comparing packaged baseline metrics against the current editor payload"));
+        assertTrue(page.contains("candidate count, healthy/unhealthy count, total in-flight load, max p95 latency, max error rate, and queue depth"));
+        assertTrue(page.contains("Unhealthy backends are counted from <code>healthy=false</code>"));
+        assertTrue(page.contains("all-unhealthy payloads are called out as a degradation boundary"));
+        assertTrue(page.contains("fewer unhealthy backends than the baseline are described as recovery"));
+        assertTrue(page.contains("Run <code>mvn spring-boot:run</code>"));
+        assertTrue(page.contains("reviewer, operator, timeline, and export packet pages provide navigation"));
+        assertTrue(page.contains("Use the copied association summary as a reviewer note"));
+        assertTrue(page.contains("it is not an audit artifact created by the server"));
+        assertTrue(page.contains("Local/demo proof uses synthetic payloads, same-origin local API responses, and browser-local notes"));
+        assertTrue(normalized.contains("does not prove production traffic"));
+        assertTrue(normalized.contains("live cloud behavior"));
+        assertTrue(normalized.contains("real tenant behavior"));
+        assertTrue(normalized.contains("registry publication"));
+        assertTrue(normalized.contains("container signing"));
+        assertTrue(normalized.contains("production certification"));
+    }
+
+    @Test
+    void routingDemoEdgeCaseFallbackTextIsSpecificAndBrowserLocal() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("No previous scenario has been captured yet; the packaged normal-load baseline remains the static reference."));
+        assertTrue(page.contains("Same scenario run twice or unchanged from baseline: strategy order and input signal totals should read as unchanged."));
+        assertTrue(page.contains("Selected backend unchanged but signals changed: review the strategy reason and visible scores/signals before treating the decision as equivalent."));
+        assertTrue(page.contains("Strategy changed but backend stayed the same: the selected backend can remain preferred under multiple routing methods."));
+        assertTrue(page.contains("Backend changed but strategy stayed the same: input signal deltas likely changed which candidate the same strategy preferred."));
+        assertTrue(page.contains("All unhealthy/degraded scenario: every visible backend is unhealthy, so the page should show a degradation boundary instead of production proof."));
+        assertTrue(page.contains("Missing or empty comparison response: Local API returned an empty comparison response; static guidance remains available."));
+        assertTrue(page.contains("API error or unavailable local server: Local API response unavailable; static guidance remains available."));
+        assertTrue(page.contains("Copy-to-clipboard failure fallback: Copy failed; select the visible text and copy manually."));
+        assertTrue(page.contains("Static page loaded without prior interaction: static guidance and evidence links remain available before running a scenario."));
+        assertTrue(page.contains("Local API returned HTTP "));
+        assertTrue(page.contains("Local API returned an empty comparison response; static guidance remains available."));
+        assertTrue(page.contains("Local API response unavailable; static guidance remains available."));
+        assertTrue(page.contains("Malformed sample request JSON; static guidance remains available."));
+        assertTrue(page.contains("Static page loaded without prior interaction; static guidance and evidence links remain available before running a scenario."));
+        assertTrue(page.contains("Browser clipboard permission may be unavailable."));
+        assertTrue(page.contains("Evidence links are available even before running a scenario."));
+        assertTrue(normalized.contains("browser-local summaries"));
+        assertTrue(normalized.contains("no upload/share endpoint"));
+        assertTrue(normalized.contains("no server-side export/pdf/zip generation"));
+        assertFalse(normalized.contains("server-side association export"));
+        assertFalse(normalized.contains("automatic upload"));
     }
 
     @Test

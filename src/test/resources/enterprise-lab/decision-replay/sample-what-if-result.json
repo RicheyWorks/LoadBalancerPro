@@ -1,0 +1,53 @@
+{
+  "resultVersion": "enterprise-lab-what-if-result-v1",
+  "fixtureResultId": "decision-replay-fixture-result-001",
+  "sourceSnapshotId": "decision-replay-fixture-snapshot-001",
+  "sourceRequestId": "decision-replay-fixture-request-001",
+  "originalSelectedBackend": "edge-alpha",
+  "hypotheticalSelectedBackend": "edge-beta",
+  "changedSelection": true,
+  "changedFactors": [
+    {
+      "factor": "p95LatencyMs",
+      "backendId": "edge-beta",
+      "originalValue": 118,
+      "hypotheticalValue": 38,
+      "summary": "The static fixture shape shows how a visible latency mutation could become decisive later."
+    }
+  ],
+  "unchangedFactors": [
+    {
+      "factor": "health",
+      "summary": "Only healthy candidates remain eligible in the fixture."
+    },
+    {
+      "factor": "recentErrorRate",
+      "summary": "The request mutates one signal only; error rate remains unchanged."
+    },
+    {
+      "factor": "configuredCapacity",
+      "summary": "Capacity remains unchanged so the fixture does not imply multi-factor retuning."
+    }
+  ],
+  "explanationSummary": "Fixture-only result shape for a future one-signal what-if comparison. It does not execute replay, retune weights, call a live endpoint, or mutate real backends.",
+  "boundaries": [
+    "Result is deterministic sample JSON only.",
+    "No live replay endpoint exists.",
+    "No production traffic replay is implemented.",
+    "No real backend mutation is implemented.",
+    "Unknown and unexposed signals remain explicit boundaries."
+  ],
+  "notProductionProof": {
+    "labOnly": true,
+    "productionTrafficReplay": false,
+    "realBackendMutation": false,
+    "externalStorage": false,
+    "externalTelemetry": false,
+    "liveCloudProof": false,
+    "realTenantProof": false,
+    "slaSloProof": false,
+    "productionCertification": false,
+    "registryPublication": false,
+    "containerSigning": false
+  }
+}

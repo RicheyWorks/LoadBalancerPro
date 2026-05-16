@@ -1,0 +1,28 @@
+{
+  "requestVersion": "enterprise-lab-what-if-request-v1",
+  "fixtureRequestId": "decision-replay-fixture-request-001",
+  "sourceSnapshotId": "decision-replay-fixture-snapshot-001",
+  "mutation": {
+    "name": "lower-edge-beta-p95-latency",
+    "targetBackend": "edge-beta",
+    "targetSignal": "p95LatencyMs",
+    "originalValue": 118,
+    "hypotheticalValue": 38,
+    "validationBoundary": "finite-non-negative-milliseconds",
+    "reason": "Reviewer asks whether p95 latency was the decisive visible lab factor."
+  },
+  "labOnly": true,
+  "boundary": "Fixture-only contract seed; no endpoint, no service execution, no production traffic replay, and no real backend mutation.",
+  "notProductionProof": {
+    "productionTrafficReplay": false,
+    "realBackendMutation": false,
+    "externalStorage": false,
+    "externalTelemetry": false,
+    "liveCloudProof": false,
+    "realTenantProof": false,
+    "slaSloProof": false,
+    "productionCertification": false,
+    "registryPublication": false,
+    "containerSigning": false
+  }
+}

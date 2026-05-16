@@ -54,6 +54,20 @@ A future what-if request should apply exactly one bounded mutation to a copied c
 
 The planned model should reject multiple simultaneous mutations until single-factor explanations are verified. It should also reject hidden or unexposed signals. Unknown production telemetry, hidden production weights, private backend state, and exact production scoring must stay unavailable unless a future API explicitly exposes them.
 
+## Contract Fixture Lane
+
+The first implementation foundation is a fixture-only contract seed under `src/test/resources/enterprise-lab/decision-replay/`. It is deterministic sample JSON used by `EnterpriseLabDecisionReplayContractFixtureTest`; it is not executable replay and it is not a live what-if engine.
+
+The current fixture lane includes:
+
+| Fixture | Purpose |
+| --- | --- |
+| `sample-decision-snapshot.json` | Captures a static controlled-lab routing decision snapshot with selected backend, candidates, Decision Vector fields, factor contributions, known signals, unknown signals, exactness boundaries, and not-production-proof flags. |
+| `sample-what-if-request.json` | Shows a future one-signal mutation request shape for one visible lab signal, including original value, hypothetical value, reason, lab-only marker, and safety boundary. |
+| `sample-what-if-result.json` | Shows a future comparison result shape with original selected backend, hypothetical selected backend, changed/unchanged factors, explanation summary, boundaries, and not-production-proof flags. |
+
+These fixtures are static contract examples only. They do not call `ServerScoreCalculator`, do not choose a backend, do not retune weights, do not mutate backend state, do not read or write external storage, do not emit telemetry, and do not expose an endpoint. They exist so future replay/what-if work can evolve against a reviewed shape without inventing hidden scoring or implying executable replay behavior.
+
 ## Safe What-If Questions
 
 Safe future questions are constrained to visible local lab signals:
@@ -118,11 +132,11 @@ This planning lane keeps these boundaries:
 
 ## Future Implementation Phases
 
-1. Documentation and guardrails: define this plan, link it from reviewer docs, and test the planned/not-implemented safety boundary.
-2. Contract sketch: add design-only DTO names or examples if useful, still without exposing an endpoint or implying completion.
+1. Documentation and guardrails: define this plan, link it from reviewer docs, and test the planned/not-implemented safety boundary. PR #180 completed this planning phase.
+2. Contract sketch: add deterministic fixture examples if useful, still without exposing an endpoint or implying completion. The current contract fixture lane is a phase 2 seed only.
 3. Pure local replay service spike: copy a controlled lab input in memory and compare baseline versus one mutation in unit tests only.
 4. Read-only local API proposal: only after the pure service is verified, propose a protected local endpoint contract with no storage, no external calls, and no production claims.
 5. Cockpit rendering proposal: display future replay/what-if results as read-only local lab interpretation, keeping unknowns and not-proven limits visible.
 6. Evidence hardening: add regression fixtures for unchanged selection, changed selection, all-unhealthy cases, invalid mutation rejection, and exactness boundary language.
 
-Each phase requires separate review. This sprint completes phase 1 only.
+Each phase requires separate review. The fixture-only contract seed does not complete replay execution, what-if execution, a live replay endpoint, production traffic replay, or real backend mutation.

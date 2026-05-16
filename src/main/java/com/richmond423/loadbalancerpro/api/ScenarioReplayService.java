@@ -117,11 +117,25 @@ public class ScenarioReplayService {
                 null,
                 null,
                 selectedServerId,
-                routing.results(),
+                routingResultsForReplay(routing.results()),
                 snapshot(serverState),
                 selectedServerId == null
                         ? "Routing preview found no healthy eligible server."
                         : "Routing preview selected " + selectedServerId + ".");
+    }
+
+    private List<RoutingComparisonResultResponse> routingResultsForReplay(
+            List<RoutingComparisonResultResponse> results) {
+        return results.stream()
+                .map(result -> new RoutingComparisonResultResponse(
+                        result.strategyId(),
+                        result.status(),
+                        result.chosenServerId(),
+                        result.reason(),
+                        result.candidateServersConsidered(),
+                        result.scores(),
+                        null))
+                .toList();
     }
 
     private ScenarioReplayStepResponse markHealth(

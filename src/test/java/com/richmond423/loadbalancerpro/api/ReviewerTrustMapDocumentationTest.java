@@ -109,8 +109,10 @@ class ReviewerTrustMapDocumentationTest {
                 "PROXY_DEMO_STACK.md",
                 "PROXY_DEMO_FIXTURE_LAUNCHER.md",
                 "routing-demo.html",
+                "Reviewer Workflow Checklist",
                 "Routing Proof Summary",
                 "Scenario Comparison",
+                "Reviewer Confidence Signals",
                 "Evidence Navigation",
                 "REAL_BACKEND_PROXY_EXAMPLES.md",
                 "OPERATOR_INSTALL_RUN_MATRIX.md",
@@ -145,8 +147,10 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("http://localhost:8080/"));
         assertTrue(demoPath.contains("http://localhost:8080/routing-demo.html"));
         assertTrue(demoPath.contains("http://localhost:8080/load-balancing-cockpit.html"));
+        assertTrue(demoPath.contains("Reviewer Workflow Checklist"));
         assertTrue(demoPath.contains("Routing Proof Summary"));
         assertTrue(demoPath.contains("Scenario Comparison"));
+        assertTrue(demoPath.contains("Reviewer Confidence Signals"));
         assertTrue(demoPath.contains("Evidence Navigation reviewer path"));
         assertTrue(demoPath.contains("selected strategy/backend"));
         assertTrue(demoPath.contains("scenario-to-scenario what-changed notes"));
@@ -154,6 +158,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("degradation/recovery notes"));
         assertTrue(demoPath.contains("local verification commands"));
         assertTrue(demoPath.contains("routing-to-evidence dashboard links"));
+        assertTrue(demoPath.contains("copyable end-to-end reviewer walkthrough"));
         assertTrue(demoPath.contains("explicit not-proven boundaries"));
         assertTrue(demoPath.contains("mvn -Dtest=LocalProxyEvidenceExportTest test"));
         assertTrue(demoPath.contains("target/proxy-evidence/local-proxy-evidence.md"));
@@ -216,11 +221,14 @@ class ReviewerTrustMapDocumentationTest {
         String matrix = section(trustMap, "## Evidence Matrix", "## Recommended Reviewer Flows");
         String normalized = matrix.toLowerCase(Locale.ROOT);
 
+        assertTrue(matrix.contains("How should a reviewer walk the routing cockpit end-to-end?"));
         assertTrue(matrix.contains("How do routing proof scenarios compare?"));
         assertTrue(matrix.contains("/routing-demo.html"));
         assertTrue(matrix.contains("RoutingDecisionDemoTest"));
+        assertTrue(matrix.contains("Reviewer Workflow Checklist"));
         assertTrue(matrix.contains("Routing Proof Summary"));
         assertTrue(matrix.contains("Scenario Comparison"));
+        assertTrue(matrix.contains("Reviewer Confidence Signals"));
         assertTrue(matrix.contains("Evidence Navigation reviewer path"));
         assertTrue(matrix.contains("previous/current scenario names"));
         assertTrue(matrix.contains("selected strategy/backend delta"));
@@ -228,11 +236,16 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("degradation/recovery notes"));
         assertTrue(matrix.contains("routing-to-evidence dashboard links"));
         assertTrue(matrix.contains("copyable local reviewer summary"));
+        assertTrue(matrix.contains("copyable end-to-end reviewer walkthrough"));
         assertTrue(matrix.contains("reviewer/operator/timeline/export packet pages"));
+        assertTrue(normalized.contains("sample scenario to routing comparison"));
+        assertTrue(normalized.contains("evidence dashboards, timeline, and evidence export packet"));
         assertTrue(normalized.contains("packaged normal-load baseline"));
         assertTrue(normalized.contains("edited local demo payloads"));
         assertTrue(normalized.contains("same-origin local api responses"));
         assertTrue(normalized.contains("browser-local copy text"));
+        assertTrue(normalized.contains("upload/share endpoint behavior"));
+        assertTrue(normalized.contains("server-side export/pdf/zip generation"));
         assertTrue(normalized.contains("production deployment certification"));
         assertTrue(normalized.contains("live cloud validation"));
         assertTrue(normalized.contains("real tenant traffic proof"));
@@ -240,6 +253,37 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("server-side export/share artifact creation"));
         assertTrue(normalized.contains("registry publication"));
         assertTrue(normalized.contains("container signing"));
+    }
+
+    @Test
+    void routingCockpitReviewerWorkflowTrustMapSectionIsDiscoverableAndBounded() throws Exception {
+        String trustMap = read(TRUST_MAP);
+        String section = section(trustMap, "### Routing Cockpit Reviewer Workflow", "## Reviewer Demo Path");
+        String normalized = section.toLowerCase(Locale.ROOT);
+
+        assertTrue(section.contains("Routing Cockpit Reviewer Workflow"));
+        assertTrue(section.contains("/routing-demo.html"));
+        assertTrue(section.contains("load sample scenario"));
+        assertTrue(section.contains("run routing comparison"));
+        assertTrue(section.contains("inspect Routing Proof Summary"));
+        assertTrue(section.contains("compare scenario deltas"));
+        assertTrue(section.contains("follow Evidence Navigation links"));
+        assertTrue(section.contains("copy reviewer proof note"));
+        assertTrue(section.contains("export/print packet from `/evidence-export-packet.html`"));
+        assertTrue(section.contains("Reviewer Confidence Signals"));
+        assertTrue(normalized.contains("local repeatability"));
+        assertTrue(normalized.contains("deterministic sample scenarios"));
+        assertTrue(normalized.contains("same-origin api usage"));
+        assertTrue(normalized.contains("static browser-only notes/copy actions"));
+        assertTrue(normalized.contains("not-production-certified boundary"));
+        assertTrue(normalized.contains("browser-local copy text only"));
+        assertTrue(normalized.contains("no upload/share endpoint"));
+        assertTrue(normalized.contains("no server-side export/pdf/zip generation"));
+        assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no live cloud proof"));
+        assertTrue(normalized.contains("no real tenant proof"));
+        assertTrue(normalized.contains("no registry publication proof"));
+        assertTrue(normalized.contains("no container signing proof"));
     }
 
     @Test

@@ -51,7 +51,7 @@ class RoutingDecisionDemoTest {
 
     @Test
     void routingDemoPageExistsAndIsServed() throws Exception {
-        assertTrue(Files.exists(ROUTING_DEMO_PAGE), "routing browser demo page should be source-controlled");
+        assertTrue(Files.exists(ROUTING_DEMO_PAGE), "routing cockpit page should be source-controlled");
 
         mockMvc.perform(get("/routing-demo.html"))
                 .andExpect(status().isOk())
@@ -326,7 +326,7 @@ class RoutingDecisionDemoTest {
         assertFalse(normalized.contains("enterprise production ready"));
         assertFalse(normalized.contains("registry published"));
         assertFalse(normalized.contains("signed container"));
-        assertFalse(normalized.contains("governance-applied"));
+        assertTrue(normalized.contains("no governance-applied proof"));
     }
 
     @Test
@@ -367,6 +367,124 @@ class RoutingDecisionDemoTest {
         assertFalse(normalized.contains("production monitoring proof"));
         assertFalse(normalized.contains("live production telemetry is available"));
         assertFalse(normalized.contains("server-side lab monitor export"));
+    }
+
+    @Test
+    void routingDemoMonitoringDepthExplainsWhatTheCockpitMonitors() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("What the Enterprise Lab Cockpit Monitors"));
+        assertTrue(page.contains("aria-label=\"Monitored proof chain explanation cards\""));
+        assertTrue(page.contains("Active controlled lab scenario"));
+        assertTrue(page.contains("Shows which local lab input state is under review"));
+        assertTrue(page.contains("Routing comparison request state"));
+        assertTrue(page.contains("not run, completed, empty, or unavailable"));
+        assertTrue(page.contains("Selected strategy"));
+        assertTrue(page.contains("connect strategy behavior to backend selection"));
+        assertTrue(page.contains("Selected backend/server"));
+        assertTrue(page.contains("compare it with alternatives and visible signals"));
+        assertTrue(page.contains("Candidate backend health states"));
+        assertTrue(page.contains("degraded inputs are visible"));
+        assertTrue(page.contains("Visible latency signal"));
+        assertTrue(page.contains("whether latency pressure helped explain the selected candidate"));
+        assertTrue(page.contains("Visible load/connection pressure signal"));
+        assertTrue(page.contains("Capacity/weight signal if exposed"));
+        assertTrue(page.contains("exact production scoring is not claimed"));
+        assertTrue(page.contains("Degradation/fallback/recovery state"));
+        assertTrue(page.contains("Scenario-to-scenario delta"));
+        assertTrue(page.contains("Evidence association path"));
+        assertTrue(page.contains("Reviewer handoff readiness"));
+        assertTrue(normalized.contains("production proof gaps"));
+    }
+
+    @Test
+    void routingDemoMonitorStatusCardsAndSignalGuideStayLabBounded() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("Monitor Status Cards"));
+        assertTrue(page.contains("aria-label=\"Monitor status cards\""));
+        assertTrue(page.contains("id=\"monitor-status-scenario\""));
+        assertTrue(page.contains("id=\"monitor-status-strategy\""));
+        assertTrue(page.contains("id=\"monitor-status-backend\""));
+        assertTrue(page.contains("id=\"monitor-status-health\""));
+        assertTrue(page.contains("id=\"monitor-status-pressure\""));
+        assertTrue(page.contains("id=\"monitor-status-delta\""));
+        assertTrue(page.contains("id=\"monitor-status-handoff\""));
+        assertTrue(page.contains("not production telemetry and do not monitor production behavior"));
+        assertTrue(page.contains("Signal Interpretation Guide"));
+        assertTrue(page.contains("id=\"signal-interpretation-guide-panel\""));
+        assertTrue(page.contains("visible lab signals derived from the local comparison response"));
+        assertTrue(page.contains("Exact production scoring is not claimed unless exposed by the API."));
+        assertTrue(page.contains("Healthy vs unhealthy backend state"));
+        assertTrue(page.contains("Lower or higher latency"));
+        assertTrue(page.contains("Load or active connection pressure"));
+        assertTrue(page.contains("Capacity/weight assumptions where exposed"));
+        assertTrue(page.contains("Unchanged backend with changed signals"));
+        assertTrue(page.contains("Backend changes under the same strategy"));
+        assertTrue(page.contains("Strategy changes but backend remains the same"));
+        assertTrue(page.contains("All backends degraded or unhealthy"));
+        assertTrue(page.contains("Missing or unavailable local API data"));
+        assertFalse(normalized.contains("live production telemetry is available"));
+        assertFalse(normalized.contains("production monitoring proof"));
+    }
+
+    @Test
+    void routingDemoDecisionChainTraceAndCopyTextAreBrowserLocal() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("id=\"decision-chain-trace-panel\""));
+        assertTrue(page.contains("Decision Chain Trace"));
+        assertTrue(page.contains("data-copy-target=\"monitored-decision-chain-output\""));
+        assertTrue(page.contains("Copy monitored decision chain"));
+        assertTrue(page.contains("controlled lab scenario -> visible input signals -> selected strategy -> selected backend ->"));
+        assertTrue(page.contains("id=\"decision-chain-scenario\""));
+        assertTrue(page.contains("id=\"decision-chain-signals\""));
+        assertTrue(page.contains("id=\"decision-chain-strategy\""));
+        assertTrue(page.contains("id=\"decision-chain-backend\""));
+        assertTrue(page.contains("id=\"decision-chain-delta\""));
+        assertTrue(page.contains("id=\"decision-chain-evidence\""));
+        assertTrue(page.contains("id=\"decision-chain-handoff\""));
+        assertTrue(page.contains("id=\"decision-chain-not-proven\""));
+        assertTrue(page.contains("# Monitored Decision Chain"));
+        assertTrue(page.contains("activeLabScenario: "));
+        assertTrue(page.contains("runStatus: "));
+        assertTrue(page.contains("visibleSignalInterpretation: "));
+        assertTrue(page.contains("degradationFallbackRecoveryState: "));
+        assertTrue(page.contains("scenarioDelta: "));
+        assertTrue(page.contains("decisionChainTrace: controlled lab scenario -> visible input signals -> selected strategy -> selected backend -> comparison delta -> evidence association -> reviewer handoff"));
+        assertTrue(page.contains("reviewerHandoffPath: /evidence-export-packet.html browser-local copy/download/print handoff"));
+        assertTrue(page.contains("copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"));
+        assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no production telemetry proof"));
+        assertTrue(normalized.contains("no live-cloud proof"));
+        assertTrue(normalized.contains("no real-tenant proof"));
+        assertTrue(normalized.contains("no registry publication proof"));
+        assertTrue(normalized.contains("no container signing proof"));
+        assertTrue(normalized.contains("no governance-applied proof"));
+        assertTrue(normalized.contains("no upload/share endpoint"));
+        assertTrue(normalized.contains("no server-side export/pdf/zip generation"));
+    }
+
+    @Test
+    void routingDemoSurprisingDecisionGuideDirectsReviewerInvestigation() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("id=\"surprising-decision-investigation-panel\""));
+        assertTrue(page.contains("How to Investigate a Surprising Decision"));
+        assertTrue(page.contains("Backend changed unexpectedly"));
+        assertTrue(page.contains("Backend did not change despite signal changes"));
+        assertTrue(page.contains("All candidates unhealthy"));
+        assertTrue(page.contains("Local API unavailable"));
+        assertTrue(page.contains("Copied handoff text unavailable"));
+        assertTrue(page.contains("Reviewer next inspection path"));
+        assertTrue(page.contains("Inspect Signal Interpretation Guide, Scenario Comparison, Evidence Associations, Evidence Navigation, and the local export packet"));
+        assertTrue(normalized.contains("no server-side sharing or export is implied"));
+        assertFalse(normalized.contains("automatic upload"));
+        assertFalse(normalized.contains("server-side investigation export"));
     }
 
     @Test

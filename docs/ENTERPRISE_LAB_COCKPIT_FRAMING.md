@@ -43,6 +43,24 @@ The proof chain starts with a controlled lab scenario, runs the same-origin loca
 
 This chain proves local repeatability, controlled scenario interpretation, and reviewer/operator explanation quality for the current codebase. It does not prove production traffic behavior, production telemetry, live cloud execution, real tenant behavior, SLA/SLO achievement, registry publication, container signing, governance application, or production certification.
 
+## Monitored Proof Chain
+
+The Enterprise Lab Cockpit monitors the controlled lab scenario, routing comparison request state, selected strategy, selected backend/server, candidate backend health states, visible latency signal, visible load/connection pressure signal, capacity/weight signal when exposed, degradation/fallback/recovery state, scenario-to-scenario delta, evidence association path, reviewer handoff readiness, local lab proof boundary, and production proof gaps.
+
+The monitored proof chain should read as:
+
+controlled lab scenario -> visible input signals -> selected strategy -> selected backend/server -> comparison delta -> evidence association -> reviewer handoff.
+
+This monitoring depth is reviewer-facing interpretation for controlled pre-production routing validation. It does not add production telemetry, production monitoring, live-cloud validation, real-tenant validation, registry operations, signing, or server-side export behavior.
+
+## How to Investigate Surprising Lab Decisions
+
+- If the backend changed unexpectedly, inspect the selected strategy, candidate health, visible latency/load/connection pressure, capacity/weight fields, scenario comparison delta, and returned reason text.
+- If the backend did not change despite signal changes, compare close candidates and reason text before treating the lab decision as equivalent.
+- If all candidates are unhealthy, treat the result as a degradation/fallback boundary, not production proof.
+- If the local API is unavailable, static reviewer guidance and evidence links remain available, but the monitored decision chain is incomplete.
+- If copied handoff text is unavailable, use the visible lab explanation as the fallback; no server-side sharing or export is implied.
+
 ## Evidence Association Model
 
 The cockpit associates:

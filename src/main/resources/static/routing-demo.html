@@ -354,6 +354,92 @@
           Strict local lab monitor for controlled scenario validation, reviewer trust, operator interpretation,
           and pre-production evidence review. This is lab-bounded proof, not production monitoring.
         </p>
+        <h3 style="margin-top: 14px;">What the Enterprise Lab Cockpit Monitors</h3>
+        <div class="proof-grid" aria-label="Monitored proof chain explanation cards">
+          <div class="proof-card">
+            <strong>Active controlled lab scenario</strong>
+            <p>Shows which local lab input state is under review so the decision is tied to a repeatable scenario instead of a vague outcome.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Routing comparison request state</strong>
+            <p>Shows whether the same-origin local comparison request is not run, completed, empty, or unavailable before a reviewer trusts the proof chain.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected strategy</strong>
+            <p>Identifies the routing method returned by the local comparison response so reviewers can connect strategy behavior to backend selection.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected backend/server</strong>
+            <p>Names the candidate selected by the controlled lab response so operators can compare it with alternatives and visible signals.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Candidate backend health states</strong>
+            <p>Separates healthy and unhealthy candidates so degraded inputs are visible instead of hidden behind a single selected-backend label.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Visible latency signal</strong>
+            <p>Exposes local p95 latency where present so reviewers can see whether latency pressure helped explain the selected candidate.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Visible load/connection pressure signal</strong>
+            <p>Exposes in-flight request, queue, and pressure fields where present so the lab decision can be interpreted against local load.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Capacity/weight signal if exposed</strong>
+            <p>Shows configured capacity, estimated concurrency, and weight fields when the local payload exposes them; exact production scoring is not claimed.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Degradation/fallback/recovery state</strong>
+            <p>Calls out unhealthy, overloaded, empty, or recovering states so reviewers know when the result is a lab boundary or recovery story.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Scenario-to-scenario delta</strong>
+            <p>Compares the current lab payload against the packaged baseline so reviewers can see what changed before explaining why the result changed.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Evidence association path</strong>
+            <p>Connects the routing proof to reviewer, operator, timeline, and packet pages so the decision is not isolated from the evidence trail.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Reviewer handoff readiness</strong>
+            <p>Shows whether browser-local proof notes and packet links are ready for reviewer handoff, while keeping production proof gaps explicit.</p>
+          </div>
+        </div>
+        <h3 style="margin-top: 14px;">Monitor Status Cards</h3>
+        <p class="muted">
+          These browser-local status cards summarize current lab state only; they are not production telemetry and do not monitor production behavior.
+        </p>
+        <div class="proof-grid" aria-label="Monitor status cards">
+          <div class="proof-card">
+            <strong>Lab scenario</strong>
+            <p id="monitor-status-scenario">No previous lab scenario has been captured yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Strategy</strong>
+            <p id="monitor-status-strategy">Not run.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected backend</strong>
+            <p id="monitor-status-backend">Not run.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Backend health</strong>
+            <p id="monitor-status-health">Run Compare strategies to inspect candidate health.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Signal pressure</strong>
+            <p id="monitor-status-pressure">Run Compare strategies to summarize local lab signal pressure.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Delta state</strong>
+            <p id="monitor-status-delta">Run Compare strategies to compare scenario deltas.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Evidence handoff</strong>
+            <p id="monitor-status-handoff">Evidence links are available before a lab run; they do not certify production behavior.</p>
+          </div>
+        </div>
+        <h3 style="margin-top: 14px;">Live Monitor Snapshot</h3>
         <div class="proof-grid" aria-label="Enterprise Lab cockpit monitor cards">
           <div class="proof-card">
             <strong>Active lab scenario</strong>
@@ -412,6 +498,150 @@
         </p>
         <h3 style="margin-top: 14px;">Copyable lab monitor explanation</h3>
         <pre id="lab-monitor-output">No previous lab scenario has been captured yet. Load a controlled lab scenario and run Compare strategies to generate the lab monitor explanation.</pre>
+      </div>
+    </section>
+
+    <section id="signal-interpretation-guide-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Signal Interpretation Guide</h2>
+        <span class="muted">Reviewer-facing interpretation for visible local lab signals.</span>
+      </div>
+      <div class="panel-body">
+        <p class="muted">
+          Interpret these as visible lab signals derived from the local comparison response and request payload.
+          Exact production scoring is not claimed unless exposed by the API.
+        </p>
+        <div class="proof-grid" aria-label="Signal interpretation guide cards">
+          <div class="proof-card">
+            <strong>Healthy vs unhealthy backend state</strong>
+            <p>A healthy backend can be selected; an unhealthy backend should be treated as degraded lab input and inspected before trusting any selection.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Lower or higher latency</strong>
+            <p>Lower visible latency usually supports selection under latency-aware strategies, while higher p95 latency is a pressure signal for reviewer interpretation.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Load or active connection pressure</strong>
+            <p>Higher in-flight request counts or queue depth indicate local lab pressure that may explain a backend change under the same strategy.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Capacity/weight assumptions where exposed</strong>
+            <p>Capacity, estimated concurrency, and weight help explain local preference when present; the cockpit does not invent hidden production scoring.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Unchanged backend with changed signals</strong>
+            <p>If the backend is unchanged but visible lab signals changed, compare reason text and deltas before calling the result equivalent.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Backend changes under the same strategy</strong>
+            <p>If the strategy is unchanged but the backend changed, visible health, latency, load, queue, capacity, or weight shifts may have changed the preferred candidate.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Strategy changes but backend remains the same</strong>
+            <p>If the strategy changed but the backend stayed the same, multiple strategies can still prefer the same controlled lab candidate.</p>
+          </div>
+          <div class="proof-card">
+            <strong>All backends degraded or unhealthy</strong>
+            <p>All-unhealthy lab input is a degradation boundary and should be reviewed as a failure/fallback scenario, not production proof.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Missing or unavailable local API data</strong>
+            <p>If local API data is missing or unavailable, static guidance and evidence links remain available, but the monitored decision chain is not complete.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="decision-chain-trace-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Decision Chain Trace</h2>
+        <div class="actions">
+          <button class="copy" type="button" data-copy-target="monitored-decision-chain-output">Copy monitored decision chain</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="muted">
+          Chain under review: controlled lab scenario -> visible input signals -> selected strategy -> selected backend ->
+          comparison delta -> evidence association -> reviewer handoff.
+        </p>
+        <div class="proof-grid" aria-label="Decision chain trace cards">
+          <div class="proof-card">
+            <strong>Controlled lab scenario</strong>
+            <p id="decision-chain-scenario">Load a controlled lab scenario to start the trace.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Visible input signals</strong>
+            <p id="decision-chain-signals">Run Compare strategies to identify visible health, latency, load, connection, capacity, and weight signals.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected strategy</strong>
+            <p id="decision-chain-strategy">Not run.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Selected backend</strong>
+            <p id="decision-chain-backend">Not run.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Comparison delta</strong>
+            <p id="decision-chain-delta">Run Compare strategies to summarize what changed from the previous lab state.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Evidence association</strong>
+            <p id="decision-chain-evidence">Evidence path links remain available before a lab run; they do not certify production behavior.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Reviewer handoff</strong>
+            <p id="decision-chain-handoff">Browser-local handoff text is waiting for a completed local lab comparison.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Not-proven boundary</strong>
+            <p id="decision-chain-not-proven">No production traffic proof, production telemetry proof, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication proof, container signing proof, governance-applied proof, or production certification claim.</p>
+          </div>
+        </div>
+        <h3 style="margin-top: 14px;">Copyable monitored decision chain</h3>
+        <pre id="monitored-decision-chain-output"># Monitored Decision Chain
+
+status: waiting for local lab comparison
+nextStep: load the controlled lab scenario and run Compare strategies
+decisionChainTrace: controlled lab scenario -> visible input signals -> selected strategy -> selected backend -> comparison delta -> evidence association -> reviewer handoff
+reviewerHandoffPath: /evidence-export-packet.html browser-local copy/download/print handoff
+productionNotProven: no production traffic proof; no production telemetry proof; no live-cloud proof; no real-tenant proof; no SLA/SLO proof; no registry publication proof; no container signing proof; no governance-applied proof; no production certification claim
+copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry</pre>
+      </div>
+    </section>
+
+    <section id="surprising-decision-investigation-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>How to Investigate a Surprising Decision</h2>
+        <span class="muted">Controlled lab triage prompts for reviewer/operator follow-up.</span>
+      </div>
+      <div class="panel-body">
+        <div class="proof-grid" aria-label="Surprising lab decision investigation cards">
+          <div class="proof-card">
+            <strong>Backend changed unexpectedly</strong>
+            <p>Inspect selected strategy, visible signal pressure, candidate health, and the scenario comparison delta before assuming the change is wrong.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Backend did not change despite signal changes</strong>
+            <p>Compare reason text and close candidate signals; unchanged selection can still be explainable in controlled lab evidence.</p>
+          </div>
+          <div class="proof-card">
+            <strong>All candidates unhealthy</strong>
+            <p>Treat the result as a degradation/fallback boundary and review the unhealthy candidate list plus static fallback guidance.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Local API unavailable</strong>
+            <p>Use static reviewer guidance and evidence links while marking the monitored decision chain incomplete until the same-origin local API responds.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Copied handoff text unavailable</strong>
+            <p>Use the visible lab explanation as fallback when clipboard permission is unavailable; no server-side sharing or export is implied.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Reviewer next inspection path</strong>
+            <p>Inspect Signal Interpretation Guide, Scenario Comparison, Evidence Associations, Evidence Navigation, and the local export packet before escalation.</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1091,7 +1321,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       scenarioComparison: document.getElementById("scenario-comparison-output"),
       reviewerWalkthrough: document.getElementById("reviewer-walkthrough-output"),
       evidenceAssociation: document.getElementById("evidence-association-output"),
-      labMonitor: document.getElementById("lab-monitor-output")
+      labMonitor: document.getElementById("lab-monitor-output"),
+      monitoredDecisionChain: document.getElementById("monitored-decision-chain-output")
     };
     const proofFields = {
       strategy: document.getElementById("proof-strategy"),
@@ -1127,6 +1358,25 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       degradation: document.getElementById("lab-monitor-degradation"),
       evidencePath: document.getElementById("lab-monitor-evidence-path"),
       handoff: document.getElementById("lab-monitor-handoff")
+    };
+    const monitorStatusFields = {
+      scenario: document.getElementById("monitor-status-scenario"),
+      strategy: document.getElementById("monitor-status-strategy"),
+      backend: document.getElementById("monitor-status-backend"),
+      health: document.getElementById("monitor-status-health"),
+      pressure: document.getElementById("monitor-status-pressure"),
+      delta: document.getElementById("monitor-status-delta"),
+      handoff: document.getElementById("monitor-status-handoff")
+    };
+    const decisionChainFields = {
+      scenario: document.getElementById("decision-chain-scenario"),
+      signals: document.getElementById("decision-chain-signals"),
+      strategy: document.getElementById("decision-chain-strategy"),
+      backend: document.getElementById("decision-chain-backend"),
+      delta: document.getElementById("decision-chain-delta"),
+      evidence: document.getElementById("decision-chain-evidence"),
+      handoff: document.getElementById("decision-chain-handoff"),
+      notProven: document.getElementById("decision-chain-not-proven")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -1347,6 +1597,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       renderEvidenceAssociations();
       renderReviewerWalkthrough();
       renderLabMonitorExplanation();
+      renderMonitorStatusCards();
+      renderDecisionChainTrace();
     }
 
     function currentRequestPayload() {
@@ -1841,6 +2093,123 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "",
         "labProofBoundaries: controlled lab evidence from local payloads, same-origin local API responses, visible browser text, and static evidence links",
         "productionNotProven: no production traffic proof; no production telemetry proof; no live cloud proof; no real tenant proof; no SLA/SLO proof; no registry publication proof; no container signing proof; no production certification claim",
+        "copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"
+      ].join("\n");
+    }
+
+    function visibleSignalInterpretation(selectedServer, currentMetrics, results) {
+      if (!selectedServer) {
+        return lastRoutingError
+          || "No selected backend signals yet; run Compare strategies to derive reviewer-facing interpretation from the local comparison response.";
+      }
+      const parts = [];
+      parts.push(Boolean(selectedServer.healthy)
+        ? "healthy backend state: selected backend is healthy in the visible lab payload"
+        : "unhealthy backend state: selected backend is degraded in the visible lab payload");
+      parts.push("latency signal: p95LatencyMs=" + Number(selectedServer.p95LatencyMillis || 0)
+        + " and lower latency generally supports latency-aware selection");
+      parts.push("load/connection pressure: inFlight=" + Number(selectedServer.inFlightRequestCount || 0)
+        + " and queueDepth=" + Number(selectedServer.queueDepth || 0));
+      parts.push("capacity/weight assumptions: capacity=" + Number(selectedServer.configuredCapacity || 0)
+        + ", estimatedConcurrencyLimit=" + Number(selectedServer.estimatedConcurrencyLimit || 0)
+        + ", weight=" + Number(selectedServer.weight || 0));
+      if (currentMetrics.healthyCount === 0 && currentMetrics.unhealthyServers.length > 0) {
+        parts.push("all backends degraded/unhealthy: treat this as a fallback boundary, not production proof");
+      }
+      if (results.length === 0) {
+        parts.push("local API data missing or unavailable: monitored decision chain remains incomplete");
+      }
+      parts.push("exact production scoring is not claimed; this is visible lab signal interpretation derived from the local comparison response");
+      return parts.join("; ") + ".";
+    }
+
+    function renderMonitorStatusCards() {
+      const currentPayload = currentRequestPayload();
+      const currentMetrics = scenarioMetrics(currentPayload);
+      const currentScenario = scenarioName(currentMetrics);
+      const results = lastRoutingBody && Array.isArray(lastRoutingBody.results)
+        ? lastRoutingBody.results
+        : [];
+      const primary = results.length > 0 ? results[0] : null;
+      const selectedStrategy = primary && primary.strategyId ? primary.strategyId : "Not run";
+      const selectedBackend = primary && primary.chosenServerId ? primary.chosenServerId : "Not run";
+      const selectedServer = primary && primary.chosenServerId ? selectedServerDetails(primary.chosenServerId) : null;
+      const signalPressure = selectedServer
+        ? visibleSignalInterpretation(selectedServer, currentMetrics, results)
+        : (lastRoutingError || "Run Compare strategies to summarize local lab signal pressure.");
+
+      monitorStatusFields.scenario.textContent = currentScenario + (results.length > 0
+        ? "."
+        : "; No previous lab scenario has been captured yet.");
+      monitorStatusFields.strategy.textContent = selectedStrategy;
+      monitorStatusFields.backend.textContent = selectedBackend;
+      monitorStatusFields.health.textContent = selectedServer
+        ? "selectedBackendHealthy=" + Boolean(selectedServer.healthy)
+          + "; healthyCandidates=" + currentMetrics.healthyCount
+          + "; unhealthyCandidates=" + currentMetrics.unhealthyServers.length
+        : "Run Compare strategies to inspect candidate backend health states.";
+      monitorStatusFields.pressure.textContent = signalPressure;
+      monitorStatusFields.delta.textContent = scenarioFields.signals.textContent
+        || "Run Compare strategies to compare scenario-to-scenario delta.";
+      monitorStatusFields.handoff.textContent = results.length > 0
+        ? "Evidence handoff ready for browser-local proof notes and /evidence-export-packet.html review."
+        : "Evidence links are available before a lab run; they do not certify production behavior.";
+    }
+
+    function renderDecisionChainTrace() {
+      const currentPayload = currentRequestPayload();
+      const currentMetrics = scenarioMetrics(currentPayload);
+      const currentScenario = scenarioName(currentMetrics);
+      const results = lastRoutingBody && Array.isArray(lastRoutingBody.results)
+        ? lastRoutingBody.results
+        : [];
+      const primary = results.length > 0 ? results[0] : null;
+      const selectedStrategy = primary && primary.strategyId ? primary.strategyId : "not run";
+      const selectedBackend = primary && primary.chosenServerId ? primary.chosenServerId : "not run";
+      const selectedServer = primary && primary.chosenServerId ? selectedServerDetails(primary.chosenServerId) : null;
+      const requestStatus = results.length > 0
+        ? "completed with " + results.length + " strategy result(s)"
+        : (lastRoutingError || "not run; static reviewer guidance remains available");
+      const signalInterpretation = visibleSignalInterpretation(selectedServer, currentMetrics, results);
+      const comparisonDelta = scenarioFields.signals.textContent
+        || "Run Compare strategies to compare scenario-to-scenario delta.";
+      const degradationState = scenarioFields.degradation.textContent
+        || "Static reviewer guidance remains available before a lab run.";
+      const evidencePath = evidenceNavigationPath();
+      const handoffPath = "/evidence-export-packet.html browser-local copy/download/print handoff";
+      const notProven = "No production traffic proof, production telemetry proof, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication proof, container signing proof, governance-applied proof, or production certification claim.";
+
+      decisionChainFields.scenario.textContent =
+        "controlled lab scenario -> " + currentScenario + "; requestStatus=" + requestStatus + ".";
+      decisionChainFields.signals.textContent =
+        "visible input signals -> " + signalInterpretation;
+      decisionChainFields.strategy.textContent =
+        "visible input signals -> selected strategy " + selectedStrategy + ".";
+      decisionChainFields.backend.textContent =
+        "selected strategy " + selectedStrategy + " -> selected backend/server " + selectedBackend + ".";
+      decisionChainFields.delta.textContent =
+        "selected backend/server -> comparison delta: " + comparisonDelta + " " + degradationState;
+      decisionChainFields.evidence.textContent =
+        "comparison delta -> evidence association path: " + evidencePath + ".";
+      decisionChainFields.handoff.textContent =
+        "evidence association -> reviewer handoff: " + handoffPath + ".";
+      decisionChainFields.notProven.textContent = notProven;
+
+      outputs.monitoredDecisionChain.textContent = [
+        "# Monitored Decision Chain",
+        "",
+        "activeLabScenario: " + currentScenario,
+        "runStatus: " + requestStatus,
+        "selectedStrategy: " + selectedStrategy,
+        "selectedBackend: " + selectedBackend,
+        "visibleSignalInterpretation: " + signalInterpretation,
+        "degradationFallbackRecoveryState: " + degradationState,
+        "scenarioDelta: " + comparisonDelta,
+        "decisionChainTrace: controlled lab scenario -> visible input signals -> selected strategy -> selected backend -> comparison delta -> evidence association -> reviewer handoff",
+        "evidenceAssociationPath: " + evidencePath,
+        "reviewerHandoffPath: " + handoffPath,
+        "",
+        "productionNotProven: " + notProven,
         "copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"
       ].join("\n");
     }

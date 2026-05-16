@@ -111,6 +111,7 @@ class ReviewerTrustMapDocumentationTest {
                 "routing-demo.html",
                 "Routing Proof Summary",
                 "Scenario Comparison",
+                "Evidence Navigation",
                 "REAL_BACKEND_PROXY_EXAMPLES.md",
                 "OPERATOR_INSTALL_RUN_MATRIX.md",
                 "OPERATOR_PACKAGING.md",
@@ -146,11 +147,13 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("http://localhost:8080/load-balancing-cockpit.html"));
         assertTrue(demoPath.contains("Routing Proof Summary"));
         assertTrue(demoPath.contains("Scenario Comparison"));
+        assertTrue(demoPath.contains("Evidence Navigation reviewer path"));
         assertTrue(demoPath.contains("selected strategy/backend"));
         assertTrue(demoPath.contains("scenario-to-scenario what-changed notes"));
         assertTrue(demoPath.contains("visible input signal deltas"));
         assertTrue(demoPath.contains("degradation/recovery notes"));
         assertTrue(demoPath.contains("local verification commands"));
+        assertTrue(demoPath.contains("routing-to-evidence dashboard links"));
         assertTrue(demoPath.contains("explicit not-proven boundaries"));
         assertTrue(demoPath.contains("mvn -Dtest=LocalProxyEvidenceExportTest test"));
         assertTrue(demoPath.contains("target/proxy-evidence/local-proxy-evidence.md"));
@@ -218,11 +221,14 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("RoutingDecisionDemoTest"));
         assertTrue(matrix.contains("Routing Proof Summary"));
         assertTrue(matrix.contains("Scenario Comparison"));
+        assertTrue(matrix.contains("Evidence Navigation reviewer path"));
         assertTrue(matrix.contains("previous/current scenario names"));
         assertTrue(matrix.contains("selected strategy/backend delta"));
         assertTrue(matrix.contains("input signal deltas"));
         assertTrue(matrix.contains("degradation/recovery notes"));
+        assertTrue(matrix.contains("routing-to-evidence dashboard links"));
         assertTrue(matrix.contains("copyable local reviewer summary"));
+        assertTrue(matrix.contains("reviewer/operator/timeline/export packet pages"));
         assertTrue(normalized.contains("packaged normal-load baseline"));
         assertTrue(normalized.contains("edited local demo payloads"));
         assertTrue(normalized.contains("same-origin local api responses"));

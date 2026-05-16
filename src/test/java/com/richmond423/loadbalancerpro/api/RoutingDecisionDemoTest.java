@@ -93,6 +93,19 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Degradation/recovery explanation"));
         assertTrue(page.contains("Copy scenario comparison"));
         assertTrue(page.contains("scenario-comparison-output"));
+        assertTrue(page.contains("Evidence Navigation"));
+        assertTrue(page.contains("Routing evidence navigation links"));
+        assertTrue(page.contains("/load-balancing-cockpit.html"));
+        assertTrue(page.contains("/enterprise-lab-reviewer.html"));
+        assertTrue(page.contains("/operator-evidence-dashboard.html"));
+        assertTrue(page.contains("/evidence-timeline.html"));
+        assertTrue(page.contains("/evidence-export-packet.html"));
+        assertTrue(page.contains("Reviewer path"));
+        assertTrue(page.contains("start with Routing Proof Summary"));
+        assertTrue(page.contains("compare scenarios"));
+        assertTrue(page.contains("inspect operator evidence"));
+        assertTrue(page.contains("review timeline/history"));
+        assertTrue(page.contains("export/copy/print the reviewer packet"));
         assertTrue(page.contains("Copy curl"));
         assertTrue(page.contains("Copy payload"));
         assertTrue(page.contains("Copy summary"));
@@ -164,6 +177,33 @@ class RoutingDecisionDemoTest {
         assertTrue(normalized.contains("no live cloud validation"));
         assertTrue(normalized.contains("no real tenant data"));
         assertTrue(normalized.contains("no upload, share endpoint, or server-side export/pdf/zip generation"));
+    }
+
+    @Test
+    void routingDemoEvidenceNavigationIsLocalStaticAndBounded() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("id=\"routing-evidence-navigation-panel\""));
+        assertTrue(page.contains("Reviewer path across local static evidence pages."));
+        assertTrue(page.contains("Use Routing Proof Summary and Scenario Comparison"));
+        assertTrue(page.contains("Review the Enterprise Lab dashboard posture"));
+        assertTrue(page.contains("Check operator evidence locations"));
+        assertTrue(page.contains("Compare local and CI evidence stages"));
+        assertTrue(page.contains("Use the browser-local packet page"));
+        assertTrue(normalized.contains("local/demo evidence only"));
+        assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no live cloud proof"));
+        assertTrue(normalized.contains("no real tenant proof"));
+        assertTrue(normalized.contains("registry publication proof"));
+        assertTrue(normalized.contains("container signing proof"));
+        assertFalse(page.contains("href=\"http"));
+        assertFalse(page.contains("href=\"//"));
+        assertFalse(normalized.contains("navigator.sendbeacon"));
+        assertFalse(normalized.contains("fetch(\"https://"));
+        assertFalse(normalized.contains("fetch('https://"));
+        assertFalse(normalized.contains("upload endpoint"));
+        assertFalse(normalized.contains("server-side packet"));
     }
 
     @Test

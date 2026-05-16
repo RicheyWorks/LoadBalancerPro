@@ -14,10 +14,10 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.version>3.5.14</spring-boot.version>
         <netty.version>4.2.13.Final</netty.version>
-        <aws-sdk-v2.version>2.44.4</aws-sdk-v2.version>
+        <aws-sdk-v2.version>2.44.7</aws-sdk-v2.version>
         <javafx.version>17.0.19</javafx.version>
         <mockito.version>5.17.0</mockito.version>
-        <jacoco.version>0.8.13</jacoco.version>
+        <jacoco.version>0.8.14</jacoco.version>
         <argLine></argLine>
     </properties>
 
@@ -195,7 +195,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.6.3</version>
             </plugin>
 
             <!-- Test coverage reporting. Reports are generated under target/site/jacoco during verify. -->

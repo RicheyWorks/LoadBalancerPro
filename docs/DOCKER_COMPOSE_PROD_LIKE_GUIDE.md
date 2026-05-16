@@ -122,7 +122,7 @@ This Compose example does not prove:
 - High availability.
 - Cloud capacity.
 
-Treat this as a local/private validation aid for an enterprise-demo repository, not as production deployment evidence.
+Treat this as a local/private validation aid for an Enterprise Lab cockpit repository, not as production deployment evidence.
 
 ## Local Docker Warning Note
 

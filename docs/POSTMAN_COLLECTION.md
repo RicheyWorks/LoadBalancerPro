@@ -70,4 +70,4 @@ Included requests use localhost or loopback placeholders only. They do not call 
 - Smoke harness failures print the checked route, expected status, actual status, and child process log paths. They never print the configured API key.
 - If a protected request works without `X-API-Key` in prod/cloud-sandbox API-key mode, stop and re-check the active profile and `loadbalancerpro.auth.mode`.
 
-This lab and its smoke harness are enterprise-demo hardening support, not production IAM, SSO, certification, compliance proof, OAuth2 validation, or public exposure approval.
+This lab and its smoke harness are Enterprise Lab cockpit hardening support, not production IAM, SSO, certification, compliance proof, OAuth2 validation, or public exposure approval.

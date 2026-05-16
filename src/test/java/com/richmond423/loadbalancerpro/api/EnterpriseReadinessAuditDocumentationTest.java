@@ -92,6 +92,8 @@ class EnterpriseReadinessAuditDocumentationTest {
         for (String expected : List.of(
                 "Date: 2026-05-14",
                 "LoadBalancerPro Enterprise Lab",
+                "LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.",
+                "ENTERPRISE_LAB_COCKPIT_FRAMING.md",
                 "Enterprise Lab ready",
                 "Production Gateway Candidate",
                 "main",

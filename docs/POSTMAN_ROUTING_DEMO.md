@@ -1,13 +1,13 @@
 # Postman Routing Decision Demo
 
-This guide covers the `Routing Decision Demo` folder in `postman/LoadBalancerPro.postman_collection.json`.
-It mirrors the browser page at:
+This guide covers the legacy `Routing Decision Demo` folder in `postman/LoadBalancerPro.postman_collection.json`.
+It mirrors the Enterprise Lab routing cockpit legacy route at:
 
 ```text
 http://localhost:8080/routing-demo.html
 ```
 
-The demo is local/operator review only. It is not certification, not benchmark proof, not legal compliance proof, and not identity proof. It uses synthetic caller-provided routing telemetry, does not mutate cloud state, does not construct `CloudManager`, does not call external services, and does not write runtime reports.
+The cockpit proof path is local/operator lab review only. It is not certification, not benchmark proof, not legal compliance proof, and not identity proof. It uses controlled caller-provided routing telemetry, does not mutate cloud state, does not construct `CloudManager`, does not call external services, and does not write runtime reports.
 
 ## Import
 
@@ -48,7 +48,7 @@ Supported request-level strategy IDs are:
 - `WEIGHTED_ROUND_ROBIN`
 - `ROUND_ROBIN`
 
-These are the strategies currently registered by the API. The demo does not invent a separate response-time strategy or merge legacy batch allocation behavior into request-level routing.
+These are the strategies currently registered by the API. The lab cockpit path does not invent a separate response-time strategy or merge legacy batch allocation behavior into request-level routing.
 
 ## Sample Body
 

@@ -28,7 +28,9 @@ class ProductionReadinessSummaryDocumentationTest {
         String summary = read(SUMMARY);
 
         for (String expected : List.of(
-                "production-candidate for controlled enterprise demo/reviewer usage",
+                "production-candidate for controlled enterprise lab/reviewer usage",
+                "LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.",
+                "ENTERPRISE_LAB_COCKPIT_FRAMING.md",
                 "Local/default mode is intentionally permissive",
                 "Container/default deployment uses the `prod` profile",
                 "deny-by-default for non-`OPTIONS` `/api/**`",

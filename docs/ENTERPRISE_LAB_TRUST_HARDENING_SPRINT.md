@@ -6,6 +6,14 @@ LoadBalancerPro is **Enterprise Lab ready**. It is **not production certified** 
 
 This sprint strengthens reviewer trust and governance evidence without changing runtime certification status. It is a reviewer-ready Enterprise Lab documentation and guardrail sprint, not a deployment certification sprint.
 
+## Enterprise Lab Cockpit Framing
+
+LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
+
+The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibility, and reviewer/operator explanations. It does not claim production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, production telemetry, or production monitoring proof.
+
+Use [`ENTERPRISE_LAB_COCKPIT_FRAMING.md`](ENTERPRISE_LAB_COCKPIT_FRAMING.md) for the explicit product identity, what the cockpit monitors, what reviewer/operator questions it answers, and the production not-proven boundaries.
+
 ## What This Sprint Is
 
 - Enterprise Lab trust hardening.
@@ -90,12 +98,12 @@ Repo-side CODEOWNERS coverage and manual governance recommendations are tracked 
 
 Docs must not claim:
 
-- production approval or production certification;
-- readiness for enterprise production;
-- completed container-signing or registry-distribution proof;
-- completed real IdP or real tenant proof;
-- completed live cloud or live AWS validation;
-- production SLO or SLA certification.
+- No production approval or production certification.
+- No readiness for enterprise production.
+- No completed container-signing or registry-distribution proof.
+- No completed real IdP or real tenant proof.
+- No completed live cloud or live AWS validation.
+- No production SLO or SLA certification.
 
 Use candidate, planned, future, or requires approval for unexecuted tracks.
 

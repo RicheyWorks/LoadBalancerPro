@@ -44,7 +44,11 @@ class ReadmeVisibilityDocumentationTest {
         assertTrue(readme.toLowerCase(Locale.ROOT).contains("enterprise-style operator foundation"));
         assertTrue(readme.contains("http://localhost:8080/"));
         assertTrue(readme.contains("http://localhost:8080/load-balancing-cockpit.html"));
-        assertTrue(readme.contains("docs/REVIEWER_TRUST_MAP.md#reviewer-demo-path"));
+        assertTrue(readme.contains("docs/REVIEWER_TRUST_MAP.md#reviewer-lab-review-path"));
+        assertTrue(readme.contains("## Enterprise Lab Cockpit, Not a Demo"));
+        assertTrue(readme.contains("LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo."));
+        assertTrue(readme.contains("## What the Enterprise Lab Cockpit Monitors"));
+        assertTrue(readme.contains("## What the Enterprise Lab Cockpit Answers"));
         assertTrue(readme.contains("The Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod`"));
         assertTrue(readme.contains("Docker mode starts the prod API-key profile by default"));
         assertTrue(readme.contains("Local developer mode is intentionally permissive"));
@@ -58,7 +62,8 @@ class ReadmeVisibilityDocumentationTest {
                 "docs/EXECUTIVE_SUMMARY.md",
                 "docs/DEMO_WALKTHROUGH.md",
                 "docs/REVIEWER_TRUST_MAP.md",
-                "docs/REVIEWER_TRUST_MAP.md#reviewer-demo-path",
+                "docs/REVIEWER_TRUST_MAP.md#reviewer-lab-review-path",
+                "docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md",
                 "docs/OPERATOR_RUN_PROFILES.md",
                 "docs/DEPLOYMENT_SMOKE_KIT.md",
                 "docs/CONTAINER_DEPLOYMENT.md",

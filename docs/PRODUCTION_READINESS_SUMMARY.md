@@ -2,11 +2,15 @@
 
 This summary is the reviewer-facing snapshot for LoadBalancerPro after the enterprise-production-candidate hardening line. It says what is ready for controlled production-like review, what remains outside scope, and which evidence proves each claim.
 
-Current label: production-candidate for controlled enterprise demo/reviewer usage, with a verified `v2.5.0` JAR/docs-first GitHub Release. This is not production certification and not approval for unmanaged public traffic.
+Current label: production-candidate for controlled enterprise lab/reviewer usage, with a verified `v2.5.0` JAR/docs-first GitHub Release. This is not production certification and not approval for unmanaged public traffic.
 
 ## Product Identity
 
 LoadBalancerPro's next identity is **LoadBalancerPro Enterprise Lab**: Enterprise Adaptive Routing Lab first, Production Gateway Candidate second. The lab track owns controlled scenario running, deterministic replay, LASE shadow/recommend/active-experiment comparison, policy gates, scorecards, process-local lab metrics, measured local performance evidence, mocked auth proof, evidence export, and SRE walkthroughs. The gateway-candidate track owns optional future proxy/runtime hardening, config reload, production-grade metrics, rate limiting, canary/shadow mode, rollback, signed container distribution later, and deployment guides later. See [`ENTERPRISE_LAB_PRODUCT_CHARTER.md`](ENTERPRISE_LAB_PRODUCT_CHARTER.md), [`ENTERPRISE_LAB_ROADMAP.md`](ENTERPRISE_LAB_ROADMAP.md), [`CONTROLLED_ACTIVE_LASE_POLICY_GATE.md`](CONTROLLED_ACTIVE_LASE_POLICY_GATE.md), [`ENTERPRISE_AUTH_PROOF_LANE.md`](ENTERPRISE_AUTH_PROOF_LANE.md), and [`NEXT_GOAL_PROMPTS.md`](NEXT_GOAL_PROMPTS.md).
+
+LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo. The explicit cockpit framing is recorded in [`ENTERPRISE_LAB_COCKPIT_FRAMING.md`](ENTERPRISE_LAB_COCKPIT_FRAMING.md).
+
+The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibility, and reviewer/operator explanations. It does not claim production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, production telemetry, or production monitoring proof.
 
 The current enterprise-readiness audit is [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md). Its verdict is Enterprise Lab ready and production gateway not certified.
 The reviewer-ready trust-hardening sprint packet is [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md); it strengthens governance evidence and selects a future gated path without changing production certification status.
@@ -70,6 +74,7 @@ The `v2.5.0` JAR/docs-first release evidence is produced and verified for the ex
 
 ## Evidence Index
 
+- Enterprise Lab cockpit framing: [`ENTERPRISE_LAB_COCKPIT_FRAMING.md`](ENTERPRISE_LAB_COCKPIT_FRAMING.md)
 - Reviewer navigation: [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md)
 - Enterprise readiness audit: [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md)
 - Trust-hardening sprint packet: [`ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md`](ENTERPRISE_LAB_TRUST_HARDENING_SPRINT.md)

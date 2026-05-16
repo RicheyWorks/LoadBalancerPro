@@ -4,7 +4,7 @@ Date: 2026-05-04
 
 ## Purpose And Scope
 
-This guide provides lab and enterprise-demo operations guidance for LoadBalancerPro.
+This guide provides Enterprise Lab cockpit operations guidance for LoadBalancerPro.
 
 It is not production certification. It does not prove that any deployment is secure, highly available, compliant, or ready for unmanaged production traffic.
 
@@ -158,4 +158,4 @@ This guide does not provide:
 - Cloud account governance.
 - Production certification.
 
-Treat this as operational guidance for an enterprise-demo repository. A real production deployment still needs environment-specific architecture, security review, monitoring, incident response, and operational ownership.
+Treat this as operational guidance for an Enterprise Lab cockpit repository. A real production deployment still needs environment-specific architecture, security review, monitoring, incident response, and operational ownership.

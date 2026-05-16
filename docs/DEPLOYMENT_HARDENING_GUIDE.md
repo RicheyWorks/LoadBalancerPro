@@ -4,7 +4,7 @@ Date: 2026-05-04
 
 ## Purpose And Scope
 
-LoadBalancerPro is an enterprise-demo and lab system. This guide documents safer deployment patterns for reviewers and operators who want to run the application in a production-like environment.
+LoadBalancerPro is an Enterprise Lab cockpit and lab system. This guide documents safer deployment patterns for reviewers and operators who want to run the application in a production-like environment.
 
 This guide is not production certification. It does not prove that a deployment is secure, compliant, highly available, or ready for unmanaged production traffic.
 
@@ -178,4 +178,4 @@ This guide does not provide:
 - Container registry publication or signing; those require the focused decision gate in [`CONTAINER_SIGNING_DECISION_RECORD.md`](CONTAINER_SIGNING_DECISION_RECORD.md) and rollout plan in [`CONTAINER_REGISTRY_SIGNING_ROLLOUT.md`](CONTAINER_REGISTRY_SIGNING_ROLLOUT.md).
 - Production certification.
 
-Treat this guide as deployment hardening guidance for an enterprise-demo repository. A real production deployment needs infrastructure-specific design, review, testing, monitoring, and incident response.
+Treat this guide as deployment hardening guidance for an Enterprise Lab cockpit repository. A real production deployment needs infrastructure-specific design, review, testing, monitoring, and incident response.

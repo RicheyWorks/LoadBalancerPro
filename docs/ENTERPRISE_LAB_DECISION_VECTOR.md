@@ -295,7 +295,7 @@ The Decision Vector is a foundation for future work. These roadmap items are fut
 - Correlated failure modeling: future/not implemented.
 - Live interrogation mode: future/not implemented.
 
-Decision Vector data should make those paths safer by keeping known signals, unknown signals, exact scoring availability, and production proof boundaries explicit.
+Decision Vector data should make those paths safer by keeping known signals, unknown signals, exact scoring availability, and production proof boundaries explicit. The dedicated [`ENTERPRISE_LAB_DECISION_REPLAY_WHAT_IF_PLAN.md`](ENTERPRISE_LAB_DECISION_REPLAY_WHAT_IF_PLAN.md) planning lane uses Decision Vectors as the prerequisite evidence layer for future controlled-lab replay and one-signal what-if analysis, but it does not implement replay execution, what-if execution, a live replay endpoint, production traffic replay, external storage, external telemetry, or real backend mutation.
 
 ## Static Example Decision Vector Payload
 

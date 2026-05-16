@@ -710,6 +710,109 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
       </div>
     </section>
 
+    <section id="alternative-candidate-evidence-panel" class="panel" style="margin-top: 16px;">
+      <div class="panel-head">
+        <h2>Alternative Candidate Evidence</h2>
+        <div class="actions">
+          <button class="copy" type="button" data-copy-target="alternative-candidate-evidence-output">Copy alternative candidate evidence</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="muted">
+          Compare selected vs non-selected candidates using visible controlled lab response data only.
+          The cockpit uses visible health state, visible latency signal, visible load/connection pressure, and visible capacity/weight signal
+          only when exposed. Hidden scoring must not be invented, and exact production scoring is not claimed unless exposed by the API.
+        </p>
+        <div class="proof-grid" aria-label="Alternative candidate evidence comparison cards">
+          <div class="proof-card">
+            <strong>Selected candidate</strong>
+            <p id="alternative-candidate-selected">Run Compare strategies to identify the selected backend/server.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Non-selected candidates</strong>
+            <p id="alternative-candidate-non-selected">Run Compare strategies to list visible non-selected candidates from the local lab payload.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Known from lab response</strong>
+            <p id="alternative-candidate-known">Known visible candidate signals are health, latency, load/connection pressure, capacity, and weight fields when exposed by the local lab response.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Not exposed/unknown</strong>
+            <p id="alternative-candidate-unknown">Hidden routing internals, exact production scoring, production telemetry, and unavailable local API data are not inferred.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Why Not This Candidate?</strong>
+            <p id="alternative-candidate-why-not">Alternative candidate reasoning remains unknown until visible local lab signals are available.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Candidate Comparison Limits</strong>
+            <p id="alternative-candidate-limits-summary">The local lab response can explain visible signals only; reviewers should treat unknowns as investigation items.</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 14px;">Why Not This Candidate?</h3>
+        <p id="alternative-candidate-list">
+          Candidate-specific non-selection notes are populated from visible local lab response data only.
+        </p>
+
+        <h3 style="margin-top: 14px;">Candidate Comparison Limits</h3>
+        <p id="candidate-comparison-limits">
+          Exact production scoring is not claimed unless exposed by the API; hidden routing internals are not inferred;
+          local lab response data can explain visible signals only; production telemetry proof is not claimed and production monitoring
+          is not claimed; unknown or unexposed candidate signals remain investigation items.
+        </p>
+
+        <h3 style="margin-top: 14px;">Candidate Evidence Cards</h3>
+        <div class="proof-grid" aria-label="Candidate evidence cards">
+          <div class="proof-card">
+            <strong>Selected candidate</strong>
+            <p id="candidate-evidence-card-selected">Waiting for local lab comparison.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Strongest visible support signal</strong>
+            <p id="candidate-evidence-card-support">Run Compare strategies to identify the strongest visible support signal.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Alternative candidate caution</strong>
+            <p id="candidate-evidence-card-caution">Visible signals may not fully explain every non-selected candidate.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Unknown signal reminder</strong>
+            <p id="candidate-evidence-card-unknown">Exact scoring and hidden routing internals are not exposed unless the API returns them.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Investigation next step</strong>
+            <p id="candidate-evidence-card-next-step">Review the decision trace, scenario comparison, evidence associations, and export packet before making production claims.</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 14px;">Candidate Review Questions</h3>
+        <div class="checklist" aria-label="Candidate review questions checklist">
+          <label><input type="checkbox" checked disabled> Which candidate was selected?</label>
+          <label><input type="checkbox" checked disabled> Which candidates were not selected?</label>
+          <label><input type="checkbox" checked disabled> What visible signals support the selection?</label>
+          <label><input type="checkbox" checked disabled> What visible signals weaken alternatives?</label>
+          <label><input type="checkbox" checked disabled> What signals are unknown?</label>
+          <label><input type="checkbox" checked disabled> What evidence page should be checked next?</label>
+          <label><input type="checkbox" checked disabled> What remains not proven?</label>
+        </div>
+
+        <h3 style="margin-top: 14px;">Copyable alternative candidate evidence</h3>
+        <pre id="alternative-candidate-evidence-output"># Alternative Candidate Evidence
+
+status: waiting for local lab comparison
+selectedBackend: not run
+visibleCandidateComparisons: run Compare strategies to compare selected and non-selected candidates
+knownCandidateSignals: health, latency, load/connection pressure, capacity, and weight fields when exposed by the local lab response
+unknownCandidateSignals: exact production scoring not exposed; hidden routing internals not inferred; production telemetry proof not claimed; production monitoring not claimed
+whyAlternativesWereNotSelected: alternatives cannot be explained until visible local lab signals are available
+candidateComparisonLimits: exact production scoring is not claimed unless exposed by the API; hidden routing internals are not inferred; local lab response can explain visible signals only; unknowns remain investigation items
+evidenceAssociationPath: /routing-demo.html -> /enterprise-lab-reviewer.html -> /operator-evidence-dashboard.html -> /evidence-timeline.html -> /evidence-export-packet.html
+productionNotProven: no production traffic proof; no production telemetry proof; no live-cloud proof; no real-tenant proof; no SLA/SLO proof; no registry publication proof; no container signing proof; no governance-applied proof; no production certification claim
+copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry</pre>
+      </div>
+    </section>
+
     <section id="known-unknown-signals-panel" class="panel" style="margin-top: 16px;">
       <div class="panel-head">
         <h2>Known vs Unknown Signals</h2>
@@ -1525,7 +1628,8 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       evidenceAssociation: document.getElementById("evidence-association-output"),
       labMonitor: document.getElementById("lab-monitor-output"),
       monitoredDecisionChain: document.getElementById("monitored-decision-chain-output"),
-      decisionTraceExplanation: document.getElementById("decision-trace-explanation-output")
+      decisionTraceExplanation: document.getElementById("decision-trace-explanation-output"),
+      alternativeCandidateEvidence: document.getElementById("alternative-candidate-evidence-output")
     };
     const proofFields = {
       strategy: document.getElementById("proof-strategy"),
@@ -1599,6 +1703,21 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       cardAlternative: document.getElementById("decision-trace-card-alternative"),
       cardUnknown: document.getElementById("decision-trace-card-unknown"),
       cardNextStep: document.getElementById("decision-trace-card-next-step")
+    };
+    const alternativeCandidateEvidenceFields = {
+      selected: document.getElementById("alternative-candidate-selected"),
+      nonSelected: document.getElementById("alternative-candidate-non-selected"),
+      known: document.getElementById("alternative-candidate-known"),
+      unknown: document.getElementById("alternative-candidate-unknown"),
+      whyNot: document.getElementById("alternative-candidate-why-not"),
+      limitsSummary: document.getElementById("alternative-candidate-limits-summary"),
+      list: document.getElementById("alternative-candidate-list"),
+      limits: document.getElementById("candidate-comparison-limits"),
+      cardSelected: document.getElementById("candidate-evidence-card-selected"),
+      cardSupport: document.getElementById("candidate-evidence-card-support"),
+      cardCaution: document.getElementById("candidate-evidence-card-caution"),
+      cardUnknown: document.getElementById("candidate-evidence-card-unknown"),
+      cardNextStep: document.getElementById("candidate-evidence-card-next-step")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -1822,6 +1941,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       renderMonitorStatusCards();
       renderDecisionChainTrace();
       renderDecisionTraceDepth();
+      renderAlternativeCandidateEvidence();
     }
 
     function currentRequestPayload() {
@@ -2473,6 +2593,142 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           : "visible signals alone do not fully explain non-selection; rely on returned reason text or treat candidate reason as unknown";
         return (server.serverId || "unnamed candidate") + ": " + reason;
       }).join("; ") + ".";
+    }
+
+    function candidateName(server) {
+      return server && server.serverId ? server.serverId : "unnamed candidate";
+    }
+
+    function nonSelectedCandidates(currentPayload, selectedServer) {
+      const servers = currentPayload && Array.isArray(currentPayload.servers) ? currentPayload.servers : [];
+      if (!selectedServer) {
+        return servers;
+      }
+      return servers.filter((server) => server.serverId !== selectedServer.serverId);
+    }
+
+    function candidateSignalSummary(server) {
+      if (!server) {
+        return "candidate signal details are not available from the local lab response.";
+      }
+      return "health=" + visibleSignalValue(server, "healthy", "unknown")
+        + "; averageLatencyMillis=" + visibleSignalValue(server, "averageLatencyMillis", "unknown")
+        + "; p95LatencyMillis=" + visibleSignalValue(server, "p95LatencyMillis", "unknown")
+        + "; p99LatencyMillis=" + visibleSignalValue(server, "p99LatencyMillis", "unknown")
+        + "; inFlightRequestCount=" + visibleSignalValue(server, "inFlightRequestCount", "unknown")
+        + "; queueDepth=" + visibleSignalValue(server, "queueDepth", "unknown")
+        + "; configuredCapacity=" + visibleSignalValue(server, "configuredCapacity", "unknown")
+        + "; estimatedConcurrencyLimit=" + visibleSignalValue(server, "estimatedConcurrencyLimit", "unknown")
+        + "; weight=" + visibleSignalValue(server, "weight", "unknown");
+    }
+
+    function candidateUnknownSignalSummary(server) {
+      if (!server) {
+        return "Unknown candidate signals: selected candidate details are not exposed or the local lab API response is unavailable.";
+      }
+      const missing = [];
+      [
+        ["healthy", "health state"],
+        ["averageLatencyMillis", "average latency"],
+        ["p95LatencyMillis", "p95 latency"],
+        ["p99LatencyMillis", "p99 latency"],
+        ["inFlightRequestCount", "in-flight request count"],
+        ["queueDepth", "queue depth"],
+        ["configuredCapacity", "configured capacity"],
+        ["estimatedConcurrencyLimit", "estimated concurrency limit"],
+        ["weight", "weight"]
+      ].forEach(([key, label]) => {
+        if (!hasVisibleSignal(server, key)) {
+          missing.push(label);
+        }
+      });
+      const missingText = missing.length > 0
+        ? "Unknown or unexposed candidate signals: " + missing.join(", ") + "."
+        : "Common selected-candidate comparison signals are visible in the local lab payload.";
+      return missingText
+        + " Exact production scoring is not exposed unless the API returns it; hidden routing internals, production telemetry proof, and production monitoring are not claimed.";
+    }
+
+    function candidateComparisonSummary(selectedServer, currentPayload, results) {
+      const alternatives = nonSelectedCandidates(currentPayload, selectedServer);
+      if (results.length === 0) {
+        return lastRoutingError
+          || "Run Compare strategies to compare selected and non-selected candidates from the controlled lab response.";
+      }
+      if (!selectedServer) {
+        return "Selected backend is not mapped to the local lab payload; visible selected-vs-non-selected candidate comparison is incomplete.";
+      }
+      if (alternatives.length === 0) {
+        return "Selected candidate " + candidateName(selectedServer)
+          + " is visible, but no non-selected candidates are available in the local lab payload.";
+      }
+      return "Selected candidate " + candidateName(selectedServer) + " known from lab response: "
+        + candidateSignalSummary(selectedServer)
+        + ". Non-selected candidates visible in local lab response: "
+        + alternatives.map((server) => candidateName(server) + " (" + candidateSignalSummary(server) + ")").join(" | ")
+        + ".";
+    }
+
+    function candidateComparisonLimitsText() {
+      return "Exact production scoring is not claimed unless exposed by the API; hidden routing internals are not inferred; local lab response can explain visible signals only; production telemetry proof and production monitoring are not claimed; unknown or unexposed candidate signals remain investigation items.";
+    }
+
+    function renderAlternativeCandidateEvidence() {
+      const currentPayload = currentRequestPayload();
+      const currentMetrics = scenarioMetrics(currentPayload);
+      const results = lastRoutingBody && Array.isArray(lastRoutingBody.results)
+        ? lastRoutingBody.results
+        : [];
+      const primary = results.length > 0 ? results[0] : null;
+      const selectedBackend = primary && primary.chosenServerId ? primary.chosenServerId : "not run";
+      const selectedServer = primary && primary.chosenServerId ? selectedServerDetails(primary.chosenServerId) : null;
+      const alternatives = nonSelectedCandidates(currentPayload, selectedServer);
+      const knownSignals = selectedServer
+        ? "Known from lab response for selected candidate " + candidateName(selectedServer) + ": " + candidateSignalSummary(selectedServer) + "."
+        : "Known from lab response: no selected candidate has been mapped yet; static guidance remains available.";
+      const unknownSignals = candidateUnknownSignalSummary(selectedServer);
+      const visibleComparisons = candidateComparisonSummary(selectedServer, currentPayload, results);
+      const whyAlternatives = alternativeCandidateSummary(selectedServer, currentPayload, currentMetrics, results);
+      const limits = candidateComparisonLimitsText();
+      const evidencePath = evidenceNavigationPath();
+      const notProven = "No production traffic proof, production telemetry proof, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication proof, container signing proof, governance-applied proof, or production certification claim.";
+      const nonSelectedText = alternatives.length > 0
+        ? "Non-selected candidates visible in the local lab payload: " + alternatives.map(candidateName).join(", ") + "."
+        : "No non-selected candidates are visible yet; run Compare strategies or inspect whether the local lab payload contains multiple candidates.";
+
+      alternativeCandidateEvidenceFields.selected.textContent = selectedServer
+        ? "Selected backend/server " + selectedBackend + " is known from the controlled lab response; " + candidateSignalSummary(selectedServer) + "."
+        : "Run Compare strategies to identify the selected backend/server from the controlled lab response.";
+      alternativeCandidateEvidenceFields.nonSelected.textContent = nonSelectedText;
+      alternativeCandidateEvidenceFields.known.textContent = knownSignals;
+      alternativeCandidateEvidenceFields.unknown.textContent = unknownSignals;
+      alternativeCandidateEvidenceFields.whyNot.textContent = whyAlternatives;
+      alternativeCandidateEvidenceFields.limitsSummary.textContent = limits;
+      alternativeCandidateEvidenceFields.list.textContent = whyAlternatives;
+      alternativeCandidateEvidenceFields.limits.textContent = limits;
+      alternativeCandidateEvidenceFields.cardSelected.textContent = selectedBackend;
+      alternativeCandidateEvidenceFields.cardSupport.textContent = leadingVisibleSignal(selectedServer, currentMetrics, results);
+      alternativeCandidateEvidenceFields.cardCaution.textContent = alternatives.length > 0
+        ? "Compare non-selected candidates without inventing hidden scoring: " + alternatives.map(candidateName).join(", ") + "."
+        : "Alternative candidate caution remains active because non-selected candidates are unavailable or not yet compared.";
+      alternativeCandidateEvidenceFields.cardUnknown.textContent = unknownSignals;
+      alternativeCandidateEvidenceFields.cardNextStep.textContent =
+        "Inspect Decision Trace, Scenario Comparison, Evidence Associations, and Export Packet; treat unknowns as investigation items.";
+
+      outputs.alternativeCandidateEvidence.textContent = [
+        "# Alternative Candidate Evidence",
+        "",
+        "selectedBackend: " + selectedBackend,
+        "visibleCandidateComparisons: " + visibleComparisons,
+        "knownCandidateSignals: " + knownSignals,
+        "unknownCandidateSignals: " + unknownSignals,
+        "whyAlternativesWereNotSelected: " + whyAlternatives,
+        "candidateComparisonLimits: " + limits,
+        "evidenceAssociationPath: " + evidencePath,
+        "",
+        "productionNotProven: " + notProven,
+        "copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"
+      ].join("\n");
     }
 
     function selectedBackendReasonSummary(primary, selectedServer, currentMetrics, results) {

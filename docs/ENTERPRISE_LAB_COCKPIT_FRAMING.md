@@ -65,6 +65,16 @@ The investigation playbook should guide reviewers to inspect the Signal Interpre
 
 Decision trace depth remains controlled lab evidence for pre-production routing validation. It does not prove production traffic behavior, production telemetry, production monitoring, production certification, SLA/SLO achievement, live-cloud execution, real-tenant behavior, registry publication, container signing, or governance application.
 
+## Alternative Candidate Evidence
+
+Alternative candidate evidence compares the selected backend against non-selected candidates using visible controlled lab response data only. The cockpit can show selected vs non-selected candidate names, visible health state, visible latency signal, visible load/connection pressure, visible capacity/weight signal when exposed, and a reviewer-facing note about why a candidate appears favored or weakened.
+
+Known candidate signals are fields present in the local lab request payload or same-origin routing comparison response. Unknown or unexposed candidate signals include missing candidate fields, unavailable local API responses, exact production scoring not exposed by the API, hidden routing internals, hidden production weighting, production telemetry, production monitoring, live-cloud behavior, and real-tenant behavior.
+
+The cockpit must not invent hidden scoring. If visible signal comparison does not explain why a non-selected candidate lost, reviewers should record that the candidate reason is unknown or only partially explainable and treat the unknown as an investigation item. The correct next step is to inspect Decision Trace, Scenario Comparison, Evidence Associations, the Signal Interpretation Guide, and the Export Packet before making any production-facing claim.
+
+Alternative candidate evidence remains controlled lab evidence for pre-production routing validation. It does not prove production traffic behavior, production telemetry proof, production monitoring proof, production certification, exact production scoring, live-cloud execution, real-tenant behavior, SLA/SLO achievement, registry publication, container signing, or governance application.
+
 ## How to Investigate Surprising Lab Decisions
 
 - If the backend changed unexpectedly, inspect the selected strategy, candidate health, visible latency/load/connection pressure, capacity/weight fields, scenario comparison delta, and returned reason text.

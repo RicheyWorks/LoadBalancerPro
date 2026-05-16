@@ -564,6 +564,83 @@ class RoutingDecisionDemoTest {
     }
 
     @Test
+    void routingDemoAlternativeCandidateEvidenceComparesVisibleLabSignals() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("id=\"alternative-candidate-evidence-panel\""));
+        assertTrue(page.contains("Alternative Candidate Evidence"));
+        assertTrue(page.contains("Compare selected vs non-selected candidates using visible controlled lab response data only."));
+        assertTrue(page.contains("Hidden scoring must not be invented"));
+        assertTrue(page.contains("exact production scoring is not claimed unless exposed by the API"));
+        assertTrue(page.contains("data-copy-target=\"alternative-candidate-evidence-output\""));
+        assertTrue(page.contains("id=\"alternative-candidate-selected\""));
+        assertTrue(page.contains("id=\"alternative-candidate-non-selected\""));
+        assertTrue(page.contains("Known from lab response"));
+        assertTrue(page.contains("id=\"alternative-candidate-known\""));
+        assertTrue(page.contains("Not exposed/unknown"));
+        assertTrue(page.contains("id=\"alternative-candidate-unknown\""));
+        assertTrue(page.contains("Why Not This Candidate?"));
+        assertTrue(page.contains("id=\"alternative-candidate-why-not\""));
+        assertTrue(page.contains("id=\"alternative-candidate-list\""));
+        assertTrue(page.contains("Candidate Comparison Limits"));
+        assertTrue(page.contains("id=\"candidate-comparison-limits\""));
+        assertTrue(page.contains("visible health state"));
+        assertTrue(page.contains("visible latency signal"));
+        assertTrue(page.contains("visible load/connection pressure"));
+        assertTrue(page.contains("visible capacity/weight signal"));
+        assertTrue(page.contains("hidden routing internals are not inferred"));
+        assertTrue(page.contains("local lab response can explain visible signals only"));
+        assertTrue(page.contains("unknown or unexposed candidate signals remain investigation items"));
+        assertFalse(normalized.contains("hidden scoring is available"));
+        assertFalse(normalized.contains("hidden routing internals are inferred"));
+        assertFalse(normalized.contains("exact production scoring is claimed"));
+        assertFalse(normalized.contains("production monitoring proof"));
+    }
+
+    @Test
+    void routingDemoAlternativeCandidateEvidenceCopyAndStretchCardsAreBrowserLocal() throws Exception {
+        String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
+        String normalized = page.toLowerCase(Locale.ROOT);
+
+        assertTrue(page.contains("Copy alternative candidate evidence"));
+        assertTrue(page.contains("Candidate Evidence Cards"));
+        assertTrue(page.contains("aria-label=\"Candidate evidence cards\""));
+        assertTrue(page.contains("id=\"candidate-evidence-card-selected\""));
+        assertTrue(page.contains("id=\"candidate-evidence-card-support\""));
+        assertTrue(page.contains("id=\"candidate-evidence-card-caution\""));
+        assertTrue(page.contains("id=\"candidate-evidence-card-unknown\""));
+        assertTrue(page.contains("id=\"candidate-evidence-card-next-step\""));
+        assertTrue(page.contains("Candidate Review Questions"));
+        assertTrue(page.contains("Which candidate was selected?"));
+        assertTrue(page.contains("Which candidates were not selected?"));
+        assertTrue(page.contains("What visible signals support the selection?"));
+        assertTrue(page.contains("What visible signals weaken alternatives?"));
+        assertTrue(page.contains("What signals are unknown?"));
+        assertTrue(page.contains("What evidence page should be checked next?"));
+        assertTrue(page.contains("What remains not proven?"));
+        assertTrue(page.contains("# Alternative Candidate Evidence"));
+        assertTrue(page.contains("selectedBackend: "));
+        assertTrue(page.contains("visibleCandidateComparisons: "));
+        assertTrue(page.contains("knownCandidateSignals: "));
+        assertTrue(page.contains("unknownCandidateSignals: "));
+        assertTrue(page.contains("whyAlternativesWereNotSelected: "));
+        assertTrue(page.contains("candidateComparisonLimits: "));
+        assertTrue(page.contains("evidenceAssociationPath: /routing-demo.html -> /enterprise-lab-reviewer.html -> /operator-evidence-dashboard.html -> /evidence-timeline.html -> /evidence-export-packet.html"));
+        assertTrue(page.contains("copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"));
+        assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no production telemetry proof"));
+        assertTrue(normalized.contains("no live-cloud proof"));
+        assertTrue(normalized.contains("no real-tenant proof"));
+        assertTrue(normalized.contains("no registry publication proof"));
+        assertTrue(normalized.contains("no container signing proof"));
+        assertTrue(normalized.contains("no governance-applied proof"));
+        assertFalse(normalized.contains("upload endpoint"));
+        assertFalse(normalized.contains("server-side export endpoint"));
+        assertFalse(normalized.contains("sendbeacon"));
+    }
+
+    @Test
     void routingDemoSurprisingDecisionGuideDirectsReviewerInvestigation() throws Exception {
         String page = Files.readString(ROUTING_DEMO_PAGE, StandardCharsets.UTF_8);
         String normalized = page.toLowerCase(Locale.ROOT);

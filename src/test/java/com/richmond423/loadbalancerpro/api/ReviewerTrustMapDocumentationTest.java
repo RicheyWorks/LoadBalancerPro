@@ -110,6 +110,7 @@ class ReviewerTrustMapDocumentationTest {
                 "PROXY_DEMO_FIXTURE_LAUNCHER.md",
                 "routing-demo.html",
                 "Reviewer Workflow Checklist",
+                "How This Proof Works",
                 "Evidence Associations",
                 "Association Legend",
                 "Routing Proof Summary",
@@ -150,6 +151,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("http://localhost:8080/routing-demo.html"));
         assertTrue(demoPath.contains("http://localhost:8080/load-balancing-cockpit.html"));
         assertTrue(demoPath.contains("Reviewer Workflow Checklist"));
+        assertTrue(demoPath.contains("How This Proof Works"));
         assertTrue(demoPath.contains("Evidence Associations"));
         assertTrue(demoPath.contains("Association Legend"));
         assertTrue(demoPath.contains("Routing Proof Summary"));
@@ -163,6 +165,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("degradation/recovery notes"));
         assertTrue(demoPath.contains("local verification commands"));
         assertTrue(demoPath.contains("routing-to-evidence dashboard links"));
+        assertTrue(demoPath.contains("copyable how-to reviewer explanation"));
         assertTrue(demoPath.contains("copyable evidence association summary"));
         assertTrue(demoPath.contains("copyable end-to-end reviewer walkthrough"));
         assertTrue(demoPath.contains("explicit not-proven boundaries"));
@@ -229,10 +232,17 @@ class ReviewerTrustMapDocumentationTest {
 
         assertTrue(matrix.contains("How should a reviewer walk the routing cockpit end-to-end?"));
         assertTrue(matrix.contains("How do routing decisions connect to reviewer evidence pages?"));
+        assertTrue(matrix.contains("How should reviewers interpret routing proof details and edge cases?"));
         assertTrue(matrix.contains("How do routing proof scenarios compare?"));
         assertTrue(matrix.contains("/routing-demo.html"));
         assertTrue(matrix.contains("RoutingDecisionDemoTest"));
         assertTrue(matrix.contains("Reviewer Workflow Checklist"));
+        assertTrue(matrix.contains("How This Proof Works"));
+        assertTrue(matrix.contains("How to Interpret This Decision"));
+        assertTrue(matrix.contains("How to Reproduce This Proof"));
+        assertTrue(matrix.contains("How to Read Edge Cases"));
+        assertTrue(matrix.contains("How Strategy Choice Matters"));
+        assertTrue(matrix.contains("How Evidence Supports the Decision"));
         assertTrue(matrix.contains("Evidence Associations"));
         assertTrue(matrix.contains("Association Legend"));
         assertTrue(matrix.contains("Routing Proof Summary"));
@@ -240,6 +250,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("Reviewer Confidence Signals"));
         assertTrue(matrix.contains("Evidence Navigation reviewer path"));
         assertTrue(matrix.contains("copyable evidence association summary"));
+        assertTrue(matrix.contains("copyable how-to reviewer explanation"));
         assertTrue(matrix.contains("selected scenario-to-decision mapping"));
         assertTrue(matrix.contains("selected strategy/backend mapping"));
         assertTrue(matrix.contains("key input signal mapping"));
@@ -260,6 +271,9 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("edited local demo payloads"));
         assertTrue(normalized.contains("same-origin local api responses"));
         assertTrue(normalized.contains("browser-local copy text"));
+        assertTrue(normalized.contains("how the selected backend was chosen"));
+        assertTrue(normalized.contains("strategy and input signals influenced the proof"));
+        assertTrue(normalized.contains("edge cases should be read"));
         assertTrue(normalized.contains("upload/share endpoint behavior"));
         assertTrue(normalized.contains("server-side export/pdf/zip generation"));
         assertTrue(normalized.contains("production deployment certification"));
@@ -269,6 +283,37 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("server-side export/share artifact creation"));
         assertTrue(normalized.contains("registry publication"));
         assertTrue(normalized.contains("container signing"));
+    }
+
+    @Test
+    void routingCockpitHowQuestionGuideTrustMapSectionIsDiscoverableAndBounded() throws Exception {
+        String trustMap = read(TRUST_MAP);
+        String section = section(trustMap, "### Cockpit How-Question Guide", "## Reviewer Demo Path");
+        String normalized = section.toLowerCase(Locale.ROOT);
+
+        assertTrue(section.contains("Cockpit How-Question Guide"));
+        assertTrue(section.contains("/routing-demo.html"));
+        assertTrue(section.contains("How This Proof Works panel"));
+        assertTrue(section.contains("interpret the selected decision"));
+        assertTrue(section.contains("reproduce the proof"));
+        assertTrue(section.contains("read edge cases"));
+        assertTrue(section.contains("understand strategy choice"));
+        assertTrue(section.contains("follow evidence support"));
+        assertTrue(section.contains("copyable how-to reviewer explanation"));
+        assertTrue(normalized.contains("browser-local text"));
+        assertTrue(normalized.contains("visible page guidance"));
+        assertTrue(normalized.contains("local comparison state"));
+        assertTrue(normalized.contains("no upload/share endpoint"));
+        assertTrue(normalized.contains("no server-side export/pdf/zip generation"));
+        assertTrue(normalized.contains("no external calls"));
+        assertTrue(normalized.contains("no telemetry"));
+        assertTrue(normalized.contains("no production traffic proof"));
+        assertTrue(normalized.contains("no live cloud proof"));
+        assertTrue(normalized.contains("no real tenant proof"));
+        assertTrue(normalized.contains("no registry publication proof"));
+        assertTrue(normalized.contains("no container signing proof"));
+        assertTrue(normalized.contains("no github settings mutation proof"));
+        assertTrue(normalized.contains("no production certification claim"));
     }
 
     @Test

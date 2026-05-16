@@ -75,6 +75,15 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(normalized.contains("future/not implemented"));
         assertTrue(normalized.contains("exact production scoring is not claimed"));
         assertTrue(normalized.contains("hidden scoring must not be inferred"));
+        assertTrue(doc.contains("## From Decision Vector to Factor Contributions"));
+        assertTrue(doc.contains("ServerScoreCalculator"));
+        assertTrue(doc.contains("It explains current calculator components; it does not retune weights."));
+        assertTrue(doc.contains("It preserves existing score values and routing selection behavior."));
+        assertTrue(doc.contains("It does not implement decision replay, what-if experiments, or structured decision logging."));
+        assertTrue(doc.contains("\"factorContributions\""));
+        assertTrue(doc.contains("\"EXACT_FROM_CALCULATOR\""));
+        assertTrue(doc.contains("\"NOT_EXPOSED\""));
+        assertTrue(doc.contains("not production scoring proof"));
     }
 
     @Test
@@ -134,7 +143,8 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("A structured explanation object for one controlled lab routing decision"));
         assertTrue(page.contains("Candidate Decision Vector"));
         assertTrue(page.contains("Known vs unknown separation"));
-        assertTrue(page.contains("Factor contribution analysis is a future extension unless implemented and exposed by the API"));
+        assertTrue(page.contains("ServerScoreCalculator factor contribution contract extraction has begun"));
+        assertTrue(page.contains("no score weights are retuned"));
         assertTrue(page.contains("Decision replay, what-if experiments, and structured decision logging should build on this contract later"));
         assertTrue(page.contains("id=\"decision-vector-selected-strategy\""));
         assertTrue(page.contains("id=\"decision-vector-selected-backend\""));
@@ -149,6 +159,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("candidateVectors: "));
         assertTrue(page.contains("exactScoringAvailability: "));
         assertTrue(page.contains("factorContributionAvailability: "));
+        assertTrue(page.contains("internal calculator contribution contract started"));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
         assertTrue(page.contains("structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented"));

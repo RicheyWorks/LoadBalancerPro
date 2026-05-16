@@ -81,7 +81,7 @@ Alternative candidate evidence remains controlled lab evidence for pre-productio
 
 The Candidate Decision Vector describes one visible backend/server with candidate id/name, selected true/false state, health state, latency signal, load or active connection pressure signal, capacity or weight signal when exposed, degradation warning, visible support signals, visible caution signals, unknown signals, why selected or why not selected when explainable, and fallback text when the candidate cannot be explained from visible data.
 
-The Decision Vector contract keeps unknowns explicit. Exact production scoring is not claimed unless exposed by the API, hidden scoring must not be inferred, ServerScoreCalculator factor contribution extraction is additive for current local calculator components, API/cockpit contribution rendering remains future/not implemented unless exposed, replay and what-if execution remain future/not implemented, and structured decision logging remains future/not implemented.
+The Decision Vector contract keeps unknowns explicit. Exact production scoring is not claimed unless exposed by the API, hidden scoring must not be inferred, ServerScoreCalculator factor contribution extraction is additive for current local calculator components, and candidate factor contribution summaries can attach those calculator explanations to selected and non-selected candidate vectors for controlled lab review. API/cockpit contribution rendering remains future/not implemented unless exposed, replay and what-if execution remain future/not implemented, and structured decision logging remains future/not implemented.
 
 ## How to Investigate Surprising Lab Decisions
 

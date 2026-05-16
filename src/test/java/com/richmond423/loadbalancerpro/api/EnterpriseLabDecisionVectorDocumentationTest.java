@@ -79,6 +79,11 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("ServerScoreCalculator"));
         assertTrue(doc.contains("It explains current calculator components; it does not retune weights."));
         assertTrue(doc.contains("It preserves existing score values and routing selection behavior."));
+        assertTrue(doc.contains("## Candidate Factor Contribution Integration"));
+        assertTrue(doc.contains("CandidateFactorContributionSummary"));
+        assertTrue(doc.contains("selected and non-selected candidates carry the same contribution summary shape"));
+        assertTrue(doc.contains("This sprint does not implement a runtime Decision Vector API field"));
+        assertTrue(doc.contains("\"factorContributionSummary\""));
         assertTrue(doc.contains("It does not implement decision replay, what-if experiments, or structured decision logging."));
         assertTrue(doc.contains("\"factorContributions\""));
         assertTrue(doc.contains("\"EXACT_FROM_CALCULATOR\""));
@@ -144,6 +149,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("Candidate Decision Vector"));
         assertTrue(page.contains("Known vs unknown separation"));
         assertTrue(page.contains("ServerScoreCalculator factor contribution contract extraction has begun"));
+        assertTrue(page.contains("candidate summaries can attach those explanations to selected and non-selected candidate vectors"));
         assertTrue(page.contains("no score weights are retuned"));
         assertTrue(page.contains("Decision replay, what-if experiments, and structured decision logging should build on this contract later"));
         assertTrue(page.contains("id=\"decision-vector-selected-strategy\""));
@@ -159,7 +165,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("candidateVectors: "));
         assertTrue(page.contains("exactScoringAvailability: "));
         assertTrue(page.contains("factorContributionAvailability: "));
-        assertTrue(page.contains("internal calculator contribution contract started"));
+        assertTrue(page.contains("internal calculator contribution and candidate summary contracts started"));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
         assertTrue(page.contains("structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented"));

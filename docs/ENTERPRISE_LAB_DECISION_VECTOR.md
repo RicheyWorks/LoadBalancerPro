@@ -136,6 +136,57 @@ exposes them. This is a contract shape and documentation example, not a new runt
 }
 ```
 
+## Candidate Factor Contribution Integration
+
+Candidate factor contribution integration connects the `ServerScoreCalculator` contribution contract to
+Candidate Decision Vectors without changing scoring behavior, strategy weights, or selected backend outcomes.
+The additive `CandidateFactorContributionSummary` view can organize:
+
+- Candidate backend/server id.
+- Selected true/false state.
+- Known visible state-vector signals.
+- Unknown or unexposed candidate signals.
+- Existing `ScoreFactorContribution` entries from `ServerScoreCalculator`.
+- Selected-vs-alternative explanation notes.
+- Exactness boundary for current calculator internals.
+- Controlled lab proof boundary.
+- Production not-proven boundary.
+
+This integration lets selected and non-selected candidates carry the same contribution summary shape.
+Selected-vs-alternative reasoning should use only visible/exposed contribution data, returned reason
+text, and controlled lab signals. Unknown or unavailable candidate signals remain explicit investigation
+items, and hidden scoring must not be invented.
+
+This sprint does not implement a runtime Decision Vector API field, decision replay, what-if execution,
+strategy plugin explainability, structured decision logging, production telemetry, production monitoring, or
+production scoring proof. Future cockpit rendering can consume candidate contribution summaries once an API
+or explicit Decision Vector payload exposes them.
+
+Representative candidate vector attachment shape:
+
+```json
+{
+  "candidateId": "edge-alpha",
+  "selected": true,
+  "knownVisibleSignals": [
+    "healthState=true",
+    "p95LatencyMillis=60.000000",
+    "inFlightRequestCount=20"
+  ],
+  "unknownOrUnexposedSignals": [
+    "hidden routing internals not exposed",
+    "exact production scoring not exposed",
+    "production telemetry not exposed"
+  ],
+  "factorContributionSummary": {
+    "factorNames": ["p95LatencyMillis", "recentErrorRate", "healthPenalty"],
+    "exactnessBoundary": "current calculator components only; hidden scoring is not inferred",
+    "labProofBoundary": "controlled lab evidence only",
+    "productionNotProvenBoundary": "no production scoring proof, telemetry proof, monitoring proof, or certification"
+  }
+}
+```
+
 ## How It Answers Why This Backend
 
 The Decision Vector answers "why this backend?" by showing:

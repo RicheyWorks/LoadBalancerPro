@@ -557,7 +557,7 @@
             <span><a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a><br>Purpose: copy/download/print/share checklist.</span>
           </div>
         </div>
-        <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-summary</code>, <code>/api/enterprise-lab/ci-evidence-gate-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
+        <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-detail</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-evidence-packet</code>, <code>/api/enterprise-lab/ci-evidence-gate-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
         <p class="compact"><strong>Recommended reviewer path:</strong> Start with Reviewer Dashboard. Check Adaptive Routing Scenario Runner. Check Operator Evidence Dashboard. Review Evidence Timeline. Open Evidence Export Packet. Copy/download/print packet. Use Share Checklist before sending. Verify not-proven boundaries.</p>
         <p class="compact"><strong>Reference docs:</strong> <code>docs/REVIEWER_TRUST_MAP.md</code>, <code>docs/ENTERPRISE_READINESS_AUDIT.md</code>, <code>docs/MANUAL_GITHUB_GOVERNANCE_HARDENING.md</code>, <code>docs/CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md</code>, and <code>docs/CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md</code>.</p>
       </div>
@@ -594,6 +594,8 @@
   - /enterprise-lab-reviewer.html
   - /api/enterprise-lab/evidence-timeline
   - /api/enterprise-lab/adaptive-routing-scenario-summary
+  - /api/enterprise-lab/adaptive-routing-scenario-detail
+  - /api/enterprise-lab/adaptive-routing-scenario-evidence-packet
   - /api/enterprise-lab/ci-evidence-gate-summary
   - /api/enterprise-lab/operator-evidence-summary
   - /api/enterprise-lab/reviewer-summary
@@ -638,7 +640,7 @@ Safety note: do not include secrets/tokens/private keys in this packet.</pre>
             <li><input type="checkbox" aria-label="JSON packet downloaded"><span>JSON packet downloaded if machine-readable review is needed.</span></li>
             <li><input type="checkbox" aria-label="PDF print copy generated through browser"><span>PDF/print copy generated through browser print/save-as-PDF if needed.</span></li>
             <li><input type="checkbox" aria-label="Evidence timeline link included"><span>Evidence timeline link included: <code>/evidence-timeline.html</code>.</span></li>
-            <li><input type="checkbox" aria-label="Adaptive routing scenario runner link included"><span>Adaptive routing scenario runner link included: <code>/adaptive-routing-scenarios.html</code> and <code>/api/enterprise-lab/adaptive-routing-scenario-summary</code>.</span></li>
+            <li><input type="checkbox" aria-label="Adaptive routing scenario runner link included"><span>Adaptive routing scenario runner link included: <code>/adaptive-routing-scenarios.html</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-detail</code>, and <code>/api/enterprise-lab/adaptive-routing-scenario-evidence-packet</code>.</span></li>
             <li><input type="checkbox" aria-label="CI evidence gate prototype link included"><span>CI evidence gate prototype link included: <code>/ci-evidence-gate.html</code>, with artifact contract <code>docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md</code> and template <code>docs/examples/ci-evidence-gate-summary.template.json</code>.</span></li>
             <li><input type="checkbox" aria-label="Operator evidence dashboard link included"><span>Operator evidence dashboard link included: <code>/operator-evidence-dashboard.html</code>.</span></li>
             <li><input type="checkbox" aria-label="Reviewer dashboard link included"><span>Reviewer dashboard link included: <code>/enterprise-lab-reviewer.html</code>.</span></li>

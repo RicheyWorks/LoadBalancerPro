@@ -1,6 +1,8 @@
 package com.richmond423.loadbalancerpro.api;
 
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioDrilldown;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioEvidencePacket;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioEvidencePacketBuilder;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioRunner;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioSummary;
 
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/enterprise-lab")
 public class EnterpriseLabAdaptiveRoutingScenarioController {
     private final AdaptiveRoutingScenarioRunner runner;
+    private final AdaptiveRoutingScenarioEvidencePacketBuilder evidencePacketBuilder;
 
     public EnterpriseLabAdaptiveRoutingScenarioController() {
         this(new AdaptiveRoutingScenarioRunner());
@@ -19,6 +22,7 @@ public class EnterpriseLabAdaptiveRoutingScenarioController {
 
     EnterpriseLabAdaptiveRoutingScenarioController(AdaptiveRoutingScenarioRunner runner) {
         this.runner = runner;
+        this.evidencePacketBuilder = new AdaptiveRoutingScenarioEvidencePacketBuilder(runner);
     }
 
     @GetMapping("/adaptive-routing-scenario-summary")
@@ -29,5 +33,10 @@ public class EnterpriseLabAdaptiveRoutingScenarioController {
     @GetMapping("/adaptive-routing-scenario-detail")
     public AdaptiveRoutingScenarioDrilldown adaptiveRoutingScenarioDetail() {
         return runner.runDrilldown();
+    }
+
+    @GetMapping("/adaptive-routing-scenario-evidence-packet")
+    public AdaptiveRoutingScenarioEvidencePacket adaptiveRoutingScenarioEvidencePacket() {
+        return evidencePacketBuilder.build();
     }
 }

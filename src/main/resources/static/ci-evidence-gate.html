@@ -309,6 +309,50 @@
           <strong>Enforcement</strong>
           <span>NOT_ENFORCED</span>
         </div>
+        <div class="summary-item" id="summary-artifact-version">
+          <strong>Artifact Version</strong>
+          <span>ci-evidence-gate-artifact/v1</span>
+        </div>
+        <div class="summary-item" id="summary-artifact-kind">
+          <strong>Artifact Kind</strong>
+          <span>ci-evidence-gate-summary</span>
+        </div>
+        <div class="summary-item" id="summary-artifact-contract">
+          <strong>Artifact Contract</strong>
+          <span>docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md</span>
+        </div>
+        <div class="summary-item" id="summary-artifact-template">
+          <strong>Template</strong>
+          <span>docs/examples/ci-evidence-gate-summary.template.json</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel artifact" aria-labelledby="contract-title">
+    <div class="panel-head">
+      <h2 id="contract-title">Artifact Contract & Reviewer Handoff</h2>
+      <span class="compact">template/example only</span>
+    </div>
+    <div class="panel-body">
+      <p>The artifact contract defines the local JSON packet shape a future gate could consume or emit after approval. The checked-in template is a safe example only; it is not a generated run result, not a live CI result, and not proof that evidence was produced.</p>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <strong>Contract Doc</strong>
+          <span><code>docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md</code></span>
+        </div>
+        <div class="summary-item">
+          <strong>Template JSON</strong>
+          <span><code>docs/examples/ci-evidence-gate-summary.template.json</code></span>
+        </div>
+        <div class="summary-item">
+          <strong>Future Flow</strong>
+          <span>Reviewer dashboard -> CI Evidence Gate page -> artifact contract -> evidence timeline -> export packet.</span>
+        </div>
+        <div class="summary-item">
+          <strong>Current Boundary</strong>
+          <span>Endpoint metadata only; no artifact file generation, file reads, CI inspection, or enforcement.</span>
+        </div>
       </div>
     </div>
   </section>
@@ -457,6 +501,10 @@
   const modeEl = document.getElementById("summary-mode");
   const decisionEl = document.getElementById("summary-decision");
   const enforcementEl = document.getElementById("summary-enforcement");
+  const artifactVersionEl = document.getElementById("summary-artifact-version");
+  const artifactKindEl = document.getElementById("summary-artifact-kind");
+  const artifactContractEl = document.getElementById("summary-artifact-contract");
+  const artifactTemplateEl = document.getElementById("summary-artifact-template");
   const inputsEl = document.getElementById("evidence-inputs");
   const checksEl = document.getElementById("readiness-checks");
   const manualEl = document.getElementById("manual-steps");
@@ -469,6 +517,10 @@
   function fallbackSummary() {
     return {
       gateName: "CI Evidence Gate Prototype",
+      artifactVersion: "ci-evidence-gate-artifact/v1",
+      artifactKind: "ci-evidence-gate-summary",
+      artifactContract: "docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md",
+      artifactTemplatePath: "docs/examples/ci-evidence-gate-summary.template.json",
       mode: "prototype/local-review",
       decision: "READY_FOR_LOCAL_REVIEW",
       enforcementStatus: "NOT_ENFORCED",
@@ -620,6 +672,10 @@
       `Mode: ${summary.mode}`,
       `Decision: ${summary.decision}`,
       `Enforcement: ${summary.enforcementStatus}`,
+      `Artifact version: ${summary.artifactVersion}`,
+      `Artifact kind: ${summary.artifactKind}`,
+      `Artifact contract: ${summary.artifactContract}`,
+      `Artifact template: ${summary.artifactTemplatePath}`,
       `Dashboard: ${summary.dashboardPath}`,
       `API: ${summary.apiPath}`,
       `Local evidence paths: ${(summary.localEvidencePaths || []).join(", ")}`,
@@ -633,6 +689,10 @@
     setSummaryItem(modeEl, "Mode", summary.mode || "prototype/local-review");
     setSummaryItem(decisionEl, "Decision", summary.decision || "READY_FOR_LOCAL_REVIEW");
     setSummaryItem(enforcementEl, "Enforcement", summary.enforcementStatus || "NOT_ENFORCED");
+    setSummaryItem(artifactVersionEl, "Artifact Version", summary.artifactVersion || "ci-evidence-gate-artifact/v1");
+    setSummaryItem(artifactKindEl, "Artifact Kind", summary.artifactKind || "ci-evidence-gate-summary");
+    setSummaryItem(artifactContractEl, "Artifact Contract", summary.artifactContract || "docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md");
+    setSummaryItem(artifactTemplateEl, "Template", summary.artifactTemplatePath || "docs/examples/ci-evidence-gate-summary.template.json");
     renderInputs(summary.requiredEvidenceInputs || []);
     renderChecks(summary.readinessChecks || []);
     renderList(manualEl, summary.manualReviewSteps || []);

@@ -13,6 +13,10 @@ public class EnterpriseLabCiEvidenceGateSummaryController {
     public CiEvidenceGateSummary ciEvidenceGateSummary() {
         return new CiEvidenceGateSummary(
                 "CI Evidence Gate Prototype",
+                "ci-evidence-gate-artifact/v1",
+                "ci-evidence-gate-summary",
+                "docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md",
+                "docs/examples/ci-evidence-gate-summary.template.json",
                 "prototype/local-review",
                 "READY_FOR_LOCAL_REVIEW",
                 "NOT_ENFORCED",
@@ -123,6 +127,10 @@ public class EnterpriseLabCiEvidenceGateSummaryController {
 
     public record CiEvidenceGateSummary(
             String gateName,
+            String artifactVersion,
+            String artifactKind,
+            String artifactContract,
+            String artifactTemplatePath,
             String mode,
             String decision,
             String enforcementStatus,

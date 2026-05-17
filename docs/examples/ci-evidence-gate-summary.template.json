@@ -1,0 +1,128 @@
+{
+  "templateNotice": "TEMPLATE_ONLY_NOT_A_RUN_RESULT",
+  "artifactVersion": "ci-evidence-gate-artifact/v1",
+  "artifactKind": "ci-evidence-gate-summary-template",
+  "generatedBy": "LoadBalancerPro Enterprise Lab local prototype template",
+  "generatedAtPolicy": "TEMPLATE_ONLY_NO_TIMESTAMP",
+  "gateName": "CI Evidence Gate Prototype",
+  "mode": "prototype/local-review",
+  "decision": "TEMPLATE_ONLY",
+  "enforcementStatus": "NOT_ENFORCED",
+  "dashboardPath": "/ci-evidence-gate.html",
+  "apiPath": "/api/enterprise-lab/ci-evidence-gate-summary",
+  "artifactContract": "docs/CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md",
+  "artifactTemplatePath": "docs/examples/ci-evidence-gate-summary.template.json",
+  "linkedReviewerPages": [
+    "/enterprise-lab-reviewer.html",
+    "/ci-evidence-gate.html",
+    "/evidence-timeline.html",
+    "/evidence-export-packet.html"
+  ],
+  "evidenceInputs": [
+    {
+      "name": "Enterprise Lab workflow run",
+      "localEvidencePath": "target/enterprise-lab-runs/enterprise-lab-run-summary.md",
+      "localProducer": "scripts/smoke/enterprise-lab-workflow.ps1 -Package",
+      "reviewPurpose": "lab evidence only / not production activation",
+      "templateValuePolicy": "path placeholder only; no generated file content included"
+    },
+    {
+      "name": "Controlled adaptive-routing policy",
+      "localEvidencePath": "target/controlled-adaptive-routing/controlled-adaptive-routing-policy-summary.md",
+      "localProducer": "scripts/smoke/controlled-adaptive-routing-policy.ps1 -Package",
+      "reviewPurpose": "off, shadow, recommend, and guarded active-experiment review",
+      "templateValuePolicy": "path placeholder only; no generated file content included"
+    },
+    {
+      "name": "Enterprise Lab observability pack",
+      "localEvidencePath": "target/enterprise-lab-observability/observability-summary.md",
+      "localProducer": "scripts/smoke/enterprise-lab-observability-pack.ps1 -Package",
+      "reviewPurpose": "process-local metrics and dashboard or alert templates only",
+      "templateValuePolicy": "path placeholder only; no generated file content included"
+    },
+    {
+      "name": "Measured local performance baseline",
+      "localEvidencePath": "target/performance-baseline/performance-summary.md",
+      "localProducer": "scripts/smoke/performance-baseline.ps1 -Package",
+      "reviewPurpose": "local loopback fixtures with warning-only thresholds and no benchmark result",
+      "templateValuePolicy": "path placeholder only; no measured numbers included"
+    },
+    {
+      "name": "Mocked enterprise auth proof",
+      "localEvidencePath": "target/enterprise-auth-proof/enterprise-auth-proof-summary.md",
+      "localProducer": "scripts/smoke/enterprise-auth-proof.ps1 -Package",
+      "reviewPurpose": "synthetic mock IdP/JWKS role-claim behavior only",
+      "templateValuePolicy": "path placeholder only; no tenant, IdP, or credential material included"
+    },
+    {
+      "name": "Adaptive-routing experiment comparison",
+      "localEvidencePath": "target/adaptive-routing-experiments/adaptive-routing-experiment.md",
+      "localProducer": "scripts/smoke/adaptive-routing-experiment.ps1 -Package",
+      "reviewPurpose": "offline baseline versus shadow versus active-experiment comparison",
+      "templateValuePolicy": "path placeholder only; no generated file content included"
+    }
+  ],
+  "readinessChecks": [
+    {
+      "name": "Template boundary",
+      "state": "WARN_STYLE",
+      "summary": "This JSON is a template only and is not a produced run result.",
+      "futureGateMeaning": "A future gate must replace this with an approved local artifact before making any decision."
+    },
+    {
+      "name": "Evidence input catalog",
+      "state": "PASS_STYLE",
+      "summary": "Candidate evidence inputs use ignored target/ paths only.",
+      "futureGateMeaning": "A future gate can require these paths after schema and runtime cost approval."
+    },
+    {
+      "name": "Enforcement boundary",
+      "state": "WARN_STYLE",
+      "summary": "Enforcement is not active and this is not a required GitHub check.",
+      "futureGateMeaning": "Branch protection, rulesets, required checks, and GitHub settings remain unchanged."
+    },
+    {
+      "name": "Unsafe proof boundary",
+      "state": "FAIL_STYLE_BLOCKER",
+      "summary": "Unsafe proof claims or generated evidence committed outside ignored target/ paths would block future review.",
+      "futureGateMeaning": "A future gate should reject unsafe claims before merge enforcement is considered."
+    }
+  ],
+  "manualReviewSteps": [
+    "Confirm latest CI and CodeQL passed for the exact commit under review.",
+    "Confirm this template is not represented as generated evidence.",
+    "Run or inspect local Enterprise Lab smoke evidence when needed.",
+    "Confirm generated evidence stays under ignored target/ paths and is not committed.",
+    "Confirm release-downloads/ was not changed.",
+    "Confirm no branch protection, rulesets, required checks, GitHub settings, secrets, or environments changed."
+  ],
+  "safetyBoundaries": [
+    "template/example only",
+    "local prototype review only",
+    "NOT_ENFORCED",
+    "no file reads by the endpoint",
+    "no process execution by the endpoint",
+    "no environment variable or credential reads by the endpoint",
+    "no external network calls by the endpoint",
+    "no filesystem mutation by the endpoint",
+    "no branch protection or required-check mutation"
+  ],
+  "notProvenBoundaries": [
+    "No production certification",
+    "No production performance proof",
+    "No production SLO/SLA proof",
+    "No live-cloud validation",
+    "No real tenant validation",
+    "No real enterprise IdP validation",
+    "No signed-container proof",
+    "No registry publish completion",
+    "No GitHub governance-applied proof"
+  ],
+  "recommendedNextSteps": [
+    "Use the template to review the artifact shape only.",
+    "Keep local evidence generators deterministic and ignored under target/.",
+    "Approve a validator before any CI parser reads generated evidence.",
+    "Approve failure policy and runtime cost before adding any CI enforcement.",
+    "Keep GitHub settings and branch protection changes outside this prototype."
+  ]
+}

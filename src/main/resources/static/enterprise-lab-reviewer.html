@@ -354,7 +354,7 @@
     </div>
     <div class="panel-body">
       <p>This page is a static reviewer dashboard. It makes evidence easier to inspect, but it does not create release artifacts, mutate GitHub settings, publish containers, sign containers, perform cloud validation, or certify production use.</p>
-      <p class="compact">Operators who need the generated evidence map can open <a href="/operator-evidence-dashboard.html"><code>/operator-evidence-dashboard.html</code></a>; future gate review starts at <a href="/ci-evidence-gate.html"><code>/ci-evidence-gate.html</code></a> and its artifact contract/template paths; repeated-run comparison starts at <a href="/evidence-timeline.html"><code>/evidence-timeline.html</code></a>; reviewer handoff starts at <a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a>.</p>
+      <p class="compact">Operators who need the generated evidence map can open <a href="/operator-evidence-dashboard.html"><code>/operator-evidence-dashboard.html</code></a>; deterministic adaptive-routing scenario output is at <a href="/adaptive-routing-scenarios.html"><code>/adaptive-routing-scenarios.html</code></a>; future gate review starts at <a href="/ci-evidence-gate.html"><code>/ci-evidence-gate.html</code></a> and its artifact contract/template paths; repeated-run comparison starts at <a href="/evidence-timeline.html"><code>/evidence-timeline.html</code></a>; reviewer handoff starts at <a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a>.</p>
     </div>
   </section>
 
@@ -378,6 +378,10 @@
           <span><a href="/ci-evidence-gate.html"><code>/ci-evidence-gate.html</code></a><br>Purpose: local pass/warn/fail-style gate readiness summary plus artifact contract/template handoff.</span>
         </div>
         <div class="summary-item">
+          <strong>Adaptive Routing Scenarios</strong>
+          <span><a href="/adaptive-routing-scenarios.html"><code>/adaptive-routing-scenarios.html</code></a><br>Purpose: deterministic local synthetic selected-server distribution evidence.</span>
+        </div>
+        <div class="summary-item">
           <strong>Evidence Timeline</strong>
           <span><a href="/evidence-timeline.html"><code>/evidence-timeline.html</code></a><br>Purpose: evidence stages and run template.</span>
         </div>
@@ -386,8 +390,8 @@
           <span><a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a><br>Purpose: copy/download/print/share checklist.</span>
         </div>
       </div>
-      <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/ci-evidence-gate-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
-      <p class="compact"><strong>Recommended reviewer path:</strong> Start with Reviewer Dashboard. Check Operator Evidence Dashboard. Review Evidence Timeline. Open Evidence Export Packet. Copy/download/print packet. Use Share Checklist before sending. Verify not-proven boundaries.</p>
+      <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-summary</code>, <code>/api/enterprise-lab/ci-evidence-gate-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
+      <p class="compact"><strong>Recommended reviewer path:</strong> Start with Reviewer Dashboard. Check Adaptive Routing Scenario Runner. Check Operator Evidence Dashboard. Review Evidence Timeline. Open Evidence Export Packet. Copy/download/print packet. Use Share Checklist before sending. Verify not-proven boundaries.</p>
     </div>
   </section>
 
@@ -435,6 +439,7 @@
           <li><span><strong>Container evidence lanes</strong><br><code>docs/CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md</code><br><code>docs/CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md</code></span></li>
           <li><span><strong>CI dry-run artifact</strong><br><code>container-dry-run-evidence-no-publish-no-sign</code></span></li>
           <li><span><strong>Operator evidence dashboard</strong><br><code>/operator-evidence-dashboard.html</code></span></li>
+          <li><span><strong>Adaptive routing scenario runner</strong><br><code>/adaptive-routing-scenarios.html</code></span></li>
           <li><span><strong>CI evidence gate prototype</strong><br><code>/ci-evidence-gate.html</code></span></li>
           <li><span><strong>Evidence timeline</strong><br><code>/evidence-timeline.html</code></span></li>
           <li><span><strong>Evidence export packet</strong><br><code>/evidence-export-packet.html</code></span></li>

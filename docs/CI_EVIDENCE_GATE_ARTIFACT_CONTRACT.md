@@ -55,7 +55,7 @@ The current template is a template only. It is not a generated run result, not a
 | `notProvenBoundaries` | Array of proof boundaries that the artifact must not claim as completed. |
 | `recommendedNextSteps` | Array of next actions for local review or future implementation. |
 
-Optional helper fields may include `gateName`, `dashboardPath`, `apiPath`, `artifactContract`, `artifactTemplatePath`, and `linkedReviewerPages` when they improve reviewer navigation.
+Optional helper fields may include `gateName`, `dashboardPath`, `apiPath`, `artifactContract`, `artifactTemplatePath`, `linkedReviewerPages`, and `adaptiveRoutingScenarioSummary` when they improve reviewer navigation or future gate parser design.
 
 ## Field Details
 
@@ -70,6 +70,8 @@ Each entry should include:
 - `templateValuePolicy`: only for templates; explains that the entry is a placeholder and not a produced run result.
 
 Local evidence paths must stay under ignored `target/` directories. The contract must not point to `release-downloads/`, private endpoints, cloud accounts, local absolute paths, or generated tracked files.
+
+The adaptive routing scenario runner may appear as an optional future evidence input through `/adaptive-routing-scenarios.html`, `GET /api/enterprise-lab/adaptive-routing-scenario-summary`, and the reserved ignored path `target/adaptive-routing-scenarios/adaptive-routing-scenario-summary.json`. That runner output is deterministic selected-server distribution evidence from synthetic local inputs; it is not a production benchmark, live traffic validation, or generated artifact result in this sprint.
 
 ### `readinessChecks`
 

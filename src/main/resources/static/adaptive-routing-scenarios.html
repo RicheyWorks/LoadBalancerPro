@@ -172,6 +172,24 @@
       gap: 14px;
     }
 
+    .drilldown-list,
+    .explanation-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .strategy-explanation {
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+
+    .strategy-explanation:first-child {
+      border-top: 0;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
     .scenario-head {
       justify-content: space-between;
       margin-bottom: 12px;
@@ -291,6 +309,24 @@
       </div>
     </section>
 
+    <section aria-labelledby="drilldown-heading">
+      <h2 id="drilldown-heading">Scenario Drilldown</h2>
+      <div class="notice">
+        <div class="status-row">
+          <span class="badge">Strategy Explanations</span>
+          <span class="badge">observed distribution</span>
+          <span class="badge warn">local synthetic reasoning</span>
+        </div>
+        <p style="margin-top:10px">Drilldowns explain each strategy by combining deterministic scenario inputs, exposed decision reasons, first-decision score snapshots, and observed selected-server distribution. They do not claim hidden internal causality, live traffic validation, or production benchmark performance.</p>
+      </div>
+      <div class="drilldown-list" id="drilldown-list" style="margin-top:14px">
+        <div class="scenario">
+          <h3>Loading scenario drilldown...</h3>
+          <p>The page fetches <code>/api/enterprise-lab/adaptive-routing-scenario-detail</code> from the same origin.</p>
+        </div>
+      </div>
+    </section>
+
     <section aria-labelledby="evidence-heading">
       <h2 id="evidence-heading">Evidence Boundaries</h2>
       <div class="columns">
@@ -309,6 +345,7 @@
 
   <script>
     const endpoint = "/api/enterprise-lab/adaptive-routing-scenario-summary";
+    const detailEndpoint = "/api/enterprise-lab/adaptive-routing-scenario-detail";
 
     const fallback = {
       runnerName: "Adaptive Routing Scenario Runner",
@@ -327,6 +364,16 @@
       warnings: ["Summary endpoint is unavailable in this static fallback view."]
     };
 
+    const detailFallback = {
+      runnerName: "Adaptive Routing Scenario Runner",
+      mode: "local-synthetic",
+      deterministic: true,
+      detailApiPath: detailEndpoint,
+      scenarios: [],
+      warnings: ["Detail endpoint is unavailable in this static fallback view."],
+      notProvenBoundaries: fallback.notProvenBoundaries
+    };
+
     function text(value) {
       return value === undefined || value === null || value === "" ? "unavailable" : String(value);
     }
@@ -339,6 +386,31 @@
       renderScenarios(summary.scenarios || []);
       renderList("evidence-paths", summary.localEvidencePaths || []);
       renderList("not-proven", summary.notProvenBoundaries || []);
+    }
+
+    function renderDetails(detail) {
+      const list = document.getElementById("drilldown-list");
+      list.innerHTML = "";
+      const scenarios = detail.scenarios || [];
+      if (scenarios.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "scenario";
+        empty.innerHTML = "<h3>No drilldown available</h3><p>Start the local app to fetch scenario-specific strategy explanations.</p>";
+        list.appendChild(empty);
+        return;
+      }
+      for (const scenario of scenarios) {
+        const element = document.createElement("article");
+        element.className = "scenario";
+        element.appendChild(scenarioHeader(scenario));
+        const description = document.createElement("p");
+        description.textContent = text(scenario.description);
+        element.appendChild(description);
+        element.appendChild(candidateTable(scenario.candidates || []));
+        element.appendChild(strategyExplanationList(scenario.strategyExplanations || []));
+        element.appendChild(detailBoundaryList(scenario.notProvenBoundaries || []));
+        list.appendChild(element);
+      }
     }
 
     function renderScenarios(scenarios) {
@@ -410,6 +482,71 @@
       return wrapper;
     }
 
+    function candidateTable(candidates) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "table-wrap";
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      thead.innerHTML = "<tr><th>Candidate</th><th>Health</th><th>Visible Synthetic Inputs</th></tr>";
+      const tbody = document.createElement("tbody");
+      for (const candidate of candidates) {
+        const row = document.createElement("tr");
+        const id = document.createElement("td");
+        id.textContent = text(candidate.serverId);
+        const health = document.createElement("td");
+        health.textContent = candidate.healthy ? "healthy" : "unhealthy";
+        const signals = document.createElement("td");
+        signals.textContent = `inFlight=${text(candidate.inFlightRequestCount)}, weight=${text(candidate.weight)}, avgLatency=${text(candidate.averageLatencyMillis)}, p95=${text(candidate.p95LatencyMillis)}, p99=${text(candidate.p99LatencyMillis)}, errorRate=${text(candidate.recentErrorRate)}, queueDepth=${text(candidate.queueDepth)}`;
+        row.append(id, health, signals);
+        tbody.appendChild(row);
+      }
+      table.append(thead, tbody);
+      wrapper.appendChild(table);
+      return wrapper;
+    }
+
+    function strategyExplanationList(explanations) {
+      const container = document.createElement("div");
+      container.className = "explanation-list";
+      for (const explanation of explanations) {
+        const article = document.createElement("div");
+        article.className = "strategy-explanation";
+        const title = document.createElement("h3");
+        title.textContent = text(explanation.strategyName);
+        const summary = document.createElement("p");
+        summary.textContent = `Dominant selected server: ${text(explanation.dominantSelectedServer)}. Total selections: ${text(explanation.totalSelections)}.`;
+        article.append(title, summary, distributionTable({
+          [text(explanation.strategyName)]: explanation.selectedServerCounts || {}
+        }));
+        appendBulletGroup(article, "Observed Inputs", explanation.observedInputSignals || []);
+        appendBulletGroup(article, "Explanation Notes", explanation.explanationNotes || []);
+        appendBulletGroup(article, "Caution Notes", explanation.cautionNotes || []);
+        container.appendChild(article);
+      }
+      return container;
+    }
+
+    function detailBoundaryList(boundaries) {
+      const container = document.createElement("div");
+      appendBulletGroup(container, "Not Proven By Drilldown", boundaries.slice(0, 6));
+      return container;
+    }
+
+    function appendBulletGroup(container, heading, values) {
+      if (values.length === 0) {
+        return;
+      }
+      const title = document.createElement("h3");
+      title.textContent = heading;
+      const list = document.createElement("ul");
+      for (const value of values.slice(0, 8)) {
+        const item = document.createElement("li");
+        item.textContent = value;
+        list.appendChild(item);
+      }
+      container.append(title, list);
+    }
+
     function notesList(scenario) {
       const container = document.createElement("div");
       const notes = [...(scenario.decisionNotes || []), ...(scenario.warnings || [])];
@@ -445,6 +582,16 @@
       })
       .then(renderSummary)
       .catch(() => renderSummary(fallback));
+
+    fetch(detailEndpoint, { headers: { "Accept": "application/json" } })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(renderDetails)
+      .catch(() => renderDetails(detailFallback));
   </script>
 </body>
 </html>

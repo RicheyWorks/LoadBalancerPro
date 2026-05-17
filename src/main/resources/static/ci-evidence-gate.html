@@ -467,7 +467,7 @@
         </div>
         <div class="summary-item">
           <strong>Adaptive Routing Scenarios</strong>
-          <span><a href="/adaptive-routing-scenarios.html"><code>/adaptive-routing-scenarios.html</code></a><br>Deterministic local synthetic selected-server distribution evidence.</span>
+          <span><a href="/adaptive-routing-scenarios.html"><code>/adaptive-routing-scenarios.html</code></a><br>Deterministic local synthetic selected-server distribution and explanation drilldown evidence.</span>
         </div>
         <div class="summary-item">
           <strong>Evidence Timeline</strong>
@@ -478,7 +478,7 @@
           <span><a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a><br>Reviewer handoff packet.</span>
         </div>
       </div>
-      <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/ci-evidence-gate-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-summary</code>, <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
+      <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/ci-evidence-gate-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-detail</code>, <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
     </div>
   </section>
 
@@ -577,8 +577,8 @@
         {
           name: "Adaptive routing scenario runner summary",
           localEvidencePath: "target/adaptive-routing-scenarios/adaptive-routing-scenario-summary.json",
-          localProducer: "GET /api/enterprise-lab/adaptive-routing-scenario-summary",
-          reviewPurpose: "deterministic local synthetic selected-server distribution summary"
+          localProducer: "GET /api/enterprise-lab/adaptive-routing-scenario-summary and GET /api/enterprise-lab/adaptive-routing-scenario-detail",
+          reviewPurpose: "deterministic local synthetic selected-server distribution summary and strategy explanation drilldown"
         }
       ],
       readinessChecks: [

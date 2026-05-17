@@ -18,7 +18,7 @@ The local prototype is available from the running app:
 - Read-only API: `GET /api/enterprise-lab/ci-evidence-gate-summary`
 - Artifact contract: [`CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md`](CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md)
 - Template/example JSON: [`examples/ci-evidence-gate-summary.template.json`](examples/ci-evidence-gate-summary.template.json)
-- Adaptive scenario runner input: `/adaptive-routing-scenarios.html` and `GET /api/enterprise-lab/adaptive-routing-scenario-summary`
+- Adaptive scenario runner input: `/adaptive-routing-scenarios.html`, `GET /api/enterprise-lab/adaptive-routing-scenario-summary`, and `GET /api/enterprise-lab/adaptive-routing-scenario-detail`
 
 The endpoint returns deterministic static JSON for local review, including artifact contract metadata such as `artifactVersion`, `artifactKind`, `artifactContract`, and `artifactTemplatePath`. It does not read files, run commands, inspect the live CI environment, call GitHub, call cloud services, read secrets, read environment variables, or mutate filesystem state. The page fetches only the same-origin endpoint and falls back to static prototype copy if the API is unavailable.
 

@@ -1,5 +1,6 @@
 package com.richmond423.loadbalancerpro.api;
 
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioDrilldown;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioRunner;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioSummary;
 
@@ -23,5 +24,10 @@ public class EnterpriseLabAdaptiveRoutingScenarioController {
     @GetMapping("/adaptive-routing-scenario-summary")
     public AdaptiveRoutingScenarioSummary adaptiveRoutingScenarioSummary() {
         return runner.runSummary();
+    }
+
+    @GetMapping("/adaptive-routing-scenario-detail")
+    public AdaptiveRoutingScenarioDrilldown adaptiveRoutingScenarioDetail() {
+        return runner.runDrilldown();
     }
 }

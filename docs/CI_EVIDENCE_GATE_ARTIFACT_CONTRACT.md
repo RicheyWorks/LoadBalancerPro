@@ -71,7 +71,7 @@ Each entry should include:
 
 Local evidence paths must stay under ignored `target/` directories. The contract must not point to `release-downloads/`, private endpoints, cloud accounts, local absolute paths, or generated tracked files.
 
-The adaptive routing scenario runner may appear as an optional future evidence input through `/adaptive-routing-scenarios.html`, `GET /api/enterprise-lab/adaptive-routing-scenario-summary`, and the reserved ignored path `target/adaptive-routing-scenarios/adaptive-routing-scenario-summary.json`. That runner output is deterministic selected-server distribution evidence from synthetic local inputs; it is not a production benchmark, live traffic validation, or generated artifact result in this sprint.
+The adaptive routing scenario runner may appear as an optional future evidence input through `/adaptive-routing-scenarios.html`, `GET /api/enterprise-lab/adaptive-routing-scenario-summary`, `GET /api/enterprise-lab/adaptive-routing-scenario-detail`, and the reserved ignored path `target/adaptive-routing-scenarios/adaptive-routing-scenario-summary.json`. That runner output is deterministic selected-server distribution and explanation drilldown evidence from synthetic local inputs; it is not a production benchmark, live traffic validation, or generated artifact result in this sprint.
 
 ### `readinessChecks`
 

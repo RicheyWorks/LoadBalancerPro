@@ -3,6 +3,8 @@ package com.richmond423.loadbalancerpro.api;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioDrilldown;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioEvidencePacket;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioEvidencePacketBuilder;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioGateEvaluation;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioGateEvaluator;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioRunner;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioSummary;
 
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class EnterpriseLabAdaptiveRoutingScenarioController {
     private final AdaptiveRoutingScenarioRunner runner;
     private final AdaptiveRoutingScenarioEvidencePacketBuilder evidencePacketBuilder;
+    private final AdaptiveRoutingScenarioGateEvaluator gateEvaluator;
 
     public EnterpriseLabAdaptiveRoutingScenarioController() {
         this(new AdaptiveRoutingScenarioRunner());
@@ -23,6 +26,7 @@ public class EnterpriseLabAdaptiveRoutingScenarioController {
     EnterpriseLabAdaptiveRoutingScenarioController(AdaptiveRoutingScenarioRunner runner) {
         this.runner = runner;
         this.evidencePacketBuilder = new AdaptiveRoutingScenarioEvidencePacketBuilder(runner);
+        this.gateEvaluator = new AdaptiveRoutingScenarioGateEvaluator(evidencePacketBuilder);
     }
 
     @GetMapping("/adaptive-routing-scenario-summary")
@@ -38,5 +42,10 @@ public class EnterpriseLabAdaptiveRoutingScenarioController {
     @GetMapping("/adaptive-routing-scenario-evidence-packet")
     public AdaptiveRoutingScenarioEvidencePacket adaptiveRoutingScenarioEvidencePacket() {
         return evidencePacketBuilder.build();
+    }
+
+    @GetMapping("/adaptive-routing-scenario-gate-evaluation")
+    public AdaptiveRoutingScenarioGateEvaluation adaptiveRoutingScenarioGateEvaluation() {
+        return gateEvaluator.evaluate();
     }
 }

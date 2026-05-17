@@ -1,6 +1,6 @@
 # CI Evidence Gate Artifact Contract
 
-Status: local prototype contract. This document defines the source-visible JSON packet shape for future CI Evidence Gate review. It does not enable live CI enforcement, mutate required checks, mutate branch protection, call GitHub, call cloud services, publish artifacts, sign containers, or create release assets.
+Status: local prototype contract. This document defines the source-visible JSON packet shape for future CI Evidence Gate review. It does not enable active CI enforcement, mutate required checks, mutate branch protection, call GitHub, call cloud services, publish artifacts, sign containers, or create release assets.
 
 LoadBalancerPro is becoming the evidence, governance, and explainability layer for adaptive routing: a local flight simulator and black-box recorder for routing decisions. This contract defines the black-box recorder packet that a later CI/CD gate could consume or emit after the evidence schema and failure policy are approved.
 
@@ -55,7 +55,7 @@ The current template is a template only. It is not a generated run result, not a
 | `notProvenBoundaries` | Array of proof boundaries that the artifact must not claim as completed. |
 | `recommendedNextSteps` | Array of next actions for local review or future implementation. |
 
-Optional helper fields may include `gateName`, `dashboardPath`, `apiPath`, `artifactContract`, `artifactTemplatePath`, `linkedReviewerPages`, `adaptiveRoutingScenarioSummary`, `adaptiveRoutingScenarioDetail`, and `adaptiveRoutingScenarioEvidencePacket` when they improve reviewer navigation or future gate parser design.
+Optional helper fields may include `gateName`, `dashboardPath`, `apiPath`, `artifactContract`, `artifactTemplatePath`, `linkedReviewerPages`, `adaptiveRoutingScenarioSummary`, `adaptiveRoutingScenarioDetail`, `adaptiveRoutingScenarioEvidencePacket`, and `adaptiveRoutingScenarioGateEvaluation` when they improve reviewer navigation or future gate parser design.
 
 ## Field Details
 
@@ -71,7 +71,7 @@ Each entry should include:
 
 Local evidence paths must stay under ignored `target/` directories. The contract must not point to `release-downloads/`, private endpoints, cloud accounts, local absolute paths, or generated tracked files.
 
-The adaptive routing scenario runner may appear as an optional future evidence input through `/adaptive-routing-scenarios.html`, `GET /api/enterprise-lab/adaptive-routing-scenario-summary`, `GET /api/enterprise-lab/adaptive-routing-scenario-detail`, `GET /api/enterprise-lab/adaptive-routing-scenario-evidence-packet`, and the reserved ignored paths `target/adaptive-routing-scenarios/adaptive-routing-scenario-summary.json` and `target/adaptive-routing-scenarios/adaptive-routing-scenario-evidence-packet.json`. That runner output is deterministic selected-server distribution, explanation drilldown, and reviewer packet-shape evidence from synthetic local inputs; it is not a production benchmark, live traffic validation, or generated artifact result in this sprint.
+The adaptive routing scenario runner may appear as an optional future evidence input through `/adaptive-routing-scenarios.html`, `GET /api/enterprise-lab/adaptive-routing-scenario-summary`, `GET /api/enterprise-lab/adaptive-routing-scenario-detail`, `GET /api/enterprise-lab/adaptive-routing-scenario-evidence-packet`, `GET /api/enterprise-lab/adaptive-routing-scenario-gate-evaluation`, and the reserved ignored paths `target/adaptive-routing-scenarios/adaptive-routing-scenario-summary.json`, `target/adaptive-routing-scenarios/adaptive-routing-scenario-evidence-packet.json`, and `target/adaptive-routing-scenarios/adaptive-routing-scenario-gate-evaluation.json`. That runner output is deterministic selected-server distribution, explanation drilldown, reviewer packet-shape evidence, and local pass/warn/fail-style reviewer findings from synthetic local inputs; it is not a production benchmark, live traffic validation, active CI enforcement, branch-protection mutation, required-check mutation, or generated artifact result in this sprint.
 
 ### `readinessChecks`
 

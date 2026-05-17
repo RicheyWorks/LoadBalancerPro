@@ -68,7 +68,12 @@ public class EnterpriseLabCiEvidenceGateSummaryController {
                                 "Adaptive routing scenario evidence packet",
                                 "target/adaptive-routing-scenarios/adaptive-routing-scenario-evidence-packet.json",
                                 "GET /api/enterprise-lab/adaptive-routing-scenario-evidence-packet",
-                                "in-memory reviewer packet shape combining summary and drilldown evidence")),
+                                "in-memory reviewer packet shape combining summary and drilldown evidence"),
+                        new EvidenceInput(
+                                "Adaptive routing scenario gate evaluation",
+                                "target/adaptive-routing-scenarios/adaptive-routing-scenario-gate-evaluation.json",
+                                "GET /api/enterprise-lab/adaptive-routing-scenario-gate-evaluation",
+                                "local pass/warn/fail-style reviewer findings over the scenario evidence packet")),
                 List.of(
                         "target/enterprise-lab-runs/",
                         "target/controlled-adaptive-routing/",
@@ -131,8 +136,8 @@ public class EnterpriseLabCiEvidenceGateSummaryController {
                         "no branch protection or required-check mutation"),
                 List.of(
                         "Use this prototype for local reviewer orientation.",
-                        "Inspect adaptive routing scenario summary, drilldown, and evidence packet output before adding "
-                                + "gate enforcement.",
+                        "Inspect adaptive routing scenario summary, drilldown, evidence packet, and gate evaluation "
+                                + "output before adding gate enforcement.",
                         "Keep evidence generators local and deterministic.",
                         "Define an evidence schema before implementing a real CI parser.",
                         "Approve failure policy and runtime cost before adding any CI enforcement.",

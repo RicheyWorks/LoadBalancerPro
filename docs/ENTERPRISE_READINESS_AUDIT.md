@@ -44,7 +44,7 @@ The safest positioning is:
 
 | Area | Rating | Current finding |
 | --- | --- | --- |
-| Enterprise Lab readiness | Strong | Lab APIs, deterministic scenario runs, scorecards, policy gates, local evidence export, observability pack, measured performance plus auth proof lane, CI evidence gate readiness lane plus local prototype, performance lane, and mocked auth proof exist. |
+| Enterprise Lab readiness | Strong | Lab APIs, deterministic scenario runs, scorecards, policy gates, local evidence export, observability pack, measured performance plus auth proof lane, CI evidence gate readiness lane plus local prototype and artifact contract, performance lane, and mocked auth proof exist. |
 | Enterprise demo/reviewer readiness | Strong | README, trust map, product charter, roadmap, run profiles, smoke kits, and release evidence give a clear safe path. |
 | Production-candidate posture | Good | Prod/cloud-sandbox auth modes, OAuth2 role mapping, DTO validation, CI/SBOM/Trivy/CodeQL, Docker prod default, and release evidence are documented and tested. |
 | Production enterprise readiness | Not ready | External TLS, IAM, ingress, WAF, distributed rate limiting, monitoring retention, secret rotation, live IdP tenant proof, live AWS validation, and incident evidence are not provided by the app. |
@@ -96,7 +96,7 @@ Remaining transition work is primarily hygiene:
 - Lab workflow exists beyond documentation: `/api/lab/**`, `/enterprise-lab.html`, bounded process-local storage, scorecards, policy/audit endpoints, metrics endpoints, and smoke evidence outputs under ignored `target/`.
 - Controlled adaptive-routing policy supports `off`, `shadow`, `recommend`, and explicit guarded `active-experiment` without making production traffic-control claims.
 - The measured performance plus auth proof lane presents local loopback performance evidence and mocked IdP/JWKS role-claim proof as one reviewer-safe product lane without claiming production SLO/SLA, real tenant, live cloud, or real enterprise IdP validation.
-- [`CI_EVIDENCE_GATE_READINESS_LANE.md`](CI_EVIDENCE_GATE_READINESS_LANE.md), `/ci-evidence-gate.html`, and `GET /api/enterprise-lab/ci-evidence-gate-summary` define and demonstrate how local Enterprise Lab evidence could become a future gate without changing branch protection, required checks, rulesets, or GitHub settings today.
+- [`CI_EVIDENCE_GATE_READINESS_LANE.md`](CI_EVIDENCE_GATE_READINESS_LANE.md), [`CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md`](CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md), [`examples/ci-evidence-gate-summary.template.json`](examples/ci-evidence-gate-summary.template.json), `/ci-evidence-gate.html`, and `GET /api/enterprise-lab/ci-evidence-gate-summary` define and demonstrate how local Enterprise Lab evidence could become a future gate without changing branch protection, required checks, rulesets, or GitHub settings today.
 - OAuth2 role behavior is documented and tested around dedicated role claims; `scope` and `scp` do not become app roles.
 - Enterprise-required DTO omissions are rejected instead of silently defaulting for current allocation/evaluation contracts.
 - CI covers tests, packaging, packaged-jar smoke, Docker build/runtime smoke, Docker healthcheck, Trivy, SBOM generation, and artifact upload.

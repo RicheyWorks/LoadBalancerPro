@@ -16,10 +16,14 @@ The local prototype is available from the running app:
 
 - Browser page: `/ci-evidence-gate.html`
 - Read-only API: `GET /api/enterprise-lab/ci-evidence-gate-summary`
+- Artifact contract: [`CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md`](CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md)
+- Template/example JSON: [`examples/ci-evidence-gate-summary.template.json`](examples/ci-evidence-gate-summary.template.json)
 
-The endpoint returns deterministic static JSON for local review. It does not read files, run commands, inspect the live CI environment, call GitHub, call cloud services, read secrets, read environment variables, or mutate filesystem state. The page fetches only the same-origin endpoint and falls back to static prototype copy if the API is unavailable.
+The endpoint returns deterministic static JSON for local review, including artifact contract metadata such as `artifactVersion`, `artifactKind`, `artifactContract`, and `artifactTemplatePath`. It does not read files, run commands, inspect the live CI environment, call GitHub, call cloud services, read secrets, read environment variables, or mutate filesystem state. The page fetches only the same-origin endpoint and falls back to static prototype copy if the API is unavailable.
 
 The prototype can say `READY_FOR_LOCAL_REVIEW`, `NOT_ENFORCED`, `PASS_STYLE`, `WARN_STYLE`, and `FAIL_STYLE_BLOCKER` as review semantics. Those labels are local readiness semantics only. They are not live merge enforcement, not required checks, not branch protection, and not a production certification result.
+
+The template/example JSON is not a generated run result. It is a source-visible packet shape for reviewer handoff and future parser design.
 
 ## Candidate Evidence Inputs
 
@@ -112,4 +116,4 @@ This lane does not add or change `.github/workflows/` files. It does not add req
 
 It also does not prove production readiness, production performance, production SLO/SLA behavior, live-cloud behavior, real tenant behavior, real enterprise IdP behavior, signed-container provenance, registry publication, or governance-applied status.
 
-Use this lane and the prototype as the design and safety contract for a later implementation sprint. A future implementation can add a local parser or CI job only after the evidence schema, failure policy, runtime cost, and reviewer workflow are explicitly approved.
+Use this lane, the prototype, and [`CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md`](CI_EVIDENCE_GATE_ARTIFACT_CONTRACT.md) as the design and safety contract for a later implementation sprint. A future implementation can add a local parser or CI job only after the artifact contract, evidence schema, failure policy, runtime cost, and reviewer workflow are explicitly approved.

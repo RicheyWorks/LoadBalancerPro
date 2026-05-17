@@ -48,9 +48,17 @@ class CiEvidenceGateReadinessLaneDocumentationTest {
         String lane = read(CI_GATE_LANE);
 
         for (String expected : List.of(
-                "Status: readiness lane only. No CI enforcement change is made by this document.",
+                "Status: readiness lane plus local prototype. No CI enforcement change is made by this document or by the prototype.",
                 "local flight simulator and black-box recorder",
                 "future gate",
+                "Local Prototype Surface",
+                "/ci-evidence-gate.html",
+                "GET /api/enterprise-lab/ci-evidence-gate-summary",
+                "READY_FOR_LOCAL_REVIEW",
+                "NOT_ENFORCED",
+                "PASS_STYLE",
+                "WARN_STYLE",
+                "FAIL_STYLE_BLOCKER",
                 "Candidate Evidence Inputs",
                 "Candidate Local Producers",
                 "Future Pass Conditions",

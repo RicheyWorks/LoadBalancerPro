@@ -7,6 +7,8 @@ import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioGateEvaluatio
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioGateEvaluator;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioRunner;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingScenarioSummary;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingStrategyComparisonMatrix;
+import com.richmond423.loadbalancerpro.core.AdaptiveRoutingStrategyComparisonMatrixBuilder;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +20,7 @@ public class EnterpriseLabAdaptiveRoutingScenarioController {
     private final AdaptiveRoutingScenarioRunner runner;
     private final AdaptiveRoutingScenarioEvidencePacketBuilder evidencePacketBuilder;
     private final AdaptiveRoutingScenarioGateEvaluator gateEvaluator;
+    private final AdaptiveRoutingStrategyComparisonMatrixBuilder comparisonMatrixBuilder;
 
     public EnterpriseLabAdaptiveRoutingScenarioController() {
         this(new AdaptiveRoutingScenarioRunner());
@@ -27,6 +30,7 @@ public class EnterpriseLabAdaptiveRoutingScenarioController {
         this.runner = runner;
         this.evidencePacketBuilder = new AdaptiveRoutingScenarioEvidencePacketBuilder(runner);
         this.gateEvaluator = new AdaptiveRoutingScenarioGateEvaluator(evidencePacketBuilder);
+        this.comparisonMatrixBuilder = new AdaptiveRoutingStrategyComparisonMatrixBuilder(runner);
     }
 
     @GetMapping("/adaptive-routing-scenario-summary")
@@ -47,5 +51,10 @@ public class EnterpriseLabAdaptiveRoutingScenarioController {
     @GetMapping("/adaptive-routing-scenario-gate-evaluation")
     public AdaptiveRoutingScenarioGateEvaluation adaptiveRoutingScenarioGateEvaluation() {
         return gateEvaluator.evaluate();
+    }
+
+    @GetMapping("/adaptive-routing-strategy-comparison-matrix")
+    public AdaptiveRoutingStrategyComparisonMatrix adaptiveRoutingStrategyComparisonMatrix() {
+        return comparisonMatrixBuilder.build();
     }
 }

@@ -467,7 +467,7 @@
         </div>
         <div class="summary-item">
           <strong>Adaptive Routing Scenarios</strong>
-          <span><a href="/adaptive-routing-scenarios.html"><code>/adaptive-routing-scenarios.html</code></a><br>Deterministic local synthetic selected-server distribution and explanation drilldown evidence.</span>
+          <span><a href="/adaptive-routing-scenarios.html"><code>/adaptive-routing-scenarios.html</code></a><br>Deterministic local synthetic selected-server distribution, explanation drilldown, gate findings, and strategy comparison matrix evidence.</span>
         </div>
         <div class="summary-item">
           <strong>Evidence Timeline</strong>
@@ -478,7 +478,7 @@
           <span><a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a><br>Reviewer handoff packet.</span>
         </div>
       </div>
-      <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/ci-evidence-gate-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-detail</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-evidence-packet</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-gate-evaluation</code>, <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
+      <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/ci-evidence-gate-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-detail</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-evidence-packet</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-gate-evaluation</code>, <code>/api/enterprise-lab/adaptive-routing-strategy-comparison-matrix</code>, <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
     </div>
   </section>
 
@@ -490,7 +490,7 @@
     <div class="panel-body">
       <ul class="plain-list" id="next-steps">
         <li>Use this prototype for local reviewer orientation.</li>
-        <li>Inspect adaptive routing scenario summary, drilldown, and evidence packet output before adding gate enforcement.</li>
+        <li>Inspect adaptive routing scenario summary, drilldown, evidence packet, gate evaluation, and strategy comparison matrix output before adding gate enforcement.</li>
         <li>Keep evidence generators local and deterministic.</li>
         <li>Define an evidence schema before implementing a real CI parser.</li>
         <li>Approve failure policy and runtime cost before adding any CI enforcement.</li>
@@ -592,6 +592,12 @@
           localEvidencePath: "target/adaptive-routing-scenarios/adaptive-routing-scenario-gate-evaluation.json",
           localProducer: "GET /api/enterprise-lab/adaptive-routing-scenario-gate-evaluation",
           reviewPurpose: "local pass/warn/fail-style reviewer findings over the scenario evidence packet"
+        },
+        {
+          name: "Adaptive routing strategy comparison matrix",
+          localEvidencePath: "target/adaptive-routing-scenarios/adaptive-routing-strategy-comparison-matrix.json",
+          localProducer: "GET /api/enterprise-lab/adaptive-routing-strategy-comparison-matrix",
+          reviewPurpose: "local strategy-by-scenario selected-server distribution and reviewer signal matrix"
         }
       ],
       readinessChecks: [
@@ -650,7 +656,7 @@
       ],
       recommendedNextSteps: [
         "Use this prototype for local reviewer orientation.",
-        "Inspect adaptive routing scenario summary, drilldown, evidence packet, and gate evaluation output before adding gate enforcement.",
+        "Inspect adaptive routing scenario summary, drilldown, evidence packet, gate evaluation, and strategy comparison matrix output before adding gate enforcement.",
         "Keep evidence generators local and deterministic.",
         "Define an evidence schema before implementing a real CI parser.",
         "Approve failure policy and runtime cost before adding any CI enforcement.",

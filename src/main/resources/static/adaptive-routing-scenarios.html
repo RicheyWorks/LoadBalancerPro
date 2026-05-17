@@ -173,7 +173,8 @@
     }
 
     .drilldown-list,
-    .explanation-list {
+    .explanation-list,
+    .matrix-list {
       display: grid;
       gap: 14px;
     }
@@ -383,6 +384,40 @@
       </div>
     </section>
 
+    <section aria-labelledby="matrix-heading">
+      <h2 id="matrix-heading">Strategy Comparison Matrix</h2>
+      <div class="notice">
+        <div class="status-row">
+          <span class="badge">strategy x scenario</span>
+          <span class="badge">output distribution</span>
+          <span class="badge warn">not hidden causality</span>
+        </div>
+        <p style="margin-top:10px">The matrix compares each routing strategy across the same deterministic local synthetic scenarios. Diversity and consistency signals are inferred from selected-server distribution only; they are not production benchmarks, SLO/SLA proof, live traffic validation, or hidden strategy-causality claims.</p>
+      </div>
+      <div class="summary-grid" style="margin-top:14px">
+        <div class="metric"><span>Matrix</span><strong id="matrix-version">unavailable</strong></div>
+        <div class="metric"><span>Scenarios</span><strong id="matrix-scenarios">0</strong></div>
+        <div class="metric"><span>Strategies</span><strong id="matrix-strategies">0</strong></div>
+        <div class="metric"><span>Decisions</span><strong id="matrix-decisions">0</strong></div>
+      </div>
+      <div class="matrix-list" id="matrix-list" style="margin-top:14px">
+        <div class="scenario">
+          <h3>Loading strategy comparison matrix...</h3>
+          <p>The page fetches <code>/api/enterprise-lab/adaptive-routing-strategy-comparison-matrix</code> from the same origin.</p>
+        </div>
+      </div>
+      <div class="columns" style="margin-top:14px">
+        <div class="notice">
+          <h3>Matrix Insights</h3>
+          <ul id="matrix-insights"></ul>
+        </div>
+        <div class="notice">
+          <h3>Matrix Reviewer Actions</h3>
+          <ul id="matrix-reviewer-actions"></ul>
+        </div>
+      </div>
+    </section>
+
     <section aria-labelledby="evidence-heading">
       <h2 id="evidence-heading">Evidence Boundaries</h2>
       <div class="columns">
@@ -404,6 +439,7 @@
     const detailEndpoint = "/api/enterprise-lab/adaptive-routing-scenario-detail";
     const packetEndpoint = "/api/enterprise-lab/adaptive-routing-scenario-evidence-packet";
     const gateEvaluationEndpoint = "/api/enterprise-lab/adaptive-routing-scenario-gate-evaluation";
+    const matrixEndpoint = "/api/enterprise-lab/adaptive-routing-strategy-comparison-matrix";
 
     const fallback = {
       runnerName: "Adaptive Routing Scenario Runner",
@@ -459,6 +495,22 @@
       reviewerActions: [
         "Start the local app to fetch adaptive-routing scenario gate evaluation findings.",
         "Treat findings as local reviewer guidance only, not active CI enforcement."
+      ]
+    };
+
+    const matrixFallback = {
+      matrixName: "Adaptive Routing Strategy Comparison Matrix",
+      matrixVersion: "adaptive-routing-strategy-comparison-matrix/v1",
+      mode: "local-synthetic",
+      deterministic: true,
+      scenarioCount: 0,
+      strategyCount: 0,
+      totalDecisions: 0,
+      rows: [],
+      insights: [],
+      reviewerActions: [
+        "Start the local app to fetch the adaptive-routing strategy comparison matrix.",
+        "Treat matrix signals as local synthetic output-distribution evidence only."
       ]
     };
 
@@ -519,6 +571,79 @@
         .map((finding) => `${text(finding.status)}: ${text(finding.title)} - ${text(finding.explanation)}`);
       renderList("gate-finding-list", findings);
       renderList("gate-reviewer-actions", evaluation.reviewerActions || []);
+    }
+
+    function renderMatrix(matrix) {
+      document.getElementById("matrix-version").textContent = text(matrix.matrixVersion);
+      document.getElementById("matrix-scenarios").textContent = text(matrix.scenarioCount);
+      document.getElementById("matrix-strategies").textContent = text(matrix.strategyCount);
+      document.getElementById("matrix-decisions").textContent = text(matrix.totalDecisions);
+      renderMatrixRows(matrix.rows || []);
+      renderList("matrix-insights", (matrix.insights || []).map((insight) => `${text(insight.title)} - ${text(insight.explanation)}`));
+      renderList("matrix-reviewer-actions", matrix.reviewerActions || []);
+    }
+
+    function renderMatrixRows(rows) {
+      const list = document.getElementById("matrix-list");
+      list.innerHTML = "";
+      if (rows.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "scenario";
+        empty.innerHTML = "<h3>No comparison matrix available</h3><p>Start the local app to fetch strategy-by-scenario matrix output.</p>";
+        list.appendChild(empty);
+        return;
+      }
+      for (const row of rows) {
+        const element = document.createElement("article");
+        element.className = "scenario";
+        const header = document.createElement("div");
+        header.className = "scenario-head";
+        const title = document.createElement("h3");
+        title.textContent = text(row.strategyName);
+        const badges = document.createElement("div");
+        badges.className = "meta-row";
+        for (const value of [`${text(row.scenarioCount)} scenarios`, `${text(row.totalDecisions)} decisions`]) {
+          const badge = document.createElement("span");
+          badge.className = "badge";
+          badge.textContent = value;
+          badges.appendChild(badge);
+        }
+        header.append(title, badges);
+        element.appendChild(header);
+        element.appendChild(matrixTable(row.cells || []));
+        appendBulletGroup(element, "Row Warnings", (row.warnings || []).slice(0, 5));
+        appendBulletGroup(element, "Row Reviewer Actions", row.reviewerActions || []);
+        list.appendChild(element);
+      }
+    }
+
+    function matrixTable(cells) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "table-wrap";
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      thead.innerHTML = "<tr><th>Scenario</th><th>Distribution</th><th>Dominant Server</th><th>Diversity</th><th>Consistency</th><th>Reviewer Note</th></tr>";
+      const tbody = document.createElement("tbody");
+      for (const cell of cells) {
+        const row = document.createElement("tr");
+        const scenario = document.createElement("td");
+        scenario.textContent = text(cell.scenarioName);
+        const distribution = document.createElement("td");
+        distribution.textContent = distributionText(cell.selectedServerDistribution || {});
+        const dominant = document.createElement("td");
+        dominant.textContent = text(cell.dominantSelectedServer);
+        const diversity = document.createElement("td");
+        diversity.textContent = text(cell.diversitySignal);
+        const consistency = document.createElement("td");
+        consistency.textContent = text(cell.consistencySignal);
+        const note = document.createElement("td");
+        note.textContent = text((cell.explanationNotes || [])[0]);
+        row.append(scenario, distribution, dominant, diversity, consistency, note);
+        tbody.appendChild(row);
+      }
+      table.append(thead, tbody);
+      wrapper.appendChild(table);
+      return wrapper;
     }
 
     function renderScenarios(scenarios) {
@@ -588,6 +713,13 @@
       table.append(thead, tbody);
       wrapper.appendChild(table);
       return wrapper;
+    }
+
+    function distributionText(counts) {
+      const entries = Object.entries(counts || {});
+      return entries.length === 0
+        ? "no selected server"
+        : entries.map(([server, count]) => `${server}: ${count}`).join(", ");
     }
 
     function candidateTable(candidates) {
@@ -720,6 +852,16 @@
       })
       .then(renderGateEvaluation)
       .catch(() => renderGateEvaluation(gateEvaluationFallback));
+
+    fetch(matrixEndpoint, { headers: { "Accept": "application/json" } })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(renderMatrix)
+      .catch(() => renderMatrix(matrixFallback));
   </script>
 </body>
 </html>

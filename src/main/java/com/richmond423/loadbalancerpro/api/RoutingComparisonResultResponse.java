@@ -10,5 +10,6 @@ public record RoutingComparisonResultResponse(
         String reason,
         List<String> candidateServersConsidered,
         Map<String, Double> scores,
-        RoutingDecisionVectorResponse decisionVector) {
+        RoutingDecisionVectorResponse decisionVector,
+        DominantFactorAnalysisResponse dominantFactorAnalysis) {
 }

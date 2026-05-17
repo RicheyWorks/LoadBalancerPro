@@ -55,6 +55,14 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertEquals("edge-alpha", vector.at("/selectedCandidateVector/candidateId").asText());
         assertTrue(vector.at("/selectedCandidateVector/selected").asBoolean());
         assertEquals(2, vector.path("nonSelectedCandidateVectors").size());
+
+        JsonNode dominant = result.path("dominantFactorAnalysis");
+        assertTrue(dominant.path("readOnly").asBoolean());
+        assertEquals("AVAILABLE", dominant.path("status").asText());
+        assertEquals("edge-alpha", dominant.at("/selectedDecisionAnalysis/candidateId").asText());
+        assertEquals(3, dominant.path("candidateAnalyses").size());
+        assertTrue(dominant.at("/selectedDecisionAnalysis/largestPenaltyContributor/factorName").isTextual());
+        assertTrue(dominant.path("boundaryNote").asText().contains("does not change routing behavior"));
     }
 
     @Test
@@ -114,6 +122,8 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(result.path("candidateServersConsidered").isEmpty());
         assertTrue(result.path("scores").isEmpty());
         assertTrue(result.path("decisionVector").isNull());
+        assertEquals("UNKNOWN", result.at("/dominantFactorAnalysis/status").asText());
+        assertTrue(result.at("/dominantFactorAnalysis/candidateAnalyses").isEmpty());
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

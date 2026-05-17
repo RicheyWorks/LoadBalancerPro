@@ -169,7 +169,8 @@ class ApiContractTest {
         assertSchemaProperties(docs, "RoutingComparisonResponse", "requestedStrategies", "candidateCount",
                 "timestamp", "results");
         assertSchemaProperties(docs, "RoutingComparisonResultResponse", "strategyId", "status",
-                "chosenServerId", "reason", "candidateServersConsidered", "scores", "decisionVector");
+                "chosenServerId", "reason", "candidateServersConsidered", "scores", "decisionVector",
+                "dominantFactorAnalysis");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -184,6 +185,14 @@ class ApiContractTest {
         assertSchemaProperties(docs, "ScoreFactorContributionResponse", "factorName", "rawValueDescription",
                 "weightDescription", "direction", "contributionDescription", "contributionValue",
                 "exactness", "explanationText", "boundaryNote");
+        assertSchemaProperties(docs, "DominantFactorAnalysisResponse", "readOnly", "source", "status",
+                "candidateAnalyses", "selectedDecisionAnalysis", "selectedDecisionExplanation",
+                "boundaryNote", "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "CandidateDominantFactorResponse", "candidateId", "selected", "available",
+                "sourceContributionCount", "sourceFactorNames", "largestPositiveContributor",
+                "largestPenaltyContributor", "largestAbsoluteImpact", "explanation", "boundaryNote");
+        assertSchemaProperties(docs, "DominantFactorResponse", "factorName", "direction", "contributionValue",
+                "absoluteImpact", "contributionDescription", "explanationText", "boundaryNote");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -301,6 +310,12 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].decisionVector.candidateCount", is(2)))
                 .andExpect(jsonPath("$.results[0].decisionVector.selectedCandidateVector.candidateId", is("green")))
                 .andExpect(jsonPath("$.results[0].decisionVector.nonSelectedCandidateVectors[0].candidateId", is("blue")))
+                .andExpect(jsonPath("$.results[0].dominantFactorAnalysis.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].dominantFactorAnalysis.status", is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].dominantFactorAnalysis.selectedDecisionAnalysis.candidateId",
+                        is("green")))
+                .andExpect(jsonPath("$.results[0].dominantFactorAnalysis.selectedDecisionAnalysis"
+                        + ".largestPenaltyContributor.factorName").isString())
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -332,6 +347,7 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].candidateServersConsidered").isEmpty())
                 .andExpect(jsonPath("$.results[0].scores").isEmpty())
                 .andExpect(jsonPath("$.results[0].decisionVector", nullValue()))
+                .andExpect(jsonPath("$.results[0].dominantFactorAnalysis.status", is("UNKNOWN")))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

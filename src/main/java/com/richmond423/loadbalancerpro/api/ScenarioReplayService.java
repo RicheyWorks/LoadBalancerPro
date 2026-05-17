@@ -134,6 +134,7 @@ public class ScenarioReplayService {
                         result.reason(),
                         result.candidateServersConsidered(),
                         result.scores(),
+                        null,
                         null))
                 .toList();
     }

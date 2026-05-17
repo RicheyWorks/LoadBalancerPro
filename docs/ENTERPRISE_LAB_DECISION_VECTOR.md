@@ -6,7 +6,7 @@ The Enterprise Lab Decision Vector is the structured explanation object for one 
 
 ## Why the Lab Needs It
 
-The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so future work can add factor contribution analysis, decision replay, what-if experiments, structured decision logging, strategy plugin explainability, and data center signal modeling without inventing hidden scoring.
+The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane and future work such as decision replay, what-if experiments, structured decision logging, strategy plugin explainability, and data center signal modeling can build without inventing hidden scoring.
 
 A Decision Vector differs from a simple reason string because it separates:
 
@@ -19,6 +19,7 @@ A Decision Vector differs from a simple reason string because it separates:
 - Selected-vs-alternative explanation notes.
 - Exact scoring availability or absence.
 - Factor contribution availability or absence.
+- Dominant factor analysis derived from returned factor contributions.
 - Replay readiness and future replay gaps.
 - Lab proof boundaries and production not-proven boundaries.
 
@@ -42,6 +43,7 @@ One Decision Vector represents one controlled lab routing decision. The contract
 | `selectedVsAlternativeNotes` | Notes explaining why the selected backend appears favored and why alternatives appear weakened when visible data supports it. |
 | `exactScoringAvailability` | `notExposed` unless the API explicitly returns exact scoring. |
 | `factorContributionAvailability` | Exposed only when the local lab response returns current calculator contribution fields; otherwise mark as unavailable. |
+| `dominantFactorAnalysis` | Additive read-only summary of largest support, penalty/risk, and absolute-impact factors derived only from returned contribution data. |
 | `replayReadiness` | Contract readiness for future replay; replay execution remains future/not implemented until built. |
 | `labProofBoundary` | Controlled lab evidence, local reproducibility, same-origin local API responses, and browser-local interpretation. |
 | `productionNotProvenBoundary` | No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof. |
@@ -160,6 +162,28 @@ Selected-vs-alternative reasoning should use only visible/exposed contribution d
 text, and controlled lab signals. Unknown or unavailable candidate signals remain explicit investigation
 items, and hidden scoring must not be invented.
 
+## Dominant Factor Analysis
+
+Dominant Factor Analysis is the first read-only interpretation layer on top of returned Decision Vector
+contribution data. It does not duplicate scoring logic or recompute scores from raw server fields.
+Instead, it consumes existing `ScoreFactorContributionResponse` entries and identifies, per candidate:
+
+- The largest support-direction contributor when present.
+- The largest penalty/risk contributor when present.
+- The factor with the largest absolute numeric impact when present.
+- A short deterministic explanation based only on returned factor names, directions, and contribution values.
+
+The selected-decision summary is based only on the selected candidate's contribution list. It does not
+borrow factors from non-selected candidates, infer hidden routing internals, or claim production proof.
+When contributions are absent or empty, the analysis returns an unknown state rather than inventing data.
+Ties are resolved by stable factor-name ordering.
+
+Reviewers can use this lane to see which returned factor most influenced each candidate's local lab score
+and why one candidate looked better or worse than another under the visible calculator contribution data.
+It does not change routing behavior, scoring math, strategy weights, server selection logic, proxy behavior,
+or existing API response fields. See [`ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md`](ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md)
+for the focused reviewer contract and safety boundaries.
+
 The read-only `/api/routing/compare` response can expose candidate contribution summaries through
 `results[].decisionVector` without changing scoring behavior, strategy weights, selected backend outcomes,
 or existing response fields. This does not implement decision replay, what-if execution, strategy plugin
@@ -206,8 +230,12 @@ The read-only field includes:
 - `selectedCandidateVector` and `nonSelectedCandidateVectors`.
 - `knownVisibleSignals` and `unknownOrUnexposedSignals`.
 - Current calculator `factorContributions` where the contract exposes them.
+- Result-level `dominantFactorAnalysis` derived from those returned contribution entries.
 - Exactness, lab proof, and production not-proven boundaries.
 - Replay, what-if, and structured logging readiness marked future/not implemented.
+
+The dominant factor field is exposed as `results[].dominantFactorAnalysis` and is derived after
+`results[].decisionVector` exists.
 
 The exposure is additive controlled lab explainability only. It does not change routing selection,
 score calculation, strategy weights, route/proxy behavior, or existing API response fields.
@@ -261,6 +289,30 @@ Example response snippet:
         "factorContributionAvailability": "exposed for current ServerScoreCalculator components through read-only controlled lab response data; hidden scoring is not inferred and exact production scoring is not claimed.",
         "replayReadiness": "future/not implemented; read-only Decision Vector exposure does not execute replay.",
         "whatIfReadiness": "future/not implemented; read-only Decision Vector exposure does not execute what-if experiments."
+      },
+      "dominantFactorAnalysis": {
+        "readOnly": true,
+        "source": "/api/routing/compare results[].decisionVector candidate factorContributions",
+        "status": "AVAILABLE",
+        "selectedDecisionAnalysis": {
+          "candidateId": "edge-alpha",
+          "selected": true,
+          "available": true,
+          "largestPenaltyContributor": {
+            "factorName": "p99LatencyMillis",
+            "direction": "WEAKENS_SELECTION",
+            "contributionValue": 28.0,
+            "absoluteImpact": 28.0
+          },
+          "largestAbsoluteImpact": {
+            "factorName": "p99LatencyMillis",
+            "direction": "WEAKENS_SELECTION",
+            "contributionValue": 28.0,
+            "absoluteImpact": 28.0
+          },
+          "explanation": "Candidate edge-alpha is selected; dominant factors are derived only from returned contribution data."
+        },
+        "boundaryNote": "Read-only lab explainability derived only from returned contribution data; routing behavior is unchanged."
       }
     }
   ]
@@ -278,15 +330,17 @@ The Decision Vector answers "why this backend?" by showing:
 - Which visible candidate signals caution against non-selected candidates.
 - Which fields are unknown or unexposed.
 - Which explanation notes are supported by visible data.
+- Which dominant factors were derived from returned contribution entries.
 - Which explanation gaps remain investigation items.
 
 If a candidate appears weakened by unhealthy state, higher visible latency, higher visible load/connection pressure, or lower capacity/weight where those fields are exposed, the vector can record that visible signal comparison. If the local lab response does not expose enough information, the vector must say that the candidate reason is unknown from visible data.
 
 ## Replay, What-If, Logging, and Plugin Roadmap
 
-The Decision Vector is a foundation for future work. These roadmap items are future/not implemented unless a later sprint adds and verifies them:
+The Decision Vector is a foundation for current read-only dominant-factor explainability and future work. These roadmap items remain bounded unless a later sprint adds and verifies them:
 
-- Factor contribution analysis: future/not implemented.
+- Dominant factor analysis: implemented as additive read-only interpretation of returned contribution data only.
+- Broader factor modeling beyond current returned calculator contribution data: future/not implemented.
 - Decision replay: future/not implemented.
 - What-if experiments: future/not implemented.
 - Structured decision logging: future/not implemented.
@@ -407,4 +461,4 @@ This example is static documentation, not an implemented runtime endpoint or ser
 
 The Decision Vector contract is controlled lab explainability. It does not change live routing behavior, does not add production telemetry, does not add production monitoring, does not generate server-side files, and does not claim production certification.
 
-It does not prove production traffic behavior, live-cloud behavior, real-tenant behavior, SLA/SLO achievement, registry publication, container signing, governance application, exact production scoring, completed factor contribution analysis, completed replay, completed what-if experiments, completed strategy plugin explainability, or production readiness.
+It does not prove production traffic behavior, live-cloud behavior, real-tenant behavior, SLA/SLO achievement, registry publication, container signing, governance application, exact production scoring, broader factor modeling beyond returned calculator contribution data, completed replay, completed what-if experiments, completed strategy plugin explainability, or production readiness.

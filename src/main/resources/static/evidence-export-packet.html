@@ -545,11 +545,15 @@
             <span><a href="/evidence-timeline.html"><code>/evidence-timeline.html</code></a><br>Purpose: evidence stages and run template.</span>
           </div>
           <div class="summary-item">
+            <strong>CI Evidence Gate Prototype</strong>
+            <span><a href="/ci-evidence-gate.html"><code>/ci-evidence-gate.html</code></a><br>Purpose: local pass/warn/fail-style gate readiness summary.</span>
+          </div>
+          <div class="summary-item">
             <strong>Evidence Export Packet</strong>
             <span><a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a><br>Purpose: copy/download/print/share checklist.</span>
           </div>
         </div>
-        <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
+        <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/ci-evidence-gate-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
         <p class="compact"><strong>Recommended reviewer path:</strong> Start with Reviewer Dashboard. Check Operator Evidence Dashboard. Review Evidence Timeline. Open Evidence Export Packet. Copy/download/print packet. Use Share Checklist before sending. Verify not-proven boundaries.</p>
         <p class="compact"><strong>Reference docs:</strong> <code>docs/REVIEWER_TRUST_MAP.md</code>, <code>docs/ENTERPRISE_READINESS_AUDIT.md</code>, <code>docs/MANUAL_GITHUB_GOVERNANCE_HARDENING.md</code>, <code>docs/CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md</code>, and <code>docs/CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md</code>.</p>
       </div>
@@ -580,9 +584,11 @@
 - CI artifact name: container-dry-run-evidence-no-publish-no-sign
 - Dashboard links checked:
   - /evidence-timeline.html
+  - /ci-evidence-gate.html
   - /operator-evidence-dashboard.html
   - /enterprise-lab-reviewer.html
   - /api/enterprise-lab/evidence-timeline
+  - /api/enterprise-lab/ci-evidence-gate-summary
   - /api/enterprise-lab/operator-evidence-summary
   - /api/enterprise-lab/reviewer-summary
 - Proof summary:
@@ -626,6 +632,7 @@ Safety note: do not include secrets/tokens/private keys in this packet.</pre>
             <li><input type="checkbox" aria-label="JSON packet downloaded"><span>JSON packet downloaded if machine-readable review is needed.</span></li>
             <li><input type="checkbox" aria-label="PDF print copy generated through browser"><span>PDF/print copy generated through browser print/save-as-PDF if needed.</span></li>
             <li><input type="checkbox" aria-label="Evidence timeline link included"><span>Evidence timeline link included: <code>/evidence-timeline.html</code>.</span></li>
+            <li><input type="checkbox" aria-label="CI evidence gate prototype link included"><span>CI evidence gate prototype link included: <code>/ci-evidence-gate.html</code>.</span></li>
             <li><input type="checkbox" aria-label="Operator evidence dashboard link included"><span>Operator evidence dashboard link included: <code>/operator-evidence-dashboard.html</code>.</span></li>
             <li><input type="checkbox" aria-label="Reviewer dashboard link included"><span>Reviewer dashboard link included: <code>/enterprise-lab-reviewer.html</code>.</span></li>
             <li><input type="checkbox" aria-label="CI dry-run artifact name included"><span>CI dry-run artifact name included: <code>container-dry-run-evidence-no-publish-no-sign</code>.</span></li>
@@ -665,6 +672,7 @@ Safety note: do not include secrets/tokens/private keys in this packet.</pre>
             <li><input type="checkbox" aria-label="Recipient opens reviewer dashboard"><span>Recipient opens <code>/enterprise-lab-reviewer.html</code>.</span></li>
             <li><input type="checkbox" aria-label="Recipient opens operator evidence dashboard"><span>Recipient opens <code>/operator-evidence-dashboard.html</code>.</span></li>
             <li><input type="checkbox" aria-label="Recipient opens evidence timeline"><span>Recipient opens <code>/evidence-timeline.html</code>.</span></li>
+            <li><input type="checkbox" aria-label="Recipient opens CI evidence gate prototype"><span>Recipient opens <code>/ci-evidence-gate.html</code>.</span></li>
             <li><input type="checkbox" aria-label="Recipient opens evidence export packet"><span>Recipient opens <code>/evidence-export-packet.html</code>.</span></li>
             <li><input type="checkbox" aria-label="Recipient inspects Markdown JSON packet"><span>Recipient inspects Markdown/JSON packet.</span></li>
             <li><input type="checkbox" aria-label="Recipient compares packet against CI artifact and evidence paths"><span>Recipient compares packet against CI artifact and local evidence paths.</span></li>
@@ -784,6 +792,7 @@ Safety note: do not include secrets/tokens/private keys in this packet.</pre>
       reviewerDashboardPath: "/enterprise-lab-reviewer.html",
       apiLinks: [
         "/api/enterprise-lab/evidence-timeline",
+        "/api/enterprise-lab/ci-evidence-gate-summary",
         "/api/enterprise-lab/operator-evidence-summary",
         "/api/enterprise-lab/reviewer-summary"
       ],
@@ -874,6 +883,7 @@ Safety note: do not include secrets/tokens/private keys in this packet.</pre>
     const artifact = summary.ciArtifact || {};
     const apiLinks = summary.apiLinks || [
       "/api/enterprise-lab/evidence-timeline",
+      "/api/enterprise-lab/ci-evidence-gate-summary",
       "/api/enterprise-lab/operator-evidence-summary",
       "/api/enterprise-lab/reviewer-summary"
     ];
@@ -907,6 +917,7 @@ Safety note: do not include secrets/tokens/private keys in this packet.</pre>
       listLines([
         summary.dashboardPath || "/evidence-export-packet.html",
         summary.timelinePath || "/evidence-timeline.html",
+        "/ci-evidence-gate.html",
         summary.operatorDashboardPath || "/operator-evidence-dashboard.html",
         summary.reviewerDashboardPath || "/enterprise-lab-reviewer.html",
         ...apiLinks
@@ -943,11 +954,13 @@ Safety note: do not include secrets/tokens/private keys in this packet.</pre>
       dashboardLinksChecked: [
         summary.dashboardPath || "/evidence-export-packet.html",
         summary.timelinePath || "/evidence-timeline.html",
+        "/ci-evidence-gate.html",
         summary.operatorDashboardPath || "/operator-evidence-dashboard.html",
         summary.reviewerDashboardPath || "/enterprise-lab-reviewer.html"
       ],
       apiLinksChecked: summary.apiLinks || [
         "/api/enterprise-lab/evidence-timeline",
+        "/api/enterprise-lab/ci-evidence-gate-summary",
         "/api/enterprise-lab/operator-evidence-summary",
         "/api/enterprise-lab/reviewer-summary"
       ],

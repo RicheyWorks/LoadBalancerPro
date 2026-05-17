@@ -1,6 +1,6 @@
 # CI Evidence Gate Readiness Lane
 
-Status: readiness lane only. No CI enforcement change is made by this document.
+Status: readiness lane plus local prototype. No CI enforcement change is made by this document or by the prototype.
 
 LoadBalancerPro is becoming the evidence, governance, and explainability layer for adaptive routing: a local flight simulator and black-box recorder for routing decisions. This lane describes how local Enterprise Lab evidence could later become a CI evidence gate that blocks unsafe adaptive-routing changes.
 
@@ -8,7 +8,18 @@ LoadBalancerPro is becoming the evidence, governance, and explainability layer f
 
 The future gate would consume local, source-visible Enterprise Lab evidence and fail when a change weakens the proof story or crosses a safety boundary. It is intended to make adaptive-routing changes reviewable before they become release or production-candidate claims.
 
-This sprint prepares the gate. It does not create a required check, mutate branch protection, mutate rulesets, change GitHub settings, publish artifacts, sign containers, call cloud resources, or validate real tenants.
+This lane prepares the gate. It does not create a required check, mutate branch protection, mutate rulesets, change GitHub settings, publish artifacts, sign containers, call cloud resources, or validate real tenants.
+
+## Local Prototype Surface
+
+The local prototype is available from the running app:
+
+- Browser page: `/ci-evidence-gate.html`
+- Read-only API: `GET /api/enterprise-lab/ci-evidence-gate-summary`
+
+The endpoint returns deterministic static JSON for local review. It does not read files, run commands, inspect the live CI environment, call GitHub, call cloud services, read secrets, read environment variables, or mutate filesystem state. The page fetches only the same-origin endpoint and falls back to static prototype copy if the API is unavailable.
+
+The prototype can say `READY_FOR_LOCAL_REVIEW`, `NOT_ENFORCED`, `PASS_STYLE`, `WARN_STYLE`, and `FAIL_STYLE_BLOCKER` as review semantics. Those labels are local readiness semantics only. They are not live merge enforcement, not required checks, not branch protection, and not a production certification result.
 
 ## Candidate Evidence Inputs
 
@@ -88,6 +99,7 @@ A future gate should fail or block review when:
 Reviewers still manually confirm:
 
 - latest CI and CodeQL passed for the exact commit under review;
+- the local prototype at `/ci-evidence-gate.html` and `GET /api/enterprise-lab/ci-evidence-gate-summary` still reports `NOT_ENFORCED`;
 - Dependency Review and Trivy findings are resolved or have owner-approved rationale;
 - the generated local evidence, if produced, is from the same commit;
 - `release-downloads/` was not changed;
@@ -100,4 +112,4 @@ This lane does not add or change `.github/workflows/` files. It does not add req
 
 It also does not prove production readiness, production performance, production SLO/SLA behavior, live-cloud behavior, real tenant behavior, real enterprise IdP behavior, signed-container provenance, registry publication, or governance-applied status.
 
-Use this lane as the design and safety contract for a later implementation sprint. A future implementation can add a local parser or CI job only after the evidence schema, failure policy, runtime cost, and reviewer workflow are explicitly approved.
+Use this lane and the prototype as the design and safety contract for a later implementation sprint. A future implementation can add a local parser or CI job only after the evidence schema, failure policy, runtime cost, and reviewer workflow are explicitly approved.

@@ -355,6 +355,34 @@
       </div>
     </section>
 
+    <section aria-labelledby="gate-evaluation-heading">
+      <h2 id="gate-evaluation-heading">Gate Evaluation</h2>
+      <div class="notice">
+        <div class="status-row">
+          <span class="badge">pass/warn/fail findings</span>
+          <span class="badge">local review only</span>
+          <span class="badge warn">NOT_ENFORCED</span>
+        </div>
+        <p style="margin-top:10px">The gate evaluation consumes the in-memory evidence packet and turns it into reviewer findings. It is a local prototype checklist, not a required GitHub check, branch-protection change, live CI gate, or production proof.</p>
+      </div>
+      <div class="summary-grid" style="margin-top:14px">
+        <div class="metric"><span>Decision</span><strong id="gate-decision">unavailable</strong></div>
+        <div class="metric"><span>Enforcement</span><strong id="gate-enforcement">NOT_ENFORCED</strong></div>
+        <div class="metric"><span>Findings</span><strong id="gate-findings">0</strong></div>
+        <div class="metric"><span>Warnings</span><strong id="gate-warnings">0</strong></div>
+      </div>
+      <div class="columns" style="margin-top:14px">
+        <div class="notice">
+          <h3>Findings</h3>
+          <ul id="gate-finding-list"></ul>
+        </div>
+        <div class="notice">
+          <h3>Reviewer Actions</h3>
+          <ul id="gate-reviewer-actions"></ul>
+        </div>
+      </div>
+    </section>
+
     <section aria-labelledby="evidence-heading">
       <h2 id="evidence-heading">Evidence Boundaries</h2>
       <div class="columns">
@@ -375,6 +403,7 @@
     const endpoint = "/api/enterprise-lab/adaptive-routing-scenario-summary";
     const detailEndpoint = "/api/enterprise-lab/adaptive-routing-scenario-detail";
     const packetEndpoint = "/api/enterprise-lab/adaptive-routing-scenario-evidence-packet";
+    const gateEvaluationEndpoint = "/api/enterprise-lab/adaptive-routing-scenario-gate-evaluation";
 
     const fallback = {
       runnerName: "Adaptive Routing Scenario Runner",
@@ -415,6 +444,21 @@
       recommendedNextSteps: [
         "Review summary and drilldown sections on this page.",
         "Use CI Evidence Gate only as a prototype/local-review surface."
+      ]
+    };
+
+    const gateEvaluationFallback = {
+      evaluationName: "Adaptive Routing Scenario Gate Evaluation",
+      evaluationVersion: "adaptive-routing-scenario-gate-evaluation/v1",
+      mode: "local-synthetic",
+      enforcementStatus: "NOT_ENFORCED",
+      decision: "unavailable",
+      totalFindings: 0,
+      warningFindings: 0,
+      findings: [],
+      reviewerActions: [
+        "Start the local app to fetch adaptive-routing scenario gate evaluation findings.",
+        "Treat findings as local reviewer guidance only, not active CI enforcement."
       ]
     };
 
@@ -464,6 +508,17 @@
       document.getElementById("packet-source-count").textContent = text((packet.sourceEndpoints || []).length);
       renderList("packet-checklist", packet.reviewerChecklist || []);
       renderList("packet-next-steps", packet.recommendedNextSteps || []);
+    }
+
+    function renderGateEvaluation(evaluation) {
+      document.getElementById("gate-decision").textContent = text(evaluation.decision);
+      document.getElementById("gate-enforcement").textContent = text(evaluation.enforcementStatus);
+      document.getElementById("gate-findings").textContent = text(evaluation.totalFindings);
+      document.getElementById("gate-warnings").textContent = text(evaluation.warningFindings);
+      const findings = (evaluation.findings || []).slice(0, 12)
+        .map((finding) => `${text(finding.status)}: ${text(finding.title)} - ${text(finding.explanation)}`);
+      renderList("gate-finding-list", findings);
+      renderList("gate-reviewer-actions", evaluation.reviewerActions || []);
     }
 
     function renderScenarios(scenarios) {
@@ -655,6 +710,16 @@
       })
       .then(renderPacket)
       .catch(() => renderPacket(packetFallback));
+
+    fetch(gateEvaluationEndpoint, { headers: { "Accept": "application/json" } })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(renderGateEvaluation)
+      .catch(() => renderGateEvaluation(gateEvaluationFallback));
   </script>
 </body>
 </html>

@@ -24,6 +24,7 @@ public class EnterpriseLabCiEvidenceGateSummaryController {
                 "/api/enterprise-lab/ci-evidence-gate-summary",
                 List.of(
                         "/enterprise-lab-reviewer.html",
+                        "/adaptive-routing-scenarios.html",
                         "/operator-evidence-dashboard.html",
                         "/evidence-timeline.html",
                         "/evidence-export-packet.html"),
@@ -57,14 +58,20 @@ public class EnterpriseLabCiEvidenceGateSummaryController {
                                 "Adaptive-routing experiment comparison",
                                 "target/adaptive-routing-experiments/adaptive-routing-experiment.md",
                                 "scripts/smoke/adaptive-routing-experiment.ps1 -Package",
-                                "offline baseline versus shadow versus active-experiment comparison")),
+                                "offline baseline versus shadow versus active-experiment comparison"),
+                        new EvidenceInput(
+                                "Adaptive routing scenario runner summary",
+                                "target/adaptive-routing-scenarios/adaptive-routing-scenario-summary.json",
+                                "GET /api/enterprise-lab/adaptive-routing-scenario-summary",
+                                "deterministic local synthetic selected-server distribution summary")),
                 List.of(
                         "target/enterprise-lab-runs/",
                         "target/controlled-adaptive-routing/",
                         "target/enterprise-lab-observability/",
                         "target/performance-baseline/",
                         "target/enterprise-auth-proof/",
-                        "target/adaptive-routing-experiments/"),
+                        "target/adaptive-routing-experiments/",
+                        "target/adaptive-routing-scenarios/"),
                 List.of(
                         new ReadinessCheck(
                                 "Evidence input catalog",
@@ -119,6 +126,7 @@ public class EnterpriseLabCiEvidenceGateSummaryController {
                         "no branch protection or required-check mutation"),
                 List.of(
                         "Use this prototype for local reviewer orientation.",
+                        "Inspect adaptive routing scenario runner output before adding gate enforcement.",
                         "Keep evidence generators local and deterministic.",
                         "Define an evidence schema before implementing a real CI parser.",
                         "Approve failure policy and runtime cost before adding any CI enforcement.",

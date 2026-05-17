@@ -327,6 +327,34 @@
       </div>
     </section>
 
+    <section aria-labelledby="packet-heading">
+      <h2 id="packet-heading">Evidence Packet</h2>
+      <div class="notice">
+        <div class="status-row">
+          <span class="badge">reviewer packet</span>
+          <span class="badge">summary + drilldown</span>
+          <span class="badge warn">in-memory only</span>
+        </div>
+        <p style="margin-top:10px">The packet endpoint turns the deterministic scenario summary and drilldowns into one local reviewer handoff shape. It is endpoint output only; it does not generate files, enforce CI, or claim production proof.</p>
+      </div>
+      <div class="summary-grid" style="margin-top:14px">
+        <div class="metric"><span>Packet</span><strong id="packet-name">unavailable</strong></div>
+        <div class="metric"><span>Version</span><strong id="packet-version">unavailable</strong></div>
+        <div class="metric"><span>Readiness</span><strong id="packet-readiness">unavailable</strong></div>
+        <div class="metric"><span>Sources</span><strong id="packet-source-count">0</strong></div>
+      </div>
+      <div class="columns" style="margin-top:14px">
+        <div class="notice">
+          <h3>Reviewer Checklist</h3>
+          <ul id="packet-checklist"></ul>
+        </div>
+        <div class="notice">
+          <h3>Recommended Next Steps</h3>
+          <ul id="packet-next-steps"></ul>
+        </div>
+      </div>
+    </section>
+
     <section aria-labelledby="evidence-heading">
       <h2 id="evidence-heading">Evidence Boundaries</h2>
       <div class="columns">
@@ -346,6 +374,7 @@
   <script>
     const endpoint = "/api/enterprise-lab/adaptive-routing-scenario-summary";
     const detailEndpoint = "/api/enterprise-lab/adaptive-routing-scenario-detail";
+    const packetEndpoint = "/api/enterprise-lab/adaptive-routing-scenario-evidence-packet";
 
     const fallback = {
       runnerName: "Adaptive Routing Scenario Runner",
@@ -372,6 +401,21 @@
       scenarios: [],
       warnings: ["Detail endpoint is unavailable in this static fallback view."],
       notProvenBoundaries: fallback.notProvenBoundaries
+    };
+
+    const packetFallback = {
+      packetName: "Adaptive Routing Scenario Evidence Packet",
+      packetVersion: "adaptive-routing-scenario-evidence-packet/v1",
+      readinessForCiGate: "unavailable",
+      sourceEndpoints: [endpoint, detailEndpoint, packetEndpoint],
+      reviewerChecklist: [
+        "Start the local app to fetch the adaptive-routing scenario evidence packet.",
+        "Confirm local-synthetic mode and not-proven boundaries before citing packet output."
+      ],
+      recommendedNextSteps: [
+        "Review summary and drilldown sections on this page.",
+        "Use CI Evidence Gate only as a prototype/local-review surface."
+      ]
     };
 
     function text(value) {
@@ -411,6 +455,15 @@
         element.appendChild(detailBoundaryList(scenario.notProvenBoundaries || []));
         list.appendChild(element);
       }
+    }
+
+    function renderPacket(packet) {
+      document.getElementById("packet-name").textContent = text(packet.packetName);
+      document.getElementById("packet-version").textContent = text(packet.packetVersion);
+      document.getElementById("packet-readiness").textContent = text(packet.readinessForCiGate);
+      document.getElementById("packet-source-count").textContent = text((packet.sourceEndpoints || []).length);
+      renderList("packet-checklist", packet.reviewerChecklist || []);
+      renderList("packet-next-steps", packet.recommendedNextSteps || []);
     }
 
     function renderScenarios(scenarios) {
@@ -592,6 +645,16 @@
       })
       .then(renderDetails)
       .catch(() => renderDetails(detailFallback));
+
+    fetch(packetEndpoint, { headers: { "Accept": "application/json" } })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(renderPacket)
+      .catch(() => renderPacket(packetFallback));
   </script>
 </body>
 </html>

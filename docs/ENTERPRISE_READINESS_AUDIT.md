@@ -44,7 +44,7 @@ The safest positioning is:
 
 | Area | Rating | Current finding |
 | --- | --- | --- |
-| Enterprise Lab readiness | Strong | Lab APIs, deterministic scenario runs, scorecards, policy gates, local evidence export, observability pack, performance lane, and mocked auth proof exist. |
+| Enterprise Lab readiness | Strong | Lab APIs, deterministic scenario runs, scorecards, policy gates, local evidence export, observability pack, measured performance plus auth proof lane, performance lane, and mocked auth proof exist. |
 | Enterprise demo/reviewer readiness | Strong | README, trust map, product charter, roadmap, run profiles, smoke kits, and release evidence give a clear safe path. |
 | Production-candidate posture | Good | Prod/cloud-sandbox auth modes, OAuth2 role mapping, DTO validation, CI/SBOM/Trivy/CodeQL, Docker prod default, and release evidence are documented and tested. |
 | Production enterprise readiness | Not ready | External TLS, IAM, ingress, WAF, distributed rate limiting, monitoring retention, secret rotation, live IdP tenant proof, live AWS validation, and incident evidence are not provided by the app. |
@@ -78,7 +78,7 @@ The transition is mostly complete at the current reviewer-entry level:
 - `docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md` separates Enterprise Adaptive Routing Lab from Production Gateway Candidate.
 - `docs/ENTERPRISE_LAB_ROADMAP.md` defines P0/P1/P2/P3 lab and candidate milestones.
 - `docs/PRODUCTION_READINESS_SUMMARY.md` says production-candidate rather than production-certified.
-- `docs/REVIEWER_TRUST_MAP.md` gives reviewer paths for lab workflow, controlled policy evidence, observability, performance, mocked auth proof, and release evidence.
+- `docs/REVIEWER_TRUST_MAP.md` gives reviewer paths for lab workflow, controlled policy evidence, observability, the combined measured performance plus auth proof lane, performance, mocked auth proof, and release evidence.
 - Static documentation tests guard against production-ready gateway and certification overclaims.
 
 Remaining transition work is primarily hygiene:
@@ -95,6 +95,7 @@ Remaining transition work is primarily hygiene:
 - Conservative default posture: local/dev convenience is called out, prod/cloud-sandbox profiles are protected, proxy mode is disabled by default, and cloud live mode is guarded.
 - Lab workflow exists beyond documentation: `/api/lab/**`, `/enterprise-lab.html`, bounded process-local storage, scorecards, policy/audit endpoints, metrics endpoints, and smoke evidence outputs under ignored `target/`.
 - Controlled adaptive-routing policy supports `off`, `shadow`, `recommend`, and explicit guarded `active-experiment` without making production traffic-control claims.
+- The measured performance plus auth proof lane presents local loopback performance evidence and mocked IdP/JWKS role-claim proof as one reviewer-safe product lane without claiming production SLO/SLA, real tenant, live cloud, or real enterprise IdP validation.
 - OAuth2 role behavior is documented and tested around dedicated role claims; `scope` and `scp` do not become app roles.
 - Enterprise-required DTO omissions are rejected instead of silently defaulting for current allocation/evaluation contracts.
 - CI covers tests, packaging, packaged-jar smoke, Docker build/runtime smoke, Docker healthcheck, Trivy, SBOM generation, and artifact upload.

@@ -24,6 +24,7 @@ class PerformanceAuthProofLaneDocumentationTest {
     private static final Path DEMO = Path.of("docs/DEMO_WALKTHROUGH.md");
     private static final Path PRODUCTION_SUMMARY = Path.of("docs/PRODUCTION_READINESS_SUMMARY.md");
     private static final Path TEST_EVIDENCE = Path.of("evidence/TEST_EVIDENCE.md");
+    private static final Path COMBINED_LANE = Path.of("docs/MEASURED_PERFORMANCE_BASELINE_AND_AUTH_PROOF_LANE.md");
     private static final Path PERFORMANCE_BASELINE = Path.of("evidence/PERFORMANCE_BASELINE.md");
     private static final Path AUTH_PROOF = Path.of("docs/ENTERPRISE_AUTH_PROOF_LANE.md");
     private static final Path PAGE = Path.of("src/main/resources/static/enterprise-lab.html");
@@ -35,9 +36,10 @@ class PerformanceAuthProofLaneDocumentationTest {
         String combined = read(README) + read(ROADMAP) + read(CHARTER) + read(API_SECURITY)
                 + read(API_CONTRACTS) + read(OBSERVABILITY) + read(RUNBOOK) + read(TRUST_MAP)
                 + read(SRE) + read(DEMO) + read(PRODUCTION_SUMMARY) + read(TEST_EVIDENCE)
-                + read(PERFORMANCE_BASELINE) + read(AUTH_PROOF) + read(PAGE);
+                + read(COMBINED_LANE) + read(PERFORMANCE_BASELINE) + read(AUTH_PROOF) + read(PAGE);
 
         for (String expected : List.of(
+                "MEASURED_PERFORMANCE_BASELINE_AND_AUTH_PROOF_LANE.md",
                 "scripts/smoke/performance-baseline.ps1",
                 "target/performance-baseline/",
                 "performance-dashboard.json",
@@ -52,7 +54,8 @@ class PerformanceAuthProofLaneDocumentationTest {
                 "scope-only denial",
                 "token lifetime",
                 "key-rotation",
-                "no real enterprise IdP tenant validation")) {
+                "no real enterprise IdP tenant validation",
+                "local flight simulator and black-box recorder")) {
             assertTrue(combined.contains(expected), "docs should mention " + expected);
         }
 
@@ -60,6 +63,51 @@ class PerformanceAuthProofLaneDocumentationTest {
         assertFalse(normalized.contains("production performance certification is complete"));
         assertFalse(normalized.contains("real enterprise tenant proof is complete"));
         assertFalse(normalized.contains("scope/scp values become application roles"));
+    }
+
+    @Test
+    void combinedLaneConnectsExistingProofsWithoutNewProductionClaims() throws Exception {
+        String lane = read(COMBINED_LANE);
+        String normalized = lane.toLowerCase(Locale.ROOT);
+
+        for (String expected : List.of(
+                "local evidence lane ready",
+                "LoadBalancerPro is not trying to out-Envoy Envoy",
+                "evidence, governance, and explainability layer for adaptive routing",
+                "local flight simulator and black-box recorder",
+                "scripts\\smoke\\performance-baseline.ps1 -Package",
+                "scripts\\smoke\\enterprise-auth-proof.ps1 -Package",
+                "PerformanceBaselineFixtureCatalogTest,EnterpriseAuthProofLaneTest,OAuth2AuthorizationTest,PerformanceAuthProofLaneDocumentationTest",
+                "target/performance-baseline/",
+                "target/enterprise-auth-proof/",
+                "../evidence/PERFORMANCE_BASELINE.md",
+                "ENTERPRISE_AUTH_PROOF_LANE.md",
+                "warning-only performance thresholds",
+                "synthetic mock IdP/JWKS fixtures",
+                "mocked-resource-server tests",
+                "should not be committed")) {
+            assertTrue(lane.contains(expected), "combined lane should mention " + expected);
+        }
+
+        for (String expected : List.of(
+                "not production certification",
+                "not live cloud proof",
+                "not real tenant proof",
+                "not slo/sla proof",
+                "real enterprise idp validation",
+                "no real secrets",
+                "no real enterprise idp tenant validation",
+                "does not use real secrets, tokens, tenant ids, customer data, private endpoints, cloud resources")) {
+            assertTrue(normalized.contains(expected), "combined lane should keep boundary: " + expected);
+        }
+
+        String linkedDocs = read(README) + read(TRUST_MAP) + read(Path.of("docs/ENTERPRISE_READINESS_AUDIT.md"));
+        assertTrue(linkedDocs.contains("MEASURED_PERFORMANCE_BASELINE_AND_AUTH_PROOF_LANE.md"),
+                "current reviewer entry points should link the combined lane");
+        assertFalse(normalized.contains("production performance certification is complete"));
+        assertFalse(normalized.contains("production slo proof is complete"));
+        assertFalse(normalized.contains("real enterprise tenant proof is complete"));
+        assertFalse(normalized.contains("real enterprise idp validation is complete"));
     }
 
     @Test

@@ -73,7 +73,12 @@ public class EnterpriseLabCiEvidenceGateSummaryController {
                                 "Adaptive routing scenario gate evaluation",
                                 "target/adaptive-routing-scenarios/adaptive-routing-scenario-gate-evaluation.json",
                                 "GET /api/enterprise-lab/adaptive-routing-scenario-gate-evaluation",
-                                "local pass/warn/fail-style reviewer findings over the scenario evidence packet")),
+                                "local pass/warn/fail-style reviewer findings over the scenario evidence packet"),
+                        new EvidenceInput(
+                                "Adaptive routing strategy comparison matrix",
+                                "target/adaptive-routing-scenarios/adaptive-routing-strategy-comparison-matrix.json",
+                                "GET /api/enterprise-lab/adaptive-routing-strategy-comparison-matrix",
+                                "local strategy-by-scenario selected-server distribution and review signal matrix")),
                 List.of(
                         "target/enterprise-lab-runs/",
                         "target/controlled-adaptive-routing/",
@@ -136,8 +141,8 @@ public class EnterpriseLabCiEvidenceGateSummaryController {
                         "no branch protection or required-check mutation"),
                 List.of(
                         "Use this prototype for local reviewer orientation.",
-                        "Inspect adaptive routing scenario summary, drilldown, evidence packet, and gate evaluation "
-                                + "output before adding gate enforcement.",
+                        "Inspect adaptive routing scenario summary, drilldown, evidence packet, gate evaluation, "
+                                + "and strategy comparison matrix output before adding gate enforcement.",
                         "Keep evidence generators local and deterministic.",
                         "Define an evidence schema before implementing a real CI parser.",
                         "Approve failure policy and runtime cost before adding any CI enforcement.",

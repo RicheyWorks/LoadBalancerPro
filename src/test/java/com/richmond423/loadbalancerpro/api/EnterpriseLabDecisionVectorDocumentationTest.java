@@ -24,6 +24,8 @@ class EnterpriseLabDecisionVectorDocumentationTest {
             Path.of("docs/ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md");
     private static final Path DECISION_REPLAY_CAPSULE =
             Path.of("docs/ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md");
+    private static final Path DECISION_REPLAY_READINESS_CHECKLIST =
+            Path.of("docs/ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md");
     private static final Path README = Path.of("README.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path FRAMING = Path.of("docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md");
@@ -55,6 +57,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("`decisionReplaySnapshot`"));
         assertTrue(doc.contains("`decisionReplayReconstructionTrace`"));
         assertTrue(doc.contains("`decisionReplayCapsule`"));
+        assertTrue(doc.contains("`decisionReplayReadinessChecklist`"));
         assertTrue(doc.contains("`replayReadiness`"));
         assertTrue(normalized.contains("how it answers why this backend"));
         assertTrue(normalized.contains("selected-vs-alternative"));
@@ -123,6 +126,9 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("## Decision Replay Capsule"));
         assertTrue(doc.contains("deterministic capsule fingerprint"));
         assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md"));
+        assertTrue(doc.contains("## Decision Replay Readiness Checklist"));
+        assertTrue(doc.contains("Decision Replay Readiness Checklist is the read-only lab evidence readiness layer"));
+        assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md"));
         assertTrue(doc.contains("\"EXACT_FROM_CALCULATOR\""));
         assertTrue(doc.contains("\"NOT_EXPOSED\""));
         assertTrue(doc.contains("not production scoring proof"));
@@ -140,6 +146,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
                 "Decision replay snapshot: implemented as additive read-only snapshot evidence and deterministic local fingerprint only.",
                 "Decision replay reconstruction trace: implemented as additive read-only reconstruction evidence steps and deterministic local trace fingerprint only.",
                 "Decision replay capsule: implemented as additive read-only canonical evidence packaging and deterministic local capsule fingerprint only.",
+                "Decision replay readiness checklist: implemented as additive read-only lab evidence readiness status over already-built evidence lanes only.",
                 "Broader factor modeling beyond current returned calculator contribution data: future/not implemented.",
                 "Replay execution: future/not implemented.",
                 "What-if experiments: future/not implemented.",
@@ -164,6 +171,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("`results[].decisionReplaySnapshot`"));
         assertTrue(doc.contains("`results[].decisionReplayReconstructionTrace`"));
         assertTrue(doc.contains("`results[].decisionReplayCapsule`"));
+        assertTrue(doc.contains("`results[].decisionReplayReadinessChecklist`"));
         assertTrue(doc.contains("preserves existing"));
         assertTrue(doc.contains("`requestedStrategies`, `candidateCount`, `timestamp`, result status"));
         assertTrue(doc.contains("\"localLabResponsePath\": \"/api/routing/compare\""));
@@ -355,6 +363,45 @@ class EnterpriseLabDecisionVectorDocumentationTest {
     }
 
     @Test
+    void decisionReplayReadinessChecklistDocDefinesReadOnlyBoundaries() throws Exception {
+        String doc = read(DECISION_REPLAY_READINESS_CHECKLIST);
+        String normalized = doc.toLowerCase(Locale.ROOT);
+
+        assertTrue(doc.contains("# Enterprise Lab Decision Replay Readiness Checklist"));
+        assertTrue(doc.contains("read-only lab evidence readiness lane"));
+        assertTrue(doc.contains("`POST /api/routing/compare`"));
+        assertTrue(doc.contains("derived only from already-built Decision Vector"));
+        assertTrue(doc.contains("`results[].decisionReplayReadinessChecklist`"));
+        assertTrue(doc.contains("`decision-replay-readiness-checklist/v1`"));
+        assertTrue(doc.contains("`decision-vector-evidence`"));
+        assertTrue(doc.contains("`read-only-boundary-evidence`"));
+        assertTrue(doc.contains("does not execute replay"));
+        assertTrue(doc.contains("does not perform what-if mutation"));
+        assertTrue(doc.contains("does not persist checklist state or audit logs"));
+        assertTrue(doc.contains("does not recompute scores"));
+        assertTrue(doc.contains("does not retune weights"));
+        assertTrue(doc.contains("does not export, download, or share checklist data"));
+        assertTrue(doc.contains("linked replay snapshot, reconstruction trace, and replay capsule fingerprints only when the source evidence is already available"));
+        assertTrue(doc.contains("returns `UNKNOWN`"));
+        assertTrue(doc.contains("returns `PARTIAL`"));
+        assertTrue(normalized.contains("lab explainability/replay-readiness only"));
+        assertTrue(normalized.contains("production certification"));
+        assertTrue(normalized.contains("live-cloud behavior"));
+        assertTrue(normalized.contains("real-tenant behavior"));
+        assertTrue(normalized.contains("sla/slo"));
+        assertTrue(normalized.contains("registry publication"));
+        assertTrue(normalized.contains("signing status"));
+        assertTrue(normalized.contains("governance application"));
+        assertTrue(normalized.contains("exact production scoring"));
+        assertTrue(normalized.contains("guaranteed replay"));
+        assertFalse(normalized.contains("production certification is proven"));
+        assertFalse(normalized.contains("guaranteed replay is proven"));
+        assertFalse(normalized.contains("upload endpoint"));
+        assertFalse(normalized.contains("download endpoint"));
+        assertFalse(normalized.contains("server-side export endpoint"));
+    }
+
+    @Test
     void decisionVectorDocIsLinkedFromReviewerDocs() throws Exception {
         String readme = read(README);
         String trustMap = read(TRUST_MAP);
@@ -367,10 +414,11 @@ class EnterpriseLabDecisionVectorDocumentationTest {
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md"));
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md"));
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md"));
+            assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md"));
             assertTrue(doc.contains("Decision Vector"));
         }
 
-        assertTrue(readme.contains("Decision Vector contract: [`docs/ENTERPRISE_LAB_DECISION_VECTOR.md`](docs/ENTERPRISE_LAB_DECISION_VECTOR.md); read-only Dominant Factor Analysis lane: [`docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md`](docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md); read-only Decision Delta Analysis lane: [`docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md`](docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md); read-only Decision Replay Snapshot lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md); read-only Decision Replay Reconstruction Trace lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md); read-only Decision Replay Capsule lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md)."));
+        assertTrue(readme.contains("Decision Vector contract: [`docs/ENTERPRISE_LAB_DECISION_VECTOR.md`](docs/ENTERPRISE_LAB_DECISION_VECTOR.md); read-only Dominant Factor Analysis lane: [`docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md`](docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md); read-only Decision Delta Analysis lane: [`docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md`](docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md); read-only Decision Replay Snapshot lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md); read-only Decision Replay Reconstruction Trace lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md); read-only Decision Replay Capsule lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md); read-only Decision Replay Readiness Checklist lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md)."));
         assertTrue(trustMap.contains("### Decision Vector Contract"));
         assertTrue(framing.contains("## Decision Vector Contract"));
     }
@@ -425,6 +473,10 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("id=\"decision-vector-replay-capsule\""));
         assertTrue(page.contains("id=\"decision-vector-capsule-fingerprint\""));
         assertTrue(page.contains("id=\"decision-vector-capsule-boundary\""));
+        assertTrue(page.contains("Replay Readiness Checklist"));
+        assertTrue(page.contains("id=\"decision-vector-readiness-checklist\""));
+        assertTrue(page.contains("id=\"decision-vector-readiness-fingerprints\""));
+        assertTrue(page.contains("id=\"decision-vector-readiness-boundary\""));
         assertTrue(page.contains("# Decision Vector Foundation"));
         assertTrue(page.contains("decisionIdOrLabRunId: "));
         assertTrue(page.contains("candidateVectors: "));
@@ -437,6 +489,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("decisionReplaySnapshot: "));
         assertTrue(page.contains("decisionReplayReconstructionTrace: "));
         assertTrue(page.contains("decisionReplayCapsule: "));
+        assertTrue(page.contains("decisionReplayReadinessChecklist: "));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("internal calculator contribution and candidate summary contracts started"));
         assertTrue(page.contains("replayReadiness: "));

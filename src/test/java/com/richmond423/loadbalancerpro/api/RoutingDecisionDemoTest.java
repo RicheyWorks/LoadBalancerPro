@@ -701,6 +701,12 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("id=\"decision-vector-replay-capsule\""));
         assertTrue(page.contains("id=\"decision-vector-capsule-fingerprint\""));
         assertTrue(page.contains("id=\"decision-vector-capsule-boundary\""));
+        assertTrue(page.contains("Replay Readiness Checklist"));
+        assertTrue(page.contains("Readiness Items"));
+        assertTrue(page.contains("Linked Evidence Fingerprints"));
+        assertTrue(page.contains("id=\"decision-vector-readiness-checklist\""));
+        assertTrue(page.contains("id=\"decision-vector-readiness-fingerprints\""));
+        assertTrue(page.contains("id=\"decision-vector-readiness-boundary\""));
         assertTrue(page.contains("# Decision Vector Foundation"));
         assertTrue(page.contains("decisionIdOrLabRunId: "));
         assertTrue(page.contains("candidateVectors: "));
@@ -714,6 +720,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("decisionReplaySnapshot: "));
         assertTrue(page.contains("decisionReplayReconstructionTrace: "));
         assertTrue(page.contains("decisionReplayCapsule: "));
+        assertTrue(page.contains("decisionReplayReadinessChecklist: "));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
@@ -1056,7 +1063,23 @@ class RoutingDecisionDemoTest {
                     .andExpect(jsonPath("$.results[0].decisionReplayCapsule.candidateIdsConsidered[1]",
                             is("edge-weighted")))
                     .andExpect(jsonPath("$.results[0].decisionReplayCapsule.capsuleFingerprint")
-                            .isString());
+                            .isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.readOnly", is(true)))
+                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.checklistSchemaVersion",
+                            is("decision-replay-readiness-checklist/v1")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.status").isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.decisionVectorStatus",
+                            is("AVAILABLE")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.linkedReplaySnapshotFingerprint")
+                            .isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.linkedReconstructionTraceFingerprint")
+                            .isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.linkedReplayCapsuleFingerprint")
+                            .isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.checklistItems[0].itemId",
+                            is("decision-vector-evidence")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.checklistItems[8].itemId",
+                            is("read-only-boundary-evidence")));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "routing demo comparison must not construct CloudManager");

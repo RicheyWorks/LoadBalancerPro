@@ -79,6 +79,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayReconstructionTraceResponse");
         assertRef(required(resultProperties, "/decisionReplayCapsule"),
                 "#/components/schemas/RoutingDecisionReplayCapsuleResponse");
+        assertRef(required(resultProperties, "/decisionReplayReadinessChecklist"),
+                "#/components/schemas/RoutingDecisionReplayReadinessChecklistResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -206,6 +208,25 @@ class RoutingOpenApiContractTest {
         assertEquals("boolean", required(capsuleFactorProperties, "/appearedInSelectedCandidate/type").asText());
         assertEquals("boolean", required(capsuleFactorProperties, "/appearedInClosestAlternative/type").asText());
         assertEquals("number", required(capsuleFactorProperties, "/contributionDelta/type").asText());
+
+        JsonNode checklistProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayReadinessChecklistResponse/properties");
+        assertEquals("boolean", required(checklistProperties, "/readOnly/type").asText());
+        assertEquals("string", required(checklistProperties, "/checklistSchemaVersion/type").asText());
+        assertEquals("string", required(checklistProperties, "/status/type").asText());
+        assertEquals("string", required(checklistProperties, "/linkedReplaySnapshotFingerprint/type").asText());
+        assertEquals("string", required(checklistProperties, "/linkedReconstructionTraceFingerprint/type").asText());
+        assertEquals("string", required(checklistProperties, "/linkedReplayCapsuleFingerprint/type").asText());
+        assertEquals("integer", required(checklistProperties, "/availableItemCount/type").asText());
+        assertEquals("array", required(checklistProperties, "/checklistItems/type").asText());
+        assertRef(required(checklistProperties, "/checklistItems/items"),
+                "#/components/schemas/DecisionReplayReadinessChecklistItemResponse");
+
+        JsonNode checklistItemProperties = required(docs,
+                "/components/schemas/DecisionReplayReadinessChecklistItemResponse/properties");
+        assertEquals("string", required(checklistItemProperties, "/itemId/type").asText());
+        assertEquals("string", required(checklistItemProperties, "/status/type").asText());
+        assertEquals("string", required(checklistItemProperties, "/evidenceSourceFieldPath/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

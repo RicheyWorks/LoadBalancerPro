@@ -6,7 +6,7 @@ The Enterprise Lab Decision Vector is the structured explanation object for one 
 
 ## Why the Lab Needs It
 
-The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, Decision Replay Reconstruction Trace lane, and future work such as replay execution, what-if experiments, structured decision logging, strategy plugin explainability, and data center signal modeling can build without inventing hidden scoring.
+The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, Decision Replay Reconstruction Trace lane, Decision Replay Capsule lane, Decision Replay Readiness Checklist lane, and future work such as replay execution, what-if experiments, structured decision logging, strategy plugin explainability, and data center signal modeling can build without inventing hidden scoring.
 
 A Decision Vector differs from a simple reason string because it separates:
 
@@ -23,6 +23,8 @@ A Decision Vector differs from a simple reason string because it separates:
 - Decision delta analysis comparing the selected candidate with the closest scored alternative.
 - Decision Replay Snapshot metadata and deterministic local fingerprint for already-returned lab evidence.
 - Decision Replay Reconstruction Trace steps and deterministic local trace fingerprint for already-returned lab evidence.
+- Decision Replay Capsule canonical evidence packaging and deterministic local capsule fingerprint for already-returned lab evidence.
+- Decision Replay Readiness Checklist status over already-built evidence lanes.
 - Replay readiness and future replay execution gaps.
 - Lab proof boundaries and production not-proven boundaries.
 
@@ -51,6 +53,7 @@ One Decision Vector represents one controlled lab routing decision. The contract
 | `decisionReplaySnapshot` | Additive read-only snapshot of stable compare evidence and deterministic local fingerprint derived only from already-built response fields. |
 | `decisionReplayReconstructionTrace` | Additive read-only reconstruction evidence steps and deterministic local trace fingerprint derived only from already-built response fields. |
 | `decisionReplayCapsule` | Additive read-only canonical evidence package and deterministic local capsule fingerprint derived only from already-built response fields and prior lab analysis objects. |
+| `decisionReplayReadinessChecklist` | Additive read-only checklist of lab replay-readiness evidence statuses derived only from already-built Decision Vector, dominant factor, delta, snapshot, trace, and capsule fields. |
 | `replayReadiness` | Contract readiness for future replay; replay execution remains future/not implemented until built. |
 | `labProofBoundary` | Controlled lab evidence, local reproducibility, same-origin local API responses, and browser-local interpretation. |
 | `productionNotProvenBoundary` | No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof. |
@@ -299,6 +302,29 @@ values unknown instead of inventing them. See
 [`ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md`](ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md) for the focused reviewer
 contract and safety boundaries.
 
+## Decision Replay Readiness Checklist
+
+Decision Replay Readiness Checklist is the read-only lab evidence readiness layer on top of the already-built
+routing comparison evidence. It summarizes stable checklist items across Decision Vector, Dominant Factor Analysis,
+Decision Delta Analysis, Decision Replay Snapshot, Decision Replay Reconstruction Trace, and Decision Replay Capsule
+fields. It does not execute replay, perform what-if mutation, persist checklist state or audit logs, export/download/share
+checklist data, rerun routing, recompute scores, or retune weights.
+
+The checklist includes:
+
+- deterministic item ids for Decision Vector, dominant factor, decision delta, replay snapshot, reconstruction trace,
+  replay capsule, candidate, factor, and read-only boundary evidence;
+- source evidence statuses copied from already-built lanes;
+- linked snapshot, trace, and capsule fingerprints only when already available;
+- available, partial, and unknown item counts;
+- missing evidence reasons that keep absent evidence unknown instead of inventing values.
+
+When selected candidate evidence, candidate ids, and Decision Vector evidence are missing, the checklist returns
+`UNKNOWN`. When useful evidence is present but item status, final scores, factor contributions, or linked fingerprints
+are incomplete, partial, or unavailable, the checklist returns `PARTIAL`. See
+[`ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md`](ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md)
+for the focused reviewer contract and safety boundaries.
+
 The read-only `/api/routing/compare` response can expose candidate contribution summaries through
 `results[].decisionVector` without changing scoring behavior, strategy weights, selected backend outcomes,
 or existing response fields. This does not implement decision replay, what-if execution, strategy plugin
@@ -350,6 +376,7 @@ The read-only field includes:
 - Result-level `decisionReplaySnapshot` derived from already-built compare evidence and stable analysis statuses.
 - Result-level `decisionReplayReconstructionTrace` derived from already-built compare evidence, stable analysis statuses, and reconstruction steps.
 - Result-level `decisionReplayCapsule` derived from already-built compare evidence and already-built analysis objects.
+- Result-level `decisionReplayReadinessChecklist` derived from already-built evidence lane statuses and linked fingerprints.
 - Exactness, lab proof, and production not-proven boundaries.
 - Replay, what-if, and structured logging readiness marked future/not implemented.
 
@@ -370,6 +397,11 @@ The reconstruction trace field is exposed as `results[].decisionReplayReconstruc
 The replay capsule field is exposed as `results[].decisionReplayCapsule` and is derived after
 `results[].decisionVector`, `results[].dominantFactorAnalysis`, `results[].decisionDeltaAnalysis`,
 `results[].decisionReplaySnapshot`, and `results[].decisionReplayReconstructionTrace` are available.
+
+The replay readiness checklist field is exposed as `results[].decisionReplayReadinessChecklist` and is derived after
+`results[].decisionVector`, `results[].dominantFactorAnalysis`, `results[].decisionDeltaAnalysis`,
+`results[].decisionReplaySnapshot`, `results[].decisionReplayReconstructionTrace`, and
+`results[].decisionReplayCapsule` are available.
 
 The exposure is additive controlled lab explainability only. It does not change routing selection,
 score calculation, strategy weights, route/proxy behavior, or existing API response fields.
@@ -559,6 +591,36 @@ Example response snippet:
           }
         ],
         "boundaryNote": "Read-only canonical lab evidence packaging; no replay execution, what-if mutation, capsule persistence, upload/share/download, or server-side export/PDF/ZIP generation is performed."
+      },
+      "decisionReplayReadinessChecklist": {
+        "readOnly": true,
+        "checklistSchemaVersion": "decision-replay-readiness-checklist/v1",
+        "status": "PARTIAL",
+        "selectedCandidateId": "backend-a",
+        "candidateCount": 2,
+        "linkedReplaySnapshotFingerprint": "deterministic-local-hash",
+        "linkedReconstructionTraceFingerprint": "deterministic-local-trace-hash",
+        "linkedReplayCapsuleFingerprint": "deterministic-local-capsule-hash",
+        "decisionVectorStatus": "AVAILABLE",
+        "decisionReplayCapsuleStatus": "PARTIAL",
+        "availableItemCount": 8,
+        "partialItemCount": 2,
+        "unknownItemCount": 0,
+        "checklistItems": [
+          {
+            "itemId": "decision-vector-evidence",
+            "status": "AVAILABLE",
+            "evidenceSourceFieldPath": "decisionVector",
+            "missingEvidenceReason": null
+          },
+          {
+            "itemId": "read-only-boundary-evidence",
+            "status": "AVAILABLE",
+            "evidenceSourceFieldPath": "decisionReplayReadinessChecklist.boundaryNote",
+            "missingEvidenceReason": null
+          }
+        ],
+        "boundaryNote": "Read-only lab evidence readiness only; no replay execution, what-if mutation, checklist persistence, upload/share/download, or server-side export/PDF/ZIP generation is performed."
       }
     }
   ]
@@ -591,6 +653,7 @@ The Decision Vector is a foundation for current read-only dominant-factor explai
 - Decision replay snapshot: implemented as additive read-only snapshot evidence and deterministic local fingerprint only.
 - Decision replay reconstruction trace: implemented as additive read-only reconstruction evidence steps and deterministic local trace fingerprint only.
 - Decision replay capsule: implemented as additive read-only canonical evidence packaging and deterministic local capsule fingerprint only.
+- Decision replay readiness checklist: implemented as additive read-only lab evidence readiness status over already-built evidence lanes only.
 - Broader factor modeling beyond current returned calculator contribution data: future/not implemented.
 - Replay execution: future/not implemented.
 - What-if experiments: future/not implemented.

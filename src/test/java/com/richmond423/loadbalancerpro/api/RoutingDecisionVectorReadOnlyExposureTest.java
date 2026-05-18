@@ -137,6 +137,28 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(capsule.path("factorEvidence").isArray());
         assertTrue(capsule.path("explanation").asText()
                 .contains("packaged from existing lab compare evidence only"));
+
+        JsonNode checklist = result.path("decisionReplayReadinessChecklist");
+        assertTrue(checklist.path("readOnly").asBoolean());
+        assertEquals("decision-replay-readiness-checklist/v1",
+                checklist.path("checklistSchemaVersion").asText());
+        assertEquals("PARTIAL", checklist.path("status").asText());
+        assertEquals(snapshot.path("snapshotFingerprint").asText(),
+                checklist.path("linkedReplaySnapshotFingerprint").asText());
+        assertEquals(trace.path("traceFingerprint").asText(),
+                checklist.path("linkedReconstructionTraceFingerprint").asText());
+        assertEquals(capsule.path("capsuleFingerprint").asText(),
+                checklist.path("linkedReplayCapsuleFingerprint").asText());
+        assertEquals("edge-alpha", checklist.path("selectedCandidateId").asText());
+        assertEquals(3, checklist.path("candidateCount").asInt());
+        assertEquals("AVAILABLE", checklist.path("decisionVectorStatus").asText());
+        assertEquals("AVAILABLE", checklist.path("dominantFactorAnalysisStatus").asText());
+        assertEquals("PARTIAL", checklist.path("decisionDeltaAnalysisStatus").asText());
+        assertEquals("PARTIAL", checklist.path("decisionReplayCapsuleStatus").asText());
+        assertEquals("decision-vector-evidence", checklist.at("/checklistItems/0/itemId").asText());
+        assertEquals("read-only-boundary-evidence", checklist.at("/checklistItems/8/itemId").asText());
+        assertTrue(checklist.path("explanation").asText()
+                .contains("derived from already-built lab compare evidence only"));
     }
 
     @Test
@@ -225,6 +247,17 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(result.at("/decisionReplayCapsule/closestAlternativeCandidateId").isNull());
         assertTrue(result.at("/decisionReplayCapsule/finalScoreGap").isNull());
         assertTrue(result.at("/decisionReplayCapsule/explanation").asText()
+                .contains("No replay execution"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayReadinessChecklist/status").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayReadinessChecklist/decisionVectorStatus").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayReadinessChecklist/decisionReplayCapsuleStatus").asText());
+        assertTrue(result.at("/decisionReplayReadinessChecklist/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayReadinessChecklist/candidateCount").asInt());
+        assertTrue(result.at("/decisionReplayReadinessChecklist/linkedReplaySnapshotFingerprint").isNull());
+        assertTrue(result.at("/decisionReplayReadinessChecklist/linkedReconstructionTraceFingerprint").isNull());
+        assertTrue(result.at("/decisionReplayReadinessChecklist/linkedReplayCapsuleFingerprint").isNull());
+        assertEquals("UNKNOWN", result.at("/decisionReplayReadinessChecklist/checklistItems/6/status").asText());
+        assertTrue(result.at("/decisionReplayReadinessChecklist/explanation").asText()
                 .contains("No replay execution"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }

@@ -75,6 +75,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionDeltaAnalysisResponse");
         assertRef(required(resultProperties, "/decisionReplaySnapshot"),
                 "#/components/schemas/RoutingDecisionReplaySnapshotResponse");
+        assertRef(required(resultProperties, "/decisionReplayReconstructionTrace"),
+                "#/components/schemas/RoutingDecisionReplayReconstructionTraceResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -151,6 +153,27 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(snapshotProperties, "/decisionVectorStatus/type").asText());
         assertEquals("string", required(snapshotProperties, "/decisionDeltaAnalysisStatus/type").asText());
         assertEquals("number", required(snapshotProperties, "/finalScoreGap/type").asText());
+
+        JsonNode traceProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayReconstructionTraceResponse/properties");
+        assertEquals("boolean", required(traceProperties, "/readOnly/type").asText());
+        assertEquals("string", required(traceProperties, "/traceSchemaVersion/type").asText());
+        assertEquals("string", required(traceProperties, "/traceFingerprint/type").asText());
+        assertEquals("string", required(traceProperties, "/snapshotFingerprint/type").asText());
+        assertEquals("array", required(traceProperties, "/candidateIdsConsidered/type").asText());
+        assertEquals("integer", required(traceProperties, "/candidateCount/type").asText());
+        assertEquals("object", required(traceProperties, "/candidateFinalScores/type").asText());
+        assertEquals("string", required(traceProperties, "/factorContributionStatus/type").asText());
+        assertEquals("string", required(traceProperties, "/decisionReplaySnapshotStatus/type").asText());
+        assertEquals("array", required(traceProperties, "/reconstructionSteps/type").asText());
+        assertRef(required(traceProperties, "/reconstructionSteps/items"),
+                "#/components/schemas/DecisionReplayReconstructionStepResponse");
+
+        JsonNode traceStepProperties = required(docs,
+                "/components/schemas/DecisionReplayReconstructionStepResponse/properties");
+        assertEquals("string", required(traceStepProperties, "/stepId/type").asText());
+        assertEquals("string", required(traceStepProperties, "/status/type").asText());
+        assertEquals("string", required(traceStepProperties, "/evidenceSourceFieldPath/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

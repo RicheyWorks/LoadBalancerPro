@@ -44,6 +44,7 @@ public class RoutingComparisonService {
     private final RoutingDominantFactorAnalysisService dominantFactorAnalysisService;
     private final RoutingDecisionDeltaAnalysisService decisionDeltaAnalysisService;
     private final RoutingDecisionReplaySnapshotService decisionReplaySnapshotService;
+    private final RoutingDecisionReplayReconstructionTraceService decisionReplayReconstructionTraceService;
     private final Clock clock;
 
     public RoutingComparisonService() {
@@ -58,6 +59,7 @@ public class RoutingComparisonService {
         this.dominantFactorAnalysisService = new RoutingDominantFactorAnalysisService();
         this.decisionDeltaAnalysisService = new RoutingDecisionDeltaAnalysisService();
         this.decisionReplaySnapshotService = new RoutingDecisionReplaySnapshotService();
+        this.decisionReplayReconstructionTraceService = new RoutingDecisionReplayReconstructionTraceService();
     }
 
     public RoutingComparisonResponse compare(RoutingComparisonRequest request) {
@@ -178,6 +180,13 @@ public class RoutingComparisonService {
         RoutingDecisionDeltaAnalysisResponse decisionDeltaAnalysis = decisionDeltaAnalysisService.unknownAnalysis(
                 "Decision delta analysis is unavailable because no selected routing decision, "
                         + "Decision Vector contribution data, or final score comparison was returned.");
+        RoutingDecisionReplaySnapshotResponse decisionReplaySnapshot = decisionReplaySnapshotService.snapshot(
+                result.strategyId().externalName(),
+                null,
+                List.of(),
+                null,
+                dominantFactorAnalysis,
+                decisionDeltaAnalysis);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -188,13 +197,16 @@ public class RoutingComparisonService {
                 null,
                 dominantFactorAnalysis,
                 decisionDeltaAnalysis,
-                decisionReplaySnapshotService.snapshot(
+                decisionReplaySnapshot,
+                decisionReplayReconstructionTraceService.trace(
                         result.strategyId().externalName(),
                         null,
                         List.of(),
+                        Map.of(),
                         null,
                         dominantFactorAnalysis,
-                        decisionDeltaAnalysis));
+                        decisionDeltaAnalysis,
+                        decisionReplaySnapshot));
     }
 
     private RoutingComparisonResultResponse successfulResultResponse(
@@ -205,6 +217,13 @@ public class RoutingComparisonService {
         DominantFactorAnalysisResponse dominantFactorAnalysis = dominantFactorAnalysisService.analyze(decisionVector);
         RoutingDecisionDeltaAnalysisResponse decisionDeltaAnalysis =
                 decisionDeltaAnalysisService.analyze(decisionVector, explanation.scores());
+        RoutingDecisionReplaySnapshotResponse decisionReplaySnapshot = decisionReplaySnapshotService.snapshot(
+                result.strategyId().externalName(),
+                selectedServerId,
+                explanation.candidateServersConsidered(),
+                decisionVector,
+                dominantFactorAnalysis,
+                decisionDeltaAnalysis);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -215,13 +234,16 @@ public class RoutingComparisonService {
                 decisionVector,
                 dominantFactorAnalysis,
                 decisionDeltaAnalysis,
-                decisionReplaySnapshotService.snapshot(
+                decisionReplaySnapshot,
+                decisionReplayReconstructionTraceService.trace(
                         result.strategyId().externalName(),
                         selectedServerId,
                         explanation.candidateServersConsidered(),
+                        explanation.scores(),
                         decisionVector,
                         dominantFactorAnalysis,
-                        decisionDeltaAnalysis));
+                        decisionDeltaAnalysis,
+                        decisionReplaySnapshot));
     }
 
     private RoutingDecisionVectorResponse decisionVector(RoutingStrategyId strategyId,

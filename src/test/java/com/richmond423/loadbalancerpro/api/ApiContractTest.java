@@ -170,7 +170,8 @@ class ApiContractTest {
                 "timestamp", "results");
         assertSchemaProperties(docs, "RoutingComparisonResultResponse", "strategyId", "status",
                 "chosenServerId", "reason", "candidateServersConsidered", "scores", "decisionVector",
-                "dominantFactorAnalysis", "decisionDeltaAnalysis", "decisionReplaySnapshot");
+                "dominantFactorAnalysis", "decisionDeltaAnalysis", "decisionReplaySnapshot",
+                "decisionReplayReconstructionTrace");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -209,6 +210,15 @@ class ApiContractTest {
                 "dominantFactorAnalysisStatus", "decisionDeltaAnalysisStatus", "closestAlternativeCandidateId",
                 "finalScoreGap", "largestDeltaFactorName", "explanation", "boundaryNote",
                 "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "RoutingDecisionReplayReconstructionTraceResponse", "readOnly",
+                "traceSchemaVersion", "source", "status", "traceFingerprint", "fingerprintAlgorithm",
+                "snapshotFingerprint", "selectedCandidateId", "candidateIdsConsidered", "candidateCount",
+                "candidateFinalScores", "strategyId", "decisionVectorStatus", "factorContributionStatus",
+                "dominantFactorAnalysisStatus", "decisionDeltaAnalysisStatus", "decisionReplaySnapshotStatus",
+                "closestAlternativeCandidateId", "finalScoreGap", "largestDeltaFactorName",
+                "reconstructionSteps", "explanation", "boundaryNote", "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "DecisionReplayReconstructionStepResponse", "stepId", "status",
+                "evidenceSourceFieldPath", "explanation", "missingEvidenceReason");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -351,6 +361,26 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.candidateIdsConsidered[1]", is("green")))
                 .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.finalScoreGap").isNumber())
                 .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.snapshotFingerprint").isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.traceSchemaVersion",
+                        is("decision-replay-reconstruction-trace/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.status", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.selectedCandidateId",
+                        is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.closestAlternativeCandidateId",
+                        is("blue")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.candidateIdsConsidered[0]",
+                        is("blue")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.candidateIdsConsidered[1]",
+                        is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.candidateFinalScores.green")
+                        .isNumber())
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.finalScoreGap").isNumber())
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.traceFingerprint").isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.reconstructionSteps[0].stepId",
+                        is("candidate-set-observed")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.reconstructionSteps[8].stepId",
+                        is("replay-snapshot-fingerprint-observed")))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -390,6 +420,16 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.candidateIdsConsidered").isEmpty())
                 .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.closestAlternativeCandidateId", nullValue()))
                 .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.finalScoreGap", nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.selectedCandidateId",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.candidateIdsConsidered")
+                        .isEmpty())
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.candidateFinalScores")
+                        .isEmpty())
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.closestAlternativeCandidateId",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.finalScoreGap", nullValue()))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

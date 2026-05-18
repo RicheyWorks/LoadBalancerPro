@@ -857,8 +857,12 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p>Decision Evidence Snapshot captures stable read-only compare evidence and a deterministic local fingerprint for later reviewer analysis; it does not execute replay or what-if mutation.</p>
           </div>
           <div class="proof-card">
+            <strong>Reconstruction trace</strong>
+            <p>Replay Reconstruction Trace lists deterministic evidence steps reviewers can use to understand what returned lab fields support later explanation reconstruction.</p>
+          </div>
+          <div class="proof-card">
             <strong>Read-only API exposure</strong>
-            <p>The same-origin <code>/api/routing/compare</code> response can return <code>results[].decisionVector</code> and <code>results[].decisionReplaySnapshot</code> as additive controlled lab data; if it is absent, static lab guidance remains available.</p>
+            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, and <code>decisionReplayReconstructionTrace</code> data; if absent, static lab guidance remains available.</p>
           </div>
           <div class="proof-card">
             <strong>Replay and what-if boundary</strong>
@@ -953,6 +957,21 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-replay-boundary">Read-only lab evidence only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.</p>
           </div>
         </div>
+        <h3 style="margin-top: 14px;">Replay Reconstruction Trace</h3>
+        <div class="proof-grid" aria-label="Decision Replay Reconstruction Trace summary">
+          <div class="proof-card">
+            <strong>Reconstruction Evidence</strong>
+            <p id="decision-vector-reconstruction-trace">Run Compare strategies to populate reconstruction evidence steps.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Trace Fingerprint</strong>
+            <p id="decision-vector-reconstruction-fingerprint">No deterministic local trace fingerprint has been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Reconstruction boundary</strong>
+            <p id="decision-vector-reconstruction-boundary">Read-only lab evidence only; no replay execution, what-if mutation, trace persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.</p>
+          </div>
+        </div>
         <p class="postman-note">
           Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
           no upload/share/download route, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
@@ -973,6 +992,7 @@ factorContributionAvailability: internal calculator contribution and candidate s
 dominantFactorAnalysis: unavailable until /api/routing/compare returns dominantFactorAnalysis; no dominant factors are invented
 decisionDeltaAnalysis: unavailable until /api/routing/compare returns decisionDeltaAnalysis; no selected-vs-alternative factor differences are invented
 decisionReplaySnapshot: unavailable until /api/routing/compare returns decisionReplaySnapshot; no replay evidence snapshot is invented
+decisionReplayReconstructionTrace: unavailable until /api/routing/compare returns decisionReplayReconstructionTrace; no reconstruction evidence is invented
 readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
@@ -1908,7 +1928,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       deltaBoundary: document.getElementById("decision-vector-delta-boundary"),
       replaySnapshot: document.getElementById("decision-vector-replay-snapshot"),
       replayFingerprint: document.getElementById("decision-vector-replay-fingerprint"),
-      replayBoundary: document.getElementById("decision-vector-replay-boundary")
+      replayBoundary: document.getElementById("decision-vector-replay-boundary"),
+      reconstructionTrace: document.getElementById("decision-vector-reconstruction-trace"),
+      reconstructionFingerprint: document.getElementById("decision-vector-reconstruction-fingerprint"),
+      reconstructionBoundary: document.getElementById("decision-vector-reconstruction-boundary")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -2945,6 +2968,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           && typeof primary.decisionReplaySnapshot === "object"
         ? primary.decisionReplaySnapshot
         : null;
+      const reconstructionTrace = primary && primary.decisionReplayReconstructionTrace
+          && typeof primary.decisionReplayReconstructionTrace === "object"
+        ? primary.decisionReplayReconstructionTrace
+        : null;
       const selectedStrategy = decisionVector && decisionVector.selectedStrategy
         ? decisionVector.selectedStrategy
         : (primary && primary.strategyId ? primary.strategyId : "not run");
@@ -3056,6 +3083,29 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const replayBoundary = replaySnapshot && replaySnapshot.boundaryNote
         ? replaySnapshot.boundaryNote
         : "Read-only lab evidence only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.";
+      const reconstructionStepsSummary = reconstructionTrace && Array.isArray(reconstructionTrace.reconstructionSteps)
+          && reconstructionTrace.reconstructionSteps.length > 0
+        ? reconstructionTrace.reconstructionSteps.map((step) =>
+          (step.stepId || "unknown-step") + "=" + (step.status || "UNKNOWN")
+        ).join("; ")
+        : "No reconstruction evidence steps have been returned yet.";
+      const reconstructionSummary = reconstructionTrace
+        ? "status=" + (reconstructionTrace.status || "unknown")
+          + "; selected=" + (reconstructionTrace.selectedCandidateId || "not returned")
+          + "; closestAlternative=" + (reconstructionTrace.closestAlternativeCandidateId || "not returned")
+          + "; candidates=" + (Array.isArray(reconstructionTrace.candidateIdsConsidered)
+            ? reconstructionTrace.candidateIdsConsidered.join(", ") || "none"
+            : "unknown")
+          + "; finalScoreGap=" + formatNumber(reconstructionTrace.finalScoreGap)
+          + "; largestDeltaFactor=" + (reconstructionTrace.largestDeltaFactorName || "not returned")
+          + "; steps=" + reconstructionStepsSummary
+        : "Decision Replay Reconstruction Trace is unavailable; no reconstruction evidence is invented.";
+      const reconstructionFingerprintSummary = reconstructionTrace && reconstructionTrace.traceFingerprint
+        ? reconstructionTrace.traceFingerprint + " (" + (reconstructionTrace.fingerprintAlgorithm || "local deterministic trace fingerprint") + ")"
+        : "No deterministic local trace fingerprint has been returned yet.";
+      const reconstructionBoundary = reconstructionTrace && reconstructionTrace.boundaryNote
+        ? reconstructionTrace.boundaryNote
+        : "Read-only lab evidence only; no replay execution, what-if mutation, trace persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.";
       const replayReadiness = decisionVector && decisionVector.replayReadiness
         ? decisionVector.replayReadiness
         : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
@@ -3087,6 +3137,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       decisionVectorFields.replaySnapshot.textContent = replaySnapshotSummary;
       decisionVectorFields.replayFingerprint.textContent = replayFingerprintSummary;
       decisionVectorFields.replayBoundary.textContent = replayBoundary;
+      decisionVectorFields.reconstructionTrace.textContent = reconstructionSummary;
+      decisionVectorFields.reconstructionFingerprint.textContent = reconstructionFingerprintSummary;
+      decisionVectorFields.reconstructionBoundary.textContent = reconstructionBoundary;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
@@ -3111,6 +3164,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "decisionReplaySnapshot: " + (replaySnapshot
           ? replaySnapshotSummary + "; fingerprint=" + replayFingerprintSummary
           : "unavailable until /api/routing/compare returns decisionReplaySnapshot; no replay evidence snapshot is invented"),
+        "decisionReplayReconstructionTrace: " + (reconstructionTrace
+          ? reconstructionSummary + "; traceFingerprint=" + reconstructionFingerprintSummary
+          : "unavailable until /api/routing/compare returns decisionReplayReconstructionTrace; no reconstruction evidence is invented"),
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
         "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,

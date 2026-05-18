@@ -77,6 +77,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplaySnapshotResponse");
         assertRef(required(resultProperties, "/decisionReplayReconstructionTrace"),
                 "#/components/schemas/RoutingDecisionReplayReconstructionTraceResponse");
+        assertRef(required(resultProperties, "/decisionReplayCapsule"),
+                "#/components/schemas/RoutingDecisionReplayCapsuleResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -174,6 +176,36 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(traceStepProperties, "/stepId/type").asText());
         assertEquals("string", required(traceStepProperties, "/status/type").asText());
         assertEquals("string", required(traceStepProperties, "/evidenceSourceFieldPath/type").asText());
+
+        JsonNode capsuleProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayCapsuleResponse/properties");
+        assertEquals("boolean", required(capsuleProperties, "/readOnly/type").asText());
+        assertEquals("string", required(capsuleProperties, "/capsuleSchemaVersion/type").asText());
+        assertEquals("string", required(capsuleProperties, "/capsuleFingerprint/type").asText());
+        assertEquals("string", required(capsuleProperties, "/linkedReplaySnapshotFingerprint/type").asText());
+        assertEquals("string", required(capsuleProperties, "/linkedReconstructionTraceFingerprint/type").asText());
+        assertEquals("array", required(capsuleProperties, "/candidateIdsConsidered/type").asText());
+        assertEquals("array", required(capsuleProperties, "/reconstructionStepIds/type").asText());
+        assertEquals("array", required(capsuleProperties, "/candidateEvidence/type").asText());
+        assertRef(required(capsuleProperties, "/candidateEvidence/items"),
+                "#/components/schemas/DecisionReplayCapsuleCandidateEvidenceResponse");
+        assertEquals("array", required(capsuleProperties, "/factorEvidence/type").asText());
+        assertRef(required(capsuleProperties, "/factorEvidence/items"),
+                "#/components/schemas/DecisionReplayCapsuleFactorEvidenceResponse");
+
+        JsonNode capsuleCandidateProperties = required(docs,
+                "/components/schemas/DecisionReplayCapsuleCandidateEvidenceResponse/properties");
+        assertEquals("string", required(capsuleCandidateProperties, "/candidateId/type").asText());
+        assertEquals("boolean", required(capsuleCandidateProperties, "/selected/type").asText());
+        assertEquals("array", required(capsuleCandidateProperties, "/factorNames/type").asText());
+        assertEquals("integer", required(capsuleCandidateProperties, "/contributionCount/type").asText());
+
+        JsonNode capsuleFactorProperties = required(docs,
+                "/components/schemas/DecisionReplayCapsuleFactorEvidenceResponse/properties");
+        assertEquals("string", required(capsuleFactorProperties, "/factorName/type").asText());
+        assertEquals("boolean", required(capsuleFactorProperties, "/appearedInSelectedCandidate/type").asText());
+        assertEquals("boolean", required(capsuleFactorProperties, "/appearedInClosestAlternative/type").asText());
+        assertEquals("number", required(capsuleFactorProperties, "/contributionDelta/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

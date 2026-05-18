@@ -45,6 +45,7 @@ public class RoutingComparisonService {
     private final RoutingDecisionDeltaAnalysisService decisionDeltaAnalysisService;
     private final RoutingDecisionReplaySnapshotService decisionReplaySnapshotService;
     private final RoutingDecisionReplayReconstructionTraceService decisionReplayReconstructionTraceService;
+    private final RoutingDecisionReplayCapsuleService decisionReplayCapsuleService;
     private final Clock clock;
 
     public RoutingComparisonService() {
@@ -60,6 +61,7 @@ public class RoutingComparisonService {
         this.decisionDeltaAnalysisService = new RoutingDecisionDeltaAnalysisService();
         this.decisionReplaySnapshotService = new RoutingDecisionReplaySnapshotService();
         this.decisionReplayReconstructionTraceService = new RoutingDecisionReplayReconstructionTraceService();
+        this.decisionReplayCapsuleService = new RoutingDecisionReplayCapsuleService();
     }
 
     public RoutingComparisonResponse compare(RoutingComparisonRequest request) {
@@ -187,6 +189,16 @@ public class RoutingComparisonService {
                 null,
                 dominantFactorAnalysis,
                 decisionDeltaAnalysis);
+        RoutingDecisionReplayReconstructionTraceResponse decisionReplayReconstructionTrace =
+                decisionReplayReconstructionTraceService.trace(
+                        result.strategyId().externalName(),
+                        null,
+                        List.of(),
+                        Map.of(),
+                        null,
+                        dominantFactorAnalysis,
+                        decisionDeltaAnalysis,
+                        decisionReplaySnapshot);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -198,7 +210,8 @@ public class RoutingComparisonService {
                 dominantFactorAnalysis,
                 decisionDeltaAnalysis,
                 decisionReplaySnapshot,
-                decisionReplayReconstructionTraceService.trace(
+                decisionReplayReconstructionTrace,
+                decisionReplayCapsuleService.capsule(
                         result.strategyId().externalName(),
                         null,
                         List.of(),
@@ -206,7 +219,8 @@ public class RoutingComparisonService {
                         null,
                         dominantFactorAnalysis,
                         decisionDeltaAnalysis,
-                        decisionReplaySnapshot));
+                        decisionReplaySnapshot,
+                        decisionReplayReconstructionTrace));
     }
 
     private RoutingComparisonResultResponse successfulResultResponse(
@@ -224,6 +238,16 @@ public class RoutingComparisonService {
                 decisionVector,
                 dominantFactorAnalysis,
                 decisionDeltaAnalysis);
+        RoutingDecisionReplayReconstructionTraceResponse decisionReplayReconstructionTrace =
+                decisionReplayReconstructionTraceService.trace(
+                        result.strategyId().externalName(),
+                        selectedServerId,
+                        explanation.candidateServersConsidered(),
+                        explanation.scores(),
+                        decisionVector,
+                        dominantFactorAnalysis,
+                        decisionDeltaAnalysis,
+                        decisionReplaySnapshot);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -235,7 +259,8 @@ public class RoutingComparisonService {
                 dominantFactorAnalysis,
                 decisionDeltaAnalysis,
                 decisionReplaySnapshot,
-                decisionReplayReconstructionTraceService.trace(
+                decisionReplayReconstructionTrace,
+                decisionReplayCapsuleService.capsule(
                         result.strategyId().externalName(),
                         selectedServerId,
                         explanation.candidateServersConsidered(),
@@ -243,7 +268,8 @@ public class RoutingComparisonService {
                         decisionVector,
                         dominantFactorAnalysis,
                         decisionDeltaAnalysis,
-                        decisionReplaySnapshot));
+                        decisionReplaySnapshot,
+                        decisionReplayReconstructionTrace));
     }
 
     private RoutingDecisionVectorResponse decisionVector(RoutingStrategyId strategyId,

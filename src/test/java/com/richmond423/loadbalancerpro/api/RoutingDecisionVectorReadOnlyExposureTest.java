@@ -63,6 +63,16 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertEquals(3, dominant.path("candidateAnalyses").size());
         assertTrue(dominant.at("/selectedDecisionAnalysis/largestPenaltyContributor/factorName").isTextual());
         assertTrue(dominant.path("boundaryNote").asText().contains("does not change routing behavior"));
+
+        JsonNode delta = result.path("decisionDeltaAnalysis");
+        assertTrue(delta.path("readOnly").asBoolean());
+        assertEquals("PARTIAL", delta.path("status").asText());
+        assertEquals("edge-alpha", delta.at("/comparison/selectedCandidateId").asText());
+        assertEquals("edge-beta", delta.at("/comparison/closestAlternativeCandidateId").asText());
+        assertTrue(delta.at("/comparison/finalScoreGap").isNumber());
+        assertTrue(delta.at("/largestAbsoluteFactorDelta/factorName").isTextual());
+        assertTrue(delta.path("explanation").asText().contains("returned lab score and contribution data"));
+        assertTrue(delta.path("boundaryNote").asText().contains("does not change routing behavior"));
     }
 
     @Test
@@ -124,6 +134,10 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(result.path("decisionVector").isNull());
         assertEquals("UNKNOWN", result.at("/dominantFactorAnalysis/status").asText());
         assertTrue(result.at("/dominantFactorAnalysis/candidateAnalyses").isEmpty());
+        assertEquals("UNKNOWN", result.at("/decisionDeltaAnalysis/status").asText());
+        assertTrue(result.at("/decisionDeltaAnalysis/factorDeltas").isEmpty());
+        assertTrue(result.at("/decisionDeltaAnalysis/explanation").asText()
+                .contains("Decision delta analysis is unavailable"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

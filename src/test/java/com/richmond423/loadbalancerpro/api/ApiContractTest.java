@@ -170,7 +170,7 @@ class ApiContractTest {
                 "timestamp", "results");
         assertSchemaProperties(docs, "RoutingComparisonResultResponse", "strategyId", "status",
                 "chosenServerId", "reason", "candidateServersConsidered", "scores", "decisionVector",
-                "dominantFactorAnalysis");
+                "dominantFactorAnalysis", "decisionDeltaAnalysis");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -193,6 +193,16 @@ class ApiContractTest {
                 "largestPenaltyContributor", "largestAbsoluteImpact", "explanation", "boundaryNote");
         assertSchemaProperties(docs, "DominantFactorResponse", "factorName", "direction", "contributionValue",
                 "absoluteImpact", "contributionDescription", "explanationText", "boundaryNote");
+        assertSchemaProperties(docs, "RoutingDecisionDeltaAnalysisResponse", "readOnly", "source", "status",
+                "comparison", "factorDeltas", "largestAbsoluteFactorDelta", "explanation", "boundaryNote",
+                "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "CandidateDecisionDeltaResponse", "selectedCandidateId",
+                "closestAlternativeCandidateId", "selectedFinalScore", "alternativeFinalScore", "finalScoreGap",
+                "absoluteFinalScoreGap", "selectedContributionCount", "alternativeContributionCount",
+                "comparedFactorCount", "comparedFactorNames", "omittedFactorNames", "explanation");
+        assertSchemaProperties(docs, "ScoreFactorDeltaResponse", "factorName", "selectedCandidateContribution",
+                "alternativeCandidateContribution", "contributionDelta", "absoluteDelta",
+                "selectedCandidateDirection", "alternativeCandidateDirection", "explanation");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -316,6 +326,15 @@ class ApiContractTest {
                         is("green")))
                 .andExpect(jsonPath("$.results[0].dominantFactorAnalysis.selectedDecisionAnalysis"
                         + ".largestPenaltyContributor.factorName").isString())
+                .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.status", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.comparison.selectedCandidateId",
+                        is("green")))
+                .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.comparison.closestAlternativeCandidateId",
+                        is("blue")))
+                .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.comparison.finalScoreGap").isNumber())
+                .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.largestAbsoluteFactorDelta.factorName")
+                        .isString())
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -348,6 +367,8 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].scores").isEmpty())
                 .andExpect(jsonPath("$.results[0].decisionVector", nullValue()))
                 .andExpect(jsonPath("$.results[0].dominantFactorAnalysis.status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.factorDeltas").isEmpty())
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

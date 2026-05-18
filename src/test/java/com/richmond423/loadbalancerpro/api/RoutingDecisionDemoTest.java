@@ -679,6 +679,11 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("id=\"decision-vector-dominant-selected\""));
         assertTrue(page.contains("id=\"decision-vector-dominant-candidates\""));
         assertTrue(page.contains("id=\"decision-vector-dominant-boundary\""));
+        assertTrue(page.contains("Selected vs Closest Alternative"));
+        assertTrue(page.contains("Decision Delta"));
+        assertTrue(page.contains("id=\"decision-vector-delta-comparison\""));
+        assertTrue(page.contains("id=\"decision-vector-delta-largest\""));
+        assertTrue(page.contains("id=\"decision-vector-delta-boundary\""));
         assertTrue(page.contains("# Decision Vector Foundation"));
         assertTrue(page.contains("decisionIdOrLabRunId: "));
         assertTrue(page.contains("candidateVectors: "));
@@ -688,6 +693,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("candidateFactorContributionSummary: "));
         assertTrue(page.contains("dominantFactorAnalysis: "));
         assertTrue(page.contains("candidateDominantFactors: "));
+        assertTrue(page.contains("decisionDeltaAnalysis: "));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));

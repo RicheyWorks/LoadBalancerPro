@@ -16,6 +16,8 @@ class EnterpriseLabDecisionVectorDocumentationTest {
     private static final Path DECISION_VECTOR = Path.of("docs/ENTERPRISE_LAB_DECISION_VECTOR.md");
     private static final Path DOMINANT_FACTOR_ANALYSIS =
             Path.of("docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md");
+    private static final Path DECISION_DELTA_ANALYSIS =
+            Path.of("docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md");
     private static final Path README = Path.of("README.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path FRAMING = Path.of("docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md");
@@ -43,6 +45,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("`exactScoringAvailability`"));
         assertTrue(doc.contains("`factorContributionAvailability`"));
         assertTrue(doc.contains("`dominantFactorAnalysis`"));
+        assertTrue(doc.contains("`decisionDeltaAnalysis`"));
         assertTrue(doc.contains("`replayReadiness`"));
         assertTrue(normalized.contains("how it answers why this backend"));
         assertTrue(normalized.contains("selected-vs-alternative"));
@@ -97,6 +100,10 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("largest absolute numeric impact"));
         assertTrue(doc.contains("Ties are resolved by stable factor-name ordering."));
         assertTrue(doc.contains("ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md"));
+        assertTrue(doc.contains("## Selected-vs-Closest-Alternative Decision Delta Analysis"));
+        assertTrue(doc.contains("closest scored non-selected alternative"));
+        assertTrue(doc.contains("shared finite factor contribution deltas"));
+        assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md"));
         assertTrue(doc.contains("\"EXACT_FROM_CALCULATOR\""));
         assertTrue(doc.contains("\"NOT_EXPOSED\""));
         assertTrue(doc.contains("not production scoring proof"));
@@ -110,6 +117,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("## Replay, What-If, Logging, and Plugin Roadmap"));
         for (String futureItem : List.of(
                 "Dominant factor analysis: implemented as additive read-only interpretation of returned contribution data only.",
+                "Decision delta analysis: implemented as additive read-only selected-vs-closest-alternative interpretation of returned score and contribution data only.",
                 "Broader factor modeling beyond current returned calculator contribution data: future/not implemented.",
                 "Decision replay: future/not implemented.",
                 "What-if experiments: future/not implemented.",
@@ -130,6 +138,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("`POST /api/routing/compare` exposes the Decision Vector through the additive"));
         assertTrue(doc.contains("`results[].decisionVector` field"));
         assertTrue(doc.contains("`results[].dominantFactorAnalysis`"));
+        assertTrue(doc.contains("`results[].decisionDeltaAnalysis`"));
         assertTrue(doc.contains("preserves existing"));
         assertTrue(doc.contains("`requestedStrategies`, `candidateCount`, `timestamp`, result status"));
         assertTrue(doc.contains("\"localLabResponsePath\": \"/api/routing/compare\""));
@@ -171,6 +180,41 @@ class EnterpriseLabDecisionVectorDocumentationTest {
     }
 
     @Test
+    void decisionDeltaAnalysisDocDefinesReadOnlyBoundaries() throws Exception {
+        String doc = read(DECISION_DELTA_ANALYSIS);
+        String normalized = doc.toLowerCase(Locale.ROOT);
+
+        assertTrue(doc.contains("# Enterprise Lab Decision Delta Analysis"));
+        assertTrue(doc.contains("Selected-vs-Closest-Alternative Decision Delta Analysis"));
+        assertTrue(doc.contains("final score values already returned in `results[].scores`"));
+        assertTrue(doc.contains("ScoreFactorContributionResponse"));
+        assertTrue(doc.contains("does not recompute scores from raw server fields"));
+        assertTrue(doc.contains("does not duplicate `ServerScoreCalculator`"));
+        assertTrue(doc.contains("does not retune weights"));
+        assertTrue(doc.contains("closest non-selected alternative"));
+        assertTrue(doc.contains("stable candidate/server id ordering"));
+        assertTrue(doc.contains("contribution delta"));
+        assertTrue(doc.contains("absolute delta"));
+        assertTrue(doc.contains("If the selected candidate, closest alternative, final scores, or Decision Vector data are unavailable"));
+        assertTrue(doc.contains("returns `UNKNOWN`"));
+        assertTrue(doc.contains("returns `PARTIAL`"));
+        assertTrue(doc.contains("instead of inventing zero values"));
+        assertTrue(normalized.contains("lab explainability only"));
+        assertTrue(normalized.contains("production certification"));
+        assertTrue(normalized.contains("live-cloud behavior"));
+        assertTrue(normalized.contains("real-tenant behavior"));
+        assertTrue(normalized.contains("sla/slo"));
+        assertTrue(normalized.contains("registry publication"));
+        assertTrue(normalized.contains("signing status"));
+        assertTrue(normalized.contains("governance application"));
+        assertFalse(normalized.contains("production certification is proven"));
+        assertFalse(normalized.contains("live-cloud behavior is proven"));
+        assertFalse(normalized.contains("real-tenant behavior is proven"));
+        assertFalse(normalized.contains("upload endpoint"));
+        assertFalse(normalized.contains("server-side export endpoint"));
+    }
+
+    @Test
     void decisionVectorDocIsLinkedFromReviewerDocs() throws Exception {
         String readme = read(README);
         String trustMap = read(TRUST_MAP);
@@ -179,10 +223,11 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         for (String doc : List.of(readme, trustMap, framing)) {
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
             assertTrue(doc.contains("ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md"));
+            assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md"));
             assertTrue(doc.contains("Decision Vector"));
         }
 
-        assertTrue(readme.contains("Decision Vector contract: [`docs/ENTERPRISE_LAB_DECISION_VECTOR.md`](docs/ENTERPRISE_LAB_DECISION_VECTOR.md); read-only Dominant Factor Analysis lane: [`docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md`](docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md)."));
+        assertTrue(readme.contains("Decision Vector contract: [`docs/ENTERPRISE_LAB_DECISION_VECTOR.md`](docs/ENTERPRISE_LAB_DECISION_VECTOR.md); read-only Dominant Factor Analysis lane: [`docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md`](docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md); read-only Decision Delta Analysis lane: [`docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md`](docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md)."));
         assertTrue(trustMap.contains("### Decision Vector Contract"));
         assertTrue(framing.contains("## Decision Vector Contract"));
     }
@@ -220,6 +265,11 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("id=\"decision-vector-dominant-selected\""));
         assertTrue(page.contains("id=\"decision-vector-dominant-candidates\""));
         assertTrue(page.contains("id=\"decision-vector-dominant-boundary\""));
+        assertTrue(page.contains("Selected vs Closest Alternative"));
+        assertTrue(page.contains("Decision Delta"));
+        assertTrue(page.contains("id=\"decision-vector-delta-comparison\""));
+        assertTrue(page.contains("id=\"decision-vector-delta-largest\""));
+        assertTrue(page.contains("id=\"decision-vector-delta-boundary\""));
         assertTrue(page.contains("# Decision Vector Foundation"));
         assertTrue(page.contains("decisionIdOrLabRunId: "));
         assertTrue(page.contains("candidateVectors: "));
@@ -228,6 +278,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("candidateFactorContributionSummary: "));
         assertTrue(page.contains("dominantFactorAnalysis: "));
         assertTrue(page.contains("candidateDominantFactors: "));
+        assertTrue(page.contains("decisionDeltaAnalysis: "));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("internal calculator contribution and candidate summary contracts started"));
         assertTrue(page.contains("replayReadiness: "));
@@ -240,8 +291,8 @@ class EnterpriseLabDecisionVectorDocumentationTest {
 
     @Test
     void decisionVectorDocsAndUiAvoidUnsafeClaims() throws Exception {
-        for (Path path : List.of(DECISION_VECTOR, DOMINANT_FACTOR_ANALYSIS, README, TRUST_MAP, FRAMING,
-                ROUTING_COCKPIT)) {
+        for (Path path : List.of(DECISION_VECTOR, DOMINANT_FACTOR_ANALYSIS, DECISION_DELTA_ANALYSIS,
+                README, TRUST_MAP, FRAMING, ROUTING_COCKPIT)) {
             String content = read(path);
             String normalized = content.toLowerCase(Locale.ROOT);
 

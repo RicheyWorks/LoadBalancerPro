@@ -1259,6 +1259,10 @@
             <div id="dominant-factor-explanation">Run routing comparison to populate dominant factors from returned contribution data.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Selected vs Closest Alternative</strong>
+            <div id="decision-delta-explanation">Run routing comparison to populate selected-vs-closest-alternative contribution differences.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3426,12 +3430,14 @@
       if (response.status === "Not available in current API") {
         rows.innerHTML = "<tr><td colspan=\"3\">Not available in current API.</td></tr>";
         renderDominantFactorExplanation(response);
+        renderDecisionDeltaExplanation(response);
         return;
       }
       const results = response.results || [];
       if (!results.length) {
         rows.innerHTML = "<tr><td colspan=\"3\" class=\"muted\">No routing results returned.</td></tr>";
         renderDominantFactorExplanation(response);
+        renderDecisionDeltaExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3440,6 +3446,7 @@
         + "<td>" + escapeHtml(result.reason || result.status || "No explanation returned.") + "</td>"
         + "</tr>").join("");
       renderDominantFactorExplanation(response);
+      renderDecisionDeltaExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3480,6 +3487,7 @@
       const scenario = currentScenario();
       renderRoutingExplanation(scenario);
       renderDominantFactorExplanation(state.routing);
+      renderDecisionDeltaExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -3564,6 +3572,43 @@
           + escapeHtml(explanation) + "<br>"
           + "<span class=\"muted\">Boundary: read-only lab explainability; no routing, scoring, strategy-weight, server-selection, or proxy behavior change.</span></p>";
       }).join("");
+    }
+
+    function renderDecisionDeltaExplanation(response) {
+      const container = document.getElementById("decision-delta-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate selected-vs-closest-alternative contribution differences.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; decision delta analysis is unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const analysis = result.decisionDeltaAnalysis || {};
+        const comparison = analysis.comparison || {};
+        const largest = analysis.largestAbsoluteFactorDelta;
+        const comparisonText = comparison.selectedCandidateId
+          ? "selected=" + comparison.selectedCandidateId
+            + "; closestAlternative=" + (comparison.closestAlternativeCandidateId || "unknown")
+            + "; finalScoreGap(selected-minus-alternative)=" + formatFinite(comparison.finalScoreGap)
+            + "; comparedFactors=" + String(comparison.comparedFactorCount || 0)
+          : (analysis.explanation || "Decision delta analysis is unavailable or unknown; no factor differences are invented.");
+        const largestText = largest && largest.factorName
+          ? largest.factorName + " absoluteDelta=" + formatFinite(largest.absoluteDelta)
+            + "; contributionDelta=" + formatFinite(largest.contributionDelta)
+          : "No largest contribution difference returned.";
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(comparisonText) + "<br>"
+          + escapeHtml(largestText) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab explainability; no routing, scoring, strategy-weight, server-selection, or proxy behavior change.</span></p>";
+      }).join("");
+    }
+
+    function formatFinite(value) {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric.toFixed(6) : "not returned";
     }
 
     function renderAllocationExplanation(scenario) {
@@ -4060,6 +4105,8 @@
         "Run routing comparison to populate strategy explanations.";
       document.getElementById("dominant-factor-explanation").textContent =
         "Run routing comparison to populate dominant factors from returned contribution data.";
+      document.getElementById("decision-delta-explanation").textContent =
+        "Run routing comparison to populate selected-vs-closest-alternative contribution differences.";
       document.getElementById("allocation-explanation").textContent =
         "Run allocation preview to populate capacity math.";
       document.getElementById("overload-explanation").textContent =

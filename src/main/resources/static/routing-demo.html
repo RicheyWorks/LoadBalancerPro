@@ -849,6 +849,10 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p>Most Influential Signals are derived only from returned factor contribution entries: largest support contributor, largest penalty/risk contributor, and largest absolute impact.</p>
           </div>
           <div class="proof-card">
+            <strong>Decision delta analysis</strong>
+            <p>Selected vs Closest Alternative compares the selected candidate with the closest scored non-selected candidate using returned final scores and shared finite factor contribution entries.</p>
+          </div>
+          <div class="proof-card">
             <strong>Read-only API exposure</strong>
             <p>The same-origin <code>/api/routing/compare</code> response can return <code>results[].decisionVector</code> as additive controlled lab data; if it is absent, static lab guidance remains available.</p>
           </div>
@@ -915,6 +919,21 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-dominant-boundary">Read-only lab explainability only; no routing behavior, scoring math, strategy weight, server selection, or proxy behavior changes.</p>
           </div>
         </div>
+        <h3 style="margin-top: 14px;">Selected vs Closest Alternative</h3>
+        <div class="proof-grid" aria-label="Decision Delta summary">
+          <div class="proof-card">
+            <strong>Decision Delta</strong>
+            <p id="decision-vector-delta-comparison">Run Compare strategies to populate selected-vs-closest-alternative score gap analysis.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Largest Contribution Difference</strong>
+            <p id="decision-vector-delta-largest">No contribution difference has been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Decision delta boundary</strong>
+            <p id="decision-vector-delta-boundary">Read-only lab explainability only; no routing behavior, scoring math, strategy weight, server selection, or proxy behavior changes.</p>
+          </div>
+        </div>
         <p class="postman-note">
           Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
           no upload/share endpoint, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
@@ -933,6 +952,7 @@ unknownSignals: exact scoring not exposed; hidden routing internals not inferred
 exactScoringAvailability: not exposed unless the API returns exact scoring fields
 factorContributionAvailability: internal calculator contribution and candidate summary contracts started; not exposed in this cockpit response unless the API returns contribution fields
 dominantFactorAnalysis: unavailable until /api/routing/compare returns dominantFactorAnalysis; no dominant factors are invented
+decisionDeltaAnalysis: unavailable until /api/routing/compare returns decisionDeltaAnalysis; no selected-vs-alternative factor differences are invented
 readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
@@ -1862,7 +1882,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       replayReadiness: document.getElementById("decision-vector-replay-readiness"),
       dominantSelected: document.getElementById("decision-vector-dominant-selected"),
       dominantCandidates: document.getElementById("decision-vector-dominant-candidates"),
-      dominantBoundary: document.getElementById("decision-vector-dominant-boundary")
+      dominantBoundary: document.getElementById("decision-vector-dominant-boundary"),
+      deltaComparison: document.getElementById("decision-vector-delta-comparison"),
+      deltaLargest: document.getElementById("decision-vector-delta-largest"),
+      deltaBoundary: document.getElementById("decision-vector-delta-boundary")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -2891,6 +2914,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           && typeof primary.dominantFactorAnalysis === "object"
         ? primary.dominantFactorAnalysis
         : null;
+      const deltaAnalysis = primary && primary.decisionDeltaAnalysis
+          && typeof primary.decisionDeltaAnalysis === "object"
+        ? primary.decisionDeltaAnalysis
+        : null;
       const selectedStrategy = decisionVector && decisionVector.selectedStrategy
         ? decisionVector.selectedStrategy
         : (primary && primary.strategyId ? primary.strategyId : "not run");
@@ -2966,6 +2993,25 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const dominantBoundary = dominantAnalysis && dominantAnalysis.boundaryNote
         ? dominantAnalysis.boundaryNote
         : "Read-only lab explainability only; no routing behavior, scoring math, strategy weight, server selection, or proxy behavior changes.";
+      const deltaComparison = deltaAnalysis && deltaAnalysis.comparison
+        ? deltaAnalysis.comparison
+        : null;
+      const deltaComparisonSummary = deltaComparison
+        ? "status=" + (deltaAnalysis.status || "unknown")
+          + "; selected=" + (deltaComparison.selectedCandidateId || "unknown")
+          + "; closestAlternative=" + (deltaComparison.closestAlternativeCandidateId || "unknown")
+          + "; finalScoreGap(selected-minus-alternative)=" + formatNumber(deltaComparison.finalScoreGap)
+          + "; comparedFactors=" + String(deltaComparison.comparedFactorCount || 0)
+          + "; omittedFactors=" + (Array.isArray(deltaComparison.omittedFactorNames)
+            ? deltaComparison.omittedFactorNames.join(", ") || "none"
+            : "unknown")
+        : "Decision delta analysis is unavailable or unknown; selected-vs-alternative factor differences are not invented.";
+      const deltaLargestSummary = deltaAnalysis && deltaAnalysis.largestAbsoluteFactorDelta
+        ? decisionDeltaLabel(deltaAnalysis.largestAbsoluteFactorDelta)
+        : "No largest contribution difference has been returned; missing or partial contribution data remains unknown.";
+      const deltaBoundary = deltaAnalysis && deltaAnalysis.boundaryNote
+        ? deltaAnalysis.boundaryNote
+        : "Read-only lab explainability only; no routing behavior, scoring math, strategy weight, server selection, or proxy behavior changes.";
       const replayReadiness = decisionVector && decisionVector.replayReadiness
         ? decisionVector.replayReadiness
         : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
@@ -2991,6 +3037,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       decisionVectorFields.dominantSelected.textContent = selectedDominantSummary;
       decisionVectorFields.dominantCandidates.textContent = candidateDominantSummary;
       decisionVectorFields.dominantBoundary.textContent = dominantBoundary;
+      decisionVectorFields.deltaComparison.textContent = deltaComparisonSummary;
+      decisionVectorFields.deltaLargest.textContent = deltaLargestSummary;
+      decisionVectorFields.deltaBoundary.textContent = deltaBoundary;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
@@ -3009,6 +3058,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           ? "status=" + (dominantAnalysis.status || "unknown") + "; " + selectedDominantSummary
           : "unavailable until /api/routing/compare returns dominantFactorAnalysis; no dominant factors are invented"),
         "candidateDominantFactors: " + candidateDominantSummary,
+        "decisionDeltaAnalysis: " + (deltaAnalysis
+          ? deltaComparisonSummary + "; largestContributionDifference=" + deltaLargestSummary
+          : "unavailable until /api/routing/compare returns decisionDeltaAnalysis; no selected-vs-alternative factor differences are invented"),
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
         "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,
@@ -3030,6 +3082,22 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         ? Number(factor.contributionValue).toFixed(6)
         : "not exposed";
       return factor.factorName + " (" + value + ", " + (factor.direction || "unknown") + ")";
+    }
+
+    function decisionDeltaLabel(delta) {
+      if (!delta || !delta.factorName) {
+        return "none returned";
+      }
+      return delta.factorName
+        + ": selected=" + formatNumber(delta.selectedCandidateContribution)
+        + "; alternative=" + formatNumber(delta.alternativeCandidateContribution)
+        + "; contributionDelta(selected-minus-alternative)=" + formatNumber(delta.contributionDelta)
+        + "; absoluteDelta=" + formatNumber(delta.absoluteDelta);
+    }
+
+    function formatNumber(value) {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric.toFixed(6) : "not returned";
     }
 
     function selectedBackendReasonSummary(primary, selectedServer, currentMetrics, results) {

@@ -138,6 +138,7 @@ public class ScenarioReplayService {
                         null,
                         null,
                         null,
+                        null,
                         null))
                 .toList();
     }

@@ -131,6 +131,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md"));
+        assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md"));
         assertTrue(framing.contains("structured explanation contract for one controlled lab routing decision"));
         assertTrue(framing.contains("selected candidate vector"));
         assertTrue(framing.contains("non-selected candidate vectors"));
@@ -139,8 +140,10 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("The read-only `/api/routing/compare` response can expose `results[].decisionVector`"));
         assertTrue(framing.contains("`results[].decisionReplaySnapshot`"));
         assertTrue(framing.contains("`results[].decisionReplayReconstructionTrace`"));
+        assertTrue(framing.contains("`results[].decisionReplayCapsule`"));
         assertTrue(framing.contains("deterministic local fingerprint from already-built compare evidence only"));
         assertTrue(framing.contains("deterministic reconstruction evidence steps"));
+        assertTrue(framing.contains("canonical evidence packaging"));
         assertTrue(framing.contains("preserving existing fields, routing behavior, scoring behavior, and strategy weights"));
         assertTrue(framing.contains("Replay execution and what-if execution remain future/not implemented"));
         assertTrue(framing.contains("## How to Investigate Surprising Lab Decisions"));

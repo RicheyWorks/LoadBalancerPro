@@ -1271,6 +1271,10 @@
             <div id="decision-replay-reconstruction-trace-explanation">Run routing comparison to populate reconstruction evidence steps.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Replay Capsule</strong>
+            <div id="decision-replay-capsule-explanation">Run routing comparison to populate canonical decision evidence and a deterministic capsule fingerprint.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3441,6 +3445,7 @@
         renderDecisionDeltaExplanation(response);
         renderDecisionReplaySnapshotExplanation(response);
         renderDecisionReplayReconstructionTraceExplanation(response);
+        renderDecisionReplayCapsuleExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3450,6 +3455,7 @@
         renderDecisionDeltaExplanation(response);
         renderDecisionReplaySnapshotExplanation(response);
         renderDecisionReplayReconstructionTraceExplanation(response);
+        renderDecisionReplayCapsuleExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3461,6 +3467,7 @@
       renderDecisionDeltaExplanation(response);
       renderDecisionReplaySnapshotExplanation(response);
       renderDecisionReplayReconstructionTraceExplanation(response);
+      renderDecisionReplayCapsuleExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3504,6 +3511,7 @@
       renderDecisionDeltaExplanation(state.routing);
       renderDecisionReplaySnapshotExplanation(state.routing);
       renderDecisionReplayReconstructionTraceExplanation(state.routing);
+      renderDecisionReplayCapsuleExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -3688,6 +3696,51 @@
         return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
           + escapeHtml(summary) + "<br>"
           + "<span class=\"muted\">Boundary: read-only lab evidence only; no replay execution, what-if mutation, trace persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
+    function renderDecisionReplayCapsuleExplanation(response) {
+      const container = document.getElementById("decision-replay-capsule-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate canonical decision evidence and a deterministic capsule fingerprint.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; replay capsule evidence is unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const capsule = result.decisionReplayCapsule || {};
+        const candidateIds = Array.isArray(capsule.candidateIdsConsidered)
+          ? capsule.candidateIdsConsidered.join(", ")
+          : "";
+        const stepIds = Array.isArray(capsule.reconstructionStepIds)
+          ? capsule.reconstructionStepIds.join(", ")
+          : "";
+        const candidateEvidenceCount = Array.isArray(capsule.candidateEvidence)
+          ? capsule.candidateEvidence.length
+          : 0;
+        const factorEvidenceCount = Array.isArray(capsule.factorEvidence)
+          ? capsule.factorEvidence.length
+          : 0;
+        const summary = capsule.capsuleFingerprint
+          ? "status=" + (capsule.status || "unknown")
+            + "; selected=" + (capsule.selectedCandidateId || "not returned")
+            + "; closestAlternative=" + (capsule.closestAlternativeCandidateId || "not returned")
+            + "; candidates=" + (candidateIds || "none")
+            + "; finalScoreGap=" + formatFinite(capsule.finalScoreGap)
+            + "; largestDeltaFactor=" + (capsule.largestDeltaFactorName || "not returned")
+            + "; candidateEvidence=" + candidateEvidenceCount
+            + "; factorEvidence=" + factorEvidenceCount
+            + "; linkedSnapshotFingerprint=" + (capsule.linkedReplaySnapshotFingerprint || "not returned")
+            + "; linkedTraceFingerprint=" + (capsule.linkedReconstructionTraceFingerprint || "not returned")
+            + "; capsuleFingerprint=" + capsule.capsuleFingerprint
+            + "; reconstructionStepIds=" + (stepIds || "none")
+          : (capsule.explanation || "Decision Replay Capsule is unavailable; no canonical decision evidence is invented.");
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(summary) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab evidence packaging only; no replay execution, what-if mutation, capsule persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.</span></p>";
       }).join("");
     }
 
@@ -4003,6 +4056,18 @@
             + ", traceFingerprint=" + (trace.traceFingerprint || "not returned");
         }).join("\n")
         : "- Not run";
+      const replayCapsuleLines = routingResults.length
+        ? routingResults.map((result) => {
+          const capsule = result.decisionReplayCapsule || {};
+          return "- " + result.strategyId
+            + ": capsuleStatus=" + (capsule.status || "unknown")
+            + ", selected=" + (capsule.selectedCandidateId || "not returned")
+            + ", closestAlternative=" + (capsule.closestAlternativeCandidateId || "not returned")
+            + ", linkedSnapshotFingerprint=" + (capsule.linkedReplaySnapshotFingerprint || "not returned")
+            + ", linkedTraceFingerprint=" + (capsule.linkedReconstructionTraceFingerprint || "not returned")
+            + ", capsuleFingerprint=" + (capsule.capsuleFingerprint || "not returned");
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -4041,6 +4106,9 @@
         "",
         "## Replay Reconstruction Trace",
         reconstructionTraceLines,
+        "",
+        "## Replay Capsule",
+        replayCapsuleLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,
@@ -4223,6 +4291,8 @@
         "Run routing comparison to populate replay snapshot evidence and a deterministic local fingerprint.";
       document.getElementById("decision-replay-reconstruction-trace-explanation").textContent =
         "Run routing comparison to populate reconstruction evidence steps.";
+      document.getElementById("decision-replay-capsule-explanation").textContent =
+        "Run routing comparison to populate canonical decision evidence and a deterministic capsule fingerprint.";
       document.getElementById("allocation-explanation").textContent =
         "Run allocation preview to populate capacity math.";
       document.getElementById("overload-explanation").textContent =

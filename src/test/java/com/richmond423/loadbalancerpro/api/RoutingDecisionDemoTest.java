@@ -695,6 +695,12 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("id=\"decision-vector-reconstruction-trace\""));
         assertTrue(page.contains("id=\"decision-vector-reconstruction-fingerprint\""));
         assertTrue(page.contains("id=\"decision-vector-reconstruction-boundary\""));
+        assertTrue(page.contains("Replay Capsule"));
+        assertTrue(page.contains("Canonical Decision Evidence"));
+        assertTrue(page.contains("Capsule Fingerprint"));
+        assertTrue(page.contains("id=\"decision-vector-replay-capsule\""));
+        assertTrue(page.contains("id=\"decision-vector-capsule-fingerprint\""));
+        assertTrue(page.contains("id=\"decision-vector-capsule-boundary\""));
         assertTrue(page.contains("# Decision Vector Foundation"));
         assertTrue(page.contains("decisionIdOrLabRunId: "));
         assertTrue(page.contains("candidateVectors: "));
@@ -707,6 +713,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("decisionDeltaAnalysis: "));
         assertTrue(page.contains("decisionReplaySnapshot: "));
         assertTrue(page.contains("decisionReplayReconstructionTrace: "));
+        assertTrue(page.contains("decisionReplayCapsule: "));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
@@ -1038,6 +1045,17 @@ class RoutingDecisionDemoTest {
                     .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.candidateIdsConsidered[1]",
                             is("edge-weighted")))
                     .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.traceFingerprint")
+                            .isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule.readOnly", is(true)))
+                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule.capsuleSchemaVersion",
+                            is("decision-replay-capsule/v1")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule.selectedCandidateId",
+                            is("edge-weighted")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule.candidateIdsConsidered[0]",
+                            is("edge-standard")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule.candidateIdsConsidered[1]",
+                            is("edge-weighted")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule.capsuleFingerprint")
                             .isString());
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),

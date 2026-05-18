@@ -112,6 +112,31 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertEquals("replay-snapshot-fingerprint-observed", trace.at("/reconstructionSteps/8/stepId").asText());
         assertTrue(trace.path("explanation").asText()
                 .contains("derived from existing lab compare evidence only"));
+
+        JsonNode capsule = result.path("decisionReplayCapsule");
+        assertTrue(capsule.path("readOnly").asBoolean());
+        assertEquals("decision-replay-capsule/v1", capsule.path("capsuleSchemaVersion").asText());
+        assertEquals("PARTIAL", capsule.path("status").asText());
+        assertEquals("edge-alpha", capsule.path("selectedCandidateId").asText());
+        assertEquals("edge-beta", capsule.path("closestAlternativeCandidateId").asText());
+        assertEquals(snapshot.path("snapshotFingerprint").asText(),
+                capsule.path("linkedReplaySnapshotFingerprint").asText());
+        assertEquals(trace.path("traceFingerprint").asText(),
+                capsule.path("linkedReconstructionTraceFingerprint").asText());
+        assertEquals("AVAILABLE", capsule.path("decisionVectorStatus").asText());
+        assertEquals("AVAILABLE", capsule.path("factorContributionStatus").asText());
+        assertEquals("AVAILABLE", capsule.path("dominantFactorAnalysisStatus").asText());
+        assertEquals("PARTIAL", capsule.path("decisionDeltaAnalysisStatus").asText());
+        assertEquals("PARTIAL", capsule.path("decisionReplaySnapshotStatus").asText());
+        assertEquals("PARTIAL", capsule.path("decisionReplayReconstructionTraceStatus").asText());
+        assertEquals(3, capsule.path("candidateCount").asInt());
+        assertEquals("edge-alpha", capsule.at("/candidateIdsConsidered/0").asText());
+        assertTrue(capsule.path("finalScoreGap").isNumber());
+        assertTrue(capsule.path("capsuleFingerprint").asText().matches("[0-9a-f]{64}"));
+        assertTrue(capsule.path("candidateEvidence").isArray());
+        assertTrue(capsule.path("factorEvidence").isArray());
+        assertTrue(capsule.path("explanation").asText()
+                .contains("packaged from existing lab compare evidence only"));
     }
 
     @Test
@@ -191,6 +216,15 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(result.at("/decisionReplayReconstructionTrace/closestAlternativeCandidateId").isNull());
         assertTrue(result.at("/decisionReplayReconstructionTrace/finalScoreGap").isNull());
         assertTrue(result.at("/decisionReplayReconstructionTrace/explanation").asText()
+                .contains("No replay execution"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayCapsule/status").asText());
+        assertTrue(result.at("/decisionReplayCapsule/selectedCandidateId").isNull());
+        assertTrue(result.at("/decisionReplayCapsule/candidateIdsConsidered").isEmpty());
+        assertTrue(result.at("/decisionReplayCapsule/candidateEvidence").isEmpty());
+        assertTrue(result.at("/decisionReplayCapsule/factorEvidence").isEmpty());
+        assertTrue(result.at("/decisionReplayCapsule/closestAlternativeCandidateId").isNull());
+        assertTrue(result.at("/decisionReplayCapsule/finalScoreGap").isNull());
+        assertTrue(result.at("/decisionReplayCapsule/explanation").asText()
                 .contains("No replay execution"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }

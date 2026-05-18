@@ -50,6 +50,7 @@ One Decision Vector represents one controlled lab routing decision. The contract
 | `decisionDeltaAnalysis` | Additive read-only selected-vs-closest-alternative score gap and factor contribution delta summary derived only from returned scores and contribution data. |
 | `decisionReplaySnapshot` | Additive read-only snapshot of stable compare evidence and deterministic local fingerprint derived only from already-built response fields. |
 | `decisionReplayReconstructionTrace` | Additive read-only reconstruction evidence steps and deterministic local trace fingerprint derived only from already-built response fields. |
+| `decisionReplayCapsule` | Additive read-only canonical evidence package and deterministic local capsule fingerprint derived only from already-built response fields and prior lab analysis objects. |
 | `replayReadiness` | Contract readiness for future replay; replay execution remains future/not implemented until built. |
 | `labProofBoundary` | Controlled lab evidence, local reproducibility, same-origin local API responses, and browser-local interpretation. |
 | `productionNotProvenBoundary` | No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof. |
@@ -269,6 +270,35 @@ the trace returns `PARTIAL` and keeps missing values unknown instead of inventin
 [`ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md`](ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md)
 for the focused reviewer contract and safety boundaries.
 
+## Decision Replay Capsule
+
+Decision Replay Capsule is the read-only canonical evidence packaging layer on top of the already-built routing
+comparison evidence. It packages stable candidate evidence, factor evidence, linked replay snapshot and
+reconstruction trace fingerprints, and a deterministic capsule fingerprint from already-built compare evidence only.
+It does not execute replay, perform what-if mutation, persist capsules or audit logs, export/download/share capsules,
+rerun routing, recompute scores, or retune weights.
+
+The capsule includes:
+
+- selected candidate id and deterministically ordered candidate ids when already returned;
+- candidate final scores only when already returned as finite values;
+- compact candidate evidence with observed factor names, contribution counts, and dominant factor names when already available;
+- compact factor evidence for selected-vs-closest-alternative contribution differences when already available;
+- linked Decision Replay Snapshot and Decision Replay Reconstruction Trace fingerprints;
+- deterministic local capsule fingerprint over stable capsule fields only.
+
+The capsule fingerprint must not include timestamps, random ids, hostnames, environment variables, file paths,
+secrets, local usernames, machine-specific data, or network-specific data. It is a deterministic local comparison
+aid, not a cryptographic proof of production behavior, signing proof, registry publication proof, audit-log
+persistence feature, guaranteed replay proof, exact production scoring proof, or production traffic validation.
+
+When selected candidate evidence, candidate ids, and Decision Vector evidence are missing, the capsule returns
+`UNKNOWN`. When useful evidence is present but candidate evidence, factor evidence, linked fingerprints, score gaps,
+or prior analysis statuses are incomplete, partial, or non-finite, the capsule returns `PARTIAL` and keeps missing
+values unknown instead of inventing them. See
+[`ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md`](ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md) for the focused reviewer
+contract and safety boundaries.
+
 The read-only `/api/routing/compare` response can expose candidate contribution summaries through
 `results[].decisionVector` without changing scoring behavior, strategy weights, selected backend outcomes,
 or existing response fields. This does not implement decision replay, what-if execution, strategy plugin
@@ -319,6 +349,7 @@ The read-only field includes:
 - Result-level `decisionDeltaAnalysis` derived from returned final scores and shared finite contribution entries.
 - Result-level `decisionReplaySnapshot` derived from already-built compare evidence and stable analysis statuses.
 - Result-level `decisionReplayReconstructionTrace` derived from already-built compare evidence, stable analysis statuses, and reconstruction steps.
+- Result-level `decisionReplayCapsule` derived from already-built compare evidence and already-built analysis objects.
 - Exactness, lab proof, and production not-proven boundaries.
 - Replay, what-if, and structured logging readiness marked future/not implemented.
 
@@ -335,6 +366,10 @@ are available.
 The reconstruction trace field is exposed as `results[].decisionReplayReconstructionTrace` and is derived after
 `results[].decisionVector`, `results[].dominantFactorAnalysis`, `results[].decisionDeltaAnalysis`, and
 `results[].decisionReplaySnapshot` are available.
+
+The replay capsule field is exposed as `results[].decisionReplayCapsule` and is derived after
+`results[].decisionVector`, `results[].dominantFactorAnalysis`, `results[].decisionDeltaAnalysis`,
+`results[].decisionReplaySnapshot`, and `results[].decisionReplayReconstructionTrace` are available.
 
 The exposure is additive controlled lab explainability only. It does not change routing selection,
 score calculation, strategy weights, route/proxy behavior, or existing API response fields.
@@ -486,6 +521,44 @@ Example response snippet:
           }
         ],
         "boundaryNote": "Read-only lab evidence derived only from already-built compare response data; no replay execution, what-if mutation, or trace persistence is performed."
+      },
+      "decisionReplayCapsule": {
+        "readOnly": true,
+        "capsuleSchemaVersion": "decision-replay-capsule/v1",
+        "status": "PARTIAL",
+        "capsuleFingerprint": "deterministic-local-capsule-hash",
+        "linkedReplaySnapshotFingerprint": "deterministic-local-hash",
+        "linkedReconstructionTraceFingerprint": "deterministic-local-trace-hash",
+        "selectedCandidateId": "edge-alpha",
+        "candidateIdsConsidered": ["edge-alpha", "edge-beta", "edge-drain"],
+        "candidateCount": 3,
+        "closestAlternativeCandidateId": "edge-beta",
+        "finalScoreGap": -20.0,
+        "largestDeltaFactorName": "p99LatencyMillis",
+        "reconstructionStepIds": ["candidate-set-observed", "replay-snapshot-fingerprint-observed"],
+        "candidateEvidence": [
+          {
+            "candidateId": "edge-alpha",
+            "selected": true,
+            "finalScore": 50.0,
+            "factorNames": ["p95LatencyMillis", "p99LatencyMillis"],
+            "contributionCount": 2,
+            "dominantFactorNames": ["p99LatencyMillis"],
+            "status": "PARTIAL"
+          }
+        ],
+        "factorEvidence": [
+          {
+            "factorName": "p99LatencyMillis",
+            "appearedInSelectedCandidate": true,
+            "appearedInClosestAlternative": true,
+            "selectedCandidateContribution": 28.0,
+            "closestAlternativeContribution": 33.6,
+            "contributionDelta": -5.6,
+            "status": "AVAILABLE"
+          }
+        ],
+        "boundaryNote": "Read-only canonical lab evidence packaging; no replay execution, what-if mutation, capsule persistence, upload/share/download, or server-side export/PDF/ZIP generation is performed."
       }
     }
   ]
@@ -517,6 +590,7 @@ The Decision Vector is a foundation for current read-only dominant-factor explai
 - Decision delta analysis: implemented as additive read-only selected-vs-closest-alternative interpretation of returned score and contribution data only.
 - Decision replay snapshot: implemented as additive read-only snapshot evidence and deterministic local fingerprint only.
 - Decision replay reconstruction trace: implemented as additive read-only reconstruction evidence steps and deterministic local trace fingerprint only.
+- Decision replay capsule: implemented as additive read-only canonical evidence packaging and deterministic local capsule fingerprint only.
 - Broader factor modeling beyond current returned calculator contribution data: future/not implemented.
 - Replay execution: future/not implemented.
 - What-if experiments: future/not implemented.

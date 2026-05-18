@@ -6,7 +6,7 @@ The Enterprise Lab Decision Vector is the structured explanation object for one 
 
 ## Why the Lab Needs It
 
-The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, and future work such as decision replay, what-if experiments, structured decision logging, strategy plugin explainability, and data center signal modeling can build without inventing hidden scoring.
+The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, and future work such as replay execution, what-if experiments, structured decision logging, strategy plugin explainability, and data center signal modeling can build without inventing hidden scoring.
 
 A Decision Vector differs from a simple reason string because it separates:
 
@@ -21,7 +21,8 @@ A Decision Vector differs from a simple reason string because it separates:
 - Factor contribution availability or absence.
 - Dominant factor analysis derived from returned factor contributions.
 - Decision delta analysis comparing the selected candidate with the closest scored alternative.
-- Replay readiness and future replay gaps.
+- Decision Replay Snapshot metadata and deterministic local fingerprint for already-returned lab evidence.
+- Replay readiness and future replay execution gaps.
 - Lab proof boundaries and production not-proven boundaries.
 
 ## Decision Vector Fields
@@ -46,6 +47,7 @@ One Decision Vector represents one controlled lab routing decision. The contract
 | `factorContributionAvailability` | Exposed only when the local lab response returns current calculator contribution fields; otherwise mark as unavailable. |
 | `dominantFactorAnalysis` | Additive read-only summary of largest support, penalty/risk, and absolute-impact factors derived only from returned contribution data. |
 | `decisionDeltaAnalysis` | Additive read-only selected-vs-closest-alternative score gap and factor contribution delta summary derived only from returned scores and contribution data. |
+| `decisionReplaySnapshot` | Additive read-only snapshot of stable compare evidence and deterministic local fingerprint derived only from already-built response fields. |
 | `replayReadiness` | Contract readiness for future replay; replay execution remains future/not implemented until built. |
 | `labProofBoundary` | Controlled lab evidence, local reproducibility, same-origin local API responses, and browser-local interpretation. |
 | `productionNotProvenBoundary` | No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof. |
@@ -213,6 +215,31 @@ weights, server selection logic, proxy behavior, or existing API response fields
 [`ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md`](ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md) for the focused
 reviewer contract and safety boundaries.
 
+## Decision Replay Snapshot
+
+Decision Replay Snapshot is the read-only replay-readiness layer on top of the already-built routing
+comparison evidence. It does not execute replay, perform what-if mutation, persist audit logs, or rerun
+scoring. Instead, it summarizes stable fields already returned by the compare response and analysis lanes:
+
+- selected candidate id when available;
+- deterministically ordered candidate ids considered;
+- candidate count;
+- strategy id;
+- Decision Vector, Dominant Factor Analysis, and Decision Delta Analysis statuses;
+- closest alternative id, final score gap, and largest delta factor when returned by Decision Delta Analysis;
+- deterministic local snapshot fingerprint over stable fields only.
+
+The fingerprint must not include timestamps, random ids, hostnames, environment variables, file paths,
+secrets, local usernames, or machine-specific data. It is a deterministic local comparison aid, not a
+cryptographic proof of production behavior, signing proof, registry publication proof, or audit-log
+persistence feature.
+
+When selected candidate evidence, candidate ids, or Decision Vector evidence is missing, the snapshot
+returns `UNKNOWN`. When optional analysis data is absent, partial, or non-finite, the snapshot returns
+`PARTIAL` and keeps missing values unknown instead of inventing them. See
+[`ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md`](ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md) for the focused
+reviewer contract and safety boundaries.
+
 The read-only `/api/routing/compare` response can expose candidate contribution summaries through
 `results[].decisionVector` without changing scoring behavior, strategy weights, selected backend outcomes,
 or existing response fields. This does not implement decision replay, what-if execution, strategy plugin
@@ -261,6 +288,7 @@ The read-only field includes:
 - Current calculator `factorContributions` where the contract exposes them.
 - Result-level `dominantFactorAnalysis` derived from those returned contribution entries.
 - Result-level `decisionDeltaAnalysis` derived from returned final scores and shared finite contribution entries.
+- Result-level `decisionReplaySnapshot` derived from already-built compare evidence and stable analysis statuses.
 - Exactness, lab proof, and production not-proven boundaries.
 - Replay, what-if, and structured logging readiness marked future/not implemented.
 
@@ -270,10 +298,14 @@ The dominant factor field is exposed as `results[].dominantFactorAnalysis` and i
 The decision delta field is exposed as `results[].decisionDeltaAnalysis` and is derived after
 `results[].decisionVector` and existing result score data are available.
 
+The replay snapshot field is exposed as `results[].decisionReplaySnapshot` and is derived after
+`results[].decisionVector`, `results[].dominantFactorAnalysis`, and `results[].decisionDeltaAnalysis`
+are available.
+
 The exposure is additive controlled lab explainability only. It does not change routing selection,
 score calculation, strategy weights, route/proxy behavior, or existing API response fields.
 It does not claim production telemetry, production monitoring, production certification, exact production scoring,
-completed replay, or completed what-if experiments.
+replay execution, or completed what-if experiments.
 
 Example response snippet:
 
@@ -367,6 +399,23 @@ Example response snippet:
           "absoluteDelta": 5.6
         },
         "boundaryNote": "Read-only lab explainability derived only from returned score and contribution data; routing behavior is unchanged."
+      },
+      "decisionReplaySnapshot": {
+        "readOnly": true,
+        "snapshotSchemaVersion": "decision-replay-snapshot/v1",
+        "status": "PARTIAL",
+        "snapshotFingerprint": "deterministic-local-hash",
+        "selectedCandidateId": "edge-alpha",
+        "candidateIdsConsidered": ["edge-alpha", "edge-beta", "edge-drain"],
+        "candidateCount": 3,
+        "strategyId": "TAIL_LATENCY_POWER_OF_TWO",
+        "decisionVectorStatus": "AVAILABLE",
+        "dominantFactorAnalysisStatus": "AVAILABLE",
+        "decisionDeltaAnalysisStatus": "PARTIAL",
+        "closestAlternativeCandidateId": "edge-beta",
+        "finalScoreGap": -20.0,
+        "largestDeltaFactorName": "p99LatencyMillis",
+        "boundaryNote": "Read-only lab evidence derived only from already-built compare response data; no replay execution or what-if mutation is performed."
       }
     }
   ]
@@ -385,6 +434,7 @@ The Decision Vector answers "why this backend?" by showing:
 - Which fields are unknown or unexposed.
 - Which explanation notes are supported by visible data.
 - Which dominant factors were derived from returned contribution entries.
+- Which deterministic replay snapshot fields were available for later review.
 - Which explanation gaps remain investigation items.
 
 If a candidate appears weakened by unhealthy state, higher visible latency, higher visible load/connection pressure, or lower capacity/weight where those fields are exposed, the vector can record that visible signal comparison. If the local lab response does not expose enough information, the vector must say that the candidate reason is unknown from visible data.
@@ -395,8 +445,9 @@ The Decision Vector is a foundation for current read-only dominant-factor explai
 
 - Dominant factor analysis: implemented as additive read-only interpretation of returned contribution data only.
 - Decision delta analysis: implemented as additive read-only selected-vs-closest-alternative interpretation of returned score and contribution data only.
+- Decision replay snapshot: implemented as additive read-only snapshot evidence and deterministic local fingerprint only.
 - Broader factor modeling beyond current returned calculator contribution data: future/not implemented.
-- Decision replay: future/not implemented.
+- Replay execution: future/not implemented.
 - What-if experiments: future/not implemented.
 - Structured decision logging: future/not implemented.
 - Strategy plugin explainability: future/not implemented.
@@ -516,4 +567,4 @@ This example is static documentation, not an implemented runtime endpoint or ser
 
 The Decision Vector contract is controlled lab explainability. It does not change live routing behavior, does not add production telemetry, does not add production monitoring, does not generate server-side files, and does not claim production certification.
 
-It does not prove production traffic behavior, live-cloud behavior, real-tenant behavior, SLA/SLO achievement, registry publication, container signing, governance application, exact production scoring, broader factor modeling beyond returned calculator contribution data, completed replay, completed what-if experiments, completed strategy plugin explainability, or production readiness.
+It does not prove production traffic behavior, live-cloud behavior, real-tenant behavior, SLA/SLO achievement, registry publication, container signing, governance application, exact production scoring, broader factor modeling beyond returned calculator contribution data, replay execution, completed what-if experiments, completed strategy plugin explainability, or production readiness.

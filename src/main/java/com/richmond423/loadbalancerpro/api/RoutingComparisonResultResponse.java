@@ -12,5 +12,6 @@ public record RoutingComparisonResultResponse(
         Map<String, Double> scores,
         RoutingDecisionVectorResponse decisionVector,
         DominantFactorAnalysisResponse dominantFactorAnalysis,
-        RoutingDecisionDeltaAnalysisResponse decisionDeltaAnalysis) {
+        RoutingDecisionDeltaAnalysisResponse decisionDeltaAnalysis,
+        RoutingDecisionReplaySnapshotResponse decisionReplaySnapshot) {
 }

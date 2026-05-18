@@ -73,6 +73,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/DominantFactorAnalysisResponse");
         assertRef(required(resultProperties, "/decisionDeltaAnalysis"),
                 "#/components/schemas/RoutingDecisionDeltaAnalysisResponse");
+        assertRef(required(resultProperties, "/decisionReplaySnapshot"),
+                "#/components/schemas/RoutingDecisionReplaySnapshotResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -138,6 +140,17 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(factorDeltaProperties, "/factorName/type").asText());
         assertEquals("number", required(factorDeltaProperties, "/contributionDelta/type").asText());
         assertEquals("number", required(factorDeltaProperties, "/absoluteDelta/type").asText());
+
+        JsonNode snapshotProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplaySnapshotResponse/properties");
+        assertEquals("boolean", required(snapshotProperties, "/readOnly/type").asText());
+        assertEquals("string", required(snapshotProperties, "/snapshotSchemaVersion/type").asText());
+        assertEquals("string", required(snapshotProperties, "/snapshotFingerprint/type").asText());
+        assertEquals("array", required(snapshotProperties, "/candidateIdsConsidered/type").asText());
+        assertEquals("integer", required(snapshotProperties, "/candidateCount/type").asText());
+        assertEquals("string", required(snapshotProperties, "/decisionVectorStatus/type").asText());
+        assertEquals("string", required(snapshotProperties, "/decisionDeltaAnalysisStatus/type").asText());
+        assertEquals("number", required(snapshotProperties, "/finalScoreGap/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

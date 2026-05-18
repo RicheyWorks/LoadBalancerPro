@@ -129,14 +129,17 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("Alternative candidate evidence remains controlled lab evidence for pre-production routing validation."));
         assertTrue(framing.contains("## Decision Vector Contract"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
+        assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md"));
         assertTrue(framing.contains("structured explanation contract for one controlled lab routing decision"));
         assertTrue(framing.contains("selected candidate vector"));
         assertTrue(framing.contains("non-selected candidate vectors"));
         assertTrue(framing.contains("ServerScoreCalculator factor contribution extraction is additive"));
         assertTrue(framing.contains("candidate factor contribution summaries can attach those calculator explanations to selected and non-selected candidate vectors"));
         assertTrue(framing.contains("The read-only `/api/routing/compare` response can expose `results[].decisionVector`"));
+        assertTrue(framing.contains("`results[].decisionReplaySnapshot`"));
+        assertTrue(framing.contains("deterministic local fingerprint from already-built compare evidence only"));
         assertTrue(framing.contains("preserving existing fields, routing behavior, scoring behavior, and strategy weights"));
-        assertTrue(framing.contains("Replay and what-if execution remain future/not implemented"));
+        assertTrue(framing.contains("Replay execution and what-if execution remain future/not implemented"));
         assertTrue(framing.contains("## How to Investigate Surprising Lab Decisions"));
         assertTrue(framing.contains("If the backend changed unexpectedly"));
         assertTrue(framing.contains("If all candidates are unhealthy"));

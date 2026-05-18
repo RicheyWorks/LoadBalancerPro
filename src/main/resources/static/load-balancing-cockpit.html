@@ -1263,6 +1263,10 @@
             <div id="decision-delta-explanation">Run routing comparison to populate selected-vs-closest-alternative contribution differences.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Evidence Snapshot</strong>
+            <div id="decision-replay-snapshot-explanation">Run routing comparison to populate replay snapshot evidence and a deterministic local fingerprint.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3431,6 +3435,7 @@
         rows.innerHTML = "<tr><td colspan=\"3\">Not available in current API.</td></tr>";
         renderDominantFactorExplanation(response);
         renderDecisionDeltaExplanation(response);
+        renderDecisionReplaySnapshotExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3438,6 +3443,7 @@
         rows.innerHTML = "<tr><td colspan=\"3\" class=\"muted\">No routing results returned.</td></tr>";
         renderDominantFactorExplanation(response);
         renderDecisionDeltaExplanation(response);
+        renderDecisionReplaySnapshotExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3447,6 +3453,7 @@
         + "</tr>").join("");
       renderDominantFactorExplanation(response);
       renderDecisionDeltaExplanation(response);
+      renderDecisionReplaySnapshotExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3488,6 +3495,7 @@
       renderRoutingExplanation(scenario);
       renderDominantFactorExplanation(state.routing);
       renderDecisionDeltaExplanation(state.routing);
+      renderDecisionReplaySnapshotExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -3603,6 +3611,37 @@
           + escapeHtml(comparisonText) + "<br>"
           + escapeHtml(largestText) + "<br>"
           + "<span class=\"muted\">Boundary: read-only lab explainability; no routing, scoring, strategy-weight, server-selection, or proxy behavior change.</span></p>";
+      }).join("");
+    }
+
+    function renderDecisionReplaySnapshotExplanation(response) {
+      const container = document.getElementById("decision-replay-snapshot-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate replay snapshot evidence and a deterministic local fingerprint.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; decision replay snapshot evidence is unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const snapshot = result.decisionReplaySnapshot || {};
+        const candidateIds = Array.isArray(snapshot.candidateIdsConsidered)
+          ? snapshot.candidateIdsConsidered.join(", ")
+          : "";
+        const summary = snapshot.snapshotFingerprint
+          ? "status=" + (snapshot.status || "unknown")
+            + "; selected=" + (snapshot.selectedCandidateId || "not returned")
+            + "; closestAlternative=" + (snapshot.closestAlternativeCandidateId || "not returned")
+            + "; candidates=" + (candidateIds || "none")
+            + "; finalScoreGap=" + formatFinite(snapshot.finalScoreGap)
+            + "; largestDeltaFactor=" + (snapshot.largestDeltaFactorName || "not returned")
+            + "; fingerprint=" + snapshot.snapshotFingerprint
+          : (snapshot.explanation || "Decision Replay Snapshot is unavailable; no replay evidence snapshot is invented.");
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(summary) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab evidence only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.</span></p>";
       }).join("");
     }
 
@@ -3897,6 +3936,16 @@
           + ", status=" + (result.status || "unknown")
           + ", reason=" + (result.reason || "No reason returned.")).join("\n")
         : "- Not run";
+      const replaySnapshotLines = routingResults.length
+        ? routingResults.map((result) => {
+          const snapshot = result.decisionReplaySnapshot || {};
+          return "- " + result.strategyId
+            + ": snapshotStatus=" + (snapshot.status || "unknown")
+            + ", selected=" + (snapshot.selectedCandidateId || "not returned")
+            + ", closestAlternative=" + (snapshot.closestAlternativeCandidateId || "not returned")
+            + ", fingerprint=" + (snapshot.snapshotFingerprint || "not returned");
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -3929,6 +3978,9 @@
         "",
         "## Routing Strategy Explanation",
         routingLines,
+        "",
+        "## Decision Evidence Snapshot",
+        replaySnapshotLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,
@@ -4107,6 +4159,8 @@
         "Run routing comparison to populate dominant factors from returned contribution data.";
       document.getElementById("decision-delta-explanation").textContent =
         "Run routing comparison to populate selected-vs-closest-alternative contribution differences.";
+      document.getElementById("decision-replay-snapshot-explanation").textContent =
+        "Run routing comparison to populate replay snapshot evidence and a deterministic local fingerprint.";
       document.getElementById("allocation-explanation").textContent =
         "Run allocation preview to populate capacity math.";
       document.getElementById("overload-explanation").textContent =

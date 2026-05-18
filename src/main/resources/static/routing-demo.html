@@ -853,8 +853,12 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p>Selected vs Closest Alternative compares the selected candidate with the closest scored non-selected candidate using returned final scores and shared finite factor contribution entries.</p>
           </div>
           <div class="proof-card">
+            <strong>Decision replay snapshot</strong>
+            <p>Decision Evidence Snapshot captures stable read-only compare evidence and a deterministic local fingerprint for later reviewer analysis; it does not execute replay or what-if mutation.</p>
+          </div>
+          <div class="proof-card">
             <strong>Read-only API exposure</strong>
-            <p>The same-origin <code>/api/routing/compare</code> response can return <code>results[].decisionVector</code> as additive controlled lab data; if it is absent, static lab guidance remains available.</p>
+            <p>The same-origin <code>/api/routing/compare</code> response can return <code>results[].decisionVector</code> and <code>results[].decisionReplaySnapshot</code> as additive controlled lab data; if it is absent, static lab guidance remains available.</p>
           </div>
           <div class="proof-card">
             <strong>Replay and what-if boundary</strong>
@@ -934,9 +938,24 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-delta-boundary">Read-only lab explainability only; no routing behavior, scoring math, strategy weight, server selection, or proxy behavior changes.</p>
           </div>
         </div>
+        <h3 style="margin-top: 14px;">Decision Evidence Snapshot</h3>
+        <div class="proof-grid" aria-label="Decision Replay Snapshot summary">
+          <div class="proof-card">
+            <strong>Replay Snapshot</strong>
+            <p id="decision-vector-replay-snapshot">Run Compare strategies to populate a stable decision evidence snapshot.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Snapshot Fingerprint</strong>
+            <p id="decision-vector-replay-fingerprint">No deterministic local fingerprint has been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Replay snapshot boundary</strong>
+            <p id="decision-vector-replay-boundary">Read-only lab evidence only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.</p>
+          </div>
+        </div>
         <p class="postman-note">
           Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
-          no upload/share endpoint, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
+          no upload/share/download route, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
         </p>
         <h3 style="margin-top: 14px;">Copyable Decision Vector summary</h3>
         <pre id="decision-vector-summary-output"># Decision Vector Foundation
@@ -953,13 +972,14 @@ exactScoringAvailability: not exposed unless the API returns exact scoring field
 factorContributionAvailability: internal calculator contribution and candidate summary contracts started; not exposed in this cockpit response unless the API returns contribution fields
 dominantFactorAnalysis: unavailable until /api/routing/compare returns dominantFactorAnalysis; no dominant factors are invented
 decisionDeltaAnalysis: unavailable until /api/routing/compare returns decisionDeltaAnalysis; no selected-vs-alternative factor differences are invented
+decisionReplaySnapshot: unavailable until /api/routing/compare returns decisionReplaySnapshot; no replay evidence snapshot is invented
 readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
 structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented
 evidenceAssociationPath: /routing-demo.html -> /enterprise-lab-reviewer.html -> /operator-evidence-dashboard.html -> /evidence-timeline.html -> /evidence-export-packet.html
 productionNotProven: no production traffic proof; no production telemetry proof; no live-cloud proof; no real-tenant proof; no SLA/SLO proof; no registry publication proof; no container signing proof; no governance-applied proof; no exact production scoring proof; no production certification claim
-copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry</pre>
+copyBoundary: browser-local copy action only; no upload/share/download route; no server-side export/PDF/ZIP generation; no external calls; no telemetry</pre>
       </div>
     </section>
 
@@ -1885,7 +1905,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       dominantBoundary: document.getElementById("decision-vector-dominant-boundary"),
       deltaComparison: document.getElementById("decision-vector-delta-comparison"),
       deltaLargest: document.getElementById("decision-vector-delta-largest"),
-      deltaBoundary: document.getElementById("decision-vector-delta-boundary")
+      deltaBoundary: document.getElementById("decision-vector-delta-boundary"),
+      replaySnapshot: document.getElementById("decision-vector-replay-snapshot"),
+      replayFingerprint: document.getElementById("decision-vector-replay-fingerprint"),
+      replayBoundary: document.getElementById("decision-vector-replay-boundary")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -2918,6 +2941,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           && typeof primary.decisionDeltaAnalysis === "object"
         ? primary.decisionDeltaAnalysis
         : null;
+      const replaySnapshot = primary && primary.decisionReplaySnapshot
+          && typeof primary.decisionReplaySnapshot === "object"
+        ? primary.decisionReplaySnapshot
+        : null;
       const selectedStrategy = decisionVector && decisionVector.selectedStrategy
         ? decisionVector.selectedStrategy
         : (primary && primary.strategyId ? primary.strategyId : "not run");
@@ -3012,6 +3039,23 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const deltaBoundary = deltaAnalysis && deltaAnalysis.boundaryNote
         ? deltaAnalysis.boundaryNote
         : "Read-only lab explainability only; no routing behavior, scoring math, strategy weight, server selection, or proxy behavior changes.";
+      const replaySnapshotSummary = replaySnapshot
+        ? "status=" + (replaySnapshot.status || "unknown")
+          + "; schema=" + (replaySnapshot.snapshotSchemaVersion || "unknown")
+          + "; selected=" + (replaySnapshot.selectedCandidateId || "not returned")
+          + "; closestAlternative=" + (replaySnapshot.closestAlternativeCandidateId || "not returned")
+          + "; candidates=" + (Array.isArray(replaySnapshot.candidateIdsConsidered)
+            ? replaySnapshot.candidateIdsConsidered.join(", ") || "none"
+            : "unknown")
+          + "; finalScoreGap=" + formatNumber(replaySnapshot.finalScoreGap)
+          + "; largestDeltaFactor=" + (replaySnapshot.largestDeltaFactorName || "not returned")
+        : "Decision Replay Snapshot is unavailable; no replay evidence snapshot or fingerprint is invented.";
+      const replayFingerprintSummary = replaySnapshot && replaySnapshot.snapshotFingerprint
+        ? replaySnapshot.snapshotFingerprint + " (" + (replaySnapshot.fingerprintAlgorithm || "local deterministic fingerprint") + ")"
+        : "No deterministic local fingerprint has been returned yet.";
+      const replayBoundary = replaySnapshot && replaySnapshot.boundaryNote
+        ? replaySnapshot.boundaryNote
+        : "Read-only lab evidence only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.";
       const replayReadiness = decisionVector && decisionVector.replayReadiness
         ? decisionVector.replayReadiness
         : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
@@ -3040,6 +3084,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       decisionVectorFields.deltaComparison.textContent = deltaComparisonSummary;
       decisionVectorFields.deltaLargest.textContent = deltaLargestSummary;
       decisionVectorFields.deltaBoundary.textContent = deltaBoundary;
+      decisionVectorFields.replaySnapshot.textContent = replaySnapshotSummary;
+      decisionVectorFields.replayFingerprint.textContent = replayFingerprintSummary;
+      decisionVectorFields.replayBoundary.textContent = replayBoundary;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
@@ -3061,6 +3108,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "decisionDeltaAnalysis: " + (deltaAnalysis
           ? deltaComparisonSummary + "; largestContributionDifference=" + deltaLargestSummary
           : "unavailable until /api/routing/compare returns decisionDeltaAnalysis; no selected-vs-alternative factor differences are invented"),
+        "decisionReplaySnapshot: " + (replaySnapshot
+          ? replaySnapshotSummary + "; fingerprint=" + replayFingerprintSummary
+          : "unavailable until /api/routing/compare returns decisionReplaySnapshot; no replay evidence snapshot is invented"),
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
         "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,
@@ -3070,7 +3120,7 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "",
         "labProofBoundary: controlled lab evidence, same-origin local API response data, visible request payload fields, and browser-local interpretation",
         "productionNotProven: " + notProven,
-        "copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"
+        "copyBoundary: browser-local copy action only; no upload/share/download route; no server-side export/PDF/ZIP generation; no external calls; no telemetry"
       ].join("\n");
     }
 

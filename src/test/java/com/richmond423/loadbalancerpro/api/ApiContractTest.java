@@ -171,7 +171,8 @@ class ApiContractTest {
         assertSchemaProperties(docs, "RoutingComparisonResultResponse", "strategyId", "status",
                 "chosenServerId", "reason", "candidateServersConsidered", "scores", "decisionVector",
                 "dominantFactorAnalysis", "decisionDeltaAnalysis", "decisionReplaySnapshot",
-                "decisionReplayReconstructionTrace", "decisionReplayCapsule");
+                "decisionReplayReconstructionTrace", "decisionReplayCapsule",
+                "decisionReplayReadinessChecklist");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -232,6 +233,16 @@ class ApiContractTest {
         assertSchemaProperties(docs, "DecisionReplayCapsuleFactorEvidenceResponse", "factorName",
                 "appearedInSelectedCandidate", "appearedInClosestAlternative", "selectedCandidateContribution",
                 "closestAlternativeContribution", "contributionDelta", "status");
+        assertSchemaProperties(docs, "RoutingDecisionReplayReadinessChecklistResponse", "readOnly",
+                "checklistSchemaVersion", "source", "status", "strategyId", "selectedCandidateId",
+                "candidateCount", "linkedReplaySnapshotFingerprint", "linkedReconstructionTraceFingerprint",
+                "linkedReplayCapsuleFingerprint", "decisionVectorStatus", "dominantFactorAnalysisStatus",
+                "decisionDeltaAnalysisStatus", "decisionReplaySnapshotStatus",
+                "decisionReplayReconstructionTraceStatus", "decisionReplayCapsuleStatus",
+                "availableItemCount", "partialItemCount", "unknownItemCount", "checklistItems",
+                "explanation", "boundaryNote", "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "DecisionReplayReadinessChecklistItemResponse", "itemId", "label", "status",
+                "evidenceSourceFieldPath", "explanation", "missingEvidenceReason");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -410,6 +421,28 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].decisionReplayCapsule.candidateEvidence[0].candidateId",
                         is("blue")))
                 .andExpect(jsonPath("$.results[0].decisionReplayCapsule.factorEvidence").isArray())
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.checklistSchemaVersion",
+                        is("decision-replay-readiness-checklist/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.status", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.decisionVectorStatus",
+                        is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.decisionReplayCapsuleStatus",
+                        is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.selectedCandidateId",
+                        is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.candidateCount",
+                        is(2)))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.linkedReplaySnapshotFingerprint")
+                        .isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.linkedReconstructionTraceFingerprint")
+                        .isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.linkedReplayCapsuleFingerprint")
+                        .isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.checklistItems[0].itemId",
+                        is("decision-vector-evidence")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.checklistItems[8].itemId",
+                        is("read-only-boundary-evidence")))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -467,6 +500,23 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].decisionReplayCapsule.closestAlternativeCandidateId",
                         nullValue()))
                 .andExpect(jsonPath("$.results[0].decisionReplayCapsule.finalScoreGap", nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.decisionVectorStatus",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.decisionReplayCapsuleStatus",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.selectedCandidateId",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.candidateCount",
+                        is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.linkedReplaySnapshotFingerprint",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.linkedReconstructionTraceFingerprint",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.linkedReplayCapsuleFingerprint",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.checklistItems[6].status",
+                        is("UNKNOWN")))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

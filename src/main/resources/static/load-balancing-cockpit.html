@@ -1275,6 +1275,10 @@
             <div id="decision-replay-capsule-explanation">Run routing comparison to populate canonical decision evidence and a deterministic capsule fingerprint.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Replay Readiness Checklist</strong>
+            <div id="decision-replay-readiness-checklist-explanation">Run routing comparison to populate lab replay-readiness checklist evidence.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3446,6 +3450,7 @@
         renderDecisionReplaySnapshotExplanation(response);
         renderDecisionReplayReconstructionTraceExplanation(response);
         renderDecisionReplayCapsuleExplanation(response);
+        renderDecisionReplayReadinessChecklistExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3456,6 +3461,7 @@
         renderDecisionReplaySnapshotExplanation(response);
         renderDecisionReplayReconstructionTraceExplanation(response);
         renderDecisionReplayCapsuleExplanation(response);
+        renderDecisionReplayReadinessChecklistExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3468,6 +3474,7 @@
       renderDecisionReplaySnapshotExplanation(response);
       renderDecisionReplayReconstructionTraceExplanation(response);
       renderDecisionReplayCapsuleExplanation(response);
+      renderDecisionReplayReadinessChecklistExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3512,6 +3519,7 @@
       renderDecisionReplaySnapshotExplanation(state.routing);
       renderDecisionReplayReconstructionTraceExplanation(state.routing);
       renderDecisionReplayCapsuleExplanation(state.routing);
+      renderDecisionReplayReadinessChecklistExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -3741,6 +3749,40 @@
         return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
           + escapeHtml(summary) + "<br>"
           + "<span class=\"muted\">Boundary: read-only lab evidence packaging only; no replay execution, what-if mutation, capsule persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
+    function renderDecisionReplayReadinessChecklistExplanation(response) {
+      const container = document.getElementById("decision-replay-readiness-checklist-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate lab replay-readiness checklist evidence.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; replay-readiness checklist evidence is unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const checklist = result.decisionReplayReadinessChecklist || {};
+        const items = Array.isArray(checklist.checklistItems)
+          ? checklist.checklistItems.map((item) =>
+            (item.itemId || "unknown-item") + "=" + (item.status || "UNKNOWN")
+          ).join("; ")
+          : "";
+        const summary = checklist.checklistSchemaVersion
+          ? "status=" + (checklist.status || "unknown")
+            + "; availableItems=" + String(checklist.availableItemCount || 0)
+            + "; partialItems=" + String(checklist.partialItemCount || 0)
+            + "; unknownItems=" + String(checklist.unknownItemCount || 0)
+            + "; linkedSnapshotFingerprint=" + (checklist.linkedReplaySnapshotFingerprint || "not linked")
+            + "; linkedTraceFingerprint=" + (checklist.linkedReconstructionTraceFingerprint || "not linked")
+            + "; linkedCapsuleFingerprint=" + (checklist.linkedReplayCapsuleFingerprint || "not linked")
+            + "; items=" + (items || "none")
+          : (checklist.explanation || "Decision Replay Readiness Checklist is unavailable; no lab replay-readiness claim is invented.");
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(summary) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab evidence readiness only; no replay execution, what-if mutation, checklist persistence, upload/share/download, telemetry, production certification, or server-side export/PDF/ZIP generation.</span></p>";
       }).join("");
     }
 
@@ -4068,6 +4110,19 @@
             + ", capsuleFingerprint=" + (capsule.capsuleFingerprint || "not returned");
         }).join("\n")
         : "- Not run";
+      const replayReadinessChecklistLines = routingResults.length
+        ? routingResults.map((result) => {
+          const checklist = result.decisionReplayReadinessChecklist || {};
+          return "- " + result.strategyId
+            + ": checklistStatus=" + (checklist.status || "unknown")
+            + ", availableItems=" + String(checklist.availableItemCount || 0)
+            + ", partialItems=" + String(checklist.partialItemCount || 0)
+            + ", unknownItems=" + String(checklist.unknownItemCount || 0)
+            + ", linkedSnapshotFingerprint=" + (checklist.linkedReplaySnapshotFingerprint || "not linked")
+            + ", linkedTraceFingerprint=" + (checklist.linkedReconstructionTraceFingerprint || "not linked")
+            + ", linkedCapsuleFingerprint=" + (checklist.linkedReplayCapsuleFingerprint || "not linked");
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -4109,6 +4164,9 @@
         "",
         "## Replay Capsule",
         replayCapsuleLines,
+        "",
+        "## Replay Readiness Checklist",
+        replayReadinessChecklistLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

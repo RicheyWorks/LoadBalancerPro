@@ -865,8 +865,12 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p>Replay Capsule packages stable returned lab evidence, linked snapshot and trace fingerprints, candidate evidence, and factor evidence without executing replay, exporting data, or persisting capsules.</p>
           </div>
           <div class="proof-card">
+            <strong>Replay readiness checklist</strong>
+            <p>Decision Replay Readiness Checklist summarizes existing Decision Vector, dominant factor, delta, snapshot, trace, and capsule evidence statuses without executing replay or claiming production readiness.</p>
+          </div>
+          <div class="proof-card">
             <strong>Read-only API exposure</strong>
-            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, and <code>decisionReplayCapsule</code> data; if absent, static lab guidance remains available.</p>
+            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, and <code>decisionReplayReadinessChecklist</code> data; if absent, static lab guidance remains available.</p>
           </div>
           <div class="proof-card">
             <strong>Replay and what-if boundary</strong>
@@ -991,6 +995,21 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-capsule-boundary">Read-only lab evidence packaging only; no replay execution, what-if mutation, capsule persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.</p>
           </div>
         </div>
+        <h3 style="margin-top: 14px;">Replay Readiness Checklist</h3>
+        <div class="proof-grid" aria-label="Decision Replay Readiness Checklist summary">
+          <div class="proof-card">
+            <strong>Readiness Items</strong>
+            <p id="decision-vector-readiness-checklist">Run Compare strategies to populate lab replay-readiness checklist items.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Linked Evidence Fingerprints</strong>
+            <p id="decision-vector-readiness-fingerprints">No linked snapshot, trace, or capsule fingerprints have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Readiness boundary</strong>
+            <p id="decision-vector-readiness-boundary">Read-only lab evidence readiness only; no replay execution, what-if mutation, checklist persistence, upload/share/download, telemetry, production certification, or server-side export/PDF/ZIP generation.</p>
+          </div>
+        </div>
         <p class="postman-note">
           Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
           no upload/share/download route, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
@@ -1013,6 +1032,7 @@ decisionDeltaAnalysis: unavailable until /api/routing/compare returns decisionDe
 decisionReplaySnapshot: unavailable until /api/routing/compare returns decisionReplaySnapshot; no replay evidence snapshot is invented
 decisionReplayReconstructionTrace: unavailable until /api/routing/compare returns decisionReplayReconstructionTrace; no reconstruction evidence is invented
 decisionReplayCapsule: unavailable until /api/routing/compare returns decisionReplayCapsule; no canonical evidence capsule is invented
+decisionReplayReadinessChecklist: unavailable until /api/routing/compare returns decisionReplayReadinessChecklist; no lab replay-readiness claim is invented
 readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
@@ -1954,7 +1974,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       reconstructionBoundary: document.getElementById("decision-vector-reconstruction-boundary"),
       replayCapsule: document.getElementById("decision-vector-replay-capsule"),
       capsuleFingerprint: document.getElementById("decision-vector-capsule-fingerprint"),
-      capsuleBoundary: document.getElementById("decision-vector-capsule-boundary")
+      capsuleBoundary: document.getElementById("decision-vector-capsule-boundary"),
+      readinessChecklist: document.getElementById("decision-vector-readiness-checklist"),
+      readinessFingerprints: document.getElementById("decision-vector-readiness-fingerprints"),
+      readinessBoundary: document.getElementById("decision-vector-readiness-boundary")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -2999,6 +3022,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           && typeof primary.decisionReplayCapsule === "object"
         ? primary.decisionReplayCapsule
         : null;
+      const replayReadinessChecklist = primary && primary.decisionReplayReadinessChecklist
+          && typeof primary.decisionReplayReadinessChecklist === "object"
+        ? primary.decisionReplayReadinessChecklist
+        : null;
       const selectedStrategy = decisionVector && decisionVector.selectedStrategy
         ? decisionVector.selectedStrategy
         : (primary && primary.strategyId ? primary.strategyId : "not run");
@@ -3160,6 +3187,29 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const capsuleBoundary = replayCapsule && replayCapsule.boundaryNote
         ? replayCapsule.boundaryNote
         : "Read-only lab evidence packaging only; no replay execution, what-if mutation, capsule persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.";
+      const readinessItemsSummary = replayReadinessChecklist
+          && Array.isArray(replayReadinessChecklist.checklistItems)
+          && replayReadinessChecklist.checklistItems.length > 0
+        ? replayReadinessChecklist.checklistItems.map((item) =>
+          (item.itemId || "unknown-item") + "=" + (item.status || "UNKNOWN")
+        ).join("; ")
+        : "No lab replay-readiness checklist items have been returned yet.";
+      const readinessSummary = replayReadinessChecklist
+        ? "status=" + (replayReadinessChecklist.status || "unknown")
+          + "; schema=" + (replayReadinessChecklist.checklistSchemaVersion || "unknown")
+          + "; availableItems=" + String(replayReadinessChecklist.availableItemCount || 0)
+          + "; partialItems=" + String(replayReadinessChecklist.partialItemCount || 0)
+          + "; unknownItems=" + String(replayReadinessChecklist.unknownItemCount || 0)
+          + "; items=" + readinessItemsSummary
+        : "Decision Replay Readiness Checklist is unavailable; no lab replay-readiness claim is invented.";
+      const readinessFingerprintSummary = replayReadinessChecklist
+        ? "snapshot=" + (replayReadinessChecklist.linkedReplaySnapshotFingerprint || "not linked")
+          + "; trace=" + (replayReadinessChecklist.linkedReconstructionTraceFingerprint || "not linked")
+          + "; capsule=" + (replayReadinessChecklist.linkedReplayCapsuleFingerprint || "not linked")
+        : "No linked snapshot, trace, or capsule fingerprints have been returned yet.";
+      const readinessBoundary = replayReadinessChecklist && replayReadinessChecklist.boundaryNote
+        ? replayReadinessChecklist.boundaryNote
+        : "Read-only lab evidence readiness only; no replay execution, what-if mutation, checklist persistence, upload/share/download, telemetry, production certification, or server-side export/PDF/ZIP generation.";
       const replayReadiness = decisionVector && decisionVector.replayReadiness
         ? decisionVector.replayReadiness
         : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
@@ -3197,6 +3247,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       decisionVectorFields.replayCapsule.textContent = replayCapsuleSummary;
       decisionVectorFields.capsuleFingerprint.textContent = capsuleFingerprintSummary;
       decisionVectorFields.capsuleBoundary.textContent = capsuleBoundary;
+      decisionVectorFields.readinessChecklist.textContent = readinessSummary;
+      decisionVectorFields.readinessFingerprints.textContent = readinessFingerprintSummary;
+      decisionVectorFields.readinessBoundary.textContent = readinessBoundary;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
@@ -3227,6 +3280,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "decisionReplayCapsule: " + (replayCapsule
           ? replayCapsuleSummary + "; capsuleFingerprint=" + capsuleFingerprintSummary
           : "unavailable until /api/routing/compare returns decisionReplayCapsule; no canonical evidence capsule is invented"),
+        "decisionReplayReadinessChecklist: " + (replayReadinessChecklist
+          ? readinessSummary + "; linkedFingerprints=" + readinessFingerprintSummary
+          : "unavailable until /api/routing/compare returns decisionReplayReadinessChecklist; no lab replay-readiness claim is invented"),
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
         "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,

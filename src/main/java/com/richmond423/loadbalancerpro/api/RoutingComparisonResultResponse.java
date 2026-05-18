@@ -15,5 +15,6 @@ public record RoutingComparisonResultResponse(
         RoutingDecisionDeltaAnalysisResponse decisionDeltaAnalysis,
         RoutingDecisionReplaySnapshotResponse decisionReplaySnapshot,
         RoutingDecisionReplayReconstructionTraceResponse decisionReplayReconstructionTrace,
-        RoutingDecisionReplayCapsuleResponse decisionReplayCapsule) {
+        RoutingDecisionReplayCapsuleResponse decisionReplayCapsule,
+        RoutingDecisionReplayReadinessChecklistResponse decisionReplayReadinessChecklist) {
 }

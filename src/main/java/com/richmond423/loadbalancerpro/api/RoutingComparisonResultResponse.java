@@ -13,5 +13,6 @@ public record RoutingComparisonResultResponse(
         RoutingDecisionVectorResponse decisionVector,
         DominantFactorAnalysisResponse dominantFactorAnalysis,
         RoutingDecisionDeltaAnalysisResponse decisionDeltaAnalysis,
-        RoutingDecisionReplaySnapshotResponse decisionReplaySnapshot) {
+        RoutingDecisionReplaySnapshotResponse decisionReplaySnapshot,
+        RoutingDecisionReplayReconstructionTraceResponse decisionReplayReconstructionTrace) {
 }

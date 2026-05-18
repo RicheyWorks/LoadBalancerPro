@@ -13,12 +13,16 @@ It helps reviewers inspect why a packaged scenario produced its routing, allocat
 - `Routing Strategy Explanation`: selected server, strategy status, API reason, visible health, weight, capacity, connection, latency, and queue inputs.
 - `Most Influential Signals`: dominant factor analysis returned by `/api/routing/compare`, derived only from existing contribution data.
 - `Selected vs Closest Alternative`: decision delta analysis returned by `/api/routing/compare`, including selected-minus-alternative final score gap and largest shared finite contribution difference when available.
+- `Decision Evidence Snapshot`: replay snapshot metadata returned by `/api/routing/compare`, derived only from already-built lab compare evidence.
+- `Replay Reconstruction Trace`: reconstruction evidence steps returned by `/api/routing/compare`, derived only from already-built lab compare evidence and linked snapshot fingerprints when available.
 - `Allocation Math / Capacity Explanation`: requested load, returned allocations, unallocated load, recommended simulated capacity, and client-derived remaining capacity from visible request/response fields.
 - `Load-Shedding / Overload Reason Breakdown`: evaluation decision reason, priority, action, queue depth, utilization, latency, error rate, healthy-server count, and read-only metrics state.
 - `Remediation Rationale`: advisory-only `remediationPlan` status and recommendation reasons returned by the evaluate endpoint.
 - `Scenario Delta Explanation`: changed scenario name, healthy allocation server count, total visible capacity, average routing pressure, unallocated load, and load-shedding action versus the prior run.
 
 Exact internal scores and every internal threshold are not exposed by the current API. Decision delta analysis uses only returned final score fields and returned factor contribution entries; missing, partial, or non-finite contribution values remain unknown instead of being invented. When the browser derives supporting math, the page labels it as derived from visible request/response fields and preserves the raw JSON as the source of truth.
+
+Replay snapshots and reconstruction traces are read-only lab evidence. They do not execute replay, perform what-if mutation, persist traces or audit logs server-side, recompute scores, retune weights, or add upload/share/download/export/PDF/ZIP functionality.
 
 The operator comparison matrix reuses the same explanation boundaries. It summarizes routing, allocation pressure, overload, remediation, and delta fields across scenarios without inventing scores or benchmark claims.
 

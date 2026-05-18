@@ -6,7 +6,7 @@ The Enterprise Lab Decision Vector is the structured explanation object for one 
 
 ## Why the Lab Needs It
 
-The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, and future work such as replay execution, what-if experiments, structured decision logging, strategy plugin explainability, and data center signal modeling can build without inventing hidden scoring.
+The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, Decision Replay Reconstruction Trace lane, and future work such as replay execution, what-if experiments, structured decision logging, strategy plugin explainability, and data center signal modeling can build without inventing hidden scoring.
 
 A Decision Vector differs from a simple reason string because it separates:
 
@@ -22,6 +22,7 @@ A Decision Vector differs from a simple reason string because it separates:
 - Dominant factor analysis derived from returned factor contributions.
 - Decision delta analysis comparing the selected candidate with the closest scored alternative.
 - Decision Replay Snapshot metadata and deterministic local fingerprint for already-returned lab evidence.
+- Decision Replay Reconstruction Trace steps and deterministic local trace fingerprint for already-returned lab evidence.
 - Replay readiness and future replay execution gaps.
 - Lab proof boundaries and production not-proven boundaries.
 
@@ -48,6 +49,7 @@ One Decision Vector represents one controlled lab routing decision. The contract
 | `dominantFactorAnalysis` | Additive read-only summary of largest support, penalty/risk, and absolute-impact factors derived only from returned contribution data. |
 | `decisionDeltaAnalysis` | Additive read-only selected-vs-closest-alternative score gap and factor contribution delta summary derived only from returned scores and contribution data. |
 | `decisionReplaySnapshot` | Additive read-only snapshot of stable compare evidence and deterministic local fingerprint derived only from already-built response fields. |
+| `decisionReplayReconstructionTrace` | Additive read-only reconstruction evidence steps and deterministic local trace fingerprint derived only from already-built response fields. |
 | `replayReadiness` | Contract readiness for future replay; replay execution remains future/not implemented until built. |
 | `labProofBoundary` | Controlled lab evidence, local reproducibility, same-origin local API responses, and browser-local interpretation. |
 | `productionNotProvenBoundary` | No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof. |
@@ -240,6 +242,33 @@ returns `UNKNOWN`. When optional analysis data is absent, partial, or non-finite
 [`ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md`](ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md) for the focused
 reviewer contract and safety boundaries.
 
+## Decision Replay Reconstruction Trace
+
+Decision Replay Reconstruction Trace is the read-only reconstruction evidence layer on top of the already-built
+routing comparison evidence. It does not execute replay, perform what-if mutation, persist traces or audit logs,
+or rerun scoring. Instead, it lists deterministic reconstruction steps and field paths that show whether the
+current compare result contains enough stable lab evidence to reconstruct the decision explanation later:
+
+- candidate set observed from returned candidate ids, scores, Decision Vector, or replay snapshot fields;
+- selected candidate observed from returned selected fields;
+- candidate final scores observed only when already returned as finite values;
+- Decision Vector evidence and candidate factor contribution evidence;
+- Dominant Factor Analysis and Decision Delta Analysis status;
+- closest alternative id, final score gap, and largest delta factor when already returned by Decision Delta Analysis;
+- linked Decision Replay Snapshot status and snapshot fingerprint;
+- deterministic local trace fingerprint over stable trace fields only.
+
+The trace fingerprint must not include timestamps, random ids, hostnames, environment variables, file paths,
+secrets, local usernames, machine-specific data, or network-specific data. It is a deterministic local comparison
+aid, not a cryptographic proof of production behavior, signing proof, registry publication proof, audit-log
+persistence feature, guaranteed replay proof, or production traffic validation.
+
+When selected candidate evidence, candidate ids, and Decision Vector evidence are missing, the trace returns
+`UNKNOWN`. When useful evidence is present but some reconstruction steps are missing, partial, or non-finite,
+the trace returns `PARTIAL` and keeps missing values unknown instead of inventing them. See
+[`ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md`](ENTERPRISE_LAB_DECISION_REPLAY_RECONSTRUCTION_TRACE.md)
+for the focused reviewer contract and safety boundaries.
+
 The read-only `/api/routing/compare` response can expose candidate contribution summaries through
 `results[].decisionVector` without changing scoring behavior, strategy weights, selected backend outcomes,
 or existing response fields. This does not implement decision replay, what-if execution, strategy plugin
@@ -289,6 +318,7 @@ The read-only field includes:
 - Result-level `dominantFactorAnalysis` derived from those returned contribution entries.
 - Result-level `decisionDeltaAnalysis` derived from returned final scores and shared finite contribution entries.
 - Result-level `decisionReplaySnapshot` derived from already-built compare evidence and stable analysis statuses.
+- Result-level `decisionReplayReconstructionTrace` derived from already-built compare evidence, stable analysis statuses, and reconstruction steps.
 - Exactness, lab proof, and production not-proven boundaries.
 - Replay, what-if, and structured logging readiness marked future/not implemented.
 
@@ -301,6 +331,10 @@ The decision delta field is exposed as `results[].decisionDeltaAnalysis` and is 
 The replay snapshot field is exposed as `results[].decisionReplaySnapshot` and is derived after
 `results[].decisionVector`, `results[].dominantFactorAnalysis`, and `results[].decisionDeltaAnalysis`
 are available.
+
+The reconstruction trace field is exposed as `results[].decisionReplayReconstructionTrace` and is derived after
+`results[].decisionVector`, `results[].dominantFactorAnalysis`, `results[].decisionDeltaAnalysis`, and
+`results[].decisionReplaySnapshot` are available.
 
 The exposure is additive controlled lab explainability only. It does not change routing selection,
 score calculation, strategy weights, route/proxy behavior, or existing API response fields.
@@ -416,6 +450,42 @@ Example response snippet:
         "finalScoreGap": -20.0,
         "largestDeltaFactorName": "p99LatencyMillis",
         "boundaryNote": "Read-only lab evidence derived only from already-built compare response data; no replay execution or what-if mutation is performed."
+      },
+      "decisionReplayReconstructionTrace": {
+        "readOnly": true,
+        "traceSchemaVersion": "decision-replay-reconstruction-trace/v1",
+        "status": "PARTIAL",
+        "traceFingerprint": "deterministic-local-trace-hash",
+        "snapshotFingerprint": "deterministic-local-hash",
+        "selectedCandidateId": "edge-alpha",
+        "candidateIdsConsidered": ["edge-alpha", "edge-beta", "edge-drain"],
+        "candidateFinalScores": {
+          "edge-alpha": 50.0,
+          "edge-beta": 70.0
+        },
+        "decisionVectorStatus": "AVAILABLE",
+        "factorContributionStatus": "AVAILABLE",
+        "dominantFactorAnalysisStatus": "AVAILABLE",
+        "decisionDeltaAnalysisStatus": "PARTIAL",
+        "decisionReplaySnapshotStatus": "PARTIAL",
+        "closestAlternativeCandidateId": "edge-beta",
+        "finalScoreGap": -20.0,
+        "largestDeltaFactorName": "p99LatencyMillis",
+        "reconstructionSteps": [
+          {
+            "stepId": "candidate-set-observed",
+            "status": "AVAILABLE",
+            "evidenceSourceFieldPath": "candidateServersConsidered, scores, decisionVector.candidateSummaries, decisionReplaySnapshot",
+            "missingEvidenceReason": null
+          },
+          {
+            "stepId": "replay-snapshot-fingerprint-observed",
+            "status": "AVAILABLE",
+            "evidenceSourceFieldPath": "decisionReplaySnapshot.snapshotFingerprint",
+            "missingEvidenceReason": null
+          }
+        ],
+        "boundaryNote": "Read-only lab evidence derived only from already-built compare response data; no replay execution, what-if mutation, or trace persistence is performed."
       }
     }
   ]
@@ -446,6 +516,7 @@ The Decision Vector is a foundation for current read-only dominant-factor explai
 - Dominant factor analysis: implemented as additive read-only interpretation of returned contribution data only.
 - Decision delta analysis: implemented as additive read-only selected-vs-closest-alternative interpretation of returned score and contribution data only.
 - Decision replay snapshot: implemented as additive read-only snapshot evidence and deterministic local fingerprint only.
+- Decision replay reconstruction trace: implemented as additive read-only reconstruction evidence steps and deterministic local trace fingerprint only.
 - Broader factor modeling beyond current returned calculator contribution data: future/not implemented.
 - Replay execution: future/not implemented.
 - What-if experiments: future/not implemented.

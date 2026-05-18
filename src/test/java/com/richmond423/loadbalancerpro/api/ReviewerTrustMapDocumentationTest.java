@@ -522,6 +522,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(section.contains("exact scoring availability or absence"));
         assertTrue(section.contains("factor contribution availability or absence"));
         assertTrue(section.contains("Decision Replay Snapshot evidence"));
+        assertTrue(section.contains("Decision Replay Reconstruction Trace evidence steps"));
         assertTrue(section.contains("replay readiness"));
         assertTrue(section.contains("Candidate Decision Vector"));
         assertTrue(section.contains("fallback text when non-selection cannot be explained from visible data"));
@@ -536,8 +537,11 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("read-only `/api/routing/compare` response"));
         assertTrue(normalized.contains("results[].decisionvector"));
         assertTrue(normalized.contains("results[].decisionreplaysnapshot"));
+        assertTrue(normalized.contains("results[].decisionreplayreconstructiontrace"));
         assertTrue(normalized.contains("decision replay snapshot"));
+        assertTrue(normalized.contains("decision replay reconstruction trace"));
         assertTrue(normalized.contains("does not persist audit logs"));
+        assertTrue(normalized.contains("does not persist traces or audit logs"));
         assertTrue(normalized.contains("execute replay"));
         assertTrue(normalized.contains("perform what-if mutation"));
         assertTrue(normalized.contains("replay execution"));

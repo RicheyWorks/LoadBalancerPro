@@ -252,6 +252,9 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Decision Evidence Snapshot"));
         assertTrue(page.contains("id=\"decision-replay-snapshot-explanation\""));
         assertTrue(page.contains("replay snapshot evidence and a deterministic local fingerprint"));
+        assertTrue(page.contains("Replay Reconstruction Trace"));
+        assertTrue(page.contains("id=\"decision-replay-reconstruction-trace-explanation\""));
+        assertTrue(page.contains("reconstruction evidence steps"));
         assertTrue(page.contains("Allocation Math / Capacity Explanation"));
         assertTrue(page.contains("Load-Shedding / Overload Reason Breakdown"));
         assertTrue(page.contains("Remediation Rationale"));

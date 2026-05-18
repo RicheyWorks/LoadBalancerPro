@@ -660,7 +660,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("ServerScoreCalculator factor contribution contract extraction has begun"));
         assertTrue(page.contains("read-only comparison response can expose those summaries for selected and non-selected candidate vectors"));
         assertTrue(page.contains("no score weights are retuned"));
-        assertTrue(page.contains("The same-origin <code>/api/routing/compare</code> response can return <code>results[].decisionVector</code>"));
+        assertTrue(page.contains("The same-origin <code>/api/routing/compare</code> response can return additive"));
         assertTrue(page.contains("Decision Vector data is unavailable in this response; static lab guidance remains available."));
         assertTrue(page.contains("Copy structured decision vector summary"));
         assertTrue(page.contains("Decision replay, what-if experiments, and structured decision logging should build on this contract later"));
@@ -690,6 +690,11 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("id=\"decision-vector-replay-snapshot\""));
         assertTrue(page.contains("id=\"decision-vector-replay-fingerprint\""));
         assertTrue(page.contains("id=\"decision-vector-replay-boundary\""));
+        assertTrue(page.contains("Replay Reconstruction Trace"));
+        assertTrue(page.contains("Reconstruction Evidence"));
+        assertTrue(page.contains("id=\"decision-vector-reconstruction-trace\""));
+        assertTrue(page.contains("id=\"decision-vector-reconstruction-fingerprint\""));
+        assertTrue(page.contains("id=\"decision-vector-reconstruction-boundary\""));
         assertTrue(page.contains("# Decision Vector Foundation"));
         assertTrue(page.contains("decisionIdOrLabRunId: "));
         assertTrue(page.contains("candidateVectors: "));
@@ -701,6 +706,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("candidateDominantFactors: "));
         assertTrue(page.contains("decisionDeltaAnalysis: "));
         assertTrue(page.contains("decisionReplaySnapshot: "));
+        assertTrue(page.contains("decisionReplayReconstructionTrace: "));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
@@ -1021,7 +1027,18 @@ class RoutingDecisionDemoTest {
                             is("edge-standard")))
                     .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.candidateIdsConsidered[1]",
                             is("edge-weighted")))
-                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.snapshotFingerprint").isString());
+                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.snapshotFingerprint").isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.readOnly", is(true)))
+                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.traceSchemaVersion",
+                            is("decision-replay-reconstruction-trace/v1")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.selectedCandidateId",
+                            is("edge-weighted")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.candidateIdsConsidered[0]",
+                            is("edge-standard")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.candidateIdsConsidered[1]",
+                            is("edge-weighted")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.traceFingerprint")
+                            .isString());
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "routing demo comparison must not construct CloudManager");

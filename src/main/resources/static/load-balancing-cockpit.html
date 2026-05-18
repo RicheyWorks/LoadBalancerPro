@@ -1267,6 +1267,10 @@
             <div id="decision-replay-snapshot-explanation">Run routing comparison to populate replay snapshot evidence and a deterministic local fingerprint.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Replay Reconstruction Trace</strong>
+            <div id="decision-replay-reconstruction-trace-explanation">Run routing comparison to populate reconstruction evidence steps.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3436,6 +3440,7 @@
         renderDominantFactorExplanation(response);
         renderDecisionDeltaExplanation(response);
         renderDecisionReplaySnapshotExplanation(response);
+        renderDecisionReplayReconstructionTraceExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3444,6 +3449,7 @@
         renderDominantFactorExplanation(response);
         renderDecisionDeltaExplanation(response);
         renderDecisionReplaySnapshotExplanation(response);
+        renderDecisionReplayReconstructionTraceExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3454,6 +3460,7 @@
       renderDominantFactorExplanation(response);
       renderDecisionDeltaExplanation(response);
       renderDecisionReplaySnapshotExplanation(response);
+      renderDecisionReplayReconstructionTraceExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3496,6 +3503,7 @@
       renderDominantFactorExplanation(state.routing);
       renderDecisionDeltaExplanation(state.routing);
       renderDecisionReplaySnapshotExplanation(state.routing);
+      renderDecisionReplayReconstructionTraceExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -3642,6 +3650,44 @@
         return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
           + escapeHtml(summary) + "<br>"
           + "<span class=\"muted\">Boundary: read-only lab evidence only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
+    function renderDecisionReplayReconstructionTraceExplanation(response) {
+      const container = document.getElementById("decision-replay-reconstruction-trace-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate reconstruction evidence steps.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; reconstruction trace evidence is unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const trace = result.decisionReplayReconstructionTrace || {};
+        const candidateIds = Array.isArray(trace.candidateIdsConsidered)
+          ? trace.candidateIdsConsidered.join(", ")
+          : "";
+        const steps = Array.isArray(trace.reconstructionSteps)
+          ? trace.reconstructionSteps.map((step) =>
+            (step.stepId || "unknown-step") + "=" + (step.status || "UNKNOWN")
+          ).join("; ")
+          : "";
+        const summary = trace.traceFingerprint
+          ? "status=" + (trace.status || "unknown")
+            + "; selected=" + (trace.selectedCandidateId || "not returned")
+            + "; closestAlternative=" + (trace.closestAlternativeCandidateId || "not returned")
+            + "; candidates=" + (candidateIds || "none")
+            + "; finalScoreGap=" + formatFinite(trace.finalScoreGap)
+            + "; largestDeltaFactor=" + (trace.largestDeltaFactorName || "not returned")
+            + "; snapshotFingerprint=" + (trace.snapshotFingerprint || "not returned")
+            + "; traceFingerprint=" + trace.traceFingerprint
+            + "; steps=" + (steps || "none")
+          : (trace.explanation || "Decision Replay Reconstruction Trace is unavailable; no reconstruction evidence is invented.");
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(summary) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab evidence only; no replay execution, what-if mutation, trace persistence, upload/share/download, telemetry, or server-side export/PDF/ZIP generation.</span></p>";
       }).join("");
     }
 
@@ -3946,6 +3992,17 @@
             + ", fingerprint=" + (snapshot.snapshotFingerprint || "not returned");
         }).join("\n")
         : "- Not run";
+      const reconstructionTraceLines = routingResults.length
+        ? routingResults.map((result) => {
+          const trace = result.decisionReplayReconstructionTrace || {};
+          return "- " + result.strategyId
+            + ": traceStatus=" + (trace.status || "unknown")
+            + ", selected=" + (trace.selectedCandidateId || "not returned")
+            + ", closestAlternative=" + (trace.closestAlternativeCandidateId || "not returned")
+            + ", snapshotFingerprint=" + (trace.snapshotFingerprint || "not returned")
+            + ", traceFingerprint=" + (trace.traceFingerprint || "not returned");
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -3981,6 +4038,9 @@
         "",
         "## Decision Evidence Snapshot",
         replaySnapshotLines,
+        "",
+        "## Replay Reconstruction Trace",
+        reconstructionTraceLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,
@@ -4161,6 +4221,8 @@
         "Run routing comparison to populate selected-vs-closest-alternative contribution differences.";
       document.getElementById("decision-replay-snapshot-explanation").textContent =
         "Run routing comparison to populate replay snapshot evidence and a deterministic local fingerprint.";
+      document.getElementById("decision-replay-reconstruction-trace-explanation").textContent =
+        "Run routing comparison to populate reconstruction evidence steps.";
       document.getElementById("allocation-explanation").textContent =
         "Run allocation preview to populate capacity math.";
       document.getElementById("overload-explanation").textContent =

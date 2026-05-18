@@ -246,6 +246,9 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Most Influential Signals"));
         assertTrue(page.contains("id=\"dominant-factor-explanation\""));
         assertTrue(page.contains("dominant factors from returned contribution data"));
+        assertTrue(page.contains("Selected vs Closest Alternative"));
+        assertTrue(page.contains("id=\"decision-delta-explanation\""));
+        assertTrue(page.contains("selected-vs-closest-alternative contribution differences"));
         assertTrue(page.contains("Allocation Math / Capacity Explanation"));
         assertTrue(page.contains("Load-Shedding / Overload Reason Breakdown"));
         assertTrue(page.contains("Remediation Rationale"));

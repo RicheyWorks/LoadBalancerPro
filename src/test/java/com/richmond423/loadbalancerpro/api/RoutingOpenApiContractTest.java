@@ -71,6 +71,8 @@ class RoutingOpenApiContractTest {
         assertRef(required(resultProperties, "/decisionVector"), "#/components/schemas/RoutingDecisionVectorResponse");
         assertRef(required(resultProperties, "/dominantFactorAnalysis"),
                 "#/components/schemas/DominantFactorAnalysisResponse");
+        assertRef(required(resultProperties, "/decisionDeltaAnalysis"),
+                "#/components/schemas/RoutingDecisionDeltaAnalysisResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -112,6 +114,30 @@ class RoutingOpenApiContractTest {
                 "/components/schemas/DominantFactorResponse/properties");
         assertEquals("string", required(factorProperties, "/factorName/type").asText());
         assertEquals("number", required(factorProperties, "/absoluteImpact/type").asText());
+
+        JsonNode deltaProperties = required(docs,
+                "/components/schemas/RoutingDecisionDeltaAnalysisResponse/properties");
+        assertEquals("boolean", required(deltaProperties, "/readOnly/type").asText());
+        assertRef(required(deltaProperties, "/comparison"),
+                "#/components/schemas/CandidateDecisionDeltaResponse");
+        assertEquals("array", required(deltaProperties, "/factorDeltas/type").asText());
+        assertRef(required(deltaProperties, "/factorDeltas/items"),
+                "#/components/schemas/ScoreFactorDeltaResponse");
+        assertRef(required(deltaProperties, "/largestAbsoluteFactorDelta"),
+                "#/components/schemas/ScoreFactorDeltaResponse");
+
+        JsonNode candidateDeltaProperties = required(docs,
+                "/components/schemas/CandidateDecisionDeltaResponse/properties");
+        assertEquals("string", required(candidateDeltaProperties, "/selectedCandidateId/type").asText());
+        assertEquals("string", required(candidateDeltaProperties, "/closestAlternativeCandidateId/type").asText());
+        assertEquals("number", required(candidateDeltaProperties, "/finalScoreGap/type").asText());
+        assertEquals("array", required(candidateDeltaProperties, "/comparedFactorNames/type").asText());
+
+        JsonNode factorDeltaProperties = required(docs,
+                "/components/schemas/ScoreFactorDeltaResponse/properties");
+        assertEquals("string", required(factorDeltaProperties, "/factorName/type").asText());
+        assertEquals("number", required(factorDeltaProperties, "/contributionDelta/type").asText());
+        assertEquals("number", required(factorDeltaProperties, "/absoluteDelta/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

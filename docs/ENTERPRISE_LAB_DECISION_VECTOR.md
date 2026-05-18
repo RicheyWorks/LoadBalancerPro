@@ -6,7 +6,7 @@ The Enterprise Lab Decision Vector is the structured explanation object for one 
 
 ## Why the Lab Needs It
 
-The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane and future work such as decision replay, what-if experiments, structured decision logging, strategy plugin explainability, and data center signal modeling can build without inventing hidden scoring.
+The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, and future work such as decision replay, what-if experiments, structured decision logging, strategy plugin explainability, and data center signal modeling can build without inventing hidden scoring.
 
 A Decision Vector differs from a simple reason string because it separates:
 
@@ -20,6 +20,7 @@ A Decision Vector differs from a simple reason string because it separates:
 - Exact scoring availability or absence.
 - Factor contribution availability or absence.
 - Dominant factor analysis derived from returned factor contributions.
+- Decision delta analysis comparing the selected candidate with the closest scored alternative.
 - Replay readiness and future replay gaps.
 - Lab proof boundaries and production not-proven boundaries.
 
@@ -44,6 +45,7 @@ One Decision Vector represents one controlled lab routing decision. The contract
 | `exactScoringAvailability` | `notExposed` unless the API explicitly returns exact scoring. |
 | `factorContributionAvailability` | Exposed only when the local lab response returns current calculator contribution fields; otherwise mark as unavailable. |
 | `dominantFactorAnalysis` | Additive read-only summary of largest support, penalty/risk, and absolute-impact factors derived only from returned contribution data. |
+| `decisionDeltaAnalysis` | Additive read-only selected-vs-closest-alternative score gap and factor contribution delta summary derived only from returned scores and contribution data. |
 | `replayReadiness` | Contract readiness for future replay; replay execution remains future/not implemented until built. |
 | `labProofBoundary` | Controlled lab evidence, local reproducibility, same-origin local API responses, and browser-local interpretation. |
 | `productionNotProvenBoundary` | No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof. |
@@ -184,6 +186,33 @@ It does not change routing behavior, scoring math, strategy weights, server sele
 or existing API response fields. See [`ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md`](ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md)
 for the focused reviewer contract and safety boundaries.
 
+## Selected-vs-Closest-Alternative Decision Delta Analysis
+
+Decision Delta Analysis is the next read-only interpretation layer on top of returned Decision Vector
+contribution data and result score data. It does not duplicate scoring logic or recompute scores from
+raw server fields. Instead, it consumes existing final scores and `ScoreFactorContributionResponse`
+entries and identifies, per routing comparison result:
+
+- the selected candidate;
+- the closest scored non-selected alternative by smallest absolute final score gap;
+- stable candidate/server id tie handling when alternatives have equal score gaps;
+- shared finite factor contribution deltas between the selected candidate and closest alternative;
+- the largest absolute factor delta when present;
+- the selected-minus-alternative final score gap when present.
+
+The comparison uses only the selected candidate and the closest alternative candidate. It does not borrow
+factor data from farther alternatives, infer hidden routing internals, fill missing factors from raw server
+fields, or claim production proof. When scores or candidate vectors are unavailable, it returns `UNKNOWN`.
+When factor data is empty, missing on one side, null, partial, or non-finite, it returns `PARTIAL` and omits
+unsafe deltas instead of inventing zero values.
+
+Reviewers can use this lane to inspect which returned factor contribution differences separated the selected
+candidate from the closest scored alternative under the visible lab response. Score sign semantics follow the
+existing score output and are not reinterpreted. It does not change routing behavior, scoring math, strategy
+weights, server selection logic, proxy behavior, or existing API response fields. See
+[`ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md`](ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md) for the focused
+reviewer contract and safety boundaries.
+
 The read-only `/api/routing/compare` response can expose candidate contribution summaries through
 `results[].decisionVector` without changing scoring behavior, strategy weights, selected backend outcomes,
 or existing response fields. This does not implement decision replay, what-if execution, strategy plugin
@@ -231,11 +260,15 @@ The read-only field includes:
 - `knownVisibleSignals` and `unknownOrUnexposedSignals`.
 - Current calculator `factorContributions` where the contract exposes them.
 - Result-level `dominantFactorAnalysis` derived from those returned contribution entries.
+- Result-level `decisionDeltaAnalysis` derived from returned final scores and shared finite contribution entries.
 - Exactness, lab proof, and production not-proven boundaries.
 - Replay, what-if, and structured logging readiness marked future/not implemented.
 
 The dominant factor field is exposed as `results[].dominantFactorAnalysis` and is derived after
 `results[].decisionVector` exists.
+
+The decision delta field is exposed as `results[].decisionDeltaAnalysis` and is derived after
+`results[].decisionVector` and existing result score data are available.
 
 The exposure is additive controlled lab explainability only. It does not change routing selection,
 score calculation, strategy weights, route/proxy behavior, or existing API response fields.
@@ -313,6 +346,27 @@ Example response snippet:
           "explanation": "Candidate edge-alpha is selected; dominant factors are derived only from returned contribution data."
         },
         "boundaryNote": "Read-only lab explainability derived only from returned contribution data; routing behavior is unchanged."
+      },
+      "decisionDeltaAnalysis": {
+        "readOnly": true,
+        "source": "/api/routing/compare results[].scores and results[].decisionVector candidate factorContributions",
+        "status": "PARTIAL",
+        "comparison": {
+          "selectedCandidateId": "edge-alpha",
+          "closestAlternativeCandidateId": "edge-beta",
+          "finalScoreGap": -20.0,
+          "absoluteFinalScoreGap": 20.0,
+          "comparedFactorCount": 15,
+          "omittedFactorNames": ["hiddenRoutingInternals"]
+        },
+        "largestAbsoluteFactorDelta": {
+          "factorName": "p99LatencyMillis",
+          "selectedCandidateContribution": 28.0,
+          "alternativeCandidateContribution": 33.6,
+          "contributionDelta": -5.6,
+          "absoluteDelta": 5.6
+        },
+        "boundaryNote": "Read-only lab explainability derived only from returned score and contribution data; routing behavior is unchanged."
       }
     }
   ]
@@ -340,6 +394,7 @@ If a candidate appears weakened by unhealthy state, higher visible latency, high
 The Decision Vector is a foundation for current read-only dominant-factor explainability and future work. These roadmap items remain bounded unless a later sprint adds and verifies them:
 
 - Dominant factor analysis: implemented as additive read-only interpretation of returned contribution data only.
+- Decision delta analysis: implemented as additive read-only selected-vs-closest-alternative interpretation of returned score and contribution data only.
 - Broader factor modeling beyond current returned calculator contribution data: future/not implemented.
 - Decision replay: future/not implemented.
 - What-if experiments: future/not implemented.

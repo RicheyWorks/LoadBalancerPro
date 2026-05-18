@@ -11,5 +11,6 @@ public record RoutingComparisonResultResponse(
         List<String> candidateServersConsidered,
         Map<String, Double> scores,
         RoutingDecisionVectorResponse decisionVector,
-        DominantFactorAnalysisResponse dominantFactorAnalysis) {
+        DominantFactorAnalysisResponse dominantFactorAnalysis,
+        RoutingDecisionDeltaAnalysisResponse decisionDeltaAnalysis) {
 }

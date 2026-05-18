@@ -42,6 +42,7 @@ public class RoutingComparisonService {
     private final RoutingComparisonEngine engine;
     private final ServerScoreCalculator scoreCalculator;
     private final RoutingDominantFactorAnalysisService dominantFactorAnalysisService;
+    private final RoutingDecisionDeltaAnalysisService decisionDeltaAnalysisService;
     private final Clock clock;
 
     public RoutingComparisonService() {
@@ -54,6 +55,7 @@ public class RoutingComparisonService {
         this.engine = new RoutingComparisonEngine(registry, clock);
         this.scoreCalculator = new ServerScoreCalculator();
         this.dominantFactorAnalysisService = new RoutingDominantFactorAnalysisService();
+        this.decisionDeltaAnalysisService = new RoutingDecisionDeltaAnalysisService();
     }
 
     public RoutingComparisonResponse compare(RoutingComparisonRequest request) {
@@ -174,7 +176,10 @@ public class RoutingComparisonService {
                         null,
                         dominantFactorAnalysisService.unknownAnalysis(
                                 "Dominant factor analysis is unavailable because no selected routing decision "
-                                        + "or Decision Vector contribution data was returned.")));
+                                        + "or Decision Vector contribution data was returned."),
+                        decisionDeltaAnalysisService.unknownAnalysis(
+                                "Decision delta analysis is unavailable because no selected routing decision, "
+                                        + "Decision Vector contribution data, or final score comparison was returned.")));
     }
 
     private RoutingComparisonResultResponse successfulResultResponse(
@@ -182,6 +187,7 @@ public class RoutingComparisonService {
         RoutingDecisionExplanation explanation = decision.explanation();
         String selectedServerId = explanation.chosenServerId().orElse(null);
         RoutingDecisionVectorResponse decisionVector = decisionVector(result.strategyId(), selectedServerId, candidates);
+        DominantFactorAnalysisResponse dominantFactorAnalysis = dominantFactorAnalysisService.analyze(decisionVector);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -190,7 +196,8 @@ public class RoutingComparisonService {
                 explanation.candidateServersConsidered(),
                 explanation.scores(),
                 decisionVector,
-                dominantFactorAnalysisService.analyze(decisionVector));
+                dominantFactorAnalysis,
+                decisionDeltaAnalysisService.analyze(decisionVector, explanation.scores()));
     }
 
     private RoutingDecisionVectorResponse decisionVector(RoutingStrategyId strategyId,

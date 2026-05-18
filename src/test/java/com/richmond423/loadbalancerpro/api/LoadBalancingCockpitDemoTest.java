@@ -249,6 +249,9 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Selected vs Closest Alternative"));
         assertTrue(page.contains("id=\"decision-delta-explanation\""));
         assertTrue(page.contains("selected-vs-closest-alternative contribution differences"));
+        assertTrue(page.contains("Decision Evidence Snapshot"));
+        assertTrue(page.contains("id=\"decision-replay-snapshot-explanation\""));
+        assertTrue(page.contains("replay snapshot evidence and a deterministic local fingerprint"));
         assertTrue(page.contains("Allocation Math / Capacity Explanation"));
         assertTrue(page.contains("Load-Shedding / Overload Reason Breakdown"));
         assertTrue(page.contains("Remediation Rationale"));

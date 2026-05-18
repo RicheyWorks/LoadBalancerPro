@@ -18,6 +18,8 @@ class EnterpriseLabDecisionVectorDocumentationTest {
             Path.of("docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md");
     private static final Path DECISION_DELTA_ANALYSIS =
             Path.of("docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md");
+    private static final Path DECISION_REPLAY_SNAPSHOT =
+            Path.of("docs/ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md");
     private static final Path README = Path.of("README.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path FRAMING = Path.of("docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md");
@@ -46,6 +48,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("`factorContributionAvailability`"));
         assertTrue(doc.contains("`dominantFactorAnalysis`"));
         assertTrue(doc.contains("`decisionDeltaAnalysis`"));
+        assertTrue(doc.contains("`decisionReplaySnapshot`"));
         assertTrue(doc.contains("`replayReadiness`"));
         assertTrue(normalized.contains("how it answers why this backend"));
         assertTrue(normalized.contains("selected-vs-alternative"));
@@ -104,6 +107,10 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("closest scored non-selected alternative"));
         assertTrue(doc.contains("shared finite factor contribution deltas"));
         assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md"));
+        assertTrue(doc.contains("## Decision Replay Snapshot"));
+        assertTrue(doc.contains("deterministic local snapshot fingerprint"));
+        assertTrue(doc.contains("does not execute replay, perform what-if mutation, persist audit logs, or rerun"));
+        assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md"));
         assertTrue(doc.contains("\"EXACT_FROM_CALCULATOR\""));
         assertTrue(doc.contains("\"NOT_EXPOSED\""));
         assertTrue(doc.contains("not production scoring proof"));
@@ -118,8 +125,9 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         for (String futureItem : List.of(
                 "Dominant factor analysis: implemented as additive read-only interpretation of returned contribution data only.",
                 "Decision delta analysis: implemented as additive read-only selected-vs-closest-alternative interpretation of returned score and contribution data only.",
+                "Decision replay snapshot: implemented as additive read-only snapshot evidence and deterministic local fingerprint only.",
                 "Broader factor modeling beyond current returned calculator contribution data: future/not implemented.",
-                "Decision replay: future/not implemented.",
+                "Replay execution: future/not implemented.",
                 "What-if experiments: future/not implemented.",
                 "Structured decision logging: future/not implemented.",
                 "Strategy plugin explainability: future/not implemented.",
@@ -139,11 +147,12 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("`results[].decisionVector` field"));
         assertTrue(doc.contains("`results[].dominantFactorAnalysis`"));
         assertTrue(doc.contains("`results[].decisionDeltaAnalysis`"));
+        assertTrue(doc.contains("`results[].decisionReplaySnapshot`"));
         assertTrue(doc.contains("preserves existing"));
         assertTrue(doc.contains("`requestedStrategies`, `candidateCount`, `timestamp`, result status"));
         assertTrue(doc.contains("\"localLabResponsePath\": \"/api/routing/compare\""));
         assertFalse(normalized.contains("factor contribution analysis is implemented"));
-        assertFalse(normalized.contains("decision replay is implemented"));
+        assertFalse(normalized.contains("replay execution is implemented"));
         assertFalse(normalized.contains("what-if experiments are implemented"));
         assertFalse(normalized.contains("strategy plugin explainability is implemented"));
     }
@@ -215,6 +224,44 @@ class EnterpriseLabDecisionVectorDocumentationTest {
     }
 
     @Test
+    void decisionReplaySnapshotDocDefinesReadOnlyBoundaries() throws Exception {
+        String doc = read(DECISION_REPLAY_SNAPSHOT);
+        String normalized = doc.toLowerCase(Locale.ROOT);
+
+        assertTrue(doc.contains("# Enterprise Lab Decision Replay Snapshot"));
+        assertTrue(doc.contains("read-only evidence lane"));
+        assertTrue(doc.contains("`POST /api/routing/compare`"));
+        assertTrue(doc.contains("not replay execution"));
+        assertTrue(doc.contains("not what-if mutation"));
+        assertTrue(doc.contains("does not persist data"));
+        assertTrue(doc.contains("does not recompute scores from raw server fields"));
+        assertTrue(doc.contains("does not duplicate `ServerScoreCalculator`"));
+        assertTrue(doc.contains("deterministic local hash"));
+        assertTrue(doc.contains("must not include timestamps, random ids, hostnames"));
+        assertTrue(doc.contains("environment variables, file paths, secrets, local usernames"));
+        assertTrue(doc.contains("returns `UNKNOWN`"));
+        assertTrue(doc.contains("returns `PARTIAL`"));
+        assertTrue(doc.contains("does not execute replay"));
+        assertTrue(doc.contains("does not perform what-if mutation"));
+        assertTrue(doc.contains("does not persist audit logs"));
+        assertTrue(normalized.contains("lab explainability only"));
+        assertTrue(normalized.contains("production certification"));
+        assertTrue(normalized.contains("live-cloud behavior"));
+        assertTrue(normalized.contains("real-tenant behavior"));
+        assertTrue(normalized.contains("sla/slo"));
+        assertTrue(normalized.contains("registry publication"));
+        assertTrue(normalized.contains("signing status"));
+        assertTrue(normalized.contains("governance application"));
+        assertTrue(normalized.contains("exact production scoring"));
+        assertFalse(normalized.contains("production certification is proven"));
+        assertFalse(normalized.contains("live-cloud behavior is proven"));
+        assertFalse(normalized.contains("real-tenant behavior is proven"));
+        assertFalse(normalized.contains("upload endpoint"));
+        assertFalse(normalized.contains("download endpoint"));
+        assertFalse(normalized.contains("server-side export endpoint"));
+    }
+
+    @Test
     void decisionVectorDocIsLinkedFromReviewerDocs() throws Exception {
         String readme = read(README);
         String trustMap = read(TRUST_MAP);
@@ -224,10 +271,11 @@ class EnterpriseLabDecisionVectorDocumentationTest {
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
             assertTrue(doc.contains("ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md"));
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md"));
+            assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md"));
             assertTrue(doc.contains("Decision Vector"));
         }
 
-        assertTrue(readme.contains("Decision Vector contract: [`docs/ENTERPRISE_LAB_DECISION_VECTOR.md`](docs/ENTERPRISE_LAB_DECISION_VECTOR.md); read-only Dominant Factor Analysis lane: [`docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md`](docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md); read-only Decision Delta Analysis lane: [`docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md`](docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md)."));
+        assertTrue(readme.contains("Decision Vector contract: [`docs/ENTERPRISE_LAB_DECISION_VECTOR.md`](docs/ENTERPRISE_LAB_DECISION_VECTOR.md); read-only Dominant Factor Analysis lane: [`docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md`](docs/ENTERPRISE_LAB_DOMINANT_FACTOR_ANALYSIS.md); read-only Decision Delta Analysis lane: [`docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md`](docs/ENTERPRISE_LAB_DECISION_DELTA_ANALYSIS.md); read-only Decision Replay Snapshot lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md)."));
         assertTrue(trustMap.contains("### Decision Vector Contract"));
         assertTrue(framing.contains("## Decision Vector Contract"));
     }
@@ -270,6 +318,10 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("id=\"decision-vector-delta-comparison\""));
         assertTrue(page.contains("id=\"decision-vector-delta-largest\""));
         assertTrue(page.contains("id=\"decision-vector-delta-boundary\""));
+        assertTrue(page.contains("Decision Evidence Snapshot"));
+        assertTrue(page.contains("id=\"decision-vector-replay-snapshot\""));
+        assertTrue(page.contains("id=\"decision-vector-replay-fingerprint\""));
+        assertTrue(page.contains("id=\"decision-vector-replay-boundary\""));
         assertTrue(page.contains("# Decision Vector Foundation"));
         assertTrue(page.contains("decisionIdOrLabRunId: "));
         assertTrue(page.contains("candidateVectors: "));
@@ -279,12 +331,13 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("dominantFactorAnalysis: "));
         assertTrue(page.contains("candidateDominantFactors: "));
         assertTrue(page.contains("decisionDeltaAnalysis: "));
+        assertTrue(page.contains("decisionReplaySnapshot: "));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("internal calculator contribution and candidate summary contracts started"));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
         assertTrue(page.contains("structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented"));
-        assertTrue(page.contains("copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"));
+        assertTrue(page.contains("copyBoundary: browser-local copy action only; no upload/share/download route; no server-side export/PDF/ZIP generation; no external calls; no telemetry"));
         assertTrue(normalized.contains("hidden scoring is not invented"));
         assertTrue(normalized.contains("exact production scoring is not claimed unless exposed by the api"));
     }
@@ -292,6 +345,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
     @Test
     void decisionVectorDocsAndUiAvoidUnsafeClaims() throws Exception {
         for (Path path : List.of(DECISION_VECTOR, DOMINANT_FACTOR_ANALYSIS, DECISION_DELTA_ANALYSIS,
+                DECISION_REPLAY_SNAPSHOT,
                 README, TRUST_MAP, FRAMING, ROUTING_COCKPIT)) {
             String content = read(path);
             String normalized = content.toLowerCase(Locale.ROOT);

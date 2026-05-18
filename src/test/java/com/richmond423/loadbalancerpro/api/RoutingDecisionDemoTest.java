@@ -684,6 +684,12 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("id=\"decision-vector-delta-comparison\""));
         assertTrue(page.contains("id=\"decision-vector-delta-largest\""));
         assertTrue(page.contains("id=\"decision-vector-delta-boundary\""));
+        assertTrue(page.contains("Decision Evidence Snapshot"));
+        assertTrue(page.contains("Replay Snapshot"));
+        assertTrue(page.contains("Snapshot Fingerprint"));
+        assertTrue(page.contains("id=\"decision-vector-replay-snapshot\""));
+        assertTrue(page.contains("id=\"decision-vector-replay-fingerprint\""));
+        assertTrue(page.contains("id=\"decision-vector-replay-boundary\""));
         assertTrue(page.contains("# Decision Vector Foundation"));
         assertTrue(page.contains("decisionIdOrLabRunId: "));
         assertTrue(page.contains("candidateVectors: "));
@@ -694,12 +700,13 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("dominantFactorAnalysis: "));
         assertTrue(page.contains("candidateDominantFactors: "));
         assertTrue(page.contains("decisionDeltaAnalysis: "));
+        assertTrue(page.contains("decisionReplaySnapshot: "));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
         assertTrue(page.contains("structuredDecisionLoggingReadiness: planned future contract; structured decision logging is not implemented"));
         assertTrue(page.contains("labProofBoundary: controlled lab evidence"));
-        assertTrue(page.contains("copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"));
+        assertTrue(page.contains("copyBoundary: browser-local copy action only; no upload/share/download route; no server-side export/PDF/ZIP generation; no external calls; no telemetry"));
         assertTrue(normalized.contains("internal calculator contribution and candidate summary contracts started"));
         assertTrue(normalized.contains("no production traffic proof"));
         assertTrue(normalized.contains("no production telemetry proof"));
@@ -1004,7 +1011,17 @@ class RoutingDecisionDemoTest {
                     .andExpect(jsonPath("$.results[0].decisionVector.candidateCount", is(2)))
                     .andExpect(jsonPath("$.results[0].decisionVector.selectedCandidateVector.candidateId", is("edge-weighted")))
                     .andExpect(jsonPath("$.results[0].decisionVector.unknownOrUnexposedSignals",
-                            hasItem("hidden routing internals not exposed")));
+                            hasItem("hidden routing internals not exposed")))
+                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.readOnly", is(true)))
+                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.snapshotSchemaVersion",
+                            is("decision-replay-snapshot/v1")))
+                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.selectedCandidateId",
+                            is("edge-weighted")))
+                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.candidateIdsConsidered[0]",
+                            is("edge-standard")))
+                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.candidateIdsConsidered[1]",
+                            is("edge-weighted")))
+                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.snapshotFingerprint").isString());
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "routing demo comparison must not construct CloudManager");

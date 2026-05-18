@@ -73,6 +73,23 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(delta.at("/largestAbsoluteFactorDelta/factorName").isTextual());
         assertTrue(delta.path("explanation").asText().contains("returned lab score and contribution data"));
         assertTrue(delta.path("boundaryNote").asText().contains("does not change routing behavior"));
+
+        JsonNode snapshot = result.path("decisionReplaySnapshot");
+        assertTrue(snapshot.path("readOnly").asBoolean());
+        assertEquals("decision-replay-snapshot/v1", snapshot.path("snapshotSchemaVersion").asText());
+        assertEquals("PARTIAL", snapshot.path("status").asText());
+        assertEquals("edge-alpha", snapshot.path("selectedCandidateId").asText());
+        assertEquals("edge-beta", snapshot.path("closestAlternativeCandidateId").asText());
+        assertEquals("TAIL_LATENCY_POWER_OF_TWO", snapshot.path("strategyId").asText());
+        assertEquals("AVAILABLE", snapshot.path("decisionVectorStatus").asText());
+        assertEquals("AVAILABLE", snapshot.path("dominantFactorAnalysisStatus").asText());
+        assertEquals("PARTIAL", snapshot.path("decisionDeltaAnalysisStatus").asText());
+        assertEquals(3, snapshot.path("candidateCount").asInt());
+        assertEquals("edge-alpha", snapshot.at("/candidateIdsConsidered/0").asText());
+        assertTrue(snapshot.path("finalScoreGap").isNumber());
+        assertTrue(snapshot.path("snapshotFingerprint").asText().matches("[0-9a-f]{64}"));
+        assertTrue(snapshot.path("explanation").asText()
+                .contains("derived from existing lab compare evidence only"));
     }
 
     @Test
@@ -138,6 +155,13 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(result.at("/decisionDeltaAnalysis/factorDeltas").isEmpty());
         assertTrue(result.at("/decisionDeltaAnalysis/explanation").asText()
                 .contains("Decision delta analysis is unavailable"));
+        assertEquals("UNKNOWN", result.at("/decisionReplaySnapshot/status").asText());
+        assertTrue(result.at("/decisionReplaySnapshot/selectedCandidateId").isNull());
+        assertTrue(result.at("/decisionReplaySnapshot/candidateIdsConsidered").isEmpty());
+        assertTrue(result.at("/decisionReplaySnapshot/closestAlternativeCandidateId").isNull());
+        assertTrue(result.at("/decisionReplaySnapshot/finalScoreGap").isNull());
+        assertTrue(result.at("/decisionReplaySnapshot/explanation").asText()
+                .contains("No replay execution"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

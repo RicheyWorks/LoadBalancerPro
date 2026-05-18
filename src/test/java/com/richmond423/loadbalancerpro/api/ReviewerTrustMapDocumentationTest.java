@@ -508,6 +508,7 @@ class ReviewerTrustMapDocumentationTest {
 
         assertTrue(section.contains("Decision Vector Contract"));
         assertTrue(section.contains("ENTERPRISE_LAB_DECISION_VECTOR.md"));
+        assertTrue(section.contains("ENTERPRISE_LAB_DECISION_REPLAY_SNAPSHOT.md"));
         assertTrue(section.contains("Decision Vector Foundation"));
         assertTrue(section.contains("/routing-demo.html"));
         assertTrue(section.contains("structured contract behind the cockpit explanation"));
@@ -520,6 +521,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(section.contains("unknown or unexposed signals"));
         assertTrue(section.contains("exact scoring availability or absence"));
         assertTrue(section.contains("factor contribution availability or absence"));
+        assertTrue(section.contains("Decision Replay Snapshot evidence"));
         assertTrue(section.contains("replay readiness"));
         assertTrue(section.contains("Candidate Decision Vector"));
         assertTrue(section.contains("fallback text when non-selection cannot be explained from visible data"));
@@ -533,7 +535,12 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("future/not implemented roadmap items"));
         assertTrue(normalized.contains("read-only `/api/routing/compare` response"));
         assertTrue(normalized.contains("results[].decisionvector"));
-        assertTrue(normalized.contains("decision replay"));
+        assertTrue(normalized.contains("results[].decisionreplaysnapshot"));
+        assertTrue(normalized.contains("decision replay snapshot"));
+        assertTrue(normalized.contains("does not persist audit logs"));
+        assertTrue(normalized.contains("execute replay"));
+        assertTrue(normalized.contains("perform what-if mutation"));
+        assertTrue(normalized.contains("replay execution"));
         assertTrue(normalized.contains("what-if experiments"));
         assertTrue(normalized.contains("structured decision logging"));
         assertTrue(normalized.contains("strategy plugin explainability"));
@@ -544,7 +551,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("production telemetry"));
         assertTrue(normalized.contains("production monitoring"));
         assertTrue(normalized.contains("production certification"));
-        assertTrue(normalized.contains("upload/share endpoints"));
+        assertTrue(normalized.contains("upload/share/download routes"));
         assertTrue(normalized.contains("server-side export/pdf/zip generation"));
     }
 

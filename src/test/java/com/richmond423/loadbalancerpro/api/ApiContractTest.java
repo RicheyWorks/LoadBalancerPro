@@ -170,7 +170,7 @@ class ApiContractTest {
                 "timestamp", "results");
         assertSchemaProperties(docs, "RoutingComparisonResultResponse", "strategyId", "status",
                 "chosenServerId", "reason", "candidateServersConsidered", "scores", "decisionVector",
-                "dominantFactorAnalysis", "decisionDeltaAnalysis");
+                "dominantFactorAnalysis", "decisionDeltaAnalysis", "decisionReplaySnapshot");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -203,6 +203,12 @@ class ApiContractTest {
         assertSchemaProperties(docs, "ScoreFactorDeltaResponse", "factorName", "selectedCandidateContribution",
                 "alternativeCandidateContribution", "contributionDelta", "absoluteDelta",
                 "selectedCandidateDirection", "alternativeCandidateDirection", "explanation");
+        assertSchemaProperties(docs, "RoutingDecisionReplaySnapshotResponse", "readOnly", "snapshotSchemaVersion",
+                "source", "status", "snapshotFingerprint", "fingerprintAlgorithm", "selectedCandidateId",
+                "candidateIdsConsidered", "candidateCount", "strategyId", "decisionVectorStatus",
+                "dominantFactorAnalysisStatus", "decisionDeltaAnalysisStatus", "closestAlternativeCandidateId",
+                "finalScoreGap", "largestDeltaFactorName", "explanation", "boundaryNote",
+                "productionNotProvenBoundary");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -335,6 +341,16 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.comparison.finalScoreGap").isNumber())
                 .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.largestAbsoluteFactorDelta.factorName")
                         .isString())
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.snapshotSchemaVersion",
+                        is("decision-replay-snapshot/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.status", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.selectedCandidateId", is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.closestAlternativeCandidateId", is("blue")))
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.candidateIdsConsidered[0]", is("blue")))
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.candidateIdsConsidered[1]", is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.finalScoreGap").isNumber())
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.snapshotFingerprint").isString())
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -369,6 +385,11 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].dominantFactorAnalysis.status", is("UNKNOWN")))
                 .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.status", is("UNKNOWN")))
                 .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.factorDeltas").isEmpty())
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.selectedCandidateId", nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.candidateIdsConsidered").isEmpty())
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.closestAlternativeCandidateId", nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.finalScoreGap", nullValue()))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

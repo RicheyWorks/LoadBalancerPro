@@ -136,6 +136,7 @@ public class ScenarioReplayService {
                         result.scores(),
                         null,
                         null,
+                        null,
                         null))
                 .toList();
     }

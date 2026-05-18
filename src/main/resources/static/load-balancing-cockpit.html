@@ -1255,6 +1255,10 @@
             <div id="routing-explanation">Run routing comparison to populate strategy explanations.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Most Influential Signals</strong>
+            <div id="dominant-factor-explanation">Run routing comparison to populate dominant factors from returned contribution data.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3421,11 +3425,13 @@
       const rows = document.getElementById("routing-rows");
       if (response.status === "Not available in current API") {
         rows.innerHTML = "<tr><td colspan=\"3\">Not available in current API.</td></tr>";
+        renderDominantFactorExplanation(response);
         return;
       }
       const results = response.results || [];
       if (!results.length) {
         rows.innerHTML = "<tr><td colspan=\"3\" class=\"muted\">No routing results returned.</td></tr>";
+        renderDominantFactorExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3433,6 +3439,7 @@
         + "<td>" + escapeHtml(result.chosenServerId || "none") + "</td>"
         + "<td>" + escapeHtml(result.reason || result.status || "No explanation returned.") + "</td>"
         + "</tr>").join("");
+      renderDominantFactorExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3472,6 +3479,7 @@
       }
       const scenario = currentScenario();
       renderRoutingExplanation(scenario);
+      renderDominantFactorExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -3532,6 +3540,30 @@
             + "</tr>";
         }).join("")
         + "</tbody></table>";
+    }
+
+    function renderDominantFactorExplanation(response) {
+      const container = document.getElementById("dominant-factor-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate dominant factors from returned contribution data.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; dominant factors are unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const analysis = result.dominantFactorAnalysis || {};
+        const selected = analysis.selectedDecisionAnalysis || {};
+        const explanation = selected.available
+          ? selected.explanation
+          : (analysis.selectedDecisionExplanation
+            || "Dominant factor analysis is unavailable or unknown; no factor data is invented.");
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(explanation) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab explainability; no routing, scoring, strategy-weight, server-selection, or proxy behavior change.</span></p>";
+      }).join("");
     }
 
     function renderAllocationExplanation(scenario) {
@@ -4026,6 +4058,8 @@
         "<strong>Advisory hints</strong><span class=\"muted\">Run remediation hints to populate advisory plan output.</span>";
       document.getElementById("routing-explanation").textContent =
         "Run routing comparison to populate strategy explanations.";
+      document.getElementById("dominant-factor-explanation").textContent =
+        "Run routing comparison to populate dominant factors from returned contribution data.";
       document.getElementById("allocation-explanation").textContent =
         "Run allocation preview to populate capacity math.";
       document.getElementById("overload-explanation").textContent =

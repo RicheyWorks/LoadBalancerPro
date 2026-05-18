@@ -41,6 +41,7 @@ public class RoutingComparisonService {
     private final RoutingStrategyRegistry registry;
     private final RoutingComparisonEngine engine;
     private final ServerScoreCalculator scoreCalculator;
+    private final RoutingDominantFactorAnalysisService dominantFactorAnalysisService;
     private final Clock clock;
 
     public RoutingComparisonService() {
@@ -52,6 +53,7 @@ public class RoutingComparisonService {
         this.clock = clock;
         this.engine = new RoutingComparisonEngine(registry, clock);
         this.scoreCalculator = new ServerScoreCalculator();
+        this.dominantFactorAnalysisService = new RoutingDominantFactorAnalysisService();
     }
 
     public RoutingComparisonResponse compare(RoutingComparisonRequest request) {
@@ -169,13 +171,17 @@ public class RoutingComparisonService {
                         result.reason(),
                         List.of(),
                         Map.of(),
-                        null));
+                        null,
+                        dominantFactorAnalysisService.unknownAnalysis(
+                                "Dominant factor analysis is unavailable because no selected routing decision "
+                                        + "or Decision Vector contribution data was returned.")));
     }
 
     private RoutingComparisonResultResponse successfulResultResponse(
             RoutingComparisonResult result, RoutingDecision decision, List<ServerStateVector> candidates) {
         RoutingDecisionExplanation explanation = decision.explanation();
         String selectedServerId = explanation.chosenServerId().orElse(null);
+        RoutingDecisionVectorResponse decisionVector = decisionVector(result.strategyId(), selectedServerId, candidates);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -183,7 +189,8 @@ public class RoutingComparisonService {
                 result.reason(),
                 explanation.candidateServersConsidered(),
                 explanation.scores(),
-                decisionVector(result.strategyId(), selectedServerId, candidates));
+                decisionVector,
+                dominantFactorAnalysisService.analyze(decisionVector));
     }
 
     private RoutingDecisionVectorResponse decisionVector(RoutingStrategyId strategyId,

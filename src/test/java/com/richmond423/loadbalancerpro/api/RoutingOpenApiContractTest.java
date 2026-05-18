@@ -69,6 +69,8 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(resultProperties, "/candidateServersConsidered/type").asText());
         assertEquals("object", required(resultProperties, "/scores/type").asText());
         assertRef(required(resultProperties, "/decisionVector"), "#/components/schemas/RoutingDecisionVectorResponse");
+        assertRef(required(resultProperties, "/dominantFactorAnalysis"),
+                "#/components/schemas/DominantFactorAnalysisResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -89,6 +91,27 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(candidateProperties, "/factorContributions/type").asText());
         assertRef(required(candidateProperties, "/factorContributions/items"),
                 "#/components/schemas/ScoreFactorContributionResponse");
+
+        JsonNode dominantProperties = required(docs,
+                "/components/schemas/DominantFactorAnalysisResponse/properties");
+        assertEquals("boolean", required(dominantProperties, "/readOnly/type").asText());
+        assertEquals("array", required(dominantProperties, "/candidateAnalyses/type").asText());
+        assertRef(required(dominantProperties, "/candidateAnalyses/items"),
+                "#/components/schemas/CandidateDominantFactorResponse");
+        assertRef(required(dominantProperties, "/selectedDecisionAnalysis"),
+                "#/components/schemas/CandidateDominantFactorResponse");
+
+        JsonNode candidateDominantProperties = required(docs,
+                "/components/schemas/CandidateDominantFactorResponse/properties");
+        assertEquals("string", required(candidateDominantProperties, "/candidateId/type").asText());
+        assertEquals("boolean", required(candidateDominantProperties, "/available/type").asText());
+        assertRef(required(candidateDominantProperties, "/largestAbsoluteImpact"),
+                "#/components/schemas/DominantFactorResponse");
+
+        JsonNode factorProperties = required(docs,
+                "/components/schemas/DominantFactorResponse/properties");
+        assertEquals("string", required(factorProperties, "/factorName/type").asText());
+        assertEquals("number", required(factorProperties, "/absoluteImpact/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

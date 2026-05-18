@@ -845,6 +845,10 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p>ServerScoreCalculator factor contribution contract extraction has begun for current local calculator components, and the read-only comparison response can expose those summaries for selected and non-selected candidate vectors; no score weights are retuned.</p>
           </div>
           <div class="proof-card">
+            <strong>Dominant factor analysis</strong>
+            <p>Most Influential Signals are derived only from returned factor contribution entries: largest support contributor, largest penalty/risk contributor, and largest absolute impact.</p>
+          </div>
+          <div class="proof-card">
             <strong>Read-only API exposure</strong>
             <p>The same-origin <code>/api/routing/compare</code> response can return <code>results[].decisionVector</code> as additive controlled lab data; if it is absent, static lab guidance remains available.</p>
           </div>
@@ -896,6 +900,21 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-replay-readiness">Planned future contract readiness; replay execution and what-if execution are not implemented here.</p>
           </div>
         </div>
+        <h3 style="margin-top: 14px;">Most Influential Signals</h3>
+        <div class="proof-grid" aria-label="Dominant Factors summary">
+          <div class="proof-card">
+            <strong>Selected decision dominant factor</strong>
+            <p id="decision-vector-dominant-selected">Run Compare strategies to populate dominant factors from returned contribution data.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Candidate dominant factors</strong>
+            <p id="decision-vector-dominant-candidates">No candidate dominant-factor analysis has been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Dominant factor boundary</strong>
+            <p id="decision-vector-dominant-boundary">Read-only lab explainability only; no routing behavior, scoring math, strategy weight, server selection, or proxy behavior changes.</p>
+          </div>
+        </div>
         <p class="postman-note">
           Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
           no upload/share endpoint, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
@@ -913,6 +932,7 @@ knownSignals: run Compare strategies to populate visible lab signals
 unknownSignals: exact scoring not exposed; hidden routing internals not inferred; production telemetry not claimed; production monitoring not claimed
 exactScoringAvailability: not exposed unless the API returns exact scoring fields
 factorContributionAvailability: internal calculator contribution and candidate summary contracts started; not exposed in this cockpit response unless the API returns contribution fields
+dominantFactorAnalysis: unavailable until /api/routing/compare returns dominantFactorAnalysis; no dominant factors are invented
 readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
@@ -1839,7 +1859,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       scoringAvailability: document.getElementById("decision-vector-scoring-availability"),
       factorContribution: document.getElementById("decision-vector-factor-contribution"),
       readOnlyExposure: document.getElementById("decision-vector-readonly-exposure"),
-      replayReadiness: document.getElementById("decision-vector-replay-readiness")
+      replayReadiness: document.getElementById("decision-vector-replay-readiness"),
+      dominantSelected: document.getElementById("decision-vector-dominant-selected"),
+      dominantCandidates: document.getElementById("decision-vector-dominant-candidates"),
+      dominantBoundary: document.getElementById("decision-vector-dominant-boundary")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -2864,6 +2887,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const decisionVector = primary && primary.decisionVector && typeof primary.decisionVector === "object"
         ? primary.decisionVector
         : null;
+      const dominantAnalysis = primary && primary.dominantFactorAnalysis
+          && typeof primary.dominantFactorAnalysis === "object"
+        ? primary.dominantFactorAnalysis
+        : null;
       const selectedStrategy = decisionVector && decisionVector.selectedStrategy
         ? decisionVector.selectedStrategy
         : (primary && primary.strategyId ? primary.strategyId : "not run");
@@ -2921,6 +2948,24 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         ? "selectedCandidateFactorContributions=" + selectedContributionCount
           + "; knownVsUnknownSignals exposed in read-only candidate vectors."
         : "candidate factor contribution summaries are unavailable in this response; static lab guidance remains available.";
+      const selectedDominant = dominantAnalysis && dominantAnalysis.selectedDecisionAnalysis
+        ? dominantAnalysis.selectedDecisionAnalysis
+        : null;
+      const selectedDominantSummary = selectedDominant && selectedDominant.available
+        ? selectedDominant.explanation
+        : "Dominant factor analysis is unavailable or unknown for the selected decision; no factor data is invented.";
+      const candidateDominantSummary = dominantAnalysis && Array.isArray(dominantAnalysis.candidateAnalyses)
+          && dominantAnalysis.candidateAnalyses.length > 0
+        ? dominantAnalysis.candidateAnalyses.map((candidate) =>
+          (candidate.candidateId || "unknown")
+          + ": support=" + dominantFactorLabel(candidate.largestPositiveContributor)
+          + "; penaltyRisk=" + dominantFactorLabel(candidate.largestPenaltyContributor)
+          + "; absoluteImpact=" + dominantFactorLabel(candidate.largestAbsoluteImpact)
+        ).join(" | ")
+        : "No candidate dominant-factor analysis has been returned yet.";
+      const dominantBoundary = dominantAnalysis && dominantAnalysis.boundaryNote
+        ? dominantAnalysis.boundaryNote
+        : "Read-only lab explainability only; no routing behavior, scoring math, strategy weight, server selection, or proxy behavior changes.";
       const replayReadiness = decisionVector && decisionVector.replayReadiness
         ? decisionVector.replayReadiness
         : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
@@ -2943,6 +2988,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       decisionVectorFields.factorContribution.textContent = factorContributionAvailability;
       decisionVectorFields.readOnlyExposure.textContent = readOnlyExposure;
       decisionVectorFields.replayReadiness.textContent = replayReadiness;
+      decisionVectorFields.dominantSelected.textContent = selectedDominantSummary;
+      decisionVectorFields.dominantCandidates.textContent = candidateDominantSummary;
+      decisionVectorFields.dominantBoundary.textContent = dominantBoundary;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
@@ -2957,6 +3005,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "exactScoringAvailability: " + exactScoringAvailability,
         "factorContributionAvailability: " + factorContributionAvailability,
         "candidateFactorContributionSummary: " + candidateContributionSummary,
+        "dominantFactorAnalysis: " + (dominantAnalysis
+          ? "status=" + (dominantAnalysis.status || "unknown") + "; " + selectedDominantSummary
+          : "unavailable until /api/routing/compare returns dominantFactorAnalysis; no dominant factors are invented"),
+        "candidateDominantFactors: " + candidateDominantSummary,
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
         "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,
@@ -2968,6 +3020,16 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "productionNotProven: " + notProven,
         "copyBoundary: browser-local copy action only; no upload/share endpoint; no server-side export/PDF/ZIP generation; no external calls; no telemetry"
       ].join("\n");
+    }
+
+    function dominantFactorLabel(factor) {
+      if (!factor || !factor.factorName) {
+        return "none returned";
+      }
+      const value = Number.isFinite(Number(factor.contributionValue))
+        ? Number(factor.contributionValue).toFixed(6)
+        : "not exposed";
+      return factor.factorName + " (" + value + ", " + (factor.direction || "unknown") + ")";
     }
 
     function selectedBackendReasonSummary(primary, selectedServer, currentMetrics, results) {

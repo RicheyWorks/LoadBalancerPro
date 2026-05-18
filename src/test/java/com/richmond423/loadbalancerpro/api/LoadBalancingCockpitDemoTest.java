@@ -243,6 +243,9 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Not available in current API"));
         assertTrue(page.contains("Explanation Drill-Down"));
         assertTrue(page.contains("Routing Strategy Explanation"));
+        assertTrue(page.contains("Most Influential Signals"));
+        assertTrue(page.contains("id=\"dominant-factor-explanation\""));
+        assertTrue(page.contains("dominant factors from returned contribution data"));
         assertTrue(page.contains("Allocation Math / Capacity Explanation"));
         assertTrue(page.contains("Load-Shedding / Overload Reason Breakdown"));
         assertTrue(page.contains("Remediation Rationale"));

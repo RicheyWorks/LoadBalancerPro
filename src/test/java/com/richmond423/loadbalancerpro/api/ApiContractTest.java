@@ -172,7 +172,7 @@ class ApiContractTest {
                 "chosenServerId", "reason", "candidateServersConsidered", "scores", "decisionVector",
                 "dominantFactorAnalysis", "decisionDeltaAnalysis", "decisionReplaySnapshot",
                 "decisionReplayReconstructionTrace", "decisionReplayCapsule",
-                "decisionReplayReadinessChecklist");
+                "decisionReplayReadinessChecklist", "decisionReplayEvidenceSourceMap");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -243,6 +243,17 @@ class ApiContractTest {
                 "explanation", "boundaryNote", "productionNotProvenBoundary");
         assertSchemaProperties(docs, "DecisionReplayReadinessChecklistItemResponse", "itemId", "label", "status",
                 "evidenceSourceFieldPath", "explanation", "missingEvidenceReason");
+        assertSchemaProperties(docs, "RoutingDecisionReplayEvidenceSourceMapResponse", "readOnly",
+                "sourceMapSchemaVersion", "source", "status", "strategyId", "selectedCandidateId",
+                "candidateCount", "linkedReplaySnapshotFingerprint", "linkedReconstructionTraceFingerprint",
+                "linkedReplayCapsuleFingerprint", "decisionVectorStatus", "dominantFactorAnalysisStatus",
+                "decisionDeltaAnalysisStatus", "decisionReplaySnapshotStatus",
+                "decisionReplayReconstructionTraceStatus", "decisionReplayCapsuleStatus",
+                "decisionReplayReadinessChecklistStatus", "sourceMapEntries", "explanation", "boundaryNote",
+                "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "DecisionReplayEvidenceSourceMapEntryResponse", "sourceId", "label",
+                "status", "sourceFieldPath", "downstreamEvidenceFieldPaths", "linkedFingerprint",
+                "evidenceSummary", "boundaryNote");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -443,6 +454,32 @@ class ApiContractTest {
                         is("decision-vector-evidence")))
                 .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.checklistItems[8].itemId",
                         is("read-only-boundary-evidence")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapSchemaVersion",
+                        is("decision-replay-evidence-source-map/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.status", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.decisionVectorStatus",
+                        is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.decisionReplayCapsuleStatus",
+                        is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap"
+                        + ".decisionReplayReadinessChecklistStatus", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.selectedCandidateId",
+                        is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.candidateCount",
+                        is(2)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.linkedReplaySnapshotFingerprint")
+                        .isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap"
+                        + ".linkedReconstructionTraceFingerprint").isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.linkedReplayCapsuleFingerprint")
+                        .isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[0].sourceId",
+                        is("decision-vector-source")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[7].sourceId",
+                        is("linked-fingerprint-source")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[8].sourceId",
+                        is("read-only-boundary-source")))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -517,6 +554,29 @@ class ApiContractTest {
                         nullValue()))
                 .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.checklistItems[6].status",
                         is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.decisionVectorStatus",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.decisionReplayCapsuleStatus",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap"
+                        + ".decisionReplayReadinessChecklistStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.selectedCandidateId",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.candidateCount",
+                        is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.linkedReplaySnapshotFingerprint",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap"
+                        + ".linkedReconstructionTraceFingerprint", nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.linkedReplayCapsuleFingerprint",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[0].status",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[7].status",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[8].status",
+                        is("AVAILABLE")))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

@@ -81,6 +81,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayCapsuleResponse");
         assertRef(required(resultProperties, "/decisionReplayReadinessChecklist"),
                 "#/components/schemas/RoutingDecisionReplayReadinessChecklistResponse");
+        assertRef(required(resultProperties, "/decisionReplayEvidenceSourceMap"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceSourceMapResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -227,6 +229,27 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(checklistItemProperties, "/itemId/type").asText());
         assertEquals("string", required(checklistItemProperties, "/status/type").asText());
         assertEquals("string", required(checklistItemProperties, "/evidenceSourceFieldPath/type").asText());
+
+        JsonNode sourceMapProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceSourceMapResponse/properties");
+        assertEquals("boolean", required(sourceMapProperties, "/readOnly/type").asText());
+        assertEquals("string", required(sourceMapProperties, "/sourceMapSchemaVersion/type").asText());
+        assertEquals("string", required(sourceMapProperties, "/status/type").asText());
+        assertEquals("string", required(sourceMapProperties, "/linkedReplaySnapshotFingerprint/type").asText());
+        assertEquals("string", required(sourceMapProperties, "/linkedReconstructionTraceFingerprint/type").asText());
+        assertEquals("string", required(sourceMapProperties, "/linkedReplayCapsuleFingerprint/type").asText());
+        assertEquals("string", required(sourceMapProperties, "/decisionReplayReadinessChecklistStatus/type")
+                .asText());
+        assertEquals("array", required(sourceMapProperties, "/sourceMapEntries/type").asText());
+        assertRef(required(sourceMapProperties, "/sourceMapEntries/items"),
+                "#/components/schemas/DecisionReplayEvidenceSourceMapEntryResponse");
+
+        JsonNode sourceMapEntryProperties = required(docs,
+                "/components/schemas/DecisionReplayEvidenceSourceMapEntryResponse/properties");
+        assertEquals("string", required(sourceMapEntryProperties, "/sourceId/type").asText());
+        assertEquals("string", required(sourceMapEntryProperties, "/status/type").asText());
+        assertEquals("string", required(sourceMapEntryProperties, "/sourceFieldPath/type").asText());
+        assertEquals("array", required(sourceMapEntryProperties, "/downstreamEvidenceFieldPaths/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

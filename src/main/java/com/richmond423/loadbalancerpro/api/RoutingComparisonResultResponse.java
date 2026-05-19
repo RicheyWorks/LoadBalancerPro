@@ -22,5 +22,6 @@ public record RoutingComparisonResultResponse(
         RoutingDecisionReplayEvidenceFieldInventoryResponse decisionReplayEvidenceFieldInventory,
         RoutingDecisionReplayEvidenceNullSafetySummaryResponse decisionReplayEvidenceNullSafetySummary,
         RoutingDecisionReplayEvidenceStatusRollupResponse decisionReplayEvidenceStatusRollup,
-        RoutingDecisionReplayEvidenceLaneNavigationSummaryResponse decisionReplayEvidenceLaneNavigationSummary) {
+        RoutingDecisionReplayEvidenceLaneNavigationSummaryResponse decisionReplayEvidenceLaneNavigationSummary,
+        RoutingDecisionReplayEvidenceLaneDependencyMapResponse decisionReplayEvidenceLaneDependencyMap) {
 }

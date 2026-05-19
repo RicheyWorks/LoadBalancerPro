@@ -315,6 +315,17 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("responseFieldPath"));
         assertTrue(page.contains("uiSection"));
         assertTrue(page.contains("docsReference"));
+        assertTrue(page.contains("Decision Evidence Lane Dependency Map"));
+        assertTrue(page.contains("id=\"decision-replay-evidence-lane-dependency-map-explanation\""));
+        assertTrue(page.contains("Lane Dependency Map Status"));
+        assertTrue(page.contains("Evidence Lane Dependencies"));
+        assertTrue(page.contains("Depends On Lanes"));
+        assertTrue(page.contains("Downstream Lanes"));
+        assertTrue(page.contains("Dependency Count"));
+        assertTrue(page.contains("Downstream Count"));
+        assertTrue(page.contains("dependencyItems"));
+        assertTrue(page.contains("dependsOnLanes"));
+        assertTrue(page.contains("downstreamLanes"));
         assertTrue(page.contains("Allocation Math / Capacity Explanation"));
         assertTrue(page.contains("Load-Shedding / Overload Reason Breakdown"));
         assertTrue(page.contains("Remediation Rationale"));

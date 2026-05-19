@@ -197,6 +197,38 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertEquals("production-not-proven-boundary", boundarySummary.at("/boundaryItems/9/boundaryId").asText());
         assertTrue(boundarySummary.path("explanation").asText()
                 .contains("already-built lab compare evidence boundary fields"));
+
+        JsonNode fieldInventory = result.path("decisionReplayEvidenceFieldInventory");
+        assertTrue(fieldInventory.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-field-inventory/v1",
+                fieldInventory.path("fieldInventorySchemaVersion").asText());
+        assertEquals("AVAILABLE", fieldInventory.path("status").asText());
+        assertEquals("edge-alpha", fieldInventory.path("selectedCandidateId").asText());
+        assertEquals(3, fieldInventory.path("candidateCount").asInt());
+        assertEquals("AVAILABLE", fieldInventory.path("decisionVectorStatus").asText());
+        assertEquals("AVAILABLE", fieldInventory.path("decisionReplayEvidenceBoundarySummaryStatus").asText());
+        assertEquals(12, fieldInventory.path("availableInventoryGroupCount").asInt());
+        assertEquals(0, fieldInventory.path("partialInventoryGroupCount").asInt());
+        assertEquals(0, fieldInventory.path("unknownInventoryGroupCount").asInt());
+        assertEquals("decision-vector-fields", fieldInventory.at("/inventoryEntries/0/inventoryId").asText());
+        assertEquals("linked-fingerprint-fields", fieldInventory.at("/inventoryEntries/9/inventoryId").asText());
+        assertEquals("read-only-boundary-fields", fieldInventory.at("/inventoryEntries/10/inventoryId").asText());
+        assertEquals("production-not-proven-boundary-fields",
+                fieldInventory.at("/inventoryEntries/11/inventoryId").asText());
+        assertTrue(fieldInventory.at("/inventoryEntries/0/observedFieldPaths").toString()
+                .contains("decisionVector.candidateSummaries"));
+        assertEquals(15, fieldInventory.at("/inventoryEntries/0/observedFieldCount").asInt());
+        assertEquals(0, fieldInventory.at("/inventoryEntries/0/missingOrUnavailableFieldCount").asInt());
+        assertTrue(fieldInventory.path("explanation").asText()
+                .contains("derived from already-built lab compare evidence only"));
+        assertTrue(fieldInventory.path("boundaryNote").asText().contains("does not execute replay"));
+        assertTrue(fieldInventory.path("boundaryNote").asText().contains("does not perform what-if mutation"));
+        assertTrue(fieldInventory.path("boundaryNote").asText().contains("does not change routing behavior"));
+        assertTrue(fieldInventory.path("boundaryNote").asText().contains("does not recompute scores"));
+        assertTrue(fieldInventory.path("productionNotProvenBoundary").asText()
+                .contains("not production certification"));
+        assertTrue(fieldInventory.path("productionNotProvenBoundary").asText()
+                .contains("not guaranteed replay"));
     }
 
     @Test
@@ -326,6 +358,26 @@ class RoutingDecisionVectorReadOnlyExposureTest {
                 result.at("/decisionReplayEvidenceBoundarySummary/boundaryItems/9/status").asText());
         assertTrue(result.at("/decisionReplayEvidenceBoundarySummary/explanation").asText()
                 .contains("No replay execution"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceFieldInventory/status").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceFieldInventory/decisionVectorStatus").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceFieldInventory/decisionReplayEvidenceBoundarySummaryStatus")
+                        .asText());
+        assertTrue(result.at("/decisionReplayEvidenceFieldInventory/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceFieldInventory/candidateCount").asInt());
+        assertEquals(10, result.at("/decisionReplayEvidenceFieldInventory/unknownInventoryGroupCount").asInt());
+        assertEquals("decision-vector-fields",
+                result.at("/decisionReplayEvidenceFieldInventory/inventoryEntries/0/inventoryId").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceFieldInventory/inventoryEntries/0/status")
+                .asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceFieldInventory/inventoryEntries/9/status")
+                .asText());
+        assertEquals("production-not-proven-boundary-fields",
+                result.at("/decisionReplayEvidenceFieldInventory/inventoryEntries/11/inventoryId").asText());
+        assertTrue(result.at("/decisionReplayEvidenceFieldInventory/explanation").asText()
+                .contains("No replay execution"));
+        assertTrue(result.at("/decisionReplayEvidenceFieldInventory/explanation").asText()
+                .contains("no selected candidate"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

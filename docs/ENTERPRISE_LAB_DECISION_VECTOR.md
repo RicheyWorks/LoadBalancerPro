@@ -6,7 +6,7 @@ The Enterprise Lab Decision Vector is the structured explanation object for one 
 
 ## Why the Lab Needs It
 
-The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, Decision Replay Reconstruction Trace lane, Decision Replay Capsule lane, Decision Replay Readiness Checklist lane, Decision Replay Evidence Source Map lane, Decision Replay Evidence Boundary Summary lane, and later separately scoped lab planning work can build without inventing hidden scoring.
+The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, Decision Replay Reconstruction Trace lane, Decision Replay Capsule lane, Decision Replay Readiness Checklist lane, Decision Replay Evidence Source Map lane, Decision Replay Evidence Boundary Summary lane, Decision Replay Evidence Field Inventory lane, and later separately scoped lab planning work can build without inventing hidden scoring.
 
 A Decision Vector differs from a simple reason string because it separates:
 
@@ -27,6 +27,7 @@ A Decision Vector differs from a simple reason string because it separates:
 - Decision Replay Readiness Checklist status over already-built evidence lanes.
 - Decision Replay Evidence Source Map relationships over already-built evidence lanes.
 - Decision Replay Evidence Boundary Summary metadata over already-built boundary fields and statuses.
+- Decision Replay Evidence Field Inventory metadata over already-built evidence field groups.
 - Replay readiness and later separately scoped replay planning gaps.
 - Lab proof boundaries and production not-proven boundaries.
 
@@ -58,6 +59,7 @@ One Decision Vector represents one controlled lab routing decision. The contract
 | `decisionReplayReadinessChecklist` | Additive read-only checklist of lab replay-readiness evidence statuses derived only from already-built Decision Vector, dominant factor, delta, snapshot, trace, and capsule fields. |
 | `decisionReplayEvidenceSourceMap` | Additive read-only source map showing which already-built compare evidence fields support replay/readiness artifacts; it links existing fingerprints only when already available and does not generate a new fingerprint. |
 | `decisionReplayEvidenceBoundarySummary` | Additive read-only boundary summary showing existing lab-only, read-only, and not-proven boundary fields across already-built compare evidence; it does not generate a new fingerprint. |
+| `decisionReplayEvidenceFieldInventory` | Additive read-only field inventory showing which already-built compare evidence field groups are observed or unavailable; it uses explicit DTO accessors and does not generate a new fingerprint. |
 | `replayReadiness` | Contract readiness for future replay; replay execution remains future/not implemented until built. |
 | `labProofBoundary` | Controlled lab evidence, local reproducibility, same-origin local API responses, and browser-local interpretation. |
 | `productionNotProvenBoundary` | No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof. |
@@ -378,6 +380,33 @@ scoring, or retune weights. See
 [`ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_BOUNDARY_SUMMARY.md`](ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_BOUNDARY_SUMMARY.md)
 for the focused reviewer contract and safety boundaries.
 
+## Decision Replay Evidence Field Inventory
+
+Decision Replay Evidence Field Inventory is the read-only lab field inventory layer on top of the already-built
+routing comparison evidence. It inventories which existing evidence field groups are observed or unavailable across
+Decision Vector, Dominant Factor Analysis, Decision Delta Analysis, Decision Replay Snapshot, Decision Replay
+Reconstruction Trace, Decision Replay Capsule, Decision Replay Readiness Checklist, Decision Replay Evidence Source
+Map, and Decision Replay Evidence Boundary Summary. It does not use reflection, derive from raw server input, execute
+replay, perform what-if mutation, persist field-inventory data or audit logs, export/download/share field-inventory
+data, generate a new fingerprint, rerun routing, recompute scores, infer hidden scoring, or retune weights.
+
+The field inventory includes:
+
+- deterministic inventory ids for evidence field groups, linked fingerprint fields, read-only boundary fields, and
+  production not-proven boundary fields;
+- observed field paths and missing or unavailable field paths for already-built compare response DTOs;
+- normalized source statuses copied from already-built lanes;
+- available, partial, and unknown inventory group counts;
+- missing evidence handling that keeps absent selected candidates, candidate sets, alternatives, score gaps, largest
+  delta factors, fingerprints, and factor values unknown instead of inventing values.
+
+When selected candidate evidence, candidate ids, and source evidence lane statuses are missing, the field inventory
+returns `UNKNOWN`. It does not execute replay, perform what-if mutation, persist field-inventory data or audit logs,
+export/download/share field-inventory data, generate a new fingerprint, rerun routing, recompute scores, infer hidden
+scoring, or retune weights. See
+[`ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_FIELD_INVENTORY.md`](ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_FIELD_INVENTORY.md)
+for the focused reviewer contract and safety boundaries.
+
 The read-only `/api/routing/compare` response can expose candidate contribution summaries through
 `results[].decisionVector` without changing scoring behavior, strategy weights, selected backend outcomes,
 or existing response fields. This does not implement decision replay, what-if execution, strategy plugin
@@ -432,6 +461,7 @@ The read-only field includes:
 - Result-level `decisionReplayReadinessChecklist` derived from already-built evidence lane statuses and linked fingerprints.
 - Result-level `decisionReplayEvidenceSourceMap` derived from already-built evidence lane statuses and source field relationships.
 - Result-level `decisionReplayEvidenceBoundarySummary` derived from already-built boundary fields and source statuses.
+- Result-level `decisionReplayEvidenceFieldInventory` derived from already-built evidence field groups and source statuses.
 - Exactness, lab proof, and production not-proven boundaries.
 - Replay, what-if, and structured logging readiness marked future/not implemented.
 
@@ -465,6 +495,9 @@ The evidence source map field is exposed as `results[].decisionReplayEvidenceSou
 
 The evidence boundary summary field is exposed as `results[].decisionReplayEvidenceBoundarySummary` and is derived
 after `results[].decisionReplayEvidenceSourceMap` and the already-built upstream evidence lanes are available.
+
+The evidence field inventory field is exposed as `results[].decisionReplayEvidenceFieldInventory` and is derived
+after `results[].decisionReplayEvidenceBoundarySummary` and the already-built upstream evidence lanes are available.
 
 The exposure is additive controlled lab explainability only. It does not change routing selection,
 score calculation, strategy weights, route/proxy behavior, or existing API response fields.
@@ -757,6 +790,42 @@ Example response snippet:
           }
         ],
         "boundaryNote": "Read-only lab boundary metadata only; no replay execution, what-if mutation, boundary-summary persistence, upload/share/download, new fingerprint generation, or server-side export/PDF/ZIP generation is performed."
+      },
+      "decisionReplayEvidenceFieldInventory": {
+        "readOnly": true,
+        "fieldInventorySchemaVersion": "decision-replay-evidence-field-inventory/v1",
+        "status": "AVAILABLE",
+        "selectedCandidateId": "backend-a",
+        "candidateCount": 2,
+        "decisionVectorStatus": "AVAILABLE",
+        "decisionReplayEvidenceBoundarySummaryStatus": "AVAILABLE",
+        "availableInventoryGroupCount": 12,
+        "partialInventoryGroupCount": 0,
+        "unknownInventoryGroupCount": 0,
+        "inventoryEntries": [
+          {
+            "inventoryId": "decision-vector-fields",
+            "status": "AVAILABLE",
+            "sourceFieldPath": "decisionVector",
+            "observedFieldPaths": [
+              "decisionVector.readOnly",
+              "decisionVector.selectedStrategy",
+              "decisionVector.candidateCount"
+            ],
+            "missingOrUnavailableFieldPaths": []
+          },
+          {
+            "inventoryId": "production-not-proven-boundary-fields",
+            "status": "AVAILABLE",
+            "sourceFieldPath": "productionNotProvenBoundary fields",
+            "observedFieldPaths": [
+              "decisionVector.productionNotProvenBoundary",
+              "decisionReplayEvidenceBoundarySummary.productionNotProvenBoundary"
+            ],
+            "missingOrUnavailableFieldPaths": []
+          }
+        ],
+        "boundaryNote": "Read-only lab field inventory only; no replay execution, what-if mutation, field-inventory persistence, upload/share/download, new fingerprint generation, or server-side export/PDF/ZIP generation is performed."
       }
     }
   ]
@@ -776,6 +845,7 @@ The Decision Vector answers "why this backend?" by showing:
 - Which explanation notes are supported by visible data.
 - Which dominant factors were derived from returned contribution entries.
 - Which deterministic replay snapshot fields were available for later review.
+- Which evidence field groups were observed or unavailable for reviewer inspection.
 - Which explanation gaps remain investigation items.
 
 If a candidate appears weakened by unhealthy state, higher visible latency, higher visible load/connection pressure, or lower capacity/weight where those fields are exposed, the vector can record that visible signal comparison. If the local lab response does not expose enough information, the vector must say that the candidate reason is unknown from visible data.
@@ -792,6 +862,7 @@ The Decision Vector is a foundation for current read-only dominant-factor explai
 - Decision replay readiness checklist: implemented as additive read-only lab evidence readiness status over already-built evidence lanes only.
 - Decision replay evidence source map: implemented as additive read-only lab evidence source mapping over already-built evidence lanes only.
 - Decision replay evidence boundary summary: implemented as additive read-only lab boundary metadata over already-built boundary fields and statuses only.
+- Decision replay evidence field inventory: implemented as additive read-only lab field inventory over already-built evidence field groups only.
 - Broader factor modeling beyond current returned calculator contribution data: future/not implemented.
 - Replay execution: future/not implemented.
 - What-if experiments: future/not implemented.

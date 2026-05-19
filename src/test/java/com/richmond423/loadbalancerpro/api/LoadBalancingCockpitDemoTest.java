@@ -271,6 +271,14 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("id=\"decision-replay-evidence-boundary-summary-explanation\""));
         assertTrue(page.contains("lab-only and not-proven boundary evidence"));
         assertTrue(page.contains("boundaryItems"));
+        assertTrue(page.contains("Decision Replay Evidence Field Inventory"));
+        assertTrue(page.contains("id=\"decision-replay-evidence-field-inventory-explanation\""));
+        assertTrue(page.contains("field inventory evidence"));
+        assertTrue(page.contains("availableInventoryGroups"));
+        assertTrue(page.contains("partialInventoryGroups"));
+        assertTrue(page.contains("unknownInventoryGroups"));
+        assertTrue(page.contains("observedFieldPaths"));
+        assertTrue(page.contains("missingOrUnavailableFieldPaths"));
         assertTrue(page.contains("Allocation Math / Capacity Explanation"));
         assertTrue(page.contains("Load-Shedding / Overload Reason Breakdown"));
         assertTrue(page.contains("Remediation Rationale"));

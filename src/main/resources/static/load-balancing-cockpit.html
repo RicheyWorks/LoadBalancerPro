@@ -1287,6 +1287,10 @@
             <div id="decision-replay-evidence-boundary-summary-explanation">Run routing comparison to populate lab-only and not-proven boundary evidence.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Replay Evidence Field Inventory</strong>
+            <div id="decision-replay-evidence-field-inventory-explanation">Run routing comparison to populate field inventory evidence.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3461,6 +3465,7 @@
         renderDecisionReplayReadinessChecklistExplanation(response);
         renderDecisionReplayEvidenceSourceMapExplanation(response);
         renderDecisionReplayEvidenceBoundarySummaryExplanation(response);
+        renderDecisionReplayEvidenceFieldInventoryExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3474,6 +3479,7 @@
         renderDecisionReplayReadinessChecklistExplanation(response);
         renderDecisionReplayEvidenceSourceMapExplanation(response);
         renderDecisionReplayEvidenceBoundarySummaryExplanation(response);
+        renderDecisionReplayEvidenceFieldInventoryExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3489,6 +3495,7 @@
       renderDecisionReplayReadinessChecklistExplanation(response);
       renderDecisionReplayEvidenceSourceMapExplanation(response);
       renderDecisionReplayEvidenceBoundarySummaryExplanation(response);
+      renderDecisionReplayEvidenceFieldInventoryExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3536,6 +3543,7 @@
       renderDecisionReplayReadinessChecklistExplanation(state.routing);
       renderDecisionReplayEvidenceSourceMapExplanation(state.routing);
       renderDecisionReplayEvidenceBoundarySummaryExplanation(state.routing);
+      renderDecisionReplayEvidenceFieldInventoryExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -3863,6 +3871,50 @@
         return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
           + escapeHtml(summary) + "<br>"
           + "<span class=\"muted\">Boundary: read-only lab boundary metadata only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, external calls, new fingerprint generation, or server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
+    function renderDecisionReplayEvidenceFieldInventoryExplanation(response) {
+      const container = document.getElementById("decision-replay-evidence-field-inventory-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate field inventory evidence.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; evidence field inventory status is unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const inventory = result.decisionReplayEvidenceFieldInventory || {};
+        const entries = Array.isArray(inventory.inventoryEntries)
+          ? inventory.inventoryEntries.map((entry) =>
+            (entry.inventoryId || "unknown-inventory") + "=" + (entry.status || "UNKNOWN")
+          ).join("; ")
+          : "";
+        const firstEntry = Array.isArray(inventory.inventoryEntries) && inventory.inventoryEntries.length > 0
+          ? inventory.inventoryEntries[0]
+          : {};
+        const observed = Array.isArray(firstEntry.observedFieldPaths)
+          ? firstEntry.observedFieldPaths.slice(0, 8).join(", ") || "none"
+          : "none";
+        const missing = Array.isArray(firstEntry.missingOrUnavailableFieldPaths)
+          ? firstEntry.missingOrUnavailableFieldPaths.slice(0, 8).join(", ") || "none"
+          : "none";
+        const summary = inventory.fieldInventorySchemaVersion
+          ? "status=" + (inventory.status || "unknown")
+            + "; selectedCandidate=" + (inventory.selectedCandidateId || "not returned")
+            + "; candidateCount=" + String(inventory.candidateCount || 0)
+            + "; availableInventoryGroups=" + String(inventory.availableInventoryGroupCount || 0)
+            + "; partialInventoryGroups=" + String(inventory.partialInventoryGroupCount || 0)
+            + "; unknownInventoryGroups=" + String(inventory.unknownInventoryGroupCount || 0)
+            + "; inventoryEntries=" + (entries || "none")
+            + "; observedFieldPaths=" + observed
+            + "; missingOrUnavailableFieldPaths=" + missing
+          : (inventory.explanation || "Decision Replay Evidence Field Inventory is unavailable; no field inventory claim is invented.");
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(summary) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab field metadata only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, external calls, new fingerprint generation, or server-side export/PDF/ZIP generation.</span></p>";
       }).join("");
     }
 
@@ -4228,6 +4280,20 @@
             + ", selected=" + (boundarySummary.selectedCandidateId || "not returned");
         }).join("\n")
         : "- Not run";
+      const evidenceFieldInventoryLines = routingResults.length
+        ? routingResults.map((result) => {
+          const inventory = result.decisionReplayEvidenceFieldInventory || {};
+          const entryCount = Array.isArray(inventory.inventoryEntries)
+            ? inventory.inventoryEntries.length
+            : 0;
+          return "- " + result.strategyId
+            + ": fieldInventoryStatus=" + (inventory.status || "unknown")
+            + ", inventoryEntries=" + String(entryCount)
+            + ", availableInventoryGroups=" + String(inventory.availableInventoryGroupCount || 0)
+            + ", partialInventoryGroups=" + String(inventory.partialInventoryGroupCount || 0)
+            + ", unknownInventoryGroups=" + String(inventory.unknownInventoryGroupCount || 0);
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -4278,6 +4344,9 @@
         "",
         "## Decision Replay Evidence Boundary Summary",
         evidenceBoundarySummaryLines,
+        "",
+        "## Decision Replay Evidence Field Inventory",
+        evidenceFieldInventoryLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

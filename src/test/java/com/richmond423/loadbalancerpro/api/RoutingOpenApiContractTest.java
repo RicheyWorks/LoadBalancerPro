@@ -85,6 +85,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayEvidenceSourceMapResponse");
         assertRef(required(resultProperties, "/decisionReplayEvidenceBoundarySummary"),
                 "#/components/schemas/RoutingDecisionReplayEvidenceBoundarySummaryResponse");
+        assertRef(required(resultProperties, "/decisionReplayEvidenceFieldInventory"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceFieldInventoryResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -270,6 +272,30 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(boundaryItemProperties, "/status/type").asText());
         assertEquals("string", required(boundaryItemProperties, "/sourceFieldPath/type").asText());
         assertEquals("array", required(boundaryItemProperties, "/supportingEvidenceFieldPaths/type").asText());
+
+        JsonNode fieldInventoryProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceFieldInventoryResponse/properties");
+        assertEquals("boolean", required(fieldInventoryProperties, "/readOnly/type").asText());
+        assertEquals("string", required(fieldInventoryProperties, "/fieldInventorySchemaVersion/type").asText());
+        assertEquals("string", required(fieldInventoryProperties, "/status/type").asText());
+        assertEquals("string", required(fieldInventoryProperties, "/decisionReplayEvidenceBoundarySummaryStatus/type")
+                .asText());
+        assertEquals("integer", required(fieldInventoryProperties, "/availableInventoryGroupCount/type").asText());
+        assertEquals("integer", required(fieldInventoryProperties, "/partialInventoryGroupCount/type").asText());
+        assertEquals("integer", required(fieldInventoryProperties, "/unknownInventoryGroupCount/type").asText());
+        assertEquals("array", required(fieldInventoryProperties, "/inventoryEntries/type").asText());
+        assertRef(required(fieldInventoryProperties, "/inventoryEntries/items"),
+                "#/components/schemas/DecisionReplayEvidenceFieldInventoryEntryResponse");
+
+        JsonNode inventoryEntryProperties = required(docs,
+                "/components/schemas/DecisionReplayEvidenceFieldInventoryEntryResponse/properties");
+        assertEquals("string", required(inventoryEntryProperties, "/inventoryId/type").asText());
+        assertEquals("string", required(inventoryEntryProperties, "/status/type").asText());
+        assertEquals("string", required(inventoryEntryProperties, "/sourceFieldPath/type").asText());
+        assertEquals("array", required(inventoryEntryProperties, "/observedFieldPaths/type").asText());
+        assertEquals("array", required(inventoryEntryProperties, "/missingOrUnavailableFieldPaths/type").asText());
+        assertEquals("integer", required(inventoryEntryProperties, "/observedFieldCount/type").asText());
+        assertEquals("integer", required(inventoryEntryProperties, "/missingOrUnavailableFieldCount/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

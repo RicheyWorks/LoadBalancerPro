@@ -135,6 +135,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_SOURCE_MAP.md"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_BOUNDARY_SUMMARY.md"));
+        assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_FIELD_INVENTORY.md"));
         assertTrue(framing.contains("structured explanation contract for one controlled lab routing decision"));
         assertTrue(framing.contains("selected candidate vector"));
         assertTrue(framing.contains("non-selected candidate vectors"));
@@ -147,12 +148,14 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("`results[].decisionReplayReadinessChecklist`"));
         assertTrue(framing.contains("`results[].decisionReplayEvidenceSourceMap`"));
         assertTrue(framing.contains("`results[].decisionReplayEvidenceBoundarySummary`"));
+        assertTrue(framing.contains("`results[].decisionReplayEvidenceFieldInventory`"));
         assertTrue(framing.contains("deterministic local fingerprint from already-built compare evidence only"));
         assertTrue(framing.contains("deterministic reconstruction evidence steps"));
         assertTrue(framing.contains("canonical evidence packaging"));
         assertTrue(framing.contains("lab replay-readiness checklist status"));
         assertTrue(framing.contains("maps already-built evidence source fields to replay/readiness artifacts"));
         assertTrue(framing.contains("summarizes existing lab-only, read-only, and not-proven boundary fields"));
+        assertTrue(framing.contains("inventories already-built evidence field groups without reflection"));
         assertTrue(framing.contains("preserving existing fields, routing behavior, scoring behavior, and strategy weights"));
         assertTrue(framing.contains("Replay execution and what-if execution remain future/not implemented"));
         assertTrue(framing.contains("## How to Investigate Surprising Lab Decisions"));

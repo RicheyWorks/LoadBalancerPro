@@ -6,7 +6,7 @@ The Enterprise Lab Decision Vector is the structured explanation object for one 
 
 ## Why the Lab Needs It
 
-The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, Decision Replay Reconstruction Trace lane, Decision Replay Capsule lane, Decision Replay Readiness Checklist lane, Decision Replay Evidence Source Map lane, Decision Replay Evidence Boundary Summary lane, Decision Replay Evidence Field Inventory lane, Decision Evidence Null-Safety Summary lane, and later separately scoped lab planning work can build without inventing hidden scoring.
+The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, Decision Replay Reconstruction Trace lane, Decision Replay Capsule lane, Decision Replay Readiness Checklist lane, Decision Replay Evidence Source Map lane, Decision Replay Evidence Boundary Summary lane, Decision Replay Evidence Field Inventory lane, Decision Evidence Null-Safety Summary lane, Decision Evidence Status Rollup lane, and later separately scoped lab planning work can build without inventing hidden scoring.
 
 A Decision Vector differs from a simple reason string because it separates:
 
@@ -29,6 +29,7 @@ A Decision Vector differs from a simple reason string because it separates:
 - Decision Replay Evidence Boundary Summary metadata over already-built boundary fields and statuses.
 - Decision Replay Evidence Field Inventory metadata over already-built evidence field groups.
 - Decision Evidence Null-Safety Summary metadata over already-built null, missing, unavailable, and no-healthy/failure-path evidence.
+- Decision Evidence Status Rollup metadata over already-built evidence lane statuses, selected-candidate presence, candidate count, and boundary state.
 - Replay readiness and later separately scoped replay planning gaps.
 - Lab proof boundaries and production not-proven boundaries.
 
@@ -62,6 +63,7 @@ One Decision Vector represents one controlled lab routing decision. The contract
 | `decisionReplayEvidenceBoundarySummary` | Additive read-only boundary summary showing existing lab-only, read-only, and not-proven boundary fields across already-built compare evidence; it does not generate a new fingerprint. |
 | `decisionReplayEvidenceFieldInventory` | Additive read-only field inventory showing which already-built compare evidence field groups are observed or unavailable; it uses explicit DTO accessors and does not generate a new fingerprint. |
 | `decisionReplayEvidenceNullSafetySummary` | Additive read-only null-safety summary showing null, missing, unavailable, and no-healthy/failure-path safety across already-built compare evidence; it uses explicit DTO accessors, does not use reflection, and does not generate a new fingerprint. |
+| `decisionReplayEvidenceStatusRollup` | Additive read-only status rollup showing existing evidence lane status, selected-candidate presence, candidate count, and boundary state; it is metadata-only, does not use reflection, and does not generate a new fingerprint. |
 | `replayReadiness` | Contract readiness for future replay; replay execution remains future/not implemented until built. |
 | `labProofBoundary` | Controlled lab evidence, local reproducibility, same-origin local API responses, and browser-local interpretation. |
 | `productionNotProvenBoundary` | No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof. |
@@ -440,6 +442,34 @@ certification and not guaranteed replay. See
 [`ENTERPRISE_LAB_DECISION_EVIDENCE_NULL_SAFETY_SUMMARY.md`](ENTERPRISE_LAB_DECISION_EVIDENCE_NULL_SAFETY_SUMMARY.md)
 for the focused reviewer contract and safety boundaries.
 
+## Decision Evidence Status Rollup
+
+Decision Evidence Status Rollup is the read-only lab status metadata layer on top of the already-built routing
+comparison evidence. It summarizes evidence lane statuses, selected-candidate presence, candidate count, and boundary
+state across Decision Vector, Dominant Factor Analysis, Decision Delta Analysis, Decision Replay Snapshot, Decision
+Replay Reconstruction Trace, Decision Replay Capsule, Decision Replay Readiness Checklist, Decision Replay Evidence
+Source Map, Decision Replay Evidence Boundary Summary, Decision Replay Evidence Field Inventory, and Decision Evidence
+Null-Safety Summary. It does not use reflection, inspect raw request payloads, inspect raw server input, execute replay,
+perform what-if mutation, persist status-rollup data or audit logs, export/download/share status-rollup data, generate a
+new fingerprint, rerun routing, recompute scores, infer hidden scoring, or retune weights.
+
+The status rollup includes:
+
+- deterministic status ids for the existing evidence lanes plus read-only and production-not-proven boundary status;
+- selected-candidate presence and candidate count copied only from already-built compare response DTOs;
+- normalized `AVAILABLE`, `PARTIAL`, and `UNKNOWN` status counts;
+- boundary presence based only on already-built read-only and not-proven boundary text;
+- missing evidence handling that keeps absent selected candidates, candidate sets, fingerprints, replay claims,
+  certification claims, quality-ranking claims, and guaranteed replay claims unknown instead of inventing values.
+
+When selected candidate evidence, candidate ids, source evidence lane statuses, and boundary evidence are missing, the
+status rollup returns `UNKNOWN` or `PARTIAL`. It does not execute replay, perform what-if mutation, persist status-rollup
+data or audit logs, export/download/share status-rollup data, generate a new fingerprint, rerun routing, recompute
+scores, infer hidden scoring, retune weights, or claim production behavior; it is not production certification and not
+guaranteed replay. See
+[`ENTERPRISE_LAB_DECISION_EVIDENCE_STATUS_ROLLUP.md`](ENTERPRISE_LAB_DECISION_EVIDENCE_STATUS_ROLLUP.md)
+for the focused reviewer contract and safety boundaries.
+
 The read-only `/api/routing/compare` response can expose candidate contribution summaries through
 `results[].decisionVector` without changing scoring behavior, strategy weights, selected backend outcomes,
 or existing response fields. This does not implement decision replay, what-if execution, strategy plugin
@@ -496,6 +526,7 @@ The read-only field includes:
 - Result-level `decisionReplayEvidenceBoundarySummary` derived from already-built boundary fields and source statuses.
 - Result-level `decisionReplayEvidenceFieldInventory` derived from already-built evidence field groups and source statuses.
 - Result-level `decisionReplayEvidenceNullSafetySummary` derived from already-built null, missing, unavailable, and no-healthy/failure-path evidence.
+- Result-level `decisionReplayEvidenceStatusRollup` derived from already-built evidence lane statuses and boundary state.
 - Exactness, lab proof, and production not-proven boundaries.
 - Replay, what-if, and structured logging readiness marked future/not implemented.
 
@@ -536,6 +567,9 @@ after `results[].decisionReplayEvidenceBoundarySummary` and the already-built up
 The evidence null-safety summary field is exposed as `results[].decisionReplayEvidenceNullSafetySummary` and is
 derived after `results[].decisionReplayEvidenceFieldInventory` and the already-built upstream evidence lanes are
 available.
+
+The evidence status rollup field is exposed as `results[].decisionReplayEvidenceStatusRollup` and is derived after
+`results[].decisionReplayEvidenceNullSafetySummary` and the already-built upstream evidence lanes are available.
 
 The exposure is additive controlled lab explainability only. It does not change routing selection,
 score calculation, strategy weights, route/proxy behavior, or existing API response fields.
@@ -902,6 +936,7 @@ The Decision Vector is a foundation for current read-only dominant-factor explai
 - Decision replay evidence boundary summary: implemented as additive read-only lab boundary metadata over already-built boundary fields and statuses only.
 - Decision replay evidence field inventory: implemented as additive read-only lab field inventory over already-built evidence field groups only.
 - Decision evidence null-safety summary: implemented as additive read-only lab null-safety metadata over already-built evidence lanes only.
+- Decision evidence status rollup: implemented as additive read-only lab status metadata over already-built evidence lanes only.
 - Broader factor modeling beyond current returned calculator contribution data: future/not implemented.
 - Replay execution: future/not implemented.
 - What-if experiments: future/not implemented.

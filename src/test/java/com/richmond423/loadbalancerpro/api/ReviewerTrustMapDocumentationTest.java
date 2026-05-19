@@ -118,9 +118,11 @@ class ReviewerTrustMapDocumentationTest {
                 "Decision Vector Foundation",
                 "Decision Replay Evidence Field Inventory",
                 "Decision Evidence Null-Safety Summary",
+                "Decision Evidence Status Rollup",
                 "ENTERPRISE_LAB_DECISION_VECTOR.md",
                 "ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_FIELD_INVENTORY.md",
                 "ENTERPRISE_LAB_DECISION_EVIDENCE_NULL_SAFETY_SUMMARY.md",
+                "ENTERPRISE_LAB_DECISION_EVIDENCE_STATUS_ROLLUP.md",
                 "Candidate Comparison Limits",
                 "Candidate Evidence Cards",
                 "Candidate Review Questions",
@@ -181,6 +183,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("Decision Vector Foundation"));
         assertTrue(demoPath.contains("Decision Replay Evidence Field Inventory"));
         assertTrue(demoPath.contains("Decision Evidence Null-Safety Summary"));
+        assertTrue(demoPath.contains("Decision Evidence Status Rollup"));
         assertTrue(demoPath.contains("Candidate Comparison Limits"));
         assertTrue(demoPath.contains("Candidate Evidence Cards"));
         assertTrue(demoPath.contains("Candidate Review Questions"));
@@ -293,6 +296,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("Decision Vector Foundation"));
         assertTrue(matrix.contains("Decision Replay Evidence Field Inventory"));
         assertTrue(matrix.contains("Decision Evidence Null-Safety Summary"));
+        assertTrue(matrix.contains("Decision Evidence Status Rollup"));
         assertTrue(matrix.contains("Structured Decision Evidence"));
         assertTrue(matrix.contains("EnterpriseLabDecisionVectorDocumentationTest"));
         assertTrue(matrix.contains("Candidate Decision Vector"));
@@ -330,6 +334,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("Decision Replay Evidence Boundary Summary metadata"));
         assertTrue(matrix.contains("Decision Replay Evidence Field Inventory metadata"));
         assertTrue(matrix.contains("Decision Evidence Null-Safety Summary metadata"));
+        assertTrue(matrix.contains("Decision Evidence Status Rollup"));
         assertTrue(matrix.contains("known candidate signals"));
         assertTrue(matrix.contains("unknown or unexposed candidate signals"));
         assertTrue(matrix.contains("key input signal mapping"));
@@ -524,6 +529,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(section.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_BOUNDARY_SUMMARY.md"));
         assertTrue(section.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_FIELD_INVENTORY.md"));
         assertTrue(section.contains("ENTERPRISE_LAB_DECISION_EVIDENCE_NULL_SAFETY_SUMMARY.md"));
+        assertTrue(section.contains("ENTERPRISE_LAB_DECISION_EVIDENCE_STATUS_ROLLUP.md"));
         assertTrue(section.contains("Decision Vector Foundation"));
         assertTrue(section.contains("/routing-demo.html"));
         assertTrue(section.contains("structured contract behind the cockpit explanation"));
@@ -544,6 +550,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(section.contains("Decision Replay Evidence Boundary Summary metadata"));
         assertTrue(section.contains("Decision Replay Evidence Field Inventory metadata"));
         assertTrue(section.contains("Decision Evidence Null-Safety Summary metadata"));
+        assertTrue(section.contains("Decision Evidence Status Rollup metadata"));
         assertTrue(section.contains("replay readiness"));
         assertTrue(section.contains("Candidate Decision Vector"));
         assertTrue(section.contains("fallback text when non-selection cannot be explained from visible data"));
@@ -565,6 +572,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("results[].decisionreplayevidenceboundarysummary"));
         assertTrue(normalized.contains("results[].decisionreplayevidencefieldinventory"));
         assertTrue(normalized.contains("results[].decisionreplayevidencenullsafetysummary"));
+        assertTrue(normalized.contains("results[].decisionreplayevidencestatusrollup"));
         assertTrue(normalized.contains("decision replay snapshot"));
         assertTrue(normalized.contains("decision replay reconstruction trace"));
         assertTrue(normalized.contains("decision replay capsule"));
@@ -573,6 +581,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("decision replay evidence boundary summary"));
         assertTrue(normalized.contains("decision replay evidence field inventory"));
         assertTrue(normalized.contains("decision evidence null-safety summary"));
+        assertTrue(normalized.contains("decision evidence status rollup"));
         assertTrue(normalized.contains("does not persist audit logs"));
         assertTrue(normalized.contains("does not persist traces or audit logs"));
         assertTrue(normalized.contains("does not persist capsules or audit logs"));
@@ -581,6 +590,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("does not persist boundary-summary data or audit logs"));
         assertTrue(normalized.contains("does not persist field-inventory data or audit logs"));
         assertTrue(normalized.contains("does not persist null-safety data or audit logs"));
+        assertTrue(normalized.contains("does not persist status-rollup data or audit logs"));
         assertTrue(normalized.contains("does not use reflection"));
         assertTrue(normalized.contains("generate a new fingerprint"));
         assertTrue(normalized.contains("execute replay"));

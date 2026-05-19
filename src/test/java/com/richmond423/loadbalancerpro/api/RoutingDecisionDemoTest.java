@@ -755,6 +755,15 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Available Null-Safety Items"));
         assertTrue(page.contains("Partial Null-Safety Items"));
         assertTrue(page.contains("Unknown Null-Safety Items"));
+        assertTrue(page.contains("Decision Evidence Status Rollup"));
+        assertTrue(page.contains("decisionReplayEvidenceStatusRollup: "));
+        assertTrue(page.contains("Status Rollup"));
+        assertTrue(page.contains("Evidence Lane Status"));
+        assertTrue(page.contains("Available Lanes"));
+        assertTrue(page.contains("Partial Lanes"));
+        assertTrue(page.contains("Unknown Lanes"));
+        assertTrue(page.contains("Selected Candidate Present"));
+        assertTrue(page.contains("Boundary Present"));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));

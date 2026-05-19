@@ -1295,6 +1295,10 @@
             <div id="decision-replay-evidence-null-safety-summary-explanation">Run routing comparison to populate null-safety evidence.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Evidence Status Rollup</strong>
+            <div id="decision-replay-evidence-status-rollup-explanation">Run routing comparison to populate Status Rollup, Evidence Lane Status, Available Lanes, Partial Lanes, Unknown Lanes, Selected Candidate Present, and Boundary Present metadata.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3471,6 +3475,7 @@
         renderDecisionReplayEvidenceBoundarySummaryExplanation(response);
         renderDecisionReplayEvidenceFieldInventoryExplanation(response);
         renderDecisionReplayEvidenceNullSafetySummaryExplanation(response);
+        renderDecisionReplayEvidenceStatusRollupExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3486,6 +3491,7 @@
         renderDecisionReplayEvidenceBoundarySummaryExplanation(response);
         renderDecisionReplayEvidenceFieldInventoryExplanation(response);
         renderDecisionReplayEvidenceNullSafetySummaryExplanation(response);
+        renderDecisionReplayEvidenceStatusRollupExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3503,6 +3509,7 @@
       renderDecisionReplayEvidenceBoundarySummaryExplanation(response);
       renderDecisionReplayEvidenceFieldInventoryExplanation(response);
       renderDecisionReplayEvidenceNullSafetySummaryExplanation(response);
+      renderDecisionReplayEvidenceStatusRollupExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3552,6 +3559,7 @@
       renderDecisionReplayEvidenceBoundarySummaryExplanation(state.routing);
       renderDecisionReplayEvidenceFieldInventoryExplanation(state.routing);
       renderDecisionReplayEvidenceNullSafetySummaryExplanation(state.routing);
+      renderDecisionReplayEvidenceStatusRollupExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -3979,6 +3987,50 @@
       }).join("");
     }
 
+    function renderDecisionReplayEvidenceStatusRollupExplanation(response) {
+      const container = document.getElementById("decision-replay-evidence-status-rollup-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate status rollup evidence.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; evidence status rollup is unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const rollup = result.decisionReplayEvidenceStatusRollup || {};
+        const items = Array.isArray(rollup.statusItems)
+          ? rollup.statusItems.map((item) =>
+            (item.laneId || "unknown-lane") + "=" + (item.status || "UNKNOWN")
+          ).join("; ")
+          : "";
+        const firstItem = Array.isArray(rollup.statusItems) && rollup.statusItems.length > 0
+          ? rollup.statusItems[0]
+          : {};
+        const selectedPresent = firstItem && Object.prototype.hasOwnProperty.call(firstItem, "selectedCandidatePresent")
+          ? String(Boolean(firstItem.selectedCandidatePresent))
+          : "not returned";
+        const boundaryPresent = Array.isArray(rollup.statusItems)
+          ? String(rollup.statusItems.some((item) => item && item.boundaryPresent))
+          : "not returned";
+        const summary = rollup.statusRollupSchemaVersion
+          ? "status=" + (rollup.status || "unknown")
+            + "; selectedCandidate=" + (rollup.selectedCandidateId || "not returned")
+            + "; candidateCount=" + String(rollup.candidateCount || 0)
+            + "; availableLanes=" + String(rollup.availableLaneCount || 0)
+            + "; partialLanes=" + String(rollup.partialLaneCount || 0)
+            + "; unknownLanes=" + String(rollup.unknownLaneCount || 0)
+            + "; selectedCandidatePresent=" + selectedPresent
+            + "; boundaryPresent=" + boundaryPresent
+            + "; evidenceLaneStatus=" + (items || "none")
+          : (rollup.explanation || "Decision Evidence Status Rollup is unavailable; no status rollup claim is invented.");
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(summary) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab status metadata only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, external calls, reflection, scorecard, quality ranking, approval, remediation, enforcement, production-readiness claim, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
     function formatFinite(value) {
       const numeric = Number(value);
       return Number.isFinite(numeric) ? numeric.toFixed(6) : "not returned";
@@ -4370,6 +4422,21 @@
             + ", noInventedEvidence=true";
         }).join("\n")
         : "- Not run";
+      const evidenceStatusRollupLines = routingResults.length
+        ? routingResults.map((result) => {
+          const rollup = result.decisionReplayEvidenceStatusRollup || {};
+          const itemCount = Array.isArray(rollup.statusItems)
+            ? rollup.statusItems.length
+            : 0;
+          return "- " + result.strategyId
+            + ": statusRollup=" + (rollup.status || "unknown")
+            + ", statusItems=" + String(itemCount)
+            + ", availableLanes=" + String(rollup.availableLaneCount || 0)
+            + ", partialLanes=" + String(rollup.partialLaneCount || 0)
+            + ", unknownLanes=" + String(rollup.unknownLaneCount || 0)
+            + ", metadataOnly=true";
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -4426,6 +4493,9 @@
         "",
         "## Decision Evidence Null-Safety Summary",
         evidenceNullSafetyLines,
+        "",
+        "## Decision Evidence Status Rollup",
+        evidenceStatusRollupLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

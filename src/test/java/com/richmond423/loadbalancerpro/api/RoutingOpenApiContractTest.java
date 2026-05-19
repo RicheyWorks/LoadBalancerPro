@@ -89,6 +89,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayEvidenceFieldInventoryResponse");
         assertRef(required(resultProperties, "/decisionReplayEvidenceNullSafetySummary"),
                 "#/components/schemas/RoutingDecisionReplayEvidenceNullSafetySummaryResponse");
+        assertRef(required(resultProperties, "/decisionReplayEvidenceStatusRollup"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceStatusRollupResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -322,6 +324,28 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(nullSafetyItemProperties, "/unavailableFieldPaths/type").asText());
         assertEquals("integer", required(nullSafetyItemProperties, "/checkedFieldCount/type").asText());
         assertEquals("integer", required(nullSafetyItemProperties, "/unavailableFieldCount/type").asText());
+
+        JsonNode statusRollupProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceStatusRollupResponse/properties");
+        assertEquals("boolean", required(statusRollupProperties, "/readOnly/type").asText());
+        assertEquals("string", required(statusRollupProperties, "/statusRollupSchemaVersion/type").asText());
+        assertEquals("string", required(statusRollupProperties, "/status/type").asText());
+        assertEquals("integer", required(statusRollupProperties, "/availableLaneCount/type").asText());
+        assertEquals("integer", required(statusRollupProperties, "/partialLaneCount/type").asText());
+        assertEquals("integer", required(statusRollupProperties, "/unknownLaneCount/type").asText());
+        assertEquals("array", required(statusRollupProperties, "/statusItems/type").asText());
+        assertRef(required(statusRollupProperties, "/statusItems/items"),
+                "#/components/schemas/DecisionReplayEvidenceStatusRollupItemResponse");
+
+        JsonNode statusRollupItemProperties = required(docs,
+                "/components/schemas/DecisionReplayEvidenceStatusRollupItemResponse/properties");
+        assertEquals("string", required(statusRollupItemProperties, "/laneId/type").asText());
+        assertEquals("string", required(statusRollupItemProperties, "/status/type").asText());
+        assertEquals("string", required(statusRollupItemProperties, "/sourceFieldPath/type").asText());
+        assertEquals("boolean", required(statusRollupItemProperties, "/readOnly/type").asText());
+        assertEquals("boolean", required(statusRollupItemProperties, "/selectedCandidatePresent/type").asText());
+        assertEquals("integer", required(statusRollupItemProperties, "/candidateCount/type").asText());
+        assertEquals("boolean", required(statusRollupItemProperties, "/boundaryPresent/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

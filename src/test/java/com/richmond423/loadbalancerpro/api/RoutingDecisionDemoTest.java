@@ -744,6 +744,17 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Available Inventory Groups"));
         assertTrue(page.contains("Partial Inventory Groups"));
         assertTrue(page.contains("Unknown Inventory Groups"));
+        assertTrue(page.contains("Decision Evidence Null-Safety Summary"));
+        assertTrue(page.contains("decisionReplayEvidenceNullSafetySummary: "));
+        assertTrue(page.contains("Null-Safety Status"));
+        assertTrue(page.contains("Null-Safety Items"));
+        assertTrue(page.contains("Checked Field Paths"));
+        assertTrue(page.contains("Unavailable Field Paths"));
+        assertTrue(page.contains("No-Healthy Path Safety"));
+        assertTrue(page.contains("No Invented Evidence"));
+        assertTrue(page.contains("Available Null-Safety Items"));
+        assertTrue(page.contains("Partial Null-Safety Items"));
+        assertTrue(page.contains("Unknown Null-Safety Items"));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
@@ -1150,7 +1161,24 @@ class RoutingDecisionDemoTest {
                     .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[9]"
                             + ".inventoryId", is("linked-fingerprint-fields")))
                     .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[11]"
-                            + ".inventoryId", is("production-not-proven-boundary-fields")));
+                            + ".inventoryId", is("production-not-proven-boundary-fields")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.readOnly", is(true)))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary"
+                            + ".nullSafetySchemaVersion",
+                            is("decision-replay-evidence-null-safety-summary/v1")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.status").isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.decisionVectorStatus",
+                            is("AVAILABLE")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary"
+                            + ".decisionReplayEvidenceFieldInventoryStatus").isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[0]"
+                            + ".nullSafetyId", is("selected-candidate-null-safety")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[5]"
+                            + ".nullSafetyId", is("linked-fingerprint-null-safety")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[9]"
+                            + ".nullSafetyId", is("no-healthy-path-null-safety")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[11]"
+                            + ".nullSafetyId", is("production-not-proven-null-safety")));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "routing demo comparison must not construct CloudManager");

@@ -87,6 +87,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayEvidenceBoundarySummaryResponse");
         assertRef(required(resultProperties, "/decisionReplayEvidenceFieldInventory"),
                 "#/components/schemas/RoutingDecisionReplayEvidenceFieldInventoryResponse");
+        assertRef(required(resultProperties, "/decisionReplayEvidenceNullSafetySummary"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceNullSafetySummaryResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -296,6 +298,30 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(inventoryEntryProperties, "/missingOrUnavailableFieldPaths/type").asText());
         assertEquals("integer", required(inventoryEntryProperties, "/observedFieldCount/type").asText());
         assertEquals("integer", required(inventoryEntryProperties, "/missingOrUnavailableFieldCount/type").asText());
+
+        JsonNode nullSafetyProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceNullSafetySummaryResponse/properties");
+        assertEquals("boolean", required(nullSafetyProperties, "/readOnly/type").asText());
+        assertEquals("string", required(nullSafetyProperties, "/nullSafetySchemaVersion/type").asText());
+        assertEquals("string", required(nullSafetyProperties, "/status/type").asText());
+        assertEquals("string", required(nullSafetyProperties, "/decisionReplayEvidenceFieldInventoryStatus/type")
+                .asText());
+        assertEquals("integer", required(nullSafetyProperties, "/availableNullSafetyItemCount/type").asText());
+        assertEquals("integer", required(nullSafetyProperties, "/partialNullSafetyItemCount/type").asText());
+        assertEquals("integer", required(nullSafetyProperties, "/unknownNullSafetyItemCount/type").asText());
+        assertEquals("array", required(nullSafetyProperties, "/nullSafetyItems/type").asText());
+        assertRef(required(nullSafetyProperties, "/nullSafetyItems/items"),
+                "#/components/schemas/DecisionReplayEvidenceNullSafetyItemResponse");
+
+        JsonNode nullSafetyItemProperties = required(docs,
+                "/components/schemas/DecisionReplayEvidenceNullSafetyItemResponse/properties");
+        assertEquals("string", required(nullSafetyItemProperties, "/nullSafetyId/type").asText());
+        assertEquals("string", required(nullSafetyItemProperties, "/status/type").asText());
+        assertEquals("string", required(nullSafetyItemProperties, "/sourceFieldPath/type").asText());
+        assertEquals("array", required(nullSafetyItemProperties, "/checkedFieldPaths/type").asText());
+        assertEquals("array", required(nullSafetyItemProperties, "/unavailableFieldPaths/type").asText());
+        assertEquals("integer", required(nullSafetyItemProperties, "/checkedFieldCount/type").asText());
+        assertEquals("integer", required(nullSafetyItemProperties, "/unavailableFieldCount/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

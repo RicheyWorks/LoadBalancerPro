@@ -1291,6 +1291,10 @@
             <div id="decision-replay-evidence-field-inventory-explanation">Run routing comparison to populate field inventory evidence.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Evidence Null-Safety Summary</strong>
+            <div id="decision-replay-evidence-null-safety-summary-explanation">Run routing comparison to populate null-safety evidence.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3466,6 +3470,7 @@
         renderDecisionReplayEvidenceSourceMapExplanation(response);
         renderDecisionReplayEvidenceBoundarySummaryExplanation(response);
         renderDecisionReplayEvidenceFieldInventoryExplanation(response);
+        renderDecisionReplayEvidenceNullSafetySummaryExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3480,6 +3485,7 @@
         renderDecisionReplayEvidenceSourceMapExplanation(response);
         renderDecisionReplayEvidenceBoundarySummaryExplanation(response);
         renderDecisionReplayEvidenceFieldInventoryExplanation(response);
+        renderDecisionReplayEvidenceNullSafetySummaryExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3496,6 +3502,7 @@
       renderDecisionReplayEvidenceSourceMapExplanation(response);
       renderDecisionReplayEvidenceBoundarySummaryExplanation(response);
       renderDecisionReplayEvidenceFieldInventoryExplanation(response);
+      renderDecisionReplayEvidenceNullSafetySummaryExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3544,6 +3551,7 @@
       renderDecisionReplayEvidenceSourceMapExplanation(state.routing);
       renderDecisionReplayEvidenceBoundarySummaryExplanation(state.routing);
       renderDecisionReplayEvidenceFieldInventoryExplanation(state.routing);
+      renderDecisionReplayEvidenceNullSafetySummaryExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -3915,6 +3923,59 @@
         return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
           + escapeHtml(summary) + "<br>"
           + "<span class=\"muted\">Boundary: read-only lab field metadata only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, external calls, new fingerprint generation, or server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
+    function renderDecisionReplayEvidenceNullSafetySummaryExplanation(response) {
+      const container = document.getElementById("decision-replay-evidence-null-safety-summary-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate null-safety evidence.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; evidence null-safety status is unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const nullSafety = result.decisionReplayEvidenceNullSafetySummary || {};
+        const items = Array.isArray(nullSafety.nullSafetyItems)
+          ? nullSafety.nullSafetyItems.map((item) =>
+            (item.nullSafetyId || "unknown-null-safety") + "=" + (item.status || "UNKNOWN")
+          ).join("; ")
+          : "";
+        const firstItem = Array.isArray(nullSafety.nullSafetyItems) && nullSafety.nullSafetyItems.length > 0
+          ? nullSafety.nullSafetyItems[0]
+          : {};
+        const checked = Array.isArray(firstItem.checkedFieldPaths)
+          ? firstItem.checkedFieldPaths.slice(0, 8).join(", ") || "none"
+          : "none";
+        const unavailable = Array.isArray(firstItem.unavailableFieldPaths)
+          ? firstItem.unavailableFieldPaths.slice(0, 8).join(", ") || "none"
+          : "none";
+        const noHealthyItem = Array.isArray(nullSafety.nullSafetyItems)
+          ? nullSafety.nullSafetyItems.find((item) =>
+            item && item.nullSafetyId === "no-healthy-path-null-safety")
+          : null;
+        const noHealthy = noHealthyItem
+          ? (noHealthyItem.status || "UNKNOWN") + " checked=" + String(noHealthyItem.checkedFieldCount || 0)
+            + " unavailable=" + String(noHealthyItem.unavailableFieldCount || 0)
+          : "not returned";
+        const summary = nullSafety.nullSafetySchemaVersion
+          ? "status=" + (nullSafety.status || "unknown")
+            + "; selectedCandidate=" + (nullSafety.selectedCandidateId || "not returned")
+            + "; candidateCount=" + String(nullSafety.candidateCount || 0)
+            + "; availableNullSafetyItems=" + String(nullSafety.availableNullSafetyItemCount || 0)
+            + "; partialNullSafetyItems=" + String(nullSafety.partialNullSafetyItemCount || 0)
+            + "; unknownNullSafetyItems=" + String(nullSafety.unknownNullSafetyItemCount || 0)
+            + "; nullSafetyItems=" + (items || "none")
+            + "; checkedFieldPaths=" + checked
+            + "; unavailableFieldPaths=" + unavailable
+            + "; noHealthyPathSafety=" + noHealthy
+          : (nullSafety.explanation || "Decision Evidence Null-Safety Summary is unavailable; no null-safety claim is invented.");
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(summary) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab null-safety metadata only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, external calls, reflection, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation. No selected candidate, candidate set, alternative, score gap, largest delta factor, fingerprint, replay claim, or production proof is invented.</span></p>";
       }).join("");
     }
 
@@ -4294,6 +4355,21 @@
             + ", unknownInventoryGroups=" + String(inventory.unknownInventoryGroupCount || 0);
         }).join("\n")
         : "- Not run";
+      const evidenceNullSafetyLines = routingResults.length
+        ? routingResults.map((result) => {
+          const nullSafety = result.decisionReplayEvidenceNullSafetySummary || {};
+          const itemCount = Array.isArray(nullSafety.nullSafetyItems)
+            ? nullSafety.nullSafetyItems.length
+            : 0;
+          return "- " + result.strategyId
+            + ": nullSafetyStatus=" + (nullSafety.status || "unknown")
+            + ", nullSafetyItems=" + String(itemCount)
+            + ", availableNullSafetyItems=" + String(nullSafety.availableNullSafetyItemCount || 0)
+            + ", partialNullSafetyItems=" + String(nullSafety.partialNullSafetyItemCount || 0)
+            + ", unknownNullSafetyItems=" + String(nullSafety.unknownNullSafetyItemCount || 0)
+            + ", noInventedEvidence=true";
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -4347,6 +4423,9 @@
         "",
         "## Decision Replay Evidence Field Inventory",
         evidenceFieldInventoryLines,
+        "",
+        "## Decision Evidence Null-Safety Summary",
+        evidenceNullSafetyLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

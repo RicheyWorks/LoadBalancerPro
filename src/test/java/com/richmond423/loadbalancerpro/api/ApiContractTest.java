@@ -173,7 +173,8 @@ class ApiContractTest {
                 "dominantFactorAnalysis", "decisionDeltaAnalysis", "decisionReplaySnapshot",
                 "decisionReplayReconstructionTrace", "decisionReplayCapsule",
                 "decisionReplayReadinessChecklist", "decisionReplayEvidenceSourceMap",
-                "decisionReplayEvidenceBoundarySummary", "decisionReplayEvidenceFieldInventory");
+                "decisionReplayEvidenceBoundarySummary", "decisionReplayEvidenceFieldInventory",
+                "decisionReplayEvidenceNullSafetySummary");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -276,6 +277,18 @@ class ApiContractTest {
         assertSchemaProperties(docs, "DecisionReplayEvidenceFieldInventoryEntryResponse", "inventoryId", "label",
                 "status", "sourceFieldPath", "observedFieldPaths", "missingOrUnavailableFieldPaths",
                 "observedFieldCount", "missingOrUnavailableFieldCount", "evidenceSummary", "boundaryNote");
+        assertSchemaProperties(docs, "RoutingDecisionReplayEvidenceNullSafetySummaryResponse", "readOnly",
+                "nullSafetySchemaVersion", "source", "status", "strategyId", "selectedCandidateId",
+                "candidateCount", "decisionVectorStatus", "dominantFactorAnalysisStatus",
+                "decisionDeltaAnalysisStatus", "decisionReplaySnapshotStatus",
+                "decisionReplayReconstructionTraceStatus", "decisionReplayCapsuleStatus",
+                "decisionReplayReadinessChecklistStatus", "decisionReplayEvidenceSourceMapStatus",
+                "decisionReplayEvidenceBoundarySummaryStatus", "decisionReplayEvidenceFieldInventoryStatus",
+                "availableNullSafetyItemCount", "partialNullSafetyItemCount", "unknownNullSafetyItemCount",
+                "nullSafetyItems", "explanation", "boundaryNote", "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "DecisionReplayEvidenceNullSafetyItemResponse", "nullSafetyId", "label",
+                "status", "sourceFieldPath", "checkedFieldPaths", "unavailableFieldPaths",
+                "checkedFieldCount", "unavailableFieldCount", "safetySummary", "boundaryNote");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -544,6 +557,27 @@ class ApiContractTest {
                         + ".inventoryId", is("linked-fingerprint-fields")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[11]"
                         + ".inventoryId", is("production-not-proven-boundary-fields")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary"
+                        + ".nullSafetySchemaVersion",
+                        is("decision-replay-evidence-null-safety-summary/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.status").isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.decisionVectorStatus",
+                        is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary"
+                        + ".decisionReplayEvidenceFieldInventoryStatus", is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.selectedCandidateId",
+                        is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.candidateCount",
+                        is(2)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[0]"
+                        + ".nullSafetyId", is("selected-candidate-null-safety")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[5]"
+                        + ".nullSafetyId", is("linked-fingerprint-null-safety")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[9]"
+                        + ".nullSafetyId", is("no-healthy-path-null-safety")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[11]"
+                        + ".nullSafetyId", is("production-not-proven-null-safety")))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -673,6 +707,25 @@ class ApiContractTest {
                         + ".status", is("UNKNOWN")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[11]"
                         + ".inventoryId", is("production-not-proven-boundary-fields")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.decisionVectorStatus",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary"
+                        + ".decisionReplayEvidenceFieldInventoryStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.selectedCandidateId",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.candidateCount",
+                        is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[0]"
+                        + ".status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[1]"
+                        + ".status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[9]"
+                        + ".nullSafetyId", is("no-healthy-path-null-safety")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[9]"
+                        + ".status", is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[11]"
+                        + ".nullSafetyId", is("production-not-proven-null-safety")))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

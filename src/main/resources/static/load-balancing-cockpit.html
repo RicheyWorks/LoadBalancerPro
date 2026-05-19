@@ -1283,6 +1283,10 @@
             <div id="decision-replay-evidence-source-map-explanation">Run routing comparison to populate source-map evidence relationships.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Replay Evidence Boundary Summary</strong>
+            <div id="decision-replay-evidence-boundary-summary-explanation">Run routing comparison to populate lab-only and not-proven boundary evidence.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3456,6 +3460,7 @@
         renderDecisionReplayCapsuleExplanation(response);
         renderDecisionReplayReadinessChecklistExplanation(response);
         renderDecisionReplayEvidenceSourceMapExplanation(response);
+        renderDecisionReplayEvidenceBoundarySummaryExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3468,6 +3473,7 @@
         renderDecisionReplayCapsuleExplanation(response);
         renderDecisionReplayReadinessChecklistExplanation(response);
         renderDecisionReplayEvidenceSourceMapExplanation(response);
+        renderDecisionReplayEvidenceBoundarySummaryExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3482,6 +3488,7 @@
       renderDecisionReplayCapsuleExplanation(response);
       renderDecisionReplayReadinessChecklistExplanation(response);
       renderDecisionReplayEvidenceSourceMapExplanation(response);
+      renderDecisionReplayEvidenceBoundarySummaryExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3528,6 +3535,7 @@
       renderDecisionReplayCapsuleExplanation(state.routing);
       renderDecisionReplayReadinessChecklistExplanation(state.routing);
       renderDecisionReplayEvidenceSourceMapExplanation(state.routing);
+      renderDecisionReplayEvidenceBoundarySummaryExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -3824,6 +3832,37 @@
         return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
           + escapeHtml(summary) + "<br>"
           + "<span class=\"muted\">Boundary: read-only lab source mapping only; no replay execution, what-if mutation, source-map persistence, upload/share/download, telemetry, production certification, new fingerprint generation, or server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
+    function renderDecisionReplayEvidenceBoundarySummaryExplanation(response) {
+      const container = document.getElementById("decision-replay-evidence-boundary-summary-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate lab-only and not-proven boundary evidence.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; evidence boundary-summary status is unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const boundarySummary = result.decisionReplayEvidenceBoundarySummary || {};
+        const items = Array.isArray(boundarySummary.boundaryItems)
+          ? boundarySummary.boundaryItems.map((item) =>
+            (item.boundaryId || "unknown-boundary") + "=" + (item.status || "UNKNOWN")
+          ).join("; ")
+          : "";
+        const summary = boundarySummary.boundarySummarySchemaVersion
+          ? "status=" + (boundarySummary.status || "unknown")
+            + "; selectedCandidate=" + (boundarySummary.selectedCandidateId || "not returned")
+            + "; candidateCount=" + String(boundarySummary.candidateCount || 0)
+            + "; sourceMapStatus=" + (boundarySummary.decisionReplayEvidenceSourceMapStatus || "UNKNOWN")
+            + "; boundaryItems=" + (items || "none")
+          : (boundarySummary.explanation || "Decision Replay Evidence Boundary Summary is unavailable; no boundary summary claim is invented.");
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(summary) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab boundary metadata only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, external calls, new fingerprint generation, or server-side export/PDF/ZIP generation.</span></p>";
       }).join("");
     }
 
@@ -4176,6 +4215,19 @@
             + ", linkedCapsuleFingerprint=" + (sourceMap.linkedReplayCapsuleFingerprint || "not linked");
         }).join("\n")
         : "- Not run";
+      const evidenceBoundarySummaryLines = routingResults.length
+        ? routingResults.map((result) => {
+          const boundarySummary = result.decisionReplayEvidenceBoundarySummary || {};
+          const itemCount = Array.isArray(boundarySummary.boundaryItems)
+            ? boundarySummary.boundaryItems.length
+            : 0;
+          return "- " + result.strategyId
+            + ": boundarySummaryStatus=" + (boundarySummary.status || "unknown")
+            + ", boundaryItems=" + String(itemCount)
+            + ", sourceMapStatus=" + (boundarySummary.decisionReplayEvidenceSourceMapStatus || "unknown")
+            + ", selected=" + (boundarySummary.selectedCandidateId || "not returned");
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -4223,6 +4275,9 @@
         "",
         "## Decision Replay Evidence Source Map",
         evidenceSourceMapLines,
+        "",
+        "## Decision Replay Evidence Boundary Summary",
+        evidenceBoundarySummaryLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

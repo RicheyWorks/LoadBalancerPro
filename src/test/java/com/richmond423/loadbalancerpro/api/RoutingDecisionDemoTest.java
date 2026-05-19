@@ -713,6 +713,12 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("id=\"decision-vector-source-map\""));
         assertTrue(page.contains("id=\"decision-vector-source-map-fingerprints\""));
         assertTrue(page.contains("id=\"decision-vector-source-map-boundary\""));
+        assertTrue(page.contains("Decision Replay Evidence Boundary Summary"));
+        assertTrue(page.contains("Boundary Items"));
+        assertTrue(page.contains("Not-Proven Boundary"));
+        assertTrue(page.contains("id=\"decision-vector-boundary-summary\""));
+        assertTrue(page.contains("id=\"decision-vector-boundary-items\""));
+        assertTrue(page.contains("id=\"decision-vector-boundary-summary-boundary\""));
         assertTrue(page.contains("# Decision Vector Foundation"));
         assertTrue(page.contains("decisionIdOrLabRunId: "));
         assertTrue(page.contains("candidateVectors: "));
@@ -728,6 +734,7 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("decisionReplayCapsule: "));
         assertTrue(page.contains("decisionReplayReadinessChecklist: "));
         assertTrue(page.contains("decisionReplayEvidenceSourceMap: "));
+        assertTrue(page.contains("decisionReplayEvidenceBoundarySummary: "));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
@@ -1104,7 +1111,22 @@ class RoutingDecisionDemoTest {
                     .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[7].sourceId",
                             is("linked-fingerprint-source")))
                     .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[8].sourceId",
-                            is("read-only-boundary-source")));
+                            is("read-only-boundary-source")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.readOnly", is(true)))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary"
+                            + ".boundarySummarySchemaVersion",
+                            is("decision-replay-evidence-boundary-summary/v1")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.status").isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.decisionVectorStatus",
+                            is("AVAILABLE")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary"
+                            + ".decisionReplayEvidenceSourceMapStatus").isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[0]"
+                            + ".boundaryId", is("lab-only-boundary")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[8]"
+                            + ".boundaryId", is("fingerprint-boundary")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[9]"
+                            + ".boundaryId", is("production-not-proven-boundary")));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "routing demo comparison must not construct CloudManager");

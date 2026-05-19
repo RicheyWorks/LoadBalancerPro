@@ -17,5 +17,6 @@ public record RoutingComparisonResultResponse(
         RoutingDecisionReplayReconstructionTraceResponse decisionReplayReconstructionTrace,
         RoutingDecisionReplayCapsuleResponse decisionReplayCapsule,
         RoutingDecisionReplayReadinessChecklistResponse decisionReplayReadinessChecklist,
-        RoutingDecisionReplayEvidenceSourceMapResponse decisionReplayEvidenceSourceMap) {
+        RoutingDecisionReplayEvidenceSourceMapResponse decisionReplayEvidenceSourceMap,
+        RoutingDecisionReplayEvidenceBoundarySummaryResponse decisionReplayEvidenceBoundarySummary) {
 }

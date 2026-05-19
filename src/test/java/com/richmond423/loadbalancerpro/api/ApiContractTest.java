@@ -172,7 +172,8 @@ class ApiContractTest {
                 "chosenServerId", "reason", "candidateServersConsidered", "scores", "decisionVector",
                 "dominantFactorAnalysis", "decisionDeltaAnalysis", "decisionReplaySnapshot",
                 "decisionReplayReconstructionTrace", "decisionReplayCapsule",
-                "decisionReplayReadinessChecklist", "decisionReplayEvidenceSourceMap");
+                "decisionReplayReadinessChecklist", "decisionReplayEvidenceSourceMap",
+                "decisionReplayEvidenceBoundarySummary");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -254,6 +255,15 @@ class ApiContractTest {
         assertSchemaProperties(docs, "DecisionReplayEvidenceSourceMapEntryResponse", "sourceId", "label",
                 "status", "sourceFieldPath", "downstreamEvidenceFieldPaths", "linkedFingerprint",
                 "evidenceSummary", "boundaryNote");
+        assertSchemaProperties(docs, "RoutingDecisionReplayEvidenceBoundarySummaryResponse", "readOnly",
+                "boundarySummarySchemaVersion", "source", "status", "strategyId", "selectedCandidateId",
+                "candidateCount", "decisionVectorStatus", "dominantFactorAnalysisStatus",
+                "decisionDeltaAnalysisStatus", "decisionReplaySnapshotStatus",
+                "decisionReplayReconstructionTraceStatus", "decisionReplayCapsuleStatus",
+                "decisionReplayReadinessChecklistStatus", "decisionReplayEvidenceSourceMapStatus",
+                "boundaryItems", "explanation", "boundaryNote", "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "DecisionReplayEvidenceBoundarySummaryItemResponse", "boundaryId", "label",
+                "status", "sourceFieldPath", "supportingEvidenceFieldPaths", "evidenceSummary", "boundaryNote");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -480,6 +490,26 @@ class ApiContractTest {
                         is("linked-fingerprint-source")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[8].sourceId",
                         is("read-only-boundary-source")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary"
+                        + ".boundarySummarySchemaVersion",
+                        is("decision-replay-evidence-boundary-summary/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.status",
+                        is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.decisionVectorStatus",
+                        is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary"
+                        + ".decisionReplayEvidenceSourceMapStatus", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.selectedCandidateId",
+                        is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.candidateCount",
+                        is(2)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[0]"
+                        + ".boundaryId", is("lab-only-boundary")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[8]"
+                        + ".boundaryId", is("fingerprint-boundary")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[9]"
+                        + ".boundaryId", is("production-not-proven-boundary")))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -577,6 +607,21 @@ class ApiContractTest {
                         is("UNKNOWN")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[8].status",
                         is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.decisionVectorStatus",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary"
+                        + ".decisionReplayEvidenceSourceMapStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.selectedCandidateId",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.candidateCount",
+                        is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[0]"
+                        + ".boundaryId", is("lab-only-boundary")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[8]"
+                        + ".status", is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[9]"
+                        + ".status", is("AVAILABLE")))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

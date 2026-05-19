@@ -182,6 +182,21 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertEquals("read-only-boundary-source", sourceMap.at("/sourceMapEntries/8/sourceId").asText());
         assertTrue(sourceMap.path("explanation").asText()
                 .contains("derived from already-built lab compare evidence only"));
+
+        JsonNode boundarySummary = result.path("decisionReplayEvidenceBoundarySummary");
+        assertTrue(boundarySummary.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-boundary-summary/v1",
+                boundarySummary.path("boundarySummarySchemaVersion").asText());
+        assertEquals("AVAILABLE", boundarySummary.path("status").asText());
+        assertEquals("edge-alpha", boundarySummary.path("selectedCandidateId").asText());
+        assertEquals(3, boundarySummary.path("candidateCount").asInt());
+        assertEquals("AVAILABLE", boundarySummary.path("decisionVectorStatus").asText());
+        assertEquals("PARTIAL", boundarySummary.path("decisionReplayEvidenceSourceMapStatus").asText());
+        assertEquals("lab-only-boundary", boundarySummary.at("/boundaryItems/0/boundaryId").asText());
+        assertEquals("fingerprint-boundary", boundarySummary.at("/boundaryItems/8/boundaryId").asText());
+        assertEquals("production-not-proven-boundary", boundarySummary.at("/boundaryItems/9/boundaryId").asText());
+        assertTrue(boundarySummary.path("explanation").asText()
+                .contains("already-built lab compare evidence boundary fields"));
     }
 
     @Test
@@ -296,6 +311,20 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceSourceMap/sourceMapEntries/7/status").asText());
         assertEquals("AVAILABLE", result.at("/decisionReplayEvidenceSourceMap/sourceMapEntries/8/status").asText());
         assertTrue(result.at("/decisionReplayEvidenceSourceMap/explanation").asText()
+                .contains("No replay execution"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceBoundarySummary/status").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceBoundarySummary/decisionVectorStatus").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceBoundarySummary/decisionReplayEvidenceSourceMapStatus").asText());
+        assertTrue(result.at("/decisionReplayEvidenceBoundarySummary/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceBoundarySummary/candidateCount").asInt());
+        assertEquals("lab-only-boundary",
+                result.at("/decisionReplayEvidenceBoundarySummary/boundaryItems/0/boundaryId").asText());
+        assertEquals("AVAILABLE",
+                result.at("/decisionReplayEvidenceBoundarySummary/boundaryItems/8/status").asText());
+        assertEquals("AVAILABLE",
+                result.at("/decisionReplayEvidenceBoundarySummary/boundaryItems/9/status").asText());
+        assertTrue(result.at("/decisionReplayEvidenceBoundarySummary/explanation").asText()
                 .contains("No replay execution"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }

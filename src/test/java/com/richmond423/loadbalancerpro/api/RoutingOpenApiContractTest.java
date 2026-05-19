@@ -83,6 +83,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayReadinessChecklistResponse");
         assertRef(required(resultProperties, "/decisionReplayEvidenceSourceMap"),
                 "#/components/schemas/RoutingDecisionReplayEvidenceSourceMapResponse");
+        assertRef(required(resultProperties, "/decisionReplayEvidenceBoundarySummary"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceBoundarySummaryResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -250,6 +252,24 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(sourceMapEntryProperties, "/status/type").asText());
         assertEquals("string", required(sourceMapEntryProperties, "/sourceFieldPath/type").asText());
         assertEquals("array", required(sourceMapEntryProperties, "/downstreamEvidenceFieldPaths/type").asText());
+
+        JsonNode boundarySummaryProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceBoundarySummaryResponse/properties");
+        assertEquals("boolean", required(boundarySummaryProperties, "/readOnly/type").asText());
+        assertEquals("string", required(boundarySummaryProperties, "/boundarySummarySchemaVersion/type").asText());
+        assertEquals("string", required(boundarySummaryProperties, "/status/type").asText());
+        assertEquals("string", required(boundarySummaryProperties, "/decisionReplayEvidenceSourceMapStatus/type")
+                .asText());
+        assertEquals("array", required(boundarySummaryProperties, "/boundaryItems/type").asText());
+        assertRef(required(boundarySummaryProperties, "/boundaryItems/items"),
+                "#/components/schemas/DecisionReplayEvidenceBoundarySummaryItemResponse");
+
+        JsonNode boundaryItemProperties = required(docs,
+                "/components/schemas/DecisionReplayEvidenceBoundarySummaryItemResponse/properties");
+        assertEquals("string", required(boundaryItemProperties, "/boundaryId/type").asText());
+        assertEquals("string", required(boundaryItemProperties, "/status/type").asText());
+        assertEquals("string", required(boundaryItemProperties, "/sourceFieldPath/type").asText());
+        assertEquals("array", required(boundaryItemProperties, "/supportingEvidenceFieldPaths/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

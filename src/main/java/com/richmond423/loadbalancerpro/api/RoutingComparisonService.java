@@ -48,6 +48,7 @@ public class RoutingComparisonService {
     private final RoutingDecisionReplayCapsuleService decisionReplayCapsuleService;
     private final RoutingDecisionReplayReadinessChecklistService decisionReplayReadinessChecklistService;
     private final RoutingDecisionReplayEvidenceSourceMapService decisionReplayEvidenceSourceMapService;
+    private final RoutingDecisionReplayEvidenceBoundarySummaryService decisionReplayEvidenceBoundarySummaryService;
     private final Clock clock;
 
     public RoutingComparisonService() {
@@ -66,6 +67,8 @@ public class RoutingComparisonService {
         this.decisionReplayCapsuleService = new RoutingDecisionReplayCapsuleService();
         this.decisionReplayReadinessChecklistService = new RoutingDecisionReplayReadinessChecklistService();
         this.decisionReplayEvidenceSourceMapService = new RoutingDecisionReplayEvidenceSourceMapService();
+        this.decisionReplayEvidenceBoundarySummaryService =
+                new RoutingDecisionReplayEvidenceBoundarySummaryService();
     }
 
     public RoutingComparisonResponse compare(RoutingComparisonRequest request) {
@@ -231,6 +234,17 @@ public class RoutingComparisonService {
                         decisionReplayReconstructionTrace,
                         decisionReplayCapsule,
                         decisionReplayReadinessChecklist);
+        RoutingDecisionReplayEvidenceBoundarySummaryResponse decisionReplayEvidenceBoundarySummary =
+                decisionReplayEvidenceBoundarySummaryService.boundarySummary(
+                        result.strategyId().externalName(),
+                        null,
+                        dominantFactorAnalysis,
+                        decisionDeltaAnalysis,
+                        decisionReplaySnapshot,
+                        decisionReplayReconstructionTrace,
+                        decisionReplayCapsule,
+                        decisionReplayReadinessChecklist,
+                        decisionReplayEvidenceSourceMap);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -245,7 +259,8 @@ public class RoutingComparisonService {
                 decisionReplayReconstructionTrace,
                 decisionReplayCapsule,
                 decisionReplayReadinessChecklist,
-                decisionReplayEvidenceSourceMap);
+                decisionReplayEvidenceSourceMap,
+                decisionReplayEvidenceBoundarySummary);
     }
 
     private RoutingComparisonResultResponse successfulResultResponse(
@@ -301,6 +316,17 @@ public class RoutingComparisonService {
                         decisionReplayReconstructionTrace,
                         decisionReplayCapsule,
                         decisionReplayReadinessChecklist);
+        RoutingDecisionReplayEvidenceBoundarySummaryResponse decisionReplayEvidenceBoundarySummary =
+                decisionReplayEvidenceBoundarySummaryService.boundarySummary(
+                        result.strategyId().externalName(),
+                        decisionVector,
+                        dominantFactorAnalysis,
+                        decisionDeltaAnalysis,
+                        decisionReplaySnapshot,
+                        decisionReplayReconstructionTrace,
+                        decisionReplayCapsule,
+                        decisionReplayReadinessChecklist,
+                        decisionReplayEvidenceSourceMap);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -315,7 +341,8 @@ public class RoutingComparisonService {
                 decisionReplayReconstructionTrace,
                 decisionReplayCapsule,
                 decisionReplayReadinessChecklist,
-                decisionReplayEvidenceSourceMap);
+                decisionReplayEvidenceSourceMap,
+                decisionReplayEvidenceBoundarySummary);
     }
 
     private RoutingDecisionVectorResponse decisionVector(RoutingStrategyId strategyId,

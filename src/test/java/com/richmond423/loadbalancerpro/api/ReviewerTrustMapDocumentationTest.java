@@ -319,6 +319,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("lab replay-readiness"));
         assertTrue(matrix.contains("lab replay-readiness gap status"));
         assertTrue(matrix.contains("Decision Replay Evidence Source Map relationships"));
+        assertTrue(matrix.contains("Decision Replay Evidence Boundary Summary metadata"));
         assertTrue(matrix.contains("known candidate signals"));
         assertTrue(matrix.contains("unknown or unexposed candidate signals"));
         assertTrue(matrix.contains("key input signal mapping"));
@@ -510,6 +511,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(section.contains("ENTERPRISE_LAB_DECISION_REPLAY_CAPSULE.md"));
         assertTrue(section.contains("ENTERPRISE_LAB_DECISION_REPLAY_READINESS_CHECKLIST.md"));
         assertTrue(section.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_SOURCE_MAP.md"));
+        assertTrue(section.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_BOUNDARY_SUMMARY.md"));
         assertTrue(section.contains("Decision Vector Foundation"));
         assertTrue(section.contains("/routing-demo.html"));
         assertTrue(section.contains("structured contract behind the cockpit explanation"));
@@ -527,6 +529,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(section.contains("Decision Replay Capsule canonical evidence packaging"));
         assertTrue(section.contains("Decision Replay Readiness Checklist status"));
         assertTrue(section.contains("Decision Replay Evidence Source Map relationships"));
+        assertTrue(section.contains("Decision Replay Evidence Boundary Summary metadata"));
         assertTrue(section.contains("replay readiness"));
         assertTrue(section.contains("Candidate Decision Vector"));
         assertTrue(section.contains("fallback text when non-selection cannot be explained from visible data"));
@@ -545,16 +548,19 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(normalized.contains("results[].decisionreplaycapsule"));
         assertTrue(normalized.contains("results[].decisionreplayreadinesschecklist"));
         assertTrue(normalized.contains("results[].decisionreplayevidencesourcemap"));
+        assertTrue(normalized.contains("results[].decisionreplayevidenceboundarysummary"));
         assertTrue(normalized.contains("decision replay snapshot"));
         assertTrue(normalized.contains("decision replay reconstruction trace"));
         assertTrue(normalized.contains("decision replay capsule"));
         assertTrue(normalized.contains("decision replay readiness checklist"));
         assertTrue(normalized.contains("decision replay evidence source map"));
+        assertTrue(normalized.contains("decision replay evidence boundary summary"));
         assertTrue(normalized.contains("does not persist audit logs"));
         assertTrue(normalized.contains("does not persist traces or audit logs"));
         assertTrue(normalized.contains("does not persist capsules or audit logs"));
         assertTrue(normalized.contains("does not persist checklist state or audit logs"));
         assertTrue(normalized.contains("does not persist source-map data or audit logs"));
+        assertTrue(normalized.contains("does not persist boundary-summary data or audit logs"));
         assertTrue(normalized.contains("generate a new fingerprint"));
         assertTrue(normalized.contains("execute replay"));
         assertTrue(normalized.contains("perform what-if mutation"));

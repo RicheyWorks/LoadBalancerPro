@@ -263,6 +263,10 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("id=\"decision-replay-readiness-checklist-explanation\""));
         assertTrue(page.contains("lab replay-readiness checklist evidence"));
         assertTrue(page.contains("linkedCapsuleFingerprint"));
+        assertTrue(page.contains("Decision Replay Evidence Source Map"));
+        assertTrue(page.contains("id=\"decision-replay-evidence-source-map-explanation\""));
+        assertTrue(page.contains("source-map evidence relationships"));
+        assertTrue(page.contains("sourceMapEntries"));
         assertTrue(page.contains("Allocation Math / Capacity Explanation"));
         assertTrue(page.contains("Load-Shedding / Overload Reason Breakdown"));
         assertTrue(page.contains("Remediation Rationale"));

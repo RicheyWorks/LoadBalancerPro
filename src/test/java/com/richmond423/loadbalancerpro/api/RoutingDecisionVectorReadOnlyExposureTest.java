@@ -159,6 +159,29 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertEquals("read-only-boundary-evidence", checklist.at("/checklistItems/8/itemId").asText());
         assertTrue(checklist.path("explanation").asText()
                 .contains("derived from already-built lab compare evidence only"));
+
+        JsonNode sourceMap = result.path("decisionReplayEvidenceSourceMap");
+        assertTrue(sourceMap.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-source-map/v1",
+                sourceMap.path("sourceMapSchemaVersion").asText());
+        assertEquals("PARTIAL", sourceMap.path("status").asText());
+        assertEquals(snapshot.path("snapshotFingerprint").asText(),
+                sourceMap.path("linkedReplaySnapshotFingerprint").asText());
+        assertEquals(trace.path("traceFingerprint").asText(),
+                sourceMap.path("linkedReconstructionTraceFingerprint").asText());
+        assertEquals(capsule.path("capsuleFingerprint").asText(),
+                sourceMap.path("linkedReplayCapsuleFingerprint").asText());
+        assertEquals("edge-alpha", sourceMap.path("selectedCandidateId").asText());
+        assertEquals(3, sourceMap.path("candidateCount").asInt());
+        assertEquals("AVAILABLE", sourceMap.path("decisionVectorStatus").asText());
+        assertEquals("AVAILABLE", sourceMap.path("dominantFactorAnalysisStatus").asText());
+        assertEquals("PARTIAL", sourceMap.path("decisionDeltaAnalysisStatus").asText());
+        assertEquals("PARTIAL", sourceMap.path("decisionReplayReadinessChecklistStatus").asText());
+        assertEquals("decision-vector-source", sourceMap.at("/sourceMapEntries/0/sourceId").asText());
+        assertEquals("linked-fingerprint-source", sourceMap.at("/sourceMapEntries/7/sourceId").asText());
+        assertEquals("read-only-boundary-source", sourceMap.at("/sourceMapEntries/8/sourceId").asText());
+        assertTrue(sourceMap.path("explanation").asText()
+                .contains("derived from already-built lab compare evidence only"));
     }
 
     @Test
@@ -258,6 +281,21 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(result.at("/decisionReplayReadinessChecklist/linkedReplayCapsuleFingerprint").isNull());
         assertEquals("UNKNOWN", result.at("/decisionReplayReadinessChecklist/checklistItems/6/status").asText());
         assertTrue(result.at("/decisionReplayReadinessChecklist/explanation").asText()
+                .contains("No replay execution"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceSourceMap/status").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceSourceMap/decisionVectorStatus").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceSourceMap/decisionReplayCapsuleStatus").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceSourceMap/decisionReplayReadinessChecklistStatus").asText());
+        assertTrue(result.at("/decisionReplayEvidenceSourceMap/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceSourceMap/candidateCount").asInt());
+        assertTrue(result.at("/decisionReplayEvidenceSourceMap/linkedReplaySnapshotFingerprint").isNull());
+        assertTrue(result.at("/decisionReplayEvidenceSourceMap/linkedReconstructionTraceFingerprint").isNull());
+        assertTrue(result.at("/decisionReplayEvidenceSourceMap/linkedReplayCapsuleFingerprint").isNull());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceSourceMap/sourceMapEntries/0/status").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceSourceMap/sourceMapEntries/7/status").asText());
+        assertEquals("AVAILABLE", result.at("/decisionReplayEvidenceSourceMap/sourceMapEntries/8/status").asText());
+        assertTrue(result.at("/decisionReplayEvidenceSourceMap/explanation").asText()
                 .contains("No replay execution"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }

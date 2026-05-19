@@ -1279,6 +1279,10 @@
             <div id="decision-replay-readiness-checklist-explanation">Run routing comparison to populate lab replay-readiness checklist evidence.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Replay Evidence Source Map</strong>
+            <div id="decision-replay-evidence-source-map-explanation">Run routing comparison to populate source-map evidence relationships.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3451,6 +3455,7 @@
         renderDecisionReplayReconstructionTraceExplanation(response);
         renderDecisionReplayCapsuleExplanation(response);
         renderDecisionReplayReadinessChecklistExplanation(response);
+        renderDecisionReplayEvidenceSourceMapExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3462,6 +3467,7 @@
         renderDecisionReplayReconstructionTraceExplanation(response);
         renderDecisionReplayCapsuleExplanation(response);
         renderDecisionReplayReadinessChecklistExplanation(response);
+        renderDecisionReplayEvidenceSourceMapExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3475,6 +3481,7 @@
       renderDecisionReplayReconstructionTraceExplanation(response);
       renderDecisionReplayCapsuleExplanation(response);
       renderDecisionReplayReadinessChecklistExplanation(response);
+      renderDecisionReplayEvidenceSourceMapExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3520,6 +3527,7 @@
       renderDecisionReplayReconstructionTraceExplanation(state.routing);
       renderDecisionReplayCapsuleExplanation(state.routing);
       renderDecisionReplayReadinessChecklistExplanation(state.routing);
+      renderDecisionReplayEvidenceSourceMapExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -3783,6 +3791,39 @@
         return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
           + escapeHtml(summary) + "<br>"
           + "<span class=\"muted\">Boundary: read-only lab evidence readiness only; no replay execution, what-if mutation, checklist persistence, upload/share/download, telemetry, production certification, or server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
+    function renderDecisionReplayEvidenceSourceMapExplanation(response) {
+      const container = document.getElementById("decision-replay-evidence-source-map-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate source-map evidence relationships.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; evidence source-map status is unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const sourceMap = result.decisionReplayEvidenceSourceMap || {};
+        const entries = Array.isArray(sourceMap.sourceMapEntries)
+          ? sourceMap.sourceMapEntries.map((entry) =>
+            (entry.sourceId || "unknown-source") + "=" + (entry.status || "UNKNOWN")
+          ).join("; ")
+          : "";
+        const summary = sourceMap.sourceMapSchemaVersion
+          ? "status=" + (sourceMap.status || "unknown")
+            + "; selectedCandidate=" + (sourceMap.selectedCandidateId || "not returned")
+            + "; candidateCount=" + String(sourceMap.candidateCount || 0)
+            + "; linkedSnapshotFingerprint=" + (sourceMap.linkedReplaySnapshotFingerprint || "not linked")
+            + "; linkedTraceFingerprint=" + (sourceMap.linkedReconstructionTraceFingerprint || "not linked")
+            + "; linkedCapsuleFingerprint=" + (sourceMap.linkedReplayCapsuleFingerprint || "not linked")
+            + "; sourceMapEntries=" + (entries || "none")
+          : (sourceMap.explanation || "Decision Replay Evidence Source Map is unavailable; no evidence source mapping claim is invented.");
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(summary) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab source mapping only; no replay execution, what-if mutation, source-map persistence, upload/share/download, telemetry, production certification, new fingerprint generation, or server-side export/PDF/ZIP generation.</span></p>";
       }).join("");
     }
 
@@ -4123,6 +4164,18 @@
             + ", linkedCapsuleFingerprint=" + (checklist.linkedReplayCapsuleFingerprint || "not linked");
         }).join("\n")
         : "- Not run";
+      const evidenceSourceMapLines = routingResults.length
+        ? routingResults.map((result) => {
+          const sourceMap = result.decisionReplayEvidenceSourceMap || {};
+          const entryCount = Array.isArray(sourceMap.sourceMapEntries) ? sourceMap.sourceMapEntries.length : 0;
+          return "- " + result.strategyId
+            + ": sourceMapStatus=" + (sourceMap.status || "unknown")
+            + ", sourceMapEntries=" + String(entryCount)
+            + ", linkedSnapshotFingerprint=" + (sourceMap.linkedReplaySnapshotFingerprint || "not linked")
+            + ", linkedTraceFingerprint=" + (sourceMap.linkedReconstructionTraceFingerprint || "not linked")
+            + ", linkedCapsuleFingerprint=" + (sourceMap.linkedReplayCapsuleFingerprint || "not linked");
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -4167,6 +4220,9 @@
         "",
         "## Replay Readiness Checklist",
         replayReadinessChecklistLines,
+        "",
+        "## Decision Replay Evidence Source Map",
+        evidenceSourceMapLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

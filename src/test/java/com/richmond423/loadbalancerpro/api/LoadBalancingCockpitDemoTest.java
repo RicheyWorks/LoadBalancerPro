@@ -304,6 +304,17 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("availableLanes"));
         assertTrue(page.contains("partialLanes"));
         assertTrue(page.contains("unknownLanes"));
+        assertTrue(page.contains("Decision Evidence Lane Navigation"));
+        assertTrue(page.contains("id=\"decision-replay-evidence-lane-navigation-explanation\""));
+        assertTrue(page.contains("Lane Navigation Status"));
+        assertTrue(page.contains("Evidence Lane Navigation"));
+        assertTrue(page.contains("Response Field Path"));
+        assertTrue(page.contains("UI Section"));
+        assertTrue(page.contains("Docs Reference"));
+        assertTrue(page.contains("navigationItems"));
+        assertTrue(page.contains("responseFieldPath"));
+        assertTrue(page.contains("uiSection"));
+        assertTrue(page.contains("docsReference"));
         assertTrue(page.contains("Allocation Math / Capacity Explanation"));
         assertTrue(page.contains("Load-Shedding / Overload Reason Breakdown"));
         assertTrue(page.contains("Remediation Rationale"));

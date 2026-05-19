@@ -889,8 +889,12 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p>Decision Evidence Status Rollup summarizes already-built evidence lane statuses, selected-candidate presence, candidate counts, and boundary presence without scoring, ranking, approval, or production-readiness claims.</p>
           </div>
           <div class="proof-card">
+            <strong>Evidence lane navigation</strong>
+            <p>Decision Replay Evidence Lane Navigation Summary points reviewers to existing response fields, UI sections, and docs references without scoring, replay execution, ranking, approval, or production-readiness claims.</p>
+          </div>
+          <div class="proof-card">
             <strong>Read-only API exposure</strong>
-            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, <code>decisionReplayEvidenceBoundarySummary</code>, <code>decisionReplayEvidenceFieldInventory</code>, <code>decisionReplayEvidenceNullSafetySummary</code>, and <code>decisionReplayEvidenceStatusRollup</code> data; if absent, static lab guidance remains available.</p>
+            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, <code>decisionReplayEvidenceBoundarySummary</code>, <code>decisionReplayEvidenceFieldInventory</code>, <code>decisionReplayEvidenceNullSafetySummary</code>, <code>decisionReplayEvidenceStatusRollup</code>, and <code>decisionReplayEvidenceLaneNavigationSummary</code> data; if absent, static lab guidance remains available.</p>
           </div>
           <div class="proof-card">
             <strong>Replay and what-if boundary</strong>
@@ -1173,6 +1177,45 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-status-rollup-boundary">Read-only lab status metadata only; no replay execution, what-if mutation, status-rollup persistence, upload/share/download, telemetry, external calls, reflection, scorecard, quality ranking, approval, remediation, enforcement, production-readiness claim, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.</p>
           </div>
         </div>
+        <h3 style="margin-top: 14px;">Decision Evidence Lane Navigation</h3>
+        <div class="proof-grid" aria-label="Decision Evidence Lane Navigation">
+          <div class="proof-card">
+            <strong>Lane Navigation Status</strong>
+            <p id="decision-vector-lane-navigation-status">Run Compare strategies to populate read-only lane navigation metadata.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Evidence Lane Navigation</strong>
+            <p id="decision-vector-lane-navigation-items">No evidence lane navigation items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Response Field Path</strong>
+            <p id="decision-vector-lane-navigation-response-paths">No response field paths have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>UI Section</strong>
+            <p id="decision-vector-lane-navigation-ui-sections">No UI section labels have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Docs Reference</strong>
+            <p id="decision-vector-lane-navigation-docs">No docs reference labels have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Available Lanes</strong>
+            <p id="decision-vector-lane-navigation-available">No available lane navigation items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Partial Lanes</strong>
+            <p id="decision-vector-lane-navigation-partial">No partial lane navigation items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Unknown Lanes</strong>
+            <p id="decision-vector-lane-navigation-unknown">No unknown lane navigation items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Lane navigation boundary</strong>
+            <p id="decision-vector-lane-navigation-boundary">Read-only lab navigation metadata only; no replay execution, what-if mutation, lane-navigation persistence, upload/share/download, telemetry, external calls, reflection, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.</p>
+          </div>
+        </div>
         <p class="postman-note">
           Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
           no upload/share/download route, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
@@ -1201,6 +1244,7 @@ decisionReplayEvidenceBoundarySummary: unavailable until /api/routing/compare re
 decisionReplayEvidenceFieldInventory: unavailable until /api/routing/compare returns decisionReplayEvidenceFieldInventory; no field inventory claim is invented
 decisionReplayEvidenceNullSafetySummary: unavailable until /api/routing/compare returns decisionReplayEvidenceNullSafetySummary; no null-safety claim is invented
 decisionReplayEvidenceStatusRollup: unavailable until /api/routing/compare returns decisionReplayEvidenceStatusRollup; no status rollup claim is invented
+decisionReplayEvidenceLaneNavigationSummary: unavailable until /api/routing/compare returns decisionReplayEvidenceLaneNavigationSummary; no lane navigation claim is invented
 readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
@@ -2177,7 +2221,16 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       evidenceStatusRollupUnknown: document.getElementById("decision-vector-status-rollup-unknown"),
       evidenceStatusRollupSelected: document.getElementById("decision-vector-status-rollup-selected"),
       evidenceStatusRollupBoundaryPresent: document.getElementById("decision-vector-status-rollup-boundary-present"),
-      evidenceStatusRollupBoundary: document.getElementById("decision-vector-status-rollup-boundary")
+      evidenceStatusRollupBoundary: document.getElementById("decision-vector-status-rollup-boundary"),
+      evidenceLaneNavigationStatus: document.getElementById("decision-vector-lane-navigation-status"),
+      evidenceLaneNavigationItems: document.getElementById("decision-vector-lane-navigation-items"),
+      evidenceLaneNavigationResponsePaths: document.getElementById("decision-vector-lane-navigation-response-paths"),
+      evidenceLaneNavigationUiSections: document.getElementById("decision-vector-lane-navigation-ui-sections"),
+      evidenceLaneNavigationDocs: document.getElementById("decision-vector-lane-navigation-docs"),
+      evidenceLaneNavigationAvailable: document.getElementById("decision-vector-lane-navigation-available"),
+      evidenceLaneNavigationPartial: document.getElementById("decision-vector-lane-navigation-partial"),
+      evidenceLaneNavigationUnknown: document.getElementById("decision-vector-lane-navigation-unknown"),
+      evidenceLaneNavigationBoundary: document.getElementById("decision-vector-lane-navigation-boundary")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -3246,6 +3299,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           && typeof primary.decisionReplayEvidenceStatusRollup === "object"
         ? primary.decisionReplayEvidenceStatusRollup
         : null;
+      const evidenceLaneNavigation = primary && primary.decisionReplayEvidenceLaneNavigationSummary
+          && typeof primary.decisionReplayEvidenceLaneNavigationSummary === "object"
+        ? primary.decisionReplayEvidenceLaneNavigationSummary
+        : null;
       const selectedStrategy = decisionVector && decisionVector.selectedStrategy
         ? decisionVector.selectedStrategy
         : (primary && primary.strategyId ? primary.strategyId : "not run");
@@ -3553,6 +3610,39 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const statusRollupBoundary = evidenceStatusRollup && evidenceStatusRollup.boundaryNote
         ? evidenceStatusRollup.boundaryNote
         : "Read-only lab status metadata only; no replay execution, what-if mutation, status-rollup persistence, upload/share/download, telemetry, external calls, reflection, scorecard, quality ranking, approval, remediation, enforcement, production-readiness claim, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.";
+      const laneNavigationItems = evidenceLaneNavigation && Array.isArray(evidenceLaneNavigation.navigationItems)
+        ? evidenceLaneNavigation.navigationItems
+        : [];
+      const laneNavigationItemsSummary = laneNavigationItems.length > 0
+        ? laneNavigationItems.map((item) =>
+          (item.laneId || "unknown-lane") + "=" + (item.status || "UNKNOWN")
+        ).join("; ")
+        : "No evidence lane navigation items have been returned yet.";
+      const laneNavigationResponsePathSummary = laneNavigationItems.length > 0
+        ? laneNavigationItems.map((item) =>
+          (item.laneId || "unknown-lane") + ":" + (item.responseFieldPath || "not returned")
+        ).join("; ")
+        : "No response field paths have been returned yet.";
+      const laneNavigationUiSectionSummary = laneNavigationItems.length > 0
+        ? laneNavigationItems.map((item) =>
+          (item.laneId || "unknown-lane") + ":" + (item.uiSectionLabel || "not returned")
+        ).join("; ")
+        : "No UI section labels have been returned yet.";
+      const laneNavigationDocsSummary = laneNavigationItems.length > 0
+        ? laneNavigationItems.map((item) =>
+          (item.laneId || "unknown-lane") + ":" + (item.docsReferenceLabel || "not returned")
+        ).join("; ")
+        : "No docs reference labels have been returned yet.";
+      const laneNavigationSummary = evidenceLaneNavigation
+        ? "status=" + (evidenceLaneNavigation.status || "unknown")
+          + "; schema=" + (evidenceLaneNavigation.laneNavigationSchemaVersion || "unknown")
+          + "; selectedCandidate=" + (evidenceLaneNavigation.selectedCandidateId || "not returned")
+          + "; candidateCount=" + String(evidenceLaneNavigation.candidateCount || 0)
+          + "; navigationItems=" + laneNavigationItemsSummary
+        : "Decision Replay Evidence Lane Navigation Summary is unavailable; no lane navigation claim is invented.";
+      const laneNavigationBoundary = evidenceLaneNavigation && evidenceLaneNavigation.boundaryNote
+        ? evidenceLaneNavigation.boundaryNote
+        : "Read-only lab navigation metadata only; no replay execution, what-if mutation, lane-navigation persistence, upload/share/download, telemetry, external calls, reflection, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.";
       const replayReadiness = decisionVector && decisionVector.replayReadiness
         ? decisionVector.replayReadiness
         : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
@@ -3645,6 +3735,21 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       decisionVectorFields.evidenceStatusRollupSelected.textContent = statusRollupSelectedSummary;
       decisionVectorFields.evidenceStatusRollupBoundaryPresent.textContent = statusRollupBoundaryPresentSummary;
       decisionVectorFields.evidenceStatusRollupBoundary.textContent = statusRollupBoundary;
+      decisionVectorFields.evidenceLaneNavigationStatus.textContent = laneNavigationSummary;
+      decisionVectorFields.evidenceLaneNavigationItems.textContent = laneNavigationItemsSummary;
+      decisionVectorFields.evidenceLaneNavigationResponsePaths.textContent = laneNavigationResponsePathSummary;
+      decisionVectorFields.evidenceLaneNavigationUiSections.textContent = laneNavigationUiSectionSummary;
+      decisionVectorFields.evidenceLaneNavigationDocs.textContent = laneNavigationDocsSummary;
+      decisionVectorFields.evidenceLaneNavigationAvailable.textContent = evidenceLaneNavigation
+        ? String(evidenceLaneNavigation.availableLaneCount || 0)
+        : "No available lane navigation items have been returned yet.";
+      decisionVectorFields.evidenceLaneNavigationPartial.textContent = evidenceLaneNavigation
+        ? String(evidenceLaneNavigation.partialLaneCount || 0)
+        : "No partial lane navigation items have been returned yet.";
+      decisionVectorFields.evidenceLaneNavigationUnknown.textContent = evidenceLaneNavigation
+        ? String(evidenceLaneNavigation.unknownLaneCount || 0)
+        : "No unknown lane navigation items have been returned yet.";
+      decisionVectorFields.evidenceLaneNavigationBoundary.textContent = laneNavigationBoundary;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
@@ -3700,6 +3805,12 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
             + "; boundaryPresent=" + statusRollupBoundaryPresentSummary
             + "; boundaryNote=" + statusRollupBoundary
           : "unavailable until /api/routing/compare returns decisionReplayEvidenceStatusRollup; no status rollup claim is invented"),
+        "decisionReplayEvidenceLaneNavigationSummary: " + (evidenceLaneNavigation
+          ? laneNavigationSummary + "; responseFieldPaths=" + laneNavigationResponsePathSummary
+            + "; uiSections=" + laneNavigationUiSectionSummary
+            + "; docsReferences=" + laneNavigationDocsSummary
+            + "; boundaryNote=" + laneNavigationBoundary
+          : "unavailable until /api/routing/compare returns decisionReplayEvidenceLaneNavigationSummary; no lane navigation claim is invented"),
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
         "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,

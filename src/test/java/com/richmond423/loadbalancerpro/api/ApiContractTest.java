@@ -174,7 +174,8 @@ class ApiContractTest {
                 "decisionReplayReconstructionTrace", "decisionReplayCapsule",
                 "decisionReplayReadinessChecklist", "decisionReplayEvidenceSourceMap",
                 "decisionReplayEvidenceBoundarySummary", "decisionReplayEvidenceFieldInventory",
-                "decisionReplayEvidenceNullSafetySummary", "decisionReplayEvidenceStatusRollup");
+                "decisionReplayEvidenceNullSafetySummary", "decisionReplayEvidenceStatusRollup",
+                "decisionReplayEvidenceLaneNavigationSummary");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -296,6 +297,13 @@ class ApiContractTest {
         assertSchemaProperties(docs, "DecisionReplayEvidenceStatusRollupItemResponse", "laneId", "label",
                 "status", "sourceFieldPath", "readOnly", "selectedCandidatePresent", "candidateCount",
                 "boundaryPresent", "evidenceSummary", "boundaryNote");
+        assertSchemaProperties(docs, "RoutingDecisionReplayEvidenceLaneNavigationSummaryResponse", "readOnly",
+                "laneNavigationSchemaVersion", "source", "status", "strategyId", "selectedCandidateId",
+                "candidateCount", "availableLaneCount", "partialLaneCount", "unknownLaneCount",
+                "navigationItems", "explanation", "boundaryNote", "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "DecisionReplayEvidenceLaneNavigationItemResponse", "laneId", "label",
+                "status", "responseFieldPath", "uiSectionLabel", "docsReferenceLabel", "readOnly",
+                "boundaryPresent", "navigationSummary", "boundaryNote");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -608,6 +616,31 @@ class ApiContractTest {
                         + ".laneId", is("read-only-boundary-status")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[12]"
                         + ".laneId", is("production-not-proven-status")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                        + ".laneNavigationSchemaVersion",
+                        is("decision-replay-evidence-lane-navigation-summary/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary.status").isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary.selectedCandidateId",
+                        is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary.candidateCount",
+                        is(2)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary.availableLaneCount")
+                        .isNumber())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary.partialLaneCount")
+                        .isNumber())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary.unknownLaneCount",
+                        is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                        + ".navigationItems[0].laneId", is("decision-vector-navigation")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                        + ".navigationItems[0].responseFieldPath", is("results[].decisionVector")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                        + ".navigationItems[0].uiSectionLabel", is("Decision Vector")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                        + ".navigationItems[0].docsReferenceLabel", is("Enterprise Lab Decision Vector")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                        + ".navigationItems[11].laneId", is("evidence-status-rollup-navigation")))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -773,6 +806,22 @@ class ApiContractTest {
                         + ".laneId", is("production-not-proven-status")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[12]"
                         + ".boundaryPresent", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary.status",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary.selectedCandidateId",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary.candidateCount",
+                        is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                        + ".navigationItems[0].laneId", is("decision-vector-navigation")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                        + ".navigationItems[0].status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                        + ".navigationItems[11].laneId", is("evidence-status-rollup-navigation")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                        + ".navigationItems[11].status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                        + ".navigationItems[11].boundaryPresent", is(true)))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

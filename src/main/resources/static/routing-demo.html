@@ -873,8 +873,12 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p>Decision Replay Evidence Source Map explains which already-built compare evidence fields support replay/readiness artifacts without generating a new fingerprint or claiming guaranteed replay.</p>
           </div>
           <div class="proof-card">
+            <strong>Evidence boundary summary</strong>
+            <p>Decision Replay Evidence Boundary Summary summarizes existing lab-only, read-only, and not-proven boundary fields from already-built compare evidence without adding production proof claims or mutation guidance.</p>
+          </div>
+          <div class="proof-card">
             <strong>Read-only API exposure</strong>
-            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, and <code>decisionReplayEvidenceSourceMap</code> data; if absent, static lab guidance remains available.</p>
+            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, and <code>decisionReplayEvidenceBoundarySummary</code> data; if absent, static lab guidance remains available.</p>
           </div>
           <div class="proof-card">
             <strong>Replay and what-if boundary</strong>
@@ -1029,6 +1033,21 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-source-map-boundary">Read-only lab source mapping only; no replay execution, what-if mutation, source-map persistence, upload/share/download, telemetry, production certification, new fingerprint generation, or server-side export/PDF/ZIP generation.</p>
           </div>
         </div>
+        <h3 style="margin-top: 14px;">Decision Replay Evidence Boundary Summary</h3>
+        <div class="proof-grid" aria-label="Decision Replay Evidence Boundary Summary">
+          <div class="proof-card">
+            <strong>Boundary Items</strong>
+            <p id="decision-vector-boundary-summary">Run Compare strategies to populate lab-only and not-proven boundary evidence.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Not-Proven Boundary</strong>
+            <p id="decision-vector-boundary-items">No boundary items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Boundary summary boundary</strong>
+            <p id="decision-vector-boundary-summary-boundary">Read-only lab boundary metadata only; no replay execution, what-if mutation, boundary-summary persistence, upload/share/download, telemetry, external calls, new fingerprint generation, or server-side export/PDF/ZIP generation.</p>
+          </div>
+        </div>
         <p class="postman-note">
           Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
           no upload/share/download route, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
@@ -1053,6 +1072,7 @@ decisionReplayReconstructionTrace: unavailable until /api/routing/compare return
 decisionReplayCapsule: unavailable until /api/routing/compare returns decisionReplayCapsule; no canonical evidence capsule is invented
 decisionReplayReadinessChecklist: unavailable until /api/routing/compare returns decisionReplayReadinessChecklist; no lab replay-readiness claim is invented
 decisionReplayEvidenceSourceMap: unavailable until /api/routing/compare returns decisionReplayEvidenceSourceMap; no evidence source mapping claim is invented
+decisionReplayEvidenceBoundarySummary: unavailable until /api/routing/compare returns decisionReplayEvidenceBoundarySummary; no boundary summary claim is invented
 readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
@@ -2000,7 +2020,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       readinessBoundary: document.getElementById("decision-vector-readiness-boundary"),
       evidenceSourceMap: document.getElementById("decision-vector-source-map"),
       evidenceSourceMapFingerprints: document.getElementById("decision-vector-source-map-fingerprints"),
-      evidenceSourceMapBoundary: document.getElementById("decision-vector-source-map-boundary")
+      evidenceSourceMapBoundary: document.getElementById("decision-vector-source-map-boundary"),
+      evidenceBoundarySummary: document.getElementById("decision-vector-boundary-summary"),
+      evidenceBoundaryItems: document.getElementById("decision-vector-boundary-items"),
+      evidenceBoundarySummaryBoundary: document.getElementById("decision-vector-boundary-summary-boundary")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -3053,6 +3076,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           && typeof primary.decisionReplayEvidenceSourceMap === "object"
         ? primary.decisionReplayEvidenceSourceMap
         : null;
+      const evidenceBoundarySummary = primary && primary.decisionReplayEvidenceBoundarySummary
+          && typeof primary.decisionReplayEvidenceBoundarySummary === "object"
+        ? primary.decisionReplayEvidenceBoundarySummary
+        : null;
       const selectedStrategy = decisionVector && decisionVector.selectedStrategy
         ? decisionVector.selectedStrategy
         : (primary && primary.strategyId ? primary.strategyId : "not run");
@@ -3259,6 +3286,23 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const sourceMapBoundary = evidenceSourceMap && evidenceSourceMap.boundaryNote
         ? evidenceSourceMap.boundaryNote
         : "Read-only lab source mapping only; no replay execution, what-if mutation, source-map persistence, upload/share/download, telemetry, production certification, new fingerprint generation, or server-side export/PDF/ZIP generation.";
+      const boundaryItemsSummary = evidenceBoundarySummary
+          && Array.isArray(evidenceBoundarySummary.boundaryItems)
+          && evidenceBoundarySummary.boundaryItems.length > 0
+        ? evidenceBoundarySummary.boundaryItems.map((item) =>
+          (item.boundaryId || "unknown-boundary") + "=" + (item.status || "UNKNOWN")
+        ).join("; ")
+        : "No boundary summary items have been returned yet.";
+      const boundarySummary = evidenceBoundarySummary
+        ? "status=" + (evidenceBoundarySummary.status || "unknown")
+          + "; schema=" + (evidenceBoundarySummary.boundarySummarySchemaVersion || "unknown")
+          + "; selectedCandidate=" + (evidenceBoundarySummary.selectedCandidateId || "not returned")
+          + "; candidateCount=" + String(evidenceBoundarySummary.candidateCount || 0)
+          + "; boundaryItems=" + boundaryItemsSummary
+        : "Decision Replay Evidence Boundary Summary is unavailable; no boundary summary claim is invented.";
+      const boundarySummaryBoundary = evidenceBoundarySummary && evidenceBoundarySummary.boundaryNote
+        ? evidenceBoundarySummary.boundaryNote
+        : "Read-only lab boundary metadata only; no replay execution, what-if mutation, boundary-summary persistence, upload/share/download, telemetry, external calls, new fingerprint generation, or server-side export/PDF/ZIP generation.";
       const replayReadiness = decisionVector && decisionVector.replayReadiness
         ? decisionVector.replayReadiness
         : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
@@ -3302,6 +3346,11 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       decisionVectorFields.evidenceSourceMap.textContent = sourceMapSummary;
       decisionVectorFields.evidenceSourceMapFingerprints.textContent = sourceMapFingerprintSummary;
       decisionVectorFields.evidenceSourceMapBoundary.textContent = sourceMapBoundary;
+      decisionVectorFields.evidenceBoundarySummary.textContent = boundarySummary;
+      decisionVectorFields.evidenceBoundaryItems.textContent = evidenceBoundarySummary
+        ? "productionNotProvenBoundary=" + (evidenceBoundarySummary.productionNotProvenBoundary || notProven)
+        : "No boundary items have been returned yet.";
+      decisionVectorFields.evidenceBoundarySummaryBoundary.textContent = boundarySummaryBoundary;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
@@ -3338,6 +3387,9 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "decisionReplayEvidenceSourceMap: " + (evidenceSourceMap
           ? sourceMapSummary + "; linkedFingerprints=" + sourceMapFingerprintSummary
           : "unavailable until /api/routing/compare returns decisionReplayEvidenceSourceMap; no evidence source mapping claim is invented"),
+        "decisionReplayEvidenceBoundarySummary: " + (evidenceBoundarySummary
+          ? boundarySummary + "; boundaryNote=" + boundarySummaryBoundary
+          : "unavailable until /api/routing/compare returns decisionReplayEvidenceBoundarySummary; no boundary summary claim is invented"),
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
         "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,

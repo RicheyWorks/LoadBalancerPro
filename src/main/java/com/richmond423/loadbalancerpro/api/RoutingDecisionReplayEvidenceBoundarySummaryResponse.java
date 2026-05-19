@@ -1,0 +1,29 @@
+package com.richmond423.loadbalancerpro.api;
+
+import java.util.List;
+
+public record RoutingDecisionReplayEvidenceBoundarySummaryResponse(
+        boolean readOnly,
+        String boundarySummarySchemaVersion,
+        String source,
+        String status,
+        String strategyId,
+        String selectedCandidateId,
+        int candidateCount,
+        String decisionVectorStatus,
+        String dominantFactorAnalysisStatus,
+        String decisionDeltaAnalysisStatus,
+        String decisionReplaySnapshotStatus,
+        String decisionReplayReconstructionTraceStatus,
+        String decisionReplayCapsuleStatus,
+        String decisionReplayReadinessChecklistStatus,
+        String decisionReplayEvidenceSourceMapStatus,
+        List<DecisionReplayEvidenceBoundarySummaryItemResponse> boundaryItems,
+        String explanation,
+        String boundaryNote,
+        String productionNotProvenBoundary) {
+
+    public RoutingDecisionReplayEvidenceBoundarySummaryResponse {
+        boundaryItems = boundaryItems == null ? List.of() : List.copyOf(boundaryItems);
+    }
+}

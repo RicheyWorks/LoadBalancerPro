@@ -764,6 +764,13 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Unknown Lanes"));
         assertTrue(page.contains("Selected Candidate Present"));
         assertTrue(page.contains("Boundary Present"));
+        assertTrue(page.contains("Decision Evidence Lane Navigation"));
+        assertTrue(page.contains("decisionReplayEvidenceLaneNavigationSummary: "));
+        assertTrue(page.contains("Lane Navigation Status"));
+        assertTrue(page.contains("Evidence Lane Navigation"));
+        assertTrue(page.contains("Response Field Path"));
+        assertTrue(page.contains("UI Section"));
+        assertTrue(page.contains("Docs Reference"));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
@@ -1187,7 +1194,23 @@ class RoutingDecisionDemoTest {
                     .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[9]"
                             + ".nullSafetyId", is("no-healthy-path-null-safety")))
                     .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[11]"
-                            + ".nullSafetyId", is("production-not-proven-null-safety")));
+                            + ".nullSafetyId", is("production-not-proven-null-safety")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.readOnly", is(true)))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[0]"
+                            + ".laneId", is("decision-vector-status")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary.readOnly",
+                            is(true)))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                            + ".laneNavigationSchemaVersion",
+                            is("decision-replay-evidence-lane-navigation-summary/v1")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary.status")
+                            .isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                            + ".navigationItems[0].laneId", is("decision-vector-navigation")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                            + ".navigationItems[0].responseFieldPath", is("results[].decisionVector")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
+                            + ".navigationItems[11].laneId", is("evidence-status-rollup-navigation")));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "routing demo comparison must not construct CloudManager");

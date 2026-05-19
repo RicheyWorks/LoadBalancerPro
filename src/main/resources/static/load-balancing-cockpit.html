@@ -1299,6 +1299,10 @@
             <div id="decision-replay-evidence-status-rollup-explanation">Run routing comparison to populate Status Rollup, Evidence Lane Status, Available Lanes, Partial Lanes, Unknown Lanes, Selected Candidate Present, and Boundary Present metadata.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Evidence Lane Navigation</strong>
+            <div id="decision-replay-evidence-lane-navigation-explanation">Run routing comparison to populate Lane Navigation Status, Evidence Lane Navigation, Response Field Path, UI Section, Docs Reference, Available Lanes, Partial Lanes, and Unknown Lanes metadata.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3476,6 +3480,7 @@
         renderDecisionReplayEvidenceFieldInventoryExplanation(response);
         renderDecisionReplayEvidenceNullSafetySummaryExplanation(response);
         renderDecisionReplayEvidenceStatusRollupExplanation(response);
+        renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3492,6 +3497,7 @@
         renderDecisionReplayEvidenceFieldInventoryExplanation(response);
         renderDecisionReplayEvidenceNullSafetySummaryExplanation(response);
         renderDecisionReplayEvidenceStatusRollupExplanation(response);
+        renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3510,6 +3516,7 @@
       renderDecisionReplayEvidenceFieldInventoryExplanation(response);
       renderDecisionReplayEvidenceNullSafetySummaryExplanation(response);
       renderDecisionReplayEvidenceStatusRollupExplanation(response);
+      renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3560,6 +3567,7 @@
       renderDecisionReplayEvidenceFieldInventoryExplanation(state.routing);
       renderDecisionReplayEvidenceNullSafetySummaryExplanation(state.routing);
       renderDecisionReplayEvidenceStatusRollupExplanation(state.routing);
+      renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -4031,6 +4039,57 @@
       }).join("");
     }
 
+    function renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(response) {
+      const container = document.getElementById("decision-replay-evidence-lane-navigation-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate lane navigation evidence.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; evidence lane navigation is unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const navigation = result.decisionReplayEvidenceLaneNavigationSummary || {};
+        const items = Array.isArray(navigation.navigationItems)
+          ? navigation.navigationItems.map((item) =>
+            (item.laneId || "unknown-lane") + "=" + (item.status || "UNKNOWN")
+          ).join("; ")
+          : "";
+        const responsePaths = Array.isArray(navigation.navigationItems)
+          ? navigation.navigationItems.map((item) =>
+            (item.laneId || "unknown-lane") + ":" + (item.responseFieldPath || "not returned")
+          ).join("; ")
+          : "";
+        const uiSections = Array.isArray(navigation.navigationItems)
+          ? navigation.navigationItems.map((item) =>
+            (item.laneId || "unknown-lane") + ":" + (item.uiSectionLabel || "not returned")
+          ).join("; ")
+          : "";
+        const docsReferences = Array.isArray(navigation.navigationItems)
+          ? navigation.navigationItems.map((item) =>
+            (item.laneId || "unknown-lane") + ":" + (item.docsReferenceLabel || "not returned")
+          ).join("; ")
+          : "";
+        const summary = navigation.laneNavigationSchemaVersion
+          ? "status=" + (navigation.status || "unknown")
+            + "; selectedCandidate=" + (navigation.selectedCandidateId || "not returned")
+            + "; candidateCount=" + String(navigation.candidateCount || 0)
+            + "; availableLanes=" + String(navigation.availableLaneCount || 0)
+            + "; partialLanes=" + String(navigation.partialLaneCount || 0)
+            + "; unknownLanes=" + String(navigation.unknownLaneCount || 0)
+            + "; evidenceLaneNavigation=" + (items || "none")
+            + "; responseFieldPath=" + (responsePaths || "none")
+            + "; uiSection=" + (uiSections || "none")
+            + "; docsReference=" + (docsReferences || "none")
+          : (navigation.explanation || "Decision Replay Evidence Lane Navigation Summary is unavailable; no lane navigation claim is invented.");
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(summary) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab navigation metadata only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, external calls, reflection, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
     function formatFinite(value) {
       const numeric = Number(value);
       return Number.isFinite(numeric) ? numeric.toFixed(6) : "not returned";
@@ -4437,6 +4496,21 @@
             + ", metadataOnly=true";
         }).join("\n")
         : "- Not run";
+      const evidenceLaneNavigationLines = routingResults.length
+        ? routingResults.map((result) => {
+          const navigation = result.decisionReplayEvidenceLaneNavigationSummary || {};
+          const itemCount = Array.isArray(navigation.navigationItems)
+            ? navigation.navigationItems.length
+            : 0;
+          return "- " + result.strategyId
+            + ": laneNavigationStatus=" + (navigation.status || "unknown")
+            + ", navigationItems=" + String(itemCount)
+            + ", availableLanes=" + String(navigation.availableLaneCount || 0)
+            + ", partialLanes=" + String(navigation.partialLaneCount || 0)
+            + ", unknownLanes=" + String(navigation.unknownLaneCount || 0)
+            + ", reviewerNavigationOnly=true";
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -4496,6 +4570,9 @@
         "",
         "## Decision Evidence Status Rollup",
         evidenceStatusRollupLines,
+        "",
+        "## Decision Evidence Lane Navigation",
+        evidenceLaneNavigationLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

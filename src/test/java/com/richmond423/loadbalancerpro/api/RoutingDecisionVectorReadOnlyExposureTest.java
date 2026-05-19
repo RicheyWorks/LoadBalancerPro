@@ -302,6 +302,41 @@ class RoutingDecisionVectorReadOnlyExposureTest {
                 .contains("not production certification"));
         assertTrue(statusRollup.path("productionNotProvenBoundary").asText()
                 .contains("not guaranteed replay"));
+
+        JsonNode laneNavigation = result.path("decisionReplayEvidenceLaneNavigationSummary");
+        assertTrue(laneNavigation.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-lane-navigation-summary/v1",
+                laneNavigation.path("laneNavigationSchemaVersion").asText());
+        assertTrue(List.of("AVAILABLE", "PARTIAL", "UNKNOWN").contains(laneNavigation.path("status").asText()));
+        assertEquals("edge-alpha", laneNavigation.path("selectedCandidateId").asText());
+        assertEquals(3, laneNavigation.path("candidateCount").asInt());
+        assertTrue(laneNavigation.path("availableLaneCount").asInt() > 0);
+        assertTrue(laneNavigation.path("partialLaneCount").asInt() >= 0);
+        assertEquals(0, laneNavigation.path("unknownLaneCount").asInt());
+        assertEquals("decision-vector-navigation",
+                laneNavigation.at("/navigationItems/0/laneId").asText());
+        assertEquals("results[].decisionVector",
+                laneNavigation.at("/navigationItems/0/responseFieldPath").asText());
+        assertEquals("Decision Vector",
+                laneNavigation.at("/navigationItems/0/uiSectionLabel").asText());
+        assertEquals("Enterprise Lab Decision Vector",
+                laneNavigation.at("/navigationItems/0/docsReferenceLabel").asText());
+        assertEquals("evidence-status-rollup-navigation",
+                laneNavigation.at("/navigationItems/11/laneId").asText());
+        assertEquals("results[].decisionReplayEvidenceStatusRollup",
+                laneNavigation.at("/navigationItems/11/responseFieldPath").asText());
+        assertTrue(laneNavigation.at("/navigationItems/0/readOnly").asBoolean());
+        assertTrue(laneNavigation.at("/navigationItems/0/boundaryPresent").asBoolean());
+        assertTrue(laneNavigation.path("explanation").asText()
+                .contains("derived from already-built lab compare evidence only"));
+        assertTrue(laneNavigation.path("boundaryNote").asText().contains("does not execute replay"));
+        assertTrue(laneNavigation.path("boundaryNote").asText().contains("does not perform what-if mutation"));
+        assertTrue(laneNavigation.path("boundaryNote").asText().contains("does not change routing behavior"));
+        assertTrue(laneNavigation.path("boundaryNote").asText().contains("does not recompute scores"));
+        assertTrue(laneNavigation.path("productionNotProvenBoundary").asText()
+                .contains("not production certification"));
+        assertTrue(laneNavigation.path("productionNotProvenBoundary").asText()
+                .contains("not guaranteed replay"));
     }
 
     @Test
@@ -495,6 +530,24 @@ class RoutingDecisionVectorReadOnlyExposureTest {
                 .asBoolean());
         assertTrue(result.at("/decisionReplayEvidenceStatusRollup/statusItems/12/boundaryPresent").asBoolean());
         assertTrue(result.at("/decisionReplayEvidenceStatusRollup/explanation").asText()
+                .contains("No replay execution"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceLaneNavigationSummary/status").asText());
+        assertTrue(result.at("/decisionReplayEvidenceLaneNavigationSummary/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceLaneNavigationSummary/candidateCount").asInt());
+        assertEquals("decision-vector-navigation",
+                result.at("/decisionReplayEvidenceLaneNavigationSummary/navigationItems/0/laneId").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceLaneNavigationSummary/navigationItems/0/status").asText());
+        assertEquals("results[].decisionVector",
+                result.at("/decisionReplayEvidenceLaneNavigationSummary/navigationItems/0/responseFieldPath")
+                        .asText());
+        assertEquals("evidence-status-rollup-navigation",
+                result.at("/decisionReplayEvidenceLaneNavigationSummary/navigationItems/11/laneId").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceLaneNavigationSummary/navigationItems/11/status").asText());
+        assertTrue(result.at("/decisionReplayEvidenceLaneNavigationSummary/navigationItems/11/boundaryPresent")
+                .asBoolean());
+        assertTrue(result.at("/decisionReplayEvidenceLaneNavigationSummary/explanation").asText()
                 .contains("No replay execution"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }

@@ -91,6 +91,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayEvidenceNullSafetySummaryResponse");
         assertRef(required(resultProperties, "/decisionReplayEvidenceStatusRollup"),
                 "#/components/schemas/RoutingDecisionReplayEvidenceStatusRollupResponse");
+        assertRef(required(resultProperties, "/decisionReplayEvidenceLaneNavigationSummary"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceLaneNavigationSummaryResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -346,6 +348,28 @@ class RoutingOpenApiContractTest {
         assertEquals("boolean", required(statusRollupItemProperties, "/selectedCandidatePresent/type").asText());
         assertEquals("integer", required(statusRollupItemProperties, "/candidateCount/type").asText());
         assertEquals("boolean", required(statusRollupItemProperties, "/boundaryPresent/type").asText());
+
+        JsonNode laneNavigationProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceLaneNavigationSummaryResponse/properties");
+        assertEquals("boolean", required(laneNavigationProperties, "/readOnly/type").asText());
+        assertEquals("string", required(laneNavigationProperties, "/laneNavigationSchemaVersion/type").asText());
+        assertEquals("string", required(laneNavigationProperties, "/status/type").asText());
+        assertEquals("integer", required(laneNavigationProperties, "/availableLaneCount/type").asText());
+        assertEquals("integer", required(laneNavigationProperties, "/partialLaneCount/type").asText());
+        assertEquals("integer", required(laneNavigationProperties, "/unknownLaneCount/type").asText());
+        assertEquals("array", required(laneNavigationProperties, "/navigationItems/type").asText());
+        assertRef(required(laneNavigationProperties, "/navigationItems/items"),
+                "#/components/schemas/DecisionReplayEvidenceLaneNavigationItemResponse");
+
+        JsonNode laneNavigationItemProperties = required(docs,
+                "/components/schemas/DecisionReplayEvidenceLaneNavigationItemResponse/properties");
+        assertEquals("string", required(laneNavigationItemProperties, "/laneId/type").asText());
+        assertEquals("string", required(laneNavigationItemProperties, "/status/type").asText());
+        assertEquals("string", required(laneNavigationItemProperties, "/responseFieldPath/type").asText());
+        assertEquals("string", required(laneNavigationItemProperties, "/uiSectionLabel/type").asText());
+        assertEquals("string", required(laneNavigationItemProperties, "/docsReferenceLabel/type").asText());
+        assertEquals("boolean", required(laneNavigationItemProperties, "/readOnly/type").asText());
+        assertEquals("boolean", required(laneNavigationItemProperties, "/boundaryPresent/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

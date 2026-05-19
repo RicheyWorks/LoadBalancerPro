@@ -266,6 +266,42 @@ class RoutingDecisionVectorReadOnlyExposureTest {
                 .contains("not production certification"));
         assertTrue(nullSafety.path("productionNotProvenBoundary").asText()
                 .contains("not guaranteed replay"));
+
+        JsonNode statusRollup = result.path("decisionReplayEvidenceStatusRollup");
+        assertTrue(statusRollup.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-status-rollup/v1",
+                statusRollup.path("statusRollupSchemaVersion").asText());
+        assertTrue(List.of("AVAILABLE", "PARTIAL", "UNKNOWN").contains(statusRollup.path("status").asText()));
+        assertEquals("edge-alpha", statusRollup.path("selectedCandidateId").asText());
+        assertEquals(3, statusRollup.path("candidateCount").asInt());
+        assertTrue(statusRollup.path("availableLaneCount").asInt() > 0);
+        assertTrue(statusRollup.path("partialLaneCount").asInt() >= 0);
+        assertEquals(0, statusRollup.path("unknownLaneCount").asInt());
+        assertEquals("decision-vector-status",
+                statusRollup.at("/statusItems/0/laneId").asText());
+        assertEquals("dominant-factor-analysis-status",
+                statusRollup.at("/statusItems/1/laneId").asText());
+        assertEquals("decision-delta-analysis-status",
+                statusRollup.at("/statusItems/2/laneId").asText());
+        assertEquals("evidence-null-safety-status",
+                statusRollup.at("/statusItems/10/laneId").asText());
+        assertEquals("read-only-boundary-status",
+                statusRollup.at("/statusItems/11/laneId").asText());
+        assertEquals("production-not-proven-status",
+                statusRollup.at("/statusItems/12/laneId").asText());
+        assertTrue(statusRollup.at("/statusItems/0/selectedCandidatePresent").asBoolean());
+        assertEquals(3, statusRollup.at("/statusItems/0/candidateCount").asInt());
+        assertTrue(statusRollup.at("/statusItems/0/boundaryPresent").asBoolean());
+        assertTrue(statusRollup.path("explanation").asText()
+                .contains("derived from already-built lab compare evidence only"));
+        assertTrue(statusRollup.path("boundaryNote").asText().contains("does not execute replay"));
+        assertTrue(statusRollup.path("boundaryNote").asText().contains("does not perform what-if mutation"));
+        assertTrue(statusRollup.path("boundaryNote").asText().contains("does not change routing behavior"));
+        assertTrue(statusRollup.path("boundaryNote").asText().contains("does not recompute scores"));
+        assertTrue(statusRollup.path("productionNotProvenBoundary").asText()
+                .contains("not production certification"));
+        assertTrue(statusRollup.path("productionNotProvenBoundary").asText()
+                .contains("not guaranteed replay"));
     }
 
     @Test
@@ -440,6 +476,26 @@ class RoutingDecisionVectorReadOnlyExposureTest {
                 .contains("No replay execution"));
         assertTrue(result.at("/decisionReplayEvidenceNullSafetySummary/explanation").asText()
                 .contains("no selected candidate"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceStatusRollup/status").asText());
+        assertTrue(result.at("/decisionReplayEvidenceStatusRollup/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceStatusRollup/candidateCount").asInt());
+        assertEquals("decision-vector-status",
+                result.at("/decisionReplayEvidenceStatusRollup/statusItems/0/laneId").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceStatusRollup/statusItems/0/status").asText());
+        assertEquals("evidence-null-safety-status",
+                result.at("/decisionReplayEvidenceStatusRollup/statusItems/10/laneId").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceStatusRollup/statusItems/10/status").asText());
+        assertEquals("read-only-boundary-status",
+                result.at("/decisionReplayEvidenceStatusRollup/statusItems/11/laneId").asText());
+        assertEquals("production-not-proven-status",
+                result.at("/decisionReplayEvidenceStatusRollup/statusItems/12/laneId").asText());
+        assertFalse(result.at("/decisionReplayEvidenceStatusRollup/statusItems/0/selectedCandidatePresent")
+                .asBoolean());
+        assertTrue(result.at("/decisionReplayEvidenceStatusRollup/statusItems/12/boundaryPresent").asBoolean());
+        assertTrue(result.at("/decisionReplayEvidenceStatusRollup/explanation").asText()
+                .contains("No replay execution"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

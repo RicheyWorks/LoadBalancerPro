@@ -174,7 +174,7 @@ class ApiContractTest {
                 "decisionReplayReconstructionTrace", "decisionReplayCapsule",
                 "decisionReplayReadinessChecklist", "decisionReplayEvidenceSourceMap",
                 "decisionReplayEvidenceBoundarySummary", "decisionReplayEvidenceFieldInventory",
-                "decisionReplayEvidenceNullSafetySummary");
+                "decisionReplayEvidenceNullSafetySummary", "decisionReplayEvidenceStatusRollup");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -289,6 +289,13 @@ class ApiContractTest {
         assertSchemaProperties(docs, "DecisionReplayEvidenceNullSafetyItemResponse", "nullSafetyId", "label",
                 "status", "sourceFieldPath", "checkedFieldPaths", "unavailableFieldPaths",
                 "checkedFieldCount", "unavailableFieldCount", "safetySummary", "boundaryNote");
+        assertSchemaProperties(docs, "RoutingDecisionReplayEvidenceStatusRollupResponse", "readOnly",
+                "statusRollupSchemaVersion", "source", "status", "strategyId", "selectedCandidateId",
+                "candidateCount", "availableLaneCount", "partialLaneCount", "unknownLaneCount",
+                "statusItems", "explanation", "boundaryNote", "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "DecisionReplayEvidenceStatusRollupItemResponse", "laneId", "label",
+                "status", "sourceFieldPath", "readOnly", "selectedCandidatePresent", "candidateCount",
+                "boundaryPresent", "evidenceSummary", "boundaryNote");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -578,6 +585,29 @@ class ApiContractTest {
                         + ".nullSafetyId", is("no-healthy-path-null-safety")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[11]"
                         + ".nullSafetyId", is("production-not-proven-null-safety")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup"
+                        + ".statusRollupSchemaVersion",
+                        is("decision-replay-evidence-status-rollup/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.status").isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.selectedCandidateId",
+                        is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.candidateCount",
+                        is(2)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.availableLaneCount")
+                        .isNumber())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.partialLaneCount")
+                        .isNumber())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.unknownLaneCount",
+                        is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[0]"
+                        + ".laneId", is("decision-vector-status")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[10]"
+                        + ".laneId", is("evidence-null-safety-status")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[11]"
+                        + ".laneId", is("read-only-boundary-status")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[12]"
+                        + ".laneId", is("production-not-proven-status")))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -726,6 +756,23 @@ class ApiContractTest {
                         + ".status", is("AVAILABLE")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceNullSafetySummary.nullSafetyItems[11]"
                         + ".nullSafetyId", is("production-not-proven-null-safety")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.selectedCandidateId",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.candidateCount",
+                        is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[0]"
+                        + ".laneId", is("decision-vector-status")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[0]"
+                        + ".status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[10]"
+                        + ".laneId", is("evidence-null-safety-status")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[10]"
+                        + ".status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[12]"
+                        + ".laneId", is("production-not-proven-status")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceStatusRollup.statusItems[12]"
+                        + ".boundaryPresent", is(true)))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

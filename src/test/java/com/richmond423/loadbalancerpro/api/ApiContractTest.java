@@ -175,7 +175,8 @@ class ApiContractTest {
                 "decisionReplayReadinessChecklist", "decisionReplayEvidenceSourceMap",
                 "decisionReplayEvidenceBoundarySummary", "decisionReplayEvidenceFieldInventory",
                 "decisionReplayEvidenceNullSafetySummary", "decisionReplayEvidenceStatusRollup",
-                "decisionReplayEvidenceLaneNavigationSummary", "decisionReplayEvidenceLaneDependencyMap");
+                "decisionReplayEvidenceLaneNavigationSummary", "decisionReplayEvidenceLaneDependencyMap",
+                "decisionReplayEvidenceLaneReferenceIndex");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -311,6 +312,13 @@ class ApiContractTest {
         assertSchemaProperties(docs, "DecisionReplayEvidenceLaneDependencyItemResponse", "laneId", "label",
                 "status", "responseFieldPath", "dependsOnLaneIds", "downstreamLaneIds", "dependencyCount",
                 "downstreamCount", "readOnly", "boundaryPresent", "dependencySummary", "boundaryNote");
+        assertSchemaProperties(docs, "RoutingDecisionReplayEvidenceLaneReferenceIndexResponse", "readOnly",
+                "laneReferenceIndexSchemaVersion", "source", "status", "strategyId", "selectedCandidateId",
+                "candidateCount", "availableLaneCount", "partialLaneCount", "unknownLaneCount",
+                "referenceItems", "explanation", "boundaryNote", "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "DecisionReplayEvidenceLaneReferenceIndexItemResponse", "laneId", "label",
+                "status", "responseFieldPath", "uiSectionLabel", "docsReferenceLabel", "dependencyCount",
+                "downstreamCount", "readOnly", "boundaryPresent", "referenceSummary", "boundaryNote");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -679,6 +687,39 @@ class ApiContractTest {
                         + ".dependencyItems[12].dependencyCount", is(12)))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneDependencyMap"
                         + ".dependencyItems[12].downstreamCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".laneReferenceIndexSchemaVersion",
+                        is("decision-replay-evidence-lane-reference-index/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex.status").isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex.selectedCandidateId",
+                        is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex.candidateCount",
+                        is(2)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex.availableLaneCount")
+                        .isNumber())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex.partialLaneCount")
+                        .isNumber())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex.unknownLaneCount",
+                        is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[0].laneId", is("decision-vector-reference")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[0].responseFieldPath", is("results[].decisionVector")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[0].uiSectionLabel", is("Decision Vector")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[0].docsReferenceLabel", is("Enterprise Lab Decision Vector")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[0].dependencyCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[0].downstreamCount", is(12)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[13].laneId", is("evidence-lane-dependency-map-reference")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[13].dependencyCount", is(13)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[13].downstreamCount", is(0)))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -884,6 +925,30 @@ class ApiContractTest {
                         + ".dependencyItems[12].downstreamCount", is(0)))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneDependencyMap"
                         + ".dependencyItems[12].boundaryPresent", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex.status",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex.selectedCandidateId",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex.candidateCount",
+                        is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[0].laneId", is("decision-vector-reference")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[0].status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[0].dependencyCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[0].downstreamCount", is(12)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[13].laneId", is("evidence-lane-dependency-map-reference")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[13].status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[13].dependencyCount", is(13)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[13].downstreamCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneReferenceIndex"
+                        + ".referenceItems[13].boundaryPresent", is(true)))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

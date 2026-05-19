@@ -139,6 +139,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_EVIDENCE_NULL_SAFETY_SUMMARY.md"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_EVIDENCE_STATUS_ROLLUP.md"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_NAVIGATION_SUMMARY.md"));
+        assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_MAP.md"));
         assertTrue(framing.contains("structured explanation contract for one controlled lab routing decision"));
         assertTrue(framing.contains("selected candidate vector"));
         assertTrue(framing.contains("non-selected candidate vectors"));
@@ -155,6 +156,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("`results[].decisionReplayEvidenceNullSafetySummary`"));
         assertTrue(framing.contains("`results[].decisionReplayEvidenceStatusRollup`"));
         assertTrue(framing.contains("`results[].decisionReplayEvidenceLaneNavigationSummary`"));
+        assertTrue(framing.contains("`results[].decisionReplayEvidenceLaneDependencyMap`"));
         assertTrue(framing.contains("deterministic local fingerprint from already-built compare evidence only"));
         assertTrue(framing.contains("deterministic reconstruction evidence steps"));
         assertTrue(framing.contains("canonical evidence packaging"));
@@ -165,6 +167,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("summarizes null, missing, unavailable, and no-healthy/failure-path safety"));
         assertTrue(framing.contains("summarizes already-built evidence lane statuses"));
         assertTrue(framing.contains("maps already-built evidence lanes to response field paths, UI section labels, and docs reference labels"));
+        assertTrue(framing.contains("maps already-built evidence lane dependencies and downstream relationships"));
         assertTrue(framing.contains("preserving existing fields, routing behavior, scoring behavior, and strategy weights"));
         assertTrue(framing.contains("Replay execution and what-if execution remain future/not implemented"));
         assertTrue(framing.contains("## How to Investigate Surprising Lab Decisions"));

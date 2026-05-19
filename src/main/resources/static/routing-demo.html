@@ -894,7 +894,7 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
           </div>
           <div class="proof-card">
             <strong>Read-only API exposure</strong>
-            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, <code>decisionReplayEvidenceBoundarySummary</code>, <code>decisionReplayEvidenceFieldInventory</code>, <code>decisionReplayEvidenceNullSafetySummary</code>, <code>decisionReplayEvidenceStatusRollup</code>, and <code>decisionReplayEvidenceLaneNavigationSummary</code> data; if absent, static lab guidance remains available.</p>
+            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, <code>decisionReplayEvidenceBoundarySummary</code>, <code>decisionReplayEvidenceFieldInventory</code>, <code>decisionReplayEvidenceNullSafetySummary</code>, <code>decisionReplayEvidenceStatusRollup</code>, <code>decisionReplayEvidenceLaneNavigationSummary</code>, and <code>decisionReplayEvidenceLaneDependencyMap</code> data; if absent, static lab guidance remains available.</p>
           </div>
           <div class="proof-card">
             <strong>Replay and what-if boundary</strong>
@@ -1216,6 +1216,49 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-lane-navigation-boundary">Read-only lab navigation metadata only; no replay execution, what-if mutation, lane-navigation persistence, upload/share/download, telemetry, external calls, reflection, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.</p>
           </div>
         </div>
+        <h3 style="margin-top: 14px;">Decision Evidence Lane Dependency Map</h3>
+        <div class="proof-grid" aria-label="Decision Evidence Lane Dependency Map">
+          <div class="proof-card">
+            <strong>Lane Dependency Map Status</strong>
+            <p id="decision-vector-lane-dependency-status">Run Compare strategies to populate read-only lane dependency metadata.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Evidence Lane Dependencies</strong>
+            <p id="decision-vector-lane-dependency-items">No evidence lane dependency items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Depends On Lanes</strong>
+            <p id="decision-vector-lane-dependency-depends-on">No upstream lane metadata has been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Downstream Lanes</strong>
+            <p id="decision-vector-lane-dependency-downstream">No downstream lane metadata has been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Dependency Count</strong>
+            <p id="decision-vector-lane-dependency-count">No dependency counts have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Downstream Count</strong>
+            <p id="decision-vector-lane-dependency-downstream-count">No downstream counts have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Available Lanes</strong>
+            <p id="decision-vector-lane-dependency-available">No available lane dependency items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Partial Lanes</strong>
+            <p id="decision-vector-lane-dependency-partial">No partial lane dependency items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Unknown Lanes</strong>
+            <p id="decision-vector-lane-dependency-unknown">No unknown lane dependency items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Lane dependency boundary</strong>
+            <p id="decision-vector-lane-dependency-boundary">Read-only lab dependency metadata only; no replay execution, what-if mutation, lane-dependency persistence, upload/share/download, telemetry, external calls, reflection, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.</p>
+          </div>
+        </div>
         <p class="postman-note">
           Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
           no upload/share/download route, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
@@ -1245,6 +1288,7 @@ decisionReplayEvidenceFieldInventory: unavailable until /api/routing/compare ret
 decisionReplayEvidenceNullSafetySummary: unavailable until /api/routing/compare returns decisionReplayEvidenceNullSafetySummary; no null-safety claim is invented
 decisionReplayEvidenceStatusRollup: unavailable until /api/routing/compare returns decisionReplayEvidenceStatusRollup; no status rollup claim is invented
 decisionReplayEvidenceLaneNavigationSummary: unavailable until /api/routing/compare returns decisionReplayEvidenceLaneNavigationSummary; no lane navigation claim is invented
+decisionReplayEvidenceLaneDependencyMap: unavailable until /api/routing/compare returns decisionReplayEvidenceLaneDependencyMap; no lane dependency claim is invented
 readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
@@ -2230,7 +2274,18 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       evidenceLaneNavigationAvailable: document.getElementById("decision-vector-lane-navigation-available"),
       evidenceLaneNavigationPartial: document.getElementById("decision-vector-lane-navigation-partial"),
       evidenceLaneNavigationUnknown: document.getElementById("decision-vector-lane-navigation-unknown"),
-      evidenceLaneNavigationBoundary: document.getElementById("decision-vector-lane-navigation-boundary")
+      evidenceLaneNavigationBoundary: document.getElementById("decision-vector-lane-navigation-boundary"),
+      evidenceLaneDependencyStatus: document.getElementById("decision-vector-lane-dependency-status"),
+      evidenceLaneDependencyItems: document.getElementById("decision-vector-lane-dependency-items"),
+      evidenceLaneDependencyDependsOn: document.getElementById("decision-vector-lane-dependency-depends-on"),
+      evidenceLaneDependencyDownstream: document.getElementById("decision-vector-lane-dependency-downstream"),
+      evidenceLaneDependencyCount: document.getElementById("decision-vector-lane-dependency-count"),
+      evidenceLaneDependencyDownstreamCount: document.getElementById(
+        "decision-vector-lane-dependency-downstream-count"),
+      evidenceLaneDependencyAvailable: document.getElementById("decision-vector-lane-dependency-available"),
+      evidenceLaneDependencyPartial: document.getElementById("decision-vector-lane-dependency-partial"),
+      evidenceLaneDependencyUnknown: document.getElementById("decision-vector-lane-dependency-unknown"),
+      evidenceLaneDependencyBoundary: document.getElementById("decision-vector-lane-dependency-boundary")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -3303,6 +3358,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           && typeof primary.decisionReplayEvidenceLaneNavigationSummary === "object"
         ? primary.decisionReplayEvidenceLaneNavigationSummary
         : null;
+      const evidenceLaneDependency = primary && primary.decisionReplayEvidenceLaneDependencyMap
+          && typeof primary.decisionReplayEvidenceLaneDependencyMap === "object"
+        ? primary.decisionReplayEvidenceLaneDependencyMap
+        : null;
       const selectedStrategy = decisionVector && decisionVector.selectedStrategy
         ? decisionVector.selectedStrategy
         : (primary && primary.strategyId ? primary.strategyId : "not run");
@@ -3643,6 +3702,50 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const laneNavigationBoundary = evidenceLaneNavigation && evidenceLaneNavigation.boundaryNote
         ? evidenceLaneNavigation.boundaryNote
         : "Read-only lab navigation metadata only; no replay execution, what-if mutation, lane-navigation persistence, upload/share/download, telemetry, external calls, reflection, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.";
+      const laneDependencyItems = evidenceLaneDependency && Array.isArray(evidenceLaneDependency.dependencyItems)
+        ? evidenceLaneDependency.dependencyItems
+        : [];
+      const laneDependencyItemsSummary = laneDependencyItems.length > 0
+        ? laneDependencyItems.map((item) =>
+          (item.laneId || "unknown-lane") + "=" + (item.status || "UNKNOWN")
+        ).join("; ")
+        : "No evidence lane dependency items have been returned yet.";
+      const laneDependencyDependsOnSummary = laneDependencyItems.length > 0
+        ? laneDependencyItems.map((item) =>
+          (item.laneId || "unknown-lane") + ":"
+          + (Array.isArray(item.dependsOnLaneIds) && item.dependsOnLaneIds.length > 0
+            ? item.dependsOnLaneIds.join("|")
+            : "none")
+        ).join("; ")
+        : "No upstream lane metadata has been returned yet.";
+      const laneDependencyDownstreamSummary = laneDependencyItems.length > 0
+        ? laneDependencyItems.map((item) =>
+          (item.laneId || "unknown-lane") + ":"
+          + (Array.isArray(item.downstreamLaneIds) && item.downstreamLaneIds.length > 0
+            ? item.downstreamLaneIds.join("|")
+            : "none")
+        ).join("; ")
+        : "No downstream lane metadata has been returned yet.";
+      const laneDependencyCountSummary = laneDependencyItems.length > 0
+        ? laneDependencyItems.map((item) =>
+          (item.laneId || "unknown-lane") + "=" + String(item.dependencyCount || 0)
+        ).join("; ")
+        : "No dependency counts have been returned yet.";
+      const laneDependencyDownstreamCountSummary = laneDependencyItems.length > 0
+        ? laneDependencyItems.map((item) =>
+          (item.laneId || "unknown-lane") + "=" + String(item.downstreamCount || 0)
+        ).join("; ")
+        : "No downstream counts have been returned yet.";
+      const laneDependencySummary = evidenceLaneDependency
+        ? "status=" + (evidenceLaneDependency.status || "unknown")
+          + "; schema=" + (evidenceLaneDependency.laneDependencyMapSchemaVersion || "unknown")
+          + "; selectedCandidate=" + (evidenceLaneDependency.selectedCandidateId || "not returned")
+          + "; candidateCount=" + String(evidenceLaneDependency.candidateCount || 0)
+          + "; dependencyItems=" + laneDependencyItemsSummary
+        : "Decision Replay Evidence Lane Dependency Map is unavailable; no lane dependency claim is invented.";
+      const laneDependencyBoundary = evidenceLaneDependency && evidenceLaneDependency.boundaryNote
+        ? evidenceLaneDependency.boundaryNote
+        : "Read-only lab dependency metadata only; no replay execution, what-if mutation, lane-dependency persistence, upload/share/download, telemetry, external calls, reflection, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.";
       const replayReadiness = decisionVector && decisionVector.replayReadiness
         ? decisionVector.replayReadiness
         : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
@@ -3750,6 +3853,22 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         ? String(evidenceLaneNavigation.unknownLaneCount || 0)
         : "No unknown lane navigation items have been returned yet.";
       decisionVectorFields.evidenceLaneNavigationBoundary.textContent = laneNavigationBoundary;
+      decisionVectorFields.evidenceLaneDependencyStatus.textContent = laneDependencySummary;
+      decisionVectorFields.evidenceLaneDependencyItems.textContent = laneDependencyItemsSummary;
+      decisionVectorFields.evidenceLaneDependencyDependsOn.textContent = laneDependencyDependsOnSummary;
+      decisionVectorFields.evidenceLaneDependencyDownstream.textContent = laneDependencyDownstreamSummary;
+      decisionVectorFields.evidenceLaneDependencyCount.textContent = laneDependencyCountSummary;
+      decisionVectorFields.evidenceLaneDependencyDownstreamCount.textContent = laneDependencyDownstreamCountSummary;
+      decisionVectorFields.evidenceLaneDependencyAvailable.textContent = evidenceLaneDependency
+        ? String(evidenceLaneDependency.availableLaneCount || 0)
+        : "No available lane dependency items have been returned yet.";
+      decisionVectorFields.evidenceLaneDependencyPartial.textContent = evidenceLaneDependency
+        ? String(evidenceLaneDependency.partialLaneCount || 0)
+        : "No partial lane dependency items have been returned yet.";
+      decisionVectorFields.evidenceLaneDependencyUnknown.textContent = evidenceLaneDependency
+        ? String(evidenceLaneDependency.unknownLaneCount || 0)
+        : "No unknown lane dependency items have been returned yet.";
+      decisionVectorFields.evidenceLaneDependencyBoundary.textContent = laneDependencyBoundary;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
@@ -3811,6 +3930,13 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
             + "; docsReferences=" + laneNavigationDocsSummary
             + "; boundaryNote=" + laneNavigationBoundary
           : "unavailable until /api/routing/compare returns decisionReplayEvidenceLaneNavigationSummary; no lane navigation claim is invented"),
+        "decisionReplayEvidenceLaneDependencyMap: " + (evidenceLaneDependency
+          ? laneDependencySummary + "; dependsOnLaneIds=" + laneDependencyDependsOnSummary
+            + "; downstreamLaneIds=" + laneDependencyDownstreamSummary
+            + "; dependencyCounts=" + laneDependencyCountSummary
+            + "; downstreamCounts=" + laneDependencyDownstreamCountSummary
+            + "; boundaryNote=" + laneDependencyBoundary
+          : "unavailable until /api/routing/compare returns decisionReplayEvidenceLaneDependencyMap; no lane dependency claim is invented"),
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
         "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,

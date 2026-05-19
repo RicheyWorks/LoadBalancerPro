@@ -771,6 +771,14 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("Response Field Path"));
         assertTrue(page.contains("UI Section"));
         assertTrue(page.contains("Docs Reference"));
+        assertTrue(page.contains("Decision Evidence Lane Dependency Map"));
+        assertTrue(page.contains("decisionReplayEvidenceLaneDependencyMap: "));
+        assertTrue(page.contains("Lane Dependency Map Status"));
+        assertTrue(page.contains("Evidence Lane Dependencies"));
+        assertTrue(page.contains("Depends On Lanes"));
+        assertTrue(page.contains("Downstream Lanes"));
+        assertTrue(page.contains("Dependency Count"));
+        assertTrue(page.contains("Downstream Count"));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
@@ -1210,7 +1218,22 @@ class RoutingDecisionDemoTest {
                     .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
                             + ".navigationItems[0].responseFieldPath", is("results[].decisionVector")))
                     .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneNavigationSummary"
-                            + ".navigationItems[11].laneId", is("evidence-status-rollup-navigation")));
+                            + ".navigationItems[11].laneId", is("evidence-status-rollup-navigation")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneDependencyMap.readOnly",
+                            is(true)))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneDependencyMap"
+                            + ".laneDependencyMapSchemaVersion",
+                            is("decision-replay-evidence-lane-dependency-map/v1")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneDependencyMap.status")
+                            .isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneDependencyMap"
+                            + ".dependencyItems[0].laneId", is("decision-vector-dependency")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneDependencyMap"
+                            + ".dependencyItems[0].dependencyCount", is(0)))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneDependencyMap"
+                            + ".dependencyItems[0].downstreamCount", is(12)))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneDependencyMap"
+                            + ".dependencyItems[12].laneId", is("evidence-lane-navigation-dependency")));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "routing demo comparison must not construct CloudManager");

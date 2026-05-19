@@ -735,6 +735,15 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("decisionReplayReadinessChecklist: "));
         assertTrue(page.contains("decisionReplayEvidenceSourceMap: "));
         assertTrue(page.contains("decisionReplayEvidenceBoundarySummary: "));
+        assertTrue(page.contains("Decision Replay Evidence Field Inventory"));
+        assertTrue(page.contains("decisionReplayEvidenceFieldInventory: "));
+        assertTrue(page.contains("Field Inventory Status"));
+        assertTrue(page.contains("Inventory Entries"));
+        assertTrue(page.contains("Observed Field Paths"));
+        assertTrue(page.contains("Missing or Unavailable Field Paths"));
+        assertTrue(page.contains("Available Inventory Groups"));
+        assertTrue(page.contains("Partial Inventory Groups"));
+        assertTrue(page.contains("Unknown Inventory Groups"));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("replayReadiness: "));
         assertTrue(page.contains("whatIfReadiness: planned future contract; what-if execution is not implemented"));
@@ -1126,7 +1135,22 @@ class RoutingDecisionDemoTest {
                     .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[8]"
                             + ".boundaryId", is("fingerprint-boundary")))
                     .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[9]"
-                            + ".boundaryId", is("production-not-proven-boundary")));
+                            + ".boundaryId", is("production-not-proven-boundary")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.readOnly", is(true)))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory"
+                            + ".fieldInventorySchemaVersion",
+                            is("decision-replay-evidence-field-inventory/v1")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.status").isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.decisionVectorStatus",
+                            is("AVAILABLE")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory"
+                            + ".decisionReplayEvidenceBoundarySummaryStatus").isString())
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[0]"
+                            + ".inventoryId", is("decision-vector-fields")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[9]"
+                            + ".inventoryId", is("linked-fingerprint-fields")))
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[11]"
+                            + ".inventoryId", is("production-not-proven-boundary-fields")));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "routing demo comparison must not construct CloudManager");

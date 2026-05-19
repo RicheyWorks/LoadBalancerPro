@@ -877,8 +877,12 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p>Decision Replay Evidence Boundary Summary summarizes existing lab-only, read-only, and not-proven boundary fields from already-built compare evidence without adding production proof claims or mutation guidance.</p>
           </div>
           <div class="proof-card">
+            <strong>Evidence field inventory</strong>
+            <p>Decision Replay Evidence Field Inventory lists observed and unavailable already-built compare evidence field groups without reflection, new fingerprinting, scoring changes, replay execution, or production certification claims.</p>
+          </div>
+          <div class="proof-card">
             <strong>Read-only API exposure</strong>
-            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, and <code>decisionReplayEvidenceBoundarySummary</code> data; if absent, static lab guidance remains available.</p>
+            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, <code>decisionReplayEvidenceBoundarySummary</code>, and <code>decisionReplayEvidenceFieldInventory</code> data; if absent, static lab guidance remains available.</p>
           </div>
           <div class="proof-card">
             <strong>Replay and what-if boundary</strong>
@@ -1048,6 +1052,41 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-boundary-summary-boundary">Read-only lab boundary metadata only; no replay execution, what-if mutation, boundary-summary persistence, upload/share/download, telemetry, external calls, new fingerprint generation, or server-side export/PDF/ZIP generation.</p>
           </div>
         </div>
+        <h3 style="margin-top: 14px;">Decision Replay Evidence Field Inventory</h3>
+        <div class="proof-grid" aria-label="Decision Replay Evidence Field Inventory">
+          <div class="proof-card">
+            <strong>Field Inventory Status</strong>
+            <p id="decision-vector-field-inventory-status">Run Compare strategies to populate read-only field inventory status.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Inventory Entries</strong>
+            <p id="decision-vector-field-inventory-entries">No inventory entries have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Observed Field Paths</strong>
+            <p id="decision-vector-field-inventory-observed">No observed field paths have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Missing or Unavailable Field Paths</strong>
+            <p id="decision-vector-field-inventory-missing">No missing or unavailable field paths have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Available Inventory Groups</strong>
+            <p id="decision-vector-field-inventory-available">No available inventory groups have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Partial Inventory Groups</strong>
+            <p id="decision-vector-field-inventory-partial">No partial inventory groups have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Unknown Inventory Groups</strong>
+            <p id="decision-vector-field-inventory-unknown">No unknown inventory groups have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Field inventory boundary</strong>
+            <p id="decision-vector-field-inventory-boundary">Read-only lab field metadata only; no replay execution, what-if mutation, field-inventory persistence, upload/share/download, telemetry, external calls, new fingerprint generation, or server-side export/PDF/ZIP generation.</p>
+          </div>
+        </div>
         <p class="postman-note">
           Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
           no upload/share/download route, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
@@ -1073,6 +1112,7 @@ decisionReplayCapsule: unavailable until /api/routing/compare returns decisionRe
 decisionReplayReadinessChecklist: unavailable until /api/routing/compare returns decisionReplayReadinessChecklist; no lab replay-readiness claim is invented
 decisionReplayEvidenceSourceMap: unavailable until /api/routing/compare returns decisionReplayEvidenceSourceMap; no evidence source mapping claim is invented
 decisionReplayEvidenceBoundarySummary: unavailable until /api/routing/compare returns decisionReplayEvidenceBoundarySummary; no boundary summary claim is invented
+decisionReplayEvidenceFieldInventory: unavailable until /api/routing/compare returns decisionReplayEvidenceFieldInventory; no field inventory claim is invented
 readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
@@ -2023,7 +2063,15 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       evidenceSourceMapBoundary: document.getElementById("decision-vector-source-map-boundary"),
       evidenceBoundarySummary: document.getElementById("decision-vector-boundary-summary"),
       evidenceBoundaryItems: document.getElementById("decision-vector-boundary-items"),
-      evidenceBoundarySummaryBoundary: document.getElementById("decision-vector-boundary-summary-boundary")
+      evidenceBoundarySummaryBoundary: document.getElementById("decision-vector-boundary-summary-boundary"),
+      evidenceFieldInventoryStatus: document.getElementById("decision-vector-field-inventory-status"),
+      evidenceFieldInventoryEntries: document.getElementById("decision-vector-field-inventory-entries"),
+      evidenceFieldInventoryObserved: document.getElementById("decision-vector-field-inventory-observed"),
+      evidenceFieldInventoryMissing: document.getElementById("decision-vector-field-inventory-missing"),
+      evidenceFieldInventoryAvailable: document.getElementById("decision-vector-field-inventory-available"),
+      evidenceFieldInventoryPartial: document.getElementById("decision-vector-field-inventory-partial"),
+      evidenceFieldInventoryUnknown: document.getElementById("decision-vector-field-inventory-unknown"),
+      evidenceFieldInventoryBoundary: document.getElementById("decision-vector-field-inventory-boundary")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -3080,6 +3128,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           && typeof primary.decisionReplayEvidenceBoundarySummary === "object"
         ? primary.decisionReplayEvidenceBoundarySummary
         : null;
+      const evidenceFieldInventory = primary && primary.decisionReplayEvidenceFieldInventory
+          && typeof primary.decisionReplayEvidenceFieldInventory === "object"
+        ? primary.decisionReplayEvidenceFieldInventory
+        : null;
       const selectedStrategy = decisionVector && decisionVector.selectedStrategy
         ? decisionVector.selectedStrategy
         : (primary && primary.strategyId ? primary.strategyId : "not run");
@@ -3303,6 +3355,32 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const boundarySummaryBoundary = evidenceBoundarySummary && evidenceBoundarySummary.boundaryNote
         ? evidenceBoundarySummary.boundaryNote
         : "Read-only lab boundary metadata only; no replay execution, what-if mutation, boundary-summary persistence, upload/share/download, telemetry, external calls, new fingerprint generation, or server-side export/PDF/ZIP generation.";
+      const inventoryEntries = evidenceFieldInventory && Array.isArray(evidenceFieldInventory.inventoryEntries)
+        ? evidenceFieldInventory.inventoryEntries
+        : [];
+      const inventoryEntriesSummary = inventoryEntries.length > 0
+        ? inventoryEntries.map((entry) =>
+          (entry.inventoryId || "unknown-inventory") + "=" + (entry.status || "UNKNOWN")
+        ).join("; ")
+        : "No inventory entries have been returned yet.";
+      const firstInventoryEntry = inventoryEntries.length > 0 ? inventoryEntries[0] : null;
+      const inventoryObservedSummary = firstInventoryEntry && Array.isArray(firstInventoryEntry.observedFieldPaths)
+        ? firstInventoryEntry.observedFieldPaths.slice(0, 10).join(", ") || "none"
+        : "No observed field paths have been returned yet.";
+      const inventoryMissingSummary = firstInventoryEntry
+          && Array.isArray(firstInventoryEntry.missingOrUnavailableFieldPaths)
+        ? firstInventoryEntry.missingOrUnavailableFieldPaths.slice(0, 10).join(", ") || "none"
+        : "No missing or unavailable field paths have been returned yet.";
+      const fieldInventorySummary = evidenceFieldInventory
+        ? "status=" + (evidenceFieldInventory.status || "unknown")
+          + "; schema=" + (evidenceFieldInventory.fieldInventorySchemaVersion || "unknown")
+          + "; selectedCandidate=" + (evidenceFieldInventory.selectedCandidateId || "not returned")
+          + "; candidateCount=" + String(evidenceFieldInventory.candidateCount || 0)
+          + "; inventoryEntries=" + inventoryEntriesSummary
+        : "Decision Replay Evidence Field Inventory is unavailable; no field inventory claim is invented.";
+      const fieldInventoryBoundary = evidenceFieldInventory && evidenceFieldInventory.boundaryNote
+        ? evidenceFieldInventory.boundaryNote
+        : "Read-only lab field metadata only; no replay execution, what-if mutation, field-inventory persistence, upload/share/download, telemetry, external calls, new fingerprint generation, or server-side export/PDF/ZIP generation.";
       const replayReadiness = decisionVector && decisionVector.replayReadiness
         ? decisionVector.replayReadiness
         : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
@@ -3351,6 +3429,20 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         ? "productionNotProvenBoundary=" + (evidenceBoundarySummary.productionNotProvenBoundary || notProven)
         : "No boundary items have been returned yet.";
       decisionVectorFields.evidenceBoundarySummaryBoundary.textContent = boundarySummaryBoundary;
+      decisionVectorFields.evidenceFieldInventoryStatus.textContent = fieldInventorySummary;
+      decisionVectorFields.evidenceFieldInventoryEntries.textContent = inventoryEntriesSummary;
+      decisionVectorFields.evidenceFieldInventoryObserved.textContent = inventoryObservedSummary;
+      decisionVectorFields.evidenceFieldInventoryMissing.textContent = inventoryMissingSummary;
+      decisionVectorFields.evidenceFieldInventoryAvailable.textContent = evidenceFieldInventory
+        ? String(evidenceFieldInventory.availableInventoryGroupCount || 0)
+        : "No available inventory groups have been returned yet.";
+      decisionVectorFields.evidenceFieldInventoryPartial.textContent = evidenceFieldInventory
+        ? String(evidenceFieldInventory.partialInventoryGroupCount || 0)
+        : "No partial inventory groups have been returned yet.";
+      decisionVectorFields.evidenceFieldInventoryUnknown.textContent = evidenceFieldInventory
+        ? String(evidenceFieldInventory.unknownInventoryGroupCount || 0)
+        : "No unknown inventory groups have been returned yet.";
+      decisionVectorFields.evidenceFieldInventoryBoundary.textContent = fieldInventoryBoundary;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
@@ -3390,6 +3482,11 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         "decisionReplayEvidenceBoundarySummary: " + (evidenceBoundarySummary
           ? boundarySummary + "; boundaryNote=" + boundarySummaryBoundary
           : "unavailable until /api/routing/compare returns decisionReplayEvidenceBoundarySummary; no boundary summary claim is invented"),
+        "decisionReplayEvidenceFieldInventory: " + (evidenceFieldInventory
+          ? fieldInventorySummary + "; observedFieldPaths=" + inventoryObservedSummary
+            + "; missingOrUnavailableFieldPaths=" + inventoryMissingSummary
+            + "; boundaryNote=" + fieldInventoryBoundary
+          : "unavailable until /api/routing/compare returns decisionReplayEvidenceFieldInventory; no field inventory claim is invented"),
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
         "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,

@@ -173,7 +173,7 @@ class ApiContractTest {
                 "dominantFactorAnalysis", "decisionDeltaAnalysis", "decisionReplaySnapshot",
                 "decisionReplayReconstructionTrace", "decisionReplayCapsule",
                 "decisionReplayReadinessChecklist", "decisionReplayEvidenceSourceMap",
-                "decisionReplayEvidenceBoundarySummary");
+                "decisionReplayEvidenceBoundarySummary", "decisionReplayEvidenceFieldInventory");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -264,6 +264,18 @@ class ApiContractTest {
                 "boundaryItems", "explanation", "boundaryNote", "productionNotProvenBoundary");
         assertSchemaProperties(docs, "DecisionReplayEvidenceBoundarySummaryItemResponse", "boundaryId", "label",
                 "status", "sourceFieldPath", "supportingEvidenceFieldPaths", "evidenceSummary", "boundaryNote");
+        assertSchemaProperties(docs, "RoutingDecisionReplayEvidenceFieldInventoryResponse", "readOnly",
+                "fieldInventorySchemaVersion", "source", "status", "strategyId", "selectedCandidateId",
+                "candidateCount", "decisionVectorStatus", "dominantFactorAnalysisStatus",
+                "decisionDeltaAnalysisStatus", "decisionReplaySnapshotStatus",
+                "decisionReplayReconstructionTraceStatus", "decisionReplayCapsuleStatus",
+                "decisionReplayReadinessChecklistStatus", "decisionReplayEvidenceSourceMapStatus",
+                "decisionReplayEvidenceBoundarySummaryStatus", "availableInventoryGroupCount",
+                "partialInventoryGroupCount", "unknownInventoryGroupCount", "inventoryEntries",
+                "explanation", "boundaryNote", "productionNotProvenBoundary");
+        assertSchemaProperties(docs, "DecisionReplayEvidenceFieldInventoryEntryResponse", "inventoryId", "label",
+                "status", "sourceFieldPath", "observedFieldPaths", "missingOrUnavailableFieldPaths",
+                "observedFieldCount", "missingOrUnavailableFieldCount", "evidenceSummary", "boundaryNote");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -510,6 +522,28 @@ class ApiContractTest {
                         + ".boundaryId", is("fingerprint-boundary")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[9]"
                         + ".boundaryId", is("production-not-proven-boundary")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory"
+                        + ".fieldInventorySchemaVersion",
+                        is("decision-replay-evidence-field-inventory/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.status",
+                        is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.decisionVectorStatus",
+                        is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory"
+                        + ".decisionReplayEvidenceBoundarySummaryStatus", is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.selectedCandidateId",
+                        is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.candidateCount",
+                        is(2)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory"
+                        + ".availableInventoryGroupCount", is(12)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[0]"
+                        + ".inventoryId", is("decision-vector-fields")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[9]"
+                        + ".inventoryId", is("linked-fingerprint-fields")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[11]"
+                        + ".inventoryId", is("production-not-proven-boundary-fields")))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -622,6 +656,23 @@ class ApiContractTest {
                         + ".status", is("AVAILABLE")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceBoundarySummary.boundaryItems[9]"
                         + ".status", is("AVAILABLE")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.decisionVectorStatus",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory"
+                        + ".decisionReplayEvidenceBoundarySummaryStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.selectedCandidateId",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.candidateCount",
+                        is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory"
+                        + ".unknownInventoryGroupCount", is(10)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[0]"
+                        + ".status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[9]"
+                        + ".status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceFieldInventory.inventoryEntries[11]"
+                        + ".inventoryId", is("production-not-proven-boundary-fields")))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

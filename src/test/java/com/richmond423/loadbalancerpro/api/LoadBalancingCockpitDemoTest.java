@@ -279,6 +279,18 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("unknownInventoryGroups"));
         assertTrue(page.contains("observedFieldPaths"));
         assertTrue(page.contains("missingOrUnavailableFieldPaths"));
+        assertTrue(page.contains("Decision Evidence Null-Safety Summary"));
+        assertTrue(page.contains("id=\"decision-replay-evidence-null-safety-summary-explanation\""));
+        assertTrue(page.contains("null-safety evidence"));
+        assertTrue(page.contains("Null-Safety Status") || page.contains("nullSafetyStatus"));
+        assertTrue(page.contains("nullSafetyItems"));
+        assertTrue(page.contains("checkedFieldPaths"));
+        assertTrue(page.contains("unavailableFieldPaths"));
+        assertTrue(page.contains("noHealthyPathSafety"));
+        assertTrue(page.contains("No selected candidate, candidate set, alternative, score gap"));
+        assertTrue(page.contains("availableNullSafetyItems"));
+        assertTrue(page.contains("partialNullSafetyItems"));
+        assertTrue(page.contains("unknownNullSafetyItems"));
         assertTrue(page.contains("Allocation Math / Capacity Explanation"));
         assertTrue(page.contains("Load-Shedding / Overload Reason Breakdown"));
         assertTrue(page.contains("Remediation Rationale"));

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -229,6 +230,42 @@ class RoutingDecisionVectorReadOnlyExposureTest {
                 .contains("not production certification"));
         assertTrue(fieldInventory.path("productionNotProvenBoundary").asText()
                 .contains("not guaranteed replay"));
+
+        JsonNode nullSafety = result.path("decisionReplayEvidenceNullSafetySummary");
+        assertTrue(nullSafety.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-null-safety-summary/v1",
+                nullSafety.path("nullSafetySchemaVersion").asText());
+        assertTrue(List.of("AVAILABLE", "PARTIAL", "UNKNOWN").contains(nullSafety.path("status").asText()));
+        assertEquals("edge-alpha", nullSafety.path("selectedCandidateId").asText());
+        assertEquals(3, nullSafety.path("candidateCount").asInt());
+        assertEquals("AVAILABLE", nullSafety.path("decisionVectorStatus").asText());
+        assertEquals("AVAILABLE", nullSafety.path("decisionReplayEvidenceFieldInventoryStatus").asText());
+        assertEquals("selected-candidate-null-safety",
+                nullSafety.at("/nullSafetyItems/0/nullSafetyId").asText());
+        assertEquals("candidate-set-null-safety",
+                nullSafety.at("/nullSafetyItems/1/nullSafetyId").asText());
+        assertEquals("score-gap-null-safety",
+                nullSafety.at("/nullSafetyItems/2/nullSafetyId").asText());
+        assertEquals("linked-fingerprint-null-safety",
+                nullSafety.at("/nullSafetyItems/5/nullSafetyId").asText());
+        assertEquals("field-inventory-null-safety",
+                nullSafety.at("/nullSafetyItems/8/nullSafetyId").asText());
+        assertEquals("no-healthy-path-null-safety",
+                nullSafety.at("/nullSafetyItems/9/nullSafetyId").asText());
+        assertEquals("production-not-proven-null-safety",
+                nullSafety.at("/nullSafetyItems/11/nullSafetyId").asText());
+        assertTrue(nullSafety.at("/nullSafetyItems/0/checkedFieldCount").asInt() > 0);
+        assertTrue(nullSafety.at("/nullSafetyItems/0/unavailableFieldCount").asInt() >= 0);
+        assertTrue(nullSafety.path("explanation").asText()
+                .contains("derived from already-built lab compare evidence only"));
+        assertTrue(nullSafety.path("boundaryNote").asText().contains("does not execute replay"));
+        assertTrue(nullSafety.path("boundaryNote").asText().contains("does not perform what-if mutation"));
+        assertTrue(nullSafety.path("boundaryNote").asText().contains("does not change routing behavior"));
+        assertTrue(nullSafety.path("boundaryNote").asText().contains("does not recompute scores"));
+        assertTrue(nullSafety.path("productionNotProvenBoundary").asText()
+                .contains("not production certification"));
+        assertTrue(nullSafety.path("productionNotProvenBoundary").asText()
+                .contains("not guaranteed replay"));
     }
 
     @Test
@@ -377,6 +414,31 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(result.at("/decisionReplayEvidenceFieldInventory/explanation").asText()
                 .contains("No replay execution"));
         assertTrue(result.at("/decisionReplayEvidenceFieldInventory/explanation").asText()
+                .contains("no selected candidate"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceNullSafetySummary/status").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceNullSafetySummary/decisionVectorStatus").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceNullSafetySummary/decisionReplayEvidenceFieldInventoryStatus")
+                        .asText());
+        assertTrue(result.at("/decisionReplayEvidenceNullSafetySummary/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceNullSafetySummary/candidateCount").asInt());
+        assertEquals("selected-candidate-null-safety",
+                result.at("/decisionReplayEvidenceNullSafetySummary/nullSafetyItems/0/nullSafetyId").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceNullSafetySummary/nullSafetyItems/0/status").asText());
+        assertEquals("candidate-set-null-safety",
+                result.at("/decisionReplayEvidenceNullSafetySummary/nullSafetyItems/1/nullSafetyId").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceNullSafetySummary/nullSafetyItems/1/status").asText());
+        assertEquals("no-healthy-path-null-safety",
+                result.at("/decisionReplayEvidenceNullSafetySummary/nullSafetyItems/9/nullSafetyId").asText());
+        assertEquals("AVAILABLE",
+                result.at("/decisionReplayEvidenceNullSafetySummary/nullSafetyItems/9/status").asText());
+        assertEquals("production-not-proven-null-safety",
+                result.at("/decisionReplayEvidenceNullSafetySummary/nullSafetyItems/11/nullSafetyId").asText());
+        assertTrue(result.at("/decisionReplayEvidenceNullSafetySummary/explanation").asText()
+                .contains("No replay execution"));
+        assertTrue(result.at("/decisionReplayEvidenceNullSafetySummary/explanation").asText()
                 .contains("no selected candidate"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }

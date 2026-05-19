@@ -881,8 +881,12 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p>Decision Replay Evidence Field Inventory lists observed and unavailable already-built compare evidence field groups without reflection, new fingerprinting, scoring changes, replay execution, or production certification claims.</p>
           </div>
           <div class="proof-card">
+            <strong>Evidence null-safety summary</strong>
+            <p>Decision Evidence Null-Safety Summary summarizes null, missing, unavailable, and no-healthy/failure-path safety from already-built compare evidence without inventing selected candidates, candidate sets, gaps, fingerprints, replay claims, or production proof.</p>
+          </div>
+          <div class="proof-card">
             <strong>Read-only API exposure</strong>
-            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, <code>decisionReplayEvidenceBoundarySummary</code>, and <code>decisionReplayEvidenceFieldInventory</code> data; if absent, static lab guidance remains available.</p>
+            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, <code>decisionReplayEvidenceBoundarySummary</code>, <code>decisionReplayEvidenceFieldInventory</code>, and <code>decisionReplayEvidenceNullSafetySummary</code> data; if absent, static lab guidance remains available.</p>
           </div>
           <div class="proof-card">
             <strong>Replay and what-if boundary</strong>
@@ -1087,6 +1091,49 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-field-inventory-boundary">Read-only lab field metadata only; no replay execution, what-if mutation, field-inventory persistence, upload/share/download, telemetry, external calls, new fingerprint generation, or server-side export/PDF/ZIP generation.</p>
           </div>
         </div>
+        <h3 style="margin-top: 14px;">Decision Evidence Null-Safety Summary</h3>
+        <div class="proof-grid" aria-label="Decision Evidence Null-Safety Summary">
+          <div class="proof-card">
+            <strong>Null-Safety Status</strong>
+            <p id="decision-vector-null-safety-status">Run Compare strategies to populate read-only null-safety status.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Null-Safety Items</strong>
+            <p id="decision-vector-null-safety-items">No null-safety items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Checked Field Paths</strong>
+            <p id="decision-vector-null-safety-checked">No checked field paths have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Unavailable Field Paths</strong>
+            <p id="decision-vector-null-safety-unavailable">No unavailable field paths have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>No-Healthy Path Safety</strong>
+            <p id="decision-vector-null-safety-no-healthy">No no-healthy path safety evidence has been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>No Invented Evidence</strong>
+            <p id="decision-vector-null-safety-no-invented">No selected candidate, candidate set, alternative, score gap, largest delta factor, fingerprint, replay claim, or production proof is invented.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Available Null-Safety Items</strong>
+            <p id="decision-vector-null-safety-available">No available null-safety items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Partial Null-Safety Items</strong>
+            <p id="decision-vector-null-safety-partial">No partial null-safety items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Unknown Null-Safety Items</strong>
+            <p id="decision-vector-null-safety-unknown">No unknown null-safety items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Null-safety boundary</strong>
+            <p id="decision-vector-null-safety-boundary">Read-only lab null-safety metadata only; no replay execution, what-if mutation, null-safety persistence, upload/share/download, telemetry, external calls, reflection, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.</p>
+          </div>
+        </div>
         <p class="postman-note">
           Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
           no upload/share/download route, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
@@ -1113,6 +1160,7 @@ decisionReplayReadinessChecklist: unavailable until /api/routing/compare returns
 decisionReplayEvidenceSourceMap: unavailable until /api/routing/compare returns decisionReplayEvidenceSourceMap; no evidence source mapping claim is invented
 decisionReplayEvidenceBoundarySummary: unavailable until /api/routing/compare returns decisionReplayEvidenceBoundarySummary; no boundary summary claim is invented
 decisionReplayEvidenceFieldInventory: unavailable until /api/routing/compare returns decisionReplayEvidenceFieldInventory; no field inventory claim is invented
+decisionReplayEvidenceNullSafetySummary: unavailable until /api/routing/compare returns decisionReplayEvidenceNullSafetySummary; no null-safety claim is invented
 readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
@@ -2071,7 +2119,17 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       evidenceFieldInventoryAvailable: document.getElementById("decision-vector-field-inventory-available"),
       evidenceFieldInventoryPartial: document.getElementById("decision-vector-field-inventory-partial"),
       evidenceFieldInventoryUnknown: document.getElementById("decision-vector-field-inventory-unknown"),
-      evidenceFieldInventoryBoundary: document.getElementById("decision-vector-field-inventory-boundary")
+      evidenceFieldInventoryBoundary: document.getElementById("decision-vector-field-inventory-boundary"),
+      evidenceNullSafetyStatus: document.getElementById("decision-vector-null-safety-status"),
+      evidenceNullSafetyItems: document.getElementById("decision-vector-null-safety-items"),
+      evidenceNullSafetyChecked: document.getElementById("decision-vector-null-safety-checked"),
+      evidenceNullSafetyUnavailable: document.getElementById("decision-vector-null-safety-unavailable"),
+      evidenceNullSafetyNoHealthy: document.getElementById("decision-vector-null-safety-no-healthy"),
+      evidenceNullSafetyNoInvented: document.getElementById("decision-vector-null-safety-no-invented"),
+      evidenceNullSafetyAvailable: document.getElementById("decision-vector-null-safety-available"),
+      evidenceNullSafetyPartial: document.getElementById("decision-vector-null-safety-partial"),
+      evidenceNullSafetyUnknown: document.getElementById("decision-vector-null-safety-unknown"),
+      evidenceNullSafetyBoundary: document.getElementById("decision-vector-null-safety-boundary")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -3132,6 +3190,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           && typeof primary.decisionReplayEvidenceFieldInventory === "object"
         ? primary.decisionReplayEvidenceFieldInventory
         : null;
+      const evidenceNullSafety = primary && primary.decisionReplayEvidenceNullSafetySummary
+          && typeof primary.decisionReplayEvidenceNullSafetySummary === "object"
+        ? primary.decisionReplayEvidenceNullSafetySummary
+        : null;
       const selectedStrategy = decisionVector && decisionVector.selectedStrategy
         ? decisionVector.selectedStrategy
         : (primary && primary.strategyId ? primary.strategyId : "not run");
@@ -3381,6 +3443,39 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       const fieldInventoryBoundary = evidenceFieldInventory && evidenceFieldInventory.boundaryNote
         ? evidenceFieldInventory.boundaryNote
         : "Read-only lab field metadata only; no replay execution, what-if mutation, field-inventory persistence, upload/share/download, telemetry, external calls, new fingerprint generation, or server-side export/PDF/ZIP generation.";
+      const nullSafetyItems = evidenceNullSafety && Array.isArray(evidenceNullSafety.nullSafetyItems)
+        ? evidenceNullSafety.nullSafetyItems
+        : [];
+      const nullSafetyItemsSummary = nullSafetyItems.length > 0
+        ? nullSafetyItems.map((item) =>
+          (item.nullSafetyId || "unknown-null-safety") + "=" + (item.status || "UNKNOWN")
+        ).join("; ")
+        : "No null-safety items have been returned yet.";
+      const firstNullSafetyItem = nullSafetyItems.length > 0 ? nullSafetyItems[0] : null;
+      const nullSafetyCheckedSummary = firstNullSafetyItem && Array.isArray(firstNullSafetyItem.checkedFieldPaths)
+        ? firstNullSafetyItem.checkedFieldPaths.slice(0, 10).join(", ") || "none"
+        : "No checked field paths have been returned yet.";
+      const nullSafetyUnavailableSummary = firstNullSafetyItem
+          && Array.isArray(firstNullSafetyItem.unavailableFieldPaths)
+        ? firstNullSafetyItem.unavailableFieldPaths.slice(0, 10).join(", ") || "none"
+        : "No unavailable field paths have been returned yet.";
+      const noHealthyNullSafety = nullSafetyItems.find((item) =>
+        item && item.nullSafetyId === "no-healthy-path-null-safety");
+      const nullSafetyNoHealthySummary = noHealthyNullSafety
+        ? "status=" + (noHealthyNullSafety.status || "UNKNOWN")
+          + "; checked=" + String(noHealthyNullSafety.checkedFieldCount || 0)
+          + "; unavailable=" + String(noHealthyNullSafety.unavailableFieldCount || 0)
+        : "No no-healthy path safety evidence has been returned yet.";
+      const nullSafetySummary = evidenceNullSafety
+        ? "status=" + (evidenceNullSafety.status || "unknown")
+          + "; schema=" + (evidenceNullSafety.nullSafetySchemaVersion || "unknown")
+          + "; selectedCandidate=" + (evidenceNullSafety.selectedCandidateId || "not returned")
+          + "; candidateCount=" + String(evidenceNullSafety.candidateCount || 0)
+          + "; nullSafetyItems=" + nullSafetyItemsSummary
+        : "Decision Evidence Null-Safety Summary is unavailable; no null-safety claim is invented.";
+      const nullSafetyBoundary = evidenceNullSafety && evidenceNullSafety.boundaryNote
+        ? evidenceNullSafety.boundaryNote
+        : "Read-only lab null-safety metadata only; no replay execution, what-if mutation, null-safety persistence, upload/share/download, telemetry, external calls, reflection, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.";
       const replayReadiness = decisionVector && decisionVector.replayReadiness
         ? decisionVector.replayReadiness
         : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
@@ -3443,6 +3538,22 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         ? String(evidenceFieldInventory.unknownInventoryGroupCount || 0)
         : "No unknown inventory groups have been returned yet.";
       decisionVectorFields.evidenceFieldInventoryBoundary.textContent = fieldInventoryBoundary;
+      decisionVectorFields.evidenceNullSafetyStatus.textContent = nullSafetySummary;
+      decisionVectorFields.evidenceNullSafetyItems.textContent = nullSafetyItemsSummary;
+      decisionVectorFields.evidenceNullSafetyChecked.textContent = nullSafetyCheckedSummary;
+      decisionVectorFields.evidenceNullSafetyUnavailable.textContent = nullSafetyUnavailableSummary;
+      decisionVectorFields.evidenceNullSafetyNoHealthy.textContent = nullSafetyNoHealthySummary;
+      decisionVectorFields.evidenceNullSafetyNoInvented.textContent = "No selected candidate, candidate set, closest alternative, score gap, largest delta factor, fingerprint, replay claim, certification claim, guaranteed replay claim, production-proof claim, or unsupported explanation is invented.";
+      decisionVectorFields.evidenceNullSafetyAvailable.textContent = evidenceNullSafety
+        ? String(evidenceNullSafety.availableNullSafetyItemCount || 0)
+        : "No available null-safety items have been returned yet.";
+      decisionVectorFields.evidenceNullSafetyPartial.textContent = evidenceNullSafety
+        ? String(evidenceNullSafety.partialNullSafetyItemCount || 0)
+        : "No partial null-safety items have been returned yet.";
+      decisionVectorFields.evidenceNullSafetyUnknown.textContent = evidenceNullSafety
+        ? String(evidenceNullSafety.unknownNullSafetyItemCount || 0)
+        : "No unknown null-safety items have been returned yet.";
+      decisionVectorFields.evidenceNullSafetyBoundary.textContent = nullSafetyBoundary;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
@@ -3487,6 +3598,12 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
             + "; missingOrUnavailableFieldPaths=" + inventoryMissingSummary
             + "; boundaryNote=" + fieldInventoryBoundary
           : "unavailable until /api/routing/compare returns decisionReplayEvidenceFieldInventory; no field inventory claim is invented"),
+        "decisionReplayEvidenceNullSafetySummary: " + (evidenceNullSafety
+          ? nullSafetySummary + "; checkedFieldPaths=" + nullSafetyCheckedSummary
+            + "; unavailableFieldPaths=" + nullSafetyUnavailableSummary
+            + "; noHealthyPathSafety=" + nullSafetyNoHealthySummary
+            + "; boundaryNote=" + nullSafetyBoundary
+          : "unavailable until /api/routing/compare returns decisionReplayEvidenceNullSafetySummary; no null-safety claim is invented"),
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
         "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,

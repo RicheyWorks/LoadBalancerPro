@@ -199,6 +199,8 @@ class ScenarioReplayControllerTest {
                     .andExpect(jsonPath("$.steps[0].serverStates[0].healthy", is(false)))
                     .andExpect(jsonPath("$.steps[1].selectedServerId", is("blue")))
                     .andExpect(jsonPath("$.steps[1].routingResults[0].chosenServerId", is("blue")))
+                    .andExpect(jsonPath("$.steps[1].routingResults[0].decisionReplayEvidenceLaneConsistencySummary",
+                            nullValue()))
                     .andExpect(jsonPath("$.steps[2].serverStates[0].healthy", is(true)))
                     .andExpect(jsonPath("$.steps[3].selectedServerId", is("green")))
                     .andExpect(jsonPath("$.steps[3].routingResults[0].chosenServerId", is("green")))

@@ -359,6 +359,16 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("Widest Downstream Lanes"));
         assertTrue(page.contains("Dependency Summary Limitations"));
         assertTrue(page.contains("decisionReplayEvidenceLaneDependencySummary"));
+        assertTrue(page.contains("Decision Evidence Lane Consistency Summary"));
+        assertTrue(page.contains("id=\"decision-replay-evidence-lane-consistency-summary-explanation\""));
+        assertTrue(page.contains("Consistency Summary Status"));
+        assertTrue(page.contains("Checked Surfaces"));
+        assertTrue(page.contains("Count Alignment"));
+        assertTrue(page.contains("Mismatches"));
+        assertTrue(page.contains("Missing Surfaces"));
+        assertTrue(page.contains("Consistency Limitations"));
+        assertTrue(page.contains("decisionReplayEvidenceLaneConsistencySummary"));
+        assertTrue(page.contains("not guaranteed replay"));
         assertTrue(page.contains("not replay execution"));
         assertTrue(page.contains("not scoring proof"));
         assertTrue(page.contains("not correctness validation"));

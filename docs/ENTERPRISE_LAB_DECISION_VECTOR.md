@@ -6,7 +6,7 @@ The Enterprise Lab Decision Vector is the structured explanation object for one 
 
 ## Why the Lab Needs It
 
-The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, Decision Replay Reconstruction Trace lane, Decision Replay Capsule lane, Decision Replay Readiness Checklist lane, Decision Replay Evidence Source Map lane, Decision Replay Evidence Boundary Summary lane, Decision Replay Evidence Field Inventory lane, Decision Evidence Null-Safety Summary lane, Decision Evidence Status Rollup lane, Decision Replay Evidence Lane Navigation Summary lane, Decision Replay Evidence Lane Dependency Map lane, Decision Replay Evidence Lane Reference Index lane, Decision Replay Evidence Lane Dependency Summary lane, Decision Replay Evidence Lane Consistency Summary lane, Decision Replay Evidence Reviewer Snapshot lane, Decision Replay Evidence Reviewer Guidance lane, and later separately scoped lab planning work can build without inventing hidden scoring.
+The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, Decision Replay Reconstruction Trace lane, Decision Replay Capsule lane, Decision Replay Readiness Checklist lane, Decision Replay Evidence Source Map lane, Decision Replay Evidence Boundary Summary lane, Decision Replay Evidence Field Inventory lane, Decision Evidence Null-Safety Summary lane, Decision Evidence Status Rollup lane, Decision Replay Evidence Lane Navigation Summary lane, Decision Replay Evidence Lane Dependency Map lane, Decision Replay Evidence Lane Reference Index lane, Decision Replay Evidence Lane Dependency Summary lane, Decision Replay Evidence Lane Consistency Summary lane, Decision Replay Evidence Reviewer Snapshot lane, Decision Replay Evidence Reviewer Guidance lane, Decision Replay Evidence Reviewer Handoff Summary lane, and later separately scoped lab planning work can build without inventing hidden scoring.
 
 A Decision Vector differs from a simple reason string because it separates:
 
@@ -37,6 +37,7 @@ A Decision Vector differs from a simple reason string because it separates:
 - Decision Replay Evidence Lane Consistency Summary metadata over the existing status rollup, dependency map, lane reference index, and lane dependency summary surfaces.
 - Decision Replay Evidence Reviewer Snapshot metadata over the existing status rollup, dependency map, lane reference index, lane dependency summary, and lane consistency summary surfaces.
 - Decision Replay Evidence Reviewer Guidance metadata over the existing status rollup, dependency map, lane reference index, lane dependency summary, lane consistency summary, and reviewer snapshot surfaces.
+- Decision Replay Evidence Reviewer Handoff Summary metadata over the existing status rollup, dependency map, lane reference index, lane dependency summary, lane consistency summary, reviewer snapshot, and reviewer guidance surfaces.
 - Replay readiness and later separately scoped replay planning gaps.
 - Lab proof boundaries and production not-proven boundaries.
 
@@ -78,6 +79,7 @@ One Decision Vector represents one controlled lab routing decision. The contract
 | `decisionReplayEvidenceLaneConsistencySummary` | Additive read-only lane consistency summary derived only from existing status rollup, dependency map, lane reference index, and dependency summary metadata; it shows status alignment, count alignment, missing surfaces, mismatched count fields, and limitations without replay execution, score recomputation, reflection, or a new fingerprint. |
 | `decisionReplayEvidenceReviewerSnapshot` | Additive read-only reviewer snapshot derived only from existing status rollup, dependency map, lane reference index, dependency summary, and consistency summary metadata; it shows snapshot status, lane counts, checked/missing surfaces, highlights, warnings, and limitations without replay execution, score recomputation, reflection, or a new fingerprint. |
 | `decisionReplayEvidenceReviewerGuidance` | Additive read-only reviewer guidance derived only from existing status rollup, dependency map, lane reference index, dependency summary, consistency summary, and reviewer snapshot metadata; it shows guidance status, reviewer priority, suggested review steps, evidence surfaces to inspect, caution notes, and limitations without replay execution, score recomputation, reflection, or a new fingerprint. |
+| `decisionReplayEvidenceReviewerHandoffSummary` | Additive read-only reviewer handoff summary derived only from existing status rollup, dependency map, lane reference index, dependency summary, consistency summary, reviewer snapshot, and reviewer guidance metadata; it shows handoff status, priority, bullets, operator follow-up items, referenced surfaces, caution notes, and limitations without replay execution, score recomputation, reflection, production validation, or a new fingerprint. |
 | `replayReadiness` | Contract readiness for future replay; replay execution remains future/not implemented until built. |
 | `labProofBoundary` | Controlled lab evidence, local reproducibility, same-origin local API responses, and browser-local interpretation. |
 | `productionNotProvenBoundary` | No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof. |
@@ -710,6 +712,7 @@ The read-only field includes:
 - Result-level `decisionReplayEvidenceLaneConsistencySummary` derived from already-built status rollup, dependency map, lane reference index, and dependency summary metadata.
 - Result-level `decisionReplayEvidenceReviewerSnapshot` derived from already-built status rollup, dependency map, lane reference index, dependency summary, and consistency summary metadata.
 - Result-level `decisionReplayEvidenceReviewerGuidance` derived from already-built status rollup, dependency map, lane reference index, dependency summary, consistency summary, and reviewer snapshot metadata.
+- Result-level `decisionReplayEvidenceReviewerHandoffSummary` derived from already-built status rollup, dependency map, lane reference index, dependency summary, consistency summary, reviewer snapshot, and reviewer guidance metadata.
 - Exactness, lab proof, and production not-proven boundaries.
 - Replay, what-if, and structured logging readiness marked future/not implemented.
 
@@ -784,6 +787,15 @@ after `results[].decisionReplayEvidenceStatusRollup`, `results[].decisionReplayE
 `results[].decisionReplayEvidenceLaneReferenceIndex`, `results[].decisionReplayEvidenceLaneDependencySummary`,
 `results[].decisionReplayEvidenceLaneConsistencySummary`, and `results[].decisionReplayEvidenceReviewerSnapshot`
 are available.
+
+The evidence reviewer handoff summary field is exposed as
+`results[].decisionReplayEvidenceReviewerHandoffSummary` and is derived after
+`results[].decisionReplayEvidenceStatusRollup`, `results[].decisionReplayEvidenceLaneDependencyMap`,
+`results[].decisionReplayEvidenceLaneReferenceIndex`, `results[].decisionReplayEvidenceLaneDependencySummary`,
+`results[].decisionReplayEvidenceLaneConsistencySummary`, `results[].decisionReplayEvidenceReviewerSnapshot`, and
+`results[].decisionReplayEvidenceReviewerGuidance` are available. It is reviewer handoff metadata only; it is not
+production validation, not replay proof, not scoring proof, not approval, not enforcement, not remediation,
+not correctness validation, not production readiness, not production certification, or not guaranteed replay.
 
 The exposure is additive controlled lab explainability only. It does not change routing selection,
 score calculation, strategy weights, route/proxy behavior, or existing API response fields.

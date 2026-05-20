@@ -546,6 +546,38 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(reviewerGuidance.toString().contains("not production certification"));
         assertTrue(reviewerGuidance.toString().contains("not guaranteed replay"));
         assertFalse(reviewerGuidance.toString().contains("reviewerGuidanceFingerprint"));
+        JsonNode reviewerHandoff = result.path("decisionReplayEvidenceReviewerHandoffSummary");
+        assertTrue(reviewerHandoff.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-reviewer-handoff-summary/v1",
+                reviewerHandoff.path("reviewerHandoffSummarySchemaVersion").asText());
+        assertEquals("PARTIAL", reviewerHandoff.path("status").asText());
+        assertEquals("REVIEW", reviewerHandoff.path("handoffPriority").asText());
+        assertEquals("PARTIAL", reviewerHandoff.path("reviewerSnapshotStatus").asText());
+        assertEquals("PARTIAL", reviewerHandoff.path("reviewerGuidanceStatus").asText());
+        assertEquals("CONSISTENT", reviewerHandoff.path("consistencyStatus").asText());
+        assertEquals("edge-alpha", reviewerHandoff.path("selectedCandidateId").asText());
+        assertEquals(3, reviewerHandoff.path("candidateCount").asInt());
+        assertEquals(14, reviewerHandoff.path("totalLaneCount").asInt());
+        assertEquals(4, reviewerHandoff.path("availableLaneCount").asInt());
+        assertEquals(10, reviewerHandoff.path("partialLaneCount").asInt());
+        assertEquals(0, reviewerHandoff.path("unknownLaneCount").asInt());
+        assertEquals("Reviewer snapshot is PARTIAL.",
+                reviewerHandoff.at("/handoffBullets/0").asText());
+        assertEquals("Review partial or unknown evidence lanes before operator handoff.",
+                reviewerHandoff.at("/operatorFollowUpItems/0").asText());
+        assertEquals("decisionReplayEvidenceReviewerGuidance",
+                reviewerHandoff.at("/evidenceSurfacesReferenced/6").asText());
+        assertEquals("Reviewer snapshot status is PARTIAL.",
+                reviewerHandoff.at("/cautionNotes/0").asText());
+        assertTrue(reviewerHandoff.path("summaryText").asText()
+                .contains("Reviewer handoff summary is PARTIAL"));
+        assertTrue(reviewerHandoff.toString().contains("Not replay proof"));
+        assertTrue(reviewerHandoff.toString().contains("Not scoring proof"));
+        assertTrue(reviewerHandoff.toString().contains("Not correctness validation"));
+        assertTrue(reviewerHandoff.toString().contains("not production certification"));
+        assertTrue(reviewerHandoff.toString().contains("not guaranteed replay"));
+        assertTrue(reviewerHandoff.toString().contains("not production validation"));
+        assertFalse(reviewerHandoff.toString().contains("reviewerHandoffFingerprint"));
     }
 
     @Test
@@ -895,6 +927,28 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertFalse(reviewerGuidanceText.contains("quality ranking is proven"));
         assertFalse(reviewerGuidanceText.contains("approval is granted"));
         assertFalse(reviewerGuidanceText.contains("correctness validation is proven"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceReviewerHandoffSummary/status").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceReviewerHandoffSummary/handoffPriority").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceReviewerHandoffSummary/reviewerSnapshotStatus").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceReviewerHandoffSummary/reviewerGuidanceStatus").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceReviewerHandoffSummary/consistencyStatus").asText());
+        assertTrue(result.at("/decisionReplayEvidenceReviewerHandoffSummary/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerHandoffSummary/candidateCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerHandoffSummary/totalLaneCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerHandoffSummary/availableLaneCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerHandoffSummary/partialLaneCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerHandoffSummary/unknownLaneCount").asInt());
+        assertEquals("No selected candidate evidence is available for reviewer handoff.",
+                result.at("/decisionReplayEvidenceReviewerHandoffSummary/cautionNotes/0").asText());
+        String reviewerHandoffText = result.at("/decisionReplayEvidenceReviewerHandoffSummary").toString();
+        assertFalse(reviewerHandoffText.contains("reviewerHandoffFingerprint"));
+        assertFalse(reviewerHandoffText.contains("production certification is proven"));
+        assertFalse(reviewerHandoffText.contains("guaranteed replay is proven"));
+        assertFalse(reviewerHandoffText.contains("quality ranking is proven"));
+        assertFalse(reviewerHandoffText.contains("approval is granted"));
+        assertFalse(reviewerHandoffText.contains("correctness validation is proven"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

@@ -126,6 +126,7 @@ class ReviewerTrustMapDocumentationTest {
                 "Decision Replay Evidence Lane Consistency Summary",
                 "Decision Replay Evidence Reviewer Snapshot",
                 "Decision Replay Evidence Reviewer Guidance",
+                "Decision Replay Evidence Reviewer Handoff Summary",
                 "ENTERPRISE_LAB_DECISION_VECTOR.md",
                 "ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_FIELD_INVENTORY.md",
                 "ENTERPRISE_LAB_DECISION_EVIDENCE_NULL_SAFETY_SUMMARY.md",
@@ -137,6 +138,7 @@ class ReviewerTrustMapDocumentationTest {
                 "ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY.md",
                 "ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_SNAPSHOT.md",
                 "ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_GUIDANCE.md",
+                "ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_HANDOFF_SUMMARY.md",
                 "Candidate Comparison Limits",
                 "Candidate Evidence Cards",
                 "Candidate Review Questions",
@@ -205,6 +207,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("Decision Replay Evidence Lane Consistency Summary"));
         assertTrue(demoPath.contains("Decision Replay Evidence Reviewer Snapshot"));
         assertTrue(demoPath.contains("Decision Replay Evidence Reviewer Guidance"));
+        assertTrue(demoPath.contains("Decision Replay Evidence Reviewer Handoff Summary"));
         assertTrue(demoPath.contains("Candidate Comparison Limits"));
         assertTrue(demoPath.contains("Candidate Evidence Cards"));
         assertTrue(demoPath.contains("Candidate Review Questions"));
@@ -369,6 +372,10 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("results[].decisionReplayEvidenceReviewerSnapshot"));
         assertTrue(matrix.contains("Decision Replay Evidence Reviewer Guidance metadata"));
         assertTrue(matrix.contains("results[].decisionReplayEvidenceReviewerGuidance"));
+        assertTrue(matrix.contains("Decision Replay Evidence Reviewer Handoff Summary metadata"));
+        assertTrue(matrix.contains("results[].decisionReplayEvidenceReviewerHandoffSummary"));
+        assertTrue(matrix.contains("handoff priority"));
+        assertTrue(matrix.contains("operator follow-up items"));
         assertTrue(matrix.contains("suggested review steps"));
         assertTrue(matrix.contains("reviewer highlights"));
         assertTrue(matrix.contains("reviewer warnings"));

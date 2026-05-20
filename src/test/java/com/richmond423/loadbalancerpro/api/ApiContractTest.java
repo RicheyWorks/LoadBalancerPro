@@ -178,7 +178,7 @@ class ApiContractTest {
                 "decisionReplayEvidenceLaneNavigationSummary", "decisionReplayEvidenceLaneDependencyMap",
                 "decisionReplayEvidenceLaneReferenceIndex", "decisionReplayEvidenceLaneDependencySummary",
                 "decisionReplayEvidenceLaneConsistencySummary", "decisionReplayEvidenceReviewerSnapshot",
-                "decisionReplayEvidenceReviewerGuidance");
+                "decisionReplayEvidenceReviewerGuidance", "decisionReplayEvidenceReviewerHandoffSummary");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -349,6 +349,12 @@ class ApiContractTest {
                 "partialLaneCount", "unknownLaneCount", "checkedSurfaceCount", "missingSurfaceCount",
                 "missingSurfaces", "primaryReviewerFocus", "suggestedReviewSteps",
                 "evidenceSurfacesToInspect", "cautionNotes", "summaryText", "limitations", "boundaryNote");
+        assertSchemaProperties(docs, "RoutingDecisionReplayEvidenceReviewerHandoffSummaryResponse", "readOnly",
+                "reviewerHandoffSummarySchemaVersion", "source", "status", "handoffPriority",
+                "reviewerSnapshotStatus", "reviewerGuidanceStatus", "consistencyStatus", "strategyId",
+                "selectedCandidateId", "candidateCount", "totalLaneCount", "availableLaneCount",
+                "partialLaneCount", "unknownLaneCount", "handoffBullets", "operatorFollowUpItems",
+                "evidenceSurfacesReferenced", "cautionNotes", "summaryText", "limitations", "boundaryNote");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -907,6 +913,46 @@ class ApiContractTest {
                         containsString("Read-only reviewer guidance")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerGuidance.boundaryNote",
                         containsString("does not execute replay")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary.readOnly",
+                        is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".reviewerHandoffSummarySchemaVersion",
+                        is("decision-replay-evidence-reviewer-handoff-summary/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary.status",
+                        is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".handoffPriority", is("REVIEW")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".reviewerSnapshotStatus", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".reviewerGuidanceStatus", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".consistencyStatus", is("CONSISTENT")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".selectedCandidateId", is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".candidateCount", is(2)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".totalLaneCount", is(14)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".availableLaneCount", is(5)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".partialLaneCount", is(9)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".unknownLaneCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".handoffBullets[0]", is("Reviewer snapshot is PARTIAL.")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".operatorFollowUpItems[0]",
+                        is("Review partial or unknown evidence lanes before operator handoff.")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".evidenceSurfacesReferenced[6]", is("decisionReplayEvidenceReviewerGuidance")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary.summaryText",
+                        containsString("Reviewer handoff summary is PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary.limitations[0]",
+                        containsString("Read-only reviewer handoff metadata")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary.boundaryNote",
+                        containsString("does not execute replay")))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -1217,6 +1263,33 @@ class ApiContractTest {
                         + ".cautionNotes[0]",
                         is("No selected candidate evidence is available for reviewer guidance.")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerGuidance.summaryText",
+                        containsString("UNKNOWN because required reviewer metadata is missing")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary.status",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".handoffPriority", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".reviewerSnapshotStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".reviewerGuidanceStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".consistencyStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".selectedCandidateId", nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".candidateCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".totalLaneCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".availableLaneCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".partialLaneCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".unknownLaneCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary"
+                        + ".cautionNotes[0]",
+                        is("No selected candidate evidence is available for reviewer handoff.")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary.summaryText",
                         containsString("UNKNOWN because required reviewer metadata is missing")))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }

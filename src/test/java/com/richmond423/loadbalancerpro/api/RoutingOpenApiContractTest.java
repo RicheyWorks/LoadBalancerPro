@@ -101,6 +101,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayEvidenceLaneDependencySummaryResponse");
         assertRef(required(resultProperties, "/decisionReplayEvidenceLaneConsistencySummary"),
                 "#/components/schemas/RoutingDecisionReplayEvidenceLaneConsistencySummaryResponse");
+        assertRef(required(resultProperties, "/decisionReplayEvidenceReviewerSnapshot"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceReviewerSnapshotResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -488,6 +490,37 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(laneConsistencyCheckProperties, "/expected/type").asText());
         assertEquals("string", required(laneConsistencyCheckProperties, "/actual/type").asText());
         assertEquals("string", required(laneConsistencyCheckProperties, "/detail/type").asText());
+
+        JsonNode reviewerSnapshotProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceReviewerSnapshotResponse/properties");
+        assertEquals("boolean", required(reviewerSnapshotProperties, "/readOnly/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/reviewerSnapshotSchemaVersion/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/source/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/status/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/consistencyStatus/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/referenceIndexStatus/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/dependencySummaryStatus/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/statusRollupStatus/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/dependencyMapStatus/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/strategyId/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/selectedCandidateId/type").asText());
+        assertEquals("integer", required(reviewerSnapshotProperties, "/candidateCount/type").asText());
+        assertEquals("integer", required(reviewerSnapshotProperties, "/totalLaneCount/type").asText());
+        assertEquals("integer", required(reviewerSnapshotProperties, "/availableLaneCount/type").asText());
+        assertEquals("integer", required(reviewerSnapshotProperties, "/partialLaneCount/type").asText());
+        assertEquals("integer", required(reviewerSnapshotProperties, "/unknownLaneCount/type").asText());
+        assertEquals("integer", required(reviewerSnapshotProperties, "/checkedSurfaceCount/type").asText());
+        assertEquals("integer", required(reviewerSnapshotProperties, "/missingSurfaceCount/type").asText());
+        assertEquals("array", required(reviewerSnapshotProperties, "/missingSurfaces/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/missingSurfaces/items/type").asText());
+        assertEquals("array", required(reviewerSnapshotProperties, "/reviewerHighlights/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/reviewerHighlights/items/type").asText());
+        assertEquals("array", required(reviewerSnapshotProperties, "/reviewerWarnings/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/reviewerWarnings/items/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/summaryText/type").asText());
+        assertEquals("array", required(reviewerSnapshotProperties, "/limitations/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/limitations/items/type").asText());
+        assertEquals("string", required(reviewerSnapshotProperties, "/boundaryNote/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

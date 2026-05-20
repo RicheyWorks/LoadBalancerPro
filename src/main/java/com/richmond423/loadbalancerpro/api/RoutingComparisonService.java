@@ -56,6 +56,8 @@ public class RoutingComparisonService {
             decisionReplayEvidenceLaneNavigationSummaryService;
     private final RoutingDecisionReplayEvidenceLaneDependencyMapService decisionReplayEvidenceLaneDependencyMapService;
     private final RoutingDecisionReplayEvidenceLaneReferenceIndexService decisionReplayEvidenceLaneReferenceIndexService;
+    private final RoutingDecisionReplayEvidenceLaneDependencySummaryService
+            decisionReplayEvidenceLaneDependencySummaryService;
     private final Clock clock;
 
     public RoutingComparisonService() {
@@ -88,6 +90,8 @@ public class RoutingComparisonService {
                 new RoutingDecisionReplayEvidenceLaneDependencyMapService();
         this.decisionReplayEvidenceLaneReferenceIndexService =
                 new RoutingDecisionReplayEvidenceLaneReferenceIndexService();
+        this.decisionReplayEvidenceLaneDependencySummaryService =
+                new RoutingDecisionReplayEvidenceLaneDependencySummaryService();
     }
 
     public RoutingComparisonResponse compare(RoutingComparisonRequest request) {
@@ -351,6 +355,9 @@ public class RoutingComparisonService {
                         decisionReplayEvidenceStatusRollup,
                         decisionReplayEvidenceLaneNavigationSummary,
                         decisionReplayEvidenceLaneDependencyMap);
+        RoutingDecisionReplayEvidenceLaneDependencySummaryResponse decisionReplayEvidenceLaneDependencySummary =
+                decisionReplayEvidenceLaneDependencySummaryService.dependencySummary(
+                        decisionReplayEvidenceLaneReferenceIndex);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -372,7 +379,8 @@ public class RoutingComparisonService {
                 decisionReplayEvidenceStatusRollup,
                 decisionReplayEvidenceLaneNavigationSummary,
                 decisionReplayEvidenceLaneDependencyMap,
-                decisionReplayEvidenceLaneReferenceIndex);
+                decisionReplayEvidenceLaneReferenceIndex,
+                decisionReplayEvidenceLaneDependencySummary);
     }
 
     private RoutingComparisonResultResponse successfulResultResponse(
@@ -526,6 +534,9 @@ public class RoutingComparisonService {
                         decisionReplayEvidenceStatusRollup,
                         decisionReplayEvidenceLaneNavigationSummary,
                         decisionReplayEvidenceLaneDependencyMap);
+        RoutingDecisionReplayEvidenceLaneDependencySummaryResponse decisionReplayEvidenceLaneDependencySummary =
+                decisionReplayEvidenceLaneDependencySummaryService.dependencySummary(
+                        decisionReplayEvidenceLaneReferenceIndex);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -547,7 +558,8 @@ public class RoutingComparisonService {
                 decisionReplayEvidenceStatusRollup,
                 decisionReplayEvidenceLaneNavigationSummary,
                 decisionReplayEvidenceLaneDependencyMap,
-                decisionReplayEvidenceLaneReferenceIndex);
+                decisionReplayEvidenceLaneReferenceIndex,
+                decisionReplayEvidenceLaneDependencySummary);
     }
 
     private RoutingDecisionVectorResponse decisionVector(RoutingStrategyId strategyId,

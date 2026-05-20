@@ -1311,6 +1311,10 @@
             <div id="decision-replay-evidence-lane-reference-index-explanation">Run routing comparison to populate Lane Reference Index Status, Evidence Lane Reference Items, Response Field Path, UI Section, Docs Reference, Dependency Count, Downstream Count, Available Lanes, Partial Lanes, and Unknown Lanes metadata.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Evidence Lane Dependency Summary</strong>
+            <div id="decision-replay-evidence-lane-dependency-summary-explanation">Run routing comparison to populate Lane Dependency Summary Status, Total Lanes, Root Lanes, Terminal Lanes, Max Dependency Count, Max Downstream Count, Densest Dependency Lanes, Widest Downstream Lanes, and Dependency Summary Limitations metadata.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3491,6 +3495,7 @@
         renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(response);
         renderDecisionReplayEvidenceLaneDependencyMapExplanation(response);
         renderDecisionReplayEvidenceLaneReferenceIndexExplanation(response);
+        renderDecisionReplayEvidenceLaneDependencySummaryExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3510,6 +3515,7 @@
         renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(response);
         renderDecisionReplayEvidenceLaneDependencyMapExplanation(response);
         renderDecisionReplayEvidenceLaneReferenceIndexExplanation(response);
+        renderDecisionReplayEvidenceLaneDependencySummaryExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3531,6 +3537,7 @@
       renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(response);
       renderDecisionReplayEvidenceLaneDependencyMapExplanation(response);
       renderDecisionReplayEvidenceLaneReferenceIndexExplanation(response);
+      renderDecisionReplayEvidenceLaneDependencySummaryExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3584,6 +3591,7 @@
       renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(state.routing);
       renderDecisionReplayEvidenceLaneDependencyMapExplanation(state.routing);
       renderDecisionReplayEvidenceLaneReferenceIndexExplanation(state.routing);
+      renderDecisionReplayEvidenceLaneDependencySummaryExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -4229,6 +4237,46 @@
         return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
           + escapeHtml(summary) + "<br>"
           + "<span class=\"muted\">Boundary: read-only lab reference metadata only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, external calls, reflection, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
+    function renderDecisionReplayEvidenceLaneDependencySummaryExplanation(response) {
+      const container = document.getElementById("decision-replay-evidence-lane-dependency-summary-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate Lane Dependency Summary Status, Total Lanes, Root Lanes, Terminal Lanes, Max Dependency Count, Max Downstream Count, Densest Dependency Lanes, Widest Downstream Lanes, and Dependency Summary Limitations metadata.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; Lane Dependency Summary Status is UNKNOWN and dependency summary counts are unavailable.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const summary = result.decisionReplayEvidenceLaneDependencySummary || {};
+        const densest = Array.isArray(summary.densestDependencyLaneIds)
+          ? summary.densestDependencyLaneIds.join("; ")
+          : "";
+        const widest = Array.isArray(summary.widestDownstreamLaneIds)
+          ? summary.widestDownstreamLaneIds.join("; ")
+          : "";
+        const limitations = Array.isArray(summary.limitations)
+          ? summary.limitations.join("; ")
+          : "Read-only lab dependency summary only; not replay execution, not scoring proof, not correctness validation, and not production readiness.";
+        const text = summary.laneDependencySummarySchemaVersion
+          ? "Lane Dependency Summary Status: " + (summary.status || "UNKNOWN")
+            + "; " + (summary.summaryText || "summary unavailable")
+            + "; Total Lanes: " + String(summary.totalLaneCount || 0)
+            + "; Root Lanes: " + String(summary.rootLaneCount || 0)
+            + "; Terminal Lanes: " + String(summary.terminalLaneCount || 0)
+            + "; Max Dependency Count: " + String(summary.maxDependencyCount || 0)
+            + "; Max Downstream Count: " + String(summary.maxDownstreamCount || 0)
+            + "; Densest Dependency Lanes: " + (densest || "none")
+            + "; Widest Downstream Lanes: " + (widest || "none")
+            + "; Dependency Summary Limitations: " + limitations
+          : "Decision Replay Evidence Lane Dependency Summary is unavailable; no lane dependency summary claim is invented.";
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(text) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab dependency summary metadata only; not replay execution, not scoring proof, not correctness validation, not production readiness, no upload/share/download, no telemetry, no external calls, and no server-side export/PDF/ZIP generation.</span></p>";
       }).join("");
     }
 

@@ -428,6 +428,31 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(laneReferenceIndex.path("productionNotProvenBoundary").asText()
                 .contains("not guaranteed replay"));
         assertFalse(laneReferenceIndex.toString().contains("laneReferenceIndexFingerprint"));
+        JsonNode laneDependencySummary = result.path("decisionReplayEvidenceLaneDependencySummary");
+        assertTrue(laneDependencySummary.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-lane-dependency-summary/v1",
+                laneDependencySummary.path("laneDependencySummarySchemaVersion").asText());
+        assertEquals(laneReferenceIndex.path("status").asText(), laneDependencySummary.path("status").asText());
+        assertEquals(laneReferenceIndex.path("availableLaneCount").asInt(),
+                laneDependencySummary.path("availableLaneCount").asInt());
+        assertEquals(laneReferenceIndex.path("partialLaneCount").asInt(),
+                laneDependencySummary.path("partialLaneCount").asInt());
+        assertEquals(laneReferenceIndex.path("unknownLaneCount").asInt(),
+                laneDependencySummary.path("unknownLaneCount").asInt());
+        assertEquals(14, laneDependencySummary.path("totalLaneCount").asInt());
+        assertEquals(1, laneDependencySummary.path("rootLaneCount").asInt());
+        assertEquals(2, laneDependencySummary.path("terminalLaneCount").asInt());
+        assertEquals(13, laneDependencySummary.path("maxDependencyCount").asInt());
+        assertEquals(12, laneDependencySummary.path("maxDownstreamCount").asInt());
+        assertEquals("evidence-lane-dependency-map-reference",
+                laneDependencySummary.at("/densestDependencyLaneIds/0").asText());
+        assertEquals("decision-vector-reference",
+                laneDependencySummary.at("/widestDownstreamLaneIds/0").asText());
+        assertTrue(laneDependencySummary.path("summaryText").asText()
+                .contains("Reference index is " + laneReferenceIndex.path("status").asText()));
+        assertTrue(laneDependencySummary.toString().contains("Does not execute replay"));
+        assertTrue(laneDependencySummary.toString().contains("Not correctness validation"));
+        assertFalse(laneDependencySummary.toString().contains("dependencySummaryFingerprint"));
     }
 
     @Test
@@ -698,6 +723,23 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertFalse(laneReferenceText.contains("quality ranking is proven"));
         assertFalse(laneReferenceText.contains("approval is granted"));
         assertFalse(laneReferenceText.contains("correctness validation is proven"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceLaneDependencySummary/status").asText());
+        assertTrue(result.at("/decisionReplayEvidenceLaneDependencySummary/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceLaneDependencySummary/candidateCount").asInt());
+        assertEquals(14, result.at("/decisionReplayEvidenceLaneDependencySummary/totalLaneCount").asInt());
+        assertEquals(1, result.at("/decisionReplayEvidenceLaneDependencySummary/rootLaneCount").asInt());
+        assertEquals(2, result.at("/decisionReplayEvidenceLaneDependencySummary/terminalLaneCount").asInt());
+        assertEquals("evidence-lane-dependency-map-reference",
+                result.at("/decisionReplayEvidenceLaneDependencySummary/densestDependencyLaneIds/0").asText());
+        assertEquals("decision-vector-reference",
+                result.at("/decisionReplayEvidenceLaneDependencySummary/widestDownstreamLaneIds/0").asText());
+        String laneDependencySummaryText = result.at("/decisionReplayEvidenceLaneDependencySummary").toString();
+        assertFalse(laneDependencySummaryText.contains("dependencySummaryFingerprint"));
+        assertFalse(laneDependencySummaryText.contains("production certification is proven"));
+        assertFalse(laneDependencySummaryText.contains("guaranteed replay is proven"));
+        assertFalse(laneDependencySummaryText.contains("quality ranking is proven"));
+        assertFalse(laneDependencySummaryText.contains("approval is granted"));
+        assertFalse(laneDependencySummaryText.contains("correctness validation is proven"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

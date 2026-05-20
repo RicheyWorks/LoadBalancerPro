@@ -97,6 +97,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayEvidenceLaneDependencyMapResponse");
         assertRef(required(resultProperties, "/decisionReplayEvidenceLaneReferenceIndex"),
                 "#/components/schemas/RoutingDecisionReplayEvidenceLaneReferenceIndexResponse");
+        assertRef(required(resultProperties, "/decisionReplayEvidenceLaneDependencySummary"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceLaneDependencySummaryResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -424,6 +426,29 @@ class RoutingOpenApiContractTest {
         assertEquals("integer", required(laneReferenceItemProperties, "/downstreamCount/type").asText());
         assertEquals("boolean", required(laneReferenceItemProperties, "/readOnly/type").asText());
         assertEquals("boolean", required(laneReferenceItemProperties, "/boundaryPresent/type").asText());
+
+        JsonNode laneDependencySummaryProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceLaneDependencySummaryResponse/properties");
+        assertEquals("boolean", required(laneDependencySummaryProperties, "/readOnly/type").asText());
+        assertEquals("string", required(laneDependencySummaryProperties, "/laneDependencySummarySchemaVersion/type")
+                .asText());
+        assertEquals("string", required(laneDependencySummaryProperties, "/status/type").asText());
+        assertEquals("integer", required(laneDependencySummaryProperties, "/totalLaneCount/type").asText());
+        assertEquals("integer", required(laneDependencySummaryProperties, "/availableLaneCount/type").asText());
+        assertEquals("integer", required(laneDependencySummaryProperties, "/partialLaneCount/type").asText());
+        assertEquals("integer", required(laneDependencySummaryProperties, "/unknownLaneCount/type").asText());
+        assertEquals("integer", required(laneDependencySummaryProperties, "/rootLaneCount/type").asText());
+        assertEquals("integer", required(laneDependencySummaryProperties, "/terminalLaneCount/type").asText());
+        assertEquals("integer", required(laneDependencySummaryProperties, "/maxDependencyCount/type").asText());
+        assertEquals("integer", required(laneDependencySummaryProperties, "/maxDownstreamCount/type").asText());
+        assertEquals("array", required(laneDependencySummaryProperties, "/densestDependencyLaneIds/type").asText());
+        assertEquals("string", required(laneDependencySummaryProperties,
+                "/densestDependencyLaneIds/items/type").asText());
+        assertEquals("array", required(laneDependencySummaryProperties, "/widestDownstreamLaneIds/type").asText());
+        assertEquals("string", required(laneDependencySummaryProperties,
+                "/widestDownstreamLaneIds/items/type").asText());
+        assertEquals("array", required(laneDependencySummaryProperties, "/limitations/type").asText());
+        assertEquals("string", required(laneDependencySummaryProperties, "/limitations/items/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

@@ -1335,6 +1335,10 @@
             <div id="decision-replay-evidence-reviewer-closure-explanation">Run routing comparison to populate Reviewer Closure Summary Status, Closure Disposition, Closure Bullets, Safe Conclusions, Unresolved Boundaries, Evidence Surfaces Referenced, and Reviewer Closure Limitations metadata. Read-only lab reviewer closure metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Replay Evidence Closure Rollup</strong>
+            <div id="decision-replay-evidence-reviewer-closure-rollup-explanation">Run routing comparison to populate response-level Reviewer Closure Rollup Status, Disposition, Counts, Reviewer Ready state, and not-proven boundaries. Read-only response-level reviewer closure metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3521,6 +3525,7 @@
         renderDecisionReplayEvidenceReviewerGuidanceExplanation(response);
         renderDecisionReplayEvidenceReviewerHandoffExplanation(response);
         renderDecisionReplayEvidenceReviewerClosureExplanation(response);
+        renderDecisionReplayEvidenceReviewerClosureRollupExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3546,6 +3551,7 @@
         renderDecisionReplayEvidenceReviewerGuidanceExplanation(response);
         renderDecisionReplayEvidenceReviewerHandoffExplanation(response);
         renderDecisionReplayEvidenceReviewerClosureExplanation(response);
+        renderDecisionReplayEvidenceReviewerClosureRollupExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3573,6 +3579,7 @@
       renderDecisionReplayEvidenceReviewerGuidanceExplanation(response);
       renderDecisionReplayEvidenceReviewerHandoffExplanation(response);
       renderDecisionReplayEvidenceReviewerClosureExplanation(response);
+      renderDecisionReplayEvidenceReviewerClosureRollupExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3632,6 +3639,7 @@
       renderDecisionReplayEvidenceReviewerGuidanceExplanation(state.routing);
       renderDecisionReplayEvidenceReviewerHandoffExplanation(state.routing);
       renderDecisionReplayEvidenceReviewerClosureExplanation(state.routing);
+      renderDecisionReplayEvidenceReviewerClosureRollupExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -4566,6 +4574,35 @@
       }).join("");
     }
 
+    function renderDecisionReplayEvidenceReviewerClosureRollupExplanation(response) {
+      const container = document.getElementById(
+        "decision-replay-evidence-reviewer-closure-rollup-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate response-level Reviewer Closure Rollup Status, Disposition, Counts, Reviewer Ready state, and not-proven boundaries. Read-only response-level reviewer closure metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
+        return;
+      }
+      const rollup = response.decisionReplayEvidenceReviewerClosureRollup || {};
+      if (!rollup.summary) {
+        container.textContent = "Decision Replay Evidence Closure Rollup is unavailable; no response-level reviewer closure claim is invented. Read-only response-level reviewer closure metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
+        return;
+      }
+      const boundaries = Array.isArray(rollup.notProvenBoundaries)
+        ? rollup.notProvenBoundaries.join("; ")
+        : "not replay proof; not scoring proof; not correctness validation; not production readiness; not production certification; not guaranteed replay; not production validation";
+      const text = "Reviewer Closure Rollup Status: " + (rollup.status || "UNKNOWN")
+        + "; Disposition: " + (rollup.disposition || "UNKNOWN")
+        + "; " + rollup.summary
+        + "; Counts: resultCount=" + String(rollup.resultCount || 0)
+        + ", withClosure=" + String(rollup.resultsWithClosureSummary || 0)
+        + ", missingClosure=" + String(rollup.resultsMissingClosureSummary || 0)
+        + ", completeWithLimitations=" + String(rollup.completeWithLimitationsCount || 0)
+        + ", unknown=" + String(rollup.unknownCount || 0)
+        + "; reviewerReady=" + String(Boolean(rollup.reviewerReady))
+        + "; Not-Proven Boundaries: " + boundaries;
+      container.innerHTML = "<p>" + escapeHtml(text) + "<br>"
+        + "<span class=\"muted\">Boundary: read-only response-level reviewer closure metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, not production validation, no upload/share/download, no telemetry, no external calls, and no server-side export/PDF/ZIP generation.</span></p>";
+    }
+
     function formatFinite(value) {
       const numeric = Number(value);
       return Number.isFinite(numeric) ? numeric.toFixed(6) : "not returned";
@@ -5155,6 +5192,25 @@
             + ", reviewerClosureOnly=true";
         }).join("\n")
         : "- Not run";
+      const closureRollup = state.routing && state.routing.decisionReplayEvidenceReviewerClosureRollup
+        ? state.routing.decisionReplayEvidenceReviewerClosureRollup
+        : null;
+      const evidenceReviewerClosureRollupLines = closureRollup
+        ? [
+          "- status: " + (closureRollup.status || "unknown"),
+          "- disposition: " + (closureRollup.disposition || "unknown"),
+          "- resultCount: " + String(closureRollup.resultCount || 0),
+          "- resultsWithClosureSummary: " + String(closureRollup.resultsWithClosureSummary || 0),
+          "- resultsMissingClosureSummary: " + String(closureRollup.resultsMissingClosureSummary || 0),
+          "- completeWithLimitationsCount: " + String(closureRollup.completeWithLimitationsCount || 0),
+          "- unknownCount: " + String(closureRollup.unknownCount || 0),
+          "- reviewerReady: " + String(Boolean(closureRollup.reviewerReady)),
+          "- summary: " + (closureRollup.summary || "summary unavailable"),
+          "- notProvenBoundaries: " + (Array.isArray(closureRollup.notProvenBoundaries)
+            ? closureRollup.notProvenBoundaries.join(";")
+            : "not replay proof;not scoring proof;not correctness validation;not production readiness;not production certification;not guaranteed replay;not production validation")
+        ].join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -5238,6 +5294,9 @@
         "",
         "## Decision Replay Evidence Reviewer Closure Summary",
         evidenceReviewerClosureLines,
+        "",
+        "## Decision Replay Evidence Closure Rollup",
+        evidenceReviewerClosureRollupLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

@@ -56,6 +56,8 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(responseProperties, "/requestedStrategies/type").asText());
         assertEquals("string", required(responseProperties, "/requestedStrategies/items/type").asText());
         assertEquals("integer", required(responseProperties, "/candidateCount/type").asText());
+        assertRef(required(responseProperties, "/decisionReplayEvidenceReviewerClosureRollup"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceReviewerClosureRollupResponse");
         assertEquals("array", required(responseProperties, "/results/type").asText());
         assertRef(required(responseProperties, "/results/items"),
                 "#/components/schemas/RoutingComparisonResultResponse");
@@ -623,6 +625,24 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(reviewerClosureProperties, "/limitations/type").asText());
         assertEquals("string", required(reviewerClosureProperties, "/limitations/items/type").asText());
         assertEquals("string", required(reviewerClosureProperties, "/boundaryNote/type").asText());
+
+        JsonNode reviewerClosureRollupProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceReviewerClosureRollupResponse/properties");
+        assertEquals("string", required(reviewerClosureRollupProperties, "/status/type").asText());
+        assertEquals("string", required(reviewerClosureRollupProperties, "/disposition/type").asText());
+        assertEquals("integer", required(reviewerClosureRollupProperties, "/resultCount/type").asText());
+        assertEquals("integer",
+                required(reviewerClosureRollupProperties, "/resultsWithClosureSummary/type").asText());
+        assertEquals("integer",
+                required(reviewerClosureRollupProperties, "/resultsMissingClosureSummary/type").asText());
+        assertEquals("integer",
+                required(reviewerClosureRollupProperties, "/completeWithLimitationsCount/type").asText());
+        assertEquals("integer", required(reviewerClosureRollupProperties, "/unknownCount/type").asText());
+        assertEquals("boolean", required(reviewerClosureRollupProperties, "/reviewerReady/type").asText());
+        assertEquals("string", required(reviewerClosureRollupProperties, "/summary/type").asText());
+        assertEquals("array", required(reviewerClosureRollupProperties, "/notProvenBoundaries/type").asText());
+        assertEquals("string",
+                required(reviewerClosureRollupProperties, "/notProvenBoundaries/items/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

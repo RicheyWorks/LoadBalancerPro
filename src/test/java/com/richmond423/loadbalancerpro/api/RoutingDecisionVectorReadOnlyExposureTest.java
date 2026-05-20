@@ -515,6 +515,37 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(reviewerSnapshot.toString().contains("not production certification"));
         assertTrue(reviewerSnapshot.toString().contains("not guaranteed replay"));
         assertFalse(reviewerSnapshot.toString().contains("reviewerSnapshotFingerprint"));
+        JsonNode reviewerGuidance = result.path("decisionReplayEvidenceReviewerGuidance");
+        assertTrue(reviewerGuidance.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-reviewer-guidance/v1",
+                reviewerGuidance.path("reviewerGuidanceSchemaVersion").asText());
+        assertEquals("PARTIAL", reviewerGuidance.path("status").asText());
+        assertEquals("REVIEW", reviewerGuidance.path("reviewerPriority").asText());
+        assertEquals("edge-alpha", reviewerGuidance.path("selectedCandidateId").asText());
+        assertEquals(3, reviewerGuidance.path("candidateCount").asInt());
+        assertEquals(14, reviewerGuidance.path("totalLaneCount").asInt());
+        assertEquals(4, reviewerGuidance.path("availableLaneCount").asInt());
+        assertEquals(10, reviewerGuidance.path("partialLaneCount").asInt());
+        assertEquals(0, reviewerGuidance.path("unknownLaneCount").asInt());
+        assertEquals(6, reviewerGuidance.path("checkedSurfaceCount").asInt());
+        assertEquals(0, reviewerGuidance.path("missingSurfaceCount").asInt());
+        assertTrue(reviewerGuidance.path("missingSurfaces").isEmpty());
+        assertEquals("Review partial or unknown evidence lanes before citing the lab explanation.",
+                reviewerGuidance.path("primaryReviewerFocus").asText());
+        assertEquals("Inspect Decision Replay Evidence Reviewer Snapshot warnings and highlights.",
+                reviewerGuidance.at("/suggestedReviewSteps/0").asText());
+        assertEquals("decisionReplayEvidenceReviewerSnapshot",
+                reviewerGuidance.at("/evidenceSurfacesToInspect/5").asText());
+        assertEquals("Reviewer snapshot status is PARTIAL.",
+                reviewerGuidance.at("/cautionNotes/0").asText());
+        assertTrue(reviewerGuidance.path("summaryText").asText()
+                .contains("Reviewer guidance is PARTIAL"));
+        assertTrue(reviewerGuidance.toString().contains("Not replay proof"));
+        assertTrue(reviewerGuidance.toString().contains("Not scoring proof"));
+        assertTrue(reviewerGuidance.toString().contains("Not correctness validation"));
+        assertTrue(reviewerGuidance.toString().contains("not production certification"));
+        assertTrue(reviewerGuidance.toString().contains("not guaranteed replay"));
+        assertFalse(reviewerGuidance.toString().contains("reviewerGuidanceFingerprint"));
     }
 
     @Test
@@ -844,6 +875,26 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertFalse(reviewerSnapshotText.contains("quality ranking is proven"));
         assertFalse(reviewerSnapshotText.contains("approval is granted"));
         assertFalse(reviewerSnapshotText.contains("correctness validation is proven"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceReviewerGuidance/status").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceReviewerGuidance/reviewerPriority").asText());
+        assertTrue(result.at("/decisionReplayEvidenceReviewerGuidance/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerGuidance/candidateCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerGuidance/totalLaneCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerGuidance/availableLaneCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerGuidance/partialLaneCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerGuidance/unknownLaneCount").asInt());
+        assertEquals(6, result.at("/decisionReplayEvidenceReviewerGuidance/checkedSurfaceCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerGuidance/missingSurfaceCount").asInt());
+        assertTrue(result.at("/decisionReplayEvidenceReviewerGuidance/missingSurfaces").isEmpty());
+        assertEquals("No selected candidate evidence is available for reviewer guidance.",
+                result.at("/decisionReplayEvidenceReviewerGuidance/cautionNotes/0").asText());
+        String reviewerGuidanceText = result.at("/decisionReplayEvidenceReviewerGuidance").toString();
+        assertFalse(reviewerGuidanceText.contains("reviewerGuidanceFingerprint"));
+        assertFalse(reviewerGuidanceText.contains("production certification is proven"));
+        assertFalse(reviewerGuidanceText.contains("guaranteed replay is proven"));
+        assertFalse(reviewerGuidanceText.contains("quality ranking is proven"));
+        assertFalse(reviewerGuidanceText.contains("approval is granted"));
+        assertFalse(reviewerGuidanceText.contains("correctness validation is proven"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

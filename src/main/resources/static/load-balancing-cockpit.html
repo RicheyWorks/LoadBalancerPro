@@ -1323,6 +1323,10 @@
             <div id="decision-replay-evidence-reviewer-snapshot-explanation">Run routing comparison to populate Reviewer Snapshot Status, Lane Counts, Checked Surfaces, Missing Surfaces, Reviewer Highlights, Reviewer Warnings, and Snapshot Limitations metadata. Read-only lab reviewer snapshot only; not replay execution, not scoring proof, not correctness validation, not production readiness, not production certification, and not guaranteed replay.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Replay Evidence Reviewer Guidance</strong>
+            <div id="decision-replay-evidence-reviewer-guidance-explanation">Run routing comparison to populate Reviewer Guidance Status, Reviewer Priority, Suggested Review Steps, Evidence Surfaces To Inspect, Caution Notes, and Reviewer Guidance Limitations metadata. Read-only lab reviewer guidance only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, and not guaranteed replay.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3506,6 +3510,7 @@
         renderDecisionReplayEvidenceLaneDependencySummaryExplanation(response);
         renderDecisionReplayEvidenceLaneConsistencySummaryExplanation(response);
         renderDecisionReplayEvidenceReviewerSnapshotExplanation(response);
+        renderDecisionReplayEvidenceReviewerGuidanceExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3528,6 +3533,7 @@
         renderDecisionReplayEvidenceLaneDependencySummaryExplanation(response);
         renderDecisionReplayEvidenceLaneConsistencySummaryExplanation(response);
         renderDecisionReplayEvidenceReviewerSnapshotExplanation(response);
+        renderDecisionReplayEvidenceReviewerGuidanceExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3552,6 +3558,7 @@
       renderDecisionReplayEvidenceLaneDependencySummaryExplanation(response);
       renderDecisionReplayEvidenceLaneConsistencySummaryExplanation(response);
       renderDecisionReplayEvidenceReviewerSnapshotExplanation(response);
+      renderDecisionReplayEvidenceReviewerGuidanceExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3608,6 +3615,7 @@
       renderDecisionReplayEvidenceLaneDependencySummaryExplanation(state.routing);
       renderDecisionReplayEvidenceLaneConsistencySummaryExplanation(state.routing);
       renderDecisionReplayEvidenceReviewerSnapshotExplanation(state.routing);
+      renderDecisionReplayEvidenceReviewerGuidanceExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -4392,6 +4400,53 @@
       }).join("");
     }
 
+    function renderDecisionReplayEvidenceReviewerGuidanceExplanation(response) {
+      const container = document.getElementById("decision-replay-evidence-reviewer-guidance-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate Reviewer Guidance Status, Reviewer Priority, Suggested Review Steps, Evidence Surfaces To Inspect, Caution Notes, and Reviewer Guidance Limitations metadata. Read-only lab reviewer guidance only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, and not guaranteed replay.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; Reviewer Guidance Status is UNKNOWN and reviewer guidance counts are unavailable. Read-only lab reviewer guidance only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, and not guaranteed replay.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const guidance = result.decisionReplayEvidenceReviewerGuidance || {};
+        const steps = Array.isArray(guidance.suggestedReviewSteps)
+          ? guidance.suggestedReviewSteps.join("; ")
+          : "";
+        const surfaces = Array.isArray(guidance.evidenceSurfacesToInspect)
+          ? guidance.evidenceSurfacesToInspect.join("; ")
+          : "";
+        const cautions = Array.isArray(guidance.cautionNotes)
+          ? guidance.cautionNotes.join("; ")
+          : "";
+        const limitations = Array.isArray(guidance.limitations)
+          ? guidance.limitations.join("; ")
+          : "Read-only lab reviewer guidance only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, and not guaranteed replay.";
+        const text = guidance.reviewerGuidanceSchemaVersion
+          ? "Reviewer Guidance Status: " + (guidance.status || "UNKNOWN")
+            + "; Reviewer Priority: " + (guidance.reviewerPriority || "UNKNOWN")
+            + "; " + (guidance.summaryText || "summary unavailable")
+            + "; Primary Reviewer Focus: " + (guidance.primaryReviewerFocus || "not returned")
+            + "; Counts: total=" + String(guidance.totalLaneCount || 0)
+            + ", available=" + String(guidance.availableLaneCount || 0)
+            + ", partial=" + String(guidance.partialLaneCount || 0)
+            + ", unknown=" + String(guidance.unknownLaneCount || 0)
+            + ", checkedSurfaces=" + String(guidance.checkedSurfaceCount || 0)
+            + ", missingSurfaces=" + String(guidance.missingSurfaceCount || 0)
+            + "; Suggested Review Steps: " + (steps || "none")
+            + "; Evidence Surfaces To Inspect: " + (surfaces || "none")
+            + "; Caution Notes: " + (cautions || "none")
+            + "; Reviewer Guidance Limitations: " + limitations
+          : "Decision Replay Evidence Reviewer Guidance is unavailable; no reviewer guidance claim is invented.";
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(text) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab reviewer guidance metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, no upload/share/download, no telemetry, no external calls, and no server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
     function formatFinite(value) {
       const numeric = Number(value);
       return Number.isFinite(numeric) ? numeric.toFixed(6) : "not returned";
@@ -4889,6 +4944,33 @@
             + ", reviewerSnapshotOnly=true";
         }).join("\n")
         : "- Not run";
+      const evidenceReviewerGuidanceLines = routingResults.length
+        ? routingResults.map((result) => {
+          const guidance = result.decisionReplayEvidenceReviewerGuidance || {};
+          const steps = Array.isArray(guidance.suggestedReviewSteps)
+            ? guidance.suggestedReviewSteps.join(";")
+            : "";
+          const surfaces = Array.isArray(guidance.evidenceSurfacesToInspect)
+            ? guidance.evidenceSurfacesToInspect.join(";")
+            : "";
+          const cautions = Array.isArray(guidance.cautionNotes)
+            ? guidance.cautionNotes.join(";")
+            : "";
+          return "- " + result.strategyId
+            + ": reviewerGuidanceStatus=" + (guidance.status || "unknown")
+            + ", reviewerPriority=" + (guidance.reviewerPriority || "unknown")
+            + ", totalLanes=" + String(guidance.totalLaneCount || 0)
+            + ", availableLanes=" + String(guidance.availableLaneCount || 0)
+            + ", partialLanes=" + String(guidance.partialLaneCount || 0)
+            + ", unknownLanes=" + String(guidance.unknownLaneCount || 0)
+            + ", checkedSurfaces=" + String(guidance.checkedSurfaceCount || 0)
+            + ", missingSurfaces=" + String(guidance.missingSurfaceCount || 0)
+            + ", suggestedReviewSteps=" + (steps || "none")
+            + ", evidenceSurfacesToInspect=" + (surfaces || "none")
+            + ", cautionNotes=" + (cautions || "none")
+            + ", reviewerGuidanceOnly=true";
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -4963,6 +5045,9 @@
         "",
         "## Decision Replay Evidence Reviewer Snapshot",
         evidenceReviewerSnapshotLines,
+        "",
+        "## Decision Replay Evidence Reviewer Guidance",
+        evidenceReviewerGuidanceLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

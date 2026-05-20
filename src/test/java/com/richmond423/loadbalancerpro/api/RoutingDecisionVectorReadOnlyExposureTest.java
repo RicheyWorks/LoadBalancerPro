@@ -482,6 +482,39 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(laneConsistencySummary.toString().contains("Not correctness validation"));
         assertTrue(laneConsistencySummary.toString().contains("not guaranteed replay"));
         assertFalse(laneConsistencySummary.toString().contains("dependencyConsistencyFingerprint"));
+        JsonNode reviewerSnapshot = result.path("decisionReplayEvidenceReviewerSnapshot");
+        assertTrue(reviewerSnapshot.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-reviewer-snapshot/v1",
+                reviewerSnapshot.path("reviewerSnapshotSchemaVersion").asText());
+        assertEquals("PARTIAL", reviewerSnapshot.path("status").asText());
+        assertEquals("CONSISTENT", reviewerSnapshot.path("consistencyStatus").asText());
+        assertEquals("PARTIAL", reviewerSnapshot.path("referenceIndexStatus").asText());
+        assertEquals("PARTIAL", reviewerSnapshot.path("dependencySummaryStatus").asText());
+        assertEquals("PARTIAL", reviewerSnapshot.path("statusRollupStatus").asText());
+        assertEquals("PARTIAL", reviewerSnapshot.path("dependencyMapStatus").asText());
+        assertEquals("edge-alpha", reviewerSnapshot.path("selectedCandidateId").asText());
+        assertEquals(3, reviewerSnapshot.path("candidateCount").asInt());
+        assertEquals(14, reviewerSnapshot.path("totalLaneCount").asInt());
+        assertEquals(4, reviewerSnapshot.path("availableLaneCount").asInt());
+        assertEquals(10, reviewerSnapshot.path("partialLaneCount").asInt());
+        assertEquals(0, reviewerSnapshot.path("unknownLaneCount").asInt());
+        assertEquals(5, reviewerSnapshot.path("checkedSurfaceCount").asInt());
+        assertEquals(0, reviewerSnapshot.path("missingSurfaceCount").asInt());
+        assertTrue(reviewerSnapshot.path("missingSurfaces").isEmpty());
+        assertEquals("14 evidence lanes summarized",
+                reviewerSnapshot.at("/reviewerHighlights/0").asText());
+        assertEquals("Consistency summary reports CONSISTENT",
+                reviewerSnapshot.at("/reviewerHighlights/5").asText());
+        assertEquals("10 lanes remain PARTIAL.",
+                reviewerSnapshot.at("/reviewerWarnings/0").asText());
+        assertTrue(reviewerSnapshot.path("summaryText").asText()
+                .contains("Reviewer snapshot is PARTIAL"));
+        assertTrue(reviewerSnapshot.toString().contains("Does not execute replay"));
+        assertTrue(reviewerSnapshot.toString().contains("not scoring proof"));
+        assertTrue(reviewerSnapshot.toString().contains("Not correctness validation"));
+        assertTrue(reviewerSnapshot.toString().contains("not production certification"));
+        assertTrue(reviewerSnapshot.toString().contains("not guaranteed replay"));
+        assertFalse(reviewerSnapshot.toString().contains("reviewerSnapshotFingerprint"));
     }
 
     @Test
@@ -789,6 +822,28 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertFalse(laneConsistencySummaryText.contains("quality ranking is proven"));
         assertFalse(laneConsistencySummaryText.contains("approval is granted"));
         assertFalse(laneConsistencySummaryText.contains("correctness validation is proven"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceReviewerSnapshot/status").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceReviewerSnapshot/consistencyStatus").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceReviewerSnapshot/referenceIndexStatus").asText());
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceReviewerSnapshot/dependencySummaryStatus").asText());
+        assertTrue(result.at("/decisionReplayEvidenceReviewerSnapshot/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerSnapshot/candidateCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerSnapshot/totalLaneCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerSnapshot/availableLaneCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerSnapshot/partialLaneCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerSnapshot/unknownLaneCount").asInt());
+        assertEquals(5, result.at("/decisionReplayEvidenceReviewerSnapshot/checkedSurfaceCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerSnapshot/missingSurfaceCount").asInt());
+        assertTrue(result.at("/decisionReplayEvidenceReviewerSnapshot/missingSurfaces").isEmpty());
+        assertEquals("No selected candidate evidence is available for reviewer snapshot.",
+                result.at("/decisionReplayEvidenceReviewerSnapshot/reviewerWarnings/0").asText());
+        String reviewerSnapshotText = result.at("/decisionReplayEvidenceReviewerSnapshot").toString();
+        assertFalse(reviewerSnapshotText.contains("reviewerSnapshotFingerprint"));
+        assertFalse(reviewerSnapshotText.contains("production certification is proven"));
+        assertFalse(reviewerSnapshotText.contains("guaranteed replay is proven"));
+        assertFalse(reviewerSnapshotText.contains("quality ranking is proven"));
+        assertFalse(reviewerSnapshotText.contains("approval is granted"));
+        assertFalse(reviewerSnapshotText.contains("correctness validation is proven"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

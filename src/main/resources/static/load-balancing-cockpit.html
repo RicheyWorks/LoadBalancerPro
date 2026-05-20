@@ -1319,6 +1319,10 @@
             <div id="decision-replay-evidence-lane-consistency-summary-explanation">Run routing comparison to populate Consistency Summary Status, Checked Surfaces, Count Alignment, Mismatches, Missing Surfaces, and Consistency Limitations metadata.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Replay Evidence Reviewer Snapshot</strong>
+            <div id="decision-replay-evidence-reviewer-snapshot-explanation">Run routing comparison to populate Reviewer Snapshot Status, Lane Counts, Checked Surfaces, Missing Surfaces, Reviewer Highlights, Reviewer Warnings, and Snapshot Limitations metadata. Read-only lab reviewer snapshot only; not replay execution, not scoring proof, not correctness validation, not production readiness, not production certification, and not guaranteed replay.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3501,6 +3505,7 @@
         renderDecisionReplayEvidenceLaneReferenceIndexExplanation(response);
         renderDecisionReplayEvidenceLaneDependencySummaryExplanation(response);
         renderDecisionReplayEvidenceLaneConsistencySummaryExplanation(response);
+        renderDecisionReplayEvidenceReviewerSnapshotExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3522,6 +3527,7 @@
         renderDecisionReplayEvidenceLaneReferenceIndexExplanation(response);
         renderDecisionReplayEvidenceLaneDependencySummaryExplanation(response);
         renderDecisionReplayEvidenceLaneConsistencySummaryExplanation(response);
+        renderDecisionReplayEvidenceReviewerSnapshotExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3545,6 +3551,7 @@
       renderDecisionReplayEvidenceLaneReferenceIndexExplanation(response);
       renderDecisionReplayEvidenceLaneDependencySummaryExplanation(response);
       renderDecisionReplayEvidenceLaneConsistencySummaryExplanation(response);
+      renderDecisionReplayEvidenceReviewerSnapshotExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3600,6 +3607,7 @@
       renderDecisionReplayEvidenceLaneReferenceIndexExplanation(state.routing);
       renderDecisionReplayEvidenceLaneDependencySummaryExplanation(state.routing);
       renderDecisionReplayEvidenceLaneConsistencySummaryExplanation(state.routing);
+      renderDecisionReplayEvidenceReviewerSnapshotExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -4334,6 +4342,56 @@
       }).join("");
     }
 
+    function renderDecisionReplayEvidenceReviewerSnapshotExplanation(response) {
+      const container = document.getElementById("decision-replay-evidence-reviewer-snapshot-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate Reviewer Snapshot Status, Lane Counts, Checked Surfaces, Missing Surfaces, Reviewer Highlights, Reviewer Warnings, and Snapshot Limitations metadata. Read-only lab reviewer snapshot only; not replay execution, not scoring proof, not correctness validation, not production readiness, not production certification, and not guaranteed replay.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; Reviewer Snapshot Status is UNKNOWN and lane counts are unavailable. Read-only lab reviewer snapshot only; not replay execution, not scoring proof, not correctness validation, not production readiness, not production certification, and not guaranteed replay.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const snapshot = result.decisionReplayEvidenceReviewerSnapshot || {};
+        const missing = Array.isArray(snapshot.missingSurfaces)
+          ? snapshot.missingSurfaces.join("; ")
+          : "";
+        const highlights = Array.isArray(snapshot.reviewerHighlights)
+          ? snapshot.reviewerHighlights.join("; ")
+          : "";
+        const warnings = Array.isArray(snapshot.reviewerWarnings)
+          ? snapshot.reviewerWarnings.join("; ")
+          : "";
+        const limitations = Array.isArray(snapshot.limitations)
+          ? snapshot.limitations.join("; ")
+          : "Read-only lab reviewer snapshot only; not replay execution, not scoring proof, not correctness validation, not production readiness, not production certification, and not guaranteed replay.";
+        const text = snapshot.reviewerSnapshotSchemaVersion
+          ? "Reviewer Snapshot Status: " + (snapshot.status || "UNKNOWN")
+            + "; " + (snapshot.summaryText || "summary unavailable")
+            + "; Lane Counts: total=" + String(snapshot.totalLaneCount || 0)
+            + ", available=" + String(snapshot.availableLaneCount || 0)
+            + ", partial=" + String(snapshot.partialLaneCount || 0)
+            + ", unknown=" + String(snapshot.unknownLaneCount || 0)
+            + "; Checked Surfaces: checked=" + String(snapshot.checkedSurfaceCount || 0)
+            + ", missing=" + String(snapshot.missingSurfaceCount || 0)
+            + ", consistencyStatus=" + (snapshot.consistencyStatus || "UNKNOWN")
+            + ", referenceIndex=" + (snapshot.referenceIndexStatus || "UNKNOWN")
+            + ", dependencySummary=" + (snapshot.dependencySummaryStatus || "UNKNOWN")
+            + ", statusRollup=" + (snapshot.statusRollupStatus || "UNKNOWN")
+            + ", dependencyMap=" + (snapshot.dependencyMapStatus || "UNKNOWN")
+            + "; Missing Surfaces: " + (missing || "none")
+            + "; Reviewer Highlights: " + (highlights || "none")
+            + "; Reviewer Warnings: " + (warnings || "none")
+            + "; Snapshot Limitations: " + limitations
+          : "Decision Replay Evidence Reviewer Snapshot is unavailable; no reviewer snapshot claim is invented.";
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(text) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab reviewer snapshot metadata only; not replay execution, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, no upload/share/download, no telemetry, no external calls, and no server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
     function formatFinite(value) {
       const numeric = Number(value);
       return Number.isFinite(numeric) ? numeric.toFixed(6) : "not returned";
@@ -4805,6 +4863,32 @@
             + ", reviewerConsistencyOnly=true";
         }).join("\n")
         : "- Not run";
+      const evidenceReviewerSnapshotLines = routingResults.length
+        ? routingResults.map((result) => {
+          const snapshot = result.decisionReplayEvidenceReviewerSnapshot || {};
+          const missing = Array.isArray(snapshot.missingSurfaces)
+            ? snapshot.missingSurfaces.join(";")
+            : "";
+          const highlights = Array.isArray(snapshot.reviewerHighlights)
+            ? snapshot.reviewerHighlights.join(";")
+            : "";
+          const warnings = Array.isArray(snapshot.reviewerWarnings)
+            ? snapshot.reviewerWarnings.join(";")
+            : "";
+          return "- " + result.strategyId
+            + ": reviewerSnapshotStatus=" + (snapshot.status || "unknown")
+            + ", consistencyStatus=" + (snapshot.consistencyStatus || "unknown")
+            + ", totalLanes=" + String(snapshot.totalLaneCount || 0)
+            + ", availableLanes=" + String(snapshot.availableLaneCount || 0)
+            + ", partialLanes=" + String(snapshot.partialLaneCount || 0)
+            + ", unknownLanes=" + String(snapshot.unknownLaneCount || 0)
+            + ", checkedSurfaces=" + String(snapshot.checkedSurfaceCount || 0)
+            + ", missingSurfaces=" + (missing || "none")
+            + ", reviewerHighlights=" + (highlights || "none")
+            + ", reviewerWarnings=" + (warnings || "none")
+            + ", reviewerSnapshotOnly=true";
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -4876,6 +4960,9 @@
         "",
         "## Decision Evidence Lane Consistency Summary",
         evidenceLaneConsistencySummaryLines,
+        "",
+        "## Decision Replay Evidence Reviewer Snapshot",
+        evidenceReviewerSnapshotLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

@@ -172,6 +172,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("`results[].decisionReplayEvidenceReviewerHandoffSummary`"));
         assertTrue(framing.contains("`results[].decisionReplayEvidenceReviewerClosureSummary`"));
         assertTrue(framing.contains("top-level `decisionReplayEvidenceReviewerClosureRollup`"));
+        assertTrue(framing.contains("`decisionReplayEvidenceReviewerClosureChecklist`"));
         assertTrue(framing.contains("deterministic local fingerprint from already-built compare evidence only"));
         assertTrue(framing.contains("deterministic reconstruction evidence steps"));
         assertTrue(framing.contains("canonical evidence packaging"));
@@ -186,6 +187,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("derives deterministic reviewer handoff metadata from existing reviewer snapshot and guidance metadata"));
         assertTrue(framing.contains("derives deterministic closure metadata from existing reviewer metadata"));
         assertTrue(framing.contains("Decision Replay Evidence Closure Rollup metadata derives only from already-returned"));
+        assertTrue(framing.contains("Decision Replay Evidence Closure Checklist metadata derives only from already-returned"));
         assertTrue(framing.contains("without new fingerprint generation"));
         assertTrue(framing.contains("without replay execution"));
         assertTrue(framing.contains("without what-if mutation"));

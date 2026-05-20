@@ -53,6 +53,26 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertFalse(closureRollupText.contains("production certification is proven"));
         assertFalse(closureRollupText.contains("guaranteed replay is proven"));
         assertFalse(closureRollupText.contains("correctness validation is proven"));
+        JsonNode closureChecklist = response.path("decisionReplayEvidenceReviewerClosureChecklist");
+        assertEquals("COMPLETE", closureChecklist.path("status").asText());
+        assertTrue(closureChecklist.path("reviewerReady").asBoolean());
+        assertEquals("closureSummaryPresent", closureChecklist.at("/items/0/name").asText());
+        assertEquals("PASS", closureChecklist.at("/items/0/status").asText());
+        assertEquals("closureRollupPresent", closureChecklist.at("/items/1/name").asText());
+        assertEquals("PASS", closureChecklist.at("/items/1/status").asText());
+        assertEquals("countsMatchResultMetadata", closureChecklist.at("/items/2/name").asText());
+        assertEquals("PASS", closureChecklist.at("/items/2/status").asText());
+        assertEquals("scenarioReplayStripped", closureChecklist.at("/items/3/name").asText());
+        assertEquals("PASS", closureChecklist.at("/items/3/status").asText());
+        assertEquals("notProvenBoundariesPresent", closureChecklist.at("/items/4/name").asText());
+        assertEquals("PASS", closureChecklist.at("/items/4/status").asText());
+        assertTrue(closureChecklist.path("summary").asText().contains("not replay proof"));
+        assertEquals("not replay proof", closureChecklist.at("/notProvenBoundaries/0").asText());
+        assertEquals("not production validation", closureChecklist.at("/notProvenBoundaries/6").asText());
+        assertFalse(closureChecklist.toString().contains("reviewerClosureChecklistFingerprint"));
+        assertFalse(closureChecklist.toString().contains("production certification is proven"));
+        assertFalse(closureChecklist.toString().contains("guaranteed replay is proven"));
+        assertFalse(closureChecklist.toString().contains("correctness validation is proven"));
         JsonNode result = response.at("/results/0");
         assertEquals("TAIL_LATENCY_POWER_OF_TWO", result.path("strategyId").asText());
         assertEquals("SUCCESS", result.path("status").asText());
@@ -1043,6 +1063,20 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertFalse(closureRollup.toString().contains("production certification is proven"));
         assertFalse(closureRollup.toString().contains("guaranteed replay is proven"));
         assertFalse(closureRollup.toString().contains("correctness validation is proven"));
+        JsonNode closureChecklist = response.path("decisionReplayEvidenceReviewerClosureChecklist");
+        assertEquals("UNKNOWN", closureChecklist.path("status").asText());
+        assertFalse(closureChecklist.path("reviewerReady").asBoolean());
+        assertEquals("PASS", closureChecklist.at("/items/0/status").asText());
+        assertEquals("PASS", closureChecklist.at("/items/1/status").asText());
+        assertEquals("PASS", closureChecklist.at("/items/2/status").asText());
+        assertEquals("PASS", closureChecklist.at("/items/3/status").asText());
+        assertEquals("PASS", closureChecklist.at("/items/4/status").asText());
+        assertEquals("not replay proof", closureChecklist.at("/notProvenBoundaries/0").asText());
+        assertEquals("not production validation", closureChecklist.at("/notProvenBoundaries/6").asText());
+        assertFalse(closureChecklist.toString().contains("reviewerClosureChecklistFingerprint"));
+        assertFalse(closureChecklist.toString().contains("production certification is proven"));
+        assertFalse(closureChecklist.toString().contains("guaranteed replay is proven"));
+        assertFalse(closureChecklist.toString().contains("correctness validation is proven"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

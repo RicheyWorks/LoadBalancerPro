@@ -68,6 +68,8 @@ public class RoutingComparisonService {
             decisionReplayEvidenceReviewerClosureSummaryService;
     private final RoutingDecisionReplayEvidenceReviewerClosureRollupService
             decisionReplayEvidenceReviewerClosureRollupService;
+    private final RoutingDecisionReplayEvidenceReviewerClosureChecklistService
+            decisionReplayEvidenceReviewerClosureChecklistService;
     private final Clock clock;
 
     public RoutingComparisonService() {
@@ -114,6 +116,8 @@ public class RoutingComparisonService {
                 new RoutingDecisionReplayEvidenceReviewerClosureSummaryService();
         this.decisionReplayEvidenceReviewerClosureRollupService =
                 new RoutingDecisionReplayEvidenceReviewerClosureRollupService();
+        this.decisionReplayEvidenceReviewerClosureChecklistService =
+                new RoutingDecisionReplayEvidenceReviewerClosureChecklistService();
     }
 
     public RoutingComparisonResponse compare(RoutingComparisonRequest request) {
@@ -215,11 +219,14 @@ public class RoutingComparisonService {
     private RoutingComparisonResponse toResponse(RoutingComparisonReport report, List<ServerStateVector> candidates) {
         List<RoutingComparisonResultResponse> results =
                 report.results().stream().map(result -> toResultResponse(result, candidates)).toList();
+        RoutingDecisionReplayEvidenceReviewerClosureRollupResponse closureRollup =
+                decisionReplayEvidenceReviewerClosureRollupService.rollup(results);
         return new RoutingComparisonResponse(
                 report.requestedStrategies().stream().map(RoutingStrategyId::externalName).toList(),
                 report.candidateCount(),
                 report.timestamp(),
-                decisionReplayEvidenceReviewerClosureRollupService.rollup(results),
+                closureRollup,
+                decisionReplayEvidenceReviewerClosureChecklistService.checklist(results, closureRollup),
                 results);
     }
 

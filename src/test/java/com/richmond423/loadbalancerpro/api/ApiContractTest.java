@@ -167,7 +167,8 @@ class ApiContractTest {
                 "recommendedAdditionalServers", "metricNames", "emitted");
         assertSchemaProperties(docs, "RoutingComparisonRequest", "strategies", "servers");
         assertSchemaProperties(docs, "RoutingComparisonResponse", "requestedStrategies", "candidateCount",
-                "timestamp", "decisionReplayEvidenceReviewerClosureRollup", "results");
+                "timestamp", "decisionReplayEvidenceReviewerClosureRollup",
+                "decisionReplayEvidenceReviewerClosureChecklist", "results");
         assertSchemaProperties(docs, "RoutingComparisonResultResponse", "strategyId", "status",
                 "chosenServerId", "reason", "candidateServersConsidered", "scores", "decisionVector",
                 "dominantFactorAnalysis", "decisionDeltaAnalysis", "decisionReplaySnapshot",
@@ -367,6 +368,10 @@ class ApiContractTest {
                 "status", "disposition", "resultCount", "resultsWithClosureSummary",
                 "resultsMissingClosureSummary", "completeWithLimitationsCount", "unknownCount",
                 "reviewerReady", "summary", "notProvenBoundaries");
+        assertSchemaProperties(docs, "RoutingDecisionReplayEvidenceReviewerClosureChecklistResponse",
+                "status", "reviewerReady", "items", "summary", "notProvenBoundaries");
+        assertSchemaProperties(docs, "RoutingDecisionReplayEvidenceReviewerClosureChecklistItemResponse",
+                "name", "status", "description");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -485,6 +490,34 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureRollup.notProvenBoundaries[0]",
                         is("not replay proof")))
                 .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureRollup.notProvenBoundaries[6]",
+                        is("not production validation")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.status", is("COMPLETE")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.reviewerReady", is(true)))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[0].name",
+                        is("closureSummaryPresent")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[0].status",
+                        is("PASS")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[1].name",
+                        is("closureRollupPresent")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[1].status",
+                        is("PASS")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[2].name",
+                        is("countsMatchResultMetadata")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[2].status",
+                        is("PASS")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[3].name",
+                        is("scenarioReplayStripped")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[3].status",
+                        is("PASS")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[4].name",
+                        is("notProvenBoundariesPresent")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[4].status",
+                        is("PASS")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.summary",
+                        containsString("closureSummaryPresent=PASS")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.notProvenBoundaries[0]",
+                        is("not replay proof")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.notProvenBoundaries[6]",
                         is("not production validation")))
                 .andExpect(jsonPath("$.results").isArray())
                 .andExpect(jsonPath("$.results[0].strategyId", is("TAIL_LATENCY_POWER_OF_TWO")))
@@ -1067,6 +1100,20 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureRollup.notProvenBoundaries[0]",
                         is("not replay proof")))
                 .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureRollup.notProvenBoundaries[6]",
+                        is("not production validation")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.reviewerReady", is(false)))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[0].status",
+                        is("PASS")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[2].status",
+                        is("PASS")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[3].status",
+                        is("PASS")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.items[4].status",
+                        is("PASS")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.notProvenBoundaries[0]",
+                        is("not replay proof")))
+                .andExpect(jsonPath("$.decisionReplayEvidenceReviewerClosureChecklist.notProvenBoundaries[6]",
                         is("not production validation")))
                 .andExpect(jsonPath("$.results[0].strategyId", is("TAIL_LATENCY_POWER_OF_TWO")))
                 .andExpect(jsonPath("$.results[0].status", is("SUCCESS")))

@@ -8,5 +8,6 @@ public record RoutingComparisonResponse(
         int candidateCount,
         Instant timestamp,
         RoutingDecisionReplayEvidenceReviewerClosureRollupResponse decisionReplayEvidenceReviewerClosureRollup,
+        RoutingDecisionReplayEvidenceReviewerClosureChecklistResponse decisionReplayEvidenceReviewerClosureChecklist,
         List<RoutingComparisonResultResponse> results) {
 }

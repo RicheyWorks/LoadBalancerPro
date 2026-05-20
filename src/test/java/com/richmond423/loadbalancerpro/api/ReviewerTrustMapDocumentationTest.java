@@ -210,6 +210,8 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("Decision Replay Evidence Reviewer Handoff Summary"));
         assertTrue(demoPath.contains("Decision Replay Evidence Reviewer Closure Summary"));
         assertTrue(demoPath.contains("Decision Replay Evidence Closure Rollup"));
+        assertTrue(demoPath.contains("Decision Replay Evidence Closure Checklist"));
+        assertTrue(demoPath.contains("Decision Replay Evidence Closure Packet"));
         assertTrue(demoPath.contains("Candidate Comparison Limits"));
         assertTrue(demoPath.contains("Candidate Evidence Cards"));
         assertTrue(demoPath.contains("Candidate Review Questions"));
@@ -344,6 +346,11 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("RoutingDecisionReplayEvidenceReviewerClosureChecklistServiceTest"));
         assertTrue(matrix.contains("Do closure summary, closure rollup, and not-proven boundaries line up"));
         assertTrue(matrix.contains("decisionReplayEvidenceReviewerClosureChecklist"));
+        assertTrue(matrix.contains("Decision Replay Evidence Closure Packet"));
+        assertTrue(matrix.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_PACKET.md"));
+        assertTrue(matrix.contains("RoutingDecisionReplayEvidenceReviewerClosurePacketServiceTest"));
+        assertTrue(matrix.contains("What compact packet groups closure summary, rollup, and checklist metadata?"));
+        assertTrue(matrix.contains("decisionReplayEvidenceReviewerClosurePacket"));
         assertTrue(matrix.contains("Structured Decision Evidence"));
         assertTrue(matrix.contains("EnterpriseLabDecisionVectorDocumentationTest"));
         assertTrue(matrix.contains("Candidate Decision Vector"));

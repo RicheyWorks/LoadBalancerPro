@@ -44,6 +44,8 @@ class EnterpriseLabDecisionVectorDocumentationTest {
             Path.of("docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_REFERENCE_INDEX.md");
     private static final Path DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY =
             Path.of("docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY.md");
+    private static final Path DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY =
+            Path.of("docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY.md");
     private static final Path README = Path.of("README.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path FRAMING = Path.of("docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md");
@@ -187,6 +189,10 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains(
                 "Decision Replay Evidence Lane Dependency Summary is the read-only lab reviewer metadata layer"));
         assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY.md"));
+        assertTrue(doc.contains("## Decision Replay Evidence Lane Consistency Summary"));
+        assertTrue(doc.contains(
+                "Decision Replay Evidence Lane Consistency Summary is the read-only lab reviewer metadata layer"));
+        assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY.md"));
         assertTrue(doc.contains("\"EXACT_FROM_CALCULATOR\""));
         assertTrue(doc.contains("\"NOT_EXPOSED\""));
         assertTrue(doc.contains("not production scoring proof"));
@@ -214,6 +220,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
                 "Decision replay evidence lane dependency map: implemented as additive read-only reviewer-navigation/provenance metadata over already-built evidence lanes only.",
                 "Decision replay evidence lane reference index: implemented as additive read-only reviewer-reference metadata over already-built evidence lanes only.",
                 "Decision replay evidence lane dependency summary: implemented as additive read-only reviewer dependency-shape metadata over the already-built lane reference index only.",
+                "Decision replay evidence lane consistency summary: implemented as additive read-only reviewer consistency metadata over already-built lane status/dependency/reference/summary surfaces only.",
                 "Broader factor modeling beyond current returned calculator contribution data: future/not implemented.",
                 "Replay execution: future/not implemented.",
                 "What-if experiments: future/not implemented.",
@@ -589,6 +596,50 @@ class EnterpriseLabDecisionVectorDocumentationTest {
     }
 
     @Test
+    void decisionReplayEvidenceLaneConsistencySummaryDocDefinesReadOnlyBoundaries() throws Exception {
+        String doc = read(DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY);
+        String normalized = doc.toLowerCase(Locale.ROOT);
+
+        assertTrue(doc.contains("# Enterprise Lab Decision Replay Evidence Lane Consistency Summary"));
+        assertTrue(doc.contains("`results[].decisionReplayEvidenceLaneConsistencySummary`"));
+        assertTrue(doc.contains("decision-replay-evidence-lane-consistency-summary/v1"));
+        assertTrue(doc.contains("`results[].decisionReplayEvidenceStatusRollup`"));
+        assertTrue(doc.contains("`results[].decisionReplayEvidenceLaneDependencyMap`"));
+        assertTrue(doc.contains("`results[].decisionReplayEvidenceLaneReferenceIndex`"));
+        assertTrue(doc.contains("`results[].decisionReplayEvidenceLaneDependencySummary`"));
+        assertTrue(doc.contains("normalized consistency status"));
+        assertTrue(doc.contains("mismatched count field names"));
+        assertTrue(doc.contains("missing surface names"));
+        assertTrue(doc.contains("deterministic consistency check objects"));
+        assertTrue(doc.contains("not replay execution"));
+        assertTrue(doc.contains("not scoring proof"));
+        assertTrue(doc.contains("not correctness validation"));
+        assertTrue(doc.contains("not production readiness"));
+        assertTrue(doc.contains("not guaranteed replay"));
+        assertTrue(doc.contains("does not inspect raw server input"));
+        assertTrue(normalized.contains("raw request payload"));
+        assertTrue(doc.contains("does not use reflection"));
+        assertTrue(doc.contains("does not generate a new fingerprint"));
+        assertTrue(doc.contains("does not execute replay"));
+        assertTrue(doc.contains("does not perform what-if mutation"));
+        assertTrue(doc.contains("does not persist lane consistency summaries or audit logs server-side"));
+        assertTrue(doc.contains("does not export, download, upload, or share lane consistency summaries"));
+        assertTrue(doc.contains("does not change routing behavior"));
+        assertTrue(doc.contains("does not recompute scores"));
+        assertTrue(doc.contains("does not retune weights"));
+        assertTrue(doc.contains("does not infer hidden scoring"));
+        assertTrue(normalized.contains("not production certification"));
+        assertTrue(normalized.contains("not guaranteed replay"));
+        assertTrue(normalized.contains("not cryptographic production proof"));
+        assertTrue(normalized.contains("not production traffic validation"));
+        assertTrue(normalized.contains("not an approval"));
+        assertFalse(normalized.contains("production certification is proven"));
+        assertFalse(normalized.contains("guaranteed replay is proven"));
+        assertFalse(normalized.contains("upload endpoint"));
+        assertFalse(normalized.contains("server-side export endpoint"));
+    }
+
+    @Test
     void dominantFactorAnalysisDocDefinesReadOnlyBoundaries() throws Exception {
         String doc = read(DOMINANT_FACTOR_ANALYSIS);
         String normalized = doc.toLowerCase(Locale.ROOT);
@@ -955,10 +1006,11 @@ class EnterpriseLabDecisionVectorDocumentationTest {
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_MAP.md"));
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_REFERENCE_INDEX.md"));
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY.md"));
+            assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY.md"));
             assertTrue(doc.contains("Decision Vector"));
         }
 
-        assertTrue(readme.contains("read-only Decision Replay Evidence Lane Navigation Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_NAVIGATION_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_NAVIGATION_SUMMARY.md); read-only Decision Replay Evidence Lane Dependency Map lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_MAP.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_MAP.md); read-only Decision Replay Evidence Lane Reference Index lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_REFERENCE_INDEX.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_REFERENCE_INDEX.md); read-only Decision Replay Evidence Lane Dependency Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY.md)."));
+        assertTrue(readme.contains("read-only Decision Replay Evidence Lane Navigation Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_NAVIGATION_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_NAVIGATION_SUMMARY.md); read-only Decision Replay Evidence Lane Dependency Map lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_MAP.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_MAP.md); read-only Decision Replay Evidence Lane Reference Index lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_REFERENCE_INDEX.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_REFERENCE_INDEX.md); read-only Decision Replay Evidence Lane Dependency Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY.md); read-only Decision Replay Evidence Lane Consistency Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY.md)."));
         assertTrue(trustMap.contains("### Decision Vector Contract"));
         assertTrue(framing.contains("## Decision Vector Contract"));
     }

@@ -142,6 +142,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_MAP.md"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_REFERENCE_INDEX.md"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY.md"));
+        assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY.md"));
         assertTrue(framing.contains("structured explanation contract for one controlled lab routing decision"));
         assertTrue(framing.contains("selected candidate vector"));
         assertTrue(framing.contains("non-selected candidate vectors"));
@@ -160,6 +161,8 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("`results[].decisionReplayEvidenceLaneNavigationSummary`"));
         assertTrue(framing.contains("`results[].decisionReplayEvidenceLaneDependencyMap`"));
         assertTrue(framing.contains("`results[].decisionReplayEvidenceLaneReferenceIndex`"));
+        assertTrue(framing.contains("`results[].decisionReplayEvidenceLaneDependencySummary`"));
+        assertTrue(framing.contains("`results[].decisionReplayEvidenceLaneConsistencySummary`"));
         assertTrue(framing.contains("`results[].decisionReplayEvidenceLaneDependencySummary`"));
         assertTrue(framing.contains("deterministic local fingerprint from already-built compare evidence only"));
         assertTrue(framing.contains("deterministic reconstruction evidence steps"));

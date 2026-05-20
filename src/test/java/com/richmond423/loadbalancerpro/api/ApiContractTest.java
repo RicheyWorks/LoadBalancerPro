@@ -176,7 +176,8 @@ class ApiContractTest {
                 "decisionReplayEvidenceBoundarySummary", "decisionReplayEvidenceFieldInventory",
                 "decisionReplayEvidenceNullSafetySummary", "decisionReplayEvidenceStatusRollup",
                 "decisionReplayEvidenceLaneNavigationSummary", "decisionReplayEvidenceLaneDependencyMap",
-                "decisionReplayEvidenceLaneReferenceIndex", "decisionReplayEvidenceLaneDependencySummary");
+                "decisionReplayEvidenceLaneReferenceIndex", "decisionReplayEvidenceLaneDependencySummary",
+                "decisionReplayEvidenceLaneConsistencySummary");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -325,6 +326,15 @@ class ApiContractTest {
                 "unknownLaneCount", "rootLaneCount", "terminalLaneCount", "maxDependencyCount",
                 "maxDownstreamCount", "densestDependencyLaneIds", "widestDownstreamLaneIds", "summaryText",
                 "limitations", "boundaryNote");
+        assertSchemaProperties(docs, "RoutingDecisionReplayEvidenceLaneConsistencySummaryResponse", "readOnly",
+                "laneConsistencySummarySchemaVersion", "source", "status", "referenceIndexStatus",
+                "dependencySummaryStatus", "statusRollupStatus", "dependencyMapStatus", "strategyId",
+                "selectedCandidateId", "candidateCount", "totalLaneCount", "availableLaneCount",
+                "partialLaneCount", "unknownLaneCount", "dependencyMapLaneCount", "referenceIndexLaneCount",
+                "dependencySummaryLaneCount", "mismatchedCountFields", "missingSurfaces", "consistencyChecks",
+                "summaryText", "limitations", "boundaryNote");
+        assertSchemaProperties(docs, "DecisionReplayEvidenceLaneConsistencyCheckResponse", "name", "status",
+                "expected", "actual", "detail");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -761,6 +771,51 @@ class ApiContractTest {
                         containsString("Reference index is PARTIAL with 14 lanes")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneDependencySummary.limitations[0]")
                         .isString())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary.readOnly",
+                        is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".laneConsistencySummarySchemaVersion",
+                        is("decision-replay-evidence-lane-consistency-summary/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary.status",
+                        is("CONSISTENT")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".referenceIndexStatus", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".dependencySummaryStatus", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".statusRollupStatus", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".dependencyMapStatus", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".selectedCandidateId", is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".candidateCount", is(2)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".totalLaneCount", is(14)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".availableLaneCount").isNumber())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".partialLaneCount").isNumber())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".unknownLaneCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".dependencyMapLaneCount", is(13)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".referenceIndexLaneCount", is(14)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".dependencySummaryLaneCount", is(14)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".mismatchedCountFields").isEmpty())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".missingSurfaces").isEmpty())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".consistencyChecks[0].name", is("status-rollup-present")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".consistencyChecks[4].name", is("lane-count-alignment")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary.summaryText",
+                        containsString("Lane evidence surfaces are consistent")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary.limitations[0]")
+                        .isString())
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -1006,6 +1061,22 @@ class ApiContractTest {
                         + ".densestDependencyLaneIds[0]", is("evidence-lane-dependency-map-reference")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneDependencySummary"
                         + ".widestDownstreamLaneIds[0]", is("decision-vector-reference")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary.status",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary.selectedCandidateId",
+                        nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary.candidateCount",
+                        is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".referenceIndexStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".dependencySummaryStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".missingSurfaces").isEmpty())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary"
+                        + ".mismatchedCountFields").isEmpty())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceLaneConsistencySummary.summaryText",
+                        containsString("UNKNOWN because required lane metadata is missing or unavailable")))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }
 

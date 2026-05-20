@@ -99,6 +99,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayEvidenceLaneReferenceIndexResponse");
         assertRef(required(resultProperties, "/decisionReplayEvidenceLaneDependencySummary"),
                 "#/components/schemas/RoutingDecisionReplayEvidenceLaneDependencySummaryResponse");
+        assertRef(required(resultProperties, "/decisionReplayEvidenceLaneConsistencySummary"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceLaneConsistencySummaryResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -449,6 +451,43 @@ class RoutingOpenApiContractTest {
                 "/widestDownstreamLaneIds/items/type").asText());
         assertEquals("array", required(laneDependencySummaryProperties, "/limitations/type").asText());
         assertEquals("string", required(laneDependencySummaryProperties, "/limitations/items/type").asText());
+
+        JsonNode laneConsistencySummaryProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceLaneConsistencySummaryResponse/properties");
+        assertEquals("boolean", required(laneConsistencySummaryProperties, "/readOnly/type").asText());
+        assertEquals("string", required(laneConsistencySummaryProperties,
+                "/laneConsistencySummarySchemaVersion/type").asText());
+        assertEquals("string", required(laneConsistencySummaryProperties, "/status/type").asText());
+        assertEquals("string", required(laneConsistencySummaryProperties, "/referenceIndexStatus/type").asText());
+        assertEquals("string", required(laneConsistencySummaryProperties, "/dependencySummaryStatus/type").asText());
+        assertEquals("string", required(laneConsistencySummaryProperties, "/statusRollupStatus/type").asText());
+        assertEquals("string", required(laneConsistencySummaryProperties, "/dependencyMapStatus/type").asText());
+        assertEquals("integer", required(laneConsistencySummaryProperties, "/totalLaneCount/type").asText());
+        assertEquals("integer", required(laneConsistencySummaryProperties, "/availableLaneCount/type").asText());
+        assertEquals("integer", required(laneConsistencySummaryProperties, "/partialLaneCount/type").asText());
+        assertEquals("integer", required(laneConsistencySummaryProperties, "/unknownLaneCount/type").asText());
+        assertEquals("integer", required(laneConsistencySummaryProperties, "/dependencyMapLaneCount/type").asText());
+        assertEquals("integer", required(laneConsistencySummaryProperties, "/referenceIndexLaneCount/type").asText());
+        assertEquals("integer", required(laneConsistencySummaryProperties, "/dependencySummaryLaneCount/type")
+                .asText());
+        assertEquals("array", required(laneConsistencySummaryProperties, "/mismatchedCountFields/type").asText());
+        assertEquals("string", required(laneConsistencySummaryProperties,
+                "/mismatchedCountFields/items/type").asText());
+        assertEquals("array", required(laneConsistencySummaryProperties, "/missingSurfaces/type").asText());
+        assertEquals("string", required(laneConsistencySummaryProperties, "/missingSurfaces/items/type").asText());
+        assertEquals("array", required(laneConsistencySummaryProperties, "/consistencyChecks/type").asText());
+        assertRef(required(laneConsistencySummaryProperties, "/consistencyChecks/items"),
+                "#/components/schemas/DecisionReplayEvidenceLaneConsistencyCheckResponse");
+        assertEquals("array", required(laneConsistencySummaryProperties, "/limitations/type").asText());
+        assertEquals("string", required(laneConsistencySummaryProperties, "/limitations/items/type").asText());
+
+        JsonNode laneConsistencyCheckProperties = required(docs,
+                "/components/schemas/DecisionReplayEvidenceLaneConsistencyCheckResponse/properties");
+        assertEquals("string", required(laneConsistencyCheckProperties, "/name/type").asText());
+        assertEquals("string", required(laneConsistencyCheckProperties, "/status/type").asText());
+        assertEquals("string", required(laneConsistencyCheckProperties, "/expected/type").asText());
+        assertEquals("string", required(laneConsistencyCheckProperties, "/actual/type").asText());
+        assertEquals("string", required(laneConsistencyCheckProperties, "/detail/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

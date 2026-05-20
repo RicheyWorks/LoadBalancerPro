@@ -453,6 +453,35 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(laneDependencySummary.toString().contains("Does not execute replay"));
         assertTrue(laneDependencySummary.toString().contains("Not correctness validation"));
         assertFalse(laneDependencySummary.toString().contains("dependencySummaryFingerprint"));
+        JsonNode laneConsistencySummary = result.path("decisionReplayEvidenceLaneConsistencySummary");
+        assertTrue(laneConsistencySummary.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-lane-consistency-summary/v1",
+                laneConsistencySummary.path("laneConsistencySummarySchemaVersion").asText());
+        assertEquals("CONSISTENT", laneConsistencySummary.path("status").asText());
+        assertEquals("PARTIAL", laneConsistencySummary.path("referenceIndexStatus").asText());
+        assertEquals("PARTIAL", laneConsistencySummary.path("dependencySummaryStatus").asText());
+        assertEquals("PARTIAL", laneConsistencySummary.path("statusRollupStatus").asText());
+        assertEquals("PARTIAL", laneConsistencySummary.path("dependencyMapStatus").asText());
+        assertEquals(14, laneConsistencySummary.path("totalLaneCount").asInt());
+        assertEquals(4, laneConsistencySummary.path("availableLaneCount").asInt());
+        assertEquals(10, laneConsistencySummary.path("partialLaneCount").asInt());
+        assertEquals(0, laneConsistencySummary.path("unknownLaneCount").asInt());
+        assertEquals(13, laneConsistencySummary.path("dependencyMapLaneCount").asInt());
+        assertEquals(14, laneConsistencySummary.path("referenceIndexLaneCount").asInt());
+        assertEquals(14, laneConsistencySummary.path("dependencySummaryLaneCount").asInt());
+        assertTrue(laneConsistencySummary.path("mismatchedCountFields").isEmpty());
+        assertTrue(laneConsistencySummary.path("missingSurfaces").isEmpty());
+        assertEquals("status-rollup-present",
+                laneConsistencySummary.at("/consistencyChecks/0/name").asText());
+        assertEquals("lane-count-alignment",
+                laneConsistencySummary.at("/consistencyChecks/4/name").asText());
+        assertTrue(laneConsistencySummary.path("summaryText").asText()
+                .contains("Lane evidence surfaces are consistent"));
+        assertTrue(laneConsistencySummary.toString().contains("Does not execute replay"));
+        assertTrue(laneConsistencySummary.toString().contains("not scoring proof"));
+        assertTrue(laneConsistencySummary.toString().contains("Not correctness validation"));
+        assertTrue(laneConsistencySummary.toString().contains("not guaranteed replay"));
+        assertFalse(laneConsistencySummary.toString().contains("dependencyConsistencyFingerprint"));
     }
 
     @Test
@@ -740,6 +769,26 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertFalse(laneDependencySummaryText.contains("quality ranking is proven"));
         assertFalse(laneDependencySummaryText.contains("approval is granted"));
         assertFalse(laneDependencySummaryText.contains("correctness validation is proven"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceLaneConsistencySummary/status").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceLaneConsistencySummary/referenceIndexStatus").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceLaneConsistencySummary/dependencySummaryStatus").asText());
+        assertTrue(result.at("/decisionReplayEvidenceLaneConsistencySummary/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceLaneConsistencySummary/candidateCount").asInt());
+        assertEquals(14, result.at("/decisionReplayEvidenceLaneConsistencySummary/referenceIndexLaneCount").asInt());
+        assertEquals(14, result.at("/decisionReplayEvidenceLaneConsistencySummary/dependencySummaryLaneCount")
+                .asInt());
+        assertEquals(13, result.at("/decisionReplayEvidenceLaneConsistencySummary/dependencyMapLaneCount").asInt());
+        assertTrue(result.at("/decisionReplayEvidenceLaneConsistencySummary/missingSurfaces").isEmpty());
+        assertTrue(result.at("/decisionReplayEvidenceLaneConsistencySummary/mismatchedCountFields").isEmpty());
+        String laneConsistencySummaryText = result.at("/decisionReplayEvidenceLaneConsistencySummary").toString();
+        assertFalse(laneConsistencySummaryText.contains("dependencyConsistencyFingerprint"));
+        assertFalse(laneConsistencySummaryText.contains("production certification is proven"));
+        assertFalse(laneConsistencySummaryText.contains("guaranteed replay is proven"));
+        assertFalse(laneConsistencySummaryText.contains("quality ranking is proven"));
+        assertFalse(laneConsistencySummaryText.contains("approval is granted"));
+        assertFalse(laneConsistencySummaryText.contains("correctness validation is proven"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

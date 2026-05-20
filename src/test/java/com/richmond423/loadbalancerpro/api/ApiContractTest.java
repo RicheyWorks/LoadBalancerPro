@@ -178,7 +178,8 @@ class ApiContractTest {
                 "decisionReplayEvidenceLaneNavigationSummary", "decisionReplayEvidenceLaneDependencyMap",
                 "decisionReplayEvidenceLaneReferenceIndex", "decisionReplayEvidenceLaneDependencySummary",
                 "decisionReplayEvidenceLaneConsistencySummary", "decisionReplayEvidenceReviewerSnapshot",
-                "decisionReplayEvidenceReviewerGuidance", "decisionReplayEvidenceReviewerHandoffSummary");
+                "decisionReplayEvidenceReviewerGuidance", "decisionReplayEvidenceReviewerHandoffSummary",
+                "decisionReplayEvidenceReviewerClosureSummary");
         assertSchemaProperties(docs, "RoutingDecisionVectorResponse", "readOnly", "localLabResponsePath",
                 "decisionIdOrLabRunId", "selectedStrategy", "selectedBackend", "candidateCount",
                 "candidateSummaries", "selectedCandidateVector", "nonSelectedCandidateVectors",
@@ -355,6 +356,13 @@ class ApiContractTest {
                 "selectedCandidateId", "candidateCount", "totalLaneCount", "availableLaneCount",
                 "partialLaneCount", "unknownLaneCount", "handoffBullets", "operatorFollowUpItems",
                 "evidenceSurfacesReferenced", "cautionNotes", "summaryText", "limitations", "boundaryNote");
+        assertSchemaProperties(docs, "RoutingDecisionReplayEvidenceReviewerClosureSummaryResponse", "readOnly",
+                "reviewerClosureSummarySchemaVersion", "source", "status", "closureDisposition",
+                "reviewerSnapshotStatus", "reviewerGuidanceStatus", "reviewerHandoffStatus",
+                "consistencyStatus", "strategyId", "selectedCandidateId", "candidateCount",
+                "totalLaneCount", "availableLaneCount", "partialLaneCount", "unknownLaneCount",
+                "closureBullets", "safeConclusions", "unresolvedBoundaries", "evidenceSurfacesReferenced",
+                "summaryText", "limitations", "boundaryNote");
         assertSchemaProperties(docs, "ScenarioReplayRequest", "scenarioId", "servers", "steps");
         assertSchemaProperties(docs, "ScenarioReplayStepRequest", "stepId", "type", "requestedLoad",
                 "strategy", "priority", "serverId", "routingStrategies", "currentInFlightRequestCount",
@@ -953,6 +961,51 @@ class ApiContractTest {
                         containsString("Read-only reviewer handoff metadata")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary.boundaryNote",
                         containsString("does not execute replay")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary.readOnly",
+                        is(true)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".reviewerClosureSummarySchemaVersion",
+                        is("decision-replay-evidence-reviewer-closure-summary/v1")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary.status",
+                        is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".closureDisposition", is("REVIEW_COMPLETE_WITH_LIMITATIONS")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".reviewerSnapshotStatus", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".reviewerGuidanceStatus", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".reviewerHandoffStatus", is("PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".consistencyStatus", is("CONSISTENT")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".selectedCandidateId", is("green")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".candidateCount", is(2)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".totalLaneCount", is(14)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".availableLaneCount", is(5)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".partialLaneCount", is(9)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".unknownLaneCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".closureBullets[0]", is("Reviewer snapshot is PARTIAL.")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".safeConclusions[0]",
+                        is("Reviewer metadata was generated deterministically from exposed compare surfaces.")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".unresolvedBoundaries[0]", is("Not replay proof.")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".evidenceSurfacesReferenced[7]",
+                        is("decisionReplayEvidenceReviewerHandoffSummary")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary.summaryText",
+                        containsString("Reviewer closure summary is PARTIAL")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary.limitations[0]",
+                        containsString("Read-only reviewer closure metadata")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary.boundaryNote",
+                        containsString("does not execute replay")))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -1290,6 +1343,38 @@ class ApiContractTest {
                         + ".cautionNotes[0]",
                         is("No selected candidate evidence is available for reviewer handoff.")))
                 .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerHandoffSummary.summaryText",
+                        containsString("UNKNOWN because required reviewer metadata is missing")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary.status",
+                        is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".closureDisposition", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".reviewerSnapshotStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".reviewerGuidanceStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".reviewerHandoffStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".consistencyStatus", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".selectedCandidateId", nullValue()))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".candidateCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".totalLaneCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".availableLaneCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".partialLaneCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".unknownLaneCount", is(0)))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".closureBullets[1]", is("Reviewer closure summary status is UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".safeConclusions").isEmpty())
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary"
+                        + ".unresolvedBoundaries[0]", is("Not replay proof.")))
+                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceReviewerClosureSummary.summaryText",
                         containsString("UNKNOWN because required reviewer metadata is missing")))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")));
     }

@@ -107,6 +107,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayEvidenceReviewerGuidanceResponse");
         assertRef(required(resultProperties, "/decisionReplayEvidenceReviewerHandoffSummary"),
                 "#/components/schemas/RoutingDecisionReplayEvidenceReviewerHandoffSummaryResponse");
+        assertRef(required(resultProperties, "/decisionReplayEvidenceReviewerClosureSummary"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceReviewerClosureSummaryResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -588,6 +590,39 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(reviewerHandoffProperties, "/limitations/type").asText());
         assertEquals("string", required(reviewerHandoffProperties, "/limitations/items/type").asText());
         assertEquals("string", required(reviewerHandoffProperties, "/boundaryNote/type").asText());
+
+        JsonNode reviewerClosureProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceReviewerClosureSummaryResponse/properties");
+        assertEquals("boolean", required(reviewerClosureProperties, "/readOnly/type").asText());
+        assertEquals("string", required(reviewerClosureProperties,
+                "/reviewerClosureSummarySchemaVersion/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/source/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/status/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/closureDisposition/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/reviewerSnapshotStatus/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/reviewerGuidanceStatus/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/reviewerHandoffStatus/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/consistencyStatus/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/strategyId/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/selectedCandidateId/type").asText());
+        assertEquals("integer", required(reviewerClosureProperties, "/candidateCount/type").asText());
+        assertEquals("integer", required(reviewerClosureProperties, "/totalLaneCount/type").asText());
+        assertEquals("integer", required(reviewerClosureProperties, "/availableLaneCount/type").asText());
+        assertEquals("integer", required(reviewerClosureProperties, "/partialLaneCount/type").asText());
+        assertEquals("integer", required(reviewerClosureProperties, "/unknownLaneCount/type").asText());
+        assertEquals("array", required(reviewerClosureProperties, "/closureBullets/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/closureBullets/items/type").asText());
+        assertEquals("array", required(reviewerClosureProperties, "/safeConclusions/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/safeConclusions/items/type").asText());
+        assertEquals("array", required(reviewerClosureProperties, "/unresolvedBoundaries/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/unresolvedBoundaries/items/type").asText());
+        assertEquals("array", required(reviewerClosureProperties, "/evidenceSurfacesReferenced/type").asText());
+        assertEquals("string", required(reviewerClosureProperties,
+                "/evidenceSurfacesReferenced/items/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/summaryText/type").asText());
+        assertEquals("array", required(reviewerClosureProperties, "/limitations/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/limitations/items/type").asText());
+        assertEquals("string", required(reviewerClosureProperties, "/boundaryNote/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

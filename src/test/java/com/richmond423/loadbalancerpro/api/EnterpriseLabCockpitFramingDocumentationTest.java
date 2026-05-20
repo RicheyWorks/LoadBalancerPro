@@ -144,6 +144,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY.md"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY.md"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_SNAPSHOT.md"));
+        assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_GUIDANCE.md"));
         assertTrue(framing.contains("structured explanation contract for one controlled lab routing decision"));
         assertTrue(framing.contains("selected candidate vector"));
         assertTrue(framing.contains("non-selected candidate vectors"));
@@ -165,6 +166,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("`results[].decisionReplayEvidenceLaneDependencySummary`"));
         assertTrue(framing.contains("`results[].decisionReplayEvidenceLaneConsistencySummary`"));
         assertTrue(framing.contains("`results[].decisionReplayEvidenceReviewerSnapshot`"));
+        assertTrue(framing.contains("`results[].decisionReplayEvidenceReviewerGuidance`"));
         assertTrue(framing.contains("deterministic local fingerprint from already-built compare evidence only"));
         assertTrue(framing.contains("deterministic reconstruction evidence steps"));
         assertTrue(framing.contains("canonical evidence packaging"));
@@ -175,6 +177,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("summarizes null, missing, unavailable, and no-healthy/failure-path safety"));
         assertTrue(framing.contains("summarizes already-built evidence lane statuses"));
         assertTrue(framing.contains("summarizes existing status rollup, dependency map, reference index, dependency summary, and consistency summary surfaces"));
+        assertTrue(framing.contains("derives deterministic reviewer guidance from existing reviewer metadata"));
         assertTrue(framing.contains("maps already-built evidence lanes to response field paths, UI section labels, and docs reference labels"));
         assertTrue(framing.contains("maps already-built evidence lane dependencies and downstream relationships"));
         assertTrue(framing.contains("indexes already-built evidence lanes by response field path, UI section label, docs reference label, dependency count, and downstream count"));

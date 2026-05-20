@@ -103,6 +103,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayEvidenceLaneConsistencySummaryResponse");
         assertRef(required(resultProperties, "/decisionReplayEvidenceReviewerSnapshot"),
                 "#/components/schemas/RoutingDecisionReplayEvidenceReviewerSnapshotResponse");
+        assertRef(required(resultProperties, "/decisionReplayEvidenceReviewerGuidance"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceReviewerGuidanceResponse");
 
         JsonNode vectorProperties = required(docs,
                 "/components/schemas/RoutingDecisionVectorResponse/properties");
@@ -521,6 +523,37 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(reviewerSnapshotProperties, "/limitations/type").asText());
         assertEquals("string", required(reviewerSnapshotProperties, "/limitations/items/type").asText());
         assertEquals("string", required(reviewerSnapshotProperties, "/boundaryNote/type").asText());
+
+        JsonNode reviewerGuidanceProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceReviewerGuidanceResponse/properties");
+        assertEquals("boolean", required(reviewerGuidanceProperties, "/readOnly/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/reviewerGuidanceSchemaVersion/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/source/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/status/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/reviewerPriority/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/strategyId/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/selectedCandidateId/type").asText());
+        assertEquals("integer", required(reviewerGuidanceProperties, "/candidateCount/type").asText());
+        assertEquals("integer", required(reviewerGuidanceProperties, "/totalLaneCount/type").asText());
+        assertEquals("integer", required(reviewerGuidanceProperties, "/availableLaneCount/type").asText());
+        assertEquals("integer", required(reviewerGuidanceProperties, "/partialLaneCount/type").asText());
+        assertEquals("integer", required(reviewerGuidanceProperties, "/unknownLaneCount/type").asText());
+        assertEquals("integer", required(reviewerGuidanceProperties, "/checkedSurfaceCount/type").asText());
+        assertEquals("integer", required(reviewerGuidanceProperties, "/missingSurfaceCount/type").asText());
+        assertEquals("array", required(reviewerGuidanceProperties, "/missingSurfaces/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/missingSurfaces/items/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/primaryReviewerFocus/type").asText());
+        assertEquals("array", required(reviewerGuidanceProperties, "/suggestedReviewSteps/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/suggestedReviewSteps/items/type").asText());
+        assertEquals("array", required(reviewerGuidanceProperties, "/evidenceSurfacesToInspect/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties,
+                "/evidenceSurfacesToInspect/items/type").asText());
+        assertEquals("array", required(reviewerGuidanceProperties, "/cautionNotes/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/cautionNotes/items/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/summaryText/type").asText());
+        assertEquals("array", required(reviewerGuidanceProperties, "/limitations/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/limitations/items/type").asText());
+        assertEquals("string", required(reviewerGuidanceProperties, "/boundaryNote/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

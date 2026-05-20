@@ -428,6 +428,16 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("unknownCount"));
         assertTrue(page.contains("reviewerReady"));
         assertTrue(page.contains("read-only response-level reviewer closure metadata only"));
+        assertTrue(page.contains("Decision Replay Evidence Closure Checklist"));
+        assertTrue(page.contains("id=\"decision-replay-evidence-reviewer-closure-checklist-explanation\""));
+        assertTrue(page.contains("decisionReplayEvidenceReviewerClosureChecklist"));
+        assertTrue(page.contains("Reviewer Closure Checklist Status"));
+        assertTrue(page.contains("Reviewer Closure Checklist Items"));
+        assertTrue(page.contains("closureSummaryPresent"));
+        assertTrue(page.contains("countsMatchResultMetadata"));
+        assertTrue(page.contains("scenarioReplayStripped"));
+        assertTrue(page.contains("notProvenBoundariesPresent"));
+        assertTrue(page.contains("read-only response-level reviewer closure checklist metadata only"));
         assertTrue(page.contains("not replay proof"));
         assertTrue(page.contains("not production certification"));
         assertTrue(page.contains("not guaranteed replay"));

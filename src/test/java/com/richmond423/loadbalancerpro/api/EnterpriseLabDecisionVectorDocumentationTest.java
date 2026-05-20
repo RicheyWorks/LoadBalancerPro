@@ -211,6 +211,9 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("Decision Replay Evidence Closure Rollup metadata"));
         assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_ROLLUP.md"));
         assertTrue(doc.contains("`decisionReplayEvidenceReviewerClosureRollup`"));
+        assertTrue(doc.contains("Decision Replay Evidence Closure Checklist metadata"));
+        assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_CHECKLIST.md"));
+        assertTrue(doc.contains("`decisionReplayEvidenceReviewerClosureChecklist`"));
         assertTrue(doc.contains("\"EXACT_FROM_CALCULATOR\""));
         assertTrue(doc.contains("\"NOT_EXPOSED\""));
         assertTrue(doc.contains("not production scoring proof"));
@@ -242,6 +245,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
                 "Broader factor modeling beyond current returned calculator contribution data: future/not implemented.",
                 "Decision replay evidence reviewer closure summary: implemented as additive read-only reviewer closure metadata over already-built reviewer evidence surfaces only.",
                 "Decision replay evidence closure rollup: implemented as additive read-only response-level reviewer closure metadata over already-returned per-result reviewer closure summaries only.",
+                "Decision replay evidence closure checklist: implemented as additive read-only response-level reviewer checklist metadata over already-returned per-result reviewer closure summaries and the response-level closure rollup only.",
                 "Replay execution: future/not implemented.",
                 "What-if experiments: future/not implemented.",
                 "Structured decision logging: future/not implemented.",
@@ -277,6 +281,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("`results[].decisionReplayEvidenceLaneDependencySummary`"));
         assertTrue(doc.contains("`results[].decisionReplayEvidenceReviewerClosureSummary`"));
         assertTrue(doc.contains("`decisionReplayEvidenceReviewerClosureRollup`"));
+        assertTrue(doc.contains("`decisionReplayEvidenceReviewerClosureChecklist`"));
         assertTrue(doc.contains("preserves existing"));
         assertTrue(doc.contains("`requestedStrategies`, `candidateCount`, `timestamp`, result status"));
         assertTrue(doc.contains("\"localLabResponsePath\": \"/api/routing/compare\""));
@@ -1210,7 +1215,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
             assertTrue(doc.contains("Decision Vector"));
         }
 
-        assertTrue(readme.contains("read-only Decision Replay Evidence Reviewer Closure Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md); read-only Decision Replay Evidence Closure Rollup lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_ROLLUP.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_ROLLUP.md)."));
+        assertTrue(readme.contains("read-only Decision Replay Evidence Reviewer Closure Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md); read-only Decision Replay Evidence Closure Rollup lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_ROLLUP.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_ROLLUP.md); read-only Decision Replay Evidence Closure Checklist lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_CHECKLIST.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_CHECKLIST.md)."));
         assertTrue(trustMap.contains("### Decision Vector Contract"));
         assertTrue(framing.contains("## Decision Vector Contract"));
     }

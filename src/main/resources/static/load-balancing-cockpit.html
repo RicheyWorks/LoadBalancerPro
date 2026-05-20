@@ -1339,6 +1339,10 @@
             <div id="decision-replay-evidence-reviewer-closure-rollup-explanation">Run routing comparison to populate response-level Reviewer Closure Rollup Status, Disposition, Counts, Reviewer Ready state, and not-proven boundaries. Read-only response-level reviewer closure metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Replay Evidence Closure Checklist</strong>
+            <div id="decision-replay-evidence-reviewer-closure-checklist-explanation">Run routing comparison to populate response-level Reviewer Closure Checklist Status, Reviewer Closure Checklist Items, Reviewer Ready state, and not-proven boundaries: closureSummaryPresent, closureRollupPresent, countsMatchResultMetadata, scenarioReplayStripped, and notProvenBoundariesPresent. Read-only response-level reviewer closure checklist metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3526,6 +3530,7 @@
         renderDecisionReplayEvidenceReviewerHandoffExplanation(response);
         renderDecisionReplayEvidenceReviewerClosureExplanation(response);
         renderDecisionReplayEvidenceReviewerClosureRollupExplanation(response);
+        renderDecisionReplayEvidenceReviewerClosureChecklistExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3552,6 +3557,7 @@
         renderDecisionReplayEvidenceReviewerHandoffExplanation(response);
         renderDecisionReplayEvidenceReviewerClosureExplanation(response);
         renderDecisionReplayEvidenceReviewerClosureRollupExplanation(response);
+        renderDecisionReplayEvidenceReviewerClosureChecklistExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3580,6 +3586,7 @@
       renderDecisionReplayEvidenceReviewerHandoffExplanation(response);
       renderDecisionReplayEvidenceReviewerClosureExplanation(response);
       renderDecisionReplayEvidenceReviewerClosureRollupExplanation(response);
+      renderDecisionReplayEvidenceReviewerClosureChecklistExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3640,6 +3647,7 @@
       renderDecisionReplayEvidenceReviewerHandoffExplanation(state.routing);
       renderDecisionReplayEvidenceReviewerClosureExplanation(state.routing);
       renderDecisionReplayEvidenceReviewerClosureRollupExplanation(state.routing);
+      renderDecisionReplayEvidenceReviewerClosureChecklistExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -4603,6 +4611,34 @@
         + "<span class=\"muted\">Boundary: read-only response-level reviewer closure metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, not production validation, no upload/share/download, no telemetry, no external calls, and no server-side export/PDF/ZIP generation.</span></p>";
     }
 
+    function renderDecisionReplayEvidenceReviewerClosureChecklistExplanation(response) {
+      const container = document.getElementById(
+        "decision-replay-evidence-reviewer-closure-checklist-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate response-level Reviewer Closure Checklist Status, Reviewer Closure Checklist Items, Reviewer Ready state, and not-proven boundaries: closureSummaryPresent, closureRollupPresent, countsMatchResultMetadata, scenarioReplayStripped, and notProvenBoundariesPresent. Read-only response-level reviewer closure checklist metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
+        return;
+      }
+      const checklist = response.decisionReplayEvidenceReviewerClosureChecklist || {};
+      if (!checklist.summary) {
+        container.textContent = "Decision Replay Evidence Closure Checklist is unavailable; no response-level reviewer closure checklist claim is invented. Read-only response-level reviewer closure checklist metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
+        return;
+      }
+      const items = Array.isArray(checklist.items)
+        ? checklist.items.map((item) =>
+          (item.name || "unknown") + "=" + (item.status || "UNKNOWN")).join("; ")
+        : "none";
+      const boundaries = Array.isArray(checklist.notProvenBoundaries)
+        ? checklist.notProvenBoundaries.join("; ")
+        : "not replay proof; not scoring proof; not correctness validation; not production readiness; not production certification; not guaranteed replay; not production validation";
+      const text = "Reviewer Closure Checklist Status: " + (checklist.status || "UNKNOWN")
+        + "; " + checklist.summary
+        + "; Items: " + items
+        + "; reviewerReady=" + String(Boolean(checklist.reviewerReady))
+        + "; Not-Proven Boundaries: " + boundaries;
+      container.innerHTML = "<p>" + escapeHtml(text) + "<br>"
+        + "<span class=\"muted\">Boundary: read-only response-level reviewer closure checklist metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, not production validation, no upload/share/download, no telemetry, no external calls, and no server-side export/PDF/ZIP generation.</span></p>";
+    }
+
     function formatFinite(value) {
       const numeric = Number(value);
       return Number.isFinite(numeric) ? numeric.toFixed(6) : "not returned";
@@ -5211,6 +5247,23 @@
             : "not replay proof;not scoring proof;not correctness validation;not production readiness;not production certification;not guaranteed replay;not production validation")
         ].join("\n")
         : "- Not run";
+      const closureChecklist = state.routing && state.routing.decisionReplayEvidenceReviewerClosureChecklist
+        ? state.routing.decisionReplayEvidenceReviewerClosureChecklist
+        : null;
+      const evidenceReviewerClosureChecklistLines = closureChecklist
+        ? [
+          "- status: " + (closureChecklist.status || "unknown"),
+          "- reviewerReady: " + String(Boolean(closureChecklist.reviewerReady)),
+          "- items: " + (Array.isArray(closureChecklist.items)
+            ? closureChecklist.items.map((item) =>
+              (item.name || "unknown") + "=" + (item.status || "UNKNOWN")).join(";")
+            : "none"),
+          "- summary: " + (closureChecklist.summary || "summary unavailable"),
+          "- notProvenBoundaries: " + (Array.isArray(closureChecklist.notProvenBoundaries)
+            ? closureChecklist.notProvenBoundaries.join(";")
+            : "not replay proof;not scoring proof;not correctness validation;not production readiness;not production certification;not guaranteed replay;not production validation")
+        ].join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -5297,6 +5350,9 @@
         "",
         "## Decision Replay Evidence Closure Rollup",
         evidenceReviewerClosureRollupLines,
+        "",
+        "## Decision Replay Evidence Closure Checklist",
+        evidenceReviewerClosureChecklistLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

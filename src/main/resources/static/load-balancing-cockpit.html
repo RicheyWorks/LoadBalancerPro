@@ -1307,6 +1307,10 @@
             <div id="decision-replay-evidence-lane-dependency-map-explanation">Run routing comparison to populate Lane Dependency Map Status, Evidence Lane Dependencies, Depends On Lanes, Downstream Lanes, Dependency Count, Downstream Count, Available Lanes, Partial Lanes, and Unknown Lanes metadata.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Evidence Lane Reference Index</strong>
+            <div id="decision-replay-evidence-lane-reference-index-explanation">Run routing comparison to populate Lane Reference Index Status, Evidence Lane Reference Items, Response Field Path, UI Section, Docs Reference, Dependency Count, Downstream Count, Available Lanes, Partial Lanes, and Unknown Lanes metadata.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3486,6 +3490,7 @@
         renderDecisionReplayEvidenceStatusRollupExplanation(response);
         renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(response);
         renderDecisionReplayEvidenceLaneDependencyMapExplanation(response);
+        renderDecisionReplayEvidenceLaneReferenceIndexExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3504,6 +3509,7 @@
         renderDecisionReplayEvidenceStatusRollupExplanation(response);
         renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(response);
         renderDecisionReplayEvidenceLaneDependencyMapExplanation(response);
+        renderDecisionReplayEvidenceLaneReferenceIndexExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3524,6 +3530,7 @@
       renderDecisionReplayEvidenceStatusRollupExplanation(response);
       renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(response);
       renderDecisionReplayEvidenceLaneDependencyMapExplanation(response);
+      renderDecisionReplayEvidenceLaneReferenceIndexExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3576,6 +3583,7 @@
       renderDecisionReplayEvidenceStatusRollupExplanation(state.routing);
       renderDecisionReplayEvidenceLaneNavigationSummaryExplanation(state.routing);
       renderDecisionReplayEvidenceLaneDependencyMapExplanation(state.routing);
+      renderDecisionReplayEvidenceLaneReferenceIndexExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -4161,6 +4169,69 @@
       }).join("");
     }
 
+    function renderDecisionReplayEvidenceLaneReferenceIndexExplanation(response) {
+      const container = document.getElementById("decision-replay-evidence-lane-reference-index-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate lane reference index evidence.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; evidence lane reference index is unknown.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const referenceIndex = result.decisionReplayEvidenceLaneReferenceIndex || {};
+        const items = Array.isArray(referenceIndex.referenceItems)
+          ? referenceIndex.referenceItems.map((item) =>
+            (item.laneId || "unknown-lane") + "=" + (item.status || "UNKNOWN")
+          ).join("; ")
+          : "";
+        const responsePaths = Array.isArray(referenceIndex.referenceItems)
+          ? referenceIndex.referenceItems.map((item) =>
+            (item.laneId || "unknown-lane") + ":" + (item.responseFieldPath || "not returned")
+          ).join("; ")
+          : "";
+        const uiSections = Array.isArray(referenceIndex.referenceItems)
+          ? referenceIndex.referenceItems.map((item) =>
+            (item.laneId || "unknown-lane") + ":" + (item.uiSectionLabel || "not returned")
+          ).join("; ")
+          : "";
+        const docsReferences = Array.isArray(referenceIndex.referenceItems)
+          ? referenceIndex.referenceItems.map((item) =>
+            (item.laneId || "unknown-lane") + ":" + (item.docsReferenceLabel || "not returned")
+          ).join("; ")
+          : "";
+        const dependencyCounts = Array.isArray(referenceIndex.referenceItems)
+          ? referenceIndex.referenceItems.map((item) =>
+            (item.laneId || "unknown-lane") + "=" + String(item.dependencyCount || 0)
+          ).join("; ")
+          : "";
+        const downstreamCounts = Array.isArray(referenceIndex.referenceItems)
+          ? referenceIndex.referenceItems.map((item) =>
+            (item.laneId || "unknown-lane") + "=" + String(item.downstreamCount || 0)
+          ).join("; ")
+          : "";
+        const summary = referenceIndex.laneReferenceIndexSchemaVersion
+          ? "status=" + (referenceIndex.status || "unknown")
+            + "; selectedCandidate=" + (referenceIndex.selectedCandidateId || "not returned")
+            + "; candidateCount=" + String(referenceIndex.candidateCount || 0)
+            + "; availableLanes=" + String(referenceIndex.availableLaneCount || 0)
+            + "; partialLanes=" + String(referenceIndex.partialLaneCount || 0)
+            + "; unknownLanes=" + String(referenceIndex.unknownLaneCount || 0)
+            + "; evidenceLaneReferenceItems=" + (items || "none")
+            + "; responseFieldPath=" + (responsePaths || "none")
+            + "; uiSection=" + (uiSections || "none")
+            + "; docsReference=" + (docsReferences || "none")
+            + "; dependencyCount=" + (dependencyCounts || "none")
+            + "; downstreamCount=" + (downstreamCounts || "none")
+          : (referenceIndex.explanation || "Decision Replay Evidence Lane Reference Index is unavailable; no lane reference index claim is invented.");
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(summary) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab reference metadata only; no replay execution, what-if mutation, persistence, upload/share/download, telemetry, external calls, reflection, new fingerprint generation, no production certification, no guaranteed replay, or server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
     function formatFinite(value) {
       const numeric = Number(value);
       return Number.isFinite(numeric) ? numeric.toFixed(6) : "not returned";
@@ -4597,6 +4668,21 @@
             + ", reviewerNavigationOnly=true";
         }).join("\n")
         : "- Not run";
+      const evidenceLaneReferenceIndexLines = routingResults.length
+        ? routingResults.map((result) => {
+          const referenceIndex = result.decisionReplayEvidenceLaneReferenceIndex || {};
+          const itemCount = Array.isArray(referenceIndex.referenceItems)
+            ? referenceIndex.referenceItems.length
+            : 0;
+          return "- " + result.strategyId
+            + ": laneReferenceIndexStatus=" + (referenceIndex.status || "unknown")
+            + ", referenceItems=" + String(itemCount)
+            + ", availableLanes=" + String(referenceIndex.availableLaneCount || 0)
+            + ", partialLanes=" + String(referenceIndex.partialLaneCount || 0)
+            + ", unknownLanes=" + String(referenceIndex.unknownLaneCount || 0)
+            + ", reviewerReferenceOnly=true";
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -4662,6 +4748,9 @@
         "",
         "## Decision Evidence Lane Dependency Map",
         evidenceLaneDependencyLines,
+        "",
+        "## Decision Evidence Lane Reference Index",
+        evidenceLaneReferenceIndexLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

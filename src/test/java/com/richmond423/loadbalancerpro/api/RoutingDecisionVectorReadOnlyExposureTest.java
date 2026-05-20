@@ -372,6 +372,62 @@ class RoutingDecisionVectorReadOnlyExposureTest {
                 .contains("not production certification"));
         assertTrue(laneDependencyMap.path("productionNotProvenBoundary").asText()
                 .contains("not guaranteed replay"));
+
+        JsonNode laneReferenceIndex = result.path("decisionReplayEvidenceLaneReferenceIndex");
+        assertTrue(laneReferenceIndex.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-lane-reference-index/v1",
+                laneReferenceIndex.path("laneReferenceIndexSchemaVersion").asText());
+        assertTrue(List.of("AVAILABLE", "PARTIAL", "UNKNOWN").contains(laneReferenceIndex.path("status").asText()));
+        assertEquals("edge-alpha", laneReferenceIndex.path("selectedCandidateId").asText());
+        assertEquals(3, laneReferenceIndex.path("candidateCount").asInt());
+        assertTrue(laneReferenceIndex.path("availableLaneCount").asInt() > 0);
+        assertTrue(laneReferenceIndex.path("partialLaneCount").asInt() >= 0);
+        assertEquals(0, laneReferenceIndex.path("unknownLaneCount").asInt());
+        assertEquals(List.of(
+                        "decision-vector-reference",
+                        "dominant-factor-analysis-reference",
+                        "decision-delta-analysis-reference",
+                        "replay-snapshot-reference",
+                        "reconstruction-trace-reference",
+                        "replay-capsule-reference",
+                        "readiness-checklist-reference",
+                        "evidence-source-map-reference",
+                        "evidence-boundary-summary-reference",
+                        "evidence-field-inventory-reference",
+                        "evidence-null-safety-reference",
+                        "evidence-status-rollup-reference",
+                        "evidence-lane-navigation-reference",
+                        "evidence-lane-dependency-map-reference"),
+                streamTextValues(laneReferenceIndex.path("referenceItems"), "laneId"));
+        assertEquals("results[].decisionVector",
+                laneReferenceIndex.at("/referenceItems/0/responseFieldPath").asText());
+        assertEquals("Decision Vector",
+                laneReferenceIndex.at("/referenceItems/0/uiSectionLabel").asText());
+        assertEquals("Enterprise Lab Decision Vector",
+                laneReferenceIndex.at("/referenceItems/0/docsReferenceLabel").asText());
+        assertEquals(0, laneReferenceIndex.at("/referenceItems/0/dependencyCount").asInt());
+        assertEquals(12, laneReferenceIndex.at("/referenceItems/0/downstreamCount").asInt());
+        assertEquals("results[].decisionReplayEvidenceLaneDependencyMap",
+                laneReferenceIndex.at("/referenceItems/13/responseFieldPath").asText());
+        assertEquals("Decision Evidence Lane Dependency Map",
+                laneReferenceIndex.at("/referenceItems/13/uiSectionLabel").asText());
+        assertEquals("Decision Replay Evidence Lane Dependency Map",
+                laneReferenceIndex.at("/referenceItems/13/docsReferenceLabel").asText());
+        assertEquals(13, laneReferenceIndex.at("/referenceItems/13/dependencyCount").asInt());
+        assertEquals(0, laneReferenceIndex.at("/referenceItems/13/downstreamCount").asInt());
+        assertTrue(laneReferenceIndex.at("/referenceItems/0/readOnly").asBoolean());
+        assertTrue(laneReferenceIndex.at("/referenceItems/0/boundaryPresent").asBoolean());
+        assertTrue(laneReferenceIndex.path("explanation").asText()
+                .contains("derived from already-built lab compare evidence"));
+        assertTrue(laneReferenceIndex.path("boundaryNote").asText().contains("does not execute replay"));
+        assertTrue(laneReferenceIndex.path("boundaryNote").asText().contains("does not perform what-if mutation"));
+        assertTrue(laneReferenceIndex.path("boundaryNote").asText().contains("does not change routing behavior"));
+        assertTrue(laneReferenceIndex.path("boundaryNote").asText().contains("does not recompute scores"));
+        assertTrue(laneReferenceIndex.path("productionNotProvenBoundary").asText()
+                .contains("not production certification"));
+        assertTrue(laneReferenceIndex.path("productionNotProvenBoundary").asText()
+                .contains("not guaranteed replay"));
+        assertFalse(laneReferenceIndex.toString().contains("laneReferenceIndexFingerprint"));
     }
 
     @Test
@@ -610,7 +666,45 @@ class RoutingDecisionVectorReadOnlyExposureTest {
                 .asBoolean());
         assertTrue(result.at("/decisionReplayEvidenceLaneDependencyMap/explanation").asText()
                 .contains("No replay execution"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceLaneReferenceIndex/status").asText());
+        assertTrue(result.at("/decisionReplayEvidenceLaneReferenceIndex/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceLaneReferenceIndex/candidateCount").asInt());
+        assertEquals("decision-vector-reference",
+                result.at("/decisionReplayEvidenceLaneReferenceIndex/referenceItems/0/laneId").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceLaneReferenceIndex/referenceItems/0/status").asText());
+        assertEquals("results[].decisionVector",
+                result.at("/decisionReplayEvidenceLaneReferenceIndex/referenceItems/0/responseFieldPath").asText());
+        assertEquals(0, result.at("/decisionReplayEvidenceLaneReferenceIndex/referenceItems/0/dependencyCount")
+                .asInt());
+        assertEquals(12, result.at("/decisionReplayEvidenceLaneReferenceIndex/referenceItems/0/downstreamCount")
+                .asInt());
+        assertEquals("evidence-lane-dependency-map-reference",
+                result.at("/decisionReplayEvidenceLaneReferenceIndex/referenceItems/13/laneId").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceLaneReferenceIndex/referenceItems/13/status").asText());
+        assertEquals(13, result.at("/decisionReplayEvidenceLaneReferenceIndex/referenceItems/13/dependencyCount")
+                .asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceLaneReferenceIndex/referenceItems/13/downstreamCount")
+                .asInt());
+        assertTrue(result.at("/decisionReplayEvidenceLaneReferenceIndex/referenceItems/13/boundaryPresent")
+                .asBoolean());
+        assertTrue(result.at("/decisionReplayEvidenceLaneReferenceIndex/explanation").asText()
+                .contains("No selected candidate"));
+        String laneReferenceText = result.at("/decisionReplayEvidenceLaneReferenceIndex").toString();
+        assertFalse(laneReferenceText.contains("laneReferenceIndexFingerprint"));
+        assertFalse(laneReferenceText.contains("production certification is proven"));
+        assertFalse(laneReferenceText.contains("guaranteed replay is proven"));
+        assertFalse(laneReferenceText.contains("quality ranking is proven"));
+        assertFalse(laneReferenceText.contains("approval is granted"));
+        assertFalse(laneReferenceText.contains("correctness validation is proven"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
+    }
+
+    private static List<String> streamTextValues(JsonNode values, String fieldName) {
+        List<String> result = new java.util.ArrayList<>();
+        values.forEach(value -> result.add(value.path(fieldName).asText()));
+        return result;
     }
 
     private JsonNode postCompare(String body) throws Exception {

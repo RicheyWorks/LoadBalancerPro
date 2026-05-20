@@ -28,5 +28,6 @@ public record RoutingComparisonResultResponse(
         RoutingDecisionReplayEvidenceLaneDependencySummaryResponse decisionReplayEvidenceLaneDependencySummary,
         RoutingDecisionReplayEvidenceLaneConsistencySummaryResponse decisionReplayEvidenceLaneConsistencySummary,
         RoutingDecisionReplayEvidenceReviewerSnapshotResponse decisionReplayEvidenceReviewerSnapshot,
-        RoutingDecisionReplayEvidenceReviewerGuidanceResponse decisionReplayEvidenceReviewerGuidance) {
+        RoutingDecisionReplayEvidenceReviewerGuidanceResponse decisionReplayEvidenceReviewerGuidance,
+        RoutingDecisionReplayEvidenceReviewerHandoffSummaryResponse decisionReplayEvidenceReviewerHandoffSummary) {
 }

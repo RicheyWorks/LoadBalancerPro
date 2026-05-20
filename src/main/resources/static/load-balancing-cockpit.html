@@ -1327,6 +1327,10 @@
             <div id="decision-replay-evidence-reviewer-guidance-explanation">Run routing comparison to populate Reviewer Guidance Status, Reviewer Priority, Suggested Review Steps, Evidence Surfaces To Inspect, Caution Notes, and Reviewer Guidance Limitations metadata. Read-only lab reviewer guidance only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, and not guaranteed replay.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Replay Evidence Reviewer Handoff Summary</strong>
+            <div id="decision-replay-evidence-reviewer-handoff-explanation">Run routing comparison to populate Reviewer Handoff Summary Status, Handoff Priority, Handoff Bullets, Operator Follow-Up Items, Evidence Surfaces Referenced, Handoff Caution Notes, and Reviewer Handoff Limitations metadata. Read-only lab reviewer handoff metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3511,6 +3515,7 @@
         renderDecisionReplayEvidenceLaneConsistencySummaryExplanation(response);
         renderDecisionReplayEvidenceReviewerSnapshotExplanation(response);
         renderDecisionReplayEvidenceReviewerGuidanceExplanation(response);
+        renderDecisionReplayEvidenceReviewerHandoffExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3534,6 +3539,7 @@
         renderDecisionReplayEvidenceLaneConsistencySummaryExplanation(response);
         renderDecisionReplayEvidenceReviewerSnapshotExplanation(response);
         renderDecisionReplayEvidenceReviewerGuidanceExplanation(response);
+        renderDecisionReplayEvidenceReviewerHandoffExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3559,6 +3565,7 @@
       renderDecisionReplayEvidenceLaneConsistencySummaryExplanation(response);
       renderDecisionReplayEvidenceReviewerSnapshotExplanation(response);
       renderDecisionReplayEvidenceReviewerGuidanceExplanation(response);
+      renderDecisionReplayEvidenceReviewerHandoffExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3616,6 +3623,7 @@
       renderDecisionReplayEvidenceLaneConsistencySummaryExplanation(state.routing);
       renderDecisionReplayEvidenceReviewerSnapshotExplanation(state.routing);
       renderDecisionReplayEvidenceReviewerGuidanceExplanation(state.routing);
+      renderDecisionReplayEvidenceReviewerHandoffExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -4447,6 +4455,57 @@
       }).join("");
     }
 
+    function renderDecisionReplayEvidenceReviewerHandoffExplanation(response) {
+      const container = document.getElementById("decision-replay-evidence-reviewer-handoff-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate Reviewer Handoff Summary Status, Handoff Priority, Handoff Bullets, Operator Follow-Up Items, Evidence Surfaces Referenced, Handoff Caution Notes, and Reviewer Handoff Limitations metadata. Read-only lab reviewer handoff metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; Reviewer Handoff Summary Status is UNKNOWN and reviewer handoff counts are unavailable. Read-only lab reviewer handoff metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const handoff = result.decisionReplayEvidenceReviewerHandoffSummary || {};
+        const bullets = Array.isArray(handoff.handoffBullets)
+          ? handoff.handoffBullets.join("; ")
+          : "";
+        const followUps = Array.isArray(handoff.operatorFollowUpItems)
+          ? handoff.operatorFollowUpItems.join("; ")
+          : "";
+        const surfaces = Array.isArray(handoff.evidenceSurfacesReferenced)
+          ? handoff.evidenceSurfacesReferenced.join("; ")
+          : "";
+        const cautions = Array.isArray(handoff.cautionNotes)
+          ? handoff.cautionNotes.join("; ")
+          : "";
+        const limitations = Array.isArray(handoff.limitations)
+          ? handoff.limitations.join("; ")
+          : "Read-only lab reviewer handoff metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
+        const text = handoff.reviewerHandoffSummarySchemaVersion
+          ? "Reviewer Handoff Summary Status: " + (handoff.status || "UNKNOWN")
+            + "; Handoff Priority: " + (handoff.handoffPriority || "UNKNOWN")
+            + "; Snapshot Status: " + (handoff.reviewerSnapshotStatus || "UNKNOWN")
+            + "; Guidance Status: " + (handoff.reviewerGuidanceStatus || "UNKNOWN")
+            + "; Consistency Status: " + (handoff.consistencyStatus || "UNKNOWN")
+            + "; " + (handoff.summaryText || "summary unavailable")
+            + "; Counts: total=" + String(handoff.totalLaneCount || 0)
+            + ", available=" + String(handoff.availableLaneCount || 0)
+            + ", partial=" + String(handoff.partialLaneCount || 0)
+            + ", unknown=" + String(handoff.unknownLaneCount || 0)
+            + "; Handoff Bullets: " + (bullets || "none")
+            + "; Operator Follow-Up Items: " + (followUps || "none")
+            + "; Evidence Surfaces Referenced: " + (surfaces || "none")
+            + "; Handoff Caution Notes: " + (cautions || "none")
+            + "; Reviewer Handoff Limitations: " + limitations
+          : "Decision Replay Evidence Reviewer Handoff Summary is unavailable; no reviewer handoff claim is invented.";
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(text) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab reviewer handoff metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, not production validation, no upload/share/download, no telemetry, no external calls, and no server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
     function formatFinite(value) {
       const numeric = Number(value);
       return Number.isFinite(numeric) ? numeric.toFixed(6) : "not returned";
@@ -4971,6 +5030,38 @@
             + ", reviewerGuidanceOnly=true";
         }).join("\n")
         : "- Not run";
+      const evidenceReviewerHandoffLines = routingResults.length
+        ? routingResults.map((result) => {
+          const handoff = result.decisionReplayEvidenceReviewerHandoffSummary || {};
+          const bullets = Array.isArray(handoff.handoffBullets)
+            ? handoff.handoffBullets.join(";")
+            : "";
+          const followUps = Array.isArray(handoff.operatorFollowUpItems)
+            ? handoff.operatorFollowUpItems.join(";")
+            : "";
+          const surfaces = Array.isArray(handoff.evidenceSurfacesReferenced)
+            ? handoff.evidenceSurfacesReferenced.join(";")
+            : "";
+          const cautions = Array.isArray(handoff.cautionNotes)
+            ? handoff.cautionNotes.join(";")
+            : "";
+          return "- " + result.strategyId
+            + ": reviewerHandoffStatus=" + (handoff.status || "unknown")
+            + ", handoffPriority=" + (handoff.handoffPriority || "unknown")
+            + ", reviewerSnapshotStatus=" + (handoff.reviewerSnapshotStatus || "unknown")
+            + ", reviewerGuidanceStatus=" + (handoff.reviewerGuidanceStatus || "unknown")
+            + ", consistencyStatus=" + (handoff.consistencyStatus || "unknown")
+            + ", totalLanes=" + String(handoff.totalLaneCount || 0)
+            + ", availableLanes=" + String(handoff.availableLaneCount || 0)
+            + ", partialLanes=" + String(handoff.partialLaneCount || 0)
+            + ", unknownLanes=" + String(handoff.unknownLaneCount || 0)
+            + ", handoffBullets=" + (bullets || "none")
+            + ", operatorFollowUpItems=" + (followUps || "none")
+            + ", evidenceSurfacesReferenced=" + (surfaces || "none")
+            + ", cautionNotes=" + (cautions || "none")
+            + ", reviewerHandoffOnly=true";
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -5048,6 +5139,9 @@
         "",
         "## Decision Replay Evidence Reviewer Guidance",
         evidenceReviewerGuidanceLines,
+        "",
+        "## Decision Replay Evidence Reviewer Handoff Summary",
+        evidenceReviewerHandoffLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

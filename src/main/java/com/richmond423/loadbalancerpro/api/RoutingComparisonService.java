@@ -62,6 +62,8 @@ public class RoutingComparisonService {
             decisionReplayEvidenceLaneConsistencySummaryService;
     private final RoutingDecisionReplayEvidenceReviewerSnapshotService decisionReplayEvidenceReviewerSnapshotService;
     private final RoutingDecisionReplayEvidenceReviewerGuidanceService decisionReplayEvidenceReviewerGuidanceService;
+    private final RoutingDecisionReplayEvidenceReviewerHandoffSummaryService
+            decisionReplayEvidenceReviewerHandoffSummaryService;
     private final Clock clock;
 
     public RoutingComparisonService() {
@@ -102,6 +104,8 @@ public class RoutingComparisonService {
                 new RoutingDecisionReplayEvidenceReviewerSnapshotService();
         this.decisionReplayEvidenceReviewerGuidanceService =
                 new RoutingDecisionReplayEvidenceReviewerGuidanceService();
+        this.decisionReplayEvidenceReviewerHandoffSummaryService =
+                new RoutingDecisionReplayEvidenceReviewerHandoffSummaryService();
     }
 
     public RoutingComparisonResponse compare(RoutingComparisonRequest request) {
@@ -389,6 +393,15 @@ public class RoutingComparisonService {
                         decisionReplayEvidenceLaneDependencySummary,
                         decisionReplayEvidenceLaneConsistencySummary,
                         decisionReplayEvidenceReviewerSnapshot);
+        RoutingDecisionReplayEvidenceReviewerHandoffSummaryResponse decisionReplayEvidenceReviewerHandoffSummary =
+                decisionReplayEvidenceReviewerHandoffSummaryService.reviewerHandoffSummary(
+                        decisionReplayEvidenceStatusRollup,
+                        decisionReplayEvidenceLaneDependencyMap,
+                        decisionReplayEvidenceLaneReferenceIndex,
+                        decisionReplayEvidenceLaneDependencySummary,
+                        decisionReplayEvidenceLaneConsistencySummary,
+                        decisionReplayEvidenceReviewerSnapshot,
+                        decisionReplayEvidenceReviewerGuidance);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -414,7 +427,8 @@ public class RoutingComparisonService {
                 decisionReplayEvidenceLaneDependencySummary,
                 decisionReplayEvidenceLaneConsistencySummary,
                 decisionReplayEvidenceReviewerSnapshot,
-                decisionReplayEvidenceReviewerGuidance);
+                decisionReplayEvidenceReviewerGuidance,
+                decisionReplayEvidenceReviewerHandoffSummary);
     }
 
     private RoutingComparisonResultResponse successfulResultResponse(
@@ -592,6 +606,15 @@ public class RoutingComparisonService {
                         decisionReplayEvidenceLaneDependencySummary,
                         decisionReplayEvidenceLaneConsistencySummary,
                         decisionReplayEvidenceReviewerSnapshot);
+        RoutingDecisionReplayEvidenceReviewerHandoffSummaryResponse decisionReplayEvidenceReviewerHandoffSummary =
+                decisionReplayEvidenceReviewerHandoffSummaryService.reviewerHandoffSummary(
+                        decisionReplayEvidenceStatusRollup,
+                        decisionReplayEvidenceLaneDependencyMap,
+                        decisionReplayEvidenceLaneReferenceIndex,
+                        decisionReplayEvidenceLaneDependencySummary,
+                        decisionReplayEvidenceLaneConsistencySummary,
+                        decisionReplayEvidenceReviewerSnapshot,
+                        decisionReplayEvidenceReviewerGuidance);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -617,7 +640,8 @@ public class RoutingComparisonService {
                 decisionReplayEvidenceLaneDependencySummary,
                 decisionReplayEvidenceLaneConsistencySummary,
                 decisionReplayEvidenceReviewerSnapshot,
-                decisionReplayEvidenceReviewerGuidance);
+                decisionReplayEvidenceReviewerGuidance,
+                decisionReplayEvidenceReviewerHandoffSummary);
     }
 
     private RoutingDecisionVectorResponse decisionVector(RoutingStrategyId strategyId,

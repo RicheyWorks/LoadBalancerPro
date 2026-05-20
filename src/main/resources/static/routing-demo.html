@@ -905,8 +905,12 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p>Decision Replay Evidence Reviewer Guidance gives reviewers deterministic next-review prompts from already-exposed reviewer metadata without replay proof, scoring proof, correctness validation, production readiness, production certification, or guaranteed replay claims.</p>
           </div>
           <div class="proof-card">
+            <strong>Reviewer handoff summary</strong>
+            <p>Decision Replay Evidence Reviewer Handoff Summary gives reviewers compact handoff-ready metadata from already-exposed reviewer snapshot and guidance surfaces without replay proof, scoring proof, correctness validation, production readiness, production certification, guaranteed replay, or production validation claims.</p>
+          </div>
+          <div class="proof-card">
             <strong>Read-only API exposure</strong>
-            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, <code>decisionReplayEvidenceBoundarySummary</code>, <code>decisionReplayEvidenceFieldInventory</code>, <code>decisionReplayEvidenceNullSafetySummary</code>, <code>decisionReplayEvidenceStatusRollup</code>, <code>decisionReplayEvidenceLaneNavigationSummary</code>, <code>decisionReplayEvidenceLaneDependencyMap</code>, <code>decisionReplayEvidenceLaneReferenceIndex</code>, <code>decisionReplayEvidenceLaneDependencySummary</code>, <code>decisionReplayEvidenceLaneConsistencySummary</code>, <code>decisionReplayEvidenceReviewerSnapshot</code>, and <code>decisionReplayEvidenceReviewerGuidance</code> data; if absent, static lab guidance remains available.</p>
+            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, <code>decisionReplayEvidenceBoundarySummary</code>, <code>decisionReplayEvidenceFieldInventory</code>, <code>decisionReplayEvidenceNullSafetySummary</code>, <code>decisionReplayEvidenceStatusRollup</code>, <code>decisionReplayEvidenceLaneNavigationSummary</code>, <code>decisionReplayEvidenceLaneDependencyMap</code>, <code>decisionReplayEvidenceLaneReferenceIndex</code>, <code>decisionReplayEvidenceLaneDependencySummary</code>, <code>decisionReplayEvidenceLaneConsistencySummary</code>, <code>decisionReplayEvidenceReviewerSnapshot</code>, <code>decisionReplayEvidenceReviewerGuidance</code>, and <code>decisionReplayEvidenceReviewerHandoffSummary</code> data; if absent, static lab guidance remains available.</p>
           </div>
           <div class="proof-card">
             <strong>Replay and what-if boundary</strong>
@@ -1446,6 +1450,37 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-reviewer-guidance-limitations">Read-only lab reviewer guidance only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, and not guaranteed replay.</p>
           </div>
         </div>
+        <h3 style="margin-top: 14px;">Decision Replay Evidence Reviewer Handoff Summary</h3>
+        <div class="proof-grid" aria-label="Decision Replay Evidence Reviewer Handoff Summary">
+          <div class="proof-card">
+            <strong>Reviewer Handoff Summary Status</strong>
+            <p id="decision-vector-reviewer-handoff-status">Run Compare strategies to populate read-only reviewer handoff metadata.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Handoff Priority</strong>
+            <p id="decision-vector-reviewer-handoff-priority">No reviewer handoff priority has been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Handoff Bullets</strong>
+            <p id="decision-vector-reviewer-handoff-bullets">No handoff bullets have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Operator Follow-Up Items</strong>
+            <p id="decision-vector-reviewer-handoff-follow-up">No operator follow-up items have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Evidence Surfaces Referenced</strong>
+            <p id="decision-vector-reviewer-handoff-surfaces">No reviewer handoff surfaces have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Handoff Caution Notes</strong>
+            <p id="decision-vector-reviewer-handoff-cautions">No reviewer handoff caution notes have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Reviewer Handoff Limitations</strong>
+            <p id="decision-vector-reviewer-handoff-limitations">Read-only lab reviewer handoff metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.</p>
+          </div>
+        </div>
         <p class="postman-note">
           Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
           no upload/share/download route, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
@@ -1481,6 +1516,7 @@ decisionReplayEvidenceLaneDependencySummary: unavailable until /api/routing/comp
 decisionReplayEvidenceLaneConsistencySummary: unavailable until /api/routing/compare returns decisionReplayEvidenceLaneConsistencySummary; no lane consistency summary claim is invented
 decisionReplayEvidenceReviewerSnapshot: unavailable until /api/routing/compare returns decisionReplayEvidenceReviewerSnapshot; no reviewer snapshot claim is invented
 decisionReplayEvidenceReviewerGuidance: unavailable until /api/routing/compare returns decisionReplayEvidenceReviewerGuidance; no reviewer guidance claim is invented
+decisionReplayEvidenceReviewerHandoffSummary: unavailable until /api/routing/compare returns decisionReplayEvidenceReviewerHandoffSummary; no reviewer handoff claim is invented
 readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
@@ -2538,7 +2574,14 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       evidenceReviewerGuidanceSteps: document.getElementById("decision-vector-reviewer-guidance-steps"),
       evidenceReviewerGuidanceSurfaces: document.getElementById("decision-vector-reviewer-guidance-surfaces"),
       evidenceReviewerGuidanceCautions: document.getElementById("decision-vector-reviewer-guidance-cautions"),
-      evidenceReviewerGuidanceLimitations: document.getElementById("decision-vector-reviewer-guidance-limitations")
+      evidenceReviewerGuidanceLimitations: document.getElementById("decision-vector-reviewer-guidance-limitations"),
+      evidenceReviewerHandoffStatus: document.getElementById("decision-vector-reviewer-handoff-status"),
+      evidenceReviewerHandoffPriority: document.getElementById("decision-vector-reviewer-handoff-priority"),
+      evidenceReviewerHandoffBullets: document.getElementById("decision-vector-reviewer-handoff-bullets"),
+      evidenceReviewerHandoffFollowUp: document.getElementById("decision-vector-reviewer-handoff-follow-up"),
+      evidenceReviewerHandoffSurfaces: document.getElementById("decision-vector-reviewer-handoff-surfaces"),
+      evidenceReviewerHandoffCautions: document.getElementById("decision-vector-reviewer-handoff-cautions"),
+      evidenceReviewerHandoffLimitations: document.getElementById("decision-vector-reviewer-handoff-limitations")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -3635,6 +3678,10 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           && typeof primary.decisionReplayEvidenceReviewerGuidance === "object"
         ? primary.decisionReplayEvidenceReviewerGuidance
         : null;
+      const evidenceReviewerHandoff = primary && primary.decisionReplayEvidenceReviewerHandoffSummary
+          && typeof primary.decisionReplayEvidenceReviewerHandoffSummary === "object"
+        ? primary.decisionReplayEvidenceReviewerHandoffSummary
+        : null;
       const selectedStrategy = decisionVector && decisionVector.selectedStrategy
         ? decisionVector.selectedStrategy
         : (primary && primary.strategyId ? primary.strategyId : "not run");
@@ -4202,6 +4249,47 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           && evidenceReviewerGuidance.limitations.length > 0
         ? evidenceReviewerGuidance.limitations.join("; ")
         : "Read-only lab reviewer guidance only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, and not guaranteed replay.";
+      const reviewerHandoffText = evidenceReviewerHandoff
+        ? (evidenceReviewerHandoff.summaryText
+          || ("Decision replay evidence reviewer handoff summary is "
+            + (evidenceReviewerHandoff.status || "UNKNOWN")
+            + " with priority " + (evidenceReviewerHandoff.handoffPriority || "UNKNOWN") + "."))
+        : "Decision Replay Evidence Reviewer Handoff Summary is unavailable; no reviewer handoff claim is invented.";
+      const reviewerHandoffPrioritySummary = evidenceReviewerHandoff
+        ? "priority=" + (evidenceReviewerHandoff.handoffPriority || "UNKNOWN")
+          + "; snapshotStatus=" + (evidenceReviewerHandoff.reviewerSnapshotStatus || "UNKNOWN")
+          + "; guidanceStatus=" + (evidenceReviewerHandoff.reviewerGuidanceStatus || "UNKNOWN")
+          + "; consistencyStatus=" + (evidenceReviewerHandoff.consistencyStatus || "UNKNOWN")
+          + "; total=" + String(evidenceReviewerHandoff.totalLaneCount || 0)
+          + "; available=" + String(evidenceReviewerHandoff.availableLaneCount || 0)
+          + "; partial=" + String(evidenceReviewerHandoff.partialLaneCount || 0)
+          + "; unknown=" + String(evidenceReviewerHandoff.unknownLaneCount || 0)
+        : "No reviewer handoff priority has been returned yet.";
+      const reviewerHandoffBullets = evidenceReviewerHandoff
+          && Array.isArray(evidenceReviewerHandoff.handoffBullets)
+          && evidenceReviewerHandoff.handoffBullets.length > 0
+        ? evidenceReviewerHandoff.handoffBullets.join("; ")
+        : (evidenceReviewerHandoff ? "none" : "No handoff bullets have been returned yet.");
+      const reviewerHandoffFollowUp = evidenceReviewerHandoff
+          && Array.isArray(evidenceReviewerHandoff.operatorFollowUpItems)
+          && evidenceReviewerHandoff.operatorFollowUpItems.length > 0
+        ? evidenceReviewerHandoff.operatorFollowUpItems.join("; ")
+        : (evidenceReviewerHandoff ? "none" : "No operator follow-up items have been returned yet.");
+      const reviewerHandoffSurfaces = evidenceReviewerHandoff
+          && Array.isArray(evidenceReviewerHandoff.evidenceSurfacesReferenced)
+          && evidenceReviewerHandoff.evidenceSurfacesReferenced.length > 0
+        ? evidenceReviewerHandoff.evidenceSurfacesReferenced.join("; ")
+        : (evidenceReviewerHandoff ? "none" : "No reviewer handoff surfaces have been returned yet.");
+      const reviewerHandoffCautions = evidenceReviewerHandoff
+          && Array.isArray(evidenceReviewerHandoff.cautionNotes)
+          && evidenceReviewerHandoff.cautionNotes.length > 0
+        ? evidenceReviewerHandoff.cautionNotes.join("; ")
+        : (evidenceReviewerHandoff ? "none" : "No reviewer handoff caution notes have been returned yet.");
+      const reviewerHandoffLimitations = evidenceReviewerHandoff
+          && Array.isArray(evidenceReviewerHandoff.limitations)
+          && evidenceReviewerHandoff.limitations.length > 0
+        ? evidenceReviewerHandoff.limitations.join("; ")
+        : "Read-only lab reviewer handoff metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
       const replayReadiness = decisionVector && decisionVector.replayReadiness
         ? decisionVector.replayReadiness
         : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
@@ -4383,6 +4471,13 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       decisionVectorFields.evidenceReviewerGuidanceSurfaces.textContent = reviewerGuidanceSurfaces;
       decisionVectorFields.evidenceReviewerGuidanceCautions.textContent = reviewerGuidanceCautions;
       decisionVectorFields.evidenceReviewerGuidanceLimitations.textContent = reviewerGuidanceLimitations;
+      decisionVectorFields.evidenceReviewerHandoffStatus.textContent = reviewerHandoffText;
+      decisionVectorFields.evidenceReviewerHandoffPriority.textContent = reviewerHandoffPrioritySummary;
+      decisionVectorFields.evidenceReviewerHandoffBullets.textContent = reviewerHandoffBullets;
+      decisionVectorFields.evidenceReviewerHandoffFollowUp.textContent = reviewerHandoffFollowUp;
+      decisionVectorFields.evidenceReviewerHandoffSurfaces.textContent = reviewerHandoffSurfaces;
+      decisionVectorFields.evidenceReviewerHandoffCautions.textContent = reviewerHandoffCautions;
+      decisionVectorFields.evidenceReviewerHandoffLimitations.textContent = reviewerHandoffLimitations;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
@@ -4488,6 +4583,13 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
             + "; evidenceSurfacesToInspect=" + reviewerGuidanceSurfaces
             + "; cautionNotes=" + reviewerGuidanceCautions
           : "unavailable until /api/routing/compare returns decisionReplayEvidenceReviewerGuidance; no reviewer guidance claim is invented"),
+        "decisionReplayEvidenceReviewerHandoffSummary: " + (evidenceReviewerHandoff
+          ? reviewerHandoffText + "; handoffPriority=" + reviewerHandoffPrioritySummary
+            + "; handoffBullets=" + reviewerHandoffBullets
+            + "; operatorFollowUpItems=" + reviewerHandoffFollowUp
+            + "; evidenceSurfacesReferenced=" + reviewerHandoffSurfaces
+            + "; cautionNotes=" + reviewerHandoffCautions
+          : "unavailable until /api/routing/compare returns decisionReplayEvidenceReviewerHandoffSummary; no reviewer handoff claim is invented"),
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
         "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,

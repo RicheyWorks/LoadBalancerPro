@@ -205,6 +205,9 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY.md"));
         assertTrue(doc.contains("## Decision Replay Evidence Reviewer Guidance"));
         assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_GUIDANCE.md"));
+        assertTrue(doc.contains("## Decision Replay Evidence Reviewer Closure Summary"));
+        assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md"));
+        assertTrue(doc.contains("`decisionReplayEvidenceReviewerClosureSummary`"));
         assertTrue(doc.contains("\"EXACT_FROM_CALCULATOR\""));
         assertTrue(doc.contains("\"NOT_EXPOSED\""));
         assertTrue(doc.contains("not production scoring proof"));
@@ -234,6 +237,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
                 "Decision replay evidence lane dependency summary: implemented as additive read-only reviewer dependency-shape metadata over the already-built lane reference index only.",
                 "Decision replay evidence lane consistency summary: implemented as additive read-only reviewer consistency metadata over already-built lane status/dependency/reference/summary surfaces only.",
                 "Broader factor modeling beyond current returned calculator contribution data: future/not implemented.",
+                "Decision replay evidence reviewer closure summary: implemented as additive read-only reviewer closure metadata over already-built reviewer evidence surfaces only.",
                 "Replay execution: future/not implemented.",
                 "What-if experiments: future/not implemented.",
                 "Structured decision logging: future/not implemented.",
@@ -267,6 +271,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("`results[].decisionReplayEvidenceLaneDependencyMap`"));
         assertTrue(doc.contains("`results[].decisionReplayEvidenceLaneReferenceIndex`"));
         assertTrue(doc.contains("`results[].decisionReplayEvidenceLaneDependencySummary`"));
+        assertTrue(doc.contains("`results[].decisionReplayEvidenceReviewerClosureSummary`"));
         assertTrue(doc.contains("preserves existing"));
         assertTrue(doc.contains("`requestedStrategies`, `candidateCount`, `timestamp`, result status"));
         assertTrue(doc.contains("\"localLabResponsePath\": \"/api/routing/compare\""));
@@ -1195,10 +1200,11 @@ class EnterpriseLabDecisionVectorDocumentationTest {
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY.md"));
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY.md"));
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_GUIDANCE.md"));
+            assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md"));
             assertTrue(doc.contains("Decision Vector"));
         }
 
-        assertTrue(readme.contains("read-only Decision Replay Evidence Lane Navigation Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_NAVIGATION_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_NAVIGATION_SUMMARY.md); read-only Decision Replay Evidence Lane Dependency Map lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_MAP.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_MAP.md); read-only Decision Replay Evidence Lane Reference Index lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_REFERENCE_INDEX.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_REFERENCE_INDEX.md); read-only Decision Replay Evidence Lane Dependency Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_DEPENDENCY_SUMMARY.md); read-only Decision Replay Evidence Lane Consistency Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_LANE_CONSISTENCY_SUMMARY.md); read-only Decision Replay Evidence Reviewer Snapshot lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_SNAPSHOT.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_SNAPSHOT.md); read-only Decision Replay Evidence Reviewer Guidance lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_GUIDANCE.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_GUIDANCE.md); read-only Decision Replay Evidence Reviewer Handoff Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_HANDOFF_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_HANDOFF_SUMMARY.md)."));
+        assertTrue(readme.contains("read-only Decision Replay Evidence Reviewer Closure Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md)."));
         assertTrue(trustMap.contains("### Decision Vector Contract"));
         assertTrue(framing.contains("## Decision Vector Contract"));
     }

@@ -578,6 +578,39 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(reviewerHandoff.toString().contains("not guaranteed replay"));
         assertTrue(reviewerHandoff.toString().contains("not production validation"));
         assertFalse(reviewerHandoff.toString().contains("reviewerHandoffFingerprint"));
+        JsonNode reviewerClosure = result.path("decisionReplayEvidenceReviewerClosureSummary");
+        assertTrue(reviewerClosure.path("readOnly").asBoolean());
+        assertEquals("decision-replay-evidence-reviewer-closure-summary/v1",
+                reviewerClosure.path("reviewerClosureSummarySchemaVersion").asText());
+        assertEquals("PARTIAL", reviewerClosure.path("status").asText());
+        assertEquals("REVIEW_COMPLETE_WITH_LIMITATIONS", reviewerClosure.path("closureDisposition").asText());
+        assertEquals("PARTIAL", reviewerClosure.path("reviewerSnapshotStatus").asText());
+        assertEquals("PARTIAL", reviewerClosure.path("reviewerGuidanceStatus").asText());
+        assertEquals("PARTIAL", reviewerClosure.path("reviewerHandoffStatus").asText());
+        assertEquals("CONSISTENT", reviewerClosure.path("consistencyStatus").asText());
+        assertEquals("edge-alpha", reviewerClosure.path("selectedCandidateId").asText());
+        assertEquals(3, reviewerClosure.path("candidateCount").asInt());
+        assertEquals(14, reviewerClosure.path("totalLaneCount").asInt());
+        assertEquals(4, reviewerClosure.path("availableLaneCount").asInt());
+        assertEquals(10, reviewerClosure.path("partialLaneCount").asInt());
+        assertEquals(0, reviewerClosure.path("unknownLaneCount").asInt());
+        assertEquals("Reviewer snapshot is PARTIAL.",
+                reviewerClosure.at("/closureBullets/0").asText());
+        assertEquals("Reviewer metadata was generated deterministically from exposed compare surfaces.",
+                reviewerClosure.at("/safeConclusions/0").asText());
+        assertEquals("Not replay proof.",
+                reviewerClosure.at("/unresolvedBoundaries/0").asText());
+        assertEquals("decisionReplayEvidenceReviewerHandoffSummary",
+                reviewerClosure.at("/evidenceSurfacesReferenced/7").asText());
+        assertTrue(reviewerClosure.path("summaryText").asText()
+                .contains("Reviewer closure summary is PARTIAL"));
+        assertTrue(reviewerClosure.toString().contains("Not replay proof"));
+        assertTrue(reviewerClosure.toString().contains("Not scoring proof"));
+        assertTrue(reviewerClosure.toString().contains("Not correctness validation"));
+        assertTrue(reviewerClosure.toString().contains("not production certification"));
+        assertTrue(reviewerClosure.toString().contains("not guaranteed replay"));
+        assertTrue(reviewerClosure.toString().contains("not production validation"));
+        assertFalse(reviewerClosure.toString().contains("reviewerClosureFingerprint"));
     }
 
     @Test
@@ -949,6 +982,35 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertFalse(reviewerHandoffText.contains("quality ranking is proven"));
         assertFalse(reviewerHandoffText.contains("approval is granted"));
         assertFalse(reviewerHandoffText.contains("correctness validation is proven"));
+        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceReviewerClosureSummary/status").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceReviewerClosureSummary/closureDisposition").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceReviewerClosureSummary/reviewerSnapshotStatus").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceReviewerClosureSummary/reviewerGuidanceStatus").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceReviewerClosureSummary/reviewerHandoffStatus").asText());
+        assertEquals("UNKNOWN",
+                result.at("/decisionReplayEvidenceReviewerClosureSummary/consistencyStatus").asText());
+        assertTrue(result.at("/decisionReplayEvidenceReviewerClosureSummary/selectedCandidateId").isNull());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerClosureSummary/candidateCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerClosureSummary/totalLaneCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerClosureSummary/availableLaneCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerClosureSummary/partialLaneCount").asInt());
+        assertEquals(0, result.at("/decisionReplayEvidenceReviewerClosureSummary/unknownLaneCount").asInt());
+        assertEquals("Reviewer closure summary status is UNKNOWN",
+                result.at("/decisionReplayEvidenceReviewerClosureSummary/closureBullets/1").asText());
+        assertTrue(result.at("/decisionReplayEvidenceReviewerClosureSummary/safeConclusions").isEmpty());
+        assertEquals("Not replay proof.",
+                result.at("/decisionReplayEvidenceReviewerClosureSummary/unresolvedBoundaries/0").asText());
+        String reviewerClosureText = result.at("/decisionReplayEvidenceReviewerClosureSummary").toString();
+        assertFalse(reviewerClosureText.contains("reviewerClosureFingerprint"));
+        assertFalse(reviewerClosureText.contains("production certification is proven"));
+        assertFalse(reviewerClosureText.contains("guaranteed replay is proven"));
+        assertFalse(reviewerClosureText.contains("quality ranking is proven"));
+        assertFalse(reviewerClosureText.contains("approval is granted"));
+        assertFalse(reviewerClosureText.contains("correctness validation is proven"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

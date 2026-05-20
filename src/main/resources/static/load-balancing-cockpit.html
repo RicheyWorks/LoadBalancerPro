@@ -1331,6 +1331,10 @@
             <div id="decision-replay-evidence-reviewer-handoff-explanation">Run routing comparison to populate Reviewer Handoff Summary Status, Handoff Priority, Handoff Bullets, Operator Follow-Up Items, Evidence Surfaces Referenced, Handoff Caution Notes, and Reviewer Handoff Limitations metadata. Read-only lab reviewer handoff metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Replay Evidence Reviewer Closure Summary</strong>
+            <div id="decision-replay-evidence-reviewer-closure-explanation">Run routing comparison to populate Reviewer Closure Summary Status, Closure Disposition, Closure Bullets, Safe Conclusions, Unresolved Boundaries, Evidence Surfaces Referenced, and Reviewer Closure Limitations metadata. Read-only lab reviewer closure metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3516,6 +3520,7 @@
         renderDecisionReplayEvidenceReviewerSnapshotExplanation(response);
         renderDecisionReplayEvidenceReviewerGuidanceExplanation(response);
         renderDecisionReplayEvidenceReviewerHandoffExplanation(response);
+        renderDecisionReplayEvidenceReviewerClosureExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3540,6 +3545,7 @@
         renderDecisionReplayEvidenceReviewerSnapshotExplanation(response);
         renderDecisionReplayEvidenceReviewerGuidanceExplanation(response);
         renderDecisionReplayEvidenceReviewerHandoffExplanation(response);
+        renderDecisionReplayEvidenceReviewerClosureExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3566,6 +3572,7 @@
       renderDecisionReplayEvidenceReviewerSnapshotExplanation(response);
       renderDecisionReplayEvidenceReviewerGuidanceExplanation(response);
       renderDecisionReplayEvidenceReviewerHandoffExplanation(response);
+      renderDecisionReplayEvidenceReviewerClosureExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3624,6 +3631,7 @@
       renderDecisionReplayEvidenceReviewerSnapshotExplanation(state.routing);
       renderDecisionReplayEvidenceReviewerGuidanceExplanation(state.routing);
       renderDecisionReplayEvidenceReviewerHandoffExplanation(state.routing);
+      renderDecisionReplayEvidenceReviewerClosureExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -4506,6 +4514,58 @@
       }).join("");
     }
 
+    function renderDecisionReplayEvidenceReviewerClosureExplanation(response) {
+      const container = document.getElementById("decision-replay-evidence-reviewer-closure-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate Reviewer Closure Summary Status, Closure Disposition, Closure Bullets, Safe Conclusions, Unresolved Boundaries, Evidence Surfaces Referenced, and Reviewer Closure Limitations metadata. Read-only lab reviewer closure metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
+        return;
+      }
+      const results = response.results || [];
+      if (!results.length) {
+        container.textContent = "No routing results returned; Reviewer Closure Summary Status is UNKNOWN and reviewer closure counts are unavailable. Read-only lab reviewer closure metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
+        return;
+      }
+      container.innerHTML = results.map((result) => {
+        const closure = result.decisionReplayEvidenceReviewerClosureSummary || {};
+        const bullets = Array.isArray(closure.closureBullets)
+          ? closure.closureBullets.join("; ")
+          : "";
+        const conclusions = Array.isArray(closure.safeConclusions)
+          ? closure.safeConclusions.join("; ")
+          : "";
+        const boundaries = Array.isArray(closure.unresolvedBoundaries)
+          ? closure.unresolvedBoundaries.join("; ")
+          : "";
+        const surfaces = Array.isArray(closure.evidenceSurfacesReferenced)
+          ? closure.evidenceSurfacesReferenced.join("; ")
+          : "";
+        const limitations = Array.isArray(closure.limitations)
+          ? closure.limitations.join("; ")
+          : "Read-only lab reviewer closure metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
+        const text = closure.reviewerClosureSummarySchemaVersion
+          ? "Reviewer Closure Summary Status: " + (closure.status || "UNKNOWN")
+            + "; Closure Disposition: " + (closure.closureDisposition || "UNKNOWN")
+            + "; Snapshot Status: " + (closure.reviewerSnapshotStatus || "UNKNOWN")
+            + "; Guidance Status: " + (closure.reviewerGuidanceStatus || "UNKNOWN")
+            + "; Handoff Status: " + (closure.reviewerHandoffStatus || "UNKNOWN")
+            + "; Consistency Status: " + (closure.consistencyStatus || "UNKNOWN")
+            + "; " + (closure.summaryText || "summary unavailable")
+            + "; Counts: total=" + String(closure.totalLaneCount || 0)
+            + ", available=" + String(closure.availableLaneCount || 0)
+            + ", partial=" + String(closure.partialLaneCount || 0)
+            + ", unknown=" + String(closure.unknownLaneCount || 0)
+            + "; Closure Bullets: " + (bullets || "none")
+            + "; Safe Conclusions: " + (conclusions || "none")
+            + "; Unresolved Boundaries: " + (boundaries || "none")
+            + "; Evidence Surfaces Referenced: " + (surfaces || "none")
+            + "; Reviewer Closure Limitations: " + limitations
+          : "Decision Replay Evidence Reviewer Closure Summary is unavailable; no reviewer closure claim is invented.";
+        return "<p><strong>" + escapeHtml(result.strategyId || "unknown") + "</strong><br>"
+          + escapeHtml(text) + "<br>"
+          + "<span class=\"muted\">Boundary: read-only lab reviewer closure metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, not production validation, no upload/share/download, no telemetry, no external calls, and no server-side export/PDF/ZIP generation.</span></p>";
+      }).join("");
+    }
+
     function formatFinite(value) {
       const numeric = Number(value);
       return Number.isFinite(numeric) ? numeric.toFixed(6) : "not returned";
@@ -5062,6 +5122,39 @@
             + ", reviewerHandoffOnly=true";
         }).join("\n")
         : "- Not run";
+      const evidenceReviewerClosureLines = routingResults.length
+        ? routingResults.map((result) => {
+          const closure = result.decisionReplayEvidenceReviewerClosureSummary || {};
+          const bullets = Array.isArray(closure.closureBullets)
+            ? closure.closureBullets.join(";")
+            : "";
+          const conclusions = Array.isArray(closure.safeConclusions)
+            ? closure.safeConclusions.join(";")
+            : "";
+          const boundaries = Array.isArray(closure.unresolvedBoundaries)
+            ? closure.unresolvedBoundaries.join(";")
+            : "";
+          const surfaces = Array.isArray(closure.evidenceSurfacesReferenced)
+            ? closure.evidenceSurfacesReferenced.join(";")
+            : "";
+          return "- " + result.strategyId
+            + ": reviewerClosureStatus=" + (closure.status || "unknown")
+            + ", closureDisposition=" + (closure.closureDisposition || "unknown")
+            + ", reviewerSnapshotStatus=" + (closure.reviewerSnapshotStatus || "unknown")
+            + ", reviewerGuidanceStatus=" + (closure.reviewerGuidanceStatus || "unknown")
+            + ", reviewerHandoffStatus=" + (closure.reviewerHandoffStatus || "unknown")
+            + ", consistencyStatus=" + (closure.consistencyStatus || "unknown")
+            + ", totalLanes=" + String(closure.totalLaneCount || 0)
+            + ", availableLanes=" + String(closure.availableLaneCount || 0)
+            + ", partialLanes=" + String(closure.partialLaneCount || 0)
+            + ", unknownLanes=" + String(closure.unknownLaneCount || 0)
+            + ", closureBullets=" + (bullets || "none")
+            + ", safeConclusions=" + (conclusions || "none")
+            + ", unresolvedBoundaries=" + (boundaries || "none")
+            + ", evidenceSurfacesReferenced=" + (surfaces || "none")
+            + ", reviewerClosureOnly=true";
+        }).join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -5142,6 +5235,9 @@
         "",
         "## Decision Replay Evidence Reviewer Handoff Summary",
         evidenceReviewerHandoffLines,
+        "",
+        "## Decision Replay Evidence Reviewer Closure Summary",
+        evidenceReviewerClosureLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

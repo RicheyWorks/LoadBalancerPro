@@ -208,6 +208,7 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(demoPath.contains("Decision Replay Evidence Reviewer Snapshot"));
         assertTrue(demoPath.contains("Decision Replay Evidence Reviewer Guidance"));
         assertTrue(demoPath.contains("Decision Replay Evidence Reviewer Handoff Summary"));
+        assertTrue(demoPath.contains("Decision Replay Evidence Reviewer Closure Summary"));
         assertTrue(demoPath.contains("Candidate Comparison Limits"));
         assertTrue(demoPath.contains("Candidate Evidence Cards"));
         assertTrue(demoPath.contains("Candidate Review Questions"));
@@ -328,6 +329,10 @@ class ReviewerTrustMapDocumentationTest {
         assertTrue(matrix.contains("Decision Replay Evidence Lane Consistency Summary"));
         assertTrue(matrix.contains("Decision Replay Evidence Reviewer Snapshot"));
         assertTrue(matrix.contains("Decision Replay Evidence Reviewer Guidance"));
+        assertTrue(matrix.contains("Decision Replay Evidence Reviewer Handoff Summary"));
+        assertTrue(matrix.contains("Decision Replay Evidence Reviewer Closure Summary"));
+        assertTrue(matrix.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md"));
+        assertTrue(matrix.contains("RoutingDecisionReplayEvidenceReviewerClosureSummaryServiceTest"));
         assertTrue(matrix.contains("Structured Decision Evidence"));
         assertTrue(matrix.contains("EnterpriseLabDecisionVectorDocumentationTest"));
         assertTrue(matrix.contains("Candidate Decision Vector"));

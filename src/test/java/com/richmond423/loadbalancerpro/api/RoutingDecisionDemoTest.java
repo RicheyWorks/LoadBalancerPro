@@ -896,6 +896,16 @@ class RoutingDecisionDemoTest {
         assertTrue(page.contains("id=\"decision-vector-reviewer-closure-boundaries\""));
         assertTrue(page.contains("id=\"decision-vector-reviewer-closure-surfaces\""));
         assertTrue(page.contains("id=\"decision-vector-reviewer-closure-limitations\""));
+        assertTrue(page.contains("Decision Replay Evidence Closure Rollup"));
+        assertTrue(page.contains("decisionReplayEvidenceReviewerClosureRollup: "));
+        assertTrue(page.contains("Reviewer Closure Rollup Status"));
+        assertTrue(page.contains("Reviewer Closure Rollup Counts"));
+        assertTrue(page.contains("Reviewer Closure Rollup Boundaries"));
+        assertTrue(page.contains("Reviewer Closure Rollup Limitations"));
+        assertTrue(page.contains("id=\"decision-vector-reviewer-closure-rollup-status\""));
+        assertTrue(page.contains("id=\"decision-vector-reviewer-closure-rollup-counts\""));
+        assertTrue(page.contains("id=\"decision-vector-reviewer-closure-rollup-boundaries\""));
+        assertTrue(page.contains("id=\"decision-vector-reviewer-closure-rollup-limitations\""));
         assertTrue(page.contains("not production validation"));
         assertTrue(page.contains("not replay proof"));
         assertTrue(page.contains("not replay execution"));

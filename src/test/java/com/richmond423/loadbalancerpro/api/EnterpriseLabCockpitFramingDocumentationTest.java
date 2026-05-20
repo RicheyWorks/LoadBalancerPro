@@ -146,6 +146,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_SNAPSHOT.md"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_GUIDANCE.md"));
         assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md"));
+        assertTrue(framing.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_ROLLUP.md"));
         assertTrue(framing.contains("structured explanation contract for one controlled lab routing decision"));
         assertTrue(framing.contains("selected candidate vector"));
         assertTrue(framing.contains("non-selected candidate vectors"));
@@ -170,6 +171,7 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("`results[].decisionReplayEvidenceReviewerGuidance`"));
         assertTrue(framing.contains("`results[].decisionReplayEvidenceReviewerHandoffSummary`"));
         assertTrue(framing.contains("`results[].decisionReplayEvidenceReviewerClosureSummary`"));
+        assertTrue(framing.contains("top-level `decisionReplayEvidenceReviewerClosureRollup`"));
         assertTrue(framing.contains("deterministic local fingerprint from already-built compare evidence only"));
         assertTrue(framing.contains("deterministic reconstruction evidence steps"));
         assertTrue(framing.contains("canonical evidence packaging"));
@@ -183,6 +185,12 @@ class EnterpriseLabCockpitFramingDocumentationTest {
         assertTrue(framing.contains("derives deterministic reviewer guidance from existing reviewer metadata"));
         assertTrue(framing.contains("derives deterministic reviewer handoff metadata from existing reviewer snapshot and guidance metadata"));
         assertTrue(framing.contains("derives deterministic closure metadata from existing reviewer metadata"));
+        assertTrue(framing.contains("Decision Replay Evidence Closure Rollup metadata derives only from already-returned"));
+        assertTrue(framing.contains("without new fingerprint generation"));
+        assertTrue(framing.contains("without replay execution"));
+        assertTrue(framing.contains("without what-if mutation"));
+        assertTrue(framing.contains("without scoring changes"));
+        assertTrue(framing.contains("without routing behavior changes"));
         assertTrue(framing.contains("maps already-built evidence lanes to response field paths, UI section labels, and docs reference labels"));
         assertTrue(framing.contains("maps already-built evidence lane dependencies and downstream relationships"));
         assertTrue(framing.contains("indexes already-built evidence lanes by response field path, UI section label, docs reference label, dependency count, and downstream count"));

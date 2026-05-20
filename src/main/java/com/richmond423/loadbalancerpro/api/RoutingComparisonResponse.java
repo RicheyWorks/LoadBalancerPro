@@ -7,5 +7,6 @@ public record RoutingComparisonResponse(
         List<String> requestedStrategies,
         int candidateCount,
         Instant timestamp,
+        RoutingDecisionReplayEvidenceReviewerClosureRollupResponse decisionReplayEvidenceReviewerClosureRollup,
         List<RoutingComparisonResultResponse> results) {
 }

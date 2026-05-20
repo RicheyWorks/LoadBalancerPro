@@ -36,6 +36,23 @@ class RoutingDecisionVectorReadOnlyExposureTest {
 
         assertEquals("TAIL_LATENCY_POWER_OF_TWO", response.at("/requestedStrategies/0").asText());
         assertEquals(3, response.path("candidateCount").asInt());
+        JsonNode closureRollup = response.path("decisionReplayEvidenceReviewerClosureRollup");
+        assertEquals("COMPLETE", closureRollup.path("status").asText());
+        assertEquals("REVIEW_COMPLETE_WITH_LIMITATIONS", closureRollup.path("disposition").asText());
+        assertEquals(response.path("results").size(), closureRollup.path("resultCount").asInt());
+        assertEquals(response.path("results").size(), closureRollup.path("resultsWithClosureSummary").asInt());
+        assertEquals(0, closureRollup.path("resultsMissingClosureSummary").asInt());
+        assertEquals(response.path("results").size(), closureRollup.path("completeWithLimitationsCount").asInt());
+        assertEquals(0, closureRollup.path("unknownCount").asInt());
+        assertTrue(closureRollup.path("reviewerReady").asBoolean());
+        assertTrue(closureRollup.path("summary").asText().contains("results include closure summaries"));
+        assertEquals("not replay proof", closureRollup.at("/notProvenBoundaries/0").asText());
+        assertEquals("not production validation", closureRollup.at("/notProvenBoundaries/6").asText());
+        String closureRollupText = closureRollup.toString();
+        assertFalse(closureRollupText.contains("reviewerClosureRollupFingerprint"));
+        assertFalse(closureRollupText.contains("production certification is proven"));
+        assertFalse(closureRollupText.contains("guaranteed replay is proven"));
+        assertFalse(closureRollupText.contains("correctness validation is proven"));
         JsonNode result = response.at("/results/0");
         assertEquals("TAIL_LATENCY_POWER_OF_TWO", result.path("strategyId").asText());
         assertEquals("SUCCESS", result.path("status").asText());
@@ -1011,6 +1028,21 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertFalse(reviewerClosureText.contains("quality ranking is proven"));
         assertFalse(reviewerClosureText.contains("approval is granted"));
         assertFalse(reviewerClosureText.contains("correctness validation is proven"));
+        JsonNode closureRollup = response.path("decisionReplayEvidenceReviewerClosureRollup");
+        assertEquals("UNKNOWN", closureRollup.path("status").asText());
+        assertEquals("UNKNOWN", closureRollup.path("disposition").asText());
+        assertEquals(1, closureRollup.path("resultCount").asInt());
+        assertEquals(1, closureRollup.path("resultsWithClosureSummary").asInt());
+        assertEquals(0, closureRollup.path("resultsMissingClosureSummary").asInt());
+        assertEquals(0, closureRollup.path("completeWithLimitationsCount").asInt());
+        assertEquals(1, closureRollup.path("unknownCount").asInt());
+        assertFalse(closureRollup.path("reviewerReady").asBoolean());
+        assertEquals("not replay proof", closureRollup.at("/notProvenBoundaries/0").asText());
+        assertEquals("not production validation", closureRollup.at("/notProvenBoundaries/6").asText());
+        assertFalse(closureRollup.toString().contains("reviewerClosureRollupFingerprint"));
+        assertFalse(closureRollup.toString().contains("production certification is proven"));
+        assertFalse(closureRollup.toString().contains("guaranteed replay is proven"));
+        assertFalse(closureRollup.toString().contains("correctness validation is proven"));
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
     }
 

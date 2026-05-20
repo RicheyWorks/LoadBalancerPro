@@ -6,7 +6,7 @@ The Enterprise Lab Decision Vector is the structured explanation object for one 
 
 ## Why the Lab Needs It
 
-The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, Decision Replay Reconstruction Trace lane, Decision Replay Capsule lane, Decision Replay Readiness Checklist lane, Decision Replay Evidence Source Map lane, Decision Replay Evidence Boundary Summary lane, Decision Replay Evidence Field Inventory lane, Decision Evidence Null-Safety Summary lane, Decision Evidence Status Rollup lane, Decision Replay Evidence Lane Navigation Summary lane, Decision Replay Evidence Lane Dependency Map lane, Decision Replay Evidence Lane Reference Index lane, Decision Replay Evidence Lane Dependency Summary lane, Decision Replay Evidence Lane Consistency Summary lane, Decision Replay Evidence Reviewer Snapshot lane, Decision Replay Evidence Reviewer Guidance lane, Decision Replay Evidence Reviewer Handoff Summary lane, Decision Replay Evidence Reviewer Closure Summary lane, and later separately scoped lab planning work can build without inventing hidden scoring.
+The cockpit already explains visible outcomes: selected strategy, selected backend/server, candidate signals, known versus unknown signals, and selected-vs-alternative notes. A Decision Vector gives those explanations a contract so the current read-only dominant-factor lane, selected-vs-closest-alternative decision delta lane, Decision Replay Snapshot lane, Decision Replay Reconstruction Trace lane, Decision Replay Capsule lane, Decision Replay Readiness Checklist lane, Decision Replay Evidence Source Map lane, Decision Replay Evidence Boundary Summary lane, Decision Replay Evidence Field Inventory lane, Decision Evidence Null-Safety Summary lane, Decision Evidence Status Rollup lane, Decision Replay Evidence Lane Navigation Summary lane, Decision Replay Evidence Lane Dependency Map lane, Decision Replay Evidence Lane Reference Index lane, Decision Replay Evidence Lane Dependency Summary lane, Decision Replay Evidence Lane Consistency Summary lane, Decision Replay Evidence Reviewer Snapshot lane, Decision Replay Evidence Reviewer Guidance lane, Decision Replay Evidence Reviewer Handoff Summary lane, Decision Replay Evidence Reviewer Closure Summary lane, response-level Decision Replay Evidence Closure Rollup lane, and later separately scoped lab planning work can build without inventing hidden scoring.
 
 A Decision Vector differs from a simple reason string because it separates:
 
@@ -39,6 +39,7 @@ A Decision Vector differs from a simple reason string because it separates:
 - Decision Replay Evidence Reviewer Guidance metadata over the existing status rollup, dependency map, lane reference index, lane dependency summary, lane consistency summary, and reviewer snapshot surfaces.
 - Decision Replay Evidence Reviewer Handoff Summary metadata over the existing status rollup, dependency map, lane reference index, lane dependency summary, lane consistency summary, reviewer snapshot, and reviewer guidance surfaces.
 - Decision Replay Evidence Reviewer Closure Summary metadata over the existing status rollup, dependency map, lane reference index, lane dependency summary, lane consistency summary, reviewer snapshot, reviewer guidance, and reviewer handoff surfaces.
+- Decision Replay Evidence Closure Rollup metadata over already-returned per-result reviewer closure summary fields.
 - Replay readiness and later separately scoped replay planning gaps.
 - Lab proof boundaries and production not-proven boundaries.
 
@@ -82,6 +83,7 @@ One Decision Vector represents one controlled lab routing decision. The contract
 | `decisionReplayEvidenceReviewerGuidance` | Additive read-only reviewer guidance derived only from existing status rollup, dependency map, lane reference index, dependency summary, consistency summary, and reviewer snapshot metadata; it shows guidance status, reviewer priority, suggested review steps, evidence surfaces to inspect, caution notes, and limitations without replay execution, score recomputation, reflection, or a new fingerprint. |
 | `decisionReplayEvidenceReviewerHandoffSummary` | Additive read-only reviewer handoff summary derived only from existing status rollup, dependency map, lane reference index, dependency summary, consistency summary, reviewer snapshot, and reviewer guidance metadata; it shows handoff status, priority, bullets, operator follow-up items, referenced surfaces, caution notes, and limitations without replay execution, score recomputation, reflection, production validation, or a new fingerprint. |
 | `decisionReplayEvidenceReviewerClosureSummary` | Additive read-only reviewer closure summary derived only from existing status rollup, dependency map, lane reference index, dependency summary, consistency summary, reviewer snapshot, reviewer guidance, and reviewer handoff metadata; it shows closure status, disposition, bullets, safe conclusions, unresolved boundaries, referenced surfaces, and limitations without replay execution, score recomputation, reflection, production validation, or a new fingerprint. |
+| `decisionReplayEvidenceReviewerClosureRollup` | Additive read-only top-level reviewer closure rollup derived only from already-returned per-result reviewer closure summaries; it shows result counts, closure summary coverage, complete-with-limitations count, unknown/not-available count, reviewer-ready state, deterministic summary text, and explicit not-proven boundaries without replay execution, score recomputation, reflection, production validation, persistence, telemetry, upload/share/download/export/PDF/ZIP behavior, or a new fingerprint. |
 | `replayReadiness` | Contract readiness for future replay; replay execution remains future/not implemented until built. |
 | `labProofBoundary` | Controlled lab evidence, local reproducibility, same-origin local API responses, and browser-local interpretation. |
 | `productionNotProvenBoundary` | No production traffic proof, production telemetry proof, production monitoring proof, production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, or exact production scoring proof. |
@@ -668,6 +670,14 @@ proof, not scoring proof, not correctness validation, and not production readine
 [`ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md`](ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md)
 for the focused reviewer contract and safety boundaries.
 
+Decision Replay Evidence Closure Rollup metadata is the additive read-only response-level reviewer closure coverage
+layer derived only from already-returned per-result reviewer closure summaries. The top-level
+`decisionReplayEvidenceReviewerClosureRollup` field summarizes result count, closure-summary coverage,
+complete-with-limitations count, unknown/not-available count, reviewer-ready state, deterministic summary text, and
+explicit not-proven boundaries. See
+[`ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_ROLLUP.md`](ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_ROLLUP.md)
+for the focused reviewer contract and safety boundaries.
+
 The read-only `/api/routing/compare` response can expose candidate contribution summaries through
 `results[].decisionVector` without changing scoring behavior, strategy weights, selected backend outcomes,
 or existing response fields. This does not implement decision replay, what-if execution, strategy plugin
@@ -1201,6 +1211,7 @@ The Decision Vector is a foundation for current read-only dominant-factor explai
 - Decision replay evidence lane consistency summary: implemented as additive read-only reviewer consistency metadata over already-built lane status/dependency/reference/summary surfaces only.
 - Decision replay evidence reviewer guidance: implemented as additive read-only reviewer guidance metadata over already-built reviewer evidence surfaces only.
 - Decision replay evidence reviewer closure summary: implemented as additive read-only reviewer closure metadata over already-built reviewer evidence surfaces only.
+- Decision replay evidence closure rollup: implemented as additive read-only response-level reviewer closure metadata over already-returned per-result reviewer closure summaries only.
 - Broader factor modeling beyond current returned calculator contribution data: future/not implemented.
 - Replay execution: future/not implemented.
 - What-if experiments: future/not implemented.

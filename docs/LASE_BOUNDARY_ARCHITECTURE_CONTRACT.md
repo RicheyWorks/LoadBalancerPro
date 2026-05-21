@@ -51,6 +51,8 @@ This document does not claim the LASE boundary is already enforced by package re
 
 The current-tree inventory for this future boundary is documented in [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md). That inventory is docs/test-only preparation. It maps current classes into future boundary buckets without moving classes, adding runtime interfaces, adding ArchUnit rules, enforcing packages, or changing behavior.
 
+The staged package-boundary enforcement plan is documented in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md). That plan is docs/test-only preparation for future enforcement. It does not add ArchUnit, package-boundary tooling, package moves, runtime interfaces, or behavior changes.
+
 ## Why The LASE/Live Allocation Boundary Matters
 
 LASE is useful because it can compare strategies, explain tradeoffs, evaluate scenarios, and generate evidence while the live allocation path remains understandable and bounded. That value weakens if shadow evaluation can silently mutate live state or become an unreviewed routing authority.
@@ -306,6 +308,7 @@ This sprint does not implement WorkloadProfile records/classes, API fields, work
 Before any runtime boundary enforcement, a future sprint must define and pass gates for:
 
 - review of the current-tree inventory in [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md);
+- review of the staged enforcement plan in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md);
 - approved scope and owner intent;
 - explicit package boundary design;
 - dependency direction review;

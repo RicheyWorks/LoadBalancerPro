@@ -54,6 +54,8 @@ The LASE boundary contract defines the desired future architecture: live allocat
 
 This inventory gives future maintainers a low-risk map before any package move, runtime interface, ArchUnit rule, or enforcement sprint is proposed.
 
+The staged path from this inventory to future package-boundary enforcement is documented in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md). That plan is planning only, not enforcement. It adds no ArchUnit or package-boundary tool, moves no classes, and changes no runtime behavior.
+
 Reviewer questions this document helps answer:
 
 - Which current classes appear to be live allocation or routing behavior?
@@ -228,6 +230,7 @@ Future enforcement options, each requiring separate approval:
 
 - documentation-only package boundary contract updates;
 - naming guard tests that confirm intended packages and links;
+- the staged package-boundary enforcement plan in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md);
 - a future `domain` package for pure models;
 - a future read-only `LaseObservationPort`;
 - a future `lase` package for shadow evaluation and replay/evidence;

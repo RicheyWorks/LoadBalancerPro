@@ -60,6 +60,8 @@ The dry-run design plan defines future report-only modes, review workflow, sever
 
 This checklist depends on [`SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md). A future dry-run report should remain report-only unless a separate enforcement sprint explicitly approves blocking behavior.
 
+The future report sample plan is documented in [`SOURCE_NAME_GUARD_REPORT_SAMPLE_PLAN.md`](SOURCE_NAME_GUARD_REPORT_SAMPLE_PLAN.md). That sample plan remains docs/test-only and provides static documentation examples only; it does not add source scanning, dry-run report generation, JSON output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 ## When Reviewers Should Use This Checklist
 
 Use this checklist when a future sprint proposes any source-name guard dry-run report, JSON report output, local report output, CI report-only output, PR comment, report artifact, allowlist/suppression report, or severity summary.

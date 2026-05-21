@@ -67,6 +67,8 @@ The package-boundary enforcement plan stages future enforcement from documentati
 
 This naming plan fits the E1-style preparation lane from that plan: naming and docs-only boundary guard tests. It is intentionally earlier and weaker than package-boundary enforcement. Naming guard tests do not replace package-boundary enforcement and must not be used to claim package-boundary enforcement is active.
 
+The current naming inventory is documented in [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md). That inventory maps current class/file naming against this plan before any source-name guard test, runtime naming enforcement, package move, ArchUnit rule, or behavior change is introduced.
+
 ## Why Naming Guards Come Before Package Moves
 
 Naming guards come before package moves because names are cheap to review and low-risk to discuss:
@@ -166,7 +168,7 @@ This sprint adds only documentation guard tests for this plan itself. It does no
 Before any future naming guard becomes broader than documentation assertions, reviewers should require:
 
 - explicit sprint approval for naming guard implementation;
-- a current inventory review;
+- a current inventory review, starting with [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md);
 - an agreed list of unsafe implication patterns;
 - a small allowlist for documentation-only risky examples;
 - deterministic tests with clear failure messages;

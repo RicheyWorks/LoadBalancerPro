@@ -69,6 +69,8 @@ This naming plan fits the E1-style preparation lane from that plan: naming and d
 
 The current naming inventory is documented in [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md). That inventory maps current class/file naming against this plan before any source-name guard test, runtime naming enforcement, package move, ArchUnit rule, or behavior change is introduced.
 
+The source-name guard feasibility plan is documented in [`LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md`](LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md). That feasibility plan decides what a future narrow source-name guard could safely check before any source-name scanning, runtime naming enforcement, package move, ArchUnit rule, or behavior change is introduced.
+
 ## Why Naming Guards Come Before Package Moves
 
 Naming guards come before package moves because names are cheap to review and low-risk to discuss:

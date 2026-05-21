@@ -68,6 +68,8 @@ This rule catalog depends on [`SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md`](SOURCE_
 
 The future report review checklist is documented in [`SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md). The future dry-run design plan is documented in [`SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md). Both remain docs/test-only references and do not add source scanning, report generation, JSON output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
 
+The future source-name guard rule review checklist is documented in [`SOURCE_NAME_GUARD_RULE_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_RULE_REVIEW_CHECKLIST.md). That checklist remains docs/test-only and defines per-rule review questions for intent, scope, pattern specificity, severity, false-positive risk, false-negative risk, allowlists, suppressions, report output, rollback, and approval gates without adding source scanning, report generation, JSON output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 ## Why Rule Catalog Comes Before Implementation
 
 Rule catalog comes before implementation because naming rules can become noisy or misleading if categories are invented after scanning begins:

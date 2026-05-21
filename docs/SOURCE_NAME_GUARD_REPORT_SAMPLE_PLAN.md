@@ -10,6 +10,8 @@ PR #227 added [`SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_DRY
 
 This sample plan is the next preparation layer. It shows static, documentation-only examples of how future report content might be read by reviewers before any source-name guard report generator, JSON output, CI integration, PR comment, artifact upload, or enforcement exists.
 
+The future report acceptance criteria plan is documented in [`SOURCE_NAME_GUARD_REPORT_ACCEPTANCE_CRITERIA_PLAN.md`](SOURCE_NAME_GUARD_REPORT_ACCEPTANCE_CRITERIA_PLAN.md). That plan remains docs/test-only and defines future report quality, finding quality, severity quality, privacy/secret-safety, determinism, rejection criteria, and approval gates without adding source scanning, dry-run report generation, JSON output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 The core rule is:
 
 Sample findings are review triggers, not proof of unsafe runtime behavior.

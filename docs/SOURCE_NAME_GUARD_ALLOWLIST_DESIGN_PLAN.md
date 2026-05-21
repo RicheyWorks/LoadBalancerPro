@@ -76,6 +76,8 @@ The rule catalog plan defines candidate future source-name guard categories, ris
 
 This allowlist design plan depends on [`SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md). A future allowlist entry should identify which rule category it belongs to and preserve the reviewer rationale for why a matching name is acceptable.
 
+The future source-name guard allowlist review checklist is documented in [`SOURCE_NAME_GUARD_ALLOWLIST_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_ALLOWLIST_REVIEW_CHECKLIST.md). That checklist remains docs/test-only and defines reviewer criteria for future allowlist candidates before any allowlist file, source scanning, report generation, JSON/YAML/TOML output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 The future report acceptance criteria plan is documented in [`SOURCE_NAME_GUARD_REPORT_ACCEPTANCE_CRITERIA_PLAN.md`](SOURCE_NAME_GUARD_REPORT_ACCEPTANCE_CRITERIA_PLAN.md). The future report review checklist is documented in [`SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md). Both remain docs/test-only references and do not add source scanning, allowlist files, report generation, JSON/YAML/TOML output, JSON output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
 
 ## Why Allowlist Design Comes Before Implementation

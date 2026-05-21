@@ -8,6 +8,8 @@ The future naming preparation layer is documented in [`LASE_BOUNDARY_NAMING_GUAR
 
 The current naming inventory is documented in [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md). That inventory maps current class/file naming before any source-name guard test, package move, ArchUnit rule, runtime naming enforcement, package-boundary enforcement, or behavior change.
 
+The source-name guard feasibility plan is documented in [`LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md`](LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md). That plan keeps any future source-name guard narrow and review-trigger-only before source scanning, package moves, ArchUnit rules, runtime naming enforcement, package-boundary enforcement, or behavior change.
+
 ## Executive Summary
 
 PR #220 added [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), which defines the desired future boundary between live allocation and LASE shadow/evidence paths. PR #221 added [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md), which maps the current tree into future boundary buckets.

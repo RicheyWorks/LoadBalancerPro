@@ -4,6 +4,8 @@ This document inventories current LoadBalancerPro class, file, and responsibilit
 
 This is a naming inventory only, not enforcement. It is docs/test only. No runtime naming guard is active. No classes are renamed in this sprint. No package moves are made in this sprint. No source-name guard tests are added in this sprint. No ArchUnit or package-boundary tool is added. No runtime interface, API field, routing behavior, scoring behavior, strategy behavior, proxy behavior, configuration behavior, CI behavior, Docker behavior, release behavior, registry behavior, governance behavior, or production behavior is added.
 
+The next source-name guard feasibility step is documented in [`LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md`](LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md). That feasibility plan remains docs/test-only and does not add source scanning, runtime naming enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 ## Executive Summary
 
 PR #220 added the LASE boundary architecture contract. PR #221 mapped current classes into future boundary buckets. PR #222 staged future package-boundary enforcement. PR #223 defined naming guard vocabulary and examples. This inventory is the next preparation layer: it maps current names into the naming categories before any source-name guard, package move, ArchUnit rule, or runtime enforcement exists.

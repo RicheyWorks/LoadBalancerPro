@@ -63,6 +63,8 @@ The future metadata should answer:
 
 Future LASE or shadow evaluation could use WorkloadProfile metadata as declared reviewer context for comparing strategies across multiple objectives. That context must begin as metadata shown to reviewers, not hidden scoring behavior.
 
+The future LASE/live allocation boundary is documented in [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md). That contract is documentation-only and does not implement runtime boundary enforcement, package refactors, ArchUnit rules, Java ports, API fields, routing behavior, scoring behavior, strategy behavior, proxy behavior, signal ingestion, persistence, telemetry, secrets, environment variables, or production behavior.
+
 Safe future uses:
 
 - show declared workload assumptions beside a strategy comparison;
@@ -70,6 +72,7 @@ Safe future uses:
 - mark missing workload fields as `UNKNOWN`;
 - distinguish fixture-derived, synthetic, estimated, and reviewer-supplied metadata;
 - keep scoring influence opt-in, separately gated, and test-covered.
+- keep WorkloadProfile metadata from changing live routing behavior without explicit future policy gates.
 
 Unsafe current claims:
 

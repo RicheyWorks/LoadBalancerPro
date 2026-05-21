@@ -4,6 +4,8 @@ This document explains how LoadBalancerPro should eventually move from the LASE 
 
 This is planning only, not enforcement. It is docs/test only. No ArchUnit or package-boundary tool is added in this sprint. No classes are moved in this sprint. No packages are refactored. No Maven build files are changed. No runtime interfaces, API fields, routing behavior, scoring behavior, strategy behavior, proxy behavior, configuration behavior, CI behavior, Docker behavior, release behavior, registry behavior, or production behavior are added.
 
+The future naming preparation layer is documented in [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md). That plan is docs/test-only naming guard preparation, not runtime naming enforcement, package-boundary enforcement, ArchUnit tooling, package moves, runtime interfaces, Maven build changes, or behavior change.
+
 ## Executive Summary
 
 PR #220 added [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), which defines the desired future boundary between live allocation and LASE shadow/evidence paths. PR #221 added [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md), which maps the current tree into future boundary buckets.

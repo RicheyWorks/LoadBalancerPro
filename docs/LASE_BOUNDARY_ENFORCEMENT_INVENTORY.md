@@ -56,6 +56,8 @@ This inventory gives future maintainers a low-risk map before any package move, 
 
 The staged path from this inventory to future package-boundary enforcement is documented in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md). That plan is planning only, not enforcement. It adds no ArchUnit or package-boundary tool, moves no classes, and changes no runtime behavior.
 
+The future naming preparation layer is documented in [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md). That plan is docs/test-only naming guard preparation, not runtime naming enforcement, package-boundary enforcement, ArchUnit tooling, package moves, or behavior change.
+
 Reviewer questions this document helps answer:
 
 - Which current classes appear to be live allocation or routing behavior?

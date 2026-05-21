@@ -77,6 +77,7 @@ The transition is mostly complete at the current reviewer-entry level:
 - `README.md` starts with LoadBalancerPro Enterprise Lab identity.
 - `docs/ENTERPRISE_LAB_PRODUCT_CHARTER.md` separates Enterprise Adaptive Routing Lab from Production Gateway Candidate.
 - `docs/ENTERPRISE_LAB_ROADMAP.md` defines P0/P1/P2/P3 lab and candidate milestones.
+- `docs/THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md` records the strategic architecture positioning: Tier 1 L4-L7 routing is the current primary focus, while Tier 2 compute/GPU/workload signals and Tier 3 facility/power/grid/carbon signals are future-oriented read-only signal concepts, not implementation proof.
 - `docs/PRODUCTION_READINESS_SUMMARY.md` says production-candidate rather than production-certified.
 - `docs/REVIEWER_TRUST_MAP.md` gives reviewer paths for lab workflow, controlled policy evidence, observability, the combined measured performance plus auth proof lane, CI evidence gate readiness/prototype, performance, mocked auth proof, and release evidence.
 - Static documentation tests guard against production-ready gateway and certification overclaims.
@@ -159,7 +160,7 @@ Recommended action: keep current reviewer entry points focused on `README.md`, `
 ## Recommended Next Safest Actions
 
 1. Strengthen `main` ruleset review requirements.
-2. Keep current entry points linked to the Enterprise Lab charter, roadmap, production-candidate summary, reviewer trust map, and this audit.
+2. Keep current entry points linked to the Enterprise Lab charter, roadmap, three-tier strategy positioning, production-candidate summary, reviewer trust map, and this audit.
 3. Maintain the mocked enterprise auth proof lane until a real tenant proof sprint is explicitly approved.
 4. Keep container distribution deferred until registry/signing/retention/rollback gates are implemented.
 5. Add a disposable live sandbox lab plan only if real cloud evidence becomes necessary.

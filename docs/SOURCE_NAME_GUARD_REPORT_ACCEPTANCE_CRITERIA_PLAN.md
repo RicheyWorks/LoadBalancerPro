@@ -74,6 +74,8 @@ This acceptance criteria plan depends on [`SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.
 
 The source-name guard dry-run design plan remains the staging reference in [`SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md). It is docs/test-only and does not add source scanning, dry-run report generation, JSON output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
 
+The future source-name guard rule catalog plan is documented in [`SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md). That catalog remains docs/test-only and defines candidate future rule categories, severity guidance, false-positive risks, allowlist needs, reviewer actions, and implementation gates without adding source scanning, report generation, JSON output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 ## Why Acceptance Criteria Come Before Implementation
 
 Acceptance criteria come before implementation because future report output can become misleading if quality gates are invented after scanning begins:

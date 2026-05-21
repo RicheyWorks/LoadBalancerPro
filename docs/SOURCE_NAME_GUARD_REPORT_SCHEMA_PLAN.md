@@ -58,6 +58,8 @@ The review checklist defines the questions reviewers should answer before any fu
 
 A future implementation proposal should complete [`SOURCE_NAME_GUARD_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_REVIEW_CHECKLIST.md) and confirm the proposed report schema remains narrow, deterministic, reviewable, and non-proving.
 
+The future report review checklist is documented in [`SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md). That checklist remains docs/test-only and does not add source scanning, dry-run report generation, JSON output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 ## Why Report Schema Comes Before Implementation
 
 Report schema comes before implementation because a source-name dry run can become noisy or misleading if output structure is improvised after scanning begins:

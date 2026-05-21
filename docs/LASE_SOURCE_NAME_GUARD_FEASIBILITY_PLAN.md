@@ -12,6 +12,8 @@ This feasibility plan is the next preparation layer. It decides what a future so
 
 The reviewer checklist for evaluating any future source-name guard proposal is documented in [`SOURCE_NAME_GUARD_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_REVIEW_CHECKLIST.md). That checklist remains docs/test-only and does not add source scanning, runtime naming enforcement, source-name guard enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
 
+The future report-only dry-run design is documented in [`SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md). That design remains docs/test-only and does not add source scanning, dry-run commands, report generation, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 The main feasibility finding is:
 
 A future source-name guard may be useful only if it stays narrow, deterministic, reviewable, and explicitly non-proving. It should treat failures as review triggers, not proof of unsafe runtime behavior.
@@ -162,12 +164,13 @@ A future review workflow should require:
 2. Re-read [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md).
 3. Re-read [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md).
 4. Complete [`SOURCE_NAME_GUARD_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_REVIEW_CHECKLIST.md).
-5. Confirm the guard scans only approved paths.
-6. Confirm denylist terms are narrow and documented.
-7. Confirm allowlist entries are reviewed and explain why they are safe.
-8. Confirm failures produce actionable review messages.
-9. Confirm source-name guard enforcement is not combined with package moves or behavior changes.
-10. Confirm the guard is not used to claim production readiness, production certification, package-boundary enforcement, or runtime enforcement.
+5. Re-read [`SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md) if the proposal includes report-only dry-run behavior.
+6. Confirm the guard scans only approved paths.
+7. Confirm denylist terms are narrow and documented.
+8. Confirm allowlist entries are reviewed and explain why they are safe.
+9. Confirm failures produce actionable review messages.
+10. Confirm source-name guard enforcement is not combined with package moves or behavior changes.
+11. Confirm the guard is not used to claim production readiness, production certification, package-boundary enforcement, or runtime enforcement.
 
 Guard failures are review triggers, not proof of unsafe runtime behavior.
 

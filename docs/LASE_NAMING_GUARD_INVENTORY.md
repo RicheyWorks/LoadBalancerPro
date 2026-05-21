@@ -8,6 +8,8 @@ The next source-name guard feasibility step is documented in [`LASE_SOURCE_NAME_
 
 The source-name guard review checklist is documented in [`SOURCE_NAME_GUARD_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_REVIEW_CHECKLIST.md). That checklist remains docs/test-only and helps reviewers evaluate future guard scope, denylist terms, allowlists, suppressions, false-positive risk, false-negative risk, failure messages, rollback, and approval gates before any source-name guard implementation exists.
 
+The source-name guard dry-run design plan is documented in [`SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md). That design remains docs/test-only and maps future report-only dry-run modes, report contents, severity, CI gates, and rollback before any source scanning, report generation, CI workflow change, PR comment/report artifact behavior, or enforcement exists.
+
 ## Executive Summary
 
 PR #220 added the LASE boundary architecture contract. PR #221 mapped current classes into future boundary buckets. PR #222 staged future package-boundary enforcement. PR #223 defined naming guard vocabulary and examples. This inventory is the next preparation layer: it maps current names into the naming categories before any source-name guard, package move, ArchUnit rule, or runtime enforcement exists.

@@ -10,6 +10,8 @@ PR #223 added [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_
 
 This checklist is the next preparation layer. It gives reviewers a structured way to decide whether a proposed future guard is narrow, deterministic, reviewable, low false-positive risk, easy to roll back, and separate from package moves, behavior changes, and production claims.
 
+The future report-only dry-run design is documented in [`SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md). That design remains docs/test-only and does not add source scanning, dry-run commands, report generation, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 The core rule is:
 
 Guard failures are review triggers, not proof of unsafe runtime behavior.
@@ -157,11 +159,12 @@ Before any future source-name guard implementation, reviewers should require:
 1. Separate sprint approval for source-name scanning.
 2. Re-read [`LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md`](LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md).
 3. Re-read [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md).
-4. Complete this checklist.
-5. Confirm source-name guard implementation must not be combined with package moves.
-6. Confirm source-name guard implementation must not be combined with behavior changes.
-7. Confirm source-name guard implementation must not be combined with production claims.
-8. Confirm the guard is not used to claim runtime naming enforcement, package-boundary enforcement, runtime LASE boundary enforcement, production readiness, or production certification.
+4. Re-read [`SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md) if the proposal includes report-only dry-run behavior.
+5. Complete this checklist.
+6. Confirm source-name guard implementation must not be combined with package moves.
+7. Confirm source-name guard implementation must not be combined with behavior changes.
+8. Confirm source-name guard implementation must not be combined with production claims.
+9. Confirm the guard is not used to claim runtime naming enforcement, package-boundary enforcement, runtime LASE boundary enforcement, production readiness, or production certification.
 
 Source-name guard implementation must not be combined with package moves. Source-name guard implementation must not be combined with behavior changes. Source-name guard implementation must not be combined with production claims.
 

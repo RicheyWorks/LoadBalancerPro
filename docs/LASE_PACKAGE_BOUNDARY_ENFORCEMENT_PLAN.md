@@ -10,6 +10,8 @@ The current naming inventory is documented in [`LASE_NAMING_GUARD_INVENTORY.md`]
 
 The source-name guard feasibility plan is documented in [`LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md`](LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md). That plan keeps any future source-name guard narrow and review-trigger-only before source scanning, package moves, ArchUnit rules, runtime naming enforcement, package-boundary enforcement, or behavior change.
 
+The source-name guard review checklist is documented in [`SOURCE_NAME_GUARD_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_REVIEW_CHECKLIST.md). That checklist keeps any future source-name guard proposal review separate from package moves, behavior changes, source scanning implementation, package-boundary enforcement, ArchUnit tooling, and production claims.
+
 ## Executive Summary
 
 PR #220 added [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), which defines the desired future boundary between live allocation and LASE shadow/evidence paths. PR #221 added [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md), which maps the current tree into future boundary buckets.

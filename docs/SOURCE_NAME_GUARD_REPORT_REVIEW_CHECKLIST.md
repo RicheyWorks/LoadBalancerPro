@@ -62,6 +62,8 @@ This checklist depends on [`SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md`](SOURCE_NA
 
 The future report sample plan is documented in [`SOURCE_NAME_GUARD_REPORT_SAMPLE_PLAN.md`](SOURCE_NAME_GUARD_REPORT_SAMPLE_PLAN.md). That sample plan remains docs/test-only and provides static documentation examples only; it does not add source scanning, dry-run report generation, JSON output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
 
+The future report acceptance criteria plan is documented in [`SOURCE_NAME_GUARD_REPORT_ACCEPTANCE_CRITERIA_PLAN.md`](SOURCE_NAME_GUARD_REPORT_ACCEPTANCE_CRITERIA_PLAN.md). That plan remains docs/test-only and defines future report quality, finding quality, severity quality, privacy/secret-safety, determinism, rejection criteria, and approval gates without adding source scanning, dry-run report generation, JSON output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 ## When Reviewers Should Use This Checklist
 
 Use this checklist when a future sprint proposes any source-name guard dry-run report, JSON report output, local report output, CI report-only output, PR comment, report artifact, allowlist/suppression report, or severity summary.

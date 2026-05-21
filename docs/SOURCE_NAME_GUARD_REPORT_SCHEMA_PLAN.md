@@ -62,6 +62,8 @@ The future report review checklist is documented in [`SOURCE_NAME_GUARD_REPORT_R
 
 The future report sample plan is documented in [`SOURCE_NAME_GUARD_REPORT_SAMPLE_PLAN.md`](SOURCE_NAME_GUARD_REPORT_SAMPLE_PLAN.md). That sample plan remains docs/test-only and provides static documentation examples only; it does not add source scanning, dry-run report generation, JSON output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
 
+The future report acceptance criteria plan is documented in [`SOURCE_NAME_GUARD_REPORT_ACCEPTANCE_CRITERIA_PLAN.md`](SOURCE_NAME_GUARD_REPORT_ACCEPTANCE_CRITERIA_PLAN.md). That plan remains docs/test-only and defines future report quality, finding quality, severity quality, privacy/secret-safety, determinism, rejection criteria, and approval gates without adding source scanning, dry-run report generation, JSON output files, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 ## Why Report Schema Comes Before Implementation
 
 Report schema comes before implementation because a source-name dry run can become noisy or misleading if output structure is improvised after scanning begins:

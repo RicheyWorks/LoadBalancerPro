@@ -113,6 +113,8 @@ The safe design target is to show reviewers how a strategy would be evaluated un
 
 The detailed future LASE boundary contract is documented in [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md). That contract is documentation-only and does not implement runtime boundary enforcement, package refactors, ArchUnit rules, Java ports, API fields, routing behavior, scoring behavior, strategy behavior, proxy behavior, signal ingestion, persistence, telemetry, secrets, environment variables, or production behavior.
 
+The current-tree inventory for later LASE boundary planning is documented in [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md). That inventory is docs/test-only and maps current classes into future boundary buckets without moving classes, adding runtime interfaces, enforcing packages, adding ArchUnit rules, or changing behavior.
+
 ## Expanded Phase 5: AI-Era Workload Modeling
 
 Future workload profile metadata could include optional fields such as:

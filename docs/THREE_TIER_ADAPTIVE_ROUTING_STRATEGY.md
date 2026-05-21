@@ -117,14 +117,20 @@ Future workload profile metadata could include optional fields such as:
 
 - `workloadClass`
 - `burstProfile`
+- `tailLatencyProfile`
+- `thinkTimeProfile`
 - `gpuSensitivity`
 - `carbonSensitivity`
 - `estimatedPowerDrawProfile`
 - `thermalBurstPattern`
 - `latencyCriticality`
 - `batchDeferrable`
+- `metadataVersion`
+- `evidenceNotes`
 
 These fields are documentation-only concepts in this sprint. They do not change runtime behavior, scoring internals, strategy selection, proxy behavior, replay behavior, or production behavior.
+
+The detailed future workload metadata contract is documented in [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md). That contract is documentation-only and does not implement Java records/classes, API fields, workload model code, routing behavior, scoring behavior, strategy behavior, proxy behavior, signal ingestion, persistence, telemetry, secrets, environment variables, or production behavior.
 
 ## ExternalSignalPort Design Concept
 

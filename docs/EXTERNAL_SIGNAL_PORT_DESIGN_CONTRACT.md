@@ -206,12 +206,15 @@ The future port must not become a control plane by accident. It must not mutate 
 
 The future port could eventually provide optional context to LASE or shadow evaluation. That context must begin as reviewer metadata, not hidden scoring behavior.
 
+The future LASE/live allocation boundary is documented in [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md). That contract is documentation-only and does not implement runtime boundary enforcement, package refactors, ArchUnit rules, Java ports, API fields, routing behavior, scoring behavior, strategy behavior, proxy behavior, signal ingestion, persistence, telemetry, secrets, environment variables, or production behavior.
+
 Safe future uses:
 
 - show optional external context alongside a routing comparison;
 - mark unavailable or stale context explicitly;
 - compare strategies under declared multi-objective assumptions in a lab setting;
 - help reviewers ask better follow-up questions.
+- keep ExternalSignalPort inputs read-only so they never grant LASE direct facility, grid, GPU, cloud, proxy, routing, or production control.
 
 Unsafe current claims:
 

@@ -111,6 +111,8 @@ Power, carbon, and thermal values are future optional metadata only. They are no
 
 The safe design target is to show reviewers how a strategy would be evaluated under declared objectives while keeping every objective source visible, bounded, and marked as observed, estimated, synthetic, unavailable, or unknown.
 
+The detailed future LASE boundary contract is documented in [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md). That contract is documentation-only and does not implement runtime boundary enforcement, package refactors, ArchUnit rules, Java ports, API fields, routing behavior, scoring behavior, strategy behavior, proxy behavior, signal ingestion, persistence, telemetry, secrets, environment variables, or production behavior.
+
 ## Expanded Phase 5: AI-Era Workload Modeling
 
 Future workload profile metadata could include optional fields such as:

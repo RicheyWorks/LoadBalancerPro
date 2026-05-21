@@ -58,6 +58,8 @@ The staged path from this inventory to future package-boundary enforcement is do
 
 The future naming preparation layer is documented in [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md). That plan is docs/test-only naming guard preparation, not runtime naming enforcement, package-boundary enforcement, ArchUnit tooling, package moves, or behavior change.
 
+The current naming surface is inventoried in [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md). That inventory maps current class/file naming against the naming plan without renaming classes, moving packages, adding source-name guard tests, or claiming naming guard enforcement.
+
 Reviewer questions this document helps answer:
 
 - Which current classes appear to be live allocation or routing behavior?

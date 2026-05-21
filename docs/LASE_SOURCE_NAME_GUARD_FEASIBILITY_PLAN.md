@@ -14,6 +14,8 @@ The reviewer checklist for evaluating any future source-name guard proposal is d
 
 The future report-only dry-run design is documented in [`SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_DRY_RUN_DESIGN_PLAN.md). That design remains docs/test-only and does not add source scanning, dry-run commands, report generation, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
 
+The future report schema plan is documented in [`SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md`](SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md). That schema plan remains docs/test-only and does not add source scanning, dry-run report generation, JSON output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 The main feasibility finding is:
 
 A future source-name guard may be useful only if it stays narrow, deterministic, reviewable, and explicitly non-proving. It should treat failures as review triggers, not proof of unsafe runtime behavior.

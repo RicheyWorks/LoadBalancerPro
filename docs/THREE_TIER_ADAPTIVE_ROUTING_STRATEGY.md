@@ -130,6 +130,8 @@ These fields are documentation-only concepts in this sprint. They do not change 
 
 `ExternalSignalPort` should remain a read-only boundary if implemented later. Its design intent is to describe context, not control infrastructure.
 
+The detailed future design contract is documented in [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md). That contract is documentation-only and does not implement Java interfaces, adapters, clients, signal ingestion, persistence, telemetry, secrets, environment variables, or production behavior.
+
 Design constraints:
 
 - read-only signal snapshots only;

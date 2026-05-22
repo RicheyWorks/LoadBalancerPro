@@ -57,6 +57,8 @@ The LASE boundary naming guard plan is documented in [`LASE_BOUNDARY_NAMING_GUAR
 
 The Phase 0 architecture ADR index is documented in [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md). That index names the future LASE integration ADR and layered architecture ADR as planning-only decision topics. It does not implement runtime LASE enforcement, package moves, package-boundary enforcement, ArchUnit tooling, or behavior changes.
 
+ADR-0001 is drafted in [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md). That ADR is proposed/planning-only layered architecture guidance. It maps future domain, allocation, LASE, evidence, infrastructure, API, config, and docs/tests boundaries without moving packages, adding ArchUnit, enforcing package boundaries, changing routing/scoring/strategy/proxy behavior, or claiming production readiness.
+
 ## Why The LASE/Live Allocation Boundary Matters
 
 LASE is useful because it can compare strategies, explain tradeoffs, evaluate scenarios, and generate evidence while the live allocation path remains understandable and bounded. That value weakens if shadow evaluation can silently mutate live state or become an unreviewed routing authority.

@@ -70,6 +70,7 @@ Reviewer entry points:
 - [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md) maps reviewer questions to evidence sources.
 - [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md) records the current Enterprise Lab readiness posture.
 - [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md) names the initial planning-only Phase 0 ADR set recommended by the architecture report.
+- [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) drafts ADR-0001 as a proposed/planning-only layered architecture boundary without package moves, ArchUnit, package-boundary enforcement, or runtime behavior changes.
 - [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) frames current Tier 1 routing focus and future Tier 2/Tier 3 signal concepts.
 - [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) documents a future read-only external signal port target.
 - [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) documents future workload metadata.
@@ -92,9 +93,9 @@ Each phase lists report phase name, current documentation coverage, related repo
 
 - Report phase name: Phase 0 discovery and north-star definition.
 - Current documentation coverage: already documented through product identity, reviewer trust, enterprise readiness, and architecture positioning.
-- Related repo docs: [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md).
+- Related repo docs: [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md).
 - Current implementation status: partial; reviewer-facing Enterprise Lab behavior exists, but the architecture report is broader than current runtime scope.
-- Recommended next safe sprint type: [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md) as a docs/test-only Phase 0 architecture ADR index.
+- Recommended next safe sprint type: review [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) as a proposed/planning-only ADR draft before any package plan, package move, or enforcement tool proposal.
 - Explicit not-proven boundary: north-star alignment is not production readiness, production certification, live-cloud validation, or real-tenant validation.
 
 ## Phase 1 Alignment: Domain Model And Core Abstractions
@@ -223,7 +224,7 @@ Implementation status values: current repo behavior, documentation only, plannin
 
 | Architecture report area | Current repo document | Coverage type | Implementation status | Safe next action | Explicit boundary |
 | --- | --- | --- | --- | --- | --- |
-| North-star platform framing | [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md) | already documented | current repo behavior plus planning only | Phase 0 ADR text slices | Not production-ready or production-certified |
+| North-star platform framing | [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) | already documented | current repo behavior plus planning only | ADR-0001 review and later ADR text slices | Not production-ready or production-certified |
 | Routing, compute, and facility signal strategy | [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) | already documented | planning only for Tier 2/Tier 3 | Docs-only strategy boundary refresh | No GPU orchestration, grid control, or carbon-aware routing implementation |
 | External context signals | [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) | planned only | future-only | ExternalSignalPort readiness plan | ExternalSignalPort implementation not added |
 | Workload modeling | [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) | planned only | future-only | Workload profile implementation readiness plan | WorkloadProfile implementation not added |
@@ -261,6 +262,7 @@ Future-only implementation boundaries:
 Recommended next architecture slices are documentation recommendations only:
 
 - [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md) as the Phase 0 architecture ADR index;
+- [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) as the proposed/planning-only ADR-0001 layered architecture boundary draft;
 - Phase 1 domain model package plan;
 - Phase 4 LASE observation port readiness plan;
 - Phase 5 workload profile implementation readiness plan;

@@ -84,7 +84,7 @@ The proposed Phase 0 ADR set is:
 
 | ADR | Decision area | Current status | Safe next documentation slice |
 | --- | --- | --- | --- |
-| ADR-0001 | layered architecture boundary | planning only | Write ADR-0001 as docs/test-only architecture decision text |
+| ADR-0001 | layered architecture boundary | proposed / planning-only draft in [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) | Keep ADR-0001 docs/test-only until separately reviewed; no package moves, ArchUnit, package-boundary enforcement, or runtime behavior changes |
 | ADR-0002 | LASE integration model | planning only | Write ADR-0002 as docs/test-only LASE integration decision text |
 | ADR-0003 | evidence as first-class artifact | planning only | Write ADR-0003 as docs/test-only evidence decision text |
 | ADR-0004 | workload realism and scenario modeling | planning only | Write ADR-0004 as docs/test-only workload realism decision text |
@@ -97,12 +97,13 @@ These are proposed ADRs, not accepted ADRs. They do not prove implementation, pa
 
 ## ADR-0001 Layered Architecture Boundary
 
+- Proposed ADR draft: [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md).
 - Decision area: ADR-0001 layered architecture boundary.
 - Why it matters: The architecture report recommends clearer future domain, application, infrastructure, and evidence boundaries. A future ADR should define those layers before any package move or enforcement sprint.
 - Existing related docs: [`ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md), [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md), [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md).
-- Current status: planning only. Existing docs map future boundaries, but package-boundary enforcement is not active.
+- Current status: proposed / planning-only. Existing docs and the ADR-0001 draft map future boundaries, but package-boundary enforcement is not active.
 - Implementation boundary: must not move packages in this sprint; must not rename classes; must not add ArchUnit; must not claim package-boundary enforcement.
-- Safe next documentation slice: a docs/test-only ADR-0001 that records desired layers, current package mapping, migration risks, and no-enforcement boundaries.
+- Safe next documentation slice: review the docs/test-only ADR-0001 draft before any package plan or enforcement proposal.
 - Explicit non-claims: no package moves, no package-boundary enforcement, no runtime architecture implementation, no production readiness claim, and no production certification claim.
 
 ## ADR-0002 LASE Integration Model
@@ -194,7 +195,7 @@ Before any proposed ADR is written or accepted, reviewers should confirm:
 
 Suggested sequencing:
 
-1. Write ADR-0001 layered architecture boundary before any package plan or enforcement tool proposal.
+1. Review [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) before any package plan or enforcement tool proposal.
 2. Write ADR-0002 LASE integration model before any runtime LASE boundary enforcement proposal.
 3. Write ADR-0003 evidence as first-class artifact before any EvidencePacket or report generation proposal.
 4. Write ADR-0004 workload realism and scenario modeling before any WorkloadProfile or ScenarioGenerator implementation proposal.

@@ -76,6 +76,8 @@ The future source-name guard allowlist review checklist is documented in [`SOURC
 
 The future source-name guard allowlist sample plan is documented in [`SOURCE_NAME_GUARD_ALLOWLIST_SAMPLE_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_SAMPLE_PLAN.md). That sample plan remains docs/test-only and provides static examples for future allowlist candidate outcomes before any allowlist file, source scanning, report generation, JSON/YAML/TOML output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
 
+The future source-name guard allowlist lifecycle plan is documented in [`SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md). That lifecycle plan remains docs/test-only and defines future allowlist entry states, creation, re-review, expiration, retirement, migration, audit, stale-entry risk handling, privacy/secret-safety, and implementation gates before any allowlist file, source scanning, report generation, JSON/YAML/TOML output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 ## Why Rule Catalog Comes Before Implementation
 
 Rule catalog comes before implementation because naming rules can become noisy or misleading if categories are invented after scanning begins:

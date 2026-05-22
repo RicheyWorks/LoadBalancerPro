@@ -77,6 +77,8 @@ The future source-name guard allowlist review checklist is documented in [`SOURC
 
 The future source-name guard allowlist sample plan is documented in [`SOURCE_NAME_GUARD_ALLOWLIST_SAMPLE_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_SAMPLE_PLAN.md). That plan remains docs/test-only and shows static allowlist entry examples before any allowlist file, source scanning, report generation, JSON/YAML/TOML output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
 
+The future source-name guard allowlist lifecycle plan is documented in [`SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md). That lifecycle plan remains docs/test-only and defines future allowlist entry states, creation, re-review, expiration, retirement, migration, audit, stale-entry risk handling, privacy/secret-safety, and implementation gates before any allowlist file, source scanning, report generation, JSON/YAML/TOML output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 ## Why Rule Review Comes Before Implementation
 
 Rule review comes before implementation because a future source-name guard can become noisy, misleading, or too broad if individual rules are not reviewed before scanning begins:

@@ -85,6 +85,8 @@ This sample plan depends on [`SOURCE_NAME_GUARD_ALLOWLIST_REVIEW_CHECKLIST.md`](
 
 The future source-name guard rule review checklist is documented in [`SOURCE_NAME_GUARD_RULE_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_RULE_REVIEW_CHECKLIST.md). The future source-name guard rule catalog plan is documented in [`SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md). Both remain docs/test-only references and do not add allowlist files, source scanning, report generation, JSON/YAML/TOML output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
 
+The future source-name guard allowlist lifecycle plan is documented in [`SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md). That lifecycle plan remains docs/test-only and defines future allowlist entry states, creation, re-review, expiration, retirement, migration, audit, stale-entry risk handling, privacy/secret-safety, and implementation gates before any allowlist file, source scanning, report generation, JSON/YAML/TOML output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 ## Why Sample Entries Come Before Implementation
 
 Sample entries come before implementation because future allowlists can become noisy or misleading if reviewers do not first agree on what a good entry looks like:

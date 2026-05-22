@@ -43,6 +43,8 @@ Current status:
 
 Future implementation requires a separate approved sprint with API contracts, deterministic fixtures, reviewer documentation, security review, and explicit safety gates.
 
+The Phase 0 architecture ADR index is documented in [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md). That index names workload realism and scenario modeling as a planning-only ADR topic. It does not implement `WorkloadProfile`, ScenarioGenerator, runtime workload models, API fields, scoring influence, routing influence, signal ingestion, telemetry, secrets, or production behavior.
+
 ## Why WorkloadProfile Signal Metadata Matters
 
 Adaptive-routing review may eventually need to distinguish workload shapes that look similar at the network layer but behave differently under load. A small metadata vocabulary can help reviewers reason about burstiness, tail latency pressure, think-time patterns, GPU sensitivity, carbon sensitivity, estimated power draw, thermal burst shape, batch deferrability, and latency criticality.

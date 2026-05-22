@@ -55,6 +55,8 @@ The staged package-boundary enforcement plan is documented in [`LASE_PACKAGE_BOU
 
 The LASE boundary naming guard plan is documented in [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md). That plan is docs/test-only naming preparation for future boundary vocabulary. It does not add runtime naming enforcement, ArchUnit, package-boundary tooling, package moves, runtime interfaces, or behavior changes.
 
+The Phase 0 architecture ADR index is documented in [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md). That index names the future LASE integration ADR and layered architecture ADR as planning-only decision topics. It does not implement runtime LASE enforcement, package moves, package-boundary enforcement, ArchUnit tooling, or behavior changes.
+
 ## Why The LASE/Live Allocation Boundary Matters
 
 LASE is useful because it can compare strategies, explain tradeoffs, evaluate scenarios, and generate evidence while the live allocation path remains understandable and bounded. That value weakens if shadow evaluation can silently mutate live state or become an unreviewed routing authority.

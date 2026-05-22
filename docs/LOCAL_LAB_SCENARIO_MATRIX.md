@@ -6,6 +6,10 @@ It is planning-only. It does not implement Docker Compose files, scripts, fake b
 
 Local simulation is useful evidence. Local simulation is not production certification. LAN/server/Acer AI hardware experiments remain controlled lab work unless separately validated.
 
+## Test-Scope Scenario Model Foundation
+
+PR #250 adds only a test-scope scenario model/catalog. It does not implement fake backend servers. It does not implement Docker Compose, k6, Bruno, Toxiproxy, Prometheus/Grafana, scripts, networking, or runtime behavior. It is a stepping stone toward future local lab tooling.
+
 ## Scenario Matrix
 
 | Future scenario | Purpose | Expected signals | Expected evidence | Not-proven boundary | Future tool candidate |

@@ -56,6 +56,8 @@ This inventory gives future maintainers a low-risk map before any package move, 
 
 The staged path from this inventory to future package-boundary enforcement is documented in [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md). That plan is planning only, not enforcement. It adds no ArchUnit or package-boundary tool, moves no classes, and changes no runtime behavior.
 
+ADR-0001 is drafted in [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md). That ADR is proposed/planning-only and maps this current-tree inventory to future layer vocabulary without moving packages, adding runtime interfaces, adding ArchUnit, enforcing packages, changing routing/scoring/strategy/proxy behavior, or claiming production readiness.
+
 The future naming preparation layer is documented in [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md). That plan is docs/test-only naming guard preparation, not runtime naming enforcement, package-boundary enforcement, ArchUnit tooling, package moves, or behavior change.
 
 The current naming surface is inventoried in [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md). That inventory maps current class/file naming against the naming plan without renaming classes, moving packages, adding source-name guard tests, or claiming naming guard enforcement.

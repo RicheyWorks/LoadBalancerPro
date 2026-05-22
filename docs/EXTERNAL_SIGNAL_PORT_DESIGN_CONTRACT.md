@@ -212,6 +212,8 @@ The future LASE/live allocation boundary is documented in [`LASE_BOUNDARY_ARCHIT
 
 The proposed LASE integration ADR is drafted in [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md). That ADR is planning-only and keeps future ExternalSignalPort context read-only for LASE without adding runtime LASE enforcement, `LaseObservationPort`, ExternalSignalPort implementation, signal ingestion, replay execution, routing/scoring/strategy/proxy/API behavior changes, or production-readiness claims.
 
+The proposed safety boundaries ADR is drafted in [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md). That ADR is planning-only and keeps future external signal context behind policy/operator gates, provenance expectations, privacy constraints, and no-hidden-mutation boundaries without adding ExternalSignalPort implementation, signal ingestion, external clients, HTTP calls, runtime enforcement, active traffic shifting, GPU orchestration, power/grid control, carbon-aware routing, or facility automation.
+
 Safe future uses:
 
 - show optional external context alongside a routing comparison;

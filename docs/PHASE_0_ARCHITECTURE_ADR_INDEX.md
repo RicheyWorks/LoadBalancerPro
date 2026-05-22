@@ -2,7 +2,7 @@
 
 This document identifies the initial architecture decision record set recommended by the uploaded architecture report and maps those decision areas to the current LoadBalancerPro documentation set. It is an ADR index only, not implementation, and it does not add runtime architecture changes, package moves, source scanning, ArchUnit, dependencies, Maven build changes, API behavior, routing behavior, scoring behavior, strategy behavior, proxy behavior, config changes, Docker changes, CI changes, release changes, registry changes, governance changes, or production behavior.
 
-This is docs/test only. Proposed ADRs are planning only until separately written/approved in future scoped PRs. No package moves are introduced. No runtime LASE enforcement is introduced. No EvidencePacket implementation is introduced. No EvidenceAssembler implementation is introduced. No WorkloadProfile implementation is introduced. No ScenarioGenerator implementation is introduced. No workload generator implementation is introduced. No trace import is introduced. No ExternalSignalPort implementation is introduced. No production readiness claim is made. No production certification claim is made.
+This is docs/test only. Proposed ADRs are planning only until separately written/approved in future scoped PRs. No package moves are introduced. No runtime LASE enforcement is introduced. No runtime safety enforcement is introduced. No EvidencePacket implementation is introduced. No EvidenceAssembler implementation is introduced. No WorkloadProfile implementation is introduced. No ScenarioGenerator implementation is introduced. No workload generator implementation is introduced. No trace import is introduced. No ExternalSignalPort implementation is introduced. No production readiness claim is made. No production certification claim is made.
 
 ## Executive Summary
 
@@ -88,7 +88,7 @@ The proposed Phase 0 ADR set is:
 | ADR-0002 | LASE integration model | proposed / planning-only draft in [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) | Keep ADR-0002 docs/test-only until separately reviewed; no runtime LASE enforcement, `LaseObservationPort`, package-boundary enforcement, replay execution, or behavior changes |
 | ADR-0003 | evidence as first-class artifact | proposed / planning-only draft in [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) | Keep ADR-0003 docs/test-only until separately reviewed; no EvidencePacket, EvidenceAssembler, report generation, JSON output, storage/persistence/telemetry/audit log, replay execution, or behavior changes |
 | ADR-0004 | workload realism and scenario modeling | proposed / planning-only draft in [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) | Keep ADR-0004 docs/test-only until separately reviewed; no WorkloadProfile, ScenarioGenerator, workload generator, trace import, replay execution, EvidencePacket/report generation, JSON output, storage/persistence/telemetry, or behavior changes |
-| ADR-0005 | safety boundaries and guardrails | planning only | Write ADR-0005 as docs/test-only safety boundary decision text |
+| ADR-0005 | safety boundaries and guardrails | proposed / planning-only draft in [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) | Keep ADR-0005 docs/test-only until separately reviewed; no runtime enforcement, active traffic shifting, replay execution, evidence/report generation, storage/persistence, workload generation, trace import, external signal ingestion, or behavior changes |
 | ADR-0006 | live allocation vs shadow evaluation separation | planning only | Write ADR-0006 as docs/test-only separation decision text |
 | ADR-0007 | reviewer evidence and trust model | planning only | Write ADR-0007 as docs/test-only reviewer trust decision text |
 | ADR-0008 | future external signal context boundaries | planning only | Write ADR-0008 as docs/test-only external signal context decision text |
@@ -141,13 +141,14 @@ These are proposed ADRs, not accepted ADRs. They do not prove implementation, pa
 
 ## ADR-0005 Safety Boundaries And Guardrails
 
+- Proposed ADR draft: [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md).
 - Decision area: ADR-0005 safety boundaries and guardrails.
 - Why it matters: The architecture report depends on strong guardrails, especially around CloudManager, infrastructure mutation, source-name claims, production language, and external control paths.
-- Existing related docs: [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md), [`SOURCE_NAME_GUARD_ALLOWLIST_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_DESIGN_PLAN.md), [`SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md).
-- Current status: current behavior plus planning only. Safety posture is documented and tested in bounded areas, while future source-name guard and allowlist implementation remain future-only.
-- Implementation boundary: must not mutate cloud resources, GitHub settings, rulesets, secrets, environments, registries, releases, signing, or production behavior.
-- Safe next documentation slice: a docs/test-only ADR-0005 that records safety vocabulary, mutation boundaries, escalation gates, and no-overclaim language.
-- Explicit non-claims: no cloud mutation, no GitHub settings mutation, no registry publication, no release creation, no container signing, no production readiness claim, and no production certification claim.
+- Existing related docs: [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md), [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md), [`SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md), [`SOURCE_NAME_GUARD_ALLOWLIST_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_DESIGN_PLAN.md), [`SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md).
+- Current status: proposed / planning-only. Safety posture is documented and tested in bounded areas, while runtime safety enforcement, future source-name guard, and allowlist implementation remain future-only.
+- Implementation boundary: must not add runtime enforcement, active traffic shifting, replay execution, evidence/report generation, storage/persistence, workload generation, trace import, or external signal ingestion; must not mutate cloud resources, GitHub settings, rulesets, secrets, environments, registries, releases, signing, governance, or production behavior.
+- Safe next documentation slice: review the docs/test-only ADR-0005 draft before any active-experiment implementation, runtime safety enforcement, policy-gate expansion, or external-control proposal.
+- Explicit non-claims: no runtime safety enforcement, no autonomous production traffic shifting, no cloud mutation, no GitHub settings mutation, no registry publication, no release creation, no container signing, no production readiness claim, and no production certification claim.
 
 ## ADR-0006 Live Allocation Vs Shadow Evaluation Separation
 
@@ -202,7 +203,7 @@ Suggested sequencing:
 2. Review [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) before any runtime LASE boundary enforcement, observation port, policy-gate expansion, or replay execution proposal.
 3. Review [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) before any EvidencePacket, EvidenceAssembler, report generation, storage/retention, or replay execution proposal.
 4. Review [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) before any WorkloadProfile, ScenarioGenerator, workload generator, trace import, replay execution, or workload profile implementation readiness proposal.
-5. Write ADR-0005 safety boundaries and guardrails before any implementation that could affect cloud, release, registry, governance, or external-control boundaries.
+5. Review [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) before any implementation that could affect active-experiment, cloud, release, registry, governance, external-control, runtime safety enforcement, or traffic-changing boundaries.
 6. Write ADR-0006 live allocation vs shadow evaluation separation before any policy-gate expansion or LASE influence proposal.
 7. Write ADR-0007 reviewer evidence and trust model before any new reviewer proof, dashboard, or certification-adjacent claim.
 8. Write ADR-0008 future external signal context boundaries before any external signal ingestion, external client, or Tier 2/Tier 3 context implementation.
@@ -218,6 +219,7 @@ Future-only implementation boundaries:
 - no package moves are introduced;
 - no package-boundary enforcement is active;
 - no runtime LASE enforcement is introduced;
+- no runtime safety enforcement is introduced;
 - no ExternalSignalPort implementation exists;
 - no WorkloadProfile implementation exists;
 - no EvidencePacket implementation exists;
@@ -225,6 +227,7 @@ Future-only implementation boundaries:
 - no ScenarioGenerator implementation exists;
 - no workload generator implementation exists;
 - no trace import exists;
+- no autonomous production traffic shifting is added;
 - no source-name guard implementation exists;
 - no allowlist implementation exists;
 - no source scanning is added;

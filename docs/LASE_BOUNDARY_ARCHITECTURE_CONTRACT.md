@@ -65,6 +65,8 @@ ADR-0005 is drafted in [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/
 
 ADR-0006 is drafted in [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md). That ADR is proposed/planning-only evidence packet and replay boundary guidance. It maps future `EvidencePacket`, `EvidenceAssembler`, replay-facing evidence, deterministic assembly, privacy, filesystem/artifact, and not-proven boundaries without adding EvidencePacket implementation, EvidenceAssembler implementation, replay execution, evidence/report generation, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, or behavior changes.
 
+ADR-0007 is drafted in [`adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md). That ADR is proposed/planning-only reviewer evidence and trust guidance. It maps future reviewer evidence purpose, trust inputs, explanation expectations, policy gate evidence, signal provenance, rejected-option evidence, safety-mode evidence, replay/scenario evidence, manual/operator approval, and not-proven boundaries without adding reviewer portal/dashboard/API implementation, evidence/report generation, replay execution, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, runtime enforcement, or behavior changes.
+
 ## Why The LASE/Live Allocation Boundary Matters
 
 LASE is useful because it can compare strategies, explain tradeoffs, evaluate scenarios, and generate evidence while the live allocation path remains understandable and bounded. That value weakens if shadow evaluation can silently mutate live state or become an unreviewed routing authority.

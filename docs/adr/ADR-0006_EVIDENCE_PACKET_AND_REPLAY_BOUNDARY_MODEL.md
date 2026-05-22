@@ -16,7 +16,7 @@ Implementation status: not implemented.
 
 The architecture report frames LoadBalancerPro as an adaptive routing experimentation and evidence platform. It describes evidence packets, replay-facing evidence, deterministic comparison, auditability, and reviewer/operator explanations as core future architecture concerns.
 
-[`../PHASE_0_ARCHITECTURE_ADR_INDEX.md`](../PHASE_0_ARCHITECTURE_ADR_INDEX.md) now names ADR-0006 as the evidence packet and replay boundary model ADR. [`ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) defines the proposed future layered architecture boundary. [`ADR-0002_LASE_INTEGRATION_MODEL.md`](ADR-0002_LASE_INTEGRATION_MODEL.md) defines the proposed future LASE integration model. [`ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) defines evidence as a proposed future first-class architecture artifact. [`ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) defines proposed future workload realism and scenario modeling boundaries. [`ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) defines future safety modes and guardrails.
+[`../PHASE_0_ARCHITECTURE_ADR_INDEX.md`](../PHASE_0_ARCHITECTURE_ADR_INDEX.md) now names ADR-0006 as the evidence packet and replay boundary model ADR. [`ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) defines the proposed future layered architecture boundary. [`ADR-0002_LASE_INTEGRATION_MODEL.md`](ADR-0002_LASE_INTEGRATION_MODEL.md) defines the proposed future LASE integration model. [`ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) defines evidence as a proposed future first-class architecture artifact. [`ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) defines proposed future workload realism and scenario modeling boundaries. [`ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) defines future safety modes and guardrails. [`ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md) defines the proposed future reviewer evidence and trust model.
 
 LoadBalancerPro already has reviewer evidence surfaces, decision/replay documentation, bounded lab evidence, and not-proven boundary language. This ADR records the future boundary model for `EvidencePacket`, `EvidenceAssembler`, and replay-facing evidence without implementing new runtime behavior.
 
@@ -300,6 +300,7 @@ ADR-0006 depends on and narrows the evidence implications of prior ADRs:
 - ADR-0003 evidence and external signal/source boundary: ADR-0003 defines evidence as a first-class artifact, while this ADR narrows future `EvidencePacket`, `EvidenceAssembler`, source provenance, and replay-facing evidence boundaries.
 - ADR-0004 workload realism/scenario modeling: future workload and scenario context may enrich evidence, but clean scenario results remain lab/shadow/reviewer context, not production proof.
 - ADR-0005 safety boundaries and guardrails: future evidence packets must expose safety mode, policy checks, uncertainty, traffic-change reasons, operator explanations, and not-proven boundaries.
+- ADR-0007 reviewer evidence and trust model: future evidence packets may support reviewer trust, but they must remain non-certifying, explainable, and separate from reviewer portal/dashboard/API implementation unless separately approved.
 
 These relationships are planning guidance only. They do not approve implementation.
 
@@ -410,6 +411,7 @@ Related docs:
 - [`ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) defines the proposed future evidence architecture model.
 - [`ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) defines the proposed future workload realism and scenario modeling model.
 - [`ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) defines the proposed future safety boundary and guardrail model.
+- [`ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md) defines the proposed future reviewer evidence and trust model.
 - [`../ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](../ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md) maps evidence, replay, auditability, explainability, and future-only boundaries to current docs.
 - [`../REVIEWER_TRUST_MAP.md`](../REVIEWER_TRUST_MAP.md) provides reviewer navigation and evidence boundaries.
 - [`../ENTERPRISE_READINESS_AUDIT.md`](../ENTERPRISE_READINESS_AUDIT.md) records readiness posture and not-proven boundaries.
@@ -464,6 +466,7 @@ Remaining not-proven boundaries:
 - ADR-0004 is proposed/planning-only;
 - ADR-0005 is proposed/planning-only;
 - ADR-0006 is proposed/planning-only.
+- ADR-0007 is proposed/planning-only.
 
 ## Reviewer-Facing Value
 

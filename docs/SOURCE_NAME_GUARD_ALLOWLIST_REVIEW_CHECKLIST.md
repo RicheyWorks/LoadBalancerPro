@@ -79,6 +79,8 @@ This checklist depends on [`SOURCE_NAME_GUARD_RULE_REVIEW_CHECKLIST.md`](SOURCE_
 
 The future source-name guard rule catalog plan is documented in [`SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md). The future source-name guard report review checklist is documented in [`SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md). Both remain docs/test-only references and do not add allowlist files, source scanning, report generation, JSON/YAML/TOML output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
 
+The future source-name guard allowlist sample plan is documented in [`SOURCE_NAME_GUARD_ALLOWLIST_SAMPLE_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_SAMPLE_PLAN.md). That sample plan remains docs/test-only and provides static examples for future allowlist entry shapes, rationale quality, scope/path boundaries, re-review triggers, suppression posture, stale entries, invalid entries, privacy constraints, and misuse risks before any allowlist file, source scanning, report generation, JSON/YAML/TOML output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 ## When This Checklist Should Be Used
 
 Use this checklist when a future report-only source-name guard output, rule review, or reviewer discussion proposes adding a name, pattern, path, or scope to a future allowlist.

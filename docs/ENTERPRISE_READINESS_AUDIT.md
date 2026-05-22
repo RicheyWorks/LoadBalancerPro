@@ -88,6 +88,8 @@ The transition is mostly complete at the current reviewer-entry level:
 - `docs/adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md` records a proposed/planning-only ADR-0006 draft for future EvidencePacket, EvidenceAssembler, and replay-facing evidence boundaries without adding ADR approval, EvidencePacket implementation, EvidenceAssembler implementation, replay execution, evidence/report generation, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, routing/scoring/strategy/proxy/API behavior changes, live-cloud validation, real-tenant validation, production certification, or claiming production readiness.
 - `docs/adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md` records a proposed/planning-only ADR-0007 draft for future reviewer evidence and trust boundaries without adding ADR approval, reviewer portal/dashboard/API implementation, evidence/report generation, replay execution, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, runtime enforcement, routing/scoring/strategy/proxy/API behavior changes, live-cloud validation, real-tenant validation, production certification, or claiming production readiness.
 - `docs/adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md` records a proposed/planning-only ADR-0008 draft for future runtime enforcement and package-boundary planning without adding ADR approval, runtime enforcement, package-boundary enforcement, ArchUnit dependency/enforcement, source-name guard implementation, package moves or renames, reviewer portal/dashboard/API behavior, EvidencePacket/EvidenceAssembler implementation, replay execution, evidence/report generation, storage/persistence, filesystem-writing/export behavior, routing/scoring/strategy/proxy/API behavior changes, live-cloud validation, real-tenant validation, production certification, or claiming production readiness.
+- `docs/adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md` records a proposed/planning-only ADR-0009 draft for a future Local Lab Kit and simulated datacenter test harness without adding ADR approval, Docker Compose files, scripts, simulated backend node implementation, k6 scenario files, Bruno collections, Toxiproxy configuration, Prometheus/Grafana dashboards, replay/storage/export behavior, routing/scoring/strategy/proxy/API behavior changes, LAN/server/Acer AI production-infrastructure claims, live-cloud validation, real-tenant validation, production certification, or claiming production readiness.
+- `docs/LOCAL_LAB_SCENARIO_MATRIX.md` records planning-only future local lab scenario categories, expected signals, expected evidence, hardware expansion boundaries, and not-production-proof warnings. Local simulation is useful evidence, but local simulation is not production certification. LAN/server/Acer AI hardware experiments remain controlled lab work unless separately validated.
 - `docs/EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md` records a docs-only future read-only external signal port contract for Tier 2/Tier 3 context snapshots without runtime interfaces, adapters, signal ingestion, telemetry, secrets, or production behavior.
 - `docs/WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md` records a docs-only future WorkloadProfile signal metadata contract for AI-era workload modeling without runtime records/classes, API fields, workload model code, routing/scoring/strategy/proxy behavior changes, telemetry, secrets, or production behavior.
 - `docs/LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md` records a docs-only future LASE/live allocation boundary contract without runtime enforcement, package refactors, ArchUnit rules, Java ports, API fields, routing/scoring/strategy/proxy behavior changes, CloudManager/future control calls, telemetry, secrets, or production behavior.
@@ -166,13 +168,19 @@ Default CI and Maven paths use mocks, loopback, dry-run evidence, or non-executi
 
 Recommended action: keep live validation out of default CI. If needed, add a disposable sandbox lab with explicit account, region, IAM, budget, naming, teardown, and evidence rules.
 
-### 5. Container Distribution Is Deferred
+### 5. Local Simulation Is Useful Evidence, Not Production Certification
+
+ADR-0009 and the Local Lab Scenario Matrix describe a future local lab bridge for partial degradation, p95/p99 tail latency, overload and queue pressure, error-prone backends, recovery behavior, explainable routing decisions, reviewer/operator evidence, and hardware expansion planning. That local simulation is useful evidence, but it is not production certification, live-cloud validation, real-tenant validation, or proof that LAN/server/Acer AI hardware is production infrastructure.
+
+Recommended action: use [`adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md`](adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md) and [`LOCAL_LAB_SCENARIO_MATRIX.md`](LOCAL_LAB_SCENARIO_MATRIX.md) before any Docker Compose lab, simulated backend node implementation, k6 scenario, Bruno collection, Toxiproxy configuration, Prometheus/Grafana dashboard, LAN server, Acer AI mini, replay/storage/export, or production-validation proposal.
+
+### 6. Container Distribution Is Deferred
 
 The Dockerfile and CI runtime smoke are strong local/container evidence, but there is no registry image, cosign signature, registry attestation, retention policy, or rollback policy.
 
 Recommended action: keep container use local/private until the reviewer-ready lane in [`CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md`](CONTAINER_DISTRIBUTION_SIGNING_EVIDENCE_LANE.md) and `docs/CONTAINER_REGISTRY_SIGNING_ROLLOUT.md` are implemented through a separate approved change. Use [`CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md`](CONTAINER_SIGNING_DRY_RUN_VERIFICATION_LANE.md) for no-publish/no-sign dry-run evidence planning.
 
-### 6. Evidence Can Drift
+### 7. Evidence Can Drift
 
 The repo has many historical docs. Some intentionally preserve older branch and release context.
 

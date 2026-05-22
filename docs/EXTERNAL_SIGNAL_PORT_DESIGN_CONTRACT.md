@@ -59,6 +59,8 @@ The Phase 0 architecture ADR index is documented in [`PHASE_0_ARCHITECTURE_ADR_I
 
 The proposed runtime enforcement and package boundary ADR is documented in [`adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md`](adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md). It keeps future external signal ingestion behind explicit ports/contracts and future enforcement review without adding `ExternalSignalPort` implementation, external clients, HTTP calls, signal ingestion, package-boundary enforcement, ArchUnit dependency/enforcement, routing/scoring/strategy/proxy/API behavior changes, GPU orchestration, power/grid control, carbon-aware routing, facility automation, or production behavior.
 
+The proposed Local Lab Kit and simulated datacenter test harness ADR is documented in [`adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md`](adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md), with planning-only scenario categories in [`LOCAL_LAB_SCENARIO_MATRIX.md`](LOCAL_LAB_SCENARIO_MATRIX.md). It keeps future local simulation and hardware expansion evidence separate from external signal ingestion, live-cloud validation, real-tenant validation, facility automation, power/grid control, GPU orchestration, carbon-aware routing, or production certification.
+
 ## Read-Only Signal Boundary
 
 The future port must be read-only. It may describe external context, but it must not control external systems.

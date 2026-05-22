@@ -55,6 +55,8 @@ Current status:
 
 Future implementation requires a separate approved sprint with API contracts, test fixtures, security review, reviewer documentation, and explicit safety gates.
 
+The Phase 0 architecture ADR index is documented in [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md). That index names future external signal context boundaries as a planning-only ADR topic. It does not implement `ExternalSignalPort`, adapters, external clients, HTTP calls, signal ingestion, telemetry, secrets, GPU orchestration, power/grid control, carbon-aware routing, facility automation, or production behavior.
+
 ## Read-Only Signal Boundary
 
 The future port must be read-only. It may describe external context, but it must not control external systems.

@@ -62,7 +62,7 @@ This Phase 0 ADR index is the next documentation slice recommended by that align
 - safety guardrails;
 - evidence packet and replay boundary model;
 - reviewer evidence and trust;
-- future external signal context boundaries.
+- runtime enforcement and package boundary planning.
 
 This document does not implement those ADRs. It only identifies what future ADRs should cover and how reviewers can inspect existing related documentation today.
 
@@ -91,7 +91,7 @@ The proposed Phase 0 ADR set is:
 | ADR-0005 | safety boundaries and guardrails | proposed / planning-only draft in [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) | Keep ADR-0005 docs/test-only until separately reviewed; no runtime enforcement, active traffic shifting, replay execution, evidence/report generation, storage/persistence, workload generation, trace import, external signal ingestion, or behavior changes |
 | ADR-0006 | evidence packet and replay boundary model | proposed / planning-only draft in [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md) | Keep ADR-0006 docs/test-only until separately reviewed; no EvidencePacket, EvidenceAssembler, replay execution, evidence/report generation, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, or behavior changes |
 | ADR-0007 | reviewer evidence and trust model | proposed / planning-only draft in [`adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md) | Keep ADR-0007 docs/test-only until separately reviewed; no reviewer portal/dashboard/API implementation, evidence/report generation, replay execution, storage/persistence, export/upload/download/PDF/ZIP behavior, or behavior changes |
-| ADR-0008 | future external signal context boundaries | planning only | Write ADR-0008 as docs/test-only external signal context decision text |
+| ADR-0008 | runtime enforcement and package boundary plan | proposed / planning-only draft in [`adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md`](adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md) | Keep ADR-0008 docs/test-only until separately reviewed; no runtime enforcement, package-boundary enforcement, ArchUnit dependency/enforcement, source-name guard implementation, package moves, routing/scoring/strategy/proxy/API behavior changes, reviewer portal/dashboard/API behavior, or production claims |
 
 These are proposed ADRs, not accepted ADRs. They do not prove implementation, package enforcement, runtime enforcement, production readiness, or production certification.
 
@@ -172,15 +172,16 @@ These are proposed ADRs, not accepted ADRs. They do not prove implementation, pa
 - Safe next documentation slice: review the docs/test-only ADR-0007 draft before any new reviewer proof, dashboard, portal, API, evidence generation, report generation, or certification-adjacent claim.
 - Explicit non-claims: no reviewer portal implementation, no reviewer dashboard implementation, no reviewer API implementation, no production certification, no correctness validation, no live-cloud validation, no real-tenant validation, no production safety proof, and no production readiness claim.
 
-## ADR-0008 Future External Signal Context Boundaries
+## ADR-0008 Runtime Enforcement And Package Boundary Plan
 
-- Decision area: ADR-0008 future external signal context boundaries.
-- Why it matters: The architecture report points toward external context such as workload, compute, GPU, grid, facility, carbon, and power signals. A future ADR should define read-only context boundaries before any external integration exists.
-- Existing related docs: [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md), [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md), [`ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md).
-- Current status: documented only and future-only. ExternalSignalPort and WorkloadProfile signal metadata are design contracts, not implementation.
-- Implementation boundary: must not implement external clients, HTTP calls, signal ingestion, telemetry/storage/persistence, GPU orchestration, power/grid control, facility automation, or carbon-aware routing.
-- Safe next documentation slice: a docs/test-only ADR-0008 that defines read-only signal context, freshness, trust labels, unavailable states, and control-plane prohibitions.
-- Explicit non-claims: no ExternalSignalPort implementation, no WorkloadProfile implementation, no runtime signal ingestion, no GPU orchestration, no power/grid control, no carbon-aware routing implementation, and no facility automation.
+- Proposed ADR draft: [`adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md`](adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md).
+- Decision area: ADR-0008 runtime enforcement and package boundary plan.
+- Why it matters: The architecture report points toward stronger guardrails before autonomy. A future ADR should define how runtime enforcement, package boundaries, forbidden dependency checks, and mutation-authority checks could eventually keep LASE/adaptive decision logic separate from live routing, evidence, external signals, reviewer explanation, and production traffic mutation.
+- Existing related docs: [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md), [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md), [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md), [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md), [`ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md), [`adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md).
+- Current status: proposed / planning-only. Existing docs describe LASE boundary, package-boundary planning, source-name guard planning, and safety modes, but runtime enforcement, package-boundary enforcement, ArchUnit enforcement, source-name guard implementation, package moves, and mutation-authority checks are not active.
+- Implementation boundary: must not implement runtime enforcement, package-boundary enforcement, ArchUnit dependency/enforcement, source-name guard implementation, package moves or renames, reviewer portal/dashboard/API behavior, EvidencePacket/EvidenceAssembler implementation, replay execution, evidence/report generation, storage/persistence, filesystem-writing/export behavior, routing/scoring/strategy/proxy/API behavior changes, or production traffic controls.
+- Safe next documentation slice: review the docs/test-only ADR-0008 draft before any runtime enforcement, package-boundary enforcement, ArchUnit-style rule, source-name guard implementation, package move, explicit port, adapter boundary, mutation-authority check, safety-mode runtime test, or forbidden dependency check.
+- Explicit non-claims: no runtime LASE enforcement, no package-boundary enforcement, no ArchUnit enforcement, no source-name guard implementation, no package moves, no routing/scoring/strategy/proxy/API behavior changes, no autonomous production traffic shifting, no production readiness claim, and no production certification claim.
 
 ## ADR Readiness Checklist
 
@@ -208,7 +209,7 @@ Suggested sequencing:
 5. Review [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) before any implementation that could affect active-experiment, cloud, release, registry, governance, external-control, runtime safety enforcement, or traffic-changing boundaries.
 6. Review [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md) before any EvidencePacket, EvidenceAssembler, replay execution, report generation, storage/retention, filesystem-writing, export/upload/download/PDF/ZIP, or evidence packet schema proposal.
 7. Review [`adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md) before any new reviewer proof, dashboard, portal, API, evidence generation, report generation, or certification-adjacent claim.
-8. Write ADR-0008 future external signal context boundaries before any external signal ingestion, external client, or Tier 2/Tier 3 context implementation.
+8. Review [`adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md`](adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md) before any runtime enforcement, package-boundary enforcement, ArchUnit-style rule, source-name guard implementation, package move, explicit port, adapter boundary, mutation-authority check, safety-mode runtime test, forbidden dependency check, or production-traffic-control proposal.
 
 The sequence is advisory. It does not authorize implementation.
 

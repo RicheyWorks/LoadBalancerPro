@@ -22,6 +22,8 @@ This ADR is planning-only. This does not implement Docker Compose files, scripts
 
 This ADR does not add Docker Compose implementation. This ADR does not add scripts implementation. This ADR does not add fake backend node implementation. This ADR does not add k6 scenario implementation. This ADR does not add Bruno collection implementation. This ADR does not add Prometheus/Grafana implementation. This ADR does not add Toxiproxy implementation. This ADR does not change API behavior. This ADR does not change routing behavior. This ADR does not change scoring behavior. This ADR does not change strategy behavior. This ADR does not change proxy behavior. This ADR does not add config/resource/runtime changes. This ADR does not add Maven dependency changes. This ADR does not add CI changes.
 
+PR #250 adds only a test-scope scenario model/catalog. It does not implement fake backend servers. It does not implement Docker Compose, k6, Bruno, Toxiproxy, Prometheus/Grafana, scripts, networking, or runtime behavior. It is a stepping stone toward future local lab tooling.
+
 ## Decision
 
 If a future implementation sprint is separately approved, LoadBalancerPro should grow a Local Lab Kit that can simulate a small datacenter on one Windows machine before real server hardware is purchased.

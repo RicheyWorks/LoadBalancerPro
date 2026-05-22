@@ -77,6 +77,7 @@ Reviewer entry points:
 - [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) drafts ADR-0002 as a proposed/planning-only LASE integration model without runtime LASE enforcement, `LaseObservationPort`, replay execution, policy-gate expansion, or behavior changes.
 - [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) drafts ADR-0003 as a proposed/planning-only evidence architecture model without EvidencePacket, EvidenceAssembler, report generation, JSON output, storage/persistence/telemetry, replay execution, or behavior changes.
 - [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) drafts ADR-0004 as a proposed/planning-only workload realism and scenario modeling architecture model without WorkloadProfile, ScenarioGenerator, workload generators, trace import, replay execution, EvidencePacket/report generation, JSON output, storage/persistence/telemetry, or behavior changes.
+- [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) drafts ADR-0005 as a proposed/planning-only safety boundary and guardrail model without runtime enforcement, active traffic shifting, replay execution, evidence/report generation, storage/persistence, workload generation, trace import, external signal ingestion, or behavior changes.
 - [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) frames current Tier 1 routing focus and future Tier 2/Tier 3 signal concepts.
 - [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) documents a future read-only external signal port target.
 - [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) documents future workload metadata.
@@ -99,7 +100,7 @@ Each phase lists report phase name, current documentation coverage, related repo
 
 - Report phase name: Phase 0 discovery and north-star definition.
 - Current documentation coverage: already documented through product identity, reviewer trust, enterprise readiness, and architecture positioning.
-- Related repo docs: [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md), [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md).
+- Related repo docs: [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md), [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md), [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md).
 - Current implementation status: partial; reviewer-facing Enterprise Lab behavior exists, but the architecture report is broader than current runtime scope.
 - Recommended next safe sprint type: review [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) as a proposed/planning-only ADR draft before any package plan, package move, or enforcement tool proposal.
 - Explicit not-proven boundary: north-star alignment is not production readiness, production certification, live-cloud validation, or real-tenant validation.
@@ -171,19 +172,19 @@ Each phase lists report phase name, current documentation coverage, related repo
 
 - Report phase name: Phase 8 configuration and safe control plane.
 - Current documentation coverage: partially documented through configuration, proxy containment, private-network gates, governance recommendations, and enterprise readiness boundaries.
-- Related repo docs: [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md).
-- Current implementation status: partial; current config/proxy safety docs exist, but future control-plane behavior described by the report is future-only.
-- Recommended next safe sprint type: docs-only safe control-plane readiness plan.
+- Related repo docs: [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md).
+- Current implementation status: partial and planning-only; current config/proxy safety docs exist, ADR-0005 is proposed/planning-only, and future control-plane behavior described by the report is future-only.
+- Recommended next safe sprint type: review [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) before any safe control-plane readiness plan, policy-gate expansion, runtime safety enforcement, or active-experiment proposal.
 - Explicit not-proven boundary: no control-plane implementation, no cloud mutation, no facility/grid/GPU control, no config additions, and no governance mutation.
 
 ## Phase 9 Alignment: Security And Guardrail Hardening
 
 - Report phase name: Phase 9 security and guardrail hardening.
 - Current documentation coverage: safety and guardrails alignment is documented through enterprise readiness, source-name guard planning, allowlist lifecycle planning, boundary naming, and no-overclaim rules.
-- Related repo docs: [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md), [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md), [`SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md), [`SOURCE_NAME_GUARD_ALLOWLIST_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_DESIGN_PLAN.md), [`SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md).
-- Current implementation status: planning-only for source-name guard and allowlist lanes; existing security posture remains bounded by current implementation.
-- Recommended next safe sprint type: docs-only guardrail readiness summary.
-- Explicit not-proven boundary: no source-name guard implementation, no allowlist file, no source scanning, no runtime naming enforcement, and no package-boundary enforcement.
+- Related repo docs: [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md), [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md), [`SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md), [`SOURCE_NAME_GUARD_ALLOWLIST_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_DESIGN_PLAN.md), [`SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md).
+- Current implementation status: planning-only for ADR-0005, source-name guard, and allowlist lanes; existing security posture remains bounded by current implementation.
+- Recommended next safe sprint type: review [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) before any docs-only guardrail readiness summary or runtime safety enforcement proposal.
+- Explicit not-proven boundary: no runtime safety enforcement, no source-name guard implementation, no allowlist file, no source scanning, no runtime naming enforcement, and no package-boundary enforcement.
 
 ## Phase 10 Alignment: Testing, Chaos, Validation, Feedback
 
@@ -219,7 +220,7 @@ Cross-cutting principles from the architecture report align with the current doc
 - LASE alignment: current docs keep live allocation separate from shadow/evaluation and evidence concepts, but runtime LASE boundary enforcement is not active.
 - WorkloadProfile alignment: current docs define future metadata vocabulary, and ADR-0004 documents future workload realism and scenario modeling planning, but WorkloadProfile implementation, ScenarioGenerator implementation, workload generator implementation, trace import, and replay execution are not added. WorkloadProfile implementation and ScenarioGenerator implementation are not added.
 - Evidence alignment: current docs emphasize deterministic reviewer evidence, and ADR-0003 documents future evidence architecture planning, but EvidencePacket implementation not added, EvidenceAssembler implementation not added, report generation not added, and replay execution not added.
-- Safety and guardrails alignment: current docs preserve no-overclaim, no-production-certification, no-live-cloud, no-real-tenant, no-package-enforcement, and no-runtime-naming-enforcement boundaries.
+- Safety and guardrails alignment: current docs preserve no-overclaim, no-production-certification, no-live-cloud, no-real-tenant, no-package-enforcement, and no-runtime-naming-enforcement boundaries. ADR-0005 documents future observe-only, recommendation, shadow, active-experiment, and manual-promotion safety-mode planning, but runtime safety enforcement and active traffic shifting are not added.
 - Separation principle: live allocation, LASE shadow/evaluation, replay/evidence, reviewer metadata, and future control paths remain separated as documentation targets unless separately implemented.
 
 ## Current Documentation Coverage Table
@@ -230,7 +231,7 @@ Implementation status values: current repo behavior, documentation only, plannin
 
 | Architecture report area | Current repo document | Coverage type | Implementation status | Safe next action | Explicit boundary |
 | --- | --- | --- | --- | --- | --- |
-| North-star platform framing | [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md), [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) | already documented | current repo behavior plus planning only | ADR-0001, ADR-0002, ADR-0003, and ADR-0004 review and later ADR text slices | Not production-ready or production-certified |
+| North-star platform framing | [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md), [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md), [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) | already documented | current repo behavior plus planning only | ADR-0001 through ADR-0005 review and later ADR text slices | Not production-ready or production-certified |
 | Routing, compute, and facility signal strategy | [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) | already documented | planning only for Tier 2/Tier 3 | Docs-only strategy boundary refresh | No GPU orchestration, grid control, or carbon-aware routing implementation |
 | External context signals | [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) | planned only | future-only | ExternalSignalPort readiness plan | ExternalSignalPort implementation not added |
 | Workload modeling | [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md), [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) | planned only | future-only | ADR-0004 review before workload profile implementation readiness plan | WorkloadProfile, ScenarioGenerator, workload generator, trace import, and replay execution implementation not added |
@@ -240,6 +241,7 @@ Implementation status values: current repo behavior, documentation only, plannin
 | Future source-name report shape | [`SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md`](SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md) | planned only | future-only | Report schema readiness review | No report generation or JSON output |
 | Future source-name allowlists | [`SOURCE_NAME_GUARD_ALLOWLIST_DESIGN_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_DESIGN_PLAN.md), [`SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_LIFECYCLE_PLAN.md) | planned only | future-only | Allowlist readiness review | No allowlist files or source scanning |
 | Evidence and explainability | [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md) | partially documented | current repo behavior plus planning only | ADR-0003 review before any evidence packet schema readiness plan | EvidencePacket implementation and EvidenceAssembler implementation not added |
+| Safety boundaries and guardrails | [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md) | planned only | planning only | ADR-0005 review before runtime safety enforcement, active-experiment, policy-gate expansion, or control-plane proposals | Runtime safety enforcement, active traffic shifting, replay execution, evidence/report generation, storage/persistence, workload generation, trace import, and external signal ingestion not added |
 | Testing and validation | [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md) | partially documented | current repo behavior | Deterministic validation roadmap | No live-cloud or real-tenant validation |
 | Future research | [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) | future implementation candidate | future-only | Research roadmap alignment note | No facility automation or production certification |
 
@@ -258,6 +260,8 @@ Future-only implementation boundaries:
 - no ScenarioGenerator implementation is added;
 - no workload generator implementation is added;
 - no trace import is added;
+- no runtime safety enforcement is added;
+- no active traffic shifting is added;
 - no source-name guard implementation exists;
 - no source-name guard allowlist implementation exists;
 - no allowlist files or source scanning are added;
@@ -276,6 +280,7 @@ Recommended next architecture slices are documentation recommendations only:
 - [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) as the proposed/planning-only ADR-0002 LASE integration model draft;
 - [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) as the proposed/planning-only ADR-0003 evidence architecture draft;
 - [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) as the proposed/planning-only ADR-0004 workload realism and scenario modeling architecture draft;
+- [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) as the proposed/planning-only ADR-0005 safety boundaries and guardrails architecture draft;
 - Phase 1 domain model package plan;
 - Phase 4 LASE observation port readiness plan;
 - Phase 5 workload profile implementation readiness plan;

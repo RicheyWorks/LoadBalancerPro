@@ -43,7 +43,7 @@ Current status:
 
 Future implementation requires a separate approved sprint with API contracts, deterministic fixtures, reviewer documentation, security review, and explicit safety gates.
 
-The Phase 0 architecture ADR index is documented in [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md). That index names workload realism and scenario modeling as a planning-only ADR topic. It does not implement `WorkloadProfile`, ScenarioGenerator, runtime workload models, API fields, scoring influence, routing influence, signal ingestion, telemetry, secrets, or production behavior.
+The Phase 0 architecture ADR index is documented in [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md). That index names workload realism and scenario modeling as a planning-only ADR topic. The proposed ADR-0004 workload realism and scenario modeling draft is documented in [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md). It does not implement `WorkloadProfile`, ScenarioGenerator, workload generators, trace import, replay execution, runtime workload models, API fields, scoring influence, routing influence, signal ingestion, telemetry, secrets, or production behavior.
 
 ## Why WorkloadProfile Signal Metadata Matters
 

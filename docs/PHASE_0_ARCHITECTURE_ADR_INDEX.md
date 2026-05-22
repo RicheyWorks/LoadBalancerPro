@@ -2,7 +2,7 @@
 
 This document identifies the initial architecture decision record set recommended by the uploaded architecture report and maps those decision areas to the current LoadBalancerPro documentation set. It is an ADR index only, not implementation, and it does not add runtime architecture changes, package moves, source scanning, ArchUnit, dependencies, Maven build changes, API behavior, routing behavior, scoring behavior, strategy behavior, proxy behavior, config changes, Docker changes, CI changes, release changes, registry changes, governance changes, or production behavior.
 
-This is docs/test only. Proposed ADRs are planning only until separately written/approved in future scoped PRs. No package moves are introduced. No runtime LASE enforcement is introduced. No EvidencePacket implementation is introduced. No WorkloadProfile implementation is introduced. No ScenarioGenerator implementation is introduced. No ExternalSignalPort implementation is introduced. No production readiness claim is made. No production certification claim is made.
+This is docs/test only. Proposed ADRs are planning only until separately written/approved in future scoped PRs. No package moves are introduced. No runtime LASE enforcement is introduced. No EvidencePacket implementation is introduced. No EvidenceAssembler implementation is introduced. No WorkloadProfile implementation is introduced. No ScenarioGenerator implementation is introduced. No ExternalSignalPort implementation is introduced. No production readiness claim is made. No production certification claim is made.
 
 ## Executive Summary
 
@@ -86,7 +86,7 @@ The proposed Phase 0 ADR set is:
 | --- | --- | --- | --- |
 | ADR-0001 | layered architecture boundary | proposed / planning-only draft in [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) | Keep ADR-0001 docs/test-only until separately reviewed; no package moves, ArchUnit, package-boundary enforcement, or runtime behavior changes |
 | ADR-0002 | LASE integration model | proposed / planning-only draft in [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) | Keep ADR-0002 docs/test-only until separately reviewed; no runtime LASE enforcement, `LaseObservationPort`, package-boundary enforcement, replay execution, or behavior changes |
-| ADR-0003 | evidence as first-class artifact | planning only | Write ADR-0003 as docs/test-only evidence decision text |
+| ADR-0003 | evidence as first-class artifact | proposed / planning-only draft in [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) | Keep ADR-0003 docs/test-only until separately reviewed; no EvidencePacket, EvidenceAssembler, report generation, JSON output, storage/persistence/telemetry/audit log, replay execution, or behavior changes |
 | ADR-0004 | workload realism and scenario modeling | planning only | Write ADR-0004 as docs/test-only workload realism decision text |
 | ADR-0005 | safety boundaries and guardrails | planning only | Write ADR-0005 as docs/test-only safety boundary decision text |
 | ADR-0006 | live allocation vs shadow evaluation separation | planning only | Write ADR-0006 as docs/test-only separation decision text |
@@ -119,13 +119,14 @@ These are proposed ADRs, not accepted ADRs. They do not prove implementation, pa
 
 ## ADR-0003 Evidence As First-Class Artifact
 
+- Proposed ADR draft: [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md).
 - Decision area: ADR-0003 evidence as first-class artifact.
 - Why it matters: The architecture report treats evidence packets, reviewer evidence, audit trail, and explainability as architecture concerns. A future ADR should define those terms before new evidence artifacts or report generation exist.
 - Existing related docs: [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md), [`SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md`](SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md), [`SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md), [`SOURCE_NAME_GUARD_REPORT_ACCEPTANCE_CRITERIA_PLAN.md`](SOURCE_NAME_GUARD_REPORT_ACCEPTANCE_CRITERIA_PLAN.md).
-- Current status: current behavior plus planning only. Current reviewer evidence exists, but the architecture-report-level EvidencePacket remains future-only.
-- Implementation boundary: must not implement EvidencePacket; must not add report generation; must not add JSON/YAML/TOML output; must not add upload/share/download/export/PDF/ZIP behavior.
-- Safe next documentation slice: a docs/test-only ADR-0003 that defines evidence artifact terms, retention boundaries, deterministic expectations, and reviewer value.
-- Explicit non-claims: no EvidencePacket implementation, no report generation, no audit-trail persistence, no replay execution, no correctness validation, and no production certification claim.
+- Current status: proposed / planning-only. Current reviewer evidence exists, but the architecture-report-level EvidencePacket and EvidenceAssembler concepts remain future-only.
+- Implementation boundary: must not implement EvidencePacket; must not implement EvidenceAssembler; must not add report generation; must not add JSON/YAML/TOML output; must not add storage, persistence, telemetry, audit log implementation, replay execution, or upload/share/download/export/PDF/ZIP behavior.
+- Safe next documentation slice: review the docs/test-only ADR-0003 draft before any EvidencePacket, EvidenceAssembler, report generation, storage/retention, replay, or evidence packet schema proposal.
+- Explicit non-claims: no EvidencePacket implementation, no EvidenceAssembler implementation, no report generation, no audit-trail persistence, no replay execution, no correctness validation, and no production certification claim.
 
 ## ADR-0004 Workload Realism And Scenario Modeling
 
@@ -198,7 +199,7 @@ Suggested sequencing:
 
 1. Review [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) before any package plan or enforcement tool proposal.
 2. Review [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) before any runtime LASE boundary enforcement, observation port, policy-gate expansion, or replay execution proposal.
-3. Write ADR-0003 evidence as first-class artifact before any EvidencePacket or report generation proposal.
+3. Review [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) before any EvidencePacket, EvidenceAssembler, report generation, storage/retention, or replay execution proposal.
 4. Write ADR-0004 workload realism and scenario modeling before any WorkloadProfile or ScenarioGenerator implementation proposal.
 5. Write ADR-0005 safety boundaries and guardrails before any implementation that could affect cloud, release, registry, governance, or external-control boundaries.
 6. Write ADR-0006 live allocation vs shadow evaluation separation before any policy-gate expansion or LASE influence proposal.
@@ -219,12 +220,14 @@ Future-only implementation boundaries:
 - no ExternalSignalPort implementation exists;
 - no WorkloadProfile implementation exists;
 - no EvidencePacket implementation exists;
+- no EvidenceAssembler implementation exists;
 - no ScenarioGenerator implementation exists;
 - no source-name guard implementation exists;
 - no allowlist implementation exists;
 - no source scanning is added;
 - no report generation is added;
 - no JSON/YAML/TOML output is added;
+- no replay execution is added;
 - no telemetry/storage/persistence implementation is added;
 - no external client or HTTP call is added;
 - no GPU orchestration, power/grid control, carbon-aware routing implementation, or facility automation is added;
@@ -252,6 +255,7 @@ Hard boundaries for this sprint:
 - no ExternalSignalPort implementation;
 - no WorkloadProfile implementation;
 - no EvidencePacket implementation;
+- no EvidenceAssembler implementation;
 - no ScenarioGenerator implementation;
 - no observability, telemetry, storage, or persistence;
 - no external API clients;

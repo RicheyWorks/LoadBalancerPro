@@ -1,6 +1,6 @@
 # LoadBalancerPro
 
-## Enterprise Lab Cockpit, Not a Demo
+## Enterprise Lab Cockpit
 
 LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
 

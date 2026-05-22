@@ -62,7 +62,8 @@ This Phase 0 ADR index is the next documentation slice recommended by that align
 - safety guardrails;
 - evidence packet and replay boundary model;
 - reviewer evidence and trust;
-- runtime enforcement and package boundary planning.
+- runtime enforcement and package boundary planning;
+- local lab kit and simulated datacenter test harness planning.
 
 This document does not implement those ADRs. It only identifies what future ADRs should cover and how reviewers can inspect existing related documentation today.
 
@@ -92,6 +93,7 @@ The proposed Phase 0 ADR set is:
 | ADR-0006 | evidence packet and replay boundary model | proposed / planning-only draft in [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md) | Keep ADR-0006 docs/test-only until separately reviewed; no EvidencePacket, EvidenceAssembler, replay execution, evidence/report generation, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, or behavior changes |
 | ADR-0007 | reviewer evidence and trust model | proposed / planning-only draft in [`adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md) | Keep ADR-0007 docs/test-only until separately reviewed; no reviewer portal/dashboard/API implementation, evidence/report generation, replay execution, storage/persistence, export/upload/download/PDF/ZIP behavior, or behavior changes |
 | ADR-0008 | runtime enforcement and package boundary plan | proposed / planning-only draft in [`adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md`](adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md) | Keep ADR-0008 docs/test-only until separately reviewed; no runtime enforcement, package-boundary enforcement, ArchUnit dependency/enforcement, source-name guard implementation, package moves, routing/scoring/strategy/proxy/API behavior changes, reviewer portal/dashboard/API behavior, or production claims |
+| ADR-0009 | local lab kit and simulated datacenter test harness plan | proposed / planning-only draft in [`adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md`](adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md) | Keep ADR-0009 docs/test-only until separately reviewed; no Docker Compose files, scripts, fake backend nodes, k6 scenarios, Bruno collections, Toxiproxy configuration, Prometheus/Grafana dashboards, replay/storage/export behavior, routing/scoring/strategy/proxy/API behavior changes, or production claims |
 
 These are proposed ADRs, not accepted ADRs. They do not prove implementation, package enforcement, runtime enforcement, production readiness, or production certification.
 
@@ -183,6 +185,17 @@ These are proposed ADRs, not accepted ADRs. They do not prove implementation, pa
 - Safe next documentation slice: review the docs/test-only ADR-0008 draft before any runtime enforcement, package-boundary enforcement, ArchUnit-style rule, source-name guard implementation, package move, explicit port, adapter boundary, mutation-authority check, safety-mode runtime test, or forbidden dependency check.
 - Explicit non-claims: no runtime LASE enforcement, no package-boundary enforcement, no ArchUnit enforcement, no source-name guard implementation, no package moves, no routing/scoring/strategy/proxy/API behavior changes, no autonomous production traffic shifting, no production readiness claim, and no production certification claim.
 
+## ADR-0009 Local Lab Kit And Simulated Datacenter Test Harness Plan
+
+- Proposed ADR draft: [`adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md`](adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md).
+- Decision area: ADR-0009 local lab kit and simulated datacenter test harness plan.
+- Why it matters: The architecture report points toward richer testing, chaos, validation, feedback, and adaptive-routing evidence. A future ADR should define how a repeatable local lab can model partial degradation, p95/p99 tail latency, overload and queue pressure, error-prone backends, recovery behavior, and reviewer/operator evidence before real hardware is purchased.
+- Existing related docs: [`LOCAL_LAB_SCENARIO_MATRIX.md`](LOCAL_LAB_SCENARIO_MATRIX.md), [`ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md), [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md), [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md), [`adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md), [`adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md`](adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md).
+- Current status: proposed / planning-only. The Local Lab Kit and simulated datacenter plan is documented, but Docker Compose lab implementation, scripts, fake backend nodes, k6 scenarios, Bruno collections, Toxiproxy configuration, Prometheus/Grafana dashboards, replay/storage/export behavior, and runtime routing behavior are not added.
+- Implementation boundary: must not add Docker Compose files, scripts, fake backend nodes, k6 scenario files, Bruno collections, Prometheus/Grafana dashboards, Toxiproxy configuration, runtime LASE enforcement, package-boundary enforcement, routing/scoring/strategy/proxy/API behavior changes, EvidencePacket/EvidenceAssembler implementation, replay execution, report generation, storage/persistence, export behavior, or production certification claims.
+- Safe next documentation slice: review the docs/test-only ADR-0009 draft and local lab scenario matrix before any local lab implementation, fake backend, load-test, API collection, degradation tooling, observability, LAN hardware, or Acer AI mini experiment proposal.
+- Explicit non-claims: no Docker Compose implementation, no scripts implementation, no fake backend implementation, no k6 implementation, no Bruno implementation, no Prometheus/Grafana implementation, no Toxiproxy implementation, no runtime behavior change, no production readiness claim, no production certification claim, no live-cloud validation claim, and no real-tenant validation claim.
+
 ## ADR Readiness Checklist
 
 Before any proposed ADR is written or accepted, reviewers should confirm:
@@ -210,6 +223,7 @@ Suggested sequencing:
 6. Review [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md) before any EvidencePacket, EvidenceAssembler, replay execution, report generation, storage/retention, filesystem-writing, export/upload/download/PDF/ZIP, or evidence packet schema proposal.
 7. Review [`adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md) before any new reviewer proof, dashboard, portal, API, evidence generation, report generation, or certification-adjacent claim.
 8. Review [`adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md`](adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md) before any runtime enforcement, package-boundary enforcement, ArchUnit-style rule, source-name guard implementation, package move, explicit port, adapter boundary, mutation-authority check, safety-mode runtime test, forbidden dependency check, or production-traffic-control proposal.
+9. Review [`adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md`](adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md) and [`LOCAL_LAB_SCENARIO_MATRIX.md`](LOCAL_LAB_SCENARIO_MATRIX.md) before any Docker Compose lab, fake backend node, k6 scenario, Bruno collection, Toxiproxy configuration, Prometheus/Grafana dashboard, LAN server, Acer AI mini, replay/storage/export, or production-validation proposal.
 
 The sequence is advisory. It does not authorize implementation.
 
@@ -237,12 +251,19 @@ Future-only implementation boundaries:
 - no source scanning is added;
 - no report generation is added;
 - no JSON/YAML/TOML output is added;
+- no Docker Compose lab implementation is added;
+- no fake backend node implementation is added;
+- no k6 scenario files are added;
+- no Bruno collections are added;
+- no Toxiproxy configuration is added;
 - no replay execution is added;
 - no telemetry/storage/persistence implementation is added;
 - no filesystem-writing implementation is added;
 - no export/upload/download/PDF/ZIP behavior is added;
 - no external client or HTTP call is added;
 - no GPU orchestration, power/grid control, carbon-aware routing implementation, or facility automation is added;
+- no local lab simulation is treated as production proof;
+- no LAN server or Acer AI mini experiment is treated as production infrastructure;
 - no production readiness claim, production certification claim, live-cloud validation claim, or real-tenant validation claim is made.
 
 ## Safety Boundaries And Non-Goals
@@ -276,6 +297,11 @@ Hard boundaries for this sprint:
 - no HTTP calls;
 - no secrets, tokens, environment variables, credentials, config, or properties;
 - no MessageDigest, SHA, UUID, random, time, environment, or system-property behavior;
+- no Docker Compose lab implementation;
+- no fake backend node implementation;
+- no k6 scenario files;
+- no Bruno collections;
+- no Toxiproxy configuration;
 - no replay execution;
 - no what-if mutation;
 - no upload/share/download/export/PDF/ZIP behavior;
@@ -297,4 +323,4 @@ Hard boundaries for this sprint:
 
 This index helps reviewers inspect the first architecture decisions recommended by the report without treating the report as implementation proof. It provides a compact map from future ADR topics to current docs, current status, implementation boundaries, and safe next documentation slices.
 
-The value is reviewer navigation and decision scoping only. Phase 0 ADR index is not implementation. Architecture report alignment index is not implementation. Production readiness, production certification, live-cloud validation, real-tenant validation, GPU orchestration, power/grid control, carbon-aware routing implementation, facility automation, ExternalSignalPort implementation, WorkloadProfile implementation, EvidencePacket implementation, ScenarioGenerator implementation, runtime LASE boundary enforcement, package-boundary enforcement, ArchUnit tooling, and source-name guard implementation remain not proven.
+The value is reviewer navigation and decision scoping only. Phase 0 ADR index is not implementation. Architecture report alignment index is not implementation. ADR-0009 and the Local Lab Scenario Matrix are not local lab implementation. Production readiness, production certification, live-cloud validation, real-tenant validation, Docker Compose lab implementation, fake backend node implementation, k6 scenario implementation, Bruno collection implementation, Toxiproxy configuration, Prometheus/Grafana dashboard implementation, GPU orchestration, power/grid control, carbon-aware routing implementation, facility automation, ExternalSignalPort implementation, WorkloadProfile implementation, EvidencePacket implementation, ScenarioGenerator implementation, runtime LASE boundary enforcement, package-boundary enforcement, ArchUnit tooling, and source-name guard implementation remain not proven.

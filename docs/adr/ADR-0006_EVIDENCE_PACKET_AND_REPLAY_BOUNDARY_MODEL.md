@@ -413,6 +413,7 @@ Related docs:
 - [`ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) defines the proposed future safety boundary and guardrail model.
 - [`ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md) defines the proposed future reviewer evidence and trust model.
 - [`ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md`](ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md) defines the proposed future runtime enforcement and package-boundary plan that should keep EvidencePacket, EvidenceAssembler, replay-facing evidence, reviewer explanation, and runtime authority separated until separately implemented.
+- [`ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md`](ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md) drafts the proposed future Local Lab Kit and simulated datacenter test harness plan so future lab scenarios can define evidence expectations without adding EvidencePacket implementation, EvidenceAssembler implementation, replay execution, report generation, storage, or export behavior.
 - [`../ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](../ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md) maps evidence, replay, auditability, explainability, and future-only boundaries to current docs.
 - [`../REVIEWER_TRUST_MAP.md`](../REVIEWER_TRUST_MAP.md) provides reviewer navigation and evidence boundaries.
 - [`../ENTERPRISE_READINESS_AUDIT.md`](../ENTERPRISE_READINESS_AUDIT.md) records readiness posture and not-proven boundaries.

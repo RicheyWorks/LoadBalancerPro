@@ -63,7 +63,7 @@ class Phase0ArchitectureAdrIndexDocumentationTest {
                 "ADR-0005 safety boundaries and guardrails",
                 "ADR-0006 evidence packet and replay boundary model",
                 "ADR-0007 reviewer evidence and trust model",
-                "ADR-0008 future external signal context boundaries")) {
+                "ADR-0008 runtime enforcement and package boundary plan")) {
             assertTrue(doc.contains(expected), "ADR index should include proposed ADR item " + expected);
         }
     }
@@ -90,7 +90,7 @@ class Phase0ArchitectureAdrIndexDocumentationTest {
                 "must not implement ScenarioGenerator",
                 "must not mutate cloud resources",
                 "must not add replay execution, evidence/report generation",
-                "must not implement external clients, HTTP calls, signal ingestion")) {
+                "must not implement runtime enforcement, package-boundary enforcement")) {
             assertTrue(doc.contains(expected), "ADR index should include metadata/boundary item " + expected);
         }
     }

@@ -55,7 +55,9 @@ Current status:
 
 Future implementation requires a separate approved sprint with API contracts, test fixtures, security review, reviewer documentation, and explicit safety gates.
 
-The Phase 0 architecture ADR index is documented in [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md). That index names future external signal context boundaries as a planning-only ADR topic. It does not implement `ExternalSignalPort`, adapters, external clients, HTTP calls, signal ingestion, telemetry, secrets, GPU orchestration, power/grid control, carbon-aware routing, facility automation, or production behavior.
+The Phase 0 architecture ADR index is documented in [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md). That index now names ADR-0008 as a runtime enforcement and package-boundary planning topic while this contract remains the external signal context reference. It does not implement `ExternalSignalPort`, adapters, external clients, HTTP calls, signal ingestion, telemetry, secrets, GPU orchestration, power/grid control, carbon-aware routing, facility automation, or production behavior.
+
+The proposed runtime enforcement and package boundary ADR is documented in [`adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md`](adr/ADR-0008_RUNTIME_ENFORCEMENT_AND_PACKAGE_BOUNDARY_PLAN.md). It keeps future external signal ingestion behind explicit ports/contracts and future enforcement review without adding `ExternalSignalPort` implementation, external clients, HTTP calls, signal ingestion, package-boundary enforcement, ArchUnit dependency/enforcement, routing/scoring/strategy/proxy/API behavior changes, GPU orchestration, power/grid control, carbon-aware routing, facility automation, or production behavior.
 
 ## Read-Only Signal Boundary
 

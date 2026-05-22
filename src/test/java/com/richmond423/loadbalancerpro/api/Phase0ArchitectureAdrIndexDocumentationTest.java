@@ -61,7 +61,7 @@ class Phase0ArchitectureAdrIndexDocumentationTest {
                 "ADR-0003 evidence as first-class artifact",
                 "ADR-0004 workload realism and scenario modeling",
                 "ADR-0005 safety boundaries and guardrails",
-                "ADR-0006 live allocation vs shadow evaluation separation",
+                "ADR-0006 evidence packet and replay boundary model",
                 "ADR-0007 reviewer evidence and trust model",
                 "ADR-0008 future external signal context boundaries")) {
             assertTrue(doc.contains(expected), "ADR index should include proposed ADR item " + expected);
@@ -84,10 +84,12 @@ class Phase0ArchitectureAdrIndexDocumentationTest {
                 "must not claim package-boundary enforcement",
                 "must not implement runtime LASE enforcement",
                 "must not implement EvidencePacket",
+                "must not implement `EvidencePacket`",
+                "must not implement `EvidenceAssembler`",
                 "must not implement WorkloadProfile",
                 "must not implement ScenarioGenerator",
                 "must not mutate cloud resources",
-                "must not change routing behavior, scoring behavior, strategy behavior, proxy behavior",
+                "must not add replay execution, evidence/report generation",
                 "must not implement external clients, HTTP calls, signal ingestion")) {
             assertTrue(doc.contains(expected), "ADR index should include metadata/boundary item " + expected);
         }
@@ -164,6 +166,9 @@ class Phase0ArchitectureAdrIndexDocumentationTest {
                 "no ExternalSignalPort implementation exists",
                 "no WorkloadProfile implementation exists",
                 "no EvidencePacket implementation exists",
+                "no EvidenceAssembler implementation exists",
+                "no filesystem-writing implementation is added",
+                "no export/upload/download/PDF/ZIP behavior is added",
                 "no ScenarioGenerator implementation exists",
                 "no source-name guard implementation exists",
                 "no allowlist implementation exists",

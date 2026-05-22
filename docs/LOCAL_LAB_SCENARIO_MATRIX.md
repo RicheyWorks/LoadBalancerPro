@@ -10,6 +10,8 @@ Local simulation is useful evidence. Local simulation is not production certific
 
 PR #250 adds only a test-scope scenario model/catalog. It does not implement fake backend servers. It does not implement Docker Compose, k6, Bruno, Toxiproxy, Prometheus/Grafana, scripts, networking, or runtime behavior. It is a stepping stone toward future local lab tooling.
 
+This PR adds test-scope response fixtures only. The fixtures describe future fake backend response expectations. It is not fake backend server implementation. It does not implement fake backend servers. It does not start listeners, open ports, call localhost, generate traffic, run Docker, k6, Bruno, Toxiproxy, Prometheus/Grafana, scripts, networking, or runtime behavior. Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana remain future tooling, and this is not production proof.
+
 ## Scenario Matrix
 
 | Future scenario | Purpose | Expected signals | Expected evidence | Not-proven boundary | Future tool candidate |

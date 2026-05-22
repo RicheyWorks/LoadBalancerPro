@@ -234,7 +234,7 @@ Any future scoring influence must require a separate approved sprint, explicit s
 
 `ExternalSignalPort` is separate from a future `WorkloadProfile`.
 
-The future `WorkloadProfile` metadata design contract is documented in [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md). That contract is documentation-only and does not implement Java records/classes, API fields, workload model code, routing behavior, scoring behavior, strategy behavior, proxy behavior, signal ingestion, persistence, telemetry, secrets, environment variables, or production behavior.
+The future `WorkloadProfile` metadata design contract is documented in [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md). That contract is documentation-only and does not implement Java records/classes, API fields, workload model code, routing behavior, scoring behavior, strategy behavior, proxy behavior, signal ingestion, persistence, telemetry, secrets, environment variables, or production behavior. The proposed ADR-0004 workload realism and scenario modeling draft is documented in [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md). ADR-0004 is documentation-only and does not implement workload generators, trace import, replay execution, or production behavior.
 
 Potential future relationship:
 

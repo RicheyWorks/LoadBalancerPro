@@ -2,7 +2,7 @@
 
 This document maps the uploaded architecture report, "LoadBalancerPro: Adaptive Routing Experimentation & Evidence Platform - Engineering Architecture Report, Iterated v4", to the current LoadBalancerPro documentation set. It is an alignment index only, not implementation, and it does not add runtime architecture changes, package moves, source scanning, ArchUnit, dependencies, Maven build changes, API behavior, routing behavior, scoring behavior, strategy behavior, proxy behavior, config changes, Docker changes, CI changes, release changes, registry changes, governance changes, or production behavior.
 
-This is docs/test only. Future phases are not implemented merely because they are documented. Future implementation would require separate scoped PR review. No production readiness claim is made. No production certification claim is made. No live-cloud validation claim is made. No real-tenant validation claim is made. No runtime-enforced LASE boundary is active. No package-boundary enforcement is active. No ExternalSignalPort implementation exists. No WorkloadProfile implementation exists. No EvidencePacket implementation exists. No EvidenceAssembler implementation exists.
+This is docs/test only. Future phases are not implemented merely because they are documented. Future implementation would require separate scoped PR review. No production readiness claim is made. No production certification claim is made. No live-cloud validation claim is made. No real-tenant validation claim is made. No runtime-enforced LASE boundary is active. No package-boundary enforcement is active. No ExternalSignalPort implementation exists. No WorkloadProfile implementation exists. No ScenarioGenerator implementation exists. No workload generator implementation exists. No trace import exists. No EvidencePacket implementation exists. No EvidenceAssembler implementation exists.
 
 ## Executive Summary
 
@@ -37,6 +37,9 @@ Current status:
 - no routing, scoring, strategy, proxy, config, Docker, CI, release, signing, registry, governance, or production behavior changes;
 - no ExternalSignalPort implementation;
 - no WorkloadProfile implementation;
+- no ScenarioGenerator implementation;
+- no workload generator implementation;
+- no trace import;
 - no EvidencePacket implementation;
 - no workload scenario generator implementation;
 - no observability/telemetry/storage/persistence implementation;
@@ -73,6 +76,7 @@ Reviewer entry points:
 - [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) drafts ADR-0001 as a proposed/planning-only layered architecture boundary without package moves, ArchUnit, package-boundary enforcement, or runtime behavior changes.
 - [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) drafts ADR-0002 as a proposed/planning-only LASE integration model without runtime LASE enforcement, `LaseObservationPort`, replay execution, policy-gate expansion, or behavior changes.
 - [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) drafts ADR-0003 as a proposed/planning-only evidence architecture model without EvidencePacket, EvidenceAssembler, report generation, JSON output, storage/persistence/telemetry, replay execution, or behavior changes.
+- [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) drafts ADR-0004 as a proposed/planning-only workload realism and scenario modeling architecture model without WorkloadProfile, ScenarioGenerator, workload generators, trace import, replay execution, EvidencePacket/report generation, JSON output, storage/persistence/telemetry, or behavior changes.
 - [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) frames current Tier 1 routing focus and future Tier 2/Tier 3 signal concepts.
 - [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) documents a future read-only external signal port target.
 - [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) documents future workload metadata.
@@ -95,7 +99,7 @@ Each phase lists report phase name, current documentation coverage, related repo
 
 - Report phase name: Phase 0 discovery and north-star definition.
 - Current documentation coverage: already documented through product identity, reviewer trust, enterprise readiness, and architecture positioning.
-- Related repo docs: [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md).
+- Related repo docs: [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md), [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md).
 - Current implementation status: partial; reviewer-facing Enterprise Lab behavior exists, but the architecture report is broader than current runtime scope.
 - Recommended next safe sprint type: review [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) as a proposed/planning-only ADR draft before any package plan, package move, or enforcement tool proposal.
 - Explicit not-proven boundary: north-star alignment is not production readiness, production certification, live-cloud validation, or real-tenant validation.
@@ -140,10 +144,10 @@ Each phase lists report phase name, current documentation coverage, related repo
 
 - Report phase name: Phase 5 workload modeling and scenario generation.
 - Current documentation coverage: WorkloadProfile alignment is documented as future signal metadata, while current scenario evidence remains local and bounded.
-- Related repo docs: [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
-- Current implementation status: partial and future-only; current deterministic local scenarios exist, but WorkloadProfile implementation and ScenarioGenerator implementation are not added.
-- Recommended next safe sprint type: Phase 5 workload profile implementation readiness plan.
-- Explicit not-proven boundary: no WorkloadProfile implementation, no workload scenario generator implementation, no routing/scoring behavior change, and no production workload modeling proof.
+- Related repo docs: [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md), [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
+- Current implementation status: partial and future-only; current deterministic local scenarios exist, but ADR-0004 is proposed/planning-only and WorkloadProfile, ScenarioGenerator, workload generator, trace import, and replay execution implementation are not added.
+- Recommended next safe sprint type: review [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) before any Phase 5 workload profile implementation readiness plan, ScenarioGenerator implementation, workload generator, trace import, or replay execution proposal.
+- Explicit not-proven boundary: no WorkloadProfile implementation, no workload scenario generator implementation, no workload generator implementation, no trace import, no replay execution, no routing/scoring behavior change, no live-cloud validation, no real-tenant validation, and no production workload modeling proof.
 
 ## Phase 6 Alignment: Evidence, Audit Trail, And Explainability
 
@@ -213,7 +217,7 @@ Each phase lists report phase name, current documentation coverage, related repo
 Cross-cutting principles from the architecture report align with the current documentation set as follows:
 
 - LASE alignment: current docs keep live allocation separate from shadow/evaluation and evidence concepts, but runtime LASE boundary enforcement is not active.
-- WorkloadProfile alignment: current docs define future metadata vocabulary, but WorkloadProfile implementation is not added.
+- WorkloadProfile alignment: current docs define future metadata vocabulary, and ADR-0004 documents future workload realism and scenario modeling planning, but WorkloadProfile implementation, ScenarioGenerator implementation, workload generator implementation, trace import, and replay execution are not added. WorkloadProfile implementation and ScenarioGenerator implementation are not added.
 - Evidence alignment: current docs emphasize deterministic reviewer evidence, and ADR-0003 documents future evidence architecture planning, but EvidencePacket implementation not added, EvidenceAssembler implementation not added, report generation not added, and replay execution not added.
 - Safety and guardrails alignment: current docs preserve no-overclaim, no-production-certification, no-live-cloud, no-real-tenant, no-package-enforcement, and no-runtime-naming-enforcement boundaries.
 - Separation principle: live allocation, LASE shadow/evaluation, replay/evidence, reviewer metadata, and future control paths remain separated as documentation targets unless separately implemented.
@@ -226,10 +230,10 @@ Implementation status values: current repo behavior, documentation only, plannin
 
 | Architecture report area | Current repo document | Coverage type | Implementation status | Safe next action | Explicit boundary |
 | --- | --- | --- | --- | --- | --- |
-| North-star platform framing | [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) | already documented | current repo behavior plus planning only | ADR-0001, ADR-0002, and ADR-0003 review and later ADR text slices | Not production-ready or production-certified |
+| North-star platform framing | [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md), [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) | already documented | current repo behavior plus planning only | ADR-0001, ADR-0002, ADR-0003, and ADR-0004 review and later ADR text slices | Not production-ready or production-certified |
 | Routing, compute, and facility signal strategy | [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) | already documented | planning only for Tier 2/Tier 3 | Docs-only strategy boundary refresh | No GPU orchestration, grid control, or carbon-aware routing implementation |
 | External context signals | [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) | planned only | future-only | ExternalSignalPort readiness plan | ExternalSignalPort implementation not added |
-| Workload modeling | [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) | planned only | future-only | Workload profile implementation readiness plan | WorkloadProfile implementation not added |
+| Workload modeling | [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md), [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) | planned only | future-only | ADR-0004 review before workload profile implementation readiness plan | WorkloadProfile, ScenarioGenerator, workload generator, trace import, and replay execution implementation not added |
 | LASE/live allocation boundary | [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md) | partially documented | planning only | LASE observation port readiness plan after ADR-0002 review | Runtime LASE boundary not enforced |
 | Package-boundary enforcement | [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md) | planned only | not implemented | Package-boundary readiness review | ArchUnit/package-boundary tooling not added |
 | Naming and source-name guardrails | [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md), [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md), [`LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md`](LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md), [`SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md) | partially documented | planning only | Source-name guard implementation readiness review | Source-name guard not implemented |
@@ -252,6 +256,8 @@ Future-only implementation boundaries:
 - no EvidencePacket implementation is added;
 - no EvidenceAssembler implementation is added;
 - no ScenarioGenerator implementation is added;
+- no workload generator implementation is added;
+- no trace import is added;
 - no source-name guard implementation exists;
 - no source-name guard allowlist implementation exists;
 - no allowlist files or source scanning are added;
@@ -269,6 +275,7 @@ Recommended next architecture slices are documentation recommendations only:
 - [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) as the proposed/planning-only ADR-0001 layered architecture boundary draft;
 - [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) as the proposed/planning-only ADR-0002 LASE integration model draft;
 - [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) as the proposed/planning-only ADR-0003 evidence architecture draft;
+- [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) as the proposed/planning-only ADR-0004 workload realism and scenario modeling architecture draft;
 - Phase 1 domain model package plan;
 - Phase 4 LASE observation port readiness plan;
 - Phase 5 workload profile implementation readiness plan;
@@ -301,6 +308,8 @@ Hard boundaries for this sprint:
 - no evidence packet implementation;
 - no evidence assembler implementation;
 - no workload scenario generator implementation;
+- no workload generator implementation;
+- no trace import;
 - no observability, telemetry, storage, or persistence;
 - no external API clients;
 - no HTTP calls;
@@ -327,4 +336,4 @@ Hard boundaries for this sprint:
 
 This index gives reviewers a single map between the architecture report and the current documentation set. It makes it easier to tell which report concepts are current, partial, planning-only, future-only, or not implemented, while keeping future roadmap items separate from implementation proof.
 
-The value is strategic architecture summary and reviewer navigation only. Architecture report alignment index is not implementation. Production readiness, production certification, live-cloud validation, real-tenant validation, GPU orchestration, power/grid control, carbon-aware routing implementation, facility automation, ExternalSignalPort implementation, WorkloadProfile implementation, EvidencePacket implementation, ScenarioGenerator implementation, runtime LASE boundary enforcement, package-boundary enforcement, ArchUnit tooling, and source-name guard implementation remain not proven.
+The value is strategic architecture summary and reviewer navigation only. Architecture report alignment index is not implementation. Production readiness, production certification, live-cloud validation, real-tenant validation, GPU orchestration, power/grid control, carbon-aware routing implementation, facility automation, ExternalSignalPort implementation, WorkloadProfile implementation, EvidencePacket implementation, ScenarioGenerator implementation, workload generator implementation, trace import, replay execution, runtime LASE boundary enforcement, package-boundary enforcement, ArchUnit tooling, and source-name guard implementation remain not proven.

@@ -298,7 +298,7 @@ This sprint does not implement ExternalSignalPort, external signal ingestion, or
 
 ## Relationship To WorkloadProfile Signal Metadata
 
-The future WorkloadProfile signal metadata design contract is documented in [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md). WorkloadProfile remains a documentation-only metadata concept.
+The future WorkloadProfile signal metadata design contract is documented in [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md). The proposed ADR-0004 workload realism and scenario modeling draft is documented in [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md). WorkloadProfile and ScenarioGenerator remain documentation-only metadata and scenario concepts.
 
 Future WorkloadProfile metadata may help LASE generate deterministic shadow comparisons and evidence. It must not by itself change live routing behavior without explicit future policy gates.
 
@@ -309,7 +309,7 @@ Safe future relationship:
 - Missing or stale metadata must degrade safely.
 - WorkloadProfile metadata must not become hidden scoring, routing, strategy, proxy, or production behavior.
 
-This sprint does not implement WorkloadProfile records/classes, API fields, workload model code, or runtime LASE integration.
+This sprint does not implement WorkloadProfile records/classes, ScenarioGenerator classes, workload generators, trace import, replay execution, API fields, workload model code, or runtime LASE integration.
 
 ## Future Implementation Gates
 

@@ -2,7 +2,7 @@
 
 This document identifies the initial architecture decision record set recommended by the uploaded architecture report and maps those decision areas to the current LoadBalancerPro documentation set. It is an ADR index only, not implementation, and it does not add runtime architecture changes, package moves, source scanning, ArchUnit, dependencies, Maven build changes, API behavior, routing behavior, scoring behavior, strategy behavior, proxy behavior, config changes, Docker changes, CI changes, release changes, registry changes, governance changes, or production behavior.
 
-This is docs/test only. Proposed ADRs are planning only until separately written/approved in future scoped PRs. No package moves are introduced. No runtime LASE enforcement is introduced. No EvidencePacket implementation is introduced. No EvidenceAssembler implementation is introduced. No WorkloadProfile implementation is introduced. No ScenarioGenerator implementation is introduced. No ExternalSignalPort implementation is introduced. No production readiness claim is made. No production certification claim is made.
+This is docs/test only. Proposed ADRs are planning only until separately written/approved in future scoped PRs. No package moves are introduced. No runtime LASE enforcement is introduced. No EvidencePacket implementation is introduced. No EvidenceAssembler implementation is introduced. No WorkloadProfile implementation is introduced. No ScenarioGenerator implementation is introduced. No workload generator implementation is introduced. No trace import is introduced. No ExternalSignalPort implementation is introduced. No production readiness claim is made. No production certification claim is made.
 
 ## Executive Summary
 
@@ -87,7 +87,7 @@ The proposed Phase 0 ADR set is:
 | ADR-0001 | layered architecture boundary | proposed / planning-only draft in [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) | Keep ADR-0001 docs/test-only until separately reviewed; no package moves, ArchUnit, package-boundary enforcement, or runtime behavior changes |
 | ADR-0002 | LASE integration model | proposed / planning-only draft in [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) | Keep ADR-0002 docs/test-only until separately reviewed; no runtime LASE enforcement, `LaseObservationPort`, package-boundary enforcement, replay execution, or behavior changes |
 | ADR-0003 | evidence as first-class artifact | proposed / planning-only draft in [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) | Keep ADR-0003 docs/test-only until separately reviewed; no EvidencePacket, EvidenceAssembler, report generation, JSON output, storage/persistence/telemetry/audit log, replay execution, or behavior changes |
-| ADR-0004 | workload realism and scenario modeling | planning only | Write ADR-0004 as docs/test-only workload realism decision text |
+| ADR-0004 | workload realism and scenario modeling | proposed / planning-only draft in [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) | Keep ADR-0004 docs/test-only until separately reviewed; no WorkloadProfile, ScenarioGenerator, workload generator, trace import, replay execution, EvidencePacket/report generation, JSON output, storage/persistence/telemetry, or behavior changes |
 | ADR-0005 | safety boundaries and guardrails | planning only | Write ADR-0005 as docs/test-only safety boundary decision text |
 | ADR-0006 | live allocation vs shadow evaluation separation | planning only | Write ADR-0006 as docs/test-only separation decision text |
 | ADR-0007 | reviewer evidence and trust model | planning only | Write ADR-0007 as docs/test-only reviewer trust decision text |
@@ -130,13 +130,14 @@ These are proposed ADRs, not accepted ADRs. They do not prove implementation, pa
 
 ## ADR-0004 Workload Realism And Scenario Modeling
 
+- Proposed ADR draft: [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md).
 - Decision area: ADR-0004 workload realism and scenario modeling.
 - Why it matters: The architecture report recommends richer workload profiles and scenario generation. A future ADR should define what workload realism means before adding runtime models.
-- Existing related docs: [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md), [`ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
-- Current status: documented only and future-only. WorkloadProfile signal metadata is documented as a future design contract, while ScenarioGenerator implementation is not added.
-- Implementation boundary: must not implement WorkloadProfile; must not implement ScenarioGenerator; must not add runtime workload model code; must not change routing, scoring, strategy, or proxy behavior.
-- Safe next documentation slice: a docs/test-only ADR-0004 that defines workload realism vocabulary, fixture boundaries, scenario quality, and not-proven limits.
-- Explicit non-claims: no WorkloadProfile implementation, no ScenarioGenerator implementation, no production workload modeling proof, no GPU orchestration, no power/grid control, and no carbon-aware routing implementation.
+- Existing related docs: [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md), [`ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md).
+- Current status: proposed / planning-only. WorkloadProfile signal metadata is documented as a future design contract, while WorkloadProfile, ScenarioGenerator, workload generator, trace import, and replay execution implementation are not added.
+- Implementation boundary: must not implement WorkloadProfile; must not implement ScenarioGenerator; must not add workload generators, trace import, replay execution, EvidencePacket/report generation, JSON output, storage/persistence/telemetry, runtime workload model code, or routing/scoring/strategy/proxy/API behavior changes.
+- Safe next documentation slice: review the docs/test-only ADR-0004 draft before any WorkloadProfile, ScenarioGenerator, workload generator, trace import, replay execution, or workload profile implementation readiness proposal.
+- Explicit non-claims: no WorkloadProfile implementation, no ScenarioGenerator implementation, no workload generator implementation, no trace import, no replay execution, no production workload modeling proof, no live-cloud validation, no real-tenant validation, no GPU orchestration, no power/grid control, and no carbon-aware routing implementation.
 
 ## ADR-0005 Safety Boundaries And Guardrails
 
@@ -200,7 +201,7 @@ Suggested sequencing:
 1. Review [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) before any package plan or enforcement tool proposal.
 2. Review [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) before any runtime LASE boundary enforcement, observation port, policy-gate expansion, or replay execution proposal.
 3. Review [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) before any EvidencePacket, EvidenceAssembler, report generation, storage/retention, or replay execution proposal.
-4. Write ADR-0004 workload realism and scenario modeling before any WorkloadProfile or ScenarioGenerator implementation proposal.
+4. Review [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) before any WorkloadProfile, ScenarioGenerator, workload generator, trace import, replay execution, or workload profile implementation readiness proposal.
 5. Write ADR-0005 safety boundaries and guardrails before any implementation that could affect cloud, release, registry, governance, or external-control boundaries.
 6. Write ADR-0006 live allocation vs shadow evaluation separation before any policy-gate expansion or LASE influence proposal.
 7. Write ADR-0007 reviewer evidence and trust model before any new reviewer proof, dashboard, or certification-adjacent claim.
@@ -222,6 +223,8 @@ Future-only implementation boundaries:
 - no EvidencePacket implementation exists;
 - no EvidenceAssembler implementation exists;
 - no ScenarioGenerator implementation exists;
+- no workload generator implementation exists;
+- no trace import exists;
 - no source-name guard implementation exists;
 - no allowlist implementation exists;
 - no source scanning is added;
@@ -257,6 +260,8 @@ Hard boundaries for this sprint:
 - no EvidencePacket implementation;
 - no EvidenceAssembler implementation;
 - no ScenarioGenerator implementation;
+- no workload generators;
+- no trace import;
 - no observability, telemetry, storage, or persistence;
 - no external API clients;
 - no HTTP calls;

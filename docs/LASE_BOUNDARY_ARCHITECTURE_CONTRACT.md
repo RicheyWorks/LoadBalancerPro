@@ -63,6 +63,8 @@ ADR-0002 is drafted in [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_L
 
 ADR-0005 is drafted in [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md). That ADR is proposed/planning-only safety boundary guidance. It maps future observe-only, recommendation, shadow, active-experiment, and manual-promotion guardrails without adding runtime enforcement, active traffic shifting, replay execution, evidence/report generation, storage/persistence, workload generation, trace import, external signal ingestion, or behavior changes.
 
+ADR-0006 is drafted in [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md). That ADR is proposed/planning-only evidence packet and replay boundary guidance. It maps future `EvidencePacket`, `EvidenceAssembler`, replay-facing evidence, deterministic assembly, privacy, filesystem/artifact, and not-proven boundaries without adding EvidencePacket implementation, EvidenceAssembler implementation, replay execution, evidence/report generation, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, or behavior changes.
+
 ## Why The LASE/Live Allocation Boundary Matters
 
 LASE is useful because it can compare strategies, explain tradeoffs, evaluate scenarios, and generate evidence while the live allocation path remains understandable and bounded. That value weakens if shadow evaluation can silently mutate live state or become an unreviewed routing authority.

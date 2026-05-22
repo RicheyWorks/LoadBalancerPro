@@ -214,6 +214,8 @@ The proposed LASE integration ADR is drafted in [`adr/ADR-0002_LASE_INTEGRATION_
 
 The proposed safety boundaries ADR is drafted in [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md). That ADR is planning-only and keeps future external signal context behind policy/operator gates, provenance expectations, privacy constraints, and no-hidden-mutation boundaries without adding ExternalSignalPort implementation, signal ingestion, external clients, HTTP calls, runtime enforcement, active traffic shifting, GPU orchestration, power/grid control, carbon-aware routing, or facility automation.
 
+The proposed evidence packet and replay boundary model ADR is drafted in [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md). That ADR is planning-only and keeps future external signal/source provenance evidence read-only, privacy-safe, and not-proving without adding EvidencePacket implementation, EvidenceAssembler implementation, replay execution, evidence/report generation, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, external signal ingestion, external clients, HTTP calls, or production claims.
+
 Safe future uses:
 
 - show optional external context alongside a routing comparison;

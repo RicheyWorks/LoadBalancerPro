@@ -2,7 +2,7 @@
 
 This document identifies the initial architecture decision record set recommended by the uploaded architecture report and maps those decision areas to the current LoadBalancerPro documentation set. It is an ADR index only, not implementation, and it does not add runtime architecture changes, package moves, source scanning, ArchUnit, dependencies, Maven build changes, API behavior, routing behavior, scoring behavior, strategy behavior, proxy behavior, config changes, Docker changes, CI changes, release changes, registry changes, governance changes, or production behavior.
 
-This is docs/test only. Proposed ADRs are planning only until separately written/approved in future scoped PRs. No package moves are introduced. No runtime LASE enforcement is introduced. No runtime safety enforcement is introduced. No EvidencePacket implementation is introduced. No EvidenceAssembler implementation is introduced. No WorkloadProfile implementation is introduced. No ScenarioGenerator implementation is introduced. No workload generator implementation is introduced. No trace import is introduced. No ExternalSignalPort implementation is introduced. No production readiness claim is made. No production certification claim is made.
+This is docs/test only. Proposed ADRs are planning only until separately written/approved in future scoped PRs. No package moves are introduced. No runtime LASE enforcement is introduced. No runtime safety enforcement is introduced. No EvidencePacket implementation is introduced. No EvidenceAssembler implementation is introduced. No WorkloadProfile implementation is introduced. No ScenarioGenerator implementation is introduced. No workload generator implementation is introduced. No trace import is introduced. No ExternalSignalPort implementation is introduced. No replay execution, filesystem-writing behavior, report generation, storage/persistence, export, upload, download, PDF, or ZIP behavior is introduced. No production readiness claim is made. No production certification claim is made.
 
 ## Executive Summary
 
@@ -60,7 +60,7 @@ This Phase 0 ADR index is the next documentation slice recommended by that align
 - evidence as an architecture artifact;
 - workload realism;
 - safety guardrails;
-- live allocation and shadow evaluation separation;
+- evidence packet and replay boundary model;
 - reviewer evidence and trust;
 - future external signal context boundaries.
 
@@ -89,7 +89,7 @@ The proposed Phase 0 ADR set is:
 | ADR-0003 | evidence as first-class artifact | proposed / planning-only draft in [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) | Keep ADR-0003 docs/test-only until separately reviewed; no EvidencePacket, EvidenceAssembler, report generation, JSON output, storage/persistence/telemetry/audit log, replay execution, or behavior changes |
 | ADR-0004 | workload realism and scenario modeling | proposed / planning-only draft in [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) | Keep ADR-0004 docs/test-only until separately reviewed; no WorkloadProfile, ScenarioGenerator, workload generator, trace import, replay execution, EvidencePacket/report generation, JSON output, storage/persistence/telemetry, or behavior changes |
 | ADR-0005 | safety boundaries and guardrails | proposed / planning-only draft in [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) | Keep ADR-0005 docs/test-only until separately reviewed; no runtime enforcement, active traffic shifting, replay execution, evidence/report generation, storage/persistence, workload generation, trace import, external signal ingestion, or behavior changes |
-| ADR-0006 | live allocation vs shadow evaluation separation | planning only | Write ADR-0006 as docs/test-only separation decision text |
+| ADR-0006 | evidence packet and replay boundary model | proposed / planning-only draft in [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md) | Keep ADR-0006 docs/test-only until separately reviewed; no EvidencePacket, EvidenceAssembler, replay execution, evidence/report generation, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, or behavior changes |
 | ADR-0007 | reviewer evidence and trust model | planning only | Write ADR-0007 as docs/test-only reviewer trust decision text |
 | ADR-0008 | future external signal context boundaries | planning only | Write ADR-0008 as docs/test-only external signal context decision text |
 
@@ -150,15 +150,16 @@ These are proposed ADRs, not accepted ADRs. They do not prove implementation, pa
 - Safe next documentation slice: review the docs/test-only ADR-0005 draft before any active-experiment implementation, runtime safety enforcement, policy-gate expansion, or external-control proposal.
 - Explicit non-claims: no runtime safety enforcement, no autonomous production traffic shifting, no cloud mutation, no GitHub settings mutation, no registry publication, no release creation, no container signing, no production readiness claim, and no production certification claim.
 
-## ADR-0006 Live Allocation Vs Shadow Evaluation Separation
+## ADR-0006 Evidence Packet And Replay Boundary Model
 
-- Decision area: ADR-0006 live allocation vs shadow evaluation separation.
-- Why it matters: The architecture report repeatedly separates production decision paths from shadow/evidence evaluation paths. A future ADR should define that separation before any future policy or package enforcement work.
-- Existing related docs: [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), [`ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md).
-- Current status: current behavior plus planning only. Current controlled lab behavior and docs preserve separation language, while future runtime enforcement remains not implemented.
-- Implementation boundary: must not change routing behavior, scoring behavior, strategy behavior, proxy behavior, API behavior, or production behavior.
-- Safe next documentation slice: a docs/test-only ADR-0006 that defines live allocation, shadow evaluation, recommendation, reviewer evidence, and future policy-gate meanings.
-- Explicit non-claims: no routing behavior change, no scoring-internals change, no strategy behavior change, no proxy behavior change, no runtime LASE enforcement, and no production traffic-control claim.
+- Proposed ADR draft: [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md).
+- Decision area: ADR-0006 evidence packet and replay boundary model.
+- Why it matters: The architecture report treats evidence packets, replay-facing evidence, deterministic comparison, and auditability as future architecture concerns. A future ADR should define `EvidencePacket`, `EvidenceAssembler`, and replay evidence boundaries before adding runtime replay, report generation, storage, persistence, filesystem-writing behavior, exports, uploads, downloads, PDFs, ZIPs, or production claims.
+- Existing related docs: [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md), [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md), [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md), [`ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md), [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md).
+- Current status: proposed / planning-only. Current reviewer evidence exists, but architecture-level `EvidencePacket`, `EvidenceAssembler`, replay execution, report generation, storage/persistence, filesystem-writing behavior, and export/upload/download/PDF/ZIP behavior remain future-only.
+- Implementation boundary: must not implement `EvidencePacket`; must not implement `EvidenceAssembler`; must not add replay execution, evidence/report generation, JSON/YAML/TOML output, storage, persistence, telemetry, audit log implementation, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, PR comments, CI artifacts, or behavior changes.
+- Safe next documentation slice: review the docs/test-only ADR-0006 draft before any EvidencePacket, EvidenceAssembler, replay execution, report generation, storage/retention, filesystem-writing, export/upload/download/PDF/ZIP, or evidence packet schema proposal.
+- Explicit non-claims: no EvidencePacket implementation, no EvidenceAssembler implementation, no replay execution, no report generation, no storage/persistence, no filesystem-writing implementation, no export/upload/download/PDF/ZIP behavior, no correctness validation, no replay proof, no production readiness claim, and no production certification claim.
 
 ## ADR-0007 Reviewer Evidence And Trust Model
 
@@ -204,7 +205,7 @@ Suggested sequencing:
 3. Review [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) before any EvidencePacket, EvidenceAssembler, report generation, storage/retention, or replay execution proposal.
 4. Review [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) before any WorkloadProfile, ScenarioGenerator, workload generator, trace import, replay execution, or workload profile implementation readiness proposal.
 5. Review [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) before any implementation that could affect active-experiment, cloud, release, registry, governance, external-control, runtime safety enforcement, or traffic-changing boundaries.
-6. Write ADR-0006 live allocation vs shadow evaluation separation before any policy-gate expansion or LASE influence proposal.
+6. Review [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md) before any EvidencePacket, EvidenceAssembler, replay execution, report generation, storage/retention, filesystem-writing, export/upload/download/PDF/ZIP, or evidence packet schema proposal.
 7. Write ADR-0007 reviewer evidence and trust model before any new reviewer proof, dashboard, or certification-adjacent claim.
 8. Write ADR-0008 future external signal context boundaries before any external signal ingestion, external client, or Tier 2/Tier 3 context implementation.
 
@@ -235,6 +236,8 @@ Future-only implementation boundaries:
 - no JSON/YAML/TOML output is added;
 - no replay execution is added;
 - no telemetry/storage/persistence implementation is added;
+- no filesystem-writing implementation is added;
+- no export/upload/download/PDF/ZIP behavior is added;
 - no external client or HTTP call is added;
 - no GPU orchestration, power/grid control, carbon-aware routing implementation, or facility automation is added;
 - no production readiness claim, production certification claim, live-cloud validation claim, or real-tenant validation claim is made.

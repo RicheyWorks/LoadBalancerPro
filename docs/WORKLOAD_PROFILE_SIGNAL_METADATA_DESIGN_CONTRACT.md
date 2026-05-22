@@ -67,6 +67,8 @@ Future LASE or shadow evaluation could use WorkloadProfile metadata as declared 
 
 The future LASE/live allocation boundary is documented in [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md). That contract is documentation-only and does not implement runtime boundary enforcement, package refactors, ArchUnit rules, Java ports, API fields, routing behavior, scoring behavior, strategy behavior, proxy behavior, signal ingestion, persistence, telemetry, secrets, environment variables, or production behavior.
 
+The proposed LASE integration ADR is drafted in [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md). That ADR is planning-only and keeps future WorkloadProfile context reviewer-facing/read-only for LASE without adding runtime LASE enforcement, `LaseObservationPort`, WorkloadProfile implementation, replay execution, routing/scoring/strategy/proxy/API behavior changes, or production-readiness claims.
+
 Safe future uses:
 
 - show declared workload assumptions beside a strategy comparison;

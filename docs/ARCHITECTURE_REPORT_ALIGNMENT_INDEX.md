@@ -71,6 +71,7 @@ Reviewer entry points:
 - [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md) records the current Enterprise Lab readiness posture.
 - [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md) names the initial planning-only Phase 0 ADR set recommended by the architecture report.
 - [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) drafts ADR-0001 as a proposed/planning-only layered architecture boundary without package moves, ArchUnit, package-boundary enforcement, or runtime behavior changes.
+- [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) drafts ADR-0002 as a proposed/planning-only LASE integration model without runtime LASE enforcement, `LaseObservationPort`, replay execution, policy-gate expansion, or behavior changes.
 - [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) frames current Tier 1 routing focus and future Tier 2/Tier 3 signal concepts.
 - [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) documents a future read-only external signal port target.
 - [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) documents future workload metadata.
@@ -93,7 +94,7 @@ Each phase lists report phase name, current documentation coverage, related repo
 
 - Report phase name: Phase 0 discovery and north-star definition.
 - Current documentation coverage: already documented through product identity, reviewer trust, enterprise readiness, and architecture positioning.
-- Related repo docs: [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md).
+- Related repo docs: [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md).
 - Current implementation status: partial; reviewer-facing Enterprise Lab behavior exists, but the architecture report is broader than current runtime scope.
 - Recommended next safe sprint type: review [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) as a proposed/planning-only ADR draft before any package plan, package move, or enforcement tool proposal.
 - Explicit not-proven boundary: north-star alignment is not production readiness, production certification, live-cloud validation, or real-tenant validation.
@@ -129,9 +130,9 @@ Each phase lists report phase name, current documentation coverage, related repo
 
 - Report phase name: Phase 4 LASE shadow evaluation and policy gates.
 - Current documentation coverage: LASE alignment is documented through policy framing, boundary architecture, boundary inventories, package-boundary planning, naming guard planning, and source-name guard planning.
-- Related repo docs: [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md), [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md), [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md), [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md), [`LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md`](LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md).
+- Related repo docs: [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md), [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md), [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md), [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md), [`LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md`](LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md).
 - Current implementation status: partial and planning-only; current LASE policy/evidence concepts exist, but runtime-enforced LASE package boundaries and source-name guard enforcement are not active.
-- Recommended next safe sprint type: Phase 4 LASE observation port readiness plan.
+- Recommended next safe sprint type: review [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) before any Phase 4 LASE observation port readiness plan, runtime LASE enforcement, replay execution, or policy-gate expansion.
 - Explicit not-proven boundary: LASE boundary not runtime-enforced, LASE package boundary not enforced, ArchUnit/package-boundary tooling not added, and source-name guard not implemented.
 
 ## Phase 5 Alignment: Workload Modeling And Scenario Generation
@@ -224,11 +225,11 @@ Implementation status values: current repo behavior, documentation only, plannin
 
 | Architecture report area | Current repo document | Coverage type | Implementation status | Safe next action | Explicit boundary |
 | --- | --- | --- | --- | --- | --- |
-| North-star platform framing | [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) | already documented | current repo behavior plus planning only | ADR-0001 review and later ADR text slices | Not production-ready or production-certified |
+| North-star platform framing | [`README.md`](../README.md), [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md), [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md), [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) | already documented | current repo behavior plus planning only | ADR-0001 and ADR-0002 review and later ADR text slices | Not production-ready or production-certified |
 | Routing, compute, and facility signal strategy | [`THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) | already documented | planning only for Tier 2/Tier 3 | Docs-only strategy boundary refresh | No GPU orchestration, grid control, or carbon-aware routing implementation |
 | External context signals | [`EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) | planned only | future-only | ExternalSignalPort readiness plan | ExternalSignalPort implementation not added |
 | Workload modeling | [`WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) | planned only | future-only | Workload profile implementation readiness plan | WorkloadProfile implementation not added |
-| LASE/live allocation boundary | [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md) | partially documented | planning only | LASE observation port readiness plan | Runtime LASE boundary not enforced |
+| LASE/live allocation boundary | [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md), [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md) | partially documented | planning only | LASE observation port readiness plan after ADR-0002 review | Runtime LASE boundary not enforced |
 | Package-boundary enforcement | [`LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md`](LASE_PACKAGE_BOUNDARY_ENFORCEMENT_PLAN.md) | planned only | not implemented | Package-boundary readiness review | ArchUnit/package-boundary tooling not added |
 | Naming and source-name guardrails | [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md), [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md), [`LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md`](LASE_SOURCE_NAME_GUARD_FEASIBILITY_PLAN.md), [`SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md) | partially documented | planning only | Source-name guard implementation readiness review | Source-name guard not implemented |
 | Future source-name report shape | [`SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md`](SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md) | planned only | future-only | Report schema readiness review | No report generation or JSON output |
@@ -263,6 +264,7 @@ Recommended next architecture slices are documentation recommendations only:
 
 - [`PHASE_0_ARCHITECTURE_ADR_INDEX.md`](PHASE_0_ARCHITECTURE_ADR_INDEX.md) as the Phase 0 architecture ADR index;
 - [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) as the proposed/planning-only ADR-0001 layered architecture boundary draft;
+- [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) as the proposed/planning-only ADR-0002 LASE integration model draft;
 - Phase 1 domain model package plan;
 - Phase 4 LASE observation port readiness plan;
 - Phase 5 workload profile implementation readiness plan;

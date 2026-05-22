@@ -85,7 +85,7 @@ The proposed Phase 0 ADR set is:
 | ADR | Decision area | Current status | Safe next documentation slice |
 | --- | --- | --- | --- |
 | ADR-0001 | layered architecture boundary | proposed / planning-only draft in [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) | Keep ADR-0001 docs/test-only until separately reviewed; no package moves, ArchUnit, package-boundary enforcement, or runtime behavior changes |
-| ADR-0002 | LASE integration model | planning only | Write ADR-0002 as docs/test-only LASE integration decision text |
+| ADR-0002 | LASE integration model | proposed / planning-only draft in [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) | Keep ADR-0002 docs/test-only until separately reviewed; no runtime LASE enforcement, `LaseObservationPort`, package-boundary enforcement, replay execution, or behavior changes |
 | ADR-0003 | evidence as first-class artifact | planning only | Write ADR-0003 as docs/test-only evidence decision text |
 | ADR-0004 | workload realism and scenario modeling | planning only | Write ADR-0004 as docs/test-only workload realism decision text |
 | ADR-0005 | safety boundaries and guardrails | planning only | Write ADR-0005 as docs/test-only safety boundary decision text |
@@ -108,12 +108,13 @@ These are proposed ADRs, not accepted ADRs. They do not prove implementation, pa
 
 ## ADR-0002 LASE Integration Model
 
+- Proposed ADR draft: [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md).
 - Decision area: ADR-0002 LASE integration model.
 - Why it matters: LASE needs a clear architecture decision for how shadow/evidence paths relate to live allocation without becoming hidden routing authority.
 - Existing related docs: [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md), [`LASE_BOUNDARY_NAMING_GUARD_PLAN.md`](LASE_BOUNDARY_NAMING_GUARD_PLAN.md), [`LASE_NAMING_GUARD_INVENTORY.md`](LASE_NAMING_GUARD_INVENTORY.md).
-- Current status: documented only and planning only. LASE boundary concepts are documented, but runtime LASE boundary enforcement is not introduced.
+- Current status: proposed / planning-only. LASE boundary concepts and the ADR-0002 draft are documented, but runtime LASE boundary enforcement is not introduced.
 - Implementation boundary: must not implement runtime LASE enforcement; must not add package-boundary enforcement; must not change routing, scoring, strategy, or proxy behavior.
-- Safe next documentation slice: a docs/test-only ADR-0002 that defines LASE observation, recommendation, evidence, and policy-gate terms.
+- Safe next documentation slice: review the docs/test-only ADR-0002 draft before any runtime LASE enforcement, observation port, replay execution, policy-gate expansion, or package-boundary enforcement proposal.
 - Explicit non-claims: no runtime LASE enforcement, no package-boundary enforcement, no ArchUnit tooling, no production routing authority, and no production certification claim.
 
 ## ADR-0003 Evidence As First-Class Artifact
@@ -196,7 +197,7 @@ Before any proposed ADR is written or accepted, reviewers should confirm:
 Suggested sequencing:
 
 1. Review [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) before any package plan or enforcement tool proposal.
-2. Write ADR-0002 LASE integration model before any runtime LASE boundary enforcement proposal.
+2. Review [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md) before any runtime LASE boundary enforcement, observation port, policy-gate expansion, or replay execution proposal.
 3. Write ADR-0003 evidence as first-class artifact before any EvidencePacket or report generation proposal.
 4. Write ADR-0004 workload realism and scenario modeling before any WorkloadProfile or ScenarioGenerator implementation proposal.
 5. Write ADR-0005 safety boundaries and guardrails before any implementation that could affect cloud, release, registry, governance, or external-control boundaries.

@@ -14,6 +14,8 @@ The source-name guard review checklist is documented in [`SOURCE_NAME_GUARD_REVI
 
 ADR-0001 is drafted in [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md). That ADR is proposed/planning-only and records future layered architecture dependency guidance before any package moves, ArchUnit dependency, package-boundary enforcement, runtime architecture implementation, routing/scoring/strategy/proxy behavior change, or production-readiness claim.
 
+ADR-0002 is drafted in [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md). That ADR is proposed/planning-only and records future LASE integration guidance before any runtime LASE enforcement, `LaseObservationPort`, package-boundary enforcement, replay execution, routing/scoring/strategy/proxy/API behavior change, or production-readiness claim.
+
 ## Executive Summary
 
 PR #220 added [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md), which defines the desired future boundary between live allocation and LASE shadow/evidence paths. PR #221 added [`LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md), which maps the current tree into future boundary buckets.

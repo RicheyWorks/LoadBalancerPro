@@ -151,6 +151,7 @@ Costs and risks:
 Related docs:
 
 - [`../PHASE_0_ARCHITECTURE_ADR_INDEX.md`](../PHASE_0_ARCHITECTURE_ADR_INDEX.md) names ADR-0001 as a proposed Phase 0 ADR.
+- [`ADR-0002_LASE_INTEGRATION_MODEL.md`](ADR-0002_LASE_INTEGRATION_MODEL.md) drafts the proposed future LASE integration model as planning-only guidance for live allocation, shadow evaluation, replay, evidence, policy gates, observation ports, and external signal context.
 - [`../ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](../ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md) maps architecture report phases to current docs and future-only boundaries.
 - [`../LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](../LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md) defines the future LASE/live allocation boundary contract.
 - [`../LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md`](../LASE_BOUNDARY_ENFORCEMENT_INVENTORY.md) maps current classes into future boundary buckets.

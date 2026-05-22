@@ -90,7 +90,7 @@ The proposed Phase 0 ADR set is:
 | ADR-0004 | workload realism and scenario modeling | proposed / planning-only draft in [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) | Keep ADR-0004 docs/test-only until separately reviewed; no WorkloadProfile, ScenarioGenerator, workload generator, trace import, replay execution, EvidencePacket/report generation, JSON output, storage/persistence/telemetry, or behavior changes |
 | ADR-0005 | safety boundaries and guardrails | proposed / planning-only draft in [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) | Keep ADR-0005 docs/test-only until separately reviewed; no runtime enforcement, active traffic shifting, replay execution, evidence/report generation, storage/persistence, workload generation, trace import, external signal ingestion, or behavior changes |
 | ADR-0006 | evidence packet and replay boundary model | proposed / planning-only draft in [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md) | Keep ADR-0006 docs/test-only until separately reviewed; no EvidencePacket, EvidenceAssembler, replay execution, evidence/report generation, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, or behavior changes |
-| ADR-0007 | reviewer evidence and trust model | planning only | Write ADR-0007 as docs/test-only reviewer trust decision text |
+| ADR-0007 | reviewer evidence and trust model | proposed / planning-only draft in [`adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md) | Keep ADR-0007 docs/test-only until separately reviewed; no reviewer portal/dashboard/API implementation, evidence/report generation, replay execution, storage/persistence, export/upload/download/PDF/ZIP behavior, or behavior changes |
 | ADR-0008 | future external signal context boundaries | planning only | Write ADR-0008 as docs/test-only external signal context decision text |
 
 These are proposed ADRs, not accepted ADRs. They do not prove implementation, package enforcement, runtime enforcement, production readiness, or production certification.
@@ -163,13 +163,14 @@ These are proposed ADRs, not accepted ADRs. They do not prove implementation, pa
 
 ## ADR-0007 Reviewer Evidence And Trust Model
 
+- Proposed ADR draft: [`adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md).
 - Decision area: ADR-0007 reviewer evidence and trust model.
 - Why it matters: The architecture report emphasizes evidence, explainability, auditability, and reviewer trust. A future ADR should define the trust model before adding new dashboards, packets, or closure artifacts.
-- Existing related docs: [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md), [`SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md).
-- Current status: current behavior plus planning only. Reviewer trust documentation exists, but it does not certify correctness, production readiness, or production safety.
-- Implementation boundary: must not claim production certification, correctness validation, live-cloud validation, real-tenant validation, SLA/SLO proof, or production monitoring proof.
-- Safe next documentation slice: a docs/test-only ADR-0007 that defines reviewer trust inputs, proof boundaries, confidence language, and residual-risk language.
-- Explicit non-claims: no production certification, no correctness validation, no live-cloud validation, no real-tenant validation, no production safety proof, and no production readiness claim.
+- Existing related docs: [`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md), [`ENTERPRISE_READINESS_AUDIT.md`](ENTERPRISE_READINESS_AUDIT.md), [`ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md), [`adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](adr/ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md), [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md), [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md), [`SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_REPORT_REVIEW_CHECKLIST.md).
+- Current status: proposed / planning-only. Reviewer trust documentation and local reviewer evidence exist, but ADR-0007 does not certify correctness, production readiness, production safety, live-cloud validation, or real-tenant validation.
+- Implementation boundary: must not add reviewer portal/dashboard/API implementation, evidence/report generation, replay execution, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, runtime enforcement, or routing/scoring/strategy/proxy/API behavior changes.
+- Safe next documentation slice: review the docs/test-only ADR-0007 draft before any new reviewer proof, dashboard, portal, API, evidence generation, report generation, or certification-adjacent claim.
+- Explicit non-claims: no reviewer portal implementation, no reviewer dashboard implementation, no reviewer API implementation, no production certification, no correctness validation, no live-cloud validation, no real-tenant validation, no production safety proof, and no production readiness claim.
 
 ## ADR-0008 Future External Signal Context Boundaries
 
@@ -206,7 +207,7 @@ Suggested sequencing:
 4. Review [`adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md`](adr/ADR-0004_WORKLOAD_REALISM_AND_SCENARIO_MODELING.md) before any WorkloadProfile, ScenarioGenerator, workload generator, trace import, replay execution, or workload profile implementation readiness proposal.
 5. Review [`adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md`](adr/ADR-0005_SAFETY_BOUNDARIES_AND_GUARDRAILS.md) before any implementation that could affect active-experiment, cloud, release, registry, governance, external-control, runtime safety enforcement, or traffic-changing boundaries.
 6. Review [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md) before any EvidencePacket, EvidenceAssembler, replay execution, report generation, storage/retention, filesystem-writing, export/upload/download/PDF/ZIP, or evidence packet schema proposal.
-7. Write ADR-0007 reviewer evidence and trust model before any new reviewer proof, dashboard, or certification-adjacent claim.
+7. Review [`adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md) before any new reviewer proof, dashboard, portal, API, evidence generation, report generation, or certification-adjacent claim.
 8. Write ADR-0008 future external signal context boundaries before any external signal ingestion, external client, or Tier 2/Tier 3 context implementation.
 
 The sequence is advisory. It does not authorize implementation.
@@ -225,6 +226,7 @@ Future-only implementation boundaries:
 - no WorkloadProfile implementation exists;
 - no EvidencePacket implementation exists;
 - no EvidenceAssembler implementation exists;
+- no reviewer portal/dashboard/API implementation exists;
 - no ScenarioGenerator implementation exists;
 - no workload generator implementation exists;
 - no trace import exists;

@@ -216,6 +216,8 @@ The proposed safety boundaries ADR is drafted in [`adr/ADR-0005_SAFETY_BOUNDARIE
 
 The proposed evidence packet and replay boundary model ADR is drafted in [`adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md`](adr/ADR-0006_EVIDENCE_PACKET_AND_REPLAY_BOUNDARY_MODEL.md). That ADR is planning-only and keeps future external signal/source provenance evidence read-only, privacy-safe, and not-proving without adding EvidencePacket implementation, EvidenceAssembler implementation, replay execution, evidence/report generation, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, external signal ingestion, external clients, HTTP calls, or production claims.
 
+The proposed reviewer evidence and trust model ADR is drafted in [`adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md`](adr/ADR-0007_REVIEWER_EVIDENCE_AND_TRUST_MODEL.md). That ADR is planning-only and keeps future external signal/source provenance reviewable, non-certifying, and separated from runtime authority without adding reviewer portal/dashboard/API implementation, evidence/report generation, replay execution, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, external signal ingestion, external clients, HTTP calls, or production claims.
+
 Safe future uses:
 
 - show optional external context alongside a routing comparison;

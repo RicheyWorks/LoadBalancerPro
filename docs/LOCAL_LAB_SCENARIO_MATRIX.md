@@ -12,6 +12,8 @@ PR #250 adds only a test-scope scenario model/catalog. It does not implement fak
 
 This PR adds test-scope response fixtures only. The fixtures describe future fake backend response expectations. It is not fake backend server implementation. It does not implement fake backend servers. It does not start listeners, open ports, call localhost, generate traffic, run Docker, k6, Bruno, Toxiproxy, Prometheus/Grafana, scripts, networking, or runtime behavior. Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana remain future tooling, and this is not production proof.
 
+This PR adds test-scope passive transcript fixtures only. Transcripts describe future request/response evidence expectations. Transcripts do not execute HTTP requests. Transcripts do not implement fake backend servers. Transcripts do not start listeners, open ports, call localhost, generate traffic, run replay, write reports, persist storage, or run tools. Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana remain future tooling. This is still not production proof.
+
 ## Scenario Matrix
 
 | Future scenario | Purpose | Expected signals | Expected evidence | Not-proven boundary | Future tool candidate |

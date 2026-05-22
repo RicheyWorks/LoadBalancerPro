@@ -210,6 +210,8 @@ The future port could eventually provide optional context to LASE or shadow eval
 
 The future LASE/live allocation boundary is documented in [`LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md`](LASE_BOUNDARY_ARCHITECTURE_CONTRACT.md). That contract is documentation-only and does not implement runtime boundary enforcement, package refactors, ArchUnit rules, Java ports, API fields, routing behavior, scoring behavior, strategy behavior, proxy behavior, signal ingestion, persistence, telemetry, secrets, environment variables, or production behavior.
 
+The proposed LASE integration ADR is drafted in [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md). That ADR is planning-only and keeps future ExternalSignalPort context read-only for LASE without adding runtime LASE enforcement, `LaseObservationPort`, ExternalSignalPort implementation, signal ingestion, replay execution, routing/scoring/strategy/proxy/API behavior changes, or production-readiness claims.
+
 Safe future uses:
 
 - show optional external context alongside a routing comparison;

@@ -59,6 +59,8 @@ The Phase 0 architecture ADR index is documented in [`PHASE_0_ARCHITECTURE_ADR_I
 
 ADR-0001 is drafted in [`adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](adr/ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md). That ADR is proposed/planning-only layered architecture guidance. It maps future domain, allocation, LASE, evidence, infrastructure, API, config, and docs/tests boundaries without moving packages, adding ArchUnit, enforcing package boundaries, changing routing/scoring/strategy/proxy behavior, or claiming production readiness.
 
+ADR-0002 is drafted in [`adr/ADR-0002_LASE_INTEGRATION_MODEL.md`](adr/ADR-0002_LASE_INTEGRATION_MODEL.md). That ADR is proposed/planning-only LASE integration guidance. It maps future LASE relationships to live allocation, shadow evaluation, replay/comparison, evidence/reviewer metadata, policy gates, read-only observation ports, and future external signals without adding runtime LASE enforcement, `LaseObservationPort`, replay execution, package-boundary enforcement, routing/scoring/strategy/proxy/API behavior changes, or production-readiness claims.
+
 ## Why The LASE/Live Allocation Boundary Matters
 
 LASE is useful because it can compare strategies, explain tradeoffs, evaluate scenarios, and generate evidence while the live allocation path remains understandable and bounded. That value weakens if shadow evaluation can silently mutate live state or become an unreviewed routing authority.

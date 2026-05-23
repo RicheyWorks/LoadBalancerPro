@@ -22,7 +22,9 @@ This PR adds a docs/test-only k6/Bruno/Toxiproxy implementation boundary plan on
 
 The k6/Bruno/Toxiproxy boundary plan is now present. It explains future lanes for docs-only k6 scenario design, docs-only Bruno collection design, docs-only Toxiproxy fault model design, later tool files only after boundary approval, and future Docker Compose only after a separate Docker boundary plan. The plan is not tool implementation and does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, replay execution, evidence/report generation, storage/export, load testing, stress testing, benchmarking, throughput evidence, p95/p99 evidence, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
 
-This PR adds docs/test-only future tool scenario design specs only: [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). Future tool work must be separately scoped and must target local/lab endpoints first. The specs add no k6 scripts, no Bruno collections, no Toxiproxy config, no Docker Compose files, no scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence.
+PR #270 added docs/test-only future tool scenario design specs: [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). Future tool work must be separately scoped and must target local/lab endpoints first. Those specs added no k6 scripts, no Bruno collections, no Toxiproxy config, no Docker Compose files, no scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence.
+
+This sprint adds one optional local-lab k6 smoke script skeleton at [`../lab/k6/local-lab-smoke.js`](../lab/k6/local-lab-smoke.js). See [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md), [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). It is not CI-gated, not Dockerized, and must target local/lab-owned loopback endpoints by default. It does not add Bruno collections, Toxiproxy config, Docker Compose files, automatic execution, CI jobs, Maven dependencies, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark testing, throughput evidence, or p95/p99 evidence.
 
 ## End-of-Day Checkpoint
 
@@ -56,6 +58,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 24. Local-lab progress handoff docs.
 25. k6/Bruno/Toxiproxy implementation boundary plan.
 26. k6/Bruno/Toxiproxy scenario design specs.
+27. Optional local-lab k6 smoke script skeleton.
 
 ### What Is Actually Proven Today
 
@@ -68,6 +71,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - the bounded burst reviewer checklist can map in-memory burst summaries into reviewer-friendly bounded language;
 - the k6/Bruno/Toxiproxy boundary plan can define future tool lanes and stop conditions before any tool files exist;
 - the k6/Bruno/Toxiproxy scenario design specs can define future scenario, collection, and fault-model shapes before any tool files exist;
+- the optional local-lab k6 smoke script skeleton can document a tiny manual loopback-only k6 walkthrough without CI, Docker, production, benchmark, throughput, p95, or p99 claims;
 - reviewer checklist and handoff docs explain boundaries;
 - all current evidence is local/test-scope only.
 
@@ -79,7 +83,9 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - not real-tenant validation;
 - not runtime enforcement;
 - not production traffic behavior;
-- not Docker/k6/Bruno/Toxiproxy execution;
+- not Docker/Bruno/Toxiproxy execution;
+- not automatic k6 execution;
+- not expanded k6 scenario implementation;
 - not replay execution;
 - not evidence/report generation;
 - not storage/export behavior;
@@ -95,7 +101,8 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - Lane A1: docs-only k6 scenario design.
 - Lane A2: docs-only Bruno collection design.
 - Lane A3: docs-only Toxiproxy fault model design.
-- Lane A4: future actual k6 files only after boundary approval.
+- Lane A4a: first optional local-lab k6 smoke script skeleton.
+- Lane A4b: future expanded k6 scenario files only after separate review.
 - Lane A5: future actual Bruno collection only after boundary approval.
 - Lane A6: future actual Toxiproxy config only after boundary approval.
 - Lane A7: future Docker Compose only after a separate Docker boundary plan.
@@ -111,7 +118,9 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - stop if `src/main/java` changes are needed;
 - stop if production endpoint wiring appears;
 - stop if Maven dependencies are required;
-- stop if Docker/k6/Bruno/Toxiproxy implementation sneaks in;
+- stop if Docker/Bruno/Toxiproxy implementation sneaks in;
+- stop if expanded k6 implementation sneaks in;
+- stop if the optional k6 smoke skeleton becomes CI-gated, Dockerized, or non-loopback by default;
 - stop if docs start claiming production validation.
 
 ## What Exists Now
@@ -137,6 +146,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - in-memory bounded request burst summary renderer.
 - bounded burst reviewer checklist mapping.
 - k6/Bruno/Toxiproxy implementation boundary plan.
+- optional local-lab k6 smoke script skeleton.
 
 ## What Each Layer Proves
 
@@ -162,7 +172,8 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 | bounded request burst smoke tests | issue fixed small loopback-only request repetitions across the existing matrix through the harness and smoke client | not load/stress/benchmark testing |
 | in-memory bounded request burst summary | summarizes burst case count, total request count, fixed repetition count, fixture matches, boundary responses, loopback-only use, and ephemeral-port use | no evidence/report generation |
 | bounded burst reviewer checklist mapping | maps the bounded burst summary into stable reviewer checklist items | no persistence, export, production validation, load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence |
-| k6/Bruno/Toxiproxy implementation boundary plan | documents future local-lab tool lanes, reviewer checklist language, and stop conditions | no k6 scripts, Bruno collections, Toxiproxy config, Docker Compose files, scripts, CI jobs, dependencies, replay, report, storage, export, or production validation |
+| k6/Bruno/Toxiproxy implementation boundary plan | documents future local-lab tool lanes, reviewer checklist language, and stop conditions | no expanded k6 scripts, Bruno collections, Toxiproxy config, Docker Compose files, automatic execution, CI jobs, dependencies, replay, report, storage, export, or production validation |
+| optional local-lab k6 smoke script skeleton | gives reviewers a tiny manual k6 walkthrough against an already-running loopback app endpoint | not CI-gated, not Dockerized, local/lab-owned loopback endpoints only, no Bruno collections, no Toxiproxy config, no Docker Compose, no production behavior, no replay, no report, no storage, no export, no benchmark, no throughput evidence, no p95/p99 evidence |
 
 ## What Each Layer Does Not Prove
 
@@ -174,9 +185,9 @@ The bounded request burst layer uses fixed small request counts only. It is not 
 
 The bounded burst reviewer checklist mapping turns the in-memory burst summary into reviewer questions about burst case count, total request count, fixed repetition count, fixture matches, boundary responses, loopback-only use, ephemeral-port use, deterministic output, no-production-proof warnings, no load/stress/benchmark warning, no throughput/p95/p99 evidence warning, no Docker/k6/Bruno/Toxiproxy warning, and no replay/report/storage/export warning. It is checklist data only and does not call endpoints, write files, persist storage, export anything, or change runtime behavior.
 
-The k6/Bruno/Toxiproxy implementation boundary plan is docs-only. It does not add k6 scripts, Bruno collections, Toxiproxy config, Docker Compose files, scripts, CI jobs, Maven dependencies, production endpoints, production listeners, replay execution, evidence/report generation, storage/export behavior, load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence.
+The k6/Bruno/Toxiproxy implementation boundary plan started as docs-only. The first k6 follow-up adds one optional local-lab k6 smoke script skeleton only. It does not add Bruno collections, Toxiproxy config, Docker Compose files, automatic execution, CI jobs, Maven dependencies, production endpoints, production listeners, replay execution, evidence/report generation, storage/export behavior, load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence.
 
-Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Prometheus/Grafana dashboards, Docker Compose files, scripts, k6 scenarios, Bruno collections, Toxiproxy configuration, storage, export/download/upload/PDF/ZIP behavior, and production traffic remain outside this handoff.
+Docker/Bruno/Toxiproxy remain future-only unless separately scoped. Expanded k6 scenarios remain future-only unless separately scoped. Prometheus/Grafana dashboards, Docker Compose files, automatically run scripts, Bruno collections, Toxiproxy configuration, storage, export/download/upload/PDF/ZIP behavior, and production traffic remain outside this handoff.
 
 ## Next Safe Steps
 

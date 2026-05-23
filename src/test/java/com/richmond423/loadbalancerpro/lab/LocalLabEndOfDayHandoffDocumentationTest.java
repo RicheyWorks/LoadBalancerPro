@@ -76,7 +76,9 @@ class LocalLabEndOfDayHandoffDocumentationTest {
                 "not real-tenant validation",
                 "not runtime enforcement",
                 "not production traffic behavior",
-                "not Docker/k6/Bruno/Toxiproxy execution",
+                "not Docker/Bruno/Toxiproxy execution",
+                "not automatic k6 execution",
+                "not expanded k6 scenario implementation",
                 "not replay execution",
                 "not evidence/report generation",
                 "not storage/export behavior",
@@ -95,6 +97,8 @@ class LocalLabEndOfDayHandoffDocumentationTest {
 
         for (String expected : List.of(
                 "Lane A: docs-only k6/Bruno/Toxiproxy implementation plan",
+                "Lane A4a: first optional local-lab k6 smoke script skeleton",
+                "Lane A4b: future expanded k6 scenario files only after separate review",
                 "Lane B: test-scope bounded request burst smoke test, still loopback-only",
                 "Lane C: test-scope fault-style fixture expansion, no Toxiproxy yet",
                 "Lane D: docs-only Docker Compose design boundary, no compose file yet",
@@ -104,7 +108,9 @@ class LocalLabEndOfDayHandoffDocumentationTest {
                 "stop if `src/main/java` changes are needed",
                 "stop if production endpoint wiring appears",
                 "stop if Maven dependencies are required",
-                "stop if Docker/k6/Bruno/Toxiproxy implementation sneaks in",
+                "stop if Docker/Bruno/Toxiproxy implementation sneaks in",
+                "stop if expanded k6 implementation sneaks in",
+                "stop if the optional k6 smoke skeleton becomes CI-gated, Dockerized, or non-loopback by default",
                 "stop if docs start claiming production validation")) {
             assertTrue(combined.contains(expected), "handoff should include lane or stop condition " + expected);
         }

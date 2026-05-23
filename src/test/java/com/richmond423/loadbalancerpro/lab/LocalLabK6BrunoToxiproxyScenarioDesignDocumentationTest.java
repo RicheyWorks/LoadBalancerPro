@@ -51,7 +51,10 @@ class LocalLabK6BrunoToxiproxyScenarioDesignDocumentationTest {
                 "recovery scenario",
                 "bounded burst scenario",
                 "matrix scenario",
-                "No k6 scripts are added in this PR.",
+                "one optional local-lab k6 smoke script skeleton",
+                "LOCAL_LAB_K6_SMOKE_SCRIPT.md",
+                "not CI-gated",
+                "not Dockerized",
                 "No load/stress/benchmarking is implemented.",
                 "No throughput/p95/p99 evidence is produced.",
                 "Future k6 scripts must target local lab endpoints first.",
@@ -138,7 +141,8 @@ class LocalLabK6BrunoToxiproxyScenarioDesignDocumentationTest {
             assertTrue(text.contains("LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md"), doc + " should link Bruno design");
             assertTrue(text.contains("LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md"),
                     doc + " should link Toxiproxy design");
-            assertTrue(text.contains("no k6 scripts"), doc + " should keep k6 future-only");
+            assertTrue(text.contains("optional local-lab k6 smoke script skeleton"),
+                    doc + " should keep k6 smoke skeleton narrowly scoped");
             assertTrue(text.contains("no Bruno collections"), doc + " should keep Bruno future-only");
             assertTrue(text.contains("no Toxiproxy config"), doc + " should keep Toxiproxy future-only");
             assertTrue(text.contains("no Docker Compose files"), doc + " should keep Compose future-only");

@@ -48,6 +48,8 @@ This PR adds a test-scope deterministic loopback traffic smoke client and in-mem
 
 This PR adds a test-scope traffic smoke reviewer checklist mapper and docs-only progress handoff only. The mapper turns existing in-memory loopback traffic smoke summaries into reviewer checklist entries. It does not call endpoints. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Passing smoke checklist tests is not production proof. See [`../LOCAL_LAB_PROGRESS_HANDOFF.md`](../LOCAL_LAB_PROGRESS_HANDOFF.md).
 
+This PR adds deterministic test-scope traffic matrix tests and in-memory summaries only. The matrix uses the existing `src/test/java` multi-backend loopback harness. The matrix calls only `127.0.0.1` harness URLs with ephemeral ports. It is not k6, Bruno, Docker, Toxiproxy, load testing, stress testing, or production traffic. It does not add production endpoints. It does not change production routing, proxy, scoring, or API behavior. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Passing matrix tests is not production proof. Live-cloud, real-tenant, production certification, and runtime enforcement remain not proven. See [`../LOCAL_LAB_PROGRESS_HANDOFF.md`](../LOCAL_LAB_PROGRESS_HANDOFF.md).
+
 ## Decision
 
 If a future implementation sprint is separately approved, LoadBalancerPro should grow a Local Lab Kit that can simulate a small datacenter on one Windows machine before real server hardware is purchased.

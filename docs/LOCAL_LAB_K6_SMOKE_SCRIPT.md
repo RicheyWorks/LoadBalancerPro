@@ -11,10 +11,10 @@ The default base URL is `http://127.0.0.1:8080`. The script must not target exte
 This smoke skeleton is the first narrow step after the docs/test-only design phase:
 
 - [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md) defines future k6 scenario shapes and now points at this first optional smoke skeleton.
-- [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md) remains design-only; no Bruno collection files are added here.
+- [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md) defines Bruno collection shapes, and [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md) describes the separate optional local-lab Bruno collection skeleton. The k6 script does not run Bruno, and the Bruno collection does not run k6.
 - [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md) remains design-only; no Toxiproxy config is added here.
 
-This sprint does not add Docker, Docker Compose, Bruno collections, Toxiproxy config, CI workflow changes, Maven dependency changes, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage, export, upload, download, PDF, or ZIP behavior.
+This k6 sprint does not add Docker, Docker Compose, Bruno execution, Toxiproxy config, CI workflow changes, Maven dependency changes, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage, export, upload, download, PDF, or ZIP behavior. The later Bruno skeleton is a separate optional manual local-lab tool.
 
 ## Manual Use Boundary
 
@@ -43,10 +43,10 @@ Stop before merge or use if:
 - an external host appears as a default;
 - the script becomes automatic Maven or CI execution;
 - Docker or Docker Compose is added;
-- Bruno collections or Toxiproxy config are added;
+- Bruno execution, automatic Bruno use, or Toxiproxy config are added;
 - production endpoint wiring, production listeners, or production runtime behavior changes are required;
 - documentation starts claiming benchmark, stress, load, throughput, p95, p99, production readiness, production certification, live-cloud validation, or real-tenant validation evidence.
 
 ## Remaining Not-Proven Boundaries
 
-The following remain not proven: production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, Docker/Bruno/Toxiproxy implementation, Docker Compose implementation, expanded k6 scenario implementation, replay execution, evidence/report generation, storage/export behavior, load testing, stress testing, benchmarking, throughput evidence, p95 evidence, p99 evidence, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, and facility automation.
+The following remain not proven: production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, Docker/Toxiproxy platform implementation, Docker Compose implementation, expanded k6 scenario implementation, expanded Bruno collection implementation, replay execution, evidence/report generation, storage/export behavior, load testing, stress testing, benchmarking, throughput evidence, p95 evidence, p99 evidence, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, and facility automation.

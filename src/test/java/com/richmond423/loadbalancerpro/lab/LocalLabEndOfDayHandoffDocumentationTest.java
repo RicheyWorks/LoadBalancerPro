@@ -46,7 +46,8 @@ class LocalLabEndOfDayHandoffDocumentationTest {
                 "Deterministic traffic matrix tests",
                 "Traffic matrix summary renderer",
                 "Traffic matrix reviewer checklist mapping",
-                "Local-lab progress handoff docs")) {
+                "Local-lab progress handoff docs",
+                "Optional local-lab Bruno collection skeleton")) {
             assertTrue(handoff.contains(expected), "handoff should list " + expected);
             assertTrue(nextSteps.contains(expected), "next-steps boundary should list " + expected);
         }
@@ -78,7 +79,9 @@ class LocalLabEndOfDayHandoffDocumentationTest {
                 "not production traffic behavior",
                 "not Docker/Bruno/Toxiproxy execution",
                 "not automatic k6 execution",
+                "not automatic Bruno execution",
                 "not expanded k6 scenario implementation",
+                "not expanded Bruno collection implementation",
                 "not replay execution",
                 "not evidence/report generation",
                 "not storage/export behavior",
@@ -99,6 +102,8 @@ class LocalLabEndOfDayHandoffDocumentationTest {
                 "Lane A: docs-only k6/Bruno/Toxiproxy implementation plan",
                 "Lane A4a: first optional local-lab k6 smoke script skeleton",
                 "Lane A4b: future expanded k6 scenario files only after separate review",
+                "Lane A5a: first optional local-lab Bruno collection skeleton",
+                "Lane A5b: future expanded Bruno collection files only after separate review",
                 "Lane B: test-scope bounded request burst smoke test, still loopback-only",
                 "Lane C: test-scope fault-style fixture expansion, no Toxiproxy yet",
                 "Lane D: docs-only Docker Compose design boundary, no compose file yet",
@@ -108,9 +113,10 @@ class LocalLabEndOfDayHandoffDocumentationTest {
                 "stop if `src/main/java` changes are needed",
                 "stop if production endpoint wiring appears",
                 "stop if Maven dependencies are required",
-                "stop if Docker/Bruno/Toxiproxy implementation sneaks in",
+                "stop if Docker/Toxiproxy platform implementation sneaks in",
                 "stop if expanded k6 implementation sneaks in",
                 "stop if the optional k6 smoke skeleton becomes CI-gated, Dockerized, or non-loopback by default",
+                "stop if the optional Bruno collection skeleton becomes CI-gated, Dockerized, Toxiproxy integration, k6 execution, or non-loopback by default",
                 "stop if docs start claiming production validation")) {
             assertTrue(combined.contains(expected), "handoff should include lane or stop condition " + expected);
         }

@@ -2,9 +2,11 @@
 
 This matrix is docs/test-only planning for the future Local Lab Kit and simulated datacenter test harness described by [`adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md`](adr/ADR-0009_LOCAL_LAB_KIT_AND_SIMULATED_DATACENTER_TEST_HARNESS_PLAN.md).
 
-It is planning-only. It does not implement Docker Compose files, scripts, fake backend nodes, k6 scenario files, Bruno collections, Toxiproxy configuration, Prometheus/Grafana dashboards, telemetry ingestion, replay execution, report generation, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, routing/scoring/strategy/proxy/API behavior changes, or production validation.
+It is planning-only. It does not implement Docker Compose files, scripts, fake backend nodes, k6 scenario files, expanded Bruno collections beyond the optional local-lab skeleton, Toxiproxy configuration, Prometheus/Grafana dashboards, telemetry ingestion, replay execution, report generation, storage/persistence, filesystem-writing behavior, export/upload/download/PDF/ZIP behavior, routing/scoring/strategy/proxy/API behavior changes, or production validation.
 
 Local simulation is useful evidence. Local simulation is not production certification. LAN/server/Acer AI hardware experiments remain controlled lab work unless separately validated.
+
+The current local-lab tool lane now has one optional local-lab k6 smoke script skeleton at [`../lab/k6/local-lab-smoke.js`](../lab/k6/local-lab-smoke.js) and one optional local-lab Bruno collection skeleton at [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/). See [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md), [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). The Bruno skeleton is optional and manual, not CI-gated, not Dockerized, not Toxiproxy integration, not k6 execution, and must target local/lab-owned loopback endpoints by default. It does not add production endpoints, production listeners, routing/scoring/strategy/proxy/API behavior changes, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark testing, throughput evidence, or p95/p99 evidence.
 
 ## Test-Scope Scenario Model Foundation
 
@@ -107,7 +109,7 @@ This matrix does not add:
 - scripts implementation;
 - fake backend node implementation;
 - k6 scenario files;
-- Bruno collections;
+- expanded Bruno collections beyond the optional local-lab skeleton;
 - Prometheus/Grafana dashboards;
 - Toxiproxy configuration;
 - runtime LASE enforcement;

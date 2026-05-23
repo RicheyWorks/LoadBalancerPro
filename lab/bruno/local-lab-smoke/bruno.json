@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Local Lab Smoke",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

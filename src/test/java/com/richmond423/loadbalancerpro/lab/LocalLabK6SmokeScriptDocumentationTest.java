@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 class LocalLabK6SmokeScriptDocumentationTest {
     private static final Path K6_SCRIPT = Path.of("lab/k6/local-lab-smoke.js");
     private static final Path K6_DOC = Path.of("docs/LOCAL_LAB_K6_SMOKE_SCRIPT.md");
+    private static final Path BRUNO_DOC = Path.of("docs/LOCAL_LAB_BRUNO_COLLECTION.md");
     private static final Path K6_DESIGN = Path.of("docs/LOCAL_LAB_K6_SCENARIO_DESIGN.md");
     private static final Path BRUNO_DESIGN = Path.of("docs/LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md");
     private static final Path TOXIPROXY_DESIGN = Path.of("docs/LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md");
@@ -112,8 +113,9 @@ class LocalLabK6SmokeScriptDocumentationTest {
         for (String expected : List.of(
                 "LOCAL_LAB_K6_SCENARIO_DESIGN.md",
                 "LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md",
+                "LOCAL_LAB_BRUNO_COLLECTION.md",
                 "LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md",
-                "no Bruno collection files are added here",
+                "The k6 script does not run Bruno, and the Bruno collection does not run k6.",
                 "no Toxiproxy config is added here",
                 "does not add Docker",
                 "Docker Compose",
@@ -146,6 +148,7 @@ class LocalLabK6SmokeScriptDocumentationTest {
             String text = read(doc);
 
             assertTrue(text.contains("LOCAL_LAB_K6_SMOKE_SCRIPT.md"), doc + " should link k6 smoke doc");
+            assertTrue(text.contains("LOCAL_LAB_BRUNO_COLLECTION.md"), doc + " should link Bruno skeleton doc");
             assertTrue(text.contains("LOCAL_LAB_K6_SCENARIO_DESIGN.md"), doc + " should link k6 design");
             assertTrue(text.contains("LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md"), doc + " should link Bruno design");
             assertTrue(text.contains("LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md"),
@@ -159,7 +162,8 @@ class LocalLabK6SmokeScriptDocumentationTest {
                     doc + " should require local loopback ownership");
         }
 
-        assertTrue(read(BRUNO_DESIGN).contains("No Bruno collection files are added in this PR."));
+        assertTrue(read(BRUNO_DOC).contains("optional local-lab Bruno collection skeleton"));
+        assertTrue(read(BRUNO_DESIGN).contains("one optional local-lab Bruno collection skeleton"));
         assertTrue(read(TOXIPROXY_DESIGN).contains("No Toxiproxy config is added in this PR."));
     }
 

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 class LocalLabK6BrunoToxiproxyScenarioDesignDocumentationTest {
     private static final Path K6_DESIGN = Path.of("docs/LOCAL_LAB_K6_SCENARIO_DESIGN.md");
+    private static final Path BRUNO_DOC = Path.of("docs/LOCAL_LAB_BRUNO_COLLECTION.md");
     private static final Path BRUNO_DESIGN = Path.of("docs/LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md");
     private static final Path TOXIPROXY_DESIGN = Path.of("docs/LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md");
     private static final Path BOUNDARY_PLAN = Path.of("docs/LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md");
@@ -76,7 +77,13 @@ class LocalLabK6BrunoToxiproxyScenarioDesignDocumentationTest {
                 "future operator/reviewer API checks",
                 "negative/boundary checks",
                 "collection naming and folder structure as design only",
-                "No Bruno collection files are added in this PR.",
+                "one optional local-lab Bruno collection skeleton",
+                "LOCAL_LAB_BRUNO_COLLECTION.md",
+                "LOCAL_LAB_K6_SMOKE_SCRIPT.md",
+                "not CI-gated",
+                "not Dockerized",
+                "not Toxiproxy integration",
+                "not k6 execution",
                 "No live API or production API checks are added.",
                 "No external calls are added.",
                 "Future Bruno collection work must target local/lab endpoints first.",
@@ -138,12 +145,16 @@ class LocalLabK6BrunoToxiproxyScenarioDesignDocumentationTest {
             String text = read(doc);
 
             assertTrue(text.contains("LOCAL_LAB_K6_SCENARIO_DESIGN.md"), doc + " should link k6 design");
+            assertTrue(text.contains("LOCAL_LAB_BRUNO_COLLECTION.md"), doc + " should link Bruno skeleton doc");
             assertTrue(text.contains("LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md"), doc + " should link Bruno design");
             assertTrue(text.contains("LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md"),
                     doc + " should link Toxiproxy design");
             assertTrue(text.contains("optional local-lab k6 smoke script skeleton"),
                     doc + " should keep k6 smoke skeleton narrowly scoped");
-            assertTrue(text.contains("no Bruno collections"), doc + " should keep Bruno future-only");
+            assertTrue(text.contains("optional local-lab Bruno collection skeleton"),
+                    doc + " should keep Bruno skeleton narrowly scoped");
+            assertTrue(text.contains("not Toxiproxy integration"), doc + " should separate Bruno from Toxiproxy");
+            assertTrue(text.contains("not k6 execution"), doc + " should separate Bruno from k6");
             assertTrue(text.contains("no Toxiproxy config"), doc + " should keep Toxiproxy future-only");
             assertTrue(text.contains("no Docker Compose files"), doc + " should keep Compose future-only");
             assertTrue(text.contains("Future tool work must be separately scoped"),
@@ -151,6 +162,8 @@ class LocalLabK6BrunoToxiproxyScenarioDesignDocumentationTest {
             assertTrue(text.contains("must target local/lab endpoints first"),
                     doc + " should require local/lab endpoints first");
         }
+
+        assertTrue(read(BRUNO_DOC).contains("optional local-lab Bruno collection skeleton"));
     }
 
     @Test

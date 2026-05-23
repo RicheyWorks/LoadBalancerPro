@@ -18,9 +18,9 @@ LoadBalancerPro is building toward future datacenter adaptive traffic control th
 
 ADR-0009 records the proposed future Local Lab Kit and simulated datacenter test harness plan. The Local Lab Kit should become the practical bridge between today's safe evidence/control-plane work and later controlled experiments with partial degradation, p95/p99 tail latency, overload and queue pressure, error-prone backends, recovery behavior, explainable routing decisions, reviewer/operator evidence, guardrails before autonomy, and trusted adaptive routing instead of black-box routing.
 
-This ADR is planning-only. This does not implement Docker Compose files, scripts, fake nodes, k6 tests, Bruno collections, telemetry ingestion, replay, report generation, storage, export behavior, or runtime routing behavior yet.
+This ADR is planning-only. This does not implement Docker Compose files, scripts, fake nodes, k6 tests beyond the optional local-lab smoke skeleton, expanded Bruno collections beyond the optional local-lab skeleton, telemetry ingestion, replay, report generation, storage, export behavior, or runtime routing behavior yet.
 
-This ADR does not add Docker Compose implementation. This ADR does not add scripts implementation. This ADR does not add fake backend node implementation. This ADR does not add k6 scenario implementation. This ADR does not add Bruno collection implementation. This ADR does not add Prometheus/Grafana implementation. This ADR does not add Toxiproxy implementation. This ADR does not change API behavior. This ADR does not change routing behavior. This ADR does not change scoring behavior. This ADR does not change strategy behavior. This ADR does not change proxy behavior. This ADR does not add config/resource/runtime changes. This ADR does not add Maven dependency changes. This ADR does not add CI changes.
+This ADR does not add Docker Compose implementation. This ADR does not add scripts implementation. This ADR does not add fake backend node implementation. This ADR does not add expanded k6 scenario implementation. This ADR does not add expanded Bruno collection implementation. This ADR does not add Prometheus/Grafana implementation. This ADR does not add Toxiproxy implementation. This ADR does not change API behavior. This ADR does not change routing behavior. This ADR does not change scoring behavior. This ADR does not change strategy behavior. This ADR does not change proxy behavior. This ADR does not add config/resource/runtime changes. This ADR does not add Maven dependency changes. This ADR does not add CI changes.
 
 PR #250 adds only a test-scope scenario model/catalog. It does not implement fake backend servers. It does not implement Docker Compose, k6, Bruno, Toxiproxy, Prometheus/Grafana, scripts, networking, or runtime behavior. It is a stepping stone toward future local lab tooling.
 
@@ -63,6 +63,8 @@ This PR adds a docs/test-only k6/Bruno/Toxiproxy implementation boundary plan on
 PR #270 added docs/test-only future tool scenario design specs. See [`../LOCAL_LAB_K6_SCENARIO_DESIGN.md`](../LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`../LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](../LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`../LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](../LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). Future tool work must be separately scoped and must target local/lab endpoints first. The specs added no k6 scripts, no Bruno collections, no Toxiproxy config, no Docker Compose files, no scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence.
 
 This sprint adds one optional local-lab k6 smoke script skeleton at [`../../lab/k6/local-lab-smoke.js`](../../lab/k6/local-lab-smoke.js). See [`../LOCAL_LAB_K6_SMOKE_SCRIPT.md`](../LOCAL_LAB_K6_SMOKE_SCRIPT.md), [`../LOCAL_LAB_K6_SCENARIO_DESIGN.md`](../LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`../LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](../LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`../LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](../LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). It is not CI-gated, not Dockerized, and must target local/lab-owned loopback endpoints by default. It does not add Bruno collections, Toxiproxy config, Docker Compose files, automatic execution, CI jobs, Maven dependencies, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark testing, throughput evidence, or p95/p99 evidence.
+
+This sprint adds one optional local-lab Bruno collection skeleton at [`../../lab/bruno/local-lab-smoke/`](../../lab/bruno/local-lab-smoke/). See [`../LOCAL_LAB_BRUNO_COLLECTION.md`](../LOCAL_LAB_BRUNO_COLLECTION.md), [`../LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](../LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), [`../LOCAL_LAB_K6_SMOKE_SCRIPT.md`](../LOCAL_LAB_K6_SMOKE_SCRIPT.md), and [`../LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](../LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). It is optional and manual, not CI-gated, not Dockerized, not Toxiproxy integration, not k6 execution, and must target local/lab-owned loopback endpoints by default. It does not add Toxiproxy config, Docker Compose files, automatic execution, CI jobs, Maven dependencies, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark testing, throughput evidence, or p95/p99 evidence.
 
 ## Decision
 
@@ -108,7 +110,7 @@ The future simulated datacenter topology is conceptual only:
 | Fake backend node 5: overloaded/queue-depth simulated | Backend with overload and queue-depth simulation signals. | No fake backend node implementation in this ADR. |
 | Optional Toxiproxy network degradation layer | Future latency, timeout, connection reset, and network damage scenarios. | No Toxiproxy configuration in this ADR. |
 | Optional k6 traffic generator | Future smoke, load, stress, spike, and tail-latency tests. | No k6 scenario files in this ADR. |
-| Optional Bruno API checks | Future API collection checks for local lab workflows. | No Bruno collection in this ADR. |
+| Optional Bruno API checks | Current tiny optional local-lab Bruno collection skeleton plus future expanded API collection checks for local lab workflows. | Manual local/lab-owned loopback endpoints only; no expanded Bruno collection in this ADR. |
 | Optional Prometheus/Grafana observability later | Future metrics visualization for lab-only signals and local dashboards. | No Prometheus/Grafana implementation in this ADR. |
 | Optional future LAN server | Future backend host for controlled private lab experiments. | Not production infrastructure. |
 | Optional future Acer AI mini machine | Future local lab, coding, research, local inference, and telemetry experiment support. | Not production infrastructure. |
@@ -128,7 +130,7 @@ The future tooling roles are planned only:
 - Java/Maven remains the build and local run path for LoadBalancerPro.
 - Windows PowerShell should be the preferred local command shell for examples.
 
-These are future/planned roles, not implemented files in this sprint. ADR-0009 does not add Docker Compose files, scripts, fake backend nodes, k6 files, Bruno collections, WireMock fixtures, Toxiproxy configuration, Prometheus/Grafana dashboards, Maven dependencies, CI jobs, or runtime configuration.
+These are future/planned roles, not production implementation files in this sprint. ADR-0009 does not add Docker Compose files, scripts, fake backend nodes, expanded k6 files, expanded Bruno collections beyond the optional local-lab skeleton, WireMock fixtures, Toxiproxy configuration, Prometheus/Grafana dashboards, Maven dependencies, CI jobs, or runtime configuration.
 
 ## Scenario Categories
 
@@ -251,7 +253,7 @@ Non-goals:
 - no scripts implementation;
 - no fake backend node implementation;
 - no k6 scenario files;
-- no Bruno collections;
+- no expanded Bruno collections beyond the optional local-lab skeleton;
 - no Prometheus/Grafana dashboards;
 - no Toxiproxy configuration;
 - no WireMock fixtures;
@@ -302,7 +304,7 @@ ADR-0009 does not implement or prove:
 - Docker Compose lab implementation;
 - fake backend nodes;
 - k6 scenario files;
-- Bruno collections;
+- expanded Bruno collections beyond the optional local-lab skeleton;
 - Prometheus/Grafana dashboards;
 - Toxiproxy configuration;
 - runtime LASE enforcement;
@@ -363,4 +365,4 @@ ADR-0009 helps reviewers answer:
 - how LAN/server/Acer AI hardware expansion remains controlled lab work;
 - how local lab planning supports trusted adaptive routing instead of black-box routing.
 
-Reviewers should treat ADR-0009 as proposed/planning-only. It is not Docker Compose implementation, not scripts implementation, not fake backend node implementation, not k6 scenario implementation, not Bruno collection implementation, not Toxiproxy implementation, not Prometheus/Grafana implementation, not runtime LASE enforcement, not package-boundary enforcement, not routing/scoring/strategy/proxy/API behavior change, not replay execution, not evidence/report generation, not storage/persistence, not filesystem-writing/export behavior, not production-readiness proof, and not production-certification proof.
+Reviewers should treat ADR-0009 as proposed/planning-only. It is not Docker Compose implementation, not scripts implementation, not fake backend node implementation, not expanded k6 scenario implementation, not expanded Bruno collection implementation, not automatic Bruno execution, not Toxiproxy implementation, not Prometheus/Grafana implementation, not runtime LASE enforcement, not package-boundary enforcement, not routing/scoring/strategy/proxy/API behavior change, not replay execution, not evidence/report generation, not storage/persistence, not filesystem-writing/export behavior, not production-readiness proof, and not production-certification proof.

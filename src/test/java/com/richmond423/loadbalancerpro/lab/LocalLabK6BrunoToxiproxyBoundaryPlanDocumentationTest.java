@@ -26,10 +26,14 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
         String plan = read(BOUNDARY_PLAN);
 
         for (String expected : List.of(
-                "Bruno and Toxiproxy remain future-only tooling",
+                "Toxiproxy remains future-only tooling",
                 "Docker/Docker Compose is future-only unless separately scoped",
                 "k6 has one optional local-lab smoke script skeleton",
-                "Bruno is a future local-lab tool candidate for API check collections",
+                "Bruno has one optional local-lab Bruno collection skeleton",
+                "LOCAL_LAB_BRUNO_COLLECTION.md",
+                "lab/bruno/local-lab-smoke",
+                "not Toxiproxy integration",
+                "not k6 execution",
                 "Toxiproxy is a future local-lab tool candidate for network degradation simulation",
                 "Docker/Docker Compose is a future local service orchestration candidate only after separate boundary review")) {
             assertTrue(plan.contains(expected), "boundary plan should include " + expected);
@@ -43,9 +47,11 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
 
             assertTrue(text.contains("docs/test-only k6/Bruno/Toxiproxy implementation boundary plan"));
             assertTrue(text.contains("optional local-lab k6 smoke script skeleton"));
-            assertTrue(text.contains("no Bruno collections"));
+            assertTrue(text.contains("optional local-lab Bruno collection skeleton"));
             assertTrue(text.contains("no Toxiproxy config"));
             assertTrue(text.contains("no Docker Compose files"));
+            assertTrue(text.contains("not Toxiproxy integration"));
+            assertTrue(text.contains("not k6 execution"));
             assertTrue(text.contains("automatic"));
             assertTrue(text.contains("no CI jobs"));
             assertTrue(text.contains("no Maven dependencies"));
@@ -70,12 +76,15 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
                 "Lane A3: docs-only Toxiproxy fault model design",
                 "Lane A4a: first optional local-lab k6 smoke script skeleton",
                 "Lane A4b: future expanded k6 scenario files only after separate review",
-                "Lane A5: future actual Bruno collection only after boundary approval",
+                "Lane A5a: first optional local-lab Bruno collection skeleton",
+                "Lane A5b: future expanded Bruno collection files only after separate review",
                 "Lane A6: future actual Toxiproxy config only after boundary approval",
                 "Lane A7: future Docker Compose only after a separate Docker boundary plan",
-                "a PR adds expanded k6, Bruno, or Toxiproxy files without separate approval",
+                "a PR adds expanded k6, expanded Bruno, or Toxiproxy files without separate approval",
                 "the optional k6 smoke skeleton stops defaulting to loopback/local targets",
                 "the optional k6 smoke skeleton becomes CI-gated or Dockerized",
+                "the optional Bruno collection skeleton stops defaulting to loopback/local targets",
+                "the optional Bruno collection skeleton becomes CI-gated, Dockerized, Toxiproxy integration, or k6 execution",
                 "a PR adds Docker Compose before the Docker boundary plan",
                 "a PR changes `src/main/java`",
                 "a PR adds production endpoint wiring",
@@ -92,9 +101,10 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
         String plan = read(BOUNDARY_PLAN);
 
         for (String expected : List.of(
-                "Is this limited to the one optional k6 smoke skeleton plus docs/tests?",
-                "Are Bruno/Toxiproxy still future-only?",
+                "Is this limited to the one optional k6 smoke skeleton, one optional Bruno collection skeleton, plus docs/tests?",
+                "Is Toxiproxy still future-only?",
                 "Is expanded k6 work still separately scoped?",
+                "Is expanded Bruno work still separately scoped?",
                 "Are Docker/Compose still future-only?",
                 "Are load/stress/benchmark claims absent?",
                 "Are throughput/p95/p99 evidence claims absent?",
@@ -106,9 +116,11 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
                 "live-cloud validation",
                 "real-tenant validation",
                 "runtime enforcement",
-                "Docker/Bruno/Toxiproxy implementation",
+                "Docker/Toxiproxy platform implementation",
                 "expanded k6 scenario implementation",
+                "expanded Bruno collection implementation",
                 "automatic k6 execution",
+                "automatic Bruno execution",
                 "replay execution",
                 "evidence/report generation",
                 "storage/export behavior",

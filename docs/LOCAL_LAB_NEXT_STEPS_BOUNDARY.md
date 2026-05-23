@@ -12,6 +12,8 @@ PR #270 added docs/test-only future tool scenario design specs only: [`LOCAL_LAB
 
 This sprint adds one optional local-lab k6 smoke script skeleton at [`../lab/k6/local-lab-smoke.js`](../lab/k6/local-lab-smoke.js). See [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md), [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). It is not CI-gated, not Dockerized, and must target local/lab-owned loopback endpoints by default. It does not add Bruno collections, Toxiproxy config, Docker Compose files, automatic execution, CI jobs, Maven dependencies, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark testing, throughput evidence, or p95/p99 evidence.
 
+This sprint adds one optional local-lab Bruno collection skeleton at [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/). See [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). It is optional and manual, not CI-gated, not Dockerized, not Toxiproxy integration, not k6 execution, and must target local/lab-owned loopback endpoints by default. It does not add Toxiproxy config, Docker Compose files, automatic execution, CI jobs, Maven dependencies, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark testing, throughput evidence, or p95/p99 evidence.
+
 ## Current Local-Lab Stack
 
 The current local-lab stack is:
@@ -43,6 +45,7 @@ The current local-lab stack is:
 25. k6/Bruno/Toxiproxy implementation boundary plan.
 26. k6/Bruno/Toxiproxy scenario design specs.
 27. Optional local-lab k6 smoke script skeleton.
+28. Optional local-lab Bruno collection skeleton.
 
 ## What Is Actually Proven Today
 
@@ -56,6 +59,7 @@ The current local-lab stack is:
 - the k6/Bruno/Toxiproxy boundary plan can describe future tool lanes and stop conditions before any tool files exist;
 - the k6/Bruno/Toxiproxy scenario design specs can describe future scenario, collection, and fault-model shapes before any tool files exist;
 - the optional local-lab k6 smoke script skeleton can describe and perform a tiny manual loopback-only walkthrough against an already-running local app endpoint without CI, Docker, production, benchmark, throughput, p95, or p99 claims;
+- the optional local-lab Bruno collection skeleton can describe tiny manual loopback-only Bruno requests without CI, Docker, Toxiproxy integration, k6 execution, production, benchmark, throughput, p95, or p99 claims;
 - reviewer checklist and handoff docs explain evidence boundaries;
 - all current evidence is local/test-scope only.
 
@@ -69,7 +73,9 @@ The current local-lab stack is:
 - not production traffic behavior;
 - not Docker/Bruno/Toxiproxy execution;
 - not automatic k6 execution;
+- not automatic Bruno execution;
 - not expanded k6 scenario implementation;
+- not expanded Bruno collection implementation;
 - not replay execution;
 - not evidence/report generation;
 - not storage/export behavior;
@@ -90,7 +96,8 @@ The current local-lab stack is:
 - Lane A3: docs-only Toxiproxy fault model design.
 - Lane A4a: first optional local-lab k6 smoke script skeleton.
 - Lane A4b: future expanded k6 scenario files only after separate review.
-- Lane A5: future actual Bruno collection only after boundary approval.
+- Lane A5a: first optional local-lab Bruno collection skeleton.
+- Lane A5b: future expanded Bruno collection files only after separate review.
 - Lane A6: future actual Toxiproxy config only after boundary approval.
 - Lane A7: future Docker Compose only after a separate Docker boundary plan.
 - Lane B: test-scope bounded request burst smoke test, still loopback-only.
@@ -98,11 +105,11 @@ The current local-lab stack is:
 - Lane D: docs-only Docker Compose design boundary, no compose file yet.
 - Lane E: future actual Docker/k6/Bruno PR only after a separate boundary plan.
 
-Lane A is represented by the current k6/Bruno/Toxiproxy implementation boundary plan and first optional local-lab k6 smoke script skeleton. It is not expanded k6 implementation, Bruno implementation, Toxiproxy implementation, Docker/Docker Compose implementation, load testing, stress testing, benchmarking, production traffic, replay execution, evidence/report generation, storage, export, throughput evidence, or p95/p99 evidence.
+Lane A is represented by the current k6/Bruno/Toxiproxy implementation boundary plan, first optional local-lab k6 smoke script skeleton, and first optional local-lab Bruno collection skeleton. It is not expanded k6 implementation, expanded Bruno implementation, Toxiproxy implementation, Docker/Docker Compose implementation, load testing, stress testing, benchmarking, production traffic, replay execution, evidence/report generation, storage, export, throughput evidence, or p95/p99 evidence.
 
 Lane B is represented by the current bounded burst smoke tests and bounded burst reviewer checklist mapping only as fixed-count local/test-scope context. It is not load testing, stress testing, performance benchmarking, throughput evidence, latency measurement, p95/p99 evidence, production traffic, or production proof.
 
-Each lane must be separately scoped and reviewed. A future lane should stop before merge if it needs production code, production endpoint wiring, Maven dependencies, fixed ports, non-loopback defaults, Docker/Bruno/Toxiproxy implementation, expanded k6 implementation, replay execution, evidence/report generation, file writing, storage, export, load/stress/benchmark claims, throughput or p95/p99 claims, or production-validation language.
+Each lane must be separately scoped and reviewed. A future lane should stop before merge if it needs production code, production endpoint wiring, Maven dependencies, fixed ports, non-loopback defaults, Docker/Toxiproxy implementation, expanded Bruno implementation, expanded k6 implementation, replay execution, evidence/report generation, file writing, storage, export, load/stress/benchmark claims, throughput or p95/p99 claims, or production-validation language.
 
 ## Stop Conditions / Safety Gates
 
@@ -112,11 +119,12 @@ Each lane must be separately scoped and reviewed. A future lane should stop befo
 - stop if production endpoint wiring appears;
 - stop if Maven dependencies are required;
 - stop if CI changes are required;
-- stop if expanded k6, Bruno, or Toxiproxy files appear without separate approval;
+- stop if expanded k6, expanded Bruno, or Toxiproxy files appear without separate approval;
 - stop if Docker Compose appears before the Docker boundary plan;
-- stop if Docker/Bruno/Toxiproxy implementation sneaks in;
+- stop if Docker/Toxiproxy platform implementation sneaks in;
 - stop if expanded k6 implementation sneaks in;
 - stop if the optional k6 smoke skeleton becomes CI-gated, Dockerized, or non-loopback by default;
+- stop if the optional Bruno collection skeleton becomes CI-gated, Dockerized, Toxiproxy integration, k6 execution, or non-loopback by default;
 - stop if load/stress/benchmark/p95/p99/throughput evidence is claimed without a separately validated test lane;
 - stop if docs start claiming production validation.
 

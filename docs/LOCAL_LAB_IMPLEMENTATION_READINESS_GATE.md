@@ -14,6 +14,8 @@ This PR adds a test-scope multi-backend loopback harness only. The harness remai
 
 This PR adds test-scope multi-backend transcript alignment tests only. The alignment proves existing passive transcript expectations match loopback harness responses. It does not add production endpoints. It does not change production routing, proxy, scoring, or API behavior. It does not add Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Passing alignment tests is not production proof. Live-cloud, real-tenant, production certification, and runtime enforcement remain not proven.
 
+This PR adds a test-scope deterministic loopback traffic smoke client and in-memory summary only. The client calls only the `src/test/java` multi-backend loopback harness on `127.0.0.1` using harness-assigned ephemeral ports. It does not add production endpoints. It does not change production routing, proxy, scoring, or API behavior. It does not add Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Passing smoke client tests is not production proof. Live-cloud, real-tenant, production certification, and runtime enforcement remain not proven.
+
 ## Purpose
 
 The readiness gate gives reviewers and operators one deterministic answer to a narrow question: is the passive planning/test evidence chain coherent enough to plan a future, separately scoped implementation PR for an actual fake backend server?

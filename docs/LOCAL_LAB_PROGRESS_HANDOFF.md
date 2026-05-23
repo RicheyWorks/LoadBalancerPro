@@ -6,6 +6,10 @@ This PR adds a test-scope traffic smoke reviewer checklist mapper and docs-only 
 
 This PR adds deterministic test-scope traffic matrix tests and in-memory summaries only. The matrix uses the existing `src/test/java` multi-backend loopback harness. The matrix calls only `127.0.0.1` harness URLs with ephemeral ports. It is not k6, Bruno, Docker, Toxiproxy, load testing, stress testing, or production traffic. It does not add production endpoints. It does not change production routing, proxy, scoring, or API behavior. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Passing matrix tests is not production proof. Live-cloud, real-tenant, production certification, and runtime enforcement remain not proven.
 
+This PR adds a test-scope traffic matrix reviewer checklist mapper and handoff update only. The mapper turns existing in-memory traffic matrix summaries into reviewer checklist entries. It does not call endpoints. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. It is not load testing or stress testing. Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Passing matrix checklist tests is not production proof.
+
+The traffic matrix layer is now present; traffic matrix reviewer checklist mapping is now present. The matrix layer proves deterministic loopback-only coverage over required local-lab profiles, stable fixture/boundary matching, stable in-memory matrix summaries, and reviewer-friendly checklist language. It does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, Docker/k6/Bruno/Toxiproxy execution, replay execution, evidence/report generation, storage/export, load/stress testing, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
+
 ## What Exists Now
 
 - passive scenario catalog;
@@ -23,7 +27,8 @@ This PR adds deterministic test-scope traffic matrix tests and in-memory summari
 - in-memory smoke summary;
 - smoke reviewer checklist mapping;
 - deterministic traffic matrix tests;
-- in-memory traffic matrix summary.
+- in-memory traffic matrix summary;
+- traffic matrix reviewer checklist mapping.
 
 ## What Each Layer Proves
 
@@ -45,18 +50,22 @@ This PR adds deterministic test-scope traffic matrix tests and in-memory summari
 | smoke reviewer checklist mapping | maps the smoke summary into stable reviewer checklist items | no persistence or export |
 | deterministic traffic matrix tests | exercise a small scenario/profile matrix through the existing loopback harness and smoke client | not load/stress testing |
 | in-memory traffic matrix summary | summarizes matrix case count, fixture matches, boundary cases, loopback-only use, and ephemeral-port use | no evidence/report generation |
+| traffic matrix reviewer checklist mapping | maps the matrix summary into stable reviewer checklist items | no persistence, export, or production validation |
 
 ## What Each Layer Does Not Prove
 
 Local loopback smoke is not production proof. The local-lab chain does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, replay execution, evidence/report generation, storage/export, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
+
+The traffic matrix layer does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, Docker/k6/Bruno/Toxiproxy execution, replay execution, evidence/report generation, storage/export, load/stress testing, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
 
 Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Prometheus/Grafana dashboards, Docker Compose files, scripts, k6 scenarios, Bruno collections, Toxiproxy configuration, storage, export/download/upload/PDF/ZIP behavior, and production traffic remain outside this handoff.
 
 ## Next Safe Steps
 
 1. Review the small deterministic traffic matrix tests and in-memory traffic matrix summary as local-lab test-scope context only.
-2. Then consider k6/Bruno planning docs that describe future tooling boundaries without adding tool execution.
-3. Keep Docker/k6/Bruno/Toxiproxy future-only unless a later sprint separately scopes them.
+2. Then consider k6/Bruno planning docs or a docs-only k6/Bruno/Toxiproxy implementation plan that describes future tooling boundaries without adding tool execution.
+3. Alternatively consider a test-scope bounded request burst smoke test, but not production traffic.
+4. Keep Docker/k6/Bruno/Toxiproxy future-only unless a later sprint separately scopes them.
 
 ## Explicit Not-Proven Boundaries
 
@@ -66,6 +75,7 @@ Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Prometheu
 - not real-tenant validation;
 - not runtime enforcement;
 - not Docker/k6/Bruno/Toxiproxy implementation;
+- not Docker/k6/Bruno/Toxiproxy execution;
 - not replay execution;
 - not evidence/report generation;
 - not storage/export;

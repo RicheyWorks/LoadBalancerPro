@@ -4,6 +4,8 @@ This handoff summarizes what the local lab can do now and what remains not prove
 
 This PR adds a test-scope traffic smoke reviewer checklist mapper and docs-only progress handoff only. The mapper turns existing in-memory loopback traffic smoke summaries into reviewer checklist entries. It does not call endpoints. It does not start listeners. It does not open ports. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Passing smoke checklist tests is not production proof.
 
+This PR adds deterministic test-scope traffic matrix tests and in-memory summaries only. The matrix uses the existing `src/test/java` multi-backend loopback harness. The matrix calls only `127.0.0.1` harness URLs with ephemeral ports. It is not k6, Bruno, Docker, Toxiproxy, load testing, stress testing, or production traffic. It does not add production endpoints. It does not change production routing, proxy, scoring, or API behavior. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Passing matrix tests is not production proof. Live-cloud, real-tenant, production certification, and runtime enforcement remain not proven.
+
 ## What Exists Now
 
 - passive scenario catalog;
@@ -19,7 +21,9 @@ This PR adds a test-scope traffic smoke reviewer checklist mapper and docs-only 
 - transcript alignment;
 - deterministic loopback traffic smoke client;
 - in-memory smoke summary;
-- smoke reviewer checklist mapping.
+- smoke reviewer checklist mapping;
+- deterministic traffic matrix tests;
+- in-memory traffic matrix summary.
 
 ## What Each Layer Proves
 
@@ -39,6 +43,8 @@ This PR adds a test-scope traffic smoke reviewer checklist mapper and docs-only 
 | deterministic loopback traffic smoke client | calls only 127.0.0.1 harness URLs and returns in-memory observations | not production traffic |
 | in-memory smoke summary | summarizes loopback-only coverage, fixture matches, and boundaries | no evidence/report generation |
 | smoke reviewer checklist mapping | maps the smoke summary into stable reviewer checklist items | no persistence or export |
+| deterministic traffic matrix tests | exercise a small scenario/profile matrix through the existing loopback harness and smoke client | not load/stress testing |
+| in-memory traffic matrix summary | summarizes matrix case count, fixture matches, boundary cases, loopback-only use, and ephemeral-port use | no evidence/report generation |
 
 ## What Each Layer Does Not Prove
 
@@ -48,7 +54,7 @@ Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Prometheu
 
 ## Next Safe Steps
 
-1. Add small deterministic traffic matrix tests that reuse the existing test-scope loopback harness and in-memory smoke observations.
+1. Review the small deterministic traffic matrix tests and in-memory traffic matrix summary as local-lab test-scope context only.
 2. Then consider k6/Bruno planning docs that describe future tooling boundaries without adding tool execution.
 3. Keep Docker/k6/Bruno/Toxiproxy future-only unless a later sprint separately scopes them.
 

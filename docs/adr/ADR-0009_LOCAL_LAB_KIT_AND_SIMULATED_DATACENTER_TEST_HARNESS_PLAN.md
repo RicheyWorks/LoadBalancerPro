@@ -30,6 +30,8 @@ This PR adds test-scope passive transcript fixtures only. Transcripts describe f
 
 This PR adds a test-scope passive transcript summary renderer only. The renderer summarizes existing passive transcript fixtures in memory. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. It does not implement fake backend servers. It does not start listeners, open ports, call localhost, generate traffic, or run tools. Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana remain future tooling. This is still not production proof.
 
+This PR adds a test-scope passive reviewer checklist mapper only. The mapper turns existing passive transcript summaries into in-memory reviewer checklist entries. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. It does not implement fake backend servers. It does not start listeners, open ports, call localhost, generate traffic, or run tools. Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana remain future tooling. This is still not production proof.
+
 ## Decision
 
 If a future implementation sprint is separately approved, LoadBalancerPro should grow a Local Lab Kit that can simulate a small datacenter on one Windows machine before real server hardware is purchased.

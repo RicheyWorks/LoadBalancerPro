@@ -14,6 +14,10 @@ This PR adds docs/test-only end-of-day handoff and next-step boundary cleanup on
 
 This PR adds deterministic test-scope bounded request burst smoke tests and in-memory summaries only. The burst uses the existing `src/test/java` multi-backend loopback harness. The burst calls only `127.0.0.1` harness URLs with ephemeral ports. The burst uses fixed small request counts only. It is not k6, Bruno, Docker, Toxiproxy, load testing, stress testing, benchmarking, or production traffic. It does not add production endpoints. It does not change production routing, proxy, scoring, or API behavior. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Passing bounded burst tests is not production proof. Live-cloud, real-tenant, production certification, and runtime enforcement remain not proven.
 
+This PR adds a test-scope bounded burst reviewer checklist mapper and handoff update only. The mapper turns existing in-memory bounded request burst summaries into reviewer checklist entries. It does not call endpoints. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. It is not load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence. Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Passing bounded burst checklist tests is not production proof.
+
+The bounded burst layer is now present; bounded burst reviewer checklist mapping is now present. The bounded burst layer proves fixed small-count deterministic loopback-only request coverage, stable fixture/boundary matching under repeated calls, stable in-memory burst summaries, and reviewer-friendly checklist language. The reviewer boundary is explicit: bounded burst tests are not production proof; bounded burst tests are not load/stress/benchmark tests; bounded burst tests do not provide throughput or p95/p99 evidence. The layer does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, Docker/k6/Bruno/Toxiproxy execution, replay execution, evidence/report generation, storage/export, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
+
 ## End-of-Day Checkpoint
 
 This checkpoint summarizes the completed local-lab stack at the end of the day. All current evidence is local/test-scope only. The loopback layers bind to `127.0.0.1` only and use OS-assigned ephemeral ports in tests. The checkpoint is reviewer handoff context, not production validation.
@@ -42,7 +46,8 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 20. Traffic matrix reviewer checklist mapping.
 21. Bounded request burst smoke tests.
 22. In-memory bounded request burst summary renderer.
-23. Local-lab progress handoff docs.
+23. Bounded burst reviewer checklist mapping.
+24. Local-lab progress handoff docs.
 
 ### What Is Actually Proven Today
 
@@ -52,6 +57,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - the smoke client can call loopback harness URLs;
 - the traffic matrix can cover required local-lab profiles;
 - the bounded request burst smoke test can issue fixed small loopback-only repetitions across the existing matrix;
+- the bounded burst reviewer checklist can map in-memory burst summaries into reviewer-friendly bounded language;
 - reviewer checklist and handoff docs explain boundaries;
 - all current evidence is local/test-scope only.
 
@@ -112,6 +118,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - traffic matrix reviewer checklist mapping;
 - bounded request burst smoke tests;
 - in-memory bounded request burst summary renderer.
+- bounded burst reviewer checklist mapping.
 
 ## What Each Layer Proves
 
@@ -136,6 +143,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 | traffic matrix reviewer checklist mapping | maps the matrix summary into stable reviewer checklist items | no persistence, export, or production validation |
 | bounded request burst smoke tests | issue fixed small loopback-only request repetitions across the existing matrix through the harness and smoke client | not load/stress/benchmark testing |
 | in-memory bounded request burst summary | summarizes burst case count, total request count, fixed repetition count, fixture matches, boundary responses, loopback-only use, and ephemeral-port use | no evidence/report generation |
+| bounded burst reviewer checklist mapping | maps the bounded burst summary into stable reviewer checklist items | no persistence, export, production validation, load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence |
 
 ## What Each Layer Does Not Prove
 
@@ -145,6 +153,8 @@ The traffic matrix layer does not prove production readiness, production certifi
 
 The bounded request burst layer uses fixed small request counts only. It is not load testing, stress testing, performance benchmarking, throughput evidence, latency measurement, p95/p99 evidence, production traffic, production proof, live-cloud validation, real-tenant validation, runtime enforcement, Docker/k6/Bruno/Toxiproxy execution, replay execution, evidence/report generation, storage/export, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
 
+The bounded burst reviewer checklist mapping turns the in-memory burst summary into reviewer questions about burst case count, total request count, fixed repetition count, fixture matches, boundary responses, loopback-only use, ephemeral-port use, deterministic output, no-production-proof warnings, no load/stress/benchmark warning, no throughput/p95/p99 evidence warning, no Docker/k6/Bruno/Toxiproxy warning, and no replay/report/storage/export warning. It is checklist data only and does not call endpoints, write files, persist storage, export anything, or change runtime behavior.
+
 Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Prometheus/Grafana dashboards, Docker Compose files, scripts, k6 scenarios, Bruno collections, Toxiproxy configuration, storage, export/download/upload/PDF/ZIP behavior, and production traffic remain outside this handoff.
 
 ## Next Safe Steps
@@ -152,8 +162,9 @@ Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Prometheu
 1. Review the small deterministic traffic matrix tests and in-memory traffic matrix summary as local-lab test-scope context only.
 2. Then consider k6/Bruno planning docs or a docs-only k6/Bruno/Toxiproxy implementation plan that describes future tooling boundaries without adding tool execution.
 3. Review the bounded request burst smoke tests as fixed-count local/test-scope context only; they are not load/stress/benchmark testing, throughput evidence, or p95/p99 evidence.
-4. Consider a separately scoped bounded burst reviewer checklist mapping, test-scope fault-style fixture expansion, or docs-only k6/Bruno/Toxiproxy planning.
+4. Review bounded burst reviewer checklist mapping as local/test-scope reviewer context, then consider test-scope fault-style fixture expansion or docs-only k6/Bruno/Toxiproxy planning.
 5. Keep Docker/k6/Bruno/Toxiproxy future-only unless a later sprint separately scopes them.
+6. Possible next safe lanes remain docs-only k6/Bruno/Toxiproxy implementation plan, test-scope fault-style fixture expansion, or docs-only Docker Compose design boundary, but not production traffic.
 
 ## Explicit Not-Proven Boundaries
 

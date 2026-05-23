@@ -4,6 +4,8 @@ This document is an end-of-day checkpoint for the local-lab work. It is reviewer
 
 This PR adds deterministic test-scope bounded request burst smoke tests and in-memory summaries only. The burst uses the existing `src/test/java` multi-backend loopback harness. The burst calls only `127.0.0.1` harness URLs with ephemeral ports. The burst uses fixed small request counts only. It is not k6, Bruno, Docker, Toxiproxy, load testing, stress testing, benchmarking, or production traffic. It does not add production endpoints. It does not change production routing, proxy, scoring, or API behavior. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Passing bounded burst tests is not production proof. Live-cloud, real-tenant, production certification, and runtime enforcement remain not proven.
 
+This PR adds a test-scope bounded burst reviewer checklist mapper and handoff update only. The mapper turns existing in-memory bounded request burst summaries into reviewer checklist entries. It does not call endpoints. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. It is not load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence. Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Passing bounded burst checklist tests is not production proof.
+
 ## Current Local-Lab Stack
 
 The current local-lab stack is:
@@ -30,7 +32,8 @@ The current local-lab stack is:
 20. Traffic matrix reviewer checklist mapping.
 21. Bounded request burst smoke tests.
 22. In-memory bounded request burst summary renderer.
-23. Local-lab progress handoff docs.
+23. Bounded burst reviewer checklist mapping.
+24. Local-lab progress handoff docs.
 
 ## What Is Actually Proven Today
 
@@ -40,6 +43,7 @@ The current local-lab stack is:
 - smoke client can call only `127.0.0.1` loopback harness URLs;
 - traffic matrix can cover the required local-lab profiles;
 - bounded request burst smoke tests can issue fixed small loopback-only repetitions across the existing matrix;
+- bounded burst reviewer checklist mapping can turn in-memory burst summaries into bounded reviewer questions;
 - reviewer checklist and handoff docs explain evidence boundaries;
 - all current evidence is local/test-scope only.
 
@@ -72,7 +76,7 @@ The current local-lab stack is:
 - Lane D: docs-only Docker Compose design boundary, no compose file yet.
 - Lane E: future actual Docker/k6/Bruno PR only after a separate boundary plan.
 
-Lane B is represented by the current bounded burst smoke tests only as fixed-count local/test-scope context. It is not load testing, stress testing, performance benchmarking, throughput evidence, latency measurement, p95/p99 evidence, production traffic, or production proof.
+Lane B is represented by the current bounded burst smoke tests and bounded burst reviewer checklist mapping only as fixed-count local/test-scope context. It is not load testing, stress testing, performance benchmarking, throughput evidence, latency measurement, p95/p99 evidence, production traffic, or production proof.
 
 Each lane must be separately scoped and reviewed. A future lane should stop before merge if it needs production code, production endpoint wiring, Maven dependencies, fixed ports, non-loopback hosts, Docker/k6/Bruno/Toxiproxy implementation, replay execution, evidence/report generation, file writing, storage, export, load/stress/benchmark claims, throughput or p95/p99 claims, or production-validation language.
 

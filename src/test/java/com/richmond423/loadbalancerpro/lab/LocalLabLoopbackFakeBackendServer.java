@@ -57,6 +57,10 @@ final class LocalLabLoopbackFakeBackendServer implements AutoCloseable {
         return URI.create("http://" + host() + ":" + port() + ENDPOINT_PATH);
     }
 
+    boolean stopped() {
+        return stopped;
+    }
+
     @Override
     public void close() {
         if (!stopped) {

@@ -20,6 +20,7 @@ class LocalLabK6SmokeScriptDocumentationTest {
     private static final Path K6_DESIGN = Path.of("docs/LOCAL_LAB_K6_SCENARIO_DESIGN.md");
     private static final Path BRUNO_DESIGN = Path.of("docs/LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md");
     private static final Path TOXIPROXY_DESIGN = Path.of("docs/LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md");
+    private static final Path TOXIPROXY_DOC = Path.of("docs/LOCAL_LAB_TOXIPROXY_CONFIG.md");
     private static final Path BOUNDARY_PLAN = Path.of("docs/LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md");
     private static final Path HANDOFF = Path.of("docs/LOCAL_LAB_PROGRESS_HANDOFF.md");
     private static final Path NEXT_STEPS = Path.of("docs/LOCAL_LAB_NEXT_STEPS_BOUNDARY.md");
@@ -115,8 +116,9 @@ class LocalLabK6SmokeScriptDocumentationTest {
                 "LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md",
                 "LOCAL_LAB_BRUNO_COLLECTION.md",
                 "LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md",
+                "LOCAL_LAB_TOXIPROXY_CONFIG.md",
                 "The k6 script does not run Bruno, and the Bruno collection does not run k6.",
-                "no Toxiproxy config is added here",
+                "The k6 script does not run Toxiproxy, and the Toxiproxy config does not run k6.",
                 "does not add Docker",
                 "Docker Compose",
                 "CI workflow changes",
@@ -153,9 +155,15 @@ class LocalLabK6SmokeScriptDocumentationTest {
             assertTrue(text.contains("LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md"), doc + " should link Bruno design");
             assertTrue(text.contains("LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md"),
                     doc + " should link Toxiproxy design");
+            assertTrue(text.contains("LOCAL_LAB_TOXIPROXY_CONFIG.md"),
+                    doc + " should link Toxiproxy config doc");
             assertTrue(text.contains("lab/k6/local-lab-smoke.js"), doc + " should name k6 smoke script path");
+            assertTrue(text.contains("lab/toxiproxy/local-lab-toxiproxy.json"),
+                    doc + " should name Toxiproxy config path");
             assertTrue(text.contains("optional local-lab k6 smoke script skeleton"),
                     doc + " should describe the narrow k6 script scope");
+            assertTrue(text.contains("optional local-lab Toxiproxy config skeleton"),
+                    doc + " should describe the narrow Toxiproxy scope");
             assertTrue(text.contains("not CI-gated"), doc + " should preserve manual-only boundary");
             assertTrue(text.contains("not Dockerized"), doc + " should preserve no-Docker boundary");
             assertTrue(text.contains("local/lab-owned loopback endpoints"),
@@ -164,13 +172,13 @@ class LocalLabK6SmokeScriptDocumentationTest {
 
         assertTrue(read(BRUNO_DOC).contains("optional local-lab Bruno collection skeleton"));
         assertTrue(read(BRUNO_DESIGN).contains("one optional local-lab Bruno collection skeleton"));
-        assertTrue(read(TOXIPROXY_DESIGN).contains("No Toxiproxy config is added in this PR."));
+        assertTrue(read(TOXIPROXY_DESIGN).contains("one optional local-lab Toxiproxy config skeleton"));
     }
 
     @Test
     void k6SmokeDocsAvoidProductionAndEvidenceOverclaims() throws Exception {
-        for (Path doc : List.of(K6_DOC, K6_DESIGN, BOUNDARY_PLAN, HANDOFF, NEXT_STEPS, READINESS, MATRIX,
-                TRUST_MAP, ADR_0009)) {
+        for (Path doc : List.of(K6_DOC, K6_DESIGN, TOXIPROXY_DOC, BOUNDARY_PLAN, HANDOFF, NEXT_STEPS, READINESS,
+                MATRIX, TRUST_MAP, ADR_0009)) {
             String normalized = read(doc).toLowerCase(Locale.ROOT);
 
             for (String forbidden : List.of(

@@ -1,0 +1,16 @@
+[
+  {
+    "name": "local-lab-app-loopback",
+    "listen": "127.0.0.1:18080",
+    "upstream": "127.0.0.1:8080",
+    "enabled": true,
+    "toxics": []
+  },
+  {
+    "name": "local-lab-backend-loopback",
+    "listen": "127.0.0.1:18081",
+    "upstream": "127.0.0.1:18082",
+    "enabled": true,
+    "toxics": []
+  }
+]

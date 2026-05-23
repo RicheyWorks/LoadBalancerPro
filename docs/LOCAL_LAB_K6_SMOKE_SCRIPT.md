@@ -12,9 +12,9 @@ This smoke skeleton is the first narrow step after the docs/test-only design pha
 
 - [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md) defines future k6 scenario shapes and now points at this first optional smoke skeleton.
 - [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md) defines Bruno collection shapes, and [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md) describes the separate optional local-lab Bruno collection skeleton. The k6 script does not run Bruno, and the Bruno collection does not run k6.
-- [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md) remains design-only; no Toxiproxy config is added here.
+- [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md) remains the Toxiproxy fault-model design reference, and [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md) describes the separate optional local-lab Toxiproxy config skeleton. The k6 script does not run Toxiproxy, and the Toxiproxy config does not run k6.
 
-This k6 sprint does not add Docker, Docker Compose, Bruno execution, Toxiproxy config, CI workflow changes, Maven dependency changes, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage, export, upload, download, PDF, or ZIP behavior. The later Bruno skeleton is a separate optional manual local-lab tool.
+This k6 sprint does not add Docker, Docker Compose, Bruno execution, Toxiproxy execution, CI workflow changes, Maven dependency changes, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage, export, upload, download, PDF, or ZIP behavior. The later Bruno skeleton and later Toxiproxy config skeleton are separate optional manual local-lab tools.
 
 ## Manual Use Boundary
 
@@ -43,7 +43,7 @@ Stop before merge or use if:
 - an external host appears as a default;
 - the script becomes automatic Maven or CI execution;
 - Docker or Docker Compose is added;
-- Bruno execution, automatic Bruno use, or Toxiproxy config are added;
+- Bruno execution, automatic Bruno use, Toxiproxy execution, or Toxiproxy wiring are added;
 - production endpoint wiring, production listeners, or production runtime behavior changes are required;
 - documentation starts claiming benchmark, stress, load, throughput, p95, p99, production readiness, production certification, live-cloud validation, or real-tenant validation evidence.
 

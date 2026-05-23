@@ -47,7 +47,8 @@ class LocalLabEndOfDayHandoffDocumentationTest {
                 "Traffic matrix summary renderer",
                 "Traffic matrix reviewer checklist mapping",
                 "Local-lab progress handoff docs",
-                "Optional local-lab Bruno collection skeleton")) {
+                "Optional local-lab Bruno collection skeleton",
+                "Optional local-lab Toxiproxy config skeleton")) {
             assertTrue(handoff.contains(expected), "handoff should list " + expected);
             assertTrue(nextSteps.contains(expected), "next-steps boundary should list " + expected);
         }
@@ -80,8 +81,10 @@ class LocalLabEndOfDayHandoffDocumentationTest {
                 "not Docker/Bruno/Toxiproxy execution",
                 "not automatic k6 execution",
                 "not automatic Bruno execution",
+                "not automatic Toxiproxy execution",
                 "not expanded k6 scenario implementation",
                 "not expanded Bruno collection implementation",
+                "not expanded Toxiproxy fault execution",
                 "not replay execution",
                 "not evidence/report generation",
                 "not storage/export behavior",
@@ -104,8 +107,10 @@ class LocalLabEndOfDayHandoffDocumentationTest {
                 "Lane A4b: future expanded k6 scenario files only after separate review",
                 "Lane A5a: first optional local-lab Bruno collection skeleton",
                 "Lane A5b: future expanded Bruno collection files only after separate review",
+                "Lane A6a: first optional local-lab Toxiproxy config skeleton",
+                "Lane A6b: future expanded Toxiproxy fault execution only after separate review",
                 "Lane B: test-scope bounded request burst smoke test, still loopback-only",
-                "Lane C: test-scope fault-style fixture expansion, no Toxiproxy yet",
+                "Lane C: test-scope fault-style fixture expansion, no Toxiproxy execution yet",
                 "Lane D: docs-only Docker Compose design boundary, no compose file yet",
                 "Lane E: future actual Docker/k6/Bruno PR only after a separate boundary plan",
                 "stop if a non-loopback host appears",
@@ -117,6 +122,7 @@ class LocalLabEndOfDayHandoffDocumentationTest {
                 "stop if expanded k6 implementation sneaks in",
                 "stop if the optional k6 smoke skeleton becomes CI-gated, Dockerized, or non-loopback by default",
                 "stop if the optional Bruno collection skeleton becomes CI-gated, Dockerized, Toxiproxy integration, k6 execution, or non-loopback by default",
+                "stop if the optional Toxiproxy config skeleton becomes CI-gated, Dockerized, Docker Compose orchestration, wired into the application, wired into Maven, wired into k6 execution, wired into Bruno execution, starts Toxiproxy, starts the application, binds to `0.0.0.0`, or becomes non-loopback by default",
                 "stop if docs start claiming production validation")) {
             assertTrue(combined.contains(expected), "handoff should include lane or stop condition " + expected);
         }

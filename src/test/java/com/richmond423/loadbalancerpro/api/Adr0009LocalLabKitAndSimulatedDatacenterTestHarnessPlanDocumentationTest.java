@@ -46,7 +46,7 @@ class Adr0009LocalLabKitAndSimulatedDatacenterTestHarnessPlanDocumentationTest {
                 "Decision type: architecture planning.",
                 "Implementation status: not implemented.",
                 "This ADR is planning-only.",
-                "This does not implement Docker Compose files, scripts, fake nodes, k6 tests beyond the optional local-lab smoke skeleton, expanded Bruno collections beyond the optional local-lab skeleton, telemetry ingestion, replay, report generation, storage, export behavior, or runtime routing behavior yet.",
+                "This does not implement Docker Compose files, scripts, fake nodes, k6 tests beyond the optional local-lab smoke skeleton, expanded Bruno collections beyond the optional local-lab skeleton, expanded Toxiproxy fault execution beyond the optional local-lab config skeleton, telemetry ingestion, replay, report generation, storage, export behavior, or runtime routing behavior yet.",
                 "This ADR does not add Docker Compose implementation.",
                 "This ADR does not add scripts implementation.",
                 "This ADR does not add fake backend node implementation.",
@@ -197,7 +197,7 @@ class Adr0009LocalLabKitAndSimulatedDatacenterTestHarnessPlanDocumentationTest {
                 "no k6 scenario files",
                 "no expanded Bruno collections beyond the optional local-lab skeleton",
                 "no Prometheus/Grafana dashboards",
-                "no Toxiproxy configuration",
+                "no expanded Toxiproxy fault execution beyond the optional local-lab config skeleton",
                 "no runtime LASE enforcement",
                 "no package-boundary enforcement",
                 "no ArchUnit enforcement",
@@ -268,7 +268,7 @@ class Adr0009LocalLabKitAndSimulatedDatacenterTestHarnessPlanDocumentationTest {
                 "fake backend node implementation",
                 "k6 scenario files",
                 "expanded Bruno collections beyond the optional local-lab skeleton",
-                "Toxiproxy configuration")) {
+                "expanded Toxiproxy fault execution beyond the optional local-lab config skeleton")) {
             assertTrue(matrix.contains(expected), "local lab matrix should include " + expected);
         }
 

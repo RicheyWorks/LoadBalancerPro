@@ -2,7 +2,7 @@
 
 This document started as a docs/test-only future Bruno API check collection design spec. It converts the Bruno lane from the local-lab boundary plan into concrete collection shapes and now points at the first separately scoped optional local-lab Bruno collection skeleton.
 
-The first Bruno follow-up adds one optional local-lab Bruno collection skeleton at [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/). See [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md) and [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md). It is not CI-gated, not Dockerized, not Toxiproxy integration, not k6 execution, and must target local/lab-owned loopback endpoints by default.
+The first Bruno follow-up adds one optional local-lab Bruno collection skeleton at [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/). See [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md), [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md), and [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md). It is not CI-gated, not Dockerized, not Toxiproxy integration, not k6 execution, and must target local/lab-owned loopback endpoints by default.
 
 No live API or production API checks are added. No external calls are added. No Docker Compose files are added in this PR. No actual tool execution occurs in this PR.
 
@@ -12,7 +12,7 @@ Future Bruno collection work must target local/lab endpoints first. Future Bruno
 
 The current local lab already has deterministic loopback harnesses, smoke and matrix summaries, bounded burst summaries, reviewer checklist mappings, and boundary docs. This design only names future Bruno collection areas that could be considered after a separate implementation review.
 
-This design does not add expanded Bruno collections, k6 scripts, Toxiproxy config, Docker/Docker Compose files, scripts, CI jobs, Maven dependencies, production endpoints, production listeners, external calls, live API checks, replay execution, evidence/report generation, storage/export behavior, load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence.
+This design does not add expanded Bruno collections, k6 scripts, Toxiproxy execution, Toxiproxy wiring, Docker/Docker Compose files, scripts, CI jobs, Maven dependencies, production endpoints, production listeners, external calls, live API checks, replay execution, evidence/report generation, storage/export behavior, load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence.
 
 ## Future Collection Areas
 
@@ -33,6 +33,7 @@ This design does not add expanded Bruno collections, k6 scripts, Toxiproxy confi
 - no live API or production API checks are added;
 - no external calls are added;
 - the skeleton must stay optional/manual, not CI-gated, not Dockerized, not Toxiproxy integration, and not k6 execution;
+- the separate optional local-lab Toxiproxy config skeleton is manual-only and not wired into Bruno execution;
 - future Bruno collection work must target local/lab endpoints first;
 - future Bruno work must be separately scoped;
 - future Bruno work must stop if it needs production endpoint wiring, non-loopback targets, fixed ports, Maven dependency changes, scripts outside the approved lane, CI changes, replay execution, evidence/report generation, storage, export, or production-validation language.

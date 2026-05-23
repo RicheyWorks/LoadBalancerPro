@@ -26,15 +26,22 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
         String plan = read(BOUNDARY_PLAN);
 
         for (String expected : List.of(
-                "Toxiproxy remains future-only tooling",
+                "Expanded Toxiproxy fault execution remains future-only tooling",
                 "Docker/Docker Compose is future-only unless separately scoped",
                 "k6 has one optional local-lab smoke script skeleton",
                 "Bruno has one optional local-lab Bruno collection skeleton",
+                "Toxiproxy has one optional local-lab Toxiproxy config skeleton",
                 "LOCAL_LAB_BRUNO_COLLECTION.md",
                 "lab/bruno/local-lab-smoke",
+                "LOCAL_LAB_TOXIPROXY_CONFIG.md",
+                "lab/toxiproxy/local-lab-toxiproxy.json",
                 "not Toxiproxy integration",
                 "not k6 execution",
-                "Toxiproxy is a future local-lab tool candidate for network degradation simulation",
+                "not wired into k6 execution",
+                "not wired into Bruno execution",
+                "does not start Toxiproxy",
+                "does not start the application",
+                "Toxiproxy has one optional local-lab Toxiproxy config skeleton and remains a future local-lab tool candidate for expanded network degradation simulation",
                 "Docker/Docker Compose is a future local service orchestration candidate only after separate boundary review")) {
             assertTrue(plan.contains(expected), "boundary plan should include " + expected);
         }
@@ -48,10 +55,13 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
             assertTrue(text.contains("docs/test-only k6/Bruno/Toxiproxy implementation boundary plan"));
             assertTrue(text.contains("optional local-lab k6 smoke script skeleton"));
             assertTrue(text.contains("optional local-lab Bruno collection skeleton"));
-            assertTrue(text.contains("no Toxiproxy config"));
+            assertTrue(text.contains("optional local-lab Toxiproxy config skeleton"));
+            assertTrue(text.contains("expanded Toxiproxy fault execution"));
             assertTrue(text.contains("no Docker Compose files"));
             assertTrue(text.contains("not Toxiproxy integration"));
             assertTrue(text.contains("not k6 execution"));
+            assertTrue(text.contains("not wired into k6 execution"));
+            assertTrue(text.contains("not wired into Bruno execution"));
             assertTrue(text.contains("automatic"));
             assertTrue(text.contains("no CI jobs"));
             assertTrue(text.contains("no Maven dependencies"));
@@ -78,13 +88,17 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
                 "Lane A4b: future expanded k6 scenario files only after separate review",
                 "Lane A5a: first optional local-lab Bruno collection skeleton",
                 "Lane A5b: future expanded Bruno collection files only after separate review",
-                "Lane A6: future actual Toxiproxy config only after boundary approval",
+                "Lane A6a: first optional local-lab Toxiproxy config skeleton",
+                "Lane A6b: future expanded Toxiproxy fault execution only after separate review",
                 "Lane A7: future Docker Compose only after a separate Docker boundary plan",
-                "a PR adds expanded k6, expanded Bruno, or Toxiproxy files without separate approval",
+                "a PR adds expanded k6, expanded Bruno, or expanded Toxiproxy fault files without separate approval",
                 "the optional k6 smoke skeleton stops defaulting to loopback/local targets",
                 "the optional k6 smoke skeleton becomes CI-gated or Dockerized",
                 "the optional Bruno collection skeleton stops defaulting to loopback/local targets",
                 "the optional Bruno collection skeleton becomes CI-gated, Dockerized, Toxiproxy integration, or k6 execution",
+                "the optional Toxiproxy config skeleton stops defaulting to loopback/local targets",
+                "the optional Toxiproxy config skeleton binds to `0.0.0.0`",
+                "the optional Toxiproxy config skeleton becomes CI-gated, Dockerized, Docker Compose orchestration, wired into the application, wired into Maven, wired into k6 execution, or wired into Bruno execution",
                 "a PR adds Docker Compose before the Docker boundary plan",
                 "a PR changes `src/main/java`",
                 "a PR adds production endpoint wiring",
@@ -101,8 +115,8 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
         String plan = read(BOUNDARY_PLAN);
 
         for (String expected : List.of(
-                "Is this limited to the one optional k6 smoke skeleton, one optional Bruno collection skeleton, plus docs/tests?",
-                "Is Toxiproxy still future-only?",
+                "Is this limited to the one optional k6 smoke skeleton, one optional Bruno collection skeleton, one optional Toxiproxy config skeleton, plus docs/tests?",
+                "Is expanded Toxiproxy fault execution still separately scoped?",
                 "Is expanded k6 work still separately scoped?",
                 "Is expanded Bruno work still separately scoped?",
                 "Are Docker/Compose still future-only?",
@@ -119,8 +133,10 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
                 "Docker/Toxiproxy platform implementation",
                 "expanded k6 scenario implementation",
                 "expanded Bruno collection implementation",
+                "expanded Toxiproxy fault execution",
                 "automatic k6 execution",
                 "automatic Bruno execution",
+                "automatic Toxiproxy execution",
                 "replay execution",
                 "evidence/report generation",
                 "storage/export behavior",

@@ -10,6 +10,8 @@ This PR adds a test-scope loopback fake backend server harness only. The harness
 
 This PR adds test-scope lifecycle hardening for the loopback fake backend server only. The harness remains `src/test/java`-only. It binds to `127.0.0.1` only. It uses ephemeral ports. It does not add production endpoints. It does not change production routing, proxy, scoring, or API behavior. It does not add Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Passing lifecycle tests is not production proof.
 
+This PR adds a test-scope multi-backend loopback harness only. The harness remains `src/test/java`-only. It starts multiple loopback-only fake backend servers using OS-assigned ephemeral ports. It does not add production endpoints. It does not change production routing, proxy, scoring, or API behavior. It does not add Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Passing multi-backend loopback tests is not production proof. Live-cloud, real-tenant, production certification, and runtime enforcement remain not proven.
+
 ## Purpose
 
 The readiness gate gives reviewers and operators one deterministic answer to a narrow question: is the passive planning/test evidence chain coherent enough to plan a future, separately scoped implementation PR for an actual fake backend server?

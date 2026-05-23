@@ -18,6 +18,10 @@ This PR adds a test-scope bounded burst reviewer checklist mapper and handoff up
 
 The bounded burst layer is now present; bounded burst reviewer checklist mapping is now present. The bounded burst layer proves fixed small-count deterministic loopback-only request coverage, stable fixture/boundary matching under repeated calls, stable in-memory burst summaries, and reviewer-friendly checklist language. The reviewer boundary is explicit: bounded burst tests are not production proof; bounded burst tests are not load/stress/benchmark tests; bounded burst tests do not provide throughput or p95/p99 evidence. The layer does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, Docker/k6/Bruno/Toxiproxy execution, replay execution, evidence/report generation, storage/export, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
 
+This PR adds a docs/test-only k6/Bruno/Toxiproxy implementation boundary plan only. See [`LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md`](LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md). It adds no k6 scripts, no Bruno collections, no Toxiproxy config, no Docker Compose files, no scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence. k6, Bruno, Toxiproxy, and Docker/Docker Compose remain future-only unless separately scoped.
+
+The k6/Bruno/Toxiproxy boundary plan is now present. It explains future lanes for docs-only k6 scenario design, docs-only Bruno collection design, docs-only Toxiproxy fault model design, later tool files only after boundary approval, and future Docker Compose only after a separate Docker boundary plan. The plan is not tool implementation and does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, replay execution, evidence/report generation, storage/export, load testing, stress testing, benchmarking, throughput evidence, p95/p99 evidence, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
+
 ## End-of-Day Checkpoint
 
 This checkpoint summarizes the completed local-lab stack at the end of the day. All current evidence is local/test-scope only. The loopback layers bind to `127.0.0.1` only and use OS-assigned ephemeral ports in tests. The checkpoint is reviewer handoff context, not production validation.
@@ -48,6 +52,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 22. In-memory bounded request burst summary renderer.
 23. Bounded burst reviewer checklist mapping.
 24. Local-lab progress handoff docs.
+25. k6/Bruno/Toxiproxy implementation boundary plan.
 
 ### What Is Actually Proven Today
 
@@ -58,6 +63,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - the traffic matrix can cover required local-lab profiles;
 - the bounded request burst smoke test can issue fixed small loopback-only repetitions across the existing matrix;
 - the bounded burst reviewer checklist can map in-memory burst summaries into reviewer-friendly bounded language;
+- the k6/Bruno/Toxiproxy boundary plan can define future tool lanes and stop conditions before any tool files exist;
 - reviewer checklist and handoff docs explain boundaries;
 - all current evidence is local/test-scope only.
 
@@ -82,6 +88,13 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 ### Next Safe Implementation Lanes
 
 - Lane A: docs-only k6/Bruno/Toxiproxy implementation plan.
+- Lane A1: docs-only k6 scenario design.
+- Lane A2: docs-only Bruno collection design.
+- Lane A3: docs-only Toxiproxy fault model design.
+- Lane A4: future actual k6 files only after boundary approval.
+- Lane A5: future actual Bruno collection only after boundary approval.
+- Lane A6: future actual Toxiproxy config only after boundary approval.
+- Lane A7: future Docker Compose only after a separate Docker boundary plan.
 - Lane B: test-scope bounded request burst smoke test, still loopback-only.
 - Lane C: test-scope fault-style fixture expansion, no Toxiproxy yet.
 - Lane D: docs-only Docker Compose design boundary, no compose file yet.
@@ -119,6 +132,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - bounded request burst smoke tests;
 - in-memory bounded request burst summary renderer.
 - bounded burst reviewer checklist mapping.
+- k6/Bruno/Toxiproxy implementation boundary plan.
 
 ## What Each Layer Proves
 
@@ -144,6 +158,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 | bounded request burst smoke tests | issue fixed small loopback-only request repetitions across the existing matrix through the harness and smoke client | not load/stress/benchmark testing |
 | in-memory bounded request burst summary | summarizes burst case count, total request count, fixed repetition count, fixture matches, boundary responses, loopback-only use, and ephemeral-port use | no evidence/report generation |
 | bounded burst reviewer checklist mapping | maps the bounded burst summary into stable reviewer checklist items | no persistence, export, production validation, load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence |
+| k6/Bruno/Toxiproxy implementation boundary plan | documents future local-lab tool lanes, reviewer checklist language, and stop conditions | no k6 scripts, Bruno collections, Toxiproxy config, Docker Compose files, scripts, CI jobs, dependencies, replay, report, storage, export, or production validation |
 
 ## What Each Layer Does Not Prove
 
@@ -155,6 +170,8 @@ The bounded request burst layer uses fixed small request counts only. It is not 
 
 The bounded burst reviewer checklist mapping turns the in-memory burst summary into reviewer questions about burst case count, total request count, fixed repetition count, fixture matches, boundary responses, loopback-only use, ephemeral-port use, deterministic output, no-production-proof warnings, no load/stress/benchmark warning, no throughput/p95/p99 evidence warning, no Docker/k6/Bruno/Toxiproxy warning, and no replay/report/storage/export warning. It is checklist data only and does not call endpoints, write files, persist storage, export anything, or change runtime behavior.
 
+The k6/Bruno/Toxiproxy implementation boundary plan is docs-only. It does not add k6 scripts, Bruno collections, Toxiproxy config, Docker Compose files, scripts, CI jobs, Maven dependencies, production endpoints, production listeners, replay execution, evidence/report generation, storage/export behavior, load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence.
+
 Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Prometheus/Grafana dashboards, Docker Compose files, scripts, k6 scenarios, Bruno collections, Toxiproxy configuration, storage, export/download/upload/PDF/ZIP behavior, and production traffic remain outside this handoff.
 
 ## Next Safe Steps
@@ -165,6 +182,7 @@ Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Prometheu
 4. Review bounded burst reviewer checklist mapping as local/test-scope reviewer context, then consider test-scope fault-style fixture expansion or docs-only k6/Bruno/Toxiproxy planning.
 5. Keep Docker/k6/Bruno/Toxiproxy future-only unless a later sprint separately scopes them.
 6. Possible next safe lanes remain docs-only k6/Bruno/Toxiproxy implementation plan, test-scope fault-style fixture expansion, or docs-only Docker Compose design boundary, but not production traffic.
+7. Use the k6/Bruno/Toxiproxy boundary plan to decide whether a future sprint is still docs-only or has crossed into actual tool files.
 
 ## Explicit Not-Proven Boundaries
 
@@ -175,9 +193,15 @@ Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Prometheu
 - not runtime enforcement;
 - not Docker/k6/Bruno/Toxiproxy implementation;
 - not Docker/k6/Bruno/Toxiproxy execution;
+- not Docker Compose implementation;
 - not replay execution;
 - not evidence/report generation;
 - not storage/export;
+- not load testing;
+- not stress testing;
+- not benchmarking;
+- not throughput evidence;
+- not p95/p99 evidence;
 - not autonomous production traffic shifting;
 - not carbon-aware routing;
 - not GPU orchestration;

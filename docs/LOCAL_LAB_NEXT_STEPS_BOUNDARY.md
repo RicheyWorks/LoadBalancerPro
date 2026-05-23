@@ -6,6 +6,8 @@ This PR adds deterministic test-scope bounded request burst smoke tests and in-m
 
 This PR adds a test-scope bounded burst reviewer checklist mapper and handoff update only. The mapper turns existing in-memory bounded request burst summaries into reviewer checklist entries. It does not call endpoints. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. It is not load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence. Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Passing bounded burst checklist tests is not production proof.
 
+This PR adds a docs/test-only k6/Bruno/Toxiproxy implementation boundary plan only. See [`LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md`](LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md). It adds no k6 scripts, no Bruno collections, no Toxiproxy config, no Docker Compose files, no scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence. k6, Bruno, Toxiproxy, and Docker/Docker Compose remain future-only unless separately scoped.
+
 ## Current Local-Lab Stack
 
 The current local-lab stack is:
@@ -34,6 +36,7 @@ The current local-lab stack is:
 22. In-memory bounded request burst summary renderer.
 23. Bounded burst reviewer checklist mapping.
 24. Local-lab progress handoff docs.
+25. k6/Bruno/Toxiproxy implementation boundary plan.
 
 ## What Is Actually Proven Today
 
@@ -44,6 +47,7 @@ The current local-lab stack is:
 - traffic matrix can cover the required local-lab profiles;
 - bounded request burst smoke tests can issue fixed small loopback-only repetitions across the existing matrix;
 - bounded burst reviewer checklist mapping can turn in-memory burst summaries into bounded reviewer questions;
+- the k6/Bruno/Toxiproxy boundary plan can describe future tool lanes and stop conditions before any tool files exist;
 - reviewer checklist and handoff docs explain evidence boundaries;
 - all current evidence is local/test-scope only.
 
@@ -71,10 +75,19 @@ The current local-lab stack is:
 ## Next Safe Implementation Lanes
 
 - Lane A: docs-only k6/Bruno/Toxiproxy implementation plan.
+- Lane A1: docs-only k6 scenario design.
+- Lane A2: docs-only Bruno collection design.
+- Lane A3: docs-only Toxiproxy fault model design.
+- Lane A4: future actual k6 files only after boundary approval.
+- Lane A5: future actual Bruno collection only after boundary approval.
+- Lane A6: future actual Toxiproxy config only after boundary approval.
+- Lane A7: future Docker Compose only after a separate Docker boundary plan.
 - Lane B: test-scope bounded request burst smoke test, still loopback-only.
 - Lane C: test-scope fault-style fixture expansion, no Toxiproxy yet.
 - Lane D: docs-only Docker Compose design boundary, no compose file yet.
 - Lane E: future actual Docker/k6/Bruno PR only after a separate boundary plan.
+
+Lane A is represented by the current docs-only k6/Bruno/Toxiproxy implementation boundary plan. It is not k6 implementation, Bruno implementation, Toxiproxy implementation, Docker/Docker Compose implementation, load testing, stress testing, benchmarking, production traffic, replay execution, evidence/report generation, storage, export, throughput evidence, or p95/p99 evidence.
 
 Lane B is represented by the current bounded burst smoke tests and bounded burst reviewer checklist mapping only as fixed-count local/test-scope context. It is not load testing, stress testing, performance benchmarking, throughput evidence, latency measurement, p95/p99 evidence, production traffic, or production proof.
 
@@ -87,7 +100,11 @@ Each lane must be separately scoped and reviewed. A future lane should stop befo
 - stop if `src/main/java` changes are needed;
 - stop if production endpoint wiring appears;
 - stop if Maven dependencies are required;
+- stop if CI changes are required;
+- stop if actual k6/Bruno/Toxiproxy files appear without separate approval;
+- stop if Docker Compose appears before the Docker boundary plan;
 - stop if Docker/k6/Bruno/Toxiproxy implementation sneaks in;
+- stop if load/stress/benchmark/p95/p99/throughput evidence is claimed without a separately validated test lane;
 - stop if docs start claiming production validation.
 
 ## Handoff Boundary

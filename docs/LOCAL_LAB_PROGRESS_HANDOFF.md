@@ -12,6 +12,8 @@ The traffic matrix layer is now present; traffic matrix reviewer checklist mappi
 
 This PR adds docs/test-only end-of-day handoff and next-step boundary cleanup only. It updates reviewer-facing handoff docs and documentation guard tests. It does not add local-lab harness functionality, client functionality, server functionality, production endpoints, production listeners, Docker/k6/Bruno/Toxiproxy implementation, replay execution, evidence/report generation, file writing, storage, export, or runtime behavior. See [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md).
 
+This PR adds deterministic test-scope bounded request burst smoke tests and in-memory summaries only. The burst uses the existing `src/test/java` multi-backend loopback harness. The burst calls only `127.0.0.1` harness URLs with ephemeral ports. The burst uses fixed small request counts only. It is not k6, Bruno, Docker, Toxiproxy, load testing, stress testing, benchmarking, or production traffic. It does not add production endpoints. It does not change production routing, proxy, scoring, or API behavior. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Passing bounded burst tests is not production proof. Live-cloud, real-tenant, production certification, and runtime enforcement remain not proven.
+
 ## End-of-Day Checkpoint
 
 This checkpoint summarizes the completed local-lab stack at the end of the day. All current evidence is local/test-scope only. The loopback layers bind to `127.0.0.1` only and use OS-assigned ephemeral ports in tests. The checkpoint is reviewer handoff context, not production validation.
@@ -38,7 +40,9 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 18. Deterministic traffic matrix tests.
 19. Traffic matrix summary renderer.
 20. Traffic matrix reviewer checklist mapping.
-21. Local-lab progress handoff docs.
+21. Bounded request burst smoke tests.
+22. In-memory bounded request burst summary renderer.
+23. Local-lab progress handoff docs.
 
 ### What Is Actually Proven Today
 
@@ -47,6 +51,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - the multi-backend loopback harness can run with ephemeral ports;
 - the smoke client can call loopback harness URLs;
 - the traffic matrix can cover required local-lab profiles;
+- the bounded request burst smoke test can issue fixed small loopback-only repetitions across the existing matrix;
 - reviewer checklist and handoff docs explain boundaries;
 - all current evidence is local/test-scope only.
 
@@ -104,7 +109,9 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - smoke reviewer checklist mapping;
 - deterministic traffic matrix tests;
 - in-memory traffic matrix summary;
-- traffic matrix reviewer checklist mapping.
+- traffic matrix reviewer checklist mapping;
+- bounded request burst smoke tests;
+- in-memory bounded request burst summary renderer.
 
 ## What Each Layer Proves
 
@@ -127,6 +134,8 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 | deterministic traffic matrix tests | exercise a small scenario/profile matrix through the existing loopback harness and smoke client | not load/stress testing |
 | in-memory traffic matrix summary | summarizes matrix case count, fixture matches, boundary cases, loopback-only use, and ephemeral-port use | no evidence/report generation |
 | traffic matrix reviewer checklist mapping | maps the matrix summary into stable reviewer checklist items | no persistence, export, or production validation |
+| bounded request burst smoke tests | issue fixed small loopback-only request repetitions across the existing matrix through the harness and smoke client | not load/stress/benchmark testing |
+| in-memory bounded request burst summary | summarizes burst case count, total request count, fixed repetition count, fixture matches, boundary responses, loopback-only use, and ephemeral-port use | no evidence/report generation |
 
 ## What Each Layer Does Not Prove
 
@@ -134,14 +143,17 @@ Local loopback smoke is not production proof. The local-lab chain does not prove
 
 The traffic matrix layer does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, Docker/k6/Bruno/Toxiproxy execution, replay execution, evidence/report generation, storage/export, load/stress testing, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
 
+The bounded request burst layer uses fixed small request counts only. It is not load testing, stress testing, performance benchmarking, throughput evidence, latency measurement, p95/p99 evidence, production traffic, production proof, live-cloud validation, real-tenant validation, runtime enforcement, Docker/k6/Bruno/Toxiproxy execution, replay execution, evidence/report generation, storage/export, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
+
 Docker/k6/Bruno/Toxiproxy remain future-only unless separately scoped. Prometheus/Grafana dashboards, Docker Compose files, scripts, k6 scenarios, Bruno collections, Toxiproxy configuration, storage, export/download/upload/PDF/ZIP behavior, and production traffic remain outside this handoff.
 
 ## Next Safe Steps
 
 1. Review the small deterministic traffic matrix tests and in-memory traffic matrix summary as local-lab test-scope context only.
 2. Then consider k6/Bruno planning docs or a docs-only k6/Bruno/Toxiproxy implementation plan that describes future tooling boundaries without adding tool execution.
-3. Alternatively consider a test-scope bounded request burst smoke test, but not production traffic.
-4. Keep Docker/k6/Bruno/Toxiproxy future-only unless a later sprint separately scopes them.
+3. Review the bounded request burst smoke tests as fixed-count local/test-scope context only; they are not load/stress/benchmark testing, throughput evidence, or p95/p99 evidence.
+4. Consider a separately scoped bounded burst reviewer checklist mapping, test-scope fault-style fixture expansion, or docs-only k6/Bruno/Toxiproxy planning.
+5. Keep Docker/k6/Bruno/Toxiproxy future-only unless a later sprint separately scopes them.
 
 ## Explicit Not-Proven Boundaries
 

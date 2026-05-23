@@ -22,6 +22,8 @@ This PR adds a test-scope implementation readiness gate only. The readiness gate
 
 This PR adds a test-scope fake backend handler only. The handler maps simulated request labels to existing response fixtures in memory. It does not implement fake backend servers. It does not start listeners. It does not open ports. It does not call localhost. It does not generate traffic. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. It does not run tools. Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana remain future tooling. Passing handler tests is not production proof.
 
+This PR adds a test-scope loopback fake backend server harness only. The harness lives under `src/test/java`. It binds to `127.0.0.1` only and uses OS-assigned ephemeral ports. It does not add production endpoints. It does not change production routing, proxy, scoring, strategy, or API behavior. It does not add Docker/k6/Bruno/Toxiproxy/Prometheus/Grafana. It does not execute replay. It does not generate evidence reports. It does not write files. It does not persist storage. It does not export/download/upload/PDF/ZIP anything. Passing loopback tests is not production proof. Live-cloud, real-tenant, production certification, and runtime enforcement remain not proven.
+
 ## Scenario Matrix
 
 | Future scenario | Purpose | Expected signals | Expected evidence | Not-proven boundary | Future tool candidate |

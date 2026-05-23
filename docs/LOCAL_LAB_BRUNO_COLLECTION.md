@@ -13,9 +13,9 @@ This Bruno skeleton is the first narrow collection step after the docs/test-only
 - [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md) defines the future Bruno collection shapes and now points at this first optional collection skeleton.
 - [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md) describes the separate optional k6 smoke script. The Bruno collection does not run k6, and the k6 script does not run Bruno.
 - [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md) remains the k6 scenario design reference.
-- [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md) remains design-only; no Toxiproxy config is added here.
+- [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md) remains the Toxiproxy fault-model design reference, and [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md) describes the separate optional local-lab Toxiproxy config skeleton. The Bruno collection does not run Toxiproxy, and the Toxiproxy config does not run Bruno.
 
-This sprint does not add Docker, Docker Compose, Toxiproxy config, k6 behavior changes, CI workflow changes, Maven dependency changes, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage, export, upload, download, PDF, or ZIP behavior.
+This sprint does not add Docker, Docker Compose, Toxiproxy execution, Toxiproxy wiring, k6 behavior changes, CI workflow changes, Maven dependency changes, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage, export, upload, download, PDF, or ZIP behavior.
 
 ## Manual Use Boundary
 
@@ -37,7 +37,7 @@ Stop before merge or use if:
 - an external host appears as a default;
 - the collection becomes automatic Maven or CI execution;
 - Docker or Docker Compose is added;
-- Toxiproxy config is added;
+- Toxiproxy execution or Toxiproxy wiring is added;
 - k6 behavior is changed beyond documentation cross-links;
 - production endpoint wiring, production listeners, or production runtime behavior changes are required;
 - documentation starts claiming benchmark, stress, load, throughput, p95, p99, production readiness, production certification, live-cloud validation, or real-tenant validation evidence.

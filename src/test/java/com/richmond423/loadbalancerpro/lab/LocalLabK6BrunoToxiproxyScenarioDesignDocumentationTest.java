@@ -16,6 +16,7 @@ class LocalLabK6BrunoToxiproxyScenarioDesignDocumentationTest {
     private static final Path BRUNO_DOC = Path.of("docs/LOCAL_LAB_BRUNO_COLLECTION.md");
     private static final Path BRUNO_DESIGN = Path.of("docs/LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md");
     private static final Path TOXIPROXY_DESIGN = Path.of("docs/LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md");
+    private static final Path TOXIPROXY_DOC = Path.of("docs/LOCAL_LAB_TOXIPROXY_CONFIG.md");
     private static final Path BOUNDARY_PLAN = Path.of("docs/LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md");
     private static final Path HANDOFF = Path.of("docs/LOCAL_LAB_PROGRESS_HANDOFF.md");
     private static final Path NEXT_STEPS = Path.of("docs/LOCAL_LAB_NEXT_STEPS_BOUNDARY.md");
@@ -104,7 +105,19 @@ class LocalLabK6BrunoToxiproxyScenarioDesignDocumentationTest {
                 "reset/close behavior",
                 "recovery after fault removal",
                 "partial degradation patterns",
-                "No Toxiproxy config is added in this PR.",
+                "one optional local-lab Toxiproxy config skeleton",
+                "LOCAL_LAB_TOXIPROXY_CONFIG.md",
+                "lab/toxiproxy/local-lab-toxiproxy.json",
+                "manual-only",
+                "not CI-gated",
+                "not Dockerized",
+                "not Docker Compose orchestration",
+                "not wired into the application",
+                "not wired into Maven",
+                "not wired into k6 execution",
+                "not wired into Bruno execution",
+                "does not start Toxiproxy",
+                "does not start the application",
                 "No Docker Compose is added in this PR.",
                 "No network damage is actually executed.",
                 "No live network, LAN, or production network is touched.",
@@ -153,9 +166,16 @@ class LocalLabK6BrunoToxiproxyScenarioDesignDocumentationTest {
                     doc + " should keep k6 smoke skeleton narrowly scoped");
             assertTrue(text.contains("optional local-lab Bruno collection skeleton"),
                     doc + " should keep Bruno skeleton narrowly scoped");
+            assertTrue(text.contains("optional local-lab Toxiproxy config skeleton"),
+                    doc + " should keep Toxiproxy skeleton narrowly scoped");
+            assertTrue(text.contains("LOCAL_LAB_TOXIPROXY_CONFIG.md"),
+                    doc + " should link Toxiproxy config doc");
+            assertTrue(text.contains("lab/toxiproxy/local-lab-toxiproxy.json"),
+                    doc + " should name Toxiproxy config path");
             assertTrue(text.contains("not Toxiproxy integration"), doc + " should separate Bruno from Toxiproxy");
             assertTrue(text.contains("not k6 execution"), doc + " should separate Bruno from k6");
-            assertTrue(text.contains("no Toxiproxy config"), doc + " should keep Toxiproxy future-only");
+            assertTrue(text.contains("expanded Toxiproxy fault execution"),
+                    doc + " should keep expanded Toxiproxy work separately scoped");
             assertTrue(text.contains("no Docker Compose files"), doc + " should keep Compose future-only");
             assertTrue(text.contains("Future tool work must be separately scoped"),
                     doc + " should require separate scope");
@@ -168,8 +188,8 @@ class LocalLabK6BrunoToxiproxyScenarioDesignDocumentationTest {
 
     @Test
     void scenarioDesignDocsAvoidImplementationAndValidationOverclaims() throws Exception {
-        for (Path doc : List.of(K6_DESIGN, BRUNO_DESIGN, TOXIPROXY_DESIGN, BOUNDARY_PLAN, HANDOFF, NEXT_STEPS,
-                READINESS, MATRIX, TRUST_MAP, ADR_0009)) {
+        for (Path doc : List.of(K6_DESIGN, BRUNO_DESIGN, TOXIPROXY_DESIGN, TOXIPROXY_DOC, BOUNDARY_PLAN, HANDOFF,
+                NEXT_STEPS, READINESS, MATRIX, TRUST_MAP, ADR_0009)) {
             String normalized = read(doc).toLowerCase(Locale.ROOT);
 
             for (String forbidden : List.of(

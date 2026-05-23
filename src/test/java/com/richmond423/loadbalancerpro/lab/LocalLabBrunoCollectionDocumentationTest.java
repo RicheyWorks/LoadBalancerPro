@@ -26,6 +26,7 @@ class LocalLabBrunoCollectionDocumentationTest {
     private static final Path K6_DOC = Path.of("docs/LOCAL_LAB_K6_SMOKE_SCRIPT.md");
     private static final Path K6_DESIGN = Path.of("docs/LOCAL_LAB_K6_SCENARIO_DESIGN.md");
     private static final Path TOXIPROXY_DESIGN = Path.of("docs/LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md");
+    private static final Path TOXIPROXY_DOC = Path.of("docs/LOCAL_LAB_TOXIPROXY_CONFIG.md");
     private static final Path BOUNDARY_PLAN = Path.of("docs/LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md");
     private static final Path HANDOFF = Path.of("docs/LOCAL_LAB_PROGRESS_HANDOFF.md");
     private static final Path NEXT_STEPS = Path.of("docs/LOCAL_LAB_NEXT_STEPS_BOUNDARY.md");
@@ -134,7 +135,8 @@ class LocalLabBrunoCollectionDocumentationTest {
                 "The Bruno collection does not run k6, and the k6 script does not run Bruno.",
                 "LOCAL_LAB_K6_SCENARIO_DESIGN.md",
                 "LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md",
-                "no Toxiproxy config is added here",
+                "LOCAL_LAB_TOXIPROXY_CONFIG.md",
+                "The Bruno collection does not run Toxiproxy, and the Toxiproxy config does not run Bruno.",
                 "does not add Docker",
                 "Docker Compose",
                 "CI workflow changes",
@@ -171,9 +173,15 @@ class LocalLabBrunoCollectionDocumentationTest {
             assertTrue(text.contains("LOCAL_LAB_K6_SMOKE_SCRIPT.md"), doc + " should link k6 smoke doc");
             assertTrue(text.contains("LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md"),
                     doc + " should link Toxiproxy design");
+            assertTrue(text.contains("LOCAL_LAB_TOXIPROXY_CONFIG.md"),
+                    doc + " should link Toxiproxy config doc");
             assertTrue(text.contains("lab/bruno/local-lab-smoke"), doc + " should name Bruno collection path");
+            assertTrue(text.contains("lab/toxiproxy/local-lab-toxiproxy.json"),
+                    doc + " should name Toxiproxy config path");
             assertTrue(text.contains("optional local-lab Bruno collection skeleton"),
                     doc + " should describe the narrow Bruno scope");
+            assertTrue(text.contains("optional local-lab Toxiproxy config skeleton"),
+                    doc + " should describe the narrow Toxiproxy scope");
             assertTrue(text.contains("not CI-gated"), doc + " should preserve manual-only boundary");
             assertTrue(text.contains("not Dockerized"), doc + " should preserve no-Docker boundary");
             assertTrue(text.contains("not Toxiproxy integration"), doc + " should preserve no-Toxiproxy boundary");
@@ -184,13 +192,13 @@ class LocalLabBrunoCollectionDocumentationTest {
 
         assertTrue(read(K6_DOC).contains("LOCAL_LAB_BRUNO_COLLECTION.md"));
         assertTrue(read(K6_DESIGN).contains("LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md"));
-        assertTrue(read(TOXIPROXY_DESIGN).contains("No Toxiproxy config is added in this PR."));
+        assertTrue(read(TOXIPROXY_DESIGN).contains("one optional local-lab Toxiproxy config skeleton"));
     }
 
     @Test
     void brunoDocsAvoidProductionAndEvidenceOverclaims() throws Exception {
-        for (Path doc : List.of(BRUNO_DOC, BRUNO_DESIGN, K6_DOC, BOUNDARY_PLAN, HANDOFF, NEXT_STEPS,
-                READINESS, MATRIX, TRUST_MAP, ADR_0009)) {
+        for (Path doc : List.of(BRUNO_DOC, BRUNO_DESIGN, K6_DOC, TOXIPROXY_DOC, BOUNDARY_PLAN, HANDOFF,
+                NEXT_STEPS, READINESS, MATRIX, TRUST_MAP, ADR_0009)) {
             String normalized = read(doc).toLowerCase(Locale.ROOT);
 
             for (String forbidden : List.of(

@@ -30,6 +30,8 @@ This sprint adds one optional local-lab Bruno collection skeleton at [`../lab/br
 
 This sprint adds one optional local-lab Toxiproxy config skeleton at [`../lab/toxiproxy/local-lab-toxiproxy.json`](../lab/toxiproxy/local-lab-toxiproxy.json). See [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md), [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md), [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md), and [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md). It is optional, manual-only, not CI-gated, not Dockerized, not Docker Compose orchestration, not wired into the application, not wired into Maven, not wired into k6 execution, not wired into Bruno execution, and must target local/lab-owned loopback endpoints by default. It does not start Toxiproxy, does not start the application, and does not add automatic execution, CI jobs, Maven dependencies, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark testing, throughput evidence, or p95/p99 evidence.
 
+This docs/test-only follow-up adds [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) as the unified manual tooling reviewer index for the optional k6 smoke script skeleton, optional Bruno collection skeleton, and optional Toxiproxy config skeleton. It adds no tool behavior, automated execution, CI-gating, Docker/Compose orchestration, Maven wiring, production runtime wiring, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
+
 ## End-of-Day Checkpoint
 
 This checkpoint summarizes the completed local-lab stack at the end of the day. All current evidence is local/test-scope only. The loopback layers bind to `127.0.0.1` only and use OS-assigned ephemeral ports in tests. The checkpoint is reviewer handoff context, not production validation.
@@ -65,6 +67,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 27. Optional local-lab k6 smoke script skeleton.
 28. Optional local-lab Bruno collection skeleton.
 29. Optional local-lab Toxiproxy config skeleton.
+30. Local-lab manual tooling index and reviewer checklist.
 
 ### What Is Actually Proven Today
 
@@ -80,6 +83,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - the optional local-lab k6 smoke script skeleton can document a tiny manual loopback-only k6 walkthrough without CI, Docker, production, benchmark, throughput, p95, or p99 claims;
 - the optional local-lab Bruno collection skeleton can document tiny manual loopback-only Bruno requests without CI, Docker, Toxiproxy integration, k6 execution, production, benchmark, throughput, p95, or p99 claims;
 - the optional local-lab Toxiproxy config skeleton can document tiny manual loopback-only proxy placeholders without CI, Docker, Docker Compose orchestration, application wiring, Maven wiring, k6 execution, Bruno execution, runtime enforcement, benchmark, throughput, p95, or p99 claims;
+- the local-lab manual tooling index can point reviewers to the current optional manual k6, Bruno, and Toxiproxy skeletons and restate their shared boundaries without requiring tool execution;
 - reviewer checklist and handoff docs explain boundaries;
 - all current evidence is local/test-scope only.
 
@@ -165,6 +169,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - optional local-lab k6 smoke script skeleton.
 - optional local-lab Bruno collection skeleton.
 - optional local-lab Toxiproxy config skeleton.
+- local-lab manual tooling index and reviewer checklist.
 
 ## What Each Layer Proves
 

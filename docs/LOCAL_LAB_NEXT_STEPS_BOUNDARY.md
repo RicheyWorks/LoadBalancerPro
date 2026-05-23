@@ -8,6 +8,8 @@ This PR adds a test-scope bounded burst reviewer checklist mapper and handoff up
 
 This PR adds a docs/test-only k6/Bruno/Toxiproxy implementation boundary plan only. See [`LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md`](LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md). It adds no k6 scripts, no Bruno collections, no Toxiproxy config, no Docker Compose files, no scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence. k6, Bruno, Toxiproxy, and Docker/Docker Compose remain future-only unless separately scoped.
 
+This PR adds docs/test-only future tool scenario design specs only: [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). Future tool work must be separately scoped and must target local/lab endpoints first. The specs add no k6 scripts, no Bruno collections, no Toxiproxy config, no Docker Compose files, no scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence.
+
 ## Current Local-Lab Stack
 
 The current local-lab stack is:
@@ -37,6 +39,7 @@ The current local-lab stack is:
 23. Bounded burst reviewer checklist mapping.
 24. Local-lab progress handoff docs.
 25. k6/Bruno/Toxiproxy implementation boundary plan.
+26. k6/Bruno/Toxiproxy scenario design specs.
 
 ## What Is Actually Proven Today
 
@@ -48,6 +51,7 @@ The current local-lab stack is:
 - bounded request burst smoke tests can issue fixed small loopback-only repetitions across the existing matrix;
 - bounded burst reviewer checklist mapping can turn in-memory burst summaries into bounded reviewer questions;
 - the k6/Bruno/Toxiproxy boundary plan can describe future tool lanes and stop conditions before any tool files exist;
+- the k6/Bruno/Toxiproxy scenario design specs can describe future scenario, collection, and fault-model shapes before any tool files exist;
 - reviewer checklist and handoff docs explain evidence boundaries;
 - all current evidence is local/test-scope only.
 

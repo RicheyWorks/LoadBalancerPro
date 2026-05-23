@@ -22,6 +22,8 @@ This PR adds a docs/test-only k6/Bruno/Toxiproxy implementation boundary plan on
 
 The k6/Bruno/Toxiproxy boundary plan is now present. It explains future lanes for docs-only k6 scenario design, docs-only Bruno collection design, docs-only Toxiproxy fault model design, later tool files only after boundary approval, and future Docker Compose only after a separate Docker boundary plan. The plan is not tool implementation and does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, replay execution, evidence/report generation, storage/export, load testing, stress testing, benchmarking, throughput evidence, p95/p99 evidence, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
 
+This PR adds docs/test-only future tool scenario design specs only: [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). Future tool work must be separately scoped and must target local/lab endpoints first. The specs add no k6 scripts, no Bruno collections, no Toxiproxy config, no Docker Compose files, no scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence.
+
 ## End-of-Day Checkpoint
 
 This checkpoint summarizes the completed local-lab stack at the end of the day. All current evidence is local/test-scope only. The loopback layers bind to `127.0.0.1` only and use OS-assigned ephemeral ports in tests. The checkpoint is reviewer handoff context, not production validation.
@@ -53,6 +55,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 23. Bounded burst reviewer checklist mapping.
 24. Local-lab progress handoff docs.
 25. k6/Bruno/Toxiproxy implementation boundary plan.
+26. k6/Bruno/Toxiproxy scenario design specs.
 
 ### What Is Actually Proven Today
 
@@ -64,6 +67,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - the bounded request burst smoke test can issue fixed small loopback-only repetitions across the existing matrix;
 - the bounded burst reviewer checklist can map in-memory burst summaries into reviewer-friendly bounded language;
 - the k6/Bruno/Toxiproxy boundary plan can define future tool lanes and stop conditions before any tool files exist;
+- the k6/Bruno/Toxiproxy scenario design specs can define future scenario, collection, and fault-model shapes before any tool files exist;
 - reviewer checklist and handoff docs explain boundaries;
 - all current evidence is local/test-scope only.
 

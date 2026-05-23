@@ -10,6 +10,82 @@ This PR adds a test-scope traffic matrix reviewer checklist mapper and handoff u
 
 The traffic matrix layer is now present; traffic matrix reviewer checklist mapping is now present. The matrix layer proves deterministic loopback-only coverage over required local-lab profiles, stable fixture/boundary matching, stable in-memory matrix summaries, and reviewer-friendly checklist language. It does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, Docker/k6/Bruno/Toxiproxy execution, replay execution, evidence/report generation, storage/export, load/stress testing, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
 
+This PR adds docs/test-only end-of-day handoff and next-step boundary cleanup only. It updates reviewer-facing handoff docs and documentation guard tests. It does not add local-lab harness functionality, client functionality, server functionality, production endpoints, production listeners, Docker/k6/Bruno/Toxiproxy implementation, replay execution, evidence/report generation, file writing, storage, export, or runtime behavior. See [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md).
+
+## End-of-Day Checkpoint
+
+This checkpoint summarizes the completed local-lab stack at the end of the day. All current evidence is local/test-scope only. The loopback layers bind to `127.0.0.1` only and use OS-assigned ephemeral ports in tests. The checkpoint is reviewer handoff context, not production validation.
+
+### Current Local-Lab Stack
+
+1. ADR-0009 local lab plan.
+2. Local lab scenario matrix.
+3. Passive fake backend scenario model/catalog.
+4. Passive response fixtures.
+5. Passive request/response transcript fixtures.
+6. Passive transcript summary renderer.
+7. Passive reviewer checklist mapping.
+8. Implementation readiness gate.
+9. Test-scope in-memory fake backend handler.
+10. Handler/transcript consistency tests.
+11. Test-scope loopback fake backend server harness.
+12. Loopback lifecycle hardening.
+13. Test-scope multi-backend loopback harness.
+14. Multi-backend transcript alignment tests.
+15. Deterministic loopback traffic smoke client.
+16. In-memory traffic smoke summary renderer.
+17. Traffic smoke reviewer checklist mapping.
+18. Deterministic traffic matrix tests.
+19. Traffic matrix summary renderer.
+20. Traffic matrix reviewer checklist mapping.
+21. Local-lab progress handoff docs.
+
+### What Is Actually Proven Today
+
+- deterministic test-scope local-lab models exist;
+- loopback-only fake backend servers can run in tests;
+- the multi-backend loopback harness can run with ephemeral ports;
+- the smoke client can call loopback harness URLs;
+- the traffic matrix can cover required local-lab profiles;
+- reviewer checklist and handoff docs explain boundaries;
+- all current evidence is local/test-scope only.
+
+### What Remains Not Proven
+
+- not production readiness;
+- not production certification;
+- not live-cloud validation;
+- not real-tenant validation;
+- not runtime enforcement;
+- not production traffic behavior;
+- not Docker/k6/Bruno/Toxiproxy execution;
+- not replay execution;
+- not evidence/report generation;
+- not storage/export behavior;
+- not autonomous production traffic shifting;
+- not carbon-aware routing;
+- not GPU orchestration;
+- not power/grid control;
+- not facility automation.
+
+### Next Safe Implementation Lanes
+
+- Lane A: docs-only k6/Bruno/Toxiproxy implementation plan.
+- Lane B: test-scope bounded request burst smoke test, still loopback-only.
+- Lane C: test-scope fault-style fixture expansion, no Toxiproxy yet.
+- Lane D: docs-only Docker Compose design boundary, no compose file yet.
+- Lane E: future actual Docker/k6/Bruno PR only after a separate boundary plan.
+
+### Stop Conditions / Safety Gates
+
+- stop if a non-loopback host appears;
+- stop if a fixed port appears;
+- stop if `src/main/java` changes are needed;
+- stop if production endpoint wiring appears;
+- stop if Maven dependencies are required;
+- stop if Docker/k6/Bruno/Toxiproxy implementation sneaks in;
+- stop if docs start claiming production validation.
+
 ## What Exists Now
 
 - passive scenario catalog;

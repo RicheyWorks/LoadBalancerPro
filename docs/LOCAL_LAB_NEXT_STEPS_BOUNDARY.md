@@ -8,7 +8,9 @@ This PR adds a test-scope bounded burst reviewer checklist mapper and handoff up
 
 This PR adds a docs/test-only k6/Bruno/Toxiproxy implementation boundary plan only. See [`LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md`](LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md). It adds no k6 scripts, no Bruno collections, no Toxiproxy config, no Docker Compose files, no scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence. k6, Bruno, Toxiproxy, and Docker/Docker Compose remain future-only unless separately scoped.
 
-This PR adds docs/test-only future tool scenario design specs only: [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). Future tool work must be separately scoped and must target local/lab endpoints first. The specs add no k6 scripts, no Bruno collections, no Toxiproxy config, no Docker Compose files, no scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence.
+PR #270 added docs/test-only future tool scenario design specs only: [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). Future tool work must be separately scoped and must target local/lab endpoints first. Those specs added no k6 scripts, no Bruno collections, no Toxiproxy config, no Docker Compose files, no scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence.
+
+This sprint adds one optional local-lab k6 smoke script skeleton at [`../lab/k6/local-lab-smoke.js`](../lab/k6/local-lab-smoke.js). See [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md), [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). It is not CI-gated, not Dockerized, and must target local/lab-owned loopback endpoints by default. It does not add Bruno collections, Toxiproxy config, Docker Compose files, automatic execution, CI jobs, Maven dependencies, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark testing, throughput evidence, or p95/p99 evidence.
 
 ## Current Local-Lab Stack
 
@@ -40,6 +42,7 @@ The current local-lab stack is:
 24. Local-lab progress handoff docs.
 25. k6/Bruno/Toxiproxy implementation boundary plan.
 26. k6/Bruno/Toxiproxy scenario design specs.
+27. Optional local-lab k6 smoke script skeleton.
 
 ## What Is Actually Proven Today
 
@@ -52,6 +55,7 @@ The current local-lab stack is:
 - bounded burst reviewer checklist mapping can turn in-memory burst summaries into bounded reviewer questions;
 - the k6/Bruno/Toxiproxy boundary plan can describe future tool lanes and stop conditions before any tool files exist;
 - the k6/Bruno/Toxiproxy scenario design specs can describe future scenario, collection, and fault-model shapes before any tool files exist;
+- the optional local-lab k6 smoke script skeleton can describe and perform a tiny manual loopback-only walkthrough against an already-running local app endpoint without CI, Docker, production, benchmark, throughput, p95, or p99 claims;
 - reviewer checklist and handoff docs explain evidence boundaries;
 - all current evidence is local/test-scope only.
 
@@ -63,7 +67,9 @@ The current local-lab stack is:
 - not real-tenant validation;
 - not runtime enforcement;
 - not production traffic behavior;
-- not Docker/k6/Bruno/Toxiproxy execution;
+- not Docker/Bruno/Toxiproxy execution;
+- not automatic k6 execution;
+- not expanded k6 scenario implementation;
 - not replay execution;
 - not evidence/report generation;
 - not storage/export behavior;
@@ -82,7 +88,8 @@ The current local-lab stack is:
 - Lane A1: docs-only k6 scenario design.
 - Lane A2: docs-only Bruno collection design.
 - Lane A3: docs-only Toxiproxy fault model design.
-- Lane A4: future actual k6 files only after boundary approval.
+- Lane A4a: first optional local-lab k6 smoke script skeleton.
+- Lane A4b: future expanded k6 scenario files only after separate review.
 - Lane A5: future actual Bruno collection only after boundary approval.
 - Lane A6: future actual Toxiproxy config only after boundary approval.
 - Lane A7: future Docker Compose only after a separate Docker boundary plan.
@@ -91,11 +98,11 @@ The current local-lab stack is:
 - Lane D: docs-only Docker Compose design boundary, no compose file yet.
 - Lane E: future actual Docker/k6/Bruno PR only after a separate boundary plan.
 
-Lane A is represented by the current docs-only k6/Bruno/Toxiproxy implementation boundary plan. It is not k6 implementation, Bruno implementation, Toxiproxy implementation, Docker/Docker Compose implementation, load testing, stress testing, benchmarking, production traffic, replay execution, evidence/report generation, storage, export, throughput evidence, or p95/p99 evidence.
+Lane A is represented by the current k6/Bruno/Toxiproxy implementation boundary plan and first optional local-lab k6 smoke script skeleton. It is not expanded k6 implementation, Bruno implementation, Toxiproxy implementation, Docker/Docker Compose implementation, load testing, stress testing, benchmarking, production traffic, replay execution, evidence/report generation, storage, export, throughput evidence, or p95/p99 evidence.
 
 Lane B is represented by the current bounded burst smoke tests and bounded burst reviewer checklist mapping only as fixed-count local/test-scope context. It is not load testing, stress testing, performance benchmarking, throughput evidence, latency measurement, p95/p99 evidence, production traffic, or production proof.
 
-Each lane must be separately scoped and reviewed. A future lane should stop before merge if it needs production code, production endpoint wiring, Maven dependencies, fixed ports, non-loopback hosts, Docker/k6/Bruno/Toxiproxy implementation, replay execution, evidence/report generation, file writing, storage, export, load/stress/benchmark claims, throughput or p95/p99 claims, or production-validation language.
+Each lane must be separately scoped and reviewed. A future lane should stop before merge if it needs production code, production endpoint wiring, Maven dependencies, fixed ports, non-loopback defaults, Docker/Bruno/Toxiproxy implementation, expanded k6 implementation, replay execution, evidence/report generation, file writing, storage, export, load/stress/benchmark claims, throughput or p95/p99 claims, or production-validation language.
 
 ## Stop Conditions / Safety Gates
 
@@ -105,9 +112,11 @@ Each lane must be separately scoped and reviewed. A future lane should stop befo
 - stop if production endpoint wiring appears;
 - stop if Maven dependencies are required;
 - stop if CI changes are required;
-- stop if actual k6/Bruno/Toxiproxy files appear without separate approval;
+- stop if expanded k6, Bruno, or Toxiproxy files appear without separate approval;
 - stop if Docker Compose appears before the Docker boundary plan;
-- stop if Docker/k6/Bruno/Toxiproxy implementation sneaks in;
+- stop if Docker/Bruno/Toxiproxy implementation sneaks in;
+- stop if expanded k6 implementation sneaks in;
+- stop if the optional k6 smoke skeleton becomes CI-gated, Dockerized, or non-loopback by default;
 - stop if load/stress/benchmark/p95/p99/throughput evidence is claimed without a separately validated test lane;
 - stop if docs start claiming production validation.
 

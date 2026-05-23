@@ -1,16 +1,18 @@
 # Local Lab k6 Scenario Design
 
-This document is a docs/test-only future k6 scenario design spec. It converts the k6 lane from the local-lab boundary plan into concrete future scenario shapes without adding tool files.
+This document is a docs/test-only k6 scenario design spec. It converts the k6 lane from the local-lab boundary plan into concrete scenario shapes and cross-links the first separately scoped optional local-lab k6 smoke script skeleton.
 
-No k6 scripts are added in this PR. No load/stress/benchmarking is implemented. No throughput/p95/p99 evidence is produced. No Docker Compose files are added in this PR. No actual tool execution occurs in this PR.
+The first separately scoped k6 follow-up adds one optional local-lab k6 smoke script skeleton at [`../lab/k6/local-lab-smoke.js`](../lab/k6/local-lab-smoke.js). See [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md). It is not CI-gated, not Dockerized, and must target local/lab-owned loopback endpoints by default. No load/stress/benchmarking is implemented. No throughput/p95/p99 evidence is produced. No Docker Compose files are added in this PR. No actual tool execution occurs in this PR. No actual tool execution occurs in Maven or CI.
+
+Sibling design specs remain separately scoped: [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md) remains design-only for Bruno collection shapes, and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md) remains design-only for Toxiproxy fault-model categories.
 
 Future k6 scripts must target local lab endpoints first. Future k6 scripts must not target production. Future k6 work must be separately scoped. Future k6 results must be labeled local/test-scope unless separately validated. Future tool work must be separately scoped. Future tool work must target local/lab endpoints first.
 
 ## Relationship To Current Local Lab
 
-The current local lab already has deterministic test-scope loopback harnesses, smoke client coverage, traffic matrix coverage, bounded burst coverage, in-memory summaries, reviewer checklist mappings, and handoff docs. This design only names future k6 scenario shapes that could reuse those bounded local-lab concepts after a separate implementation review.
+The current local lab already has deterministic test-scope loopback harnesses, smoke client coverage, traffic matrix coverage, bounded burst coverage, in-memory summaries, reviewer checklist mappings, handoff docs, and one optional local-lab k6 smoke script skeleton. This design names k6 scenario shapes that could reuse those bounded local-lab concepts after separate implementation review.
 
-This design does not add k6 scripts, Docker/Docker Compose files, scripts, CI jobs, Maven dependencies, production endpoints, production listeners, replay execution, evidence/report generation, storage/export behavior, load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence.
+This design does not add expanded k6 scenario suites, Docker/Docker Compose files, automatically run scripts, CI jobs, Maven dependencies, production endpoints, production listeners, replay execution, evidence/report generation, storage/export behavior, load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence.
 
 ## Future Scenario Shapes
 
@@ -33,10 +35,11 @@ This design does not add k6 scripts, Docker/Docker Compose files, scripts, CI jo
 - future k6 work must be separately scoped;
 - future k6 results must be labeled local/test-scope unless separately validated;
 - future k6 work must not claim load testing, stress testing, benchmarking, throughput evidence, or p95/p99 evidence unless a later lane explicitly implements and validates that scope;
-- future k6 work must stop if it needs production endpoint wiring, non-loopback targets, fixed ports, Maven dependency changes, scripts outside the approved lane, CI changes, replay execution, evidence/report generation, storage, export, or production-validation language.
+- the current k6 smoke skeleton must remain optional, manually invoked, not CI-gated, not Dockerized, and defaulted to local/lab-owned loopback endpoints;
+- future k6 work must stop if it needs production endpoint wiring, non-loopback default targets, fixed production targets, Maven dependency changes, scripts outside the approved lane, CI changes, replay execution, evidence/report generation, storage, export, or production-validation language.
 
 ## Shared Reviewer Boundaries
 
 These scenario shapes are design-only. They provide no actual tool execution, no production proof, no live-cloud proof, no real-tenant proof, no runtime enforcement proof, no replay execution, no evidence/report generation, no storage/export behavior, no production traffic, and no autonomous traffic shifting.
 
-The following remain not proven: production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, Docker/k6/Bruno/Toxiproxy implementation, replay execution, evidence/report generation, storage/export behavior, load testing, stress testing, benchmarking, throughput evidence, p95/p99 evidence, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, and facility automation.
+The following remain not proven: production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, Docker/Bruno/Toxiproxy implementation, expanded k6 scenario implementation, replay execution, evidence/report generation, storage/export behavior, load testing, stress testing, benchmarking, throughput evidence, p95/p99 evidence, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, and facility automation.

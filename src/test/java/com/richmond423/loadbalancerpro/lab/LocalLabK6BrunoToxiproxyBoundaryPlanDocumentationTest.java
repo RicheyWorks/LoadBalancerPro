@@ -26,9 +26,9 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
         String plan = read(BOUNDARY_PLAN);
 
         for (String expected : List.of(
-                "k6, Bruno, and Toxiproxy are future-only tooling",
+                "Bruno and Toxiproxy remain future-only tooling",
                 "Docker/Docker Compose is future-only unless separately scoped",
-                "k6 is a future local-lab tool candidate for controlled traffic scenarios",
+                "k6 has one optional local-lab smoke script skeleton",
                 "Bruno is a future local-lab tool candidate for API check collections",
                 "Toxiproxy is a future local-lab tool candidate for network degradation simulation",
                 "Docker/Docker Compose is a future local service orchestration candidate only after separate boundary review")) {
@@ -42,11 +42,11 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
             String text = read(doc);
 
             assertTrue(text.contains("docs/test-only k6/Bruno/Toxiproxy implementation boundary plan"));
-            assertTrue(text.contains("no k6 scripts"));
+            assertTrue(text.contains("optional local-lab k6 smoke script skeleton"));
             assertTrue(text.contains("no Bruno collections"));
             assertTrue(text.contains("no Toxiproxy config"));
             assertTrue(text.contains("no Docker Compose files"));
-            assertTrue(text.contains("no scripts"));
+            assertTrue(text.contains("automatic"));
             assertTrue(text.contains("no CI jobs"));
             assertTrue(text.contains("no Maven dependencies"));
             assertTrue(text.contains("no production endpoints"));
@@ -68,11 +68,14 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
                 "Lane A1: docs-only k6 scenario design",
                 "Lane A2: docs-only Bruno collection design",
                 "Lane A3: docs-only Toxiproxy fault model design",
-                "Lane A4: future actual k6 files only after boundary approval",
+                "Lane A4a: first optional local-lab k6 smoke script skeleton",
+                "Lane A4b: future expanded k6 scenario files only after separate review",
                 "Lane A5: future actual Bruno collection only after boundary approval",
                 "Lane A6: future actual Toxiproxy config only after boundary approval",
                 "Lane A7: future Docker Compose only after a separate Docker boundary plan",
-                "a PR adds actual k6/Bruno/Toxiproxy files without separate approval",
+                "a PR adds expanded k6, Bruno, or Toxiproxy files without separate approval",
+                "the optional k6 smoke skeleton stops defaulting to loopback/local targets",
+                "the optional k6 smoke skeleton becomes CI-gated or Dockerized",
                 "a PR adds Docker Compose before the Docker boundary plan",
                 "a PR changes `src/main/java`",
                 "a PR adds production endpoint wiring",
@@ -89,8 +92,9 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
         String plan = read(BOUNDARY_PLAN);
 
         for (String expected : List.of(
-                "Is this docs-only?",
-                "Are k6/Bruno/Toxiproxy still future-only?",
+                "Is this limited to the one optional k6 smoke skeleton plus docs/tests?",
+                "Are Bruno/Toxiproxy still future-only?",
+                "Is expanded k6 work still separately scoped?",
                 "Are Docker/Compose still future-only?",
                 "Are load/stress/benchmark claims absent?",
                 "Are throughput/p95/p99 evidence claims absent?",
@@ -102,7 +106,9 @@ class LocalLabK6BrunoToxiproxyBoundaryPlanDocumentationTest {
                 "live-cloud validation",
                 "real-tenant validation",
                 "runtime enforcement",
-                "Docker/k6/Bruno/Toxiproxy implementation",
+                "Docker/Bruno/Toxiproxy implementation",
+                "expanded k6 scenario implementation",
+                "automatic k6 execution",
                 "replay execution",
                 "evidence/report generation",
                 "storage/export behavior",

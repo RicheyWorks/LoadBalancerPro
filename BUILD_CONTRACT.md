@@ -1,0 +1,72 @@
+# Build Contract Template
+
+Use this template when opening or executing a scoped repository task. It is a contract for scope, evidence, and stop conditions, not a production-readiness claim.
+
+## Goal
+
+State the concrete outcome expected from this task.
+
+## Context And Constraints
+
+- Current branch or expected base.
+- Related PRs or documents.
+- Files or subsystems that are explicitly in scope.
+- Files or subsystems that are explicitly out of scope.
+- Safety boundaries that must remain intact.
+
+## Deliverables
+
+- Files to add or update.
+- Tests or guard checks to add or update.
+- Documentation links or cross-links to preserve.
+
+## Verification Requirements
+
+- Focused failing test or focused documentation guard.
+- Relevant focused selector bundle.
+- `mvn -q test`.
+- `mvn -q "-DskipTests" package`.
+- `mvn -B package`.
+- `git diff --check`.
+- `git diff --check origin/main...HEAD`.
+- `git diff --cached --check`.
+- Enterprise lab package smoke when requested.
+- Remote PR checks when a PR is opened.
+- Main post-merge checks when a PR is merged.
+
+## Evidence And Reporting
+
+Report exact checks run, pass/fail state, head SHA, PR URL, remote check state, scope audit, and remaining not-proven boundaries.
+
+## Stop Conditions
+
+Stop before merge or push if:
+
+- required checks fail, are cancelled, remain pending, or are stale;
+- scope expands beyond the task contract;
+- production behavior changes unexpectedly;
+- safety wording is removed or weakened;
+- secrets, external targets, cloud/tenant targets, or production-looking defaults appear;
+- unreviewed CI/Maven/Docker/Compose/runtime behavior appears.
+
+## Scope Boundaries
+
+Name any forbidden areas, such as `src/main/java`, Maven config, CI/workflow files, Dockerfile, Docker Compose, scripts, runtime resources, production API/routing/scoring/proxy behavior, replay/report/storage/export behavior, local-lab behavior, k6, Bruno, or Toxiproxy.
+
+## Not-Proven Boundaries
+
+Unless explicitly implemented and verified in a separate scoped task, do not claim production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmark evidence, throughput/p95/p99 evidence, replay/evidence/report/storage/export proof, or broader automation.
+
+## Final Report Format
+
+- Overall Classification: PASS / WARN / FAIL
+- Branch
+- PR URL
+- Head SHA
+- Changed files
+- What changed
+- Verification results
+- Remote check status if available
+- Scope/safety audit
+- Remaining not-proven boundaries
+- Next recommended action

@@ -6,7 +6,7 @@ PR #270 added a docs/test-only k6/Bruno/Toxiproxy implementation boundary plan a
 
 The earlier docs-only boundary and scenario design phases added no Docker Compose files. The current Compose skeleton is separate, optional, manual-only, and local-lab-only; it does not change the earlier no-Docker-Compose-file claims for those older docs/test-only phases.
 
-Expanded Toxiproxy fault execution remains future-only tooling in this plan. Docker/Docker Compose is future-only unless separately scoped. [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) is design-only and future-only for broader orchestration; [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md) is the separately scoped first optional local-lab Compose skeleton. App container orchestration, k6 runner services, Bruno runner services, production Docker packaging, CI execution, Maven execution, and production runtime behavior still require a separate implementation PR. k6 is limited to the one optional local-lab smoke script skeleton until a later sprint separately scopes expanded k6 scenario files. Bruno is limited to the one optional local-lab Bruno collection skeleton until a later sprint separately scopes expanded Bruno collections. Toxiproxy is limited to the one optional manual loopback-only config skeleton and one optional manual loopback-only Compose mount until a later sprint separately scopes fault execution. Passing this documentation guard only means the implementation boundary is reviewer-readable; it is not production proof.
+Expanded Toxiproxy fault execution remains future-only tooling in this plan. Docker/Docker Compose is future-only unless separately scoped. [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) is design-only and future-only for broader orchestration; [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md) is the separately scoped first optional local-lab Compose skeleton; [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md) is future-only app-service boundary design. App container orchestration, k6 runner services, Bruno runner services, production Docker packaging, CI execution, Maven execution, and production runtime behavior still require a separate implementation PR. k6 is limited to the one optional local-lab smoke script skeleton until a later sprint separately scopes expanded k6 scenario files. Bruno is limited to the one optional local-lab Bruno collection skeleton until a later sprint separately scopes expanded Bruno collections. Toxiproxy is limited to the one optional manual loopback-only config skeleton and one optional manual loopback-only Compose mount until a later sprint separately scopes fault execution. Passing this documentation guard only means the implementation boundary is reviewer-readable; it is not production proof.
 
 ## Purpose
 
@@ -58,6 +58,7 @@ Each future lane must be separately scoped and reviewed.
 - Lane A7a: docs-only Docker Compose boundary design in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md).
 - Lane A7b: first optional local-lab Docker Compose skeleton in [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md).
 - Lane A7c: docs-only Compose manual runbook/checklist in [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md).
+- Lane A7c1: docs-only future app-service boundary design in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md).
 - Lane A7d: future broader Docker Compose orchestration only after a separate implementation PR.
 
 No lane here authorizes expanded Bruno collections, expanded Toxiproxy fault execution, CI, Maven, production runtime, replay, report, storage, export, app container orchestration, production Docker packaging, k6 runner services, Bruno runner services, or expanded k6 scenario implementation in this PR.
@@ -106,6 +107,7 @@ No lane here authorizes expanded Bruno collections, expanded Toxiproxy fault exe
 - docs-only future Compose boundary design lives in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md);
 - current skeleton boundary lives in [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md);
 - Compose manual inspection checklist lives in [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md);
+- future app-service prerequisites and stop conditions live in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md);
 - future broader Compose work must be separately scoped and not treated as production deployment.
 
 ## Stop Conditions

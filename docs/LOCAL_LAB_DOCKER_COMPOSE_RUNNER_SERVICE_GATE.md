@@ -49,6 +49,8 @@ Any future k6 runner PR must be separately scoped. It must keep k6 local-lab-onl
 
 The k6-specific design gate is [`LOCAL_LAB_DOCKER_COMPOSE_K6_RUNNER_SERVICE_DESIGN_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_K6_RUNNER_SERVICE_DESIGN_GATE.md). It is documentation only and adds no k6 runner service, no Bruno runner service, no Compose behavior changes, no app behavior changes, no endpoint changes, no CI-gating, no Maven wiring, no Dockerfile change, no production Docker packaging, and no production Compose change.
 
+The Bruno-specific design gate is [`LOCAL_LAB_DOCKER_COMPOSE_BRUNO_RUNNER_SERVICE_DESIGN_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_BRUNO_RUNNER_SERVICE_DESIGN_GATE.md). It is documentation only and adds no Bruno runner service, no k6 runner service, no Compose behavior changes, no app behavior changes, no endpoint changes, no CI-gating, no Maven wiring, no Dockerfile change, no production Docker packaging, and no production Compose change.
+
 Across both runner lanes, future runner services must not imply load/stress/benchmark evidence, must not claim throughput/p95/p99 evidence, must not claim production readiness/certification, must not claim live-cloud or real-tenant validation, must not claim runtime enforcement, and must not claim replay/evidence/report/storage/export behavior.
 
 A future k6 runner PR must not:
@@ -66,6 +68,8 @@ A future k6 runner PR must not:
 ## Bruno Runner Service Gate
 
 Any future Bruno runner PR must be separately scoped. It must keep Bruno local-lab-only and loopback/local-targeted, and it must preserve the current boundary that Bruno remains manual and separate until that future PR is reviewed.
+
+The Bruno-specific design gate is [`LOCAL_LAB_DOCKER_COMPOSE_BRUNO_RUNNER_SERVICE_DESIGN_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_BRUNO_RUNNER_SERVICE_DESIGN_GATE.md). It requires that any future Bruno runner must stay local-lab-only, target only loopback/local services, avoid production/cloud/tenant/external endpoints, avoid secrets/credentials, avoid production API validation claims, avoid load/stress/benchmark evidence claims, avoid throughput/p95/p99 evidence claims, avoid production readiness/certification claims, avoid live-cloud or real-tenant validation claims, avoid runtime enforcement claims, and avoid replay/evidence/report/storage/export behavior claims.
 
 A future Bruno runner PR must not:
 

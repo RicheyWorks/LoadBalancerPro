@@ -1,21 +1,19 @@
-# Local Lab Docker Compose k6 Runner Service Design Gate
+# Local Lab Docker Compose Bruno Runner Service Design Gate
 
-This page is documentation only. It is a future design gate for a k6 Compose runner service.
+This page is documentation only. It is a future design gate for a Bruno Compose runner service.
 
-It adds no k6 runner service, no Bruno runner service, no Compose behavior changes, no app behavior changes, no endpoint changes, no CI-gating, no Maven wiring, no Dockerfile change, no production Docker packaging, and no production Compose change.
+It adds no Bruno runner service, no k6 runner service, no Compose behavior changes, no app behavior changes, no endpoint changes, no CI-gating, no Maven wiring, no Dockerfile change, no production Docker packaging, and no production Compose change.
 
-The current k6 smoke script remains manual and separate: [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md). The broader runner-service gate remains [`LOCAL_LAB_DOCKER_COMPOSE_RUNNER_SERVICE_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_RUNNER_SERVICE_GATE.md). The app-service runbook remains the reviewer path for the existing local-lab app-under-test service: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md).
-
-The Bruno runner service design gate is [`LOCAL_LAB_DOCKER_COMPOSE_BRUNO_RUNNER_SERVICE_DESIGN_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_BRUNO_RUNNER_SERVICE_DESIGN_GATE.md). It is documentation only and a future design gate for a Bruno Compose runner service. It adds no Bruno runner service, no k6 runner service, no Compose behavior changes, no app behavior changes, no endpoint changes, no CI-gating, no Maven wiring, no Dockerfile change, no production Docker packaging, no production Compose change, and no automated execution.
+The current Bruno collection remains manual and separate: [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md). The broader runner-service gate remains [`LOCAL_LAB_DOCKER_COMPOSE_RUNNER_SERVICE_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_RUNNER_SERVICE_GATE.md). The k6 runner service design gate remains [`LOCAL_LAB_DOCKER_COMPOSE_K6_RUNNER_SERVICE_DESIGN_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_K6_RUNNER_SERVICE_DESIGN_GATE.md). The app-service runbook remains the reviewer path for the existing local-lab app-under-test service: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md).
 
 ## Current State
 
 - [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml) already contains `app-under-test` and Toxiproxy.
-- k6 remains manual and separate.
 - Bruno remains manual and separate.
+- k6 remains manual and separate.
 - the app-service runbook remains reviewer path.
-- no k6 runner service is added.
 - no Bruno runner service is added.
+- no k6 runner service is added.
 - no runner service is added.
 - no new Compose services are added.
 - no Compose behavior changes.
@@ -28,19 +26,19 @@ The Bruno runner service design gate is [`LOCAL_LAB_DOCKER_COMPOSE_BRUNO_RUNNER_
 - no production Compose change.
 - no automated execution.
 
-## Gate Checklist Before Any Future k6 Runner PR
+## Gate Checklist Before Any Future Bruno Runner PR
 
-Before any future k6 runner PR, reviewers must require:
+Before any future Bruno runner PR, reviewers must require:
 
 - separate PR;
 - local-lab-only service name;
-- future k6 runner PR must be separately scoped;
-- future k6 runner must stay local-lab-only;
-- future k6 runner must target only loopback/local services;
-- future k6 runner must not target production/cloud/tenant/external endpoints;
+- future Bruno runner PR must be separately scoped;
+- future Bruno runner must stay local-lab-only;
+- future Bruno runner must target only loopback/local services;
+- future Bruno runner must not target production/cloud/tenant/external endpoints;
 - no external endpoints;
 - no secrets;
-- future k6 runner must not introduce secrets/credentials;
+- future Bruno runner must not introduce secrets/credentials;
 - no CI/Maven wiring unless separately approved;
 - no automated execution unless separately approved;
 - no performance claims;
@@ -48,15 +46,17 @@ Before any future k6 runner PR, reviewers must require:
 - no automated artifact generation/storage/export;
 - explicit stop conditions.
 
-## Required Future k6 Runner Boundaries
+## Required Future Bruno Runner Boundaries
 
-A future k6 Compose runner service must preserve all of these boundaries:
+A future Bruno Compose runner service must preserve all of these boundaries:
 
-- k6 remains manual and separate until a separately scoped future PR is reviewed.
-- Bruno remains manual and separate.
+- Bruno remains manual and separate until a separately scoped future PR is reviewed.
+- k6 remains manual and separate.
 - The future runner service must stay local-lab-only and loopback/local-targeted.
+- The future runner service must target only loopback/local services.
 - The future runner service must not target production/cloud/tenant/external endpoints.
 - The future runner service must not introduce secrets/credentials.
+- The future runner service must not imply production API validation.
 - The future runner service must not imply load/stress/benchmark evidence.
 - The future runner service must not claim throughput/p95/p99 evidence.
 - The future runner service must not claim production readiness/certification.
@@ -66,7 +66,7 @@ A future k6 Compose runner service must preserve all of these boundaries:
 
 ## Stop Conditions
 
-Stop a future k6 runner PR if any of the following appear:
+Stop a future Bruno runner PR if any of the following appear:
 
 - the PR is not separately scoped;
 - the service name is not local-lab-only;
@@ -76,6 +76,7 @@ Stop a future k6 runner PR if any of the following appear:
 - CI/Maven wiring appears without separate approval;
 - automated execution appears without separate approval;
 - automated artifact generation/storage/export appears;
+- production API validation is implied;
 - load/stress/benchmark evidence is implied;
 - throughput/p95/p99 evidence is claimed;
 - production readiness/certification is claimed;
@@ -87,8 +88,8 @@ Stop a future k6 runner PR if any of the following appear:
 ## Relationship To Existing Reviewer Paths
 
 - The broad runner-service gate remains the parent gate: [`LOCAL_LAB_DOCKER_COMPOSE_RUNNER_SERVICE_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_RUNNER_SERVICE_GATE.md).
-- The k6 smoke script remains manual and separate: [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md).
-- The Bruno runner service design gate remains documentation only: [`LOCAL_LAB_DOCKER_COMPOSE_BRUNO_RUNNER_SERVICE_DESIGN_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_BRUNO_RUNNER_SERVICE_DESIGN_GATE.md).
+- The Bruno collection remains manual and separate: [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md).
+- The k6 runner service design gate remains documentation only: [`LOCAL_LAB_DOCKER_COMPOSE_K6_RUNNER_SERVICE_DESIGN_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_K6_RUNNER_SERVICE_DESIGN_GATE.md).
 - The app-service runbook remains reviewer path: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md).
 - The app-service health/readiness lane remains manual/local only: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_HEALTH_READINESS.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_HEALTH_READINESS.md).
 - The app-service manual smoke checklist remains manual/local only: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md).

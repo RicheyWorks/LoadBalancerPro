@@ -18,6 +18,8 @@ This sprint adds one optional local-lab Toxiproxy config skeleton at [`../lab/to
 
 This docs/test-only follow-up adds [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) as the unified manual tooling reviewer index and checklist for the optional k6 smoke script skeleton, optional Bruno collection skeleton, and optional Toxiproxy config skeleton. It does not add automated execution, Docker/Compose orchestration, CI-gating, Maven wiring, production runtime wiring, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
 
+This docs/test-only follow-up adds [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) as the companion manual reviewer/operator runbook for the existing optional k6, Bruno, and Toxiproxy skeletons. It does not add automated execution, Docker/Compose orchestration, CI-gating, Maven wiring, production runtime wiring, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
+
 ## Current Local-Lab Stack
 
 The current local-lab stack is:
@@ -52,6 +54,7 @@ The current local-lab stack is:
 28. Optional local-lab Bruno collection skeleton.
 29. Optional local-lab Toxiproxy config skeleton.
 30. Local-lab manual tooling index and reviewer checklist.
+31. Local-lab manual tooling runbook.
 
 ## What Is Actually Proven Today
 

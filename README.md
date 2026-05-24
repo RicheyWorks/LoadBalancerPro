@@ -38,11 +38,12 @@ The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibili
 
 Codex and other repo agents should treat this README as the public claim boundary, not as disposable marketing text. Preserve safety boundaries, keep docs/test-only scope when requested, and report only what was actually verified.
 
-Use [`AGENTS.md`](AGENTS.md) for project operating rules, [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md) for reusable task contracts, [`docs/agent/VERIFICATION_PROTOCOL.md`](docs/agent/VERIFICATION_PROTOCOL.md) for focused/full verification expectations, [`docs/agent/SESSION_MANAGER.md`](docs/agent/SESSION_MANAGER.md) for long-session state capture, and [`docs/agent/FAILURE_LOG.md`](docs/agent/FAILURE_LOG.md) for failure recording.
+Use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md) for the Codex session startup path, [`AGENTS.md`](AGENTS.md) for project operating rules, [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md) for reusable task contracts, [`docs/agent/VERIFICATION_PROTOCOL.md`](docs/agent/VERIFICATION_PROTOCOL.md) for focused/full verification expectations, [`docs/agent/SESSION_MANAGER.md`](docs/agent/SESSION_MANAGER.md) for long-session state capture, and [`docs/agent/FAILURE_LOG.md`](docs/agent/FAILURE_LOG.md) for failure recording.
 
 ## Where Detailed Rules Live
 
 - Reviewer proof path: [`docs/REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
+- Agent workflow quickstart: [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md).
 - Agent operating rules: [`AGENTS.md`](AGENTS.md).
 - Task contract template: [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md).
 - Verification protocol: [`docs/agent/VERIFICATION_PROTOCOL.md`](docs/agent/VERIFICATION_PROTOCOL.md).

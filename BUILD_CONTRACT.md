@@ -2,6 +2,8 @@
 
 Use this template when opening or executing a scoped repository task. It is a contract for scope, evidence, and stop conditions, not a production-readiness claim.
 
+For the Codex startup flow that explains how this contract fits with README, AGENTS.md, and docs/agent templates, use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md).
+
 ## Goal
 
 State the concrete outcome expected from this task.

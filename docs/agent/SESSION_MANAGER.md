@@ -2,6 +2,8 @@
 
 Use this template during long Codex sessions, handoffs, resumes, and interrupted work.
 
+For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md).
+
 ## Current Branch
 
 Name:

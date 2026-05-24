@@ -2,6 +2,8 @@
 
 This protocol defines the usual verification escalation for Codex and reviewer-agent work. It is procedural guidance only; it does not add CI/Maven wiring or runtime behavior.
 
+For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md).
+
 ## Tier 1: Focused Failing Test Or Focused Doc Guard
 
 Run the exact failing test first when CI or local output identifies one. For documentation-only work, run the new or affected documentation guard test first.

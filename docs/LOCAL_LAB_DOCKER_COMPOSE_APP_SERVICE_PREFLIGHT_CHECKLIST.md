@@ -179,3 +179,11 @@ The app-service manual smoke checklist is now a docs/test-only companion checkli
 It documents optional/manual/local-lab-only inspection and manual smoke steps for the existing `app-under-test` service. It preserves manual package-first operation, the read-only local `target/` mount, the `127.0.0.1:8080:8080` app port, Toxiproxy presence, k6 and Bruno as manual separate tools, no k6 runner service, no Bruno runner service, no CI-gating, no Maven wiring, no Dockerfile change, no production Docker packaging, no production Compose change, and no production runtime behavior change.
 
 The checklist does not create production readiness/certification claims, live-cloud or real-tenant validation claims, runtime enforcement claims, replay/evidence/report/storage/export behavior claims, load/stress/benchmark claims, or throughput/p95/p99 evidence claims.
+
+## App-Service Health/Readiness Documentation Update
+
+The app-service health/readiness documentation lane is now available at [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_HEALTH_READINESS.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_HEALTH_READINESS.md). It is docs/test-only and does not change Compose behavior, app behavior, Dockerfiles, Maven, CI, runtime resources, production Compose, production Docker packaging, production runtime behavior, or application endpoints. It adds no health endpoint and no readiness endpoint.
+
+The lane records what reviewers may inspect and what optional manual local-only observations can and cannot show for the existing `app-under-test` service. It preserves the optional/manual/local-lab-only boundary, manual package-first operation, read-only `target/` mount, `127.0.0.1:8080:8080`, Toxiproxy presence, k6 and Bruno as manual separate tools, no k6 runner service, no Bruno runner service, no CI-gating, no Maven wiring, no Dockerfile change, no production Docker packaging, no production Compose change, and no production runtime behavior change.
+
+The lane does not support production readiness/certification claims, live-cloud or real-tenant validation claims, runtime enforcement claims, replay/evidence/report/storage/export behavior claims, load/stress/benchmark claims, or throughput/p95/p99 evidence claims.

@@ -2,7 +2,7 @@
 
 This protocol defines the usual verification escalation for Codex and reviewer-agent work. It is procedural guidance only; it does not add CI/Maven wiring or runtime behavior.
 
-For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md).
+For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` work, use [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) so checkpoints, pause/resume decisions, and merge-readiness claims stay tied to current verification.
 
 ## Tier 1: Focused Failing Test Or Focused Doc Guard
 

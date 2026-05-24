@@ -2,7 +2,7 @@
 
 Use this template when opening or executing a scoped repository task. It is a contract for scope, evidence, and stop conditions, not a production-readiness claim.
 
-For the Codex startup flow that explains how this contract fits with README, AGENTS.md, and docs/agent templates, use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md).
+For the Codex startup flow that explains how this contract fits with README, AGENTS.md, and docs/agent templates, use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` sessions, use [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md) and keep this file as the focused execution contract.
 
 ## Goal
 
@@ -21,6 +21,7 @@ State the concrete outcome expected from this task.
 - Files to add or update.
 - Tests or guard checks to add or update.
 - Documentation links or cross-links to preserve.
+- Checkpoint or handoff files to update during long-running `/goal` work.
 
 ## Verification Requirements
 

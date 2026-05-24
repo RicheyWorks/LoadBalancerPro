@@ -2,7 +2,7 @@
 
 This file gives Codex and other repository agents explicit operating rules. It does not replace the README public trust surface; it keeps task/session procedure out of the README while preserving the same safety boundaries.
 
-For the session startup path that ties README, this file, the build contract, and the docs/agent templates together, use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md).
+For the session startup path that ties README, this file, the build contract, and the docs/agent templates together, use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` sessions, use [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md).
 
 ## Core Rules
 
@@ -27,6 +27,7 @@ For the session startup path that ties README, this file, the build contract, an
 ## Scope Discipline
 
 - Read the user request and the current branch diff before editing.
+- For long-running `/goal` work, keep the active objective inside the task contract and update the session manager at checkpoints.
 - Keep edits close to the requested files and behavior surface.
 - Treat README and reviewer docs as claim contracts, not cosmetic copy.
 - Preserve reviewer trust wording when refactoring or reorganizing documentation.

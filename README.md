@@ -4,6 +4,8 @@
 
 LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
 
+This cockpit is a local reviewer/operator interface, not production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmark proof, throughput/p95/p99 evidence, or replay/evidence/report/storage/export proof.
+
 It is not a casual demo, toy, mockup, playground, or sample-only page. It is built for controlled pre-production routing validation, reviewer/operator "how" questions, controlled lab evidence, local reproducibility, and explicit proof boundaries.
 
 The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibility, and reviewer/operator explanations. It does not claim production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, production telemetry, or production monitoring proof.

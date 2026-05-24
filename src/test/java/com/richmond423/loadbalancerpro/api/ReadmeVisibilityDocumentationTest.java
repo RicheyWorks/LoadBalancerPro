@@ -45,8 +45,9 @@ class ReadmeVisibilityDocumentationTest {
         assertTrue(readme.contains("http://localhost:8080/"));
         assertTrue(readme.contains("http://localhost:8080/load-balancing-cockpit.html"));
         assertTrue(readme.contains("docs/REVIEWER_TRUST_MAP.md#reviewer-lab-review-path"));
-        assertTrue(readme.contains("## Enterprise Lab Cockpit, Not a Demo"));
+        assertTrue(readme.contains("## Enterprise Lab Cockpit"));
         assertTrue(readme.contains("LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo."));
+        assertTrue(readme.contains("This cockpit is a local reviewer/operator interface, not production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmark proof, throughput/p95/p99 evidence, or replay/evidence/report/storage/export proof."));
         assertTrue(readme.contains("## What the Enterprise Lab Cockpit Monitors"));
         assertTrue(readme.contains("## What the Enterprise Lab Cockpit Answers"));
         assertTrue(readme.contains("The Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod`"));

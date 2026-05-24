@@ -50,6 +50,8 @@ This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`
 
 This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md) as future-only app-service boundary design. It adds no app service, no new Compose services, no Compose behavior changes, no Docker packaging changes, no CI-gating, no Maven wiring, no production runtime behavior, no automated execution, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence.
 
+This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md) as a readiness gate for future local-lab Compose changes. It adds no Compose behavior changes, no app service, no new Compose services, no k6 runner service, no Bruno runner service, no CI-gating, no Maven wiring, no production Docker packaging, no production runtime behavior, no automated execution, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence.
+
 expanded Toxiproxy fault execution remains separately scoped and is not proven by this readiness gate.
 
 ## Purpose

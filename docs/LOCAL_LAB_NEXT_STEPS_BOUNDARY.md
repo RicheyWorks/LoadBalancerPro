@@ -30,6 +30,8 @@ This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDA
 
 This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md) as a readiness gate for future local-lab Compose changes. It does not add Compose behavior changes, an app service, new Compose services, k6 runner services, Bruno runner services, CI-gating, Maven wiring, production Docker packaging, production runtime behavior, automated execution, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
 
+This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md) as the exact preflight checklist before any future app-service Compose PR. It does not add an app service, Compose behavior changes, Docker packaging changes, CI-gating, Maven wiring, production runtime behavior, automated execution, new services, k6 runner services, Bruno runner services, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
+
 ## Current Local-Lab Stack
 
 The current local-lab stack is:
@@ -90,6 +92,7 @@ The current local-lab stack is:
 - the local-lab Docker Compose manual runbook can describe inspection-only review and optional manual local-only Compose commands without adding services, CI, Maven wiring, production Docker packaging, production runtime behavior, automated execution, runtime enforcement, benchmark, throughput, p95, or p99 claims;
 - the local-lab Docker Compose app service boundary design can describe future app-service prerequisites and stop conditions without adding an app service, changing Compose behavior, adding Docker packaging, wiring CI or Maven, or changing production runtime behavior;
 - the local-lab Docker Compose readiness gate can describe the checklist future PRs must satisfy before Compose file changes, app services, k6 runner services, Bruno automation, Toxiproxy expansion, CI wiring, or Maven wiring without changing Compose behavior;
+- the local-lab Docker Compose app service preflight checklist can describe the exact proof reviewers require before any future app-service Compose PR without adding an app service, changing Compose behavior, changing Docker packaging, wiring CI or Maven, or changing production runtime behavior;
 - reviewer checklist and handoff docs explain evidence boundaries;
 - all current evidence is local/test-scope only.
 
@@ -137,6 +140,7 @@ The current local-lab stack is:
 - Lane A7c: docs-only Compose manual runbook/checklist in [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md).
 - Lane A7c1: docs-only future app-service boundary design in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md).
 - Lane A7c2: docs-only Compose readiness gate in [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md).
+- Lane A7c3: docs-only app-service preflight checklist in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md).
 - Lane A7d: future broader Docker Compose orchestration only after a separate implementation PR.
 - Lane B: test-scope bounded request burst smoke test, still loopback-only.
 - Lane C: test-scope fault-style fixture expansion, no Toxiproxy execution yet.

@@ -4,7 +4,7 @@ This docs/test-only page is a readiness gate for future local-lab Docker Compose
 
 This PR does not change Compose. It makes no Compose behavior changes in this PR. It does not add an app service. No app service added. It does not add k6 runner services. No k6 runner service added. It does not add Bruno runner services. No Bruno runner service added. It does not add new Compose services. It does not add CI-gating. It does not add Maven wiring. It does not change production runtime behavior.
 
-The current Compose skeleton remains Toxiproxy-only. The k6 smoke script remains manual and separate. The Bruno collection remains manual and separate. Toxiproxy remains manual/local-only. This readiness gate complements [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md), [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md), and [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md).
+The current Compose skeleton remains Toxiproxy-only. The k6 smoke script remains manual and separate. The Bruno collection remains manual and separate. Toxiproxy remains manual/local-only. This readiness gate complements [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md), [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md), [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md), and the app-service preflight checklist in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md).
 
 ## Purpose
 
@@ -43,6 +43,7 @@ Before adding an app service, a future PR must prove:
 
 - future app service PR must be separately scoped;
 - separately scoped PR;
+- preflight proof in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md) is satisfied;
 - local-lab-only service name;
 - loopback/local exposure;
 - no production profile;

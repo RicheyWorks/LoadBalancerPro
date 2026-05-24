@@ -10,6 +10,7 @@ README.md remains the constitutional layer and public trust surface. It is not t
 - [`../../AGENTS.md`](../../AGENTS.md) is the always-read operating rules file for Codex and other repository agents.
 - [`../../BUILD_CONTRACT.md`](../../BUILD_CONTRACT.md) is the focused execution contract for the current task.
 - [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md) is the startup path that ties the files together for normal Codex sessions.
+- [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) defines how multi-PR goal campaigns run one scoped PR at a time with checkpoints, failure logging, verification, remote checks, and stop conditions.
 - [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md) defines focused checks, relevant selector bundles, full checks, remote checks, post-merge checks, and merge readiness.
 - [`SESSION_MANAGER.md`](SESSION_MANAGER.md) tracks checkpoints, progress, current branch, current PR, current head SHA, changed files, blockers, checks run, and next action.
 - [`FAILURE_LOG.md`](FAILURE_LOG.md) records failures, suspected causes, fixes attempted, results, recovery, and follow-up action.

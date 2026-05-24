@@ -40,11 +40,14 @@ Codex and other repo agents should treat this README as the public claim boundar
 
 Use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md) for the Codex session startup path, [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md) for `/goal` long-running session rules, [`AGENTS.md`](AGENTS.md) for project operating rules, [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md) for reusable task contracts, [`docs/agent/VERIFICATION_PROTOCOL.md`](docs/agent/VERIFICATION_PROTOCOL.md) for focused/full verification expectations, [`docs/agent/SESSION_MANAGER.md`](docs/agent/SESSION_MANAGER.md) for long-session state capture, and [`docs/agent/FAILURE_LOG.md`](docs/agent/FAILURE_LOG.md) for failure recording.
 
+For multi-PR goal campaigns, use [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md) to keep each PR separately scoped, checkpointed, verified, and bounded by this README's trust contract.
+
 ## Where Detailed Rules Live
 
 - Reviewer proof path: [`docs/REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
 - Agent workflow quickstart: [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md).
 - Goal-mode long-run protocol: [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md).
+- Campaign system architecture: [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md).
 - Agent operating rules: [`AGENTS.md`](AGENTS.md).
 - Task contract template: [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md).
 - Verification protocol: [`docs/agent/VERIFICATION_PROTOCOL.md`](docs/agent/VERIFICATION_PROTOCOL.md).

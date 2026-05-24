@@ -2,7 +2,7 @@
 
 This docs/test-only page is a future-only and design-only boundary document for a possible `app-under-test` service in the optional local-lab Docker Compose lane. It does not add an app service. No app service is added in this PR. It does not change Compose behavior. It makes no Compose behavior changes. No Compose behavior changes are made. It does not add Docker packaging. It makes no Docker packaging changes. No Docker packaging changes are made. It does not wire Compose into CI or Maven. It is not CI-gated and not Maven-wired. It does not change production runtime behavior.
 
-The current local-lab Compose skeleton remains [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml), documented by [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md). The readiness gate for any future Compose change is [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md). The existing Compose skeleton remains Toxiproxy-only, optional, manual-only, local-lab-only, loopback-bound, not CI-gated, not Maven-wired, not production Docker packaging, and not production runtime behavior.
+The current local-lab Compose skeleton remains [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml), documented by [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md). The readiness gate for any future Compose change is [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), and the exact preflight proof for any future app-service PR is [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md). The existing Compose skeleton remains Toxiproxy-only, optional, manual-only, local-lab-only, loopback-bound, not CI-gated, not Maven-wired, not production Docker packaging, and not production runtime behavior.
 
 ## Purpose
 
@@ -63,6 +63,7 @@ A future app-service PR must stop before merge if:
 - The broader Compose boundary remains [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md).
 - The Compose manual runbook remains the inspection-only and optional manual local-only reviewer path: [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md).
 - The Compose readiness gate defines what a future PR must prove before changing the Compose file, adding services, or adding CI/Maven wiring: [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md).
+- The app-service preflight checklist defines the exact proof required before a future app-service PR: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md).
 - The k6 smoke script remains manual and separate: [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md).
 - The Bruno collection remains manual and separate: [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md).
 - Toxiproxy remains manual/local-only: [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md).

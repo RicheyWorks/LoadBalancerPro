@@ -1,12 +1,74 @@
 # LoadBalancerPro
 
-## Enterprise Lab Cockpit, Not a Demo
+## Enterprise Lab Cockpit
 
 LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
+
+This README is intentionally an Advanced README and public trust surface: it is the human front door, reviewer starting point, high-level claim contract, trust-boundary summary, and agent-visible context surface for the repository.
+
+This cockpit is a local reviewer/operator interface, not production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmark proof, throughput/p95/p99 evidence, or replay/evidence/report/storage/export proof.
 
 It is not a casual demo, toy, mockup, playground, or sample-only page. It is built for controlled pre-production routing validation, reviewer/operator "how" questions, controlled lab evidence, local reproducibility, and explicit proof boundaries.
 
 The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibility, and reviewer/operator explanations. It does not claim production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, production telemetry, or production monitoring proof.
+
+## What LoadBalancerPro Is
+
+- A Java 17 / Spring Boot Enterprise Adaptive Routing Lab with controlled local routing scenarios, reviewer surfaces, and explicit evidence boundaries.
+- A public trust contract that separates implemented behavior, local-lab evidence, release artifacts, and future roadmap work.
+- A reviewer/operator starting point for local reproducibility, safe proof paths, and high-level project claims.
+- An agent-visible context surface for Codex and other automation so task scope, safety boundaries, and verification expectations stay visible.
+
+## What LoadBalancerPro Is Not
+
+- It is not production readiness, production certification, live-cloud validation, real-tenant validation, or runtime enforcement.
+- It is not load/stress/benchmark proof and does not claim throughput/p95/p99 evidence from local-lab or README-level examples.
+- It is not replay execution, evidence/report generation, storage/export proof unless a specific implemented lane and verification result says so.
+- It is not permission to add CI/Maven wiring, Docker/Compose behavior, runtime behavior, endpoints, secrets, external/cloud/tenant targets, or production-looking defaults outside an explicitly scoped change.
+
+## Current Local-Lab Status
+
+- The local-lab Compose path is optional/manual/local-lab-only and remains bounded by the Compose readiness gate and app-service/runbook guardrails.
+- The current local-lab Compose skeleton includes Toxiproxy and the app-under-test service; k6 and Bruno remain manual and separate.
+- No k6 runner service or Bruno runner service exists.
+- Compose is not CI-gated, not Maven-wired, and not production Docker packaging.
+- Local-lab docs begin with [`docs/LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](docs/LOCAL_LAB_MANUAL_TOOLING_INDEX.md), [`docs/LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md), [`docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md), [`docs/LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), and [`docs/LOCAL_LAB_DOCKER_COMPOSE_RUNNER_SERVICE_GATE.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_RUNNER_SERVICE_GATE.md).
+
+## Agent / Codex Operating Context
+
+Codex and other repo agents should treat this README as the public claim boundary, not as disposable marketing text. Preserve safety boundaries, keep docs/test-only scope when requested, and report only what was actually verified.
+
+Use [`AGENTS.md`](AGENTS.md) for project operating rules, [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md) for reusable task contracts, [`docs/agent/VERIFICATION_PROTOCOL.md`](docs/agent/VERIFICATION_PROTOCOL.md) for focused/full verification expectations, [`docs/agent/SESSION_MANAGER.md`](docs/agent/SESSION_MANAGER.md) for long-session state capture, and [`docs/agent/FAILURE_LOG.md`](docs/agent/FAILURE_LOG.md) for failure recording.
+
+## Where Detailed Rules Live
+
+- Reviewer proof path: [`docs/REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
+- Agent operating rules: [`AGENTS.md`](AGENTS.md).
+- Task contract template: [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md).
+- Verification protocol: [`docs/agent/VERIFICATION_PROTOCOL.md`](docs/agent/VERIFICATION_PROTOCOL.md).
+- Session manager template: [`docs/agent/SESSION_MANAGER.md`](docs/agent/SESSION_MANAGER.md).
+- Failure log template: [`docs/agent/FAILURE_LOG.md`](docs/agent/FAILURE_LOG.md).
+- Local-lab and Compose docs: [`docs/LOCAL_LAB_PROGRESS_HANDOFF.md`](docs/LOCAL_LAB_PROGRESS_HANDOFF.md), [`docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md), [`docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md), and [`docs/LOCAL_LAB_DOCKER_COMPOSE_K6_RUNNER_SERVICE_DESIGN_GATE.md`](docs/LOCAL_LAB_DOCKER_COMPOSE_K6_RUNNER_SERVICE_DESIGN_GATE.md).
+
+## Not-Proven Boundaries
+
+The repository intentionally preserves these not-proven boundaries unless a later, separately scoped implementation and verification result explicitly changes them:
+
+- no production readiness;
+- no production certification;
+- no live-cloud validation;
+- no real-tenant validation;
+- no runtime enforcement;
+- no load/stress/benchmarking proof;
+- no throughput/p95/p99 evidence;
+- no replay execution, evidence/report generation, storage/export proof;
+- no broader automation, production traffic shifting, cloud/tenant target validation, or production Docker packaging claim.
+
+## Verification Expectations
+
+Use focused checks while editing, then full verification before merge. A typical escalation is: focused failing test or documentation guard, relevant selector bundle, `mvn -q test`, package checks, diff checks, enterprise lab package smoke, remote PR checks, and post-merge main checks when a PR is merged.
+
+Do not claim a PR or main is fully green while required remote checks are pending, failed, cancelled, or stale.
 
 ## What the Enterprise Lab Cockpit Monitors
 

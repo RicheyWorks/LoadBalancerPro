@@ -1,0 +1,19 @@
+# Local-lab-only optional manual Compose skeleton.
+# Inspect-only safe; not wired into CI or Maven.
+name: loadbalancerpro-local-lab
+
+services:
+  toxiproxy:
+    image: shopify/toxiproxy:2.12.0
+    command: ["toxiproxy-server", "-config", "/etc/toxiproxy/local-lab-toxiproxy.json"]
+    ports:
+      - "127.0.0.1:8474:8474"
+      - "127.0.0.1:18080:18080"
+      - "127.0.0.1:18081:18081"
+    volumes:
+      - "../toxiproxy/local-lab-toxiproxy.json:/etc/toxiproxy/local-lab-toxiproxy.json:ro"
+    labels:
+      - "local-lab-scope=local-lab-only"
+      - "local-lab-execution=manual-only"
+      - "local-lab-ci=not-ci-gated"
+      - "local-lab-maven=not-wired"

@@ -1,8 +1,8 @@
 # Local Lab Manual Tooling Runbook
 
-This docs/test-only runbook is a manual reviewer/operator guide for the current optional local-lab tooling only. It complements [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) by describing how to inspect the current k6, Bruno, and Toxiproxy skeletons, what a reviewer may optionally run by hand, and which conclusions must remain out of bounds. Future Docker Compose orchestration remains design-only in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md); this runbook does not add Compose files, Dockerfiles, CI automation, Maven wiring, runtime behavior, or tool execution.
+This docs/test-only runbook is a manual reviewer/operator guide for the current optional local-lab tooling only. It complements [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) by describing how to inspect the current k6, Bruno, Toxiproxy, and Docker Compose skeletons, what a reviewer may optionally run by hand, and which conclusions must remain out of bounds. Docker Compose boundaries remain in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), and the first optional skeleton is documented in [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md).
 
-The runbook does not make any local-lab tool CI-gated, wired into Maven, Dockerized, Docker Compose orchestration, wired into production runtime, or required for verification. It is not CI-gated, not wired into Maven, not Dockerized, and not Docker Compose orchestration. It adds no automated execution, no scripts, no app endpoints, no harness/client/server implementation, no replay execution, no evidence/report generation, no storage, and no export behavior.
+The runbook does not make any local-lab tool CI-gated, wired into Maven, Dockerized, wired into production runtime, or required for verification. The k6, Bruno, and Toxiproxy tool skeletons remain not Dockerized and not Docker Compose orchestration. The Compose skeleton is optional, manual-only, local-lab-only, not CI-gated, not wired into Maven, not production runtime behavior, and not production Docker packaging. It adds no automated execution, no scripts, no app endpoints, no harness/client/server implementation, no replay execution, no evidence/report generation, no storage, and no export behavior.
 
 ## Purpose
 
@@ -25,6 +25,7 @@ The current local-lab skeletons are:
 - k6 smoke script: [`../lab/k6/local-lab-smoke.js`](../lab/k6/local-lab-smoke.js)
 - Bruno collection: [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/)
 - Toxiproxy config: [`../lab/toxiproxy/local-lab-toxiproxy.json`](../lab/toxiproxy/local-lab-toxiproxy.json)
+- Docker Compose skeleton: [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml)
 
 ## Inspection-Only Path
 
@@ -34,8 +35,9 @@ This path requires no tool execution, no server startup, and no network calls.
 2. Inspect [`../lab/k6/local-lab-smoke.js`](../lab/k6/local-lab-smoke.js) and [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md).
 3. Inspect [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/) and [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md).
 4. Inspect [`../lab/toxiproxy/local-lab-toxiproxy.json`](../lab/toxiproxy/local-lab-toxiproxy.json) and [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md).
-5. Inspect [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) only as future-only Compose boundary design, not as runnable orchestration.
-6. Run Maven documentation guard tests only if local Maven is available.
+5. Inspect [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) as Compose boundary design.
+6. Inspect [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml) and [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md) without running Docker.
+7. Run Maven documentation guard tests only if local Maven is available.
 
 Example documentation guard command:
 
@@ -78,7 +80,19 @@ Example Toxiproxy config inspection:
 Get-Content lab\toxiproxy\local-lab-toxiproxy.json
 ```
 
-This runbook does not start Toxiproxy, does not create proxies, does not start the application, does not wire Toxiproxy into k6 or Bruno execution, and does not require Toxiproxy to be installed.
+Example Docker Compose skeleton inspection:
+
+```powershell
+Get-Content lab\docker-compose\local-lab-compose.yml
+```
+
+Optional manual Compose command after a reviewer confirms all targets are loopback/local-only:
+
+```powershell
+docker compose -f lab/docker-compose/local-lab-compose.yml up toxiproxy
+```
+
+This runbook does not require running Docker Compose. It does not start Toxiproxy automatically, does not create proxies automatically, does not start the application, does not wire Toxiproxy into k6 or Bruno execution, and does not require Toxiproxy to be installed for inspection-only review.
 
 ## Safety Checklist
 
@@ -86,7 +100,7 @@ This runbook does not start Toxiproxy, does not create proxies, does not start t
 - Confirm no production, cloud, tenant, or external endpoint is used.
 - Confirm tools are started manually only.
 - Confirm no CI or Maven automation is added.
-- Confirm no Dockerized path or Docker Compose orchestration is added.
+- Confirm the Compose skeleton remains manual-only and local-lab-only if Docker is used by hand.
 - Confirm no throughput evidence, no p95 evidence, no p99 evidence, and no p95/p99 evidence is drawn.
 - Confirm no load/stress/benchmark evidence is drawn.
 - Confirm no production readiness/certification conclusion is drawn.

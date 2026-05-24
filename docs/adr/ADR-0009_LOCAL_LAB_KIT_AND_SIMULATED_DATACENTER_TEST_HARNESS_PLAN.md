@@ -74,6 +74,8 @@ This docs/test-only follow-up adds [`../LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](..
 
 This docs/test-only follow-up adds [`../LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](../LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) as future-only Docker Compose boundary design for possible local-lab orchestration. It adds no Compose files, Dockerfiles, compose profiles, automated execution, CI-gating, Maven wiring, production runtime wiring, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
 
+This sprint adds one optional local-lab Docker Compose skeleton at [`../../lab/docker-compose/local-lab-compose.yml`](../../lab/docker-compose/local-lab-compose.yml). See [`../LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](../LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md), [`../LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](../LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), [`../LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](../LOCAL_LAB_MANUAL_TOOLING_INDEX.md), [`../LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](../LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md), and [`../LOCAL_LAB_TOXIPROXY_CONFIG.md`](../LOCAL_LAB_TOXIPROXY_CONFIG.md). It is optional, manual-only, local-lab-only, loopback-bound, not CI-gated, not wired into Maven, not production Docker packaging, not production runtime behavior, not wired into k6 execution, not wired into Bruno execution, and not wired into automated execution. It does not add app container orchestration, k6 runner services, Bruno runner services, automatic execution, CI jobs, Maven dependencies, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark testing, throughput evidence, or p95/p99 evidence.
+
 ## Decision
 
 If a future implementation sprint is separately approved, LoadBalancerPro should grow a Local Lab Kit that can simulate a small datacenter on one Windows machine before real server hardware is purchased.
@@ -117,6 +119,7 @@ The future simulated datacenter topology is conceptual only:
 | Fake backend node 4: error-prone | Backend with intermittent 500 errors or controlled error bursts. | No fake backend node implementation in this ADR. |
 | Fake backend node 5: overloaded/queue-depth simulated | Backend with overload and queue-depth simulation signals. | No fake backend node implementation in this ADR. |
 | Optional Toxiproxy network degradation layer | Current tiny optional local-lab Toxiproxy config skeleton plus future latency, timeout, connection reset, and network damage scenarios. | Manual local/lab-owned loopback endpoints only; no expanded Toxiproxy fault execution in this ADR. |
+| Optional local-lab Docker Compose skeleton | Current tiny optional manual loopback-bound Compose skeleton for the existing local Toxiproxy config. | Manual local/lab-owned loopback ports only; no app container orchestration, no k6 runner service, no Bruno runner service, no CI execution, no Maven execution, and no production Docker packaging in this ADR. |
 | Optional k6 traffic generator | Future smoke, load, stress, spike, and tail-latency tests. | No k6 scenario files in this ADR. |
 | Optional Bruno API checks | Current tiny optional local-lab Bruno collection skeleton plus future expanded API collection checks for local lab workflows. | Manual local/lab-owned loopback endpoints only; no expanded Bruno collection in this ADR. |
 | Optional Prometheus/Grafana observability later | Future metrics visualization for lab-only signals and local dashboards. | No Prometheus/Grafana implementation in this ADR. |
@@ -219,6 +222,7 @@ Related docs:
 - [`../REVIEWER_TRUST_MAP.md`](../REVIEWER_TRUST_MAP.md) provides reviewer navigation and evidence boundaries.
 - [`../ENTERPRISE_READINESS_AUDIT.md`](../ENTERPRISE_READINESS_AUDIT.md) records readiness posture and not-proven boundaries.
 - [`../LOCAL_LAB_SCENARIO_MATRIX.md`](../LOCAL_LAB_SCENARIO_MATRIX.md) lists future scenario categories as planning-only reviewer/operator scaffolding.
+- [`../LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](../LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md) documents the first optional manual local-lab Compose skeleton and its loopback/non-production boundaries.
 - [`ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) defines proposed future layer boundaries.
 - [`ADR-0002_LASE_INTEGRATION_MODEL.md`](ADR-0002_LASE_INTEGRATION_MODEL.md) defines proposed future LASE integration boundaries.
 - [`ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) defines evidence as proposed future architecture material.

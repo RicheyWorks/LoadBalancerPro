@@ -17,6 +17,7 @@ This Toxiproxy skeleton is the first narrow config step after the docs/test-only
 - [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) is the unified docs/test-only reviewer index for the current k6, Bruno, and Toxiproxy manual tool skeletons.
 - [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) is the companion manual reviewer/operator runbook for inspection-only review and optional local-only manual use.
 - [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) is future-only Docker Compose boundary design. It does not add Docker Compose, Dockerfiles, CI automation, Maven wiring, runtime behavior, Toxiproxy startup, or automatic Toxiproxy execution.
+- [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md) documents the separate optional local-lab Compose skeleton that may mount this config read-only when a reviewer manually runs Docker Compose. The config itself remains not Dockerized, not Docker Compose orchestration, not wired into Maven, not wired into the application, and not automatic Toxiproxy execution.
 
 This sprint does not add Docker, Docker Compose, automatic execution, CI workflow changes, Maven dependency changes, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage, export, upload, download, PDF, or ZIP behavior.
 

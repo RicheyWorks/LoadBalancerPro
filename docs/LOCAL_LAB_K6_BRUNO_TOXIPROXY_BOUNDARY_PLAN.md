@@ -1,10 +1,12 @@
 # Local Lab k6 Bruno Toxiproxy Boundary Plan
 
-This document is a docs/test-only k6/Bruno/Toxiproxy implementation boundary plan for local-lab tooling. It now distinguishes the first separately scoped optional k6 smoke script skeleton, first separately scoped optional Bruno collection skeleton, first separately scoped optional Toxiproxy config skeleton, and [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) from still-future expanded k6, expanded Bruno, expanded Toxiproxy fault execution, and actual Docker/Docker Compose work.
+This document is a docs/test-only k6/Bruno/Toxiproxy implementation boundary plan for local-lab tooling. It now distinguishes the first separately scoped optional k6 smoke script skeleton, first separately scoped optional Bruno collection skeleton, first separately scoped optional Toxiproxy config skeleton, [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), and the first separately scoped optional local-lab Compose skeleton in [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md) from still-future expanded k6, expanded Bruno, expanded Toxiproxy fault execution, app container orchestration, production Docker packaging, and automated Docker/Docker Compose work.
 
-PR #270 added a docs/test-only k6/Bruno/Toxiproxy implementation boundary plan and scenario design specs before tool files existed. PR #272 added one optional local-lab k6 smoke script skeleton at [`../lab/k6/local-lab-smoke.js`](../lab/k6/local-lab-smoke.js). PR #273 added one optional local-lab Bruno collection skeleton at [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/). PR #274 added one optional local-lab Toxiproxy config skeleton at [`../lab/toxiproxy/local-lab-toxiproxy.json`](../lab/toxiproxy/local-lab-toxiproxy.json). [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) is the unified docs/test-only reviewer index for those current manual tool skeletons, and [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) is the companion manual reviewer/operator runbook for inspection-only review and optional local-only manual use. See [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md), [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md), [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md), [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). The skeletons are not CI-gated, not Dockerized, and must target local/lab-owned loopback endpoints by default. Bruno is not Toxiproxy integration and not k6 execution. Toxiproxy is manual-only, not Docker Compose orchestration, not wired into the application, not wired into Maven, not wired into k6 execution, not wired into Bruno execution, does not start Toxiproxy, and does not start the application. This follow-up adds no Docker Compose files, no automatically run scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no runtime behavior, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence.
+PR #270 added a docs/test-only k6/Bruno/Toxiproxy implementation boundary plan and scenario design specs before tool files existed. PR #272 added one optional local-lab k6 smoke script skeleton at [`../lab/k6/local-lab-smoke.js`](../lab/k6/local-lab-smoke.js). PR #273 added one optional local-lab Bruno collection skeleton at [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/). PR #274 added one optional local-lab Toxiproxy config skeleton at [`../lab/toxiproxy/local-lab-toxiproxy.json`](../lab/toxiproxy/local-lab-toxiproxy.json). [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) is the unified docs/test-only reviewer index for those current manual tool skeletons, and [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) is the companion manual reviewer/operator runbook for inspection-only review and optional local-only manual use. [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md) documents one optional local-lab Compose skeleton at [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml). See [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md), [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md), [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md), [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md). The skeletons are not CI-gated, not wired into Maven, and must target local/lab-owned loopback endpoints by default. Bruno is not Toxiproxy integration and not k6 execution. Toxiproxy is manual-only, not wired into the application, not wired into Maven, not wired into k6 execution, not wired into Bruno execution, does not start Toxiproxy by itself, and does not start the application. The optional Compose skeleton is manual-only, local-lab-only, loopback-bound, not production Docker packaging, not an app container, not k6 execution, not Bruno execution, not automated execution, and not production runtime behavior. This follow-up adds no automatically run scripts, no CI jobs, no Maven dependencies, no production endpoints, no production listeners, no production runtime behavior, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence.
 
-Expanded Toxiproxy fault execution remains future-only tooling in this plan. Docker/Docker Compose is future-only unless separately scoped. [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) is design-only and future-only; actual Docker/Docker Compose work still requires a separate implementation PR. k6 is limited to the one optional local-lab smoke script skeleton until a later sprint separately scopes expanded k6 scenario files. Bruno is limited to the one optional local-lab Bruno collection skeleton until a later sprint separately scopes expanded Bruno collections. Toxiproxy is limited to the one optional manual loopback-only config skeleton until a later sprint separately scopes fault execution. Passing this documentation guard only means the implementation boundary is reviewer-readable; it is not production proof.
+The earlier docs-only boundary and scenario design phases added no Docker Compose files. The current Compose skeleton is separate, optional, manual-only, and local-lab-only; it does not change the earlier no-Docker-Compose-file claims for those older docs/test-only phases.
+
+Expanded Toxiproxy fault execution remains future-only tooling in this plan. Docker/Docker Compose is future-only unless separately scoped. [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) is design-only and future-only for broader orchestration; [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md) is the separately scoped first optional local-lab Compose skeleton. App container orchestration, k6 runner services, Bruno runner services, production Docker packaging, CI execution, Maven execution, and production runtime behavior still require a separate implementation PR. k6 is limited to the one optional local-lab smoke script skeleton until a later sprint separately scopes expanded k6 scenario files. Bruno is limited to the one optional local-lab Bruno collection skeleton until a later sprint separately scopes expanded Bruno collections. Toxiproxy is limited to the one optional manual loopback-only config skeleton and one optional manual loopback-only Compose mount until a later sprint separately scopes fault execution. Passing this documentation guard only means the implementation boundary is reviewer-readable; it is not production proof.
 
 ## Purpose
 
@@ -14,6 +16,7 @@ Future local-lab tooling should be introduced only after reviewers can see why t
 - Bruno has one optional local-lab Bruno collection skeleton and remains a future local-lab tool candidate for expanded API check collections.
 - Toxiproxy has one optional local-lab Toxiproxy config skeleton and remains a future local-lab tool candidate for expanded network degradation simulation.
 - Docker/Docker Compose is a future local service orchestration candidate only after separate boundary review.
+- Docker Compose currently has one optional local-lab skeleton only, documented in [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md); broader app orchestration, k6 runner services, Bruno runner services, CI-gating, Maven wiring, and production runtime behavior remain separately scoped.
 
 This plan does not implement expanded Bruno collections, expanded Toxiproxy fault execution, Docker, Docker Compose, or expanded k6 scenarios. It defines the safe documentation boundary for considering them later.
 
@@ -31,11 +34,12 @@ The current local-lab stack already includes:
 - optional local-lab k6 smoke script skeleton;
 - optional local-lab Bruno collection skeleton;
 - optional local-lab Toxiproxy config skeleton;
+- optional local-lab Docker Compose skeleton;
 - in-memory smoke, matrix, and burst summaries;
 - reviewer checklist mappings for passive, smoke, matrix, and bounded burst summaries;
 - progress handoff and next-step boundary docs.
 
-The current local lab has one optional k6 smoke script skeleton, one optional local-lab Bruno collection skeleton, and one optional local-lab Toxiproxy config skeleton only. Bruno is manual only, not CI-gated, not Dockerized, not Toxiproxy integration, not k6 execution, and must use local/lab-owned loopback endpoints by default. Toxiproxy is manual-only, not CI-gated, not Dockerized, not Docker Compose orchestration, not wired into the application, not wired into Maven, not wired into k6 execution, not wired into Bruno execution, does not start Toxiproxy, does not start the application, and must use local/lab-owned loopback endpoints by default. The current local lab still does not use Docker, Docker Compose, automatically run scripts, CI jobs, production infrastructure, production traffic, replay execution, evidence/report generation, storage, or export behavior.
+The current local lab has one optional k6 smoke script skeleton, one optional local-lab Bruno collection skeleton, one optional local-lab Toxiproxy config skeleton, and one optional local-lab Docker Compose skeleton only. Bruno is manual only, not CI-gated, not Dockerized, not Toxiproxy integration, not k6 execution, and must use local/lab-owned loopback endpoints by default. Toxiproxy is manual-only, not CI-gated, not wired into the application, not wired into Maven, not wired into k6 execution, not wired into Bruno execution, does not start the application, and must use local/lab-owned loopback endpoints by default. The Compose skeleton is optional, manual-only, local-lab-only, loopback-bound, not CI-gated, not wired into Maven, not production Docker packaging, not production runtime behavior, not an app service, not a k6 runner, and not a Bruno runner. The current local lab still does not use automatically run scripts, CI jobs, production infrastructure, production traffic, replay execution, evidence/report generation, storage, or export behavior.
 
 ## Future Implementation Sequence
 
@@ -52,9 +56,10 @@ Each future lane must be separately scoped and reviewed.
 - Lane A6b: future expanded Toxiproxy fault execution only after separate review.
 - Lane A7: future Docker Compose only after a separate Docker boundary plan.
 - Lane A7a: docs-only Docker Compose boundary design in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md).
-- Lane A7b: future actual Docker Compose only after a separate implementation PR.
+- Lane A7b: first optional local-lab Docker Compose skeleton in [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md).
+- Lane A7c: future broader Docker Compose orchestration only after a separate implementation PR.
 
-No lane here authorizes expanded Bruno collections, expanded Toxiproxy fault execution, Docker, Docker Compose, CI, Maven, production runtime, replay, report, storage, export, or expanded k6 scenario implementation in this PR.
+No lane here authorizes expanded Bruno collections, expanded Toxiproxy fault execution, CI, Maven, production runtime, replay, report, storage, export, app container orchestration, production Docker packaging, k6 runner services, Bruno runner services, or expanded k6 scenario implementation in this PR.
 
 ## Tool-Specific Boundaries
 
@@ -91,10 +96,15 @@ No lane here authorizes expanded Bruno collections, expanded Toxiproxy fault exe
 
 ### Docker/Docker Compose Future Boundary
 
-- no current Compose file;
-- no container orchestration yet;
+- one optional local-lab Compose skeleton only at [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml);
+- no app container orchestration yet;
+- no production Docker packaging;
+- no k6 runner service;
+- no Bruno runner service;
+- no CI or Maven execution;
 - docs-only future Compose boundary design lives in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md);
-- future Compose work must be separately scoped and not treated as production deployment.
+- current skeleton boundary lives in [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md);
+- future broader Compose work must be separately scoped and not treated as production deployment.
 
 ## Stop Conditions
 
@@ -109,6 +119,7 @@ Stop before merge if:
 - the optional Toxiproxy config skeleton binds to `0.0.0.0`;
 - the optional Toxiproxy config skeleton becomes CI-gated, Dockerized, Docker Compose orchestration, wired into the application, wired into Maven, wired into k6 execution, or wired into Bruno execution;
 - a PR adds Docker Compose before the Docker boundary plan;
+- the optional local-lab Compose skeleton publishes non-loopback ports, contains `0.0.0.0`, includes production-looking domains, introduces secrets, adds an app service, adds a k6 runner service, adds a Bruno runner service, becomes CI-gated, becomes wired into Maven, changes production Docker packaging, or changes production runtime behavior;
 - a PR changes `src/main/java`;
 - a PR adds production endpoint wiring;
 - a PR changes Maven dependencies;
@@ -118,11 +129,13 @@ Stop before merge if:
 
 ## Reviewer Checklist
 
+- Is this limited to the one optional k6 smoke skeleton, one optional Bruno collection skeleton, one optional Toxiproxy config skeleton, one optional local-lab Compose skeleton, plus docs/tests?
 - Is this limited to the one optional k6 smoke skeleton, one optional Bruno collection skeleton, one optional Toxiproxy config skeleton, plus docs/tests?
 - Is expanded Toxiproxy fault execution still separately scoped?
 - Is expanded k6 work still separately scoped?
 - Is expanded Bruno work still separately scoped?
 - Are Docker/Compose still future-only?
+- Is the optional local-lab Compose skeleton still manual-only, loopback-bound, not CI-gated, not wired into Maven, and not production runtime behavior?
 - Are load/stress/benchmark claims absent?
 - Are throughput/p95/p99 evidence claims absent?
 - Are production/live-cloud/real-tenant claims absent?

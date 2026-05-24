@@ -22,6 +22,8 @@ This docs/test-only follow-up adds [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL
 
 This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) as a future-only Docker Compose boundary design. It does not add Docker Compose files, Dockerfiles, compose profiles, CI-gating, Maven wiring, production runtime behavior, tool execution, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
 
+This sprint adds one optional local-lab Docker Compose skeleton at [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml). See [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md), [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md), [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md), and [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md). It is optional, manual-only, local-lab-only, loopback-bound, not CI-gated, not wired into Maven, not production Docker packaging, not production runtime behavior, not wired into k6 execution, not wired into Bruno execution, and not wired into automated execution. It does not add app container orchestration, k6 runner services, Bruno runner services, automatic execution, CI jobs, Maven dependencies, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark testing, throughput evidence, or p95/p99 evidence.
+
 ## Current Local-Lab Stack
 
 The current local-lab stack is:
@@ -58,6 +60,7 @@ The current local-lab stack is:
 30. Local-lab manual tooling index and reviewer checklist.
 31. Local-lab manual tooling runbook.
 32. Local-lab Docker Compose boundary design.
+33. Optional local-lab Docker Compose skeleton.
 
 ## What Is Actually Proven Today
 
@@ -74,6 +77,7 @@ The current local-lab stack is:
 - the optional local-lab Bruno collection skeleton can describe tiny manual loopback-only Bruno requests without CI, Docker, Toxiproxy integration, k6 execution, production, benchmark, throughput, p95, or p99 claims;
 - the optional local-lab Toxiproxy config skeleton can describe tiny manual loopback-only proxy placeholders without CI, Docker, Docker Compose orchestration, application wiring, Maven wiring, k6 execution, Bruno execution, runtime enforcement, benchmark, throughput, p95, or p99 claims;
 - the local-lab Docker Compose boundary design can describe future orchestration stop conditions before any Compose file, Dockerfile, CI automation, Maven wiring, runtime behavior, or tool execution exists;
+- the optional local-lab Docker Compose skeleton can describe one manual loopback-bound Toxiproxy service mount without CI, Maven wiring, production Docker packaging, production runtime behavior, app container orchestration, k6 runner services, Bruno runner services, runtime enforcement, benchmark, throughput, p95, or p99 claims;
 - reviewer checklist and handoff docs explain evidence boundaries;
 - all current evidence is local/test-scope only.
 
@@ -117,13 +121,14 @@ The current local-lab stack is:
 - Lane A6a: first optional local-lab Toxiproxy config skeleton.
 - Lane A6b: future expanded Toxiproxy fault execution only after separate review.
 - Lane A7a: docs-only Docker Compose design boundary in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), no compose file yet.
-- Lane A7b: future actual Docker Compose only after a separate implementation PR.
+- Lane A7b: first optional local-lab Docker Compose skeleton in [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md).
+- Lane A7c: future broader Docker Compose orchestration only after a separate implementation PR.
 - Lane B: test-scope bounded request burst smoke test, still loopback-only.
 - Lane C: test-scope fault-style fixture expansion, no Toxiproxy execution yet.
 - Lane D: docs-only Docker Compose design boundary, no compose file yet.
 - Lane E: future actual Docker/k6/Bruno PR only after a separate boundary plan.
 
-Lane A is represented by the current k6/Bruno/Toxiproxy implementation boundary plan, first optional local-lab k6 smoke script skeleton, first optional local-lab Bruno collection skeleton, and first optional local-lab Toxiproxy config skeleton. It is not expanded k6 implementation, expanded Bruno implementation, expanded Toxiproxy fault execution, Docker/Docker Compose implementation, load testing, stress testing, benchmarking, production traffic, replay execution, evidence/report generation, storage, export, throughput evidence, or p95/p99 evidence.
+Lane A is represented by the current k6/Bruno/Toxiproxy implementation boundary plan, first optional local-lab k6 smoke script skeleton, first optional local-lab Bruno collection skeleton, first optional local-lab Toxiproxy config skeleton, and first optional local-lab Docker Compose skeleton. It is not expanded k6 implementation, expanded Bruno implementation, expanded Toxiproxy fault execution, production Docker packaging, app container orchestration, k6 runner services, Bruno runner services, load testing, stress testing, benchmarking, production traffic, replay execution, evidence/report generation, storage, export, throughput evidence, or p95/p99 evidence.
 
 Lane B is represented by the current bounded burst smoke tests and bounded burst reviewer checklist mapping only as fixed-count local/test-scope context. It is not load testing, stress testing, performance benchmarking, throughput evidence, latency measurement, p95/p99 evidence, production traffic, or production proof.
 
@@ -144,6 +149,7 @@ Each lane must be separately scoped and reviewed. A future lane should stop befo
 - stop if the optional k6 smoke skeleton becomes CI-gated, Dockerized, or non-loopback by default;
 - stop if the optional Bruno collection skeleton becomes CI-gated, Dockerized, Toxiproxy integration, k6 execution, or non-loopback by default;
 - stop if the optional Toxiproxy config skeleton becomes CI-gated, Dockerized, Docker Compose orchestration, wired into the application, wired into Maven, wired into k6 execution, wired into Bruno execution, starts Toxiproxy, starts the application, binds to `0.0.0.0`, or becomes non-loopback by default;
+- stop if the optional local-lab Compose skeleton publishes non-loopback ports, contains `0.0.0.0`, contains production-looking domains, introduces secrets, adds an app service, adds a k6 runner service, adds a Bruno runner service, becomes CI-gated, becomes wired into Maven, changes production Docker packaging, or changes production runtime behavior;
 - stop if load/stress/benchmark/p95/p99/throughput evidence is claimed without a separately validated test lane;
 - stop if docs start claiming production validation.
 

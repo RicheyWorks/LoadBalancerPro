@@ -88,6 +88,8 @@ This docs/test-only post-app-service Compose handoff update summarizes the merge
 
 This gated app-service follow-up adds [`../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md) after applying the readiness gate and preflight checklist. The current Compose skeleton now contains the existing Toxiproxy service plus one optional/manual/local-only app-under-test service that uses a public JRE image, a read-only local `target/` mount, and `127.0.0.1` published ports only. It adds no Dockerfile changes, no production Compose changes, no CI/Maven wiring, no k6 runner service, no Bruno runner service, no production Docker packaging, no production runtime behavior, and no replay/evidence/report/storage/export behavior.
 
+The app-service manual smoke checklist in [`../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md`](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md) documents inspection-only checks and optional manual local-only commands for the existing `app-under-test` service. It is docs/test-only and changes no Compose behavior, app behavior, Dockerfiles, Maven, CI, k6, Bruno, Toxiproxy, production Compose, production Docker packaging, or production runtime behavior.
+
 ## Decision
 
 If a future implementation sprint is separately approved, LoadBalancerPro should grow a Local Lab Kit that can simulate a small datacenter on one Windows machine before real server hardware is purchased.
@@ -240,6 +242,7 @@ Related docs:
 - [`../LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](../LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md) documents the readiness gate future PRs must satisfy before changing the Compose file, adding services, adding CI wiring, or adding Maven wiring.
 - [`../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md) documents the exact preflight proof reviewers require before any future app-service Compose PR without adding an app service, changing Compose behavior, changing Docker packaging, adding CI wiring, or adding Maven wiring.
 - [`../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md) documents the first gated optional local-lab app service, manual package-first operation, read-only local `target/` mount, loopback-only published app port, and non-production boundaries.
+- [`../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md`](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md) documents the optional manual app-service smoke checklist, inspection-only path, manual package prerequisite, local-only Compose commands, and non-production boundaries.
 - [`../LOCAL_LAB_PROGRESS_HANDOFF.md`](../LOCAL_LAB_PROGRESS_HANDOFF.md) and [`../LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](../LOCAL_LAB_NEXT_STEPS_BOUNDARY.md) now carry the end-of-day Compose handoff that summarizes the merged guardrail chain through the app-service preflight checklist without adding Compose behavior, services, CI wiring, Maven wiring, production Docker packaging, production runtime behavior, or evidence behavior.
 - [`ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) defines proposed future layer boundaries.
 - [`ADR-0002_LASE_INTEGRATION_MODEL.md`](ADR-0002_LASE_INTEGRATION_MODEL.md) defines proposed future LASE integration boundaries.
@@ -434,3 +437,11 @@ Next safe expansion lanes:
 - no runner services until separate gates are created.
 
 Use [../LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md](../LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), [../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md), and [../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md) before considering any later Compose change.
+
+## App-Service Manual Smoke Checklist Update
+
+The app-service manual smoke checklist is now available in [`../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md`](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md). This is docs/test-only and does not change `lab/docker-compose/local-lab-compose.yml`, app behavior, Dockerfiles, Maven, CI, runtime resources, k6, Bruno, Toxiproxy behavior, scripts, production Compose, production Docker packaging, or production runtime behavior.
+
+It records that `app-under-test` already exists in local-lab Compose, remains optional/manual/local-lab-only, uses the local `target/` mount read-only, requires a manual package step before optional Compose use, publishes `127.0.0.1:8080:8080`, keeps Toxiproxy present, keeps k6 manual and separate, keeps Bruno manual and separate, has no k6 runner service, has no Bruno runner service, has no CI-gating, has no Maven wiring, has no Dockerfile change, has no production Docker packaging, has no production Compose change, and has no production runtime behavior change.
+
+The checklist does not support production readiness/certification claims, live-cloud or real-tenant validation claims, runtime enforcement claims, replay/evidence/report/storage/export behavior claims, load/stress/benchmark claims, or throughput/p95/p99 evidence claims.

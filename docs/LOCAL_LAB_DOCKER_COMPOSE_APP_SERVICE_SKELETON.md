@@ -67,6 +67,7 @@ These commands are optional manual local-lab commands only. They are not CI step
 - The Bruno collection remains manual and separate: [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md).
 - Toxiproxy remains manual/local-only: [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md).
 - The end-of-day Compose handoff remains the reviewer progress context: [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md).
+- The app-service manual smoke checklist gives reviewers an inspection-first optional manual smoke path: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md).
 
 Future app-service expansion, k6 runner services, Bruno automation, expanded Toxiproxy fault execution, CI wiring, Maven wiring, Dockerfile changes, production Compose changes, Docker image publishing, registry push, or production packaging still require separate review.
 
@@ -138,3 +139,11 @@ Next safe expansion lanes:
 - no runner services until separate gates are created.
 
 Use [LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), [LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md), and this app-service skeleton doc before considering any later Compose change.
+
+## App-Service Manual Smoke Checklist Update
+
+The app-service manual smoke checklist is now the next docs/test-only reviewer lane: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md). It does not change `lab/docker-compose/local-lab-compose.yml`, app behavior, Dockerfiles, Maven, CI, runtime resources, k6, Bruno, Toxiproxy behavior, production Compose, production Docker packaging, or production runtime behavior.
+
+It documents that `app-under-test` already exists in local-lab Compose, remains optional/manual/local-lab-only, uses the local `target/` mount read-only, requires a manual package step before optional Compose use, publishes `127.0.0.1:8080:8080`, keeps Toxiproxy present, keeps k6 manual and separate, keeps Bruno manual and separate, adds no k6 runner service, adds no Bruno runner service, adds no CI-gating, adds no Maven wiring, adds no Dockerfile change, adds no production Docker packaging, adds no production Compose change, and adds no production runtime behavior change.
+
+The manual smoke checklist does not create production readiness/certification claims, live-cloud or real-tenant validation claims, runtime enforcement claims, replay/evidence/report/storage/export behavior claims, load/stress/benchmark claims, or throughput/p95/p99 evidence claims.

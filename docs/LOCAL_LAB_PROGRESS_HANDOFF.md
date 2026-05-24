@@ -347,7 +347,7 @@ Docker/Toxiproxy platform execution remains future-only unless separately scoped
 4. Review bounded burst reviewer checklist mapping as local/test-scope reviewer context, then consider test-scope fault-style fixture expansion or docs-only k6/Bruno/Toxiproxy planning.
 5. Keep Docker/Toxiproxy execution, expanded k6, expanded Bruno, expanded Toxiproxy fault execution, app container orchestration, k6 runner services, Bruno runner services, and production Docker packaging future-only unless a later sprint separately scopes them.
 6. Future app-service expansion may be considered only after reusing [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md) and [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), and only as a separately scoped implementation PR.
-7. Possible next safe lanes remain test-scope fault-style fixture expansion or a separately scoped broader Compose orchestration plan, but not production traffic.
+7. Possible next safe lanes remain app-service manual smoke checklist docs, app-service health/readiness documentation only, test-scope fault-style fixture expansion, or a separately scoped broader Compose orchestration plan, but not production traffic.
 8. Use the k6/Bruno/Toxiproxy boundary plan to decide whether a future sprint is still docs-only or has crossed into actual tool files.
 
 ## Explicit Not-Proven Boundaries
@@ -377,6 +377,36 @@ Docker/Toxiproxy platform execution remains future-only unless separately scoped
 - not power/grid control;
 - not facility automation.
 - not broader automation.
+
+## App-Service Manual Smoke Checklist Update
+
+The app-service manual smoke checklist is now documented in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md). This update is docs/test-only and does not change `lab/docker-compose/local-lab-compose.yml`, app behavior, Dockerfiles, Maven, CI, runtime resources, k6, Bruno, Toxiproxy behavior, scripts, production Compose, production Docker packaging, or production runtime behavior.
+
+Current app-service smoke-checklist state:
+
+- `app-under-test` already exists in local-lab Compose.
+- It remains optional/manual/local-lab-only.
+- It uses the local `target/` mount read-only and requires a manual package step before optional Compose use.
+- The app published port remains `127.0.0.1:8080:8080`.
+- Toxiproxy remains present.
+- k6 remains manual and separate.
+- Bruno remains manual and separate.
+- no k6 runner service exists.
+- no Bruno runner service exists.
+- no CI-gating.
+- no Maven wiring.
+- no Dockerfile change.
+- no production Docker packaging.
+- no production Compose change.
+- no production runtime behavior change.
+- no production readiness/certification claim.
+- no live-cloud or real-tenant validation claim.
+- no runtime enforcement claim.
+- no replay/evidence/report/storage/export behavior claim.
+- no load/stress/benchmark claim.
+- no throughput/p95/p99 evidence claim.
+
+Next safe lanes remain docs/test-only app-service health/readiness documentation, Compose manual runbook refinements, and future k6/Bruno runner design docs only. Runner services remain blocked until separate gates are created.
 
 ## Post-App-Service Compose Handoff Update
 

@@ -4,12 +4,13 @@ This quickstart explains how to use the repository trust and agent contract file
 
 ## File Roles
 
-In short: README.md is the Advanced README / public trust surface, AGENTS.md is the Codex/agent operating rules file, BUILD_CONTRACT.md is the current task contract template, GOAL_MODE_LONG_RUN_PROTOCOL.md defines `/goal` long-running session behavior, VERIFICATION_PROTOCOL.md defines focused-vs-full verification, SESSION_MANAGER.md tracks long-running session state, and FAILURE_LOG.md tracks failures and recovery.
+In short: README.md is the Advanced README / public trust surface, AGENTS.md is the Codex/agent operating rules file, BUILD_CONTRACT.md is the current task contract template, GOAL_MODE_LONG_RUN_PROTOCOL.md defines `/goal` long-running session behavior, CAMPAIGN_SYSTEM_ARCHITECTURE.md defines multi-PR campaign execution, VERIFICATION_PROTOCOL.md defines focused-vs-full verification, SESSION_MANAGER.md tracks long-running session state, and FAILURE_LOG.md tracks failures and recovery.
 
 - [`README.md`](../../README.md) is the Advanced README / public trust surface. Use it as the human front door, reviewer starting point, trust-boundary summary, high-level claim contract, and agent-visible context surface.
 - [`AGENTS.md`](../../AGENTS.md) is the Codex/agent operating rules file. Use it for scope discipline, guardrail preservation, and honest reporting expectations.
 - [`BUILD_CONTRACT.md`](../../BUILD_CONTRACT.md) is the current task contract template. Use it to state the goal, constraints, deliverables, verification requirements, stop conditions, scope boundaries, not-proven boundaries, and final report format.
 - [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) explains how `/goal` uses README.md, AGENTS.md, BUILD_CONTRACT.md, and docs/agent files together for multi-hour Codex sessions.
+- [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) explains how a multi-PR goal campaign runs one scoped PR at a time with checkpoints, failure logging, full verification, remote checks, and stop conditions.
 - [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md) defines focused-vs-full verification. Use focused checks while editing and full checks before merge.
 - [`SESSION_MANAGER.md`](SESSION_MANAGER.md) tracks long-running session state. Use it for current branch, PR, goal, head SHA, changed files, checks run, blockers, next action, and recovery notes.
 - [`FAILURE_LOG.md`](FAILURE_LOG.md) tracks failures and recovery. Use it for local test failures, remote check failures, suspected causes, fixes attempted, results, and follow-up actions.
@@ -20,10 +21,11 @@ In short: README.md is the Advanced README / public trust surface, AGENTS.md is 
 2. Read [`AGENTS.md`](../../AGENTS.md) for Codex and agent operating rules.
 3. Read [`BUILD_CONTRACT.md`](../../BUILD_CONTRACT.md) or the user-provided task contract before editing.
 4. Read [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) before starting or resuming long-running `/goal` work.
-5. Read [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md) before choosing checks.
-6. Use [`SESSION_MANAGER.md`](SESSION_MANAGER.md) for long sessions, interruptions, resumes, or handoffs.
-7. Use [`FAILURE_LOG.md`](FAILURE_LOG.md) when a local check, remote check, or scope audit fails.
-8. Keep evidence honest: record what changed, what passed, what failed, what remained pending, and what was not verified.
+5. Read [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) before starting a multi-PR goal campaign.
+6. Read [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md) before choosing checks.
+7. Use [`SESSION_MANAGER.md`](SESSION_MANAGER.md) for long sessions, interruptions, resumes, or handoffs.
+8. Use [`FAILURE_LOG.md`](FAILURE_LOG.md) when a local check, remote check, or scope audit fails.
+9. Keep evidence honest: record what changed, what passed, what failed, what remained pending, and what was not verified.
 
 ## Verification Rules
 

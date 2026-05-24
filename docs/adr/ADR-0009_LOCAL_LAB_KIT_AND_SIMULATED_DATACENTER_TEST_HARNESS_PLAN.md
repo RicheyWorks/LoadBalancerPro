@@ -72,6 +72,8 @@ This docs/test-only follow-up adds [`../LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](../L
 
 This docs/test-only follow-up adds [`../LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](../LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) as the companion manual reviewer/operator runbook for inspection-only review and optional local-only manual use of the existing optional k6, Bruno, and Toxiproxy skeletons. It adds no tool behavior, automated execution, CI-gating, Docker/Compose orchestration, Maven wiring, production runtime wiring, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
 
+This docs/test-only follow-up adds [`../LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](../LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) as future-only Docker Compose boundary design for possible local-lab orchestration. It adds no Compose files, Dockerfiles, compose profiles, automated execution, CI-gating, Maven wiring, production runtime wiring, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
+
 ## Decision
 
 If a future implementation sprint is separately approved, LoadBalancerPro should grow a Local Lab Kit that can simulate a small datacenter on one Windows machine before real server hardware is purchased.

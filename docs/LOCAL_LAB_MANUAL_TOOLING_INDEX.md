@@ -1,6 +1,6 @@
 # Local Lab Manual Tooling Index
 
-This docs/test-only documentation-only index gives reviewers one bounded place to inspect the current optional local-lab manual tooling. [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) is the companion manual reviewer/operator runbook for inspection-only review and optional local-only manual use. It does not add automated execution, Docker/Compose orchestration, CI-gating, new endpoints, new harness/client/server implementation, runtime app behavior, replay execution, evidence/report generation, storage, or export behavior.
+This docs/test-only documentation-only index gives reviewers one bounded place to inspect the current optional local-lab manual tooling. [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) is the companion manual reviewer/operator runbook for inspection-only review and optional local-only manual use. [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) is a future-only Docker Compose boundary design that adds no Compose file, Dockerfile, CI automation, Maven wiring, runtime behavior, or tool execution. It does not add automated execution, Docker/Compose orchestration, CI-gating, new endpoints, new harness/client/server implementation, runtime app behavior, replay execution, evidence/report generation, storage, or export behavior.
 
 ## What Exists Now
 
@@ -10,7 +10,7 @@ This docs/test-only documentation-only index gives reviewers one bounded place t
 | Bruno local-lab collection | [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/) | [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md) | optional, manual-only, local-lab-only request collection against an already-running loopback/local app endpoint |
 | Toxiproxy local-lab config | [`../lab/toxiproxy/local-lab-toxiproxy.json`](../lab/toxiproxy/local-lab-toxiproxy.json) | [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md) | optional, manual-only, local-lab-only loopback proxy config skeleton that does not start Toxiproxy or the application |
 
-The supporting boundary and design docs remain [`LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md`](LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md), [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md).
+The supporting boundary and design docs remain [`LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md`](LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md), [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md), and [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md).
 
 Use [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) when a reviewer wants a step-by-step manual path that remains optional, local-lab-only, inspection-first, and not CI-gated.
 
@@ -19,6 +19,8 @@ Use [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md)
 All three tool skeletons are optional, manual-only, local-lab-only reviewer aids. They use loopback/local defaults and must keep default targets at `127.0.0.1` or `localhost`. They are not CI-gated, not Dockerized, not Docker Compose orchestration, not wired into Maven, not wired into production runtime, and not production traffic automation.
 
 The tools are separate from one another: the k6 script does not run Bruno or Toxiproxy; the Bruno collection does not run k6 or Toxiproxy; the Toxiproxy config does not run k6 or Bruno. None of these files should be treated as automatic Maven execution, CI execution, Docker execution, Docker Compose execution, replay execution, report generation, storage, export, or production runtime behavior.
+
+Future Docker Compose orchestration is described only in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md). That design is docs/test-only and future-only; it does not add Docker Compose, Dockerfiles, compose profiles, CI-gating, Maven wiring, runtime behavior, or automatic k6/Bruno/Toxiproxy execution.
 
 ## Reviewer Checklist
 

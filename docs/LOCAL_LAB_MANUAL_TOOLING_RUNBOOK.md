@@ -1,6 +1,6 @@
 # Local Lab Manual Tooling Runbook
 
-This docs/test-only runbook is a manual reviewer/operator guide for the current optional local-lab tooling only. It complements [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) by describing how to inspect the current k6, Bruno, and Toxiproxy skeletons, what a reviewer may optionally run by hand, and which conclusions must remain out of bounds.
+This docs/test-only runbook is a manual reviewer/operator guide for the current optional local-lab tooling only. It complements [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) by describing how to inspect the current k6, Bruno, and Toxiproxy skeletons, what a reviewer may optionally run by hand, and which conclusions must remain out of bounds. Future Docker Compose orchestration remains design-only in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md); this runbook does not add Compose files, Dockerfiles, CI automation, Maven wiring, runtime behavior, or tool execution.
 
 The runbook does not make any local-lab tool CI-gated, wired into Maven, Dockerized, Docker Compose orchestration, wired into production runtime, or required for verification. It is not CI-gated, not wired into Maven, not Dockerized, and not Docker Compose orchestration. It adds no automated execution, no scripts, no app endpoints, no harness/client/server implementation, no replay execution, no evidence/report generation, no storage, and no export behavior.
 
@@ -34,7 +34,8 @@ This path requires no tool execution, no server startup, and no network calls.
 2. Inspect [`../lab/k6/local-lab-smoke.js`](../lab/k6/local-lab-smoke.js) and [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md).
 3. Inspect [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/) and [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md).
 4. Inspect [`../lab/toxiproxy/local-lab-toxiproxy.json`](../lab/toxiproxy/local-lab-toxiproxy.json) and [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md).
-5. Run Maven documentation guard tests only if local Maven is available.
+5. Inspect [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) only as future-only Compose boundary design, not as runnable orchestration.
+6. Run Maven documentation guard tests only if local Maven is available.
 
 Example documentation guard command:
 

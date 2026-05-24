@@ -42,6 +42,8 @@ This docs/test-only follow-up adds [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_L
 
 This docs/test-only follow-up adds [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) as the companion manual reviewer/operator runbook for inspection-only review and optional local-only manual use. It does not run tools, start servers, call endpoints, write files, change readiness behavior, or add production runtime behavior.
 
+This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) as future-only Docker Compose boundary design. It does not add Compose files, Dockerfiles, compose profiles, CI automation, Maven wiring, production runtime behavior, tool execution, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
+
 expanded Toxiproxy fault execution remains separately scoped and is not proven by this readiness gate.
 
 ## Purpose

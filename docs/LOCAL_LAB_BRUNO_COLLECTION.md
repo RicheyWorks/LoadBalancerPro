@@ -16,6 +16,7 @@ This Bruno skeleton is the first narrow collection step after the docs/test-only
 - [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md) remains the Toxiproxy fault-model design reference, and [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md) describes the separate optional local-lab Toxiproxy config skeleton. The Bruno collection does not run Toxiproxy, and the Toxiproxy config does not run Bruno.
 - [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) is the unified docs/test-only reviewer index for the current k6, Bruno, and Toxiproxy manual tool skeletons.
 - [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) is the companion manual reviewer/operator runbook for inspection-only review and optional local-only manual use.
+- [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) is future-only Docker Compose boundary design. It does not add Docker Compose, Dockerfiles, CI automation, Maven wiring, runtime behavior, or automatic Bruno execution.
 
 This sprint does not add Docker, Docker Compose, Toxiproxy execution, Toxiproxy wiring, k6 behavior changes, CI workflow changes, Maven dependency changes, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage, export, upload, download, PDF, or ZIP behavior.
 

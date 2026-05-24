@@ -1,6 +1,6 @@
 # Local Lab Docker Compose Skeleton
 
-This page documents the first optional local-lab Docker Compose skeleton: [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml). It follows the earlier boundary design in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md). The manual reviewer/operator checklist for inspecting or optionally running this skeleton by hand is [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md). The future-only app-service boundary design is [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md). The future app-service preflight checklist is [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md). The future-change readiness gate is [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md).
+This page documents the optional local-lab Docker Compose skeleton: [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml). It follows the earlier boundary design in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md). The manual reviewer/operator checklist for inspecting or optionally running this skeleton by hand is [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md). The gated app-service skeleton is documented in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md). The app-service boundary design is [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md). The app-service preflight checklist is [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md). The future-change readiness gate is [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md).
 
 The skeleton is optional. It is manual-only. It is local-lab-only. It is not CI-gated. It is not wired into Maven. It is not production runtime behavior. It is not production Docker packaging. It is not wired into k6 execution. It is not wired into Bruno execution. It is not wired into automated execution.
 
@@ -12,6 +12,7 @@ Reviewers may inspect the Compose file without running Docker. If reviewers manu
 
 - Compose skeleton: [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml)
 - Mounted Toxiproxy config: [`../lab/toxiproxy/local-lab-toxiproxy.json`](../lab/toxiproxy/local-lab-toxiproxy.json)
+- Gated app-service skeleton: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md)
 - Boundary design: [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md)
 - Compose manual runbook: [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md)
 - App service boundary design: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md)
@@ -21,7 +22,7 @@ Reviewers may inspect the Compose file without running Docker. If reviewers manu
 - Manual reviewer runbook: [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md)
 - End-of-day Compose handoff: [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md)
 
-The Compose skeleton contains one manually run Toxiproxy service. It uses host-side port publishing bound to `127.0.0.1` only and mounts the existing local-lab Toxiproxy config read-only. It does not add an app service, k6 runner service, Bruno runner service, Dockerfile, Compose profile, script, Maven wiring, CI wiring, production runtime wiring, or new endpoint.
+The Compose skeleton contains the existing manually run Toxiproxy service and one gated local-lab-only app-under-test service. Both services use host-side port publishing bound to `127.0.0.1` only. Toxiproxy mounts the existing local-lab Toxiproxy config read-only. The app service mounts the already-built local `target/` directory read-only and requires the user to manually package first. It does not add a Dockerfile, image build, image publishing, k6 runner service, Bruno runner service, Compose profile, script, Maven wiring, CI wiring, production runtime wiring, or new endpoint.
 
 ## Optional Manual Use Boundary
 
@@ -31,6 +32,18 @@ If a reviewer deliberately chooses to run the skeleton manually, the run remains
 
 ```powershell
 docker compose -f lab/docker-compose/local-lab-compose.yml up toxiproxy
+```
+
+If a reviewer deliberately chooses to run the gated app service manually, first package the app manually:
+
+```powershell
+mvn -q "-DskipTests" package
+```
+
+Then start only the optional app service:
+
+```powershell
+docker compose -f lab/docker-compose/local-lab-compose.yml up app-under-test
 ```
 
 Before any manual run, confirm:
@@ -47,7 +60,8 @@ Before any manual run, confirm:
 - The Bruno collection remains a separate optional manual tool: [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md). The Compose skeleton does not add a Bruno runner service and does not run Bruno.
 - The Toxiproxy config remains a separate optional manual config: [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md). The Compose skeleton may mount that config read-only when a reviewer manually runs Docker Compose.
 - The broader local-lab boundary remains [`LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md`](LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md).
-- The end-of-day Compose handoff summarizes today's merged guardrail chain and keeps this skeleton optional, manual-only, local-lab-only, Toxiproxy-only, not CI-gated, not Maven-wired, and not production Docker packaging: [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md).
+- The gated app-service skeleton is documented separately and remains optional, manual-only, local-lab-only, not CI-gated, not Maven-wired, and not production Docker packaging: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md).
+- The end-of-day Compose handoff summarizes the guardrail chain and now points to the gated app-service skeleton while keeping future expansion separately scoped: [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md).
 
 ## Stop Conditions
 
@@ -56,7 +70,8 @@ Stop before merge or manual use if:
 - a published port is not bound to `127.0.0.1`;
 - `0.0.0.0` appears;
 - a production-looking domain, cloud host, tenant host, private-network host, external URL, secret, credential, token, or password appears;
-- an app service, k6 runner service, or Bruno runner service is added;
+- a k6 runner service or Bruno runner service is added;
+- the app service stops being local-lab-only, manual-only, loopback-bound, read-only mounted, or separately documented;
 - CI, Maven, scripts, production Docker packaging, production Compose profiles, runtime app config, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage, or export behavior changes are required;
 - docs claim benchmark, load, stress, throughput, p95, p99, production readiness, production certification, live-cloud validation, real-tenant validation, or runtime enforcement evidence.
 

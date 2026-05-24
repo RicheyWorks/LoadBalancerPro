@@ -48,14 +48,10 @@ class LocalLabDockerComposeReadinessGateDocumentationTest {
 
         for (String expected : List.of(
                 "readiness gate",
-                "future local-lab docker compose changes",
-                "future compose changes",
-                "no compose behavior changes in this pr",
-                "does not change compose",
-                "no app service added",
+                "local-lab docker compose changes",
+                "gated app-service skeleton pr applies this readiness gate",
                 "no k6 runner service added",
                 "no bruno runner service added",
-                "does not add new compose services",
                 "no ci-gating",
                 "no maven wiring",
                 "does not change production runtime behavior")) {
@@ -85,7 +81,8 @@ class LocalLabDockerComposeReadinessGateDocumentationTest {
         String gate = read(READINESS_GATE);
 
         for (String expected : List.of(
-                "Current Compose skeleton remains Toxiproxy-only",
+                "Current Compose skeleton contains the existing Toxiproxy service and the gated app-under-test service",
+                "LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md",
                 "k6 remains manual and separate",
                 "Bruno remains manual and separate",
                 "Toxiproxy remains manual/local-only",
@@ -105,7 +102,7 @@ class LocalLabDockerComposeReadinessGateDocumentationTest {
         String gate = read(READINESS_GATE);
 
         for (String expected : List.of(
-                "future app service PR must be separately scoped",
+                "future app service expansion PR must be separately scoped",
                 "future k6 runner PR must be separately scoped",
                 "future Bruno automation PR must be separately scoped",
                 "future Toxiproxy expansion PR must be separately scoped",
@@ -174,12 +171,14 @@ class LocalLabDockerComposeReadinessGateDocumentationTest {
     }
 
     @Test
-    void composeFileStillDoesNotContainAppServiceOrRunnerServices() throws Exception {
+    void composeFileContainsGatedAppServiceWithoutRunnerServices() throws Exception {
         String compose = read(COMPOSE).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
+                "app-under-test",
                 "local-lab-only",
                 "manual-only",
+                "127.0.0.1:8080:8080",
                 "127.0.0.1:8474:8474",
                 "127.0.0.1:18080:18080",
                 "127.0.0.1:18081:18081",
@@ -189,8 +188,6 @@ class LocalLabDockerComposeReadinessGateDocumentationTest {
 
         for (String forbidden : List.of(
                 "0.0.0.0",
-                "app-under-test",
-                "app-service",
                 "k6",
                 "bruno",
                 "password",

@@ -15,6 +15,8 @@ class LocalLabDockerComposeManualRunbookDocumentationTest {
     private static final Path RUNBOOK = Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md");
     private static final Path COMPOSE = Path.of("lab/docker-compose/local-lab-compose.yml");
     private static final Path SKELETON_DOC = Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md");
+    private static final Path APP_SERVICE_SKELETON =
+            Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md");
     private static final Path DESIGN_DOC = Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md");
     private static final Path INDEX = Path.of("docs/LOCAL_LAB_MANUAL_TOOLING_INDEX.md");
     private static final Path TOOLING_RUNBOOK = Path.of("docs/LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md");
@@ -40,6 +42,7 @@ class LocalLabDockerComposeManualRunbookDocumentationTest {
                 "docs/test-only",
                 "lab/docker-compose/local-lab-compose.yml",
                 "docs/LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md",
+                "docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md",
                 "LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md",
                 "LOCAL_LAB_MANUAL_TOOLING_INDEX.md",
                 "LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md")) {
@@ -56,12 +59,12 @@ class LocalLabDockerComposeManualRunbookDocumentationTest {
                 "optional manual local-only path",
                 "docker compose -f lab/docker-compose/local-lab-compose.yml config",
                 "docker compose -f lab/docker-compose/local-lab-compose.yml up toxiproxy",
+                "docker compose -f lab/docker-compose/local-lab-compose.yml up app-under-test",
                 "docker compose -f lab/docker-compose/local-lab-compose.yml down",
                 "not ci-gated",
                 "not wired into maven",
                 "not production docker packaging",
-                "does not add new compose behavior",
-                "does not add new services")) {
+                "manual package first")) {
             assertTrue(normalized.contains(expected), "Compose manual runbook should include " + expected);
         }
     }
@@ -76,9 +79,10 @@ class LocalLabDockerComposeManualRunbookDocumentationTest {
                 "no 0.0.0.0",
                 "no external/cloud/tenant/production endpoint",
                 "no secrets/credentials",
-                "no app service",
+                "only app service is the gated local-lab-only `app-under-test` skeleton",
                 "no k6 runner service",
                 "no bruno runner service",
+                "read-only local `target/` mount",
                 "not production docker packaging",
                 "not ci-gated",
                 "not wired into maven")) {
@@ -140,12 +144,14 @@ class LocalLabDockerComposeManualRunbookDocumentationTest {
     }
 
     @Test
-    void composeRunbookSprintDoesNotChangeComposeBehaviorOrRunnerServices() throws Exception {
+    void composeRunbookCoversGatedAppServiceWithoutRunnerServices() throws Exception {
         String compose = read(COMPOSE).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
+                "app-under-test",
                 "local-lab-only",
                 "manual-only",
+                "127.0.0.1:8080:8080",
                 "127.0.0.1:8474:8474",
                 "127.0.0.1:18080:18080",
                 "127.0.0.1:18081:18081",
@@ -155,7 +161,6 @@ class LocalLabDockerComposeManualRunbookDocumentationTest {
 
         for (String forbidden : List.of(
                 "0.0.0.0",
-                "app-under-test",
                 "k6",
                 "bruno",
                 "password",
@@ -170,8 +175,9 @@ class LocalLabDockerComposeManualRunbookDocumentationTest {
 
     @Test
     void manualComposeRunbookAvoidsProductionAndEvidenceOverclaims() throws Exception {
-        for (Path doc : List.of(RUNBOOK, SKELETON_DOC, DESIGN_DOC, INDEX, TOOLING_RUNBOOK, TOXIPROXY_DOC, K6_DOC,
-                BRUNO_DOC, BOUNDARY_PLAN, HANDOFF, READINESS, NEXT_STEPS, MATRIX, TRUST_MAP, ADR_0009)) {
+        for (Path doc : List.of(RUNBOOK, APP_SERVICE_SKELETON, SKELETON_DOC, DESIGN_DOC, INDEX, TOOLING_RUNBOOK,
+                TOXIPROXY_DOC, K6_DOC, BRUNO_DOC, BOUNDARY_PLAN, HANDOFF, READINESS, NEXT_STEPS, MATRIX, TRUST_MAP,
+                ADR_0009)) {
             String normalized = read(doc).toLowerCase(Locale.ROOT);
 
             for (String forbidden : List.of(

@@ -1,24 +1,24 @@
 # Local Lab Docker Compose App Service Boundary Design
 
-This docs/test-only page is a future-only and design-only boundary document for a possible `app-under-test` service in the optional local-lab Docker Compose lane. It does not add an app service. No app service is added in this PR. It does not change Compose behavior. It makes no Compose behavior changes. No Compose behavior changes are made. It does not add Docker packaging. It makes no Docker packaging changes. No Docker packaging changes are made. It does not wire Compose into CI or Maven. It is not CI-gated and not Maven-wired. It does not change production runtime behavior.
+This page is the boundary design for the `app-under-test` service in the optional local-lab Docker Compose lane. The first gated app-service skeleton follows this design in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md). It does not add Docker packaging. It makes no Docker packaging changes. No Docker packaging changes are made. It does not wire Compose into CI or Maven. It is not CI-gated and not Maven-wired. It does not change production runtime behavior.
 
-The current local-lab Compose skeleton remains [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml), documented by [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md). The readiness gate for any future Compose change is [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), and the exact preflight proof for any future app-service PR is [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md). The existing Compose skeleton remains Toxiproxy-only, optional, manual-only, local-lab-only, loopback-bound, not CI-gated, not Maven-wired, not production Docker packaging, and not production runtime behavior.
+The current local-lab Compose skeleton remains [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml), documented by [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md). The readiness gate for any future Compose change is [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), and the exact preflight proof for app-service PRs is [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md). The existing Compose skeleton now contains Toxiproxy plus a gated app-under-test service, and remains optional, manual-only, local-lab-only, loopback-bound, not CI-gated, not Maven-wired, not production Docker packaging, and not production runtime behavior.
 
-The end-of-day Compose handoff in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md) summarizes the current completed state and stop conditions before any future app-service PR. It does not add an app service and does not change this boundary design.
+The end-of-day Compose handoff in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md) summarizes the guardrail chain and stop conditions for future app-service expansion.
 
 ## Purpose
 
-- Describe what must be true before a future PR adds an `app-under-test` service.
-- Keep this sprint documentation-only and test-only.
+- Describe what must be true before a PR adds or expands an `app-under-test` service.
+- Keep the current app-service skeleton optional, manual-only, local-lab-only, loopback-bound, and read-only mounted.
 - Keep Dockerfiles, production Docker packaging, CI wiring, Maven wiring, production runtime behavior, and automated execution out of this sprint.
-- Keep the current local-lab Compose skeleton Toxiproxy-only.
+- Keep the current local-lab Compose skeleton limited to Toxiproxy plus the gated app-under-test service.
 - Keep k6, Bruno, and Toxiproxy as separate manual/local-only tools unless a later PR explicitly changes that boundary.
 
-This page does not add new Compose services, app container orchestration, k6 runner service behavior, Bruno runner service behavior, Docker image publishing, registry login/push behavior, scripts, runtime app config, app endpoints, or harness/client/server implementation.
+This page does not add k6 runner service behavior, Bruno runner service behavior, Docker image publishing, registry login/push behavior, scripts, runtime app config, app endpoints, or harness/client/server implementation.
 
-## Future App Service Prerequisites
+## App Service Prerequisites
 
-Before a separately scoped future PR adds an `app-under-test` service, reviewers should require:
+Before a separately scoped PR adds or expands an `app-under-test` service, reviewers should require:
 
 - explicit local-lab-only service naming;
 - loopback/local-only exposure;
@@ -60,8 +60,9 @@ A future app-service PR must stop before merge if:
 
 ## Relationship To Current Manual Tooling
 
-- The current Compose skeleton remains Toxiproxy-only: [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml).
+- The current Compose skeleton contains Toxiproxy plus the gated app-under-test service: [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml).
 - The Compose skeleton doc remains the current implementation boundary for that file: [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md).
+- The app-service skeleton doc records the manual package-first JRE-image service: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md).
 - The broader Compose boundary remains [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md).
 - The Compose manual runbook remains the inspection-only and optional manual local-only reviewer path: [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md).
 - The Compose readiness gate defines what a future PR must prove before changing the Compose file, adding services, or adding CI/Maven wiring: [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md).
@@ -70,7 +71,7 @@ A future app-service PR must stop before merge if:
 - The Bruno collection remains manual and separate: [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md).
 - Toxiproxy remains manual/local-only: [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md).
 - The manual tooling index and runbook remain the current reviewer entry points: [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) and [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md).
-- Adding an app service is a future separate PR, not this PR. A future app service PR must be separately scoped.
+- Future app-service expansion must be separately scoped.
 - The end-of-day Compose handoff points the next app-service sprint back to this design, the readiness gate, and the app-service preflight checklist: [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md).
 
 ## Reviewer Checklist For A Future App Service PR

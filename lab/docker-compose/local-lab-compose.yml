@@ -3,6 +3,21 @@
 name: loadbalancerpro-local-lab
 
 services:
+  app-under-test:
+    image: eclipse-temurin:21-jre
+    working_dir: /opt/loadbalancerpro
+    command: ["java", "-jar", "/opt/loadbalancerpro/LoadBalancerPro-2.5.0.jar"]
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - "../../target:/opt/loadbalancerpro:ro"
+    labels:
+      - "local-lab-scope=local-lab-only"
+      - "local-lab-execution=manual-only"
+      - "local-lab-ci=not-ci-gated"
+      - "local-lab-maven=not-wired"
+      - "local-lab-packaging=manual-package-first"
+
   toxiproxy:
     image: shopify/toxiproxy:2.12.0
     command: ["toxiproxy-server", "-config", "/etc/toxiproxy/local-lab-toxiproxy.json"]

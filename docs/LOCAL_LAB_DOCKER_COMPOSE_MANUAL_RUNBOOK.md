@@ -1,10 +1,10 @@
 # Local Lab Docker Compose Manual Runbook
 
-This docs/test-only page is a manual reviewer/operator runbook for the optional local-lab Compose skeleton at [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml). It complements [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md), [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md), [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md), [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md), and [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md).
+This docs/test-only page is a manual reviewer/operator runbook for the optional local-lab Compose skeleton at [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml). It complements [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md), [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md), [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md), [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md), [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md), and [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md).
 
-Repository paths referenced by this runbook include `docs/LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`, `docs/LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`, `docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`, `docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`, `docs/LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`, `docs/LOCAL_LAB_MANUAL_TOOLING_INDEX.md`, and `docs/LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`.
+Repository paths referenced by this runbook include `docs/LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`, `docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`, `docs/LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`, `docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`, `docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`, `docs/LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`, `docs/LOCAL_LAB_MANUAL_TOOLING_INDEX.md`, and `docs/LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`.
 
-This runbook does not add new Compose behavior. It does not add new services. It does not wire Compose into CI or Maven. It does not make the project production-Docker-ready. It does not add production Docker packaging, production runtime behavior, app service behavior, k6 runner behavior, Bruno runner behavior, or automated execution.
+This runbook now covers the gated local-lab app-under-test skeleton. It does not add k6 runner behavior, Bruno runner behavior, CI wiring, Maven wiring, production Docker packaging, production runtime behavior, or automated execution.
 
 The end-of-day Compose handoff is summarized in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md). That handoff keeps this runbook as an inspection-first path and keeps any future app-service PR behind the Compose readiness gate and app-service preflight checklist.
 
@@ -22,12 +22,13 @@ This path requires no Docker execution, no Compose execution, no tool execution,
 
 1. Inspect [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml).
 2. Inspect [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md).
-3. Inspect [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md).
-4. Inspect [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md).
-5. Inspect [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md) before reviewing any future app-service proposal.
-6. Inspect [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md).
-7. Inspect [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md).
-8. Run Maven documentation/file guard tests only if local Maven is available.
+3. Inspect [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md).
+4. Inspect [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md).
+5. Inspect [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md).
+6. Inspect [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md) before reviewing any future app-service expansion.
+7. Inspect [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md).
+8. Inspect [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md).
+9. Run Maven documentation/file guard tests only if local Maven is available.
 
 Example documentation guard command:
 
@@ -53,6 +54,13 @@ Optionally start the existing local-lab Toxiproxy service skeleton by hand:
 docker compose -f lab/docker-compose/local-lab-compose.yml up toxiproxy
 ```
 
+Optionally start the gated app service skeleton by hand after packaging first:
+
+```powershell
+mvn -q "-DskipTests" package
+docker compose -f lab/docker-compose/local-lab-compose.yml up app-under-test
+```
+
 Stop the optional manual local-lab Compose skeleton:
 
 ```powershell
@@ -69,10 +77,11 @@ These commands must stay local-only and reviewer-operated. They must not be adde
 - Confirm no 0.0.0.0 all-interface bind.
 - Confirm no external/cloud/tenant/production endpoint.
 - Confirm no secrets/credentials.
-- Confirm no new services.
-- Confirm no app service.
+- Confirm the only app service is the gated local-lab-only `app-under-test` skeleton.
+- Confirm no additional new services.
 - Confirm no k6 runner service.
 - Confirm no Bruno runner service.
+- Confirm the app service uses a read-only local `target/` mount and requires manual package first.
 - Confirm not CI-gated.
 - Confirm not wired into Maven.
 - Confirm not production Docker packaging.
@@ -97,8 +106,9 @@ These commands must stay local-only and reviewer-operated. They must not be adde
 - The k6 smoke script remains a separate optional manual tool: [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md).
 - The Bruno collection remains a separate optional manual tool: [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md).
 - The Toxiproxy config remains a separate optional manual config: [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md).
+- The app service skeleton remains a separate optional manual local-lab service: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md).
 - The app service boundary design remains future-only and docs/test-only: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md).
-- The app-service preflight checklist remains docs/test-only and required before any future app-service PR: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md).
+- The app-service preflight checklist remains required before any future app-service expansion PR: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md).
 - The Compose readiness gate defines the future-change checklist before editing the Compose file or adding services: [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md).
 - The manual tooling index remains the top-level checklist: [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md).
 - The broader manual tooling runbook remains the inspection-first reviewer path: [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md).

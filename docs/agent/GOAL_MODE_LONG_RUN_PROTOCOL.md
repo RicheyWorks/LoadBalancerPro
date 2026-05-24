@@ -12,6 +12,7 @@ README.md remains the constitutional layer and public trust surface. It is not t
 - [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md) is the startup path that ties the files together for normal Codex sessions.
 - [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) defines how multi-PR goal campaigns run one scoped PR at a time with checkpoints, failure logging, verification, remote checks, and stop conditions.
 - [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md) defines the campaign checkpoint fields for branch, PR, head SHA, checks, blockers, and campaign count.
+- [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md) defines the campaign PR opening, merge, post-merge, scope, and stop-condition checklist.
 - [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md) defines focused checks, relevant selector bundles, full checks, remote checks, post-merge checks, and merge readiness.
 - [`SESSION_MANAGER.md`](SESSION_MANAGER.md) tracks checkpoints, progress, current branch, current PR, current head SHA, changed files, blockers, checks run, and next action.
 - [`FAILURE_LOG.md`](FAILURE_LOG.md) records failures, suspected causes, fixes attempted, results, recovery, and follow-up action.

@@ -6,6 +6,8 @@ Repository paths referenced by this runbook include `docs/LOCAL_LAB_DOCKER_COMPO
 
 This runbook does not add new Compose behavior. It does not add new services. It does not wire Compose into CI or Maven. It does not make the project production-Docker-ready. It does not add production Docker packaging, production runtime behavior, app service behavior, k6 runner behavior, Bruno runner behavior, or automated execution.
 
+The end-of-day Compose handoff is summarized in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md). That handoff keeps this runbook as an inspection-first path and keeps any future app-service PR behind the Compose readiness gate and app-service preflight checklist.
+
 ## Purpose
 
 - Provide a manual reviewer/operator checklist for the existing optional local-lab Compose skeleton.
@@ -100,6 +102,7 @@ These commands must stay local-only and reviewer-operated. They must not be adde
 - The Compose readiness gate defines the future-change checklist before editing the Compose file or adding services: [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md).
 - The manual tooling index remains the top-level checklist: [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md).
 - The broader manual tooling runbook remains the inspection-first reviewer path: [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md).
+- The end-of-day Compose handoff summarizes the current guardrail chain: [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md).
 
 ## Remaining Not-Proven Boundaries
 

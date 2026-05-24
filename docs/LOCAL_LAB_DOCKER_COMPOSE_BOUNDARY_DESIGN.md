@@ -6,6 +6,8 @@ The current reviewer path remains the manual tooling index and runbook: [`LOCAL_
 
 The first separately scoped local-lab Compose skeleton is documented in [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md) and lives at [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml). The Compose-specific manual reviewer/operator checklist is [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md). The future app-service boundary is [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md). The future app-service preflight checklist is [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md). The future-change readiness gate is [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md). The skeleton remains optional, manual-only, local-lab-only, loopback-bound, not CI-gated, not wired into Maven, and not production runtime behavior.
 
+The end-of-day Compose handoff in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md) summarizes the merged guardrail chain through the preflight checklist. It keeps future app-service work separately scoped and does not change this design boundary.
+
 ## Purpose
 
 - Describe how a future local-lab Compose lane could be reviewed before implementation.
@@ -62,6 +64,7 @@ Any future override must remain local/lab-owned unless another separately review
 - The Compose readiness gate documents what future PRs must prove before changing the Compose file or adding services: [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md).
 - The manual tooling index and runbook remain the current reviewer path: [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) and [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md).
 - The broader local-lab tool boundary remains [`LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md`](LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md).
+- The end-of-day Compose handoff remains reviewer context only: [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md).
 
 This design remains the preparation lane for Compose work. The first skeleton does not make k6, Bruno, or Toxiproxy automatic. It does not make Docker/k6/Bruno/Toxiproxy platform implementation exist.
 

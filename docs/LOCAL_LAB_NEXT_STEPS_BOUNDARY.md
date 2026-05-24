@@ -32,6 +32,43 @@ This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`
 
 This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md) as the exact preflight checklist before any future app-service Compose PR. It does not add an app service, Compose behavior changes, Docker packaging changes, CI-gating, Maven wiring, production runtime behavior, automated execution, new services, k6 runner services, Bruno runner services, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
 
+This docs/test-only end-of-day Compose handoff update summarizes today's merged local-lab tooling and Compose guardrail chain only. It does not change Compose behavior, add an app service, add new Compose services, add k6 runner services, add Bruno runner services, change Dockerfiles, add production Docker packaging, add CI/Maven wiring, change production runtime behavior, add automated execution, or add replay/evidence/report/storage/export behavior.
+
+## End-of-Day Compose Handoff Guidance
+
+Today's merged sequence is PR #270 k6 / Bruno / Toxiproxy design specs, PR #272 optional local-lab k6 smoke script skeleton, PR #273 optional local-lab Bruno collection skeleton, PR #274 optional local-lab Toxiproxy config skeleton, PR #275 manual tooling index/checklist, PR #276 manual tooling runbook, PR #277 Docker Compose boundary design, PR #278 optional local-lab Docker Compose skeleton, PR #279 Docker Compose manual runbook, PR #280 Compose app-service boundary design, PR #281 Compose readiness gate, and PR #282 Compose app-service preflight checklist.
+
+Current completed state:
+
+- the k6 skeleton exists and remains optional/manual/local-only;
+- the Bruno collection exists and remains optional/manual/local-only;
+- the Toxiproxy config exists and remains optional/manual/local-only;
+- the Docker Compose skeleton exists and remains optional/manual/local-only;
+- Current Compose skeleton remains Toxiproxy-only;
+- No app service exists yet;
+- k6 remains manual and separate;
+- Bruno remains manual and separate;
+- Toxiproxy remains manual/local-only;
+- Compose is not CI-gated;
+- Compose is not Maven-wired;
+- no production Docker packaging has been added.
+
+Guardrails now in place: [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md), [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md), [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), and [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md).
+
+Recommended next sprint: a future app-service Compose PR may be considered only after using the preflight checklist and readiness gate. A future app-service PR must be separately scoped. That next step must be separately scoped and must not be treated as proof of production readiness, runtime enforcement, performance, replay, evidence, report, storage, export, or broader automation.
+
+Stop conditions for the next app-service PR:
+
+- stop if `src/main/java` changes appear;
+- stop if production API/routing behavior changes appear;
+- stop if Dockerfile or production Compose changes appear unexpectedly;
+- stop if CI/Maven wiring appears;
+- stop if external/cloud/tenant/private-network targets appear;
+- stop if secrets/credentials appear;
+- stop if `0.0.0.0` default exposure appears;
+- stop if performance/readiness/certification/runtime-enforcement claims appear;
+- stop if replay/evidence/report/storage/export behavior appears.
+
 ## Current Local-Lab Stack
 
 The current local-lab stack is:
@@ -72,6 +109,8 @@ The current local-lab stack is:
 34. Local-lab Docker Compose manual runbook/checklist.
 35. Local-lab Docker Compose app service boundary design.
 36. Local-lab Docker Compose readiness gate.
+37. Local-lab Docker Compose app service preflight checklist.
+38. End-of-day Compose handoff update.
 
 ## What Is Actually Proven Today
 
@@ -93,6 +132,7 @@ The current local-lab stack is:
 - the local-lab Docker Compose app service boundary design can describe future app-service prerequisites and stop conditions without adding an app service, changing Compose behavior, adding Docker packaging, wiring CI or Maven, or changing production runtime behavior;
 - the local-lab Docker Compose readiness gate can describe the checklist future PRs must satisfy before Compose file changes, app services, k6 runner services, Bruno automation, Toxiproxy expansion, CI wiring, or Maven wiring without changing Compose behavior;
 - the local-lab Docker Compose app service preflight checklist can describe the exact proof reviewers require before any future app-service Compose PR without adding an app service, changing Compose behavior, changing Docker packaging, wiring CI or Maven, or changing production runtime behavior;
+- the end-of-day Compose handoff update can summarize today's merged local-lab tooling and Compose guardrail chain without changing Compose behavior, adding services, adding CI/Maven wiring, changing production Docker packaging, changing production runtime behavior, or adding evidence behavior;
 - reviewer checklist and handoff docs explain evidence boundaries;
 - all current evidence is local/test-scope only.
 
@@ -121,7 +161,8 @@ The current local-lab stack is:
 - not carbon-aware routing;
 - not GPU orchestration;
 - not power/grid control;
-- not facility automation.
+- not facility automation;
+- not broader automation.
 
 ## Next Safe Implementation Lanes
 
@@ -141,7 +182,9 @@ The current local-lab stack is:
 - Lane A7c1: docs-only future app-service boundary design in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md).
 - Lane A7c2: docs-only Compose readiness gate in [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md).
 - Lane A7c3: docs-only app-service preflight checklist in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md).
-- Lane A7d: future broader Docker Compose orchestration only after a separate implementation PR.
+- Lane A7c4: docs-only end-of-day Compose handoff update in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and this next-steps boundary.
+- Lane A7d: future app-service Compose PR only after the preflight checklist and readiness gate are applied in a separately scoped implementation PR.
+- Lane A7e: future broader Docker Compose orchestration only after a separate implementation PR.
 - Lane B: test-scope bounded request burst smoke test, still loopback-only.
 - Lane C: test-scope fault-style fixture expansion, no Toxiproxy execution yet.
 - Lane D: docs-only Docker Compose design boundary, no compose file yet.
@@ -152,6 +195,8 @@ Lane A is represented by the current k6/Bruno/Toxiproxy implementation boundary 
 Lane B is represented by the current bounded burst smoke tests and bounded burst reviewer checklist mapping only as fixed-count local/test-scope context. It is not load testing, stress testing, performance benchmarking, throughput evidence, latency measurement, p95/p99 evidence, production traffic, or production proof.
 
 Each lane must be separately scoped and reviewed. A future lane should stop before merge if it needs production code, production endpoint wiring, Maven dependencies, fixed ports, non-loopback defaults, Docker/Toxiproxy execution, expanded Toxiproxy fault execution, expanded Bruno implementation, expanded k6 implementation, replay execution, evidence/report generation, file writing, storage, export, load/stress/benchmark claims, throughput or p95/p99 claims, or production-validation language.
+
+A future app-service Compose PR must additionally stop before merge if `src/main/java` changes appear, production API/routing behavior changes appear, Dockerfile or production Compose changes appear unexpectedly, CI/Maven wiring appears, external/cloud/tenant/private-network targets appear, secrets/credentials appear, `0.0.0.0` default exposure appears, performance/readiness/certification/runtime-enforcement claims appear, or replay/evidence/report/storage/export behavior appears.
 
 ## Stop Conditions / Safety Gates
 

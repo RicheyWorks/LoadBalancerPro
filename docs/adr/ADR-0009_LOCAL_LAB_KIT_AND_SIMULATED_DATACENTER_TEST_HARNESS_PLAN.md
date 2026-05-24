@@ -78,6 +78,8 @@ This sprint adds one optional local-lab Docker Compose skeleton at [`../../lab/d
 
 This docs/test-only follow-up adds [`../LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](../LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md) as the Compose-specific manual reviewer/operator runbook and checklist for the optional local-lab Compose skeleton. It adds no new Compose services, no app service, no k6 runner service, no Bruno runner service, no CI-gating, no Maven wiring, no production Docker packaging, no production runtime behavior, no automated execution, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark evidence, no throughput evidence, and no p95/p99 evidence.
 
+This docs/test-only follow-up adds [`../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md) as future-only app-service boundary design for the optional local-lab Compose lane. It adds no app service, no new Compose services, no Compose behavior changes, no Docker packaging changes, no CI-gating, no Maven wiring, no production runtime behavior, no automated execution, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark evidence, no throughput evidence, and no p95/p99 evidence.
+
 ## Decision
 
 If a future implementation sprint is separately approved, LoadBalancerPro should grow a Local Lab Kit that can simulate a small datacenter on one Windows machine before real server hardware is purchased.
@@ -226,6 +228,7 @@ Related docs:
 - [`../LOCAL_LAB_SCENARIO_MATRIX.md`](../LOCAL_LAB_SCENARIO_MATRIX.md) lists future scenario categories as planning-only reviewer/operator scaffolding.
 - [`../LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](../LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md) documents the first optional manual local-lab Compose skeleton and its loopback/non-production boundaries.
 - [`../LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](../LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md) documents the Compose-specific inspection checklist and optional manual local-only commands without adding services, CI, Maven wiring, production Docker packaging, production runtime behavior, or automated execution.
+- [`../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md) documents future app-service prerequisites and stop conditions without adding an app service, new Compose services, CI, Maven wiring, Docker packaging changes, production runtime behavior, or automated execution.
 - [`ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md`](ADR-0001_LAYERED_ARCHITECTURE_BOUNDARY.md) defines proposed future layer boundaries.
 - [`ADR-0002_LASE_INTEGRATION_MODEL.md`](ADR-0002_LASE_INTEGRATION_MODEL.md) defines proposed future LASE integration boundaries.
 - [`ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md`](ADR-0003_EVIDENCE_AS_FIRST_CLASS_ARTIFACT.md) defines evidence as proposed future architecture material.

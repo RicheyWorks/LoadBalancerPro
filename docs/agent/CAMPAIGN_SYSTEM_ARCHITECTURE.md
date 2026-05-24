@@ -18,6 +18,7 @@ A campaign is a bounded sequence of separately scoped PRs that share one durable
 - SESSION_MANAGER.md: checkpoint ledger for current branch, PR, head SHA, checks run, blockers, and next action.
 - FAILURE_LOG.md: factual record for local failures, remote failures, suspected causes, fixes attempted, results, and follow-up action.
 - CAMPAIGN_CHECKPOINT_LEDGER.md: required checkpoint fields and counting rules for multi-PR goal campaigns.
+- CAMPAIGN_PR_READINESS_CHECKLIST.md: per-PR opening, merge, post-merge, scope, and stop-condition checklist.
 
 ## Ten-PR Execution Loop
 
@@ -30,7 +31,7 @@ Repeat this loop for each campaign PR:
 5. Keep changes inside the scoped slice.
 6. Run focused verification while editing.
 7. Run full local verification before merge.
-8. Open a PR with scope, verification, safety audit, and not-proven boundaries.
+8. Use CAMPAIGN_PR_READINESS_CHECKLIST.md, then open a PR with scope, verification, safety audit, and not-proven boundaries.
 9. Merge only after current-head remote required checks are complete and successful.
 10. Return to main, fast-forward, run post-merge checks, confirm main remote checks for the merge commit, and then start the next PR.
 

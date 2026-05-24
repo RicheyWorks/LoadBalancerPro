@@ -12,6 +12,7 @@ In short: README.md is the Advanced README / public trust surface, AGENTS.md is 
 - [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) explains how `/goal` uses README.md, AGENTS.md, BUILD_CONTRACT.md, and docs/agent files together for multi-hour Codex sessions.
 - [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) explains how a multi-PR goal campaign runs one scoped PR at a time with checkpoints, failure logging, full verification, remote checks, and stop conditions.
 - [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md) defines the checkpoint fields for campaign PR count, branch, PR URL, head SHA, checks, blockers, and next action.
+- [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md) defines the per-PR opening, merge, post-merge, scope, and stop-condition gate for campaign slices.
 - [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md) defines focused-vs-full verification. Use focused checks while editing and full checks before merge.
 - [`SESSION_MANAGER.md`](SESSION_MANAGER.md) tracks long-running session state. Use it for current branch, PR, goal, head SHA, changed files, checks run, blockers, next action, and recovery notes.
 - [`FAILURE_LOG.md`](FAILURE_LOG.md) tracks failures and recovery. Use it for local test failures, remote check failures, suspected causes, fixes attempted, results, and follow-up actions.

@@ -186,8 +186,9 @@ The current local-lab stack is:
 - Lane A7c3: docs-only app-service preflight checklist in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md).
 - Lane A7c4: docs-only end-of-day Compose handoff update in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and this next-steps boundary.
 - Lane A7d: first gated app-service Compose skeleton in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md), using a public JRE image, read-only local `target/` mount, manual package-first operation, and loopback-only published ports.
-- Lane A7e: future app-service expansion only after the preflight checklist and readiness gate are reapplied in a separately scoped implementation PR.
-- Lane A7f: future broader Docker Compose orchestration only after a separate implementation PR.
+- Lane A7e: app-service manual smoke checklist docs in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md), with no Compose behavior change.
+- Lane A7f: future app-service expansion only after the preflight checklist and readiness gate are reapplied in a separately scoped implementation PR.
+- Lane A7g: future broader Docker Compose orchestration only after a separate implementation PR.
 - Lane B: test-scope bounded request burst smoke test, still loopback-only.
 - Lane C: test-scope fault-style fixture expansion, no Toxiproxy execution yet.
 - Lane D: docs-only Docker Compose design boundary, no compose file yet.
@@ -261,3 +262,11 @@ Next safe expansion lanes:
 - no runner services until separate gates are created.
 
 Any future lane remains separately scoped and must continue through [LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), [LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md), and [LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md).
+
+## App-Service Manual Smoke Checklist Update
+
+The app-service manual smoke checklist is now the next safe lane: [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_MANUAL_SMOKE_CHECKLIST.md). This is docs/test-only and does not change `lab/docker-compose/local-lab-compose.yml`, app behavior, Dockerfiles, Maven, CI, runtime resources, k6, Bruno, Toxiproxy behavior, scripts, production Compose, production Docker packaging, or production runtime behavior.
+
+The checklist states that `app-under-test` already exists in local-lab Compose, remains optional/manual/local-lab-only, uses the local `target/` mount read-only, requires manual package first, publishes `127.0.0.1:8080:8080`, keeps Toxiproxy present, keeps k6 manual and separate, keeps Bruno manual and separate, has no k6 runner service, has no Bruno runner service, has no CI-gating, has no Maven wiring, has no Dockerfile change, has no production Docker packaging, has no production Compose change, and has no production runtime behavior change.
+
+It does not support production readiness/certification claims, live-cloud or real-tenant validation claims, runtime enforcement claims, replay/evidence/report/storage/export behavior claims, load/stress/benchmark claims, or throughput/p95/p99 evidence claims. Next safe lanes remain app-service health/readiness documentation only and future k6/Bruno runner design docs only; no runner services until separate gates are created.

@@ -34,6 +34,8 @@ This docs/test-only follow-up adds [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_L
 
 This docs/test-only follow-up adds [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) as the companion manual reviewer/operator runbook for the existing optional k6, Bruno, and Toxiproxy skeletons. It adds no tool behavior, automated execution, CI-gating, Docker/Compose orchestration, Maven wiring, production runtime wiring, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
 
+This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) as future-only Docker Compose boundary design. It does not add Compose files, Dockerfiles, compose profiles, CI automation, Maven wiring, production runtime behavior, tool execution, replay execution, evidence/report generation, storage/export behavior, load/stress/benchmark evidence, throughput evidence, or p95/p99 evidence.
+
 ## End-of-Day Checkpoint
 
 This checkpoint summarizes the completed local-lab stack at the end of the day. All current evidence is local/test-scope only. The loopback layers bind to `127.0.0.1` only and use OS-assigned ephemeral ports in tests. The checkpoint is reviewer handoff context, not production validation.
@@ -71,6 +73,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 29. Optional local-lab Toxiproxy config skeleton.
 30. Local-lab manual tooling index and reviewer checklist.
 31. Local-lab manual tooling runbook.
+32. Local-lab Docker Compose boundary design.
 
 ### What Is Actually Proven Today
 
@@ -88,6 +91,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - the optional local-lab Toxiproxy config skeleton can document tiny manual loopback-only proxy placeholders without CI, Docker, Docker Compose orchestration, application wiring, Maven wiring, k6 execution, Bruno execution, runtime enforcement, benchmark, throughput, p95, or p99 claims;
 - the local-lab manual tooling index can point reviewers to the current optional manual k6, Bruno, and Toxiproxy skeletons and restate their shared boundaries without requiring tool execution;
 - the local-lab manual tooling runbook can give reviewers an inspection-only path and optional local-only manual run path without requiring tool execution;
+- the local-lab Docker Compose boundary design can document future local-lab orchestration candidates and stop conditions without adding Compose files, Dockerfiles, CI automation, Maven wiring, runtime behavior, or tool execution;
 - reviewer checklist and handoff docs explain boundaries;
 - all current evidence is local/test-scope only.
 
@@ -127,7 +131,8 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - Lane A5b: future expanded Bruno collection files only after separate review.
 - Lane A6a: first optional local-lab Toxiproxy config skeleton.
 - Lane A6b: future expanded Toxiproxy fault execution only after separate review.
-- Lane A7: future Docker Compose only after a separate Docker boundary plan.
+- Lane A7a: docs-only Docker Compose design boundary in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), no compose file yet.
+- Lane A7b: future actual Docker Compose only after a separate implementation PR.
 - Lane B: test-scope bounded request burst smoke test, still loopback-only.
 - Lane C: test-scope fault-style fixture expansion, no Toxiproxy execution yet.
 - Lane D: docs-only Docker Compose design boundary, no compose file yet.
@@ -175,6 +180,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - optional local-lab Toxiproxy config skeleton.
 - local-lab manual tooling index and reviewer checklist.
 - local-lab manual tooling runbook.
+- local-lab Docker Compose boundary design.
 
 ## What Each Layer Proves
 
@@ -204,6 +210,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 | optional local-lab k6 smoke script skeleton | gives reviewers a tiny manual k6 walkthrough against an already-running loopback app endpoint | not CI-gated, not Dockerized, local/lab-owned loopback endpoints only, no Bruno execution, no Toxiproxy execution, no Docker Compose, no production behavior, no replay, no report, no storage, no export, no benchmark, no throughput evidence, no p95/p99 evidence |
 | optional local-lab Bruno collection skeleton | gives reviewers tiny manual Bruno requests against an already-running loopback app endpoint | not CI-gated, not Dockerized, not Toxiproxy integration, not k6 execution, local/lab-owned loopback endpoints only, no Toxiproxy execution, no Docker Compose, no production behavior, no replay, no report, no storage, no export, no benchmark, no throughput evidence, no p95/p99 evidence |
 | optional local-lab Toxiproxy config skeleton | gives reviewers tiny manual loopback-only proxy placeholders for later local review | manual-only, not CI-gated, not Dockerized, not Docker Compose orchestration, not wired into the application, not wired into Maven, not wired into k6 execution, not wired into Bruno execution, does not start Toxiproxy, does not start the application, local/lab-owned loopback endpoints only, no production behavior, no replay, no report, no storage, no export, no runtime enforcement, no benchmark, no throughput evidence, no p95/p99 evidence |
+| local-lab Docker Compose boundary design | documents future local-lab orchestration candidates, boundary rules, and stop conditions | docs/test-only future design; no Compose files, Dockerfiles, compose profiles, CI automation, Maven wiring, runtime behavior, tool execution, replay, report, storage, export, benchmark, throughput evidence, or p95/p99 evidence |
 
 ## What Each Layer Does Not Prove
 

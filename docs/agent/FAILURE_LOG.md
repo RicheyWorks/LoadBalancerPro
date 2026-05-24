@@ -40,6 +40,24 @@ Result: retry succeeded and opened https://github.com/RicheyWorks/LoadBalancerPr
 
 Follow-up action: retry PR creation, then update SESSION_MANAGER.md with the PR URL and final branch head.
 
+## Entry
+
+Date/time: 2026-05-24T16:45-07:00
+
+Branch/PR: codex/goal-campaign-merge-gate / pending
+
+Failure type: focused documentation guard
+
+Failing check: `mvn test "-Dtest=AgentCampaignMergeGateDocumentationTest"`
+
+Suspected cause: CAMPAIGN_MERGE_GATE.md said "Do not squash, rebase" but did not contain the exact explicit phrase "Do not rebase" required by the new guard test.
+
+Fix attempted: changed the merge method section to state "Do not squash. Do not rebase."
+
+Result: focused rerun passed.
+
+Follow-up action: continue PR 5 full local verification.
+
 ## Notes
 
 - Keep entries factual.

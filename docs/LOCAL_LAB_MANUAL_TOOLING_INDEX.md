@@ -1,6 +1,6 @@
 # Local Lab Manual Tooling Index
 
-This docs/test-only documentation-only index gives reviewers one bounded place to inspect the current optional local-lab manual tooling. [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) is the companion manual reviewer/operator runbook for inspection-only review and optional local-only manual use. [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) is the Docker Compose boundary design, and [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md) documents the first optional local-lab Compose skeleton. The skeleton is manual-only, loopback/local-only, not CI-gated, not wired into Maven, not production runtime behavior, and not tool automation.
+This docs/test-only documentation-only index gives reviewers one bounded place to inspect the current optional local-lab manual tooling. [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) is the companion manual reviewer/operator runbook for inspection-only review and optional local-only manual use. [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md) is the Docker Compose boundary design, [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md) documents the first optional local-lab Compose skeleton, and [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md) is the Compose-specific manual checklist. The skeleton is manual-only, loopback/local-only, not CI-gated, not wired into Maven, not production runtime behavior, and not tool automation.
 
 ## What Exists Now
 
@@ -21,7 +21,7 @@ The k6, Bruno, and Toxiproxy tool skeletons are optional, manual-only, local-lab
 
 The tools are separate from one another: the k6 script does not run Bruno or Toxiproxy; the Bruno collection does not run k6 or Toxiproxy; the Toxiproxy config does not run k6 or Bruno. None of these files should be treated as automatic Maven execution, CI execution, Docker execution, Docker Compose execution, replay execution, report generation, storage, export, or production runtime behavior.
 
-Docker Compose boundaries are described in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), and the first optional skeleton is documented in [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md). The skeleton does not add Dockerfiles, compose profiles, CI-gating, Maven wiring, runtime behavior, or automatic k6/Bruno/Toxiproxy execution.
+Docker Compose boundaries are described in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md), the first optional skeleton is documented in [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md), and the Compose-specific manual checklist is [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md). The skeleton does not add Dockerfiles, compose profiles, CI-gating, Maven wiring, runtime behavior, or automatic k6/Bruno/Toxiproxy execution.
 
 ## Reviewer Checklist
 
@@ -42,7 +42,8 @@ Docker Compose boundaries are described in [`LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_D
 4. Inspect [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/) and [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md).
 5. Inspect [`../lab/toxiproxy/local-lab-toxiproxy.json`](../lab/toxiproxy/local-lab-toxiproxy.json) and [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md).
 6. Inspect [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml) and [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md).
-7. Use the existing Maven documentation guard tests and local-lab docs as boundary evidence; actually running k6, Bruno, or Toxiproxy is not required, and running Docker Compose is not required for this review.
+7. Inspect [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md) for the Compose-specific inspection-only path and optional manual local-only commands.
+8. Use the existing Maven documentation guard tests and local-lab docs as boundary evidence; actually running k6, Bruno, or Toxiproxy is not required, and running Docker Compose is not required for this review.
 
 ## Remaining Not-Proven Boundaries
 

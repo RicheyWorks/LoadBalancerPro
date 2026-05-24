@@ -2,11 +2,13 @@
 
 This document defines the remote-check audit for each multi-PR Codex `/goal` campaign slice. It is documentation only; it does not add automation, CI/Maven wiring, runtime behavior, Docker/Compose behavior, external targets, secrets, or production claims.
 
-Use this audit with CAMPAIGN_SYSTEM_ARCHITECTURE.md, CAMPAIGN_CHECKPOINT_LEDGER.md, CAMPAIGN_PR_READINESS_CHECKLIST.md, GOAL_MODE_LONG_RUN_PROTOCOL.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md before merging a campaign PR and before counting the PR after merge.
+Use this audit with CAMPAIGN_SYSTEM_ARCHITECTURE.md, CAMPAIGN_CHECKPOINT_LEDGER.md, CAMPAIGN_PR_READINESS_CHECKLIST.md, CAMPAIGN_MERGE_GATE.md, GOAL_MODE_LONG_RUN_PROTOCOL.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md before merging a campaign PR and before counting the PR after merge.
 
 ## Audit Purpose
 
 Remote checks are the campaign's external confirmation that the branch or merge commit is still safe to advance. They do not replace local verification, scope review, or human judgment.
+
+CAMPAIGN_MERGE_GATE.md consumes this audit as one input to the final merge decision.
 
 The audit records:
 

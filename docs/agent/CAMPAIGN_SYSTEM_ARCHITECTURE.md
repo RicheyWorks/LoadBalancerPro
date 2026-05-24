@@ -20,6 +20,7 @@ A campaign is a bounded sequence of separately scoped PRs that share one durable
 - CAMPAIGN_CHECKPOINT_LEDGER.md: required checkpoint fields and counting rules for multi-PR goal campaigns.
 - CAMPAIGN_PR_READINESS_CHECKLIST.md: per-PR opening, merge, post-merge, scope, and stop-condition checklist.
 - CAMPAIGN_REMOTE_CHECK_AUDIT.md: remote PR and main merge-commit check audit rules.
+- CAMPAIGN_MERGE_GATE.md: final pre-merge and post-merge decision gate before a PR can merge or count.
 
 ## Ten-PR Execution Loop
 
@@ -33,7 +34,7 @@ Repeat this loop for each campaign PR:
 6. Run focused verification while editing.
 7. Run full local verification before merge.
 8. Use CAMPAIGN_PR_READINESS_CHECKLIST.md, then open a PR with scope, verification, safety audit, and not-proven boundaries.
-9. Use CAMPAIGN_REMOTE_CHECK_AUDIT.md, then merge only after current-head remote required checks are complete and successful.
+9. Use CAMPAIGN_REMOTE_CHECK_AUDIT.md and CAMPAIGN_MERGE_GATE.md, then merge only after current-head remote required checks are complete and successful.
 10. Return to main, fast-forward, run post-merge checks, confirm main remote checks for the merge commit, and then start the next PR.
 
 ## Required Checkpoints

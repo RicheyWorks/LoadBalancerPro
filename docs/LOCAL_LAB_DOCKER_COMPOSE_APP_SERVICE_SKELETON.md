@@ -147,3 +147,11 @@ The app-service manual smoke checklist is now the next docs/test-only reviewer l
 It documents that `app-under-test` already exists in local-lab Compose, remains optional/manual/local-lab-only, uses the local `target/` mount read-only, requires a manual package step before optional Compose use, publishes `127.0.0.1:8080:8080`, keeps Toxiproxy present, keeps k6 manual and separate, keeps Bruno manual and separate, adds no k6 runner service, adds no Bruno runner service, adds no CI-gating, adds no Maven wiring, adds no Dockerfile change, adds no production Docker packaging, adds no production Compose change, and adds no production runtime behavior change.
 
 The manual smoke checklist does not create production readiness/certification claims, live-cloud or real-tenant validation claims, runtime enforcement claims, replay/evidence/report/storage/export behavior claims, load/stress/benchmark claims, or throughput/p95/p99 evidence claims.
+
+## App-Service Health/Readiness Documentation Update
+
+The app-service health/readiness documentation lane is now available at [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_HEALTH_READINESS.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_HEALTH_READINESS.md). It is docs/test-only and does not change the local-lab Compose file, the app service, Dockerfiles, Maven, CI, runtime resources, production Compose, production Docker packaging, production runtime behavior, or application endpoints. It adds no health endpoint and no readiness endpoint.
+
+The health/readiness lane documents inspection-only review and optional manual local-only observations for the existing `app-under-test` service. It keeps the service optional/manual/local-lab-only, package-first, read-only mounted from `target/`, and loopback-bound at `127.0.0.1:8080:8080`; it keeps Toxiproxy present, k6 manual and separate, Bruno manual and separate, no runner services, no CI-gating, and no Maven wiring.
+
+The lane does not create production readiness/certification claims, live-cloud or real-tenant validation claims, runtime enforcement claims, replay/evidence/report/storage/export behavior claims, load/stress/benchmark claims, or throughput/p95/p99 evidence claims.

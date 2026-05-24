@@ -445,3 +445,33 @@ Next safe expansion lanes:
 - no runner services until separate gates are created.
 
 Use [LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), [LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md), and [LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md) before considering any later Compose change.
+
+## App-Service Health/Readiness Documentation Update
+
+The app-service health/readiness documentation lane is now available at [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_HEALTH_READINESS.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_HEALTH_READINESS.md). This update is docs/test-only and does not change `lab/docker-compose/local-lab-compose.yml`, app behavior, Dockerfiles, Maven, CI, runtime resources, k6, Bruno, Toxiproxy behavior, scripts, production Compose, production Docker packaging, production runtime behavior, or application endpoints. It adds no health endpoint and no readiness endpoint.
+
+Current app-service health/readiness state:
+
+- `app-under-test` already exists in local-lab Compose.
+- It remains optional/manual/local-lab-only.
+- It uses the local `target/` mount read-only and requires a manual package step before optional Compose use.
+- The app published port remains `127.0.0.1:8080:8080`.
+- Toxiproxy remains present.
+- k6 remains manual and separate.
+- Bruno remains manual and separate.
+- no k6 runner service exists.
+- no Bruno runner service exists.
+- no CI-gating.
+- no Maven wiring.
+- no Dockerfile change.
+- no production Docker packaging.
+- no production Compose change.
+- no production runtime behavior change.
+- no production readiness/certification claim.
+- no live-cloud or real-tenant validation claim.
+- no runtime enforcement claim.
+- no replay/evidence/report/storage/export behavior claim.
+- no load/stress/benchmark claim.
+- no throughput/p95/p99 evidence claim.
+
+Next safe lanes remain Compose manual runbook refinements and future k6/Bruno runner design docs only. Runner services remain blocked until separate gates are created.

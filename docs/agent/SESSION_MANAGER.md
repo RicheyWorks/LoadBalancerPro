@@ -8,11 +8,13 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Campaign: 10-PR LoadBalancerPro goal campaign
 
-Checkpoint: PR 1 pre-PR verification completed
+Checkpoint: PR 1 opened
 
 Started from main SHA: dfd4b4a750d0fca5cc1b0858a21aa31470718b0b
 
 Current campaign branch: codex/goal-campaign-system-architecture
+
+Current campaign PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/296
 
 Completed campaign PRs: 0 / 10
 
@@ -20,7 +22,7 @@ Current blocker: none
 
 Checks completed: AgentCampaignSystemArchitectureDocumentationTest; AgentCampaignSystemArchitectureDocumentationTest, AgentGoalModeLongRunProtocolDocumentationTest, AgentWorkflowQuickstartDocumentationTest, AdvancedReadmeAgentContractDocumentationTest; mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"; mvn -q test; mvn -q "-DskipTests" package; mvn -B package; git diff --check; git diff --cached --check; .\scripts\smoke\enterprise-lab-workflow.ps1 -Package
 
-Next campaign action: commit, push, and open PR 1.
+Next campaign action: push PR URL checkpoint and wait for current-head remote checks.
 
 ## Current Branch
 
@@ -28,7 +30,7 @@ Name:
 
 ## Current PR
 
-URL:
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/296
 
 ## Current Goal
 

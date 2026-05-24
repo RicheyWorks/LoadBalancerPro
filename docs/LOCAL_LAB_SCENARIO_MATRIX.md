@@ -10,7 +10,7 @@ The current local-lab tool lane now has one optional local-lab k6 smoke script s
 
 The app-service preflight checklist in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md) defines exact proof before any future app-service PR. It adds no app service, no Compose behavior changes, no Docker packaging changes, no CI-gating, no Maven wiring, no production runtime behavior, no automated execution, no new services, no k6 runner service, no Bruno runner service, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark evidence, no throughput evidence, and no p95/p99 evidence.
 
-The end-of-day Compose handoff is recorded in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md). It summarizes today's merged local-lab sequence through the Compose app-service preflight checklist, keeps the current Compose skeleton Toxiproxy-only, keeps k6 and Bruno manual and separate, keeps Toxiproxy manual/local-only, confirms Compose is not CI-gated and not Maven-wired, confirms no production Docker packaging has been added, and points any future app-service PR back to the Compose readiness gate and app-service preflight checklist.
+The end-of-day Compose handoff and post-app-service Compose handoff update are recorded in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md). They summarize the merged local-lab sequence through the gated app-service skeleton, record that `app-under-test` now exists in local-lab Compose as optional/manual/local-lab-only, keep k6 and Bruno manual and separate, keep Toxiproxy manual/local-only, confirm Compose is not CI-gated and not Maven-wired, confirm no production Docker packaging has been added, and point any future Compose change back to the Compose readiness gate and app-service preflight checklist.
 
 ## Test-Scope Scenario Model Foundation
 
@@ -142,3 +142,41 @@ This matrix does not add:
 - production certification;
 - live-cloud validation;
 - real-tenant validation.
+
+## Post-App-Service Compose Handoff Update
+
+PR #284 is now the current local-lab Compose baseline. This scenario-matrix update is docs/test-only and does not change `lab/docker-compose/local-lab-compose.yml`, Dockerfiles, Maven, CI, runtime resources, k6, Bruno, Toxiproxy behavior, scripts, production Compose, production Docker packaging, or production runtime behavior.
+
+Current state:
+
+- `app-under-test` service now exists in local-lab Compose.
+- It is optional/manual/local-lab-only.
+- It uses the local `target/` mount read-only and requires a manual package step before optional use.
+- The published app port is loopback-bound at `127.0.0.1:8080:8080`.
+- The existing Toxiproxy service remains present and loopback/local.
+- k6 remains manual and separate.
+- Bruno remains manual and separate.
+- no k6 runner service exists.
+- no Bruno runner service exists.
+- no CI-gating.
+- no Maven wiring.
+- no Dockerfile change.
+- no production Docker packaging.
+- no production Compose change.
+- no production runtime behavior change.
+- no production readiness/certification claim.
+- no live-cloud or real-tenant validation claim.
+- no runtime enforcement claim.
+- no replay/evidence/report/storage/export behavior claim.
+- no load/stress/benchmark claim.
+- no throughput/p95/p99 evidence claim.
+
+Next safe expansion lanes:
+
+- app-service manual smoke checklist docs;
+- Compose manual runbook update for app service;
+- app-service health/readiness documentation only;
+- future k6/Bruno runner design docs only;
+- no runner services until separate gates are created.
+
+Use [LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), [LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md), and [LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md) before considering any later Compose change.

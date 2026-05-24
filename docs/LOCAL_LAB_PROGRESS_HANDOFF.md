@@ -42,6 +42,8 @@ This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`
 
 This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md) as a future-only app-service boundary design. It adds no app service, no new Compose services, no Compose behavior changes, no Docker packaging changes, no CI-gating, no Maven wiring, no production runtime behavior, no k6 runner service, no Bruno runner service, no automated execution, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark evidence, no throughput evidence, and no p95/p99 evidence.
 
+This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md) as a readiness gate for future local-lab Compose changes. It adds no Compose behavior changes, no app service, no new Compose services, no k6 runner service, no Bruno runner service, no CI-gating, no Maven wiring, no production Docker packaging, no production runtime behavior, no automated execution, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark evidence, no throughput evidence, and no p95/p99 evidence.
+
 ## End-of-Day Checkpoint
 
 This checkpoint summarizes the completed local-lab stack at the end of the day. All current evidence is local/test-scope only. The loopback layers bind to `127.0.0.1` only and use OS-assigned ephemeral ports in tests. The checkpoint is reviewer handoff context, not production validation.
@@ -83,6 +85,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 33. Optional local-lab Docker Compose skeleton.
 34. Local-lab Docker Compose manual runbook/checklist.
 35. Local-lab Docker Compose app service boundary design.
+36. Local-lab Docker Compose readiness gate.
 
 ### What Is Actually Proven Today
 
@@ -104,6 +107,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - the optional local-lab Docker Compose skeleton can document one manual loopback-bound Toxiproxy service mount without CI, Maven wiring, production Docker packaging, production runtime behavior, app container orchestration, k6 runner services, Bruno runner services, runtime enforcement, benchmark, throughput, p95, or p99 claims;
 - the local-lab Docker Compose manual runbook can document inspection-only review and optional manual local-only Compose commands without adding services, CI, Maven wiring, production Docker packaging, production runtime behavior, automated execution, runtime enforcement, benchmark, throughput, p95, or p99 claims;
 - the local-lab Docker Compose app service boundary design can document future app-service prerequisites and stop conditions without adding an app service, changing Compose behavior, adding Docker packaging, wiring CI or Maven, or changing production runtime behavior;
+- the local-lab Docker Compose readiness gate can document the required checklist before future Compose file changes, app services, k6 runner services, Bruno automation, Toxiproxy expansion, CI wiring, or Maven wiring without changing Compose behavior;
 - reviewer checklist and handoff docs explain boundaries;
 - all current evidence is local/test-scope only.
 
@@ -147,6 +151,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - Lane A7b: first optional local-lab Docker Compose skeleton in [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md).
 - Lane A7c: docs-only Compose manual runbook/checklist in [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md).
 - Lane A7c1: docs-only future app-service boundary design in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md).
+- Lane A7c2: docs-only Compose readiness gate in [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md).
 - Lane A7d: future broader Docker Compose orchestration only after a separate implementation PR.
 - Lane B: test-scope bounded request burst smoke test, still loopback-only.
 - Lane C: test-scope fault-style fixture expansion, no Toxiproxy execution yet.
@@ -200,6 +205,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 - optional local-lab Docker Compose skeleton.
 - local-lab Docker Compose manual runbook/checklist.
 - local-lab Docker Compose app service boundary design.
+- local-lab Docker Compose readiness gate.
 
 ## What Each Layer Proves
 
@@ -233,6 +239,7 @@ This checkpoint summarizes the completed local-lab stack at the end of the day. 
 | optional local-lab Docker Compose skeleton | gives reviewers one optional manual loopback-bound Compose skeleton for the existing local Toxiproxy config | manual-only, local-lab-only, 127.0.0.1 published ports only, not CI-gated, not wired into Maven, not production Docker packaging, not production runtime behavior, no app service, no k6 runner, no Bruno runner, no automatic execution, no production endpoints, no replay, no report, no storage, no export, no benchmark, no throughput evidence, no p95/p99 evidence |
 | local-lab Docker Compose manual runbook/checklist | gives reviewers a Compose-specific inspection path and optional manual local-only commands | docs/test-only, no new services, no app service, no k6 runner, no Bruno runner, no CI-gating, no Maven wiring, no production Docker packaging, no production runtime behavior, no automated execution, no benchmark, no throughput evidence, no p95/p99 evidence |
 | local-lab Docker Compose app service boundary design | documents prerequisites and stop conditions before any future app service | docs/test-only, future-only, no app service, no Compose behavior changes, no Docker packaging changes, no CI-gating, no Maven wiring, no production runtime behavior, no automated execution, no benchmark, no throughput evidence, no p95/p99 evidence |
+| local-lab Docker Compose readiness gate | documents the required future-change checklist before Compose file, service, CI, or Maven changes | docs/test-only, no Compose behavior changes, no app service, no new Compose services, no k6 runner service, no Bruno runner service, no CI-gating, no Maven wiring, no production runtime behavior, no automated execution, no benchmark, no throughput evidence, no p95/p99 evidence |
 
 ## What Each Layer Does Not Prove
 

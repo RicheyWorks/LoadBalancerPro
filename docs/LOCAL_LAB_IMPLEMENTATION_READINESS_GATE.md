@@ -40,6 +40,8 @@ This sprint adds one optional local-lab Toxiproxy config skeleton at [`../lab/to
 
 This docs/test-only follow-up adds [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) as the unified manual tooling reviewer index for the optional k6, Bruno, and Toxiproxy skeletons. It does not run tools, start servers, call endpoints, write files, change readiness behavior, or add production runtime behavior.
 
+This docs/test-only follow-up adds [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) as the companion manual reviewer/operator runbook for inspection-only review and optional local-only manual use. It does not run tools, start servers, call endpoints, write files, change readiness behavior, or add production runtime behavior.
+
 expanded Toxiproxy fault execution remains separately scoped and is not proven by this readiness gate.
 
 ## Purpose

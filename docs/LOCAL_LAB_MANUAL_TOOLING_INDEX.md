@@ -1,6 +1,6 @@
 # Local Lab Manual Tooling Index
 
-This docs/test-only documentation-only index gives reviewers one bounded place to inspect the current optional local-lab manual tooling. It does not add automated execution, Docker/Compose orchestration, CI-gating, new endpoints, new harness/client/server implementation, runtime app behavior, replay execution, evidence/report generation, storage, or export behavior.
+This docs/test-only documentation-only index gives reviewers one bounded place to inspect the current optional local-lab manual tooling. [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) is the companion manual reviewer/operator runbook for inspection-only review and optional local-only manual use. It does not add automated execution, Docker/Compose orchestration, CI-gating, new endpoints, new harness/client/server implementation, runtime app behavior, replay execution, evidence/report generation, storage, or export behavior.
 
 ## What Exists Now
 
@@ -11,6 +11,8 @@ This docs/test-only documentation-only index gives reviewers one bounded place t
 | Toxiproxy local-lab config | [`../lab/toxiproxy/local-lab-toxiproxy.json`](../lab/toxiproxy/local-lab-toxiproxy.json) | [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md) | optional, manual-only, local-lab-only loopback proxy config skeleton that does not start Toxiproxy or the application |
 
 The supporting boundary and design docs remain [`LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md`](LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md), [`LOCAL_LAB_K6_SCENARIO_DESIGN.md`](LOCAL_LAB_K6_SCENARIO_DESIGN.md), [`LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md`](LOCAL_LAB_BRUNO_COLLECTION_DESIGN.md), and [`LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md`](LOCAL_LAB_TOXIPROXY_FAULT_MODEL_DESIGN.md).
+
+Use [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) when a reviewer wants a step-by-step manual path that remains optional, local-lab-only, inspection-first, and not CI-gated.
 
 ## Shared Boundaries
 
@@ -32,10 +34,11 @@ The tools are separate from one another: the k6 script does not run Bruno or Tox
 ## Suggested Manual Review Order
 
 1. Read [`LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md`](LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md) and the design docs first.
-2. Inspect [`../lab/k6/local-lab-smoke.js`](../lab/k6/local-lab-smoke.js) and [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md).
-3. Inspect [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/) and [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md).
-4. Inspect [`../lab/toxiproxy/local-lab-toxiproxy.json`](../lab/toxiproxy/local-lab-toxiproxy.json) and [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md).
-5. Use the existing Maven documentation guard tests and local-lab docs as boundary evidence; actually running k6, Bruno, or Toxiproxy is not required for this review.
+2. Use [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md) for the inspection-only path and optional local-only manual run path.
+3. Inspect [`../lab/k6/local-lab-smoke.js`](../lab/k6/local-lab-smoke.js) and [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md).
+4. Inspect [`../lab/bruno/local-lab-smoke/`](../lab/bruno/local-lab-smoke/) and [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md).
+5. Inspect [`../lab/toxiproxy/local-lab-toxiproxy.json`](../lab/toxiproxy/local-lab-toxiproxy.json) and [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md).
+6. Use the existing Maven documentation guard tests and local-lab docs as boundary evidence; actually running k6, Bruno, or Toxiproxy is not required for this review.
 
 ## Remaining Not-Proven Boundaries
 

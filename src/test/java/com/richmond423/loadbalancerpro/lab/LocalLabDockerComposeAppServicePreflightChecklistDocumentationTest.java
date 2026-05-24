@@ -18,6 +18,8 @@ class LocalLabDockerComposeAppServicePreflightChecklistDocumentationTest {
             Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md");
     private static final Path APP_SERVICE_DESIGN =
             Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md");
+    private static final Path APP_SERVICE_SKELETON =
+            Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md");
     private static final Path COMPOSE_MANUAL_RUNBOOK =
             Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md");
     private static final Path COMPOSE_SKELETON =
@@ -49,9 +51,8 @@ class LocalLabDockerComposeAppServicePreflightChecklistDocumentationTest {
 
         for (String expected : List.of(
                 "preflight checklist",
-                "future app-service pr",
-                "no app service is added",
-                "no compose behavior changes",
+                "app-service prs",
+                "gated app-service skeleton pr applies this checklist",
                 "no docker packaging changes",
                 "no ci-gating",
                 "no maven wiring",
@@ -65,7 +66,7 @@ class LocalLabDockerComposeAppServicePreflightChecklistDocumentationTest {
         String normalized = read(PREFLIGHT).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
-                "future app-service pr must be separately scoped",
+                "future app-service expansion pr must be separately scoped",
                 "local-lab-only service name",
                 "local-only build/run story",
                 "no production dockerfile mutation unless separately reviewed",
@@ -74,7 +75,7 @@ class LocalLabDockerComposeAppServicePreflightChecklistDocumentationTest {
                 "documented startup command",
                 "documented health/readiness expectation",
                 "documented shutdown path",
-                "documented relationship to the current toxiproxy-only compose skeleton",
+                "documented relationship to the current compose skeleton with toxiproxy and the gated app service",
                 "documented stop conditions")) {
             assertTrue(normalized.contains(expected), "preflight checklist should require " + expected);
         }
@@ -102,8 +103,8 @@ class LocalLabDockerComposeAppServicePreflightChecklistDocumentationTest {
         String checklist = read(PREFLIGHT);
 
         for (String expected : List.of(
-                "Current Compose skeleton remains Toxiproxy-only",
-                "No app service exists yet",
+                "Current Compose skeleton contains the existing Toxiproxy service and the gated app-under-test service",
+                "LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md",
                 "k6 remains manual and separate",
                 "Bruno remains manual and separate",
                 "Toxiproxy remains manual/local-only",
@@ -166,9 +167,9 @@ class LocalLabDockerComposeAppServicePreflightChecklistDocumentationTest {
 
     @Test
     void existingLocalLabDocsCrossLinkBackToPreflightChecklist() throws Exception {
-        for (Path doc : List.of(READINESS_GATE, APP_SERVICE_DESIGN, COMPOSE_MANUAL_RUNBOOK, COMPOSE_SKELETON,
-                COMPOSE_BOUNDARY, INDEX, TOOLING_RUNBOOK, TOXIPROXY_DOC, K6_DOC, BRUNO_DOC, BOUNDARY_PLAN,
-                HANDOFF, IMPLEMENTATION_READINESS, NEXT_STEPS, MATRIX, TRUST_MAP, ADR_0009)) {
+        for (Path doc : List.of(READINESS_GATE, APP_SERVICE_DESIGN, APP_SERVICE_SKELETON, COMPOSE_MANUAL_RUNBOOK,
+                COMPOSE_SKELETON, COMPOSE_BOUNDARY, INDEX, TOOLING_RUNBOOK, TOXIPROXY_DOC, K6_DOC, BRUNO_DOC,
+                BOUNDARY_PLAN, HANDOFF, IMPLEMENTATION_READINESS, NEXT_STEPS, MATRIX, TRUST_MAP, ADR_0009)) {
             assertTrue(read(doc).contains("LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md"),
                     doc + " should cross-link the app-service preflight checklist");
         }
@@ -176,9 +177,10 @@ class LocalLabDockerComposeAppServicePreflightChecklistDocumentationTest {
 
     @Test
     void preflightDocsAvoidProductionAndEvidenceOverclaims() throws Exception {
-        for (Path doc : List.of(PREFLIGHT, READINESS_GATE, APP_SERVICE_DESIGN, COMPOSE_MANUAL_RUNBOOK,
-                COMPOSE_SKELETON, COMPOSE_BOUNDARY, INDEX, TOOLING_RUNBOOK, TOXIPROXY_DOC, K6_DOC, BRUNO_DOC,
-                BOUNDARY_PLAN, HANDOFF, IMPLEMENTATION_READINESS, NEXT_STEPS, MATRIX, TRUST_MAP, ADR_0009)) {
+        for (Path doc : List.of(PREFLIGHT, READINESS_GATE, APP_SERVICE_DESIGN, APP_SERVICE_SKELETON,
+                COMPOSE_MANUAL_RUNBOOK, COMPOSE_SKELETON, COMPOSE_BOUNDARY, INDEX, TOOLING_RUNBOOK, TOXIPROXY_DOC,
+                K6_DOC, BRUNO_DOC, BOUNDARY_PLAN, HANDOFF, IMPLEMENTATION_READINESS, NEXT_STEPS, MATRIX, TRUST_MAP,
+                ADR_0009)) {
             String normalized = read(doc).toLowerCase(Locale.ROOT);
 
             for (String forbidden : List.of(

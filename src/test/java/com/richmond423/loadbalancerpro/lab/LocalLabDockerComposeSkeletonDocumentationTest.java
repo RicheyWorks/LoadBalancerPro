@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 class LocalLabDockerComposeSkeletonDocumentationTest {
     private static final Path COMPOSE = Path.of("lab/docker-compose/local-lab-compose.yml");
     private static final Path DOC = Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md");
+    private static final Path APP_SERVICE_DOC =
+            Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md");
     private static final Path DESIGN = Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md");
     private static final Path INDEX = Path.of("docs/LOCAL_LAB_MANUAL_TOOLING_INDEX.md");
     private static final Path RUNBOOK = Path.of("docs/LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md");
@@ -48,6 +50,9 @@ class LocalLabDockerComposeSkeletonDocumentationTest {
                 "manual-only",
                 "not-ci-gated",
                 "not-wired",
+                "app-under-test",
+                "127.0.0.1:8080:8080",
+                "../../target:/opt/loadbalancerpro:ro",
                 "127.0.0.1:8474:8474",
                 "127.0.0.1:18080:18080",
                 "127.0.0.1:18081:18081",
@@ -83,8 +88,7 @@ class LocalLabDockerComposeSkeletonDocumentationTest {
                 "token",
                 "-----begin",
                 "k6",
-                "bruno",
-                "app-under-test")) {
+                "bruno")) {
             assertFalse(normalized.contains(forbidden), "Compose skeleton must not contain " + forbidden);
         }
     }
@@ -104,6 +108,8 @@ class LocalLabDockerComposeSkeletonDocumentationTest {
                 "not wired into automated execution",
                 "inspect the compose file without running docker",
                 "loopback/local-only",
+                "gated app-service skeleton",
+                "user to manually package first",
                 "k6 smoke script remains a separate optional manual tool",
                 "bruno collection remains a separate optional manual tool",
                 "toxiproxy config remains a separate optional manual config")) {
@@ -135,8 +141,8 @@ class LocalLabDockerComposeSkeletonDocumentationTest {
 
     @Test
     void existingLocalLabDocsCrossLinkBackToComposeSkeleton() throws Exception {
-        for (Path doc : List.of(DESIGN, INDEX, RUNBOOK, K6_DOC, BRUNO_DOC, TOXIPROXY_DOC, BOUNDARY_PLAN, HANDOFF,
-                NEXT_STEPS, READINESS, MATRIX, TRUST_MAP, ADR_0009)) {
+        for (Path doc : List.of(APP_SERVICE_DOC, DESIGN, INDEX, RUNBOOK, K6_DOC, BRUNO_DOC, TOXIPROXY_DOC,
+                BOUNDARY_PLAN, HANDOFF, NEXT_STEPS, READINESS, MATRIX, TRUST_MAP, ADR_0009)) {
             assertTrue(read(doc).contains("LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md"),
                     doc + " should cross-link the Compose skeleton doc");
         }
@@ -144,8 +150,8 @@ class LocalLabDockerComposeSkeletonDocumentationTest {
 
     @Test
     void composeSkeletonDocsAvoidAutomationProductionAndEvidenceOverclaims() throws Exception {
-        for (Path doc : List.of(DOC, DESIGN, INDEX, RUNBOOK, K6_DOC, BRUNO_DOC, TOXIPROXY_DOC, BOUNDARY_PLAN,
-                HANDOFF, NEXT_STEPS, READINESS, MATRIX, TRUST_MAP, ADR_0009)) {
+        for (Path doc : List.of(DOC, APP_SERVICE_DOC, DESIGN, INDEX, RUNBOOK, K6_DOC, BRUNO_DOC, TOXIPROXY_DOC,
+                BOUNDARY_PLAN, HANDOFF, NEXT_STEPS, READINESS, MATRIX, TRUST_MAP, ADR_0009)) {
             String normalized = read(doc).toLowerCase(Locale.ROOT);
 
             for (String forbidden : List.of(

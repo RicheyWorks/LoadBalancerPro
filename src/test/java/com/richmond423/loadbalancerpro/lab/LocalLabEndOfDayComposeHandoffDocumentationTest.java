@@ -22,6 +22,8 @@ class LocalLabEndOfDayComposeHandoffDocumentationTest {
             Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md");
     private static final Path APP_SERVICE_PREFLIGHT =
             Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md");
+    private static final Path APP_SERVICE_SKELETON =
+            Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md");
     private static final Path COMPOSE_MANUAL_RUNBOOK =
             Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md");
     private static final Path ADR_0009 =
@@ -65,8 +67,8 @@ class LocalLabEndOfDayComposeHandoffDocumentationTest {
                 "the Bruno collection exists and remains optional/manual/local-only",
                 "the Toxiproxy config exists and remains optional/manual/local-only",
                 "the Docker Compose skeleton exists and remains optional/manual/local-only",
-                "Current Compose skeleton remains Toxiproxy-only",
-                "No app service exists yet",
+                "Current Compose skeleton now contains Toxiproxy plus the gated app-under-test service",
+                "the app service skeleton exists and remains optional/manual/local-only",
                 "k6 remains manual and separate",
                 "Bruno remains manual and separate",
                 "Toxiproxy remains manual/local-only",
@@ -84,7 +86,8 @@ class LocalLabEndOfDayComposeHandoffDocumentationTest {
         for (String expected : List.of(
                 "LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md",
                 "LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md",
-                "A future app-service PR must be separately scoped",
+                "LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md",
+                "future app-service expansion may be considered only after",
                 "not current proof")) {
             assertTrue(combined.contains(expected), "handoff should point next sprint to " + expected);
         }
@@ -140,7 +143,7 @@ class LocalLabEndOfDayComposeHandoffDocumentationTest {
     @Test
     void relatedDocsCrossLinkTheEndOfDayComposeHandoff() throws Exception {
         for (Path doc : List.of(IMPLEMENTATION_READINESS, MATRIX, TRUST_MAP, COMPOSE_READINESS,
-                APP_SERVICE_PREFLIGHT, COMPOSE_MANUAL_RUNBOOK, ADR_0009)) {
+                APP_SERVICE_PREFLIGHT, APP_SERVICE_SKELETON, COMPOSE_MANUAL_RUNBOOK, ADR_0009)) {
             String text = read(doc);
 
             assertTrue(text.contains("LOCAL_LAB_PROGRESS_HANDOFF.md"), doc + " should link progress handoff");

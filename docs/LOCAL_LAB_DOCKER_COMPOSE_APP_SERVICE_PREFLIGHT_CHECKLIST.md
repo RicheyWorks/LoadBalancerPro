@@ -1,28 +1,27 @@
 # Local Lab Docker Compose App Service Preflight Checklist
 
-This docs/test-only page is a preflight checklist for a future app-service PR in the optional local-lab Docker Compose lane. It defines the exact preflight proof reviewers should require before any future PR adds an `app-under-test` service to [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml).
+This page is the preflight checklist for app-service PRs in the optional local-lab Docker Compose lane. It defines the exact preflight proof reviewers should require before adding or expanding an `app-under-test` service in [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml).
 
-This PR does not add an app service. No app service is added. It does not change Compose. It makes no Compose behavior changes. It does not change Docker packaging. It makes no Docker packaging changes. It does not add CI-gating. It does not add Maven wiring. It does not wire Compose into CI or Maven. It does not change production runtime behavior.
+The gated app-service skeleton PR applies this checklist before adding one local-lab-only `app-under-test` service. It does not change Docker packaging. It makes no Docker packaging changes. It does not add CI-gating. It does not add Maven wiring. It does not wire Compose into CI or Maven. It does not change production runtime behavior.
 
 It adds no throughput evidence, no p95/p99 evidence, and no load/stress/benchmark evidence. It adds no replay execution, evidence/report generation, storage, or export behavior.
 
-The current Compose skeleton remains Toxiproxy-only. The k6 smoke script remains manual and separate. The Bruno collection remains manual and separate. Toxiproxy remains manual/local-only. This preflight checklist complements [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md), [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md), and [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md).
+The current Compose skeleton contains the existing Toxiproxy service plus the gated app-under-test service. The k6 smoke script remains manual and separate. The Bruno collection remains manual and separate. Toxiproxy remains manual/local-only. This preflight checklist complements [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md), [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md), [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md), and [`LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md).
 
 The end-of-day Compose handoff in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md) summarizes the current guardrail chain through this checklist. It does not add an app service, does not change Compose behavior, does not change Docker packaging, does not add CI-gating, and does not add Maven wiring.
 
 ## Purpose
 
-- Provide a preflight checklist for a future app-service Compose PR.
-- Keep this sprint documentation-only and test-only.
-- Keep the current Compose skeleton behavior unchanged.
-- Keep app service, k6 runner service, Bruno runner service, and new Compose services out of this PR.
+- Provide a preflight checklist for app-service Compose PRs.
+- Keep the gated app service optional, manual-only, local-lab-only, loopback-bound, and read-only mounted.
+- Keep k6 runner service, Bruno runner service, and broader new Compose services out of this PR.
 - Keep Dockerfiles, production Docker packaging, CI-gating, Maven wiring, automated execution, registry login/push, production runtime behavior, and production Compose profiles out of this PR.
 
-## Required Proof Before Future App Service
+## Required Proof Before App Service Changes
 
-A future app-service PR must prove:
+An app-service PR must prove:
 
-- future app-service PR must be separately scoped;
+- future app-service expansion PR must be separately scoped;
 - separately scoped PR;
 - local-lab-only service name;
 - local-only build/run story;
@@ -44,12 +43,12 @@ A future app-service PR must prove:
 - documented startup command;
 - documented health/readiness expectation;
 - documented shutdown path;
-- documented relationship to the current Toxiproxy-only Compose skeleton;
+- documented relationship to the current Compose skeleton with Toxiproxy and the gated app service;
 - documented stop conditions.
 
 ## Required Local-Lab Service Boundaries
 
-Before a future app service can be reviewed, the PR must preserve these boundaries:
+Before an app service can be reviewed, the PR must preserve these boundaries:
 
 - app service must not imply production deployment;
 - app service must not imply production Docker packaging;
@@ -100,8 +99,8 @@ A future app-service PR must stop before merge if:
 
 ## Current Status
 
-- Current Compose skeleton remains Toxiproxy-only: [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml).
-- No app service exists yet.
+- Current Compose skeleton contains the existing Toxiproxy service and the gated app-under-test service: [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml).
+- The app-service skeleton remains optional/manual/local-lab-only and is documented in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md).
 - k6 remains manual and separate: [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md).
 - Bruno remains manual and separate: [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md).
 - Toxiproxy remains manual/local-only: [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md).

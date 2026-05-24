@@ -15,6 +15,8 @@ class LocalLabDockerComposeAppServiceBoundaryDesignDocumentationTest {
     private static final Path APP_SERVICE_DESIGN =
             Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_BOUNDARY_DESIGN.md");
     private static final Path COMPOSE = Path.of("lab/docker-compose/local-lab-compose.yml");
+    private static final Path APP_SERVICE_SKELETON =
+            Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md");
     private static final Path COMPOSE_MANUAL_RUNBOOK =
             Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md");
     private static final Path COMPOSE_SKELETON = Path.of("docs/LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md");
@@ -36,22 +38,21 @@ class LocalLabDockerComposeAppServiceBoundaryDesignDocumentationTest {
             + "LocalLabDockerComposeAppServiceBoundaryDesignDocumentationTest.java");
 
     @Test
-    void appServiceBoundaryDesignExistsAndStatesFutureOnlyScope() throws Exception {
+    void appServiceBoundaryDesignExistsAndStatesGatedScope() throws Exception {
         String normalized = read(APP_SERVICE_DESIGN).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
-                "future-only",
-                "design-only",
-                "does not add an app service",
-                "does not change compose behavior",
-                "makes no compose behavior changes",
+                "boundary design",
+                "app-under-test",
+                "first gated app-service skeleton follows this design",
+                "local-lab docker compose lane",
                 "does not add docker packaging",
                 "makes no docker packaging changes",
                 "not ci-gated",
                 "not maven-wired",
                 "does not wire compose into ci or maven",
                 "does not change production runtime behavior",
-                "documentation-only and test-only")) {
+                "does not change production runtime behavior")) {
             assertTrue(normalized.contains(expected), "app service design should state " + expected);
         }
     }
@@ -81,12 +82,13 @@ class LocalLabDockerComposeAppServiceBoundaryDesignDocumentationTest {
         String design = read(APP_SERVICE_DESIGN);
 
         for (String expected : List.of(
-                "existing Compose skeleton remains Toxiproxy-only",
+                "current Compose skeleton contains Toxiproxy plus the gated app-under-test service",
+                "LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md",
                 "k6 smoke script remains manual and separate",
                 "Bruno collection remains manual and separate",
                 "Toxiproxy remains manual/local-only",
                 "manual tooling index and runbook remain the current reviewer entry points",
-                "future app service PR must be separately scoped",
+                "Future app-service expansion must be separately scoped",
                 "LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md",
                 "LOCAL_LAB_DOCKER_COMPOSE_MANUAL_RUNBOOK.md",
                 "LOCAL_LAB_DOCKER_COMPOSE_BOUNDARY_DESIGN.md",
@@ -172,12 +174,14 @@ class LocalLabDockerComposeAppServiceBoundaryDesignDocumentationTest {
     }
 
     @Test
-    void composeFileStillDoesNotContainAppServiceOrRunnerServices() throws Exception {
+    void composeFileContainsGatedAppServiceWithoutRunnerServices() throws Exception {
         String compose = read(COMPOSE).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
+                "app-under-test",
                 "local-lab-only",
                 "manual-only",
+                "127.0.0.1:8080:8080",
                 "127.0.0.1:8474:8474",
                 "127.0.0.1:18080:18080",
                 "127.0.0.1:18081:18081",
@@ -187,8 +191,6 @@ class LocalLabDockerComposeAppServiceBoundaryDesignDocumentationTest {
 
         for (String forbidden : List.of(
                 "0.0.0.0",
-                "app-under-test",
-                "app-service",
                 "k6",
                 "bruno",
                 "password",
@@ -203,9 +205,9 @@ class LocalLabDockerComposeAppServiceBoundaryDesignDocumentationTest {
 
     @Test
     void appServiceBoundaryDocsAvoidProductionAndEvidenceOverclaims() throws Exception {
-        for (Path doc : List.of(APP_SERVICE_DESIGN, COMPOSE_MANUAL_RUNBOOK, COMPOSE_SKELETON, COMPOSE_BOUNDARY, INDEX,
-                TOOLING_RUNBOOK, TOXIPROXY_DOC, K6_DOC, BRUNO_DOC, BOUNDARY_PLAN, HANDOFF, READINESS, NEXT_STEPS,
-                MATRIX, TRUST_MAP, ADR_0009)) {
+        for (Path doc : List.of(APP_SERVICE_DESIGN, APP_SERVICE_SKELETON, COMPOSE_MANUAL_RUNBOOK, COMPOSE_SKELETON,
+                COMPOSE_BOUNDARY, INDEX, TOOLING_RUNBOOK, TOXIPROXY_DOC, K6_DOC, BRUNO_DOC, BOUNDARY_PLAN, HANDOFF,
+                READINESS, NEXT_STEPS, MATRIX, TRUST_MAP, ADR_0009)) {
             String normalized = read(doc).toLowerCase(Locale.ROOT);
 
             for (String forbidden : List.of(

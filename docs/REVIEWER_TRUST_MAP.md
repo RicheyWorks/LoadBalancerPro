@@ -2,7 +2,7 @@
 
 Use this map when you want to review LoadBalancerPro evidence without opening every operator document first. It points each reviewer question to the smallest useful evidence path.
 
-For Codex or agent-assisted review sessions, start with [`agent/AGENT_WORKFLOW_QUICKSTART.md`](agent/AGENT_WORKFLOW_QUICKSTART.md) after reading the README public trust surface. The quickstart ties together README.md, AGENTS.md, BUILD_CONTRACT.md, verification protocol, session manager, and failure log without changing reviewer evidence claims.
+For Codex or agent-assisted review sessions, start with [`agent/AGENT_WORKFLOW_QUICKSTART.md`](agent/AGENT_WORKFLOW_QUICKSTART.md) after reading the README public trust surface. For multi-hour `/goal` work, use [`agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](agent/GOAL_MODE_LONG_RUN_PROTOCOL.md). The quickstart and goal protocol tie together README.md, AGENTS.md, BUILD_CONTRACT.md, verification protocol, session manager, and failure log without changing reviewer evidence claims.
 
 ## Start Here
 

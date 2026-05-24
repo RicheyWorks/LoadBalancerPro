@@ -155,3 +155,11 @@ The app-service health/readiness documentation lane is now available at [`LOCAL_
 The health/readiness lane documents inspection-only review and optional manual local-only observations for the existing `app-under-test` service. It keeps the service optional/manual/local-lab-only, package-first, read-only mounted from `target/`, and loopback-bound at `127.0.0.1:8080:8080`; it keeps Toxiproxy present, k6 manual and separate, Bruno manual and separate, no runner services, no CI-gating, and no Maven wiring.
 
 The lane does not create production readiness/certification claims, live-cloud or real-tenant validation claims, runtime enforcement claims, replay/evidence/report/storage/export behavior claims, load/stress/benchmark claims, or throughput/p95/p99 evidence claims.
+
+## App-Service Runbook Update
+
+The app-service runbook is now available at [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_RUNBOOK.md). It is documentation only and acts as a reviewer runbook/refinement that ties together this skeleton, the manual smoke checklist, and the health/readiness lane.
+
+The runbook adds no Compose behavior changes, no app behavior changes, no endpoint changes, no health endpoint, no readiness endpoint, no CI-gating, no Maven wiring, no Dockerfile change, no production Docker packaging, no production Compose change, and no production runtime behavior change.
+
+It preserves optional/manual/local-lab-only scope, manual package-first operation, read-only `target/` mounting, `127.0.0.1:8080:8080`, Toxiproxy presence, k6 and Bruno as manual separate tools, no k6 runner service, no Bruno runner service, and manual/local-only health/readiness observations. It does not support production readiness/certification claims, live-cloud or real-tenant validation claims, runtime enforcement claims, replay/evidence/report/storage/export behavior claims, load/stress/benchmark claims, or throughput/p95/p99 evidence claims.

@@ -2,6 +2,8 @@
 
 Use this map when you want to review LoadBalancerPro evidence without opening every operator document first. It points each reviewer question to the smallest useful evidence path.
 
+For Codex or agent-assisted review sessions, start with [`agent/AGENT_WORKFLOW_QUICKSTART.md`](agent/AGENT_WORKFLOW_QUICKSTART.md) after reading the README public trust surface. The quickstart ties together README.md, AGENTS.md, BUILD_CONTRACT.md, verification protocol, session manager, and failure log without changing reviewer evidence claims.
+
 ## Start Here
 
 LoadBalancerPro is now positioned as **LoadBalancerPro Enterprise Lab**: Enterprise Adaptive Routing Lab first, Production Gateway Candidate second. It is an Enterprise Lab Cockpit and API project with guarded cloud boundaries, optional static browser review pages, optional lightweight reverse proxy mode, operator-configured route/target examples, packaged local proxy lab paths, release-free artifact checks, and CI-published workflow evidence.

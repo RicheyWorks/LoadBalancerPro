@@ -2,6 +2,8 @@
 
 Use this template to record failures during PR health passes, docs guard updates, local verification, and remote CI review.
 
+For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md).
+
 ## Entry
 
 Date/time:

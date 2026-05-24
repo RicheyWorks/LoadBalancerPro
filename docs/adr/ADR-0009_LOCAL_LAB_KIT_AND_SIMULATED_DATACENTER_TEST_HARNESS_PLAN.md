@@ -84,7 +84,7 @@ This docs/test-only follow-up adds [`../LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.
 
 This docs/test-only follow-up adds [`../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md) as the exact preflight checklist before any future app-service Compose PR. It adds no app service, no Compose behavior changes, no Docker packaging changes, no CI-gating, no Maven wiring, no production runtime behavior, no automated execution, no new Compose services, no k6 runner service, no Bruno runner service, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark evidence, no throughput evidence, and no p95/p99 evidence.
 
-This docs/test-only end-of-day Compose handoff update summarizes the merged local-lab tooling and Compose guardrail chain in [`../LOCAL_LAB_PROGRESS_HANDOFF.md`](../LOCAL_LAB_PROGRESS_HANDOFF.md) and [`../LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](../LOCAL_LAB_NEXT_STEPS_BOUNDARY.md). It records that the current Compose skeleton remained Toxiproxy-only through the guardrail checkpoint and that future app-service work had to be separately scoped after the readiness gate and preflight checklist were used. It adds no CI/Maven wiring, no production runtime behavior, and no replay/evidence/report/storage/export behavior.
+This docs/test-only post-app-service Compose handoff update summarizes the merged local-lab tooling and Compose guardrail chain in [`../LOCAL_LAB_PROGRESS_HANDOFF.md`](../LOCAL_LAB_PROGRESS_HANDOFF.md) and [`../LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](../LOCAL_LAB_NEXT_STEPS_BOUNDARY.md). It records that the current Compose skeleton now contains the existing Toxiproxy service plus one optional/manual/local-lab-only `app-under-test` service, and that future Compose changes still have to be separately scoped after the readiness gate and preflight checklist are reused. It adds no CI/Maven wiring, no production runtime behavior, and no replay/evidence/report/storage/export behavior.
 
 This gated app-service follow-up adds [`../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md`](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md) after applying the readiness gate and preflight checklist. The current Compose skeleton now contains the existing Toxiproxy service plus one optional/manual/local-only app-under-test service that uses a public JRE image, a read-only local `target/` mount, and `127.0.0.1` published ports only. It adds no Dockerfile changes, no production Compose changes, no CI/Maven wiring, no k6 runner service, no Bruno runner service, no production Docker packaging, no production runtime behavior, and no replay/evidence/report/storage/export behavior.
 
@@ -396,3 +396,41 @@ ADR-0009 helps reviewers answer:
 - how local lab planning supports trusted adaptive routing instead of black-box routing.
 
 Reviewers should treat ADR-0009 as proposed/planning-only. It is not Docker Compose implementation, not scripts implementation, not fake backend node implementation, not expanded k6 scenario implementation, not expanded Bruno collection implementation, not automatic Bruno execution, not automatic Toxiproxy execution, not expanded Toxiproxy fault execution, not Toxiproxy platform implementation, not Prometheus/Grafana implementation, not runtime LASE enforcement, not package-boundary enforcement, not routing/scoring/strategy/proxy/API behavior change, not replay execution, not evidence/report generation, not storage/persistence, not filesystem-writing/export behavior, not production-readiness proof, and not production-certification proof.
+
+## Post-App-Service Compose Handoff Update
+
+PR #284 is now the current local-lab Compose baseline. This ADR handoff update is docs/test-only and does not change `lab/docker-compose/local-lab-compose.yml`, Dockerfiles, Maven, CI, runtime resources, k6, Bruno, Toxiproxy behavior, scripts, production Compose, production Docker packaging, or production runtime behavior.
+
+Current state:
+
+- `app-under-test` service now exists in local-lab Compose.
+- It is optional/manual/local-lab-only.
+- It uses the local `target/` mount read-only and requires a manual package step before optional use.
+- The published app port is loopback-bound at `127.0.0.1:8080:8080`.
+- The existing Toxiproxy service remains present and loopback/local.
+- k6 remains manual and separate.
+- Bruno remains manual and separate.
+- no k6 runner service exists.
+- no Bruno runner service exists.
+- no CI-gating.
+- no Maven wiring.
+- no Dockerfile change.
+- no production Docker packaging.
+- no production Compose change.
+- no production runtime behavior change.
+- no production readiness/certification claim.
+- no live-cloud or real-tenant validation claim.
+- no runtime enforcement claim.
+- no replay/evidence/report/storage/export behavior claim.
+- no load/stress/benchmark claim.
+- no throughput/p95/p99 evidence claim.
+
+Next safe expansion lanes:
+
+- app-service manual smoke checklist docs;
+- Compose manual runbook update for app service;
+- app-service health/readiness documentation only;
+- future k6/Bruno runner design docs only;
+- no runner services until separate gates are created.
+
+Use [../LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md](../LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), [../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md), and [../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md](../LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md) before considering any later Compose change.

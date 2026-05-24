@@ -223,3 +223,41 @@ A future app-service expansion PR must additionally stop before merge if `src/ma
 ## Handoff Boundary
 
 Passing the current local-lab checks means the test-scope local-lab evidence chain is coherent enough for separately scoped next steps. It does not mean production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, production traffic behavior, replay execution, evidence/report generation, storage/export behavior, autonomous production traffic shifting, carbon-aware routing, GPU orchestration, power/grid control, or facility automation.
+
+## Post-App-Service Compose Handoff Update
+
+PR #284 is now the current local-lab Compose baseline. This next-step update is docs/test-only and does not change `lab/docker-compose/local-lab-compose.yml`, Dockerfiles, Maven, CI, runtime resources, k6, Bruno, Toxiproxy behavior, scripts, production Compose, production Docker packaging, or production runtime behavior.
+
+Current state:
+
+- `app-under-test` service now exists in local-lab Compose.
+- It is optional/manual/local-lab-only.
+- It uses the local `target/` mount read-only and requires a manual package step before optional use.
+- The published app port is loopback-bound at `127.0.0.1:8080:8080`.
+- The existing Toxiproxy service remains present and loopback/local.
+- k6 remains manual and separate.
+- Bruno remains manual and separate.
+- no k6 runner service exists.
+- no Bruno runner service exists.
+- no CI-gating.
+- no Maven wiring.
+- no Dockerfile change.
+- no production Docker packaging.
+- no production Compose change.
+- no production runtime behavior change.
+- no production readiness/certification claim.
+- no live-cloud or real-tenant validation claim.
+- no runtime enforcement claim.
+- no replay/evidence/report/storage/export behavior claim.
+- no load/stress/benchmark claim.
+- no throughput/p95/p99 evidence claim.
+
+Next safe expansion lanes:
+
+- app-service manual smoke checklist docs;
+- Compose manual runbook update for app service;
+- app-service health/readiness documentation only;
+- future k6/Bruno runner design docs only;
+- no runner services until separate gates are created.
+
+Any future lane remains separately scoped and must continue through [LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), [LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md), and [LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_SKELETON.md).

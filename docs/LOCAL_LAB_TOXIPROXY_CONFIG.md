@@ -14,6 +14,7 @@ This Toxiproxy skeleton is the first narrow config step after the docs/test-only
 - [`LOCAL_LAB_K6_SMOKE_SCRIPT.md`](LOCAL_LAB_K6_SMOKE_SCRIPT.md) describes the separate optional k6 smoke script. The Toxiproxy config does not run k6, and the k6 script does not run Toxiproxy.
 - [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md) describes the separate optional Bruno collection. The Toxiproxy config does not run Bruno, and the Bruno collection does not run Toxiproxy.
 - [`LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md`](LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md) tracks the local-lab tool lane stop conditions.
+- [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) is the unified docs/test-only reviewer index for the current k6, Bruno, and Toxiproxy manual tool skeletons.
 
 This sprint does not add Docker, Docker Compose, automatic execution, CI workflow changes, Maven dependency changes, production endpoints, production listeners, production routing/scoring/strategy/proxy/API behavior, replay execution, evidence/report generation, storage, export, upload, download, PDF, or ZIP behavior.
 

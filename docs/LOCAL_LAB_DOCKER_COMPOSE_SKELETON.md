@@ -19,6 +19,7 @@ Reviewers may inspect the Compose file without running Docker. If reviewers manu
 - Compose readiness gate: [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md)
 - Manual reviewer index: [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md)
 - Manual reviewer runbook: [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md)
+- End-of-day Compose handoff: [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md)
 
 The Compose skeleton contains one manually run Toxiproxy service. It uses host-side port publishing bound to `127.0.0.1` only and mounts the existing local-lab Toxiproxy config read-only. It does not add an app service, k6 runner service, Bruno runner service, Dockerfile, Compose profile, script, Maven wiring, CI wiring, production runtime wiring, or new endpoint.
 
@@ -46,6 +47,7 @@ Before any manual run, confirm:
 - The Bruno collection remains a separate optional manual tool: [`LOCAL_LAB_BRUNO_COLLECTION.md`](LOCAL_LAB_BRUNO_COLLECTION.md). The Compose skeleton does not add a Bruno runner service and does not run Bruno.
 - The Toxiproxy config remains a separate optional manual config: [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md). The Compose skeleton may mount that config read-only when a reviewer manually runs Docker Compose.
 - The broader local-lab boundary remains [`LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md`](LOCAL_LAB_K6_BRUNO_TOXIPROXY_BOUNDARY_PLAN.md).
+- The end-of-day Compose handoff summarizes today's merged guardrail chain and keeps this skeleton optional, manual-only, local-lab-only, Toxiproxy-only, not CI-gated, not Maven-wired, and not production Docker packaging: [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md).
 
 ## Stop Conditions
 

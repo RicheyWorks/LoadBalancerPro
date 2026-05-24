@@ -4,6 +4,8 @@ This docs/test-only page is a future-only and design-only boundary document for 
 
 The current local-lab Compose skeleton remains [`../lab/docker-compose/local-lab-compose.yml`](../lab/docker-compose/local-lab-compose.yml), documented by [`LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md`](LOCAL_LAB_DOCKER_COMPOSE_SKELETON.md). The readiness gate for any future Compose change is [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`](LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md), and the exact preflight proof for any future app-service PR is [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md). The existing Compose skeleton remains Toxiproxy-only, optional, manual-only, local-lab-only, loopback-bound, not CI-gated, not Maven-wired, not production Docker packaging, and not production runtime behavior.
 
+The end-of-day Compose handoff in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md) summarizes the current completed state and stop conditions before any future app-service PR. It does not add an app service and does not change this boundary design.
+
 ## Purpose
 
 - Describe what must be true before a future PR adds an `app-under-test` service.
@@ -69,6 +71,7 @@ A future app-service PR must stop before merge if:
 - Toxiproxy remains manual/local-only: [`LOCAL_LAB_TOXIPROXY_CONFIG.md`](LOCAL_LAB_TOXIPROXY_CONFIG.md).
 - The manual tooling index and runbook remain the current reviewer entry points: [`LOCAL_LAB_MANUAL_TOOLING_INDEX.md`](LOCAL_LAB_MANUAL_TOOLING_INDEX.md) and [`LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md`](LOCAL_LAB_MANUAL_TOOLING_RUNBOOK.md).
 - Adding an app service is a future separate PR, not this PR. A future app service PR must be separately scoped.
+- The end-of-day Compose handoff points the next app-service sprint back to this design, the readiness gate, and the app-service preflight checklist: [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md).
 
 ## Reviewer Checklist For A Future App Service PR
 

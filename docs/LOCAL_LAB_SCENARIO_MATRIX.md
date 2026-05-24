@@ -10,6 +10,8 @@ The current local-lab tool lane now has one optional local-lab k6 smoke script s
 
 The app-service preflight checklist in [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md) defines exact proof before any future app-service PR. It adds no app service, no Compose behavior changes, no Docker packaging changes, no CI-gating, no Maven wiring, no production runtime behavior, no automated execution, no new services, no k6 runner service, no Bruno runner service, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark evidence, no throughput evidence, and no p95/p99 evidence.
 
+The end-of-day Compose handoff is recorded in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md). It summarizes today's merged local-lab sequence through the Compose app-service preflight checklist, keeps the current Compose skeleton Toxiproxy-only, keeps k6 and Bruno manual and separate, keeps Toxiproxy manual/local-only, confirms Compose is not CI-gated and not Maven-wired, confirms no production Docker packaging has been added, and points any future app-service PR back to the Compose readiness gate and app-service preflight checklist.
+
 ## Test-Scope Scenario Model Foundation
 
 PR #250 adds only a test-scope scenario model/catalog. It does not implement fake backend servers. It does not implement Docker Compose, k6, Bruno, Toxiproxy, Prometheus/Grafana, scripts, networking, or runtime behavior. It is a stepping stone toward future local lab tooling.

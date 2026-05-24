@@ -54,6 +54,8 @@ This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_READINESS_GATE.md`
 
 This docs/test-only follow-up adds [`LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md`](LOCAL_LAB_DOCKER_COMPOSE_APP_SERVICE_PREFLIGHT_CHECKLIST.md) as the preflight proof checklist for any future app-service Compose PR. It adds no app service, no Compose behavior changes, no Docker packaging changes, no CI-gating, no Maven wiring, no production runtime behavior, no automated execution, no new services, no k6 runner service, no Bruno runner service, no replay execution, no evidence/report generation, no storage/export behavior, no load/stress/benchmark testing, no throughput evidence, and no p95/p99 evidence.
 
+This docs/test-only end-of-day Compose handoff update is summarized in [`LOCAL_LAB_PROGRESS_HANDOFF.md`](LOCAL_LAB_PROGRESS_HANDOFF.md) and [`LOCAL_LAB_NEXT_STEPS_BOUNDARY.md`](LOCAL_LAB_NEXT_STEPS_BOUNDARY.md). It records that the current Compose skeleton remains Toxiproxy-only, no app service exists yet, k6 remains manual and separate, Bruno remains manual and separate, Toxiproxy remains manual/local-only, Compose is not CI-gated, Compose is not Maven-wired, no production Docker packaging has been added, and a future app-service PR must be separately scoped after the Compose readiness gate and app-service preflight checklist are used. It adds no readiness behavior, no Compose behavior changes, no app service, no new services, no CI/Maven wiring, no production runtime behavior, and no replay/evidence/report/storage/export behavior.
+
 expanded Toxiproxy fault execution remains separately scoped and is not proven by this readiness gate.
 
 ## Purpose

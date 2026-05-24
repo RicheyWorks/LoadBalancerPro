@@ -22,6 +22,24 @@ Result:
 
 Follow-up action:
 
+## Entry
+
+Date/time: 2026-05-24T15:52-07:00
+
+Branch/PR: codex/goal-campaign-checkpoint-ledger / pending
+
+Failure type: local tooling command
+
+Failing check: gh pr create body quoting attempt
+
+Suspected cause: PowerShell passed part of the multi-line PR body as command flags, causing gh to reject `-q` as an unknown shorthand flag.
+
+Fix attempted: switched PR creation to `gh pr create --body-file -` with stdin body content.
+
+Result: retry succeeded and opened https://github.com/RicheyWorks/LoadBalancerPro/pull/297.
+
+Follow-up action: retry PR creation, then update SESSION_MANAGER.md with the PR URL and final branch head.
+
 ## Notes
 
 - Keep entries factual.

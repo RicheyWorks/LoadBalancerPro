@@ -8,21 +8,21 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Campaign: 10-PR LoadBalancerPro goal campaign
 
-Checkpoint: PR 2 local verification completed
+Checkpoint: PR 2 opened after local verification
 
 Started from main SHA: 66221c046fa5c510ab537d5f00ea0fb0a9ff7a9d
 
 Current campaign branch: codex/goal-campaign-checkpoint-ledger
 
-Current campaign PR: pending
+Current campaign PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/297
 
 Completed campaign PRs: 1 / 10
 
 Current blocker: none
 
-Checks completed: PR 1 local, PR, post-merge, and main remote checks passed; AgentCampaignCheckpointLedgerDocumentationTest; AgentCampaignCheckpointLedgerDocumentationTest, AgentCampaignSystemArchitectureDocumentationTest, AgentGoalModeLongRunProtocolDocumentationTest, AgentWorkflowQuickstartDocumentationTest; dependency tree for org.apache.tomcat.embed; mvn -q test; mvn -q -DskipTests package; mvn -B package.
+Checks completed: PR 1 local, PR, post-merge, and main remote checks passed; AgentCampaignCheckpointLedgerDocumentationTest; AgentCampaignCheckpointLedgerDocumentationTest, AgentCampaignSystemArchitectureDocumentationTest, AgentGoalModeLongRunProtocolDocumentationTest, AgentWorkflowQuickstartDocumentationTest; dependency tree for org.apache.tomcat.embed; mvn -q test; mvn -q -DskipTests package; mvn -B package; git diff --check; git diff --cached --check; enterprise lab package smoke.
 
-Next campaign action: run diff checks, enterprise lab package smoke, then open PR 2.
+Next campaign action: rerun final local verification on the PR 2 head, then audit remote checks.
 
 ## Current Branch
 
@@ -30,7 +30,7 @@ Name: codex/goal-campaign-checkpoint-ledger
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/297
 
 ## Current Goal
 
@@ -38,7 +38,7 @@ Short goal: Add campaign checkpoint ledger docs and guard test.
 
 ## Current Head SHA
 
-SHA: 66221c046fa5c510ab537d5f00ea0fb0a9ff7a9d
+SHA: 5c197445b4e3809cc00abc659f9065232e09cd7b
 
 ## What Changed
 

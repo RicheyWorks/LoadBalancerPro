@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-24T19:46-07:00
+
+Branch/PR: codex/goal-campaign-build-contract-example / pending
+
+Failure type: local tooling command
+
+Failing check: `gh pr create` body quoting attempt
+
+Suspected cause: PowerShell passed `-q` from the intended PR body as a `gh pr create` flag.
+
+Fix attempted: log the failure and switch PR creation to `gh pr create --body-file -` with stdin body content.
+
+Result: pending retry.
+
+Follow-up action: create the PR with stdin body content, commit this failure log entry, rerun final-head local verification, and push the final head.
+
+## Entry
+
 Date/time: 2026-05-24T19:22-07:00
 
 Branch/PR: codex/goal-campaign-board-initialization / https://github.com/RicheyWorks/LoadBalancerPro/pull/307

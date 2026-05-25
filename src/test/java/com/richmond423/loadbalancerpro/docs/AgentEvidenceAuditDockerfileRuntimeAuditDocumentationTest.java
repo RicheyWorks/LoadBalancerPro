@@ -121,13 +121,13 @@ class AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest {
                 "repository evidence map should link to the Dockerfile runtime audit");
 
         for (String expected : List.of(
-                "completed campaign prs: 6 / 20",
-                "current pr slot: 7",
+                "slot 7 result",
                 "codex/evidence-audit-dockerfile-runtime",
-                "pr #321 merged",
-                "06d800c478b308ef836b0ab01d8b641d8b1a35f0",
-                "post-merge main ci and codeql were green",
-                "slot 7 branch created")) {
+                "#322",
+                "933717e7fe5a59004353fb90f0718ba8b5ecd6ef",
+                "399f83ba0fec96542c544643ad214d8e4937072d",
+                "dockerfile runtime posture audited",
+                "post-merge main ci and codeql green")) {
             assertTrue(board.contains(expected) || session.contains(expected),
                     "Missing slot 7 campaign checkpoint: " + expected);
         }

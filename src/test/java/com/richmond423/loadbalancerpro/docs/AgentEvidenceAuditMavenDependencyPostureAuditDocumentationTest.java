@@ -168,8 +168,8 @@ class AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest {
                 "#321",
                 "e2798905b6d5a5633a965dd6c44ede7e553ece88",
                 "06d800c478b308ef836b0ab01d8b641d8b1a35f0",
-                "post-merge main ci and codeql were green",
-                "slot 7 branch created")) {
+                "maven/dependency posture audited",
+                "post-merge main ci and codeql green")) {
             assertTrue(board.contains(expected) || session.contains(expected),
                     "Missing slot 6 campaign checkpoint: " + expected);
         }

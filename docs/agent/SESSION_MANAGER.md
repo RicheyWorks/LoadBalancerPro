@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-25T02:30-07:00
+Timestamp: 2026-05-25T02:32-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
 Current PR slot: 6
 
-Checkpoint: Slot 6 local verification passed after two logged documentation guard repairs and post-checkpoint reruns
+Checkpoint: Slot 6 PR #321 opened after local verification passed
 
 Started from main SHA: `a58d61511d84b8d9013d5a2652dc696fb555e83c`
 
 Current branch: codex/evidence-audit-maven-dependency-posture
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/321
 
-Head SHA: pending until the local checkpoint commit is created
+Head SHA: `2a12b391eafce6bbeff56fc095aa6d40b05c3511` at PR creation; the checkpoint update commit will advance the branch head
 
 Changed files:
 
@@ -52,12 +52,15 @@ Checks run:
 - `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote only target-local lab evidence.
 - After this checkpoint was updated, the slot 6 focused selector bundle passed again, `mvn -q test` passed again, `mvn -q "-DskipTests" package` passed again, `mvn -B package` passed again with 2,416 tests and no failures/errors/skips, diff checks passed again, and enterprise lab package smoke passed again.
+- Slot 6 PR opened: https://github.com/RicheyWorks/LoadBalancerPro/pull/321.
+- PR #321 initial head SHA was `2a12b391eafce6bbeff56fc095aa6d40b05c3511`.
+- PR #321 was open, non-draft, base `main`, branch `codex/evidence-audit-maven-dependency-posture`, and mergeable when inspected.
 
-Remote status: main CI and CodeQL were green for the slot 6 starting main SHA; slot 6 PR not opened yet.
+Remote status: main CI and CodeQL were green for the slot 6 starting main SHA; PR #321 remote checks were queued or in progress at PR creation and must be refreshed after the checkpoint commit is pushed.
 
 Blocker: none.
 
-Next action: commit, push, and open the slot 6 PR.
+Next action: commit and push this PR-created checkpoint update, then wait for PR #321 current-head remote checks.
 
 Decision: continue
 
@@ -67,7 +70,7 @@ Name: codex/evidence-audit-maven-dependency-posture
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/321
 
 ## Current Goal
 
@@ -75,7 +78,7 @@ Short goal: Audit Maven/dependency posture without changing Maven configuration 
 
 ## Current Head SHA
 
-SHA: pending until the local checkpoint commit is created
+SHA: `2a12b391eafce6bbeff56fc095aa6d40b05c3511` at PR creation; checkpoint update commit pending
 
 ## What Changed
 
@@ -91,6 +94,7 @@ SHA: pending until the local checkpoint commit is created
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest.java
 - Behavioral surface: none; docs/test-only.
 - Documentation surface: records slot 5 as merged/main green and adds the Maven/dependency posture audit.
+- PR surface: PR #321 opened for slot 6.
 
 ## Checks Run
 
@@ -101,7 +105,7 @@ SHA: pending until the local checkpoint commit is created
 - Package checks: `mvn -q "-DskipTests" package` and `mvn -B package` passed, including the post-checkpoint reruns.
 - Diff checks: `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed, including the post-checkpoint reruns.
 - Smoke checks: `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed, including the post-checkpoint rerun.
-- Remote checks: main CI and CodeQL green for slot 6 starting SHA; slot 6 PR not opened yet.
+- Remote checks: main CI and CodeQL green for slot 6 starting SHA; PR #321 initial remote checks were queued or in progress and must be refreshed after this checkpoint push.
 
 ## Blockers
 
@@ -110,12 +114,12 @@ SHA: pending until the local checkpoint commit is created
 
 ## Next Action
 
-One concrete next step: commit the slot 6 docs/test-only audit and open PR.
+One concrete next step: commit and push the PR-created checkpoint, then wait for PR #321 current-head remote checks.
 
 ## Recovery Notes
 
-- How to resume: confirm branch `codex/evidence-audit-maven-dependency-posture`, inspect `git status`, rerun the slot 6 focused guard and selector bundle, then commit and open PR if the branch remains docs/test-only.
-- Commands already run for slot 6: `git checkout -b codex/evidence-audit-maven-dependency-posture`, `Get-Content pom.xml`, the slot 6 focused guard, the relevant selector bundle, dependency tree, `mvn -q test`, package checks, diff checks, enterprise lab package smoke, and main remote status checks confirming slot 5 main was green.
+- How to resume: confirm branch `codex/evidence-audit-maven-dependency-posture`, inspect `git status`, commit/push the PR-created checkpoint if it is still local, then audit PR #321 current-head checks.
+- Commands already run for slot 6: `git checkout -b codex/evidence-audit-maven-dependency-posture`, `Get-Content pom.xml`, the slot 6 focused guard, the relevant selector bundle, dependency tree, `mvn -q test`, package checks, diff checks, enterprise lab package smoke, PR creation for #321, and main remote status checks confirming slot 5 main was green.
 - Safety boundaries to re-check: docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed: slot 6 PR current-head checks after PR creation; main CI/CodeQL after merge.
 

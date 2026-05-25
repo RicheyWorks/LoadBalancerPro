@@ -11,7 +11,7 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 - Completed campaign PRs: 5 / 20.
 - Current PR slot: 6.
 - Current branch: `codex/evidence-audit-maven-dependency-posture`.
-- Current PR: pending.
+- Current PR: [#321](https://github.com/RicheyWorks/LoadBalancerPro/pull/321).
 - Starting main HEAD: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
 - Prior campaign fact: PR #315 is merged.
 - Prior campaign merge commit: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
@@ -43,7 +43,7 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 | 3 | Repository evidence map | codex/evidence-audit-repository-map | [#318](https://github.com/RicheyWorks/LoadBalancerPro/pull/318) | merged | `e411c2fa6dc2c7d65c90093c3472dd30fd9a7bab` | `65fad4a65f0297ba6e7d085bd84cacf5aa966f38` | Repository evidence map added; post-merge main CI and CodeQL green |
 | 4 | CI workflow audit | codex/evidence-audit-ci-workflow | [#319](https://github.com/RicheyWorks/LoadBalancerPro/pull/319) | merged | `e1c40e904730a9e24875424aa312c68fc62d1fa3` | `bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f` | CI workflow audit added; post-merge main CI and CodeQL green |
 | 5 | CodeQL and dependency-review audit | codex/evidence-audit-codeql-dependency-review | [#320](https://github.com/RicheyWorks/LoadBalancerPro/pull/320) | merged | `7fcbf22364d76d2cd6a5b81eee2d512ec8742f94` | `a58d61511d84b8d9013d5a2652dc696fb555e83c` | CodeQL/dependency review posture audited; post-merge main CI and CodeQL green |
-| 6 | Maven/dependency posture audit | codex/evidence-audit-maven-dependency-posture | pending | branch created | pending | pending | Audit pom.xml posture without dependency changes |
+| 6 | Maven/dependency posture audit | codex/evidence-audit-maven-dependency-posture | [#321](https://github.com/RicheyWorks/LoadBalancerPro/pull/321) | open | `2a12b391eafce6bbeff56fc095aa6d40b05c3511` at PR creation | pending | Maven/dependency posture audited; remote checks queued |
 | 7 | Dockerfile runtime audit | pending | pending | planned | pending | pending | Audit Dockerfile runtime posture without Dockerfile edits |
 | 8 | Compose/local-lab audit | pending | pending | planned | pending | pending | Audit local-lab Compose without Compose edits |
 | 9 | Runtime configuration audit | pending | pending | planned | pending | pending | Audit application config without runtime config edits |

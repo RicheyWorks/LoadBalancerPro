@@ -6,111 +6,104 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-24T21:15-07:00
+Timestamp: 2026-05-24T21:36-07:00
 
 Goal name: LoadBalancerPro Goal Mode 10-PR Trial
 
-Current PR slot: 6
+Current PR slot: 7
 
-Checkpoint: Slot 6 PR opened; final-head verification pending
+Checkpoint: Slot 7 full local verification passed; PR opening pending
 
-Started from main SHA: 702070aa6b0db90743986176bb96d1bf9208381b
+Started from main SHA: 734c7f2068420152ac4f50ae988924575ff03f8a
 
-Current branch: codex/goal-campaign-verification-protocol-refinement
+Current branch: codex/goal-campaign-readme-summary
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/311
+PR URL: pending
 
-Head SHA: 238e6beb104f06938e41046525921a334fe14d99 before the PR-opened checkpoint commit
+Head SHA: pending until slot 7 commit
 
 Changed files:
 
-- docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md
-- docs/agent/GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md
-- docs/agent/FAILURE_LOG.md
+- README.md
 - docs/agent/GOAL_CAMPAIGN_BOARD.md
-- docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md
-- docs/agent/GOAL_CAMPAIGN_CONTRACT.md
-- docs/agent/VERIFICATION_PROTOCOL.md
 - docs/agent/SESSION_MANAGER.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignVerificationProtocolRefinementDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignReadmeSummaryDocumentationTest.java
 
 Checks run:
 
-- Slot 5 merged and main green.
-- PR #310 merged at `702070aa6b0db90743986176bb96d1bf9208381b`.
+- Slot 6 merged and main green.
+- PR #311 merged at `734c7f2068420152ac4f50ae988924575ff03f8a`.
 - Main pulled with `--ff-only` after the merge.
-- Main CI and CodeQL for `702070aa6b0db90743986176bb96d1bf9208381b` completed successfully.
-- Slot 6 branch created from clean main.
-- Slot 6 documentation/test edit batch completed.
-- `mvn test "-Dtest=AgentGoalCampaignVerificationProtocolRefinementDocumentationTest"` passed.
-- Focused campaign/agent selector bundle passed.
+- Main CI and CodeQL for `734c7f2068420152ac4f50ae988924575ff03f8a` completed successfully.
+- Slot 7 branch created from clean main.
+- Slot 7 documentation/test edit batch completed.
+- `mvn test "-Dtest=AgentGoalCampaignReadmeSummaryDocumentationTest"` passed.
+- Focused README/campaign/agent selector bundle passed.
 - `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
 - `mvn -q test` passed.
 - `mvn -q "-DskipTests" package` passed.
 - `mvn -B package` passed.
-- `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
+- `git diff --check` passed with line-ending warnings only.
+- `git diff --check origin/main...HEAD` passed.
+- `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- PR #311 opened from head `238e6beb104f06938e41046525921a334fe14d99`.
-- FAILURE_LOG.md records the local PowerShell `&&` command separator failure and recovery.
 
-Remote status: PR #311 opened; remote checks pending for the branch head.
+Remote status: no PR opened yet for slot 7.
 
 Blocker: none.
 
-Next action: commit and push this PR-opened checkpoint, then rerun final-head local verification.
+Next action: commit the slot 7 docs/test-only changes, push the branch, and open the PR.
 
 Decision: continue
 
 ## Current Branch
 
-Name: codex/goal-campaign-verification-protocol-refinement
+Name: codex/goal-campaign-readme-summary
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/311
+URL: pending
 
 ## Current Goal
 
-Short goal: Add VERIFICATION_PROTOCOL campaign mode refinement for the 10-PR goal campaign, recording slot 5 as merged/main-green and slot 6 as the active scoped PR.
+Short goal: Add a README goal-mode campaign summary for the 10-PR goal campaign, recording slot 6 as merged/main-green and slot 7 as the active scoped PR.
 
 ## Current Head SHA
 
-SHA: 238e6beb104f06938e41046525921a334fe14d99 before the PR-opened checkpoint commit
+SHA: pending until slot 7 commit
 
 ## What Changed
 
 - Files changed:
-- docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md
+- README.md
 - docs/agent/GOAL_CAMPAIGN_BOARD.md
-- docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md
-- docs/agent/GOAL_CAMPAIGN_CONTRACT.md
-- docs/agent/GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md
-- docs/agent/FAILURE_LOG.md
-- docs/agent/VERIFICATION_PROTOCOL.md
 - docs/agent/SESSION_MANAGER.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignVerificationProtocolRefinementDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignReadmeSummaryDocumentationTest.java
 - Behavioral surface:
 - None; docs/test-only.
 - Documentation surface:
-- Adds reusable campaign verification protocol refinement for the live 10-PR trial, links it from verification/campaign docs, and advances the board/session checkpoint to slot 6 after slot 5 merged green.
+- Adds a concise README goal-mode campaign summary, links the live campaign docs from the public trust surface, and advances the board/session checkpoint to slot 7 after slot 6 merged green.
 
 ## Checks Run
 
 - Focused checks:
-- AgentGoalCampaignVerificationProtocolRefinementDocumentationTest passed.
-- Focused campaign/agent selector bundle passed.
+- AgentGoalCampaignReadmeSummaryDocumentationTest passed.
+- Focused README/campaign/agent selector bundle passed.
 - Dependency checks:
-- Dependency tree for org.apache.tomcat.embed passed.
+- `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
 - Full checks:
-- mvn -q test passed.
+- `mvn -q test` passed.
 - Package checks:
-- mvn -q -DskipTests package passed; mvn -B package passed.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed.
 - Diff checks:
-- git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed.
+- `git diff --check` passed with line-ending warnings only.
+- `git diff --check origin/main...HEAD` passed.
+- `git diff --cached --check` passed.
 - Smoke checks:
-- enterprise-lab-workflow.ps1 -Package passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
 - Remote checks:
-- PR #311 opened; remote checks pending for the branch head.
+- No slot 7 PR opened yet.
 
 ## Blockers
 
@@ -121,14 +114,14 @@ SHA: 238e6beb104f06938e41046525921a334fe14d99 before the PR-opened checkpoint co
 
 ## Next Action
 
-One concrete next step: commit and push this PR-opened checkpoint, then rerun final-head local verification.
+One concrete next step: commit the slot 7 docs/test-only changes and open the pull request.
 
 ## Recovery Notes
 
 - How to resume:
-- Confirm the branch is `codex/goal-campaign-verification-protocol-refinement`, inspect `git status`, then run the slot 6 focused guard and full verification before opening a PR.
+- Confirm the branch is `codex/goal-campaign-readme-summary`, inspect `git status`, then run the slot 7 focused guard and full verification before opening a PR.
 - Commands already run:
-- `git checkout main`; `git pull --ff-only origin main`; watched PR #310 and main CI/CodeQL checks to green; `git checkout -b codex/goal-campaign-verification-protocol-refinement`.
+- `git checkout main`; `git pull --ff-only origin main`; watched PR #311 and main CI/CodeQL checks to green; `git checkout -b codex/goal-campaign-readme-summary`.
 - Safety boundaries to re-check:
 - Docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed:

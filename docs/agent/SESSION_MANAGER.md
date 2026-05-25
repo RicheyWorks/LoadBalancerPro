@@ -6,21 +6,21 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-24T18:57-07:00
+Timestamp: 2026-05-24T18:58-07:00
 
 Goal name: LoadBalancerPro Goal Mode 10-PR Trial
 
 Current PR slot: 1
 
-Checkpoint: Slot 1 template architecture local verification passed; PR creation pending
+Checkpoint: Slot 1 PR opened; final-head verification pending
 
 Started from main SHA: 3ff40933e6dc486ea5dad37bf0113e27996a97b9
 
 Current branch: codex/goal-campaign-template-architecture
 
-PR URL: not opened yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/306
 
-Head SHA: 3ff40933e6dc486ea5dad37bf0113e27996a97b9 before the slot 1 commit
+Head SHA: 9ac75a295bda318e0cf60da4e12de46865b1c847 before the PR-opened checkpoint commit
 
 Changed files:
 
@@ -48,12 +48,13 @@ Checks run:
 - `mvn -B package` passed.
 - `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- PR #306 opened from head 9ac75a295bda318e0cf60da4e12de46865b1c847.
 
-Remote status: no PR opened yet.
+Remote status: PR #306 opened; remote checks pending for the branch head.
 
 Blocker: none.
 
-Next action: commit, push, and open PR slot 1.
+Next action: commit and push this PR-opened checkpoint, then rerun final-head local verification.
 
 Decision: continue
 
@@ -63,7 +64,7 @@ Name: codex/goal-campaign-template-architecture
 
 ## Current PR
 
-URL: not opened yet
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/306
 
 ## Current Goal
 
@@ -71,7 +72,7 @@ Short goal: Add the goal campaign template architecture so this 10-PR trial has 
 
 ## Current Head SHA
 
-SHA: 3ff40933e6dc486ea5dad37bf0113e27996a97b9 before the slot 1 commit
+SHA: 9ac75a295bda318e0cf60da4e12de46865b1c847 before the PR-opened checkpoint commit
 
 ## What Changed
 
@@ -104,7 +105,7 @@ SHA: 3ff40933e6dc486ea5dad37bf0113e27996a97b9 before the slot 1 commit
 - Smoke checks:
 - enterprise-lab-workflow.ps1 -Package passed.
 - Remote checks:
-- Not opened yet.
+- PR #306 opened; remote checks pending for the branch head.
 
 ## Blockers
 
@@ -115,7 +116,7 @@ SHA: 3ff40933e6dc486ea5dad37bf0113e27996a97b9 before the slot 1 commit
 
 ## Next Action
 
-One concrete next step: commit, push, and open PR slot 1.
+One concrete next step: commit and push this PR-opened checkpoint, then rerun final-head local verification.
 
 ## Recovery Notes
 

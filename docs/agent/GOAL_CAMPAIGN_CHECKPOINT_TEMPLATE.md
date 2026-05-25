@@ -2,7 +2,7 @@
 
 This template defines the checkpoint record for long-running Codex `/goal` campaigns. It is documentation only; it does not add automation, CI/Maven wiring, runtime behavior, Docker/Compose behavior, external targets, secrets, or production claims.
 
-Use this template with GOAL_CAMPAIGN_CONTRACT.md, GOAL_CAMPAIGN_BOARD.md, GOAL_CAMPAIGN_PR_TEMPLATE.md, GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md.
+Use this template with GOAL_CAMPAIGN_CONTRACT.md, GOAL_CAMPAIGN_BOARD.md, GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md, GOAL_CAMPAIGN_PR_TEMPLATE.md, GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md.
 
 ## Checkpoint Template
 

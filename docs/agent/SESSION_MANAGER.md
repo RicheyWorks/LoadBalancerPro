@@ -6,21 +6,21 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-24T20:06-07:00
+Timestamp: 2026-05-24T20:15-07:00
 
 Goal name: LoadBalancerPro Goal Mode 10-PR Trial
 
 Current PR slot: 4
 
-Checkpoint: Slot 3 merged and main green; slot 4 branch created
+Checkpoint: Slot 4 PR opened; final-head verification pending
 
 Started from main SHA: 0a855c2579b02d238d043f1152572985dce5bf82
 
 Current branch: codex/goal-campaign-session-checkpoint-examples
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/309
 
-Head SHA: pending slot 4 commit
+Head SHA: bcb17589c7089a94f1490181f7e4290959dbb1e9 before the PR-opened checkpoint commit
 
 Changed files:
 
@@ -37,12 +37,22 @@ Checks run:
 - Main pulled with `--ff-only` after the merge.
 - Main CI and CodeQL for `0a855c2579b02d238d043f1152572985dce5bf82` completed successfully.
 - Slot 4 branch created from clean main.
+- `mvn test "-Dtest=AgentGoalCampaignSessionCheckpointExamplesDocumentationTest"` passed.
+- Focused campaign/agent selector bundle initially failed because AgentGoalCampaignBuildContractExampleDocumentationTest froze the board at slot 3; FAILURE_LOG.md records the stale active-slot failure and recovery.
+- Focused campaign/agent selector bundle passed after updating the stale guard.
+- `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
+- `mvn -q test` passed.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed.
+- `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- PR #309 opened from head `bcb17589c7089a94f1490181f7e4290959dbb1e9`.
 
-Remote status: slot 3 post-merge main green; slot 4 PR not opened yet.
+Remote status: PR #309 opened; remote checks pending for the branch head.
 
 Blocker: none.
 
-Next action: add SESSION_MANAGER campaign checkpoint examples and run the slot 4 focused guard.
+Next action: commit and push this PR-opened checkpoint, then rerun final-head local verification.
 
 Decision: continue
 
@@ -52,7 +62,7 @@ Name: codex/goal-campaign-session-checkpoint-examples
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/309
 
 ## Current Goal
 
@@ -60,7 +70,7 @@ Short goal: Add SESSION_MANAGER campaign checkpoint examples for the 10-PR goal 
 
 ## Current Head SHA
 
-SHA: pending slot 4 commit
+SHA: bcb17589c7089a94f1490181f7e4290959dbb1e9 before the PR-opened checkpoint commit
 
 ## What Changed
 
@@ -73,24 +83,25 @@ SHA: pending slot 4 commit
 - Behavioral surface:
 - None; docs/test-only.
 - Documentation surface:
-- Adds reusable SESSION_MANAGER checkpoint examples for the live 10-PR trial and advances the board/session checkpoint to slot 4.
+- Adds reusable SESSION_MANAGER checkpoint examples for the live 10-PR trial, advances the board/session checkpoint to slot 4, and records the recovered stale active-slot guard failure.
 
 ## Checks Run
 
 - Focused checks:
-- Pending for slot 4.
+- AgentGoalCampaignSessionCheckpointExamplesDocumentationTest passed.
+- Focused campaign/agent selector bundle passed after one logged stale active-slot guard fix.
 - Dependency checks:
-- Pending for slot 4.
+- Dependency tree for org.apache.tomcat.embed passed.
 - Full checks:
-- Pending for slot 4.
+- mvn -q test passed.
 - Package checks:
-- Pending for slot 4.
+- mvn -q -DskipTests package passed; mvn -B package passed.
 - Diff checks:
-- Pending for slot 4.
+- git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed.
 - Smoke checks:
-- Pending for slot 4.
+- enterprise-lab-workflow.ps1 -Package passed.
 - Remote checks:
-- Slot 3 main CI/CodeQL green; slot 4 PR not opened yet.
+- PR #309 opened; remote checks pending for the branch head.
 
 ## Blockers
 
@@ -101,14 +112,14 @@ SHA: pending slot 4 commit
 
 ## Next Action
 
-One concrete next step: run the slot 4 focused guard after the checkpoint examples edit batch.
+One concrete next step: commit and push this PR-opened checkpoint, then rerun final-head local verification.
 
 ## Recovery Notes
 
 - How to resume:
-- Confirm the branch is `codex/goal-campaign-session-checkpoint-examples`, inspect `git status`, then run the slot 4 focused guard and full verification before opening the PR.
+- Confirm the branch is `codex/goal-campaign-session-checkpoint-examples`, inspect `git status`, then run the slot 4 focused guard and full verification before merging PR #309.
 - Commands already run:
-- `git checkout main`; `git pull --ff-only origin main`; `gh run list --branch main --limit 5`; `git checkout -b codex/goal-campaign-build-contract-example`; `gh pr create --body-file -`.
+- `git checkout main`; `git pull --ff-only origin main`; `gh run list --branch main --limit 5`; `git checkout -b codex/goal-campaign-session-checkpoint-examples`; `gh pr create --body-file -`.
 - Safety boundaries to re-check:
 - Docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed:

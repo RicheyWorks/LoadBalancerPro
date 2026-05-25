@@ -144,14 +144,15 @@ class AgentEvidenceAuditComposeLocalLabAuditDocumentationTest {
                 "repository evidence map should link to the Compose/local-lab audit");
 
         for (String expected : List.of(
-                "completed campaign prs: 7 / 20",
-                "current pr slot: 8",
+                "slot 8",
+                "compose/local-lab audit",
                 "codex/evidence-audit-compose-local-lab",
-                "pr #322 merged",
-                "933717e7fe5a59004353fb90f0718ba8b5ecd6ef",
-                "399f83ba0fec96542c544643ad214d8e4937072d",
+                "#323",
+                "b1a1c578eca4a11b55a60f2213d45bf48cc28838",
+                "0fc6a5431f400eb4e5f71a70805b3fcb317f1c69",
+                "slot 8 result",
                 "post-merge main ci and codeql were green",
-                "slot 8 branch created")) {
+                "compose/local-lab audited")) {
             assertTrue(board.contains(expected) || session.contains(expected),
                     "Missing slot 8 campaign checkpoint: " + expected);
         }

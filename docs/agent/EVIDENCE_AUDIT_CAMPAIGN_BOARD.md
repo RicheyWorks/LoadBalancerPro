@@ -8,10 +8,10 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 
 - Campaign name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign.
 - Total target: 20 merged PRs.
-- Completed campaign PRs: 7 / 20.
-- Current PR slot: 8.
-- Current branch: `codex/evidence-audit-compose-local-lab`.
-- Current PR: [#323](https://github.com/RicheyWorks/LoadBalancerPro/pull/323).
+- Completed campaign PRs: 8 / 20.
+- Current PR slot: 9.
+- Current branch: `codex/evidence-audit-runtime-config`.
+- Current PR: [#324](https://github.com/RicheyWorks/LoadBalancerPro/pull/324).
 - Starting main HEAD: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
 - Prior campaign fact: PR #315 is merged.
 - Prior campaign merge commit: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
@@ -23,7 +23,8 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 - Slot 5 result: PR #320 merged as `a58d61511d84b8d9013d5a2652dc696fb555e83c`; post-merge main CI and CodeQL were green.
 - Slot 6 result: PR #321 merged as `06d800c478b308ef836b0ab01d8b641d8b1a35f0`; post-merge main CI and CodeQL were green.
 - Slot 7 result: PR #322 merged as `399f83ba0fec96542c544643ad214d8e4937072d`; post-merge main CI and CodeQL were green.
-- Slot 8 purpose: audit local-lab Compose without Compose edits.
+- Slot 8 result: PR #323 merged as `0fc6a5431f400eb4e5f71a70805b3fcb317f1c69`; post-merge main CI and CodeQL were green.
+- Slot 9 purpose: audit runtime configuration without runtime resource edits.
 
 ## Board Rules
 
@@ -47,8 +48,8 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 | 5 | CodeQL and dependency-review audit | codex/evidence-audit-codeql-dependency-review | [#320](https://github.com/RicheyWorks/LoadBalancerPro/pull/320) | merged | `7fcbf22364d76d2cd6a5b81eee2d512ec8742f94` | `a58d61511d84b8d9013d5a2652dc696fb555e83c` | CodeQL/dependency review posture audited; post-merge main CI and CodeQL green |
 | 6 | Maven/dependency posture audit | codex/evidence-audit-maven-dependency-posture | [#321](https://github.com/RicheyWorks/LoadBalancerPro/pull/321) | merged | `e2798905b6d5a5633a965dd6c44ede7e553ece88` | `06d800c478b308ef836b0ab01d8b641d8b1a35f0` | Maven/dependency posture audited; post-merge main CI and CodeQL green |
 | 7 | Dockerfile runtime audit | codex/evidence-audit-dockerfile-runtime | [#322](https://github.com/RicheyWorks/LoadBalancerPro/pull/322) | merged | `933717e7fe5a59004353fb90f0718ba8b5ecd6ef` | `399f83ba0fec96542c544643ad214d8e4937072d` | Dockerfile runtime posture audited; post-merge main CI and CodeQL green |
-| 8 | Compose/local-lab audit | codex/evidence-audit-compose-local-lab | [#323](https://github.com/RicheyWorks/LoadBalancerPro/pull/323) | open | `f64502ac2ff26293d2c57defc59b9fd3bc272cd7` | pending | PR opened; remote checks in progress |
-| 9 | Runtime configuration audit | pending | pending | planned | pending | pending | Audit application config without runtime config edits |
+| 8 | Compose/local-lab audit | codex/evidence-audit-compose-local-lab | [#323](https://github.com/RicheyWorks/LoadBalancerPro/pull/323) | merged | `b1a1c578eca4a11b55a60f2213d45bf48cc28838` | `0fc6a5431f400eb4e5f71a70805b3fcb317f1c69` | Compose/local-lab audited; post-merge main CI and CodeQL green |
+| 9 | Runtime configuration audit | codex/evidence-audit-runtime-config | [#324](https://github.com/RicheyWorks/LoadBalancerPro/pull/324) | open | `e7eabc4a40fb1bd1634bdb14b182d6df10544e6d` | pending | PR opened after full local verification; remote checks in progress |
 | 10 | Proxy demo fixture audit | pending | pending | planned | pending | pending | Audit proxy demo fixture and demo profiles |
 | 11 | CLI mode and app startup audit | pending | pending | planned | pending | pending | Audit CLI dispatch and smoke expectations |
 | 12 | Enterprise lab workflow smoke audit | pending | pending | planned | pending | pending | Audit smoke evidence boundary without script edits |

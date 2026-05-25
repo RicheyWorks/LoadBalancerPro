@@ -6,47 +6,52 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-24T19:21-07:00
+Timestamp: 2026-05-24T19:47-07:00
 
 Goal name: LoadBalancerPro Goal Mode 10-PR Trial
 
-Current PR slot: 2
+Current PR slot: 3
 
-Checkpoint: Slot 2 PR opened; final-head verification pending
+Checkpoint: Slot 3 PR opened; final-head verification pending
 
-Started from main SHA: 9b0efc0dc0d6654c0e8f95294e77e7de72bd7941
+Started from main SHA: a4e2a9780de53857280748b51e097364a9872b45
 
-Current branch: codex/goal-campaign-board-initialization
+Current branch: codex/goal-campaign-build-contract-example
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/307
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/308
 
-Head SHA: 846e57e725ba27867d7e76a4e97675dfcd05a5ef before the PR-opened checkpoint commit
+Head SHA: 01b133bf15ae4e061d43701f91dd9667372a6f0c before the PR-opened checkpoint commit
 
 Changed files:
 
+- BUILD_CONTRACT.md
+- docs/agent/FAILURE_LOG.md
+- docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md
 - docs/agent/GOAL_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
+- docs/agent/GOAL_CAMPAIGN_CONTRACT.md
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignBoardInitializationDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignBuildContractExampleDocumentationTest.java
 
 Checks run:
 
-- PR #306 merged at `9b0efc0dc0d6654c0e8f95294e77e7de72bd7941`.
+- Slot 2 merged and main green.
+- PR #307 merged at `a4e2a9780de53857280748b51e097364a9872b45`.
 - Main pulled with `--ff-only` after the merge.
-- Main CI and CodeQL for `9b0efc0dc0d6654c0e8f95294e77e7de72bd7941` completed successfully.
-- Slot 2 branch created from clean main.
+- Main CI and CodeQL for `a4e2a9780de53857280748b51e097364a9872b45` completed successfully.
+- Slot 3 branch created from clean main.
+- `mvn test "-Dtest=AgentGoalCampaignBuildContractExampleDocumentationTest"` passed.
+- Focused campaign/agent selector bundle passed.
 - `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
-- `mvn test "-Dtest=AgentGoalCampaignBoardInitializationDocumentationTest"` passed.
-- Focused campaign/agent selector bundle initially failed because the slot 1 architecture guard froze the active session checkpoint at slot 1.
-- FAILURE_LOG.md records the stale guard failure and recovery.
-- Focused campaign/agent selector bundle passed after updating the stale guard.
 - `mvn -q test` passed.
 - `mvn -q "-DskipTests" package` passed.
 - `mvn -B package` passed.
-- `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
+- `git diff --check` and `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- PR #307 opened from head 846e57e725ba27867d7e76a4e97675dfcd05a5ef.
+- PR creation initially failed because PowerShell parsed `-q` from the intended PR body as a gh flag; FAILURE_LOG.md records the failure and recovery path.
+- PR #308 opened from head `01b133bf15ae4e061d43701f91dd9667372a6f0c`.
 
-Remote status: PR #307 opened; remote checks pending for the branch head.
+Remote status: PR #308 opened; remote checks pending for the branch head.
 
 Blocker: none.
 
@@ -56,38 +61,41 @@ Decision: continue
 
 ## Current Branch
 
-Name: codex/goal-campaign-board-initialization
+Name: codex/goal-campaign-build-contract-example
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/307
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/308
 
 ## Current Goal
 
-Short goal: Initialize the goal campaign board for this trial, recording slot 1 as merged/main-green and slot 2 as the active scoped PR.
+Short goal: Add a filled BUILD_CONTRACT example for the 10-PR goal campaign, recording slot 2 as merged/main-green and slot 3 as the active scoped PR.
 
 ## Current Head SHA
 
-SHA: 846e57e725ba27867d7e76a4e97675dfcd05a5ef before the PR-opened checkpoint commit
+SHA: 01b133bf15ae4e061d43701f91dd9667372a6f0c before the PR-opened checkpoint commit
 
 ## What Changed
 
 - Files changed:
+- BUILD_CONTRACT.md
 - docs/agent/FAILURE_LOG.md
+- docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md
 - docs/agent/GOAL_CAMPAIGN_BOARD.md
+- docs/agent/GOAL_CAMPAIGN_CONTRACT.md
 - docs/agent/SESSION_MANAGER.md
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignBoardInitializationDocumentationTest.java
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignTemplateArchitectureDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignBuildContractExampleDocumentationTest.java
 - Behavioral surface:
 - None; docs/test-only.
 - Documentation surface:
-- Initializes the live 10-PR trial board with slot 1 merged and main-green, slot 2 active, and remaining slots planned.
+- Adds a filled BUILD_CONTRACT example for the live 10-PR trial, advances the board/session checkpoint to slot 3, and records the recovered PR body quoting failure.
 
 ## Checks Run
 
 - Focused checks:
-- AgentGoalCampaignBoardInitializationDocumentationTest passed.
-- Focused campaign/agent selector bundle passed after one logged stale-guard fix.
+- AgentGoalCampaignBuildContractExampleDocumentationTest passed.
+- Focused campaign/agent selector bundle passed.
 - Dependency checks:
 - Dependency tree for org.apache.tomcat.embed passed.
 - Full checks:
@@ -95,11 +103,11 @@ SHA: 846e57e725ba27867d7e76a4e97675dfcd05a5ef before the PR-opened checkpoint co
 - Package checks:
 - mvn -q -DskipTests package passed; mvn -B package passed.
 - Diff checks:
-- git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed.
+- git diff --check and git diff --cached --check passed.
 - Smoke checks:
 - enterprise-lab-workflow.ps1 -Package passed.
 - Remote checks:
-- PR #307 opened; remote checks pending for the branch head.
+- PR #308 opened; remote checks pending for the branch head.
 
 ## Blockers
 
@@ -115,9 +123,9 @@ One concrete next step: commit and push this PR-opened checkpoint, then rerun fi
 ## Recovery Notes
 
 - How to resume:
-- Confirm the branch is `codex/goal-campaign-board-initialization`, inspect `git status`, then run the slot 2 focused guard and full verification before opening the PR.
+- Confirm the branch is `codex/goal-campaign-build-contract-example`, inspect `git status`, then run the slot 3 focused guard and full verification before merging PR #308.
 - Commands already run:
-- `git checkout main`; `git pull --ff-only origin main`; `gh run list --branch main --limit 3`; `git checkout -b codex/goal-campaign-board-initialization`.
+- `git checkout main`; `git pull --ff-only origin main`; `gh run list --branch main --limit 5`; `git checkout -b codex/goal-campaign-build-contract-example`; `gh pr create --body-file -`.
 - Safety boundaries to re-check:
 - Docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed:

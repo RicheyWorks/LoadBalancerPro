@@ -25,9 +25,9 @@ class AgentGoalCampaignBoardInitializationDocumentationTest {
         for (String expected : List.of(
                 "loadbalancerpro goal mode 10-pr trial",
                 "total target: 10 merged prs",
-                "completed campaign prs: 1 / 10",
-                "current pr slot: 2",
-                "codex/goal-campaign-board-initialization",
+                "completed campaign prs:",
+                "current pr slot:",
+                "current branch:",
                 "current main head",
                 "trial board")) {
             assertTrue(board.contains(expected), "board should record " + expected);
@@ -46,6 +46,21 @@ class AgentGoalCampaignBoardInitializationDocumentationTest {
                 "post-merge main green",
                 "main ci/codeql green")) {
             assertTrue(board.contains(expected), "slot 1 should record " + expected);
+        }
+    }
+
+    @Test
+    void boardRecordsSlotTwoAsMergedAndMainGreen() throws Exception {
+        String board = read(BOARD).toLowerCase(Locale.ROOT);
+
+        for (String expected : List.of(
+                "#307",
+                "codex/goal-campaign-board-initialization",
+                "3c8edd518b82fd1f182044d339d224b72bf9b75e",
+                "a4e2a9780de53857280748b51e097364a9872b45",
+                "post-merge main green",
+                "main ci/codeql green")) {
+            assertTrue(board.contains(expected), "slot 2 should record " + expected);
         }
     }
 

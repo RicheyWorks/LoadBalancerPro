@@ -2,7 +2,7 @@
 
 Use this template when opening or executing a scoped repository task. It is a contract for scope, evidence, and stop conditions, not a production-readiness claim.
 
-For the Codex startup flow that explains how this contract fits with README, AGENTS.md, and docs/agent templates, use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` sessions, use [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md) and keep this file as the focused execution contract. For multi-PR goal campaigns, start with [`docs/agent/CAMPAIGN_SYSTEM_INDEX.md`](docs/agent/CAMPAIGN_SYSTEM_INDEX.md) and use [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md).
+For the Codex startup flow that explains how this contract fits with README, AGENTS.md, and docs/agent templates, use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` sessions, use [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md) and keep this file as the focused execution contract. For multi-PR goal campaigns, start with [`docs/agent/CAMPAIGN_SYSTEM_INDEX.md`](docs/agent/CAMPAIGN_SYSTEM_INDEX.md), use [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md), and use [`docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md) as the filled 10-PR campaign example.
 
 ## Goal
 

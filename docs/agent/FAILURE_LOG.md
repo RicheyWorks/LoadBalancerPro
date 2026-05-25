@@ -24,6 +24,42 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-24T19:48-07:00
+
+Branch/PR: codex/goal-campaign-build-contract-example / https://github.com/RicheyWorks/LoadBalancerPro/pull/308
+
+Failure type: final-head focused documentation guard
+
+Failing check: `mvn test "-Dtest=AgentGoalCampaignBuildContractExampleDocumentationTest"`
+
+Suspected cause: SESSION_MANAGER.md recorded PR #307 merge facts but no longer preserved the exact phrase "slot 2 merged and main green" after the PR-opened checkpoint moved the active checkpoint forward.
+
+Fix attempted: restored the exact phrase in the slot 3 session checkpoint while keeping the PR #308 checkpoint current.
+
+Result: focused guard rerun passed.
+
+Follow-up action: continue final-head local verification.
+
+## Entry
+
+Date/time: 2026-05-24T19:46-07:00
+
+Branch/PR: codex/goal-campaign-build-contract-example / pending
+
+Failure type: local tooling command
+
+Failing check: `gh pr create` body quoting attempt
+
+Suspected cause: PowerShell passed `-q` from the intended PR body as a `gh pr create` flag.
+
+Fix attempted: logged the failure and switched PR creation to `gh pr create --body-file -` with stdin body content.
+
+Result: retry succeeded and opened https://github.com/RicheyWorks/LoadBalancerPro/pull/308.
+
+Follow-up action: commit this PR-opened checkpoint, rerun final-head local verification, and push the final head.
+
+## Entry
+
 Date/time: 2026-05-24T19:22-07:00
 
 Branch/PR: codex/goal-campaign-board-initialization / https://github.com/RicheyWorks/LoadBalancerPro/pull/307

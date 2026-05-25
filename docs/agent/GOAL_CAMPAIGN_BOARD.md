@@ -1,8 +1,22 @@
 # Goal Campaign Board
 
-This board tracks a bounded 10-PR Codex `/goal` campaign. It is documentation only; it does not add automation, CI/Maven wiring, runtime behavior, Docker/Compose behavior, external targets, secrets, or production claims.
+This board tracks the bounded **LoadBalancerPro Goal Mode 10-PR Trial**. It is documentation only; it does not add automation, CI/Maven wiring, runtime behavior, Docker/Compose behavior, external targets, secrets, or production claims.
 
-Use this board with GOAL_CAMPAIGN_CONTRACT.md, GOAL_CAMPAIGN_PR_TEMPLATE.md, GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md, GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md.
+Use this board with [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`SESSION_MANAGER.md`](SESSION_MANAGER.md), [`FAILURE_LOG.md`](FAILURE_LOG.md), and [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md).
+
+## Current Trial State
+
+- Campaign goal: LoadBalancerPro Goal Mode 10-PR Trial.
+- Total target: 10 merged PRs.
+- Completed campaign PRs: 1 / 10.
+- Current PR slot: 2.
+- Current branch: `codex/goal-campaign-board-initialization`.
+- Current PR: not opened yet.
+- Current main HEAD: `9b0efc0dc0d6654c0e8f95294e77e7de72bd7941`.
+- Slot 1 PR: [#306](https://github.com/RicheyWorks/LoadBalancerPro/pull/306).
+- Slot 1 head SHA: `30828f89a41d64e30d1acc668714e5455a6e8a9f`.
+- Slot 1 merge SHA: `9b0efc0dc0d6654c0e8f95294e77e7de72bd7941`.
+- Slot 1 post-merge main checks: CI and CodeQL green.
 
 ## Board Rules
 
@@ -34,8 +48,8 @@ Use these status values:
 
 | Slot | Scope | Branch | PR | Status | Head SHA | Merge SHA | Checkpoint |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Goal campaign template architecture | codex/goal-campaign-template-architecture | pending | in progress | pending | pending | template docs being added |
-| 2 | Initialize goal campaign board for this trial | pending | pending | planned | pending | pending | pending |
+| 1 | Goal campaign template architecture | codex/goal-campaign-template-architecture | [#306](https://github.com/RicheyWorks/LoadBalancerPro/pull/306) | post-merge main green | `30828f89a41d64e30d1acc668714e5455a6e8a9f` | `9b0efc0dc0d6654c0e8f95294e77e7de72bd7941` | Template docs merged and main CI/CodeQL green |
+| 2 | Initialize goal campaign board for this trial | codex/goal-campaign-board-initialization | pending | in progress | pending | pending | Board initialization edit batch in progress |
 | 3 | Add filled BUILD_CONTRACT example for 10-PR campaign | pending | pending | planned | pending | pending | pending |
 | 4 | Add SESSION_MANAGER campaign checkpoint examples | pending | pending | planned | pending | pending | pending |
 | 5 | Add FAILURE_LOG campaign recovery examples | pending | pending | planned | pending | pending | pending |

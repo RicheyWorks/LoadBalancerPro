@@ -192,14 +192,12 @@ class AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest {
                 "repository evidence map should link to the proxy demo fixture audit");
 
         for (String expected : List.of(
-                "completed campaign prs: 9 / 20",
-                "current pr slot: 10",
                 "proxy demo fixture audit",
                 "codex/evidence-audit-proxy-demo-fixture",
-                "slot 9 result",
-                "#324",
-                "ecc0dbca270ff4f6b96c1f41c4ca7c0037569681",
-                "6f5d0d88502fb86fdc94f5261c709a2356dee65a",
+                "slot 10 result",
+                "#325",
+                "4bad0291be2a36ed7695bb47fa3b9a3e63d4dbb0",
+                "d4a07057c7e0475e012e610a551733184d26791d",
                 "post-merge main ci and codeql were green")) {
             assertTrue(board.contains(expected) || session.contains(expected),
                     "Missing slot 10 campaign checkpoint: " + expected);

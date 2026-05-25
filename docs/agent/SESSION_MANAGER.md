@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-25T03:27-07:00
+Timestamp: 2026-05-25T03:29-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
 Current PR slot: 8
 
-Checkpoint: Slot 8 local verification passed after one logged selector-guard repair
+Checkpoint: Slot 8 PR opened after local verification passed and one logged selector-guard repair
 
 Started from main SHA: `399f83ba0fec96542c544643ad214d8e4937072d`
 
 Current branch: codex/evidence-audit-compose-local-lab
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/323
 
-Head SHA: `399f83ba0fec96542c544643ad214d8e4937072d` at branch creation
+Head SHA: `f64502ac2ff26293d2c57defc59b9fd3bc272cd7` at PR creation
 
 Changed files:
 
@@ -50,12 +50,13 @@ Checks run:
 - `mvn -B package` passed with 2,429 tests, 0 failures, 0 errors, and 0 skipped.
 - `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote only target-local lab evidence.
+- PR #323 was opened with head `f64502ac2ff26293d2c57defc59b9fd3bc272cd7`.
 
-Remote status: main CI and CodeQL were green for the slot 8 starting main SHA; slot 8 PR not opened yet.
+Remote status: main CI and CodeQL were green for the slot 8 starting main SHA; slot 8 PR #323 checks are in progress for the current head.
 
 Blocker: none.
 
-Next action: rerun focused guards after this checkpoint update, then commit, push, and open the slot 8 PR.
+Next action: commit and push this PR-creation checkpoint, rerun focused guards, then wait for current-head PR checks.
 
 Decision: continue
 
@@ -65,7 +66,7 @@ Name: codex/evidence-audit-compose-local-lab
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/323
 
 ## Current Goal
 
@@ -73,7 +74,7 @@ Short goal: Audit local-lab Compose without changing Compose contents or behavio
 
 ## Current Head SHA
 
-SHA: `399f83ba0fec96542c544643ad214d8e4937072d` at branch creation
+SHA: `f64502ac2ff26293d2c57defc59b9fd3bc272cd7` at PR creation
 
 ## What Changed
 
@@ -100,7 +101,7 @@ SHA: `399f83ba0fec96542c544643ad214d8e4937072d` at branch creation
 - Package checks: `mvn -q "-DskipTests" package` and `mvn -B package` passed.
 - Diff checks: `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
 - Smoke checks: `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Remote checks: main CI and CodeQL green for slot 8 starting SHA; slot 8 PR not opened yet.
+- Remote checks: main CI and CodeQL green for slot 8 starting SHA; slot 8 PR checks are in progress.
 
 ## Blockers
 
@@ -109,11 +110,11 @@ SHA: `399f83ba0fec96542c544643ad214d8e4937072d` at branch creation
 
 ## Next Action
 
-One concrete next step: rerun the slot 8 focused guard and selector bundle after this checkpoint update, then commit and open PR.
+One concrete next step: commit and push this PR-creation checkpoint, rerun focused guards, then wait for current-head PR checks.
 
 ## Recovery Notes
 
-- How to resume: confirm branch `codex/evidence-audit-compose-local-lab`, inspect `git status`, rerun the slot 8 focused guard and selector bundle, then commit and open PR if the branch remains docs/test-only.
+- How to resume: confirm branch `codex/evidence-audit-compose-local-lab`, inspect `git status`, push the latest checkpoint if needed, rerun focused guards, then wait for PR #323 current-head checks.
 - Commands already run for slot 8: `git checkout -b codex/evidence-audit-compose-local-lab`, `Get-Content lab/docker-compose/local-lab-compose.yml`, `Get-Content lab/toxiproxy/local-lab-toxiproxy.json`, the slot 8 focused guard, the relevant selector bundle, dependency tree, `mvn -q test`, package checks, diff checks, enterprise lab package smoke, and main remote status checks confirming slot 7 main was green.
 - Safety boundaries to re-check: docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed: slot 8 PR current-head checks after PR creation; main CI/CodeQL after merge.

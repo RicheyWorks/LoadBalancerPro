@@ -11,7 +11,7 @@ Use this board with [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`
 - Completed campaign PRs: 6 / 10.
 - Current PR slot: 7.
 - Current branch: `codex/goal-campaign-readme-summary`.
-- Current PR: pending.
+- Current PR: [#312](https://github.com/RicheyWorks/LoadBalancerPro/pull/312).
 - Current main HEAD: `734c7f2068420152ac4f50ae988924575ff03f8a`.
 - Slot 1 PR: [#306](https://github.com/RicheyWorks/LoadBalancerPro/pull/306).
 - Slot 1 head SHA: `30828f89a41d64e30d1acc668714e5455a6e8a9f`.
@@ -74,7 +74,7 @@ Use these status values:
 | 4 | Add SESSION_MANAGER campaign checkpoint examples | codex/goal-campaign-session-checkpoint-examples | [#309](https://github.com/RicheyWorks/LoadBalancerPro/pull/309) | post-merge main green | `3b0353b66e974a939ae8235ef32f564bf630b9d1` | `13fad31cd6cbc34efdf58c0a75ec5fa0f66d478e` | Session checkpoint examples merged; main CI/CodeQL green |
 | 5 | Add FAILURE_LOG campaign recovery examples | codex/goal-campaign-failure-log-recovery-examples | [#310](https://github.com/RicheyWorks/LoadBalancerPro/pull/310) | post-merge main green | `0f028c10984084d3b04f7b742969f79d5c32ff4d` | `702070aa6b0db90743986176bb96d1bf9208381b` | Failure recovery examples merged; main CI/CodeQL green |
 | 6 | Add VERIFICATION_PROTOCOL campaign mode refinement | codex/goal-campaign-verification-protocol-refinement | [#311](https://github.com/RicheyWorks/LoadBalancerPro/pull/311) | post-merge main green | `27ec0aaf6cef0cf2525802aa4a94db563567de92` | `734c7f2068420152ac4f50ae988924575ff03f8a` | Verification protocol refinement merged; main CI/CodeQL green |
-| 7 | Add README goal-mode campaign summary | codex/goal-campaign-readme-summary | pending | in progress | pending | pending | README campaign summary branch created from clean main |
+| 7 | Add README goal-mode campaign summary | codex/goal-campaign-readme-summary | [#312](https://github.com/RicheyWorks/LoadBalancerPro/pull/312) | PR opened | `b3b3b192b94a81b32ef0f0d5b46f8d4782c6da71` at PR creation; final checkpoint head pending remote audit | pending | README campaign summary PR opened; remote checks pending |
 | 8 | Add Reviewer Trust Map goal-mode campaign navigation | pending | pending | planned | pending | pending | pending |
 | 9 | Add AGENTS.md campaign discipline section | pending | pending | planned | pending | pending | pending |
 | 10 | Add goal-mode trial final handoff/report | pending | pending | planned | pending | pending | pending |

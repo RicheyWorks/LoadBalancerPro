@@ -22,14 +22,11 @@ public final class ServerScoreCalculator {
 
     public double score(ServerStateVector state) {
         Objects.requireNonNull(state, "state cannot be null");
-        double capacityBasis = capacityBasis(state);
-        double inFlightRatio = state.inFlightRequestCount() / capacityBasis;
-        double queueRatio = state.queueDepth().orElse(0) / capacityBasis;
         double score = (state.p95LatencyMillis() * P95_WEIGHT)
                 + (state.p99LatencyMillis() * P99_WEIGHT)
                 + (state.averageLatencyMillis() * AVERAGE_LATENCY_WEIGHT)
-                + (inFlightRatio * IN_FLIGHT_RATIO_WEIGHT)
-                + (queueRatio * QUEUE_RATIO_WEIGHT)
+                + (state.inFlightPressure() * IN_FLIGHT_RATIO_WEIGHT)
+                + (state.queuePressure() * QUEUE_RATIO_WEIGHT)
                 + (state.recentErrorRate() * ERROR_RATE_WEIGHT)
                 + networkRiskScore(state.networkAwarenessSignal());
         return state.healthy() ? score : score + UNHEALTHY_PENALTY;
@@ -47,9 +44,9 @@ public final class ServerScoreCalculator {
 
     public List<ScoreFactorContribution> factorContributions(ServerStateVector state) {
         Objects.requireNonNull(state, "state cannot be null");
-        double capacityBasis = capacityBasis(state);
-        double inFlightRatio = state.inFlightRequestCount() / capacityBasis;
-        double queueRatio = state.queueDepth().orElse(0) / capacityBasis;
+        double capacityBasis = state.capacityBasis();
+        double inFlightRatio = state.inFlightPressure();
+        double queueRatio = state.queuePressure();
         List<ScoreFactorContribution> contributions = new ArrayList<>();
 
         contributions.add(exactFactor(
@@ -202,16 +199,6 @@ public final class ServerScoreCalculator {
                         directionForPositivePenalty(signal.requestTimeoutCount()),
                         "Request timeout count contribution = requestTimeoutCount * REQUEST_TIMEOUT_COUNT_WEIGHT.",
                         "Network signal contribution is local lab evidence, not production telemetry proof."));
-    }
-
-    private double capacityBasis(ServerStateVector state) {
-        if (state.estimatedConcurrencyLimit().isPresent()) {
-            return Math.max(1.0, state.estimatedConcurrencyLimit().getAsDouble());
-        }
-        if (state.configuredCapacity().isPresent()) {
-            return Math.max(1.0, state.configuredCapacity().getAsDouble());
-        }
-        return 1.0;
     }
 
     private ScoreFactorContribution exactFactor(String factorName,

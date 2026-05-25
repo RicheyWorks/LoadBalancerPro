@@ -118,7 +118,10 @@ Observed during Slot 13 orientation and merge-health handling:
 - Verification expectations: focused signal tests, scoring/routing selector bundle, full Maven/package/diff/smoke checks, and remote checks.
 - Not-proven boundaries: common campaign not-proven boundaries apply.
 - Dependencies: LASE-G03 or equivalent signal model.
-- Initial status: active for Slot 16 branch `codex/lase-g04-latency-window-signals`; not merged/main-green.
+- Initial status: merged/main-green as PR #331: [LASE-G04: Add latency window signal support](https://github.com/RicheyWorks/LoadBalancerPro/pull/331).
+- PR #331 final head SHA: `e3644a34160ff37d68cff2a5302afcd1e55c48a1`.
+- PR #331 merge SHA: `1f1cc1da6bb0bcb3430d660a5c579e008f109c40`.
+- PR #331 post-merge main checks completed successfully for CI and CodeQL when this ledger was updated, so LASE-G04 is recorded as merged/main-green.
 
 ### LASE-G05 - Tail-latency hysteresis and anti-flapping
 
@@ -129,7 +132,7 @@ Observed during Slot 13 orientation and merge-health handling:
 - Verification expectations: routing tests, anti-flapping scenario tests, selector bundle, full Maven/package/diff/smoke checks, and remote checks.
 - Not-proven boundaries: common campaign not-proven boundaries apply.
 - Dependencies: LASE-G01 and any score-breakdown API needed for explainability.
-- Initial status: planned.
+- Initial status: active for branch `codex/lase-g05-tail-latency-hysteresis`; not merged/main-green.
 
 ### LASE-G06 - Recovery dampening refinement
 

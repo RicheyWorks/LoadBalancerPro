@@ -46,7 +46,7 @@ For multi-PR goal campaigns, start with [`docs/agent/CAMPAIGN_SYSTEM_INDEX.md`](
 
 The current LoadBalancerPro Goal Mode 10-PR Trial uses this README as the public trust surface while campaign execution details live in the agent docs. The campaign is intentionally bounded: one scoped PR at a time, docs/test-only by default, with SESSION_MANAGER.md checkpoints, FAILURE_LOG.md recovery entries, focused checks while editing, full local verification before merge, and current-head remote checks before any slot counts.
 
-Use [`docs/agent/GOAL_CAMPAIGN_BOARD.md`](docs/agent/GOAL_CAMPAIGN_BOARD.md) for the live 10-slot board, [`docs/agent/GOAL_CAMPAIGN_CONTRACT.md`](docs/agent/GOAL_CAMPAIGN_CONTRACT.md) for campaign rules, [`docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md) for the filled task contract, [`docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md) for campaign verification order, and [`docs/agent/GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](docs/agent/GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md) for closeout reporting.
+Use [`docs/agent/GOAL_CAMPAIGN_BOARD.md`](docs/agent/GOAL_CAMPAIGN_BOARD.md) for the live 10-slot board, [`docs/agent/GOAL_CAMPAIGN_CONTRACT.md`](docs/agent/GOAL_CAMPAIGN_CONTRACT.md) for campaign rules, [`docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md) for the filled task contract, [`docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md) for campaign verification order, [`docs/agent/GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](docs/agent/GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md) for closeout reporting format, and [`docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md) for the current trial closeout handoff.
 
 The campaign does not relax scope. It does not authorize production code changes, Maven config changes, CI/workflow changes, Dockerfile changes, Compose behavior changes, runtime behavior changes, endpoint changes, k6/Bruno/Toxiproxy behavior changes, runner services, automation, secrets, external/cloud/tenant targets, or unsupported claims.
 
@@ -61,6 +61,7 @@ The campaign also does not prove production readiness, production certification,
 - Campaign system architecture: [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md).
 - Goal campaign board: [`docs/agent/GOAL_CAMPAIGN_BOARD.md`](docs/agent/GOAL_CAMPAIGN_BOARD.md).
 - Goal campaign verification refinement: [`docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md).
+- Goal campaign final handoff/report: [`docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md).
 - Agent operating rules: [`AGENTS.md`](AGENTS.md).
 - Task contract template: [`BUILD_CONTRACT.md`](BUILD_CONTRACT.md).
 - Verification protocol: [`docs/agent/VERIFICATION_PROTOCOL.md`](docs/agent/VERIFICATION_PROTOCOL.md).

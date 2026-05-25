@@ -8,30 +8,32 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-25T04:29-07:00
+Timestamp: 2026-05-25T11:52-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
-Current PR slot: 10
+Current PR slot: 11
 
-Checkpoint: Slot 10 PR opened after full local verification
+Checkpoint: Slot 11 local verification recovered from clean process state; ready for commit and PR handoff; paused before slot advancement
 
-Started from main SHA: `6f5d0d88502fb86fdc94f5261c709a2356dee65a`
+Started from main SHA: `d4a07057c7e0475e012e610a551733184d26791d`
 
-Current branch: codex/evidence-audit-proxy-demo-fixture
+Current branch: codex/evidence-audit-cli-app-startup
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/325
+PR URL: pending
 
-Head SHA: `859209adc8822f3bfb8060c0b516fb61d9e654d4` at PR creation
+Head SHA: `d4a07057c7e0475e012e610a551733184d26791d` at branch creation
 
 Changed files:
 
 - README.md
 - docs/REVIEWER_TRUST_MAP.md
 - docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
-- docs/agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md
+- docs/agent/EVIDENCE_AUDIT_CLI_APP_STARTUP_AUDIT.md
 - docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md
+- docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditCliAppStartupAuditDocumentationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest.java
 
 Checks run:
@@ -43,83 +45,119 @@ Checks run:
 - Slot 9 post-merge local verification passed: focused campaign/agent selector bundle, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke.
 - Slot 9 post-merge main remote checks passed: CI and CodeQL green for `6f5d0d88502fb86fdc94f5261c709a2356dee65a`.
 - Slot 10 branch `codex/evidence-audit-proxy-demo-fixture` was created from clean main.
-- Slot 10 campaign state repair started as documentation/test-only before proxy demo fixture audit content.
 - Slot 10 proxy demo fixture audit doc and read-only documentation guard were added.
-- README, Reviewer Trust Map, and repository evidence map now link to the Slot 10 audit.
-- Initial Slot 10 focused guard run failed on exact documentation wording and was logged in FAILURE_LOG.md before continuing.
-- The Slot 10 audit wording was repaired without behavior changes, and `mvn test "-Dtest=AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest"` passed on rerun.
-- Slot 10 focused selector bundle passed.
+- Slot 10 final branch head was `4bad0291be2a36ed7695bb47fa3b9a3e63d4dbb0`.
+- Slot 10 PR #325 merged as `d4a07057c7e0475e012e610a551733184d26791d`.
+- Slot 10 post-merge local verification passed: focused campaign/agent selector bundle, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke.
+- Slot 10 post-merge main remote checks passed: CI and CodeQL green for `d4a07057c7e0475e012e610a551733184d26791d`.
+- Slot 11 branch `codex/evidence-audit-cli-app-startup` was created from clean main.
+- Slot 11 campaign state repair started as documentation/test-only before CLI mode and app startup audit content.
+- Slot 11 CLI app startup audit doc and read-only documentation guard were added.
+- README, Reviewer Trust Map, and repository evidence map now link to the Slot 11 audit.
+- Initial Slot 11 focused guard runs failed on exact wording and factual coverage assertions and were logged in FAILURE_LOG.md before continuing.
+- The Slot 11 audit wording and guard expectations were repaired without changing app code, startup behavior, endpoints, scripts, or runtime resources.
+- `mvn test "-Dtest=AgentEvidenceAuditCliAppStartupAuditDocumentationTest"` passed on rerun.
+- Slot 11 focused selector bundle passed, including current slot guard, prior audit guards, campaign/agent guards, `LoadBalancerApiApplicationTest`, and CLI command tests.
 - `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
 - `mvn -q test` passed.
 - `mvn -q "-DskipTests" package` passed.
-- `mvn -B package` passed with 2,443 tests, 0 failures, 0 errors, and 0 skipped.
+- `mvn -B package` passed with 2,451 tests, 0 failures, 0 errors, and 0 skipped.
 - `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote only target-local lab evidence.
-- PR #325 was opened with head `859209adc8822f3bfb8060c0b516fb61d9e654d4`.
+- After updating this checkpoint, a final working-tree rerun of `mvn -q test` timed out at the tool boundary and was logged in FAILURE_LOG.md.
+- A recovery rerun of `mvn -B test` also timed out at the tool boundary and was logged in FAILURE_LOG.md.
+- Stale Maven/Surefire processes from the recovery rerun were stopped; a follow-up process check found no remaining Maven/Java test processes.
+- Recovery orientation found branch `codex/evidence-audit-cli-app-startup`, `HEAD`, `main`, and `origin/main` all at `d4a07057c7e0475e012e610a551733184d26791d`.
+- Recovery orientation confirmed Slot 11 changes are uncommitted workspace changes and no open PR exists for the branch.
+- Recovery clean-process check found no Maven, Surefire, or Java test processes; `jps -lv` reported only the `jps` process itself.
+- Recovery focused guard `mvn test "-Dtest=AgentEvidenceAuditCliAppStartupAuditDocumentationTest"` passed.
+- Recovery durability guard `mvn test "-Dtest=AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest"` passed.
+- Recovery selector bundle failed once because `AgentGoalCampaignBoardInitializationDocumentationTest` requires the session manager to preserve a `decision: continue` marker while the active Slot 11 checkpoint was still marked `Decision: pause`; the failure is logged in FAILURE_LOG.md.
+- Recovery selector bundle rerun passed after recording that Slot 11 is continuing recovery verification only.
+- `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
+- `mvn -q test` passed from the clean process state after the stale process cleanup and recovery checkpoint update.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed with 2,451 tests, 0 failures, 0 errors, and 0 skipped.
+- `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- Previous timeout failures remain logged as historical failures; this checkpoint records the later clean-process recovery result.
+- Slot 11 has no commit, push, or PR, and it is not advanced or complete.
 
-Remote status: main CI and CodeQL are green for `6f5d0d88502fb86fdc94f5261c709a2356dee65a`; Slot 10 PR #325 checks are pending for the current head.
+Remote status: main CI and CodeQL are green for `d4a07057c7e0475e012e610a551733184d26791d`; Slot 11 PR was not opened.
 
-Blocker: none.
+Blocker: none for local verification after clean-process recovery; slot advancement remains intentionally blocked until PR review, required remote checks, merge, and post-merge main verification.
 
-Next action: commit and push this PR-created checkpoint, rerun focused guards, and wait for current-head PR checks.
+Next action: commit the recovered Slot 11 docs/test-only work, push the branch, and open a PR for review without claiming merge or completion.
 
-Decision: continue
+Decision: continue only to commit, push, and PR creation; pause before merge or Slot 11 advancement.
 
 ## Current Branch
 
-Name: codex/evidence-audit-proxy-demo-fixture
+Name: codex/evidence-audit-cli-app-startup
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/325
+URL: pending; no PR opened
 
 ## Current Goal
 
-Short goal: Audit proxy demo fixture and demo profiles without changing proxy fixture code, scripts, runtime resources, endpoints, or behavior.
+Short goal: Audit CLI mode and app startup dispatch without changing CLI code, app startup behavior, runtime resources, endpoints, scripts, or behavior.
 
 ## Current Head SHA
 
-SHA: `859209adc8822f3bfb8060c0b516fb61d9e654d4` at PR creation
+SHA: `d4a07057c7e0475e012e610a551733184d26791d` at branch creation
 
 ## What Changed
 
 - README.md
 - docs/REVIEWER_TRUST_MAP.md
 - docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
-- docs/agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md
+- docs/agent/EVIDENCE_AUDIT_CLI_APP_STARTUP_AUDIT.md
 - docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md
+- docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditCliAppStartupAuditDocumentationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest.java
 - Behavioral surface: none; docs/test-only.
-- Documentation surface: records slot 9 as merged/main green, advances the active campaign pointer to Slot 10, and adds the proxy demo fixture audit.
+- Documentation surface: records slot 10 as merged/main green, advances the active campaign pointer to Slot 11, and adds the CLI mode and app startup audit.
 
 ## Checks Run
 
-- Focused checks: Slot 9 post-merge focused selector bundle passed before Slot 10 branch creation.
-- Slot 10 focused check: first run of `mvn test "-Dtest=AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest"` failed on exact wording; failure logged; rerun passed.
-- Focused selector bundle: passed.
+- Slot 10 post-merge focused selector bundle passed before Slot 11 branch creation.
+- Slot 10 post-merge `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke passed.
+- Remote checks: main CI and CodeQL green for Slot 10 merge SHA `d4a07057c7e0475e012e610a551733184d26791d`.
+- Slot 11 focused guard passed after logged wording repairs.
+- Slot 11 focused selector bundle passed.
 - Dependency checks: `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
-- Full checks: `mvn -q test` passed.
-- Package checks: `mvn -q "-DskipTests" package` and `mvn -B package` passed; verbose package reported 2,443 tests, 0 failures, 0 errors, and 0 skipped.
-- Diff checks: `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
-- Smoke checks: `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Remote checks: main CI and CodeQL green for Slot 9 merge SHA `6f5d0d88502fb86fdc94f5261c709a2356dee65a`; Slot 10 PR #325 checks pending for current head.
+- Preliminary full checks before the final session update: `mvn -q test` passed.
+- Preliminary package checks before the final session update: `mvn -q "-DskipTests" package` and `mvn -B package` passed; verbose package reported 2,451 tests, 0 failures, 0 errors, and 0 skipped.
+- Preliminary diff checks before the final session update: `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
+- Preliminary smoke checks before the final session update: `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- Final working-tree rerun of `mvn -q test` timed out and was logged.
+- Recovery rerun of `mvn -B test` timed out and was logged.
+- Recovery process inspection found no Maven/Surefire/Java test processes before rerun.
+- Recovery focused Slot 11 guard passed.
+- Recovery durability-updated Slot 10 guard passed.
+- Recovery selector bundle failed once on stale active-decision wording and was logged.
+- Recovery selector bundle rerun passed.
+- Recovery full local verification passed once after the clean process state: dependency tree, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke.
+- Final post-update verification passed after the recovery-result checkpoint update: dependency tree, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke.
 
 ## Blockers
 
-- Current blocker: none.
-- Owner or next decision: Codex continues inside docs/test-only campaign scope.
+- Current blocker: none for local verification after clean-process recovery; Slot 11 still must not be marked merged or complete before PR review, required remote checks, merge, and post-merge main verification.
+- Owner or next decision: Codex may commit, push, and open the PR from this recovered state, then pause before merge or Slot 11 advancement.
 
 ## Next Action
 
-One concrete next step: commit and push this PR-created checkpoint, rerun focused guards, and wait for current-head PR checks.
+One concrete next step: commit the recovered Slot 11 docs/test-only work, push the branch, and open the PR for review; do not merge or advance Slot 11 in this turn.
 
 ## Recovery Notes
 
-- How to resume: confirm branch `codex/evidence-audit-proxy-demo-fixture`, inspect `git status`, verify Slot 9 remains recorded as merged/main green, then continue the Slot 10 proxy demo fixture audit.
-- Commands already run for Slot 10 start: `git fetch origin`, `git pull --ff-only origin main`, `git checkout -b codex/evidence-audit-proxy-demo-fixture`, `git status --short`, `git rev-parse --abbrev-ref HEAD`, `git rev-parse HEAD`, board/session reads, proxy fixture/profile reads, and source/doc searches for proxy demo surfaces.
+- How to resume: confirm branch `codex/evidence-audit-cli-app-startup`, inspect `git status`, verify no Maven/Java test processes remain, then rerun full local verification before any commit or PR.
+- Commands already run for Slot 11 start: `git fetch origin`, `git pull --ff-only origin main`, `git checkout -b codex/evidence-audit-cli-app-startup`, `git status --short`, `git rev-parse --abbrev-ref HEAD`, `git rev-parse HEAD`, board/session reads, CLI command source reads, and source/doc searches for CLI startup surfaces.
 - Safety boundaries to re-check: docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
-- Remote checks that must be refreshed: Slot 10 PR current-head checks after PR creation; main CI/CodeQL after Slot 10 merge.
+- Remote checks that must be refreshed: none yet because Slot 11 PR was not opened; if resumed, Slot 11 PR current-head checks after PR creation and main CI/CodeQL after Slot 11 merge.
 
 ## Historical Closeout: LoadBalancerPro Goal Mode 10-PR Trial
 

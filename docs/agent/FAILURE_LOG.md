@@ -24,6 +24,132 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-25T04:53-07:00
+
+Branch/PR: codex/evidence-audit-cli-app-startup / pending
+
+Failure type: focused documentation guard wording and assertion brittleness
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCliAppStartupAuditDocumentationTest"`
+
+Suspected cause: the new Slot 11 audit doc preserved the intended CLI startup boundary meaning, but did not include the exact phrase `CLI mode and app startup audit`; the new guard also used brittle lowercase expectations for `LoadBalancerApiApplication` and exact Java assertion formatting that did not match source text.
+
+Fix attempted: added the exact durable audit phrase and corrected the source-token expectations without changing app code, startup behavior, endpoints, scripts, or runtime resources.
+
+Result: focused Slot 11 guard rerun passed after the wording and assertion corrections.
+
+Follow-up action: continue with the relevant focused selector bundle.
+
+## Entry
+
+Date/time: 2026-05-25T04:54-07:00
+
+Branch/PR: codex/evidence-audit-cli-app-startup / pending
+
+Failure type: focused documentation guard factual coverage correction
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCliAppStartupAuditDocumentationTest"`
+
+Suspected cause: the Slot 11 audit still lacked the exact `does not start Spring Boot` phrase, and the new guard incorrectly asserted `LoadBalancerApiApplicationTest` covers `--enterprise-lab-workflow`; source inspection shows the application dispatch source includes the enterprise workflow mode, while the dedicated `EnterpriseLabWorkflowCommandTest` covers that command's request parsing and no-startup-output expectation.
+
+Fix attempted: added the exact Spring Boot phrase, made the audit coverage wording factual, and changed the guard to verify the dedicated enterprise workflow command test instead of overstating API test coverage.
+
+Result: focused Slot 11 guard rerun passed after the correction.
+
+Follow-up action: continue with the relevant focused selector bundle.
+
+## Entry
+
+Date/time: 2026-05-25T04:55-07:00
+
+Branch/PR: codex/evidence-audit-cli-app-startup / pending
+
+Failure type: focused documentation guard wording
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCliAppStartupAuditDocumentationTest"`
+
+Suspected cause: the Slot 11 audit said it does not change app startup behavior by meaning, but did not include the exact phrase `does not change app startup behavior` required by the new guard.
+
+Fix attempted: added the exact durable phrase without changing app code, startup behavior, endpoints, scripts, or runtime resources.
+
+Result: focused Slot 11 guard rerun passed after adding the phrase.
+
+Follow-up action: continue with the relevant focused selector bundle.
+
+## Entry
+
+Date/time: 2026-05-25T07:32-07:00
+
+Branch/PR: codex/evidence-audit-cli-app-startup / pending
+
+Failure type: local tooling timeout
+
+Failing check: final working-tree rerun of `mvn -q test`
+
+Suspected cause: the Maven test rerun exceeded the tool boundary and left a stale Maven launcher process plus a Surefire Java child process running from the same command.
+
+Fix attempted: observed the stale Maven/Surefire processes; by the time a targeted stop was attempted the first pair had already exited, leaving no Java/Maven processes from that run.
+
+Result: unresolved. A subsequent non-quiet full-test retry also timed out and is logged separately.
+
+Follow-up action: pause the slot until the full local verification timeout is diagnosed and a clean full verification can complete before any PR creation.
+
+## Entry
+
+Date/time: 2026-05-25T11:25-07:00
+
+Branch/PR: codex/evidence-audit-cli-app-startup / pending
+
+Failure type: local tooling timeout
+
+Failing check: recovery rerun of `mvn -B test`
+
+Suspected cause: the non-quiet Maven test rerun also exceeded the tool boundary and left a Maven launcher process plus a Surefire Java child process running from the same command.
+
+Fix attempted: stopped only the stale Maven/Surefire processes from the timed-out recovery command: Maven launcher PID 26308 and Surefire Java PID 336.
+
+Result: stale processes were terminated; a follow-up process check found no remaining Maven/Java test processes.
+
+Follow-up action: pause the campaign before PR creation. Resume only after diagnosing or successfully rerunning the required full local verification from a clean process state.
+
+## Entry
+
+Date/time: 2026-05-25T11:35-07:00
+
+Branch/PR: codex/evidence-audit-cli-app-startup / pending
+
+Failure type: recovery selector bundle active-checkpoint wording
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCliAppStartupAuditDocumentationTest,AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest,AgentEvidenceAuditRuntimeConfigurationAuditDocumentationTest,AgentEvidenceAuditComposeLocalLabAuditDocumentationTest,AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest,AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest,AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest,AgentEvidenceAuditCiWorkflowAuditDocumentationTest,AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest,LoadBalancerApiApplicationTest,AdaptiveRoutingExperimentCommandTest,EnterpriseLabWorkflowCommandTest,LaseReplayCommandTest,LaseDemoCommandTest"`
+
+Suspected cause: `AgentGoalCampaignBoardInitializationDocumentationTest` still requires SESSION_MANAGER.md to contain `decision: continue`, while the active Slot 11 recovery checkpoint truthfully recorded `Decision: pause` after the prior Maven timeouts.
+
+Fix attempted: update SESSION_MANAGER.md to record the current recovery decision as continuing verification only, with no commit, push, PR creation, or Slot 11 advancement.
+
+Result: fix pending; rerun the recovery selector bundle, then continue full local verification only if it passes.
+
+Follow-up action: keep the previous timeout failures logged and do not claim recovery until full local verification completes successfully after this checkpoint.
+
+## Entry
+
+Date/time: 2026-05-25T11:40-07:00
+
+Branch/PR: codex/evidence-audit-cli-app-startup / pending
+
+Failure type: recovery result for prior local tooling timeout
+
+Failing check: historical failures were the final working-tree `mvn -q test` timeout at 2026-05-25T07:32-07:00 and the recovery `mvn -B test` timeout at 2026-05-25T11:25-07:00
+
+Suspected cause: prior Maven/Surefire Java test processes were stale after tool-boundary timeouts; the clean-process recovery check found no Maven, Surefire, or Java test processes before rerun.
+
+Fix attempted: resume from clean process state, rerun the focused guards, rerun the selector bundle after recording the recovery-only decision, then rerun dependency tree, full tests, package checks, diff checks, and enterprise lab package smoke.
+
+Result: clean-process recovery passed once: focused guards passed, selector bundle passed, `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed, `mvn -q test` passed, `mvn -q "-DskipTests" package` passed, `mvn -B package` passed with 2,451 tests and 0 failures/errors/skips, diff checks passed, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+
+Follow-up action: rerun final post-update verification after recording this recovery result; do not commit, push, open a PR, or advance Slot 11 in this recovery turn.
+
+## Entry
+
 Date/time: 2026-05-25T04:22-07:00
 
 Branch/PR: codex/evidence-audit-proxy-demo-fixture / pending

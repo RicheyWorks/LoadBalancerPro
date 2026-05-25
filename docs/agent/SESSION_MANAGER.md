@@ -8,21 +8,21 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Campaign: 10-PR LoadBalancerPro goal campaign
 
-Checkpoint: PR 6 full local verification completed
+Checkpoint: PR 6 opened
 
 Started from main SHA: 39e1a6a013b2be884b67f8ed840aaada737f514a
 
 Current campaign branch: codex/goal-campaign-failure-recovery-playbook
 
-Current campaign PR: not opened yet
+Current campaign PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/301
 
 Completed campaign PRs: 5 / 10
 
 Current blocker: none
 
-Checks completed: PR 1, PR 2, PR 3, PR 4, and PR 5 local, PR, post-merge, and main remote checks passed. Main CI and CodeQL are green for 39e1a6a013b2be884b67f8ed840aaada737f514a. AgentCampaignFailureRecoveryPlaybookDocumentationTest passed. AgentCampaignFailureRecoveryPlaybookDocumentationTest, AgentCampaignMergeGateDocumentationTest, AgentCampaignRemoteCheckAuditDocumentationTest, AgentCampaignPrReadinessChecklistDocumentationTest, AgentCampaignCheckpointLedgerDocumentationTest, AgentCampaignSystemArchitectureDocumentationTest, and AgentWorkflowQuickstartDocumentationTest passed. Dependency tree for org.apache.tomcat.embed passed. mvn -q test passed. mvn -q -DskipTests package passed. mvn -B package passed. git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed. Enterprise lab package smoke passed.
+Checks completed: PR 1, PR 2, PR 3, PR 4, and PR 5 local, PR, post-merge, and main remote checks passed. Main CI and CodeQL are green for 39e1a6a013b2be884b67f8ed840aaada737f514a. AgentCampaignFailureRecoveryPlaybookDocumentationTest passed. AgentCampaignFailureRecoveryPlaybookDocumentationTest, AgentCampaignMergeGateDocumentationTest, AgentCampaignRemoteCheckAuditDocumentationTest, AgentCampaignPrReadinessChecklistDocumentationTest, AgentCampaignCheckpointLedgerDocumentationTest, AgentCampaignSystemArchitectureDocumentationTest, and AgentWorkflowQuickstartDocumentationTest passed. Dependency tree for org.apache.tomcat.embed passed. mvn -q test passed. mvn -q -DskipTests package passed. mvn -B package passed. git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed. Enterprise lab package smoke passed. PR #301 opened.
 
-Next campaign action: stage, scope-audit, commit, push, and open PR 6.
+Next campaign action: commit and push this PR-opened checkpoint, then rerun final local verification on the final PR head.
 
 ## Current Branch
 
@@ -30,7 +30,7 @@ Name: codex/goal-campaign-failure-recovery-playbook
 
 ## Current PR
 
-URL: not opened yet
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/301
 
 ## Current Goal
 
@@ -38,7 +38,7 @@ Short goal: Add campaign failure recovery playbook docs and guard test.
 
 ## Current Head SHA
 
-SHA: 39e1a6a013b2be884b67f8ed840aaada737f514a
+SHA: d9ecc4913ac6097d2ce30eb39924136b11a54bed
 
 ## What Changed
 
@@ -81,7 +81,7 @@ SHA: 39e1a6a013b2be884b67f8ed840aaada737f514a
 
 ## Next Action
 
-One concrete next step: stage the PR 6 files and perform the final scope audit before commit.
+One concrete next step: commit and push the PR-opened checkpoint, then rerun the PR 6 local verification gate on the final head.
 
 ## Recovery Notes
 

@@ -17,6 +17,7 @@ A campaign is a bounded sequence of separately scoped PRs that share one durable
 - VERIFICATION_PROTOCOL.md: focused checks, full checks, remote PR checks, and post-merge main checks.
 - SESSION_MANAGER.md: checkpoint ledger for current branch, PR, head SHA, checks run, blockers, and next action.
 - FAILURE_LOG.md: factual record for local failures, remote failures, suspected causes, fixes attempted, results, and follow-up action.
+- CAMPAIGN_SYSTEM_INDEX.md: navigation layer for the campaign control docs, execution loop, verification path, scope audit, and closeout flow.
 - CAMPAIGN_CHECKPOINT_LEDGER.md: required checkpoint fields and counting rules for multi-PR goal campaigns.
 - CAMPAIGN_PR_READINESS_CHECKLIST.md: per-PR opening, merge, post-merge, scope, and stop-condition checklist.
 - CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md: changed-file, forbidden-scope, claim, guard-test, and stop-condition scope audit.

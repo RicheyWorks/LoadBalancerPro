@@ -2,48 +2,53 @@
 
 Use this template during long Codex sessions, handoffs, resumes, and interrupted work.
 
-For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` work, use [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) and update this file at checkpoints. For multi-PR goal campaigns, use [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md), [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md), [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md), [`CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md`](CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md), [`CAMPAIGN_REMOTE_CHECK_AUDIT.md`](CAMPAIGN_REMOTE_CHECK_AUDIT.md), [`CAMPAIGN_MERGE_GATE.md`](CAMPAIGN_MERGE_GATE.md), [`CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md`](CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md), [`CAMPAIGN_CLOSEOUT_PROTOCOL.md`](CAMPAIGN_CLOSEOUT_PROTOCOL.md), and [`CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md`](CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md) and keep the current PR checkpoint factual.
+For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` work, use [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) and update this file at checkpoints. For multi-PR goal campaigns, use [`CAMPAIGN_SYSTEM_INDEX.md`](CAMPAIGN_SYSTEM_INDEX.md), [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md), [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md), [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md), [`CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md`](CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md), [`CAMPAIGN_REMOTE_CHECK_AUDIT.md`](CAMPAIGN_REMOTE_CHECK_AUDIT.md), [`CAMPAIGN_MERGE_GATE.md`](CAMPAIGN_MERGE_GATE.md), [`CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md`](CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md), [`CAMPAIGN_CLOSEOUT_PROTOCOL.md`](CAMPAIGN_CLOSEOUT_PROTOCOL.md), and [`CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md`](CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md) and keep the current PR checkpoint factual.
 
 ## Active Campaign Checkpoint
 
 Campaign: 10-PR LoadBalancerPro goal campaign
 
-Checkpoint: PR 9 opened and final-head verification pending
+Checkpoint: PR 10 full local verification passed; PR opening pending
 
-Started from main SHA: a8a659e04aa01836785359d3a8e94bc5b29b5d7a
+Started from main SHA: fccc80eb0d299d18f5e3ee59f09cb75a5c311c65
 
-Current campaign branch: codex/goal-campaign-closeout-protocol
+Current campaign branch: codex/goal-campaign-system-index
 
-Current campaign PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/304
+Current campaign PR: not opened yet
 
-Completed campaign PRs: 8 / 10
+Completed campaign PRs: 9 / 10
 
 Current blocker: none
 
-Checks completed: PR 1, PR 2, PR 3, PR 4, PR 5, PR 6, PR 7, and PR 8 local, PR, post-merge, and main remote checks passed. Main CI and CodeQL are green for a8a659e04aa01836785359d3a8e94bc5b29b5d7a. PR 9 branch was created from clean main. AgentCampaignCloseoutProtocolDocumentationTest passed. The campaign focused selector bundle passed. Dependency tree for org.apache.tomcat.embed passed. mvn -q test passed. mvn -q -DskipTests package passed. mvn -B package passed. git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed. Enterprise lab package smoke passed. PR #304 opened.
+Checks completed: PR 1 through PR 9 local, PR, post-merge, and main remote checks passed. Main CI and CodeQL are green for fccc80eb0d299d18f5e3ee59f09cb75a5c311c65. PR 10 branch was created from clean main. The PR 10 edit batch added the campaign system index, cross-links, a guard test, and this checkpoint update. AgentCampaignSystemIndexDocumentationTest passed. Dependency tree for org.apache.tomcat.embed passed. The campaign focused selector bundle passed. mvn -q test passed. mvn -q -DskipTests package passed. mvn -B package passed. git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed. Enterprise lab package smoke passed.
 
-Next campaign action: commit and push this PR-opened checkpoint, then rerun final local verification on the final PR head.
+Next campaign action: open PR 10, record the PR URL and head SHA, then rerun final-head verification.
 
 ## Current Branch
 
-Name: codex/goal-campaign-closeout-protocol
+Name: codex/goal-campaign-system-index
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/304
+URL: not opened yet
 
 ## Current Goal
 
-Short goal: Add campaign closeout protocol docs and guard test.
+Short goal: Add the final campaign system index and documentation guard so the ten-PR campaign has a single navigation and closeout path.
 
 ## Current Head SHA
 
-SHA: 6d34ffa1edc92633fc7b2bc4d4549e71c56148b1
+SHA: fccc80eb0d299d18f5e3ee59f09cb75a5c311c65 before the PR 10 commit
 
 ## What Changed
 
 - Files changed:
+- README.md
+- AGENTS.md
+- BUILD_CONTRACT.md
+- docs/REVIEWER_TRUST_MAP.md
 - docs/agent/AGENT_WORKFLOW_QUICKSTART.md
+- docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md
 - docs/agent/CAMPAIGN_CHECKPOINT_LEDGER.md
 - docs/agent/CAMPAIGN_CLOSEOUT_PROTOCOL.md
 - docs/agent/CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md
@@ -53,18 +58,20 @@ SHA: 6d34ffa1edc92633fc7b2bc4d4549e71c56148b1
 - docs/agent/CAMPAIGN_REMOTE_CHECK_AUDIT.md
 - docs/agent/CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md
 - docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md
+- docs/agent/CAMPAIGN_SYSTEM_INDEX.md
 - docs/agent/SESSION_MANAGER.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentCampaignCloseoutProtocolDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentCampaignSystemIndexDocumentationTest.java
 - Behavioral surface:
 - None; docs/test-only.
 - Documentation surface:
-- Adds campaign closeout protocol and cross-links it into the campaign control docs.
+- Adds the campaign system index and links it from the README, agent contract files, reviewer trust map, goal protocol, session manager, and campaign control docs.
 
 ## Checks Run
 
 - Focused checks:
-- AgentCampaignCloseoutProtocolDocumentationTest passed.
+- AgentCampaignSystemIndexDocumentationTest passed.
 - Campaign focused selector bundle passed.
+- Dependency tree for org.apache.tomcat.embed passed.
 - Full checks:
 - mvn -q test passed.
 - Package checks:
@@ -74,7 +81,7 @@ SHA: 6d34ffa1edc92633fc7b2bc4d4549e71c56148b1
 - Smoke checks:
 - enterprise-lab-workflow.ps1 -Package passed.
 - Remote checks:
-- PR #304 opened; remote checks pending for the branch head.
+- Not opened yet.
 
 ## Blockers
 
@@ -85,11 +92,15 @@ SHA: 6d34ffa1edc92633fc7b2bc4d4549e71c56148b1
 
 ## Next Action
 
-One concrete next step: commit and push this PR-opened checkpoint, then rerun final local verification on the final PR head.
+One concrete next step: open PR 10 and record the PR-opened checkpoint.
 
 ## Recovery Notes
 
 - How to resume:
+- Confirm the branch is `codex/goal-campaign-system-index`, rerun the PR 10 focused guard, then follow the normal campaign verification and PR creation path.
 - Commands already run:
+- `git fetch origin`; `git checkout main`; `git pull --ff-only origin main`; `git checkout -b codex/goal-campaign-system-index`.
 - Safety boundaries to re-check:
+- Docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed:
+- PR current-head checks after PR creation; main CI/CodeQL after merge.

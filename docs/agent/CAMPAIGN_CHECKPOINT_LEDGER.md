@@ -2,7 +2,7 @@
 
 This document defines the checkpoint ledger for a multi-PR Codex `/goal` campaign. It is documentation only; it does not add automation, CI/Maven wiring, runtime behavior, Docker/Compose behavior, external targets, secrets, or production claims.
 
-Use this ledger with CAMPAIGN_SYSTEM_ARCHITECTURE.md, CAMPAIGN_PR_READINESS_CHECKLIST.md, CAMPAIGN_REMOTE_CHECK_AUDIT.md, CAMPAIGN_MERGE_GATE.md, CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md, GOAL_MODE_LONG_RUN_PROTOCOL.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md. The ledger explains what must be recorded at each campaign checkpoint so the current state is reviewable without relying on memory or chat context.
+Use this ledger with CAMPAIGN_SYSTEM_ARCHITECTURE.md, CAMPAIGN_PR_READINESS_CHECKLIST.md, CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md, CAMPAIGN_REMOTE_CHECK_AUDIT.md, CAMPAIGN_MERGE_GATE.md, CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md, GOAL_MODE_LONG_RUN_PROTOCOL.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md. The ledger explains what must be recorded at each campaign checkpoint so the current state is reviewable without relying on memory or chat context.
 
 ## Ledger Purpose
 

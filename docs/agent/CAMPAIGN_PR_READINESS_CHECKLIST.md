@@ -2,7 +2,7 @@
 
 This checklist defines the review gate for each small PR in a multi-PR Codex `/goal` campaign. It is documentation only; it does not add automation, CI/Maven wiring, runtime behavior, Docker/Compose behavior, external targets, secrets, or production claims.
 
-Use this checklist with CAMPAIGN_SYSTEM_ARCHITECTURE.md, CAMPAIGN_CHECKPOINT_LEDGER.md, CAMPAIGN_REMOTE_CHECK_AUDIT.md, CAMPAIGN_MERGE_GATE.md, CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md, GOAL_MODE_LONG_RUN_PROTOCOL.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md before opening or merging a campaign PR.
+Use this checklist with CAMPAIGN_SYSTEM_ARCHITECTURE.md, CAMPAIGN_CHECKPOINT_LEDGER.md, CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md, CAMPAIGN_REMOTE_CHECK_AUDIT.md, CAMPAIGN_MERGE_GATE.md, CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md, GOAL_MODE_LONG_RUN_PROTOCOL.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md before opening or merging a campaign PR.
 
 ## Purpose
 
@@ -27,6 +27,7 @@ Confirm all of the following before opening a campaign PR:
 - SESSION_MANAGER.md records the branch, goal, current head SHA, changed files, checks run, blocker state, and next action;
 - FAILURE_LOG.md records any local failure, remote failure, scope audit failure, or recovered tooling failure;
 - the diff is limited to the scoped deliverables;
+- CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md is satisfied for the changed-file, forbidden-scope, claim, guard-test, and stop-condition audit;
 - no production code, Maven config, CI/workflow, Dockerfile, Compose behavior, runtime behavior, endpoint behavior, k6 behavior, Bruno behavior, Toxiproxy behavior, scripts, secrets, external/cloud/tenant targets, or automation changed outside explicit scope;
 - focused documentation guard tests passed;
 - the relevant focused selector bundle passed;

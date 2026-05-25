@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-24T19:48-07:00
+
+Branch/PR: codex/goal-campaign-build-contract-example / https://github.com/RicheyWorks/LoadBalancerPro/pull/308
+
+Failure type: final-head focused documentation guard
+
+Failing check: `mvn test "-Dtest=AgentGoalCampaignBuildContractExampleDocumentationTest"`
+
+Suspected cause: SESSION_MANAGER.md recorded PR #307 merge facts but no longer preserved the exact phrase "slot 2 merged and main green" after the PR-opened checkpoint moved the active checkpoint forward.
+
+Fix attempted: restored the exact phrase in the slot 3 session checkpoint while keeping the PR #308 checkpoint current.
+
+Result: focused guard rerun passed.
+
+Follow-up action: continue final-head local verification.
+
+## Entry
+
 Date/time: 2026-05-24T19:46-07:00
 
 Branch/PR: codex/goal-campaign-build-contract-example / pending

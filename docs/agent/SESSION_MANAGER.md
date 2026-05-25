@@ -35,6 +35,7 @@ Changed files:
 
 Checks run:
 
+- Slot 2 merged and main green.
 - PR #307 merged at `a4e2a9780de53857280748b51e097364a9872b45`.
 - Main pulled with `--ff-only` after the merge.
 - Main CI and CodeQL for `a4e2a9780de53857280748b51e097364a9872b45` completed successfully.

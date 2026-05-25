@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public final class TailLatencyPowerOfTwoStrategy implements RoutingStrategy {
     public static final String STRATEGY_NAME = "TAIL_LATENCY_POWER_OF_TWO";
@@ -44,13 +45,14 @@ public final class TailLatencyPowerOfTwoStrategy implements RoutingStrategy {
         }
 
         List<ServerStateVector> candidates = sampleCandidates(eligible);
-        Map<String, Double> scores = scoreCandidates(candidates);
+        Map<String, ServerScoreBreakdown> breakdowns = scoreCandidateBreakdowns(candidates);
+        Map<String, Double> scores = scoresFromBreakdowns(breakdowns);
         ServerStateVector chosen = candidates.stream()
                 .min(Comparator.comparingDouble((ServerStateVector state) -> scores.get(state.serverId()))
                         .thenComparing(ServerStateVector::serverId))
                 .orElseThrow();
 
-        String reason = reasonForChoice(chosen, candidates, scores);
+        String reason = reasonForChoice(chosen, candidates, scores, breakdowns);
         RoutingDecisionExplanation explanation = new RoutingDecisionExplanation(
                 STRATEGY_NAME,
                 candidates.stream().map(ServerStateVector::serverId).toList(),
@@ -79,20 +81,30 @@ public final class TailLatencyPowerOfTwoStrategy implements RoutingStrategy {
         return List.of(eligible.get(firstIndex), eligible.get(secondIndex));
     }
 
-    private Map<String, Double> scoreCandidates(List<ServerStateVector> candidates) {
-        Map<String, Double> scores = new LinkedHashMap<>();
+    private Map<String, ServerScoreBreakdown> scoreCandidateBreakdowns(List<ServerStateVector> candidates) {
+        Map<String, ServerScoreBreakdown> breakdowns = new LinkedHashMap<>();
         for (ServerStateVector candidate : candidates) {
-            scores.put(candidate.serverId(), scoreCalculator.score(candidate));
+            breakdowns.put(candidate.serverId(), scoreCalculator.scoreBreakdown(candidate));
+        }
+        return breakdowns;
+    }
+
+    private Map<String, Double> scoresFromBreakdowns(Map<String, ServerScoreBreakdown> breakdowns) {
+        Map<String, Double> scores = new LinkedHashMap<>();
+        for (Map.Entry<String, ServerScoreBreakdown> entry : breakdowns.entrySet()) {
+            scores.put(entry.getKey(), entry.getValue().totalScore());
         }
         return scores;
     }
 
     private String reasonForChoice(ServerStateVector chosen,
                                    List<ServerStateVector> candidates,
-                                   Map<String, Double> scores) {
+                                   Map<String, Double> scores,
+                                   Map<String, ServerScoreBreakdown> breakdowns) {
         if (candidates.size() == 1) {
             return "Chose " + chosen.serverId() + " because it was the only healthy candidate with score "
-                    + formatScore(scores.get(chosen.serverId())) + ".";
+                    + formatScore(scores.get(chosen.serverId()))
+                    + penaltySummarySentence("Primary penalty factors", breakdowns.get(chosen.serverId()));
         }
         ServerStateVector other = candidates.stream()
                 .filter(candidate -> !candidate.serverId().equals(chosen.serverId()))
@@ -100,7 +112,20 @@ public final class TailLatencyPowerOfTwoStrategy implements RoutingStrategy {
                 .orElse(chosen);
         return "Chose " + chosen.serverId() + " because its score "
                 + formatScore(scores.get(chosen.serverId())) + " was lower than "
-                + other.serverId() + " score " + formatScore(scores.get(other.serverId())) + ".";
+                + other.serverId() + " score " + formatScore(scores.get(other.serverId()))
+                + penaltySummarySentence("Primary penalty factors for " + other.serverId(),
+                breakdowns.get(other.serverId()));
+    }
+
+    private String penaltySummarySentence(String label, ServerScoreBreakdown breakdown) {
+        if (breakdown == null) {
+            return ".";
+        }
+        List<String> factorNames = breakdown.topPenaltyFactorNames(3);
+        if (factorNames.isEmpty()) {
+            return ".";
+        }
+        return ". " + label + ": " + factorNames.stream().collect(Collectors.joining(", ")) + ".";
     }
 
     private String formatScore(double score) {

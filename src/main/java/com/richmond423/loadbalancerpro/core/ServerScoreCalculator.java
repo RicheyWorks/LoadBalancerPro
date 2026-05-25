@@ -35,6 +35,16 @@ public final class ServerScoreCalculator {
         return state.healthy() ? score : score + UNHEALTHY_PENALTY;
     }
 
+    public ServerScoreBreakdown scoreBreakdown(ServerStateVector state) {
+        Objects.requireNonNull(state, "state cannot be null");
+        List<ScoreFactorContribution> contributions = factorContributions(state);
+        double totalScore = contributions.stream()
+                .filter(ScoreFactorContribution::hasExactContributionValue)
+                .mapToDouble(contribution -> contribution.contributionValue().orElseThrow())
+                .sum();
+        return new ServerScoreBreakdown(state.serverId(), totalScore, contributions);
+    }
+
     public List<ScoreFactorContribution> factorContributions(ServerStateVector state) {
         Objects.requireNonNull(state, "state cannot be null");
         double capacityBasis = capacityBasis(state);

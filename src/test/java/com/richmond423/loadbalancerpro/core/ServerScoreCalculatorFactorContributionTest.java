@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,21 @@ class ServerScoreCalculatorFactorContributionTest {
         assertEquals(calculator.score(state), contributionTotal, 0.000001);
         assertEquals(calculator.factorContributions(state), contributions,
                 "Contribution output should be deterministic for the same state vector");
+    }
+
+    @Test
+    void scoreBreakdownPreservesExistingScoreAndNamesDominantPenaltyFactors() {
+        ServerStateVector state = representativeState(true);
+
+        ServerScoreBreakdown breakdown = calculator.scoreBreakdown(state);
+
+        assertEquals(state.serverId(), breakdown.serverId());
+        assertEquals(calculator.score(state), breakdown.totalScore(), 0.000001);
+        assertEquals(calculator.factorContributions(state), breakdown.factorContributions());
+        assertEquals(calculator.score(state), breakdown.exactContributionTotal(), 0.000001);
+        assertEquals(List.of("recentErrorBurst", "timeoutRate", "retryRate"),
+                breakdown.topPenaltyFactorNames(3));
+        assertThrows(IllegalArgumentException.class, () -> breakdown.topPenaltyFactorNames(0));
     }
 
     @Test

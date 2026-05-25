@@ -103,6 +103,21 @@ class ServerTelemetryRoutingTest {
     }
 
     @Test
+    void worseTailLatencyLosesWhenAverageLatencyIsSimilarAndReasonNamesTailFactors() {
+        ServerStateVector lowerTail = state("lower-tail", true, 20, 100.0, 100.0,
+                50.0, 80.0, 110.0, 0.01, 2);
+        ServerStateVector higherTail = state("higher-tail", true, 20, 100.0, 100.0,
+                50.0, 180.0, 260.0, 0.01, 2);
+
+        RoutingDecision decision = strategyWithSeed(1).choose(List.of(lowerTail, higherTail));
+
+        assertEquals("lower-tail", decision.chosenServer().orElseThrow().serverId());
+        assertTrue(scoreCalculator.score(lowerTail) < scoreCalculator.score(higherTail));
+        assertTrue(decision.explanation().reason().contains("p99LatencyMillis"));
+        assertTrue(decision.explanation().reason().contains("p95LatencyMillis"));
+    }
+
+    @Test
     void scoreCalculationIsDeterministic() {
         ServerStateVector server = state("stable", true, 12, 100.0, 80.0,
                 20.0, 60.0, 90.0, 0.03, 4);
@@ -155,6 +170,21 @@ class ServerTelemetryRoutingTest {
     }
 
     @Test
+    void saturatedServerIsPenalizedAndReasonNamesPressureFactors() {
+        ServerStateVector steady = state("steady", true, 10, 100.0, 100.0,
+                40.0, 90.0, 120.0, 0.01, 2);
+        ServerStateVector saturated = state("saturated", true, 150, 100.0, 100.0,
+                40.0, 90.0, 120.0, 0.01, 80);
+
+        RoutingDecision decision = strategyWithSeed(1).choose(List.of(steady, saturated));
+
+        assertEquals("steady", decision.chosenServer().orElseThrow().serverId());
+        assertTrue(scoreCalculator.score(steady) < scoreCalculator.score(saturated));
+        assertTrue(decision.explanation().reason().contains("inFlightRequestRatio"));
+        assertTrue(decision.explanation().reason().contains("queueDepthRatio"));
+    }
+
+    @Test
     void highErrorRatePenalizesScore() {
         ServerStateVector lowErrorRate = state("low-error", true, 10, 100.0, 100.0,
                 30.0, 60.0, 90.0, 0.01, 1);
@@ -185,6 +215,22 @@ class ServerTelemetryRoutingTest {
 
         assertTrue(scoreCalculator.networkRiskScore(networkRisk.networkAwarenessSignal()) > 0.0);
         assertTrue(scoreCalculator.score(networkRisk) > scoreCalculator.score(baseline));
+    }
+
+    @Test
+    void recoveryRiskSignalCanPreventImmediatePreferenceAfterOneGoodLatencyWindow() {
+        ServerStateVector stable = state("stable", true, 15, 100.0, 100.0,
+                45.0, 90.0, 130.0, 0.01, 2, NetworkAwarenessSignal.neutral("stable", NOW));
+        ServerStateVector recovering = state("recovering", true, 5, 100.0, 100.0,
+                20.0, 35.0, 55.0, 0.01, 0,
+                new NetworkAwarenessSignal("recovering", 0.40, 0.25, 0.20, 80.0, true, 5, 100, NOW));
+
+        RoutingDecision decision = strategyWithSeed(1).choose(List.of(stable, recovering));
+
+        assertEquals("stable", decision.chosenServer().orElseThrow().serverId());
+        assertTrue(scoreCalculator.score(stable) < scoreCalculator.score(recovering));
+        assertTrue(decision.explanation().reason().contains("timeoutRate"));
+        assertTrue(decision.explanation().reason().contains("recentErrorBurst"));
     }
 
     @Test
@@ -335,8 +381,8 @@ class ServerTelemetryRoutingTest {
         TailLatencyPowerOfTwoStrategy strategy = strategyWithSeed(5);
         ServerStateVector better = state("better", true, 5, 100.0, 100.0,
                 20.0, 40.0, 80.0, 0.01, 1);
-        ServerStateVector riskier = state("riskier", true, 75, 100.0, 100.0,
-                35.0, 120.0, 220.0, 0.15, 10);
+        ServerStateVector riskier = state("riskier", true, 10, 100.0, 100.0,
+                35.0, 120.0, 220.0, 0.15, 1);
 
         RoutingDecision decision = strategy.choose(List.of(better, riskier));
         RoutingDecisionExplanation explanation = decision.explanation();
@@ -352,6 +398,9 @@ class ServerTelemetryRoutingTest {
         assertEquals(scoreCalculator.score(better), explanation.scores().get("better"));
         assertTrue(explanation.reason().contains("better"));
         assertTrue(explanation.reason().contains("score"));
+        assertTrue(explanation.reason().contains("p99LatencyMillis"));
+        assertTrue(explanation.reason().contains("p95LatencyMillis"));
+        assertTrue(explanation.reason().contains("recentErrorRate"));
         assertEquals(NOW, explanation.timestamp());
     }
 

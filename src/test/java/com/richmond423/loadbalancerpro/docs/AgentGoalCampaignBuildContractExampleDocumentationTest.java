@@ -105,14 +105,18 @@ class AgentGoalCampaignBuildContractExampleDocumentationTest {
                 "BUILD_CONTRACT.md should link to the filled example");
         assertTrue(board.contains("goal_campaign_build_contract_example.md"),
                 "board should link to the filled example");
-        assertTrue(board.contains("completed campaign prs: 2 / 10"),
-                "board should record two completed PRs");
-        assertTrue(board.contains("current pr slot: 3"),
-                "board should advance the active slot");
-        assertTrue(session.contains("current pr slot: 3"),
-                "session should record slot 3");
-        assertTrue(session.contains("slot 2 merged and main green"),
-                "session should record the slot 2 merge checkpoint");
+        assertTrue(board.contains("completed campaign prs:"),
+                "board should record completed PR count");
+        assertTrue(board.contains("current pr slot:"),
+                "board should record the active slot");
+        assertTrue(board.contains("codex/goal-campaign-build-contract-example"),
+                "board should preserve slot 3 branch history");
+        assertTrue(board.contains("#308"),
+                "board should preserve slot 3 PR history");
+        assertTrue(session.contains("current pr slot:"),
+                "session should record the active slot");
+        assertTrue(session.contains("goal_campaign_build_contract_example.md"),
+                "session should keep the example visible to later checkpoints");
     }
 
     @Test

@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-24T20:10-07:00
+
+Branch/PR: codex/goal-campaign-session-checkpoint-examples / pending
+
+Failure type: focused documentation guard bundle
+
+Failing check: `mvn test "-Dtest=AgentGoalCampaignSessionCheckpointExamplesDocumentationTest,AgentGoalCampaignBuildContractExampleDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest,AgentCampaignSystemIndexDocumentationTest,AgentCampaignSystemArchitectureDocumentationTest"`
+
+Suspected cause: AgentGoalCampaignBuildContractExampleDocumentationTest froze the campaign board at "completed campaign prs: 2 / 10" and active slot 3 after slot 4 advanced the active campaign checkpoint.
+
+Fix attempted: updated the guard to verify durable slot 3 history and generic active-slot shape instead of freezing the active board at slot 3.
+
+Result: focused selector bundle rerun passed.
+
+Follow-up action: continue slot 4 local verification.
+
+## Entry
+
 Date/time: 2026-05-24T19:48-07:00
 
 Branch/PR: codex/goal-campaign-build-contract-example / https://github.com/RicheyWorks/LoadBalancerPro/pull/308

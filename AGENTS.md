@@ -2,7 +2,7 @@
 
 This file gives Codex and other repository agents explicit operating rules. It does not replace the README public trust surface; it keeps task/session procedure out of the README while preserving the same safety boundaries.
 
-For the session startup path that ties README, this file, the build contract, and the docs/agent templates together, use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` sessions, use [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md). For multi-PR goal campaigns, start with [`docs/agent/CAMPAIGN_SYSTEM_INDEX.md`](docs/agent/CAMPAIGN_SYSTEM_INDEX.md) and use [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md).
+For the session startup path that ties README, this file, the build contract, and the docs/agent templates together, use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` sessions, use [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md). For multi-PR goal campaigns, start with [`docs/agent/CAMPAIGN_SYSTEM_INDEX.md`](docs/agent/CAMPAIGN_SYSTEM_INDEX.md), use [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md), and apply the campaign-specific discipline in [`docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md).
 
 ## Core Rules
 
@@ -32,6 +32,17 @@ For the session startup path that ties README, this file, the build contract, an
 - Treat README and reviewer docs as claim contracts, not cosmetic copy.
 - Preserve reviewer trust wording when refactoring or reorganizing documentation.
 - Stop and report if required safety wording conflicts with a requested wording change.
+
+## Goal Campaign Discipline
+
+- For a goal campaign, work one scoped PR at a time and do not open a later slot before the current slot is merged and main CI/CodeQL are green.
+- Use [`docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md) with the campaign contract, board, session manager, failure log, verification protocol, and merge gate.
+- Update `docs/agent/SESSION_MANAGER.md` after branch creation, local verification, PR creation, merge, and post-merge main checks.
+- Log every local, remote, scope, or tooling failure in `docs/agent/FAILURE_LOG.md` before continuing.
+- Keep no overclaiming as a campaign invariant: a multi-PR campaign does not upgrade evidence claims or relax the README trust contract.
+- Treat pending, failed, cancelled, stale, or duplicate-only required checks as a stop condition, not as progress.
+- Do not use the campaign format as permission to change production behavior, add automation, add CI/Maven/Docker/Compose/runtime behavior, introduce secrets or external/cloud/tenant targets, or weaken not-proven boundaries.
+- Continue only while the current slot remains docs/test-only or otherwise explicitly scoped, local verification is current-head clean, remote checks are current-head green, and main is green after merge.
 
 ## Reporting
 

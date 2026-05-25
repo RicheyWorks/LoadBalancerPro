@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-24T22:21-07:00
+
+Branch/PR: codex/goal-campaign-agents-discipline / pending
+
+Failure type: focused documentation guard
+
+Failing check: `mvn test "-Dtest=AgentGoalCampaignAgentsDisciplineDocumentationTest"`
+
+Suspected cause: AGENTS.md used "Do not overclaim" but not the exact "no overclaiming" wording expected by the new guard, GOAL_CAMPAIGN_AGENT_DISCIPLINE.md described a human choice without the exact "human decision" phrase, and the guard test listed forbidden API names literally so its own source contained "Files.write".
+
+Fix attempted: log the failure, add the missing discipline wording, and split forbidden API names in the guard test so the self-check can detect real use without matching its own string list.
+
+Result: fix pending; focused guard must be rerun before continuing.
+
+Follow-up action: rerun the focused guard and then the full slot 9 verification ladder if it passes.
+
+## Entry
+
 Date/time: 2026-05-24T22:05-07:00
 
 Branch/PR: codex/goal-campaign-reviewer-trust-navigation / https://github.com/RicheyWorks/LoadBalancerPro/pull/313

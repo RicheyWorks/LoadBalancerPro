@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-25T01:54-07:00
+Timestamp: 2026-05-25T02:00-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
 Current PR slot: 5
 
-Checkpoint: Slot 5 local verification passed after logged guard-test repairs
+Checkpoint: Slot 5 PR #320 opened after local verification
 
 Started from main SHA: `bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f`
 
 Current branch: codex/evidence-audit-codeql-dependency-review
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/320
 
-Head SHA: uncommitted local docs/test-only state based on `bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f`
+Head SHA: `d1a4e5463c2acd4c440dc61f30563cd864179747` at initial PR creation; checkpoint commit pending
 
 Changed files:
 
@@ -54,12 +54,13 @@ Checks run:
 - Full package passed: `mvn -B package` with 2,410 tests, 0 failures, 0 errors, and 0 skipped.
 - Diff checks passed: `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check`.
 - Enterprise lab package smoke passed: `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- Slot 5 PR opened: [#320](https://github.com/RicheyWorks/LoadBalancerPro/pull/320).
 
-Remote status: main CI and CodeQL were green for the slot 5 starting main SHA; slot 5 PR not opened yet.
+Remote status: main CI and CodeQL were green for the slot 5 starting main SHA; PR #320 remote checks are pending for the current PR head.
 
 Blocker: none.
 
-Next action: commit, push, open the slot 5 PR, and wait for current-head remote checks.
+Next action: commit and push this PR-creation checkpoint, rerun focused guards, then wait for current-head remote checks.
 
 Decision: continue
 
@@ -69,7 +70,7 @@ Name: codex/evidence-audit-codeql-dependency-review
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/320
 
 ## Current Goal
 
@@ -77,7 +78,7 @@ Short goal: Audit CodeQL and Dependency Review posture without changing workflow
 
 ## Current Head SHA
 
-SHA: uncommitted local docs/test-only state based on `bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f`
+SHA: `d1a4e5463c2acd4c440dc61f30563cd864179747` at initial PR creation; checkpoint commit pending
 
 ## What Changed
 
@@ -106,7 +107,7 @@ SHA: uncommitted local docs/test-only state based on `bc62bef7fb5843e2ab143a47a6
 - Package checks: `mvn -q "-DskipTests" package` passed; `mvn -B package` passed with 2,410 tests, 0 failures, 0 errors, and 0 skipped.
 - Diff checks: `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
 - Smoke checks: `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Remote checks: main CI and CodeQL green for slot 5 starting SHA; slot 5 PR not opened yet.
+- Remote checks: main CI and CodeQL green for slot 5 starting SHA; PR #320 remote checks pending for the current PR head.
 
 ## Blockers
 
@@ -115,12 +116,12 @@ SHA: uncommitted local docs/test-only state based on `bc62bef7fb5843e2ab143a47a6
 
 ## Next Action
 
-One concrete next step: commit the slot 5 docs/test-only changes, push the branch, open the PR, and wait for current-head remote checks.
+One concrete next step: commit and push this PR-creation checkpoint, rerun focused guards, and wait for current-head remote checks.
 
 ## Recovery Notes
 
-- How to resume: confirm branch `codex/evidence-audit-codeql-dependency-review`, inspect `git status`, then commit/push/open the slot 5 PR if the final guard rerun remains green.
-- Commands already run for slot 5: `git checkout -b codex/evidence-audit-codeql-dependency-review`, `Get-Content .github/workflows/codeql.yml`, `Get-Content .github/workflows/ci.yml`, main remote status checks confirming slot 4 main was green, the focused guard and selector bundle after repairs, dependency tree, `mvn -q test`, package checks, diff checks, and enterprise lab package smoke.
+- How to resume: confirm branch `codex/evidence-audit-codeql-dependency-review`, inspect `git status`, push the PR-creation checkpoint if it is still local, then inspect PR #320 current-head checks.
+- Commands already run for slot 5: `git checkout -b codex/evidence-audit-codeql-dependency-review`, `Get-Content .github/workflows/codeql.yml`, `Get-Content .github/workflows/ci.yml`, main remote status checks confirming slot 4 main was green, the focused guard and selector bundle after repairs, dependency tree, `mvn -q test`, package checks, diff checks, enterprise lab package smoke, `git commit -m "Add evidence audit CodeQL dependency review audit"`, `git push origin codex/evidence-audit-codeql-dependency-review`, and `gh pr create`.
 - Safety boundaries to re-check: docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed: slot 5 PR current-head checks after PR creation; main CI/CodeQL after merge.
 

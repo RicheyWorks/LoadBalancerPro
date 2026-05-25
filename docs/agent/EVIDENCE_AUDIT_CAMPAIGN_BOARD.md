@@ -11,7 +11,7 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 - Completed campaign PRs: 4 / 20.
 - Current PR slot: 5.
 - Current branch: `codex/evidence-audit-codeql-dependency-review`.
-- Current PR: pending after local verification.
+- Current PR: [#320](https://github.com/RicheyWorks/LoadBalancerPro/pull/320).
 - Starting main HEAD: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
 - Prior campaign fact: PR #315 is merged.
 - Prior campaign merge commit: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
@@ -21,7 +21,7 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 - Slot 3 result: PR #318 merged as `65fad4a65f0297ba6e7d085bd84cacf5aa966f38`; post-merge main CI and CodeQL were green.
 - Slot 4 result: PR #319 merged as `bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f`; post-merge main CI and CodeQL were green.
 - Slot 5 purpose: audit CodeQL and Dependency Review posture without editing workflow behavior.
-- Slot 5 local status: focused guard, relevant selector bundle, dependency tree, full tests, package checks, diff checks, and enterprise lab package smoke passed after logged documentation-guard repairs.
+- Slot 5 local status: focused guard, relevant selector bundle, dependency tree, full tests, package checks, diff checks, and enterprise lab package smoke passed after logged documentation-guard repairs; PR #320 is open and waiting for current-head remote checks.
 
 ## Board Rules
 
@@ -42,7 +42,7 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 | 2 | Open PR hygiene audit | codex/evidence-audit-open-pr-hygiene | [#317](https://github.com/RicheyWorks/LoadBalancerPro/pull/317) | merged | `08e3320e6b5413d372249b7886876341af1529e6` | `7dd64becaefd589ff94ed2fea93b017397b4a747` | PR #291 and other open PRs audited; post-merge main CI and CodeQL green |
 | 3 | Repository evidence map | codex/evidence-audit-repository-map | [#318](https://github.com/RicheyWorks/LoadBalancerPro/pull/318) | merged | `e411c2fa6dc2c7d65c90093c3472dd30fd9a7bab` | `65fad4a65f0297ba6e7d085bd84cacf5aa966f38` | Repository evidence map added; post-merge main CI and CodeQL green |
 | 4 | CI workflow audit | codex/evidence-audit-ci-workflow | [#319](https://github.com/RicheyWorks/LoadBalancerPro/pull/319) | merged | `e1c40e904730a9e24875424aa312c68fc62d1fa3` | `bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f` | CI workflow audit added; post-merge main CI and CodeQL green |
-| 5 | CodeQL and dependency-review audit | codex/evidence-audit-codeql-dependency-review | pending | local verification passed | pending | pending | CodeQL/dependency review posture audited; PR pending |
+| 5 | CodeQL and dependency-review audit | codex/evidence-audit-codeql-dependency-review | [#320](https://github.com/RicheyWorks/LoadBalancerPro/pull/320) | open / remote pending | `d1a4e5463c2acd4c440dc61f30563cd864179747` | pending | CodeQL/dependency review posture audited; waiting for current-head remote checks |
 | 6 | Maven/dependency posture audit | pending | pending | planned | pending | pending | Audit pom.xml posture without dependency changes |
 | 7 | Dockerfile runtime audit | pending | pending | planned | pending | pending | Audit Dockerfile runtime posture without Dockerfile edits |
 | 8 | Compose/local-lab audit | pending | pending | planned | pending | pending | Audit local-lab Compose without Compose edits |

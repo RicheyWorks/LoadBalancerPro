@@ -34,11 +34,11 @@ Failing check: `gh pr create` body quoting attempt
 
 Suspected cause: PowerShell passed `-q` from the intended PR body as a `gh pr create` flag.
 
-Fix attempted: log the failure and switch PR creation to `gh pr create --body-file -` with stdin body content.
+Fix attempted: logged the failure and switched PR creation to `gh pr create --body-file -` with stdin body content.
 
-Result: pending retry.
+Result: retry succeeded and opened https://github.com/RicheyWorks/LoadBalancerPro/pull/308.
 
-Follow-up action: create the PR with stdin body content, commit this failure log entry, rerun final-head local verification, and push the final head.
+Follow-up action: commit this PR-opened checkpoint, rerun final-head local verification, and push the final head.
 
 ## Entry
 

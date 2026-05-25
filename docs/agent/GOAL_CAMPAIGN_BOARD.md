@@ -11,7 +11,7 @@ Use this board with [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`
 - Completed campaign PRs: 2 / 10.
 - Current PR slot: 3.
 - Current branch: `codex/goal-campaign-build-contract-example`.
-- Current PR: not opened yet.
+- Current PR: [#308](https://github.com/RicheyWorks/LoadBalancerPro/pull/308).
 - Current main HEAD: `a4e2a9780de53857280748b51e097364a9872b45`.
 - Slot 1 PR: [#306](https://github.com/RicheyWorks/LoadBalancerPro/pull/306).
 - Slot 1 head SHA: `30828f89a41d64e30d1acc668714e5455a6e8a9f`.
@@ -54,7 +54,7 @@ Use these status values:
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Goal campaign template architecture | codex/goal-campaign-template-architecture | [#306](https://github.com/RicheyWorks/LoadBalancerPro/pull/306) | post-merge main green | `30828f89a41d64e30d1acc668714e5455a6e8a9f` | `9b0efc0dc0d6654c0e8f95294e77e7de72bd7941` | Template docs merged and main CI/CodeQL green |
 | 2 | Initialize goal campaign board for this trial | codex/goal-campaign-board-initialization | [#307](https://github.com/RicheyWorks/LoadBalancerPro/pull/307) | post-merge main green | `3c8edd518b82fd1f182044d339d224b72bf9b75e` | `a4e2a9780de53857280748b51e097364a9872b45` | Board initialized; main CI/CodeQL green |
-| 3 | Add filled BUILD_CONTRACT example for 10-PR campaign | codex/goal-campaign-build-contract-example | pending | in progress | pending | pending | Build contract example edit batch in progress |
+| 3 | Add filled BUILD_CONTRACT example for 10-PR campaign | codex/goal-campaign-build-contract-example | [#308](https://github.com/RicheyWorks/LoadBalancerPro/pull/308) | PR opened | pending final-head verification | pending | Build contract example PR opened; final-head verification pending |
 | 4 | Add SESSION_MANAGER campaign checkpoint examples | pending | pending | planned | pending | pending | pending |
 | 5 | Add FAILURE_LOG campaign recovery examples | pending | pending | planned | pending | pending | pending |
 | 6 | Add VERIFICATION_PROTOCOL campaign mode refinement | pending | pending | planned | pending | pending | pending |

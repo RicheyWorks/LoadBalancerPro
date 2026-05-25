@@ -24,6 +24,114 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-24T23:32-07:00
+
+Branch/PR: codex/evidence-audit-closeout-repair / pending
+
+Failure type: full local test suite
+
+Failing check: `mvn -q test`
+
+Suspected cause: SESSION_MANAGER.md was moved to the new 20-PR audit campaign and preserved the late 10-PR references, but omitted several earlier 10-PR campaign architecture/example links that full-suite documentation guards require as durable historical context.
+
+Fix attempted: log the failure and add the missing historical references to the 10-PR campaign contract, build contract example, session checkpoint examples, and failure recovery examples without changing the new active campaign pointer.
+
+Result: fix pending; rerun focused guards and full tests before continuing.
+
+Follow-up action: repair SESSION_MANAGER.md historical links, rerun the focused bundle, then rerun `mvn -q test`.
+
+## Entry
+
+Date/time: 2026-05-24T23:29-07:00
+
+Branch/PR: codex/evidence-audit-closeout-repair / pending
+
+Failure type: focused documentation guard bundle rerun
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignReadmeSummaryDocumentationTest,AgentGoalCampaignAgentsDisciplineDocumentationTest,AgentGoalCampaignReviewerTrustNavigationDocumentationTest,AgentGoalCampaignVerificationProtocolRefinementDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"`
+
+Suspected cause: GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md had factual "Did not accept" wording but omitted the exact durable "Do not accept failed, cancelled, stale, pending, or duplicate-only required checks" phrase.
+
+Fix attempted: log the failure and add the exact durable required-check rejection phrase.
+
+Result: fix pending; rerun the focused bundle before continuing.
+
+Follow-up action: rerun the focused bundle and proceed only after it passes.
+
+## Entry
+
+Date/time: 2026-05-24T23:29-07:00
+
+Branch/PR: codex/evidence-audit-closeout-repair / pending
+
+Failure type: focused documentation guard bundle rerun
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignReadmeSummaryDocumentationTest,AgentGoalCampaignAgentsDisciplineDocumentationTest,AgentGoalCampaignReviewerTrustNavigationDocumentationTest,AgentGoalCampaignVerificationProtocolRefinementDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"`
+
+Suspected cause: GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md still used only past-tense full-verification and merge-gate wording, while the durable guard expects the exact future-use rule phrase.
+
+Fix attempted: log the failure and restore the exact durable full-verification, merge-gate, and pending-remote wording alongside the factual completed closeout.
+
+Result: fix pending; rerun the focused bundle before continuing.
+
+Follow-up action: rerun the focused bundle and proceed only after it passes.
+
+## Entry
+
+Date/time: 2026-05-24T23:28-07:00
+
+Branch/PR: codex/evidence-audit-closeout-repair / pending
+
+Failure type: focused documentation guard bundle rerun
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignReadmeSummaryDocumentationTest,AgentGoalCampaignAgentsDisciplineDocumentationTest,AgentGoalCampaignReviewerTrustNavigationDocumentationTest,AgentGoalCampaignVerificationProtocolRefinementDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"`
+
+Suspected cause: GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md described focused checks in past tense and no longer contained the exact durable phrase "run focused checks while editing" required by the final handoff guard.
+
+Fix attempted: log the failure and restore the exact durable focused-check rule without weakening the completed closeout facts.
+
+Result: fix pending; rerun the focused bundle before continuing.
+
+Follow-up action: rerun the focused bundle and proceed only after it passes.
+
+## Entry
+
+Date/time: 2026-05-24T23:27-07:00
+
+Branch/PR: codex/evidence-audit-closeout-repair / pending
+
+Failure type: focused documentation guard bundle rerun
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignReadmeSummaryDocumentationTest,AgentGoalCampaignAgentsDisciplineDocumentationTest,AgentGoalCampaignReviewerTrustNavigationDocumentationTest,AgentGoalCampaignVerificationProtocolRefinementDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"`
+
+Suspected cause: the first repair restored most historical links, but SESSION_MANAGER.md still omitted the slot 9 merge SHA and GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md used past-tense failure logging wording instead of the exact durable rule phrase.
+
+Fix attempted: log the rerun failure, add the missing slot 9 merge SHA to the historical closeout, and restore the exact failure logging rule in the final handoff report.
+
+Result: fix pending; rerun the focused bundle before continuing.
+
+Follow-up action: rerun the focused bundle and proceed only after it passes.
+
+## Entry
+
+Date/time: 2026-05-24T23:26-07:00
+
+Branch/PR: codex/evidence-audit-closeout-repair / pending
+
+Failure type: focused documentation guard bundle
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignReadmeSummaryDocumentationTest,AgentGoalCampaignAgentsDisciplineDocumentationTest,AgentGoalCampaignReviewerTrustNavigationDocumentationTest,AgentGoalCampaignVerificationProtocolRefinementDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"`
+
+Suspected cause: slot 1 correctly moved SESSION_MANAGER.md to the new 20-PR audit campaign, while several adjacent 10-PR campaign guards still expected the old campaign to remain the active session checkpoint or expected exact pre-repair wording.
+
+Fix attempted: log the failure, then preserve old 10-PR facts as durable historical closeout references and update exact wording expectations without weakening safety boundaries.
+
+Result: fix pending; rerun the focused bundle before continuing.
+
+Follow-up action: repair the durable-history docs/tests, rerun the focused slot 1 guard bundle, then continue full verification if it passes.
+
+## Entry
+
 Date/time: 2026-05-24T22:21-07:00
 
 Branch/PR: codex/goal-campaign-agents-discipline / pending

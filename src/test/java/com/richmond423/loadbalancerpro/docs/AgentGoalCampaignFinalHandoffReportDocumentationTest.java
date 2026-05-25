@@ -26,9 +26,10 @@ class AgentGoalCampaignFinalHandoffReportDocumentationTest {
                 "goal campaign final handoff report",
                 "loadbalancerpro goal mode 10-pr trial",
                 "documentation only",
-                "slot 10 closeout artifact",
-                "completed before this closeout branch: 9 / 10",
-                "count only after merge and green main",
+                "actual post-merge closeout result",
+                "final result: 10 / 10 prs merged",
+                "pr #315 merge commit",
+                "c27dc5a8da365f9b64ab13e671d9dad07f0f2f01",
                 "post-merge main verification passes",
                 "main ci/codeql are green",
                 "update session_manager.md at checkpoints",
@@ -95,22 +96,46 @@ class AgentGoalCampaignFinalHandoffReportDocumentationTest {
         String trustMap = read(TRUST_MAP).toLowerCase();
         String finalTemplate = read(FINAL_TEMPLATE).toLowerCase();
 
-        assertTrue(board.contains("completed campaign prs: 9 / 10"));
-        assertTrue(board.contains("current pr slot: 10"));
+        assertTrue(board.contains("completed campaign prs: 10 / 10"));
+        assertTrue(board.contains("current pr slot: completed"));
         assertTrue(board.contains("codex/goal-campaign-final-handoff-report"));
         assertTrue(board.contains("goal_campaign_final_handoff_report.md"));
         assertTrue(board.contains("#315"));
-        assertTrue(board.contains("24808aff413811e3330b2e05aa6f225d52098593"));
+        assertTrue(board.contains("99934cd6f511f535cc70e316a5c8f306fd643745"));
+        assertTrue(board.contains("c27dc5a8da365f9b64ab13e671d9dad07f0f2f01"));
         assertTrue(board.contains("#314"));
         assertTrue(board.contains("09d0ab9ee4ab508846165bbab51756b83d43814c"));
         assertTrue(board.contains("b045b4669ab736cfc0c707fae058ad2e73d7cd20"));
         assertTrue(session.contains("slot 9 merged and main green"));
-        assertTrue(session.contains("current pr slot: 10"));
+        assertTrue(session.contains("slot 10 merged and main green"));
         assertTrue(session.contains("https://github.com/richeyworks/loadbalancerpro/pull/315"));
         assertTrue(readme.contains("goal_campaign_final_handoff_report.md"));
         assertTrue(agents.contains("goal_campaign_final_handoff_report.md"));
         assertTrue(trustMap.contains("goal_campaign_final_handoff_report.md"));
         assertTrue(finalTemplate.contains("goal_campaign_final_handoff_report.md"));
+    }
+
+    @Test
+    void staleSlotTenPendingLanguageIsNotKeptInCloseoutDocs() throws IOException {
+        String board = read(BOARD).toLowerCase();
+        String session = read(SESSION).toLowerCase();
+        String handoff = read(FINAL_HANDOFF).toLowerCase();
+        String readme = read(README).toLowerCase();
+
+        for (String stale : new String[] {
+                "completed campaign prs: 9 / 10",
+                "final checkpoint head pending remote audit",
+                "final handoff/report pr opened; remote checks pending",
+                "pr #315 checks in progress",
+                "current-head remote checks pending" }) {
+            assertFalse(board.contains(stale), "Board should not retain stale closeout wording: " + stale);
+            assertFalse(session.contains(stale), "Session manager should not retain stale closeout wording: " + stale);
+            assertFalse(handoff.contains(stale), "Final handoff should not retain stale closeout wording: " + stale);
+            assertFalse(readme.contains(stale), "README should not retain stale closeout wording: " + stale);
+        }
+
+        assertFalse(readme.contains("the current loadbalancerpro goal mode 10-pr trial"),
+                "README should not describe the completed 10-PR trial as current");
     }
 
     @Test

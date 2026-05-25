@@ -8,21 +8,21 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Campaign: 10-PR LoadBalancerPro goal campaign
 
-Checkpoint: PR 10 full local verification passed; PR opening pending
+Checkpoint: PR 10 opened; final-head verification pending
 
 Started from main SHA: fccc80eb0d299d18f5e3ee59f09cb75a5c311c65
 
 Current campaign branch: codex/goal-campaign-system-index
 
-Current campaign PR: not opened yet
+Current campaign PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/305
 
 Completed campaign PRs: 9 / 10
 
 Current blocker: none
 
-Checks completed: PR 1 through PR 9 local, PR, post-merge, and main remote checks passed. Main CI and CodeQL are green for fccc80eb0d299d18f5e3ee59f09cb75a5c311c65. PR 10 branch was created from clean main. The PR 10 edit batch added the campaign system index, cross-links, a guard test, and this checkpoint update. AgentCampaignSystemIndexDocumentationTest passed. Dependency tree for org.apache.tomcat.embed passed. The campaign focused selector bundle passed. mvn -q test passed. mvn -q -DskipTests package passed. mvn -B package passed. git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed. Enterprise lab package smoke passed.
+Checks completed: PR 1 through PR 9 local, PR, post-merge, and main remote checks passed. Main CI and CodeQL are green for fccc80eb0d299d18f5e3ee59f09cb75a5c311c65. PR 10 branch was created from clean main. The PR 10 edit batch added the campaign system index, cross-links, a guard test, and this checkpoint update. AgentCampaignSystemIndexDocumentationTest passed. Dependency tree for org.apache.tomcat.embed passed. The campaign focused selector bundle passed. mvn -q test passed. mvn -q -DskipTests package passed. mvn -B package passed. git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed. Enterprise lab package smoke passed. PR #305 opened from head 518b52d9171c9ca7b6674307fd247d4437a36282.
 
-Next campaign action: open PR 10, record the PR URL and head SHA, then rerun final-head verification.
+Next campaign action: commit and push this PR-opened checkpoint, then rerun final-head verification on the updated branch head.
 
 ## Current Branch
 
@@ -30,7 +30,7 @@ Name: codex/goal-campaign-system-index
 
 ## Current PR
 
-URL: not opened yet
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/305
 
 ## Current Goal
 
@@ -38,7 +38,7 @@ Short goal: Add the final campaign system index and documentation guard so the t
 
 ## Current Head SHA
 
-SHA: fccc80eb0d299d18f5e3ee59f09cb75a5c311c65 before the PR 10 commit
+SHA: 518b52d9171c9ca7b6674307fd247d4437a36282 before the PR-opened checkpoint commit
 
 ## What Changed
 
@@ -81,7 +81,7 @@ SHA: fccc80eb0d299d18f5e3ee59f09cb75a5c311c65 before the PR 10 commit
 - Smoke checks:
 - enterprise-lab-workflow.ps1 -Package passed.
 - Remote checks:
-- Not opened yet.
+- PR #305 opened; remote checks pending for the branch head.
 
 ## Blockers
 
@@ -92,7 +92,7 @@ SHA: fccc80eb0d299d18f5e3ee59f09cb75a5c311c65 before the PR 10 commit
 
 ## Next Action
 
-One concrete next step: open PR 10 and record the PR-opened checkpoint.
+One concrete next step: commit and push this PR-opened checkpoint, then rerun final-head verification.
 
 ## Recovery Notes
 

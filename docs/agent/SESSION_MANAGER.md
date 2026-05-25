@@ -6,21 +6,21 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-24T22:25-07:00
+Timestamp: 2026-05-24T22:26-07:00
 
 Goal name: LoadBalancerPro Goal Mode 10-PR Trial
 
 Current PR slot: 9
 
-Checkpoint: Slot 9 full local verification passed; PR opening pending
+Checkpoint: Slot 9 PR opened; final checkpoint verification pending
 
 Started from main SHA: f2e3c784b5858b61e664844502ce66d3cc31d352
 
 Current branch: codex/goal-campaign-agents-discipline
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/314
 
-Head SHA: pending until slot 9 commit
+Head SHA: `043b7bfb9caa59db0713d94e71547c55372c12e0` at PR creation; final pushed checkpoint head pending remote audit
 
 Changed files:
 
@@ -51,12 +51,15 @@ Checks run:
 - `git diff --check origin/main...HEAD` passed.
 - `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- Slot 9 commit `043b7bfb9caa59db0713d94e71547c55372c12e0` pushed.
+- PR #314 opened and was mergeable at PR creation.
+- Initial PR #314 remote checks were in progress for the first pushed head.
 
-Remote status: no slot 9 PR opened yet.
+Remote status: PR #314 checks in progress.
 
 Blocker: none.
 
-Next action: commit the slot 9 docs/test-only changes, push the branch, and open the PR.
+Next action: push the PR checkpoint update, rerun focused and final-head verification, then wait for current-head remote checks.
 
 Decision: continue
 
@@ -66,7 +69,7 @@ Name: codex/goal-campaign-agents-discipline
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/314
 
 ## Current Goal
 
@@ -74,7 +77,7 @@ Short goal: Add AGENTS.md campaign discipline guidance, recording slot 8 as merg
 
 ## Current Head SHA
 
-SHA: pending until slot 9 commit
+SHA: `043b7bfb9caa59db0713d94e71547c55372c12e0` at PR creation; final pushed checkpoint head pending remote audit
 
 ## What Changed
 
@@ -108,7 +111,7 @@ SHA: pending until slot 9 commit
 - Smoke checks:
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
 - Remote checks:
-- No slot 9 PR opened yet.
+- PR #314 opened; current-head remote checks pending.
 
 ## Blockers
 
@@ -119,14 +122,14 @@ SHA: pending until slot 9 commit
 
 ## Next Action
 
-One concrete next step: commit the slot 9 docs/test-only changes and open the pull request.
+One concrete next step: push the PR checkpoint update, rerun final-head verification, then wait for current-head remote checks.
 
 ## Recovery Notes
 
 - How to resume:
-- Confirm the branch is `codex/goal-campaign-agents-discipline`, inspect `git status`, and run slot 9 focused verification.
+- Confirm the branch is `codex/goal-campaign-agents-discipline`, inspect `git status`, push the PR checkpoint update if needed, then rerun final-head verification before merge consideration.
 - Commands already run:
-- `git checkout main`; `git pull --ff-only origin main`; watched PR #313 and main CI/CodeQL checks to green; `git checkout -b codex/goal-campaign-agents-discipline`.
+- `git checkout main`; `git pull --ff-only origin main`; watched PR #313 and main CI/CodeQL checks to green; `git checkout -b codex/goal-campaign-agents-discipline`; opened PR #314.
 - Safety boundaries to re-check:
 - Docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed:

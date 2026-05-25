@@ -163,13 +163,13 @@ class AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest {
                 "repository evidence map should link to the Maven dependency posture audit");
 
         for (String expected : List.of(
-                "completed campaign prs: 5 / 20",
-                "current pr slot: 6",
+                "slot 6 result",
                 "codex/evidence-audit-maven-dependency-posture",
-                "pr #320 merged",
-                "a58d61511d84b8d9013d5a2652dc696fb555e83c",
+                "#321",
+                "e2798905b6d5a5633a965dd6c44ede7e553ece88",
+                "06d800c478b308ef836b0ab01d8b641d8b1a35f0",
                 "post-merge main ci and codeql were green",
-                "slot 6 branch created")) {
+                "slot 7 branch created")) {
             assertTrue(board.contains(expected) || session.contains(expected),
                     "Missing slot 6 campaign checkpoint: " + expected);
         }

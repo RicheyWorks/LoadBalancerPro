@@ -400,6 +400,60 @@ Result: focused rerun passed.
 
 Follow-up action: continue PR 5 full local verification.
 
+## Entry
+
+Date/time: 2026-05-24T23:58-07:00
+
+Branch/PR: codex/evidence-audit-open-pr-hygiene / pending
+
+Failure type: focused documentation guard wording failure
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditOpenPrHygieneDocumentationTest"`
+
+Suspected cause: `docs/agent/EVIDENCE_AUDIT_OPEN_PR_HYGIENE.md` preserved the docs/test-only scope by meaning but did not include the exact durable phrase `documentation/test-only` required by the new guard.
+
+Fix attempted: add exact documentation/test-only wording to the slot 2 open PR hygiene note.
+
+Result: focused rerun passed.
+
+Follow-up action: continue with the relevant campaign selector bundle and full local verification.
+
+## Entry
+
+Date/time: 2026-05-24T23:59-07:00
+
+Branch/PR: codex/evidence-audit-open-pr-hygiene / pending
+
+Failure type: focused selector bundle guard fragility
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"`
+
+Suspected cause: `AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest` froze the evidence audit board to slot 1 and `0 / 20` even though slot 2 correctly advances the active campaign board after PR #316 merged and main checks were green.
+
+Fix attempted: make the slot 1 closeout guard verify durable architecture and repaired PR #315 facts without requiring the active board to remain on slot 1.
+
+Result: selector bundle rerun passed.
+
+Follow-up action: continue slot 2 full local verification.
+
+## Entry
+
+Date/time: 2026-05-25T00:05-07:00
+
+Branch/PR: codex/evidence-audit-open-pr-hygiene / pending
+
+Failure type: focused documentation guard wording drift
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest"`
+
+Suspected cause: the slot 2 session checkpoint advanced from branch creation to local verification passed and no longer contained the exact phrase `slot 2 branch created` expected by the new guard.
+
+Fix attempted: preserve exact `Slot 2 branch created` wording inside the session checkpoint history while keeping the active checkpoint factual.
+
+Result: focused rerun passed.
+
+Follow-up action: continue final verification.
+
 ## Notes
 
 - Keep entries factual.

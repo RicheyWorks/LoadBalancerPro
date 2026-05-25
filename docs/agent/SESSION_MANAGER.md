@@ -8,21 +8,21 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Campaign: 10-PR LoadBalancerPro goal campaign
 
-Checkpoint: PR 7 full local verification completed before PR open
+Checkpoint: PR 7 opened
 
 Started from main SHA: cbdd0c9be0d886ddfb74ed0cc264dc5f636b8e67
 
 Current campaign branch: codex/goal-campaign-scope-audit-checklist
 
-Current campaign PR: pending
+Current campaign PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/302
 
 Completed campaign PRs: 6 / 10
 
 Current blocker: none
 
-Checks completed: PR 1, PR 2, PR 3, PR 4, PR 5, and PR 6 local, PR, post-merge, and main remote checks passed. Main CI and CodeQL are green for cbdd0c9be0d886ddfb74ed0cc264dc5f636b8e67. PR 7 branch was created from clean main. AgentCampaignScopeAuditChecklistDocumentationTest failed once on exact wording, the failure was logged in FAILURE_LOG.md, the wording fix was applied, and the focused rerun passed. The PR 7 focused campaign selector bundle passed. Dependency tree for org.apache.tomcat.embed passed. mvn -q test passed. mvn -q -DskipTests package passed. mvn -B package passed. git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed. Enterprise lab package smoke passed.
+Checks completed: PR 1, PR 2, PR 3, PR 4, PR 5, and PR 6 local, PR, post-merge, and main remote checks passed. Main CI and CodeQL are green for cbdd0c9be0d886ddfb74ed0cc264dc5f636b8e67. PR 7 branch was created from clean main. AgentCampaignScopeAuditChecklistDocumentationTest failed once on exact wording, the failure was logged in FAILURE_LOG.md, the wording fix was applied, and the focused rerun passed. The PR 7 focused campaign selector bundle passed. Dependency tree for org.apache.tomcat.embed passed. mvn -q test passed. mvn -q -DskipTests package passed. mvn -B package passed. git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed. Enterprise lab package smoke passed. PR #302 opened.
 
-Next campaign action: commit and push the PR 7 changes, then open the PR and update this checkpoint with the PR URL and final branch head.
+Next campaign action: commit and push this PR-opened checkpoint, then rerun final local verification on the final PR head.
 
 ## Current Branch
 
@@ -30,7 +30,7 @@ Name: codex/goal-campaign-scope-audit-checklist
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/302
 
 ## Current Goal
 
@@ -38,7 +38,7 @@ Short goal: Add campaign scope audit checklist docs and guard test.
 
 ## Current Head SHA
 
-SHA: cbdd0c9be0d886ddfb74ed0cc264dc5f636b8e67
+SHA: 40618732f51a10f3f38f8acce2560d11d53e0c89
 
 ## What Changed
 
@@ -73,7 +73,7 @@ SHA: cbdd0c9be0d886ddfb74ed0cc264dc5f636b8e67
 - Smoke checks:
 - enterprise-lab-workflow.ps1 -Package passed.
 - Remote checks:
-- Not opened yet for PR 7.
+- PR #302 opened; remote checks pending for final branch head.
 
 ## Blockers
 
@@ -84,7 +84,7 @@ SHA: cbdd0c9be0d886ddfb74ed0cc264dc5f636b8e67
 
 ## Next Action
 
-One concrete next step: commit and push the PR 7 branch, then open the pull request.
+One concrete next step: commit and push this PR-opened checkpoint, then rerun final local verification on the final PR head.
 
 ## Recovery Notes
 

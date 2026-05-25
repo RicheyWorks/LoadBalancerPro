@@ -129,14 +129,12 @@ class AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest {
                 "repository evidence map should link to the CodeQL/dependency-review audit");
 
         for (String expected : List.of(
-                "completed campaign prs: 5 / 20",
                 "slot 5 result",
                 "codex/evidence-audit-codeql-dependency-review",
                 "#320",
                 "7fcbf22364d76d2cd6a5b81eee2d512ec8742f94",
                 "a58d61511d84b8d9013d5a2652dc696fb555e83c",
-                "post-merge main ci and codeql were green",
-                "slot 6 branch created")) {
+                "post-merge main ci and codeql were green")) {
             assertTrue(board.contains(expected) || session.contains(expected),
                     "Missing slot 5 campaign checkpoint: " + expected);
         }

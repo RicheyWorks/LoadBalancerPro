@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-25T02:48-07:00
+
+Branch/PR: codex/evidence-audit-dockerfile-runtime / pending
+
+Failure type: focused selector bundle guard durability
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest,AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest,AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest,AgentEvidenceAuditCiWorkflowAuditDocumentationTest,AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"`
+
+Suspected cause: the slot 5 CodeQL/dependency-review guard and slot 6 Maven/dependency-posture guard still asserted the moving active-campaign wording `completed campaign prs: 5 / 20` after slot 7 correctly advanced the board to 6 / 20 completed.
+
+Fix attempted: log the failure before continuing, then update the older guards to verify durable merged-slot facts for PR #320 and PR #321 without freezing the active campaign board at prior slot counts.
+
+Result: selector bundle rerun passed after updating the slot 5 and slot 6 guards to verify durable merged-slot facts instead of moving active-board counts.
+
+Follow-up action: continue with dependency tree and full slot 7 local verification.
+
+## Entry
+
 Date/time: 2026-05-25T02:20-07:00
 
 Branch/PR: codex/evidence-audit-maven-dependency-posture / pending

@@ -8,104 +8,102 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-25T02:32-07:00
+Timestamp: 2026-05-25T02:59-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
-Current PR slot: 6
+Current PR slot: 7
 
-Checkpoint: Slot 6 PR #321 opened after local verification passed
+Checkpoint: Slot 7 local verification passed and ready for PR creation after one logged selector-guard repair
 
-Started from main SHA: `a58d61511d84b8d9013d5a2652dc696fb555e83c`
+Started from main SHA: `06d800c478b308ef836b0ab01d8b641d8b1a35f0`
 
-Current branch: codex/evidence-audit-maven-dependency-posture
+Current branch: codex/evidence-audit-dockerfile-runtime
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/321
+PR URL: pending
 
-Head SHA: `2a12b391eafce6bbeff56fc095aa6d40b05c3511` at PR creation; the checkpoint update commit will advance the branch head
+Head SHA: `06d800c478b308ef836b0ab01d8b641d8b1a35f0` at branch creation
 
 Changed files:
 
-- docs/agent/EVIDENCE_AUDIT_MAVEN_DEPENDENCY_POSTURE_AUDIT.md
+- docs/agent/EVIDENCE_AUDIT_DOCKERFILE_RUNTIME_AUDIT.md
 - docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md
 - docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
 - docs/agent/FAILURE_LOG.md
 - README.md
 - docs/REVIEWER_TRUST_MAP.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest.java
 
 Checks run:
 
-- Slot 5 PR #320 merged as `a58d61511d84b8d9013d5a2652dc696fb555e83c`.
-- Slot 5 post-merge local verification passed: focused campaign/agent selector bundle, dependency tree, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke.
-- Slot 5 post-merge main remote checks passed: CI and CodeQL green for `a58d61511d84b8d9013d5a2652dc696fb555e83c`.
-- Slot 6 branch created from clean main.
-- Slot 6 Maven/dependency posture audit started as documentation/test-only.
-- `mvn test "-Dtest=AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest"` failed, the failure was logged in FAILURE_LOG.md, the exact-wording/main-class assertion issue was fixed, and the focused guard rerun passed.
-- `mvn test "-Dtest=AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest,AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest,AgentEvidenceAuditCiWorkflowAuditDocumentationTest,AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"` failed, the failure was logged in FAILURE_LOG.md, the slot 5 guard was made durable against slot 6 board movement, and the selector bundle rerun passed.
+- Slot 6 PR #321 merged as `06d800c478b308ef836b0ab01d8b641d8b1a35f0`.
+- Slot 6 final branch head was `e2798905b6d5a5633a965dd6c44ede7e553ece88`.
+- Slot 6 post-merge local verification passed: focused campaign/agent selector bundle, dependency tree, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke.
+- Slot 6 post-merge main remote checks passed: CI and CodeQL green for `06d800c478b308ef836b0ab01d8b641d8b1a35f0`.
+- Slot 7 branch created from clean main.
+- Slot 7 Dockerfile runtime audit started as documentation/test-only.
+- `mvn test "-Dtest=AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest"` passed.
+- `mvn test "-Dtest=AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest,AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest,AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest,AgentEvidenceAuditCiWorkflowAuditDocumentationTest,AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"` failed, the failure was logged in FAILURE_LOG.md, the slot 5 and slot 6 guards were made durable against slot 7 board movement, and the selector bundle rerun passed.
 - `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
-- `mvn -q test` passed.
-- `mvn -q "-DskipTests" package` passed.
-- `mvn -B package` passed with 2,416 tests, 0 failures, 0 errors, and 0 skipped.
-- `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
-- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote only target-local lab evidence.
-- After this checkpoint was updated, the slot 6 focused selector bundle passed again, `mvn -q test` passed again, `mvn -q "-DskipTests" package` passed again, `mvn -B package` passed again with 2,416 tests and no failures/errors/skips, diff checks passed again, and enterprise lab package smoke passed again.
-- Slot 6 PR opened: https://github.com/RicheyWorks/LoadBalancerPro/pull/321.
-- PR #321 initial head SHA was `2a12b391eafce6bbeff56fc095aa6d40b05c3511`.
-- PR #321 was open, non-draft, base `main`, branch `codex/evidence-audit-maven-dependency-posture`, and mergeable when inspected.
+- `mvn -q test` passed, then passed again after this checkpoint was updated.
+- `mvn -q "-DskipTests" package` passed, then passed again after this checkpoint was updated.
+- `mvn -B package` passed with 2,422 tests, 0 failures, 0 errors, and 0 skipped, then passed again after this checkpoint was updated with the same result count.
+- `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed, then passed again after this checkpoint was updated.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote only target-local lab evidence, then passed again after this checkpoint was updated.
 
-Remote status: main CI and CodeQL were green for the slot 6 starting main SHA; PR #321 remote checks were queued or in progress at PR creation and must be refreshed after the checkpoint commit is pushed.
+Remote status: main CI and CodeQL were green for the slot 7 starting main SHA; slot 7 PR not opened yet.
 
 Blocker: none.
 
-Next action: commit and push this PR-created checkpoint update, then wait for PR #321 current-head remote checks.
+Next action: commit, push, and open the slot 7 PR.
 
 Decision: continue
 
 ## Current Branch
 
-Name: codex/evidence-audit-maven-dependency-posture
+Name: codex/evidence-audit-dockerfile-runtime
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/321
+URL: pending
 
 ## Current Goal
 
-Short goal: Audit Maven/dependency posture without changing Maven configuration or dependencies.
+Short goal: Audit Dockerfile runtime posture without changing Dockerfile contents or Docker behavior.
 
 ## Current Head SHA
 
-SHA: `2a12b391eafce6bbeff56fc095aa6d40b05c3511` at PR creation; checkpoint update commit pending
+SHA: `06d800c478b308ef836b0ab01d8b641d8b1a35f0` at branch creation
 
 ## What Changed
 
 - Files changed:
-- docs/agent/EVIDENCE_AUDIT_MAVEN_DEPENDENCY_POSTURE_AUDIT.md
+- docs/agent/EVIDENCE_AUDIT_DOCKERFILE_RUNTIME_AUDIT.md
 - docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md
 - docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
 - docs/agent/FAILURE_LOG.md
 - README.md
 - docs/REVIEWER_TRUST_MAP.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest.java
 - Behavioral surface: none; docs/test-only.
-- Documentation surface: records slot 5 as merged/main green and adds the Maven/dependency posture audit.
-- PR surface: PR #321 opened for slot 6.
+- Documentation surface: records slot 6 as merged/main green and adds the Dockerfile runtime audit.
 
 ## Checks Run
 
-- Focused checks: slot 6 guard passed after one logged repair.
-- Focused selector bundle: passed after one logged durable-guard repair and passed again after the checkpoint update.
+- Focused checks: slot 7 guard passed.
+- Focused selector bundle: passed after one logged durable-guard repair.
 - Dependency checks: `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
-- Full checks: `mvn -q test` passed, including the post-checkpoint rerun.
-- Package checks: `mvn -q "-DskipTests" package` and `mvn -B package` passed, including the post-checkpoint reruns.
-- Diff checks: `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed, including the post-checkpoint reruns.
-- Smoke checks: `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed, including the post-checkpoint rerun.
-- Remote checks: main CI and CodeQL green for slot 6 starting SHA; PR #321 initial remote checks were queued or in progress and must be refreshed after this checkpoint push.
+- Full checks: `mvn -q test` passed.
+- Package checks: `mvn -q "-DskipTests" package` and `mvn -B package` passed.
+- Diff checks: `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
+- Smoke checks: `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- Remote checks: main CI and CodeQL green for slot 7 starting SHA; slot 7 PR not opened yet.
 
 ## Blockers
 
@@ -114,14 +112,14 @@ SHA: `2a12b391eafce6bbeff56fc095aa6d40b05c3511` at PR creation; checkpoint updat
 
 ## Next Action
 
-One concrete next step: commit and push the PR-created checkpoint, then wait for PR #321 current-head remote checks.
+One concrete next step: commit, push, and open the slot 7 PR.
 
 ## Recovery Notes
 
-- How to resume: confirm branch `codex/evidence-audit-maven-dependency-posture`, inspect `git status`, commit/push the PR-created checkpoint if it is still local, then audit PR #321 current-head checks.
-- Commands already run for slot 6: `git checkout -b codex/evidence-audit-maven-dependency-posture`, `Get-Content pom.xml`, the slot 6 focused guard, the relevant selector bundle, dependency tree, `mvn -q test`, package checks, diff checks, enterprise lab package smoke, PR creation for #321, and main remote status checks confirming slot 5 main was green.
+- How to resume: confirm branch `codex/evidence-audit-dockerfile-runtime`, inspect `git status`, then commit and open PR if the branch remains docs/test-only.
+- Commands already run for slot 7: `git checkout -b codex/evidence-audit-dockerfile-runtime`, `Get-Content Dockerfile`, `Get-Content .github/workflows/ci.yml`, the slot 7 focused guard, the relevant selector bundle, dependency tree, `mvn -q test`, package checks, diff checks, enterprise lab package smoke, and main remote status checks confirming slot 6 main was green.
 - Safety boundaries to re-check: docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
-- Remote checks that must be refreshed: slot 6 PR current-head checks after PR creation; main CI/CodeQL after merge.
+- Remote checks that must be refreshed: slot 7 PR current-head checks after PR creation; main CI/CodeQL after merge.
 
 ## Historical Closeout: LoadBalancerPro Goal Mode 10-PR Trial
 

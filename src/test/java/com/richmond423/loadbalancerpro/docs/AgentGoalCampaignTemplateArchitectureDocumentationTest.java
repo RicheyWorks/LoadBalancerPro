@@ -113,13 +113,12 @@ class AgentGoalCampaignTemplateArchitectureDocumentationTest {
     }
 
     @Test
-    void sessionManagerRecordsNewTrialSlotOneCheckpoint() throws Exception {
+    void sessionManagerRecordsActiveTrialCheckpointAndTemplateLinks() throws Exception {
         String normalized = read(SESSION_MANAGER).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
                 "loadbalancerpro goal mode 10-pr trial",
-                "current pr slot: 1",
-                "codex/goal-campaign-template-architecture",
+                "current pr slot:",
                 "goal_campaign_contract.md",
                 "goal_campaign_board.md",
                 "goal_campaign_pr_template.md",

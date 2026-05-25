@@ -36,7 +36,7 @@ For the session startup path that ties README, this file, the build contract, an
 ## Goal Campaign Discipline
 
 - For a goal campaign, work one scoped PR at a time and do not open a later slot before the current slot is merged and main CI/CodeQL are green.
-- Use [`docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md) with the campaign contract, board, session manager, failure log, verification protocol, and merge gate.
+- Use [`docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md) with the campaign contract, board, session manager, failure log, verification protocol, merge gate, and [`docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md) when a campaign reaches closeout.
 - Update `docs/agent/SESSION_MANAGER.md` after branch creation, local verification, PR creation, merge, and post-merge main checks.
 - Log every local, remote, scope, or tooling failure in `docs/agent/FAILURE_LOG.md` before continuing.
 - Keep no overclaiming as a campaign invariant: a multi-PR campaign does not upgrade evidence claims or relax the README trust contract.

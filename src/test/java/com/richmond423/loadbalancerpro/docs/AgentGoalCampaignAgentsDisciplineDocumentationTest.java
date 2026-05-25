@@ -85,19 +85,18 @@ class AgentGoalCampaignAgentsDisciplineDocumentationTest {
     }
 
     @Test
-    void boardAndSessionAdvanceToSlotNineWithoutForgettingSlotEight() throws IOException {
+    void boardAndSessionPreserveSlotNineHistoryAfterCampaignPointerMoves() throws IOException {
         String board = read(BOARD).toLowerCase();
         String session = read(SESSION).toLowerCase();
 
-        assertTrue(board.contains("completed campaign prs: 8 / 10"));
-        assertTrue(board.contains("current pr slot: 9"));
         assertTrue(board.contains("codex/goal-campaign-agents-discipline"));
-        assertTrue(board.contains("#313"));
-        assertTrue(board.contains("f2e3c784b5858b61e664844502ce66d3cc31d352"));
+        assertTrue(board.contains("#314"));
+        assertTrue(board.contains("09d0ab9ee4ab508846165bbab51756b83d43814c"));
+        assertTrue(board.contains("b045b4669ab736cfc0c707fae058ad2e73d7cd20"));
+        assertTrue(board.contains("agent discipline merged"));
         assertTrue(board.contains("goal_campaign_agent_discipline.md"));
-        assertTrue(session.contains("current pr slot: 9"));
-        assertTrue(session.contains("slot 8 merged and main green"));
-        assertTrue(session.contains("codex/goal-campaign-agents-discipline"));
+        assertTrue(session.contains("slot 9 merged and main green"));
+        assertTrue(session.contains("b045b4669ab736cfc0c707fae058ad2e73d7cd20"));
         assertTrue(session.contains("goal_campaign_agent_discipline.md"));
         assertTrue(read(TRUST_MAP).toLowerCase().contains("goal_campaign_agent_discipline.md"));
     }

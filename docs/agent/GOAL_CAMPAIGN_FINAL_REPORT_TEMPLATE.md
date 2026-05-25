@@ -2,7 +2,7 @@
 
 This template defines the final report for a bounded Codex `/goal` campaign. It is documentation only; it does not add automation, CI/Maven wiring, runtime behavior, Docker/Compose behavior, external targets, secrets, or production claims.
 
-Use this template with GOAL_CAMPAIGN_CONTRACT.md, GOAL_CAMPAIGN_BOARD.md, GOAL_CAMPAIGN_PR_TEMPLATE.md, GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md.
+Use this template with GOAL_CAMPAIGN_CONTRACT.md, GOAL_CAMPAIGN_BOARD.md, GOAL_CAMPAIGN_PR_TEMPLATE.md, GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md, GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md.
 
 ## Final Report Template
 

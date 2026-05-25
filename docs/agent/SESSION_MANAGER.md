@@ -6,42 +6,43 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-24T22:26-07:00
+Timestamp: 2026-05-24T22:50-07:00
 
 Goal name: LoadBalancerPro Goal Mode 10-PR Trial
 
-Current PR slot: 9
+Current PR slot: 10
 
-Checkpoint: Slot 9 PR opened; final checkpoint verification pending
+Checkpoint: Slot 10 PR opened; final checkpoint verification pending
 
-Started from main SHA: f2e3c784b5858b61e664844502ce66d3cc31d352
+Started from main SHA: b045b4669ab736cfc0c707fae058ad2e73d7cd20
 
-Current branch: codex/goal-campaign-agents-discipline
+Current branch: codex/goal-campaign-final-handoff-report
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/314
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/315
 
-Head SHA: `043b7bfb9caa59db0713d94e71547c55372c12e0` at PR creation; final pushed checkpoint head pending remote audit
+Head SHA: `24808aff413811e3330b2e05aa6f225d52098593` at PR creation; final pushed checkpoint head pending remote audit
 
 Changed files:
 
+- README.md
 - AGENTS.md
-- docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md
+- docs/REVIEWER_TRUST_MAP.md
 - docs/agent/GOAL_CAMPAIGN_BOARD.md
+- docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md
+- docs/agent/GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md
 - docs/agent/SESSION_MANAGER.md
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignAgentsDisciplineDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignFinalHandoffReportDocumentationTest.java
 
 Checks run:
 
-- Slot 8 merged and main green.
-- PR #313 merged at `f2e3c784b5858b61e664844502ce66d3cc31d352`.
-- Main pulled with `--ff-only` after the merge.
-- Main CI and CodeQL for `f2e3c784b5858b61e664844502ce66d3cc31d352` completed successfully.
-- Slot 8 post-merge local verification passed: dependency tree, campaign focused selector, `mvn -q test`, package checks, diff checks, and enterprise lab package smoke.
-- Slot 9 branch created from clean main.
-- Slot 9 documentation/test edit batch completed.
-- `mvn test "-Dtest=AgentGoalCampaignAgentsDisciplineDocumentationTest"` initially failed due exact wording drift and a self-referential forbidden API name list, then passed after the failure was logged and fixed.
-- `FAILURE_LOG.md` records the focused guard failure and recovery.
-- `mvn test "-Dtest=AgentGoalCampaignAgentsDisciplineDocumentationTest"` passed.
+- Slot 9 merged and main green.
+- PR #314 merged at `b045b4669ab736cfc0c707fae058ad2e73d7cd20`.
+- Slot 9 post-merge local verification passed: dependency tree, campaign focused selector, `mvn -q test`, package checks, diff checks, and enterprise lab package smoke.
+- Main CI and CodeQL for `b045b4669ab736cfc0c707fae058ad2e73d7cd20` completed successfully.
+- Slot 10 branch created from clean main.
+- Slot 10 documentation/test edit batch completed.
+- `mvn test "-Dtest=AgentGoalCampaignFinalHandoffReportDocumentationTest"` passed.
 - Focused campaign/agent selector bundle passed.
 - `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
 - `mvn -q test` passed.
@@ -51,11 +52,11 @@ Checks run:
 - `git diff --check origin/main...HEAD` passed.
 - `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Slot 9 commit `043b7bfb9caa59db0713d94e71547c55372c12e0` pushed.
-- PR #314 opened and was mergeable at PR creation.
-- Initial PR #314 remote checks were in progress for the first pushed head.
+- Slot 10 commit `24808aff413811e3330b2e05aa6f225d52098593` pushed.
+- PR #315 opened and was mergeable at PR creation.
+- Initial PR #315 remote checks were queued or in progress for the first pushed head.
 
-Remote status: PR #314 checks in progress.
+Remote status: PR #315 checks in progress.
 
 Blocker: none.
 
@@ -65,37 +66,41 @@ Decision: continue
 
 ## Current Branch
 
-Name: codex/goal-campaign-agents-discipline
+Name: codex/goal-campaign-final-handoff-report
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/314
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/315
 
 ## Current Goal
 
-Short goal: Add AGENTS.md campaign discipline guidance, recording slot 8 as merged/main-green and slot 9 as the active scoped PR.
+Short goal: Add the final handoff/report closeout artifact for the LoadBalancerPro Goal Mode 10-PR Trial.
 
 ## Current Head SHA
 
-SHA: `043b7bfb9caa59db0713d94e71547c55372c12e0` at PR creation; final pushed checkpoint head pending remote audit
+SHA: `24808aff413811e3330b2e05aa6f225d52098593` at PR creation; final pushed checkpoint head pending remote audit
 
 ## What Changed
 
 - Files changed:
+- README.md
 - AGENTS.md
-- docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md
+- docs/REVIEWER_TRUST_MAP.md
 - docs/agent/GOAL_CAMPAIGN_BOARD.md
+- docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md
+- docs/agent/GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md
 - docs/agent/SESSION_MANAGER.md
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignAgentsDisciplineDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignFinalHandoffReportDocumentationTest.java
 - Behavioral surface:
 - None; docs/test-only.
 - Documentation surface:
-- Adds campaign discipline guidance to AGENTS.md and a dedicated docs/agent page, then advances the board/session checkpoint to slot 9 after slot 8 merged green.
+- Adds a final handoff/report closeout artifact, links it from campaign navigation, advances the board/session checkpoint to slot 10 after slot 9 merged green, and keeps the campaign completion claim gated on slot 10 merge plus green main.
 
 ## Checks Run
 
 - Focused checks:
-- AgentGoalCampaignAgentsDisciplineDocumentationTest passed after one logged exact-wording/self-check recovery.
+- AgentGoalCampaignFinalHandoffReportDocumentationTest passed.
 - Focused campaign/agent selector bundle passed.
 - Dependency checks:
 - `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
@@ -111,7 +116,7 @@ SHA: `043b7bfb9caa59db0713d94e71547c55372c12e0` at PR creation; final pushed che
 - Smoke checks:
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
 - Remote checks:
-- PR #314 opened; current-head remote checks pending.
+- PR #315 opened; current-head remote checks pending.
 
 ## Blockers
 
@@ -127,9 +132,9 @@ One concrete next step: push the PR checkpoint update, rerun final-head verifica
 ## Recovery Notes
 
 - How to resume:
-- Confirm the branch is `codex/goal-campaign-agents-discipline`, inspect `git status`, push the PR checkpoint update if needed, then rerun final-head verification before merge consideration.
+- Confirm the branch is `codex/goal-campaign-final-handoff-report`, inspect `git status`, push the PR checkpoint update if needed, then rerun final-head verification before merge consideration.
 - Commands already run:
-- `git checkout main`; `git pull --ff-only origin main`; watched PR #313 and main CI/CodeQL checks to green; `git checkout -b codex/goal-campaign-agents-discipline`; opened PR #314.
+- `git checkout main`; `git pull --ff-only origin main`; watched PR #314 and main CI/CodeQL checks to green; `git checkout -b codex/goal-campaign-final-handoff-report`; opened PR #315.
 - Safety boundaries to re-check:
 - Docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed:

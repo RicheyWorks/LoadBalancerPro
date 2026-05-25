@@ -24,6 +24,42 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-25T01:48-07:00
+
+Branch/PR: codex/evidence-audit-codeql-dependency-review / pending
+
+Failure type: focused selector bundle guard durability
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest,AgentEvidenceAuditCiWorkflowAuditDocumentationTest,AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"`
+
+Suspected cause: older slot 2 and slot 3 audit guards still expected moving SESSION_MANAGER.md phrases `slot 2 branch created` and `slot 3 branch created` after the active checkpoint moved to slot 5.
+
+Fix attempted: log the failure, update those guards to verify durable merged-slot board/history facts instead of active-session branch-created wording, and rerun the selector bundle.
+
+Result: selector bundle rerun passed after updating the slot 2 and slot 3 guards to verify durable merged-slot facts.
+
+Follow-up action: continue with full slot 5 local verification.
+
+## Entry
+
+Date/time: 2026-05-25T01:46-07:00
+
+Branch/PR: codex/evidence-audit-codeql-dependency-review / pending
+
+Failure type: focused documentation guard wording
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest"`
+
+Suspected cause: the slot 5 audit described the Dependency Review high-severity gate in prose but omitted the exact `fail-on-severity` token required by the new guard.
+
+Fix attempted: log the failure, add exact source-aligned `fail-on-severity: high` wording to the slot 5 audit, and rerun the focused guard.
+
+Result: focused guard rerun passed after adding exact `fail-on-severity: high` wording.
+
+Follow-up action: continue with the relevant campaign selector bundle and full local verification.
+
+## Entry
+
 Date/time: 2026-05-24T23:32-07:00
 
 Branch/PR: codex/evidence-audit-closeout-repair / pending

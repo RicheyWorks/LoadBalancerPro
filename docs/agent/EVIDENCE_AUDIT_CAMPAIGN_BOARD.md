@@ -8,10 +8,10 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 
 - Campaign name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign.
 - Total target: 20 merged PRs.
-- Completed campaign PRs: 3 / 20.
-- Current PR slot: 4.
-- Current branch: `codex/evidence-audit-ci-workflow`.
-- Current PR: [#319](https://github.com/RicheyWorks/LoadBalancerPro/pull/319).
+- Completed campaign PRs: 4 / 20.
+- Current PR slot: 5.
+- Current branch: `codex/evidence-audit-codeql-dependency-review`.
+- Current PR: pending after local verification.
 - Starting main HEAD: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
 - Prior campaign fact: PR #315 is merged.
 - Prior campaign merge commit: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
@@ -19,7 +19,9 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 - Slot 1 result: PR #316 merged as `4622d788569fc68de1fab212cdad388d2cf10dc8`; post-merge main CI and CodeQL were green.
 - Slot 2 result: PR #317 merged as `7dd64becaefd589ff94ed2fea93b017397b4a747`; post-merge main CI and CodeQL were green.
 - Slot 3 result: PR #318 merged as `65fad4a65f0297ba6e7d085bd84cacf5aa966f38`; post-merge main CI and CodeQL were green.
-- Slot 4 purpose: audit `.github/workflows/ci.yml` posture without editing workflow behavior.
+- Slot 4 result: PR #319 merged as `bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f`; post-merge main CI and CodeQL were green.
+- Slot 5 purpose: audit CodeQL and Dependency Review posture without editing workflow behavior.
+- Slot 5 local status: focused guard, relevant selector bundle, dependency tree, full tests, package checks, diff checks, and enterprise lab package smoke passed after logged documentation-guard repairs.
 
 ## Board Rules
 
@@ -39,8 +41,8 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 | 1 | Prior 10-PR closeout repair | codex/evidence-audit-closeout-repair | [#316](https://github.com/RicheyWorks/LoadBalancerPro/pull/316) | merged | `cfa138b923a14c46b07c40a6c80fd6f1c568c8f2` | `4622d788569fc68de1fab212cdad388d2cf10dc8` | PR #315 facts repaired; post-merge main CI and CodeQL green |
 | 2 | Open PR hygiene audit | codex/evidence-audit-open-pr-hygiene | [#317](https://github.com/RicheyWorks/LoadBalancerPro/pull/317) | merged | `08e3320e6b5413d372249b7886876341af1529e6` | `7dd64becaefd589ff94ed2fea93b017397b4a747` | PR #291 and other open PRs audited; post-merge main CI and CodeQL green |
 | 3 | Repository evidence map | codex/evidence-audit-repository-map | [#318](https://github.com/RicheyWorks/LoadBalancerPro/pull/318) | merged | `e411c2fa6dc2c7d65c90093c3472dd30fd9a7bab` | `65fad4a65f0297ba6e7d085bd84cacf5aa966f38` | Repository evidence map added; post-merge main CI and CodeQL green |
-| 4 | CI workflow audit | codex/evidence-audit-ci-workflow | [#319](https://github.com/RicheyWorks/LoadBalancerPro/pull/319) | open; remote checks pending | `b583c4c65a48e274b33894abb437015caf4a2b0e` | pending | Audit workflow posture without editing workflow files |
-| 5 | CodeQL and dependency-review audit | pending | pending | planned | pending | pending | Audit CodeQL/dependency review posture and limits |
+| 4 | CI workflow audit | codex/evidence-audit-ci-workflow | [#319](https://github.com/RicheyWorks/LoadBalancerPro/pull/319) | merged | `e1c40e904730a9e24875424aa312c68fc62d1fa3` | `bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f` | CI workflow audit added; post-merge main CI and CodeQL green |
+| 5 | CodeQL and dependency-review audit | codex/evidence-audit-codeql-dependency-review | pending | local verification passed | pending | pending | CodeQL/dependency review posture audited; PR pending |
 | 6 | Maven/dependency posture audit | pending | pending | planned | pending | pending | Audit pom.xml posture without dependency changes |
 | 7 | Dockerfile runtime audit | pending | pending | planned | pending | pending | Audit Dockerfile runtime posture without Dockerfile edits |
 | 8 | Compose/local-lab audit | pending | pending | planned | pending | pending | Audit local-lab Compose without Compose edits |

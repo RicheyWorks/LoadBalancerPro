@@ -64,16 +64,17 @@ class AgentEvidenceAuditOpenPrHygieneDocumentationTest {
     }
 
     @Test
-    void slotBoardAndSessionAdvanceFromSlotOneToSlotTwo() throws IOException {
+    void slotBoardAndSessionPreserveSlotTwoHistory() throws IOException {
         String board = read(BOARD).toLowerCase(Locale.ROOT);
         String session = read(SESSION).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
-                "completed campaign prs: 1 / 20",
-                "current pr slot: 2",
                 "codex/evidence-audit-open-pr-hygiene",
                 "pr #316 merged",
                 "4622d788569fc68de1fab212cdad388d2cf10dc8",
+                "#317",
+                "08e3320e6b5413d372249b7886876341af1529e6",
+                "7dd64becaefd589ff94ed2fea93b017397b4a747",
                 "main ci and codeql were green",
                 "slot 2 branch created")) {
             assertTrue(board.contains(expected) || session.contains(expected),

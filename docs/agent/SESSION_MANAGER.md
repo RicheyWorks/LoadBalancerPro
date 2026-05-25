@@ -8,27 +8,31 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-25T00:10-07:00
+Timestamp: 2026-05-25T00:38-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
-Current PR slot: 2
+Current PR slot: 3
 
-Checkpoint: Slot 2 PR opened; final-head verification pending
+Checkpoint: Slot 3 local verification passed; PR creation pending
 
-Started from main SHA: `4622d788569fc68de1fab212cdad388d2cf10dc8`
+Started from main SHA: `7dd64becaefd589ff94ed2fea93b017397b4a747`
 
-Current branch: codex/evidence-audit-open-pr-hygiene
+Current branch: codex/evidence-audit-repository-map
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/317
+PR URL: pending
 
-Head SHA: `c53ad0a799fb8d14ebe92df2f6b40fb2bcd1d71c` at PR creation; final checkpoint head pending verification
+Head SHA: working tree verified before slot 3 commit
 
 Changed files:
 
+- docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md
 - docs/agent/EVIDENCE_AUDIT_OPEN_PR_HYGIENE.md
 - docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
+- README.md
+- docs/REVIEWER_TRUST_MAP.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditOpenPrHygieneDocumentationTest.java
 
 Checks run:
@@ -54,40 +58,61 @@ Checks run:
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
 - Slot 2 commit `c53ad0a799fb8d14ebe92df2f6b40fb2bcd1d71c` pushed.
 - PR #317 opened.
+- Slot 2 final checkpoint commit `08e3320e6b5413d372249b7886876341af1529e6` pushed.
+- PR #317 current-head remote checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review where applicable.
+- PR #317 merged as `7dd64becaefd589ff94ed2fea93b017397b4a747`.
+- Slot 2 post-merge local verification passed: dependency tree, focused guard, campaign/agent selector bundle, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke.
+- Slot 2 post-merge main remote checks passed: CI and CodeQL green for `7dd64becaefd589ff94ed2fea93b017397b4a747`.
+- Slot 3 branch created from clean main.
+- Slot 3 repository evidence map added as documentation/test-only.
+- `mvn test "-Dtest=AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest"` passed.
+- `mvn test "-Dtest=AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"` passed.
+- `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
+- `mvn -q test` passed with 2,398 tests.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed with 2,398 tests.
+- `git diff --check` passed with line-ending warnings only.
+- `git diff --check origin/main...HEAD` passed.
+- `git diff --cached --check` passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
 
-Remote status: PR #317 checks pending or not yet audited; main CI and CodeQL were green for the starting main SHA.
+Remote status: main CI and CodeQL green for `7dd64becaefd589ff94ed2fea93b017397b4a747`; slot 3 PR not opened yet.
 
 Blocker: none.
 
-Next action: run final-head verification for the PR-created checkpoint, push the checkpoint commit, then audit PR #317 current-head remote checks.
+Next action: commit and push slot 3, then open the slot 3 PR and audit current-head remote checks.
 
 Decision: continue
 
 ## Current Branch
 
-Name: codex/evidence-audit-open-pr-hygiene
+Name: codex/evidence-audit-repository-map
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/317
+URL: pending
 
 ## Current Goal
 
-Short goal: Audit open PR hygiene, especially PR #291, without closing or modifying unrelated PRs.
+Short goal: Map repository evidence surfaces across README, trust docs, CI, CodeQL, Docker, Compose, smoke scripts, runtime config, local-lab, and campaign docs.
 
 ## Current Head SHA
 
-SHA: `c53ad0a799fb8d14ebe92df2f6b40fb2bcd1d71c` at PR creation; final checkpoint head pending verification
+SHA: working tree verified before slot 3 commit
 
 ## What Changed
 
 - Files changed:
+- docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md
 - docs/agent/EVIDENCE_AUDIT_OPEN_PR_HYGIENE.md
 - docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
+- README.md
+- docs/REVIEWER_TRUST_MAP.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditOpenPrHygieneDocumentationTest.java
 - Behavioral surface: none; docs/test-only.
-- Documentation surface: documents open PR hygiene findings and records slot 1 as merged/main green.
+- Documentation surface: records slot 2 as merged/main green and adds the repository evidence map.
 
 ## Checks Run
 
@@ -108,7 +133,7 @@ SHA: `c53ad0a799fb8d14ebe92df2f6b40fb2bcd1d71c` at PR creation; final checkpoint
 - `git diff --cached --check` passed.
 - Smoke checks:
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Remote checks: PR #317 checks pending or not yet audited.
+- Remote checks: main CI and CodeQL green for `7dd64becaefd589ff94ed2fea93b017397b4a747`; slot 3 PR not opened yet.
 
 ## Blockers
 
@@ -117,14 +142,14 @@ SHA: `c53ad0a799fb8d14ebe92df2f6b40fb2bcd1d71c` at PR creation; final checkpoint
 
 ## Next Action
 
-One concrete next step: rerun final-head verification for the PR-created checkpoint.
+One concrete next step: commit and push slot 3, then open the slot 3 PR.
 
 ## Recovery Notes
 
-- How to resume: confirm branch `codex/evidence-audit-open-pr-hygiene`, inspect `git status`, then run the slot 2 focused guard and final-head verification.
-- Commands already run for slot 2: `git status`, `git rev-parse HEAD`, `gh run list --branch main`, `git checkout -b codex/evidence-audit-open-pr-hygiene`, `gh pr list --state open`, `gh pr view 291`, PR #291 diff inspection, `git push origin codex/evidence-audit-open-pr-hygiene`, and `gh pr create`.
+- How to resume: confirm branch `codex/evidence-audit-repository-map`, inspect `git status`, then commit/push slot 3 and open the PR.
+- Commands already run for slot 3: `git status`, `gh run list --branch main`, `git checkout -b codex/evidence-audit-repository-map`, focused guard, relevant selector bundle, dependency tree, full tests, package checks, diff checks, and enterprise lab package smoke.
 - Safety boundaries to re-check: docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
-- Remote checks that must be refreshed: slot 2 PR current-head checks after PR creation; main CI/CodeQL after merge.
+- Remote checks that must be refreshed: slot 3 PR current-head checks after PR creation; main CI/CodeQL after merge.
 
 ## Historical Closeout: LoadBalancerPro Goal Mode 10-PR Trial
 

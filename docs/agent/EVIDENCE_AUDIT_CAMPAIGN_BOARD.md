@@ -11,7 +11,7 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 - Completed campaign PRs: 10 / 20.
 - Current PR slot: 11.
 - Current branch: `codex/evidence-audit-cli-app-startup`.
-- Current PR: pending.
+- Current PR: [#326](https://github.com/RicheyWorks/LoadBalancerPro/pull/326) open for review.
 - Starting main HEAD: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
 - Prior campaign fact: PR #315 is merged.
 - Prior campaign merge commit: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
@@ -53,7 +53,7 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 | 8 | Compose/local-lab audit | codex/evidence-audit-compose-local-lab | [#323](https://github.com/RicheyWorks/LoadBalancerPro/pull/323) | merged | `b1a1c578eca4a11b55a60f2213d45bf48cc28838` | `0fc6a5431f400eb4e5f71a70805b3fcb317f1c69` | Compose/local-lab audited; post-merge main CI and CodeQL green |
 | 9 | Runtime configuration audit | codex/evidence-audit-runtime-config | [#324](https://github.com/RicheyWorks/LoadBalancerPro/pull/324) | merged | `ecc0dbca270ff4f6b96c1f41c4ca7c0037569681` | `6f5d0d88502fb86fdc94f5261c709a2356dee65a` | Runtime configuration audited; post-merge main CI and CodeQL green |
 | 10 | Proxy demo fixture audit | codex/evidence-audit-proxy-demo-fixture | [#325](https://github.com/RicheyWorks/LoadBalancerPro/pull/325) | merged | `4bad0291be2a36ed7695bb47fa3b9a3e63d4dbb0` | `d4a07057c7e0475e012e610a551733184d26791d` | Proxy demo fixture audited; post-merge main CI and CodeQL green |
-| 11 | CLI mode and app startup audit | codex/evidence-audit-cli-app-startup | pending | paused | pending | pending | Local verification recovered from clean process state; previous failures remain logged; paused before commit/PR; no PR opened |
+| 11 | CLI mode and app startup audit | codex/evidence-audit-cli-app-startup | [#326](https://github.com/RicheyWorks/LoadBalancerPro/pull/326) | open | `1634973d761594cb491a42a6a4fb6891ac84cde1` at PR opening | pending | PR opened for review after clean-process local verification recovery; previous failures remain logged; no merge or completion claim |
 | 12 | Enterprise lab workflow smoke audit | pending | pending | planned | pending | pending | Audit smoke evidence boundary without script edits |
 | 13 | README and Reviewer Trust claim audit | pending | pending | planned | pending | pending | Audit public claims and not-proven wording |
 | 14 | Local-lab test-scope chain audit | pending | pending | planned | pending | pending | Summarize local-lab test-scope evidence chain |

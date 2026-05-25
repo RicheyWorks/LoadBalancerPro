@@ -103,7 +103,11 @@ Observed during Slot 13 orientation and merge-health handling:
 - Verification expectations: state-vector tests, scoring tests, routing selector bundle, full Maven/package/diff/smoke checks, and current-head remote checks.
 - Not-proven boundaries: common campaign not-proven boundaries apply.
 - Dependencies: LASE-G01 or equivalent score-explainability path merged/main-green.
-- Initial status: PR-opened as Slot 14 / PR #329: [Expand ServerStateVector signal modeling](https://github.com/RicheyWorks/LoadBalancerPro/pull/329); not merged/main-green.
+- Initial status: merged/main-green as Slot 14 / PR #329: [Expand ServerStateVector signal modeling](https://github.com/RicheyWorks/LoadBalancerPro/pull/329).
+- PR #329 final head SHA: `f24e973ddad0d631edb103b0a8f30d15474ef923`.
+- PR #329 merge SHA: `efd1a09c32f99663a4f7612cd7fe8535716b9eae`.
+- PR #329 post-merge main checks completed successfully for CI and CodeQL when this ledger was updated, so LASE-G03 is recorded as merged/main-green.
+- This checkpoint keeps future LASE goals planned; it does not start LASE-G04.
 
 ### LASE-G04 - EWMA or rolling-window latency signal support
 

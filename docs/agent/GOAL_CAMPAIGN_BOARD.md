@@ -11,7 +11,7 @@ Use this board with [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`
 - Completed campaign PRs: 5 / 10.
 - Current PR slot: 6.
 - Current branch: `codex/goal-campaign-verification-protocol-refinement`.
-- Current PR: pending.
+- Current PR: [#311](https://github.com/RicheyWorks/LoadBalancerPro/pull/311).
 - Current main HEAD: `702070aa6b0db90743986176bb96d1bf9208381b`.
 - Slot 1 PR: [#306](https://github.com/RicheyWorks/LoadBalancerPro/pull/306).
 - Slot 1 head SHA: `30828f89a41d64e30d1acc668714e5455a6e8a9f`.
@@ -69,7 +69,7 @@ Use these status values:
 | 3 | Add filled BUILD_CONTRACT example for 10-PR campaign | codex/goal-campaign-build-contract-example | [#308](https://github.com/RicheyWorks/LoadBalancerPro/pull/308) | post-merge main green | `440dd50dd3b18f31637bc424120156cd9b4b00dc` | `0a855c2579b02d238d043f1152572985dce5bf82` | Build contract example merged; main CI/CodeQL green |
 | 4 | Add SESSION_MANAGER campaign checkpoint examples | codex/goal-campaign-session-checkpoint-examples | [#309](https://github.com/RicheyWorks/LoadBalancerPro/pull/309) | post-merge main green | `3b0353b66e974a939ae8235ef32f564bf630b9d1` | `13fad31cd6cbc34efdf58c0a75ec5fa0f66d478e` | Session checkpoint examples merged; main CI/CodeQL green |
 | 5 | Add FAILURE_LOG campaign recovery examples | codex/goal-campaign-failure-log-recovery-examples | [#310](https://github.com/RicheyWorks/LoadBalancerPro/pull/310) | post-merge main green | `0f028c10984084d3b04f7b742969f79d5c32ff4d` | `702070aa6b0db90743986176bb96d1bf9208381b` | Failure recovery examples merged; main CI/CodeQL green |
-| 6 | Add VERIFICATION_PROTOCOL campaign mode refinement | codex/goal-campaign-verification-protocol-refinement | pending | in progress | pending | pending | Verification protocol refinement branch created from clean main |
+| 6 | Add VERIFICATION_PROTOCOL campaign mode refinement | codex/goal-campaign-verification-protocol-refinement | [#311](https://github.com/RicheyWorks/LoadBalancerPro/pull/311) | PR opened | `238e6beb104f06938e41046525921a334fe14d99` before PR-opened checkpoint | pending | Verification protocol refinement PR opened; final-head verification pending |
 | 7 | Add README goal-mode campaign summary | pending | pending | planned | pending | pending | pending |
 | 8 | Add Reviewer Trust Map goal-mode campaign navigation | pending | pending | planned | pending | pending | pending |
 | 9 | Add AGENTS.md campaign discipline section | pending | pending | planned | pending | pending | pending |

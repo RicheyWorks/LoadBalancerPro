@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-25T04:27-07:00
+Timestamp: 2026-05-25T04:29-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
 Current PR slot: 10
 
-Checkpoint: Slot 10 local verification passed before PR creation
+Checkpoint: Slot 10 PR opened after full local verification
 
 Started from main SHA: `6f5d0d88502fb86fdc94f5261c709a2356dee65a`
 
 Current branch: codex/evidence-audit-proxy-demo-fixture
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/325
 
-Head SHA: `6f5d0d88502fb86fdc94f5261c709a2356dee65a` at Slot 10 branch creation
+Head SHA: `859209adc8822f3bfb8060c0b516fb61d9e654d4` at PR creation
 
 Changed files:
 
@@ -55,12 +55,13 @@ Checks run:
 - `mvn -B package` passed with 2,443 tests, 0 failures, 0 errors, and 0 skipped.
 - `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote only target-local lab evidence.
+- PR #325 was opened with head `859209adc8822f3bfb8060c0b516fb61d9e654d4`.
 
-Remote status: main CI and CodeQL are green for `6f5d0d88502fb86fdc94f5261c709a2356dee65a`; Slot 10 PR is pending.
+Remote status: main CI and CodeQL are green for `6f5d0d88502fb86fdc94f5261c709a2356dee65a`; Slot 10 PR #325 checks are pending for the current head.
 
 Blocker: none.
 
-Next action: commit and push the Slot 10 branch, open the PR, update this checkpoint with the PR URL and head SHA, rerun focused guards, and wait for current-head remote checks.
+Next action: commit and push this PR-created checkpoint, rerun focused guards, and wait for current-head PR checks.
 
 Decision: continue
 
@@ -70,7 +71,7 @@ Name: codex/evidence-audit-proxy-demo-fixture
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/325
 
 ## Current Goal
 
@@ -78,7 +79,7 @@ Short goal: Audit proxy demo fixture and demo profiles without changing proxy fi
 
 ## Current Head SHA
 
-SHA: `6f5d0d88502fb86fdc94f5261c709a2356dee65a` at Slot 10 branch creation
+SHA: `859209adc8822f3bfb8060c0b516fb61d9e654d4` at PR creation
 
 ## What Changed
 
@@ -102,7 +103,7 @@ SHA: `6f5d0d88502fb86fdc94f5261c709a2356dee65a` at Slot 10 branch creation
 - Package checks: `mvn -q "-DskipTests" package` and `mvn -B package` passed; verbose package reported 2,443 tests, 0 failures, 0 errors, and 0 skipped.
 - Diff checks: `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
 - Smoke checks: `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Remote checks: main CI and CodeQL green for Slot 9 merge SHA `6f5d0d88502fb86fdc94f5261c709a2356dee65a`; Slot 10 PR pending.
+- Remote checks: main CI and CodeQL green for Slot 9 merge SHA `6f5d0d88502fb86fdc94f5261c709a2356dee65a`; Slot 10 PR #325 checks pending for current head.
 
 ## Blockers
 
@@ -111,7 +112,7 @@ SHA: `6f5d0d88502fb86fdc94f5261c709a2356dee65a` at Slot 10 branch creation
 
 ## Next Action
 
-One concrete next step: commit and push the Slot 10 branch, open the PR, update the PR-created checkpoint, then wait for current-head PR checks.
+One concrete next step: commit and push this PR-created checkpoint, rerun focused guards, and wait for current-head PR checks.
 
 ## Recovery Notes
 

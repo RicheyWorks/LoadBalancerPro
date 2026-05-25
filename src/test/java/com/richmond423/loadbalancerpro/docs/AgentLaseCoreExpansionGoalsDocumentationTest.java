@@ -86,6 +86,23 @@ class AgentLaseCoreExpansionGoalsDocumentationTest {
     }
 
     @Test
+    void goalLedgerRecordsPr329AsMergedMainGreenServerStateVectorSlice() throws IOException {
+        String normalized = read(LEDGER).toLowerCase(Locale.ROOT);
+
+        for (String expected : List.of(
+                "lase-g03 - serverstatevector signal expansion",
+                "pr #329",
+                "https://github.com/richeyworks/loadbalancerpro/pull/329",
+                "f24e973ddad0d631edb103b0a8f30d15474ef923",
+                "efd1a09c32f99663a4f7612cd7fe8535716b9eae",
+                "post-merge main checks completed successfully",
+                "merged/main-green",
+                "keeps future lase goals planned")) {
+            assertTrue(normalized.contains(expected), "ledger should preserve PR #329 fact: " + expected);
+        }
+    }
+
+    @Test
     void goalLedgerPreservesVerificationAndRemoteCheckRules() throws IOException {
         String normalized = read(LEDGER).toLowerCase(Locale.ROOT);
 

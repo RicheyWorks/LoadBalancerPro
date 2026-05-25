@@ -12,66 +12,71 @@ import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
-class AgentGoalCampaignSessionCheckpointExamplesDocumentationTest {
-    private static final Path EXAMPLES = Path.of("docs/agent/GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md");
-    private static final Path CHECKPOINT_TEMPLATE = Path.of("docs/agent/GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md");
+class AgentGoalCampaignFailureRecoveryExamplesDocumentationTest {
+    private static final Path EXAMPLES = Path.of("docs/agent/GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md");
+    private static final Path FAILURE_LOG = Path.of("docs/agent/FAILURE_LOG.md");
     private static final Path BOARD = Path.of("docs/agent/GOAL_CAMPAIGN_BOARD.md");
     private static final Path SESSION_MANAGER = Path.of("docs/agent/SESSION_MANAGER.md");
     private static final Path SOURCE = Path.of(
-            "src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignSessionCheckpointExamplesDocumentationTest.java");
+            "src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignFailureRecoveryExamplesDocumentationTest.java");
 
     @Test
-    void sessionCheckpointExamplesExistAndExplainMovingActiveCheckpoint() throws Exception {
+    void failureRecoveryExamplesExistAndDefineCampaignLoggingPurpose() throws Exception {
         String examples = read(EXAMPLES).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
-                "session_manager.md",
-                "active checkpoint",
-                "durable slot history belongs in goal_campaign_board.md",
-                "branch created checkpoint",
-                "edit batch completed checkpoint",
-                "focused verification checkpoint",
-                "full local verification checkpoint",
-                "pr opened checkpoint",
-                "remote checks green checkpoint",
-                "post-merge main green checkpoint",
-                "pause checkpoint")) {
-            assertTrue(examples.contains(expected), "examples should include " + expected);
+                "failure_log.md examples",
+                "loadbalancerpro goal mode 10-pr trial",
+                "durable record",
+                "timestamp",
+                "branch/pr",
+                "head sha",
+                "failure type",
+                "failing check",
+                "suspected cause",
+                "fix attempted",
+                "result",
+                "recovery status",
+                "next action")) {
+            assertTrue(examples.contains(expected), "examples should define " + expected);
         }
     }
 
     @Test
-    void examplesPreserveVerificationAndRemoteRules() throws Exception {
+    void examplesCoverLocalRemoteScopeAndMergeFailures() throws Exception {
         String examples = read(EXAMPLES).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
-                "mvn -b dependency:tree",
+                "focused documentation guard test",
+                "relevant focused selector bundle",
                 "mvn -q test",
                 "mvn -q \"-dskiptests\" package",
                 "mvn -b package",
                 "git diff --check origin/main...head",
                 "enterprise-lab-workflow.ps1 -package",
-                "build/test/package/smoke passed",
-                "analyze java / codeql passed",
-                "dependency review passed where applicable",
-                "do not claim green main while remote checks are pending",
-                "failed, cancelled, stale, pending, or duplicate-only required checks")) {
-            assertTrue(examples.contains(expected), "examples should preserve " + expected);
+                "remote pr build/test/package/smoke",
+                "remote pr analyze java / codeql",
+                "dependency review",
+                "main post-merge ci or codeql",
+                "scope audit",
+                "github operation",
+                "merge decision")) {
+            assertTrue(examples.contains(expected), "examples should cover " + expected);
         }
     }
 
     @Test
-    void examplesRequireFailureLogEntriesAndStopDiscipline() throws Exception {
+    void examplesPreserveRemoteCheckRulesAndStopConditions() throws Exception {
         String examples = read(EXAMPLES).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
-                "update failure_log.md before continuing",
-                "scope audit",
-                "github operation",
-                "merge decision fails",
-                "decision: pause",
-                "blocker",
-                "next action")) {
+                "merge only when the latest required checks are green",
+                "failed, cancelled, stale, pending, or duplicate-only required checks are not acceptable",
+                "do not claim green main while remote checks are pending",
+                "main becomes red",
+                "github check state is ambiguous",
+                "human approval is needed",
+                "pause instead of improvising")) {
             assertTrue(examples.contains(expected), "examples should preserve " + expected);
         }
     }
@@ -83,8 +88,7 @@ class AgentGoalCampaignSessionCheckpointExamplesDocumentationTest {
         for (String expected : List.of(
                 "production readiness",
                 "production certification",
-                "live-cloud validation",
-                "real-tenant validation",
+                "live-cloud/real-tenant validation",
                 "runtime enforcement",
                 "load/stress/benchmarking",
                 "throughput/p95/p99 evidence",
@@ -95,31 +99,25 @@ class AgentGoalCampaignSessionCheckpointExamplesDocumentationTest {
     }
 
     @Test
-    void campaignDocsLinkTheSessionExamplesAndPreserveSlotFourHistory() throws Exception {
-        String checkpoint = read(CHECKPOINT_TEMPLATE).toLowerCase(Locale.ROOT);
+    void campaignDocsLinkRecoveryExamplesAndPreserveSlotHistory() throws Exception {
+        String failureLog = read(FAILURE_LOG).toLowerCase(Locale.ROOT);
         String board = read(BOARD).toLowerCase(Locale.ROOT);
         String session = read(SESSION_MANAGER).toLowerCase(Locale.ROOT);
 
-        assertTrue(checkpoint.contains("goal_campaign_session_checkpoint_examples.md"),
-                "checkpoint template should link to examples");
-        assertTrue(board.contains("goal_campaign_session_checkpoint_examples.md"),
-                "board should link to examples");
-        assertTrue(board.contains("completed campaign prs:"),
-                "board should record completed PRs");
-        assertTrue(board.contains("current pr slot:"),
-                "board should record the active slot");
+        assertTrue(failureLog.contains("goal_campaign_failure_recovery_examples.md"),
+                "failure log should link to recovery examples");
+        assertTrue(board.contains("goal_campaign_failure_recovery_examples.md"),
+                "board should link to recovery examples");
+        assertTrue(session.contains("goal_campaign_failure_recovery_examples.md"),
+                "session manager should link to recovery examples");
         assertTrue(board.contains("#309"),
                 "board should preserve slot 4 PR history");
-        assertTrue(board.contains("codex/goal-campaign-session-checkpoint-examples"),
-                "board should preserve slot 4 branch history");
         assertTrue(board.contains("3b0353b66e974a939ae8235ef32f564bf630b9d1"),
                 "board should preserve slot 4 head history");
         assertTrue(board.contains("13fad31cd6cbc34efdf58c0a75ec5fa0f66d478e"),
                 "board should preserve slot 4 merge history");
-        assertTrue(session.contains("goal_campaign_session_checkpoint_examples.md"),
-                "session manager should link to examples");
-        assertTrue(session.contains("current pr slot:"),
-                "session manager should record the active slot");
+        assertTrue(board.contains("codex/goal-campaign-failure-log-recovery-examples"),
+                "board should record slot 5 branch history");
     }
 
     @Test

@@ -2,7 +2,7 @@
 
 This protocol defines the usual verification escalation for Codex and reviewer-agent work. It is procedural guidance only; it does not add CI/Maven wiring or runtime behavior.
 
-For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` work, use [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) so checkpoints, pause/resume decisions, and merge-readiness claims stay tied to current verification. For multi-PR goal campaigns, use [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) to apply these tiers one scoped PR at a time.
+For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` work, use [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) so checkpoints, pause/resume decisions, and merge-readiness claims stay tied to current verification. For multi-PR goal campaigns, use [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) and [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md) to apply these tiers one scoped PR at a time.
 
 ## Tier 1: Focused Failing Test Or Focused Doc Guard
 
@@ -79,3 +79,9 @@ Do not accept stale, failed, cancelled, or pending required checks as green.
 After merge, update local `main`, verify the merge commit, rerun the requested local checks, and inspect main remote CI/CodeQL for the merge commit.
 
 Do not claim fully green main while remote checks are pending.
+
+## Campaign Mode Refinement
+
+For a multi-PR `/goal` campaign, each slot must verify the latest/current head SHA. Use focused checks while editing, full verification before opening a merge decision, current-head remote PR checks before merge, and post-merge main checks before counting the slot or starting the next branch.
+
+See [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md) for the campaign-specific order, final-head verification rule, remote check rules, SESSION_MANAGER.md checkpoints, and FAILURE_LOG.md failure logging expectations.

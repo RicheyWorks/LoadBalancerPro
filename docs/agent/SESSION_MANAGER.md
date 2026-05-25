@@ -8,21 +8,21 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Campaign: 10-PR LoadBalancerPro goal campaign
 
-Checkpoint: PR 8 local verification completed before PR open
+Checkpoint: PR 8 opened and final-head verification pending
 
 Started from main SHA: ee65436193f8ca855b5dab571eb7b154cddc3158
 
 Current campaign branch: codex/goal-campaign-handoff-report-template
 
-Current campaign PR: pending
+Current campaign PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/303
 
 Completed campaign PRs: 7 / 10
 
 Current blocker: none
 
-Checks completed: PR 1, PR 2, PR 3, PR 4, PR 5, PR 6, and PR 7 local, PR, post-merge, and main remote checks passed. Main CI and CodeQL are green for ee65436193f8ca855b5dab571eb7b154cddc3158. PR 8 branch was created from clean main. AgentCampaignHandoffReportTemplateDocumentationTest passed. The campaign focused selector bundle passed. Dependency tree for org.apache.tomcat.embed passed. mvn -q test passed. mvn -q -DskipTests package passed. mvn -B package passed. git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed. Enterprise lab package smoke passed.
+Checks completed: PR 1, PR 2, PR 3, PR 4, PR 5, PR 6, and PR 7 local, PR, post-merge, and main remote checks passed. Main CI and CodeQL are green for ee65436193f8ca855b5dab571eb7b154cddc3158. PR 8 branch was created from clean main. AgentCampaignHandoffReportTemplateDocumentationTest passed. The campaign focused selector bundle passed. Dependency tree for org.apache.tomcat.embed passed. mvn -q test passed. mvn -q -DskipTests package passed. mvn -B package passed. git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed. Enterprise lab package smoke passed. PR #303 opened.
 
-Next campaign action: commit, push, and open PR 8.
+Next campaign action: commit and push this PR-opened checkpoint, then rerun final local verification on the final PR head.
 
 ## Current Branch
 
@@ -30,7 +30,7 @@ Name: codex/goal-campaign-handoff-report-template
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/303
 
 ## Current Goal
 
@@ -38,7 +38,7 @@ Short goal: Add campaign handoff report template docs and guard test.
 
 ## Current Head SHA
 
-SHA: ee65436193f8ca855b5dab571eb7b154cddc3158
+SHA: ddff9d6cdc3fb8458c679dfd415abf08d2bb9776
 
 ## What Changed
 
@@ -74,7 +74,7 @@ SHA: ee65436193f8ca855b5dab571eb7b154cddc3158
 - Smoke checks:
 - enterprise-lab-workflow.ps1 -Package passed.
 - Remote checks:
-- Not opened yet for PR 8.
+- PR #303 opened; remote checks pending for the branch head.
 
 ## Blockers
 
@@ -85,7 +85,7 @@ SHA: ee65436193f8ca855b5dab571eb7b154cddc3158
 
 ## Next Action
 
-One concrete next step: commit, push, and open PR 8.
+One concrete next step: commit and push this PR-opened checkpoint, then rerun final local verification on the final PR head.
 
 ## Recovery Notes
 

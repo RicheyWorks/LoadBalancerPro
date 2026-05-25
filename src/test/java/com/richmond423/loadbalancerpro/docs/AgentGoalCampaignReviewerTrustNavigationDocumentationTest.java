@@ -139,4 +139,3 @@ class AgentGoalCampaignReviewerTrustNavigationDocumentationTest {
         return Files.readString(path, StandardCharsets.UTF_8);
     }
 }
-

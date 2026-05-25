@@ -103,6 +103,23 @@ class AgentLaseCoreExpansionGoalsDocumentationTest {
     }
 
     @Test
+    void goalLedgerRecordsLaseG04AsActiveLatencyWindowSliceWithoutCompletionClaim() throws IOException {
+        String normalized = read(LEDGER).toLowerCase(Locale.ROOT);
+
+        for (String expected : List.of(
+                "lase-g04 - ewma or rolling-window latency signal support",
+                "add bounded lase latency-window signal support",
+                "bounded ewma or rolling-window latency signal handling",
+                "codex/lase-g04-latency-window-signals",
+                "not merged/main-green")) {
+            assertTrue(normalized.contains(expected), "ledger should preserve LASE-G04 active fact: " + expected);
+        }
+
+        assertFalse(normalized.contains("lase-g04 is recorded as merged/main-green"),
+                "LASE-G04 must not be recorded merged/main-green before merge and main checks are proven");
+    }
+
+    @Test
     void goalLedgerPreservesVerificationAndRemoteCheckRules() throws IOException {
         String normalized = read(LEDGER).toLowerCase(Locale.ROOT);
 

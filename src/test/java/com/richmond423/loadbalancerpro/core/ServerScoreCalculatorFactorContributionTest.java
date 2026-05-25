@@ -57,10 +57,11 @@ class ServerScoreCalculatorFactorContributionTest {
                 .stream()
                 .collect(Collectors.toMap(ScoreFactorContribution::factorName, Function.identity()));
 
-        assertEquals(16, contributions.size());
+        assertEquals(17, contributions.size());
         assertContribution(contributions.get("p95LatencyMillis"), 27.0, ScoreFactorDirection.WEAKENS_SELECTION);
         assertContribution(contributions.get("p99LatencyMillis"), 31.5, ScoreFactorDirection.WEAKENS_SELECTION);
         assertContribution(contributions.get("averageLatencyMillis"), 3.0, ScoreFactorDirection.WEAKENS_SELECTION);
+        assertContribution(contributions.get("latencyWindowSignal"), 0.0, ScoreFactorDirection.NEUTRAL);
         assertContribution(contributions.get("capacityBasis"), 0.0, ScoreFactorDirection.NEUTRAL);
         assertContribution(contributions.get("inFlightRequestRatio"), 20.0, ScoreFactorDirection.WEAKENS_SELECTION);
         assertContribution(contributions.get("queueDepthRatio"), 5.0, ScoreFactorDirection.WEAKENS_SELECTION);
@@ -154,6 +155,7 @@ class ServerScoreCalculatorFactorContributionTest {
                 .toLowerCase();
 
         assertTrue(normalized.contains("not production telemetry proof"));
+        assertTrue(normalized.contains("not p95/p99 production proof"));
         assertTrue(normalized.contains("exact production scoring is not claimed"));
         assertTrue(normalized.contains("hidden routing internals are not inferred"));
         assertTrue(normalized.contains("does not add a weight term"));

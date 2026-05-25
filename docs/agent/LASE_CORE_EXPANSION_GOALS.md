@@ -118,7 +118,7 @@ Observed during Slot 13 orientation and merge-health handling:
 - Verification expectations: focused signal tests, scoring/routing selector bundle, full Maven/package/diff/smoke checks, and remote checks.
 - Not-proven boundaries: common campaign not-proven boundaries apply.
 - Dependencies: LASE-G03 or equivalent signal model.
-- Initial status: planned.
+- Initial status: active for Slot 16 branch `codex/lase-g04-latency-window-signals`; not merged/main-green.
 
 ### LASE-G05 - Tail-latency hysteresis and anti-flapping
 

@@ -27,6 +27,12 @@ class ServerStateVectorSignalExpansionTest {
         assertEquals(0.0, neutral.boundedQueuePressure(), 0.0);
         assertEquals(0.0, neutral.tailLatencySpreadMillis(), 0.0);
         assertEquals(0.0, neutral.tailLatencyPressure(), 0.0);
+        assertFalse(neutral.latencyWindowSignal().hasLatencyWindowValues());
+        assertEquals(neutral.averageLatencyMillis(), neutral.effectiveAverageLatencyMillis(), 0.0);
+        assertEquals(neutral.p95LatencyMillis(), neutral.effectiveP95LatencyMillis(), 0.0);
+        assertEquals(neutral.p99LatencyMillis(), neutral.effectiveP99LatencyMillis(), 0.0);
+        assertEquals(0.0, neutral.effectiveTailLatencySpreadMillis(), 0.0);
+        assertEquals(0.0, neutral.effectiveTailLatencyPressure(), 0.0);
         assertEquals(0.0, neutral.errorPressure(), 0.0);
         assertEquals(0.0, neutral.networkRiskPressure(), 0.0);
         assertEquals(0.0, neutral.normalizedHealthPressure(), 0.0);

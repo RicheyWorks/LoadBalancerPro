@@ -19,6 +19,8 @@ public record ServerStateVector(
         OptionalInt queueDepth,
         NetworkAwarenessSignal networkAwarenessSignal,
         Instant timestamp) {
+    private static final double MINIMUM_CAPACITY_BASIS = 1.0;
+    private static final double MINIMUM_LATENCY_BASIS_MILLIS = 1.0;
 
     public ServerStateVector {
         serverId = requireNonBlank(serverId, "serverId");
@@ -121,6 +123,70 @@ public record ServerStateVector(
                 NetworkAwarenessSignal.neutral(server.getServerId(), timestamp), timestamp);
     }
 
+    public double capacityBasis() {
+        if (estimatedConcurrencyLimit.isPresent()) {
+            return Math.max(MINIMUM_CAPACITY_BASIS, estimatedConcurrencyLimit.getAsDouble());
+        }
+        if (configuredCapacity.isPresent()) {
+            return Math.max(MINIMUM_CAPACITY_BASIS, configuredCapacity.getAsDouble());
+        }
+        return MINIMUM_CAPACITY_BASIS;
+    }
+
+    public double inFlightPressure() {
+        return inFlightRequestCount / capacityBasis();
+    }
+
+    public double queuePressure() {
+        return queueDepth.orElse(0) / capacityBasis();
+    }
+
+    public double boundedInFlightPressure() {
+        return clampUnit(inFlightPressure());
+    }
+
+    public double boundedQueuePressure() {
+        return clampUnit(queuePressure());
+    }
+
+    public double tailLatencySpreadMillis() {
+        return Math.max(0.0, p99LatencyMillis - p95LatencyMillis);
+    }
+
+    public double tailLatencyPressure() {
+        return boundedRatio(tailLatencySpreadMillis(), Math.max(MINIMUM_LATENCY_BASIS_MILLIS, p95LatencyMillis));
+    }
+
+    public double errorPressure() {
+        return recentErrorRate;
+    }
+
+    public double networkRiskPressure() {
+        NetworkAwarenessSignal signal = networkAwarenessSignal;
+        double timeoutCountPressure = signal.sampleSize() > 0
+                ? boundedRatio(signal.requestTimeoutCount(), signal.sampleSize())
+                : (signal.requestTimeoutCount() > 0 ? 1.0 : 0.0);
+        double jitterPressure = boundedRatio(signal.latencyJitterMillis(),
+                Math.max(MINIMUM_LATENCY_BASIS_MILLIS, p99LatencyMillis));
+        double ratePressure = Math.max(signal.timeoutRate(),
+                Math.max(signal.retryRate(), signal.connectionFailureRate()));
+        double burstPressure = signal.recentErrorBurst() ? 1.0 : 0.0;
+        return Math.max(ratePressure, Math.max(jitterPressure, Math.max(burstPressure, timeoutCountPressure)));
+    }
+
+    public double normalizedHealthPressure() {
+        if (!healthy) {
+            return 1.0;
+        }
+        return Math.max(tailLatencyPressure(),
+                Math.max(boundedInFlightPressure(),
+                        Math.max(boundedQueuePressure(), Math.max(errorPressure(), networkRiskPressure()))));
+    }
+
+    public boolean hasMaterialRisk() {
+        return !healthy || normalizedHealthPressure() > 0.0;
+    }
+
     private static String requireNonBlank(String value, String fieldName) {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(fieldName + " cannot be null or blank");
@@ -150,5 +216,16 @@ public record ServerStateVector(
         if (!Double.isFinite(value) || value < 0.0 || value > 1.0) {
             throw new IllegalArgumentException(fieldName + " must be between 0.0 and 1.0");
         }
+    }
+
+    private static double boundedRatio(double numerator, double denominator) {
+        if (denominator <= 0.0) {
+            return numerator > 0.0 ? 1.0 : 0.0;
+        }
+        return clampUnit(numerator / denominator);
+    }
+
+    private static double clampUnit(double value) {
+        return Math.max(0.0, Math.min(1.0, value));
     }
 }

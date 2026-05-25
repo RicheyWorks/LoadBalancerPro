@@ -8,97 +8,102 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-25T03:44-07:00
+Timestamp: 2026-05-25T04:29-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
-Current PR slot: 9
+Current PR slot: 10
 
-Checkpoint: Slot 9 PR opened after full local verification
+Checkpoint: Slot 10 PR opened after full local verification
 
-Started from main SHA: `0fc6a5431f400eb4e5f71a70805b3fcb317f1c69`
+Started from main SHA: `6f5d0d88502fb86fdc94f5261c709a2356dee65a`
 
-Current branch: codex/evidence-audit-runtime-config
+Current branch: codex/evidence-audit-proxy-demo-fixture
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/324
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/325
 
-Head SHA: `e7eabc4a40fb1bd1634bdb14b182d6df10544e6d` at PR creation
+Head SHA: `859209adc8822f3bfb8060c0b516fb61d9e654d4` at PR creation
 
 Changed files:
 
-- docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
-- docs/agent/SESSION_MANAGER.md
-- docs/agent/EVIDENCE_AUDIT_RUNTIME_CONFIGURATION_AUDIT.md
-- docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md
 - README.md
 - docs/REVIEWER_TRUST_MAP.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditRuntimeConfigurationAuditDocumentationTest.java
+- docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
+- docs/agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md
+- docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md
+- docs/agent/SESSION_MANAGER.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest.java
 
 Checks run:
 
-- Slot 8 PR #323 merged as `0fc6a5431f400eb4e5f71a70805b3fcb317f1c69`.
-- Slot 8 final branch head was `b1a1c578eca4a11b55a60f2213d45bf48cc28838`.
-- Slot 8 post-merge local verification passed: focused campaign/agent selector bundle, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke.
-- Slot 8 post-merge main remote checks passed: CI and CodeQL green for `0fc6a5431f400eb4e5f71a70805b3fcb317f1c69`.
-- Slot 9 branch created from clean main.
-- Slot 9 runtime configuration audit started as documentation/test-only.
-- `mvn test "-Dtest=AgentEvidenceAuditRuntimeConfigurationAuditDocumentationTest"` passed.
-- `mvn test "-Dtest=AgentEvidenceAuditRuntimeConfigurationAuditDocumentationTest,AgentEvidenceAuditComposeLocalLabAuditDocumentationTest,AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest,AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest,AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest,AgentEvidenceAuditCiWorkflowAuditDocumentationTest,AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"` passed.
+- Slot 9 PR #324 merged.
+- Slot 9 branch created from clean main before PR #324.
+- Slot 9 final branch head was `ecc0dbca270ff4f6b96c1f41c4ca7c0037569681`.
+- Slot 9 merge SHA is `6f5d0d88502fb86fdc94f5261c709a2356dee65a`.
+- Slot 9 post-merge local verification passed: focused campaign/agent selector bundle, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke.
+- Slot 9 post-merge main remote checks passed: CI and CodeQL green for `6f5d0d88502fb86fdc94f5261c709a2356dee65a`.
+- Slot 10 branch `codex/evidence-audit-proxy-demo-fixture` was created from clean main.
+- Slot 10 campaign state repair started as documentation/test-only before proxy demo fixture audit content.
+- Slot 10 proxy demo fixture audit doc and read-only documentation guard were added.
+- README, Reviewer Trust Map, and repository evidence map now link to the Slot 10 audit.
+- Initial Slot 10 focused guard run failed on exact documentation wording and was logged in FAILURE_LOG.md before continuing.
+- The Slot 10 audit wording was repaired without behavior changes, and `mvn test "-Dtest=AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest"` passed on rerun.
+- Slot 10 focused selector bundle passed.
 - `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
 - `mvn -q test` passed.
 - `mvn -q "-DskipTests" package` passed.
-- `mvn -B package` passed with 2,435 tests, 0 failures, 0 errors, and 0 skipped.
+- `mvn -B package` passed with 2,443 tests, 0 failures, 0 errors, and 0 skipped.
 - `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote only target-local lab evidence.
-- PR #324 was opened with head `e7eabc4a40fb1bd1634bdb14b182d6df10544e6d`.
+- PR #325 was opened with head `859209adc8822f3bfb8060c0b516fb61d9e654d4`.
 
-Remote status: main CI and CodeQL were green for the slot 9 starting main SHA; slot 9 PR #324 checks are in progress for the current head.
+Remote status: main CI and CodeQL are green for `6f5d0d88502fb86fdc94f5261c709a2356dee65a`; Slot 10 PR #325 checks are pending for the current head.
 
 Blocker: none.
 
-Next action: commit and push this PR-creation checkpoint, rerun focused guards, then wait for current-head PR checks.
+Next action: commit and push this PR-created checkpoint, rerun focused guards, and wait for current-head PR checks.
 
 Decision: continue
 
 ## Current Branch
 
-Name: codex/evidence-audit-runtime-config
+Name: codex/evidence-audit-proxy-demo-fixture
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/324
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/325
 
 ## Current Goal
 
-Short goal: Audit runtime configuration without changing runtime resources or behavior.
+Short goal: Audit proxy demo fixture and demo profiles without changing proxy fixture code, scripts, runtime resources, endpoints, or behavior.
 
 ## Current Head SHA
 
-SHA: `e7eabc4a40fb1bd1634bdb14b182d6df10544e6d` at PR creation
+SHA: `859209adc8822f3bfb8060c0b516fb61d9e654d4` at PR creation
 
 ## What Changed
 
-- Files changed:
-- docs/agent/EVIDENCE_AUDIT_RUNTIME_CONFIGURATION_AUDIT.md
-- docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md
-- docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
-- docs/agent/SESSION_MANAGER.md
 - README.md
 - docs/REVIEWER_TRUST_MAP.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditRuntimeConfigurationAuditDocumentationTest.java
+- docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
+- docs/agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md
+- docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md
+- docs/agent/SESSION_MANAGER.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest.java
 - Behavioral surface: none; docs/test-only.
-- Documentation surface: records slot 8 as merged/main green and adds the runtime configuration audit.
+- Documentation surface: records slot 9 as merged/main green, advances the active campaign pointer to Slot 10, and adds the proxy demo fixture audit.
 
 ## Checks Run
 
-- Focused checks: slot 9 guard passed.
+- Focused checks: Slot 9 post-merge focused selector bundle passed before Slot 10 branch creation.
+- Slot 10 focused check: first run of `mvn test "-Dtest=AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest"` failed on exact wording; failure logged; rerun passed.
 - Focused selector bundle: passed.
 - Dependency checks: `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
 - Full checks: `mvn -q test` passed.
-- Package checks: `mvn -q "-DskipTests" package` and `mvn -B package` passed.
+- Package checks: `mvn -q "-DskipTests" package` and `mvn -B package` passed; verbose package reported 2,443 tests, 0 failures, 0 errors, and 0 skipped.
 - Diff checks: `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
 - Smoke checks: `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Remote checks: main CI and CodeQL green for slot 9 starting SHA; slot 9 PR checks are in progress.
+- Remote checks: main CI and CodeQL green for Slot 9 merge SHA `6f5d0d88502fb86fdc94f5261c709a2356dee65a`; Slot 10 PR #325 checks pending for current head.
 
 ## Blockers
 
@@ -107,14 +112,14 @@ SHA: `e7eabc4a40fb1bd1634bdb14b182d6df10544e6d` at PR creation
 
 ## Next Action
 
-One concrete next step: commit and push this PR-creation checkpoint, rerun focused guards, then wait for current-head PR checks.
+One concrete next step: commit and push this PR-created checkpoint, rerun focused guards, and wait for current-head PR checks.
 
 ## Recovery Notes
 
-- How to resume: confirm branch `codex/evidence-audit-runtime-config`, inspect `git status`, push the latest checkpoint if needed, rerun focused guards, then wait for PR #324 current-head checks.
-- Commands already run for slot 9: `git checkout -b codex/evidence-audit-runtime-config`, `Get-Content src/main/resources/application.properties`, `Get-Content src/main/resources/application-prod.properties`, source/doc searches for auth, CORS, telemetry, rate-limit, proxy, LASE, and private-network defaults, the slot 9 focused guard, the relevant selector bundle, dependency tree, `mvn -q test`, package checks, diff checks, enterprise lab package smoke, and main remote status checks confirming slot 8 main was green.
+- How to resume: confirm branch `codex/evidence-audit-proxy-demo-fixture`, inspect `git status`, verify Slot 9 remains recorded as merged/main green, then continue the Slot 10 proxy demo fixture audit.
+- Commands already run for Slot 10 start: `git fetch origin`, `git pull --ff-only origin main`, `git checkout -b codex/evidence-audit-proxy-demo-fixture`, `git status --short`, `git rev-parse --abbrev-ref HEAD`, `git rev-parse HEAD`, board/session reads, proxy fixture/profile reads, and source/doc searches for proxy demo surfaces.
 - Safety boundaries to re-check: docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
-- Remote checks that must be refreshed: slot 9 PR current-head checks after PR creation; main CI/CodeQL after merge.
+- Remote checks that must be refreshed: Slot 10 PR current-head checks after PR creation; main CI/CodeQL after Slot 10 merge.
 
 ## Historical Closeout: LoadBalancerPro Goal Mode 10-PR Trial
 

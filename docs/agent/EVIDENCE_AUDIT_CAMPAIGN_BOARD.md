@@ -8,10 +8,10 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 
 - Campaign name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign.
 - Total target: 20 merged PRs.
-- Completed campaign PRs: 8 / 20.
-- Current PR slot: 9.
-- Current branch: `codex/evidence-audit-runtime-config`.
-- Current PR: [#324](https://github.com/RicheyWorks/LoadBalancerPro/pull/324).
+- Completed campaign PRs: 9 / 20.
+- Current PR slot: 10.
+- Current branch: `codex/evidence-audit-proxy-demo-fixture`.
+- Current PR: [#325](https://github.com/RicheyWorks/LoadBalancerPro/pull/325).
 - Starting main HEAD: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
 - Prior campaign fact: PR #315 is merged.
 - Prior campaign merge commit: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
@@ -24,7 +24,8 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 - Slot 6 result: PR #321 merged as `06d800c478b308ef836b0ab01d8b641d8b1a35f0`; post-merge main CI and CodeQL were green.
 - Slot 7 result: PR #322 merged as `399f83ba0fec96542c544643ad214d8e4937072d`; post-merge main CI and CodeQL were green.
 - Slot 8 result: PR #323 merged as `0fc6a5431f400eb4e5f71a70805b3fcb317f1c69`; post-merge main CI and CodeQL were green.
-- Slot 9 purpose: audit runtime configuration without runtime resource edits.
+- Slot 9 result: PR #324 merged as `6f5d0d88502fb86fdc94f5261c709a2356dee65a`; final slot 9 head was `ecc0dbca270ff4f6b96c1f41c4ca7c0037569681`; post-merge main CI and CodeQL were green.
+- Slot 10 purpose: audit proxy demo fixture and demo profiles without editing proxy fixture code, scripts, runtime resources, endpoints, or behavior.
 
 ## Board Rules
 
@@ -49,8 +50,8 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 | 6 | Maven/dependency posture audit | codex/evidence-audit-maven-dependency-posture | [#321](https://github.com/RicheyWorks/LoadBalancerPro/pull/321) | merged | `e2798905b6d5a5633a965dd6c44ede7e553ece88` | `06d800c478b308ef836b0ab01d8b641d8b1a35f0` | Maven/dependency posture audited; post-merge main CI and CodeQL green |
 | 7 | Dockerfile runtime audit | codex/evidence-audit-dockerfile-runtime | [#322](https://github.com/RicheyWorks/LoadBalancerPro/pull/322) | merged | `933717e7fe5a59004353fb90f0718ba8b5ecd6ef` | `399f83ba0fec96542c544643ad214d8e4937072d` | Dockerfile runtime posture audited; post-merge main CI and CodeQL green |
 | 8 | Compose/local-lab audit | codex/evidence-audit-compose-local-lab | [#323](https://github.com/RicheyWorks/LoadBalancerPro/pull/323) | merged | `b1a1c578eca4a11b55a60f2213d45bf48cc28838` | `0fc6a5431f400eb4e5f71a70805b3fcb317f1c69` | Compose/local-lab audited; post-merge main CI and CodeQL green |
-| 9 | Runtime configuration audit | codex/evidence-audit-runtime-config | [#324](https://github.com/RicheyWorks/LoadBalancerPro/pull/324) | open | `e7eabc4a40fb1bd1634bdb14b182d6df10544e6d` | pending | PR opened after full local verification; remote checks in progress |
-| 10 | Proxy demo fixture audit | pending | pending | planned | pending | pending | Audit proxy demo fixture and demo profiles |
+| 9 | Runtime configuration audit | codex/evidence-audit-runtime-config | [#324](https://github.com/RicheyWorks/LoadBalancerPro/pull/324) | merged | `ecc0dbca270ff4f6b96c1f41c4ca7c0037569681` | `6f5d0d88502fb86fdc94f5261c709a2356dee65a` | Runtime configuration audited; post-merge main CI and CodeQL green |
+| 10 | Proxy demo fixture audit | codex/evidence-audit-proxy-demo-fixture | [#325](https://github.com/RicheyWorks/LoadBalancerPro/pull/325) | open | `859209adc8822f3bfb8060c0b516fb61d9e654d4` | pending | PR opened after full local verification; current-head checks pending |
 | 11 | CLI mode and app startup audit | pending | pending | planned | pending | pending | Audit CLI dispatch and smoke expectations |
 | 12 | Enterprise lab workflow smoke audit | pending | pending | planned | pending | pending | Audit smoke evidence boundary without script edits |
 | 13 | README and Reviewer Trust claim audit | pending | pending | planned | pending | pending | Audit public claims and not-proven wording |

@@ -24,6 +24,7 @@ A campaign is a bounded sequence of separately scoped PRs that share one durable
 - CAMPAIGN_MERGE_GATE.md: final pre-merge and post-merge decision gate before a PR can merge or count.
 - CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md: failure logging, safe recovery, pause, and resume rules for campaign interruptions.
 - CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md: factual handoff report format for pauses, resumes, checkpoints, and human review.
+- CAMPAIGN_CLOSEOUT_PROTOCOL.md: final campaign count, verification, report, and pause rules before claiming the campaign complete.
 
 ## Ten-PR Execution Loop
 
@@ -86,7 +87,7 @@ Pause the campaign instead of improvising when:
 
 Every campaign PR report must include branch, PR URL, head SHA, changed files, what changed, local verification, remote checks, scope/safety audit, remaining not-proven boundaries, and next recommended action.
 
-Use CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md for pauses, resumes, and checkpoint handoffs. The campaign closeout must report the ten PRs, merge commits, verification summary, failures or pauses, and any remaining work.
+Use CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md for pauses, resumes, and checkpoint handoffs. Use CAMPAIGN_CLOSEOUT_PROTOCOL.md for the final count, merge commits, verification summary, failures or pauses, and any remaining work.
 
 ## Not-Proven Boundaries
 

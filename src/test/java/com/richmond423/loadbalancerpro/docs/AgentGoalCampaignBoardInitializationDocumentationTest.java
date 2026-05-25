@@ -83,17 +83,17 @@ class AgentGoalCampaignBoardInitializationDocumentationTest {
     }
 
     @Test
-    void sessionManagerRecordsSlotTwoCheckpoint() throws Exception {
+    void sessionManagerRecordsActiveCampaignCheckpointAndBoardLink() throws Exception {
         String session = read(SESSION_MANAGER).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
                 "loadbalancerpro goal mode 10-pr trial",
-                "current pr slot: 2",
-                "slot 1 merged and main green",
-                "codex/goal-campaign-board-initialization",
-                "9b0efc0dc0d6654c0e8f95294e77e7de72bd7941",
-                "main ci and codeql",
-                "slot 2 branch created from clean main")) {
+                "current pr slot:",
+                "goal_campaign_board.md",
+                "current branch:",
+                "checks run",
+                "remote status",
+                "decision: continue")) {
             assertTrue(session.contains(expected), "session manager should record " + expected);
         }
     }

@@ -4,7 +4,7 @@ This quickstart explains how to use the repository trust and agent contract file
 
 ## File Roles
 
-In short: README.md is the Advanced README / public trust surface, AGENTS.md is the Codex/agent operating rules file, BUILD_CONTRACT.md is the current task contract template, GOAL_MODE_LONG_RUN_PROTOCOL.md defines `/goal` long-running session behavior, CAMPAIGN_SYSTEM_ARCHITECTURE.md defines multi-PR campaign execution, CAMPAIGN_MERGE_GATE.md defines the final merge decision gate, VERIFICATION_PROTOCOL.md defines focused-vs-full verification, SESSION_MANAGER.md tracks long-running session state, and FAILURE_LOG.md tracks failures and recovery.
+In short: README.md is the Advanced README / public trust surface, AGENTS.md is the Codex/agent operating rules file, BUILD_CONTRACT.md is the current task contract template, GOAL_MODE_LONG_RUN_PROTOCOL.md defines `/goal` long-running session behavior, CAMPAIGN_SYSTEM_ARCHITECTURE.md defines multi-PR campaign execution, CAMPAIGN_MERGE_GATE.md defines the final merge decision gate, CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md defines failure recovery and pause/resume rules, VERIFICATION_PROTOCOL.md defines focused-vs-full verification, SESSION_MANAGER.md tracks long-running session state, and FAILURE_LOG.md tracks failures and recovery.
 
 - [`README.md`](../../README.md) is the Advanced README / public trust surface. Use it as the human front door, reviewer starting point, trust-boundary summary, high-level claim contract, and agent-visible context surface.
 - [`AGENTS.md`](../../AGENTS.md) is the Codex/agent operating rules file. Use it for scope discipline, guardrail preservation, and honest reporting expectations.
@@ -15,6 +15,7 @@ In short: README.md is the Advanced README / public trust surface, AGENTS.md is 
 - [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md) defines the per-PR opening, merge, post-merge, scope, and stop-condition gate for campaign slices.
 - [`CAMPAIGN_REMOTE_CHECK_AUDIT.md`](CAMPAIGN_REMOTE_CHECK_AUDIT.md) defines remote PR check and main merge-commit check auditing before a campaign PR can merge or count.
 - [`CAMPAIGN_MERGE_GATE.md`](CAMPAIGN_MERGE_GATE.md) defines the final current-head, local verification, remote check, scope, merge method, and post-merge main gate.
+- [`CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md`](CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md) defines how to log, recover from, pause, and resume after local, remote, scope, or tooling failures.
 - [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md) defines focused-vs-full verification. Use focused checks while editing and full checks before merge.
 - [`SESSION_MANAGER.md`](SESSION_MANAGER.md) tracks long-running session state. Use it for current branch, PR, goal, head SHA, changed files, checks run, blockers, next action, and recovery notes.
 - [`FAILURE_LOG.md`](FAILURE_LOG.md) tracks failures and recovery. Use it for local test failures, remote check failures, suspected causes, fixes attempted, results, and follow-up actions.

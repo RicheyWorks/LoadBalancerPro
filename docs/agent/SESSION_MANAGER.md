@@ -2,48 +2,48 @@
 
 Use this template during long Codex sessions, handoffs, resumes, and interrupted work.
 
-For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` work, use [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) and update this file at checkpoints. For multi-PR goal campaigns, use [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md), [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md), [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md), [`CAMPAIGN_REMOTE_CHECK_AUDIT.md`](CAMPAIGN_REMOTE_CHECK_AUDIT.md), and [`CAMPAIGN_MERGE_GATE.md`](CAMPAIGN_MERGE_GATE.md) and keep the current PR checkpoint factual.
+For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` work, use [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) and update this file at checkpoints. For multi-PR goal campaigns, use [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md), [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md), [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md), [`CAMPAIGN_REMOTE_CHECK_AUDIT.md`](CAMPAIGN_REMOTE_CHECK_AUDIT.md), [`CAMPAIGN_MERGE_GATE.md`](CAMPAIGN_MERGE_GATE.md), and [`CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md`](CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md) and keep the current PR checkpoint factual.
 
 ## Active Campaign Checkpoint
 
 Campaign: 10-PR LoadBalancerPro goal campaign
 
-Checkpoint: PR 5 opened
+Checkpoint: PR 6 full local verification completed
 
-Started from main SHA: ba92ed7c0267c570af0092db92701f627e66da7a
+Started from main SHA: 39e1a6a013b2be884b67f8ed840aaada737f514a
 
-Current campaign branch: codex/goal-campaign-merge-gate
+Current campaign branch: codex/goal-campaign-failure-recovery-playbook
 
-Current campaign PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/300
+Current campaign PR: not opened yet
 
-Completed campaign PRs: 4 / 10
+Completed campaign PRs: 5 / 10
 
-Current blocker: none; a focused guard wording failure was logged in FAILURE_LOG.md, fixed, and rerun successfully.
+Current blocker: none
 
-Checks completed: PR 1, PR 2, PR 3, and PR 4 local, PR, post-merge, and main remote checks passed. Main CI and CodeQL are green for ba92ed7c0267c570af0092db92701f627e66da7a. Initial AgentCampaignMergeGateDocumentationTest failed on explicit "Do not rebase" wording; FAILURE_LOG.md records the failure and CAMPAIGN_MERGE_GATE.md has been corrected. AgentCampaignMergeGateDocumentationTest passed. AgentCampaignMergeGateDocumentationTest, AgentCampaignRemoteCheckAuditDocumentationTest, AgentCampaignPrReadinessChecklistDocumentationTest, AgentCampaignCheckpointLedgerDocumentationTest, AgentCampaignSystemArchitectureDocumentationTest, and AgentWorkflowQuickstartDocumentationTest passed. Dependency tree for org.apache.tomcat.embed passed. mvn -q test passed. mvn -q -DskipTests package passed. mvn -B package passed. git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed. Enterprise lab package smoke passed. PR #300 opened.
+Checks completed: PR 1, PR 2, PR 3, PR 4, and PR 5 local, PR, post-merge, and main remote checks passed. Main CI and CodeQL are green for 39e1a6a013b2be884b67f8ed840aaada737f514a. AgentCampaignFailureRecoveryPlaybookDocumentationTest passed. AgentCampaignFailureRecoveryPlaybookDocumentationTest, AgentCampaignMergeGateDocumentationTest, AgentCampaignRemoteCheckAuditDocumentationTest, AgentCampaignPrReadinessChecklistDocumentationTest, AgentCampaignCheckpointLedgerDocumentationTest, AgentCampaignSystemArchitectureDocumentationTest, and AgentWorkflowQuickstartDocumentationTest passed. Dependency tree for org.apache.tomcat.embed passed. mvn -q test passed. mvn -q -DskipTests package passed. mvn -B package passed. git diff --check, git diff --check origin/main...HEAD, and git diff --cached --check passed. Enterprise lab package smoke passed.
 
-Next campaign action: commit and push this PR-opened checkpoint, then rerun final local verification on the final PR head.
+Next campaign action: stage, scope-audit, commit, push, and open PR 6.
 
 ## Current Branch
 
-Name: codex/goal-campaign-merge-gate
+Name: codex/goal-campaign-failure-recovery-playbook
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/300
+URL: not opened yet
 
 ## Current Goal
 
-Short goal: Add campaign merge gate docs and guard test.
+Short goal: Add campaign failure recovery playbook docs and guard test.
 
 ## Current Head SHA
 
-SHA: 5dffebe4f8073c3bb031ca5b3a9505f0d5ec3231
+SHA: 39e1a6a013b2be884b67f8ed840aaada737f514a
 
 ## What Changed
 
 - Files changed:
-- docs/agent/CAMPAIGN_MERGE_GATE.md
+- docs/agent/CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md
 - docs/agent/AGENT_WORKFLOW_QUICKSTART.md
 - docs/agent/CAMPAIGN_CHECKPOINT_LEDGER.md
 - docs/agent/CAMPAIGN_PR_READINESS_CHECKLIST.md
@@ -51,16 +51,16 @@ SHA: 5dffebe4f8073c3bb031ca5b3a9505f0d5ec3231
 - docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md
 - docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentCampaignMergeGateDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentCampaignFailureRecoveryPlaybookDocumentationTest.java
 - Behavioral surface:
 - None; docs/test-only.
 - Documentation surface:
-- Adds campaign merge gate and cross-links it into the campaign control docs.
+- Adds campaign failure recovery playbook and cross-links it into the campaign control docs.
 
 ## Checks Run
 
 - Focused checks:
-- AgentCampaignMergeGateDocumentationTest; campaign focused bundle.
+- AgentCampaignFailureRecoveryPlaybookDocumentationTest; campaign focused bundle.
 - Full checks:
 - mvn -q test; mvn -B package.
 - Package checks:
@@ -70,7 +70,7 @@ SHA: 5dffebe4f8073c3bb031ca5b3a9505f0d5ec3231
 - Smoke checks:
 - enterprise-lab-workflow.ps1 -Package.
 - Remote checks:
-- Not opened yet for PR 5.
+- Not opened yet for PR 6.
 
 ## Blockers
 
@@ -81,7 +81,7 @@ SHA: 5dffebe4f8073c3bb031ca5b3a9505f0d5ec3231
 
 ## Next Action
 
-One concrete next step: commit and push the PR-opened checkpoint, then rerun the PR 5 local verification gate on the final head.
+One concrete next step: stage the PR 6 files and perform the final scope audit before commit.
 
 ## Recovery Notes
 

@@ -2,7 +2,7 @@
 
 This document defines the merge decision gate for each multi-PR Codex `/goal` campaign slice. It is documentation only; it does not add automation, CI/Maven wiring, runtime behavior, Docker/Compose behavior, external targets, secrets, or production claims.
 
-Use this gate with CAMPAIGN_SYSTEM_ARCHITECTURE.md, CAMPAIGN_CHECKPOINT_LEDGER.md, CAMPAIGN_PR_READINESS_CHECKLIST.md, CAMPAIGN_REMOTE_CHECK_AUDIT.md, GOAL_MODE_LONG_RUN_PROTOCOL.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md before merging any campaign PR.
+Use this gate with CAMPAIGN_SYSTEM_ARCHITECTURE.md, CAMPAIGN_CHECKPOINT_LEDGER.md, CAMPAIGN_PR_READINESS_CHECKLIST.md, CAMPAIGN_REMOTE_CHECK_AUDIT.md, CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md, GOAL_MODE_LONG_RUN_PROTOCOL.md, SESSION_MANAGER.md, FAILURE_LOG.md, and VERIFICATION_PROTOCOL.md before merging any campaign PR.
 
 ## Gate Purpose
 
@@ -62,7 +62,7 @@ Record the merge commit, new main head, post-merge checks, and next action in SE
 
 ## Stop Conditions
 
-Pause the campaign and update FAILURE_LOG.md if:
+Pause the campaign, use CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md, and update FAILURE_LOG.md if:
 
 - the current PR head SHA changed unexpectedly and the new diff has not been reviewed;
 - scope expands beyond the current PR contract;

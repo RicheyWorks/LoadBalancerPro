@@ -21,6 +21,7 @@ A campaign is a bounded sequence of separately scoped PRs that share one durable
 - CAMPAIGN_PR_READINESS_CHECKLIST.md: per-PR opening, merge, post-merge, scope, and stop-condition checklist.
 - CAMPAIGN_REMOTE_CHECK_AUDIT.md: remote PR and main merge-commit check audit rules.
 - CAMPAIGN_MERGE_GATE.md: final pre-merge and post-merge decision gate before a PR can merge or count.
+- CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md: failure logging, safe recovery, pause, and resume rules for campaign interruptions.
 
 ## Ten-PR Execution Loop
 
@@ -52,7 +53,7 @@ Update SESSION_MANAGER.md at these minimum checkpoints:
 - post-merge main checks completed;
 - campaign pause or closeout.
 
-If any check fails or scope becomes unsafe, update FAILURE_LOG.md before pausing.
+If any check fails or scope becomes unsafe, use CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md and update FAILURE_LOG.md before pausing.
 
 ## Merge Gate
 

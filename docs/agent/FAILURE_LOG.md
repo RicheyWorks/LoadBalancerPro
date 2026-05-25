@@ -24,6 +24,42 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-25T02:20-07:00
+
+Branch/PR: codex/evidence-audit-maven-dependency-posture / pending
+
+Failure type: focused selector bundle guard durability
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest,AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest,AgentEvidenceAuditCiWorkflowAuditDocumentationTest,AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"`
+
+Suspected cause: the slot 5 CodeQL/dependency-review guard still asserted moving active-campaign wording (`completed campaign prs: 4 / 20`) after slot 6 correctly advanced the board to 5 / 20 completed.
+
+Fix attempted: log the failure, update the slot 5 guard to verify durable merged-slot history for PR #320 and its merge SHA, then rerun the selector bundle.
+
+Result: selector bundle rerun passed after updating the slot 5 guard to verify durable merged-slot facts.
+
+Follow-up action: continue with dependency tree and full slot 6 local verification.
+
+## Entry
+
+Date/time: 2026-05-25T02:18-07:00
+
+Branch/PR: codex/evidence-audit-maven-dependency-posture / pending
+
+Failure type: focused documentation guard wording and assertion brittleness
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest"`
+
+Suspected cause: the new slot 6 audit doc described the Spring Boot plugin main-class configuration but did not include the exact `Spring Boot main class` wording required by the guard, and the guard expected a misspelled lower-case `LoadBalancerApiApplication` token in both the `pom.xml` assertion and the required audit-wording list.
+
+Fix attempted: log the failure, add exact `Spring Boot main class` wording to the audit, correct both guard expectations to `loadbalancerapiapplication`, and rerun the focused guard.
+
+Result: focused guard rerun passed after adding exact `Spring Boot main class` wording and correcting both lower-case main-class token expectations.
+
+Follow-up action: continue with the slot 6 selector bundle and full local verification.
+
+## Entry
+
 Date/time: 2026-05-25T01:48-07:00
 
 Branch/PR: codex/evidence-audit-codeql-dependency-review / pending

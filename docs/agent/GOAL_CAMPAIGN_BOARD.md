@@ -11,7 +11,7 @@ Use this board with [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`
 - Completed campaign PRs: 9 / 10.
 - Current PR slot: 10.
 - Current branch: `codex/goal-campaign-final-handoff-report`.
-- Current PR: pending.
+- Current PR: [#315](https://github.com/RicheyWorks/LoadBalancerPro/pull/315).
 - Current main HEAD: `b045b4669ab736cfc0c707fae058ad2e73d7cd20`.
 - Slot 1 PR: [#306](https://github.com/RicheyWorks/LoadBalancerPro/pull/306).
 - Slot 1 head SHA: `30828f89a41d64e30d1acc668714e5455a6e8a9f`.
@@ -89,7 +89,7 @@ Use these status values:
 | 7 | Add README goal-mode campaign summary | codex/goal-campaign-readme-summary | [#312](https://github.com/RicheyWorks/LoadBalancerPro/pull/312) | post-merge main green | `29f19ef9823ba19807e170be59c8032e283c6862` | `ca16382638dbbc118aeab7070a4b8bbf585ae827` | README campaign summary merged; main CI/CodeQL green |
 | 8 | Add Reviewer Trust Map goal-mode campaign navigation | codex/goal-campaign-reviewer-trust-navigation | [#313](https://github.com/RicheyWorks/LoadBalancerPro/pull/313) | post-merge main green | `275a9ba753964ac3ff08f115fb9f91d54b1e1b94` | `f2e3c784b5858b61e664844502ce66d3cc31d352` | Reviewer trust navigation merged; main CI/CodeQL green |
 | 9 | Add AGENTS.md campaign discipline section | codex/goal-campaign-agents-discipline | [#314](https://github.com/RicheyWorks/LoadBalancerPro/pull/314) | post-merge main green | `09d0ab9ee4ab508846165bbab51756b83d43814c` | `b045b4669ab736cfc0c707fae058ad2e73d7cd20` | Agent discipline merged; main CI/CodeQL green |
-| 10 | Add goal-mode trial final handoff/report | codex/goal-campaign-final-handoff-report | pending | in progress | pending | pending | Final handoff/report branch started from slot 9 green main |
+| 10 | Add goal-mode trial final handoff/report | codex/goal-campaign-final-handoff-report | [#315](https://github.com/RicheyWorks/LoadBalancerPro/pull/315) | PR opened | `24808aff413811e3330b2e05aa6f225d52098593` at PR creation; final checkpoint head pending remote audit | pending | Final handoff/report PR opened; remote checks pending |
 
 ## Remote Check Rules
 

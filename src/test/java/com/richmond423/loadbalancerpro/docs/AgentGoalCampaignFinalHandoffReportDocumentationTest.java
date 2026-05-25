@@ -99,11 +99,14 @@ class AgentGoalCampaignFinalHandoffReportDocumentationTest {
         assertTrue(board.contains("current pr slot: 10"));
         assertTrue(board.contains("codex/goal-campaign-final-handoff-report"));
         assertTrue(board.contains("goal_campaign_final_handoff_report.md"));
+        assertTrue(board.contains("#315"));
+        assertTrue(board.contains("24808aff413811e3330b2e05aa6f225d52098593"));
         assertTrue(board.contains("#314"));
         assertTrue(board.contains("09d0ab9ee4ab508846165bbab51756b83d43814c"));
         assertTrue(board.contains("b045b4669ab736cfc0c707fae058ad2e73d7cd20"));
         assertTrue(session.contains("slot 9 merged and main green"));
         assertTrue(session.contains("current pr slot: 10"));
+        assertTrue(session.contains("https://github.com/richeyworks/loadbalancerpro/pull/315"));
         assertTrue(readme.contains("goal_campaign_final_handoff_report.md"));
         assertTrue(agents.contains("goal_campaign_final_handoff_report.md"));
         assertTrue(trustMap.contains("goal_campaign_final_handoff_report.md"));

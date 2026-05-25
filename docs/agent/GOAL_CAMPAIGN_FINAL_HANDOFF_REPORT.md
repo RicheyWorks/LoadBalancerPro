@@ -11,7 +11,7 @@ Use this report with [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FI
 - Completed before this closeout branch: 9 / 10.
 - Current slot: 10.
 - Current branch: `codex/goal-campaign-final-handoff-report`.
-- Current PR: pending until opened.
+- Current PR: [#315](https://github.com/RicheyWorks/LoadBalancerPro/pull/315).
 - Current main HEAD at branch creation: `b045b4669ab736cfc0c707fae058ad2e73d7cd20`.
 - Slot 9 result: PR #314 merged at `b045b4669ab736cfc0c707fae058ad2e73d7cd20`; main CI and CodeQL were green before slot 10 started.
 
@@ -28,7 +28,7 @@ Use this report with [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FI
 | 7 | Add README goal-mode campaign summary | #312 | merged; main CI/CodeQL green |
 | 8 | Add Reviewer Trust Map goal-mode campaign navigation | #313 | merged; main CI/CodeQL green |
 | 9 | Add AGENTS.md campaign discipline section | #314 | merged; main CI/CodeQL green |
-| 10 | Add goal-mode trial final handoff/report | pending | closeout PR; count only after merge and green main |
+| 10 | Add goal-mode trial final handoff/report | #315 | closeout PR; count only after merge and green main |
 
 ## Closeout Rules
 

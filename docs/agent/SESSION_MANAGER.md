@@ -6,21 +6,21 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-24T21:57-07:00
+Timestamp: 2026-05-24T22:00-07:00
 
 Goal name: LoadBalancerPro Goal Mode 10-PR Trial
 
 Current PR slot: 8
 
-Checkpoint: Slot 8 full local verification passed; PR opening pending
+Checkpoint: Slot 8 PR opened; final checkpoint verification pending
 
 Started from main SHA: ca16382638dbbc118aeab7070a4b8bbf585ae827
 
 Current branch: codex/goal-campaign-reviewer-trust-navigation
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/313
 
-Head SHA: pending until slot 8 commit
+Head SHA: `dd50971bdf3bf88e780200b11135826b2b0f5d8e` at PR creation; final pushed checkpoint head pending remote audit
 
 Changed files:
 
@@ -50,12 +50,15 @@ Checks run:
 - `git diff --check origin/main...HEAD` passed.
 - `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- Slot 8 commit `dd50971bdf3bf88e780200b11135826b2b0f5d8e` pushed.
+- PR #313 opened and was mergeable at PR creation.
+- Initial PR #313 remote checks were in progress for the first pushed head.
 
-Remote status: no PR opened yet for slot 8.
+Remote status: PR #313 checks in progress.
 
 Blocker: none.
 
-Next action: commit the slot 8 docs/test-only changes, push the branch, and open the PR.
+Next action: push the PR checkpoint update, rerun focused and final-head verification, then wait for current-head remote checks.
 
 Decision: continue
 
@@ -65,7 +68,7 @@ Name: codex/goal-campaign-reviewer-trust-navigation
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/313
 
 ## Current Goal
 
@@ -73,7 +76,7 @@ Short goal: Add reviewer-facing goal campaign navigation to the Reviewer Trust M
 
 ## Current Head SHA
 
-SHA: pending until slot 8 commit
+SHA: `dd50971bdf3bf88e780200b11135826b2b0f5d8e` at PR creation; final pushed checkpoint head pending remote audit
 
 ## What Changed
 
@@ -107,7 +110,7 @@ SHA: pending until slot 8 commit
 - Smoke checks:
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
 - Remote checks:
-- No slot 8 PR opened yet.
+- PR #313 opened; current-head remote checks pending.
 
 ## Blockers
 
@@ -118,14 +121,14 @@ SHA: pending until slot 8 commit
 
 ## Next Action
 
-One concrete next step: commit the slot 8 docs/test-only changes and open the pull request.
+One concrete next step: push the PR checkpoint update, rerun focused and final-head verification, then wait for current-head remote checks.
 
 ## Recovery Notes
 
 - How to resume:
-- Confirm the branch is `codex/goal-campaign-reviewer-trust-navigation`, inspect `git status`, then open the slot 8 PR from the locally verified branch.
+- Confirm the branch is `codex/goal-campaign-reviewer-trust-navigation`, inspect `git status`, push the PR checkpoint update if needed, then rerun final-head verification before merge consideration.
 - Commands already run:
-- `git checkout main`; `git pull --ff-only origin main`; watched PR #312 and main CI/CodeQL checks to green; `git checkout -b codex/goal-campaign-reviewer-trust-navigation`.
+- `git checkout main`; `git pull --ff-only origin main`; watched PR #312 and main CI/CodeQL checks to green; `git checkout -b codex/goal-campaign-reviewer-trust-navigation`; opened PR #313.
 - Safety boundaries to re-check:
 - Docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed:

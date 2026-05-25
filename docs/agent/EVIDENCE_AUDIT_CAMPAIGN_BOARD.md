@@ -11,7 +11,7 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 - Completed campaign PRs: 1 / 20.
 - Current PR slot: 2.
 - Current branch: `codex/evidence-audit-open-pr-hygiene`.
-- Current PR: pending.
+- Current PR: [#317](https://github.com/RicheyWorks/LoadBalancerPro/pull/317).
 - Starting main HEAD: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
 - Prior campaign fact: PR #315 is merged.
 - Prior campaign merge commit: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
@@ -35,7 +35,7 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 | Slot | Scope | Branch | PR | Status | Head SHA | Merge SHA | Checkpoint |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Prior 10-PR closeout repair | codex/evidence-audit-closeout-repair | [#316](https://github.com/RicheyWorks/LoadBalancerPro/pull/316) | merged | `cfa138b923a14c46b07c40a6c80fd6f1c568c8f2` | `4622d788569fc68de1fab212cdad388d2cf10dc8` | PR #315 facts repaired; post-merge main CI and CodeQL green |
-| 2 | Open PR hygiene audit | codex/evidence-audit-open-pr-hygiene | pending | local verification passed | pending | pending | PR #291 and other open PRs audited without closing or modifying them |
+| 2 | Open PR hygiene audit | codex/evidence-audit-open-pr-hygiene | [#317](https://github.com/RicheyWorks/LoadBalancerPro/pull/317) | PR opened | `c53ad0a799fb8d14ebe92df2f6b40fb2bcd1d71c` at PR creation | pending | PR #291 and other open PRs audited without closing or modifying them |
 | 3 | Repository evidence map | pending | pending | planned | pending | pending | Map README, trust, CI, CodeQL, Docker, Compose, smoke, config, and campaign evidence |
 | 4 | CI workflow audit | pending | pending | planned | pending | pending | Audit workflow posture without editing workflow files |
 | 5 | CodeQL and dependency-review audit | pending | pending | planned | pending | pending | Audit CodeQL/dependency review posture and limits |

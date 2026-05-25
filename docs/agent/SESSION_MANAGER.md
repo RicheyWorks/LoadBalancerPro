@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-25T00:04-07:00
+Timestamp: 2026-05-25T00:10-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
 Current PR slot: 2
 
-Checkpoint: Slot 2 local verification passed; PR creation pending
+Checkpoint: Slot 2 PR opened; final-head verification pending
 
 Started from main SHA: `4622d788569fc68de1fab212cdad388d2cf10dc8`
 
 Current branch: codex/evidence-audit-open-pr-hygiene
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/317
 
-Head SHA: working tree before slot 2 commit
+Head SHA: `c53ad0a799fb8d14ebe92df2f6b40fb2bcd1d71c` at PR creation; final checkpoint head pending verification
 
 Changed files:
 
@@ -52,12 +52,14 @@ Checks run:
 - `git diff --check origin/main...HEAD` passed.
 - `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- Slot 2 commit `c53ad0a799fb8d14ebe92df2f6b40fb2bcd1d71c` pushed.
+- PR #317 opened.
 
-Remote status: main CI and CodeQL green for the starting main SHA; slot 2 PR not opened yet.
+Remote status: PR #317 checks pending or not yet audited; main CI and CodeQL were green for the starting main SHA.
 
 Blocker: none.
 
-Next action: commit and push slot 2, open the slot 2 PR, then audit current-head remote checks.
+Next action: run final-head verification for the PR-created checkpoint, push the checkpoint commit, then audit PR #317 current-head remote checks.
 
 Decision: continue
 
@@ -67,7 +69,7 @@ Name: codex/evidence-audit-open-pr-hygiene
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/317
 
 ## Current Goal
 
@@ -75,7 +77,7 @@ Short goal: Audit open PR hygiene, especially PR #291, without closing or modify
 
 ## Current Head SHA
 
-SHA: working tree verified before slot 2 commit
+SHA: `c53ad0a799fb8d14ebe92df2f6b40fb2bcd1d71c` at PR creation; final checkpoint head pending verification
 
 ## What Changed
 
@@ -106,7 +108,7 @@ SHA: working tree verified before slot 2 commit
 - `git diff --cached --check` passed.
 - Smoke checks:
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Remote checks: slot 2 PR not opened yet.
+- Remote checks: PR #317 checks pending or not yet audited.
 
 ## Blockers
 
@@ -115,12 +117,12 @@ SHA: working tree verified before slot 2 commit
 
 ## Next Action
 
-One concrete next step: commit and push slot 2, then open the slot 2 PR.
+One concrete next step: rerun final-head verification for the PR-created checkpoint.
 
 ## Recovery Notes
 
-- How to resume: confirm branch `codex/evidence-audit-open-pr-hygiene`, inspect `git status`, then run the slot 2 focused guard.
-- Commands already run for slot 2: `git status`, `git rev-parse HEAD`, `gh run list --branch main`, `git checkout -b codex/evidence-audit-open-pr-hygiene`, `gh pr list --state open`, `gh pr view 291`, and PR #291 diff inspection.
+- How to resume: confirm branch `codex/evidence-audit-open-pr-hygiene`, inspect `git status`, then run the slot 2 focused guard and final-head verification.
+- Commands already run for slot 2: `git status`, `git rev-parse HEAD`, `gh run list --branch main`, `git checkout -b codex/evidence-audit-open-pr-hygiene`, `gh pr list --state open`, `gh pr view 291`, PR #291 diff inspection, `git push origin codex/evidence-audit-open-pr-hygiene`, and `gh pr create`.
 - Safety boundaries to re-check: docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed: slot 2 PR current-head checks after PR creation; main CI/CodeQL after merge.
 

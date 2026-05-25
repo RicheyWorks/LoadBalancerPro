@@ -68,7 +68,7 @@ class AgentLaseCoreExpansionGoalsDocumentationTest {
     }
 
     @Test
-    void goalLedgerRecordsPr327AsOpenFirstImplementationSlice() throws IOException {
+    void goalLedgerRecordsPr327AsMergedMainGreenFirstImplementationSlice() throws IOException {
         String normalized = read(LEDGER).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
@@ -76,8 +76,10 @@ class AgentLaseCoreExpansionGoalsDocumentationTest {
                 "https://github.com/richeyworks/loadbalancerpro/pull/327",
                 "slot 12",
                 "7a6779b96d97e5701a3654d94c1a1d60c04018cb",
-                "pr #327 state: open",
-                "pr #327 is not marked merged",
+                "38c30312640e2c7a5920a518d147cf93cdcd4d80",
+                "pr #327 state: merged",
+                "post-merge main checks completed successfully",
+                "merged/main-green",
                 "tail-latency score breakdown and explanation")) {
             assertTrue(normalized.contains(expected), "ledger should preserve PR #327 fact: " + expected);
         }

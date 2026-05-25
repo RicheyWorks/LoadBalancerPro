@@ -55,19 +55,20 @@ Unless a later separately scoped implementation and verification result explicit
 - no replay/evidence/report/storage/export proof unless implemented and verified in that PR;
 - no broader automation claim.
 
-## Current Open Slice
+## Current First Slice Status
 
 LASE-G01 corresponds to Slot 12 / PR #327: [Expand LASE tail-latency scoring and explainability](https://github.com/RicheyWorks/LoadBalancerPro/pull/327).
 
-Observed during Slot 13 orientation:
+Observed during Slot 13 orientation and merge-health handling:
 
-- PR #327 state: open.
+- PR #327 state: merged.
 - PR #327 branch: `codex/lase-core-expansion-tail-latency-scoring`.
 - PR #327 head SHA: `7a6779b96d97e5701a3654d94c1a1d60c04018cb`.
+- PR #327 merge SHA: `38c30312640e2c7a5920a518d147cf93cdcd4d80`.
 - PR #327 base: `main`.
 - PR #327 mergeability: mergeable/clean when inspected.
 - PR #327 remote checks observed during Slot 13: Build/Test/Package/Smoke passed, Analyze Java / CodeQL passed, Dependency Review passed.
-- PR #327 is not marked merged by this ledger.
+- PR #327 post-merge main checks completed successfully for CI and CodeQL when this ledger was updated, so LASE-G01 is recorded as merged/main-green.
 
 ## Goals
 
@@ -80,7 +81,7 @@ Observed during Slot 13 orientation:
 - Verification expectations: focused scoring/routing tests, relevant LASE/routing selector bundle, full Maven tests, package checks, diff checks, enterprise lab package smoke, remote PR checks, and post-merge main checks before counting the goal.
 - Not-proven boundaries: common campaign not-proven boundaries apply.
 - Dependencies: current healthy main.
-- Initial status: PR-opened as PR #327; not merged by this ledger.
+- Initial status: merged/main-green as PR #327.
 
 ### LASE-G02 - Goal ledger and campaign guard
 
@@ -337,9 +338,9 @@ Observed during Slot 13 orientation:
 
 ## Suggested Next-Goal Order
 
-1. Finish remote/merge health for LASE-G01 only when explicitly asked.
+1. Finish main-branch health confirmation for LASE-G01 before treating it as merged/main-green.
 2. Merge LASE-G02 after current-head checks pass and review accepts the ledger.
-3. Prefer LASE-G03 next: ServerStateVector signal expansion.
+3. Prefer LASE-G03 next only after LASE-G01 and LASE-G02 reach merged/main-green: ServerStateVector signal expansion.
 4. Continue through LASE-G04, LASE-G05, LASE-G06, and LASE-G07 before adding broader lab-mode limiter or shedding behavior.
 5. Add scenarios and evidence mapping only after the underlying deterministic model exists.
 

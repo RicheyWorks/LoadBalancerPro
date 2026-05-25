@@ -77,17 +77,17 @@ class AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest {
     }
 
     @Test
-    void campaignBoardAndSessionAdvanceToSlotThree() throws IOException {
+    void campaignBoardAndSessionPreserveSlotThreeHistory() throws IOException {
         String board = read(BOARD).toLowerCase(Locale.ROOT);
         String session = read(SESSION).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
-                "completed campaign prs: 2 / 20",
-                "current pr slot: 3",
+                "slot 3",
+                "repository evidence map",
                 "codex/evidence-audit-repository-map",
-                "pr #317 merged",
-                "08e3320e6b5413d372249b7886876341af1529e6",
-                "7dd64becaefd589ff94ed2fea93b017397b4a747",
+                "#318",
+                "e411c2fa6dc2c7d65c90093c3472dd30fd9a7bab",
+                "65fad4a65f0297ba6e7d085bd84cacf5aa966f38",
                 "post-merge main ci and codeql were green",
                 "slot 3 branch created")) {
             assertTrue(board.contains(expected) || session.contains(expected),

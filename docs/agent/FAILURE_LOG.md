@@ -472,6 +472,42 @@ Result: fix applied in the final slot 3 checkpoint; focused, full Maven, package
 
 Follow-up action: commit and push the failure log, PR-created checkpoint, and whitespace repair, then audit PR #318 current-head remote checks.
 
+## Entry
+
+Date/time: 2026-05-25T01:14-07:00
+
+Branch/PR: codex/evidence-audit-ci-workflow / pending
+
+Failure type: focused documentation guard line-ending fragility
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCiWorkflowAuditDocumentationTest"`
+
+Suspected cause: the new CI workflow audit guard checked the exact LF-only substring `permissions:\n  contents: read`, while the local read path preserved CRLF line endings from `.github/workflows/ci.yml`.
+
+Fix attempted: normalize CRLF to LF in the guard before checking source-visible workflow controls, while keeping the same pinned-action, permissions, test, package, smoke, Docker, Trivy, and dependency-review expectations.
+
+Result: focused rerun passed.
+
+Follow-up action: rerun the focused CI workflow audit guard before continuing slot 4 verification.
+
+## Entry
+
+Date/time: 2026-05-25T01:15-07:00
+
+Branch/PR: codex/evidence-audit-ci-workflow / pending
+
+Failure type: focused selector bundle guard durability
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditCiWorkflowAuditDocumentationTest,AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"`
+
+Suspected cause: `AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest` still required the active campaign board to say `completed campaign prs: 2 / 20` and `current pr slot: 3`, which was correct during slot 3 but stale after PR #318 merged and slot 4 started.
+
+Fix attempted: make the slot 3 repository evidence-map guard verify durable slot 3 history, PR #318 facts, and post-merge main green evidence without freezing the active campaign board at slot 3.
+
+Result: selector bundle rerun passed.
+
+Follow-up action: rerun the focused selector bundle before continuing slot 4 full local verification.
+
 ## Notes
 
 - Keep entries factual.

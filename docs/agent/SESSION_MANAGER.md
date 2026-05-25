@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-25T01:25-07:00
+Timestamp: 2026-05-25T01:27-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
 Current PR slot: 4
 
-Checkpoint: Slot 4 final local verification completed before PR creation
+Checkpoint: Slot 4 PR opened and remote checks pending
 
 Started from main SHA: `65fad4a65f0297ba6e7d085bd84cacf5aa966f38`
 
 Current branch: codex/evidence-audit-ci-workflow
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/319
 
-Head SHA: `65fad4a65f0297ba6e7d085bd84cacf5aa966f38` at branch creation; working tree changes are not committed yet
+Head SHA: `b583c4c65a48e274b33894abb437015caf4a2b0e`
 
 Changed files:
 
@@ -110,12 +110,15 @@ Checks run:
 - `git diff --check origin/main...HEAD` passed.
 - `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- Slot 4 commit `b583c4c65a48e274b33894abb437015caf4a2b0e` pushed.
+- PR #319 opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/319.
+- PR #319 remote checks are queued/in progress and are not yet acceptable for merge.
 
-Remote status: main CI and CodeQL were green for the slot 4 starting main SHA; slot 4 PR is not opened yet.
+Remote status: PR #319 current-head checks are queued/in progress; main CI and CodeQL were green for the slot 4 starting main SHA.
 
 Blocker: none.
 
-Next action: run a compact final verification pass after this checkpoint edit, then commit, push, and open the slot 4 PR.
+Next action: rerun focused and diff checks after this checkpoint edit, push the checkpoint commit, then wait for PR #319 current-head remote checks.
 
 Decision: continue
 
@@ -125,7 +128,7 @@ Name: codex/evidence-audit-ci-workflow
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/319
 
 ## Current Goal
 
@@ -133,7 +136,7 @@ Short goal: Audit `.github/workflows/ci.yml` posture without changing workflow b
 
 ## Current Head SHA
 
-SHA: `65fad4a65f0297ba6e7d085bd84cacf5aa966f38` at branch creation
+SHA: `b583c4c65a48e274b33894abb437015caf4a2b0e`
 
 ## What Changed
 
@@ -168,7 +171,7 @@ SHA: `65fad4a65f0297ba6e7d085bd84cacf5aa966f38` at branch creation
 - `git diff --cached --check` passed.
 - Smoke checks:
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Remote checks: main CI and CodeQL green for slot 4 starting SHA; slot 4 PR not opened yet.
+- Remote checks: PR #319 current-head checks queued/in progress; not mergeable evidence yet.
 
 ## Blockers
 
@@ -177,14 +180,14 @@ SHA: `65fad4a65f0297ba6e7d085bd84cacf5aa966f38` at branch creation
 
 ## Next Action
 
-One concrete next step: run a compact final verification pass after this checkpoint edit, then commit, push, and open PR slot 4.
+One concrete next step: rerun focused and diff checks after this checkpoint edit, push the checkpoint commit, then wait for PR #319 current-head remote checks.
 
 ## Recovery Notes
 
-- How to resume: confirm branch `codex/evidence-audit-ci-workflow`, inspect `git status`, run a compact final verification pass after this checkpoint edit, then commit and open PR slot 4.
+- How to resume: confirm branch `codex/evidence-audit-ci-workflow`, inspect `git status`, rerun focused and diff checks after this checkpoint edit, push the checkpoint commit, then wait for PR #319 current-head remote checks.
 - Commands already run for slot 4: `git checkout -b codex/evidence-audit-ci-workflow`, `Get-Content .github/workflows/ci.yml`, main remote status checks confirming slot 3 main was green, focused guards, dependency tree, full tests, package checks, diff checks, and enterprise lab package smoke.
 - Safety boundaries to re-check: docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
-- Remote checks that must be refreshed: slot 4 PR current-head checks after PR creation; main CI/CodeQL after merge.
+- Remote checks that must be refreshed: PR #319 current-head checks after the checkpoint push; main CI/CodeQL after merge.
 
 ## Historical Closeout: LoadBalancerPro Goal Mode 10-PR Trial
 

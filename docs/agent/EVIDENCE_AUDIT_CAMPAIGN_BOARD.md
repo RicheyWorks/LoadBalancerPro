@@ -11,7 +11,7 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 - Completed campaign PRs: 3 / 20.
 - Current PR slot: 4.
 - Current branch: `codex/evidence-audit-ci-workflow`.
-- Current PR: pending.
+- Current PR: [#319](https://github.com/RicheyWorks/LoadBalancerPro/pull/319).
 - Starting main HEAD: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
 - Prior campaign fact: PR #315 is merged.
 - Prior campaign merge commit: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
@@ -39,7 +39,7 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 | 1 | Prior 10-PR closeout repair | codex/evidence-audit-closeout-repair | [#316](https://github.com/RicheyWorks/LoadBalancerPro/pull/316) | merged | `cfa138b923a14c46b07c40a6c80fd6f1c568c8f2` | `4622d788569fc68de1fab212cdad388d2cf10dc8` | PR #315 facts repaired; post-merge main CI and CodeQL green |
 | 2 | Open PR hygiene audit | codex/evidence-audit-open-pr-hygiene | [#317](https://github.com/RicheyWorks/LoadBalancerPro/pull/317) | merged | `08e3320e6b5413d372249b7886876341af1529e6` | `7dd64becaefd589ff94ed2fea93b017397b4a747` | PR #291 and other open PRs audited; post-merge main CI and CodeQL green |
 | 3 | Repository evidence map | codex/evidence-audit-repository-map | [#318](https://github.com/RicheyWorks/LoadBalancerPro/pull/318) | merged | `e411c2fa6dc2c7d65c90093c3472dd30fd9a7bab` | `65fad4a65f0297ba6e7d085bd84cacf5aa966f38` | Repository evidence map added; post-merge main CI and CodeQL green |
-| 4 | CI workflow audit | codex/evidence-audit-ci-workflow | pending | branch created | pending | pending | Audit workflow posture without editing workflow files |
+| 4 | CI workflow audit | codex/evidence-audit-ci-workflow | [#319](https://github.com/RicheyWorks/LoadBalancerPro/pull/319) | open; remote checks pending | `b583c4c65a48e274b33894abb437015caf4a2b0e` | pending | Audit workflow posture without editing workflow files |
 | 5 | CodeQL and dependency-review audit | pending | pending | planned | pending | pending | Audit CodeQL/dependency review posture and limits |
 | 6 | Maven/dependency posture audit | pending | pending | planned | pending | pending | Audit pom.xml posture without dependency changes |
 | 7 | Dockerfile runtime audit | pending | pending | planned | pending | pending | Audit Dockerfile runtime posture without Dockerfile edits |

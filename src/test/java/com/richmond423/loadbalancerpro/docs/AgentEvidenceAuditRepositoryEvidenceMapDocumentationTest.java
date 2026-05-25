@@ -146,4 +146,3 @@ class AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest {
         return Files.readString(path, StandardCharsets.UTF_8);
     }
 }
-

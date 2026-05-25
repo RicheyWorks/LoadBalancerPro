@@ -48,4 +48,3 @@ This evidence map gives reviewers a single first-pass index across public claims
 ## Not-Proven Boundaries
 
 This repository evidence map does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmarking, throughput/p95/p99 evidence, replay/evidence/report/storage/export proof, registry publication, container signing, production telemetry, production monitoring, or broader automation.
-

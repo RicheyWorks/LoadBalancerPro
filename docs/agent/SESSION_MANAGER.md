@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-25T00:38-07:00
+Timestamp: 2026-05-25T00:43-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
 Current PR slot: 3
 
-Checkpoint: Slot 3 local verification passed; PR creation pending
+Checkpoint: Slot 3 final-head local verification passed after logged EOF whitespace repair; checkpoint commit and remote checks pending
 
 Started from main SHA: `7dd64becaefd589ff94ed2fea93b017397b4a747`
 
 Current branch: codex/evidence-audit-repository-map
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/318
 
-Head SHA: working tree verified before slot 3 commit
+Head SHA: `b8eaa5919a7b34b39e760dcab326caa24c034416` at PR creation; final checkpoint commit pending push
 
 Changed files:
 
@@ -75,12 +75,26 @@ Checks run:
 - `git diff --check origin/main...HEAD` passed.
 - `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- Slot 3 commit `b8eaa5919a7b34b39e760dcab326caa24c034416` pushed.
+- PR #318 opened.
+- `git diff --check origin/main...HEAD` reported an extra blank line at EOF in the slot 3 evidence map doc and guard test because the repair was not yet committed; this was logged in FAILURE_LOG.md before continuing.
+- EOF whitespace repair applied to `docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md` and `src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest.java`.
+- Final-head focused guard rerun passed.
+- Final-head campaign/agent selector bundle rerun passed.
+- Final-head `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
+- Final-head `mvn -q test` passed.
+- Final-head `mvn -q "-DskipTests" package` passed.
+- Final-head `mvn -B package` passed.
+- Final-head `git diff --check` passed.
+- Final-head `git diff --cached --check` passed.
+- Final-head `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- Final-head `git diff --check origin/main...HEAD` must be rerun after the checkpoint commit includes the EOF repair.
 
-Remote status: main CI and CodeQL green for `7dd64becaefd589ff94ed2fea93b017397b4a747`; slot 3 PR not opened yet.
+Remote status: PR #318 checks pending final checkpoint push; main CI and CodeQL were green for the starting main SHA.
 
 Blocker: none.
 
-Next action: commit and push slot 3, then open the slot 3 PR and audit current-head remote checks.
+Next action: push the final checkpoint commit, rerun `git diff --check origin/main...HEAD` for the committed repair, then audit PR #318 current-head remote checks.
 
 Decision: continue
 
@@ -90,7 +104,7 @@ Name: codex/evidence-audit-repository-map
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/318
 
 ## Current Goal
 
@@ -98,7 +112,7 @@ Short goal: Map repository evidence surfaces across README, trust docs, CI, Code
 
 ## Current Head SHA
 
-SHA: working tree verified before slot 3 commit
+SHA: `b8eaa5919a7b34b39e760dcab326caa24c034416` at PR creation; final checkpoint commit pending push
 
 ## What Changed
 
@@ -133,7 +147,7 @@ SHA: working tree verified before slot 3 commit
 - `git diff --cached --check` passed.
 - Smoke checks:
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Remote checks: main CI and CodeQL green for `7dd64becaefd589ff94ed2fea93b017397b4a747`; slot 3 PR not opened yet.
+- Remote checks: PR #318 checks pending final checkpoint push.
 
 ## Blockers
 
@@ -142,12 +156,12 @@ SHA: working tree verified before slot 3 commit
 
 ## Next Action
 
-One concrete next step: commit and push slot 3, then open the slot 3 PR.
+One concrete next step: push the final checkpoint commit and audit PR #318 current-head remote checks.
 
 ## Recovery Notes
 
-- How to resume: confirm branch `codex/evidence-audit-repository-map`, inspect `git status`, then commit/push slot 3 and open the PR.
-- Commands already run for slot 3: `git status`, `gh run list --branch main`, `git checkout -b codex/evidence-audit-repository-map`, focused guard, relevant selector bundle, dependency tree, full tests, package checks, diff checks, and enterprise lab package smoke.
+- How to resume: confirm branch `codex/evidence-audit-repository-map`, inspect `git status`, push the final slot 3 checkpoint commit if not yet pushed, and audit PR #318 current-head remote checks.
+- Commands already run for slot 3: `git status`, `gh run list --branch main`, `git checkout -b codex/evidence-audit-repository-map`, focused guard, relevant selector bundle, dependency tree, full tests, package checks, diff checks, enterprise lab package smoke, `git push origin codex/evidence-audit-repository-map`, and `gh pr create`.
 - Safety boundaries to re-check: docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed: slot 3 PR current-head checks after PR creation; main CI/CodeQL after merge.
 

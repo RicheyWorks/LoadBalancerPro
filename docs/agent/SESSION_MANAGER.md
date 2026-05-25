@@ -6,21 +6,21 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-24T20:42-07:00
+Timestamp: 2026-05-24T20:47-07:00
 
 Goal name: LoadBalancerPro Goal Mode 10-PR Trial
 
 Current PR slot: 5
 
-Checkpoint: Slot 5 full local verification passed before pre-PR commit
+Checkpoint: Slot 5 PR opened; final-head verification pending
 
 Started from main SHA: 13fad31cd6cbc34efdf58c0a75ec5fa0f66d478e
 
 Current branch: codex/goal-campaign-failure-log-recovery-examples
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/310
 
-Head SHA: pending pre-PR commit
+Head SHA: f0eb8c700ff44a0318875dd8d7bce9ce3e3f351e before the PR-opened checkpoint commit
 
 Changed files:
 
@@ -52,12 +52,13 @@ Checks run:
 - `mvn -B package` passed.
 - `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- PR #310 opened from head `f0eb8c700ff44a0318875dd8d7bce9ce3e3f351e`.
 
-Remote status: main green after slot 4; slot 5 PR not opened yet.
+Remote status: PR #310 opened; remote checks pending for the branch head.
 
 Blocker: none.
 
-Next action: commit the slot 5 edit batch, then rerun final-head verification before opening PR.
+Next action: commit and push this PR-opened checkpoint, then rerun final-head local verification.
 
 Decision: continue
 
@@ -67,7 +68,7 @@ Name: codex/goal-campaign-failure-log-recovery-examples
 
 ## Current PR
 
-URL: pending
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/310
 
 ## Current Goal
 
@@ -75,7 +76,7 @@ Short goal: Add FAILURE_LOG campaign recovery examples for the 10-PR goal campai
 
 ## Current Head SHA
 
-SHA: pending pre-PR commit
+SHA: f0eb8c700ff44a0318875dd8d7bce9ce3e3f351e before the PR-opened checkpoint commit
 
 ## What Changed
 
@@ -111,7 +112,7 @@ SHA: pending pre-PR commit
 - Smoke checks:
 - enterprise-lab-workflow.ps1 -Package passed.
 - Remote checks:
-- Main is green after slot 4; slot 5 PR not opened yet.
+- PR #310 opened; remote checks pending for the branch head.
 
 ## Blockers
 
@@ -122,14 +123,14 @@ SHA: pending pre-PR commit
 
 ## Next Action
 
-One concrete next step: commit the slot 5 edit batch, then rerun final-head verification before opening PR.
+One concrete next step: commit and push this PR-opened checkpoint, then rerun final-head local verification.
 
 ## Recovery Notes
 
 - How to resume:
 - Confirm the branch is `codex/goal-campaign-failure-log-recovery-examples`, inspect `git status`, then run the slot 5 focused guard and full verification before opening a PR.
 - Commands already run:
-- `git checkout main`; `git pull --ff-only origin main`; `gh run watch 26381593332 --exit-status`; `gh run watch 26381593327 --exit-status`; `git checkout -b codex/goal-campaign-failure-log-recovery-examples`.
+- `git checkout main`; `git pull --ff-only origin main`; `gh run watch 26381593332 --exit-status`; `gh run watch 26381593327 --exit-status`; `git checkout -b codex/goal-campaign-failure-log-recovery-examples`; `gh pr create --body-file -`.
 - Safety boundaries to re-check:
 - Docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed:

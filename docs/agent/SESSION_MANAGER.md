@@ -2,46 +2,47 @@
 
 Use this template during long Codex sessions, handoffs, resumes, and interrupted work.
 
-For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` work, use [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) and update this file at checkpoints. For multi-PR goal campaigns, use [`CAMPAIGN_SYSTEM_INDEX.md`](CAMPAIGN_SYSTEM_INDEX.md), [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md), [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md), [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md), [`CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md`](CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md), [`CAMPAIGN_REMOTE_CHECK_AUDIT.md`](CAMPAIGN_REMOTE_CHECK_AUDIT.md), [`CAMPAIGN_MERGE_GATE.md`](CAMPAIGN_MERGE_GATE.md), [`CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md`](CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md), [`CAMPAIGN_CLOSEOUT_PROTOCOL.md`](CAMPAIGN_CLOSEOUT_PROTOCOL.md), and [`CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md`](CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md) and keep the current PR checkpoint factual.
+For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` work, use [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) and update this file at checkpoints. For multi-PR goal campaigns, use [`CAMPAIGN_SYSTEM_INDEX.md`](CAMPAIGN_SYSTEM_INDEX.md), [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md), [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md), [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md), [`CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md`](CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md), [`CAMPAIGN_REMOTE_CHECK_AUDIT.md`](CAMPAIGN_REMOTE_CHECK_AUDIT.md), [`CAMPAIGN_MERGE_GATE.md`](CAMPAIGN_MERGE_GATE.md), [`CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md`](CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md), [`CAMPAIGN_CLOSEOUT_PROTOCOL.md`](CAMPAIGN_CLOSEOUT_PROTOCOL.md), and [`CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md`](CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md) and keep the current PR checkpoint factual.
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-24T22:06-07:00
+Timestamp: 2026-05-24T22:26-07:00
 
 Goal name: LoadBalancerPro Goal Mode 10-PR Trial
 
-Current PR slot: 8
+Current PR slot: 9
 
-Checkpoint: Slot 8 diff hygiene fix pushed; final-head verification pending
+Checkpoint: Slot 9 PR opened; final checkpoint verification pending
 
-Started from main SHA: ca16382638dbbc118aeab7070a4b8bbf585ae827
+Started from main SHA: f2e3c784b5858b61e664844502ce66d3cc31d352
 
-Current branch: codex/goal-campaign-reviewer-trust-navigation
+Current branch: codex/goal-campaign-agents-discipline
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/313
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/314
 
-Head SHA: final pushed checkpoint head pending remote audit; latest content fix head was `60616d223a4b4012fa41099861df7d39197dca44`
+Head SHA: `043b7bfb9caa59db0713d94e71547c55372c12e0` at PR creation; final pushed checkpoint head pending remote audit
 
 Changed files:
 
-- docs/REVIEWER_TRUST_MAP.md
-- docs/agent/GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md
+- AGENTS.md
+- docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md
 - docs/agent/GOAL_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignReviewerTrustNavigationDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignAgentsDisciplineDocumentationTest.java
 
 Checks run:
 
-- Slot 7 merged and main green.
-- PR #312 merged at `ca16382638dbbc118aeab7070a4b8bbf585ae827`.
+- Slot 8 merged and main green.
+- PR #313 merged at `f2e3c784b5858b61e664844502ce66d3cc31d352`.
 - Main pulled with `--ff-only` after the merge.
-- Main CI and CodeQL for `ca16382638dbbc118aeab7070a4b8bbf585ae827` completed successfully.
-- Slot 8 branch created from clean main.
-- Slot 8 documentation/test edit batch completed.
-- `mvn test "-Dtest=AgentGoalCampaignReviewerTrustNavigationDocumentationTest"` initially failed twice due exact wording drift and then passed after the wording was made explicit.
-- `FAILURE_LOG.md` records both focused guard failures and recoveries.
-- `mvn test "-Dtest=AgentGoalCampaignReviewerTrustNavigationDocumentationTest"` passed.
-- Focused reviewer-trust/campaign/agent selector bundle passed.
+- Main CI and CodeQL for `f2e3c784b5858b61e664844502ce66d3cc31d352` completed successfully.
+- Slot 8 post-merge local verification passed: dependency tree, campaign focused selector, `mvn -q test`, package checks, diff checks, and enterprise lab package smoke.
+- Slot 9 branch created from clean main.
+- Slot 9 documentation/test edit batch completed.
+- `mvn test "-Dtest=AgentGoalCampaignAgentsDisciplineDocumentationTest"` initially failed due exact wording drift and a self-referential forbidden API name list, then passed after the failure was logged and fixed.
+- `FAILURE_LOG.md` records the focused guard failure and recovery.
+- `mvn test "-Dtest=AgentGoalCampaignAgentsDisciplineDocumentationTest"` passed.
+- Focused campaign/agent selector bundle passed.
 - `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
 - `mvn -q test` passed.
 - `mvn -q "-DskipTests" package` passed.
@@ -50,56 +51,52 @@ Checks run:
 - `git diff --check origin/main...HEAD` passed.
 - `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Slot 8 commit `dd50971bdf3bf88e780200b11135826b2b0f5d8e` pushed.
-- PR #313 opened and was mergeable at PR creation.
-- Initial PR #313 remote checks were in progress for the first pushed head.
-- Slot 8 checkpoint commit `6e1ed1cdcd57d58085721364e0f1ef7da787b7ce` pushed.
-- `git diff --check origin/main...HEAD` caught a blank line at EOF in the reviewer trust navigation guard; `FAILURE_LOG.md` records the failure.
-- Slot 8 diff hygiene fix `60616d223a4b4012fa41099861df7d39197dca44` pushed.
-- `mvn test "-Dtest=AgentGoalCampaignReviewerTrustNavigationDocumentationTest"` reran and passed after the hygiene fix.
+- Slot 9 commit `043b7bfb9caa59db0713d94e71547c55372c12e0` pushed.
+- PR #314 opened and was mergeable at PR creation.
+- Initial PR #314 remote checks were in progress for the first pushed head.
 
-Remote status: PR #313 checks restarting for the latest pushed head.
+Remote status: PR #314 checks in progress.
 
 Blocker: none.
 
-Next action: rerun final-head verification, then wait for current-head remote checks.
+Next action: push the PR checkpoint update, rerun focused and final-head verification, then wait for current-head remote checks.
 
 Decision: continue
 
 ## Current Branch
 
-Name: codex/goal-campaign-reviewer-trust-navigation
+Name: codex/goal-campaign-agents-discipline
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/313
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/314
 
 ## Current Goal
 
-Short goal: Add reviewer-facing goal campaign navigation to the Reviewer Trust Map, recording slot 7 as merged/main-green and slot 8 as the active scoped PR.
+Short goal: Add AGENTS.md campaign discipline guidance, recording slot 8 as merged/main-green and slot 9 as the active scoped PR.
 
 ## Current Head SHA
 
-SHA: final pushed checkpoint head pending remote audit; latest content fix head was `60616d223a4b4012fa41099861df7d39197dca44`
+SHA: `043b7bfb9caa59db0713d94e71547c55372c12e0` at PR creation; final pushed checkpoint head pending remote audit
 
 ## What Changed
 
 - Files changed:
-- docs/REVIEWER_TRUST_MAP.md
-- docs/agent/GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md
+- AGENTS.md
+- docs/agent/GOAL_CAMPAIGN_AGENT_DISCIPLINE.md
 - docs/agent/GOAL_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignReviewerTrustNavigationDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignAgentsDisciplineDocumentationTest.java
 - Behavioral surface:
 - None; docs/test-only.
 - Documentation surface:
-- Adds reviewer-facing campaign navigation, links it from the Reviewer Trust Map, and advances the board/session checkpoint to slot 8 after slot 7 merged green.
+- Adds campaign discipline guidance to AGENTS.md and a dedicated docs/agent page, then advances the board/session checkpoint to slot 9 after slot 8 merged green.
 
 ## Checks Run
 
 - Focused checks:
-- AgentGoalCampaignReviewerTrustNavigationDocumentationTest passed after two logged exact-wording recoveries.
-- Focused reviewer-trust/campaign/agent selector bundle passed.
+- AgentGoalCampaignAgentsDisciplineDocumentationTest passed after one logged exact-wording/self-check recovery.
+- Focused campaign/agent selector bundle passed.
 - Dependency checks:
 - `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
 - Full checks:
@@ -114,7 +111,7 @@ SHA: final pushed checkpoint head pending remote audit; latest content fix head 
 - Smoke checks:
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
 - Remote checks:
-- PR #313 opened; latest-head remote checks restarting.
+- PR #314 opened; current-head remote checks pending.
 
 ## Blockers
 
@@ -125,14 +122,14 @@ SHA: final pushed checkpoint head pending remote audit; latest content fix head 
 
 ## Next Action
 
-One concrete next step: rerun final-head verification, then wait for current-head remote checks.
+One concrete next step: push the PR checkpoint update, rerun final-head verification, then wait for current-head remote checks.
 
 ## Recovery Notes
 
 - How to resume:
-- Confirm the branch is `codex/goal-campaign-reviewer-trust-navigation`, inspect `git status`, and rerun final-head verification before merge consideration.
+- Confirm the branch is `codex/goal-campaign-agents-discipline`, inspect `git status`, push the PR checkpoint update if needed, then rerun final-head verification before merge consideration.
 - Commands already run:
-- `git checkout main`; `git pull --ff-only origin main`; watched PR #312 and main CI/CodeQL checks to green; `git checkout -b codex/goal-campaign-reviewer-trust-navigation`; opened PR #313; fixed and logged a diff hygiene failure.
+- `git checkout main`; `git pull --ff-only origin main`; watched PR #313 and main CI/CodeQL checks to green; `git checkout -b codex/goal-campaign-agents-discipline`; opened PR #314.
 - Safety boundaries to re-check:
 - Docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed:

@@ -24,6 +24,42 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-24T21:52-07:00
+
+Branch/PR: codex/goal-campaign-reviewer-trust-navigation / pending
+
+Failure type: focused documentation guard
+
+Failing check: `mvn test "-Dtest=AgentGoalCampaignReviewerTrustNavigationDocumentationTest"`
+
+Suspected cause: GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md expressed the checkpoint rule with backticks around `SESSION_MANAGER.md`, while the new guard expected the exact normalized phrase "session_manager.md after every checkpoint".
+
+Fix attempted: log the failure, then make the checkpoint wording explicit in the navigation doc without changing scope or claims.
+
+Result: recovered; focused guard rerun passed after the explicit checkpoint wording was added.
+
+Follow-up action: continue the slot 8 focused selector bundle and full verification ladder.
+
+## Entry
+
+Date/time: 2026-05-24T21:53-07:00
+
+Branch/PR: codex/goal-campaign-reviewer-trust-navigation / pending
+
+Failure type: focused documentation guard
+
+Failing check: `mvn test "-Dtest=AgentGoalCampaignReviewerTrustNavigationDocumentationTest"`
+
+Suspected cause: GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md expressed the failure logging rule with backticks around `FAILURE_LOG.md`, while the new guard expected the exact normalized phrase "failure_log.md before continuing".
+
+Fix attempted: log the failure, then make the failure logging wording explicit in the navigation doc without changing scope or claims.
+
+Result: recovered; focused guard rerun passed after the explicit failure logging wording was added.
+
+Follow-up action: continue the slot 8 focused selector bundle and full verification ladder.
+
+## Entry
+
 Date/time: 2026-05-24T21:16-07:00
 
 Branch/PR: codex/goal-campaign-verification-protocol-refinement / https://github.com/RicheyWorks/LoadBalancerPro/pull/311

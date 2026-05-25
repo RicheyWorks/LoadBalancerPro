@@ -2,49 +2,47 @@
 
 Use this template during long Codex sessions, handoffs, resumes, and interrupted work.
 
-For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` work, use [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) and update this file at checkpoints. For multi-PR goal campaigns, use [`CAMPAIGN_SYSTEM_INDEX.md`](CAMPAIGN_SYSTEM_INDEX.md), [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md), [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md), [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md), [`CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md`](CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md), [`CAMPAIGN_REMOTE_CHECK_AUDIT.md`](CAMPAIGN_REMOTE_CHECK_AUDIT.md), [`CAMPAIGN_MERGE_GATE.md`](CAMPAIGN_MERGE_GATE.md), [`CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md`](CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md), [`CAMPAIGN_CLOSEOUT_PROTOCOL.md`](CAMPAIGN_CLOSEOUT_PROTOCOL.md), and [`CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md`](CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md) and keep the current PR checkpoint factual.
+For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` work, use [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) and update this file at checkpoints. For multi-PR goal campaigns, use [`CAMPAIGN_SYSTEM_INDEX.md`](CAMPAIGN_SYSTEM_INDEX.md), [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md), [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md), [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md), [`CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md`](CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md), [`CAMPAIGN_REMOTE_CHECK_AUDIT.md`](CAMPAIGN_REMOTE_CHECK_AUDIT.md), [`CAMPAIGN_MERGE_GATE.md`](CAMPAIGN_MERGE_GATE.md), [`CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md`](CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md), [`CAMPAIGN_CLOSEOUT_PROTOCOL.md`](CAMPAIGN_CLOSEOUT_PROTOCOL.md), and [`CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md`](CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md) and keep the current PR checkpoint factual.
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-24T20:47-07:00
+Timestamp: 2026-05-24T21:15-07:00
 
 Goal name: LoadBalancerPro Goal Mode 10-PR Trial
 
-Current PR slot: 5
+Current PR slot: 6
 
-Checkpoint: Slot 5 PR opened; final-head verification pending
+Checkpoint: Slot 6 PR opened; final-head verification pending
 
-Started from main SHA: 13fad31cd6cbc34efdf58c0a75ec5fa0f66d478e
+Started from main SHA: 702070aa6b0db90743986176bb96d1bf9208381b
 
-Current branch: codex/goal-campaign-failure-log-recovery-examples
+Current branch: codex/goal-campaign-verification-protocol-refinement
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/310
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/311
 
-Head SHA: f0eb8c700ff44a0318875dd8d7bce9ce3e3f351e before the PR-opened checkpoint commit
+Head SHA: 238e6beb104f06938e41046525921a334fe14d99 before the PR-opened checkpoint commit
 
 Changed files:
 
+- docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md
 - docs/agent/GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md
+- docs/agent/FAILURE_LOG.md
 - docs/agent/GOAL_CAMPAIGN_BOARD.md
 - docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md
-- docs/agent/GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md
 - docs/agent/GOAL_CAMPAIGN_CONTRACT.md
-- docs/agent/GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md
+- docs/agent/VERIFICATION_PROTOCOL.md
 - docs/agent/SESSION_MANAGER.md
-- docs/agent/FAILURE_LOG.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignFailureRecoveryExamplesDocumentationTest.java
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignSessionCheckpointExamplesDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignVerificationProtocolRefinementDocumentationTest.java
 
 Checks run:
 
-- Slot 4 merged and main green.
-- PR #309 merged at `13fad31cd6cbc34efdf58c0a75ec5fa0f66d478e`.
+- Slot 5 merged and main green.
+- PR #310 merged at `702070aa6b0db90743986176bb96d1bf9208381b`.
 - Main pulled with `--ff-only` after the merge.
-- Main CI and CodeQL for `13fad31cd6cbc34efdf58c0a75ec5fa0f66d478e` completed successfully.
-- Slot 5 branch created from clean main.
-- `mvn test "-Dtest=AgentGoalCampaignFailureRecoveryExamplesDocumentationTest"` initially failed because the examples used the combined phrase "production readiness/certification" instead of preserving "production certification" explicitly.
-- FAILURE_LOG.md records the focused guard failure and recovery.
-- `mvn test "-Dtest=AgentGoalCampaignFailureRecoveryExamplesDocumentationTest"` rerun passed.
+- Main CI and CodeQL for `702070aa6b0db90743986176bb96d1bf9208381b` completed successfully.
+- Slot 6 branch created from clean main.
+- Slot 6 documentation/test edit batch completed.
+- `mvn test "-Dtest=AgentGoalCampaignVerificationProtocolRefinementDocumentationTest"` passed.
 - Focused campaign/agent selector bundle passed.
 - `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
 - `mvn -q test` passed.
@@ -52,9 +50,10 @@ Checks run:
 - `mvn -B package` passed.
 - `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- PR #310 opened from head `f0eb8c700ff44a0318875dd8d7bce9ce3e3f351e`.
+- PR #311 opened from head `238e6beb104f06938e41046525921a334fe14d99`.
+- FAILURE_LOG.md records the local PowerShell `&&` command separator failure and recovery.
 
-Remote status: PR #310 opened; remote checks pending for the branch head.
+Remote status: PR #311 opened; remote checks pending for the branch head.
 
 Blocker: none.
 
@@ -64,42 +63,41 @@ Decision: continue
 
 ## Current Branch
 
-Name: codex/goal-campaign-failure-log-recovery-examples
+Name: codex/goal-campaign-verification-protocol-refinement
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/310
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/311
 
 ## Current Goal
 
-Short goal: Add FAILURE_LOG campaign recovery examples for the 10-PR goal campaign, recording slot 4 as merged/main-green and slot 5 as the active scoped PR.
+Short goal: Add VERIFICATION_PROTOCOL campaign mode refinement for the 10-PR goal campaign, recording slot 5 as merged/main-green and slot 6 as the active scoped PR.
 
 ## Current Head SHA
 
-SHA: f0eb8c700ff44a0318875dd8d7bce9ce3e3f351e before the PR-opened checkpoint commit
+SHA: 238e6beb104f06938e41046525921a334fe14d99 before the PR-opened checkpoint commit
 
 ## What Changed
 
 - Files changed:
+- docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md
 - docs/agent/GOAL_CAMPAIGN_BOARD.md
 - docs/agent/GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md
-- docs/agent/GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md
 - docs/agent/GOAL_CAMPAIGN_CONTRACT.md
 - docs/agent/GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md
-- docs/agent/GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md
-- docs/agent/SESSION_MANAGER.md
 - docs/agent/FAILURE_LOG.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignFailureRecoveryExamplesDocumentationTest.java
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignSessionCheckpointExamplesDocumentationTest.java
+- docs/agent/VERIFICATION_PROTOCOL.md
+- docs/agent/SESSION_MANAGER.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignVerificationProtocolRefinementDocumentationTest.java
 - Behavioral surface:
 - None; docs/test-only.
 - Documentation surface:
-- Adds reusable FAILURE_LOG campaign recovery examples for the live 10-PR trial, links them from campaign docs, advances the board/session checkpoint to slot 5, and makes the slot 4 checkpoint examples guard durable for later active slots.
+- Adds reusable campaign verification protocol refinement for the live 10-PR trial, links it from verification/campaign docs, and advances the board/session checkpoint to slot 6 after slot 5 merged green.
 
 ## Checks Run
 
 - Focused checks:
-- AgentGoalCampaignFailureRecoveryExamplesDocumentationTest passed after one logged wording fix.
+- AgentGoalCampaignVerificationProtocolRefinementDocumentationTest passed.
 - Focused campaign/agent selector bundle passed.
 - Dependency checks:
 - Dependency tree for org.apache.tomcat.embed passed.
@@ -112,7 +110,7 @@ SHA: f0eb8c700ff44a0318875dd8d7bce9ce3e3f351e before the PR-opened checkpoint co
 - Smoke checks:
 - enterprise-lab-workflow.ps1 -Package passed.
 - Remote checks:
-- PR #310 opened; remote checks pending for the branch head.
+- PR #311 opened; remote checks pending for the branch head.
 
 ## Blockers
 
@@ -128,9 +126,9 @@ One concrete next step: commit and push this PR-opened checkpoint, then rerun fi
 ## Recovery Notes
 
 - How to resume:
-- Confirm the branch is `codex/goal-campaign-failure-log-recovery-examples`, inspect `git status`, then run the slot 5 focused guard and full verification before opening a PR.
+- Confirm the branch is `codex/goal-campaign-verification-protocol-refinement`, inspect `git status`, then run the slot 6 focused guard and full verification before opening a PR.
 - Commands already run:
-- `git checkout main`; `git pull --ff-only origin main`; `gh run watch 26381593332 --exit-status`; `gh run watch 26381593327 --exit-status`; `git checkout -b codex/goal-campaign-failure-log-recovery-examples`; `gh pr create --body-file -`.
+- `git checkout main`; `git pull --ff-only origin main`; watched PR #310 and main CI/CodeQL checks to green; `git checkout -b codex/goal-campaign-verification-protocol-refinement`.
 - Safety boundaries to re-check:
 - Docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
 - Remote checks that must be refreshed:

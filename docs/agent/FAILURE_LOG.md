@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-25T03:22-07:00
+
+Branch/PR: codex/evidence-audit-compose-local-lab / pending
+
+Failure type: focused selector bundle guard durability
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditComposeLocalLabAuditDocumentationTest,AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest,AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest,AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest,AgentEvidenceAuditCiWorkflowAuditDocumentationTest,AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"`
+
+Suspected cause: the slot 7 Dockerfile runtime guard and slot 6 Maven/dependency-posture guard still asserted moving active-campaign wording after slot 8 correctly advanced the board to 7 / 20 completed.
+
+Fix attempted: log the failure before continuing, then update the older guards to verify durable merged-slot facts for PR #321 and PR #322 without freezing active campaign board counters or branch-created wording.
+
+Result: selector bundle rerun passed after updating the slot 6 and slot 7 guards to verify durable merged-slot facts instead of moving active-board state.
+
+Follow-up action: continue with dependency tree and full slot 8 local verification.
+
+## Entry
+
 Date/time: 2026-05-25T02:48-07:00
 
 Branch/PR: codex/evidence-audit-dockerfile-runtime / pending

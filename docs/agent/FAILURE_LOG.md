@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-25T04:22-07:00
+
+Branch/PR: codex/evidence-audit-proxy-demo-fixture / pending
+
+Failure type: focused documentation guard wording
+
+Failing check: `mvn test "-Dtest=AgentEvidenceAuditProxyDemoFixtureAuditDocumentationTest"`
+
+Suspected cause: the new Slot 10 proxy demo fixture audit preserved the intended boundary meaning, but did not include the exact phrases `does not call proxy endpoints` and `helper scripts are source-visible local helpers` required by the new guard.
+
+Fix attempted: added the exact missing phrases without changing proxy fixture code, scripts, runtime resources, endpoints, or behavior.
+
+Result: focused Slot 10 guard rerun passed.
+
+Follow-up action: continue with the relevant focused selector bundle and full Slot 10 local verification.
+
+## Entry
+
 Date/time: 2026-05-25T03:22-07:00
 
 Branch/PR: codex/evidence-audit-compose-local-lab / pending

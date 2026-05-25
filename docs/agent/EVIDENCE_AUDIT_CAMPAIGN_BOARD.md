@@ -8,15 +8,16 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 
 - Campaign name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign.
 - Total target: 20 merged PRs.
-- Completed campaign PRs: 0 / 20.
-- Current PR slot: 1.
-- Current branch: `codex/evidence-audit-closeout-repair`.
-- Current PR: [#316](https://github.com/RicheyWorks/LoadBalancerPro/pull/316).
+- Completed campaign PRs: 1 / 20.
+- Current PR slot: 2.
+- Current branch: `codex/evidence-audit-open-pr-hygiene`.
+- Current PR: pending.
 - Starting main HEAD: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
 - Prior campaign fact: PR #315 is merged.
 - Prior campaign merge commit: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
 - Prior campaign result before this audit: 10 / 10 PRs merged.
-- Slot 1 purpose: repair stale 10-PR closeout state and initialize the 20-slot evidence audit campaign controls.
+- Slot 1 result: PR #316 merged as `4622d788569fc68de1fab212cdad388d2cf10dc8`; post-merge main CI and CodeQL were green.
+- Slot 2 purpose: audit open PR hygiene without closing, rebasing, editing, or otherwise modifying unrelated PRs.
 
 ## Board Rules
 
@@ -33,8 +34,8 @@ Use this board with [`EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](EVIDENCE_AUDIT_CAMPA
 
 | Slot | Scope | Branch | PR | Status | Head SHA | Merge SHA | Checkpoint |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Prior 10-PR closeout repair | codex/evidence-audit-closeout-repair | [#316](https://github.com/RicheyWorks/LoadBalancerPro/pull/316) | PR opened | `001bc2056c348fba26b8cad38b9855bf92e33866` at PR creation | pending | PR #315 facts verified; local verification passed; PR opened |
-| 2 | Open PR hygiene audit | pending | pending | planned | pending | pending | Audit #291 and other open PRs without closing or modifying them |
+| 1 | Prior 10-PR closeout repair | codex/evidence-audit-closeout-repair | [#316](https://github.com/RicheyWorks/LoadBalancerPro/pull/316) | merged | `cfa138b923a14c46b07c40a6c80fd6f1c568c8f2` | `4622d788569fc68de1fab212cdad388d2cf10dc8` | PR #315 facts repaired; post-merge main CI and CodeQL green |
+| 2 | Open PR hygiene audit | codex/evidence-audit-open-pr-hygiene | pending | local verification passed | pending | pending | PR #291 and other open PRs audited without closing or modifying them |
 | 3 | Repository evidence map | pending | pending | planned | pending | pending | Map README, trust, CI, CodeQL, Docker, Compose, smoke, config, and campaign evidence |
 | 4 | CI workflow audit | pending | pending | planned | pending | pending | Audit workflow posture without editing workflow files |
 | 5 | CodeQL and dependency-review audit | pending | pending | planned | pending | pending | Audit CodeQL/dependency review posture and limits |

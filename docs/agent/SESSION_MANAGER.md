@@ -8,121 +8,105 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-24T23:18-07:00
+Timestamp: 2026-05-25T00:04-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
-Current PR slot: 1
+Current PR slot: 2
 
-Checkpoint: Slot 1 PR opened; final-head verification pending
+Checkpoint: Slot 2 local verification passed; PR creation pending
 
-Started from main SHA: `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`
+Started from main SHA: `4622d788569fc68de1fab212cdad388d2cf10dc8`
 
-Current branch: codex/evidence-audit-closeout-repair
+Current branch: codex/evidence-audit-open-pr-hygiene
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/316
+PR URL: pending
 
-Head SHA: `001bc2056c348fba26b8cad38b9855bf92e33866` at PR creation; final checkpoint head pending verification
+Head SHA: working tree before slot 2 commit
 
 Changed files:
 
-- README.md
-- docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md
+- docs/agent/EVIDENCE_AUDIT_OPEN_PR_HYGIENE.md
 - docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
-- docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CHECKPOINT_TEMPLATE.md
-- docs/agent/EVIDENCE_AUDIT_CAMPAIGN_FINAL_REPORT_TEMPLATE.md
-- docs/agent/GOAL_CAMPAIGN_BOARD.md
-- docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md
 - docs/agent/SESSION_MANAGER.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest.java
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignFinalHandoffReportDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditOpenPrHygieneDocumentationTest.java
 
 Checks run:
 
-- Read README.md, AGENTS.md, BUILD_CONTRACT.md, AGENT_WORKFLOW_QUICKSTART.md, GOAL_MODE_LONG_RUN_PROTOCOL.md, VERIFICATION_PROTOCOL.md, SESSION_MANAGER.md, and FAILURE_LOG.md.
-- Fetched origin and confirmed local main was clean.
-- Verified PR #315 is merged.
-- Verified PR #315 title is "Add goal campaign final handoff report."
-- Verified PR #315 final head SHA is `99934cd6f511f535cc70e316a5c8f306fd643745`.
-- Verified PR #315 merge commit is `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
-- Verified main CI and CodeQL were green for `c27dc5a8da365f9b64ab13e671d9dad07f0f2f01`.
-- Verified PR #291 is open, conflicting, and unrelated to slot 1; no changes were made to it.
-- Created slot 1 branch from clean main.
-- Completed slot 1 documentation/test repair batch.
-- `mvn test "-Dtest=AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest"` passed.
-- Focused campaign/agent selector bundle passed after logged wording-drift repairs.
+- Slot 1 PR #316 merged as `4622d788569fc68de1fab212cdad388d2cf10dc8`.
+- Post-merge main verification for slot 1 passed locally.
+- Main CI and CodeQL were green for `4622d788569fc68de1fab212cdad388d2cf10dc8`.
+- Slot 2 branch created from clean main.
+- Created slot 2 branch from clean main.
+- Audited open PRs with `gh pr list --state open --json number,title,headRefName,headRefOid,baseRefName,isDraft,mergeable,mergeStateStatus,updatedAt,url,author`.
+- Verified PR #291 is open, non-draft, `DIRTY` / `CONFLICTING`, and unchanged by this audit.
+- Completed slot 2 documentation/test audit batch.
+- `mvn test "-Dtest=AgentEvidenceAuditOpenPrHygieneDocumentationTest"` failed once for missing exact `documentation/test-only` wording, was logged in FAILURE_LOG.md, and passed after the wording fix.
+- Relevant campaign/agent selector bundle failed once because a slot 1 guard froze the active board to slot 1, was logged in FAILURE_LOG.md, and passed after the guard was made durable.
+- `mvn test "-Dtest=AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"` passed.
 - `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
-- `mvn -q test` passed with 2,387 tests.
+- `mvn -q test` passed with 2,392 tests.
 - `mvn -q "-DskipTests" package` passed.
-- `mvn -B package` passed with 2,387 tests.
+- `mvn -B package` passed with 2,392 tests.
 - `git diff --check` passed with line-ending warnings only.
 - `git diff --check origin/main...HEAD` passed.
 - `git diff --cached --check` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Slot 1 commit `001bc2056c348fba26b8cad38b9855bf92e33866` pushed.
-- PR #316 opened.
 
-Remote status: PR #316 checks pending or not yet audited; main CI and CodeQL were green for the starting main SHA.
+Remote status: main CI and CodeQL green for the starting main SHA; slot 2 PR not opened yet.
 
 Blocker: none.
 
-Next action: run final-head verification for the PR-created checkpoint, push the checkpoint commit, then audit PR #316 current-head remote checks.
+Next action: commit and push slot 2, open the slot 2 PR, then audit current-head remote checks.
 
 Decision: continue
 
 ## Current Branch
 
-Name: codex/evidence-audit-closeout-repair
+Name: codex/evidence-audit-open-pr-hygiene
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/316
+URL: pending
 
 ## Current Goal
 
-Short goal: Repair stale post-merge state for the completed 10-PR trial and initialize the 20-PR evidence audit campaign controls.
+Short goal: Audit open PR hygiene, especially PR #291, without closing or modifying unrelated PRs.
 
 ## Current Head SHA
 
-SHA: `001bc2056c348fba26b8cad38b9855bf92e33866` at PR creation; final checkpoint head pending verification
+SHA: working tree verified before slot 2 commit
 
 ## What Changed
 
 - Files changed:
-- README.md
-- docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md
+- docs/agent/EVIDENCE_AUDIT_OPEN_PR_HYGIENE.md
 - docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
-- docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CHECKPOINT_TEMPLATE.md
-- docs/agent/EVIDENCE_AUDIT_CAMPAIGN_FINAL_REPORT_TEMPLATE.md
-- docs/agent/FAILURE_LOG.md
-- docs/agent/GOAL_CAMPAIGN_BOARD.md
-- docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md
 - docs/agent/SESSION_MANAGER.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest.java
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentGoalCampaignFinalHandoffReportDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditOpenPrHygieneDocumentationTest.java
 - Behavioral surface: none; docs/test-only.
-- Documentation surface: repairs the completed 10-PR campaign state and starts the new 20-slot audit campaign.
+- Documentation surface: documents open PR hygiene findings and records slot 1 as merged/main green.
 
 ## Checks Run
 
 - Focused checks:
-- `mvn test "-Dtest=AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest"` passed.
+- `mvn test "-Dtest=AgentEvidenceAuditOpenPrHygieneDocumentationTest"` passed after one logged wording repair.
 - Focused selector bundle:
-- Campaign/agent selector bundle passed after logged wording-drift repairs.
+- Relevant campaign/agent selector bundle passed after one logged guard durability repair.
 - Dependency checks:
 - `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
 - Full checks:
-- `mvn -q test` passed with 2,387 tests.
+- `mvn -q test` passed with 2,392 tests.
 - Package checks:
 - `mvn -q "-DskipTests" package` passed.
-- `mvn -B package` passed with 2,387 tests.
+- `mvn -B package` passed with 2,392 tests.
 - Diff checks:
 - `git diff --check` passed with line-ending warnings only.
 - `git diff --check origin/main...HEAD` passed.
 - `git diff --cached --check` passed.
 - Smoke checks:
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Remote checks: PR #316 checks pending or not yet audited.
+- Remote checks: slot 2 PR not opened yet.
 
 ## Blockers
 
@@ -131,20 +115,21 @@ SHA: `001bc2056c348fba26b8cad38b9855bf92e33866` at PR creation; final checkpoint
 
 ## Next Action
 
-One concrete next step: rerun final-head verification for the PR-created checkpoint.
+One concrete next step: commit and push slot 2, then open the slot 2 PR.
 
 ## Recovery Notes
 
-- How to resume: confirm branch `codex/evidence-audit-closeout-repair`, inspect `git status`, then run the slot 1 focused guard and final-head verification.
-- Commands already run: read required source files, `git fetch origin`, `gh pr view 315`, `gh pr view 291`, `gh run list --branch main`, `git checkout main`, `git pull --ff-only origin main`, and `git checkout -b codex/evidence-audit-closeout-repair`.
+- How to resume: confirm branch `codex/evidence-audit-open-pr-hygiene`, inspect `git status`, then run the slot 2 focused guard.
+- Commands already run for slot 2: `git status`, `git rev-parse HEAD`, `gh run list --branch main`, `git checkout -b codex/evidence-audit-open-pr-hygiene`, `gh pr list --state open`, `gh pr view 291`, and PR #291 diff inspection.
 - Safety boundaries to re-check: docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
-- Remote checks that must be refreshed: PR current-head checks after PR creation; main CI/CodeQL after merge.
+- Remote checks that must be refreshed: slot 2 PR current-head checks after PR creation; main CI/CodeQL after merge.
 
 ## Historical Closeout: LoadBalancerPro Goal Mode 10-PR Trial
 
 - Goal name: LoadBalancerPro Goal Mode 10-PR Trial.
 - Current PR slot: completed.
 - Result: 10 / 10 PRs merged.
+- PR #315 is merged.
 - Final PR: [#315](https://github.com/RicheyWorks/LoadBalancerPro/pull/315).
 - Final branch: `codex/goal-campaign-final-handoff-report`.
 - Final head SHA: `99934cd6f511f535cc70e316a5c8f306fd643745`.

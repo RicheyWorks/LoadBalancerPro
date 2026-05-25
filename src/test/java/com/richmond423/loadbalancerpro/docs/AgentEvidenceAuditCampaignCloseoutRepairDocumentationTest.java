@@ -52,9 +52,11 @@ class AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest {
                     || finalTemplate.contains(expected), "Missing audit campaign wording: " + expected);
         }
 
-        assertTrue(board.contains("completed campaign prs: 0 / 20"));
-        assertTrue(board.contains("current pr slot: 1"));
+        assertTrue(board.contains("completed campaign prs:"));
+        assertTrue(board.contains("current pr slot:"));
         assertTrue(board.contains("codex/evidence-audit-closeout-repair"));
+        assertTrue(board.contains("prior 10-pr closeout repair"));
+        assertTrue(board.contains("open pr hygiene audit"));
     }
 
     @Test

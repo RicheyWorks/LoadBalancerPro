@@ -22,9 +22,9 @@ public final class ServerScoreCalculator {
 
     public double score(ServerStateVector state) {
         Objects.requireNonNull(state, "state cannot be null");
-        double score = (state.p95LatencyMillis() * P95_WEIGHT)
-                + (state.p99LatencyMillis() * P99_WEIGHT)
-                + (state.averageLatencyMillis() * AVERAGE_LATENCY_WEIGHT)
+        double score = (state.effectiveP95LatencyMillis() * P95_WEIGHT)
+                + (state.effectiveP99LatencyMillis() * P99_WEIGHT)
+                + (state.effectiveAverageLatencyMillis() * AVERAGE_LATENCY_WEIGHT)
                 + (state.inFlightPressure() * IN_FLIGHT_RATIO_WEIGHT)
                 + (state.queuePressure() * QUEUE_RATIO_WEIGHT)
                 + (state.recentErrorRate() * ERROR_RATE_WEIGHT)
@@ -47,32 +47,46 @@ public final class ServerScoreCalculator {
         double capacityBasis = state.capacityBasis();
         double inFlightRatio = state.inFlightPressure();
         double queueRatio = state.queuePressure();
+        double effectiveP95LatencyMillis = state.effectiveP95LatencyMillis();
+        double effectiveP99LatencyMillis = state.effectiveP99LatencyMillis();
+        double effectiveAverageLatencyMillis = state.effectiveAverageLatencyMillis();
         List<ScoreFactorContribution> contributions = new ArrayList<>();
 
         contributions.add(exactFactor(
                 "p95LatencyMillis",
-                "p95LatencyMillis=" + format(state.p95LatencyMillis()),
+                effectiveLatencyDescription("p95LatencyMillis", state.p95LatencyMillis(),
+                        "effectiveP95LatencyMillis", effectiveP95LatencyMillis, state.latencyWindowSignal()),
                 "P95_WEIGHT=" + format(P95_WEIGHT),
-                state.p95LatencyMillis() * P95_WEIGHT,
-                directionForPositivePenalty(state.p95LatencyMillis()),
-                "p95 latency contribution = p95LatencyMillis * P95_WEIGHT.",
+                effectiveP95LatencyMillis * P95_WEIGHT,
+                directionForPositivePenalty(effectiveP95LatencyMillis),
+                "Effective p95 latency contribution = effectiveP95LatencyMillis * P95_WEIGHT.",
                 "Tail latency is an exact current calculator input, not production telemetry proof."));
         contributions.add(exactFactor(
                 "p99LatencyMillis",
-                "p99LatencyMillis=" + format(state.p99LatencyMillis()),
+                effectiveLatencyDescription("p99LatencyMillis", state.p99LatencyMillis(),
+                        "effectiveP99LatencyMillis", effectiveP99LatencyMillis, state.latencyWindowSignal()),
                 "P99_WEIGHT=" + format(P99_WEIGHT),
-                state.p99LatencyMillis() * P99_WEIGHT,
-                directionForPositivePenalty(state.p99LatencyMillis()),
-                "p99 latency contribution = p99LatencyMillis * P99_WEIGHT.",
+                effectiveP99LatencyMillis * P99_WEIGHT,
+                directionForPositivePenalty(effectiveP99LatencyMillis),
+                "Effective p99 latency contribution = effectiveP99LatencyMillis * P99_WEIGHT.",
                 "Tail latency is an exact current calculator input, not production telemetry proof."));
         contributions.add(exactFactor(
                 "averageLatencyMillis",
-                "averageLatencyMillis=" + format(state.averageLatencyMillis()),
+                effectiveLatencyDescription("averageLatencyMillis", state.averageLatencyMillis(),
+                        "effectiveAverageLatencyMillis", effectiveAverageLatencyMillis, state.latencyWindowSignal()),
                 "AVERAGE_LATENCY_WEIGHT=" + format(AVERAGE_LATENCY_WEIGHT),
-                state.averageLatencyMillis() * AVERAGE_LATENCY_WEIGHT,
-                directionForPositivePenalty(state.averageLatencyMillis()),
-                "Average latency contribution = averageLatencyMillis * AVERAGE_LATENCY_WEIGHT.",
+                effectiveAverageLatencyMillis * AVERAGE_LATENCY_WEIGHT,
+                directionForPositivePenalty(effectiveAverageLatencyMillis),
+                "Effective average latency contribution = effectiveAverageLatencyMillis * AVERAGE_LATENCY_WEIGHT.",
                 "Average latency is an exact current calculator input, not production monitoring proof."));
+        contributions.add(exactFactor(
+                "latencyWindowSignal",
+                latencyWindowDescription(state),
+                "No standalone score weight; effective latency factors may use bounded window values when present.",
+                0.0,
+                ScoreFactorDirection.NEUTRAL,
+                "Latency window signal has no standalone additive contribution; it can shape latency factor inputs.",
+                "Latency window signal is deterministic local state-vector evidence, not p95/p99 production proof."));
         contributions.add(exactFactor(
                 "capacityBasis",
                 capacityBasisDescription(state, capacityBasis),
@@ -253,6 +267,27 @@ public final class ServerScoreCalculator {
         }
         return "configuredCapacity=not exposed, estimatedConcurrencyLimit=not exposed, capacityBasis="
                 + format(capacityBasis);
+    }
+
+    private String effectiveLatencyDescription(String rawLabel,
+                                               double rawValue,
+                                               String effectiveLabel,
+                                               double effectiveValue,
+                                               LatencyWindowSignal latencyWindowSignal) {
+        return rawLabel + "=" + format(rawValue)
+                + ", " + effectiveLabel + "=" + format(effectiveValue)
+                + ", latencyWindowSamples=" + latencyWindowSignal.sampleCount();
+    }
+
+    private String latencyWindowDescription(ServerStateVector state) {
+        LatencyWindowSignal signal = state.latencyWindowSignal();
+        if (!signal.hasLatencyWindowValues()) {
+            return "latencyWindowSignal=empty, effective latency values use current state vector values";
+        }
+        return "latencyWindowSignal=present, sampleCount=" + signal.sampleCount()
+                + ", effectiveAverageLatencyMillis=" + format(state.effectiveAverageLatencyMillis())
+                + ", effectiveP95LatencyMillis=" + format(state.effectiveP95LatencyMillis())
+                + ", effectiveP99LatencyMillis=" + format(state.effectiveP99LatencyMillis());
     }
 
     private String format(double value) {

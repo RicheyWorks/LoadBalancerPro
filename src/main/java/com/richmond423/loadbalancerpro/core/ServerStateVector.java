@@ -18,6 +18,7 @@ public record ServerStateVector(
         double recentErrorRate,
         OptionalInt queueDepth,
         NetworkAwarenessSignal networkAwarenessSignal,
+        LatencyWindowSignal latencyWindowSignal,
         Instant timestamp) {
     private static final double MINIMUM_CAPACITY_BASIS = 1.0;
     private static final double MINIMUM_LATENCY_BASIS_MILLIS = 1.0;
@@ -28,6 +29,7 @@ public record ServerStateVector(
         Objects.requireNonNull(estimatedConcurrencyLimit, "estimatedConcurrencyLimit cannot be null");
         Objects.requireNonNull(queueDepth, "queueDepth cannot be null");
         Objects.requireNonNull(networkAwarenessSignal, "networkAwarenessSignal cannot be null");
+        Objects.requireNonNull(latencyWindowSignal, "latencyWindowSignal cannot be null");
         Objects.requireNonNull(timestamp, "timestamp cannot be null");
         requireNonNegative(inFlightRequestCount, "inFlightRequestCount");
         configuredCapacity.ifPresent(value -> requireNonNegative(value, "configuredCapacity"));
@@ -45,6 +47,24 @@ public record ServerStateVector(
                              int inFlightRequestCount,
                              OptionalDouble configuredCapacity,
                              OptionalDouble estimatedConcurrencyLimit,
+                             double weight,
+                             double averageLatencyMillis,
+                             double p95LatencyMillis,
+                             double p99LatencyMillis,
+                             double recentErrorRate,
+                             OptionalInt queueDepth,
+                             NetworkAwarenessSignal networkAwarenessSignal,
+                             Instant timestamp) {
+        this(serverId, healthy, inFlightRequestCount, configuredCapacity, estimatedConcurrencyLimit, weight,
+                averageLatencyMillis, p95LatencyMillis, p99LatencyMillis, recentErrorRate, queueDepth,
+                networkAwarenessSignal, LatencyWindowSignal.empty(), timestamp);
+    }
+
+    public ServerStateVector(String serverId,
+                             boolean healthy,
+                             int inFlightRequestCount,
+                             OptionalDouble configuredCapacity,
+                             OptionalDouble estimatedConcurrencyLimit,
                              double averageLatencyMillis,
                              double p95LatencyMillis,
                              double p99LatencyMillis,
@@ -54,7 +74,7 @@ public record ServerStateVector(
                              Instant timestamp) {
         this(serverId, healthy, inFlightRequestCount, configuredCapacity, estimatedConcurrencyLimit, 1.0,
                 averageLatencyMillis, p95LatencyMillis, p99LatencyMillis, recentErrorRate, queueDepth,
-                networkAwarenessSignal, timestamp);
+                networkAwarenessSignal, LatencyWindowSignal.empty(), timestamp);
     }
 
     public ServerStateVector(String serverId,
@@ -71,7 +91,7 @@ public record ServerStateVector(
                              Instant timestamp) {
         this(serverId, healthy, inFlightRequestCount, configuredCapacity, estimatedConcurrencyLimit, weight,
                 averageLatencyMillis, p95LatencyMillis, p99LatencyMillis, recentErrorRate, queueDepth,
-                NetworkAwarenessSignal.neutral(serverId, timestamp), timestamp);
+                NetworkAwarenessSignal.neutral(serverId, timestamp), LatencyWindowSignal.empty(), timestamp);
     }
 
     public ServerStateVector(String serverId,
@@ -88,7 +108,7 @@ public record ServerStateVector(
         this(serverId, healthy, inFlightRequestCount, OptionalDouble.of(configuredCapacity),
                 OptionalDouble.of(estimatedConcurrencyLimit), 1.0, averageLatencyMillis, p95LatencyMillis,
                 p99LatencyMillis, recentErrorRate, OptionalInt.of(queueDepth),
-                NetworkAwarenessSignal.neutral(serverId, timestamp), timestamp);
+                NetworkAwarenessSignal.neutral(serverId, timestamp), LatencyWindowSignal.empty(), timestamp);
     }
 
     public ServerStateVector(String serverId,
@@ -105,7 +125,8 @@ public record ServerStateVector(
                              Instant timestamp) {
         this(serverId, healthy, inFlightRequestCount, OptionalDouble.of(configuredCapacity),
                 OptionalDouble.of(estimatedConcurrencyLimit), 1.0, averageLatencyMillis, p95LatencyMillis,
-                p99LatencyMillis, recentErrorRate, OptionalInt.of(queueDepth), networkAwarenessSignal, timestamp);
+                p99LatencyMillis, recentErrorRate, OptionalInt.of(queueDepth), networkAwarenessSignal,
+                LatencyWindowSignal.empty(), timestamp);
     }
 
     public static ServerStateVector fromServer(Server server,
@@ -120,7 +141,7 @@ public record ServerStateVector(
         return new ServerStateVector(server.getServerId(), server.isHealthy(), inFlightRequestCount,
                 OptionalDouble.of(server.getCapacity()), OptionalDouble.empty(), server.getWeight(), averageLatencyMillis,
                 p95LatencyMillis, p99LatencyMillis, recentErrorRate, OptionalInt.of(queueDepth),
-                NetworkAwarenessSignal.neutral(server.getServerId(), timestamp), timestamp);
+                NetworkAwarenessSignal.neutral(server.getServerId(), timestamp), LatencyWindowSignal.empty(), timestamp);
     }
 
     public double capacityBasis() {
@@ -157,6 +178,26 @@ public record ServerStateVector(
         return boundedRatio(tailLatencySpreadMillis(), Math.max(MINIMUM_LATENCY_BASIS_MILLIS, p95LatencyMillis));
     }
 
+    public double effectiveAverageLatencyMillis() {
+        return latencyWindowSignal.effectiveAverageLatencyMillis(averageLatencyMillis);
+    }
+
+    public double effectiveP95LatencyMillis() {
+        return latencyWindowSignal.effectiveP95LatencyMillis(p95LatencyMillis);
+    }
+
+    public double effectiveP99LatencyMillis() {
+        return latencyWindowSignal.effectiveP99LatencyMillis(p99LatencyMillis);
+    }
+
+    public double effectiveTailLatencySpreadMillis() {
+        return latencyWindowSignal.effectiveTailLatencySpreadMillis(p95LatencyMillis, p99LatencyMillis);
+    }
+
+    public double effectiveTailLatencyPressure() {
+        return latencyWindowSignal.effectiveTailLatencyPressure(p95LatencyMillis, p99LatencyMillis);
+    }
+
     public double errorPressure() {
         return recentErrorRate;
     }
@@ -179,8 +220,10 @@ public record ServerStateVector(
             return 1.0;
         }
         return Math.max(tailLatencyPressure(),
-                Math.max(boundedInFlightPressure(),
-                        Math.max(boundedQueuePressure(), Math.max(errorPressure(), networkRiskPressure()))));
+                Math.max(effectiveTailLatencyPressure(),
+                        Math.max(boundedInFlightPressure(),
+                                Math.max(boundedQueuePressure(),
+                                        Math.max(errorPressure(), networkRiskPressure())))));
     }
 
     public boolean hasMaterialRisk() {

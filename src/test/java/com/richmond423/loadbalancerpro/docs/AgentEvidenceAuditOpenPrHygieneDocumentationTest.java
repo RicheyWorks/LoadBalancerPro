@@ -75,8 +75,8 @@ class AgentEvidenceAuditOpenPrHygieneDocumentationTest {
                 "#317",
                 "08e3320e6b5413d372249b7886876341af1529e6",
                 "7dd64becaefd589ff94ed2fea93b017397b4a747",
-                "main ci and codeql were green",
-                "slot 2 branch created")) {
+                "open pr hygiene audit",
+                "post-merge main ci and codeql green")) {
             assertTrue(board.contains(expected) || session.contains(expected),
                     "Missing slot 2 campaign state: " + expected);
         }

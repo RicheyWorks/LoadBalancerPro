@@ -88,8 +88,8 @@ class AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest {
                 "#318",
                 "e411c2fa6dc2c7d65c90093c3472dd30fd9a7bab",
                 "65fad4a65f0297ba6e7d085bd84cacf5aa966f38",
-                "post-merge main ci and codeql were green",
-                "slot 3 branch created")) {
+                "repository evidence map added",
+                "post-merge main ci and codeql green")) {
             assertTrue(board.contains(expected) || session.contains(expected),
                     "Missing slot 3 campaign checkpoint: " + expected);
         }

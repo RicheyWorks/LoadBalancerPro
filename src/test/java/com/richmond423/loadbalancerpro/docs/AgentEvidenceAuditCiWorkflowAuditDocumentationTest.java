@@ -120,13 +120,13 @@ class AgentEvidenceAuditCiWorkflowAuditDocumentationTest {
                 "repository evidence map should link to the CI workflow audit");
 
         for (String expected : List.of(
-                "completed campaign prs: 3 / 20",
-                "current pr slot: 4",
+                "slot 4",
+                "ci workflow audit",
                 "codex/evidence-audit-ci-workflow",
-                "pr #318 merged",
-                "65fad4a65f0297ba6e7d085bd84cacf5aa966f38",
-                "post-merge main ci and codeql were green",
-                "slot 4 branch created")) {
+                "pr #319",
+                "e1c40e904730a9e24875424aa312c68fc62d1fa3",
+                "bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f",
+                "post-merge main ci and codeql were green")) {
             assertTrue(board.contains(expected) || session.contains(expected),
                     "Missing slot 4 campaign checkpoint: " + expected);
         }

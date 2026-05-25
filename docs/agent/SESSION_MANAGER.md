@@ -8,170 +8,106 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-25T01:27-07:00
+Timestamp: 2026-05-25T02:00-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign
 
-Current PR slot: 4
+Current PR slot: 5
 
-Checkpoint: Slot 4 PR opened and remote checks pending
+Checkpoint: Slot 5 PR #320 opened after local verification
 
-Started from main SHA: `65fad4a65f0297ba6e7d085bd84cacf5aa966f38`
+Started from main SHA: `bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f`
 
-Current branch: codex/evidence-audit-ci-workflow
+Current branch: codex/evidence-audit-codeql-dependency-review
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/319
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/320
 
-Head SHA: `b583c4c65a48e274b33894abb437015caf4a2b0e`
+Head SHA: PR #320 opened at `d1a4e5463c2acd4c440dc61f30563cd864179747`; current PR head is authoritative from GitHub after checkpoint commits
 
 Changed files:
 
-- docs/agent/EVIDENCE_AUDIT_CI_WORKFLOW_AUDIT.md
+- docs/agent/EVIDENCE_AUDIT_CODEQL_DEPENDENCY_REVIEW_AUDIT.md
 - docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md
+- docs/agent/EVIDENCE_AUDIT_CI_WORKFLOW_AUDIT.md
 - docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
 - docs/agent/FAILURE_LOG.md
 - README.md
 - docs/REVIEWER_TRUST_MAP.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditCiWorkflowAuditDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditOpenPrHygieneDocumentationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest.java
 
 Checks run:
 
-- Slot 1 PR #316 merged as `4622d788569fc68de1fab212cdad388d2cf10dc8`.
-- Post-merge main verification for slot 1 passed locally.
-- Main CI and CodeQL were green for `4622d788569fc68de1fab212cdad388d2cf10dc8`.
-- Slot 2 branch created from clean main.
-- Created slot 2 branch from clean main.
-- Audited open PRs with `gh pr list --state open --json number,title,headRefName,headRefOid,baseRefName,isDraft,mergeable,mergeStateStatus,updatedAt,url,author`.
-- Verified PR #291 is open, non-draft, `DIRTY` / `CONFLICTING`, and unchanged by this audit.
-- Completed slot 2 documentation/test audit batch.
-- `mvn test "-Dtest=AgentEvidenceAuditOpenPrHygieneDocumentationTest"` failed once for missing exact `documentation/test-only` wording, was logged in FAILURE_LOG.md, and passed after the wording fix.
-- Relevant campaign/agent selector bundle failed once because a slot 1 guard froze the active board to slot 1, was logged in FAILURE_LOG.md, and passed after the guard was made durable.
-- `mvn test "-Dtest=AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"` passed.
-- `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
-- `mvn -q test` passed with 2,392 tests.
-- `mvn -q "-DskipTests" package` passed.
-- `mvn -B package` passed with 2,392 tests.
-- `git diff --check` passed with line-ending warnings only.
-- `git diff --check origin/main...HEAD` passed.
-- `git diff --cached --check` passed.
-- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Slot 2 commit `c53ad0a799fb8d14ebe92df2f6b40fb2bcd1d71c` pushed.
-- PR #317 opened.
-- Slot 2 final checkpoint commit `08e3320e6b5413d372249b7886876341af1529e6` pushed.
-- PR #317 current-head remote checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review where applicable.
-- PR #317 merged as `7dd64becaefd589ff94ed2fea93b017397b4a747`.
-- Slot 2 post-merge local verification passed: dependency tree, focused guard, campaign/agent selector bundle, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke.
-- Slot 2 post-merge main remote checks passed: CI and CodeQL green for `7dd64becaefd589ff94ed2fea93b017397b4a747`.
-- Slot 3 branch created from clean main.
-- Slot 3 repository evidence map added as documentation/test-only.
-- `mvn test "-Dtest=AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest"` passed.
-- `mvn test "-Dtest=AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"` passed.
-- `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
-- `mvn -q test` passed with 2,398 tests.
-- `mvn -q "-DskipTests" package` passed.
-- `mvn -B package` passed with 2,398 tests.
-- `git diff --check` passed with line-ending warnings only.
-- `git diff --check origin/main...HEAD` passed.
-- `git diff --cached --check` passed.
-- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Slot 3 commit `b8eaa5919a7b34b39e760dcab326caa24c034416` pushed.
-- PR #318 opened.
-- `git diff --check origin/main...HEAD` reported an extra blank line at EOF in the slot 3 evidence map doc and guard test because the repair was not yet committed; this was logged in FAILURE_LOG.md before continuing.
-- EOF whitespace repair applied to `docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md` and `src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest.java`.
-- Final-head focused guard rerun passed.
-- Final-head campaign/agent selector bundle rerun passed.
-- Final-head `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
-- Final-head `mvn -q test` passed.
-- Final-head `mvn -q "-DskipTests" package` passed.
-- Final-head `mvn -B package` passed.
-- Final-head `git diff --check` passed.
-- Final-head `git diff --cached --check` passed.
-- Final-head `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Final-head `git diff --check origin/main...HEAD` must be rerun after the checkpoint commit includes the EOF repair.
-- Slot 3 final checkpoint commit `e411c2fa6dc2c7d65c90093c3472dd30fd9a7bab` pushed.
-- PR #318 current-head remote checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review where applicable.
-- PR #318 merged as `65fad4a65f0297ba6e7d085bd84cacf5aa966f38`.
-- Slot 3 post-merge local verification passed: dependency tree, focused guard, campaign/agent selector bundle, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke.
-- Slot 3 post-merge main remote checks passed: CI and CodeQL green for `65fad4a65f0297ba6e7d085bd84cacf5aa966f38`.
-- Slot 4 branch created from clean main.
-- Slot 4 CI workflow audit started as documentation/test-only.
-- Slot 4 CI workflow audit doc added without editing `.github/workflows/ci.yml`.
-- Slot 4 focused guard `mvn test "-Dtest=AgentEvidenceAuditCiWorkflowAuditDocumentationTest"` failed once because the guard expected LF-only workflow text while the file read preserved CRLF; this was logged in FAILURE_LOG.md, fixed by normalizing line endings in the guard, and rerun successfully.
-- Slot 4 campaign/agent selector bundle failed once because the slot 3 evidence-map guard froze the active campaign board at slot 3; this was logged in FAILURE_LOG.md, fixed by verifying durable slot 3 history instead of the moving active slot, and rerun successfully.
-- `mvn test "-Dtest=AgentEvidenceAuditCiWorkflowAuditDocumentationTest"` passed after the guard repair.
-- `mvn test "-Dtest=AgentEvidenceAuditCiWorkflowAuditDocumentationTest,AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"` passed after the durable-history guard repair.
-- `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
-- `mvn -q test` passed with 2,404 tests.
-- `mvn -q "-DskipTests" package` passed.
-- `mvn -B package` passed with 2,404 tests.
-- `git diff --check` passed with line-ending warnings only.
-- `git diff --check origin/main...HEAD` passed.
-- `git diff --cached --check` passed.
-- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Slot 4 commit `b583c4c65a48e274b33894abb437015caf4a2b0e` pushed.
-- PR #319 opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/319.
-- PR #319 remote checks are queued/in progress and are not yet acceptable for merge.
+- Slot 4 PR #319 merged as `bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f`.
+- Slot 4 post-merge local verification passed: focused campaign/agent selector bundle, dependency tree, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package`, diff checks, and enterprise lab package smoke.
+- Slot 4 post-merge main remote checks passed: CI and CodeQL green for `bc62bef7fb5843e2ab143a47a65f81dd6fc46f8f`.
+- Slot 5 branch created from clean main.
+- Slot 5 CodeQL and dependency-review posture audit completed as documentation/test-only.
+- Focused guard `mvn test "-Dtest=AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest"` failed once because the audit doc did not include exact `fail-on-severity: high` wording; logged in FAILURE_LOG.md, fixed in docs, and rerun passed.
+- Focused selector bundle failed once because older slot 2 and slot 3 guards depended on moving active-checkpoint wording; logged in FAILURE_LOG.md, fixed by making those guards assert durable merged-slot history, and rerun passed.
+- Dependency tree passed: `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"`.
+- Full tests passed: `mvn -q test`.
+- Skip-tests package passed: `mvn -q "-DskipTests" package`.
+- Full package passed: `mvn -B package` with 2,410 tests, 0 failures, 0 errors, and 0 skipped.
+- Diff checks passed: `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check`.
+- Enterprise lab package smoke passed: `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- Slot 5 PR opened: [#320](https://github.com/RicheyWorks/LoadBalancerPro/pull/320).
 
-Remote status: PR #319 current-head checks are queued/in progress; main CI and CodeQL were green for the slot 4 starting main SHA.
+Remote status: main CI and CodeQL were green for the slot 5 starting main SHA; PR #320 remote checks are pending for the current PR head.
 
 Blocker: none.
 
-Next action: rerun focused and diff checks after this checkpoint edit, push the checkpoint commit, then wait for PR #319 current-head remote checks.
+Next action: commit and push this PR-creation checkpoint, rerun focused guards, then wait for current-head remote checks.
 
 Decision: continue
 
 ## Current Branch
 
-Name: codex/evidence-audit-ci-workflow
+Name: codex/evidence-audit-codeql-dependency-review
 
 ## Current PR
 
-URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/319
+URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/320
 
 ## Current Goal
 
-Short goal: Audit `.github/workflows/ci.yml` posture without changing workflow behavior.
+Short goal: Audit CodeQL and Dependency Review posture without changing workflow behavior.
 
 ## Current Head SHA
 
-SHA: `b583c4c65a48e274b33894abb437015caf4a2b0e`
+SHA: PR #320 opened at `d1a4e5463c2acd4c440dc61f30563cd864179747`; current PR head is authoritative from GitHub after checkpoint commits
 
 ## What Changed
 
 - Files changed:
-- docs/agent/EVIDENCE_AUDIT_CI_WORKFLOW_AUDIT.md
+- docs/agent/EVIDENCE_AUDIT_CODEQL_DEPENDENCY_REVIEW_AUDIT.md
 - docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md
+- docs/agent/EVIDENCE_AUDIT_CI_WORKFLOW_AUDIT.md
 - docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
+- docs/agent/FAILURE_LOG.md
 - README.md
 - docs/REVIEWER_TRUST_MAP.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditCiWorkflowAuditDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditOpenPrHygieneDocumentationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest.java
 - Behavioral surface: none; docs/test-only.
-- Documentation surface: records slot 3 as merged/main green and adds the CI workflow audit.
+- Documentation surface: records slot 4 as merged/main green and adds the CodeQL/dependency-review audit.
 
 ## Checks Run
 
-- Focused checks:
-- `mvn test "-Dtest=AgentEvidenceAuditCiWorkflowAuditDocumentationTest"` passed after one logged CRLF-normalization repair.
-- Focused selector bundle:
-- `mvn test "-Dtest=AgentEvidenceAuditCiWorkflowAuditDocumentationTest,AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"` passed after one logged durable-history repair.
-- Dependency checks:
-- `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
-- Full checks:
-- `mvn -q test` passed with 2,404 tests.
-- Package checks:
-- `mvn -q "-DskipTests" package` passed.
-- `mvn -B package` passed with 2,404 tests.
-- Diff checks:
-- `git diff --check` passed with line-ending warnings only.
-- `git diff --check origin/main...HEAD` passed.
-- `git diff --cached --check` passed.
-- Smoke checks:
-- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
-- Remote checks: PR #319 current-head checks queued/in progress; not mergeable evidence yet.
+- Focused checks: `mvn test "-Dtest=AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest"` failed once on exact dependency-review wording, then passed after the logged repair.
+- Focused selector bundle: `mvn test "-Dtest=AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest,AgentEvidenceAuditCiWorkflowAuditDocumentationTest,AgentEvidenceAuditRepositoryEvidenceMapDocumentationTest,AgentEvidenceAuditOpenPrHygieneDocumentationTest,AgentEvidenceAuditCampaignCloseoutRepairDocumentationTest,AgentGoalCampaignFinalHandoffReportDocumentationTest,AgentGoalCampaignBoardInitializationDocumentationTest,AgentGoalCampaignTemplateArchitectureDocumentationTest,AgentGoalModeLongRunProtocolDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AdvancedReadmeAgentContractDocumentationTest"` failed once on moving slot-history guard wording, then passed after the logged guard repair.
+- Dependency checks: `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed.
+- Full checks: `mvn -q test` passed.
+- Package checks: `mvn -q "-DskipTests" package` passed; `mvn -B package` passed with 2,410 tests, 0 failures, 0 errors, and 0 skipped.
+- Diff checks: `git diff --check`, `git diff --check origin/main...HEAD`, and `git diff --cached --check` passed.
+- Smoke checks: `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed.
+- Remote checks: main CI and CodeQL green for slot 5 starting SHA; PR #320 remote checks pending for the current PR head.
 
 ## Blockers
 
@@ -180,14 +116,14 @@ SHA: `b583c4c65a48e274b33894abb437015caf4a2b0e`
 
 ## Next Action
 
-One concrete next step: rerun focused and diff checks after this checkpoint edit, push the checkpoint commit, then wait for PR #319 current-head remote checks.
+One concrete next step: push the durable PR-head wording correction, inspect PR #320 current head from GitHub, and wait for current-head remote checks.
 
 ## Recovery Notes
 
-- How to resume: confirm branch `codex/evidence-audit-ci-workflow`, inspect `git status`, rerun focused and diff checks after this checkpoint edit, push the checkpoint commit, then wait for PR #319 current-head remote checks.
-- Commands already run for slot 4: `git checkout -b codex/evidence-audit-ci-workflow`, `Get-Content .github/workflows/ci.yml`, main remote status checks confirming slot 3 main was green, focused guards, dependency tree, full tests, package checks, diff checks, and enterprise lab package smoke.
+- How to resume: confirm branch `codex/evidence-audit-codeql-dependency-review`, inspect `git status`, then inspect PR #320 current-head checks from GitHub.
+- Commands already run for slot 5: `git checkout -b codex/evidence-audit-codeql-dependency-review`, `Get-Content .github/workflows/codeql.yml`, `Get-Content .github/workflows/ci.yml`, main remote status checks confirming slot 4 main was green, the focused guard and selector bundle after repairs, dependency tree, `mvn -q test`, package checks, diff checks, enterprise lab package smoke, `git commit -m "Add evidence audit CodeQL dependency review audit"`, `git push origin codex/evidence-audit-codeql-dependency-review`, `gh pr create`, and the PR-creation checkpoint commit/push.
 - Safety boundaries to re-check: docs/test-only, no production code, no Maven config, no CI/workflow, no Dockerfile, no Compose behavior, no runtime behavior, no endpoints, no k6/Bruno/Toxiproxy behavior, no scripts, no secrets, no external/cloud/tenant targets, no automation, no unsupported claims.
-- Remote checks that must be refreshed: PR #319 current-head checks after the checkpoint push; main CI/CodeQL after merge.
+- Remote checks that must be refreshed: slot 5 PR current-head checks after PR creation; main CI/CodeQL after merge.
 
 ## Historical Closeout: LoadBalancerPro Goal Mode 10-PR Trial
 

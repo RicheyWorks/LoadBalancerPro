@@ -82,7 +82,7 @@ The dependency-review job:
 - uses `actions/dependency-review-action`;
 - fails on high severity dependency review findings.
 
-Dependency Review is not a replacement for CodeQL, Trivy, Maven dependency posture review, manual dependency lifecycle review, or production vulnerability management.
+Dependency Review is not a replacement for CodeQL, Trivy, Maven dependency posture review, manual dependency lifecycle review, or production vulnerability management. The separate slot 5 [CodeQL and Dependency Review audit](EVIDENCE_AUDIT_CODEQL_DEPENDENCY_REVIEW_AUDIT.md) records the static-analysis and pull-request dependency-review posture without changing workflow behavior.
 
 ## Remaining Limits
 

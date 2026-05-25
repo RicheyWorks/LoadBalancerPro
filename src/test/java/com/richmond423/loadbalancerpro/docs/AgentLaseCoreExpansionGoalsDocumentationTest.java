@@ -103,20 +103,39 @@ class AgentLaseCoreExpansionGoalsDocumentationTest {
     }
 
     @Test
-    void goalLedgerRecordsLaseG04AsActiveLatencyWindowSliceWithoutCompletionClaim() throws IOException {
+    void goalLedgerRecordsLaseG04AsMergedMainGreenLatencyWindowSlice() throws IOException {
         String normalized = read(LEDGER).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
                 "lase-g04 - ewma or rolling-window latency signal support",
                 "add bounded lase latency-window signal support",
                 "bounded ewma or rolling-window latency signal handling",
-                "codex/lase-g04-latency-window-signals",
-                "not merged/main-green")) {
-            assertTrue(normalized.contains(expected), "ledger should preserve LASE-G04 active fact: " + expected);
+                "pr #331",
+                "https://github.com/richeyworks/loadbalancerpro/pull/331",
+                "e3644a34160ff37d68cff2a5302afcd1e55c48a1",
+                "1f1cc1da6bb0bcb3430d660a5c579e008f109c40",
+                "post-merge main checks completed successfully",
+                "merged/main-green")) {
+            assertTrue(normalized.contains(expected), "ledger should preserve LASE-G04 fact: " + expected);
         }
 
-        assertFalse(normalized.contains("lase-g04 is recorded as merged/main-green"),
-                "LASE-G04 must not be recorded merged/main-green before merge and main checks are proven");
+    }
+
+    @Test
+    void goalLedgerRecordsLaseG05AsActiveHysteresisSliceWithoutCompletionClaim() throws IOException {
+        String normalized = read(LEDGER).toLowerCase(Locale.ROOT);
+
+        for (String expected : List.of(
+                "lase-g05 - tail-latency hysteresis and anti-flapping",
+                "add lase tail-latency anti-flapping guard",
+                "reduce unstable route switching when candidate scores are nearly tied",
+                "codex/lase-g05-tail-latency-hysteresis",
+                "not merged/main-green")) {
+            assertTrue(normalized.contains(expected), "ledger should preserve LASE-G05 active fact: " + expected);
+        }
+
+        assertFalse(normalized.contains("lase-g05 is recorded as merged/main-green"),
+                "LASE-G05 must not be recorded merged/main-green before merge and main checks are proven");
     }
 
     @Test

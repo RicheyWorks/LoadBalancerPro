@@ -4,12 +4,13 @@ This quickstart explains how to use the repository trust and agent contract file
 
 ## File Roles
 
-In short: README.md is the Advanced README / public trust surface, AGENTS.md is the Codex/agent operating rules file, BUILD_CONTRACT.md is the current task contract template, GOAL_MODE_LONG_RUN_PROTOCOL.md defines `/goal` long-running session behavior, CAMPAIGN_SYSTEM_ARCHITECTURE.md defines multi-PR campaign execution, CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md defines changed-file, forbidden-scope, claim, and stop-condition auditing, CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md defines factual handoff reports for pauses, resumes, and checkpoints, CAMPAIGN_CLOSEOUT_PROTOCOL.md defines final campaign closeout and counting rules, CAMPAIGN_MERGE_GATE.md defines the final merge decision gate, CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md defines failure recovery and pause/resume rules, VERIFICATION_PROTOCOL.md defines focused-vs-full verification, SESSION_MANAGER.md tracks long-running session state, and FAILURE_LOG.md tracks failures and recovery.
+In short: README.md is the Advanced README / public trust surface, AGENTS.md is the Codex/agent operating rules file, BUILD_CONTRACT.md is the current task contract template, GOAL_MODE_LONG_RUN_PROTOCOL.md defines `/goal` long-running session behavior, CAMPAIGN_SYSTEM_INDEX.md is the navigation layer for campaign controls, CAMPAIGN_SYSTEM_ARCHITECTURE.md defines multi-PR campaign execution, CAMPAIGN_SCOPE_AUDIT_CHECKLIST.md defines changed-file, forbidden-scope, claim, and stop-condition auditing, CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md defines factual handoff reports for pauses, resumes, and checkpoints, CAMPAIGN_CLOSEOUT_PROTOCOL.md defines final campaign closeout and counting rules, CAMPAIGN_MERGE_GATE.md defines the final merge decision gate, CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md defines failure recovery and pause/resume rules, VERIFICATION_PROTOCOL.md defines focused-vs-full verification, SESSION_MANAGER.md tracks long-running session state, and FAILURE_LOG.md tracks failures and recovery.
 
 - [`README.md`](../../README.md) is the Advanced README / public trust surface. Use it as the human front door, reviewer starting point, trust-boundary summary, high-level claim contract, and agent-visible context surface.
 - [`AGENTS.md`](../../AGENTS.md) is the Codex/agent operating rules file. Use it for scope discipline, guardrail preservation, and honest reporting expectations.
 - [`BUILD_CONTRACT.md`](../../BUILD_CONTRACT.md) is the current task contract template. Use it to state the goal, constraints, deliverables, verification requirements, stop conditions, scope boundaries, not-proven boundaries, and final report format.
 - [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) explains how `/goal` uses README.md, AGENTS.md, BUILD_CONTRACT.md, and docs/agent files together for multi-hour Codex sessions.
+- [`CAMPAIGN_SYSTEM_INDEX.md`](CAMPAIGN_SYSTEM_INDEX.md) is the navigation layer for multi-PR campaign control docs and closeout flow.
 - [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) explains how a multi-PR goal campaign runs one scoped PR at a time with checkpoints, failure logging, full verification, remote checks, and stop conditions.
 - [`CAMPAIGN_CHECKPOINT_LEDGER.md`](CAMPAIGN_CHECKPOINT_LEDGER.md) defines the checkpoint fields for campaign PR count, branch, PR URL, head SHA, checks, blockers, and next action.
 - [`CAMPAIGN_PR_READINESS_CHECKLIST.md`](CAMPAIGN_PR_READINESS_CHECKLIST.md) defines the per-PR opening, merge, post-merge, scope, and stop-condition gate for campaign slices.
@@ -29,11 +30,12 @@ In short: README.md is the Advanced README / public trust surface, AGENTS.md is 
 2. Read [`AGENTS.md`](../../AGENTS.md) for Codex and agent operating rules.
 3. Read [`BUILD_CONTRACT.md`](../../BUILD_CONTRACT.md) or the user-provided task contract before editing.
 4. Read [`GOAL_MODE_LONG_RUN_PROTOCOL.md`](GOAL_MODE_LONG_RUN_PROTOCOL.md) before starting or resuming long-running `/goal` work.
-5. Read [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) before starting a multi-PR goal campaign.
-6. Read [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md) before choosing checks.
-7. Use [`SESSION_MANAGER.md`](SESSION_MANAGER.md) for long sessions, interruptions, resumes, or handoffs.
-8. Use [`FAILURE_LOG.md`](FAILURE_LOG.md) when a local check, remote check, or scope audit fails.
-9. Keep evidence honest: record what changed, what passed, what failed, what remained pending, and what was not verified.
+5. Read [`CAMPAIGN_SYSTEM_INDEX.md`](CAMPAIGN_SYSTEM_INDEX.md) before starting, resuming, auditing, or closing a multi-PR goal campaign.
+6. Read [`CAMPAIGN_SYSTEM_ARCHITECTURE.md`](CAMPAIGN_SYSTEM_ARCHITECTURE.md) before executing campaign PR slices.
+7. Read [`VERIFICATION_PROTOCOL.md`](VERIFICATION_PROTOCOL.md) before choosing checks.
+8. Use [`SESSION_MANAGER.md`](SESSION_MANAGER.md) for long sessions, interruptions, resumes, or handoffs.
+9. Use [`FAILURE_LOG.md`](FAILURE_LOG.md) when a local check, remote check, or scope audit fails.
+10. Keep evidence honest: record what changed, what passed, what failed, what remained pending, and what was not verified.
 
 ## Verification Rules
 

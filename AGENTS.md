@@ -2,7 +2,7 @@
 
 This file gives Codex and other repository agents explicit operating rules. It does not replace the README public trust surface; it keeps task/session procedure out of the README while preserving the same safety boundaries.
 
-For the session startup path that ties README, this file, the build contract, and the docs/agent templates together, use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` sessions, use [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md). For multi-PR goal campaigns, use [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md).
+For the session startup path that ties README, this file, the build contract, and the docs/agent templates together, use [`docs/agent/AGENT_WORKFLOW_QUICKSTART.md`](docs/agent/AGENT_WORKFLOW_QUICKSTART.md). For long-running `/goal` sessions, use [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md). For multi-PR goal campaigns, start with [`docs/agent/CAMPAIGN_SYSTEM_INDEX.md`](docs/agent/CAMPAIGN_SYSTEM_INDEX.md) and use [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md).
 
 ## Core Rules
 

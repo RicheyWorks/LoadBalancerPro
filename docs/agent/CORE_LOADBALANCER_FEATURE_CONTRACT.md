@@ -227,7 +227,8 @@ Gap:
 ### Core-LB-G08 - Overload and recovery scenario tests
 
 - Scope: local deterministic facade scenarios for capacity exhaustion, all-unhealthy degradation, recovery, and restored capacity.
-- Exit criteria: scenarios show behavior without claiming production load proof.
+- Decision: local overload and recovery scenarios preserve non-negative allocations, explicit unallocated-load accounting, fail-closed all-unhealthy behavior, recovered healthy candidate re-entry, and deterministic restored-capacity allocation.
+- Exit criteria: `CoreLoadBalancerOverloadRecoveryScenarioTest` shows behavior without claiming production load proof.
 
 ### Core-LB-G09 - Reviewer evidence map update
 

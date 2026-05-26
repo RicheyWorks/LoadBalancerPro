@@ -33,9 +33,11 @@ class AgentDecisionExplorerDataContractDocumentationTest {
                 "ADR-0010-Interactive-Decision-Explorer-Architecture.md",
                 "DECISION_EXPLORER_CAMPAIGN_BOARD.md",
                 "planned",
+                "planning-only language",
                 "read-only",
                 "simulation-only",
-                "docs-test-only")) {
+                "docs-test-only",
+                "no runtime endpoint/UI/storage/export/replay implementation claim")) {
             assertTrue(contract.contains(expected), "data contract should state scope item " + expected);
         }
     }
@@ -62,6 +64,32 @@ class AgentDecisionExplorerDataContractDocumentationTest {
                 "`whatIfPreview`",
                 "`notProvenBoundaries`")) {
             assertTrue(contract.contains(expected), "data contract should define field " + expected);
+        }
+    }
+
+    @Test
+    void dataContractNamesRequiredV1ObjectsAndSchemaRules() throws IOException {
+        String contract = read(DATA_CONTRACT);
+
+        for (String expected : List.of(
+                "Planned V1 Objects",
+                "`DecisionExplorerPayloadV1`",
+                "`DecisionReadoutV1`",
+                "`CandidateReadoutV1`",
+                "`FactorContributionV1`",
+                "`PolicyGateReadoutV1`",
+                "`DecisionDiffReadoutV1`",
+                "`EvidencePacketReadoutV1`",
+                "`AgentStructuredOutputV1`",
+                "Versioning Rules",
+                "Unknown And Null Handling",
+                "Schema Stability Expectations",
+                "unknown/null handling",
+                "schema stability expectations",
+                "contract vocabulary only",
+                "do not create Java classes",
+                "endpoint responses, UI models, persisted records, exports, replay execution, evidence packets")) {
+            assertTrue(contract.contains(expected), "data contract should define V1 object or schema rule " + expected);
         }
     }
 
@@ -106,6 +134,14 @@ class AgentDecisionExplorerDataContractDocumentationTest {
                 "\"readOnly\": true",
                 "\"simulationOnly\": true",
                 "\"notProductionProof\": true",
+                "\"payload\": \"DecisionExplorerPayloadV1\"",
+                "\"decisionReadout\": \"DecisionReadoutV1\"",
+                "\"candidateReadout\": \"CandidateReadoutV1\"",
+                "\"factorContribution\": \"FactorContributionV1\"",
+                "\"policyGateReadout\": \"PolicyGateReadoutV1\"",
+                "\"decisionDiffReadout\": \"DecisionDiffReadoutV1\"",
+                "\"evidencePacketReadout\": \"EvidencePacketReadoutV1\"",
+                "\"agentStructuredOutput\": \"AgentStructuredOutputV1\"",
                 "Evidence References",
                 "What-If Preview",
                 "SIMULATION_ONLY",

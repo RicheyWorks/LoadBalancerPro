@@ -36,6 +36,9 @@ help a reviewer or AI agent understand:
 The data contract is planning only until a later scoped implementation PR defines DTOs, JSON schemas, endpoint behavior,
 UI behavior, storage behavior, export behavior, or evidence-packet behavior.
 
+This planning-only language is intentional: DX-G04 records names, field families, and reviewer expectations so later
+work can evolve from a stable vocabulary. It makes no runtime endpoint/UI/storage/export/replay implementation claim.
+
 ## Contract Principles
 
 - Planned: the data contract is a future-facing planning surface.
@@ -67,6 +70,61 @@ UI behavior, storage behavior, export behavior, or evidence-packet behavior.
 | `evidenceReferences` | yes | Source-visible docs, tests, ADRs, fixtures, or future evidence lane references. |
 | `whatIfPreview` | yes | Simulation-only counterfactual notes; no replay execution or mutation. |
 | `notProvenBoundaries` | yes | Explicit proof boundaries that must travel with the explanation. |
+
+## Planned V1 Objects
+
+The future data contract should use explicit V1 object names before any implementation creates DTOs, schemas, endpoint
+responses, UI state, storage records, exports, replay records, or evidence packets.
+
+| Object | Purpose |
+| --- | --- |
+| `DecisionExplorerPayloadV1` | Top-level planned payload wrapper for one read-only, simulation-only explanation. |
+| `DecisionReadoutV1` | Human and machine-readable readout for the selected simulated decision. |
+| `CandidateReadoutV1` | Candidate route/backend readout for selected, rejected, unavailable, or unknown candidates. |
+| `FactorContributionV1` | Visible factor contribution readout when factor data is returned or explicitly unavailable. |
+| `PolicyGateReadoutV1` | Policy-gate display readout with outcome, reason codes, and authorization boundary. |
+| `DecisionDiffReadoutV1` | Simulation-only selected-vs-alternative or what-if/counterfactual readout. |
+| `EvidencePacketReadoutV1` | Planned evidence packet reference shape; no packet generation, storage, export, or proof claim. |
+| `AgentStructuredOutputV1` | AI-agent structured output view with stable field names, reason codes, boundary flags, and parse notes. |
+
+These object names are contract vocabulary only. They do not create Java classes, JSON Schema files, runtime resources,
+endpoint responses, UI models, persisted records, exports, replay execution, evidence packets, or broader automation.
+
+## Versioning Rules
+
+- V1 payloads should use `contractVersion: decision-explorer-snapshot/v1`.
+- V1 object names should remain additive and parse-stable for future guard tests.
+- New optional fields may be added only when they preserve read-only and simulation-only meaning.
+- Existing field names should not be renamed without a new version and migration note.
+- Enum-like values should prefer explicit known values plus `UNKNOWN`, `UNAVAILABLE`, or `NOT_APPLICABLE`.
+- Version bumps must preserve not-proven boundaries and must not imply implementation, endpoint, UI, storage, export,
+  replay, evidence-packet, production, cloud, tenant, benchmark, throughput, or automation proof.
+
+## Unknown And Null Handling
+
+Unknown and null handling should keep absence explicit:
+
+- use `UNKNOWN` when visible data exists but the explanation cannot classify it;
+- use `UNAVAILABLE` when a field is intentionally not exposed;
+- use `NOT_APPLICABLE` when the field does not apply to the scenario;
+- use `null` only for explicitly nullable scalar values documented by a future schema;
+- include a companion reason field such as `missingReason`, `unknownSignalNote`, or `unavailableReason` when absence
+  affects reviewer or agent interpretation;
+- never infer hidden scoring, hidden routing internals, production telemetry, production monitoring, live-cloud state,
+  tenant state, or benchmark evidence from null or missing fields.
+
+## Schema Stability Expectations
+
+Future schema work should make `AgentStructuredOutputV1` stable enough for AI-agent structured understanding:
+
+- stable top-level object names;
+- stable field names for selected decision, candidates, factors, gates, diffs, evidence references, and boundaries;
+- stable reason code and policy gate outcome vocabularies;
+- source-visible field descriptions;
+- explicit nullable and unavailable semantics;
+- deterministic ordering where future arrays need reviewer comparison;
+- no hidden command fields, mutation handles, credentials, export handles, replay execution handles, or production
+  authorization handles.
 
 ## Candidate Object
 
@@ -256,6 +314,16 @@ evidence packet.
     },
     "parseSafetyNote": "AI agents must not infer hidden scoring, production readiness, or authorization."
   },
+  "plannedObjects": {
+    "payload": "DecisionExplorerPayloadV1",
+    "decisionReadout": "DecisionReadoutV1",
+    "candidateReadout": "CandidateReadoutV1",
+    "factorContribution": "FactorContributionV1",
+    "policyGateReadout": "PolicyGateReadoutV1",
+    "decisionDiffReadout": "DecisionDiffReadoutV1",
+    "evidencePacketReadout": "EvidencePacketReadoutV1",
+    "agentStructuredOutput": "AgentStructuredOutputV1"
+  },
   "evidenceReferences": [
     {
       "referenceId": "adr-0010",
@@ -299,6 +367,10 @@ Future guard tests or schema work should verify that:
 - evidence references remain repository-relative or explicitly unavailable;
 - what-if fields remain simulation-only and no-mutation;
 - not-proven boundaries remain attached to the payload;
+- `DecisionExplorerPayloadV1`, `DecisionReadoutV1`, `CandidateReadoutV1`, `FactorContributionV1`,
+  `PolicyGateReadoutV1`, `DecisionDiffReadoutV1`, `EvidencePacketReadoutV1`, and `AgentStructuredOutputV1` remain
+  planning-only vocabulary until separately implemented;
+- versioning rules, unknown/null handling, and schema stability expectations remain explicit;
 - no hidden production readiness, live-cloud validation, real-tenant validation, benchmark, throughput, replay/export,
   endpoint/UI/storage/evidence-packet implementation, or broader automation claim is introduced.
 

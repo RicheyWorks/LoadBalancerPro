@@ -19,12 +19,13 @@ class DependencyCiHygieneWorkflowTest {
     private static final Path API_SECURITY = Path.of("src/main/java/com/richmond423/loadbalancerpro/api/config/ApiSecurityConfiguration.java");
 
     @Test
-    void ciWorkflowUsesNode24DependencyReviewActionAndKeepsArtifactNames() throws Exception {
+    void ciWorkflowUsesVerifiedPinnedDependencyReviewActionAndKeepsArtifactNames() throws Exception {
         String workflow = read(CI_WORKFLOW);
 
-        assertTrue(workflow.contains("actions/dependency-review-action@v5.0.0"));
-        assertTrue(workflow.contains("actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294"));
-        assertFalse(workflow.contains("actions/dependency-review-action@v4"));
+        assertTrue(workflow.contains("actions/dependency-review-action@v4.8.0"));
+        assertTrue(workflow.contains("actions/dependency-review-action@56339e523c0409420f6c2c9a2f4292bbb3c07dd3"));
+        assertFalse(workflow.contains("actions/dependency-review-action@v5.0.0"));
+        assertFalse(workflow.contains("a1d282b36b6f3519aa1f3fc636f609c47dddb294"));
         assertFalse(workflow.contains("2031cfc080254a8a887f58cffee85186f0e49e48"));
         assertTrue(workflow.contains("name: jacoco-coverage-report"));
         assertTrue(workflow.contains("name: packaged-artifact-smoke"));

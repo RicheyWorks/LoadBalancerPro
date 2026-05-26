@@ -29,10 +29,10 @@ This audit gives reviewers a single source-readable summary of the CI workflow p
 The workflow pins major actions to explicit commit SHAs in comments and `uses:` references:
 
 - `actions/checkout` is pinned to `de0fac2e4500dabe0009e67214ff5f5447ce83dd`.
-- `actions/setup-java` is pinned to `be666c2fcd27ec809703dec50e508c2fdc7f6654`.
+- `actions/setup-java` is pinned to `c1e323688fd81a25caa38c78aa6df2d33d3e20d9`.
 - `actions/upload-artifact` is pinned to `043fb46d1a93c77aae656e7c1c64a875d1fc6a0a`.
 - `aquasecurity/trivy-action` is pinned to `ed142fd0673e97e23eac54620cfb913e5ce36c25`.
-- `actions/dependency-review-action` is pinned to `a1d282b36b6f3519aa1f3fc636f609c47dddb294`.
+- `actions/dependency-review-action` is pinned to `56339e523c0409420f6c2c9a2f4292bbb3c07dd3`.
 
 The workflow also invokes the CycloneDX Maven plugin by version `2.9.1`. This is Maven plugin execution inside CI, not a GitHub Action pin.
 

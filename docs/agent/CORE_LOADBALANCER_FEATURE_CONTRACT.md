@@ -189,6 +189,23 @@ Gap:
 - Weighted request-level strategies handle missing or zero routing weight safely and reject invalid negative weights.
 - Tail-latency routing explanations name material factors and anti-flapping decisions when relevant.
 
+## Reviewer Evidence Map
+
+Use this map after Core-LB-G08 is merged/main-green to navigate the completed local test evidence without reading every core test first.
+
+| Goal | Reviewer question | Evidence path | Boundary |
+| --- | --- | --- | --- |
+| Core-LB-G01 | What is the feature contract and audit surface? | `docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md`, `AgentCoreLoadBalancerFeatureContractDocumentationTest` | Documentation/test-only contract. |
+| Core-LB-G02 | Do facade paths fail closed for empty, all-unhealthy, invalid, and zero-load edge inputs? | `CoreLoadBalancerCrossStrategyEdgeInvariantTest` | Local deterministic facade evidence only. |
+| Core-LB-G03 | Do capacity-aware and predictive result paths cap allocations and report unallocated load? | `CoreLoadBalancerCapacityPredictiveOverloadTest` | No benchmark or production-load proof. |
+| Core-LB-G04 | Are ordering and tie behaviors deterministic where the contract exposes them? | `CoreLoadBalancerDeterministicOrderingTieTest` | Characterizes current reviewer-visible behavior. |
+| Core-LB-G05 | What does least-loaded allocation currently mean? | `CoreLoadBalancerLeastLoadedSemanticsTest` | Preserves current equal-share semantics unless a later reviewed behavior PR changes them. |
+| Core-LB-G06 | Can reviewers trust registry order, requested strategy filtering, and comparison result shape? | `CoreRoutingRegistryComparisonContractTest` | Request-level comparison contract only. |
+| Core-LB-G07 | Are server lifecycle add/remove/replace/health/snapshot/rebalance paths protected? | `CoreLoadBalancerServerLifecycleInvariantTest` | Local lifecycle invariant evidence only. |
+| Core-LB-G08 | Do overload/degradation/recovery scenarios keep allocation and unallocated-load accounting safe and deterministic? | `CoreLoadBalancerOverloadRecoveryScenarioTest` | Local deterministic scenario evidence only. |
+
+The reviewer trust map links back to this contract so reviewers can start from a single navigation surface and then drill into the focused tests above.
+
 ## Current Gaps And Follow-Up Goals
 
 ### Core-LB-G02 - Cross-strategy edge invariant tests

@@ -221,7 +221,8 @@ Gap:
 ### Core-LB-G07 - Server lifecycle invariants
 
 - Scope: add/remove/replace/rebalance, health transitions, snapshots, and accumulated-load reconciliation.
-- Exit criteria: lifecycle behavior is covered outside one large mixed-purpose test class.
+- Decision: public facade lifecycle behavior keeps server-list snapshots detached, server-map snapshots read-only, duplicate ID replacement scoped to the current server identity, removal reconciled with accumulated load, and health transitions reflected in allocation eligibility.
+- Exit criteria: `CoreLoadBalancerServerLifecycleInvariantTest` covers lifecycle behavior outside one large mixed-purpose test class without changing production behavior.
 
 ### Core-LB-G08 - Overload and recovery scenario tests
 

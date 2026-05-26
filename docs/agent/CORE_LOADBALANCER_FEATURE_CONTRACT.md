@@ -32,7 +32,7 @@ The first slot does not change runtime behavior. It records what the current cod
 | Strategy or path | Current invariant to preserve | Current evidence | Follow-up hardening need |
 | --- | --- | --- | --- |
 | Round robin allocation facade | Splits requested batch load evenly across healthy registered servers and returns an empty allocation when no healthy server is available. | `LoadBalancerTest`, `CoreRoutingDecisionIntegrationTest` | Add a compact cross-strategy invariant test for zero load, empty server set, and all-unhealthy behavior. |
-| Least-loaded allocation facade | Current contract sorts by load score but still allocates equal shares across healthy servers for the tested cases. | `LoadBalancerTest` characterization tests | Decide explicitly in Core-LB-G05 whether equal allocation is intentional or whether a later behavior PR should change it. |
+| Least-loaded allocation facade | Current contract sorts by load score but still allocates equal shares across healthy servers for positive-load tested cases. Zero-load least-loaded allocation exposes the lowest-load candidate before the current loop stops. | `LoadBalancerTest` characterization tests, `CoreLoadBalancerLeastLoadedSemanticsTest` | Preserve as an explicit contract unless a later behavior PR proposes and verifies different semantics. |
 | Weighted distribution facade | Uses server weights proportionally, gives zero-weight servers zero allocation when positive weights exist, and falls back to equal allocation when all weights are zero. | `LoadBalancerTest` | Add table-style invariant tests for mixed zero/positive weights and all-zero weights. |
 | Consistent hashing facade | Routes keys through the hash ring to healthy registered servers and rejects invalid key counts. | `LoadBalancerTest` | Add tighter deterministic-removal and all-unhealthy hash-ring checks if missing after inventory. |
 | Capacity-aware allocation | Allocates only within available capacity, reports unallocated load when requested load exceeds available capacity, and preserves deterministic degraded/recovery behavior. | `LoadBalancerTest`, `CoreRoutingDecisionIntegrationTest` | Harden overload and unallocated-load assertions across edge cases. |
@@ -208,8 +208,9 @@ Gap:
 
 ### Core-LB-G05 - Least-loaded semantics decision
 
-- Scope: audit whether current equal-share least-loaded behavior is intentional.
-- Exit criteria: either preserve with explicit contract tests or make a separately scoped behavior change with reviewer-approved semantics.
+- Scope: preserve the current least-loaded facade semantics with explicit contract tests.
+- Decision: current positive-load least-loaded behavior remains an equal-share allocation across healthy servers after sorting by load score; zero-load behavior exposes the lowest-load candidate before the current loop stops.
+- Exit criteria: focused tests fail if least-loaded positive-load allocation stops matching the documented equal-share contract or if zero-load lowest-load selection changes without a later reviewed behavior PR.
 
 ### Core-LB-G06 - Routing registry and comparison contract
 

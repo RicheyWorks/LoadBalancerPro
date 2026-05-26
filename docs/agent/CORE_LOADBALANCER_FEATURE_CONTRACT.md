@@ -33,7 +33,7 @@ The first slot does not change runtime behavior. It records what the current cod
 | --- | --- | --- | --- |
 | Round robin allocation facade | Splits requested batch load evenly across healthy registered servers and returns an empty allocation when no healthy server is available. | `LoadBalancerTest`, `CoreRoutingDecisionIntegrationTest` | Add a compact cross-strategy invariant test for zero load, empty server set, and all-unhealthy behavior. |
 | Least-loaded allocation facade | Current contract sorts by load score but still allocates equal shares across healthy servers for positive-load tested cases. Zero-load least-loaded allocation exposes the lowest-load candidate before the current loop stops. | `LoadBalancerTest` characterization tests, `CoreLoadBalancerLeastLoadedSemanticsTest` | Preserve as an explicit contract unless a later behavior PR proposes and verifies different semantics. |
-| Weighted distribution facade | Uses server weights proportionally, gives zero-weight servers zero allocation when positive weights exist, and falls back to equal allocation when all weights are zero. | `LoadBalancerTest` | Add table-style invariant tests for mixed zero/positive weights and all-zero weights. |
+| Weighted distribution facade | Uses server weights proportionally, gives zero-weight servers zero allocation when positive weights exist, and falls back to equal allocation when all weights are zero. | `LoadBalancerTest`, `CoreLoadBalancerWeightedDistributionInvariantTest` | Preserve the focused invariant matrix unless a later behavior PR proposes and verifies different semantics. |
 | Consistent hashing facade | Routes keys through the hash ring to healthy registered servers and rejects invalid key counts. | `LoadBalancerTest` | Add tighter deterministic-removal and all-unhealthy hash-ring checks if missing after inventory. |
 | Capacity-aware allocation | Allocates only within available capacity, reports unallocated load when requested load exceeds available capacity, and preserves deterministic degraded/recovery behavior. | `LoadBalancerTest`, `CoreRoutingDecisionIntegrationTest` | Harden overload and unallocated-load assertions across edge cases. |
 | Predictive allocation | Uses predicted load as a capacity input, allocates only within predicted available capacity, and reports capped excess load through result variants. | `LoadBalancerTest` | Mirror the capacity-aware invariant matrix for predictive overload cases. |
@@ -118,6 +118,7 @@ Weighted batch distribution preserves the current proportional semantics, gives 
 Evidence:
 
 - `LoadBalancerTest`
+- `CoreLoadBalancerWeightedDistributionInvariantTest`
 - `WeightedLeastLoadStrategyTest`
 - `WeightedLeastConnectionsRoutingStrategyTest`
 - `WeightedRoundRobinRoutingStrategyTest`
@@ -203,12 +204,13 @@ Use this map after Core-LB-G08 is merged/main-green to navigate the completed lo
 | Core-LB-G06 | Can reviewers trust registry order, requested strategy filtering, and comparison result shape? | `CoreRoutingRegistryComparisonContractTest` | Request-level comparison contract only. |
 | Core-LB-G07 | Are server lifecycle add/remove/replace/health/snapshot/rebalance paths protected? | `CoreLoadBalancerServerLifecycleInvariantTest` | Local lifecycle invariant evidence only. |
 | Core-LB-G08 | Do overload/degradation/recovery scenarios keep allocation and unallocated-load accounting safe and deterministic? | `CoreLoadBalancerOverloadRecoveryScenarioTest` | Local deterministic scenario evidence only. |
+| Core-LB-G11 | Does weighted distribution preserve proportional, zero-weight, all-zero fallback, invalid-weight, and non-negative allocation invariants? | `CoreLoadBalancerWeightedDistributionInvariantTest` | Local deterministic weighted facade evidence only. |
 
 The reviewer trust map links back to this contract so reviewers can start from a single navigation surface and then drill into the focused tests above.
 
 ## Campaign Evidence Consolidation
 
-Core-LB-G10 is tracked in [`CORE_LOADBALANCER_EVIDENCE_CONSOLIDATION.md`](CORE_LOADBALANCER_EVIDENCE_CONSOLIDATION.md). That consolidation summarizes Core-LB-G01 through Core-LB-G10, PRs, branches, reviewed heads, merge commits available through Core-LB-G09, tested guarantees, verification pattern, reviewer path, and remaining not-proven boundaries. The Core-LB-G10 PR and merge evidence must still be supplied by the PR and final handoff after current-head remote checks and post-merge main checks complete.
+Core-LB-G10 is tracked in [`CORE_LOADBALANCER_EVIDENCE_CONSOLIDATION.md`](CORE_LOADBALANCER_EVIDENCE_CONSOLIDATION.md). That consolidation summarizes Core-LB-G01 through Core-LB-G10, PRs, branches, reviewed heads, merge commits, tested guarantees, verification pattern, reviewer path, and remaining not-proven boundaries.
 
 ## Current Gaps And Follow-Up Goals
 
@@ -261,6 +263,12 @@ Core-LB-G10 is tracked in [`CORE_LOADBALANCER_EVIDENCE_CONSOLIDATION.md`](CORE_L
 - Scope: summarize completed Core-LB goals, remote/main status, tested guarantees, and remaining boundaries.
 - Decision: use `CORE_LOADBALANCER_EVIDENCE_CONSOLIDATION.md` as the Core-LB closeout/navigation artifact without adding production behavior or marking Core-LB-G10 merged before its PR and main checks are green.
 - Exit criteria: consolidation names Core-LB-G01 through Core-LB-G10 and preserves open not-proven boundaries.
+
+### Core-LB-G11 - Weighted distribution invariants
+
+- Scope: proportional positive weights, zero-weight exclusion when positive weights exist, all-zero equal fallback, invalid negative weight rejection, deterministic repeated calls, and non-negative weighted allocations.
+- Decision: current weighted batch distribution remains proportional by configured server weight and falls back to equal allocation only when total healthy weight is zero.
+- Exit criteria: `CoreLoadBalancerWeightedDistributionInvariantTest` protects the weighted facade contract without changing production behavior.
 
 ## Not-Proven Boundaries
 

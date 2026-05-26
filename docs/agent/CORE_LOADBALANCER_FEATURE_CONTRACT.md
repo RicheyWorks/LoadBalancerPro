@@ -206,6 +206,10 @@ Use this map after Core-LB-G08 is merged/main-green to navigate the completed lo
 
 The reviewer trust map links back to this contract so reviewers can start from a single navigation surface and then drill into the focused tests above.
 
+## Campaign Evidence Consolidation
+
+Core-LB-G10 is tracked in [`CORE_LOADBALANCER_EVIDENCE_CONSOLIDATION.md`](CORE_LOADBALANCER_EVIDENCE_CONSOLIDATION.md). That consolidation summarizes Core-LB-G01 through Core-LB-G10, PRs, branches, reviewed heads, merge commits available through Core-LB-G09, tested guarantees, verification pattern, reviewer path, and remaining not-proven boundaries. The Core-LB-G10 PR and merge evidence must still be supplied by the PR and final handoff after current-head remote checks and post-merge main checks complete.
+
 ## Current Gaps And Follow-Up Goals
 
 ### Core-LB-G02 - Cross-strategy edge invariant tests
@@ -255,7 +259,8 @@ The reviewer trust map links back to this contract so reviewers can start from a
 ### Core-LB-G10 - Core load-balancer evidence consolidation
 
 - Scope: summarize completed Core-LB goals, remote/main status, tested guarantees, and remaining boundaries.
-- Exit criteria: consolidation names only completed evidence and preserves open not-proven boundaries.
+- Decision: use `CORE_LOADBALANCER_EVIDENCE_CONSOLIDATION.md` as the Core-LB closeout/navigation artifact without adding production behavior or marking Core-LB-G10 merged before its PR and main checks are green.
+- Exit criteria: consolidation names Core-LB-G01 through Core-LB-G10 and preserves open not-proven boundaries.
 
 ## Not-Proven Boundaries
 

@@ -8,6 +8,8 @@ For the current 20-PR evidence audit campaign, use [`agent/EVIDENCE_AUDIT_CAMPAI
 
 For the LASE Core Expansion Campaign, use [`agent/LASE_CORE_EXPANSION_GOALS.md`](agent/LASE_CORE_EXPANSION_GOALS.md) to review the WARN-classified 20+ goal ledger for PR-sized adaptive routing, tail-latency scoring, degradation/recovery, lab-mode concurrency or shedding, scenario evidence, and explanation work. The ledger is a planning and tracking surface only; future goals are not complete until their own PRs are merged and main checks are green, and it does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmarking, throughput/p95/p99 production evidence, replay/evidence/report/storage/export proof, or broader automation.
 
+For the Core LoadBalancer Reliability Contract Campaign, use [`agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md`](agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md) to review the WARN-classified core feature contract for the allocation facade, load-distribution planner/evaluator, server registry, routing strategy registry, request-level strategies, current tested invariants, follow-up hardening goals, and not-proven boundaries. It is a docs/test-only contract and does not change production behavior.
+
 ## Start Here
 
 LoadBalancerPro is now positioned as **LoadBalancerPro Enterprise Lab**: Enterprise Adaptive Routing Lab first, Production Gateway Candidate second. It is an Enterprise Lab Cockpit and API project with guarded cloud boundaries, optional static browser review pages, optional lightweight reverse proxy mode, operator-configured route/target examples, packaged local proxy lab paths, release-free artifact checks, and CI-published workflow evidence.

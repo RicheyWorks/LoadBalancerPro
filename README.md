@@ -58,6 +58,8 @@ The LASE Core Expansion Campaign uses [`docs/agent/LASE_CORE_EXPANSION_GOALS.md`
 
 The Core LoadBalancer Reliability Contract Campaign uses [`docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md`](docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md) as its WARN-classified core feature contract. It maps the current allocation facade, load-distribution planner/evaluator, server registry, routing strategy registry, request-level strategies, tested invariants, follow-up hardening goals, and not-proven boundaries without changing production behavior.
 
+The Decision Explorer Architecture Bootstrap Campaign uses [`docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md`](docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md) as its WARN-classified board for DX-G01 through DX-G10. It plans the Interactive Decision Explorer as a reviewer/operator and agent-readable explanation surface for routing decisions. During this bootstrap campaign it remains docs/test-only, planned, read-only, and simulation-only; it does not create endpoints, runtime behavior, storage/export behavior, automation, deployment behavior, cloud behavior, tenant behavior, production traffic-control behavior, production readiness, production certification, live-cloud validation, real-tenant validation, load/stress/benchmarking evidence, throughput/p95/p99 evidence, replay/export/storage proof, or broader automation.
+
 ## Where Detailed Rules Live
 
 - Reviewer proof path: [`docs/REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
@@ -79,6 +81,7 @@ The Core LoadBalancer Reliability Contract Campaign uses [`docs/agent/CORE_LOADB
 - Evidence audit CLI app startup audit: [`docs/agent/EVIDENCE_AUDIT_CLI_APP_STARTUP_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_CLI_APP_STARTUP_AUDIT.md).
 - LASE core expansion goal ledger: [`docs/agent/LASE_CORE_EXPANSION_GOALS.md`](docs/agent/LASE_CORE_EXPANSION_GOALS.md).
 - Core LoadBalancer feature contract: [`docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md`](docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md).
+- Decision Explorer architecture bootstrap campaign board: [`docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md`](docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md).
 - Goal campaign verification refinement: [`docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md).
 - Goal campaign final handoff/report: [`docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md).
 - Agent operating rules: [`AGENTS.md`](AGENTS.md).

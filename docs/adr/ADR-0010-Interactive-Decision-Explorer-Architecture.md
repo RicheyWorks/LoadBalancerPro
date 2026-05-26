@@ -50,6 +50,19 @@ The proposed architecture separates explanation from authority:
 
 This decision is not accepted implementation. It is a planning contract for future DX-G04 through DX-G10 work.
 
+## Constraints
+
+The Decision Explorer architecture is constrained by the repository trust boundary:
+
+- planned only until separately scoped implementation work exists;
+- read-only until a later implementation campaign proves otherwise;
+- simulation-only during this bootstrap campaign;
+- no runtime endpoint, UI, storage, evidence-packet, export, or automation implementation in this ADR;
+- no production traffic mutation or autonomous production action;
+- no cloud, tenant, deployment, secret, external-target, Docker, Compose, Maven, CI, or script changes;
+- no production readiness, production certification, live-cloud validation, real-tenant validation,
+  benchmark/load/stress proof, throughput/p95/p99 proof, replay/export proof, or broader automation claim.
+
 ## Conceptual Architecture
 
 ### Decision Intake Snapshot
@@ -76,6 +89,32 @@ scenario context, and not-proven boundaries without scraping prose.
 
 The structured view is planning-only in this ADR. It does not add JSON schemas, API responses, storage records,
 downloadable artifacts, exported reports, or evidence packets.
+
+## Human And AI-Agent Dual-Consumption Model
+
+The future Decision Explorer should serve two consumers without letting either become runtime authority:
+
+- human reviewers and operators should get compact explanations, visual summaries, uncertainty labels, and source links;
+- AI agents should get structured JSON direction with stable field names, reason codes, policy-gate outcomes, evidence
+  references, and not-proven boundary flags;
+- both consumers should see the same read-only and simulation-only boundary language;
+- neither consumer should receive mutation handles, production credentials, hidden approval paths, or autonomous action
+  authority.
+
+## Future Presentation Directions
+
+The future presentation layer should be designed in separately scoped work. This ADR only records direction:
+
+- structured JSON direction: future contracts should define machine-readable decision snapshots for AI-agent structured
+  understanding without adding API responses in this ADR;
+- visual UI direction: future reviewer surfaces may show selected routes, rejected candidates, signal weights, confidence
+  labels, policy-gate outcomes, and not-proven boundaries without implementing UI in this ADR;
+- what-if/counterfactual future path: future simulation-only views may compare how a decision could change if a signal,
+  policy, or scenario changed, without executing replay or mutating live systems;
+- policy gate visualization future path: future views may show which gates allowed, warned, blocked, or required operator
+  review, without turning gate display into authorization;
+- evidence packet future path: future work may connect explanations to evidence packet concepts, source cards, guard
+  tests, and scenario fixtures, without implementing evidence packets, storage, export, or report artifacts in this ADR.
 
 ### Evidence And Source Lane
 

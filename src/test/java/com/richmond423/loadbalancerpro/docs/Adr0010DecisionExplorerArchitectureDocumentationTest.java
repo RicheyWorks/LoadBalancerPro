@@ -46,9 +46,12 @@ class Adr0010DecisionExplorerArchitectureDocumentationTest {
         String adr = read(ADR);
 
         for (String expected : List.of(
+                "Constraints",
                 "Decision Intake Snapshot",
                 "Explanation Model",
                 "Structured Agent View",
+                "Human And AI-Agent Dual-Consumption Model",
+                "Future Presentation Directions",
                 "Evidence And Source Lane",
                 "Boundary And Authority Guard",
                 "selected candidate",
@@ -61,6 +64,28 @@ class Adr0010DecisionExplorerArchitectureDocumentationTest {
                 "must not choose live production routes",
                 "must not mutate routing, scoring, strategy, proxy, cloud, tenant, deployment, or production traffic state")) {
             assertTrue(adr.contains(expected), "ADR-0010 should define architecture item " + expected);
+        }
+    }
+
+    @Test
+    void adr0010NamesFutureJsonUiWhatIfPolicyAndEvidencePacketPaths() throws IOException {
+        String adr = read(ADR);
+
+        for (String expected : List.of(
+                "structured JSON direction",
+                "visual UI direction",
+                "what-if/counterfactual future path",
+                "policy gate visualization future path",
+                "evidence packet future path",
+                "human reviewers and operators",
+                "AI agents",
+                "stable field names",
+                "reason codes",
+                "policy-gate outcomes",
+                "without implementing UI in this ADR",
+                "without executing replay or mutating live systems",
+                "without implementing evidence packets, storage, export, or report artifacts in this ADR")) {
+            assertTrue(adr.contains(expected), "ADR-0010 should name future path " + expected);
         }
     }
 
@@ -80,6 +105,7 @@ class Adr0010DecisionExplorerArchitectureDocumentationTest {
                 "does not prove live-cloud or real-tenant validation",
                 "does not prove benchmark/load/stress",
                 "throughput/p95/p99",
+                "no cloud, tenant, deployment, secret, external-target, docker, compose, maven, ci, or script changes",
                 "runtime endpoint/ui/storage/evidence-packet implementation",
                 "broader automation",
                 "autonomous production action")) {

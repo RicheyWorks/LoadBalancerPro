@@ -12,7 +12,8 @@ This repair keeps the required CI and CodeQL workflows intact. It does not remov
 
 Changes:
 - Adds `workflow_dispatch` to the CI workflow so maintainers can manually trigger the required CI workflow for diagnostic recovery when automatic check emission stalls.
-- Moves the shared `actions/setup-java` pin from the v5.2.0 commit to the verified v5.1.0 commit so the action archive URL changes while remaining on the official v5 action line.
+- Moves the shared `actions/setup-java` pin from the v5.2.0 commit to the verified v4.8.0 commit so the action archive URL changes while preserving SHA pinning.
+- Moves the `actions/dependency-review-action` pin from the v5.0.0 commit to the verified v4.8.0 commit after the repair PR reproduced the same codeload setup failure on the v5.0.0 archive.
 
 ## Boundaries
 

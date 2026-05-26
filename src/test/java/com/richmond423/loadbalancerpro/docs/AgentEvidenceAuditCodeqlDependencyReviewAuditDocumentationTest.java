@@ -92,7 +92,7 @@ class AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest {
                 "github.repository == 'richeyworks/loadbalancerpro'",
                 "language: [java-kotlin]",
                 "uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
-                "uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654",
+                "uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
                 "java-version: '17'",
                 "github/codeql-action/init@68bde559dea0fdcac2102bfdf6230c5f70eb485e",
                 "build-mode: manual",
@@ -107,7 +107,7 @@ class AgentEvidenceAuditCodeqlDependencyReviewAuditDocumentationTest {
                 "github.repository == 'richeyworks/loadbalancerpro'",
                 "contents: read",
                 "pull-requests: read",
-                "uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294",
+                "uses: actions/dependency-review-action@56339e523c0409420f6c2c9a2f4292bbb3c07dd3",
                 "fail-on-severity: high")) {
             assertTrue(ci.contains(expected), "Missing audited dependency-review control: " + expected);
         }

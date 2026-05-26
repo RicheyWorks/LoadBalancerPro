@@ -83,7 +83,9 @@ class ProductionCandidateEvidenceGateDocumentationTest {
 
         assertTrue(ci.contains("cyclonedx-maven-plugin:2.9.1:makeAggregateBom"));
         assertTrue(ci.contains("aquasecurity/trivy-action@0.36.0"));
-        assertTrue(ci.contains("actions/dependency-review-action@v5.0.0"));
+        assertTrue(ci.contains("actions/dependency-review-action@v4.8.0"));
+        assertTrue(ci.contains("actions/dependency-review-action@56339e523c0409420f6c2c9a2f4292bbb3c07dd3"));
+        assertFalse(ci.contains("actions/dependency-review-action@v5.0.0"));
         assertTrue(codeql.contains("name: CodeQL"));
         assertTrue(releaseWorkflow.contains("sha256sum -c"));
         assertTrue(releaseWorkflow.contains("actions/attest@v4.1.0"));

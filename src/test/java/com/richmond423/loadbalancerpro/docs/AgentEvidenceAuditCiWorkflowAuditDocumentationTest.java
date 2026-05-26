@@ -83,7 +83,7 @@ class AgentEvidenceAuditCiWorkflowAuditDocumentationTest {
         for (String expected : List.of(
                 "permissions:\n  contents: read",
                 "uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
-                "uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654",
+                "uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
                 "java-version: '17'",
                 "run: mvn -b -dskiptests dependency:tree",
                 "run: mvn -b test",
@@ -98,7 +98,7 @@ class AgentEvidenceAuditCiWorkflowAuditDocumentationTest {
                 "docker build -t loadbalancerpro:ci .",
                 "127.0.0.1:18081:8080",
                 "uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25",
-                "uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294",
+                "uses: actions/dependency-review-action@56339e523c0409420f6c2c9a2f4292bbb3c07dd3",
                 "fail-on-severity: high")) {
             assertTrue(ci.contains(expected), "Missing audited CI workflow control: " + expected);
         }

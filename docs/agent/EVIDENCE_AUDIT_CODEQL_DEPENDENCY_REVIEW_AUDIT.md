@@ -42,7 +42,7 @@ The analyze job:
 - has a `30` minute timeout;
 - is scoped to `github.repository == 'RicheyWorks/LoadBalancerPro'`;
 - uses a matrix language of `java-kotlin`;
-- uses pinned checkout and setup-java actions;
+- uses pinned checkout and setup-java actions, with `actions/setup-java` pinned to `c1e323688fd81a25caa38c78aa6df2d33d3e20d9`;
 - sets up Temurin Java `17` with Maven cache.
 
 The `security-events: write` permission is necessary for publishing CodeQL analysis results. The workflow does not grant release, package publishing, registry, environment mutation, secret-writing, deployment, or production-operation permissions.
@@ -65,7 +65,7 @@ Dependency Review is configured in the `CI` workflow as a separate job. It:
 - is scoped to the canonical `RicheyWorks/LoadBalancerPro` repository;
 - uses job permissions `contents: read` and `pull-requests: read`;
 - checks out the repository;
-- uses `actions/dependency-review-action`;
+- uses `actions/dependency-review-action` pinned to `56339e523c0409420f6c2c9a2f4292bbb3c07dd3`;
 - uses `fail-on-severity: high`;
 - fails on high severity dependency review findings.
 

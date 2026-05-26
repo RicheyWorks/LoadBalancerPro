@@ -56,6 +56,8 @@ The campaign also does not prove production readiness, production certification,
 
 The LASE Core Expansion Campaign uses [`docs/agent/LASE_CORE_EXPANSION_GOALS.md`](docs/agent/LASE_CORE_EXPANSION_GOALS.md) as its WARN-classified goal ledger. It defines PR-sized goals for adaptive routing intelligence, tail-latency-aware scoring, degradation/recovery behavior, lab-mode concurrency or shedding experiments, scenario evidence, and reviewer explanations. The ledger is a planning surface only: future goals are not complete until their own PRs are merged and main checks are green, and it does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmarking, throughput/p95/p99 production evidence, replay/evidence/report/storage/export proof, or broader automation.
 
+The Core LoadBalancer Reliability Contract Campaign uses [`docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md`](docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md) as its WARN-classified core feature contract. It maps the current allocation facade, load-distribution planner/evaluator, server registry, routing strategy registry, request-level strategies, tested invariants, follow-up hardening goals, and not-proven boundaries without changing production behavior.
+
 ## Where Detailed Rules Live
 
 - Reviewer proof path: [`docs/REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
@@ -76,6 +78,7 @@ The LASE Core Expansion Campaign uses [`docs/agent/LASE_CORE_EXPANSION_GOALS.md`
 - Evidence audit proxy demo fixture audit: [`docs/agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md).
 - Evidence audit CLI app startup audit: [`docs/agent/EVIDENCE_AUDIT_CLI_APP_STARTUP_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_CLI_APP_STARTUP_AUDIT.md).
 - LASE core expansion goal ledger: [`docs/agent/LASE_CORE_EXPANSION_GOALS.md`](docs/agent/LASE_CORE_EXPANSION_GOALS.md).
+- Core LoadBalancer feature contract: [`docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md`](docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md).
 - Goal campaign verification refinement: [`docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md).
 - Goal campaign final handoff/report: [`docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md).
 - Agent operating rules: [`AGENTS.md`](AGENTS.md).

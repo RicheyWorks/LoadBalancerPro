@@ -36,7 +36,7 @@ The Interactive Decision Explorer is a planned reviewer/operator and agent-reada
 
 | Slot | Title | Branch | PR | Head SHA | Status | Evidence / guard | Checkpoint |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| DX-G01 | Campaign index and board | `codex/dx-g01-campaign-index-and-board` | pending | pending | active-local | `AgentDecisionExplorerCampaignBoardDocumentationTest` | Create campaign board and index entry |
+| DX-G01 | Campaign index and board | `codex/dx-g01-campaign-index-and-board` | [#348](https://github.com/RicheyWorks/LoadBalancerPro/pull/348) | pending | PR-opened | `AgentDecisionExplorerCampaignBoardDocumentationTest` | Create campaign board and index entry |
 | DX-G02 | README and Reviewer Trust Map links | `codex/dx-g02-readme-trust-map-links` | pending | pending | planned | `AgentDecisionExplorerReadmeTrustMapDocumentationTest` | Reviewer-facing discovery |
 | DX-G03 | ADR for Decision Explorer architecture | `codex/dx-g03-adr-decision-explorer-architecture` | pending | pending | planned | `Adr0010DecisionExplorerArchitectureDocumentationTest` | Architecture decision record |
 | DX-G04 | Decision Explorer data contract | `codex/dx-g04-decision-explorer-data-contract` | pending | pending | planned | `AgentDecisionExplorerDataContractDocumentationTest` | Versioned payload planning |

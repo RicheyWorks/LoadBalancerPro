@@ -37,7 +37,7 @@ The first slot does not change runtime behavior. It records what the current cod
 | Consistent hashing facade | Routes keys through the hash ring to healthy registered servers and rejects invalid key counts. | `LoadBalancerTest` | Add tighter deterministic-removal and all-unhealthy hash-ring checks if missing after inventory. |
 | Capacity-aware allocation | Allocates only within available capacity, reports unallocated load when requested load exceeds available capacity, and preserves deterministic degraded/recovery behavior. | `LoadBalancerTest`, `CoreRoutingDecisionIntegrationTest` | Harden overload and unallocated-load assertions across edge cases. |
 | Predictive allocation | Uses predicted load as a capacity input, allocates only within predicted available capacity, and reports capped excess load through result variants. | `LoadBalancerTest` | Mirror the capacity-aware invariant matrix for predictive overload cases. |
-| Routing strategy registry | Default registry exposes tail-latency power-of-two, weighted least-load, weighted least-connections, weighted round-robin, and round-robin strategies in a stable reviewer-visible order. | `RoutingComparisonEngineTest`, strategy-specific tests | Add a contract test that ties registry order, strategy IDs, and explanation boundaries together. |
+| Routing strategy registry | Default registry exposes tail-latency power-of-two, weighted least-load, weighted least-connections, weighted round-robin, and round-robin strategies in a stable reviewer-visible order. Requested comparison output preserves requested order, reports absent strategies safely, and keeps decision explanation fields visible. | `RoutingComparisonEngineTest`, `CoreRoutingRegistryComparisonContractTest`, strategy-specific tests | Preserve the registry/comparison contract unless a later behavior PR proposes and verifies different semantics. |
 | Request-level routing strategies | Exclude unhealthy candidates, return safe no-candidate decisions when needed, keep deterministic tie handling where implemented, and expose bounded explanations. | `CoreRoutingDecisionIntegrationTest`, `ServerTelemetryRoutingTest`, `RoundRobinRoutingStrategyTest`, `WeightedLeastLoadStrategyTest`, `WeightedLeastConnectionsRoutingStrategyTest`, `WeightedRoundRobinRoutingStrategyTest`, `TailLatencyPowerOfTwoHysteresisTest` | Add a cross-strategy request-level invariant bundle for no healthy candidates, duplicate equivalent candidates, and explanation field presence. |
 
 ## Required Contract Topics
@@ -214,8 +214,9 @@ Gap:
 
 ### Core-LB-G06 - Routing registry and comparison contract
 
-- Scope: default registry order, strategy ID support, requested strategy filtering, duplicate strategy rejection, and explanation field presence.
-- Exit criteria: one reviewer-facing test bundle covers registry and comparison shape.
+- Scope: default registry order, strategy ID support, requested strategy filtering, duplicate strategy rejection, safe absent-strategy reporting, and explanation field presence.
+- Decision: the default routing strategy registry order remains tail-latency power-of-two, weighted least-load, weighted least-connections, weighted round-robin, then round-robin. `RoutingComparisonEngine` preserves requested strategy order, preserves duplicate requested strategy IDs as repeated results, reports registered strategy failures or absent strategies without crashing, and returns safe no-healthy-candidate decisions.
+- Exit criteria: one reviewer-facing test bundle covers registry and comparison shape without changing production behavior.
 
 ### Core-LB-G07 - Server lifecycle invariants
 

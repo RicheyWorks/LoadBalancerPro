@@ -206,6 +206,7 @@ Use this map after Core-LB-G08 is merged/main-green to navigate the completed lo
 | Core-LB-G08 | Do overload/degradation/recovery scenarios keep allocation and unallocated-load accounting safe and deterministic? | `CoreLoadBalancerOverloadRecoveryScenarioTest` | Local deterministic scenario evidence only. |
 | Core-LB-G11 | Does weighted distribution preserve proportional, zero-weight, all-zero fallback, invalid-weight, and non-negative allocation invariants? | `CoreLoadBalancerWeightedDistributionInvariantTest` | Local deterministic weighted facade evidence only. |
 | Core-LB-G12 | Does consistent hashing remain deterministic and safe across fixed inputs, invalid key counts, no-candidate inputs, removal, replacement, and zero-load inputs? | `CoreLoadBalancerConsistentHashingInvariantTest` | Local deterministic hash-ring facade evidence only. |
+| Core-LB-G13 | Does accumulated allocation state rebalance safely across empty, round-robin, least-loaded, removal, replacement, capacity-aware, and predictive paths? | `CoreLoadBalancerRebalanceInvariantTest` | Local deterministic rebalance evidence only. |
 
 The reviewer trust map links back to this contract so reviewers can start from a single navigation surface and then drill into the focused tests above.
 
@@ -276,6 +277,12 @@ Core-LB-G10 is tracked in [`CORE_LOADBALANCER_EVIDENCE_CONSOLIDATION.md`](CORE_L
 - Scope: fixed-input deterministic key routing, invalid key-count rejection, empty/all-unhealthy fail-closed behavior, server-removal cleanup, duplicate replacement cleanup, and zero-load characterization.
 - Decision: current consistent-hashing facade routes only to healthy registered servers and should not retain removed or replaced server participation in reviewer-visible allocation output.
 - Exit criteria: `CoreLoadBalancerConsistentHashingInvariantTest` protects the hash-ring facade contract without changing production behavior.
+
+### Core-LB-G13 - Rebalance and accumulated-load invariants
+
+- Scope: empty accumulated-load rebalance, current-strategy rebalance, removal and duplicate replacement reconciliation, and capacity-aware/predictive result allocation accumulation.
+- Decision: current rebalance behavior redistributes accumulated allocated load through the selected facade strategy, keeps unallocated load out of accumulated state, and remains deterministic after removal or replacement cleanup.
+- Exit criteria: `CoreLoadBalancerRebalanceInvariantTest` protects accumulated-load rebalance behavior without changing production behavior.
 
 ## Not-Proven Boundaries
 

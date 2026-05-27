@@ -24,6 +24,91 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T16:03-07:00
+
+Branch/PR: codex/decision-explorer-phase2-final-polish / no PR yet
+
+Failure type: local discovery tooling command failure
+
+Failing check: `rg -n "Decision Explorer|decision-explorer|PHASE2|Phase 2 reviewer examples|Reviewer examples|scenario catalog|factor drill|candidate comparison" README.md docs/REVIEWER_TRUST_MAP.md docs/API_CONTRACTS.md docs/agent/*.md src/main/resources/static/*.html src/test/java/com/richmond423/loadbalancerpro/**/*.java`
+
+Suspected cause: PowerShell passed glob patterns such as `docs/agent/*.md` and `src/test/java/.../**/*.java` to
+`rg` in a way that produced Windows path errors. Useful output was still returned for the explicit README, trust map,
+and API contract paths, but the command exited non-zero.
+
+Fix attempted: continue discovery with `rg --files` and explicit repository paths instead of shell-expanded globs.
+No source behavior, runtime behavior, routing, scoring, proxy, endpoint, Maven, CI, Docker, Compose, script,
+deployment, secret, or external-target behavior is changed.
+
+Result: discovery continued with explicit file reads and source-visible tests.
+
+Follow-up action: keep G11 edits scoped to reviewer navigation/docs/static-page polish and rerun focused guards before
+broader verification.
+
+## Entry
+
+Date/time: 2026-05-27T16:09-07:00
+
+Branch/PR: codex/decision-explorer-phase2-final-polish / no PR yet
+
+Failure type: local documentation guard expectation mismatch
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest,AgentDecisionExplorerPhase2ReviewerExamplesDocumentationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest,DecisionExplorerStaticPageTest"`
+
+Suspected cause: the new Phase 2 navigation polish surfaces missed exact campaign-tracking tokens required by shared
+documentation guards, and the Reviewer Trust Map used an old forbidden overclaim phrase instead of equivalent bounded
+language.
+
+Fix attempted: added the missing G11 guard-test and lowercase navigation-polish tracking tokens, restored the exact
+Phase 2 reviewer-examples filename in the session summary, and replaced the forbidden phrase with bounded language that
+still rejects production action claims.
+
+Result: focused selector rerun passed with 35 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: run the broader Decision Explorer selector and full local verification before PR creation.
+
+## Entry
+
+Date/time: 2026-05-27T16:12-07:00
+
+Branch/PR: codex/decision-explorer-phase2-final-polish / no PR yet
+
+Failure type: full local documentation guard overclaim phrase
+
+Failing check: `mvn -q test`
+
+Suspected cause: the new Reviewer Trust Map Phase 2 navigation bullet used the exact forbidden phrase `benchmark proof`
+while trying to deny benchmark evidence claims.
+
+Fix attempted: replaced the phrase with bounded `benchmark evidence` wording, preserving the not-proven boundary while
+avoiding the forbidden proof-claim token.
+
+Result: focused trust-map selector rerun passed with 33 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: rerun full local verification before PR creation.
+
+## Entry
+
+Date/time: 2026-05-27T16:21-07:00
+
+Branch/PR: codex/decision-explorer-phase2-final-polish / PR #379
+
+Failure type: local documentation guard expectation mismatch after PR checkpoint update
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+
+Suspected cause: the campaign board and session manager were correctly advanced from `active-branch`/pre-PR wording to
+PR #379 wording, but the shared Phase 2 architecture-scope guard still expected the pre-PR state.
+
+Fix attempted: updated the guard expectations to require PR #379, the PR creation SHA, and pending current-head remote
+checks for the opened PR.
+
+Result: focused campaign tracking selector rerun passed with 13 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: commit and push the PR checkpoint, then wait for current-head remote checks.
+
+## Entry
+
 Date/time: 2026-05-27T15:42-07:00
 
 Branch/PR: codex/decision-explorer-phase2-docs-examples / no PR yet

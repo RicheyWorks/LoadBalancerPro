@@ -8,28 +8,30 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T03:10-07:00
+Timestamp: 2026-05-27T03:44-07:00
 
 Goal name: Decision Explorer Implementation Phase 2
 
-Current PR slot: DX-P2-G01
+Current PR slot: DX-P2-G02
 
-Checkpoint: DX-P2-G01 PR #369 opened after local verification
+Checkpoint: DX-P2-G02 local verification passed; scenario catalog model slice ready for commit and PR creation
 
-Started from main SHA: `28c8bc10e1aa553a3c53aac70883c04431d55cc2`
+Started from main SHA: `1e75b7326b09cd7c179909aec00f0c42e34da9c1`
 
-Current branch: codex/decision-explorer-phase2-campaign-board
+Current branch: codex/decision-explorer-phase2-scenario-catalog
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/369
+PR URL: pending
 
-Head SHA: `04c0ba2f682b965622b9cb0b408df819bc837277`
+Head SHA: `1e75b7326b09cd7c179909aec00f0c42e34da9c1` before DX-P2-G02 local edits
 
 Changed files planned for this slice:
 
-- docs/agent/DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md
 - docs/agent/DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md
 - docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerScenarioCatalogV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerScenarioV1.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerScenarioCatalogV1Test.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest.java
 
 Checks run:
@@ -56,14 +58,40 @@ Checks run:
 - DX-P2-G01 committed as `04c0ba2f682b965622b9cb0b408df819bc837277`.
 - DX-P2-G01 pushed to origin and opened as PR #369:
   https://github.com/RicheyWorks/LoadBalancerPro/pull/369.
+- PR #369 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review.
+- PR #369 merged as `1e75b7326b09cd7c179909aec00f0c42e34da9c1`.
+- DX-P2-G01 post-merge local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  `mvn -B package` with 2,682 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- DX-P2-G01 main CI passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26505311136.
+- DX-P2-G01 main CodeQL passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26505311135.
+- DX-P2-G02 branch `codex/decision-explorer-phase2-scenario-catalog` was created from clean main at
+  `1e75b7326b09cd7c179909aec00f0c42e34da9c1`.
+- DX-P2-G02 is adding additive scenario catalog DTO/model support and unit tests. The slice does not add endpoint
+  behavior, static UI behavior, storage, export, replay execution, evidence-packet generation, or routing/scoring/proxy
+  behavior changes.
+- DX-P2-G02 focused selector initially failed on a broad source-guard package-token match and a campaign-board PR URL
+  expectation mismatch; the failure was logged in `FAILURE_LOG.md` before repair.
+- DX-P2-G02 focused selector rerun passed:
+  `mvn test "-Dtest=DecisionExplorerScenarioCatalogV1Test,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest,DecisionExplorerPayloadV1Test"`
+  with 20 tests, 0 failures, 0 errors, and 0 skipped.
+- DX-P2-G02 relevant Decision Explorer selector passed with 132 tests, 0 failures, 0 errors, and 0 skipped.
+- `mvn -q test` passed.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed with 2,689 tests, 0 failures, 0 errors, and 0 skipped.
+- `git diff --check` passed with line-ending warnings only.
+- `git diff --cached --check` passed.
+- `git diff --check origin/main...HEAD` passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
 
-Remote status: main CI and CodeQL green for `28c8bc10e1aa553a3c53aac70883c04431d55cc2`; PR #369 current-head
-checks are pending after PR creation.
+Remote status: main CI and CodeQL green for `1e75b7326b09cd7c179909aec00f0c42e34da9c1`; DX-P2-G02 has no PR yet.
 
 Blocker: none.
 
-Next action: wait for PR #369 current-head checks, merge only if green, verify post-merge main, then continue to
-DX-P2-G02.
+Next action: commit, push, open the DX-P2-G02 PR, wait for current-head checks, merge only if green, verify
+post-merge main, then continue to DX-P2-G03.
 
 Decision: continue.
 

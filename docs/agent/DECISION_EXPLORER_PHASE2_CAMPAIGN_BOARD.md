@@ -54,7 +54,7 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P2-G04 | `codex/decision-explorer-phase2-factor-drilldown` | Decision factor drill-down | Deterministic factor-level summaries and tests | merged-main-green / PR #372 / `b2f5017e4c7484e34d0da6a1ffde3954442a9103` |
 | DX-P2-G05 | `codex/decision-explorer-phase2-candidate-comparison` | Candidate comparison table | Additive candidate comparison rows and tests for ordering, empty, and partial candidates | merged-main-green / PR #373 / `64394f1380708a63d70ad9e5ec1a2ad3589a9780` |
 | DX-P2-G06 | `codex/decision-explorer-phase2-ui-scenarios` | UI scenario selector and filtering | Static page controls using same-origin data only | merged-main-green / PR #374 / `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb` |
-| DX-P2-G07 | `codex/decision-explorer-phase2-ui-drilldown-comparison` | UI factor drill-down and candidate comparison | Static page display for drill-down and comparison states | active-branch / local verification passed |
+| DX-P2-G07 | `codex/decision-explorer-phase2-ui-drilldown-comparison` | UI factor drill-down and candidate comparison | Static page display for drill-down and comparison states | active-pr / PR #375 / current-head checks pending |
 | DX-P2-G08 | `codex/decision-explorer-phase2-reviewer-badges` | Explanation badges and reviewer language | Reviewer-facing badges, docs language, and no-overclaim guard coverage | pending |
 | DX-P2-G09 | `codex/decision-explorer-phase2-api-hardening` | API contract hardening | Compatibility, null-safety, ordering tests, and API docs updates | pending |
 | DX-P2-G10 | `codex/decision-explorer-phase2-docs-examples` | Docs and examples | Grounded Phase 2 examples and unsupported-claim guard tests | pending |
@@ -71,9 +71,9 @@ DX-P2-G01 starts from clean main at `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
 Current branch: `codex/decision-explorer-phase2-ui-drilldown-comparison`.
 
-Current PR: not opened yet.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/375.
 
-Current base SHA: `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb`.
+Current head SHA before PR-created checkpoint: `fb7e4f87b93645228a57d9bbf69ad51a5833531f`.
 
 Current Phase 2 focus: display already-returned `DecisionExplorerPayloadV1.factorDrilldowns` and
 `DecisionExplorerPayloadV1.candidateComparisons` in the static Decision Explorer page. The controls stay read-only and
@@ -379,7 +379,12 @@ DX-P2-G07 local verification passed before PR creation:
 DX-P2-G07 local browser verification initially hit a persistent automation variable-name collision, was logged in
 `docs/agent/FAILURE_LOG.md`, and passed on retry without runtime behavior changes.
 
-Next action: commit and push DX-P2-G07, open a PR only after current-head local checks are green, and merge only after
+DX-P2-G07 committed as `fb7e4f87b93645228a57d9bbf69ad51a5833531f`.
+
+DX-P2-G07 PR #375 opened from the current branch after local verification:
+https://github.com/RicheyWorks/LoadBalancerPro/pull/375.
+
+Next action: push the PR-created checkpoint update, wait for PR #375 current-head checks, and merge only after
 Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review are current-head green.
 
 Decision: continue.

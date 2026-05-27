@@ -69,9 +69,12 @@ export, replay, deployment behavior, required checks, rulesets, or release behav
 | DX-P1-G06 | [#365](https://github.com/RicheyWorks/LoadBalancerPro/pull/365) | `codex/decision-explorer-phase1-ui-navigation` | `66242b7911c123b1f20f2820249b7173a3ef575a` | merged-main-green |
 | DX-P1-G07 | [#366](https://github.com/RicheyWorks/LoadBalancerPro/pull/366) | `codex/decision-explorer-phase1-docs-examples` | `3d85730efc979373c2838e414c78c16df43656a9` | merged-main-green |
 | DX-P1-G08 | [#367](https://github.com/RicheyWorks/LoadBalancerPro/pull/367) | `codex/decision-explorer-phase1-hardening` | `968a38eb1b2f8d8c4acaff58ab6cde4f99d71740` | merged-main-green |
-| DX-P1-G09 | pending | `codex/decision-explorer-phase1-final-handoff` | pending | active-local / candidate final handoff |
+| DX-P1-G09 | [#368](https://github.com/RicheyWorks/LoadBalancerPro/pull/368) | `codex/decision-explorer-phase1-final-handoff` | pending | active-pr / candidate final handoff |
 
 Current main before DX-P1-G09 local edits: `968a38eb1b2f8d8c4acaff58ab6cde4f99d71740`.
+
+DX-P1-G09 PR #368 was opened from head `e9e52e5a2c9599141d5034c3be26cd05ee7bbe30`; the PR-created checkpoint update
+records that PR state before the merge-health gate.
 
 ## Verification Evidence
 

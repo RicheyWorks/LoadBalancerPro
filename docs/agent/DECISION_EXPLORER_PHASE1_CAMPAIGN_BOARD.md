@@ -54,7 +54,7 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P1-G06 | `codex/decision-explorer-phase1-ui-navigation` | UI polish and reviewer navigation | Labels, empty states, ordering, README/trust-map/cockpit links, and tests | merged-main-green as PR #365, merge `66242b7911c123b1f20f2820249b7173a3ef575a` |
 | DX-P1-G07 | `codex/decision-explorer-phase1-docs-examples` | Docs and examples | Reviewer examples grounded in tests and guard tests against overclaims | merged-main-green as PR #366, merge `3d85730efc979373c2838e414c78c16df43656a9` |
 | DX-P1-G08 | `codex/decision-explorer-phase1-hardening` | Hardening | Edge-case coverage, null-safety checks, contract tests, and cross-link cleanup | merged-main-green as PR #367, merge `968a38eb1b2f8d8c4acaff58ab6cde4f99d71740` |
-| DX-P1-G09 | `codex/decision-explorer-phase1-final-handoff` | Final handoff | Handoff doc with PRs, merge SHAs, behavior, tests, safety audit, and Phase 2 recommendation | active-local / local verification passed |
+| DX-P1-G09 | `codex/decision-explorer-phase1-final-handoff` | Final handoff | Handoff doc with PRs, merge SHAs, behavior, tests, safety audit, and Phase 2 recommendation | active-pr as PR #368 / local verification passed |
 
 ## Current Checkpoint
 
@@ -144,9 +144,12 @@ DX-P1-G09 starts from clean main at `968a38eb1b2f8d8c4acaff58ab6cde4f99d71740`.
 
 Current branch: `codex/decision-explorer-phase1-final-handoff`.
 
-Current PR: pending.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/368.
 
 Current head SHA before local edits: `968a38eb1b2f8d8c4acaff58ab6cde4f99d71740`.
+
+PR #368 was opened from head `e9e52e5a2c9599141d5034c3be26cd05ee7bbe30`; this checkpoint update is the
+PR-created campaign bookkeeping commit for the same branch.
 
 Current final handoff focus: document merged Phase 1 PRs, merge SHAs, implemented behavior, verification, safety audit,
 remaining not-proven boundaries, and the recommended Decision Explorer Implementation Phase 2 campaign.
@@ -163,7 +166,7 @@ DX-P1-G09 local verification passed before PR creation:
 - `git diff --check origin/main...HEAD` passed;
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
 
-Next action: commit, push, open the G09 PR, wait for current-head checks, and merge only if green.
+Next action: push the PR-created checkpoint, wait for PR #368 current-head checks, and merge only if green.
 
 Decision: continue.
 

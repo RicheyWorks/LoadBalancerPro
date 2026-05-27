@@ -63,6 +63,8 @@ class AgentDecisionExplorerPhase1FinalHandoffDocumentationTest {
                 "#367",
                 "codex/decision-explorer-phase1-hardening",
                 "968a38eb1b2f8d8c4acaff58ab6cde4f99d71740",
+                "#368",
+                "e9e52e5a2c9599141d5034c3be26cd05ee7bbe30",
                 "DX-P1-G09",
                 "codex/decision-explorer-phase1-final-handoff")) {
             assertTrue(handoff.contains(expected), "handoff should list slot evidence " + expected);
@@ -153,13 +155,14 @@ class AgentDecisionExplorerPhase1FinalHandoffDocumentationTest {
                 "merged-main-green as PR #367",
                 "968a38eb1b2f8d8c4acaff58ab6cde4f99d71740",
                 "codex/decision-explorer-phase1-final-handoff",
-                "active-local")) {
+                "active-pr as PR #368")) {
             assertTrue(board.contains(expected), "board should track final handoff item " + expected);
         }
 
         for (String expected : List.of(
                 "Current PR slot: DX-P1-G09",
                 "PR #367 merged as",
+                "PR #368 was opened",
                 "codex/decision-explorer-phase1-final-handoff",
                 "DECISION_EXPLORER_PHASE1_FINAL_HANDOFF.md",
                 "AgentDecisionExplorerPhase1FinalHandoffDocumentationTest")) {

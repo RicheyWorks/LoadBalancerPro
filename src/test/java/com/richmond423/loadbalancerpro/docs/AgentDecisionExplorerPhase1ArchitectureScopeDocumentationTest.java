@@ -150,7 +150,7 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
                 "968a38eb1b2f8d8c4acaff58ab6cde4f99d71740",
                 "DX-P1-G09",
                 "codex/decision-explorer-phase1-final-handoff",
-                "active-local",
+                "active-pr as PR #368",
                 "Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head checks do not count",
                 "Decision: continue")) {
             assertTrue(board.contains(expected), "phase 1 board should track " + expected);
@@ -211,6 +211,8 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
                 "pr #367",
                 "pr #367 merged as",
                 "968a38eb1b2f8d8c4acaff58ab6cde4f99d71740",
+                "pr #368",
+                "e9e52e5a2c9599141d5034c3be26cd05ee7bbe30",
                 "codex/decision-explorer-phase1-docs-examples",
                 "codex/decision-explorer-phase1-hardening",
                 "codex/decision-explorer-phase1-final-handoff",

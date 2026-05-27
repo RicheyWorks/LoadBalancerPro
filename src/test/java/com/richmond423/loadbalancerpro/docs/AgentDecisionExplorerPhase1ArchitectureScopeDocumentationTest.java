@@ -113,11 +113,13 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "# Decision Explorer Phase 1 Campaign Board",
-                "Status: active / phase1-scope.",
-                "Current PR slot: DX-P1-G01.",
-                "Completed Phase 1 PRs: 0 / 9 planned.",
+                "Status: active / phase1-dto-skeleton.",
+                "Current PR slot: DX-P1-G02.",
+                "Completed Phase 1 PRs: 1 / 9 planned.",
                 "DX-P1-G01",
                 "codex/decision-explorer-phase1-architecture",
+                "merged-main-green as PR #360",
+                "0fe9331a757973d93820bbae46b05ae53f8ba64a",
                 "DX-P1-G02",
                 "codex/decision-explorer-phase1-dto-skeleton",
                 "DX-P1-G03",
@@ -163,11 +165,13 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "decision explorer implementation phase 1",
-                "current pr slot: dx-p1-g01",
-                "codex/decision-explorer-phase1-architecture",
-                "decision_explorer_phase1_architecture_scope.md",
-                "decision_explorer_phase1_campaign_board.md",
-                "agentdecisionexplorerphase1architecturescopedocumentationtest",
+                "current pr slot: dx-p1-g02",
+                "pr #360",
+                "pr #360 merged as",
+                "0fe9331a757973d93820bbae46b05ae53f8ba64a",
+                "codex/decision-explorer-phase1-dto-skeleton",
+                "decisionexplorerpayloadv1.java",
+                "decisionexplorerpayloadv1test.java",
                 "remote status:",
                 "decision: continue")) {
             assertTrue(session.contains(expected), "session manager should record " + expected);

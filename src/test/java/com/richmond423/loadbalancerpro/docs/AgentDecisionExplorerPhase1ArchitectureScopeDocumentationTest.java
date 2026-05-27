@@ -113,9 +113,9 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "# Decision Explorer Phase 1 Campaign Board",
-                "Status: active / phase1-ui-first-pass.",
-                "Current PR slot: DX-P1-G05.",
-                "Completed Phase 1 PRs: 4 / 9 planned.",
+                "Status: active / phase1-ui-navigation.",
+                "Current PR slot: DX-P1-G06.",
+                "Completed Phase 1 PRs: 5 / 9 planned.",
                 "DX-P1-G01",
                 "codex/decision-explorer-phase1-architecture",
                 "merged-main-green as PR #360",
@@ -134,6 +134,10 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
                 "20b9080d5c24ef3807e15a3ef8367a8ef1ae4915",
                 "DX-P1-G05",
                 "codex/decision-explorer-phase1-ui-first-pass",
+                "merged-main-green as PR #364",
+                "818540b424dc92df0ec59de68e456d0ce080adbf",
+                "DX-P1-G06",
+                "codex/decision-explorer-phase1-ui-navigation",
                 "active-local",
                 "DX-P1-G09",
                 "codex/decision-explorer-phase1-final-handoff",
@@ -172,7 +176,7 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "decision explorer implementation phase 1",
-                "current pr slot: dx-p1-g05",
+                "current pr slot: dx-p1-g06",
                 "pr #360",
                 "pr #360 merged as",
                 "0fe9331a757973d93820bbae46b05ae53f8ba64a",
@@ -185,9 +189,12 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
                 "pr #363",
                 "pr #363 merged as",
                 "20b9080d5c24ef3807e15a3ef8367a8ef1ae4915",
-                "codex/decision-explorer-phase1-ui-first-pass",
+                "pr #364",
+                "pr #364 merged as",
+                "818540b424dc92df0ec59de68e456d0ce080adbf",
+                "codex/decision-explorer-phase1-ui-navigation",
                 "decision-explorer.html",
-                "decisionexplorerstaticpagetest.java",
+                "decisionexplorerreviewernavigationtest.java",
                 "post /api/routing/decision-explorer",
                 "remote status:",
                 "decision: continue")) {

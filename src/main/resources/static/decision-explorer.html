@@ -86,6 +86,32 @@
       border-color: currentColor;
     }
 
+    .link-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .button-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: var(--ink);
+      text-decoration: none;
+      background: #f8fafb;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .button-link:focus,
+    .button-link:hover {
+      border-color: var(--teal);
+      outline: 3px solid rgba(31, 111, 120, 0.16);
+    }
+
     .hero {
       display: grid;
       grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
@@ -230,6 +256,16 @@
 
     th { color: #3b4655; }
 
+    .rank {
+      width: 1%;
+      white-space: nowrap;
+      color: var(--muted);
+    }
+
+    tr.selected-row {
+      background: var(--soft-green);
+    }
+
     .chips {
       display: flex;
       flex-wrap: wrap;
@@ -294,6 +330,7 @@
       <div class="brand"><span class="mark" aria-hidden="true"></span><span>LoadBalancerPro</span></div>
       <nav aria-label="Reviewer navigation">
         <a href="/">Home</a>
+        <a href="/decision-explorer.html" aria-current="page">Decision explorer</a>
         <a href="/load-balancing-cockpit.html">Cockpit</a>
         <a href="/routing-demo.html">Routing proof</a>
         <a href="/enterprise-lab-reviewer.html">Reviewer dashboard</a>
@@ -341,6 +378,20 @@
     </label>
   </section>
 
+  <section class="panel" aria-labelledby="reviewer-nav-title">
+    <h2 id="reviewer-nav-title">Reviewer Navigation</h2>
+    <div class="link-list" aria-label="Decision Explorer related reviewer links">
+      <a class="button-link" href="/load-balancing-cockpit.html">Open Web Cockpit</a>
+      <a class="button-link" href="/routing-demo.html">Open Routing Proof</a>
+      <a class="button-link" href="/enterprise-lab-reviewer.html">Open Reviewer Dashboard</a>
+      <a class="button-link" href="/operator-evidence-dashboard.html">Open Operator Evidence</a>
+    </div>
+    <p>
+      Display order is stable and follows the service-sorted payload order. Unavailable sections stay explicit instead
+      of fabricating missing evidence.
+    </p>
+  </section>
+
   <div class="grid">
     <section class="panel" aria-labelledby="decision-title">
       <h2 id="decision-title">Decision Summary</h2>
@@ -369,6 +420,21 @@
   <section class="panel" aria-labelledby="policy-title">
     <h2 id="policy-title">Policy Gates</h2>
     <div id="policy-gates" class="empty">No policy gate readouts loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="diff-title">
+    <h2 id="diff-title">Decision Diffs</h2>
+    <div id="decision-diffs" class="empty">No decision diff readouts loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="packet-title">
+    <h2 id="packet-title">Evidence Packet Readouts</h2>
+    <div id="evidence-packets" class="empty">No evidence packet readouts loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="agent-title">
+    <h2 id="agent-title">Agent Structured Output</h2>
+    <div id="agent-output" class="empty">No agent structured output loaded yet.</div>
   </section>
 
   <div class="grid">
@@ -439,6 +505,9 @@
     candidateSet: document.getElementById("candidate-set"),
     factorContributions: document.getElementById("factor-contributions"),
     policyGates: document.getElementById("policy-gates"),
+    decisionDiffs: document.getElementById("decision-diffs"),
+    evidencePackets: document.getElementById("evidence-packets"),
+    agentOutput: document.getElementById("agent-output"),
     warnings: document.getElementById("warnings"),
     unknowns: document.getElementById("unknowns"),
     rawOutput: document.getElementById("raw-output")
@@ -505,6 +574,9 @@
     renderCandidateTable(elements.candidateSet, first.candidateSet || []);
     renderFactorTable(elements.factorContributions, first.factorContributions || []);
     renderPolicyTable(elements.policyGates, first.policyGateReadouts || []);
+    renderDecisionDiffTable(elements.decisionDiffs, first.decisionDiffReadouts || []);
+    renderEvidencePacketTable(elements.evidencePackets, first.evidencePacketReadouts || []);
+    renderAgentOutput(elements.agentOutput, first.agentStructuredOutput);
     renderChips(elements.warnings, first.warnings, "warning");
     renderChips(elements.unknowns, first.unknowns, "unknown");
   }
@@ -517,6 +589,9 @@
     setEmpty(elements.candidateSet, "No candidate readouts available.");
     setEmpty(elements.factorContributions, "No factor contribution readouts available.");
     setEmpty(elements.policyGates, "No policy gate readouts available.");
+    setEmpty(elements.decisionDiffs, "No decision diff readouts available.");
+    setEmpty(elements.evidencePackets, "No evidence packet readouts available.");
+    setEmpty(elements.agentOutput, "No agent structured output available.");
     setEmpty(elements.warnings, "Request failed before warnings could be loaded.");
     setEmpty(elements.unknowns, "Request failed before unknowns could be loaded.");
   }
@@ -554,38 +629,80 @@
   }
 
   function renderCandidateTable(target, candidates) {
-    renderTable(target, ["Candidate", "Selected", "Status", "Final score", "Evidence refs"], candidates, candidate => [
+    renderTable(target, ["Rank", "Candidate", "Selected", "Status", "Final score", "Evidence refs"], candidates, (candidate, index) => [
+      String(index + 1),
       value(candidate.candidateId),
       candidate.selected ? "yes" : "no",
       value(candidate.candidateStatus),
       candidate.finalScore == null ? "UNKNOWN" : String(candidate.finalScore),
       listText(candidate.evidenceReferenceIds)
-    ]);
+    ], "No candidate readouts returned.");
   }
 
   function renderFactorTable(target, factors) {
-    renderTable(target, ["Candidate", "Factor", "Direction", "Value", "Exactness"], factors, factor => [
+    renderTable(target, ["Rank", "Candidate", "Factor", "Direction", "Value", "Exactness"], factors, (factor, index) => [
+      String(index + 1),
       value(factor.candidateId),
       value(factor.factorName),
       value(factor.direction),
       factor.contributionValue == null ? "UNKNOWN" : String(factor.contributionValue),
       value(factor.exactness)
-    ]);
+    ], "No factor contribution readouts returned.");
   }
 
   function renderPolicyTable(target, gates) {
-    renderTable(target, ["Gate", "Status", "Outcome", "Explanation"], gates, gate => [
+    renderTable(target, ["Rank", "Gate", "Status", "Outcome", "Explanation"], gates, (gate, index) => [
+      String(index + 1),
       value(gate.gateName || gate.gateId),
       value(gate.gateStatus),
       value(gate.outcome),
       value(gate.explanation)
+    ], "No policy gate readouts returned.");
+  }
+
+  function renderDecisionDiffTable(target, diffs) {
+    renderTable(target, ["Rank", "Baseline", "Comparison", "Status", "Score gap", "Explanation"], diffs, (diff, index) => [
+      String(index + 1),
+      value(diff.baselineCandidateId),
+      value(diff.comparisonCandidateId),
+      value(diff.diffStatus),
+      diff.finalScoreGap == null ? "UNKNOWN" : String(diff.finalScoreGap),
+      value(diff.explanation)
+    ], "No decision diff readouts returned.");
+  }
+
+  function renderEvidencePacketTable(target, packets) {
+    renderTable(target, ["Rank", "Reference", "Status", "Source", "Freshness", "Unavailable reasons"], packets, (packet, index) => [
+      String(index + 1),
+      value(packet.referenceId),
+      value(packet.packetStatus),
+      value(packet.sourceReferenceId),
+      value(packet.freshnessStatus),
+      listText(packet.unavailableReasons)
+    ], "No evidence packet readouts returned.");
+  }
+
+  function renderAgentOutput(target, agentOutput) {
+    if (!agentOutput) {
+      setEmpty(target, "No agent structured output returned.");
+      return;
+    }
+    renderKeyValues(target, [
+      ["Schema", value(agentOutput.schemaName)],
+      ["Version", value(agentOutput.schemaVersion)],
+      ["Stable fields", listText(agentOutput.stableFieldNames)],
+      ["Parseability rules", listText(agentOutput.parseabilityRules)],
+      ["Supported questions", listText(agentOutput.supportedQuestions)],
+      ["Unsupported actions", listText(agentOutput.unsupportedActions)],
+      ["Not-proven boundaries", listText(agentOutput.notProvenBoundaries)],
+      ["Boundary", value(agentOutput.boundaryNote)]
     ]);
   }
 
-  function renderTable(target, headers, rows, mapper) {
+  function renderTable(target, headers, rows, mapper, emptyText) {
     target.replaceChildren();
     if (!rows.length) {
-      setEmpty(target, "No rows returned.");
+      setEmpty(target, emptyText || "No rows returned.");
       return;
     }
     const table = document.createElement("table");
@@ -598,10 +715,16 @@
     });
     thead.append(headRow);
     const tbody = document.createElement("tbody");
-    rows.forEach(item => {
+    rows.forEach((item, index) => {
       const row = document.createElement("tr");
-      mapper(item).forEach(cellValue => {
+      if (item && item.selected === true) {
+        row.className = "selected-row";
+      }
+      mapper(item, index).forEach((cellValue, cellIndex) => {
         const td = document.createElement("td");
+        if (cellIndex === 0) {
+          td.className = "rank";
+        }
         td.textContent = cellValue;
         row.append(td);
       });

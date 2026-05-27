@@ -48,7 +48,7 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 
 | Slot | Branch | Scope | Expected files | State |
 | --- | --- | --- | --- | --- |
-| DX-P2-G01 | `codex/decision-explorer-phase2-campaign-board` | Phase 2 campaign board and scope contract | `DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md`, `DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md`, documentation guard, `SESSION_MANAGER.md` | active-local / local verification passed |
+| DX-P2-G01 | `codex/decision-explorer-phase2-campaign-board` | Phase 2 campaign board and scope contract | `DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md`, `DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md`, documentation guard, `SESSION_MANAGER.md` | pr-open / waiting for current-head checks |
 | DX-P2-G02 | `codex/decision-explorer-phase2-scenario-catalog` | Scenario catalog model | Additive scenario catalog DTO/model support and unit tests | pending |
 | DX-P2-G03 | `codex/decision-explorer-phase2-scenario-api` | Scenario catalog service/API | Bounded same-origin catalog API or additive companion data, controller tests, and docs | pending |
 | DX-P2-G04 | `codex/decision-explorer-phase2-factor-drilldown` | Decision factor drill-down | Deterministic factor-level summaries and tests | pending |
@@ -71,9 +71,9 @@ DX-P2-G01 starts from clean main at `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
 Current branch: `codex/decision-explorer-phase2-campaign-board`.
 
-Current PR: pending.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/369.
 
-Current head SHA before local edits: `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
+Current PR head SHA: `04c0ba2f682b965622b9cb0b408df819bc837277`.
 
 Current Phase 2 focus: define the campaign board, source-visible architecture/scope contract, counting rules, planned
 slot sequence, safety boundaries, and documentation guard tests before any runtime implementation.
@@ -90,7 +90,10 @@ DX-P2-G01 local verification passed before PR creation:
 - `git diff --check origin/main...HEAD` passed;
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
 
-Next action: commit, push, open the DX-P2-G01 PR, wait for current-head checks, and merge only if green.
+DX-P2-G01 PR #369 opened from the current branch after local verification.
+
+Next action: wait for PR #369 current-head checks, merge only if green, verify post-merge main, and then
+continue to DX-P2-G02 from clean main.
 
 Decision: continue.
 

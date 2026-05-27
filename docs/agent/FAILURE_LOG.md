@@ -24,6 +24,26 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T02:58-07:00
+
+Branch/PR: codex/decision-explorer-phase2-campaign-board / no PR yet
+
+Failure type: focused documentation guard exact-boundary mismatch
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest,AgentDecisionExplorerPhase1FinalHandoffDocumentationTest"`
+
+Suspected cause: the new Phase 2 guard expected the exact boundary phrase `already computed routing comparison evidence`,
+while the scope preserved equivalent grounding language across a Markdown line break and in adjacent wording.
+
+Fix attempted: make the exact Phase 2 grounding phrase source-visible in the data-source boundary while preserving the
+same read-only/simulation-only safety contract.
+
+Result: focused Phase 2 scope selector rerun passed with 22 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with the broader Decision Explorer selector before full verification.
+
+## Entry
+
 Date/time: 2026-05-26T22:43-07:00
 
 Branch/PR: codex/decision-explorer-phase1-builder / pending

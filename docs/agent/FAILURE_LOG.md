@@ -1313,6 +1313,25 @@ Result: focused selector rerun passed with 23 tests, 0 failures, 0 errors, and 0
 
 Follow-up action: continue with the broader Decision Explorer selector before full verification.
 
+## Entry
+
+Date/time: 2026-05-27T13:13-07:00
+
+Branch/PR: codex/decision-explorer-phase2-candidate-comparison / PR #373
+
+Failure type: local shell command separator misuse
+
+Failing check: `git add ... && git commit -m "Record Decision Explorer candidate comparison PR checkpoint"`
+
+Suspected cause: the command used a Unix-style `&&` separator in this PowerShell session, which rejected it as an
+invalid statement separator.
+
+Fix attempted: retried staging and committing as separate native PowerShell commands.
+
+Result: checkpoint commit succeeded after retry.
+
+Follow-up action: push the PR checkpoint and wait for PR checks.
+
 ## Notes
 
 - Keep entries factual.

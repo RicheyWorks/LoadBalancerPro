@@ -142,7 +142,7 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
                 "66242b7911c123b1f20f2820249b7173a3ef575a",
                 "DX-P1-G07",
                 "codex/decision-explorer-phase1-docs-examples",
-                "active-local",
+                "PR #366 open; checks pending",
                 "DX-P1-G09",
                 "codex/decision-explorer-phase1-final-handoff",
                 "Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head checks do not count",

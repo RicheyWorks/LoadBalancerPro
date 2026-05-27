@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T01:19-07:00
+Timestamp: 2026-05-27T01:22-07:00
 
 Goal name: Decision Explorer Implementation Phase 1
 
 Current PR slot: DX-P1-G07
 
-Checkpoint: DX-P1-G07 local verification passed; commit pending
+Checkpoint: DX-P1-G07 PR #366 opened after local verification; PR-created checkpoint commit pending
 
 Started from main SHA: `755ed394adfa18e462f89312c5289fd3154075f2`
 
 Current branch: codex/decision-explorer-phase1-docs-examples
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/366
 
-Head SHA: `66242b7911c123b1f20f2820249b7173a3ef575a` before DX-P1-G07 local edits
+Head SHA: `8c3355af2c131e6e5409e1ba91fd50458d41eadf` before this PR-created checkpoint commit
 
 Changed files planned for this slice:
 
@@ -239,13 +239,17 @@ Checks run:
 - `mvn -B package` passed with 2,667 tests, 0 failures, 0 errors, and 0 skipped.
 - `git diff --check`, `git diff --cached --check`, and `git diff --check origin/main...HEAD` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
+- Commit `8c3355af2c131e6e5409e1ba91fd50458d41eadf` was created for the DX-P1-G07 reviewer examples slice.
+- Branch `codex/decision-explorer-phase1-docs-examples` was pushed to origin.
+- PR #366 was opened: https://github.com/RicheyWorks/LoadBalancerPro/pull/366.
 
-Remote status: main CI and CodeQL green for `66242b7911c123b1f20f2820249b7173a3ef575a`; DX-P1-G07 has no PR yet.
+Remote status: main CI and CodeQL green for `66242b7911c123b1f20f2820249b7173a3ef575a`; PR #366 current-head checks
+are pending after PR creation and this checkpoint update.
 
 Blocker: none.
 
-Next action: commit and push DX-P1-G07, open the PR, wait for current-head checks, merge only if green, verify
-post-merge main, then continue to DX-P1-G08.
+Next action: commit and push this PR-created checkpoint, wait for PR #366 current-head checks, merge only if green,
+verify post-merge main, then continue to DX-P1-G08.
 
 Decision: continue.
 

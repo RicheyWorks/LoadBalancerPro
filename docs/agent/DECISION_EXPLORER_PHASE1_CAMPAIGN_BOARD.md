@@ -52,7 +52,7 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P1-G04 | `codex/decision-explorer-phase1-api` | Read-only API surface | Controller/API docs/tests or additive response field with bounded behavior | merged-main-green as PR #363, merge `20b9080d5c24ef3807e15a3ef8367a8ef1ae4915` |
 | DX-P1-G05 | `codex/decision-explorer-phase1-ui-first-pass` | UI first pass | Static page or cockpit integration and resource tests | merged-main-green as PR #364, merge `818540b424dc92df0ec59de68e456d0ce080adbf` |
 | DX-P1-G06 | `codex/decision-explorer-phase1-ui-navigation` | UI polish and reviewer navigation | Labels, empty states, ordering, README/trust-map/cockpit links, and tests | merged-main-green as PR #365, merge `66242b7911c123b1f20f2820249b7173a3ef575a` |
-| DX-P1-G07 | `codex/decision-explorer-phase1-docs-examples` | Docs and examples | Reviewer examples grounded in tests and guard tests against overclaims | active-local; local verification passed |
+| DX-P1-G07 | `codex/decision-explorer-phase1-docs-examples` | Docs and examples | Reviewer examples grounded in tests and guard tests against overclaims | PR #366 open; checks pending |
 | DX-P1-G08 | `codex/decision-explorer-phase1-hardening` | Hardening | Edge-case coverage, null-safety checks, contract tests, and cross-link cleanup | planned |
 | DX-P1-G09 | `codex/decision-explorer-phase1-final-handoff` | Final handoff | Handoff doc with PRs, merge SHAs, behavior, tests, safety audit, and Phase 2 recommendation | planned |
 
@@ -122,9 +122,9 @@ DX-P1-G07 starts from clean main at `66242b7911c123b1f20f2820249b7173a3ef575a`.
 
 Current branch: `codex/decision-explorer-phase1-docs-examples`.
 
-Current PR: pending.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/366.
 
-Current head SHA before local edits: `66242b7911c123b1f20f2820249b7173a3ef575a`.
+Current head SHA before PR-created checkpoint commit: `8c3355af2c131e6e5409e1ba91fd50458d41eadf`.
 
 Current guard: `AgentDecisionExplorerPhase1ReviewerExamplesDocumentationTest`.
 
@@ -138,7 +138,8 @@ DX-P1-G07 local verification passed before commit:
 - `git diff --check`, `git diff --cached --check`, and `git diff --check origin/main...HEAD` passed;
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
 
-Next action: commit, push, open the DX-P1-G07 PR, wait for current-head checks, and merge only if green.
+Next action: commit and push this PR-created checkpoint, wait for current-head checks on PR #366, and merge only if
+green.
 
 Decision: continue.
 

@@ -8,6 +8,62 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
+Timestamp: 2026-05-27T03:04-07:00
+
+Goal name: Decision Explorer Implementation Phase 2
+
+Current PR slot: DX-P2-G01
+
+Checkpoint: DX-P2-G01 local verification passed; Phase 2 scope slice ready for commit and PR creation
+
+Started from main SHA: `28c8bc10e1aa553a3c53aac70883c04431d55cc2`
+
+Current branch: codex/decision-explorer-phase2-campaign-board
+
+PR URL: pending
+
+Head SHA: `28c8bc10e1aa553a3c53aac70883c04431d55cc2` before DX-P2-G01 local edits
+
+Changed files planned for this slice:
+
+- docs/agent/DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md
+- docs/agent/DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md
+- docs/agent/SESSION_MANAGER.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest.java
+
+Checks run:
+
+- Decision Explorer Implementation Phase 1 completed at merge `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
+- PR #368 merged as `28c8bc10e1aa553a3c53aac70883c04431d55cc2`; DX-P1-G09 is merged-main-green.
+- DX-P2-G01 branch `codex/decision-explorer-phase2-campaign-board` was created from clean main at
+  `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
+- DX-P2-G01 is adding the Phase 2 architecture/scope document, campaign board, and guard test. The slice is
+  documentation and guard-test only.
+- DX-P2-G01 focused selector initially failed on exact grounding wording for `already computed routing comparison
+  evidence`; the failure was logged in `FAILURE_LOG.md`, repaired without runtime behavior changes, and rerun.
+- DX-P2-G01 focused selector passed:
+  `mvn test "-Dtest=AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest,AgentDecisionExplorerPhase1FinalHandoffDocumentationTest"`
+  with 22 tests, 0 failures, 0 errors, and 0 skipped.
+- DX-P2-G01 relevant Decision Explorer selector passed with 125 tests, 0 failures, 0 errors, and 0 skipped.
+- `mvn -q test` passed.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed with 2,682 tests, 0 failures, 0 errors, and 0 skipped.
+- `git diff --check` passed with line-ending warnings only.
+- `git diff --cached --check` passed.
+- `git diff --check origin/main...HEAD` passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
+
+Remote status: main CI and CodeQL green for `28c8bc10e1aa553a3c53aac70883c04431d55cc2`; DX-P2-G01 has no PR yet.
+
+Blocker: none.
+
+Next action: commit, push, open the DX-P2-G01 PR, wait for current-head checks, merge only if green, verify
+post-merge main, then continue to DX-P2-G02.
+
+Decision: continue.
+
+## Historical Phase 1 Campaign Checkpoint
+
 Timestamp: 2026-05-27T02:29-07:00
 
 Goal name: Decision Explorer Implementation Phase 1

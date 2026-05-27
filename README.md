@@ -64,6 +64,8 @@ The Decision Explorer Implementation Phase 1 campaign now has a current local re
 
 Decision Explorer Phase 1 reviewer examples live in [`docs/agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md`](docs/agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md). They show bounded request/response fragments and human/AI-agent review questions for the current local page and data surface without upgrading production-readiness, live-cloud, real-tenant, benchmark/load/stress, throughput/p95/p99, replay/export/storage, evidence-packet, or automation claims.
 
+Decision Explorer Phase 1 final handoff lives in [`docs/agent/DECISION_EXPLORER_PHASE1_FINAL_HANDOFF.md`](docs/agent/DECISION_EXPLORER_PHASE1_FINAL_HANDOFF.md). It records the Phase 1 PR sequence, merge evidence, implemented read-only and simulation-only behavior, verification posture, safety audit, remaining not-proven boundaries, and the recommended Decision Explorer Implementation Phase 2 campaign without adding production-readiness, certification, live-cloud, real-tenant, benchmark/load/stress, throughput/p95/p99, replay/export/storage, evidence-packet, or automation claims.
+
 ## Where Detailed Rules Live
 
 - Reviewer proof path: [`docs/REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
@@ -88,6 +90,7 @@ Decision Explorer Phase 1 reviewer examples live in [`docs/agent/DECISION_EXPLOR
 - Decision Explorer architecture bootstrap campaign board: [`docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md`](docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md).
 - Decision Explorer Phase 1 local reviewer page: [`/decision-explorer.html`](http://localhost:8080/decision-explorer.html).
 - Decision Explorer Phase 1 reviewer examples: [`docs/agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md`](docs/agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md).
+- Decision Explorer Phase 1 final handoff: [`docs/agent/DECISION_EXPLORER_PHASE1_FINAL_HANDOFF.md`](docs/agent/DECISION_EXPLORER_PHASE1_FINAL_HANDOFF.md).
 - Goal campaign verification refinement: [`docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md).
 - Goal campaign final handoff/report: [`docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md).
 - Agent operating rules: [`AGENTS.md`](AGENTS.md).

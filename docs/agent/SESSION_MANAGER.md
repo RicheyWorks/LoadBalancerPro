@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T13:41-07:00
+Timestamp: 2026-05-27T13:44-07:00
 
 Goal name: Decision Explorer Implementation Phase 2
 
 Current PR slot: DX-P2-G06
 
-Checkpoint: DX-P2-G06 local verification passed; commit and PR creation pending
+Checkpoint: DX-P2-G06 PR #374 opened; PR-created checkpoint update in progress
 
 Started from main SHA: `64394f1380708a63d70ad9e5ec1a2ad3589a9780`
 
 Current branch: codex/decision-explorer-phase2-ui-scenarios
 
-PR URL: not opened yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/374
 
-Head SHA: `64394f1380708a63d70ad9e5ec1a2ad3589a9780` before local DX-P2-G06 implementation
+Head SHA: `c13b56cb38518160cfc1a754a50e9c0eeeefea28` before the PR-created checkpoint update
 
 Changed files planned for this slice:
 
@@ -226,12 +226,17 @@ Checks run:
   served the page, the same-origin Scenario Catalog loaded, `PARTIAL_EVIDENCE` filtering narrowed the visible rows to
   the partial-evidence scenario, and browser console errors were empty. The local process was stopped after
   verification.
+- DX-P2-G06 committed as `c13b56cb38518160cfc1a754a50e9c0eeeefea28`.
+- DX-P2-G06 pushed to origin and opened as PR #374:
+  https://github.com/RicheyWorks/LoadBalancerPro/pull/374.
 
-Remote status: main CI and CodeQL green for `64394f1380708a63d70ad9e5ec1a2ad3589a9780`; DX-P2-G06 has no PR yet.
+Remote status: main CI and CodeQL green for `64394f1380708a63d70ad9e5ec1a2ad3589a9780`; PR #374 remote checks started
+after PR creation and must pass on the pushed checkpoint head before merge.
 
 Blocker: none.
 
-Next action: commit and push DX-P2-G06, open the PR, then merge only when required remote checks are current-head green.
+Next action: push the PR-created checkpoint update, wait for PR #374 current-head checks, merge only if green, verify
+post-merge main, then continue to DX-P2-G07.
 
 Decision: continue.
 

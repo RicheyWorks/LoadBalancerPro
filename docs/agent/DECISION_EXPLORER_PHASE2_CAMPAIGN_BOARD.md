@@ -53,7 +53,7 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P2-G03 | `codex/decision-explorer-phase2-scenario-api` | Scenario catalog service/API | Bounded same-origin catalog API or additive companion data, controller tests, and docs | merged-main-green / PR #371 / `186b28db1d261858a42db2ed75531fb3e4930f44` |
 | DX-P2-G04 | `codex/decision-explorer-phase2-factor-drilldown` | Decision factor drill-down | Deterministic factor-level summaries and tests | merged-main-green / PR #372 / `b2f5017e4c7484e34d0da6a1ffde3954442a9103` |
 | DX-P2-G05 | `codex/decision-explorer-phase2-candidate-comparison` | Candidate comparison table | Additive candidate comparison rows and tests for ordering, empty, and partial candidates | merged-main-green / PR #373 / `64394f1380708a63d70ad9e5ec1a2ad3589a9780` |
-| DX-P2-G06 | `codex/decision-explorer-phase2-ui-scenarios` | UI scenario selector and filtering | Static page controls using same-origin data only | active-branch / local implementation in progress |
+| DX-P2-G06 | `codex/decision-explorer-phase2-ui-scenarios` | UI scenario selector and filtering | Static page controls using same-origin data only | active-pr / PR #374 / current-head checks pending |
 | DX-P2-G07 | `codex/decision-explorer-phase2-ui-drilldown-comparison` | UI factor drill-down and candidate comparison | Static page display for drill-down and comparison states | pending |
 | DX-P2-G08 | `codex/decision-explorer-phase2-reviewer-badges` | Explanation badges and reviewer language | Reviewer-facing badges, docs language, and no-overclaim guard coverage | pending |
 | DX-P2-G09 | `codex/decision-explorer-phase2-api-hardening` | API contract hardening | Compatibility, null-safety, ordering tests, and API docs updates | pending |
@@ -71,9 +71,9 @@ DX-P2-G01 starts from clean main at `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
 Current branch: `codex/decision-explorer-phase2-ui-scenarios`.
 
-Current PR: not opened yet.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/374.
 
-Current base SHA: `64394f1380708a63d70ad9e5ec1a2ad3589a9780`.
+Current head SHA before PR-created checkpoint: `c13b56cb38518160cfc1a754a50e9c0eeeefea28`.
 
 Current Phase 2 focus: add static Decision Explorer scenario selector and filtering controls that read the bounded
 same-origin `GET /api/routing/decision-explorer/scenarios` metadata surface. The controls keep scenario selection as
@@ -328,7 +328,12 @@ app served the static page, the same-origin Scenario Catalog loaded, `PARTIAL_EV
 visible catalog rows to the partial-evidence scenario, and browser console errors were empty. The local process was
 stopped after verification.
 
-Next action: commit and push DX-P2-G06, open a PR only after current-head local checks are green, and merge only after
+DX-P2-G06 committed as `c13b56cb38518160cfc1a754a50e9c0eeeefea28`.
+
+DX-P2-G06 PR #374 opened from the current branch after local verification:
+https://github.com/RicheyWorks/LoadBalancerPro/pull/374.
+
+Next action: push the PR-created checkpoint update, wait for PR #374 current-head checks, and merge only after
 Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review are current-head green.
 
 Decision: continue.

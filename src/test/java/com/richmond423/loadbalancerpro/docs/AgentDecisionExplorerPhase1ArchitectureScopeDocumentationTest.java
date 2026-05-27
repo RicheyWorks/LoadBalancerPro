@@ -166,8 +166,8 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
         for (String expected : List.of(
                 "decision explorer implementation phase 1",
                 "current pr slot: dx-p1-g02",
-                "dx-p1-g01 merged-main-green",
                 "pr #360",
+                "pr #360 merged as",
                 "0fe9331a757973d93820bbae46b05ae53f8ba64a",
                 "codex/decision-explorer-phase1-dto-skeleton",
                 "decisionexplorerpayloadv1.java",

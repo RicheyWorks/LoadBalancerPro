@@ -882,6 +882,26 @@ Result: selector rerun passed with 61 tests, 0 failures, 0 errors, and 0 skipped
 
 Follow-up action: rerun the relevant selector bundle before full verification.
 
+## Entry
+
+Date/time: 2026-05-26T22:08-07:00
+
+Branch/PR: codex/decision-explorer-phase1-dto-skeleton / PR #361
+
+Failure type: current-head focused guard exact wording
+
+Failing check: `mvn test "-Dtest=DecisionExplorerPayloadV1Test,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest"`
+
+Suspected cause: after the PR-created metadata checkpoint, the session manager records `PR #360 merged as` and the merge
+SHA, while the guard expected the exact phrase `dx-p1-g01 merged-main-green`.
+
+Fix attempted: keep the guard tied to DX-P1-G01 merge facts by requiring `pr #360`, `pr #360 merged as`, and the merge
+SHA rather than a phrase not present in the session manager.
+
+Result: current-head focused rerun passed with 13 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: rerun the focused current-head guard and continue verification only if it passes.
+
 ## Notes
 
 - Keep entries factual.

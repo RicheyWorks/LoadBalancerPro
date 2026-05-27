@@ -822,6 +822,66 @@ amend.
 Follow-up action: include this recovery result in the final checkpoint commit, rerun the branch-range diff check, then
 push.
 
+## Entry
+
+Date/time: 2026-05-26T21:58-07:00
+
+Branch/PR: codex/decision-explorer-phase1-dto-skeleton / pending
+
+Failure type: focused unit guard assertion wording
+
+Failing check: `mvn test "-Dtest=DecisionExplorerPayloadV1Test"`
+
+Suspected cause: the new DTO boundary-language test correctly required the safe phrase `no autonomous production action`,
+but its negative assertion also rejected the substring `autonomous production action`, causing the guard to fail on the
+safe boundary wording it intended to preserve.
+
+Fix attempted: keep the positive assertion for `no autonomous production action`, and narrow the negative assertion to
+reject the overclaim `autonomous production action enabled`.
+
+Result: focused rerun passed with 5 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: rerun `mvn test "-Dtest=DecisionExplorerPayloadV1Test"` before broader verification.
+
+## Entry
+
+Date/time: 2026-05-26T21:58-07:00
+
+Branch/PR: codex/decision-explorer-phase1-dto-skeleton / pending
+
+Failure type: local inspection command syntax
+
+Failing check: `Get-Content src\test\java\com\richmond423\loadbalancerpro\api\DecisionExplorerPayloadV1Test.java | Select-Object -Index 136..150`
+
+Suspected cause: PowerShell treated `136..150` as a string for the `-Index` parameter in that invocation.
+
+Fix attempted: reran the local inspection with `Select-Object -Skip 136 -First 18`.
+
+Result: file excerpt inspection succeeded.
+
+Follow-up action: continue with focused test recovery.
+
+## Entry
+
+Date/time: 2026-05-26T21:59-07:00
+
+Branch/PR: codex/decision-explorer-phase1-dto-skeleton / pending
+
+Failure type: relevant selector campaign-state guard
+
+Failing check: `mvn test "-Dtest=DecisionExplorerPayloadV1Test,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest,AgentDecisionExplorerDataContractDocumentationTest,AgentDecisionExplorerAgentSchemaDocumentationTest,Adr0010DecisionExplorerArchitectureDocumentationTest,AgentDecisionExplorerPhase0VerificationGateDocumentationTest,AgentDecisionExplorerImplementationPlanDocumentationTest,AgentDecisionExplorerBootstrapCloseoutDocumentationTest"`
+
+Suspected cause: `AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest` still required the campaign board and
+session manager to remain at the original DX-P1-G01 active-local checkpoint after DX-P1-G01 had merged-main-green and
+the active campaign moved to DX-P1-G02.
+
+Fix attempted: update the guard to keep DX-P1-G01 merge facts source-visible while requiring the current board/session
+state to point at DX-P1-G02 and the DTO skeleton slice.
+
+Result: selector rerun passed with 61 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: rerun the relevant selector bundle before full verification.
+
 ## Notes
 
 - Keep entries factual.

@@ -8,29 +8,37 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-26T21:28-07:00
+Timestamp: 2026-05-26T21:54-07:00
 
 Goal name: Decision Explorer Implementation Phase 1
 
-Current PR slot: DX-P1-G01
+Current PR slot: DX-P1-G02
 
-Checkpoint: Phase 1 architecture/scope PR opened after local verification; PR metadata checkpoint in progress
+Checkpoint: DX-P1-G01 merged-main-green; DX-P1-G02 backend DTO skeleton active-local
 
 Started from main SHA: `755ed394adfa18e462f89312c5289fd3154075f2`
 
-Current branch: codex/decision-explorer-phase1-architecture
+Current branch: codex/decision-explorer-phase1-dto-skeleton
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/360
+PR URL: pending
 
-Head SHA: `9a1214b28e7b81512005404f8188bc9d29bdeb2e` at initial PR opening; final metadata checkpoint commit is pending push
+Head SHA: pending after commit
 
 Changed files planned for this slice:
 
-- docs/agent/DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionReadoutV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/CandidateReadoutV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/FactorContributionV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/PolicyGateReadoutV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionDiffReadoutV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/EvidencePacketReadoutV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/AgentStructuredOutputV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerDtoSupport.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1Test.java
 - docs/agent/DECISION_EXPLORER_PHASE1_CAMPAIGN_BOARD.md
-- docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest.java
+- docs/agent/FAILURE_LOG.md if repair logging is needed
 
 Checks run:
 
@@ -53,12 +61,32 @@ Checks run:
 - Commit `9a1214b28e7b81512005404f8188bc9d29bdeb2e` was created for the DX-P1-G01 architecture/scope slice.
 - Branch `codex/decision-explorer-phase1-architecture` was pushed to origin.
 - PR #360 was opened: https://github.com/RicheyWorks/LoadBalancerPro/pull/360.
+- PR #360 current-head CI passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26491188794.
+- PR #360 current-head CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26491188818.
+- PR #360 Dependency Review passed in the PR CI run.
+- PR #360 merged as `0fe9331a757973d93820bbae46b05ae53f8ba64a`.
+- Local main was fast-forwarded to `0fe9331a757973d93820bbae46b05ae53f8ba64a`.
+- Post-merge local verification on main passed: `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package` with 2,638 tests and 0 failures, `git diff --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- Main CI passed for `0fe9331a757973d93820bbae46b05ae53f8ba64a`: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26491392315.
+- Main CodeQL passed for `0fe9331a757973d93820bbae46b05ae53f8ba64a`: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26491392313.
+- Branch `codex/decision-explorer-phase1-dto-skeleton` was created from clean main at `0fe9331a757973d93820bbae46b05ae53f8ba64a`.
+- DX-P1-G02 focused DTO test initially failed on an over-broad negative assertion and was logged in `FAILURE_LOG.md`.
+- `mvn test "-Dtest=DecisionExplorerPayloadV1Test"` passed after the assertion repair with 5 tests, 0 failures, 0 errors, and 0 skipped.
+- The relevant Decision Explorer selector initially failed because the Phase 1 architecture/scope guard still froze the active campaign state at DX-P1-G01; this was logged in `FAILURE_LOG.md`.
+- The relevant selector rerun passed with 61 tests, 0 failures, 0 errors, and 0 skipped after the guard was updated to preserve DX-P1-G01 merge facts while requiring DX-P1-G02 active state.
+- `mvn -q test` passed.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed with 2,643 tests, 0 failures, 0 errors, and 0 skipped.
+- `git diff --check` passed with line-ending warnings only.
+- `git diff --cached --check` passed.
+- `git diff --check origin/main...HEAD` passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
 
-Remote status: main CI and CodeQL green for `755ed394adfa18e462f89312c5289fd3154075f2`; PR #360 remote checks are pending after PR creation.
+Remote status: main CI and CodeQL green for `0fe9331a757973d93820bbae46b05ae53f8ba64a`; DX-P1-G02 has no PR yet.
 
 Blocker: none.
 
-Next action: commit and push this PR-created checkpoint, rerun current-head local verification as needed, wait for current-head PR checks, merge only if green, verify post-merge main, then continue to DX-P1-G02.
+Next action: finish DX-P1-G02 DTO skeleton implementation, run focused/full local verification, open PR, wait for current-head checks, merge only if green, verify post-merge main, then continue to DX-P1-G03.
 
 Decision: continue.
 

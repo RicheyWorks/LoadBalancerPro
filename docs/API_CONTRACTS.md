@@ -111,6 +111,17 @@ behavior, persist storage, export evidence, execute replay, generate evidence pa
 benchmark/load/stress, throughput/p95/p99, live-cloud, real-tenant, production-readiness, or broader automation
 behavior.
 
+Decision Explorer Phase 2 API contract hardening keeps the `DecisionExplorerPayloadV1` JSON field set additive and
+compatible with Phase 1 consumers. The serialized payload keeps Phase 1 fields present while preserving additive Phase
+2 arrays for `candidateComparisons` and `factorDrilldowns`; legacy constructor paths and partial/unknown evidence
+paths serialize missing additive collections as present empty arrays rather than omitted fields. Repeated candidate,
+comparison, factor, policy-gate, diff, evidence-packet, warning, unknown, and not-proven-boundary readouts remain
+deterministically ordered by returned identifiers, display order, or stable source references. This hardening is a
+contract guard only: it does not add a new endpoint, change routing/scoring/proxy behavior, persist storage, export
+evidence, execute replay, generate evidence packets, call external systems, or prove production readiness,
+certification, live-cloud validation, real-tenant validation, benchmark/load/stress behavior, throughput/p95/p99
+behavior, replay/export behavior, storage behavior, or broader automation.
+
 Decision Explorer Phase 1 reviewer examples live in
 [`agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md`](agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md). They
 provide bounded request/response fragments and human/AI-agent review questions for the current local surface without

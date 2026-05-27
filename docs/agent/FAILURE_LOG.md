@@ -24,6 +24,28 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T15:12-07:00
+
+Branch/PR: codex/decision-explorer-phase2-api-hardening / no PR yet
+
+Failure type: focused documentation guard expectation mismatch
+
+Failing check: `mvn test "-Dtest=DecisionExplorerApiContractHardeningTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,RoutingOpenApiContractTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+
+Suspected cause: the new Phase 2 API hardening guard expected an exact `DecisionExplorerPayloadV1 field presence`
+token that was split across a Markdown line wrap in the campaign board, and expected `apicontracts.md` instead of the
+actual `api_contracts.md` token in the session manager.
+
+Fix attempted: preserve the API hardening guard intent while aligning the exact board/session tokens with the source
+files; no production code, routing, scoring, proxy, endpoint, CI, Maven, Docker, Compose, script, deployment, secret, or
+external-target behavior is changed.
+
+Result: focused selector rerun passed with 25 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: rerun the focused selector before broader verification.
+
+## Entry
+
 Date/time: 2026-05-27T07:47-07:00
 
 Branch/PR: codex/decision-explorer-phase2-factor-drilldown / PR #372

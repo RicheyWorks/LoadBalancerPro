@@ -1,14 +1,14 @@
 # Decision Explorer Phase 2 Campaign Board
 
-Status: active / phase2-reviewer-badges.
+Status: active / phase2-api-hardening.
 
 Classification: WARN / decision-explorer-phase2-campaign.
 
 Started from main SHA: `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
-Current PR slot: DX-P2-G08.
+Current PR slot: DX-P2-G09.
 
-Completed Phase 2 PRs: 7 / 12 planned.
+Completed Phase 2 PRs: 8 / 12 planned.
 
 Related architecture scope: [`DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md`](DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md).
 
@@ -55,8 +55,8 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P2-G05 | `codex/decision-explorer-phase2-candidate-comparison` | Candidate comparison table | Additive candidate comparison rows and tests for ordering, empty, and partial candidates | merged-main-green / PR #373 / `64394f1380708a63d70ad9e5ec1a2ad3589a9780` |
 | DX-P2-G06 | `codex/decision-explorer-phase2-ui-scenarios` | UI scenario selector and filtering | Static page controls using same-origin data only | merged-main-green / PR #374 / `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb` |
 | DX-P2-G07 | `codex/decision-explorer-phase2-ui-drilldown-comparison` | UI factor drill-down and candidate comparison | Static page display for drill-down and comparison states | merged-main-green / PR #375 / `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4` |
-| DX-P2-G08 | `codex/decision-explorer-phase2-reviewer-badges` | Explanation badges and reviewer language | Reviewer-facing badges, docs language, and no-overclaim guard coverage | active-pr / PR #376 / checks pending |
-| DX-P2-G09 | `codex/decision-explorer-phase2-api-hardening` | API contract hardening | Compatibility, null-safety, ordering tests, and API docs updates | pending |
+| DX-P2-G08 | `codex/decision-explorer-phase2-reviewer-badges` | Explanation badges and reviewer language | Reviewer-facing badges, docs language, and no-overclaim guard coverage | merged-main-green / PR #376 / `e92bf92f3f60d54bca23b033856af3632a431c87` |
+| DX-P2-G09 | `codex/decision-explorer-phase2-api-hardening` | API contract hardening | Compatibility, null-safety, ordering tests, and API docs updates | active-pr / PR #377 / checks pending |
 | DX-P2-G10 | `codex/decision-explorer-phase2-docs-examples` | Docs and examples | Grounded Phase 2 examples and unsupported-claim guard tests | pending |
 | DX-P2-G11 | `codex/decision-explorer-phase2-final-polish` | Final hardening and navigation polish | Reviewer navigation cleanup, page labels, and edge-case cleanup | pending |
 | DX-P2-G12 | `codex/decision-explorer-phase2-final-handoff` | Final handoff | Handoff doc with PRs, merge SHAs, behavior, tests, safety audit, and Phase 3 recommendation | pending |
@@ -69,17 +69,17 @@ Phase 1 final handoff PR #368 merged as `28c8bc10e1aa553a3c53aac70883c04431d55cc
 
 DX-P2-G01 starts from clean main at `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
-Current branch: `codex/decision-explorer-phase2-reviewer-badges`.
+Current branch: `codex/decision-explorer-phase2-api-hardening`.
 
-Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/376.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/377.
 
-Current base SHA: `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4`.
+Current base SHA: `e92bf92f3f60d54bca23b033856af3632a431c87`.
 
-Current Phase 2 focus: add display-only reviewer explanation badges for selected route, warning, unknown, partial
-evidence, deterministic evidence, and not-proven boundary states. The badges are derived from returned
-`DecisionExplorerPayloadV1` fields and selected same-origin scenario metadata only; they do not recompute scores, run
-routing, mutate decisions, persist storage, export data, execute replay, generate evidence packets, or call external
-systems.
+Current Phase 2 focus: harden the Decision Explorer API contract for field presence, Phase 1 compatibility,
+null/unknown evidence handling, deterministic ordering, and additive Phase 2 payload arrays. This slice is API
+contract documentation and guard-test focused; it does not add endpoints, recompute scores, run routing outside the
+existing read-only route, mutate decisions, persist storage, export data, execute replay, generate evidence packets, or
+call external systems.
 
 DX-P2-G01 local verification passed before PR creation:
 
@@ -441,7 +441,62 @@ DX-P2-G08 PR creation commit: `1091470d88da5196e3e5ef27f763f4cbed34803f`.
 DX-P2-G08 merge gate must re-read the latest PR head from GitHub before merge because checkpoint commits can move an
 active branch after the initial PR creation commit.
 
-Next action: wait for DX-P2-G08 Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review to become
+DX-P2-G08 final PR head: `37e219d9a616eee28b49cdc87b4a36c2ce3a0921`.
+
+DX-P2-G08 current-head PR checks passed:
+
+- PR CI passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26540977266;
+- duplicate PR CI passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26540975444;
+- PR CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26540977263;
+- Dependency Review passed on the current PR CI run.
+
+DX-P2-G08 merged as `e92bf92f3f60d54bca23b033856af3632a431c87`.
+
+DX-P2-G08 post-merge main verification passed:
+
+- `mvn -q test` passed;
+- `mvn -q "-DskipTests" package` passed;
+- `mvn -B package` passed with 2,698 tests, 0 failures, 0 errors, and 0 skipped;
+- `git diff --check` passed;
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only;
+- main CI passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26541258738;
+- main CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26541258759.
+
+DX-P2-G09 starts from clean main at `e92bf92f3f60d54bca23b033856af3632a431c87`.
+
+DX-P2-G09 hardens the existing API contract by adding guard coverage for stable DecisionExplorerPayloadV1 field presence,
+additive Phase 2 arrays, legacy constructor compatibility, null/unknown evidence array presence,
+deterministic selected-first comparison ordering, and no-overclaim boundary language.
+
+DX-P2-G09 focused selector initially failed on exact campaign/session guard wording. The failure was logged in
+`docs/agent/FAILURE_LOG.md`, repaired without runtime behavior changes, and rerun.
+
+DX-P2-G09 local verification passed before PR creation:
+
+- focused selector passed:
+  `mvn test "-Dtest=DecisionExplorerApiContractHardeningTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,RoutingOpenApiContractTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+  with 25 tests, 0 failures, 0 errors, and 0 skipped;
+- relevant Decision Explorer selector passed:
+  `mvn test "-Dtest=*DecisionExplorer*,RoutingControllerTest,RoutingOpenApiContractTest"`
+  with 163 tests, 0 failures, 0 errors, and 0 skipped;
+- `mvn -q test` passed;
+- `mvn -q "-DskipTests" package` passed;
+- `mvn -B package` passed with 2,701 tests, 0 failures, 0 errors, and 0 skipped;
+- `git diff --check` passed with line-ending warnings only;
+- `git diff --cached --check` passed;
+- `git diff --check origin/main...HEAD` passed;
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
+
+DX-P2-G09 PR #377 opened from the current branch after local verification.
+
+DX-P2-G09 PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/377.
+
+DX-P2-G09 PR creation commit: `a7b790636bbd8042bc06c48db5fc6390c334215e`.
+
+DX-P2-G09 merge gate must re-read the latest PR head from GitHub before merge because checkpoint commits can move an
+active branch after the initial PR creation commit.
+
+Next action: wait for DX-P2-G09 Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review to become
 current-head green, then merge only if the PR remains mergeable and scope-limited.
 
 Decision: continue.

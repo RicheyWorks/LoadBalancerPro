@@ -104,9 +104,9 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "# Decision Explorer Phase 2 Campaign Board",
-                "Status: active / phase2-reviewer-badges.",
-                "Current PR slot: DX-P2-G08.",
-                "Completed Phase 2 PRs: 7 / 12 planned.",
+                "Status: active / phase2-api-hardening.",
+                "Current PR slot: DX-P2-G09.",
+                "Completed Phase 2 PRs: 8 / 12 planned.",
                 "DX-P2-G01",
                 "codex/decision-explorer-phase2-campaign-board",
                 "merged-main-green",
@@ -164,8 +164,9 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "candidate comparison rows",
                 "DX-P2-G08",
                 "codex/decision-explorer-phase2-reviewer-badges",
-                "active-pr",
+                "merged-main-green",
                 "PR #376",
+                "e92bf92f3f60d54bca23b033856af3632a431c87",
                 "https://github.com/RicheyWorks/LoadBalancerPro/pull/376",
                 "PR creation commit",
                 "1091470d88da5196e3e5ef27f763f4cbed34803f",
@@ -178,6 +179,16 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "not-proven boundary",
                 "DX-P2-G09",
                 "codex/decision-explorer-phase2-api-hardening",
+                "active-pr",
+                "PR #377",
+                "https://github.com/RicheyWorks/LoadBalancerPro/pull/377",
+                "PR creation commit",
+                "a7b790636bbd8042bc06c48db5fc6390c334215e",
+                "must re-read the latest PR head from GitHub before merge",
+                "DecisionExplorerPayloadV1 field presence",
+                "legacy constructor compatibility",
+                "null/unknown evidence array presence",
+                "deterministic selected-first comparison ordering",
                 "DX-P2-G10",
                 "codex/decision-explorer-phase2-docs-examples",
                 "DX-P2-G11",
@@ -214,6 +225,9 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "DecisionExplorerPayloadV1.candidateComparisons",
                 "DecisionExplorerCandidateComparisonRowV1",
                 "reviewer explanation badges",
+                "Decision Explorer Phase 2 API contract hardening",
+                "legacy constructor paths",
+                "present empty arrays",
                 "read-only",
                 "simulation-only")) {
             if (expected.startsWith("GET ")
@@ -221,7 +235,10 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                     || expected.startsWith("DecisionExplorerPayloadV1.")
                     || expected.equals("DecisionFactorDrilldownV1")
                     || expected.equals("DecisionExplorerCandidateComparisonRowV1")
-                    || expected.equals("reviewer explanation badges")) {
+                    || expected.equals("reviewer explanation badges")
+                    || expected.equals("Decision Explorer Phase 2 API contract hardening")
+                    || expected.equals("legacy constructor paths")
+                    || expected.equals("present empty arrays")) {
                 assertTrue(apiContracts.contains(expected), "API contracts should preserve " + expected);
             } else {
                 assertTrue(phase1Scope.contains(expected), "phase 1 scope should preserve " + expected);
@@ -236,12 +253,11 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "decision explorer implementation phase 2",
-                "current pr slot: dx-p2-g08",
-                "codex/decision-explorer-phase2-reviewer-badges",
+                "current pr slot: dx-p2-g09",
+                "codex/decision-explorer-phase2-api-hardening",
                 "decision_explorer_phase2_campaign_board.md",
-                "decision-explorer.html",
-                "decisionexplorerreviewernavigationtest.java",
-                "decisionexplorerstaticpagetest.java",
+                "api_contracts.md",
+                "decisionexplorerapicontracthardeningtest.java",
                 "agentdecisionexplorerphase2architecturescopedocumentationtest.java",
                 "64394f1380708a63d70ad9e5ec1a2ad3589a9780",
                 "https://github.com/richeyworks/loadbalancerpro/pull/369",
@@ -252,20 +268,23 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "https://github.com/richeyworks/loadbalancerpro/pull/374",
                 "https://github.com/richeyworks/loadbalancerpro/pull/375",
                 "https://github.com/richeyworks/loadbalancerpro/pull/376",
+                "https://github.com/richeyworks/loadbalancerpro/pull/377",
                 "merged as `1fb16a50d4181d1411abfe6c038815a68f79e7b5`",
                 "merged as `186b28db1d261858a42db2ed75531fb3e4930f44`",
                 "merged as `b2f5017e4c7484e34d0da6a1ffde3954442a9103`",
                 "merged as `64394f1380708a63d70ad9e5ec1a2ad3589a9780`",
                 "merged as `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb`",
                 "merged as `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4`",
+                "merged as `e92bf92f3f60d54bca23b033856af3632a431c87`",
                 "dfa9baa73695cfc7ce4a2264617ce193077bc482",
                 "c13b56cb38518160cfc1a754a50e9c0eeeefea28",
                 "fb7e4f87b93645228a57d9bbf69ad51a5833531f",
                 "0efd6df064f5c8bad05270044c2a28b6a7333d9a",
                 "673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4",
-                "pr creation sha",
+                "e92bf92f3f60d54bca23b033856af3632a431c87",
                 "1091470d88da5196e3e5ef27f763f4cbed34803f",
-                "current pr head must be re-read from github before merge",
+                "37e219d9a616eee28b49cdc87b4a36c2ce3a0921",
+                "a7b790636bbd8042bc06c48db5fc6390c334215e",
                 "e8fcd4f74f3f50c2f973b78d7999c18104aee9bb",
                 "get /api/routing/decision-explorer/scenarios",
                 "2,682 tests",
@@ -273,8 +292,12 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "2,695 tests",
                 "2,696 tests",
                 "2,697 tests",
+                "2,698 tests",
+                "2,701 tests",
+                "decisionexplorerapicontracthardeningtest",
                 "focused selector passed",
-                "remote status:",
+                "full local verification passed",
+                "remote status: pr #377",
                 "decision: continue")) {
             assertTrue(session.contains(expected), "session manager should record " + expected);
         }

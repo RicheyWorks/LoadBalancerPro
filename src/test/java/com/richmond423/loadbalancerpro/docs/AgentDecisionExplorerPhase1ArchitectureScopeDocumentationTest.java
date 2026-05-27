@@ -113,15 +113,17 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "# Decision Explorer Phase 1 Campaign Board",
-                "Status: active / phase1-dto-skeleton.",
-                "Current PR slot: DX-P1-G02.",
-                "Completed Phase 1 PRs: 1 / 9 planned.",
+                "Status: active / phase1-builder.",
+                "Current PR slot: DX-P1-G03.",
+                "Completed Phase 1 PRs: 2 / 9 planned.",
                 "DX-P1-G01",
                 "codex/decision-explorer-phase1-architecture",
                 "merged-main-green as PR #360",
                 "0fe9331a757973d93820bbae46b05ae53f8ba64a",
                 "DX-P1-G02",
                 "codex/decision-explorer-phase1-dto-skeleton",
+                "merged-main-green as PR #361",
+                "fca765b897937cd20ee9955bfb7f9ba7a665a9be",
                 "DX-P1-G03",
                 "codex/decision-explorer-phase1-builder",
                 "DX-P1-G04",
@@ -165,13 +167,16 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "decision explorer implementation phase 1",
-                "current pr slot: dx-p1-g02",
+                "current pr slot: dx-p1-g03",
                 "pr #360",
                 "pr #360 merged as",
                 "0fe9331a757973d93820bbae46b05ae53f8ba64a",
-                "codex/decision-explorer-phase1-dto-skeleton",
-                "decisionexplorerpayloadv1.java",
-                "decisionexplorerpayloadv1test.java",
+                "pr #361",
+                "pr #361 merged as",
+                "fca765b897937cd20ee9955bfb7f9ba7a665a9be",
+                "codex/decision-explorer-phase1-builder",
+                "decisionexplorerpayloadservice.java",
+                "decisionexplorerpayloadservicetest.java",
                 "remote status:",
                 "decision: continue")) {
             assertTrue(session.contains(expected), "session manager should record " + expected);

@@ -1,14 +1,14 @@
 # Decision Explorer Phase 1 Campaign Board
 
-Status: active / phase1-dto-skeleton.
+Status: active / phase1-builder.
 
 Classification: WARN / decision-explorer-phase1-campaign.
 
 Started from main SHA: `755ed394adfa18e462f89312c5289fd3154075f2`.
 
-Current PR slot: DX-P1-G02.
+Current PR slot: DX-P1-G03.
 
-Completed Phase 1 PRs: 1 / 9 planned.
+Completed Phase 1 PRs: 2 / 9 planned.
 
 Related architecture scope: [`DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md`](DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md).
 
@@ -47,8 +47,8 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | Slot | Branch | Scope | Expected files | State |
 | --- | --- | --- | --- | --- |
 | DX-P1-G01 | `codex/decision-explorer-phase1-architecture` | Phase 1 architecture and scope contract | `DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md`, `DECISION_EXPLORER_PHASE1_CAMPAIGN_BOARD.md`, documentation guard, `SESSION_MANAGER.md` | merged-main-green as PR #360, merge `0fe9331a757973d93820bbae46b05ae53f8ba64a` |
-| DX-P1-G02 | `codex/decision-explorer-phase1-dto-skeleton` | Backend DTO skeleton | Additive Decision Explorer DTO/record classes and unit tests | active-local |
-| DX-P1-G03 | `codex/decision-explorer-phase1-builder` | Deterministic builder/service | Builder/service and tests for ordering, null safety, partial evidence, and deterministic output | planned |
+| DX-P1-G02 | `codex/decision-explorer-phase1-dto-skeleton` | Backend DTO skeleton | Additive Decision Explorer DTO/record classes and unit tests | merged-main-green as PR #361, merge `fca765b897937cd20ee9955bfb7f9ba7a665a9be` |
+| DX-P1-G03 | `codex/decision-explorer-phase1-builder` | Deterministic builder/service | Builder/service and tests for ordering, null safety, partial evidence, and deterministic output | active-local |
 | DX-P1-G04 | `codex/decision-explorer-phase1-api` | Read-only API surface | Controller/API docs/tests or additive response field with bounded behavior | planned |
 | DX-P1-G05 | `codex/decision-explorer-phase1-ui-first-pass` | UI first pass | Static page or cockpit integration and resource tests | planned |
 | DX-P1-G06 | `codex/decision-explorer-phase1-ui-navigation` | UI polish and reviewer navigation | Labels, empty states, ordering, README/trust-map/cockpit links, and tests | planned |
@@ -68,16 +68,26 @@ DX-P1-G01 main CI: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/2
 
 DX-P1-G01 main CodeQL: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26491392313.
 
-DX-P1-G02 starts from clean main at `0fe9331a757973d93820bbae46b05ae53f8ba64a`.
+DX-P1-G02 merged-main-green as PR #361 at merge commit `fca765b897937cd20ee9955bfb7f9ba7a665a9be`.
 
-Current branch: `codex/decision-explorer-phase1-dto-skeleton`.
+DX-P1-G02 PR CI: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26492455493.
 
-Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/361.
+DX-P1-G02 PR CodeQL: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26492455473.
 
-Current head SHA: tracked by PR #361 current head after PR-created checkpoint and current-head guard repair commits.
+DX-P1-G02 main CI: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26492690702.
 
-Next action: commit and push the PR-created checkpoint, rerun current-head local verification as needed, wait for
-current-head PR checks, merge only if green, verify post-merge main, and then continue to DX-P1-G03.
+DX-P1-G02 main CodeQL: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26492690719.
+
+DX-P1-G03 starts from clean main at `fca765b897937cd20ee9955bfb7f9ba7a665a9be`.
+
+Current branch: `codex/decision-explorer-phase1-builder`.
+
+Current PR: pending.
+
+Current head SHA: local work in progress after builder/service implementation started.
+
+Next action: finish DX-P1-G03 local verification, commit and push the builder/service slice, open the PR, wait for
+current-head PR checks, merge only if green, verify post-merge main, and then continue to DX-P1-G04.
 
 Decision: continue.
 

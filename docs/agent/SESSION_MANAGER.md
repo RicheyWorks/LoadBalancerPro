@@ -8,34 +8,31 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T01:54-07:00
+Timestamp: 2026-05-27T02:29-07:00
 
 Goal name: Decision Explorer Implementation Phase 1
 
-Current PR slot: DX-P1-G08
+Current PR slot: DX-P1-G09
 
-Checkpoint: DX-P1-G08 PR #367 opened after local verification; PR-created checkpoint commit pending
+Checkpoint: DX-P1-G09 PR #368 opened; PR-created checkpoint update in progress
 
 Started from main SHA: `755ed394adfa18e462f89312c5289fd3154075f2`
 
-Current branch: codex/decision-explorer-phase1-hardening
+Current branch: codex/decision-explorer-phase1-final-handoff
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/367
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/368
 
-Head SHA: `b6ae1388ba5b8c47788459d04203094c4fd9e2fd` before this PR-created checkpoint commit
+Head SHA: `e9e52e5a2c9599141d5034c3be26cd05ee7bbe30` before the PR-created checkpoint update
 
 Changed files planned for this slice:
 
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadService.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadServiceTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/RoutingControllerTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerStaticPageTest.java
-- docs/agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md
+- docs/agent/DECISION_EXPLORER_PHASE1_FINAL_HANDOFF.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase1FinalHandoffDocumentationTest.java
+- README.md
+- docs/REVIEWER_TRUST_MAP.md
 - docs/agent/DECISION_EXPLORER_PHASE1_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
-- src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase1ReviewerExamplesDocumentationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest.java
-- docs/agent/FAILURE_LOG.md
 
 Checks run:
 
@@ -276,14 +273,46 @@ Checks run:
 - Commit `b6ae1388ba5b8c47788459d04203094c4fd9e2fd` was created for the DX-P1-G08 hardening slice.
 - Branch `codex/decision-explorer-phase1-hardening` was pushed to origin.
 - PR #367 was opened: https://github.com/RicheyWorks/LoadBalancerPro/pull/367.
+- PR-created checkpoint commit `5bc4935429fadf6b9a63b2735adcb93c8426b7e3` was pushed to PR #367.
+- PR #367 current-head CI passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26501430347.
+- PR #367 current-head CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26501430345.
+- PR #367 Dependency Review passed in the PR CI run.
+- PR #367 merged as `968a38eb1b2f8d8c4acaff58ab6cde4f99d71740`; DX-P1-G08 is merged-main-green.
+- Local main was fast-forwarded to `968a38eb1b2f8d8c4acaff58ab6cde4f99d71740`.
+- DX-P1-G08 post-merge local verification on main passed: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,668 tests and 0 failures,
+  `git diff --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- Main CI passed for `968a38eb1b2f8d8c4acaff58ab6cde4f99d71740`:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26501780145.
+- Main CodeQL passed for `968a38eb1b2f8d8c4acaff58ab6cde4f99d71740`:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26501780148.
+- Branch `codex/decision-explorer-phase1-final-handoff` was created from clean main at
+  `968a38eb1b2f8d8c4acaff58ab6cde4f99d71740`.
+- DX-P1-G09 is adding the final handoff document and guard for the Phase 1 campaign. The slice is documentation and
+  guard-test only.
+- DX-P1-G09 focused selector passed:
+  `mvn test "-Dtest=AgentDecisionExplorerPhase1FinalHandoffDocumentationTest,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest,AgentDecisionExplorerPhase1ReviewerExamplesDocumentationTest"`
+  with 25 tests, 0 failures, 0 errors, and 0 skipped.
+- DX-P1-G09 relevant Decision Explorer selector passed with 117 tests, 0 failures, 0 errors, and 0 skipped.
+- `mvn -q test` passed.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed with 2,674 tests, 0 failures, 0 errors, and 0 skipped.
+- `git diff --check` passed with line-ending warnings only.
+- `git diff --cached --check` passed.
+- `git diff --check origin/main...HEAD` passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
+- Commit `e9e52e5a2c9599141d5034c3be26cd05ee7bbe30` was created for the DX-P1-G09 final handoff slice.
+- Branch `codex/decision-explorer-phase1-final-handoff` was pushed to origin.
+- PR #368 was opened: https://github.com/RicheyWorks/LoadBalancerPro/pull/368.
+- PR #368 is open, non-draft, and mergeable before the PR-created checkpoint update.
 
-Remote status: main CI and CodeQL green for `3d85730efc979373c2838e414c78c16df43656a9`; PR #367 current-head
-checks are pending after PR creation and this checkpoint update.
+Remote status: main CI and CodeQL green for `968a38eb1b2f8d8c4acaff58ab6cde4f99d71740`; PR #368 current-head
+checks must pass on the pushed checkpoint head before merge.
 
 Blocker: none.
 
-Next action: commit and push this PR-created checkpoint, wait for PR #367 current-head checks, merge only if green,
-verify post-merge main, then continue to DX-P1-G09.
+Next action: push the PR-created checkpoint update, wait for PR #368 current-head checks, merge only if green, verify
+post-merge main, then produce the final campaign report.
 
 Decision: continue.
 

@@ -113,9 +113,9 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "# Decision Explorer Phase 1 Campaign Board",
-                "Status: active / phase1-hardening.",
-                "Current PR slot: DX-P1-G08.",
-                "Completed Phase 1 PRs: 7 / 9 planned.",
+                "Status: active / phase1-final-handoff.",
+                "Current PR slot: DX-P1-G09.",
+                "Completed Phase 1 PRs: 8 / 9 planned.",
                 "DX-P1-G01",
                 "codex/decision-explorer-phase1-architecture",
                 "merged-main-green as PR #360",
@@ -146,9 +146,11 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
                 "3d85730efc979373c2838e414c78c16df43656a9",
                 "DX-P1-G08",
                 "codex/decision-explorer-phase1-hardening",
-                "PR #367 open; checks pending",
+                "merged-main-green as PR #367",
+                "968a38eb1b2f8d8c4acaff58ab6cde4f99d71740",
                 "DX-P1-G09",
                 "codex/decision-explorer-phase1-final-handoff",
+                "active-pr as PR #368",
                 "Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head checks do not count",
                 "Decision: continue")) {
             assertTrue(board.contains(expected), "phase 1 board should track " + expected);
@@ -184,7 +186,7 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "decision explorer implementation phase 1",
-                "current pr slot: dx-p1-g08",
+                "current pr slot: dx-p1-g09",
                 "pr #360",
                 "pr #360 merged as",
                 "0fe9331a757973d93820bbae46b05ae53f8ba64a",
@@ -207,12 +209,18 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
                 "pr #366 merged as",
                 "3d85730efc979373c2838e414c78c16df43656a9",
                 "pr #367",
+                "pr #367 merged as",
+                "968a38eb1b2f8d8c4acaff58ab6cde4f99d71740",
+                "pr #368",
+                "e9e52e5a2c9599141d5034c3be26cd05ee7bbe30",
                 "codex/decision-explorer-phase1-docs-examples",
                 "codex/decision-explorer-phase1-hardening",
-                "decisionexplorerpayloadservice.java",
-                "decisionexplorerpayloadservicetest.java",
-                "decision_explorer_phase1_reviewer_examples.md",
-                "agentdecisionexplorerphase1reviewerexamplesdocumentationtest.java",
+                "codex/decision-explorer-phase1-final-handoff",
+                "decision_explorer_phase1_final_handoff.md",
+                "agentdecisionexplorerphase1finalhandoffdocumentationtest.java",
+                "decisionexplorerpayloadservice",
+                "decisionexplorerpayloadservicetest",
+                "agentdecisionexplorerphase1reviewerexamplesdocumentationtest",
                 "post /api/routing/decision-explorer",
                 "remote status:",
                 "decision: continue")) {

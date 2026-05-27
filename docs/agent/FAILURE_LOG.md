@@ -1165,6 +1165,28 @@ Result: focused rerun passed with 44 tests, 0 failures, 0 errors, and 0 skipped.
 
 Follow-up action: continue with the broader Decision Explorer selector before full verification.
 
+## Entry
+
+Date/time: 2026-05-27T02:17-07:00
+
+Branch/PR: codex/decision-explorer-phase1-final-handoff / no PR yet
+
+Failure type: focused documentation guard lifecycle and exact-boundary mismatch
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerPhase1FinalHandoffDocumentationTest,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest,AgentDecisionExplorerPhase1ReviewerExamplesDocumentationTest"`
+
+Suspected cause: the Phase 1 architecture/session guard still expected the previous DX-P1-G08 active slot after the
+G09 checkpoint moved the campaign forward, and the new final handoff guard required the exact phrase
+`no benchmark/load/stress` while the handoff preserved the boundary in equivalent wording.
+
+Fix attempted: pending; update the stale G09 session expectation and make the no-benchmark/load/stress boundary exact
+in the handoff text.
+
+Result: after exact wording and stale suffix repairs, the focused selector rerun passed with 25 tests, 0 failures,
+0 errors, and 0 skipped.
+
+Follow-up action: continue with the broader Decision Explorer selector before full verification.
+
 ## Notes
 
 - Keep entries factual.

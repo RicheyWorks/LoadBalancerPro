@@ -1,14 +1,14 @@
 # Decision Explorer Phase 2 Campaign Board
 
-Status: active / phase2-docs-examples.
+Status: active / phase2-final-polish.
 
 Classification: WARN / decision-explorer-phase2-campaign.
 
 Started from main SHA: `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
-Current PR slot: DX-P2-G10.
+Current PR slot: DX-P2-G11.
 
-Completed Phase 2 PRs: 9 / 12 planned.
+Completed Phase 2 PRs: 10 / 12 planned.
 
 Related architecture scope: [`DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md`](DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md).
 
@@ -57,8 +57,8 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P2-G07 | `codex/decision-explorer-phase2-ui-drilldown-comparison` | UI factor drill-down and candidate comparison | Static page display for drill-down and comparison states | merged-main-green / PR #375 / `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4` |
 | DX-P2-G08 | `codex/decision-explorer-phase2-reviewer-badges` | Explanation badges and reviewer language | Reviewer-facing badges, docs language, and no-overclaim guard coverage | merged-main-green / PR #376 / `e92bf92f3f60d54bca23b033856af3632a431c87` |
 | DX-P2-G09 | `codex/decision-explorer-phase2-api-hardening` | API contract hardening | Compatibility, null-safety, ordering tests, and API docs updates | merged-main-green / PR #377 / `8a0455ee03a80ae2170c6b977a2e761407ad6d90` |
-| DX-P2-G10 | `codex/decision-explorer-phase2-docs-examples` | Docs and examples | Grounded Phase 2 examples and unsupported-claim guard tests | active-pr / PR #378 / checks pending |
-| DX-P2-G11 | `codex/decision-explorer-phase2-final-polish` | Final hardening and navigation polish | Reviewer navigation cleanup, page labels, and edge-case cleanup | pending |
+| DX-P2-G10 | `codex/decision-explorer-phase2-docs-examples` | Docs and examples | Grounded Phase 2 examples and unsupported-claim guard tests | merged-main-green / PR #378 / `567cf77643a0d56a683cea86104972715b97fa40` |
+| DX-P2-G11 | `codex/decision-explorer-phase2-final-polish` | Final hardening and navigation polish | Reviewer navigation cleanup, page labels, edge-case cleanup, final hardening and navigation polish guard coverage in `AgentDecisionExplorerPhase2NavigationPolishDocumentationTest` | active-branch / local verification passed |
 | DX-P2-G12 | `codex/decision-explorer-phase2-final-handoff` | Final handoff | Handoff doc with PRs, merge SHAs, behavior, tests, safety audit, and Phase 3 recommendation | pending |
 
 ## Current Checkpoint
@@ -69,17 +69,17 @@ Phase 1 final handoff PR #368 merged as `28c8bc10e1aa553a3c53aac70883c04431d55cc
 
 DX-P2-G01 starts from clean main at `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
-Current branch: `codex/decision-explorer-phase2-docs-examples`.
+Current branch: `codex/decision-explorer-phase2-final-polish`.
 
-Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/378.
+Current PR: not opened yet.
 
-Current base SHA: `8a0455ee03a80ae2170c6b977a2e761407ad6d90`.
+Current base SHA: `567cf77643a0d56a683cea86104972715b97fa40`.
 
-Current Phase 2 focus: add grounded reviewer examples for the implemented scenario catalog, factor drill-down,
-candidate comparison, reviewer badge, static page workflow, and additive API hardening surfaces. This slice is
-documentation and guard-test only; it does not add endpoints, recompute scores, run routing outside the existing
-read-only route, mutate decisions, persist storage, export data, execute replay, generate evidence packets, or call
-external systems.
+Current Phase 2 focus: polish reviewer navigation across README, Reviewer Trust Map, the Decision Explorer static page,
+and guard tests so the Phase 2 scenario catalog, factor drill-down, candidate comparison, reviewer badge, examples, and
+API-hardening paths are easy to find. This slice is documentation, static-page label/link, and guard-test only; it does
+not add endpoints, recompute scores, run routing outside the existing read-only route, mutate decisions, persist
+storage, export data, execute replay, generate evidence packets, or call external systems.
 
 DX-P2-G01 local verification passed before PR creation:
 
@@ -550,8 +550,56 @@ https://github.com/RicheyWorks/LoadBalancerPro/pull/378.
 DX-P2-G10 merge gate must re-read the latest PR head from GitHub before merge because checkpoint commits can move an
 active branch after the initial PR creation commit.
 
-Next action: wait for current-head Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review before any
-merge decision.
+DX-P2-G10 final PR head: `c2fa2832a9a8ecbd84422a5573b764390076e220`.
+
+DX-P2-G10 current-head PR checks passed:
+
+- PR CI and Dependency Review passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26543367605;
+- duplicate PR CI passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26543365895;
+- PR CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26543367577.
+
+DX-P2-G10 merged as `567cf77643a0d56a683cea86104972715b97fa40`.
+
+DX-P2-G10 post-merge main verification passed:
+
+- `mvn -q test` passed;
+- `mvn -q "-DskipTests" package` passed;
+- `mvn -B package` passed with 2,707 tests, 0 failures, 0 errors, and 0 skipped;
+- `git diff --check` passed;
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only;
+- main CI passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26543611673;
+- main CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26543611667.
+
+DX-P2-G11 starts from clean main at `567cf77643a0d56a683cea86104972715b97fa40`.
+
+DX-P2-G11 adds Phase 2 reviewer navigation polish across README, Reviewer Trust Map, the static Decision Explorer page,
+and documentation/static-page guards. The slice does not add endpoints, recompute scores, change routing/scoring/proxy
+behavior, persist storage, export data, execute replay, generate evidence packets, or call external systems.
+
+DX-P2-G11 discovery hit a Windows glob path error in a broad `rg` command. The failure was logged in
+`docs/agent/FAILURE_LOG.md`, and discovery continued with explicit paths.
+
+DX-P2-G11 local verification passed:
+
+- focused selector passed:
+  `mvn test "-Dtest=AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest,AgentDecisionExplorerPhase2ReviewerExamplesDocumentationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest,DecisionExplorerStaticPageTest"`
+  with 35 tests, 0 failures, 0 errors, and 0 skipped;
+- broader Decision Explorer selector passed:
+  `mvn test "-Dtest=*DecisionExplorer*,RoutingControllerTest,RoutingOpenApiContractTest"`
+  with 174 tests, 0 failures, 0 errors, and 0 skipped;
+- focused trust-map guard selector passed:
+  `mvn test "-Dtest=ReviewerTrustMapDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest"`
+  with 33 tests, 0 failures, 0 errors, and 0 skipped;
+- `mvn -q test` passed;
+- `mvn -q "-DskipTests" package` passed;
+- `mvn -B package` passed with 2,712 tests, 0 failures, 0 errors, and 0 skipped;
+- `git diff --check` passed;
+- `git diff --cached --check` passed;
+- `git diff --check origin/main...HEAD` passed;
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
+
+Next action: commit, push, open PR, and wait for current-head
+Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review before any merge decision.
 
 Decision: continue.
 

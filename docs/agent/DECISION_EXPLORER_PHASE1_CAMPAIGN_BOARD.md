@@ -1,14 +1,14 @@
 # Decision Explorer Phase 1 Campaign Board
 
-Status: active / phase1-builder.
+Status: active / phase1-api.
 
 Classification: WARN / decision-explorer-phase1-campaign.
 
 Started from main SHA: `755ed394adfa18e462f89312c5289fd3154075f2`.
 
-Current PR slot: DX-P1-G03.
+Current PR slot: DX-P1-G04.
 
-Completed Phase 1 PRs: 2 / 9 planned.
+Completed Phase 1 PRs: 3 / 9 planned.
 
 Related architecture scope: [`DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md`](DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md).
 
@@ -48,8 +48,8 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | --- | --- | --- | --- | --- |
 | DX-P1-G01 | `codex/decision-explorer-phase1-architecture` | Phase 1 architecture and scope contract | `DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md`, `DECISION_EXPLORER_PHASE1_CAMPAIGN_BOARD.md`, documentation guard, `SESSION_MANAGER.md` | merged-main-green as PR #360, merge `0fe9331a757973d93820bbae46b05ae53f8ba64a` |
 | DX-P1-G02 | `codex/decision-explorer-phase1-dto-skeleton` | Backend DTO skeleton | Additive Decision Explorer DTO/record classes and unit tests | merged-main-green as PR #361, merge `fca765b897937cd20ee9955bfb7f9ba7a665a9be` |
-| DX-P1-G03 | `codex/decision-explorer-phase1-builder` | Deterministic builder/service | Builder/service and tests for ordering, null safety, partial evidence, and deterministic output | active-local |
-| DX-P1-G04 | `codex/decision-explorer-phase1-api` | Read-only API surface | Controller/API docs/tests or additive response field with bounded behavior | planned |
+| DX-P1-G03 | `codex/decision-explorer-phase1-builder` | Deterministic builder/service | Builder/service and tests for ordering, null safety, partial evidence, and deterministic output | merged-main-green as PR #362, merge `af351b043fbc3ff0ffff50d9c0f17a667f84b7af` |
+| DX-P1-G04 | `codex/decision-explorer-phase1-api` | Read-only API surface | Controller/API docs/tests or additive response field with bounded behavior | active-local |
 | DX-P1-G05 | `codex/decision-explorer-phase1-ui-first-pass` | UI first pass | Static page or cockpit integration and resource tests | planned |
 | DX-P1-G06 | `codex/decision-explorer-phase1-ui-navigation` | UI polish and reviewer navigation | Labels, empty states, ordering, README/trust-map/cockpit links, and tests | planned |
 | DX-P1-G07 | `codex/decision-explorer-phase1-docs-examples` | Docs and examples | Reviewer examples grounded in tests and guard tests against overclaims | planned |
@@ -78,16 +78,27 @@ DX-P1-G02 main CI: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/2
 
 DX-P1-G02 main CodeQL: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26492690719.
 
-DX-P1-G03 starts from clean main at `fca765b897937cd20ee9955bfb7f9ba7a665a9be`.
+DX-P1-G03 merged-main-green as PR #362 at merge commit `af351b043fbc3ff0ffff50d9c0f17a667f84b7af`.
 
-Current branch: `codex/decision-explorer-phase1-builder`.
+DX-P1-G03 PR CI: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26493443317.
 
-Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/362.
+DX-P1-G03 PR CodeQL: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26493443321.
 
-Current head SHA: `d32cc14b9af4edc1dc2ae420231051946f9f1292` at PR opening; final PR-created checkpoint commit is pending.
+DX-P1-G03 main CI: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26493648007.
 
-Next action: finish DX-P1-G03 local verification, commit and push the builder/service slice, open the PR, wait for
-current-head PR checks, merge only if green, verify post-merge main, and then continue to DX-P1-G04.
+DX-P1-G03 main CodeQL: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26493648025.
+
+DX-P1-G04 starts from clean main at `af351b043fbc3ff0ffff50d9c0f17a667f84b7af`.
+
+Current branch: `codex/decision-explorer-phase1-api`.
+
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/363.
+
+Current head SHA: `efb5abc404ad48de95f34f8a7d2b6d68e6377da0` at PR opening; final PR-created
+checkpoint commit is pending.
+
+Next action: commit and push the PR-created checkpoint, wait for current-head PR checks, merge only if green, verify
+post-merge main, and then continue to DX-P1-G05.
 
 Decision: continue.
 

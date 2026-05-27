@@ -923,6 +923,46 @@ Result: current-head focused rerun passed with 13 tests, 0 failures, 0 errors, a
 
 Follow-up action: rerun the focused current-head guard and continue verification only if it passes.
 
+## Entry
+
+Date/time: 2026-05-26T23:10-07:00
+
+Branch/PR: codex/decision-explorer-phase1-api / pending
+
+Failure type: focused OpenAPI assertion mismatch
+
+Failing check: `mvn test "-Dtest=RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerPayloadServiceTest,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest"`
+
+Suspected cause: SpringDoc inferred the new `POST /api/routing/decision-explorer` 200 response content type under
+`*/*`, matching existing generated-controller behavior, while the new guard expected the response schema under
+`application/json`.
+
+Fix attempted: narrowed the assertion to the generated `*/*` response schema while keeping the path, request body,
+array response, and `DecisionExplorerPayloadV1` item-reference checks.
+
+Result: focused selector rerun passed with 34 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue to the relevant Decision Explorer selector and full local verification.
+
+## Entry
+
+Date/time: 2026-05-26T23:26-07:00
+
+Branch/PR: codex/decision-explorer-phase1-api / PR #363
+
+Failure type: local merge command syntax
+
+Failing check: `gh pr merge 363 --merge --subject "Add Decision Explorer API surface" --body ""`
+
+Suspected cause: GitHub CLI rejected the empty `--body` flag before attempting the merge.
+
+Fix attempted: pending; rerun the merge command without an empty body flag and with `--match-head-commit` pinned to
+the verified current PR head.
+
+Result: pending.
+
+Follow-up action: retry the merge only against current-head green PR #363.
+
 ## Notes
 
 - Keep entries factual.

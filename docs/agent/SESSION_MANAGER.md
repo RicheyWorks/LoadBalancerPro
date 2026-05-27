@@ -8,35 +8,34 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T16:20-07:00
+Timestamp: 2026-05-27T16:53-07:00
 
 Goal name: Decision Explorer Implementation Phase 2
 
-Current PR slot: DX-P2-G11
+Current PR slot: DX-P2-G12
 
-Checkpoint: DX-P2-G11 PR #379 opened; remote checks pending
+Checkpoint: DX-P2-G12 local verification passed; ready for commit, push, and PR creation
 
-Started from main SHA: `567cf77643a0d56a683cea86104972715b97fa40`
+Started from main SHA: `4fc154801b4b81c08bdc0b23ff832f5d0d819be0`
 
-Current branch: codex/decision-explorer-phase2-final-polish
+Current branch: codex/decision-explorer-phase2-final-handoff
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/379
+PR URL: not opened yet
 
-PR creation SHA: `411f5982f95b7093840221dc2cebaa0cf7e7bccd`
+PR creation SHA: pending
 
 Current branch head must be re-read before PR creation and merge because checkpoint commits can move the active branch.
 
 Changed files planned for this slice:
 
-- docs/API_CONTRACTS.md
 - README.md
 - docs/REVIEWER_TRUST_MAP.md
+- docs/agent/DECISION_EXPLORER_PHASE2_FINAL_HANDOFF.md
 - docs/agent/DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md
 - docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
-- src/main/resources/static/decision-explorer.html
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerReviewerNavigationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase2FinalHandoffDocumentationTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase2NavigationPolishDocumentationTest.java
 
 Checks run:
@@ -52,6 +51,34 @@ Checks run:
   with 33 tests, 0 failures, 0 errors, and 0 skipped.
 - DX-P2-G11 full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
   `mvn -B package` with 2,712 tests, `git diff --check`, `git diff --cached --check`,
+  `git diff --check origin/main...HEAD`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- DX-P2-G11 final PR head was `2da5fb1e971c506667797b57b66255bfd80690e7`.
+- DX-P2-G11 current-head PR checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review.
+- DX-P2-G11 PR CI and Dependency Review passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26544582671.
+- DX-P2-G11 PR CodeQL passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26544582636.
+- DX-P2-G11 merged as `4fc154801b4b81c08bdc0b23ff832f5d0d819be0`.
+- DX-P2-G11 post-merge local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  `mvn -B package` with 2,712 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- DX-P2-G11 main CI passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26544831070.
+- DX-P2-G11 main CodeQL passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26544831012.
+- DX-P2-G12 branch `codex/decision-explorer-phase2-final-handoff` was created from clean main at
+  `4fc154801b4b81c08bdc0b23ff832f5d0d819be0`.
+- DX-P2-G12 final handoff is active after DX-P2-G11 reached merged-main-green as PR #379.
+- DX-P2-G12 focused selector initially failed on a brittle README phrase expectation in the new final handoff guard.
+  The failure was logged in `FAILURE_LOG.md`, repaired without production behavior changes, and rerun.
+- DX-P2-G12 focused selector rerun passed:
+  `mvn test "-Dtest=AgentDecisionExplorerPhase2FinalHandoffDocumentationTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,AgentDecisionExplorerPhase2ReviewerExamplesDocumentationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest,DecisionExplorerStaticPageTest"`
+  with 38 tests, 0 failures, 0 errors, and 0 skipped.
+- DX-P2-G12 relevant Decision Explorer selector passed:
+  `mvn test "-Dtest=*DecisionExplorer*,RoutingControllerTest,RoutingOpenApiContractTest"`
+  with 182 tests, 0 failures, 0 errors, and 0 skipped.
+- DX-P2-G12 full local verification passed before PR creation: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,720 tests, `git diff --check`,
   `git diff --check origin/main...HEAD`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
 - Decision Explorer Implementation Phase 1 completed at merge `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 - PR #368 merged as `28c8bc10e1aa553a3c53aac70883c04431d55cc2`; DX-P1-G09 is merged-main-green.

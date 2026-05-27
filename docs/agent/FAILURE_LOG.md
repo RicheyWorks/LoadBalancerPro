@@ -24,6 +24,28 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T16:47-07:00
+
+Branch/PR: codex/decision-explorer-phase2-final-handoff / no PR yet
+
+Failure type: local documentation guard expectation mismatch
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerPhase2FinalHandoffDocumentationTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,AgentDecisionExplorerPhase2ReviewerExamplesDocumentationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest,DecisionExplorerStaticPageTest"`
+
+Suspected cause: the new final handoff guard required README to contain the exact phrase `Decision Explorer Phase 2
+reviewer navigation`, while the current README preserves the same link path as `Decision Explorer Phase 2 current
+reviewer navigation`.
+
+Fix attempted: narrowed the new guard to require the final handoff link and the existing Phase 2 handoff/trust phrases
+instead of forcing a copy-only wording change. No production code, routing, scoring, proxy, endpoint, Maven, CI,
+Docker, Compose, script, deployment, secret, or external-target behavior is changed.
+
+Result: focused selector rerun passed with 38 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with the relevant Decision Explorer selector and full local verification for DX-P2-G12.
+
+## Entry
+
 Date/time: 2026-05-27T16:03-07:00
 
 Branch/PR: codex/decision-explorer-phase2-final-polish / no PR yet

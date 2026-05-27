@@ -78,8 +78,9 @@ class AgentDecisionExplorerPhase2NavigationPolishDocumentationTest {
                 "AgentDecisionExplorerPhase2NavigationPolishDocumentationTest",
                 "567cf77643a0d56a683cea86104972715b97fa40",
                 "PR #378",
+                "PR #379",
                 "merged-main-green",
-                "phase2-final-polish")) {
+                "4fc154801b4b81c08bdc0b23ff832f5d0d819be0")) {
             assertTrue(board.contains(expected), "campaign board should track " + expected);
             assertTrue(session.contains(expected), "session manager should track " + expected);
         }

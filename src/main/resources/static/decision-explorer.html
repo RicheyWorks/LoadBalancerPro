@@ -168,7 +168,8 @@
     }
 
     textarea,
-    input {
+    input,
+    select {
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 6px;
@@ -272,6 +273,19 @@
       gap: 6px;
     }
 
+    .scenario-tools {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      align-items: end;
+      margin: 16px 0;
+    }
+
+    .scenario-note {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+
     .chip {
       display: inline-flex;
       align-items: center;
@@ -373,6 +387,36 @@
       <button id="reset-sample" class="secondary" type="button" data-action="reset-sample">Reset Sample</button>
       <button id="copy-summary" class="secondary" type="button" data-action="copy-reviewer-summary">Copy Summary</button>
     </div>
+    <h3>Scenario Catalog</h3>
+    <p class="scenario-note">
+      Load deterministic local synthetic scenario metadata from the same-origin catalog, then filter by scenario
+      category and evidence status. Selecting a scenario changes reviewer orientation only; it does not run routing,
+      mutate decisions, persist storage, export data, or execute replay.
+    </p>
+    <div class="scenario-tools" aria-label="Scenario catalog controls">
+      <button id="load-scenarios" class="secondary" type="button" data-action="load-decision-explorer-scenarios">
+        Load Scenario Catalog
+      </button>
+      <label>Scenario
+        <select id="scenario-selector" aria-label="Scenario selector">
+          <option value="">Scenario catalog not loaded</option>
+        </select>
+      </label>
+      <label>Category filter
+        <select id="scenario-category-filter" aria-label="Scenario category filter">
+          <option value="">All categories</option>
+        </select>
+      </label>
+      <label>Evidence filter
+        <select id="scenario-evidence-filter" aria-label="Scenario evidence-status filter">
+          <option value="">All evidence statuses</option>
+        </select>
+      </label>
+    </div>
+    <div id="scenario-catalog-status" class="empty">
+      Scenario Catalog not loaded yet. Filters stay local to the page after same-origin metadata loads.
+    </div>
+    <div id="scenario-catalog-list" class="empty">No scenario catalog rows loaded yet.</div>
     <label>Routing comparison input
       <textarea id="request-body" spellcheck="false"></textarea>
     </label>
@@ -456,6 +500,7 @@
 
 <script>
   const DECISION_EXPLORER_ENDPOINT = "/api/routing/decision-explorer";
+  const DECISION_EXPLORER_SCENARIOS_ENDPOINT = "/api/routing/decision-explorer/scenarios";
   const DECISION_EXPLORER_SAMPLE_REQUEST = {
     strategies: ["TAIL_LATENCY_POWER_OF_TWO"],
     servers: [
@@ -499,6 +544,11 @@
     apiKey: document.getElementById("api-key"),
     requestBody: document.getElementById("request-body"),
     status: document.getElementById("run-status"),
+    scenarioSelector: document.getElementById("scenario-selector"),
+    scenarioCategoryFilter: document.getElementById("scenario-category-filter"),
+    scenarioEvidenceFilter: document.getElementById("scenario-evidence-filter"),
+    scenarioCatalogStatus: document.getElementById("scenario-catalog-status"),
+    scenarioCatalogList: document.getElementById("scenario-catalog-list"),
     decisionSummary: document.getElementById("decision-summary"),
     selectedCandidate: document.getElementById("selected-candidate"),
     notProven: document.getElementById("not-proven"),
@@ -514,6 +564,8 @@
   };
 
   let latestPayload = null;
+  let latestScenarioCatalog = null;
+  let visibleScenarios = [];
 
   function resetSample() {
     elements.requestBody.value = JSON.stringify(DECISION_EXPLORER_SAMPLE_REQUEST, null, 2);
@@ -551,6 +603,157 @@
       renderError(error);
       setStatus("error", "Decision Explorer request failed");
     }
+  }
+
+  async function loadScenarioCatalog() {
+    setStatus("idle", "Loading Scenario Catalog");
+    const headers = {};
+    const key = elements.apiKey.value.trim();
+    if (key) {
+      headers["X-API-Key"] = key;
+    }
+
+    try {
+      const response = await fetch(DECISION_EXPLORER_SCENARIOS_ENDPOINT, {
+        method: "GET",
+        headers
+      });
+      const body = await response.json();
+      if (!response.ok) {
+        throw new Error(body.message || body.error || "Decision Explorer scenario catalog request failed");
+      }
+      latestScenarioCatalog = body || {};
+      seedScenarioFilters(latestScenarioCatalog.scenarios || []);
+      applyScenarioFilters();
+      setStatus("ready", `Loaded ${visibleScenarios.length} Scenario Catalog row(s)`);
+    } catch (error) {
+      latestScenarioCatalog = null;
+      visibleScenarios = [];
+      renderScenarioOptions([]);
+      setEmpty(elements.scenarioCatalogStatus, error.message);
+      setEmpty(elements.scenarioCatalogList, "No scenario catalog rows available.");
+      setStatus("error", "Scenario Catalog request failed");
+    }
+  }
+
+  function seedScenarioFilters(scenarios) {
+    replaceFilterOptions(
+      elements.scenarioCategoryFilter,
+      "All categories",
+      sortedUnique(scenarios.map(scenario => scenario.scenarioCategory))
+    );
+    replaceFilterOptions(
+      elements.scenarioEvidenceFilter,
+      "All evidence statuses",
+      sortedUnique(scenarios.map(scenario => scenario.evidenceStatus))
+    );
+  }
+
+  function replaceFilterOptions(select, defaultLabel, values) {
+    const previous = select.value;
+    select.replaceChildren();
+    const allOption = document.createElement("option");
+    allOption.value = "";
+    allOption.textContent = defaultLabel;
+    select.append(allOption);
+    values.forEach(item => {
+      const option = document.createElement("option");
+      option.value = item;
+      option.textContent = item;
+      select.append(option);
+    });
+    select.value = values.includes(previous) ? previous : "";
+  }
+
+  function applyScenarioFilters() {
+    const catalogScenarios = latestScenarioCatalog && Array.isArray(latestScenarioCatalog.scenarios)
+      ? latestScenarioCatalog.scenarios
+      : [];
+    const category = elements.scenarioCategoryFilter.value;
+    const evidenceStatus = elements.scenarioEvidenceFilter.value;
+    visibleScenarios = sortScenarios(catalogScenarios).filter(scenario => {
+      const categoryMatches = !category || scenario.scenarioCategory === category;
+      const evidenceMatches = !evidenceStatus || scenario.evidenceStatus === evidenceStatus;
+      return categoryMatches && evidenceMatches;
+    });
+    renderScenarioOptions(visibleScenarios);
+    renderScenarioCatalog(visibleScenarios);
+    renderSelectedScenario(selectedScenario());
+  }
+
+  function renderScenarioOptions(scenarios) {
+    const previous = elements.scenarioSelector.value;
+    elements.scenarioSelector.replaceChildren();
+    if (!scenarios.length) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "No matching scenarios";
+      elements.scenarioSelector.append(option);
+      elements.scenarioSelector.value = "";
+      return;
+    }
+    scenarios.forEach(scenario => {
+      const option = document.createElement("option");
+      option.value = value(scenario.scenarioId);
+      option.textContent = `${value(scenario.scenarioLabel)} (${value(scenario.evidenceStatus)})`;
+      elements.scenarioSelector.append(option);
+    });
+    const hasPrevious = scenarios.some(scenario => scenario.scenarioId === previous);
+    elements.scenarioSelector.value = hasPrevious ? previous : value(scenarios[0].scenarioId);
+  }
+
+  function renderScenarioCatalog(scenarios) {
+    renderTable(
+      elements.scenarioCatalogList,
+      ["Order", "Scenario", "Category", "Evidence", "Request preset", "Warnings", "Unknowns"],
+      scenarios,
+      scenario => [
+        scenario.displayOrder == null ? "UNKNOWN" : String(scenario.displayOrder),
+        value(scenario.scenarioLabel),
+        value(scenario.scenarioCategory),
+        value(scenario.evidenceStatus),
+        value(scenario.requestPresetId),
+        listText(scenario.warnings),
+        listText(scenario.unknowns)
+      ],
+      "No scenario catalog rows match the selected filters."
+    );
+  }
+
+  function renderSelectedScenario(scenario) {
+    if (!scenario) {
+      setEmpty(elements.scenarioCatalogStatus, "No scenario selected. Adjust filters or load the same-origin catalog.");
+      return;
+    }
+    renderKeyValues(elements.scenarioCatalogStatus, [
+      ["Selected scenario", value(scenario.scenarioLabel)],
+      ["Scenario ID", value(scenario.scenarioId)],
+      ["Category", value(scenario.scenarioCategory)],
+      ["Evidence status", value(scenario.evidenceStatus)],
+      ["Request preset", value(scenario.requestPresetId)],
+      ["Description", value(scenario.description)],
+      ["Boundary", value(scenario.boundaryNote || latestScenarioCatalog.boundaryNote)]
+    ]);
+  }
+
+  function selectedScenario() {
+    const selectedId = elements.scenarioSelector.value;
+    return visibleScenarios.find(scenario => scenario.scenarioId === selectedId) || null;
+  }
+
+  function sortedUnique(values) {
+    return Array.from(new Set(values.filter(item => item != null && item !== "").map(String))).sort();
+  }
+
+  function sortScenarios(scenarios) {
+    return [...scenarios].sort((left, right) => {
+      const leftOrder = left.displayOrder == null ? Number.MAX_SAFE_INTEGER : Number(left.displayOrder);
+      const rightOrder = right.displayOrder == null ? Number.MAX_SAFE_INTEGER : Number(right.displayOrder);
+      if (leftOrder !== rightOrder) {
+        return leftOrder - rightOrder;
+      }
+      return value(left.scenarioId).localeCompare(value(right.scenarioId));
+    });
   }
 
   function renderPayload(payloads) {
@@ -790,6 +993,10 @@
   document.getElementById("run-sample").addEventListener("click", runDecisionExplorer);
   document.getElementById("reset-sample").addEventListener("click", resetSample);
   document.getElementById("copy-summary").addEventListener("click", copyReviewerSummary);
+  document.getElementById("load-scenarios").addEventListener("click", loadScenarioCatalog);
+  elements.scenarioSelector.addEventListener("change", () => renderSelectedScenario(selectedScenario()));
+  elements.scenarioCategoryFilter.addEventListener("change", applyScenarioFilters);
+  elements.scenarioEvidenceFilter.addEventListener("change", applyScenarioFilters);
   resetSample();
 </script>
 </body>

@@ -9,6 +9,7 @@ LoadBalancerPro exposes a small set of calculation-only API contracts for contro
 - `POST /api/allocate/evaluate`
 - `POST /api/routing/compare`
 - `POST /api/routing/decision-explorer`
+- `GET /api/routing/decision-explorer/scenarios`
 - `ANY /proxy/**` when `loadbalancerpro.proxy.enabled=true`
 - `GET /api/proxy/status`
 - `POST /api/proxy/private-network-live-validation`
@@ -80,13 +81,15 @@ prove production readiness, certification, live-cloud validation, real-tenant va
 behavior, throughput/p95/p99 behavior, replay/export behavior, storage behavior, or broader automation.
 
 The static Decision Explorer first-pass page is served at `GET /decision-explorer.html`. It calls the same-origin
-`POST /api/routing/decision-explorer` route with deterministic synthetic routing telemetry, keeps the optional API key
-in page memory only, renders decision summary, selected candidate, candidate set, factor contributions, policy gates,
-decision diffs, evidence packet readouts, agent structured output, warnings, unknowns, not-proven boundaries, and raw
-payload locally in the browser, and writes no runtime files. Its root-page and reviewer-doc navigation points to the
-page as a local inspection surface only. The page does not add storage, export, replay execution, evidence-packet
-generation, live traffic shifting, production approval controls, cloud controls, tenant controls, or
-benchmark/load/stress claims.
+`POST /api/routing/decision-explorer` route with deterministic synthetic routing telemetry and the same-origin
+`GET /api/routing/decision-explorer/scenarios` route for deterministic scenario catalog metadata. It keeps the optional
+API key in page memory only, renders scenario selector, scenario category filtering, evidence-status filtering,
+decision summary, selected candidate, candidate set, factor contributions, policy gates, decision diffs, evidence packet
+readouts, agent structured output, warnings, unknowns, not-proven boundaries, and raw payload locally in the browser,
+and writes no runtime files. Scenario selection is reviewer orientation only and does not run routing by itself. Its
+root-page and reviewer-doc navigation points to the page as a local inspection surface only. The page does not add
+storage, export, replay execution, evidence-packet generation, live traffic shifting, production approval controls,
+cloud controls, tenant controls, or benchmark/load/stress claims.
 
 `DecisionExplorerPayloadV1.factorDrilldowns` is an additive Phase 2 field derived from already-returned
 `ScoreFactorContributionResponse` evidence. Each `DecisionFactorDrilldownV1` readout names the factor and candidate,

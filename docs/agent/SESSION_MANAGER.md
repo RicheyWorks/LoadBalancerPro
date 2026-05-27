@@ -8,34 +8,30 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T13:12-07:00
+Timestamp: 2026-05-27T13:41-07:00
 
 Goal name: Decision Explorer Implementation Phase 2
 
-Current PR slot: DX-P2-G05
+Current PR slot: DX-P2-G06
 
-Checkpoint: DX-P2-G05 PR #373 opened; PR-created checkpoint update in progress
+Checkpoint: DX-P2-G06 local verification passed; commit and PR creation pending
 
-Started from main SHA: `b2f5017e4c7484e34d0da6a1ffde3954442a9103`
+Started from main SHA: `64394f1380708a63d70ad9e5ec1a2ad3589a9780`
 
-Current branch: codex/decision-explorer-phase2-candidate-comparison
+Current branch: codex/decision-explorer-phase2-ui-scenarios
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/373
+PR URL: not opened yet
 
-Head SHA: `dfa9baa73695cfc7ce4a2264617ce193077bc482` before the PR-created checkpoint update
+Head SHA: `64394f1380708a63d70ad9e5ec1a2ad3589a9780` before local DX-P2-G06 implementation
 
 Changed files planned for this slice:
 
 - docs/API_CONTRACTS.md
 - docs/agent/DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCandidateComparisonRowV1.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadService.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCandidateComparisonRowV1Test.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadServiceTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1Test.java
-- src/test/java/com/richmond423/loadbalancerpro/api/RoutingOpenApiContractTest.java
+- src/main/resources/static/decision-explorer.html
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerReviewerNavigationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerStaticPageTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest.java
 
 Checks run:
@@ -193,14 +189,49 @@ Checks run:
 - DX-P2-G05 committed as `dfa9baa73695cfc7ce4a2264617ce193077bc482`.
 - DX-P2-G05 pushed to origin and opened as PR #373:
   https://github.com/RicheyWorks/LoadBalancerPro/pull/373.
+- DX-P2-G05 current-head PR checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review.
+- DX-P2-G05 PR CI and Dependency Review passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26536161903.
+- DX-P2-G05 PR CodeQL passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26536160452.
+- DX-P2-G05 merged as `64394f1380708a63d70ad9e5ec1a2ad3589a9780`.
+- DX-P2-G05 post-merge local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  `mvn -B package` with 2,697 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- DX-P2-G05 main CI passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26536519136.
+- DX-P2-G05 main CodeQL passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26536519094.
+- DX-P2-G06 branch `codex/decision-explorer-phase2-ui-scenarios` was created from clean main at
+  `64394f1380708a63d70ad9e5ec1a2ad3589a9780`.
+- DX-P2-G06 is adding static same-origin scenario selector and filtering controls to `/decision-explorer.html`.
+  The slice reads `GET /api/routing/decision-explorer/scenarios` metadata, filters locally by scenario category and
+  evidence status, and treats scenario selection as reviewer orientation only. It does not run routing by itself,
+  change routing/scoring/proxy behavior, persist storage, export data, execute replay, generate evidence packets, or
+  call external systems.
+- DX-P2-G06 focused selector passed:
+  `mvn test "-Dtest=DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest,RoutingControllerTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+  with 38 tests, 0 failures, 0 errors, and 0 skipped.
+- DX-P2-G06 relevant Decision Explorer selector passed:
+  `mvn test "-Dtest=*DecisionExplorer*,RoutingControllerTest,RoutingOpenApiContractTest"`
+  with 160 tests, 0 failures, 0 errors, and 0 skipped.
+- `mvn -q test` passed.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed with 2,698 tests, 0 failures, 0 errors, and 0 skipped.
+- `git diff --check` passed with line-ending warnings only.
+- `git diff --cached --check` passed.
+- `git diff --check origin/main...HEAD` passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
+- DX-P2-G06 rendered-page verification passed on `http://127.0.0.1:18080/decision-explorer.html`: the packaged app
+  served the page, the same-origin Scenario Catalog loaded, `PARTIAL_EVIDENCE` filtering narrowed the visible rows to
+  the partial-evidence scenario, and browser console errors were empty. The local process was stopped after
+  verification.
 
-Remote status: main CI and CodeQL green for `b2f5017e4c7484e34d0da6a1ffde3954442a9103`; PR #373 remote checks started
-after PR creation and must pass on the pushed checkpoint head before merge.
+Remote status: main CI and CodeQL green for `64394f1380708a63d70ad9e5ec1a2ad3589a9780`; DX-P2-G06 has no PR yet.
 
 Blocker: none.
 
-Next action: push the PR-created checkpoint update, wait for PR #373 current-head checks, merge only if green, verify
-post-merge main, then continue to DX-P2-G06.
+Next action: commit and push DX-P2-G06, open the PR, then merge only when required remote checks are current-head green.
 
 Decision: continue.
 

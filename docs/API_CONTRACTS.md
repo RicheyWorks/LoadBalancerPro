@@ -70,6 +70,13 @@ automation. In local/default mode it follows the same local routing API convenie
 `POST /api/routing/compare`; in prod/cloud-sandbox API-key mode and OAuth2 mode it inherits the existing
 `/api/routing/**` protections.
 
+The static Decision Explorer first-pass page is served at `GET /decision-explorer.html`. It calls the same-origin
+`POST /api/routing/decision-explorer` route with deterministic synthetic routing telemetry, keeps the optional API key
+in page memory only, renders decision summary, selected candidate, candidate set, factor contributions, policy gates,
+warnings, unknowns, not-proven boundaries, and raw payload locally in the browser, and writes no runtime files. The
+page does not add storage, export, replay execution, evidence-packet generation, live traffic shifting, production
+approval controls, cloud controls, tenant controls, or benchmark/load/stress claims.
+
 Scenario replay responses expose `scenarioId`, `readOnly`, `cloudMutation`, `remediationPlan`, and ordered `steps`. Remediation recommendations are advisory only and must not introduce cloud mutation or execution semantics.
 
 Remediation report export requests accept exactly one report source: an existing read-only evaluation response or an existing scenario replay response. The response exposes the requested `format`, report `contentType`, optional Markdown `report`, structured `json` payload, and top-level `readOnly`, `advisoryOnly`, and `cloudMutation` flags. Report output is deterministic for the same input and does not add generated timestamps or random identifiers unless the caller supplies a report id.

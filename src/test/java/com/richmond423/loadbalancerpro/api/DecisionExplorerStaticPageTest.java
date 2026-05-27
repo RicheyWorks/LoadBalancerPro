@@ -1,0 +1,183 @@
+package com.richmond423.loadbalancerpro.api;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Locale;
+
+import com.richmond423.loadbalancerpro.core.CloudManager;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class DecisionExplorerStaticPageTest {
+    private static final Path DECISION_EXPLORER_PAGE =
+            Path.of("src/main/resources/static/decision-explorer.html");
+    private static final String VALID_REQUEST = """
+            {
+              "strategies": ["TAIL_LATENCY_POWER_OF_TWO"],
+              "servers": [
+                {
+                  "serverId": "green",
+                  "healthy": true,
+                  "inFlightRequestCount": 5,
+                  "configuredCapacity": 100.0,
+                  "estimatedConcurrencyLimit": 100.0,
+                  "averageLatencyMillis": 20.0,
+                  "p95LatencyMillis": 40.0,
+                  "p99LatencyMillis": 80.0,
+                  "recentErrorRate": 0.01,
+                  "queueDepth": 1
+                },
+                {
+                  "serverId": "blue",
+                  "healthy": true,
+                  "inFlightRequestCount": 75,
+                  "configuredCapacity": 100.0,
+                  "estimatedConcurrencyLimit": 100.0,
+                  "averageLatencyMillis": 35.0,
+                  "p95LatencyMillis": 120.0,
+                  "p99LatencyMillis": 220.0,
+                  "recentErrorRate": 0.15,
+                  "queueDepth": 10
+                }
+              ]
+            }
+            """;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    void decisionExplorerPageExistsAndIsServed() throws Exception {
+        assertTrue(Files.exists(DECISION_EXPLORER_PAGE), "Decision Explorer page should be source-controlled");
+
+        mockMvc.perform(get("/decision-explorer.html"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(containsString("Decision Explorer")))
+                .andExpect(content().string(containsString("data-action=\"run-decision-explorer\"")))
+                .andExpect(content().string(containsString("/api/routing/decision-explorer")));
+    }
+
+    @Test
+    void decisionExplorerPageContainsFirstPassReviewerPanelsAndControls() throws Exception {
+        String page = readPage();
+
+        for (String expected : List.of(
+                "Decision Summary",
+                "Selected Candidate",
+                "Candidate Set",
+                "Factor Contributions",
+                "Policy Gates",
+                "Warnings",
+                "Unknowns",
+                "Not-Proven Boundaries",
+                "Raw Payload",
+                "Run Decision Explorer",
+                "Copy Summary",
+                "DecisionExplorerPayloadV1",
+                "read-only",
+                "simulation-only",
+                "X-API-Key",
+                "same-origin",
+                "page memory only")) {
+            assertTrue(page.contains(expected), "Decision Explorer page should contain " + expected);
+        }
+    }
+
+    @Test
+    void decisionExplorerPageUsesSameOriginApiAndNoPersistentBrowserStorage() throws Exception {
+        String page = readPage();
+
+        assertTrue(page.contains("const DECISION_EXPLORER_ENDPOINT = \"/api/routing/decision-explorer\""));
+        assertTrue(page.contains("fetch(DECISION_EXPLORER_ENDPOINT"));
+        assertTrue(page.contains("headers[\"X-API-Key\"] = key"));
+        assertTrue(page.contains("textContent"));
+        assertTrue(page.contains("createElement"));
+        assertFalse(page.contains("window.localStorage"));
+        assertFalse(page.contains("localStorage."));
+        assertFalse(page.contains("window.sessionStorage"));
+        assertFalse(page.contains("sessionStorage."));
+        assertFalse(page.contains("innerHTML"));
+        assertFalse(page.contains("document.write"));
+        assertFalse(page.contains("https://"));
+        assertFalse(page.contains("http://"));
+    }
+
+    @Test
+    void decisionExplorerPageAndEndpointReturnReadOnlySimulationOnlyPayload() throws Exception {
+        try (MockedConstruction<CloudManager> mockedCloudManager =
+                Mockito.mockConstruction(CloudManager.class)) {
+            mockMvc.perform(post("/api/routing/decision-explorer")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(VALID_REQUEST))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$[0].readOnly", is(true)))
+                    .andExpect(jsonPath("$[0].simulationOnly", is(true)))
+                    .andExpect(jsonPath("$[0].payloadObject", is("DecisionExplorerPayloadV1")))
+                    .andExpect(jsonPath("$[0].decisionReadout.selectedCandidateId", is("green")))
+                    .andExpect(jsonPath("$[0].selectedCandidate.candidateId", is("green")))
+                    .andExpect(jsonPath("$[0].candidateSet[0].selected", is(true)))
+                    .andExpect(jsonPath("$[0].policyGateReadouts[0].gateId", is("boundary-read-only")))
+                    .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no production readiness")));
+
+            assertTrue(mockedCloudManager.constructed().isEmpty(),
+                    "Decision Explorer page-backed endpoint call must not construct CloudManager.");
+        }
+    }
+
+    @Test
+    void decisionExplorerPagePreservesSafetyAndNotProvenBoundaries() throws Exception {
+        String normalized = readPage().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+
+        for (String expected : List.of(
+                "does not shift traffic",
+                "mutate routing",
+                "call cloud or tenant systems",
+                "persist storage",
+                "execute replay",
+                "generate evidence packets",
+                "export files",
+                "prove production readiness")) {
+            assertTrue(normalized.contains(expected), "Decision Explorer page should preserve boundary " + expected);
+        }
+
+        for (String forbidden : List.of(
+                "production readiness is proven",
+                "production certified",
+                "live-cloud validated",
+                "real tenant validated",
+                "benchmark proven",
+                "throughput proven",
+                "autonomous production action enabled",
+                "traffic shifting enabled",
+                "evidence packet generated")) {
+            assertFalse(normalized.contains(forbidden), "Decision Explorer page must not overclaim " + forbidden);
+        }
+    }
+
+    private static String readPage() throws Exception {
+        return Files.readString(DECISION_EXPLORER_PAGE, StandardCharsets.UTF_8);
+    }
+}

@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decision Explorer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7f8;
+      --panel: #ffffff;
+      --ink: #17212b;
+      --muted: #5b6674;
+      --line: #d8e0e7;
+      --teal: #1f6f78;
+      --green: #2f7d5b;
+      --amber: #98670f;
+      --red: #9b3a2f;
+      --soft-teal: #e5f3f4;
+      --soft-green: #e7f4ee;
+      --soft-amber: #fff4db;
+      --soft-red: #fbe8e4;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      background: #ffffff;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 42px;
+    }
+
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 6px 0 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+    }
+
+    .mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: var(--teal);
+      border-right: 10px solid var(--green);
+      border-bottom: 10px solid var(--amber);
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    nav a {
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+
+    nav a:focus,
+    nav a:hover {
+      color: var(--ink);
+      border-color: currentColor;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      margin-bottom: 14px;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin-bottom: 8px;
+      font-size: 1rem;
+      letter-spacing: 0;
+    }
+    p {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .summary-panel {
+      border-left: 5px solid var(--teal);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 5px;
+      min-width: min(260px, 100%);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    textarea,
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 11px;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 260px;
+      resize: vertical;
+      font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+
+    button {
+      min-height: 42px;
+      border: 1px solid var(--teal);
+      border-radius: 6px;
+      padding: 0 14px;
+      background: var(--teal);
+      color: #fff;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      border-color: var(--line);
+      background: #fff;
+      color: var(--ink);
+    }
+
+    button:focus,
+    button:hover {
+      outline: 3px solid rgba(31, 111, 120, 0.16);
+    }
+
+    main.shell {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.9rem;
+      background: var(--soft-amber);
+      color: var(--amber);
+    }
+
+    .status[data-state="ready"] {
+      background: var(--soft-green);
+      color: var(--green);
+    }
+
+    .status[data-state="error"] {
+      background: var(--soft-red);
+      color: var(--red);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 9px 7px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { color: #3b4655; }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: #f8fafb;
+      color: #34414f;
+      font-size: 0.82rem;
+    }
+
+    .chip.selected {
+      border-color: var(--green);
+      background: var(--soft-green);
+      color: var(--green);
+    }
+
+    pre {
+      overflow: auto;
+      max-height: 460px;
+      margin: 0;
+      border-radius: 6px;
+      padding: 12px;
+      background: #101a22;
+      color: #edf7fa;
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    @media (max-width: 780px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .topline {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="shell">
+    <div class="topline">
+      <div class="brand"><span class="mark" aria-hidden="true"></span><span>LoadBalancerPro</span></div>
+      <nav aria-label="Reviewer navigation">
+        <a href="/">Home</a>
+        <a href="/load-balancing-cockpit.html">Cockpit</a>
+        <a href="/routing-demo.html">Routing proof</a>
+        <a href="/enterprise-lab-reviewer.html">Reviewer dashboard</a>
+      </nav>
+    </div>
+    <div class="hero">
+      <div>
+        <h1>Decision Explorer</h1>
+        <p>
+          A read-only, simulation-only reviewer surface for exploring DecisionExplorerPayloadV1 data returned by
+          <code>POST /api/routing/decision-explorer</code>. It uses caller-provided synthetic routing telemetry and
+          already-built compare evidence only.
+        </p>
+      </div>
+      <section class="panel summary-panel" aria-labelledby="boundary-title">
+        <h2 id="boundary-title">Safety Boundary</h2>
+        <p>
+          This page does not shift traffic, mutate routing, call cloud or tenant systems, persist storage, execute
+          replay, generate evidence packets, export files, or prove production readiness.
+        </p>
+        <span id="run-status" class="status" data-state="idle">Ready to run sample</span>
+      </section>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+  <section class="panel" aria-labelledby="controls-title">
+    <h2 id="controls-title">Request</h2>
+    <p>
+      The sample payload is deterministic and local-lab oriented. Calls use the same-origin API. In protected profiles,
+      an optional API key is kept in page memory only and sent as <code>X-API-Key</code>; it is not stored in
+      localStorage, sessionStorage, URLs, or logs.
+    </p>
+    <div class="controls">
+      <label>Optional API key
+        <input id="api-key" type="password" autocomplete="off" placeholder="X-API-Key for protected profiles">
+      </label>
+      <button id="run-sample" type="button" data-action="run-decision-explorer">Run Decision Explorer</button>
+      <button id="reset-sample" class="secondary" type="button" data-action="reset-sample">Reset Sample</button>
+      <button id="copy-summary" class="secondary" type="button" data-action="copy-reviewer-summary">Copy Summary</button>
+    </div>
+    <label>Routing comparison input
+      <textarea id="request-body" spellcheck="false"></textarea>
+    </label>
+  </section>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="decision-title">
+      <h2 id="decision-title">Decision Summary</h2>
+      <div id="decision-summary" class="empty">Run the sample to inspect the selected decision.</div>
+    </section>
+    <section class="panel" aria-labelledby="selected-title">
+      <h2 id="selected-title">Selected Candidate</h2>
+      <div id="selected-candidate" class="empty">No selected candidate loaded yet.</div>
+    </section>
+    <section class="panel" aria-labelledby="boundaries-title">
+      <h2 id="boundaries-title">Not-Proven Boundaries</h2>
+      <div id="not-proven" class="empty">No boundaries loaded yet.</div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="candidates-title">
+    <h2 id="candidates-title">Candidate Set</h2>
+    <div id="candidate-set" class="empty">No candidate readouts loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="factors-title">
+    <h2 id="factors-title">Factor Contributions</h2>
+    <div id="factor-contributions" class="empty">No factor contribution readouts loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="policy-title">
+    <h2 id="policy-title">Policy Gates</h2>
+    <div id="policy-gates" class="empty">No policy gate readouts loaded yet.</div>
+  </section>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="warnings-title">
+      <h2 id="warnings-title">Warnings</h2>
+      <div id="warnings" class="empty">No warnings loaded yet.</div>
+    </section>
+    <section class="panel" aria-labelledby="unknowns-title">
+      <h2 id="unknowns-title">Unknowns</h2>
+      <div id="unknowns" class="empty">No unknowns loaded yet.</div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="raw-title">
+    <h2 id="raw-title">Raw Payload</h2>
+    <pre id="raw-output">No payload loaded yet.</pre>
+  </section>
+</main>
+
+<script>
+  const DECISION_EXPLORER_ENDPOINT = "/api/routing/decision-explorer";
+  const DECISION_EXPLORER_SAMPLE_REQUEST = {
+    strategies: ["TAIL_LATENCY_POWER_OF_TWO"],
+    servers: [
+      {
+        serverId: "green",
+        healthy: true,
+        inFlightRequestCount: 5,
+        configuredCapacity: 100.0,
+        estimatedConcurrencyLimit: 100.0,
+        averageLatencyMillis: 20.0,
+        p95LatencyMillis: 40.0,
+        p99LatencyMillis: 80.0,
+        recentErrorRate: 0.01,
+        queueDepth: 1,
+        networkAwareness: {
+          timeoutRate: 0.0,
+          retryRate: 0.0,
+          connectionFailureRate: 0.0,
+          latencyJitterMillis: 4.0,
+          recentErrorBurst: false,
+          requestTimeoutCount: 0,
+          sampleSize: 120
+        }
+      },
+      {
+        serverId: "blue",
+        healthy: true,
+        inFlightRequestCount: 75,
+        configuredCapacity: 100.0,
+        estimatedConcurrencyLimit: 100.0,
+        averageLatencyMillis: 35.0,
+        p95LatencyMillis: 120.0,
+        p99LatencyMillis: 220.0,
+        recentErrorRate: 0.15,
+        queueDepth: 10
+      }
+    ]
+  };
+
+  const elements = {
+    apiKey: document.getElementById("api-key"),
+    requestBody: document.getElementById("request-body"),
+    status: document.getElementById("run-status"),
+    decisionSummary: document.getElementById("decision-summary"),
+    selectedCandidate: document.getElementById("selected-candidate"),
+    notProven: document.getElementById("not-proven"),
+    candidateSet: document.getElementById("candidate-set"),
+    factorContributions: document.getElementById("factor-contributions"),
+    policyGates: document.getElementById("policy-gates"),
+    warnings: document.getElementById("warnings"),
+    unknowns: document.getElementById("unknowns"),
+    rawOutput: document.getElementById("raw-output")
+  };
+
+  let latestPayload = null;
+
+  function resetSample() {
+    elements.requestBody.value = JSON.stringify(DECISION_EXPLORER_SAMPLE_REQUEST, null, 2);
+    setStatus("idle", "Ready to run sample");
+  }
+
+  function setStatus(state, text) {
+    elements.status.dataset.state = state;
+    elements.status.textContent = text;
+  }
+
+  async function runDecisionExplorer() {
+    setStatus("idle", "Running Decision Explorer");
+    const headers = { "Content-Type": "application/json" };
+    const key = elements.apiKey.value.trim();
+    if (key) {
+      headers["X-API-Key"] = key;
+    }
+
+    try {
+      const response = await fetch(DECISION_EXPLORER_ENDPOINT, {
+        method: "POST",
+        headers,
+        body: elements.requestBody.value
+      });
+      const body = await response.json();
+      if (!response.ok) {
+        throw new Error(body.message || body.error || "Decision Explorer request failed");
+      }
+      latestPayload = Array.isArray(body) ? body : [];
+      renderPayload(latestPayload);
+      setStatus("ready", `Loaded ${latestPayload.length} Decision Explorer payload(s)`);
+    } catch (error) {
+      latestPayload = null;
+      renderError(error);
+      setStatus("error", "Decision Explorer request failed");
+    }
+  }
+
+  function renderPayload(payloads) {
+    const first = payloads[0];
+    elements.rawOutput.textContent = JSON.stringify(payloads, null, 2);
+    if (!first) {
+      setEmpty(elements.decisionSummary, "No Decision Explorer payloads returned.");
+      return;
+    }
+
+    renderKeyValues(elements.decisionSummary, [
+      ["Decision ID", first.decisionId],
+      ["Status", value(first.decisionReadout && first.decisionReadout.status)],
+      ["Strategy", value(first.decisionReadout && first.decisionReadout.selectedStrategy)],
+      ["Selected candidate", value(first.decisionReadout && first.decisionReadout.selectedCandidateId)],
+      ["Summary", value(first.decisionReadout && first.decisionReadout.summary)],
+      ["Boundary", value(first.boundaryNote)]
+    ]);
+    renderKeyValues(elements.selectedCandidate, candidateRows(first.selectedCandidate));
+    renderChips(elements.notProven, first.notProvenBoundaries, "not-proven");
+    renderCandidateTable(elements.candidateSet, first.candidateSet || []);
+    renderFactorTable(elements.factorContributions, first.factorContributions || []);
+    renderPolicyTable(elements.policyGates, first.policyGateReadouts || []);
+    renderChips(elements.warnings, first.warnings, "warning");
+    renderChips(elements.unknowns, first.unknowns, "unknown");
+  }
+
+  function renderError(error) {
+    elements.rawOutput.textContent = error.message;
+    setEmpty(elements.decisionSummary, error.message);
+    setEmpty(elements.selectedCandidate, "No selected candidate available.");
+    setEmpty(elements.notProven, "No boundaries available.");
+    setEmpty(elements.candidateSet, "No candidate readouts available.");
+    setEmpty(elements.factorContributions, "No factor contribution readouts available.");
+    setEmpty(elements.policyGates, "No policy gate readouts available.");
+    setEmpty(elements.warnings, "Request failed before warnings could be loaded.");
+    setEmpty(elements.unknowns, "Request failed before unknowns could be loaded.");
+  }
+
+  function candidateRows(candidate) {
+    if (!candidate) {
+      return [["Candidate", "UNKNOWN"]];
+    }
+    return [
+      ["Candidate ID", value(candidate.candidateId)],
+      ["Status", value(candidate.candidateStatus)],
+      ["Final score", candidate.finalScore == null ? "UNKNOWN" : String(candidate.finalScore)],
+      ["Selected", candidate.selected ? "true" : "false"],
+      ["Visible signals", listText(candidate.visibleSignals)],
+      ["Unknown signals", listText(candidate.unknownSignals)]
+    ];
+  }
+
+  function renderKeyValues(target, rows) {
+    target.replaceChildren();
+    const table = document.createElement("table");
+    const tbody = document.createElement("tbody");
+    rows.forEach(([label, detail]) => {
+      const row = document.createElement("tr");
+      const th = document.createElement("th");
+      const td = document.createElement("td");
+      th.textContent = label;
+      td.textContent = detail;
+      row.append(th, td);
+      tbody.append(row);
+    });
+    table.append(tbody);
+    target.append(table);
+    target.classList.remove("empty");
+  }
+
+  function renderCandidateTable(target, candidates) {
+    renderTable(target, ["Candidate", "Selected", "Status", "Final score", "Evidence refs"], candidates, candidate => [
+      value(candidate.candidateId),
+      candidate.selected ? "yes" : "no",
+      value(candidate.candidateStatus),
+      candidate.finalScore == null ? "UNKNOWN" : String(candidate.finalScore),
+      listText(candidate.evidenceReferenceIds)
+    ]);
+  }
+
+  function renderFactorTable(target, factors) {
+    renderTable(target, ["Candidate", "Factor", "Direction", "Value", "Exactness"], factors, factor => [
+      value(factor.candidateId),
+      value(factor.factorName),
+      value(factor.direction),
+      factor.contributionValue == null ? "UNKNOWN" : String(factor.contributionValue),
+      value(factor.exactness)
+    ]);
+  }
+
+  function renderPolicyTable(target, gates) {
+    renderTable(target, ["Gate", "Status", "Outcome", "Explanation"], gates, gate => [
+      value(gate.gateName || gate.gateId),
+      value(gate.gateStatus),
+      value(gate.outcome),
+      value(gate.explanation)
+    ]);
+  }
+
+  function renderTable(target, headers, rows, mapper) {
+    target.replaceChildren();
+    if (!rows.length) {
+      setEmpty(target, "No rows returned.");
+      return;
+    }
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    headers.forEach(header => {
+      const th = document.createElement("th");
+      th.textContent = header;
+      headRow.append(th);
+    });
+    thead.append(headRow);
+    const tbody = document.createElement("tbody");
+    rows.forEach(item => {
+      const row = document.createElement("tr");
+      mapper(item).forEach(cellValue => {
+        const td = document.createElement("td");
+        td.textContent = cellValue;
+        row.append(td);
+      });
+      tbody.append(row);
+    });
+    table.append(thead, tbody);
+    target.append(table);
+    target.classList.remove("empty");
+  }
+
+  function renderChips(target, values, type) {
+    target.replaceChildren();
+    const list = Array.isArray(values) ? values : [];
+    if (!list.length) {
+      setEmpty(target, "None returned.");
+      return;
+    }
+    const wrapper = document.createElement("div");
+    wrapper.className = "chips";
+    list.forEach(item => {
+      const chip = document.createElement("span");
+      chip.className = type === "selected" ? "chip selected" : "chip";
+      chip.textContent = value(item);
+      wrapper.append(chip);
+    });
+    target.append(wrapper);
+    target.classList.remove("empty");
+  }
+
+  function setEmpty(target, text) {
+    target.replaceChildren();
+    target.textContent = text;
+    target.classList.add("empty");
+  }
+
+  function value(input) {
+    return input == null || input === "" ? "UNKNOWN" : String(input);
+  }
+
+  function listText(values) {
+    return Array.isArray(values) && values.length ? values.join(", ") : "None returned";
+  }
+
+  async function copyReviewerSummary() {
+    if (!latestPayload || !latestPayload.length) {
+      setStatus("error", "Run Decision Explorer before copying");
+      return;
+    }
+    const first = latestPayload[0];
+    const text = [
+      "Decision Explorer reviewer summary",
+      `decisionId: ${value(first.decisionId)}`,
+      `selectedCandidate: ${value(first.decisionReadout && first.decisionReadout.selectedCandidateId)}`,
+      `strategy: ${value(first.decisionReadout && first.decisionReadout.selectedStrategy)}`,
+      `readOnly: ${first.readOnly === true}`,
+      `simulationOnly: ${first.simulationOnly === true}`,
+      `notProven: ${listText(first.notProvenBoundaries)}`
+    ].join("\n");
+    await navigator.clipboard.writeText(text);
+    setStatus("ready", "Reviewer summary copied");
+  }
+
+  document.getElementById("run-sample").addEventListener("click", runDecisionExplorer);
+  document.getElementById("reset-sample").addEventListener("click", resetSample);
+  document.getElementById("copy-summary").addEventListener("click", copyReviewerSummary);
+  resetSample();
+</script>
+</body>
+</html>

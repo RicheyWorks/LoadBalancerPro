@@ -17,6 +17,8 @@ class CockpitDiscoverabilityDocumentationTest {
     private static final Path README = Path.of("README.md");
     private static final Path INDEX_PAGE = Path.of("src/main/resources/static/index.html");
     private static final Path COCKPIT_PAGE = Path.of("src/main/resources/static/load-balancing-cockpit.html");
+    private static final Path DECISION_EXPLORER_PAGE =
+            Path.of("src/main/resources/static/decision-explorer.html");
     private static final Path ROUTING_DEMO_PAGE = Path.of("src/main/resources/static/routing-demo.html");
     private static final Path THIS_TEST = Path.of(
             "src/test/java/com/richmond423/loadbalancerpro/api/CockpitDiscoverabilityDocumentationTest.java");
@@ -29,9 +31,11 @@ class CockpitDiscoverabilityDocumentationTest {
     void rootIndexPageExistsAndLinksToCockpitAndRuntimeReviewPaths() throws Exception {
         assertTrue(Files.exists(INDEX_PAGE), "root static landing page should exist");
         assertTrue(Files.exists(COCKPIT_PAGE), "existing cockpit page should remain present");
+        assertTrue(Files.exists(DECISION_EXPLORER_PAGE), "Decision Explorer page should remain present");
 
         String index = read(INDEX_PAGE);
         assertTrue(index.contains("/load-balancing-cockpit.html"), "index should link to cockpit");
+        assertTrue(index.contains("/decision-explorer.html"), "index should link to Decision Explorer");
         assertTrue(index.contains("/api/health"), "index should link to API health");
         assertTrue(index.contains("/actuator/health/readiness"), "index should link to readiness");
 
@@ -48,6 +52,7 @@ class CockpitDiscoverabilityDocumentationTest {
         assertTrue(readme.contains("mvn spring-boot:run"));
         assertTrue(readme.contains("http://localhost:8080/"));
         assertTrue(readme.contains("http://localhost:8080/load-balancing-cockpit.html"));
+        assertTrue(readme.contains("http://localhost:8080/decision-explorer.html"));
         assertTrue(readme.contains("docs/REVIEWER_TRUST_MAP.md"));
 
         if (Files.exists(ROUTING_DEMO_PAGE)) {

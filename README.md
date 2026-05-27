@@ -60,6 +60,8 @@ The Core LoadBalancer Reliability Contract Campaign uses [`docs/agent/CORE_LOADB
 
 The Decision Explorer Architecture Bootstrap Campaign uses [`docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md`](docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md) as its WARN-classified board for DX-G01 through DX-G10. It plans the Interactive Decision Explorer as a reviewer/operator and agent-readable explanation surface for routing decisions. During this bootstrap campaign it remains docs/test-only, planned, read-only, and simulation-only; it does not create endpoints, runtime behavior, storage/export behavior, automation, deployment behavior, cloud behavior, tenant behavior, production traffic-control behavior, production readiness, production certification, live-cloud validation, real-tenant validation, load/stress/benchmarking evidence, throughput/p95/p99 evidence, replay/export/storage proof, or broader automation.
 
+The Decision Explorer Implementation Phase 1 campaign now has a current local reviewer entry point at [`/decision-explorer.html`](http://localhost:8080/decision-explorer.html) and a bounded read-only `POST /api/routing/decision-explorer` data surface documented in [`docs/API_CONTRACTS.md`](docs/API_CONTRACTS.md). The page is same-origin, simulation-only, memory-only for optional API keys, and additive to existing routing comparison evidence. It does not shift traffic, mutate routing, call cloud or tenant systems, persist storage, execute replay, export files, generate evidence packets, or prove production readiness, production certification, live-cloud validation, real-tenant validation, load/stress/benchmarking evidence, throughput/p95/p99 evidence, replay/export/storage proof, or broader automation.
+
 ## Where Detailed Rules Live
 
 - Reviewer proof path: [`docs/REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
@@ -82,6 +84,7 @@ The Decision Explorer Architecture Bootstrap Campaign uses [`docs/agent/DECISION
 - LASE core expansion goal ledger: [`docs/agent/LASE_CORE_EXPANSION_GOALS.md`](docs/agent/LASE_CORE_EXPANSION_GOALS.md).
 - Core LoadBalancer feature contract: [`docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md`](docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md).
 - Decision Explorer architecture bootstrap campaign board: [`docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md`](docs/agent/DECISION_EXPLORER_CAMPAIGN_BOARD.md).
+- Decision Explorer Phase 1 local reviewer page: [`/decision-explorer.html`](http://localhost:8080/decision-explorer.html).
 - Goal campaign verification refinement: [`docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md).
 - Goal campaign final handoff/report: [`docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](docs/agent/GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md).
 - Agent operating rules: [`AGENTS.md`](AGENTS.md).
@@ -146,6 +149,7 @@ Do not claim a PR or main is fully green while required remote checks are pendin
 - Adaptive routing scenarios: [`/adaptive-routing-scenarios.html`](http://localhost:8080/adaptive-routing-scenarios.html), including same-origin summary, drilldown, packet, gate-evaluation, and strategy-comparison-matrix APIs for local synthetic strategy explanations.
 - Evidence timeline: [`/evidence-timeline.html`](http://localhost:8080/evidence-timeline.html).
 - Evidence export packet: [`/evidence-export-packet.html`](http://localhost:8080/evidence-export-packet.html).
+- Decision Explorer: [`/decision-explorer.html`](http://localhost:8080/decision-explorer.html).
 - Reviewer trust map: [`docs/REVIEWER_TRUST_MAP.md`](docs/REVIEWER_TRUST_MAP.md).
 - Framing guide: [`docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md`](docs/ENTERPRISE_LAB_COCKPIT_FRAMING.md).
 - Strategic architecture positioning: [`docs/THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md`](docs/THREE_TIER_ADAPTIVE_ROUTING_STRATEGY.md) frames the current Tier 1 L4-L7 routing focus and future-oriented Tier 2/Tier 3 signal concepts without claiming implementation.
@@ -246,7 +250,7 @@ Run the Spring Boot app locally:
 mvn spring-boot:run
 ```
 
-Then open [`http://localhost:8080/`](http://localhost:8080/) for the app landing page, [`http://localhost:8080/enterprise-lab-reviewer.html`](http://localhost:8080/enterprise-lab-reviewer.html) for the reviewer dashboard, [`http://localhost:8080/operator-evidence-dashboard.html`](http://localhost:8080/operator-evidence-dashboard.html) for the operator evidence dashboard, [`http://localhost:8080/adaptive-routing-scenarios.html`](http://localhost:8080/adaptive-routing-scenarios.html) for deterministic local synthetic selected-server distribution evidence, [`http://localhost:8080/evidence-timeline.html`](http://localhost:8080/evidence-timeline.html) for the evidence timeline/history view, [`http://localhost:8080/evidence-export-packet.html`](http://localhost:8080/evidence-export-packet.html) for the reviewer handoff packet, or [`http://localhost:8080/load-balancing-cockpit.html`](http://localhost:8080/load-balancing-cockpit.html) for the cockpit.
+Then open [`http://localhost:8080/`](http://localhost:8080/) for the app landing page, [`http://localhost:8080/enterprise-lab-reviewer.html`](http://localhost:8080/enterprise-lab-reviewer.html) for the reviewer dashboard, [`http://localhost:8080/operator-evidence-dashboard.html`](http://localhost:8080/operator-evidence-dashboard.html) for the operator evidence dashboard, [`http://localhost:8080/adaptive-routing-scenarios.html`](http://localhost:8080/adaptive-routing-scenarios.html) for deterministic local synthetic selected-server distribution evidence, [`http://localhost:8080/evidence-timeline.html`](http://localhost:8080/evidence-timeline.html) for the evidence timeline/history view, [`http://localhost:8080/evidence-export-packet.html`](http://localhost:8080/evidence-export-packet.html) for the reviewer handoff packet, [`http://localhost:8080/decision-explorer.html`](http://localhost:8080/decision-explorer.html) for the read-only Decision Explorer, or [`http://localhost:8080/load-balancing-cockpit.html`](http://localhost:8080/load-balancing-cockpit.html) for the cockpit.
 
 The web cockpit is the quickest first look at LoadBalancerPro. It uses existing health, allocation, evaluation, and routing comparison endpoints with controlled local inputs, keeps output in the browser, and preserves the existing cockpit URLs. Legacy route name: [`/routing-demo.html`](http://localhost:8080/routing-demo.html). Product identity: Enterprise Lab routing cockpit. This is a local lab reviewer/operator surface, not managed cloud load-balancing infrastructure; proxy mode remains optional and disabled by default unless explicitly enabled.
 

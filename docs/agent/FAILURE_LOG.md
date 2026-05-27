@@ -984,6 +984,127 @@ Result: focused UI/API/docs selector rerun passed with 33 tests, 0 failures, 0 e
 
 Follow-up action: continue to the relevant Decision Explorer selector and full local verification.
 
+## Entry
+
+Date/time: 2026-05-27T00:22-07:00
+
+Branch/PR: codex/decision-explorer-phase1-ui-navigation / pending
+
+Failure type: focused UI navigation guard path mismatch
+
+Failing check: `mvn test "-Dtest=DecisionExplorerReviewerNavigationTest,DecisionExplorerStaticPageTest,CockpitDiscoverabilityDocumentationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest"`
+
+Suspected cause: `GET /` is implemented as a forward to `index.html` in the MockMvc test context, so the response body
+was empty even though the source-controlled `index.html` contained the new Decision Explorer links.
+
+Fix attempted: update the new guard to request `GET /index.html` directly while keeping the source-controlled root page
+link assertions.
+
+Result: focused G06 UI/docs selector rerun passed with 27 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue to the relevant Decision Explorer selector and full local verification.
+
+## Entry
+
+Date/time: 2026-05-27T00:28-07:00
+
+Branch/PR: codex/decision-explorer-phase1-ui-navigation / pending
+
+Failure type: full local documentation guard line-wrap mismatch
+
+Failing check: `mvn -q test`
+
+Suspected cause: `EnterpriseLabCockpitFramingDocumentationTest` checks each reviewer-trust-map line independently for
+production-proof wording. The new Decision Explorer Phase 1 trust-map paragraph wrapped `production certification` onto
+a line without the nearby `does not` negation, even though the paragraph preserved the intended boundary.
+
+Fix attempted: keep the Decision Explorer Phase 1 trust-map boundary wording on one line so `production readiness` and
+`production certification` remain visibly negated for the line-oriented guard.
+
+Result: focused framing/navigation selector rerun passed with 16 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: rerun the focused framing/navigation selector, then continue full local verification.
+
+## Entry
+
+Date/time: 2026-05-27T00:34-07:00
+
+Branch/PR: codex/decision-explorer-phase1-ui-navigation / pending
+
+Failure type: local browser verification locator mismatch
+
+Failing check: browser render verification against packaged app on `127.0.0.1:18080`
+
+Suspected cause: the manual browser verification script looked for a `Use Sample` button, but the current
+Decision Explorer page exposes `Reset Sample` as the sample-input control.
+
+Fix attempted: reran browser verification with the current visible `Reset Sample` button name and assertions matched to
+the actual sample payload fields returned by `DecisionExplorerPayloadV1`.
+
+Result: browser verification passed against the packaged app on `127.0.0.1:18080`; root navigation linked Decision
+Explorer, the page rendered reviewer navigation, stable ordering, selected/candidate/factor/policy/diff/packet/agent
+sections, raw payload output, and no console errors.
+
+Follow-up action: update the session manager with current local verification, then commit and open the PR.
+
+## Entry
+
+Date/time: 2026-05-27T00:45-07:00
+
+Branch/PR: codex/decision-explorer-phase1-ui-navigation / PR #365
+
+Failure type: PR body wording artifact
+
+Failing check: manual PR body review after `gh pr create`
+
+Suspected cause: the PowerShell PR-body here-string included an unnecessary correction block around the smoke command
+path, making the verification section noisy even though the actual command had been run correctly.
+
+Fix attempted: updated PR #365 with `gh pr edit` to keep the verification command as
+`.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` and remove the noisy correction block.
+
+Result: PR body corrected before treating the PR-created checkpoint as clean.
+
+Follow-up action: commit and push the PR-created checkpoint, then wait for current-head PR checks.
+
+## Entry
+
+Date/time: 2026-05-27T00:46-07:00
+
+Branch/PR: codex/decision-explorer-phase1-ui-navigation / PR #365
+
+Failure type: focused campaign board guard lifecycle-state mismatch
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest,EnterpriseLabCockpitFramingDocumentationTest"`
+
+Suspected cause: the PR-created checkpoint updated the Phase 1 board from `active-local` to a PR-open/checks-pending
+state, but the guard still expected the earlier local-only status string.
+
+Fix attempted: updated the guard expectations so the board still proves the active G06 branch and PR-open state without
+requiring the stale `active-local` lifecycle marker.
+
+Result: focused selector rerun passed with 24 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: commit and push the PR-created checkpoint, then wait for current-head PR checks.
+
+## Entry
+
+Date/time: 2026-05-27T00:47-07:00
+
+Branch/PR: codex/decision-explorer-phase1-ui-navigation / PR #365
+
+Failure type: local shell command syntax
+
+Failing check: staged checkpoint commit command using `&&` separators in PowerShell
+
+Suspected cause: this PowerShell session rejected `&&` as a statement separator.
+
+Fix attempted: ran staging and cached diff check as separate commands.
+
+Result: staging succeeded and `git diff --cached --check` passed.
+
+Follow-up action: commit and push the PR-created checkpoint.
+
 ## Notes
 
 - Keep entries factual.

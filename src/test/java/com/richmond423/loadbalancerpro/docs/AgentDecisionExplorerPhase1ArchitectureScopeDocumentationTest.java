@@ -113,7 +113,7 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "# Decision Explorer Phase 1 Campaign Board",
-                "Status: active / phase1-ui-navigation.",
+                "Status: active / phase1-ui-navigation-pr.",
                 "Current PR slot: DX-P1-G06.",
                 "Completed Phase 1 PRs: 5 / 9 planned.",
                 "DX-P1-G01",
@@ -138,7 +138,7 @@ class AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest {
                 "818540b424dc92df0ec59de68e456d0ce080adbf",
                 "DX-P1-G06",
                 "codex/decision-explorer-phase1-ui-navigation",
-                "active-local",
+                "PR #365 open; checks pending",
                 "DX-P1-G09",
                 "codex/decision-explorer-phase1-final-handoff",
                 "Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head checks do not count",

@@ -1047,6 +1047,64 @@ sections, raw payload output, and no console errors.
 
 Follow-up action: update the session manager with current local verification, then commit and open the PR.
 
+## Entry
+
+Date/time: 2026-05-27T00:45-07:00
+
+Branch/PR: codex/decision-explorer-phase1-ui-navigation / PR #365
+
+Failure type: PR body wording artifact
+
+Failing check: manual PR body review after `gh pr create`
+
+Suspected cause: the PowerShell PR-body here-string included an unnecessary correction block around the smoke command
+path, making the verification section noisy even though the actual command had been run correctly.
+
+Fix attempted: updated PR #365 with `gh pr edit` to keep the verification command as
+`.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` and remove the noisy correction block.
+
+Result: PR body corrected before treating the PR-created checkpoint as clean.
+
+Follow-up action: commit and push the PR-created checkpoint, then wait for current-head PR checks.
+
+## Entry
+
+Date/time: 2026-05-27T00:46-07:00
+
+Branch/PR: codex/decision-explorer-phase1-ui-navigation / PR #365
+
+Failure type: focused campaign board guard lifecycle-state mismatch
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest,EnterpriseLabCockpitFramingDocumentationTest"`
+
+Suspected cause: the PR-created checkpoint updated the Phase 1 board from `active-local` to a PR-open/checks-pending
+state, but the guard still expected the earlier local-only status string.
+
+Fix attempted: updated the guard expectations so the board still proves the active G06 branch and PR-open state without
+requiring the stale `active-local` lifecycle marker.
+
+Result: focused selector rerun passed with 24 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: commit and push the PR-created checkpoint, then wait for current-head PR checks.
+
+## Entry
+
+Date/time: 2026-05-27T00:47-07:00
+
+Branch/PR: codex/decision-explorer-phase1-ui-navigation / PR #365
+
+Failure type: local shell command syntax
+
+Failing check: staged checkpoint commit command using `&&` separators in PowerShell
+
+Suspected cause: this PowerShell session rejected `&&` as a statement separator.
+
+Fix attempted: ran staging and cached diff check as separate commands.
+
+Result: staging succeeded and `git diff --cached --check` passed.
+
+Follow-up action: commit and push the PR-created checkpoint.
+
 ## Notes
 
 - Keep entries factual.

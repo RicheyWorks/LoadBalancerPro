@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T00:38-07:00
+Timestamp: 2026-05-27T00:45-07:00
 
 Goal name: Decision Explorer Implementation Phase 1
 
 Current PR slot: DX-P1-G06
 
-Checkpoint: DX-P1-G06 local verification passed after focused guard repairs; PR opening checkpoint pending
+Checkpoint: DX-P1-G06 PR #365 opened after local verification; PR-created checkpoint commit pending
 
 Started from main SHA: `755ed394adfa18e462f89312c5289fd3154075f2`
 
 Current branch: codex/decision-explorer-phase1-ui-navigation
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/365
 
-Head SHA: local work in progress from `818540b424dc92df0ec59de68e456d0ce080adbf`; commit pending
+Head SHA: `795f4eef73083deeb33aadede47de28021e1cdba` before this PR-created checkpoint commit
 
 Changed files planned for this slice:
 
@@ -208,13 +208,19 @@ Checks run:
 - Browser verification rerun against the packaged app on `127.0.0.1:18080` passed: root navigation opened
   `/decision-explorer.html`, reviewer navigation rendered, stable ordering was visible, selected/candidate/factor/
   policy/diff/packet/agent/raw payload sections rendered, and no console errors were reported.
+- Commit `795f4eef73083deeb33aadede47de28021e1cdba` was created for the DX-P1-G06 UI navigation slice.
+- Branch `codex/decision-explorer-phase1-ui-navigation` was pushed to origin.
+- PR #365 was opened: https://github.com/RicheyWorks/LoadBalancerPro/pull/365.
+- A PR body smoke-command wording artifact was corrected with `gh pr edit`; the correction is logged in
+  `FAILURE_LOG.md`.
 
-Remote status: main CI and CodeQL green for `818540b424dc92df0ec59de68e456d0ce080adbf`; DX-P1-G06 PR not yet opened.
+Remote status: main CI and CodeQL green for `818540b424dc92df0ec59de68e456d0ce080adbf`; PR #365 current-head checks
+are pending after PR creation and this checkpoint update.
 
 Blocker: none.
 
-Next action: commit and push the verified DX-P1-G06 UI navigation slice, open the PR, wait for current-head PR checks,
-merge only if green, verify post-merge main, then continue to DX-P1-G07.
+Next action: commit and push this PR-created checkpoint, wait for PR #365 current-head checks, merge only if green,
+verify post-merge main, then continue to DX-P1-G07.
 
 Decision: continue.
 

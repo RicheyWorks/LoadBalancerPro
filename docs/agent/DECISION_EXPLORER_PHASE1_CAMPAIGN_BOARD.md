@@ -1,6 +1,6 @@
 # Decision Explorer Phase 1 Campaign Board
 
-Status: active / phase1-ui-navigation.
+Status: active / phase1-ui-navigation-pr.
 
 Classification: WARN / decision-explorer-phase1-campaign.
 
@@ -51,7 +51,7 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P1-G03 | `codex/decision-explorer-phase1-builder` | Deterministic builder/service | Builder/service and tests for ordering, null safety, partial evidence, and deterministic output | merged-main-green as PR #362, merge `af351b043fbc3ff0ffff50d9c0f17a667f84b7af` |
 | DX-P1-G04 | `codex/decision-explorer-phase1-api` | Read-only API surface | Controller/API docs/tests or additive response field with bounded behavior | merged-main-green as PR #363, merge `20b9080d5c24ef3807e15a3ef8367a8ef1ae4915` |
 | DX-P1-G05 | `codex/decision-explorer-phase1-ui-first-pass` | UI first pass | Static page or cockpit integration and resource tests | merged-main-green as PR #364, merge `818540b424dc92df0ec59de68e456d0ce080adbf` |
-| DX-P1-G06 | `codex/decision-explorer-phase1-ui-navigation` | UI polish and reviewer navigation | Labels, empty states, ordering, README/trust-map/cockpit links, and tests | active-local |
+| DX-P1-G06 | `codex/decision-explorer-phase1-ui-navigation` | UI polish and reviewer navigation | Labels, empty states, ordering, README/trust-map/cockpit links, and tests | PR #365 open; checks pending |
 | DX-P1-G07 | `codex/decision-explorer-phase1-docs-examples` | Docs and examples | Reviewer examples grounded in tests and guard tests against overclaims | planned |
 | DX-P1-G08 | `codex/decision-explorer-phase1-hardening` | Hardening | Edge-case coverage, null-safety checks, contract tests, and cross-link cleanup | planned |
 | DX-P1-G09 | `codex/decision-explorer-phase1-final-handoff` | Final handoff | Handoff doc with PRs, merge SHAs, behavior, tests, safety audit, and Phase 2 recommendation | planned |
@@ -112,12 +112,12 @@ DX-P1-G06 starts from clean main at `818540b424dc92df0ec59de68e456d0ce080adbf`.
 
 Current branch: `codex/decision-explorer-phase1-ui-navigation`.
 
-Current PR: pending.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/365.
 
-Current head SHA: local work in progress from `818540b424dc92df0ec59de68e456d0ce080adbf`.
+Current head SHA before PR-created checkpoint commit: `795f4eef73083deeb33aadede47de28021e1cdba`.
 
-Next action: finish DX-P1-G06 local verification, commit and push the UI navigation slice, open the PR, wait for
-current-head PR checks, merge only if green, verify post-merge main, and then continue to DX-P1-G07.
+Next action: commit and push this PR-created checkpoint, wait for current-head PR checks on PR #365, merge only if
+green, verify post-merge main, and then continue to DX-P1-G07.
 
 Decision: continue.
 

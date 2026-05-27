@@ -24,6 +24,28 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T15:42-07:00
+
+Branch/PR: codex/decision-explorer-phase2-docs-examples / no PR yet
+
+Failure type: focused documentation guard expectation mismatch
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerPhase2ReviewerExamplesDocumentationTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+
+Suspected cause: the new Phase 2 reviewer examples guard expected the exact `reviewer badges` token in API contracts,
+but the API contract prose split that phrase across a Markdown line wrap while still describing the same docs-only
+surface.
+
+Fix attempted: make the exact reviewer-badge phrase source-visible in the API contract examples paragraph while
+preserving docs/test-only scope and without changing Java production behavior, endpoints, routing, scoring, proxy,
+Maven, CI, Docker, Compose, scripts, deployment, secrets, or external-target behavior.
+
+Result: focused selector rerun passed with 14 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with relevant Decision Explorer selector and full local verification for DX-P2-G10.
+
+## Entry
+
 Date/time: 2026-05-27T15:12-07:00
 
 Branch/PR: codex/decision-explorer-phase2-api-hardening / no PR yet

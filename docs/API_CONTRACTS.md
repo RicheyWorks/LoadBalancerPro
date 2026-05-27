@@ -128,6 +128,13 @@ provide bounded request/response fragments and human/AI-agent review questions f
 changing this read-only, simulation-only API contract or upgrading production-readiness, live-cloud, real-tenant,
 benchmark/load/stress, throughput/p95/p99, replay/export/storage, evidence-packet, or automation claims.
 
+Decision Explorer Phase 2 reviewer examples live in
+[`agent/DECISION_EXPLORER_PHASE2_REVIEWER_EXAMPLES.md`](agent/DECISION_EXPLORER_PHASE2_REVIEWER_EXAMPLES.md). They
+provide grounded partial fragments for the scenario catalog, factor drill-down rows, candidate comparison rows, reviewer badges,
+static page workflow, and additive API hardening without changing the read-only, same-origin, simulation-only
+contract or upgrading production-readiness, live-cloud, real-tenant, benchmark/load/stress, throughput/p95/p99,
+replay/export/storage, evidence-packet, runtime enforcement, or automation claims.
+
 Scenario replay responses expose `scenarioId`, `readOnly`, `cloudMutation`, `remediationPlan`, and ordered `steps`. Remediation recommendations are advisory only and must not introduce cloud mutation or execution semantics.
 
 Remediation report export requests accept exactly one report source: an existing read-only evaluation response or an existing scenario replay response. The response exposes the requested `format`, report `contentType`, optional Markdown `report`, structured `json` payload, and top-level `readOnly`, `advisoryOnly`, and `cloudMutation` flags. Report output is deterministic for the same input and does not add generated timestamps or random identifiers unless the caller supplies a report id.

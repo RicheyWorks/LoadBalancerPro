@@ -8,6 +8,7 @@ LoadBalancerPro exposes a small set of calculation-only API contracts for contro
 - `POST /api/allocate/predictive`
 - `POST /api/allocate/evaluate`
 - `POST /api/routing/compare`
+- `POST /api/routing/decision-explorer`
 - `ANY /proxy/**` when `loadbalancerpro.proxy.enabled=true`
 - `GET /api/proxy/status`
 - `POST /api/proxy/private-network-live-validation`
@@ -58,6 +59,16 @@ The performance baseline runner uses the existing API contracts only; it adds no
 The prior CLI experiment harness remains available as an offline comparison path. Run `--adaptive-routing-experiment=all` through `scripts/smoke/adaptive-routing-experiment.ps1 -Package` to generate ignored `target/adaptive-routing-experiments/` evidence. Run `scripts/smoke/enterprise-lab-workflow.ps1 -Package` to generate the Enterprise Lab scenario catalog JSON, lab run JSON, Markdown scorecard summary, and metadata under ignored `target/enterprise-lab-runs/`. Run `scripts/smoke/controlled-adaptive-routing-policy.ps1 -Package` to generate controlled policy evidence under ignored `target/controlled-adaptive-routing/`. Run `scripts/smoke/enterprise-lab-observability-pack.ps1 -Package` to generate metrics JSON, Prometheus-style sample text, Markdown summary, and manifest under ignored `target/enterprise-lab-observability/`. The default runtime allocation behavior remains unchanged; active-experiment remains explicit, guarded, and lab/evaluation-grade rather than production traffic control or production SLO certification.
 
 Routing comparison responses expose `requestedStrategies`, `candidateCount`, `timestamp`, optional response-level `decisionReplayEvidenceReviewerClosureRollup`, optional response-level `decisionReplayEvidenceReviewerClosureChecklist`, and a `results` array. Each result exposes the strategy id, status, selected server id when one is available, the strategy reason, considered candidates, and score map when the strategy reports scores. A no-healthy-server comparison still returns a controlled result with `chosenServerId` set to `null`, empty candidate/scores collections, and an explanatory reason.
+
+`POST /api/routing/decision-explorer` accepts the same `RoutingComparisonRequest` as the comparison route and returns
+an array of `DecisionExplorerPayloadV1` readouts derived from the already-built routing comparison response. The route
+is additive, read-only, and simulation-only: it does not mutate routing state, change strategy scoring, allocate
+traffic, forward proxy traffic, call cloud or tenant systems, persist storage, execute replay, generate evidence
+packets, export files, or prove production readiness, certification, live-cloud validation, real-tenant validation,
+benchmark/load/stress behavior, throughput/p95/p99 behavior, replay/export behavior, storage behavior, or broader
+automation. In local/default mode it follows the same local routing API convenience behavior as
+`POST /api/routing/compare`; in prod/cloud-sandbox API-key mode and OAuth2 mode it inherits the existing
+`/api/routing/**` protections.
 
 Scenario replay responses expose `scenarioId`, `readOnly`, `cloudMutation`, `remediationPlan`, and ordered `steps`. Remediation recommendations are advisory only and must not introduce cloud mutation or execution semantics.
 

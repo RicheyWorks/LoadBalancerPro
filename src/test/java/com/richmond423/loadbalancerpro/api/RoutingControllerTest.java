@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.api;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -89,6 +90,35 @@ class RoutingControllerTest {
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "Routing comparison must not construct CloudManager or call AWS paths.");
+        }
+    }
+
+    @Test
+    void decisionExplorerEndpointReturnsReadOnlySimulationOnlyPayloadWithoutCloudMutationPath() throws Exception {
+        try (MockedConstruction<CloudManager> mockedCloudManager =
+                Mockito.mockConstruction(CloudManager.class)) {
+            mockMvc.perform(routingDecisionExplorer(VALID_REQUEST))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$[0].readOnly", is(true)))
+                    .andExpect(jsonPath("$[0].simulationOnly", is(true)))
+                    .andExpect(jsonPath("$[0].payloadObject", is("DecisionExplorerPayloadV1")))
+                    .andExpect(jsonPath("$[0].contractVersion", is("v1")))
+                    .andExpect(jsonPath("$[0].source", containsString("/api/routing/compare")))
+                    .andExpect(jsonPath("$[0].decisionReadout.selectedCandidateId", is("green")))
+                    .andExpect(jsonPath("$[0].selectedCandidate.candidateId", is("green")))
+                    .andExpect(jsonPath("$[0].candidateSet[0].candidateId", is("green")))
+                    .andExpect(jsonPath("$[0].candidateSet[0].selected", is(true)))
+                    .andExpect(jsonPath("$[0].candidateSet[1].candidateId", is("blue")))
+                    .andExpect(jsonPath("$[0].factorContributions[0].factorName").exists())
+                    .andExpect(jsonPath("$[0].policyGateReadouts[0].gateId", is("boundary-read-only")))
+                    .andExpect(jsonPath("$[0].policyGateReadouts[0].outcome", is("PASS")))
+                    .andExpect(jsonPath("$[0].agentStructuredOutput.schemaName", is("AgentStructuredOutputV1")))
+                    .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no production readiness")))
+                    .andExpect(jsonPath("$[0].boundaryNote", containsString("does not change routing behavior")));
+
+            assertTrue(mockedCloudManager.constructed().isEmpty(),
+                    "Decision Explorer endpoint must not construct CloudManager or call AWS paths.");
         }
     }
 
@@ -393,6 +423,22 @@ class RoutingControllerTest {
     }
 
     @Test
+    void decisionExplorerEndpointReturnsStructuredBadRequestWithEndpointPath() throws Exception {
+        mockMvc.perform(routingDecisionExplorer("""
+                        {
+                          "strategies": ["TAIL_LATENCY_POWER_OF_TWO"],
+                          "servers": []
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.error", is("validation_failed")))
+                .andExpect(jsonPath("$.path", is("/api/routing/decision-explorer")))
+                .andExpect(jsonPath("$.details").isArray());
+    }
+
+    @Test
     void duplicateServerIdsReturnStructuredBadRequest() throws Exception {
         mockMvc.perform(routingCompare("""
                         {
@@ -578,6 +624,12 @@ class RoutingControllerTest {
 
     private static MockHttpServletRequestBuilder routingCompare(String requestBody) {
         return post("/api/routing/compare")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+    }
+
+    private static MockHttpServletRequestBuilder routingDecisionExplorer(String requestBody) {
+        return post("/api/routing/decision-explorer")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody);
     }

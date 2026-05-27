@@ -36,6 +36,18 @@ class RoutingOpenApiContractTest {
 
         JsonNode response = required(operation, "/responses/200");
         assertFalse(response.isMissingNode(), "routing comparison should declare a 200 response");
+
+        JsonNode explorerOperation = required(docs, "/paths/~1api~1routing~1decision-explorer/post");
+        JsonNode explorerRequestContent = required(explorerOperation, "/requestBody/content");
+        assertFalse(explorerRequestContent.path("application/json").isMissingNode(),
+                "Decision Explorer should declare an application/json request body");
+        assertRef(explorerRequestContent.at("/application~1json/schema"),
+                "#/components/schemas/RoutingComparisonRequest");
+
+        JsonNode explorerResponseSchema = required(explorerOperation,
+                "/responses/200/content/*~1*/schema");
+        assertEquals("array", required(explorerResponseSchema, "/type").asText());
+        assertRef(required(explorerResponseSchema, "/items"), "#/components/schemas/DecisionExplorerPayloadV1");
     }
 
     @Test
@@ -63,6 +75,99 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(responseProperties, "/results/type").asText());
         assertRef(required(responseProperties, "/results/items"),
                 "#/components/schemas/RoutingComparisonResultResponse");
+
+        JsonNode explorerProperties = required(docs,
+                "/components/schemas/DecisionExplorerPayloadV1/properties");
+        assertEquals("boolean", required(explorerProperties, "/readOnly/type").asText());
+        assertEquals("boolean", required(explorerProperties, "/simulationOnly/type").asText());
+        assertEquals("string", required(explorerProperties, "/payloadObject/type").asText());
+        assertEquals("string", required(explorerProperties, "/contractVersion/type").asText());
+        assertEquals("string", required(explorerProperties, "/source/type").asText());
+        assertEquals("string", required(explorerProperties, "/decisionId/type").asText());
+        assertRef(required(explorerProperties, "/decisionReadout"), "#/components/schemas/DecisionReadoutV1");
+        assertRef(required(explorerProperties, "/selectedCandidate"), "#/components/schemas/CandidateReadoutV1");
+        assertArrayRef(required(explorerProperties, "/candidateSet"), "#/components/schemas/CandidateReadoutV1");
+        assertArrayRef(required(explorerProperties, "/factorContributions"),
+                "#/components/schemas/FactorContributionV1");
+        assertArrayRef(required(explorerProperties, "/policyGateReadouts"),
+                "#/components/schemas/PolicyGateReadoutV1");
+        assertArrayRef(required(explorerProperties, "/decisionDiffReadouts"),
+                "#/components/schemas/DecisionDiffReadoutV1");
+        assertArrayRef(required(explorerProperties, "/evidencePacketReadouts"),
+                "#/components/schemas/EvidencePacketReadoutV1");
+        assertRef(required(explorerProperties, "/agentStructuredOutput"),
+                "#/components/schemas/AgentStructuredOutputV1");
+        assertEquals("array", required(explorerProperties, "/warnings/type").asText());
+        assertEquals("string", required(explorerProperties, "/warnings/items/type").asText());
+        assertEquals("array", required(explorerProperties, "/unknowns/type").asText());
+        assertEquals("string", required(explorerProperties, "/unknowns/items/type").asText());
+        assertEquals("array", required(explorerProperties, "/notProvenBoundaries/type").asText());
+        assertEquals("string", required(explorerProperties, "/notProvenBoundaries/items/type").asText());
+        assertEquals("string", required(explorerProperties, "/boundaryNote/type").asText());
+
+        JsonNode decisionReadoutProperties = required(docs,
+                "/components/schemas/DecisionReadoutV1/properties");
+        assertEquals("string", required(decisionReadoutProperties, "/decisionId/type").asText());
+        assertEquals("string", required(decisionReadoutProperties, "/status/type").asText());
+        assertEquals("string", required(decisionReadoutProperties, "/selectedCandidateId/type").asText());
+        assertEquals("string", required(decisionReadoutProperties, "/selectedStrategy/type").asText());
+        assertEquals("string", required(decisionReadoutProperties, "/summary/type").asText());
+        assertEquals("array", required(decisionReadoutProperties, "/reasonCodes/type").asText());
+        assertEquals("array", required(decisionReadoutProperties, "/sourceReferenceIds/type").asText());
+
+        JsonNode candidateReadoutProperties = required(docs,
+                "/components/schemas/CandidateReadoutV1/properties");
+        assertEquals("string", required(candidateReadoutProperties, "/candidateId/type").asText());
+        assertEquals("string", required(candidateReadoutProperties, "/candidateLabel/type").asText());
+        assertEquals("boolean", required(candidateReadoutProperties, "/selected/type").asText());
+        assertEquals("string", required(candidateReadoutProperties, "/candidateStatus/type").asText());
+        assertEquals("number", required(candidateReadoutProperties, "/finalScore/type").asText());
+        assertEquals("array", required(candidateReadoutProperties, "/visibleSignals/type").asText());
+        assertEquals("array", required(candidateReadoutProperties, "/unknownSignals/type").asText());
+        assertEquals("array", required(candidateReadoutProperties, "/policyGateIds/type").asText());
+        assertEquals("array", required(candidateReadoutProperties, "/evidenceReferenceIds/type").asText());
+
+        JsonNode factorReadoutProperties = required(docs,
+                "/components/schemas/FactorContributionV1/properties");
+        assertEquals("string", required(factorReadoutProperties, "/factorName/type").asText());
+        assertEquals("string", required(factorReadoutProperties, "/candidateId/type").asText());
+        assertEquals("string", required(factorReadoutProperties, "/direction/type").asText());
+        assertEquals("number", required(factorReadoutProperties, "/contributionValue/type").asText());
+        assertEquals("string", required(factorReadoutProperties, "/exactness/type").asText());
+        assertEquals("string", required(factorReadoutProperties, "/explanation/type").asText());
+
+        JsonNode policyGateProperties = required(docs,
+                "/components/schemas/PolicyGateReadoutV1/properties");
+        assertEquals("string", required(policyGateProperties, "/gateId/type").asText());
+        assertEquals("string", required(policyGateProperties, "/gateName/type").asText());
+        assertEquals("string", required(policyGateProperties, "/gateStatus/type").asText());
+        assertEquals("string", required(policyGateProperties, "/outcome/type").asText());
+
+        JsonNode diffReadoutProperties = required(docs,
+                "/components/schemas/DecisionDiffReadoutV1/properties");
+        assertEquals("string", required(diffReadoutProperties, "/baselineCandidateId/type").asText());
+        assertEquals("string", required(diffReadoutProperties, "/comparisonCandidateId/type").asText());
+        assertEquals("string", required(diffReadoutProperties, "/diffStatus/type").asText());
+        assertEquals("number", required(diffReadoutProperties, "/finalScoreGap/type").asText());
+        assertEquals("array", required(diffReadoutProperties, "/comparedFactorNames/type").asText());
+        assertEquals("array", required(diffReadoutProperties, "/omittedFactorNames/type").asText());
+
+        JsonNode evidencePacketProperties = required(docs,
+                "/components/schemas/EvidencePacketReadoutV1/properties");
+        assertEquals("string", required(evidencePacketProperties, "/referenceId/type").asText());
+        assertEquals("string", required(evidencePacketProperties, "/packetStatus/type").asText());
+        assertEquals("string", required(evidencePacketProperties, "/sourceReferenceId/type").asText());
+        assertEquals("string", required(evidencePacketProperties, "/freshnessStatus/type").asText());
+        assertEquals("array", required(evidencePacketProperties, "/unavailableReasons/type").asText());
+
+        JsonNode agentOutputProperties = required(docs,
+                "/components/schemas/AgentStructuredOutputV1/properties");
+        assertEquals("string", required(agentOutputProperties, "/schemaName/type").asText());
+        assertEquals("string", required(agentOutputProperties, "/schemaVersion/type").asText());
+        assertEquals("array", required(agentOutputProperties, "/stableFieldNames/type").asText());
+        assertEquals("array", required(agentOutputProperties, "/parseabilityRules/type").asText());
+        assertEquals("array", required(agentOutputProperties, "/supportedQuestions/type").asText());
+        assertEquals("array", required(agentOutputProperties, "/unsupportedActions/type").asText());
 
         JsonNode resultProperties = required(docs,
                 "/components/schemas/RoutingComparisonResultResponse/properties");
@@ -683,5 +788,10 @@ class RoutingOpenApiContractTest {
 
     private static void assertRef(JsonNode schema, String expectedRef) {
         assertEquals(expectedRef, required(schema, "/$ref").asText());
+    }
+
+    private static void assertArrayRef(JsonNode schema, String expectedItemRef) {
+        assertEquals("array", required(schema, "/type").asText());
+        assertRef(required(schema, "/items"), expectedItemRef);
     }
 }

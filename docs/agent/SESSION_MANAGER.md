@@ -22,7 +22,9 @@ Current branch: codex/decision-explorer-phase2-reviewer-badges
 
 PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/376
 
-Head SHA: `1091470d88da5196e3e5ef27f763f4cbed34803f`
+PR creation SHA: `1091470d88da5196e3e5ef27f763f4cbed34803f`
+
+Current PR head must be re-read from GitHub before merge because checkpoint updates can move this active branch.
 
 Changed files planned for this slice:
 

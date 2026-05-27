@@ -84,14 +84,15 @@ The static Decision Explorer first-pass page is served at `GET /decision-explore
 `POST /api/routing/decision-explorer` route with deterministic synthetic routing telemetry and the same-origin
 `GET /api/routing/decision-explorer/scenarios` route for deterministic scenario catalog metadata. It keeps the optional
 API key in page memory only, renders scenario selector, scenario category filtering, evidence-status filtering,
-decision summary, selected candidate, candidate set, candidate comparison rows, factor contributions, factor
-drill-down readouts, policy gates, decision diffs, evidence packet readouts, agent structured output, warnings,
-unknowns, not-proven boundaries, and raw payload locally in the browser, and writes no runtime files. Scenario
-selection is reviewer orientation only and does not run routing by itself. Candidate comparison and factor drill-down
-display use fields already returned by `DecisionExplorerPayloadV1`; the page does not compute new scores or fabricate
-missing evidence. Its root-page and reviewer-doc navigation points to the page as a local inspection surface only. The
-page does not add storage, export, replay execution, evidence-packet generation, live traffic shifting, production
-approval controls, cloud controls, tenant controls, or benchmark/load/stress claims.
+decision summary, reviewer explanation badges, selected candidate, candidate set, candidate comparison rows, factor
+contributions, factor drill-down readouts, policy gates, decision diffs, evidence packet readouts, agent structured
+output, warnings, unknowns, not-proven boundaries, and raw payload locally in the browser, and writes no runtime files.
+Scenario selection is reviewer orientation only and does not run routing by itself. Candidate comparison, factor
+drill-down, and reviewer badge display use fields already returned by `DecisionExplorerPayloadV1` plus selected
+same-origin scenario metadata; the page does not compute new scores, enforce decisions, prove runtime behavior, or
+fabricate missing evidence. Its root-page and reviewer-doc navigation points to the page as a local inspection surface
+only. The page does not add storage, export, replay execution, evidence-packet generation, live traffic shifting,
+production approval controls, cloud controls, tenant controls, or benchmark/load/stress claims.
 
 `DecisionExplorerPayloadV1.factorDrilldowns` is an additive Phase 2 field derived from already-returned
 `ScoreFactorContributionResponse` evidence. Each `DecisionFactorDrilldownV1` readout names the factor and candidate,

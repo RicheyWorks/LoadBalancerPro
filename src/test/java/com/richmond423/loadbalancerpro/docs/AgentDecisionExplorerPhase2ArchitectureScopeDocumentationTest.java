@@ -104,9 +104,9 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "# Decision Explorer Phase 2 Campaign Board",
-                "Status: active / phase2-ui-drilldown-comparison.",
-                "Current PR slot: DX-P2-G07.",
-                "Completed Phase 2 PRs: 6 / 12 planned.",
+                "Status: active / phase2-reviewer-badges.",
+                "Current PR slot: DX-P2-G08.",
+                "Completed Phase 2 PRs: 7 / 12 planned.",
                 "DX-P2-G01",
                 "codex/decision-explorer-phase2-campaign-board",
                 "merged-main-green",
@@ -156,14 +156,21 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "https://github.com/RicheyWorks/LoadBalancerPro/pull/374",
                 "DX-P2-G07",
                 "codex/decision-explorer-phase2-ui-drilldown-comparison",
-                "active-pr",
+                "merged-main-green",
                 "PR #375",
-                "fb7e4f87b93645228a57d9bbf69ad51a5833531f",
+                "673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4",
                 "https://github.com/RicheyWorks/LoadBalancerPro/pull/375",
                 "factor drill-down",
                 "candidate comparison rows",
                 "DX-P2-G08",
                 "codex/decision-explorer-phase2-reviewer-badges",
+                "active-branch",
+                "selected route",
+                "warning",
+                "unknown",
+                "partial evidence",
+                "deterministic evidence",
+                "not-proven boundary",
                 "DX-P2-G09",
                 "codex/decision-explorer-phase2-api-hardening",
                 "DX-P2-G10",
@@ -201,13 +208,15 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "DecisionFactorDrilldownV1",
                 "DecisionExplorerPayloadV1.candidateComparisons",
                 "DecisionExplorerCandidateComparisonRowV1",
+                "reviewer explanation badges",
                 "read-only",
                 "simulation-only")) {
             if (expected.startsWith("GET ")
                     || expected.equals("DecisionExplorerScenarioCatalogV1")
                     || expected.startsWith("DecisionExplorerPayloadV1.")
                     || expected.equals("DecisionFactorDrilldownV1")
-                    || expected.equals("DecisionExplorerCandidateComparisonRowV1")) {
+                    || expected.equals("DecisionExplorerCandidateComparisonRowV1")
+                    || expected.equals("reviewer explanation badges")) {
                 assertTrue(apiContracts.contains(expected), "API contracts should preserve " + expected);
             } else {
                 assertTrue(phase1Scope.contains(expected), "phase 1 scope should preserve " + expected);
@@ -222,8 +231,8 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "decision explorer implementation phase 2",
-                "current pr slot: dx-p2-g07",
-                "codex/decision-explorer-phase2-ui-drilldown-comparison",
+                "current pr slot: dx-p2-g08",
+                "codex/decision-explorer-phase2-reviewer-badges",
                 "decision_explorer_phase2_campaign_board.md",
                 "decision-explorer.html",
                 "decisionexplorerreviewernavigationtest.java",
@@ -242,9 +251,12 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "merged as `b2f5017e4c7484e34d0da6a1ffde3954442a9103`",
                 "merged as `64394f1380708a63d70ad9e5ec1a2ad3589a9780`",
                 "merged as `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb`",
+                "merged as `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4`",
                 "dfa9baa73695cfc7ce4a2264617ce193077bc482",
                 "c13b56cb38518160cfc1a754a50e9c0eeeefea28",
                 "fb7e4f87b93645228a57d9bbf69ad51a5833531f",
+                "0efd6df064f5c8bad05270044c2a28b6a7333d9a",
+                "673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4",
                 "e8fcd4f74f3f50c2f973b78d7999c18104aee9bb",
                 "get /api/routing/decision-explorer/scenarios",
                 "2,682 tests",

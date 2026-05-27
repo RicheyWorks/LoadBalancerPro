@@ -60,6 +60,56 @@ no runtime endpoint/UI/storage/export/replay/evidence-packet implementation clai
 - Command-free: schema fields must not contain mutation handles, approval commands, deployment instructions, credentials,
   secrets, write paths, replay execution handles, export handles, or autonomous action hooks.
 
+## Agent Consumption Goals
+
+The planned schema is for agent consumption, but only for structured understanding:
+
+- let an AI agent identify which simulated decision is being explained;
+- let an AI agent identify selected and non-selected candidates without guessing hidden internals;
+- let an AI agent inspect visible reason codes, policy gates, factor contributions, and source references;
+- let an AI agent preserve uncertainty through explicit unknown, unavailable, not-applicable, and not-implemented values;
+- let an AI agent answer reviewer questions with low ambiguity and attached not-proven boundaries;
+- prevent autonomous production action, live mutation, hidden side effects, hidden approval paths, or hidden runtime
+  authority.
+
+Agent consumption goals do not create implementation authority. They do not create endpoints, runtime behavior, UI,
+storage, export, replay execution, evidence packets, automation, deployment behavior, cloud behavior, tenant behavior,
+or production traffic-control behavior.
+
+## Stable Identifiers
+
+Future agent-readable output should use stable identifiers that can be compared across docs, guard tests, examples, and
+future schema reviews:
+
+| Identifier | Stability expectation |
+| --- | --- |
+| `schemaVersion` | Must identify `decision-explorer-agent-schema/v1` until a reviewed version bump exists. |
+| `decisionId` | Must identify the simulated decision when visible or use an explicit unavailable marker. |
+| `scenarioId` | Must identify the simulated scenario or reviewer context. |
+| `candidateId` | Must be stable inside one payload and should not depend on display ordering alone. |
+| `factorId` | Must name a visible or explicitly unavailable factor contribution. |
+| `gateId` | Must name a policy gate readout without implying authorization. |
+| `referenceId` | Must point to source-visible documentation, ADRs, tests, fixtures, or explicit unavailable evidence. |
+
+Stable identifiers are reviewer and agent navigation aids only. They are not production identifiers, credentials,
+deployment handles, storage keys, replay handles, export handles, or mutation commands.
+
+## JSON Field Naming Rules
+
+If later scoped work creates a JSON schema or JSON response, the field naming rules should remain simple and
+agent-readable:
+
+- use lower camel case for JSON field names, such as `schemaVersion`, `decisionReadout`, and `policyGateReadouts`;
+- use explicit nouns instead of overloaded abbreviations;
+- keep booleans positive where possible, such as `readOnly` and `simulationOnly`;
+- keep enum-like values uppercase snake case, such as `REQUIRES_REVIEW` and `NOT_IMPLEMENTED`;
+- keep arrays plural, such as `candidateReadouts`, `sourceReferences`, and `notProvenBoundaries`;
+- keep source paths repository-relative when a source is visible;
+- avoid field names that imply command execution, approval, deployment, storage writes, export generation, replay
+  execution, cloud calls, tenant mutation, or production authority.
+
+These JSON field naming rules are planning-only guidance. They do not create a JSON Schema file or runtime response.
+
 ## Planned Schema Identity
 
 | Field | Required | Planned value or meaning |
@@ -95,6 +145,20 @@ The future `AgentStructuredOutputV1` object should expose the following stable f
 
 The required field families are planning vocabulary only. They do not create Java classes, JSON Schema files, endpoint
 responses, UI models, persisted records, exports, replay execution, evidence packets, or broader automation.
+
+## Versioning Rules
+
+Future schema versioning should be explicit and conservative:
+
+- V1 should use `schemaVersion: decision-explorer-agent-schema/v1`;
+- V1 should remain additive for optional fields and new source references;
+- existing field names, enum meanings, and boundary flag meanings should not silently change;
+- a breaking rename, removal, or semantic change should require a new version and migration note;
+- every version must preserve planning-only, read-only, simulation-only, no autonomous production action, no live
+  mutation, no hidden side effects, and not-proven boundaries;
+- versioning must not be used to imply production readiness, production certification, live-cloud validation,
+  real-tenant validation, benchmark proof, throughput proof, replay/export proof, runtime endpoint/UI/storage/evidence
+  packet implementation, or broader automation.
 
 ## Enum-Like Values
 
@@ -152,6 +216,17 @@ Agents should receive explicit values instead of free-form implication where pos
 - `notRuntimeImplementation`
 - `notBroaderAutomation`
 
+## Enum Stability Expectations
+
+Enum stability expectations are part of the agent contract:
+
+- enum-like values should remain uppercase snake case;
+- known values should stay stable within V1 once agents depend on them;
+- new values should be additive and documented before use;
+- unknown values should degrade to `UNKNOWN` rather than fabricated certainty;
+- unavailable or not-implemented states should stay distinct from failure states;
+- policy gate outcomes must remain display outcomes only, not production authorization.
+
 ## Unknown And Null Handling
 
 Unknown and null handling must be explicit enough for agents to avoid invented certainty:
@@ -181,7 +256,36 @@ The future schema must make these rules visible to every agent consumer:
   shifting approval, or production authorization.
 - Do not treat evidence packet readouts as implemented evidence packets, generated reports, persisted storage, exports,
   downloads, replay execution, or certification.
+- Do not create hidden side effects, hidden writes, hidden network calls, hidden exports, hidden storage, hidden replay,
+  hidden approvals, or hidden production action from this schema.
 - Prefer `UNKNOWN`, `UNAVAILABLE`, `NOT_APPLICABLE`, or `NOT_IMPLEMENTED` over fabricated detail.
+
+## Parseability And Low-Ambiguity Rules
+
+Parseability and low-ambiguity rules make the contract safer for agents:
+
+- every top-level object should carry a version, purpose, status, and boundary flags;
+- selected and non-selected candidates should use stable identifiers rather than position-only references;
+- every unavailable field should carry a reason when it affects interpretation;
+- source references should use repository-relative paths or explicit unavailable markers;
+- reason codes should be stable, compact, and machine-readable;
+- policy gate outcomes should be explicit and separate from authorization;
+- example values should avoid production-looking defaults, secrets, external targets, tenant targets, or cloud targets;
+- agent answers should cite visible schema fields and boundaries instead of guessing.
+
+## Example Agent Questions
+
+The planned schema should help an agent answer bounded reviewer questions such as:
+
+- Which simulated decision is being explained?
+- Which candidate was selected, and which visible reason codes support that explanation?
+- Which candidates were not selected, and what visible uncertainty remains?
+- Which factor contributions are visible, unavailable, unknown, not applicable, or not implemented?
+- Which policy gates warned, blocked, allowed, or required review?
+- Which source-visible docs, ADRs, guard tests, or fixtures support this explanation?
+- Which not-proven boundaries must be repeated in the answer?
+- What must the agent refuse to infer because the schema is planned, read-only, simulation-only, and not production
+  proof?
 
 ## Relationship To DX-G04 Objects
 

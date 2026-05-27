@@ -76,11 +76,40 @@ class AgentDecisionExplorerAgentSchemaDocumentationTest {
     }
 
     @Test
-    void schemaContractDefinesEnumsUnknownHandlingAndParseSafety() throws IOException {
+    void schemaContractDefinesAgentConsumptionIdentifiersAndJsonNamingRules() throws IOException {
         String schema = read(SCHEMA_CONTRACT);
 
         for (String expected : List.of(
+                "Agent Consumption Goals",
+                "agent consumption",
+                "structured understanding",
+                "Stable Identifiers",
+                "`decisionId`",
+                "`scenarioId`",
+                "`candidateId`",
+                "`factorId`",
+                "`gateId`",
+                "`referenceId`",
+                "JSON Field Naming Rules",
+                "lower camel case",
+                "uppercase snake case",
+                "`candidateReadouts`",
+                "`sourceReferences`",
+                "planning-only guidance")) {
+            assertTrue(schema.contains(expected), "schema contract should define agent/schema rule " + expected);
+        }
+    }
+
+    @Test
+    void schemaContractDefinesVersioningEnumsUnknownHandlingAndParseSafety() throws IOException {
+        String schema = read(SCHEMA_CONTRACT);
+
+        for (String expected : List.of(
+                "Versioning Rules",
+                "V1 should use `schemaVersion: decision-explorer-agent-schema/v1`",
+                "new version and migration note",
                 "Enum-Like Values",
+                "Enum Stability Expectations",
                 "Schema Status Values",
                 "Candidate Status Values",
                 "Policy Gate Outcome Values",
@@ -96,8 +125,30 @@ class AgentDecisionExplorerAgentSchemaDocumentationTest {
                 "Do not choose live production routes from this schema",
                 "Do not infer hidden scoring",
                 "Do not treat policy gate visualization as branch protection",
+                "Do not create hidden side effects",
                 "Prefer `UNKNOWN`, `UNAVAILABLE`, `NOT_APPLICABLE`, or `NOT_IMPLEMENTED`")) {
             assertTrue(schema.contains(expected), "schema contract should define parse safety item " + expected);
+        }
+    }
+
+    @Test
+    void schemaContractDefinesParseabilityAndExampleAgentQuestions() throws IOException {
+        String schema = read(SCHEMA_CONTRACT);
+
+        for (String expected : List.of(
+                "Parseability And Low-Ambiguity Rules",
+                "Parseability and low-ambiguity rules",
+                "selected and non-selected candidates should use stable identifiers",
+                "source references should use repository-relative paths",
+                "policy gate outcomes should be explicit and separate from authorization",
+                "Example Agent Questions",
+                "Which simulated decision is being explained?",
+                "Which candidate was selected",
+                "Which candidates were not selected",
+                "Which factor contributions are visible",
+                "Which policy gates warned, blocked, allowed, or required review?",
+                "Which not-proven boundaries must be repeated in the answer?")) {
+            assertTrue(schema.contains(expected), "schema contract should define parseability question " + expected);
         }
     }
 
@@ -170,6 +221,8 @@ class AgentDecisionExplorerAgentSchemaDocumentationTest {
                 "storage behavior",
                 "runtime endpoint/ui/storage/evidence-packet implementation",
                 "autonomous production action",
+                "live mutation",
+                "hidden side effects",
                 "broader automation",
                 "not a json schema file",
                 "not an implemented endpoint response")) {

@@ -1292,6 +1292,27 @@ Result: after exact wording and stale suffix repairs, the focused selector rerun
 
 Follow-up action: continue with the broader Decision Explorer selector before full verification.
 
+## Entry
+
+Date/time: 2026-05-27T13:00-07:00
+
+Branch/PR: codex/decision-explorer-phase2-candidate-comparison / no PR yet
+
+Failure type: focused documentation guard stale token
+
+Failing check: `mvn test "-Dtest=DecisionExplorerCandidateComparisonRowV1Test,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,RoutingOpenApiContractTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+
+Suspected cause: DX-P2-G05 moved the campaign board checkpoint from active factor drill-down to active candidate
+comparison after DX-P2-G04 merged-main-green, but the Phase 2 board guard still required the old
+`ScoreFactorContributionResponse` token in the campaign-board checkpoint.
+
+Fix attempted: aligned the board with the current G05 state while preserving the G04 `ScoreFactorContributionResponse`
+source token, merge record, and G05 candidate-comparison source token.
+
+Result: focused selector rerun passed with 23 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with the broader Decision Explorer selector before full verification.
+
 ## Notes
 
 - Keep entries factual.

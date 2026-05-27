@@ -104,9 +104,9 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "# Decision Explorer Phase 2 Campaign Board",
-                "Status: active / phase2-factor-drilldown.",
-                "Current PR slot: DX-P2-G04.",
-                "Completed Phase 2 PRs: 3 / 12 planned.",
+                "Status: active / phase2-candidate-comparison.",
+                "Current PR slot: DX-P2-G05.",
+                "Completed Phase 2 PRs: 4 / 12 planned.",
                 "DX-P2-G01",
                 "codex/decision-explorer-phase2-campaign-board",
                 "merged-main-green",
@@ -131,15 +131,17 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "https://github.com/RicheyWorks/LoadBalancerPro/pull/371",
                 "DX-P2-G04",
                 "codex/decision-explorer-phase2-factor-drilldown",
-                "active-pr",
+                "merged-main-green",
                 "PR #372",
-                "current-head checks pending",
+                "b2f5017e4c7484e34d0da6a1ffde3954442a9103",
                 "DecisionFactorDrilldownV1",
                 "ScoreFactorContributionResponse",
                 "https://github.com/RicheyWorks/LoadBalancerPro/pull/372",
-                "9b3ed5d6f677505375a80e09e8c38c1d3ec31f14",
                 "DX-P2-G05",
                 "codex/decision-explorer-phase2-candidate-comparison",
+                "active-branch",
+                "DecisionExplorerCandidateComparisonRowV1",
+                "CandidateReadoutV1",
                 "DX-P2-G06",
                 "codex/decision-explorer-phase2-ui-scenarios",
                 "DX-P2-G07",
@@ -181,12 +183,15 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "DecisionExplorerScenarioCatalogV1",
                 "DecisionExplorerPayloadV1.factorDrilldowns",
                 "DecisionFactorDrilldownV1",
+                "DecisionExplorerPayloadV1.candidateComparisons",
+                "DecisionExplorerCandidateComparisonRowV1",
                 "read-only",
                 "simulation-only")) {
             if (expected.startsWith("GET ")
                     || expected.equals("DecisionExplorerScenarioCatalogV1")
                     || expected.startsWith("DecisionExplorerPayloadV1.")
-                    || expected.equals("DecisionFactorDrilldownV1")) {
+                    || expected.equals("DecisionFactorDrilldownV1")
+                    || expected.equals("DecisionExplorerCandidateComparisonRowV1")) {
                 assertTrue(apiContracts.contains(expected), "API contracts should preserve " + expected);
             } else {
                 assertTrue(phase1Scope.contains(expected), "phase 1 scope should preserve " + expected);
@@ -201,23 +206,24 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "decision explorer implementation phase 2",
-                "current pr slot: dx-p2-g04",
-                "codex/decision-explorer-phase2-factor-drilldown",
+                "current pr slot: dx-p2-g05",
+                "codex/decision-explorer-phase2-candidate-comparison",
                 "decision_explorer_phase2_campaign_board.md",
+                "decisionexplorercandidatecomparisonrowv1.java",
                 "decisionexplorerpayloadservice.java",
                 "decisionexplorerpayloadv1.java",
-                "decisionfactordrilldownv1.java",
+                "decisionexplorercandidatecomparisonrowv1test.java",
                 "decisionexplorerpayloadservicetest.java",
                 "routingopenapicontracttest.java",
                 "agentdecisionexplorerphase2architecturescopedocumentationtest.java",
-                "186b28db1d261858a42db2ed75531fb3e4930f44",
+                "b2f5017e4c7484e34d0da6a1ffde3954442a9103",
                 "https://github.com/richeyworks/loadbalancerpro/pull/369",
                 "https://github.com/richeyworks/loadbalancerpro/pull/370",
                 "https://github.com/richeyworks/loadbalancerpro/pull/371",
                 "https://github.com/richeyworks/loadbalancerpro/pull/372",
                 "merged as `1fb16a50d4181d1411abfe6c038815a68f79e7b5`",
                 "merged as `186b28db1d261858a42db2ed75531fb3e4930f44`",
-                "9b3ed5d6f677505375a80e09e8c38c1d3ec31f14",
+                "merged as `b2f5017e4c7484e34d0da6a1ffde3954442a9103`",
                 "get /api/routing/decision-explorer/scenarios",
                 "2,682 tests",
                 "2,689 tests",

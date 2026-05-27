@@ -64,6 +64,11 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("routing-compare/tail-latency-power-of-two/edge-a", firstPayloads.get(0).decisionId());
         assertEquals(List.of("edge-a", "edge-z"),
                 firstPayloads.get(0).candidateSet().stream().map(CandidateReadoutV1::candidateId).toList());
+        assertEquals(List.of("1:edge-a:SELECTED:0.0", "2:edge-z:COMPARED_TO_SELECTED:10.0"),
+                firstPayloads.get(0).candidateComparisons().stream()
+                        .map(row -> row.displayOrder() + ":" + row.candidateId() + ":"
+                                + row.comparisonStatus() + ":" + row.scoreDeltaFromSelected())
+                        .toList());
         assertEquals(List.of("edge-a:healthState", "edge-z:p95LatencyMillis"),
                 firstPayloads.get(0).factorContributions().stream()
                         .map(factor -> factor.candidateId() + ":" + factor.factorName())
@@ -99,6 +104,7 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("UNKNOWN", payload.decisionReadout().selectedCandidateId());
         assertEquals("UNKNOWN", payload.selectedCandidate().candidateId());
         assertTrue(payload.candidateSet().isEmpty());
+        assertTrue(payload.candidateComparisons().isEmpty());
         assertTrue(payload.factorContributions().isEmpty());
         assertTrue(payload.factorDrilldowns().isEmpty());
         assertTrue(payload.decisionDiffReadouts().isEmpty());
@@ -141,6 +147,13 @@ class DecisionExplorerPayloadServiceTest {
         CandidateReadoutV1 alternative = payload.candidateSet().get(1);
         assertEquals("alternative-a", alternative.candidateId());
         assertNull(alternative.finalScore());
+        DecisionExplorerCandidateComparisonRowV1 alternativeComparison = payload.candidateComparisons().get(1);
+        assertEquals("alternative-a", alternativeComparison.candidateId());
+        assertEquals("PARTIAL_EVIDENCE", alternativeComparison.comparisonStatus());
+        assertNull(alternativeComparison.finalScore());
+        assertNull(alternativeComparison.scoreDeltaFromSelected());
+        assertTrue(alternativeComparison.warnings().contains("candidate final score was not returned"));
+        assertTrue(alternativeComparison.unknowns().contains("score delta from selected candidate"));
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertNull(payload.factorContributions().get(0).contributionValue());
         DecisionFactorDrilldownV1 partialDrilldown = payload.factorDrilldowns().get(0);

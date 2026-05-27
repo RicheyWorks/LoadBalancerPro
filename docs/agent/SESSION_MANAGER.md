@@ -8,32 +8,33 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T07:39-07:00
+Timestamp: 2026-05-27T13:07-07:00
 
 Goal name: Decision Explorer Implementation Phase 2
 
-Current PR slot: DX-P2-G04
+Current PR slot: DX-P2-G05
 
-Checkpoint: DX-P2-G04 PR #372 opened after full local verification
+Checkpoint: DX-P2-G05 local verification passed before PR creation
 
-Started from main SHA: `186b28db1d261858a42db2ed75531fb3e4930f44`
+Started from main SHA: `b2f5017e4c7484e34d0da6a1ffde3954442a9103`
 
-Current branch: codex/decision-explorer-phase2-factor-drilldown
+Current branch: codex/decision-explorer-phase2-candidate-comparison
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/372
+PR URL: not opened yet
 
-Head SHA: `9b3ed5d6f677505375a80e09e8c38c1d3ec31f14`
+Head SHA: pending local commit after local verification
 
 Changed files planned for this slice:
 
 - docs/API_CONTRACTS.md
 - docs/agent/DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCandidateComparisonRowV1.java
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadService.java
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionFactorDrilldownV1.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCandidateComparisonRowV1Test.java
 - src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadServiceTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionFactorDrilldownV1Test.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1Test.java
 - src/test/java/com/richmond423/loadbalancerpro/api/RoutingOpenApiContractTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest.java
 
@@ -158,16 +159,43 @@ Checks run:
 - DX-P2-G04 committed as `9b3ed5d6f677505375a80e09e8c38c1d3ec31f14`.
 - DX-P2-G04 pushed to origin and opened as PR #372:
   https://github.com/RicheyWorks/LoadBalancerPro/pull/372.
+- DX-P2-G04 current-head PR checks passed after the failure-log checkpoint: Build/Test/Package/Smoke, Analyze Java /
+  CodeQL, and Dependency Review.
+- DX-P2-G04 merged as `b2f5017e4c7484e34d0da6a1ffde3954442a9103`.
+- DX-P2-G04 post-merge local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  `mvn -B package` with 2,696 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- DX-P2-G04 main CI passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26534775988.
+- DX-P2-G04 main CodeQL passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26534776086.
+- DX-P2-G05 branch `codex/decision-explorer-phase2-candidate-comparison` was created from clean main at
+  `b2f5017e4c7484e34d0da6a1ffde3954442a9103`.
+- DX-P2-G05 is adding additive candidate comparison rows derived from already-built `CandidateReadoutV1` evidence.
+  The slice does not recompute scores, change routing/scoring/proxy behavior, persist storage, export data, execute
+  replay, generate evidence packets, or call external systems.
+- DX-P2-G05 focused selector initially failed on a stale campaign-board guard token after moving the active checkpoint
+  from G04 to G05. The failure was logged in `FAILURE_LOG.md`, repaired by preserving the G04
+  `ScoreFactorContributionResponse` source token in the board, and rerun.
+- DX-P2-G05 focused selector rerun passed:
+  `mvn test "-Dtest=DecisionExplorerCandidateComparisonRowV1Test,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,RoutingOpenApiContractTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+  with 23 tests, 0 failures, 0 errors, and 0 skipped.
+- DX-P2-G05 relevant Decision Explorer selector passed:
+  `mvn test "-Dtest=*DecisionExplorer*,RoutingControllerTest,RoutingOpenApiContractTest"`
+  with 159 tests, 0 failures, 0 errors, and 0 skipped.
+- `mvn -q test` passed.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed with 2,697 tests, 0 failures, 0 errors, and 0 skipped.
+- `git diff --check` passed with line-ending warnings only.
+- `git diff --cached --check` passed.
+- `git diff --check origin/main...HEAD` passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
 
-Remote status: main CI and CodeQL green for `186b28db1d261858a42db2ed75531fb3e4930f44`; PR #372 checks passed for
-`7f8f5ea96f96a18d7289594bd80de2fdd5427fb9`, but the `gh pr checks --watch` command timed out after printing green
-status. The tooling timeout is logged in `FAILURE_LOG.md`; the failure-log checkpoint must pass current-head checks
-before merge.
+Remote status: main CI and CodeQL green for `b2f5017e4c7484e34d0da6a1ffde3954442a9103`; no DX-P2-G05 PR is open yet.
 
 Blocker: none.
 
-Next action: wait for PR #372 current-head checks, merge only if green, verify post-merge main, then continue to
-DX-P2-G05.
+Next action: commit and push DX-P2-G05, open a PR, and merge only after current-head checks are green.
 
 Decision: continue.
 

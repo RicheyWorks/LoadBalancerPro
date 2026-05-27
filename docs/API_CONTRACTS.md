@@ -96,6 +96,15 @@ mutate proxy behavior, persist storage, export evidence, execute replay, generat
 systems, or prove benchmark/load/stress, throughput/p95/p99, live-cloud, real-tenant, production-readiness, or broader
 automation behavior.
 
+`DecisionExplorerPayloadV1.candidateComparisons` is an additive Phase 2 field derived from the already-built
+`CandidateReadoutV1` set. Each `DecisionExplorerCandidateComparisonRowV1` row preserves deterministic selected-first
+ordering, candidate identity, selection state, final score when returned, score delta from the selected candidate when
+both scores are available, visible signals, unknown signals, reason codes, policy gates, evidence references, warnings,
+unknowns, and boundary text. These comparison rows do not recompute scores, change routing behavior, mutate proxy
+behavior, persist storage, export evidence, execute replay, generate evidence packets, call external systems, or prove
+benchmark/load/stress, throughput/p95/p99, live-cloud, real-tenant, production-readiness, or broader automation
+behavior.
+
 Decision Explorer Phase 1 reviewer examples live in
 [`agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md`](agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md). They
 provide bounded request/response fragments and human/AI-agent review questions for the current local surface without

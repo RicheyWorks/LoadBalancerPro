@@ -53,7 +53,7 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P1-G05 | `codex/decision-explorer-phase1-ui-first-pass` | UI first pass | Static page or cockpit integration and resource tests | merged-main-green as PR #364, merge `818540b424dc92df0ec59de68e456d0ce080adbf` |
 | DX-P1-G06 | `codex/decision-explorer-phase1-ui-navigation` | UI polish and reviewer navigation | Labels, empty states, ordering, README/trust-map/cockpit links, and tests | merged-main-green as PR #365, merge `66242b7911c123b1f20f2820249b7173a3ef575a` |
 | DX-P1-G07 | `codex/decision-explorer-phase1-docs-examples` | Docs and examples | Reviewer examples grounded in tests and guard tests against overclaims | merged-main-green as PR #366, merge `3d85730efc979373c2838e414c78c16df43656a9` |
-| DX-P1-G08 | `codex/decision-explorer-phase1-hardening` | Hardening | Edge-case coverage, null-safety checks, contract tests, and cross-link cleanup | active-local |
+| DX-P1-G08 | `codex/decision-explorer-phase1-hardening` | Hardening | Edge-case coverage, null-safety checks, contract tests, and cross-link cleanup | PR #367 open; checks pending |
 | DX-P1-G09 | `codex/decision-explorer-phase1-final-handoff` | Final handoff | Handoff doc with PRs, merge SHAs, behavior, tests, safety audit, and Phase 2 recommendation | planned |
 
 ## Current Checkpoint
@@ -134,9 +134,9 @@ DX-P1-G08 starts from clean main at `3d85730efc979373c2838e414c78c16df43656a9`.
 
 Current branch: `codex/decision-explorer-phase1-hardening`.
 
-Current PR: pending.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/367.
 
-Current head SHA before local edits: `3d85730efc979373c2838e414c78c16df43656a9`.
+Current head SHA before PR-created checkpoint commit: `b6ae1388ba5b8c47788459d04203094c4fd9e2fd`.
 
 Current hardening focus: align Decision Explorer `notProvenBoundaries` with the now-implemented bounded endpoint and
 static page without weakening the remaining storage/export/replay/evidence-packet and production-proof boundaries.
@@ -145,8 +145,7 @@ DX-P1-G08 local verification passed: focused service/API/static-page/docs select
 `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B package` with 2,668 tests, diff checks, and
 `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
 
-Next action: commit and push the G08 hardening slice, open the PR, wait for current-head checks, and merge only if
-green.
+Next action: commit and push this PR-created checkpoint, wait for PR #367 current-head checks, and merge only if green.
 
 Decision: continue.
 

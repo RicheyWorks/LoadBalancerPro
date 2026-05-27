@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T01:49-07:00
+Timestamp: 2026-05-27T01:54-07:00
 
 Goal name: Decision Explorer Implementation Phase 1
 
 Current PR slot: DX-P1-G08
 
-Checkpoint: DX-P1-G08 local verification passed; commit pending
+Checkpoint: DX-P1-G08 PR #367 opened after local verification; PR-created checkpoint commit pending
 
 Started from main SHA: `755ed394adfa18e462f89312c5289fd3154075f2`
 
 Current branch: codex/decision-explorer-phase1-hardening
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/367
 
-Head SHA: `3d85730efc979373c2838e414c78c16df43656a9` before DX-P1-G08 local edits
+Head SHA: `b6ae1388ba5b8c47788459d04203094c4fd9e2fd` before this PR-created checkpoint commit
 
 Changed files planned for this slice:
 
@@ -273,13 +273,17 @@ Checks run:
 - `git diff --cached --check` passed.
 - `git diff --check origin/main...HEAD` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
+- Commit `b6ae1388ba5b8c47788459d04203094c4fd9e2fd` was created for the DX-P1-G08 hardening slice.
+- Branch `codex/decision-explorer-phase1-hardening` was pushed to origin.
+- PR #367 was opened: https://github.com/RicheyWorks/LoadBalancerPro/pull/367.
 
-Remote status: main CI and CodeQL green for `3d85730efc979373c2838e414c78c16df43656a9`; DX-P1-G08 has no PR yet.
+Remote status: main CI and CodeQL green for `3d85730efc979373c2838e414c78c16df43656a9`; PR #367 current-head
+checks are pending after PR creation and this checkpoint update.
 
 Blocker: none.
 
-Next action: commit and push DX-P1-G08, open the PR, wait for current-head checks, merge only if green, verify
-post-merge main, then continue to DX-P1-G09.
+Next action: commit and push this PR-created checkpoint, wait for PR #367 current-head checks, merge only if green,
+verify post-merge main, then continue to DX-P1-G09.
 
 Decision: continue.
 

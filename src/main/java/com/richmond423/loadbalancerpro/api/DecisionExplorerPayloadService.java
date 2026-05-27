@@ -42,6 +42,9 @@ public class DecisionExplorerPayloadService {
     private static final Comparator<FactorContributionV1> BY_CANDIDATE_THEN_FACTOR = Comparator
             .comparing(FactorContributionV1::candidateId)
             .thenComparing(FactorContributionV1::factorName);
+    private static final Comparator<DecisionFactorDrilldownV1> BY_DRILLDOWN_CANDIDATE_THEN_FACTOR = Comparator
+            .comparing(DecisionFactorDrilldownV1::candidateId)
+            .thenComparing(DecisionFactorDrilldownV1::factorName);
     private static final Comparator<PolicyGateReadoutV1> BY_GATE_ID =
             Comparator.comparing(PolicyGateReadoutV1::gateId);
     private static final Comparator<EvidencePacketReadoutV1> BY_REFERENCE_ID =
@@ -72,6 +75,7 @@ public class DecisionExplorerPayloadService {
         List<CandidateReadoutV1> candidates = candidateReadouts(result, selectedCandidateId);
         CandidateReadoutV1 selectedCandidate = selectedCandidate(candidates, selectedCandidateId);
         List<FactorContributionV1> factorContributions = factorContributions(result);
+        List<DecisionFactorDrilldownV1> factorDrilldowns = factorDrilldowns(result);
         List<PolicyGateReadoutV1> policyGateReadouts = policyGateReadouts(result);
         List<DecisionDiffReadoutV1> decisionDiffReadouts = decisionDiffReadouts(result, selectedCandidateId);
         List<EvidencePacketReadoutV1> evidencePacketReadouts = evidencePacketReadouts(result);
@@ -88,6 +92,7 @@ public class DecisionExplorerPayloadService {
                 selectedCandidate,
                 candidates,
                 factorContributions,
+                factorDrilldowns,
                 policyGateReadouts,
                 decisionDiffReadouts,
                 evidencePacketReadouts,
@@ -128,6 +133,7 @@ public class DecisionExplorerPayloadService {
                         List.of(),
                         BOUNDARY_NOTE),
                 unknownCandidate,
+                List.of(),
                 List.of(),
                 List.of(),
                 policyGateReadouts(null),
@@ -308,6 +314,100 @@ public class DecisionExplorerPayloadService {
                 .toList();
     }
 
+    private static List<DecisionFactorDrilldownV1> factorDrilldowns(RoutingComparisonResultResponse result) {
+        return vectorCandidates(result).stream()
+                .flatMap(candidate -> candidate.factorContributions().stream()
+                        .filter(Objects::nonNull)
+                        .map(contribution -> factorDrilldown(candidate, contribution)))
+                .sorted(BY_DRILLDOWN_CANDIDATE_THEN_FACTOR)
+                .toList();
+    }
+
+    private static DecisionFactorDrilldownV1 factorDrilldown(
+            CandidateDecisionVectorResponse candidate,
+            ScoreFactorContributionResponse contribution) {
+        String candidateId = safeValue(candidate.candidateId());
+        String factorName = safeValue(contribution.factorName());
+        String observedValue = !isBlank(contribution.rawValueDescription())
+                ? contribution.rawValueDescription().trim()
+                : safeValue(contribution.contributionDescription());
+        String evidenceStatus = factorEvidenceStatus(contribution);
+        List<String> warnings = factorWarnings(contribution, evidenceStatus);
+        List<String> unknowns = factorUnknowns(contribution);
+        return new DecisionFactorDrilldownV1(
+                factorName,
+                candidateId,
+                observedValue,
+                influenceCategory(contribution),
+                evidenceStatus,
+                safeValue(contribution.explanationText()),
+                warnings,
+                unknowns,
+                List.of(
+                        "decision-vector:" + candidateId,
+                        "factor-contribution:" + candidateId + ":" + normalizedId(factorName)),
+                safeValue(contribution.boundaryNote()));
+    }
+
+    private static String factorEvidenceStatus(ScoreFactorContributionResponse contribution) {
+        boolean hasObservedValue = !isBlank(contribution.rawValueDescription());
+        boolean hasExplanation = !isBlank(contribution.explanationText());
+        boolean hasFiniteContribution = finiteOrNull(contribution.contributionValue()) != null;
+        if (hasObservedValue && hasExplanation && hasFiniteContribution) {
+            return "AVAILABLE";
+        }
+        if (hasObservedValue || hasExplanation || hasFiniteContribution) {
+            return "PARTIAL";
+        }
+        return "UNKNOWN";
+    }
+
+    private static String influenceCategory(ScoreFactorContributionResponse contribution) {
+        String direction = safeValue(contribution.direction());
+        if ("SUPPORTS_SELECTION".equals(direction) || "WEAKENS_SELECTION".equals(direction)) {
+            return direction;
+        }
+        Double value = finiteOrNull(contribution.contributionValue());
+        if (value == null) {
+            return "UNKNOWN_INFLUENCE";
+        }
+        if (value < 0.0) {
+            return "SUPPORTS_SELECTION";
+        }
+        if (value > 0.0) {
+            return "WEAKENS_SELECTION";
+        }
+        return "NEUTRAL";
+    }
+
+    private static List<String> factorWarnings(
+            ScoreFactorContributionResponse contribution,
+            String evidenceStatus) {
+        List<String> warnings = new ArrayList<>();
+        if (!"AVAILABLE".equals(evidenceStatus)) {
+            warnings.add("factor evidence is " + evidenceStatus.toLowerCase(Locale.ROOT));
+        }
+        if (finiteOrNull(contribution.contributionValue()) == null) {
+            warnings.add("finite contribution value was not returned");
+        }
+        if (!"EXACT_FROM_RETURNED_EVIDENCE".equals(safeValue(contribution.exactness()))) {
+            warnings.add("factor exactness is " + safeValue(contribution.exactness()));
+        }
+        return distinctSorted(warnings);
+    }
+
+    private static List<String> factorUnknowns(ScoreFactorContributionResponse contribution) {
+        List<String> unknowns = new ArrayList<>();
+        if (isBlank(contribution.rawValueDescription())) {
+            unknowns.add("observed value or status");
+        }
+        if (finiteOrNull(contribution.contributionValue()) == null) {
+            unknowns.add("numeric contribution value");
+        }
+        unknowns.add("hidden routing internals");
+        return distinctSorted(unknowns);
+    }
+
     private static List<PolicyGateReadoutV1> policyGateReadouts(RoutingComparisonResultResponse result) {
         List<PolicyGateReadoutV1> gates = new ArrayList<>();
         gates.add(new PolicyGateReadoutV1(
@@ -429,6 +529,7 @@ public class DecisionExplorerPayloadService {
                         "selectedCandidate",
                         "candidateSet",
                         "factorContributions",
+                        "factorDrilldowns",
                         "policyGateReadouts",
                         "decisionDiffReadouts",
                         "evidencePacketReadouts",

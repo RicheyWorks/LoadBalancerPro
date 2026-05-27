@@ -95,6 +95,8 @@ class RoutingOpenApiContractTest {
         assertArrayRef(required(explorerProperties, "/candidateSet"), "#/components/schemas/CandidateReadoutV1");
         assertArrayRef(required(explorerProperties, "/factorContributions"),
                 "#/components/schemas/FactorContributionV1");
+        assertArrayRef(required(explorerProperties, "/factorDrilldowns"),
+                "#/components/schemas/DecisionFactorDrilldownV1");
         assertArrayRef(required(explorerProperties, "/policyGateReadouts"),
                 "#/components/schemas/PolicyGateReadoutV1");
         assertArrayRef(required(explorerProperties, "/decisionDiffReadouts"),
@@ -173,6 +175,19 @@ class RoutingOpenApiContractTest {
         assertEquals("number", required(factorReadoutProperties, "/contributionValue/type").asText());
         assertEquals("string", required(factorReadoutProperties, "/exactness/type").asText());
         assertEquals("string", required(factorReadoutProperties, "/explanation/type").asText());
+
+        JsonNode factorDrilldownProperties = required(docs,
+                "/components/schemas/DecisionFactorDrilldownV1/properties");
+        assertEquals("string", required(factorDrilldownProperties, "/factorName/type").asText());
+        assertEquals("string", required(factorDrilldownProperties, "/candidateId/type").asText());
+        assertEquals("string", required(factorDrilldownProperties, "/observedValueOrStatus/type").asText());
+        assertEquals("string", required(factorDrilldownProperties, "/influenceCategory/type").asText());
+        assertEquals("string", required(factorDrilldownProperties, "/evidenceStatus/type").asText());
+        assertEquals("string", required(factorDrilldownProperties, "/explanation/type").asText());
+        assertEquals("array", required(factorDrilldownProperties, "/warnings/type").asText());
+        assertEquals("array", required(factorDrilldownProperties, "/unknowns/type").asText());
+        assertEquals("array", required(factorDrilldownProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(factorDrilldownProperties, "/boundaryNote/type").asText());
 
         JsonNode policyGateProperties = required(docs,
                 "/components/schemas/PolicyGateReadoutV1/properties");

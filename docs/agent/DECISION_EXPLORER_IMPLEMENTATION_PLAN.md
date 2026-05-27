@@ -40,6 +40,9 @@ The planned implementation path should help reviewers and AI agents understand:
 - which verification expectations must be green before a future implementation PR can merge;
 - which not-proven boundaries must stay attached to every future slice.
 
+The implementation is future work. DX-G08 provides planning-only language and makes no runtime
+endpoint/UI/storage/export/replay implementation claim.
+
 The plan does not approve implementation in this bootstrap campaign. It does not prove production readiness, production
 certification, live-cloud validation, real-tenant validation, benchmark/load/stress evidence, throughput/p95/p99
 evidence, replay/export behavior, storage behavior, runtime endpoint/UI/storage/evidence-packet implementation,
@@ -82,6 +85,81 @@ The slices below are a future planning sequence only. They are not implemented b
 
 Every future slice should be independently scoped, reviewed, tested, and merged only after current-head PR checks and
 post-merge main CI/CodeQL are green.
+
+## Future Slice Families
+
+The future backend model slices would define read-only DTOs or schema objects for `DecisionExplorerPayloadV1`,
+`DecisionReadoutV1`, `CandidateReadoutV1`, `FactorContributionV1`, `PolicyGateReadoutV1`,
+`DecisionDiffReadoutV1`, `EvidencePacketReadoutV1`, and `AgentStructuredOutputV1`. These slices would not create
+mutation paths, production routing authority, storage writes, export handles, replay execution, endpoint behavior, or
+evidence packet generation.
+
+The future endpoint slices would be separately scoped only after the model slices and guards are proven. Any future
+endpoint discussion must remain read-only and simulation-only until a later PR defines and verifies actual behavior.
+DX-G08 does not add controllers, routes, API resources, OpenAPI changes, runtime configuration, or network behavior.
+
+The future static UI slices would describe reviewer-facing display of a simulated decision explanation, candidate
+readouts, visible factors, policy gate visualization, source cards, and boundary notes. DX-G08 does not add static UI
+assets, templates, frontend code, browser behavior, runtime resources, storage, export, or replay behavior.
+
+The future what-if/counterfactual slices would remain simulation-only. They may explain how visible signals could alter
+a planned explanation, but they must not execute replay, mutate routing, shift traffic, write storage, call cloud or
+tenant targets, export packets, or approve production action.
+
+The future policy gate visualization slices would display gate outcomes such as allowed, warned, blocked, requires
+review, not evaluated, or unknown. Visualization is not authorization, branch protection, required-check governance,
+deployment approval, production traffic-control approval, or runtime enforcement.
+
+The future evidence packet renderer slices would be planned only until a separate scoped campaign proves them. A future
+renderer may format `EvidencePacketReadoutV1` references for reviewers, but DX-G08 does not implement packet generation,
+storage, export, download, upload, replay execution, persistence, certification, or production proof.
+
+## Test Strategy
+
+The test strategy for a later implementation campaign should be incremental:
+
+- guard tests should continue to prove docs-before-code, read-only, simulation-only, and not-proven boundaries;
+- model tests should verify DTO or schema vocabulary without adding endpoint, storage, export, replay, or production
+  behavior;
+- endpoint tests, if later scoped, should prove read-only behavior, no mutation handles, no production-looking defaults,
+  and explicit not-implemented states for unavailable behavior;
+- static UI tests, if later scoped, should verify source-visible display text, boundary flags, and accessibility without
+  claiming runtime production proof;
+- what-if and policy gate tests should prove simulation-only display and no authorization semantics;
+- evidence packet renderer tests should prove planned or not-implemented states until a future implementation provides
+  separately verified behavior.
+
+The test strategy does not add tests in DX-G08 beyond this documentation guard, and it does not change Maven or CI.
+
+## Verification Strategy
+
+The verification strategy for future implementation slices should require:
+
+- focused guard verification before broader suites;
+- relevant Decision Explorer documentation selector bundles;
+- full Maven tests and package verification;
+- enterprise lab smoke package only as local-lab evidence, not production proof;
+- current-head PR CI, CodeQL, and Dependency Review before merge;
+- post-merge main CI and CodeQL before a later slot opens;
+- exact failure reporting when checks fail, including test class, job, step, and run link.
+
+The verification strategy is planning only. It does not add workflows, required checks, rulesets, scripts, release
+automation, deployment automation, or runtime enforcement.
+
+## Branch/PR Sequence
+
+The branch/PR sequence for a later implementation campaign should stay one scoped PR at a time:
+
+1. Open a branch from a main commit whose CI and CodeQL are green.
+2. Keep changed files inside the active slice.
+3. Run focused local verification before broad verification.
+4. Open a PR only after local verification is current.
+5. Merge only after current-head PR CI, CodeQL, and Dependency Review are green.
+6. Fast-forward local main after merge.
+7. Verify post-merge main CI and CodeQL before opening the next PR.
+
+The branch/PR sequence does not delete branches, weaken rulesets, weaken required checks, or authorize stacked
+implementation PRs in this bootstrap campaign.
 
 ## Stop Conditions Before Java, Backend, Or UI Work
 
@@ -128,6 +206,7 @@ Future implementation planning must keep these non-goals visible until separatel
 - no live-cloud or real-tenant validation claim;
 - no benchmark/load/stress or throughput/p95/p99 proof claim;
 - no replay/export/storage proof claim;
+- no runtime endpoint/UI/storage/export/replay implementation claim;
 - no runtime endpoint/UI/storage/evidence-packet implementation claim in this bootstrap campaign;
 - no evidence packet generation, persistence, download, upload, or certification claim;
 - no hidden network calls, hidden writes, hidden approvals, or hidden side effects;

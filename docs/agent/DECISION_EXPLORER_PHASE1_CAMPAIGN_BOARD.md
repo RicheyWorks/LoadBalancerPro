@@ -82,9 +82,9 @@ DX-P1-G03 starts from clean main at `fca765b897937cd20ee9955bfb7f9ba7a665a9be`.
 
 Current branch: `codex/decision-explorer-phase1-builder`.
 
-Current PR: pending.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/362.
 
-Current head SHA: local work in progress after builder/service implementation started.
+Current head SHA: `d32cc14b9af4edc1dc2ae420231051946f9f1292` at PR opening; final PR-created checkpoint commit is pending.
 
 Next action: finish DX-P1-G03 local verification, commit and push the builder/service slice, open the PR, wait for
 current-head PR checks, merge only if green, verify post-merge main, and then continue to DX-P1-G04.

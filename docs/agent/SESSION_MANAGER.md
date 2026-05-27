@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-26T22:48-07:00
+Timestamp: 2026-05-26T22:50-07:00
 
 Goal name: Decision Explorer Implementation Phase 1
 
 Current PR slot: DX-P1-G03
 
-Checkpoint: DX-P1-G03 builder/service slice active after DX-P1-G02 merged-main-green
+Checkpoint: DX-P1-G03 PR opened after local verification; PR-created metadata checkpoint in progress
 
 Started from main SHA: `755ed394adfa18e462f89312c5289fd3154075f2`
 
 Current branch: codex/decision-explorer-phase1-builder
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/362
 
-Head SHA: local work in progress from main `fca765b897937cd20ee9955bfb7f9ba7a665a9be`
+Head SHA: `d32cc14b9af4edc1dc2ae420231051946f9f1292` at PR opening; final PR-created checkpoint commit is pending
 
 Changed files planned for this slice:
 
@@ -84,14 +84,16 @@ Checks run:
 - `git diff --cached --check` passed.
 - `git diff --check origin/main...HEAD` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
+- Commit `d32cc14b9af4edc1dc2ae420231051946f9f1292` was created for the DX-P1-G03 builder/service slice.
+- Branch `codex/decision-explorer-phase1-builder` was pushed to origin.
+- PR #362 was opened: https://github.com/RicheyWorks/LoadBalancerPro/pull/362.
 
-Remote status: main CI and CodeQL green for `fca765b897937cd20ee9955bfb7f9ba7a665a9be`; no DX-P1-G03 PR opened yet.
+Remote status: main CI and CodeQL green for `fca765b897937cd20ee9955bfb7f9ba7a665a9be`; PR #362 checks are pending after PR creation.
 
 Blocker: none.
 
-Next action: run final current-tree guard/diff checks after this checkpoint update, commit and push the builder/service
-slice, open the PR, wait for current-head PR checks, merge only if green, verify post-merge main, then continue to
-DX-P1-G04.
+Next action: commit and push this PR-created checkpoint, rerun current-head local verification as needed, wait for
+current-head PR checks, merge only if green, verify post-merge main, then continue to DX-P1-G04.
 
 Decision: continue.
 

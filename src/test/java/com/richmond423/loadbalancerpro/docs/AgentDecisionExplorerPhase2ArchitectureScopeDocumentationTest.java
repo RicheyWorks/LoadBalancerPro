@@ -193,9 +193,12 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "deterministic selected-first comparison ordering",
                 "DX-P2-G10",
                 "codex/decision-explorer-phase2-docs-examples",
-                "local verification passed",
+                "active-pr",
+                "PR #378",
+                "https://github.com/RicheyWorks/LoadBalancerPro/pull/378",
                 "DECISION_EXPLORER_PHASE2_REVIEWER_EXAMPLES.md",
                 "AgentDecisionExplorerPhase2ReviewerExamplesDocumentationTest",
+                "ee5e2c4e8836d33ceead8ccc22371cc2daf77c1b",
                 "DX-P2-G11",
                 "codex/decision-explorer-phase2-final-polish",
                 "DX-P2-G12",
@@ -276,6 +279,7 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "https://github.com/richeyworks/loadbalancerpro/pull/375",
                 "https://github.com/richeyworks/loadbalancerpro/pull/376",
                 "https://github.com/richeyworks/loadbalancerpro/pull/377",
+                "https://github.com/richeyworks/loadbalancerpro/pull/378",
                 "merged as `1fb16a50d4181d1411abfe6c038815a68f79e7b5`",
                 "merged as `186b28db1d261858a42db2ed75531fb3e4930f44`",
                 "merged as `b2f5017e4c7484e34d0da6a1ffde3954442a9103`",
@@ -294,6 +298,7 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "37e219d9a616eee28b49cdc87b4a36c2ce3a0921",
                 "a7b790636bbd8042bc06c48db5fc6390c334215e",
                 "91c24d4d673df44e82f2e6e6d1e1cb6b1944ac1a",
+                "ee5e2c4e8836d33ceead8ccc22371cc2daf77c1b",
                 "e8fcd4f74f3f50c2f973b78d7999c18104aee9bb",
                 "get /api/routing/decision-explorer/scenarios",
                 "2,682 tests",
@@ -308,7 +313,7 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "decision explorer phase 2 reviewer examples",
                 "focused selector passed",
                 "full local verification passed",
-                "remote checks: pending until dx-p2-g10 pr is opened",
+                "remote checks: pr #378",
                 "decision: continue")) {
             assertTrue(session.contains(expected), "session manager should record " + expected);
         }

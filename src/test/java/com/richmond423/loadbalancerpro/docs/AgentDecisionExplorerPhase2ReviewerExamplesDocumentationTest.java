@@ -132,7 +132,8 @@ class AgentDecisionExplorerPhase2ReviewerExamplesDocumentationTest {
                 "DECISION_EXPLORER_PHASE2_REVIEWER_EXAMPLES.md",
                 "AgentDecisionExplorerPhase2ReviewerExamplesDocumentationTest",
                 "phase2-docs-examples",
-                "local verification passed",
+                "PR #378",
+                "ee5e2c4e8836d33ceead8ccc22371cc2daf77c1b",
                 "8a0455ee03a80ae2170c6b977a2e761407ad6d90")) {
             assertTrue(board.contains(expected), "campaign board should track examples item " + expected);
             assertTrue(session.contains(expected), "session manager should track examples item " + expected);

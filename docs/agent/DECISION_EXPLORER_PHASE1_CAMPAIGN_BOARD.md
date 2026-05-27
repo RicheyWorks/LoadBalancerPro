@@ -72,12 +72,13 @@ DX-P1-G02 starts from clean main at `0fe9331a757973d93820bbae46b05ae53f8ba64a`.
 
 Current branch: `codex/decision-explorer-phase1-dto-skeleton`.
 
-Current PR: pending.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/361.
 
-Current head SHA: pending after commit.
+Current head SHA: `960c8a9e1307d20cb8ac7ce69e6ee2b70ca831ec` at initial PR opening; PR-created checkpoint
+metadata commit is pending.
 
-Next action: add the additive Decision Explorer DTO skeleton, focused unit tests, local verification, PR creation,
-remote checks, merge, post-merge main verification, and then continue to DX-P1-G03.
+Next action: commit and push the PR-created checkpoint, rerun current-head local verification as needed, wait for
+current-head PR checks, merge only if green, verify post-merge main, and then continue to DX-P1-G03.
 
 Decision: continue.
 

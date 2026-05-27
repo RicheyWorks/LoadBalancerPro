@@ -308,6 +308,64 @@
       color: var(--green);
     }
 
+    .badge-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .reviewer-badge {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 156px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: #f8fafb;
+    }
+
+    .reviewer-badge strong {
+      color: #263341;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+    }
+
+    .reviewer-badge span {
+      color: #3c4858;
+      font-size: 0.84rem;
+    }
+
+    .reviewer-badge.selected {
+      border-color: var(--green);
+      background: var(--soft-green);
+    }
+
+    .reviewer-badge.warning {
+      border-color: var(--amber);
+      background: #fff7e6;
+    }
+
+    .reviewer-badge.unknown {
+      border-color: #758195;
+      background: #eef2f7;
+    }
+
+    .reviewer-badge.partial {
+      border-color: #9f6b1d;
+      background: #fff3d6;
+    }
+
+    .reviewer-badge.deterministic {
+      border-color: #2b6cb0;
+      background: #e8f1fb;
+    }
+
+    .reviewer-badge.boundary {
+      border-color: var(--red);
+      background: var(--soft-red);
+    }
+
     pre {
       overflow: auto;
       max-height: 460px;
@@ -445,6 +503,11 @@
       <h2 id="decision-title">Decision Summary</h2>
       <div id="decision-summary" class="empty">Run the sample to inspect the selected decision.</div>
     </section>
+    <section class="panel" aria-labelledby="reviewer-badges-title">
+      <h2 id="reviewer-badges-title">Reviewer Explanation Badges</h2>
+      <p class="scenario-note">Display-only labels from returned payload fields; badges do not enforce or prove runtime decisions.</p>
+      <div id="reviewer-badges" class="empty">No reviewer badges loaded yet.</div>
+    </section>
     <section class="panel" aria-labelledby="selected-title">
       <h2 id="selected-title">Selected Candidate</h2>
       <div id="selected-candidate" class="empty">No selected candidate loaded yet.</div>
@@ -564,6 +627,7 @@
     scenarioCatalogStatus: document.getElementById("scenario-catalog-status"),
     scenarioCatalogList: document.getElementById("scenario-catalog-list"),
     decisionSummary: document.getElementById("decision-summary"),
+    reviewerBadges: document.getElementById("reviewer-badges"),
     selectedCandidate: document.getElementById("selected-candidate"),
     notProven: document.getElementById("not-proven"),
     candidateSet: document.getElementById("candidate-set"),
@@ -739,6 +803,9 @@
   function renderSelectedScenario(scenario) {
     if (!scenario) {
       setEmpty(elements.scenarioCatalogStatus, "No scenario selected. Adjust filters or load the same-origin catalog.");
+      if (latestPayload && latestPayload.length) {
+        renderReviewerBadges(elements.reviewerBadges, latestPayload[0], null);
+      }
       return;
     }
     renderKeyValues(elements.scenarioCatalogStatus, [
@@ -750,6 +817,9 @@
       ["Description", value(scenario.description)],
       ["Boundary", value(scenario.boundaryNote || latestScenarioCatalog.boundaryNote)]
     ]);
+    if (latestPayload && latestPayload.length) {
+      renderReviewerBadges(elements.reviewerBadges, latestPayload[0], scenario);
+    }
   }
 
   function selectedScenario() {
@@ -788,6 +858,7 @@
       ["Summary", value(first.decisionReadout && first.decisionReadout.summary)],
       ["Boundary", value(first.boundaryNote)]
     ]);
+    renderReviewerBadges(elements.reviewerBadges, first, selectedScenario());
     renderKeyValues(elements.selectedCandidate, candidateRows(first.selectedCandidate));
     renderChips(elements.notProven, first.notProvenBoundaries, "not-proven");
     renderCandidateTable(elements.candidateSet, first.candidateSet || []);
@@ -805,6 +876,7 @@
   function renderError(error) {
     elements.rawOutput.textContent = error.message;
     setEmpty(elements.decisionSummary, error.message);
+    setEmpty(elements.reviewerBadges, "No reviewer badges available.");
     setEmpty(elements.selectedCandidate, "No selected candidate available.");
     setEmpty(elements.notProven, "No boundaries available.");
     setEmpty(elements.candidateSet, "No candidate readouts available.");
@@ -849,6 +921,65 @@
     table.append(tbody);
     target.append(table);
     target.classList.remove("empty");
+  }
+
+  function renderReviewerBadges(target, payload, scenario) {
+    target.replaceChildren();
+    if (!payload) {
+      setEmpty(target, "No reviewer badges returned.");
+      return;
+    }
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "badge-grid";
+    reviewerBadgeDefinitions(payload, scenario).forEach(item => {
+      const badge = document.createElement("div");
+      badge.className = `reviewer-badge ${item.type}`;
+      const label = document.createElement("strong");
+      const detail = document.createElement("span");
+      label.textContent = item.label;
+      detail.textContent = item.detail;
+      badge.append(label, detail);
+      wrapper.append(badge);
+    });
+    target.append(wrapper);
+    target.classList.remove("empty");
+  }
+
+  function reviewerBadgeDefinitions(payload, scenario) {
+    const warnings = collectReviewerWarnings(payload);
+    const unknowns = collectReviewerUnknowns(payload);
+    const partial = hasPartialEvidence(payload, scenario);
+    const boundaries = Array.isArray(payload.notProvenBoundaries) ? payload.notProvenBoundaries.length : 0;
+    const selectedCandidate = value(payload.decisionReadout && payload.decisionReadout.selectedCandidateId);
+    return [
+      { type: "selected", label: "Selected route", detail: selectedCandidate },
+      {
+        type: warnings.length ? "warning" : "deterministic",
+        label: "Warning",
+        detail: warnings.length ? countText(warnings.length, "warning signal") : "none returned"
+      },
+      {
+        type: unknowns.length ? "unknown" : "deterministic",
+        label: "Unknown",
+        detail: unknowns.length ? countText(unknowns.length, "unknown signal") : "none returned"
+      },
+      {
+        type: partial ? "partial" : "deterministic",
+        label: "Partial evidence",
+        detail: partial ? "present in returned scenario or rows" : "none returned"
+      },
+      {
+        type: "deterministic",
+        label: "Deterministic evidence",
+        detail: "displayed from returned payload fields"
+      },
+      {
+        type: "boundary",
+        label: "Not-proven boundaries",
+        detail: countText(boundaries, "boundary")
+      }
+    ];
   }
 
   function renderCandidateTable(target, candidates) {
@@ -1044,8 +1175,54 @@
     return Array.isArray(values) && values.length ? values.join(", ") : "None returned";
   }
 
+  function collectReviewerWarnings(payload) {
+    const comparisons = Array.isArray(payload.candidateComparisons) ? payload.candidateComparisons : [];
+    const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
+    return uniqueList(mergeLists(
+      payload.warnings,
+      comparisons.flatMap(row => row.warnings),
+      drilldowns.flatMap(row => row.warnings)
+    ));
+  }
+
+  function collectReviewerUnknowns(payload) {
+    const comparisons = Array.isArray(payload.candidateComparisons) ? payload.candidateComparisons : [];
+    const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
+    return uniqueList(mergeLists(
+      payload.unknowns,
+      comparisons.flatMap(row => mergeLists(row.unknownSignals, row.unknowns)),
+      drilldowns.flatMap(row => row.unknowns)
+    ));
+  }
+
+  function hasPartialEvidence(payload, scenario) {
+    const comparisons = Array.isArray(payload.candidateComparisons) ? payload.candidateComparisons : [];
+    const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
+    const scenarioIsPartial = scenario && !statusIs(scenario.evidenceStatus, "AVAILABLE");
+    const comparisonIsPartial = comparisons.some(row => !statusIs(row.comparisonStatus, "SELECTED", "ALTERNATIVE"));
+    const drilldownIsPartial = drilldowns.some(row => !statusIs(row.evidenceStatus, "AVAILABLE"));
+    return Boolean(scenarioIsPartial || comparisonIsPartial || drilldownIsPartial);
+  }
+
   function mergeLists(...groups) {
     return groups.flatMap(group => Array.isArray(group) ? group : []);
+  }
+
+  function uniqueList(values) {
+    return Array.from(new Set(values.filter(item => item != null && item !== "").map(String))).sort();
+  }
+
+  function statusIs(status, ...allowed) {
+    const normalized = value(status).toUpperCase();
+    return allowed.some(item => normalized === item);
+  }
+
+  function countText(count, singular) {
+    if (count === 1) {
+      return `1 ${singular}`;
+    }
+    const plural = singular.endsWith("y") ? `${singular.slice(0, -1)}ies` : `${singular}s`;
+    return `${count} ${plural}`;
   }
 
   async function copyReviewerSummary() {

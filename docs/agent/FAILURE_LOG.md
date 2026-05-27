@@ -1353,6 +1353,48 @@ Result: retry passed. The page loaded one Decision Explorer payload, rendered 2 
 
 Follow-up action: continue with DX-P2-G07 commit and PR creation.
 
+## Entry
+
+Date/time: 2026-05-27T14:34-07:00
+
+Branch/PR: codex/decision-explorer-phase2-reviewer-badges / no PR yet
+
+Failure type: local documentation guard expectation mismatch
+
+Failing check: `mvn test "-Dtest=DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+
+Suspected cause: the new `reviewer explanation badges` API-contract token was added to a shared expectation list that
+also required the Phase 1 scope document to contain the token, even though the badge surface is a Phase 2 UI addition.
+
+Fix attempted: narrowed the guard so `reviewer explanation badges` is required from `docs/API_CONTRACTS.md` without
+requiring a stale Phase 1 scope edit.
+
+Result: focused selector rerun passed with 19 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue DX-P2-G08 local verification.
+
+## Entry
+
+Date/time: 2026-05-27T14:41-07:00
+
+Branch/PR: codex/decision-explorer-phase2-reviewer-badges / no PR yet
+
+Failure type: local rendered-page wording defect
+
+Failing check: browser rendered-page verification for `http://127.0.0.1:18080/decision-explorer.html`
+
+Suspected cause: the shared badge count helper formed plurals by appending `s`, so the not-proven boundary badge
+rendered `10 boundarys` instead of `10 boundaries`.
+
+Fix attempted: updated the badge count helper to pluralize words ending in `y` as `ies` and added static-page guard
+coverage for that helper path.
+
+Result: rebuilt rendered-page verification passed. The page rendered 6 reviewer badges, including
+`Not-proven boundaries10 boundaries`, preserved returned candidate/factor source fields in raw payload output, and
+reported no browser console errors.
+
+Follow-up action: continue DX-P2-G08 commit and PR creation.
+
 ## Notes
 
 - Keep entries factual.

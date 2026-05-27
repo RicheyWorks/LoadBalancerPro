@@ -1,14 +1,14 @@
 # Decision Explorer Phase 2 Campaign Board
 
-Status: active / phase2-ui-drilldown-comparison.
+Status: active / phase2-reviewer-badges.
 
 Classification: WARN / decision-explorer-phase2-campaign.
 
 Started from main SHA: `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
-Current PR slot: DX-P2-G07.
+Current PR slot: DX-P2-G08.
 
-Completed Phase 2 PRs: 6 / 12 planned.
+Completed Phase 2 PRs: 7 / 12 planned.
 
 Related architecture scope: [`DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md`](DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md).
 
@@ -54,8 +54,8 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P2-G04 | `codex/decision-explorer-phase2-factor-drilldown` | Decision factor drill-down | Deterministic factor-level summaries and tests | merged-main-green / PR #372 / `b2f5017e4c7484e34d0da6a1ffde3954442a9103` |
 | DX-P2-G05 | `codex/decision-explorer-phase2-candidate-comparison` | Candidate comparison table | Additive candidate comparison rows and tests for ordering, empty, and partial candidates | merged-main-green / PR #373 / `64394f1380708a63d70ad9e5ec1a2ad3589a9780` |
 | DX-P2-G06 | `codex/decision-explorer-phase2-ui-scenarios` | UI scenario selector and filtering | Static page controls using same-origin data only | merged-main-green / PR #374 / `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb` |
-| DX-P2-G07 | `codex/decision-explorer-phase2-ui-drilldown-comparison` | UI factor drill-down and candidate comparison | Static page display for drill-down and comparison states | active-pr / PR #375 / current-head checks pending |
-| DX-P2-G08 | `codex/decision-explorer-phase2-reviewer-badges` | Explanation badges and reviewer language | Reviewer-facing badges, docs language, and no-overclaim guard coverage | pending |
+| DX-P2-G07 | `codex/decision-explorer-phase2-ui-drilldown-comparison` | UI factor drill-down and candidate comparison | Static page display for drill-down and comparison states | merged-main-green / PR #375 / `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4` |
+| DX-P2-G08 | `codex/decision-explorer-phase2-reviewer-badges` | Explanation badges and reviewer language | Reviewer-facing badges, docs language, and no-overclaim guard coverage | active-pr / PR #376 / checks pending |
 | DX-P2-G09 | `codex/decision-explorer-phase2-api-hardening` | API contract hardening | Compatibility, null-safety, ordering tests, and API docs updates | pending |
 | DX-P2-G10 | `codex/decision-explorer-phase2-docs-examples` | Docs and examples | Grounded Phase 2 examples and unsupported-claim guard tests | pending |
 | DX-P2-G11 | `codex/decision-explorer-phase2-final-polish` | Final hardening and navigation polish | Reviewer navigation cleanup, page labels, and edge-case cleanup | pending |
@@ -69,16 +69,17 @@ Phase 1 final handoff PR #368 merged as `28c8bc10e1aa553a3c53aac70883c04431d55cc
 
 DX-P2-G01 starts from clean main at `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
-Current branch: `codex/decision-explorer-phase2-ui-drilldown-comparison`.
+Current branch: `codex/decision-explorer-phase2-reviewer-badges`.
 
-Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/375.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/376.
 
-Current head SHA before PR-created checkpoint: `fb7e4f87b93645228a57d9bbf69ad51a5833531f`.
+Current base SHA: `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4`.
 
-Current Phase 2 focus: display already-returned `DecisionExplorerPayloadV1.factorDrilldowns` and
-`DecisionExplorerPayloadV1.candidateComparisons` in the static Decision Explorer page. The controls stay read-only and
-display-only; they do not recompute scores, run routing, mutate decisions, persist storage, export data, execute
-replay, generate evidence packets, or call external systems.
+Current Phase 2 focus: add display-only reviewer explanation badges for selected route, warning, unknown, partial
+evidence, deterministic evidence, and not-proven boundary states. The badges are derived from returned
+`DecisionExplorerPayloadV1` fields and selected same-origin scenario metadata only; they do not recompute scores, run
+routing, mutate decisions, persist storage, export data, execute replay, generate evidence packets, or call external
+systems.
 
 DX-P2-G01 local verification passed before PR creation:
 
@@ -384,8 +385,64 @@ DX-P2-G07 committed as `fb7e4f87b93645228a57d9bbf69ad51a5833531f`.
 DX-P2-G07 PR #375 opened from the current branch after local verification:
 https://github.com/RicheyWorks/LoadBalancerPro/pull/375.
 
-Next action: push the PR-created checkpoint update, wait for PR #375 current-head checks, and merge only after
-Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review are current-head green.
+DX-P2-G07 current-head PR checks passed:
+
+- PR CI and Dependency Review passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26539162199;
+- duplicate PR CI run passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26539160630;
+- PR CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26539162267.
+
+DX-P2-G07 merged as `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4`.
+
+DX-P2-G07 post-merge main verification passed:
+
+- `mvn -q test` passed;
+- `mvn -q "-DskipTests" package` passed;
+- `mvn -B package` passed with 2,698 tests, 0 failures, 0 errors, and 0 skipped;
+- `git diff --check` passed;
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only;
+- main CI passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26539471845;
+- main CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26539472173.
+
+DX-P2-G08 starts from clean main at `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4`.
+
+DX-P2-G08 adds display-only reviewer explanation badges and reviewer language for selected route, warning, unknown,
+partial evidence, deterministic evidence, and not-proven boundary states. The slice does not add endpoints, recompute
+scores, change routing/scoring/proxy behavior, persist storage, export data, execute replay, generate evidence packets,
+or call external systems.
+
+DX-P2-G08 local verification passed before PR creation:
+
+- focused selector passed:
+  `mvn test "-Dtest=DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+  with 19 tests, 0 failures, 0 errors, and 0 skipped;
+- relevant Decision Explorer selector passed:
+  `mvn test "-Dtest=*DecisionExplorer*,RoutingControllerTest,RoutingOpenApiContractTest"`
+  with 160 tests, 0 failures, 0 errors, and 0 skipped;
+- `mvn -q test` passed;
+- `mvn -q "-DskipTests" package` passed;
+- `mvn -B package` passed with 2,698 tests, 0 failures, 0 errors, and 0 skipped;
+- `git diff --check` passed with line-ending warnings only;
+- `git diff --cached --check` passed;
+- `git diff --check origin/main...HEAD` passed;
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only;
+- rendered-page verification passed on `http://127.0.0.1:18080/decision-explorer.html`: the packaged app rendered 6
+  reviewer badges, included the corrected `10 boundaries` not-proven badge detail, preserved returned candidate/factor
+  source fields in raw payload output, and reported no browser console errors.
+
+DX-P2-G08 local verification found and repaired two guard/UI wording defects, both logged in
+`docs/agent/FAILURE_LOG.md`, without runtime behavior changes outside the display-only static page.
+
+DX-P2-G08 PR #376 opened from the current branch after local verification.
+
+DX-P2-G08 PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/376.
+
+DX-P2-G08 PR creation commit: `1091470d88da5196e3e5ef27f763f4cbed34803f`.
+
+DX-P2-G08 merge gate must re-read the latest PR head from GitHub before merge because checkpoint commits can move an
+active branch after the initial PR creation commit.
+
+Next action: wait for DX-P2-G08 Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review to become
+current-head green, then merge only if the PR remains mergeable and scope-limited.
 
 Decision: continue.
 

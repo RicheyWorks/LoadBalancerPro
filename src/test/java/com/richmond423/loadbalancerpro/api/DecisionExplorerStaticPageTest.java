@@ -106,6 +106,13 @@ class DecisionExplorerStaticPageTest {
                 "Scenario selector",
                 "Category filter",
                 "Evidence filter",
+                "Reviewer Explanation Badges",
+                "Selected route",
+                "Warning",
+                "Unknown",
+                "Partial evidence",
+                "Deterministic evidence",
+                "Not-proven boundaries",
                 "Copy Summary",
                 "DecisionExplorerPayloadV1",
                 "read-only",
@@ -135,6 +142,13 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("factor-drilldowns"));
         assertTrue(page.contains("renderCandidateComparisonTable"));
         assertTrue(page.contains("renderFactorDrilldownTable"));
+        assertTrue(page.contains("reviewer-badges"));
+        assertTrue(page.contains("renderReviewerBadges"));
+        assertTrue(page.contains("reviewerBadgeDefinitions"));
+        assertTrue(page.contains("collectReviewerWarnings"));
+        assertTrue(page.contains("collectReviewerUnknowns"));
+        assertTrue(page.contains("hasPartialEvidence"));
+        assertTrue(page.contains("singular.endsWith(\"y\")"));
         assertTrue(page.contains("mergeLists"));
         assertTrue(page.contains("headers[\"X-API-Key\"] = key"));
         assertTrue(page.contains("textContent"));

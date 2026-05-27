@@ -8,21 +8,23 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T14:12-07:00
+Timestamp: 2026-05-27T14:51-07:00
 
 Goal name: Decision Explorer Implementation Phase 2
 
-Current PR slot: DX-P2-G07
+Current PR slot: DX-P2-G08
 
-Checkpoint: DX-P2-G07 PR #375 opened; PR-created checkpoint update in progress
+Checkpoint: DX-P2-G08 PR #376 opened; remote checks pending
 
-Started from main SHA: `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb`
+Started from main SHA: `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4`
 
-Current branch: codex/decision-explorer-phase2-ui-drilldown-comparison
+Current branch: codex/decision-explorer-phase2-reviewer-badges
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/375
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/376
 
-Head SHA: `fb7e4f87b93645228a57d9bbf69ad51a5833531f` before the PR-created checkpoint update
+PR creation SHA: `1091470d88da5196e3e5ef27f763f4cbed34803f`
+
+Current PR head must be re-read from GitHub before merge because checkpoint updates can move this active branch.
 
 Changed files planned for this slice:
 
@@ -265,14 +267,58 @@ Checks run:
 - DX-P2-G07 committed as `fb7e4f87b93645228a57d9bbf69ad51a5833531f`.
 - DX-P2-G07 pushed to origin and opened as PR #375:
   https://github.com/RicheyWorks/LoadBalancerPro/pull/375.
+- DX-P2-G07 PR-created checkpoint committed as `0efd6df064f5c8bad05270044c2a28b6a7333d9a`.
+- DX-P2-G07 current-head PR checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review.
+- DX-P2-G07 PR CI and Dependency Review passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26539162199.
+- DX-P2-G07 duplicate PR CI passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26539160630.
+- DX-P2-G07 PR CodeQL passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26539162267.
+- DX-P2-G07 merged as `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4`.
+- DX-P2-G07 post-merge local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  `mvn -B package` with 2,698 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- DX-P2-G07 main CI passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26539471845.
+- DX-P2-G07 main CodeQL passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26539472173.
+- DX-P2-G08 branch `codex/decision-explorer-phase2-reviewer-badges` was created from clean main at
+  `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4`.
+- DX-P2-G08 adds display-only reviewer explanation badges for selected route, warning, unknown, partial evidence,
+  deterministic evidence, and not-proven boundary states. The slice does not add endpoints, recompute scores, change
+  routing/scoring/proxy behavior, persist storage, export data, execute replay, generate evidence packets, or call
+  external systems.
+- DX-P2-G08 focused selector initially failed on a guard expectation that required the Phase 1 scope to contain the new
+  Phase 2 `reviewer explanation badges` API-contract token. The failure was logged in `docs/agent/FAILURE_LOG.md`,
+  repaired by narrowing the expectation to API contracts, and rerun.
+- DX-P2-G08 rendered-page verification initially found the badge count helper rendered `10 boundarys`. The failure was
+  logged in `docs/agent/FAILURE_LOG.md`, repaired by pluralizing `y` to `ies`, and rerun.
+- DX-P2-G08 focused selector passed:
+  `mvn test "-Dtest=DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+  with 19 tests, 0 failures, 0 errors, and 0 skipped.
+- DX-P2-G08 relevant Decision Explorer selector passed:
+  `mvn test "-Dtest=*DecisionExplorer*,RoutingControllerTest,RoutingOpenApiContractTest"`
+  with 160 tests, 0 failures, 0 errors, and 0 skipped.
+- DX-P2-G08 full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  `mvn -B package` with 2,698 tests, `git diff --check`, `git diff --cached --check`,
+  `git diff --check origin/main...HEAD`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- DX-P2-G08 rendered-page verification passed on `http://127.0.0.1:18080/decision-explorer.html`: the packaged app
+  rendered 6 reviewer badges, included the corrected `10 boundaries` not-proven badge detail, preserved returned
+  candidate/factor source fields in raw payload output, and reported no browser console errors.
 
-Remote status: main CI and CodeQL green for `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb`; PR #375 remote checks
-started after PR creation and must pass on the pushed checkpoint head before merge.
+DX-P2-G08 committed as `1091470d88da5196e3e5ef27f763f4cbed34803f`.
+
+DX-P2-G08 pushed to origin and opened as PR #376:
+  https://github.com/RicheyWorks/LoadBalancerPro/pull/376.
+
+Remote status: PR #376 Build/Test/Package/Smoke and Analyze Java / CodeQL are pending for
+`1091470d88da5196e3e5ef27f763f4cbed34803f`; Dependency Review has emitted on the current PR run.
 
 Blocker: none.
 
-Next action: push the PR-created checkpoint update, wait for PR #375 current-head checks, merge only if green, verify
-post-merge main, then continue to DX-P2-G08.
+Next action: wait for DX-P2-G08 required checks, then merge only when Build/Test/Package/Smoke, Analyze Java / CodeQL,
+and Dependency Review are current-head green.
 
 Decision: continue.
 

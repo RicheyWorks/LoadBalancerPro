@@ -956,12 +956,33 @@ Failing check: `gh pr merge 363 --merge --subject "Add Decision Explorer API sur
 
 Suspected cause: GitHub CLI rejected the empty `--body` flag before attempting the merge.
 
-Fix attempted: pending; rerun the merge command without an empty body flag and with `--match-head-commit` pinned to
-the verified current PR head.
+Fix attempted: reran the merge command without an empty body flag and with `--match-head-commit` pinned to the verified
+current PR head.
 
-Result: pending.
+Result: PR #363 merged successfully as `20b9080d5c24ef3807e15a3ef8367a8ef1ae4915` after current-head PR checks were
+green.
 
-Follow-up action: retry the merge only against current-head green PR #363.
+Follow-up action: verify post-merge main and continue only after main CI and CodeQL are green.
+
+## Entry
+
+Date/time: 2026-05-26T23:46-07:00
+
+Branch/PR: codex/decision-explorer-phase1-ui-first-pass / pending
+
+Failure type: focused UI guard whitespace mismatch
+
+Failing check: `mvn test "-Dtest=DecisionExplorerStaticPageTest,RoutingControllerTest,RoutingOpenApiContractTest,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest"`
+
+Suspected cause: the new Decision Explorer static page preserved the boundary text `execute replay`, but the source
+wrapped the words across an HTML line break while the guard searched the raw source string without normalizing
+whitespace.
+
+Fix attempted: normalized whitespace in the static page guard before checking multi-word boundary phrases.
+
+Result: focused UI/API/docs selector rerun passed with 33 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue to the relevant Decision Explorer selector and full local verification.
 
 ## Notes
 

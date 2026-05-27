@@ -24,6 +24,48 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T07:31-07:00
+
+Branch/PR: codex/decision-explorer-phase2-factor-drilldown / no PR yet
+
+Failure type: local verification tooling timeout
+
+Failing check: `mvn test "-Dtest=*DecisionExplorer*,RoutingOpenApiContractTest"`
+
+Suspected cause: the broader selector exceeded the tool timeout boundary before returning a Maven result. Follow-up
+process inspection found no lingering Maven, Surefire, or Java test processes, so the workspace can continue from a
+clean process state.
+
+Fix attempted: log the timeout, confirm no lingering Maven/Java processes, and rerun focused/broader verification from
+a clean process state.
+
+Result: explicit Decision Explorer selector rerun passed with 140 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with full local verification.
+
+## Entry
+
+Date/time: 2026-05-27T04:33-07:00
+
+Branch/PR: codex/decision-explorer-phase2-factor-drilldown / no PR yet
+
+Failure type: focused factor drill-down test expectation mismatch
+
+Failing check: `mvn test "-Dtest=DecisionFactorDrilldownV1Test,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,RoutingOpenApiContractTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+
+Suspected cause: the new `DecisionExplorerPayloadServiceTest` expected the partial `latency` drill-down to classify
+`Double.NaN` evidence as `WEAKENS_SELECTION`, but the test helper had already populated the returned direction as
+`SUPPORTS_SELECTION`. The builder correctly preserves returned direction before using score sign as a fallback.
+
+Fix attempted: update the test expectation to preserve the returned `SUPPORTS_SELECTION` influence category while
+keeping the `PARTIAL` evidence-status and missing finite contribution warnings.
+
+Result: focused DX-P2-G04 selector rerun passed with 23 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with relevant Decision Explorer selector and full local verification.
+
+## Entry
+
 Date/time: 2026-05-27T03:30-07:00
 
 Branch/PR: codex/decision-explorer-phase2-scenario-catalog / no PR yet

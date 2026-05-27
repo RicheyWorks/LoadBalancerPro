@@ -88,6 +88,14 @@ page as a local inspection surface only. The page does not add storage, export, 
 generation, live traffic shifting, production approval controls, cloud controls, tenant controls, or
 benchmark/load/stress claims.
 
+`DecisionExplorerPayloadV1.factorDrilldowns` is an additive Phase 2 field derived from already-returned
+`ScoreFactorContributionResponse` evidence. Each `DecisionFactorDrilldownV1` readout names the factor and candidate,
+copies the observed value/status, classifies the returned influence category, records an evidence status, explanation,
+warnings, unknowns, and source reference IDs. These drill-downs do not recompute scores, change routing behavior,
+mutate proxy behavior, persist storage, export evidence, execute replay, generate evidence packets, call external
+systems, or prove benchmark/load/stress, throughput/p95/p99, live-cloud, real-tenant, production-readiness, or broader
+automation behavior.
+
 Decision Explorer Phase 1 reviewer examples live in
 [`agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md`](agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md). They
 provide bounded request/response fragments and human/AI-agent review questions for the current local surface without

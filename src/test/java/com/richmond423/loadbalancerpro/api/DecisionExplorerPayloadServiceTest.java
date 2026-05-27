@@ -68,6 +68,12 @@ class DecisionExplorerPayloadServiceTest {
                 firstPayloads.get(0).factorContributions().stream()
                         .map(factor -> factor.candidateId() + ":" + factor.factorName())
                         .toList());
+        assertEquals(List.of("edge-a:healthState:SUPPORTS_SELECTION:AVAILABLE",
+                        "edge-z:p95LatencyMillis:WEAKENS_SELECTION:AVAILABLE"),
+                firstPayloads.get(0).factorDrilldowns().stream()
+                        .map(factor -> factor.candidateId() + ":" + factor.factorName() + ":"
+                                + factor.influenceCategory() + ":" + factor.evidenceStatus())
+                        .toList());
         assertTrue(firstPayloads.get(0).policyGateReadouts().stream()
                 .anyMatch(gate -> gate.gateId().equals("readiness-readiness-a")
                         && gate.outcome().equals("PASS")));
@@ -94,6 +100,7 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("UNKNOWN", payload.selectedCandidate().candidateId());
         assertTrue(payload.candidateSet().isEmpty());
         assertTrue(payload.factorContributions().isEmpty());
+        assertTrue(payload.factorDrilldowns().isEmpty());
         assertTrue(payload.decisionDiffReadouts().isEmpty());
         assertEquals("future-evidence-packet", payload.evidencePacketReadouts().get(0).referenceId());
         assertTrue(payload.warnings().contains("Selected candidate was not returned."));
@@ -136,6 +143,15 @@ class DecisionExplorerPayloadServiceTest {
         assertNull(alternative.finalScore());
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertNull(payload.factorContributions().get(0).contributionValue());
+        DecisionFactorDrilldownV1 partialDrilldown = payload.factorDrilldowns().get(0);
+        assertEquals("alternative-a", partialDrilldown.candidateId());
+        assertEquals("latency", partialDrilldown.factorName());
+        assertEquals("SUPPORTS_SELECTION", partialDrilldown.influenceCategory());
+        assertEquals("PARTIAL", partialDrilldown.evidenceStatus());
+        assertTrue(partialDrilldown.warnings().contains("finite contribution value was not returned"));
+        assertTrue(partialDrilldown.unknowns().contains("numeric contribution value"));
+        assertTrue(partialDrilldown.sourceReferenceIds()
+                .contains("factor-contribution:alternative-a:latency"));
         assertNull(payload.decisionDiffReadouts().get(0).finalScoreGap());
         assertEquals(List.of("latency", "queueDepth"), payload.decisionDiffReadouts().get(0).comparedFactorNames());
         assertTrue(payload.evidencePacketReadouts().get(0).unavailableReasons()

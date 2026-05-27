@@ -50,7 +50,7 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | --- | --- | --- | --- | --- |
 | DX-P2-G01 | `codex/decision-explorer-phase2-campaign-board` | Phase 2 campaign board and scope contract | `DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md`, `DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md`, documentation guard, `SESSION_MANAGER.md` | merged-main-green / PR #369 / `1e75b7326b09cd7c179909aec00f0c42e34da9c1` |
 | DX-P2-G02 | `codex/decision-explorer-phase2-scenario-catalog` | Scenario catalog model | Additive scenario catalog DTO/model support and unit tests | merged-main-green / PR #370 / `1fb16a50d4181d1411abfe6c038815a68f79e7b5` |
-| DX-P2-G03 | `codex/decision-explorer-phase2-scenario-api` | Scenario catalog service/API | Bounded same-origin catalog API or additive companion data, controller tests, and docs | active-local / full local verification passed |
+| DX-P2-G03 | `codex/decision-explorer-phase2-scenario-api` | Scenario catalog service/API | Bounded same-origin catalog API or additive companion data, controller tests, and docs | active-pr / PR #371 / current-head checks pending |
 | DX-P2-G04 | `codex/decision-explorer-phase2-factor-drilldown` | Decision factor drill-down | Deterministic factor-level summaries and tests | pending |
 | DX-P2-G05 | `codex/decision-explorer-phase2-candidate-comparison` | Candidate comparison table | Additive candidate comparison rows and tests for ordering, empty, and partial candidates | pending |
 | DX-P2-G06 | `codex/decision-explorer-phase2-ui-scenarios` | UI scenario selector and filtering | Static page controls using same-origin data only | pending |
@@ -71,9 +71,9 @@ DX-P2-G01 starts from clean main at `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
 Current branch: `codex/decision-explorer-phase2-scenario-api`.
 
-Current PR: pending.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/371.
 
-Current head SHA before local edits: `1fb16a50d4181d1411abfe6c038815a68f79e7b5`.
+Current head SHA: `eb6098337fc83b44f5b2c657652f8fd522eaf104`.
 
 Current Phase 2 focus: expose the scenario catalog through a bounded same-origin read-only API with service,
 controller, API contract, and OpenAPI coverage.
@@ -166,7 +166,13 @@ DX-P2-G03 full local verification passed before PR creation:
 - `git diff --check origin/main...HEAD` passed;
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
 
-Next action: open the DX-P2-G03 PR and merge only if current-head checks are green.
+DX-P2-G03 committed as `eb6098337fc83b44f5b2c657652f8fd522eaf104`.
+
+DX-P2-G03 PR #371 opened from the current branch after local verification:
+https://github.com/RicheyWorks/LoadBalancerPro/pull/371.
+
+Next action: wait for DX-P2-G03 PR #371 current-head checks and merge only if Build/Test/Package/Smoke, Analyze Java /
+CodeQL, and Dependency Review are green.
 
 Decision: continue.
 

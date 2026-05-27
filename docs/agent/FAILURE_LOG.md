@@ -760,6 +760,24 @@ Result: selector bundle rerun passed.
 
 Follow-up action: rerun the focused selector bundle before continuing slot 4 full local verification.
 
+## Entry
+
+Date/time: 2026-05-26T20:42-07:00
+
+Branch/PR: codex/dx-g10-bootstrap-closeout / pending
+
+Failure type: focused documentation guard exact wording
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerBootstrapCloseoutDocumentationTest"`
+
+Suspected cause: the new DX-G10 closeout documentation implied the final merge-health gate and runtime non-implementation boundaries, but it did not expose the exact source-visible strings required by the new guard.
+
+Fix attempted: add exact wording for current-head PR CI/CodeQL/Dependency Review, DX-G10 closing the bootstrap while preserving not-proven boundaries, no runtime endpoint/UI/storage/export/replay behavior, and no hidden side effects.
+
+Result: first fix reduced the failure set from three assertions to two exact-string assertions; a second wording fix reduced the failure set to one exact-string assertion; a third wording fix was applied and the focused rerun passed.
+
+Follow-up action: continue DX-G10 selector and full verification.
+
 ## Notes
 
 - Keep entries factual.

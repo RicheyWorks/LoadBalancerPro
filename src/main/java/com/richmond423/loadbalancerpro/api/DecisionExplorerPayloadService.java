@@ -32,7 +32,9 @@ public class DecisionExplorerPayloadService {
             "no benchmark/load/stress proof",
             "no throughput/p95/p99 proof",
             "no replay/export proof",
-            "no Decision Explorer endpoint, UI, storage, export, replay execution, or evidence-packet generation");
+            "no storage proof",
+            "no evidence-packet generation",
+            "no autonomous production action");
     private static final Comparator<CandidateReadoutV1> BY_SELECTED_THEN_CANDIDATE_ID = Comparator
             .comparing(CandidateReadoutV1::selected)
             .reversed()

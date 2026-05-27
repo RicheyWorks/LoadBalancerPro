@@ -1145,6 +1145,26 @@ Result: focused selector rerun passed with 24 tests, 0 failures, 0 errors, and 0
 
 Follow-up action: update the guard and rerun the focused selector.
 
+## Entry
+
+Date/time: 2026-05-27T01:43-07:00
+
+Branch/PR: codex/decision-explorer-phase1-hardening / no PR yet
+
+Failure type: focused documentation guard campaign-board cross-link mismatch
+
+Failing check: `mvn test "-Dtest=DecisionExplorerPayloadServiceTest,RoutingControllerTest,DecisionExplorerStaticPageTest,AgentDecisionExplorerPhase1ReviewerExamplesDocumentationTest,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest"`
+
+Suspected cause: DX-P1-G08 moved the Phase 1 campaign board forward to hardening after PR #366 merged, but the
+reviewer examples guard still required the board to preserve the G07 guard class name as a reviewer-facing
+cross-reference.
+
+Fix attempted: add the G07 guard class reference to the campaign board while keeping the G08 active-local status.
+
+Result: focused rerun passed with 44 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with the broader Decision Explorer selector before full verification.
+
 ## Notes
 
 - Keep entries factual.

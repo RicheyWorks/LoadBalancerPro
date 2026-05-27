@@ -200,6 +200,29 @@ class DecisionExplorerPayloadServiceTest {
         }
     }
 
+    @Test
+    void notProvenBoundariesDoNotDenyCurrentEndpointOrStaticPage() {
+        DecisionExplorerPayloadV1 payload = service.buildPayload(result(
+                "TAIL_LATENCY_POWER_OF_TWO",
+                "edge-a",
+                "SUCCESS",
+                vector("TAIL_LATENCY_POWER_OF_TWO",
+                        candidate("edge-a", true, contribution("healthState", -8.0))),
+                scores("edge-a", 10.0),
+                delta("edge-a", null, null),
+                null,
+                null));
+
+        String normalized = String.join(" | ", payload.notProvenBoundaries()).toLowerCase(Locale.ROOT);
+
+        assertTrue(payload.notProvenBoundaries().contains("no storage proof"));
+        assertTrue(payload.notProvenBoundaries().contains("no evidence-packet generation"));
+        assertTrue(payload.notProvenBoundaries().contains("no autonomous production action"));
+        assertTrue(payload.agentStructuredOutput().notProvenBoundaries().contains("no storage proof"));
+        assertFalse(normalized.contains("no decision explorer endpoint"));
+        assertFalse(normalized.contains("no decision explorer ui"));
+    }
+
     private static RoutingComparisonResponse comparison(RoutingComparisonResultResponse... results) {
         return new RoutingComparisonResponse(
                 List.of("TAIL_LATENCY_POWER_OF_TWO", "WEIGHTED_LEAST_CONNECTIONS"),

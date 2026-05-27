@@ -3,6 +3,7 @@ package com.richmond423.loadbalancerpro.api;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -115,6 +116,10 @@ class RoutingControllerTest {
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].outcome", is("PASS")))
                     .andExpect(jsonPath("$[0].agentStructuredOutput.schemaName", is("AgentStructuredOutputV1")))
                     .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no production readiness")))
+                    .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no storage proof")))
+                    .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no evidence-packet generation")))
+                    .andExpect(jsonPath("$[0].notProvenBoundaries", not(hasItem(
+                            "no Decision Explorer endpoint, UI, storage, export, replay execution, or evidence-packet generation"))))
                     .andExpect(jsonPath("$[0].boundaryNote", containsString("does not change routing behavior")));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),

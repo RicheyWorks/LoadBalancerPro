@@ -24,6 +24,27 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T03:30-07:00
+
+Branch/PR: codex/decision-explorer-phase2-scenario-catalog / no PR yet
+
+Failure type: focused model/documentation guard mismatch
+
+Failing check: `mvn test "-Dtest=DecisionExplorerScenarioCatalogV1Test,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest,DecisionExplorerPayloadV1Test"`
+
+Suspected cause: the new scenario-catalog source guard used the broad lowercase token `loadbalancer`, which matched the
+repository package name rather than a runtime routing mutation. The Phase 2 campaign-board guard also expected the full
+PR #369 URL while the board currently recorded the PR number and merge commit.
+
+Fix attempted: refine the source guard to look for concrete runtime mutation references instead of the package token,
+and make the PR #369 URL source-visible in the Phase 2 campaign board.
+
+Result: focused DX-P2-G02 selector rerun passed with 20 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: rerun the focused DX-P2-G02 selector before broader verification.
+
+## Entry
+
 Date/time: 2026-05-27T02:58-07:00
 
 Branch/PR: codex/decision-explorer-phase2-campaign-board / no PR yet

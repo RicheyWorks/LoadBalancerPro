@@ -79,6 +79,12 @@ page as a local inspection surface only. The page does not add storage, export, 
 generation, live traffic shifting, production approval controls, cloud controls, tenant controls, or
 benchmark/load/stress claims.
 
+Decision Explorer Phase 1 reviewer examples live in
+[`agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md`](agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md). They
+provide bounded request/response fragments and human/AI-agent review questions for the current local surface without
+changing this read-only, simulation-only API contract or upgrading production-readiness, live-cloud, real-tenant,
+benchmark/load/stress, throughput/p95/p99, replay/export/storage, evidence-packet, or automation claims.
+
 Scenario replay responses expose `scenarioId`, `readOnly`, `cloudMutation`, `remediationPlan`, and ordered `steps`. Remediation recommendations are advisory only and must not introduce cloud mutation or execution semantics.
 
 Remediation report export requests accept exactly one report source: an existing read-only evaluation response or an existing scenario replay response. The response exposes the requested `format`, report `contentType`, optional Markdown `report`, structured `json` payload, and top-level `readOnly`, `advisoryOnly`, and `cloudMutation` flags. Report output is deterministic for the same input and does not add generated timestamps or random identifiers unless the caller supplies a report id.

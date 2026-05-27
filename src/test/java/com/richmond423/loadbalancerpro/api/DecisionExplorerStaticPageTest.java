@@ -99,6 +99,11 @@ class DecisionExplorerStaticPageTest {
                 "Raw Payload",
                 "Reviewer Navigation",
                 "Run Decision Explorer",
+                "Scenario Catalog",
+                "Load Scenario Catalog",
+                "Scenario selector",
+                "Category filter",
+                "Evidence filter",
                 "Copy Summary",
                 "DecisionExplorerPayloadV1",
                 "read-only",
@@ -115,7 +120,15 @@ class DecisionExplorerStaticPageTest {
         String page = readPage();
 
         assertTrue(page.contains("const DECISION_EXPLORER_ENDPOINT = \"/api/routing/decision-explorer\""));
+        assertTrue(page.contains("const DECISION_EXPLORER_SCENARIOS_ENDPOINT = "
+                + "\"/api/routing/decision-explorer/scenarios\""));
         assertTrue(page.contains("fetch(DECISION_EXPLORER_ENDPOINT"));
+        assertTrue(page.contains("fetch(DECISION_EXPLORER_SCENARIOS_ENDPOINT"));
+        assertTrue(page.contains("data-action=\"load-decision-explorer-scenarios\""));
+        assertTrue(page.contains("scenario-category-filter"));
+        assertTrue(page.contains("scenario-evidence-filter"));
+        assertTrue(page.contains("applyScenarioFilters"));
+        assertTrue(page.contains("renderScenarioCatalog"));
         assertTrue(page.contains("headers[\"X-API-Key\"] = key"));
         assertTrue(page.contains("textContent"));
         assertTrue(page.contains("createElement"));
@@ -127,6 +140,27 @@ class DecisionExplorerStaticPageTest {
         assertFalse(page.contains("document.write"));
         assertFalse(page.contains("https://"));
         assertFalse(page.contains("http://"));
+    }
+
+    @Test
+    void decisionExplorerScenarioCatalogEndpointReturnsReadOnlySimulationOnlyMetadata() throws Exception {
+        try (MockedConstruction<CloudManager> mockedCloudManager =
+                Mockito.mockConstruction(CloudManager.class)) {
+            mockMvc.perform(get("/api/routing/decision-explorer/scenarios"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.readOnly", is(true)))
+                    .andExpect(jsonPath("$.simulationOnly", is(true)))
+                    .andExpect(jsonPath("$.payloadObject", is("DecisionExplorerScenarioCatalogV1")))
+                    .andExpect(jsonPath("$.scenarios[0].scenarioObject", is("DecisionExplorerScenarioV1")))
+                    .andExpect(jsonPath("$.scenarios[0].scenarioId", is("normal-balanced-load")))
+                    .andExpect(jsonPath("$.scenarios[0].scenarioCategory", is("HEALTHY_BASELINE")))
+                    .andExpect(jsonPath("$.scenarios[0].evidenceStatus", is("AVAILABLE")))
+                    .andExpect(jsonPath("$.notProvenBoundaries", hasItem("no production readiness")));
+
+            assertTrue(mockedCloudManager.constructed().isEmpty(),
+                    "Scenario catalog page-backed endpoint call must not construct CloudManager.");
+        }
     }
 
     @Test

@@ -88,7 +88,9 @@ class DecisionExplorerStaticPageTest {
                 "Decision Summary",
                 "Selected Candidate",
                 "Candidate Set",
+                "Candidate Comparison",
                 "Factor Contributions",
+                "Factor Drill-Down",
                 "Policy Gates",
                 "Decision Diffs",
                 "Evidence Packet Readouts",
@@ -129,6 +131,11 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("scenario-evidence-filter"));
         assertTrue(page.contains("applyScenarioFilters"));
         assertTrue(page.contains("renderScenarioCatalog"));
+        assertTrue(page.contains("candidate-comparisons"));
+        assertTrue(page.contains("factor-drilldowns"));
+        assertTrue(page.contains("renderCandidateComparisonTable"));
+        assertTrue(page.contains("renderFactorDrilldownTable"));
+        assertTrue(page.contains("mergeLists"));
         assertTrue(page.contains("headers[\"X-API-Key\"] = key"));
         assertTrue(page.contains("textContent"));
         assertTrue(page.contains("createElement"));

@@ -1332,6 +1332,27 @@ Result: checkpoint commit succeeded after retry.
 
 Follow-up action: push the PR checkpoint and wait for PR checks.
 
+## Entry
+
+Date/time: 2026-05-27T14:06-07:00
+
+Branch/PR: codex/decision-explorer-phase2-ui-drilldown-comparison / no PR yet
+
+Failure type: local browser automation variable-name collision
+
+Failing check: rendered-page verification for `http://127.0.0.1:18080/decision-explorer.html`
+
+Suspected cause: the persistent browser automation JavaScript context already had a top-level `result` binding from
+the prior DX-P2-G06 rendered-page check, and the DX-P2-G07 verification cell attempted to redeclare it.
+
+Fix attempted: reran the rendered-page verification with fresh variable names while leaving the packaged app and
+repository state unchanged.
+
+Result: retry passed. The page loaded one Decision Explorer payload, rendered 2 candidate-comparison rows, rendered
+34 factor-drilldown rows, preserved one selected candidate row, and browser console errors were empty.
+
+Follow-up action: continue with DX-P2-G07 commit and PR creation.
+
 ## Notes
 
 - Keep entries factual.

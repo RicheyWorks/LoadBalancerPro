@@ -1,14 +1,14 @@
 # Decision Explorer Phase 2 Campaign Board
 
-Status: active / phase2-ui-scenarios.
+Status: active / phase2-ui-drilldown-comparison.
 
 Classification: WARN / decision-explorer-phase2-campaign.
 
 Started from main SHA: `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
-Current PR slot: DX-P2-G06.
+Current PR slot: DX-P2-G07.
 
-Completed Phase 2 PRs: 5 / 12 planned.
+Completed Phase 2 PRs: 6 / 12 planned.
 
 Related architecture scope: [`DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md`](DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md).
 
@@ -53,8 +53,8 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P2-G03 | `codex/decision-explorer-phase2-scenario-api` | Scenario catalog service/API | Bounded same-origin catalog API or additive companion data, controller tests, and docs | merged-main-green / PR #371 / `186b28db1d261858a42db2ed75531fb3e4930f44` |
 | DX-P2-G04 | `codex/decision-explorer-phase2-factor-drilldown` | Decision factor drill-down | Deterministic factor-level summaries and tests | merged-main-green / PR #372 / `b2f5017e4c7484e34d0da6a1ffde3954442a9103` |
 | DX-P2-G05 | `codex/decision-explorer-phase2-candidate-comparison` | Candidate comparison table | Additive candidate comparison rows and tests for ordering, empty, and partial candidates | merged-main-green / PR #373 / `64394f1380708a63d70ad9e5ec1a2ad3589a9780` |
-| DX-P2-G06 | `codex/decision-explorer-phase2-ui-scenarios` | UI scenario selector and filtering | Static page controls using same-origin data only | active-pr / PR #374 / current-head checks pending |
-| DX-P2-G07 | `codex/decision-explorer-phase2-ui-drilldown-comparison` | UI factor drill-down and candidate comparison | Static page display for drill-down and comparison states | pending |
+| DX-P2-G06 | `codex/decision-explorer-phase2-ui-scenarios` | UI scenario selector and filtering | Static page controls using same-origin data only | merged-main-green / PR #374 / `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb` |
+| DX-P2-G07 | `codex/decision-explorer-phase2-ui-drilldown-comparison` | UI factor drill-down and candidate comparison | Static page display for drill-down and comparison states | active-branch / local verification passed |
 | DX-P2-G08 | `codex/decision-explorer-phase2-reviewer-badges` | Explanation badges and reviewer language | Reviewer-facing badges, docs language, and no-overclaim guard coverage | pending |
 | DX-P2-G09 | `codex/decision-explorer-phase2-api-hardening` | API contract hardening | Compatibility, null-safety, ordering tests, and API docs updates | pending |
 | DX-P2-G10 | `codex/decision-explorer-phase2-docs-examples` | Docs and examples | Grounded Phase 2 examples and unsupported-claim guard tests | pending |
@@ -69,16 +69,16 @@ Phase 1 final handoff PR #368 merged as `28c8bc10e1aa553a3c53aac70883c04431d55cc
 
 DX-P2-G01 starts from clean main at `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
-Current branch: `codex/decision-explorer-phase2-ui-scenarios`.
+Current branch: `codex/decision-explorer-phase2-ui-drilldown-comparison`.
 
-Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/374.
+Current PR: not opened yet.
 
-Current head SHA before PR-created checkpoint: `c13b56cb38518160cfc1a754a50e9c0eeeefea28`.
+Current base SHA: `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb`.
 
-Current Phase 2 focus: add static Decision Explorer scenario selector and filtering controls that read the bounded
-same-origin `GET /api/routing/decision-explorer/scenarios` metadata surface. The controls keep scenario selection as
-reviewer orientation only and do not run routing, mutate decisions, persist storage, export data, execute replay,
-generate evidence packets, or call external systems.
+Current Phase 2 focus: display already-returned `DecisionExplorerPayloadV1.factorDrilldowns` and
+`DecisionExplorerPayloadV1.candidateComparisons` in the static Decision Explorer page. The controls stay read-only and
+display-only; they do not recompute scores, run routing, mutate decisions, persist storage, export data, execute
+replay, generate evidence packets, or call external systems.
 
 DX-P2-G01 local verification passed before PR creation:
 
@@ -333,7 +333,53 @@ DX-P2-G06 committed as `c13b56cb38518160cfc1a754a50e9c0eeeefea28`.
 DX-P2-G06 PR #374 opened from the current branch after local verification:
 https://github.com/RicheyWorks/LoadBalancerPro/pull/374.
 
-Next action: push the PR-created checkpoint update, wait for PR #374 current-head checks, and merge only after
+DX-P2-G06 current-head PR checks passed:
+
+- PR CI and Dependency Review passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26537664686;
+- duplicate PR CI run passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26537662610;
+- PR CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26537664717.
+
+DX-P2-G06 merged as `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb`.
+
+DX-P2-G06 post-merge main verification passed:
+
+- `mvn -q test` passed;
+- `mvn -q "-DskipTests" package` passed;
+- `mvn -B package` passed with 2,698 tests, 0 failures, 0 errors, and 0 skipped;
+- `git diff --check` passed;
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only;
+- main CI passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26538021966;
+- main CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26538021997.
+
+DX-P2-G07 starts from clean main at `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb`.
+
+DX-P2-G07 adds display-only static page sections for factor drill-down and candidate comparison rows already returned by
+the Phase 2 payload. The slice does not add endpoints, recompute scores, change routing/scoring/proxy behavior, persist
+storage, export data, execute replay, generate evidence packets, or call external systems.
+
+DX-P2-G07 local verification passed before PR creation:
+
+- focused selector passed:
+  `mvn test "-Dtest=DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest,DecisionExplorerPayloadServiceTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+  with 26 tests, 0 failures, 0 errors, and 0 skipped;
+- relevant Decision Explorer selector passed:
+  `mvn test "-Dtest=*DecisionExplorer*,RoutingControllerTest,RoutingOpenApiContractTest"`
+  with 160 tests, 0 failures, 0 errors, and 0 skipped;
+- `mvn -q test` passed;
+- `mvn -q "-DskipTests" package` passed;
+- `mvn -B package` passed with 2,698 tests, 0 failures, 0 errors, and 0 skipped;
+- `git diff --check` passed with line-ending warnings only;
+- `git diff --cached --check` passed;
+- `git diff --check origin/main...HEAD` passed with line-ending warnings only;
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only;
+- rendered-page verification passed on `http://127.0.0.1:18080/decision-explorer.html`: the packaged app loaded one
+  Decision Explorer payload, rendered 2 candidate-comparison rows, rendered 34 factor-drilldown rows, preserved one
+  selected candidate row, and reported no browser console errors.
+
+DX-P2-G07 local browser verification initially hit a persistent automation variable-name collision, was logged in
+`docs/agent/FAILURE_LOG.md`, and passed on retry without runtime behavior changes.
+
+Next action: commit and push DX-P2-G07, open a PR only after current-head local checks are green, and merge only after
 Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review are current-head green.
 
 Decision: continue.

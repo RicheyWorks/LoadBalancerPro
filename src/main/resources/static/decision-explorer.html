@@ -248,6 +248,10 @@
       font-size: 0.9rem;
     }
 
+    .table-scroll {
+      overflow-x: auto;
+    }
+
     th, td {
       border-bottom: 1px solid var(--line);
       padding: 9px 7px;
@@ -456,9 +460,19 @@
     <div id="candidate-set" class="empty">No candidate readouts loaded yet.</div>
   </section>
 
+  <section class="panel" aria-labelledby="candidate-comparison-title">
+    <h2 id="candidate-comparison-title">Candidate Comparison</h2>
+    <div id="candidate-comparisons" class="empty">No candidate comparison rows loaded yet.</div>
+  </section>
+
   <section class="panel" aria-labelledby="factors-title">
     <h2 id="factors-title">Factor Contributions</h2>
     <div id="factor-contributions" class="empty">No factor contribution readouts loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="factor-drilldown-title">
+    <h2 id="factor-drilldown-title">Factor Drill-Down</h2>
+    <div id="factor-drilldowns" class="empty">No factor drill-down readouts loaded yet.</div>
   </section>
 
   <section class="panel" aria-labelledby="policy-title">
@@ -553,7 +567,9 @@
     selectedCandidate: document.getElementById("selected-candidate"),
     notProven: document.getElementById("not-proven"),
     candidateSet: document.getElementById("candidate-set"),
+    candidateComparisons: document.getElementById("candidate-comparisons"),
     factorContributions: document.getElementById("factor-contributions"),
+    factorDrilldowns: document.getElementById("factor-drilldowns"),
     policyGates: document.getElementById("policy-gates"),
     decisionDiffs: document.getElementById("decision-diffs"),
     evidencePackets: document.getElementById("evidence-packets"),
@@ -775,7 +791,9 @@
     renderKeyValues(elements.selectedCandidate, candidateRows(first.selectedCandidate));
     renderChips(elements.notProven, first.notProvenBoundaries, "not-proven");
     renderCandidateTable(elements.candidateSet, first.candidateSet || []);
+    renderCandidateComparisonTable(elements.candidateComparisons, first.candidateComparisons || []);
     renderFactorTable(elements.factorContributions, first.factorContributions || []);
+    renderFactorDrilldownTable(elements.factorDrilldowns, first.factorDrilldowns || []);
     renderPolicyTable(elements.policyGates, first.policyGateReadouts || []);
     renderDecisionDiffTable(elements.decisionDiffs, first.decisionDiffReadouts || []);
     renderEvidencePacketTable(elements.evidencePackets, first.evidencePacketReadouts || []);
@@ -790,7 +808,9 @@
     setEmpty(elements.selectedCandidate, "No selected candidate available.");
     setEmpty(elements.notProven, "No boundaries available.");
     setEmpty(elements.candidateSet, "No candidate readouts available.");
+    setEmpty(elements.candidateComparisons, "No candidate comparison rows available.");
     setEmpty(elements.factorContributions, "No factor contribution readouts available.");
+    setEmpty(elements.factorDrilldowns, "No factor drill-down readouts available.");
     setEmpty(elements.policyGates, "No policy gate readouts available.");
     setEmpty(elements.decisionDiffs, "No decision diff readouts available.");
     setEmpty(elements.evidencePackets, "No evidence packet readouts available.");
@@ -842,6 +862,32 @@
     ], "No candidate readouts returned.");
   }
 
+  function renderCandidateComparisonTable(target, rows) {
+    renderTable(target, [
+      "Order",
+      "Candidate",
+      "Selected",
+      "Status",
+      "Final score",
+      "Delta",
+      "Visible signals",
+      "Unknown signals",
+      "Warnings",
+      "Evidence refs"
+    ], rows, (row, index) => [
+      row.displayOrder == null ? String(index + 1) : String(row.displayOrder),
+      value(row.candidateLabel || row.candidateId),
+      row.selected ? "yes" : "no",
+      value(row.comparisonStatus),
+      row.finalScore == null ? "UNKNOWN" : String(row.finalScore),
+      row.scoreDeltaFromSelected == null ? "UNKNOWN" : String(row.scoreDeltaFromSelected),
+      listText(row.visibleSignals),
+      listText(mergeLists(row.unknownSignals, row.unknowns)),
+      listText(row.warnings),
+      listText(row.evidenceReferenceIds)
+    ], "No candidate comparison rows returned.");
+  }
+
   function renderFactorTable(target, factors) {
     renderTable(target, ["Rank", "Candidate", "Factor", "Direction", "Value", "Exactness"], factors, (factor, index) => [
       String(index + 1),
@@ -851,6 +897,30 @@
       factor.contributionValue == null ? "UNKNOWN" : String(factor.contributionValue),
       value(factor.exactness)
     ], "No factor contribution readouts returned.");
+  }
+
+  function renderFactorDrilldownTable(target, drilldowns) {
+    renderTable(target, [
+      "Rank",
+      "Candidate",
+      "Factor",
+      "Influence",
+      "Evidence",
+      "Observed",
+      "Explanation",
+      "Warning/unknown",
+      "Source refs"
+    ], drilldowns, (drilldown, index) => [
+      String(index + 1),
+      value(drilldown.candidateId),
+      value(drilldown.factorName),
+      value(drilldown.influenceCategory),
+      value(drilldown.evidenceStatus),
+      value(drilldown.observedValueOrStatus),
+      value(drilldown.explanation),
+      listText(mergeLists(drilldown.warnings, drilldown.unknowns)),
+      listText(drilldown.sourceReferenceIds)
+    ], "No factor drill-down readouts returned.");
   }
 
   function renderPolicyTable(target, gates) {
@@ -934,7 +1004,10 @@
       tbody.append(row);
     });
     table.append(thead, tbody);
-    target.append(table);
+    const wrapper = document.createElement("div");
+    wrapper.className = "table-scroll";
+    wrapper.append(table);
+    target.append(wrapper);
     target.classList.remove("empty");
   }
 
@@ -969,6 +1042,10 @@
 
   function listText(values) {
     return Array.isArray(values) && values.length ? values.join(", ") : "None returned";
+  }
+
+  function mergeLists(...groups) {
+    return groups.flatMap(group => Array.isArray(group) ? group : []);
   }
 
   async function copyReviewerSummary() {

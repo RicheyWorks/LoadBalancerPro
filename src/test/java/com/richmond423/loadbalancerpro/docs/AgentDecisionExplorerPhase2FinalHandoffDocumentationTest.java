@@ -186,7 +186,7 @@ class AgentDecisionExplorerPhase2FinalHandoffDocumentationTest {
                 "merged-main-green / PR #379",
                 "4fc154801b4b81c08bdc0b23ff832f5d0d819be0",
                 "codex/decision-explorer-phase2-final-handoff",
-                "active-branch / handoff in progress")) {
+                "active-pr / PR #380 / checks pending")) {
             assertTrue(board.contains(expected), "board should track final handoff item " + expected);
         }
 
@@ -194,6 +194,8 @@ class AgentDecisionExplorerPhase2FinalHandoffDocumentationTest {
                 "Current PR slot: DX-P2-G12",
                 "DX-P2-G11 merged as",
                 "DX-P2-G12 branch `codex/decision-explorer-phase2-final-handoff`",
+                "https://github.com/RicheyWorks/LoadBalancerPro/pull/380",
+                "16b7657d42d6b96aefb8c1cabb3e198baa9598db",
                 "DECISION_EXPLORER_PHASE2_FINAL_HANDOFF.md",
                 "AgentDecisionExplorerPhase2FinalHandoffDocumentationTest")) {
             assertTrue(session.contains(expected), "session should track final handoff item " + expected);

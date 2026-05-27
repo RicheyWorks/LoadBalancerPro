@@ -76,12 +76,12 @@ export, replay, deployment behavior, required checks, rulesets, or release behav
 | DX-P2-G09 | [#377](https://github.com/RicheyWorks/LoadBalancerPro/pull/377) | `codex/decision-explorer-phase2-api-hardening` | `8a0455ee03a80ae2170c6b977a2e761407ad6d90` | merged-main-green |
 | DX-P2-G10 | [#378](https://github.com/RicheyWorks/LoadBalancerPro/pull/378) | `codex/decision-explorer-phase2-docs-examples` | `567cf77643a0d56a683cea86104972715b97fa40` | merged-main-green |
 | DX-P2-G11 | [#379](https://github.com/RicheyWorks/LoadBalancerPro/pull/379) | `codex/decision-explorer-phase2-final-polish` | `4fc154801b4b81c08bdc0b23ff832f5d0d819be0` | merged-main-green |
-| DX-P2-G12 | pending | `codex/decision-explorer-phase2-final-handoff` | pending | active-branch / candidate final handoff |
+| DX-P2-G12 | [#380](https://github.com/RicheyWorks/LoadBalancerPro/pull/380) | `codex/decision-explorer-phase2-final-handoff` | pending | active-pr / checks pending |
 
 Current main before DX-P2-G12 local edits: `4fc154801b4b81c08bdc0b23ff832f5d0d819be0`.
 
-DX-P2-G12 must record its PR number and head SHA after PR creation. The final operator response records the actual
-DX-P2-G12 merge SHA and final main SHA after the merge-health gate completes.
+DX-P2-G12 PR creation head SHA: `16b7657d42d6b96aefb8c1cabb3e198baa9598db`. The final operator response records the
+actual DX-P2-G12 merge SHA and final main SHA after the merge-health gate completes.
 
 ## Verification Evidence
 

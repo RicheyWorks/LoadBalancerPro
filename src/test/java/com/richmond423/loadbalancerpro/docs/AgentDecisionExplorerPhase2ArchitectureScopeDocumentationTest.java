@@ -213,7 +213,9 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "codex/decision-explorer-phase2-final-handoff",
                 "DECISION_EXPLORER_PHASE2_FINAL_HANDOFF.md",
                 "AgentDecisionExplorerPhase2FinalHandoffDocumentationTest",
-                "active-branch / handoff in progress",
+                "active-pr / PR #380 / checks pending",
+                "https://github.com/RicheyWorks/LoadBalancerPro/pull/380",
+                "16b7657d42d6b96aefb8c1cabb3e198baa9598db",
                 "Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head checks do not count",
                 "Decision: continue")) {
             assertTrue(board.contains(expected), "phase 2 board should track " + expected);
@@ -276,6 +278,8 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "codex/decision-explorer-phase2-final-handoff",
                 "dx-p2-g12 branch",
                 "decision_explorer_phase2_final_handoff.md",
+                "https://github.com/richeyworks/loadbalancerpro/pull/380",
+                "16b7657d42d6b96aefb8c1cabb3e198baa9598db",
                 "decision_explorer_phase2_campaign_board.md",
                 "reviewer_trust_map.md",
                 "agentdecisionexplorerphase2finalhandoffdocumentationtest.java",

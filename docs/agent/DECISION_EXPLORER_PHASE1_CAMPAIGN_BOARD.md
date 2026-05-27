@@ -74,8 +74,7 @@ Current branch: `codex/decision-explorer-phase1-dto-skeleton`.
 
 Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/361.
 
-Current head SHA: `960c8a9e1307d20cb8ac7ce69e6ee2b70ca831ec` at initial PR opening; PR-created checkpoint
-metadata commit is pending.
+Current head SHA: tracked by PR #361 current head after PR-created checkpoint and current-head guard repair commits.
 
 Next action: commit and push the PR-created checkpoint, rerun current-head local verification as needed, wait for
 current-head PR checks, merge only if green, verify post-merge main, and then continue to DX-P1-G03.

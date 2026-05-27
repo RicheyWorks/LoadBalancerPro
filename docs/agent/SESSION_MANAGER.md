@@ -22,7 +22,7 @@ Current branch: codex/decision-explorer-phase1-dto-skeleton
 
 PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/361
 
-Head SHA: `960c8a9e1307d20cb8ac7ce69e6ee2b70ca831ec` at initial PR opening; PR-created metadata checkpoint commit is pending push
+Head SHA: tracked by PR #361 current head after PR-created checkpoint and current-head guard repair commits
 
 Changed files planned for this slice:
 
@@ -84,6 +84,8 @@ Checks run:
 - Commit `960c8a9e1307d20cb8ac7ce69e6ee2b70ca831ec` was created for the DX-P1-G02 DTO skeleton slice.
 - Branch `codex/decision-explorer-phase1-dto-skeleton` was pushed to origin.
 - PR #361 was opened: https://github.com/RicheyWorks/LoadBalancerPro/pull/361.
+- PR-created checkpoint and current-head guard repair commits were pushed after PR creation; use PR #361 headRefOid for
+  the current remote head.
 
 Remote status: main CI and CodeQL green for `0fe9331a757973d93820bbae46b05ae53f8ba64a`; PR #361 checks are pending after PR creation.
 

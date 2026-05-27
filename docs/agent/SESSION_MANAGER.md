@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T15:18-07:00
+Timestamp: 2026-05-27T15:20-07:00
 
 Goal name: Decision Explorer Implementation Phase 2
 
 Current PR slot: DX-P2-G09
 
-Checkpoint: DX-P2-G09 local verification passed; commit and PR creation pending
+Checkpoint: DX-P2-G09 PR #377 opened; remote checks pending
 
 Started from main SHA: `e92bf92f3f60d54bca23b033856af3632a431c87`
 
 Current branch: codex/decision-explorer-phase2-api-hardening
 
-PR URL: not opened yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/377
 
-Branch creation SHA: `e92bf92f3f60d54bca23b033856af3632a431c87`
+PR creation SHA: `a7b790636bbd8042bc06c48db5fc6390c334215e`
 
 Current branch head must be re-read before PR creation and merge because checkpoint commits can move the active branch.
 
@@ -359,9 +359,18 @@ DX-P2-G09 full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" p
   `mvn -B package` with 2,701 tests, `git diff --check`, `git diff --cached --check`,
   `git diff --check origin/main...HEAD`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
 
+DX-P2-G09 committed as `a7b790636bbd8042bc06c48db5fc6390c334215e`.
+
+DX-P2-G09 pushed to origin and opened as PR #377:
+  https://github.com/RicheyWorks/LoadBalancerPro/pull/377.
+
+Remote status: PR #377 Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review are pending for the
+current branch after PR creation.
+
 Blocker: none.
 
-Next action: commit and push DX-P2-G09, open the PR, then merge only when required checks are current-head green.
+Next action: wait for DX-P2-G09 required checks, then merge only when Build/Test/Package/Smoke, Analyze Java / CodeQL,
+and Dependency Review are current-head green.
 
 Decision: continue.
 

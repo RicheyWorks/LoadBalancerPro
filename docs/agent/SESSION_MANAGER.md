@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T14:46-07:00
+Timestamp: 2026-05-27T14:51-07:00
 
 Goal name: Decision Explorer Implementation Phase 2
 
 Current PR slot: DX-P2-G08
 
-Checkpoint: DX-P2-G08 local verification passed; commit and PR creation pending
+Checkpoint: DX-P2-G08 PR #376 opened; remote checks pending
 
 Started from main SHA: `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4`
 
 Current branch: codex/decision-explorer-phase2-reviewer-badges
 
-PR URL: not opened yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/376
 
-Head SHA: `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4` before local DX-P2-G08 implementation
+Head SHA: `1091470d88da5196e3e5ef27f763f4cbed34803f`
 
 Changed files planned for this slice:
 
@@ -305,11 +305,18 @@ Checks run:
   rendered 6 reviewer badges, included the corrected `10 boundaries` not-proven badge detail, preserved returned
   candidate/factor source fields in raw payload output, and reported no browser console errors.
 
-Remote status: main CI and CodeQL green for `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4`; DX-P2-G08 has no PR yet.
+DX-P2-G08 committed as `1091470d88da5196e3e5ef27f763f4cbed34803f`.
+
+DX-P2-G08 pushed to origin and opened as PR #376:
+  https://github.com/RicheyWorks/LoadBalancerPro/pull/376.
+
+Remote status: PR #376 Build/Test/Package/Smoke and Analyze Java / CodeQL are pending for
+`1091470d88da5196e3e5ef27f763f4cbed34803f`; Dependency Review has emitted on the current PR run.
 
 Blocker: none.
 
-Next action: commit and push DX-P2-G08, open the PR, then merge only when required remote checks are current-head green.
+Next action: wait for DX-P2-G08 required checks, then merge only when Build/Test/Package/Smoke, Analyze Java / CodeQL,
+and Dependency Review are current-head green.
 
 Decision: continue.
 

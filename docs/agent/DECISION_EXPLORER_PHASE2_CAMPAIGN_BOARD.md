@@ -55,7 +55,7 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P2-G05 | `codex/decision-explorer-phase2-candidate-comparison` | Candidate comparison table | Additive candidate comparison rows and tests for ordering, empty, and partial candidates | merged-main-green / PR #373 / `64394f1380708a63d70ad9e5ec1a2ad3589a9780` |
 | DX-P2-G06 | `codex/decision-explorer-phase2-ui-scenarios` | UI scenario selector and filtering | Static page controls using same-origin data only | merged-main-green / PR #374 / `e8fcd4f74f3f50c2f973b78d7999c18104aee9bb` |
 | DX-P2-G07 | `codex/decision-explorer-phase2-ui-drilldown-comparison` | UI factor drill-down and candidate comparison | Static page display for drill-down and comparison states | merged-main-green / PR #375 / `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4` |
-| DX-P2-G08 | `codex/decision-explorer-phase2-reviewer-badges` | Explanation badges and reviewer language | Reviewer-facing badges, docs language, and no-overclaim guard coverage | active-branch / local verification passed |
+| DX-P2-G08 | `codex/decision-explorer-phase2-reviewer-badges` | Explanation badges and reviewer language | Reviewer-facing badges, docs language, and no-overclaim guard coverage | active-pr / PR #376 / `1091470d88da5196e3e5ef27f763f4cbed34803f` / checks pending |
 | DX-P2-G09 | `codex/decision-explorer-phase2-api-hardening` | API contract hardening | Compatibility, null-safety, ordering tests, and API docs updates | pending |
 | DX-P2-G10 | `codex/decision-explorer-phase2-docs-examples` | Docs and examples | Grounded Phase 2 examples and unsupported-claim guard tests | pending |
 | DX-P2-G11 | `codex/decision-explorer-phase2-final-polish` | Final hardening and navigation polish | Reviewer navigation cleanup, page labels, and edge-case cleanup | pending |
@@ -71,7 +71,7 @@ DX-P2-G01 starts from clean main at `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
 Current branch: `codex/decision-explorer-phase2-reviewer-badges`.
 
-Current PR: not opened yet.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/376.
 
 Current base SHA: `673af4f8328e9f882cb44ddd1d2b9837dd0fe7e4`.
 
@@ -432,8 +432,14 @@ DX-P2-G08 local verification passed before PR creation:
 DX-P2-G08 local verification found and repaired two guard/UI wording defects, both logged in
 `docs/agent/FAILURE_LOG.md`, without runtime behavior changes outside the display-only static page.
 
-Next action: commit and push DX-P2-G08, open a PR only after current-head local checks are green, and merge only after
-Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review are current-head green.
+DX-P2-G08 PR #376 opened from the current branch after local verification.
+
+DX-P2-G08 PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/376.
+
+DX-P2-G08 current head: `1091470d88da5196e3e5ef27f763f4cbed34803f`.
+
+Next action: wait for DX-P2-G08 Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review to become
+current-head green, then merge only if the PR remains mergeable and scope-limited.
 
 Decision: continue.
 

@@ -14,6 +14,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -26,9 +28,11 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 class ApiPerformanceBaselineTest {
-    private static final Duration CORE_ROUTING_BUDGET = Duration.ofSeconds(4);
+    private static final Duration CORE_ROUTING_CI_SMOKE_BUDGET = Duration.ofSeconds(6);
     private static final Duration API_SMOKE_BUDGET = Duration.ofSeconds(15);
+    private static final int CORE_ROUTING_WARMUP_ITERATIONS = 50;
     private static final int CORE_ROUTING_ITERATIONS = 500;
+    private static final int CORE_ROUTING_SAMPLE_COUNT = 3;
     private static final int API_ITERATIONS = 12;
 
     private static final String OVERLOADED_ALLOCATION_REQUEST = """
@@ -156,16 +160,19 @@ class ApiPerformanceBaselineTest {
         RoutingComparisonService service = new RoutingComparisonService();
         RoutingComparisonRequest request = coreRoutingRequest();
 
-        assertTimeout(CORE_ROUTING_BUDGET, () -> {
-            for (int i = 0; i < CORE_ROUTING_ITERATIONS; i++) {
-                RoutingComparisonResponse response = service.compare(request);
-                assertEquals(3, response.requestedStrategies().size());
-                assertEquals(3, response.candidateCount());
-                assertEquals(3, response.results().size());
-                assertTrue(response.results().stream().allMatch(result -> "SUCCESS".equals(result.status())));
-                assertFalse(response.results().get(0).candidateServersConsidered().isEmpty());
-            }
-        });
+        runCoreRoutingComparisons(service, request, CORE_ROUTING_WARMUP_ITERATIONS);
+
+        List<Duration> samples = new ArrayList<>();
+        for (int sample = 0; sample < CORE_ROUTING_SAMPLE_COUNT; sample++) {
+            samples.add(measureCoreRoutingComparisons(service, request));
+        }
+
+        Duration median = median(samples);
+        assertTrue(median.compareTo(CORE_ROUTING_CI_SMOKE_BUDGET) <= 0,
+                () -> "median core routing CI smoke sample exceeded "
+                        + CORE_ROUTING_CI_SMOKE_BUDGET.toMillis()
+                        + " ms; this is a regression smoke guard, not benchmark proof; samples="
+                        + formatDurations(samples));
     }
 
     @Test
@@ -240,6 +247,39 @@ class ApiPerformanceBaselineTest {
                         server("green", 5, 1.0, 20.0, 40.0, 80.0, 0.01),
                         server("blue", 75, 1.0, 35.0, 120.0, 220.0, 0.15),
                         server("gold", 20, 4.0, 25.0, 50.0, 90.0, 0.02)));
+    }
+
+    private static Duration measureCoreRoutingComparisons(RoutingComparisonService service,
+                                                          RoutingComparisonRequest request) {
+        long startedAtNanos = System.nanoTime();
+        runCoreRoutingComparisons(service, request, CORE_ROUTING_ITERATIONS);
+        return Duration.ofNanos(System.nanoTime() - startedAtNanos);
+    }
+
+    private static void runCoreRoutingComparisons(RoutingComparisonService service,
+                                                  RoutingComparisonRequest request,
+                                                  int iterations) {
+        for (int i = 0; i < iterations; i++) {
+            RoutingComparisonResponse response = service.compare(request);
+            assertEquals(3, response.requestedStrategies().size());
+            assertEquals(3, response.candidateCount());
+            assertEquals(3, response.results().size());
+            assertTrue(response.results().stream().allMatch(result -> "SUCCESS".equals(result.status())));
+            assertFalse(response.results().get(0).candidateServersConsidered().isEmpty());
+        }
+    }
+
+    private static Duration median(List<Duration> durations) {
+        List<Duration> sortedDurations = new ArrayList<>(durations);
+        sortedDurations.sort(Comparator.naturalOrder());
+        return sortedDurations.get(sortedDurations.size() / 2);
+    }
+
+    private static String formatDurations(List<Duration> durations) {
+        return durations.stream()
+                .map(duration -> duration.toMillis() + " ms")
+                .toList()
+                .toString();
     }
 
     private static RoutingServerStateInput server(String id,

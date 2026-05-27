@@ -8,34 +8,32 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T00:45-07:00
+Timestamp: 2026-05-27T01:19-07:00
 
 Goal name: Decision Explorer Implementation Phase 1
 
-Current PR slot: DX-P1-G06
+Current PR slot: DX-P1-G07
 
-Checkpoint: DX-P1-G06 PR #365 opened after local verification; PR-created checkpoint commit pending
+Checkpoint: DX-P1-G07 local verification passed; commit pending
 
 Started from main SHA: `755ed394adfa18e462f89312c5289fd3154075f2`
 
-Current branch: codex/decision-explorer-phase1-ui-navigation
+Current branch: codex/decision-explorer-phase1-docs-examples
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/365
+PR URL: pending
 
-Head SHA: `795f4eef73083deeb33aadede47de28021e1cdba` before this PR-created checkpoint commit
+Head SHA: `66242b7911c123b1f20f2820249b7173a3ef575a` before DX-P1-G07 local edits
 
 Changed files planned for this slice:
 
 - README.md
 - docs/REVIEWER_TRUST_MAP.md
 - docs/API_CONTRACTS.md
-- src/main/resources/static/index.html
-- src/main/resources/static/decision-explorer.html
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerReviewerNavigationTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerStaticPageTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/CockpitDiscoverabilityDocumentationTest.java
+- docs/agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md
 - docs/agent/DECISION_EXPLORER_PHASE1_CAMPAIGN_BOARD.md
 - docs/agent/SESSION_MANAGER.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase1ReviewerExamplesDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest.java
 - docs/agent/FAILURE_LOG.md if repair logging is needed
 
 Checks run:
@@ -213,14 +211,41 @@ Checks run:
 - PR #365 was opened: https://github.com/RicheyWorks/LoadBalancerPro/pull/365.
 - A PR body smoke-command wording artifact was corrected with `gh pr edit`; the correction is logged in
   `FAILURE_LOG.md`.
+- PR-created checkpoint commit `306eef0c677be5fae62de0bd078273b071d1fb33` was pushed to PR #365.
+- PR #365 current-head CI passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26498224080.
+- PR #365 current-head CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26498224028.
+- PR #365 Dependency Review passed in the PR CI run.
+- PR #365 merged as `66242b7911c123b1f20f2820249b7173a3ef575a`; DX-P1-G06 is merged-main-green.
+- Local main was fast-forwarded to `66242b7911c123b1f20f2820249b7173a3ef575a`.
+- DX-P1-G06 post-merge local verification on main passed: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,661 tests and 0 failures,
+  `git diff --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- Main CI passed for `66242b7911c123b1f20f2820249b7173a3ef575a`:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26498546830.
+- Main CodeQL passed for `66242b7911c123b1f20f2820249b7173a3ef575a`:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26498546610.
+- Branch `codex/decision-explorer-phase1-docs-examples` was created from clean main at
+  `66242b7911c123b1f20f2820249b7173a3ef575a`.
+- DX-P1-G07 is adding Decision Explorer Phase 1 reviewer examples grounded in the current local page, bounded
+  read-only data surface, and `DecisionExplorerPayloadV1` tests. The slice is documentation and guard-test only.
+- DX-P1-G07 focused selector initially failed twice on exact examples-boundary wording and whitespace sensitivity; both
+  failures were logged in `FAILURE_LOG.md`, repaired without runtime behavior changes, and rerun.
+- DX-P1-G07 focused selector passed:
+  `mvn test "-Dtest=AgentDecisionExplorerPhase1ReviewerExamplesDocumentationTest,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest"`
+  with 24 tests, 0 failures, 0 errors, and 0 skipped.
+- Relevant Decision Explorer selector passed with 110 tests, 0 failures, 0 errors, and 0 skipped.
+- `mvn -q test` passed.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed with 2,667 tests, 0 failures, 0 errors, and 0 skipped.
+- `git diff --check`, `git diff --cached --check`, and `git diff --check origin/main...HEAD` passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
 
-Remote status: main CI and CodeQL green for `818540b424dc92df0ec59de68e456d0ce080adbf`; PR #365 current-head checks
-are pending after PR creation and this checkpoint update.
+Remote status: main CI and CodeQL green for `66242b7911c123b1f20f2820249b7173a3ef575a`; DX-P1-G07 has no PR yet.
 
 Blocker: none.
 
-Next action: commit and push this PR-created checkpoint, wait for PR #365 current-head checks, merge only if green,
-verify post-merge main, then continue to DX-P1-G07.
+Next action: commit and push DX-P1-G07, open the PR, wait for current-head checks, merge only if green, verify
+post-merge main, then continue to DX-P1-G08.
 
 Decision: continue.
 

@@ -1105,6 +1105,46 @@ Result: staging succeeded and `git diff --cached --check` passed.
 
 Follow-up action: commit and push the PR-created checkpoint.
 
+## Entry
+
+Date/time: 2026-05-27T01:12-07:00
+
+Branch/PR: codex/decision-explorer-phase1-docs-examples / no PR yet
+
+Failure type: focused documentation guard wording mismatch
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerPhase1ReviewerExamplesDocumentationTest,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest"`
+
+Suspected cause: the new reviewer examples guard expected the exact boundary phrase `call cloud or tenant systems`,
+while the examples document preserved equivalent cloud/tenant boundaries in other wording but not that exact phrase.
+
+Fix attempted: align the reviewer examples wording with the guard so the new docs-test-only examples preserve the same
+source-visible safety language as the page and reviewer docs.
+
+Result: after a follow-up whitespace-normalization repair in the guard, the focused selector rerun passed with 24 tests,
+0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: update the examples wording and rerun the focused selector.
+
+## Entry
+
+Date/time: 2026-05-27T01:13-07:00
+
+Branch/PR: codex/decision-explorer-phase1-docs-examples / no PR yet
+
+Failure type: focused documentation guard whitespace sensitivity
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerPhase1ReviewerExamplesDocumentationTest,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest"`
+
+Suspected cause: the reviewer examples document contains the expected `hidden network calls` boundary across a Markdown
+line break, while the new guard compared raw text without whitespace normalization.
+
+Fix attempted: normalize whitespace in the boundary assertion while keeping exact boundary wording requirements.
+
+Result: focused selector rerun passed with 24 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: update the guard and rerun the focused selector.
+
 ## Notes
 
 - Keep entries factual.

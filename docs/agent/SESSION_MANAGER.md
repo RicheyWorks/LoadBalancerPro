@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T16:17-07:00
+Timestamp: 2026-05-27T16:20-07:00
 
 Goal name: Decision Explorer Implementation Phase 2
 
 Current PR slot: DX-P2-G11
 
-Checkpoint: DX-P2-G11 local verification passed; ready to commit and open PR
+Checkpoint: DX-P2-G11 PR #379 opened; remote checks pending
 
 Started from main SHA: `567cf77643a0d56a683cea86104972715b97fa40`
 
 Current branch: codex/decision-explorer-phase2-final-polish
 
-PR URL: not opened yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/379
 
-PR creation SHA: pending
+PR creation SHA: `411f5982f95b7093840221dc2cebaa0cf7e7bccd`
 
 Current branch head must be re-read before PR creation and merge because checkpoint commits can move the active branch.
 
@@ -469,11 +469,17 @@ DX-P2-G11 tracks final hardening and navigation polish coverage in
 DX-P2-G11 discovery hit a Windows glob path error in a broad `rg` command. The failure was logged in
 `docs/agent/FAILURE_LOG.md`, and discovery continued with explicit paths.
 
-Remote checks: pending until DX-P2-G11 PR is opened.
+DX-P2-G11 committed as `411f5982f95b7093840221dc2cebaa0cf7e7bccd`.
+
+DX-P2-G11 pushed to origin and opened as PR #379:
+  https://github.com/RicheyWorks/LoadBalancerPro/pull/379.
+
+Remote checks: PR #379 Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review are pending for the
+current branch after PR creation.
 
 Blocker: none.
 
-Next action: commit DX-P2-G11, push, open PR, then wait for DX-P2-G11 current-head
+Next action: push this DX-P2-G11 PR checkpoint, then wait for DX-P2-G11 current-head
 Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review before merge.
 
 Decision: continue.

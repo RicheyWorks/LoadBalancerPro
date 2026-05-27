@@ -89,6 +89,26 @@ Follow-up action: rerun full local verification before PR creation.
 
 ## Entry
 
+Date/time: 2026-05-27T16:21-07:00
+
+Branch/PR: codex/decision-explorer-phase2-final-polish / PR #379
+
+Failure type: local documentation guard expectation mismatch after PR checkpoint update
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+
+Suspected cause: the campaign board and session manager were correctly advanced from `active-branch`/pre-PR wording to
+PR #379 wording, but the shared Phase 2 architecture-scope guard still expected the pre-PR state.
+
+Fix attempted: updated the guard expectations to require PR #379, the PR creation SHA, and pending current-head remote
+checks for the opened PR.
+
+Result: focused campaign tracking selector rerun passed with 13 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: commit and push the PR checkpoint, then wait for current-head remote checks.
+
+## Entry
+
 Date/time: 2026-05-27T15:42-07:00
 
 Branch/PR: codex/decision-explorer-phase2-docs-examples / no PR yet

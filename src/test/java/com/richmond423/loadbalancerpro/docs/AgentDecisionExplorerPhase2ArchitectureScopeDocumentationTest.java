@@ -203,7 +203,10 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "567cf77643a0d56a683cea86104972715b97fa40",
                 "DX-P2-G11",
                 "codex/decision-explorer-phase2-final-polish",
-                "active-branch",
+                "active-pr",
+                "PR #379",
+                "https://github.com/RicheyWorks/LoadBalancerPro/pull/379",
+                "411f5982f95b7093840221dc2cebaa0cf7e7bccd",
                 "AgentDecisionExplorerPhase2NavigationPolishDocumentationTest",
                 "DX-P2-G12",
                 "codex/decision-explorer-phase2-final-handoff",
@@ -285,6 +288,7 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "https://github.com/richeyworks/loadbalancerpro/pull/376",
                 "https://github.com/richeyworks/loadbalancerpro/pull/377",
                 "https://github.com/richeyworks/loadbalancerpro/pull/378",
+                "https://github.com/richeyworks/loadbalancerpro/pull/379",
                 "merged as `1fb16a50d4181d1411abfe6c038815a68f79e7b5`",
                 "merged as `186b28db1d261858a42db2ed75531fb3e4930f44`",
                 "merged as `b2f5017e4c7484e34d0da6a1ffde3954442a9103`",
@@ -306,6 +310,7 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "91c24d4d673df44e82f2e6e6d1e1cb6b1944ac1a",
                 "ee5e2c4e8836d33ceead8ccc22371cc2daf77c1b",
                 "c2fa2832a9a8ecbd84422a5573b764390076e220",
+                "411f5982f95b7093840221dc2cebaa0cf7e7bccd",
                 "e8fcd4f74f3f50c2f973b78d7999c18104aee9bb",
                 "get /api/routing/decision-explorer/scenarios",
                 "2,682 tests",
@@ -321,7 +326,7 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "phase 2 reviewer navigation",
                 "focused selector passed",
                 "full local verification passed",
-                "remote checks: pending until dx-p2-g11 pr is opened",
+                "remote checks: pr #379 build/test/package/smoke, analyze java / codeql, and dependency review are pending",
                 "decision: continue")) {
             assertTrue(session.contains(expected), "session manager should record " + expected);
         }

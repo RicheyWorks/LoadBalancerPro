@@ -8,6 +8,62 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
+Timestamp: 2026-05-26T21:28-07:00
+
+Goal name: Decision Explorer Implementation Phase 1
+
+Current PR slot: DX-P1-G01
+
+Checkpoint: Phase 1 architecture/scope PR opened after local verification; PR metadata checkpoint in progress
+
+Started from main SHA: `755ed394adfa18e462f89312c5289fd3154075f2`
+
+Current branch: codex/decision-explorer-phase1-architecture
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/360
+
+Head SHA: `9a1214b28e7b81512005404f8188bc9d29bdeb2e` at initial PR opening; final metadata checkpoint commit is pending push
+
+Changed files planned for this slice:
+
+- docs/agent/DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md
+- docs/agent/DECISION_EXPLORER_PHASE1_CAMPAIGN_BOARD.md
+- docs/agent/FAILURE_LOG.md
+- docs/agent/SESSION_MANAGER.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest.java
+
+Checks run:
+
+- `git status --short` confirmed the workspace was clean on `main`.
+- `git fetch origin` completed.
+- `git pull --ff-only origin main` reported main already up to date.
+- Local `main` and `origin/main` were both at `755ed394adfa18e462f89312c5289fd3154075f2`.
+- Recent main CI and CodeQL for `755ed394adfa18e462f89312c5289fd3154075f2` were green before branch creation.
+- Branch `codex/decision-explorer-phase1-architecture` was created.
+- Focused guard initially failed on two exact wording assertions and was logged in `FAILURE_LOG.md`.
+- Focused guard rerun passed: `mvn test "-Dtest=AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest"` with 8 tests, 0 failures, 0 errors, and 0 skipped.
+- Relevant Decision Explorer/session selector passed: 113 tests, 0 failures, 0 errors, and 0 skipped.
+- `mvn -q test` passed.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed with 2,638 tests, 0 failures, 0 errors, and 0 skipped.
+- `git diff --check` passed.
+- `git diff --cached --check` passed.
+- `git diff --check origin/main...HEAD` failed once on an extra blank line at EOF in the new Phase 1 board, was logged in `FAILURE_LOG.md`, repaired, amended, and rerun successfully.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
+- Commit `9a1214b28e7b81512005404f8188bc9d29bdeb2e` was created for the DX-P1-G01 architecture/scope slice.
+- Branch `codex/decision-explorer-phase1-architecture` was pushed to origin.
+- PR #360 was opened: https://github.com/RicheyWorks/LoadBalancerPro/pull/360.
+
+Remote status: main CI and CodeQL green for `755ed394adfa18e462f89312c5289fd3154075f2`; PR #360 remote checks are pending after PR creation.
+
+Blocker: none.
+
+Next action: commit and push this PR-created checkpoint, rerun current-head local verification as needed, wait for current-head PR checks, merge only if green, verify post-merge main, then continue to DX-P1-G02.
+
+Decision: continue.
+
+## Historical Evidence Audit Checkpoint
+
 Timestamp: 2026-05-25T11:57-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign

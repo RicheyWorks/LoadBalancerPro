@@ -778,6 +778,50 @@ Result: first fix reduced the failure set from three assertions to two exact-str
 
 Follow-up action: continue DX-G10 selector and full verification.
 
+## Entry
+
+Date/time: 2026-05-26T21:32-07:00
+
+Branch/PR: codex/decision-explorer-phase1-architecture / pending
+
+Failure type: focused documentation guard exact wording
+
+Failing check: `mvn test "-Dtest=AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest"`
+
+Suspected cause: the new Phase 1 architecture/scope document preserved null/unknown handling and current-head PR
+verification semantics, but the text did not expose the exact source-visible substrings required by the new guard:
+`null and unknown handling` and `Current-head PR CI, CodeQL, and Dependency Review`.
+
+Fix attempted: added exact wording for `null and unknown handling` and
+`Current-head PR CI, CodeQL, and Dependency Review` to the Phase 1 architecture/scope document without changing runtime
+behavior.
+
+Result: focused rerun passed with 8 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with the relevant Decision Explorer documentation selector and full local verification.
+
+## Entry
+
+Date/time: 2026-05-26T21:39-07:00
+
+Branch/PR: codex/decision-explorer-phase1-architecture / pending
+
+Failure type: branch-range diff whitespace check
+
+Failing check: `git diff --check origin/main...HEAD`
+
+Suspected cause: `docs/agent/DECISION_EXPLORER_PHASE1_CAMPAIGN_BOARD.md` ended with an extra blank line at EOF after
+the initial DX-P1-G01 commit.
+
+Fix attempted: removed the extra blank line at EOF from
+`docs/agent/DECISION_EXPLORER_PHASE1_CAMPAIGN_BOARD.md` and amended the DX-P1-G01 commit.
+
+Result: `git diff --check` passed on the working tree, and `git diff --check origin/main...HEAD` passed after the first
+amend.
+
+Follow-up action: include this recovery result in the final checkpoint commit, rerun the branch-range diff check, then
+push.
+
 ## Notes
 
 - Keep entries factual.

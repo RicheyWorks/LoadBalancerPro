@@ -3,6 +3,7 @@ package com.richmond423.loadbalancerpro.api;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -144,7 +145,10 @@ class DecisionExplorerStaticPageTest {
                     .andExpect(jsonPath("$[0].selectedCandidate.candidateId", is("green")))
                     .andExpect(jsonPath("$[0].candidateSet[0].selected", is(true)))
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].gateId", is("boundary-read-only")))
-                    .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no production readiness")));
+                    .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no production readiness")))
+                    .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no storage proof")))
+                    .andExpect(jsonPath("$[0].notProvenBoundaries", not(hasItem(
+                            "no Decision Explorer endpoint, UI, storage, export, replay execution, or evidence-packet generation"))));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "Decision Explorer page-backed endpoint call must not construct CloudManager.");

@@ -174,6 +174,8 @@ class AgentDecisionExplorerPhase1ReviewerExamplesDocumentationTest {
                 "real tenant validated",
                 "benchmark proven",
                 "throughput proven",
+                "no decision explorer endpoint",
+                "no decision explorer ui",
                 "autonomous production action is enabled",
                 "traffic shifting enabled",
                 "evidence packet generated")) {

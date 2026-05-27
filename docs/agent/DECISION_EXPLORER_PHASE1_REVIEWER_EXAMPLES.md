@@ -113,7 +113,9 @@ from source-visible tests, but the important review cues are:
       "no production readiness",
       "no live-cloud validation",
       "no real-tenant validation",
-      "no benchmark/load/stress proof"
+      "no benchmark/load/stress proof",
+      "no storage proof",
+      "no evidence-packet generation"
     ]
   }
 ]

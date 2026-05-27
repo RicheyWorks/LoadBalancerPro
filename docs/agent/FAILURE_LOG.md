@@ -24,6 +24,27 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-26T22:43-07:00
+
+Branch/PR: codex/decision-explorer-phase1-builder / pending
+
+Failure type: campaign-state guard exact wording
+
+Failing check: `mvn test "-Dtest=DecisionExplorerPayloadServiceTest,DecisionExplorerPayloadV1Test,AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest"`
+
+Suspected cause: `AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest` correctly expects the session manager
+to preserve the exact phrase `PR #360 merged as`, but the refreshed DX-P1-G03 checkpoint recorded the same merge facts
+with `DX-P1-G01 merged-main-green as PR #360 at merge commit`.
+
+Fix attempted: update the active campaign checkpoint wording to preserve `PR #360 merged as` and `PR #361 merged as`
+phrases while keeping the same merge SHAs and current G03 branch state.
+
+Result: focused G03 and phase guard selector rerun passed with 19 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with relevant selector and full local verification.
+
+## Entry
+
 Date/time: 2026-05-25T04:53-07:00
 
 Branch/PR: codex/evidence-audit-cli-app-startup / pending

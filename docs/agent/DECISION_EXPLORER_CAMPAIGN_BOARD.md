@@ -45,7 +45,7 @@ The Interactive Decision Explorer is a planned reviewer/operator and agent-reada
 | DX-G07 | Phase 0 verification guardrails | `codex/dx-g07-phase0-verification-guardrails` | pending | pending | planned | `AgentDecisionExplorerPhase0VerificationGateDocumentationTest` | Pre-implementation gate |
 | DX-G08 | Decision Explorer implementation plan | `codex/dx-g08-decision-explorer-implementation-plan` | pending | pending | planned | `AgentDecisionExplorerImplementationPlanDocumentationTest` | Future implementation slices |
 | DX-G09 | Reviewer walkthrough | `codex/dx-g09-reviewer-walkthrough` | pending | pending | planned | `AgentDecisionExplorerReviewerWalkthroughDocumentationTest` | Human and agent walkthrough |
-| DX-G10 | Bootstrap closeout | `codex/dx-g10-bootstrap-closeout` | pending | pending | planned | `AgentDecisionExplorerBootstrapCloseoutDocumentationTest` | Close bootstrap and prepare implementation campaign |
+| DX-G10 | Bootstrap closeout | `codex/dx-g10-bootstrap-closeout` | pending | pending | active-local | `AgentDecisionExplorerBootstrapCloseoutDocumentationTest` | Close bootstrap and prepare implementation campaign; source: [`DECISION_EXPLORER_BOOTSTRAP_CLOSEOUT.md`](DECISION_EXPLORER_BOOTSTRAP_CLOSEOUT.md) |
 
 ## Checkpoint Rules
 

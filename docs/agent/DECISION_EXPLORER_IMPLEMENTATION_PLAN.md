@@ -18,6 +18,8 @@ Related evidence lane: [`DECISION_EXPLORER_EVIDENCE_LANE.md`](DECISION_EXPLORER_
 
 Related campaign board: [`DECISION_EXPLORER_CAMPAIGN_BOARD.md`](DECISION_EXPLORER_CAMPAIGN_BOARD.md).
 
+Related bootstrap closeout: [`DECISION_EXPLORER_BOOTSTRAP_CLOSEOUT.md`](DECISION_EXPLORER_BOOTSTRAP_CLOSEOUT.md).
+
 ## Purpose
 
 This document defines a planned implementation path for the future Interactive Decision Explorer. It translates the
@@ -234,6 +236,8 @@ packet generation, deployment behavior, cloud behavior, tenant behavior, automat
 - DX-G08 defines this planned implementation path without implementing it in the bootstrap campaign.
 - DX-G09 should provide a reviewer walkthrough for human and AI-agent consumption.
 - DX-G10 should close the bootstrap and preserve not-proven boundaries.
+- DX-G10 should use [`DECISION_EXPLORER_BOOTSTRAP_CLOSEOUT.md`](DECISION_EXPLORER_BOOTSTRAP_CLOSEOUT.md) to record
+  the final merge-health gate and hand off only to a separately scoped Decision Explorer Implementation Phase 1.
 
 Future implementation work should be a separate Decision Explorer Implementation Phase 1 campaign with explicit scope,
 current-head green checks, post-merge main verification, and new proof before any claims change.

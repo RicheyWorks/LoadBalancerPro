@@ -99,6 +99,29 @@ class AgentDecisionExplorerEvidenceLaneDocumentationTest {
     }
 
     @Test
+    void evidenceLaneDefinesResearchIntakeRetirementCompactingAndAgentUpdateRules() throws IOException {
+        String lane = read(EVIDENCE_LANE);
+
+        for (String expected : List.of(
+                "Research Intake Rules",
+                "source-card template",
+                "raw research dumps",
+                "Stale-Information Retirement Policy",
+                "`freshnessStatus: \"STALE\"`",
+                "`availability: \"STALE\"`",
+                "Repo Bloat Prevention And Compacting Policy",
+                "repo bloat prevention",
+                "compacting policy",
+                "not full research dumps",
+                "evidence packet future path",
+                "Agent Update Workflow",
+                "focused docs verification",
+                "no implementation/production claim language")) {
+            assertTrue(lane.contains(expected), "evidence lane should define required intake control " + expected);
+        }
+    }
+
+    @Test
     void evidenceLaneIncludesStaticExampleAndBoundaryFlags() throws IOException {
         String lane = read(EVIDENCE_LANE);
 

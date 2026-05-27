@@ -110,6 +110,68 @@ Future evidence intake should follow these rules before any implementation:
 - reject source-card wording that implies runtime endpoint/UI/storage/export/replay behavior, evidence-packet
   implementation, autonomous production action, live mutation, hidden side effects, or broader automation.
 
+## Research Intake Rules
+
+The planned research intake rules are intentionally narrow:
+
+- use a source-card template instead of raw research dumps;
+- summarize source relevance in compact, reviewer-readable prose;
+- preserve repository-relative source paths, availability, freshness, trust label, and boundary notes;
+- include enough context for human reviewers and AI agents to understand how the source can be used;
+- reject copied article dumps, transcript dumps, vendor page dumps, pasted issue logs, or large unstructured research
+  blobs;
+- keep every intake entry read-only, simulation-only, planning-only, and free of implementation or production claims.
+
+Research intake is not evidence packet generation. It does not fetch sources, call external services, scrape websites,
+mutate files outside a scoped docs/test PR, or create runtime storage.
+
+## Stale-Information Retirement Policy
+
+The planned stale-information retirement policy should make source freshness explicit:
+
+- mark outdated or superseded items with `freshnessStatus: "STALE"` and `availability: "STALE"` when a source card
+  remains useful only as historical context;
+- replace stale cards with a compact current card when a newer source-visible artifact supersedes the older source;
+- remove stale references when they no longer help reviewers understand the planned Decision Explorer campaign;
+- require `missingReason` or `boundaryNote` text when a stale source remains unavailable, planned, or intentionally
+  retained;
+- avoid using stale local-lab notes, workflow results, or research notes as proof of production readiness,
+  certification, live-cloud validation, real-tenant validation, benchmark proof, or throughput proof.
+
+Retirement is documentation maintenance only. It is not automated cleanup, runtime evidence deletion, artifact retention
+policy, or proof that a live environment has been validated.
+
+## Repo Bloat Prevention And Compacting Policy
+
+The planned repo bloat prevention and compacting policy keeps the evidence lane small enough to review:
+
+- store compact source cards, not full research dumps;
+- prefer links to existing repository documents over duplicating their text;
+- keep example cards short and representative;
+- avoid adding screenshots, generated archives, raw benchmark logs, raw traces, large transcripts, exported packets, or
+  unbounded fixture data unless a later scoped PR explicitly permits them;
+- collapse repeated source facts into one stable source card when multiple reviewers or agents would consume the same
+  item;
+- keep evidence packet future path entries as planned placeholders until a later scoped PR defines implementation.
+
+Compacting must preserve safety boundaries. It must not remove read-only, simulation-only, planning-only, not-proven,
+no live mutation, no hidden side effects, no autonomous production action, or no implementation/production claim language
+just to shorten the file.
+
+## Agent Update Workflow
+
+The planned agent update workflow should be source-visible and reviewable:
+
+1. Add or revise a compact source card in this document or a later scoped evidence-lane document.
+2. Update the guard test so required fields, intake rules, stale-information retirement policy, repo bloat prevention,
+   compacting policy, evidence packet future path, and not-proven boundaries stay enforced.
+3. Run focused docs verification before broader Maven verification.
+4. Report what changed, what was verified, and which not-proven boundaries still apply.
+
+The workflow does not authorize autonomous production action, live mutation, hidden side effects, endpoint creation,
+runtime UI/storage/export/replay implementation, evidence packet implementation, broader automation, or weakening
+required checks.
+
 ## Source Card Intake Checklist
 
 Before a future source card becomes part of a Decision Explorer explanation, reviewers should be able to answer:

@@ -104,9 +104,9 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "# Decision Explorer Phase 2 Campaign Board",
-                "Status: active / phase2-model.",
-                "Current PR slot: DX-P2-G02.",
-                "Completed Phase 2 PRs: 1 / 12 planned.",
+                "Status: active / phase2-scenario-api.",
+                "Current PR slot: DX-P2-G03.",
+                "Completed Phase 2 PRs: 2 / 12 planned.",
                 "DX-P2-G01",
                 "codex/decision-explorer-phase2-campaign-board",
                 "merged-main-green",
@@ -114,14 +114,17 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
                 "1e75b7326b09cd7c179909aec00f0c42e34da9c1",
                 "DX-P2-G02",
                 "codex/decision-explorer-phase2-scenario-catalog",
-                "pr-open",
-                "waiting for current-head checks",
+                "merged-main-green",
                 "https://github.com/RicheyWorks/LoadBalancerPro/pull/370",
-                "a6c9df0c64b296a18436cc79a4b51968f8f20b51",
+                "1fb16a50d4181d1411abfe6c038815a68f79e7b5",
                 "DecisionExplorerScenarioCatalogV1",
                 "DecisionExplorerScenarioV1",
                 "DX-P2-G03",
                 "codex/decision-explorer-phase2-scenario-api",
+                "active-local",
+                "focused verification passed",
+                "DecisionExplorerScenarioCatalogService",
+                "GET /api/routing/decision-explorer/scenarios",
                 "DX-P2-G04",
                 "codex/decision-explorer-phase2-factor-drilldown",
                 "DX-P2-G05",
@@ -163,10 +166,16 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
         for (String expected : List.of(
                 "DecisionExplorerPayloadV1",
                 "POST /api/routing/decision-explorer",
+                "GET /api/routing/decision-explorer/scenarios",
+                "DecisionExplorerScenarioCatalogV1",
                 "read-only",
                 "simulation-only")) {
-            assertTrue(phase1Scope.contains(expected), "phase 1 scope should preserve " + expected);
-            assertTrue(apiContracts.contains(expected), "API contracts should preserve " + expected);
+            if (expected.startsWith("GET ") || expected.equals("DecisionExplorerScenarioCatalogV1")) {
+                assertTrue(apiContracts.contains(expected), "API contracts should preserve " + expected);
+            } else {
+                assertTrue(phase1Scope.contains(expected), "phase 1 scope should preserve " + expected);
+                assertTrue(apiContracts.contains(expected), "API contracts should preserve " + expected);
+            }
         }
     }
 
@@ -176,23 +185,22 @@ class AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest {
 
         for (String expected : List.of(
                 "decision explorer implementation phase 2",
-                "current pr slot: dx-p2-g02",
-                "codex/decision-explorer-phase2-scenario-catalog",
+                "current pr slot: dx-p2-g03",
+                "codex/decision-explorer-phase2-scenario-api",
                 "decision_explorer_phase2_campaign_board.md",
-                "failure_log.md",
-                "decisionexplorerscenariocatalogv1.java",
-                "decisionexplorerscenariov1.java",
-                "decisionexplorerscenariocatalogv1test.java",
+                "decisionexplorerscenariocatalogservice.java",
+                "routingcontroller.java",
+                "routingcontrollertest.java",
+                "routingopenapicontracttest.java",
                 "agentdecisionexplorerphase2architecturescopedocumentationtest.java",
-                "1e75b7326b09cd7c179909aec00f0c42e34da9c1",
+                "1fb16a50d4181d1411abfe6c038815a68f79e7b5",
                 "https://github.com/richeyworks/loadbalancerpro/pull/369",
                 "https://github.com/richeyworks/loadbalancerpro/pull/370",
-                "a6c9df0c64b296a18436cc79a4b51968f8f20b51",
-                "merged as `1e75b7326b09cd7c179909aec00f0c42e34da9c1`",
-                "scenario catalog dto/model support",
+                "merged as `1fb16a50d4181d1411abfe6c038815a68f79e7b5`",
+                "get /api/routing/decision-explorer/scenarios",
                 "2,682 tests",
                 "2,689 tests",
-                "relevant decision explorer selector passed with 132 tests",
+                "focused selector passed",
                 "remote status:",
                 "decision: continue")) {
             assertTrue(session.contains(expected), "session manager should record " + expected);

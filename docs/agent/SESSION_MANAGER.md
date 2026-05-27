@@ -8,30 +8,32 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T03:47-07:00
+Timestamp: 2026-05-27T04:12-07:00
 
 Goal name: Decision Explorer Implementation Phase 2
 
-Current PR slot: DX-P2-G02
+Current PR slot: DX-P2-G03
 
-Checkpoint: DX-P2-G02 PR #370 opened after local verification
+Checkpoint: DX-P2-G03 full local verification passed after DX-P2-G02 merged-main-green
 
-Started from main SHA: `1e75b7326b09cd7c179909aec00f0c42e34da9c1`
+Started from main SHA: `1fb16a50d4181d1411abfe6c038815a68f79e7b5`
 
-Current branch: codex/decision-explorer-phase2-scenario-catalog
+Current branch: codex/decision-explorer-phase2-scenario-api
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/370
+PR URL: pending
 
-Head SHA: `a6c9df0c64b296a18436cc79a4b51968f8f20b51`
+Head SHA: `1fb16a50d4181d1411abfe6c038815a68f79e7b5` before DX-P2-G03 local edits
 
 Changed files planned for this slice:
 
+- docs/API_CONTRACTS.md
 - docs/agent/DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md
-- docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerScenarioCatalogV1.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerScenarioV1.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerScenarioCatalogV1Test.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerScenarioCatalogService.java
+- src/main/java/com/richmond423/loadbalancerpro/api/RoutingController.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerScenarioCatalogServiceTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/RoutingControllerTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/RoutingOpenApiContractTest.java
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest.java
 
 Checks run:
@@ -88,14 +90,45 @@ Checks run:
 - DX-P2-G02 committed as `a6c9df0c64b296a18436cc79a4b51968f8f20b51`.
 - DX-P2-G02 pushed to origin and opened as PR #370:
   https://github.com/RicheyWorks/LoadBalancerPro/pull/370.
+- DX-P2-G02 PR-created checkpoint committed as `65735368723ed4b4fd10497096872916681e7d6f`.
+- PR #370 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review.
+- PR #370 merged as `1fb16a50d4181d1411abfe6c038815a68f79e7b5`.
+- DX-P2-G02 post-merge local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  `mvn -B package` with 2,689 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- DX-P2-G02 main CI passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26506855450.
+- DX-P2-G02 main CodeQL passed:
+  https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26506855449.
+- DX-P2-G03 branch `codex/decision-explorer-phase2-scenario-api` was created from clean main at
+  `1fb16a50d4181d1411abfe6c038815a68f79e7b5`.
+- DX-P2-G03 is adding a bounded same-origin `GET /api/routing/decision-explorer/scenarios` route, deterministic
+  `DecisionExplorerScenarioCatalogService`, API docs, controller tests, and OpenAPI tests. The slice does not run
+  routing, change scoring, mutate proxy behavior, persist storage, export data, execute replay, generate evidence
+  packets, or call external systems.
+- DX-P2-G03 focused selector passed:
+  `mvn test "-Dtest=DecisionExplorerScenarioCatalogServiceTest,DecisionExplorerScenarioCatalogV1Test,RoutingControllerTest,RoutingOpenApiContractTest"`
+  with 33 tests, 0 failures, 0 errors, and 0 skipped.
+- DX-P2-G03 focused selector plus Phase 2 documentation guard passed:
+  `mvn test "-Dtest=DecisionExplorerScenarioCatalogServiceTest,DecisionExplorerScenarioCatalogV1Test,RoutingControllerTest,RoutingOpenApiContractTest,AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest"`
+  with 41 tests, 0 failures, 0 errors, and 0 skipped.
+- DX-P2-G03 relevant Decision Explorer selector passed:
+  `mvn test "-Dtest=*DecisionExplorer*,RoutingControllerTest,RoutingOpenApiContractTest"`
+  with 158 tests, 0 failures, 0 errors, and 0 skipped.
+- `mvn -q test` passed.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed with 2,695 tests, 0 failures, 0 errors, and 0 skipped.
+- `git diff --check` passed with line-ending warnings only.
+- `git diff --cached --check` passed.
+- `git diff --check origin/main...HEAD` passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
 
-Remote status: main CI and CodeQL green for `1e75b7326b09cd7c179909aec00f0c42e34da9c1`; PR #370 current-head
-checks are pending after PR creation.
+Remote status: main CI and CodeQL green for `1fb16a50d4181d1411abfe6c038815a68f79e7b5`; DX-P2-G03 has no PR yet.
 
 Blocker: none.
 
-Next action: wait for PR #370 current-head checks, merge only if green, verify post-merge main, then continue to
-DX-P2-G03.
+Next action: open the DX-P2-G03 PR, wait for current-head checks, merge only if green, verify post-merge main, then
+continue to DX-P2-G04.
 
 Decision: continue.
 

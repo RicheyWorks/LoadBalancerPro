@@ -8,21 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-27T07:37-07:00
+Timestamp: 2026-05-27T07:39-07:00
 
 Goal name: Decision Explorer Implementation Phase 2
 
 Current PR slot: DX-P2-G04
 
-Checkpoint: DX-P2-G04 full local verification passed
+Checkpoint: DX-P2-G04 PR #372 opened after full local verification
 
 Started from main SHA: `186b28db1d261858a42db2ed75531fb3e4930f44`
 
 Current branch: codex/decision-explorer-phase2-factor-drilldown
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/372
 
-Head SHA: `186b28db1d261858a42db2ed75531fb3e4930f44` before DX-P2-G04 local edits
+Head SHA: `9b3ed5d6f677505375a80e09e8c38c1d3ec31f14`
 
 Changed files planned for this slice:
 
@@ -155,13 +155,17 @@ Checks run:
 - `git diff --cached --check` passed.
 - `git diff --check origin/main...HEAD` passed.
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
+- DX-P2-G04 committed as `9b3ed5d6f677505375a80e09e8c38c1d3ec31f14`.
+- DX-P2-G04 pushed to origin and opened as PR #372:
+  https://github.com/RicheyWorks/LoadBalancerPro/pull/372.
 
-Remote status: main CI and CodeQL green for `186b28db1d261858a42db2ed75531fb3e4930f44`; DX-P2-G04 has no PR yet.
+Remote status: main CI and CodeQL green for `186b28db1d261858a42db2ed75531fb3e4930f44`; PR #372 current-head
+checks are pending for `9b3ed5d6f677505375a80e09e8c38c1d3ec31f14`.
 
 Blocker: none.
 
-Next action: commit DX-P2-G04, push the branch, open the PR only if local checks pass, then merge only if current-head
-remote checks are green.
+Next action: wait for PR #372 current-head checks, merge only if green, verify post-merge main, then continue to
+DX-P2-G05.
 
 Decision: continue.
 

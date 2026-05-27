@@ -51,7 +51,7 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P2-G01 | `codex/decision-explorer-phase2-campaign-board` | Phase 2 campaign board and scope contract | `DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md`, `DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md`, documentation guard, `SESSION_MANAGER.md` | merged-main-green / PR #369 / `1e75b7326b09cd7c179909aec00f0c42e34da9c1` |
 | DX-P2-G02 | `codex/decision-explorer-phase2-scenario-catalog` | Scenario catalog model | Additive scenario catalog DTO/model support and unit tests | merged-main-green / PR #370 / `1fb16a50d4181d1411abfe6c038815a68f79e7b5` |
 | DX-P2-G03 | `codex/decision-explorer-phase2-scenario-api` | Scenario catalog service/API | Bounded same-origin catalog API or additive companion data, controller tests, and docs | merged-main-green / PR #371 / `186b28db1d261858a42db2ed75531fb3e4930f44` |
-| DX-P2-G04 | `codex/decision-explorer-phase2-factor-drilldown` | Decision factor drill-down | Deterministic factor-level summaries and tests | active-local / full local verification passed |
+| DX-P2-G04 | `codex/decision-explorer-phase2-factor-drilldown` | Decision factor drill-down | Deterministic factor-level summaries and tests | active-pr / PR #372 / current-head checks pending |
 | DX-P2-G05 | `codex/decision-explorer-phase2-candidate-comparison` | Candidate comparison table | Additive candidate comparison rows and tests for ordering, empty, and partial candidates | pending |
 | DX-P2-G06 | `codex/decision-explorer-phase2-ui-scenarios` | UI scenario selector and filtering | Static page controls using same-origin data only | pending |
 | DX-P2-G07 | `codex/decision-explorer-phase2-ui-drilldown-comparison` | UI factor drill-down and candidate comparison | Static page display for drill-down and comparison states | pending |
@@ -71,9 +71,9 @@ DX-P2-G01 starts from clean main at `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
 Current branch: `codex/decision-explorer-phase2-factor-drilldown`.
 
-Current PR: pending.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/372.
 
-Current head SHA before local edits: `186b28db1d261858a42db2ed75531fb3e4930f44`.
+Current head SHA: `9b3ed5d6f677505375a80e09e8c38c1d3ec31f14`.
 
 Current Phase 2 focus: add deterministic factor-level drill-down readouts derived from already-returned
 `ScoreFactorContributionResponse` evidence.
@@ -221,7 +221,13 @@ DX-P2-G04 full local verification passed before PR creation:
 - `git diff --check origin/main...HEAD` passed;
 - `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
 
-Next action: commit DX-P2-G04, push the branch, open the PR, and merge only if current-head checks are green.
+DX-P2-G04 committed as `9b3ed5d6f677505375a80e09e8c38c1d3ec31f14`.
+
+DX-P2-G04 PR #372 opened from the current branch after local verification:
+https://github.com/RicheyWorks/LoadBalancerPro/pull/372.
+
+Next action: wait for DX-P2-G04 PR #372 current-head checks and merge only if Build/Test/Package/Smoke, Analyze Java /
+CodeQL, and Dependency Review are green.
 
 Decision: continue.
 

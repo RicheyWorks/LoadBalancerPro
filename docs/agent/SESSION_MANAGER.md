@@ -159,8 +159,10 @@ Checks run:
 - DX-P2-G04 pushed to origin and opened as PR #372:
   https://github.com/RicheyWorks/LoadBalancerPro/pull/372.
 
-Remote status: main CI and CodeQL green for `186b28db1d261858a42db2ed75531fb3e4930f44`; PR #372 current-head
-checks are pending for `9b3ed5d6f677505375a80e09e8c38c1d3ec31f14`.
+Remote status: main CI and CodeQL green for `186b28db1d261858a42db2ed75531fb3e4930f44`; PR #372 checks passed for
+`7f8f5ea96f96a18d7289594bd80de2fdd5427fb9`, but the `gh pr checks --watch` command timed out after printing green
+status. The tooling timeout is logged in `FAILURE_LOG.md`; the failure-log checkpoint must pass current-head checks
+before merge.
 
 Blocker: none.
 

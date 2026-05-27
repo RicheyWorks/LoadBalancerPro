@@ -24,6 +24,28 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T07:47-07:00
+
+Branch/PR: codex/decision-explorer-phase2-factor-drilldown / PR #372
+
+Failure type: remote check watcher tooling timeout after green status output
+
+Failing check: `gh pr checks 372 --watch --interval 30`
+
+Suspected cause: the watch command reached the tool timeout boundary after printing all current-head checks as passed.
+An immediate `gh pr view 372 --json headRefOid,statusCheckRollup` confirmed the same head
+`7f8f5ea96f96a18d7289594bd80de2fdd5427fb9` had successful Build/Test/Package/Smoke, Analyze Java / CodeQL, CodeQL,
+and Dependency Review results.
+
+Fix attempted: log the watcher timeout and continue by using direct PR status inspection instead of the long-running
+watch process.
+
+Result: direct status inspection confirmed all required current-head checks were green before this log checkpoint.
+
+Follow-up action: push this failure-log checkpoint and require the new current head to pass before merge.
+
+## Entry
+
 Date/time: 2026-05-27T07:31-07:00
 
 Branch/PR: codex/decision-explorer-phase2-factor-drilldown / no PR yet

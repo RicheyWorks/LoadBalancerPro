@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -124,6 +125,37 @@ class RoutingControllerTest {
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "Decision Explorer endpoint must not construct CloudManager or call AWS paths.");
+        }
+    }
+
+    @Test
+    void decisionExplorerScenarioCatalogEndpointReturnsReadOnlyLocalSyntheticCatalog() throws Exception {
+        try (MockedConstruction<CloudManager> mockedCloudManager =
+                Mockito.mockConstruction(CloudManager.class)) {
+            mockMvc.perform(get("/api/routing/decision-explorer/scenarios"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.readOnly", is(true)))
+                    .andExpect(jsonPath("$.simulationOnly", is(true)))
+                    .andExpect(jsonPath("$.payloadObject", is("DecisionExplorerScenarioCatalogV1")))
+                    .andExpect(jsonPath("$.contractVersion", is("v1")))
+                    .andExpect(jsonPath("$.source", containsString("AdaptiveRoutingExperimentFixtureCatalog")))
+                    .andExpect(jsonPath("$.scenarios[0].scenarioObject", is("DecisionExplorerScenarioV1")))
+                    .andExpect(jsonPath("$.scenarios[0].scenarioId", is("normal-balanced-load")))
+                    .andExpect(jsonPath("$.scenarios[0].scenarioCategory", is("HEALTHY_BASELINE")))
+                    .andExpect(jsonPath("$.scenarios[0].evidenceStatus", is("AVAILABLE")))
+                    .andExpect(jsonPath("$.scenarios[3].scenarioId", is("stale-signal")))
+                    .andExpect(jsonPath("$.scenarios[3].scenarioCategory", is("PARTIAL_EVIDENCE")))
+                    .andExpect(jsonPath("$.scenarios[5].scenarioId", is("all-unhealthy-degradation")))
+                    .andExpect(jsonPath("$.scenarios[5].scenarioCategory", is("NO_HEALTHY_SERVER")))
+                    .andExpect(jsonPath("$.scenarios[5].evidenceStatus", is("UNKNOWN")))
+                    .andExpect(jsonPath("$.notProvenBoundaries", hasItem("no production readiness")))
+                    .andExpect(jsonPath("$.notProvenBoundaries", hasItem("no storage proof")))
+                    .andExpect(jsonPath("$.notProvenBoundaries", hasItem("no evidence-packet generation")))
+                    .andExpect(jsonPath("$.boundaryNote", containsString("does not run routing")));
+
+            assertTrue(mockedCloudManager.constructed().isEmpty(),
+                    "Decision Explorer scenario catalog endpoint must not construct CloudManager or call AWS paths.");
         }
     }
 

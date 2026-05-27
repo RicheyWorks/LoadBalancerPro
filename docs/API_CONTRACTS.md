@@ -70,6 +70,15 @@ automation. In local/default mode it follows the same local routing API convenie
 `POST /api/routing/compare`; in prod/cloud-sandbox API-key mode and OAuth2 mode it inherits the existing
 `/api/routing/**` protections.
 
+`GET /api/routing/decision-explorer/scenarios` returns a `DecisionExplorerScenarioCatalogV1` companion payload with
+deterministic local synthetic scenario metadata for the Decision Explorer reviewer workflow. The catalog is additive,
+read-only, same-origin, and simulation-only. It is grounded in existing source-visible local fixtures and includes
+healthy baseline, partial evidence, no-healthy-server/unknown, and other safe local synthetic scenario entries. The
+route does not run routing calculations, mutate routing state, change strategy scoring, allocate traffic, forward proxy
+traffic, call cloud or tenant systems, persist storage, execute replay, generate evidence packets, export files, or
+prove production readiness, certification, live-cloud validation, real-tenant validation, benchmark/load/stress
+behavior, throughput/p95/p99 behavior, replay/export behavior, storage behavior, or broader automation.
+
 The static Decision Explorer first-pass page is served at `GET /decision-explorer.html`. It calls the same-origin
 `POST /api/routing/decision-explorer` route with deterministic synthetic routing telemetry, keeps the optional API key
 in page memory only, renders decision summary, selected candidate, candidate set, factor contributions, policy gates,

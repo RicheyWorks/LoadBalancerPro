@@ -48,6 +48,12 @@ class RoutingOpenApiContractTest {
                 "/responses/200/content/*~1*/schema");
         assertEquals("array", required(explorerResponseSchema, "/type").asText());
         assertRef(required(explorerResponseSchema, "/items"), "#/components/schemas/DecisionExplorerPayloadV1");
+
+        JsonNode scenarioCatalogOperation = required(docs,
+                "/paths/~1api~1routing~1decision-explorer~1scenarios/get");
+        JsonNode scenarioCatalogResponseSchema = required(scenarioCatalogOperation,
+                "/responses/200/content/*~1*/schema");
+        assertRef(scenarioCatalogResponseSchema, "#/components/schemas/DecisionExplorerScenarioCatalogV1");
     }
 
     @Test
@@ -104,6 +110,38 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(explorerProperties, "/notProvenBoundaries/type").asText());
         assertEquals("string", required(explorerProperties, "/notProvenBoundaries/items/type").asText());
         assertEquals("string", required(explorerProperties, "/boundaryNote/type").asText());
+
+        JsonNode scenarioCatalogProperties = required(docs,
+                "/components/schemas/DecisionExplorerScenarioCatalogV1/properties");
+        assertEquals("boolean", required(scenarioCatalogProperties, "/readOnly/type").asText());
+        assertEquals("boolean", required(scenarioCatalogProperties, "/simulationOnly/type").asText());
+        assertEquals("string", required(scenarioCatalogProperties, "/payloadObject/type").asText());
+        assertEquals("string", required(scenarioCatalogProperties, "/contractVersion/type").asText());
+        assertEquals("string", required(scenarioCatalogProperties, "/source/type").asText());
+        assertArrayRef(required(scenarioCatalogProperties, "/scenarios"),
+                "#/components/schemas/DecisionExplorerScenarioV1");
+        assertEquals("array", required(scenarioCatalogProperties, "/warnings/type").asText());
+        assertEquals("array", required(scenarioCatalogProperties, "/unknowns/type").asText());
+        assertEquals("array", required(scenarioCatalogProperties, "/notProvenBoundaries/type").asText());
+        assertEquals("string", required(scenarioCatalogProperties, "/boundaryNote/type").asText());
+
+        JsonNode scenarioProperties = required(docs,
+                "/components/schemas/DecisionExplorerScenarioV1/properties");
+        assertEquals("string", required(scenarioProperties, "/scenarioObject/type").asText());
+        assertEquals("string", required(scenarioProperties, "/scenarioId/type").asText());
+        assertEquals("string", required(scenarioProperties, "/scenarioLabel/type").asText());
+        assertEquals("string", required(scenarioProperties, "/scenarioCategory/type").asText());
+        assertEquals("string", required(scenarioProperties, "/evidenceStatus/type").asText());
+        assertEquals("integer", required(scenarioProperties, "/displayOrder/type").asText());
+        assertEquals("string", required(scenarioProperties, "/description/type").asText());
+        assertEquals("string", required(scenarioProperties, "/requestPresetId/type").asText());
+        assertEquals("array", required(scenarioProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("array", required(scenarioProperties, "/expectedReviewerQuestions/type").asText());
+        assertEquals("array", required(scenarioProperties, "/tags/type").asText());
+        assertEquals("array", required(scenarioProperties, "/warnings/type").asText());
+        assertEquals("array", required(scenarioProperties, "/unknowns/type").asText());
+        assertEquals("array", required(scenarioProperties, "/notProvenBoundaries/type").asText());
+        assertEquals("string", required(scenarioProperties, "/boundaryNote/type").asText());
 
         JsonNode decisionReadoutProperties = required(docs,
                 "/components/schemas/DecisionReadoutV1/properties");

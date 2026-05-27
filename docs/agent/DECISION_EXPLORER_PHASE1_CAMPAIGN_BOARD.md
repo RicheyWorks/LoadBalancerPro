@@ -92,12 +92,13 @@ DX-P1-G04 starts from clean main at `af351b043fbc3ff0ffff50d9c0f17a667f84b7af`.
 
 Current branch: `codex/decision-explorer-phase1-api`.
 
-Current PR: pending.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/363.
 
-Current head SHA: local work in progress from `af351b043fbc3ff0ffff50d9c0f17a667f84b7af`.
+Current head SHA: `efb5abc404ad48de95f34f8a7d2b6d68e6377da0` at PR opening; final PR-created
+checkpoint commit is pending.
 
-Next action: finish DX-P1-G04 local verification, commit and push the read-only API slice, open the PR, wait for
-current-head PR checks, merge only if green, verify post-merge main, and then continue to DX-P1-G05.
+Next action: commit and push the PR-created checkpoint, wait for current-head PR checks, merge only if green, verify
+post-merge main, and then continue to DX-P1-G05.
 
 Decision: continue.
 

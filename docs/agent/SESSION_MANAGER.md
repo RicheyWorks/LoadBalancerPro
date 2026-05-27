@@ -8,6 +8,58 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
+Timestamp: 2026-05-26T21:28-07:00
+
+Goal name: Decision Explorer Implementation Phase 1
+
+Current PR slot: DX-P1-G01
+
+Checkpoint: Phase 1 architecture/scope slice locally verified; ready for commit and PR opening
+
+Started from main SHA: `755ed394adfa18e462f89312c5289fd3154075f2`
+
+Current branch: codex/decision-explorer-phase1-architecture
+
+PR URL: pending
+
+Head SHA: `755ed394adfa18e462f89312c5289fd3154075f2` at branch creation; final PR head will be recorded after the checkpoint commit
+
+Changed files planned for this slice:
+
+- docs/agent/DECISION_EXPLORER_PHASE1_ARCHITECTURE_SCOPE.md
+- docs/agent/DECISION_EXPLORER_PHASE1_CAMPAIGN_BOARD.md
+- docs/agent/FAILURE_LOG.md
+- docs/agent/SESSION_MANAGER.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest.java
+
+Checks run:
+
+- `git status --short` confirmed the workspace was clean on `main`.
+- `git fetch origin` completed.
+- `git pull --ff-only origin main` reported main already up to date.
+- Local `main` and `origin/main` were both at `755ed394adfa18e462f89312c5289fd3154075f2`.
+- Recent main CI and CodeQL for `755ed394adfa18e462f89312c5289fd3154075f2` were green before branch creation.
+- Branch `codex/decision-explorer-phase1-architecture` was created.
+- Focused guard initially failed on two exact wording assertions and was logged in `FAILURE_LOG.md`.
+- Focused guard rerun passed: `mvn test "-Dtest=AgentDecisionExplorerPhase1ArchitectureScopeDocumentationTest"` with 8 tests, 0 failures, 0 errors, and 0 skipped.
+- Relevant Decision Explorer/session selector passed: 113 tests, 0 failures, 0 errors, and 0 skipped.
+- `mvn -q test` passed.
+- `mvn -q "-DskipTests" package` passed.
+- `mvn -B package` passed with 2,638 tests, 0 failures, 0 errors, and 0 skipped.
+- `git diff --check` passed.
+- `git diff --cached --check` passed.
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
+
+Remote status: main CI and CodeQL green for `755ed394adfa18e462f89312c5289fd3154075f2`; no Phase 1 PR has been opened yet.
+
+Blocker: none.
+
+Next action: commit, run the branch-range diff check after the commit includes the new files, push, open the DX-P1-G01 PR, wait for current-head PR checks, merge only if green, verify post-merge main, then continue to DX-P1-G02.
+
+Decision: continue.
+
+## Historical Evidence Audit Checkpoint
+
 Timestamp: 2026-05-25T11:57-07:00
 
 Goal name: LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign

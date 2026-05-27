@@ -1,14 +1,14 @@
 # Decision Explorer Phase 2 Campaign Board
 
-Status: active / phase2-factor-drilldown.
+Status: active / phase2-candidate-comparison.
 
 Classification: WARN / decision-explorer-phase2-campaign.
 
 Started from main SHA: `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
-Current PR slot: DX-P2-G04.
+Current PR slot: DX-P2-G05.
 
-Completed Phase 2 PRs: 3 / 12 planned.
+Completed Phase 2 PRs: 4 / 12 planned.
 
 Related architecture scope: [`DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md`](DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md).
 
@@ -51,8 +51,8 @@ Pending, failed, cancelled, stale, skipped-only, duplicate-only, or wrong-head c
 | DX-P2-G01 | `codex/decision-explorer-phase2-campaign-board` | Phase 2 campaign board and scope contract | `DECISION_EXPLORER_PHASE2_ARCHITECTURE_SCOPE.md`, `DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md`, documentation guard, `SESSION_MANAGER.md` | merged-main-green / PR #369 / `1e75b7326b09cd7c179909aec00f0c42e34da9c1` |
 | DX-P2-G02 | `codex/decision-explorer-phase2-scenario-catalog` | Scenario catalog model | Additive scenario catalog DTO/model support and unit tests | merged-main-green / PR #370 / `1fb16a50d4181d1411abfe6c038815a68f79e7b5` |
 | DX-P2-G03 | `codex/decision-explorer-phase2-scenario-api` | Scenario catalog service/API | Bounded same-origin catalog API or additive companion data, controller tests, and docs | merged-main-green / PR #371 / `186b28db1d261858a42db2ed75531fb3e4930f44` |
-| DX-P2-G04 | `codex/decision-explorer-phase2-factor-drilldown` | Decision factor drill-down | Deterministic factor-level summaries and tests | active-pr / PR #372 / current-head checks pending |
-| DX-P2-G05 | `codex/decision-explorer-phase2-candidate-comparison` | Candidate comparison table | Additive candidate comparison rows and tests for ordering, empty, and partial candidates | pending |
+| DX-P2-G04 | `codex/decision-explorer-phase2-factor-drilldown` | Decision factor drill-down | Deterministic factor-level summaries and tests | merged-main-green / PR #372 / `b2f5017e4c7484e34d0da6a1ffde3954442a9103` |
+| DX-P2-G05 | `codex/decision-explorer-phase2-candidate-comparison` | Candidate comparison table | Additive candidate comparison rows and tests for ordering, empty, and partial candidates | active-pr / PR #373 / current-head checks pending |
 | DX-P2-G06 | `codex/decision-explorer-phase2-ui-scenarios` | UI scenario selector and filtering | Static page controls using same-origin data only | pending |
 | DX-P2-G07 | `codex/decision-explorer-phase2-ui-drilldown-comparison` | UI factor drill-down and candidate comparison | Static page display for drill-down and comparison states | pending |
 | DX-P2-G08 | `codex/decision-explorer-phase2-reviewer-badges` | Explanation badges and reviewer language | Reviewer-facing badges, docs language, and no-overclaim guard coverage | pending |
@@ -69,14 +69,14 @@ Phase 1 final handoff PR #368 merged as `28c8bc10e1aa553a3c53aac70883c04431d55cc
 
 DX-P2-G01 starts from clean main at `28c8bc10e1aa553a3c53aac70883c04431d55cc2`.
 
-Current branch: `codex/decision-explorer-phase2-factor-drilldown`.
+Current branch: `codex/decision-explorer-phase2-candidate-comparison`.
 
-Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/372.
+Current PR: https://github.com/RicheyWorks/LoadBalancerPro/pull/373.
 
-Current head SHA: `9b3ed5d6f677505375a80e09e8c38c1d3ec31f14`.
+Current head SHA before PR-created checkpoint: `dfa9baa73695cfc7ce4a2264617ce193077bc482`.
 
-Current Phase 2 focus: add deterministic factor-level drill-down readouts derived from already-returned
-`ScoreFactorContributionResponse` evidence.
+Current Phase 2 focus: add deterministic candidate comparison rows derived from already-built
+`CandidateReadoutV1` evidence.
 
 DX-P2-G01 local verification passed before PR creation:
 
@@ -192,8 +192,9 @@ DX-P2-G03 post-merge main verification passed:
 DX-P2-G04 starts from clean main at `186b28db1d261858a42db2ed75531fb3e4930f44`.
 
 DX-P2-G04 is adding additive `DecisionFactorDrilldownV1` readouts and builder tests. The slice derives reviewer
-drill-down fields from already-returned factor contribution evidence only; it does not recompute scores, change
-routing/scoring/proxy behavior, persist storage, export data, execute replay, generate evidence packets, or call
+drill-down fields from already-returned `ScoreFactorContributionResponse` factor contribution evidence only; it does
+not recompute scores, change routing/scoring/proxy behavior, persist storage, export data, execute replay, generate
+evidence packets, or call
 external systems.
 
 DX-P2-G04 focused selector initially failed on a test expectation mismatch for returned factor direction. The failure
@@ -226,8 +227,58 @@ DX-P2-G04 committed as `9b3ed5d6f677505375a80e09e8c38c1d3ec31f14`.
 DX-P2-G04 PR #372 opened from the current branch after local verification:
 https://github.com/RicheyWorks/LoadBalancerPro/pull/372.
 
-Next action: wait for DX-P2-G04 PR #372 current-head checks and merge only if Build/Test/Package/Smoke, Analyze Java /
-CodeQL, and Dependency Review are green.
+DX-P2-G04 current-head PR checks passed after the failure-log checkpoint:
+
+- PR CI passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26534430186;
+- PR CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26534430242;
+- Dependency Review passed in the PR CI run.
+
+DX-P2-G04 merged as `b2f5017e4c7484e34d0da6a1ffde3954442a9103`.
+
+DX-P2-G04 post-merge main verification passed:
+
+- `mvn -q test` passed;
+- `mvn -q "-DskipTests" package` passed;
+- `mvn -B package` passed with 2,696 tests, 0 failures, 0 errors, and 0 skipped;
+- `git diff --check` passed;
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only;
+- main CI passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26534775988;
+- main CodeQL passed: https://github.com/RicheyWorks/LoadBalancerPro/actions/runs/26534776086.
+
+DX-P2-G05 starts from clean main at `b2f5017e4c7484e34d0da6a1ffde3954442a9103`.
+
+DX-P2-G05 is adding additive `DecisionExplorerCandidateComparisonRowV1` readouts and builder tests. The slice derives
+candidate comparison rows from already-built `CandidateReadoutV1` evidence only; it does not recompute scores, change
+routing/scoring/proxy behavior, persist storage, export data, execute replay, generate evidence packets, or call
+external systems.
+
+DX-P2-G05 focused verification passed with 23 tests:
+
+- `DecisionExplorerCandidateComparisonRowV1Test`;
+- `DecisionExplorerPayloadV1Test`;
+- `DecisionExplorerPayloadServiceTest`;
+- `RoutingOpenApiContractTest`;
+- `AgentDecisionExplorerPhase2ArchitectureScopeDocumentationTest`.
+
+DX-P2-G05 relevant Decision Explorer selector passed with 159 tests.
+
+DX-P2-G05 full local verification passed before PR creation:
+
+- `mvn -q test` passed;
+- `mvn -q "-DskipTests" package` passed;
+- `mvn -B package` passed with 2,697 tests, 0 failures, 0 errors, and 0 skipped;
+- `git diff --check` passed with line-ending warnings only;
+- `git diff --cached --check` passed;
+- `git diff --check origin/main...HEAD` passed;
+- `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` passed and wrote ignored target-local evidence only.
+
+DX-P2-G05 committed as `dfa9baa73695cfc7ce4a2264617ce193077bc482`.
+
+DX-P2-G05 PR #373 opened from the current branch after local verification:
+https://github.com/RicheyWorks/LoadBalancerPro/pull/373.
+
+Next action: push the PR-created checkpoint and merge only if Build/Test/Package/Smoke, Analyze Java / CodeQL, and
+Dependency Review are current-head green.
 
 Decision: continue.
 

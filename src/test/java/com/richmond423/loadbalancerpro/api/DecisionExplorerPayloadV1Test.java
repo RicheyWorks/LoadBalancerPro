@@ -49,6 +49,7 @@ class DecisionExplorerPayloadV1Test {
         assertEquals("AgentStructuredOutputV1", payload.agentStructuredOutput().schemaName());
         assertEquals("selected-candidate", payload.decisionReadout().selectedCandidateId());
         assertEquals("candidate-a", payload.selectedCandidate().candidateId());
+        assertEquals("candidate-a", payload.candidateComparisons().get(0).candidateId());
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertEquals("policy-health", payload.policyGateReadouts().get(0).gateId());
         assertEquals("candidate-a", payload.decisionDiffReadouts().get(0).baselineCandidateId());
@@ -116,6 +117,7 @@ class DecisionExplorerPayloadV1Test {
         assertEquals("UNKNOWN", payload.source());
         assertEquals("UNKNOWN", payload.decisionId());
         assertTrue(payload.candidateSet().isEmpty());
+        assertTrue(payload.candidateComparisons().isEmpty());
         assertTrue(payload.factorContributions().isEmpty());
         assertTrue(payload.policyGateReadouts().isEmpty());
         assertTrue(payload.decisionDiffReadouts().isEmpty());
@@ -157,7 +159,9 @@ class DecisionExplorerPayloadV1Test {
                 decisionReadout(),
                 selectedCandidate(),
                 List.of(selectedCandidate(), nonSelectedCandidate()),
+                List.of(candidateComparisonRow()),
                 List.of(factorContribution()),
+                List.of(),
                 List.of(policyGate()),
                 List.of(decisionDiff()),
                 List.of(evidencePacketReadout()),
@@ -220,6 +224,25 @@ class DecisionExplorerPayloadV1Test {
                 "Latency contribution is copied from visible returned evidence when available.",
                 List.of("decision-vector"),
                 "factor readout is not benchmark/load/stress evidence");
+    }
+
+    private static DecisionExplorerCandidateComparisonRowV1 candidateComparisonRow() {
+        return new DecisionExplorerCandidateComparisonRowV1(
+                "candidate-a",
+                "candidate-a",
+                true,
+                1,
+                "SELECTED",
+                10.0,
+                0.0,
+                List.of("healthState=healthy", "latency=12ms"),
+                List.of("hidden routing internals not exposed"),
+                List.of("VISIBLE_SIGNAL_MATCH"),
+                List.of("policy-health"),
+                List.of("decision-vector:candidate-a"),
+                List.of(),
+                List.of("hidden routing internals"),
+                "candidate comparison row is read-only and simulation-only");
     }
 
     private static PolicyGateReadoutV1 policyGate() {

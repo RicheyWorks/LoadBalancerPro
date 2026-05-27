@@ -45,6 +45,9 @@ public class DecisionExplorerPayloadService {
     private static final Comparator<DecisionFactorDrilldownV1> BY_DRILLDOWN_CANDIDATE_THEN_FACTOR = Comparator
             .comparing(DecisionFactorDrilldownV1::candidateId)
             .thenComparing(DecisionFactorDrilldownV1::factorName);
+    private static final Comparator<DecisionExplorerCandidateComparisonRowV1> BY_COMPARISON_ORDER = Comparator
+            .comparingInt(DecisionExplorerCandidateComparisonRowV1::displayOrder)
+            .thenComparing(DecisionExplorerCandidateComparisonRowV1::candidateId);
     private static final Comparator<PolicyGateReadoutV1> BY_GATE_ID =
             Comparator.comparing(PolicyGateReadoutV1::gateId);
     private static final Comparator<EvidencePacketReadoutV1> BY_REFERENCE_ID =
@@ -74,6 +77,8 @@ public class DecisionExplorerPayloadService {
         String selectedCandidateId = selectedCandidateId(result);
         List<CandidateReadoutV1> candidates = candidateReadouts(result, selectedCandidateId);
         CandidateReadoutV1 selectedCandidate = selectedCandidate(candidates, selectedCandidateId);
+        List<DecisionExplorerCandidateComparisonRowV1> candidateComparisons =
+                candidateComparisons(candidates, selectedCandidate);
         List<FactorContributionV1> factorContributions = factorContributions(result);
         List<DecisionFactorDrilldownV1> factorDrilldowns = factorDrilldowns(result);
         List<PolicyGateReadoutV1> policyGateReadouts = policyGateReadouts(result);
@@ -91,6 +96,7 @@ public class DecisionExplorerPayloadService {
                 decisionReadout(result, selectedCandidateId),
                 selectedCandidate,
                 candidates,
+                candidateComparisons,
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -295,6 +301,92 @@ public class DecisionExplorerPayloadService {
                         List.of(READ_ONLY_GATE, SIMULATION_ONLY_GATE),
                         List.of(),
                         BOUNDARY_NOTE));
+    }
+
+    private static List<DecisionExplorerCandidateComparisonRowV1> candidateComparisons(
+            List<CandidateReadoutV1> candidates,
+            CandidateReadoutV1 selectedCandidate) {
+        if (candidates == null || candidates.isEmpty()) {
+            return List.of();
+        }
+        Double selectedScore = selectedCandidate == null ? null : finiteOrNull(selectedCandidate.finalScore());
+        List<CandidateReadoutV1> sortedCandidates = candidates.stream()
+                .filter(Objects::nonNull)
+                .sorted(BY_SELECTED_THEN_CANDIDATE_ID)
+                .toList();
+        List<DecisionExplorerCandidateComparisonRowV1> rows = new ArrayList<>();
+        for (int index = 0; index < sortedCandidates.size(); index++) {
+            CandidateReadoutV1 candidate = sortedCandidates.get(index);
+            rows.add(candidateComparison(candidate, index + 1, selectedScore));
+        }
+        return rows.stream().sorted(BY_COMPARISON_ORDER).toList();
+    }
+
+    private static DecisionExplorerCandidateComparisonRowV1 candidateComparison(
+            CandidateReadoutV1 candidate,
+            int displayOrder,
+            Double selectedScore) {
+        Double finalScore = finiteOrNull(candidate.finalScore());
+        Double scoreDelta = finalScore == null || selectedScore == null ? null : finalScore - selectedScore;
+        List<String> warnings = candidateComparisonWarnings(candidate, finalScore, selectedScore);
+        List<String> unknowns = candidateComparisonUnknowns(candidate, scoreDelta);
+        return new DecisionExplorerCandidateComparisonRowV1(
+                candidate.candidateId(),
+                candidate.candidateLabel(),
+                candidate.selected(),
+                displayOrder,
+                candidateComparisonStatus(candidate, finalScore, selectedScore),
+                finalScore,
+                scoreDelta,
+                candidate.visibleSignals(),
+                candidate.unknownSignals(),
+                candidate.reasonCodes(),
+                candidate.policyGateIds(),
+                candidate.evidenceReferenceIds(),
+                warnings,
+                unknowns,
+                candidate.boundaryNote());
+    }
+
+    private static String candidateComparisonStatus(
+            CandidateReadoutV1 candidate,
+            Double finalScore,
+            Double selectedScore) {
+        if (candidate.selected()) {
+            return finalScore == null ? "SELECTED_SCORE_UNKNOWN" : "SELECTED";
+        }
+        if (finalScore == null || selectedScore == null) {
+            return "PARTIAL_EVIDENCE";
+        }
+        return "COMPARED_TO_SELECTED";
+    }
+
+    private static List<String> candidateComparisonWarnings(
+            CandidateReadoutV1 candidate,
+            Double finalScore,
+            Double selectedScore) {
+        List<String> warnings = new ArrayList<>();
+        if (finalScore == null) {
+            warnings.add("candidate final score was not returned");
+        }
+        if (!candidate.selected() && selectedScore == null) {
+            warnings.add("selected candidate final score was not returned");
+        }
+        if (candidate.evidenceReferenceIds().isEmpty()) {
+            warnings.add("candidate evidence references were not returned");
+        }
+        return distinctSorted(warnings);
+    }
+
+    private static List<String> candidateComparisonUnknowns(
+            CandidateReadoutV1 candidate,
+            Double scoreDelta) {
+        List<String> unknowns = new ArrayList<>(candidate.unknownSignals());
+        if (!candidate.selected() && scoreDelta == null) {
+            unknowns.add("score delta from selected candidate");
+        }
+        unknowns.add("hidden routing internals");
+        return distinctSorted(unknowns);
     }
 
     private static List<FactorContributionV1> factorContributions(RoutingComparisonResultResponse result) {
@@ -528,6 +620,7 @@ public class DecisionExplorerPayloadService {
                         "decisionReadout",
                         "selectedCandidate",
                         "candidateSet",
+                        "candidateComparisons",
                         "factorContributions",
                         "factorDrilldowns",
                         "policyGateReadouts",

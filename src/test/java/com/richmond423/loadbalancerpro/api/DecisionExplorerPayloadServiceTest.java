@@ -69,6 +69,12 @@ class DecisionExplorerPayloadServiceTest {
                         .map(row -> row.displayOrder() + ":" + row.candidateId() + ":"
                                 + row.comparisonStatus() + ":" + row.scoreDeltaFromSelected())
                         .toList());
+        assertEquals("STRONG", firstPayloads.get(0).confidenceSummary().status());
+        assertEquals("COMPLETE", firstPayloads.get(0).confidenceSummary().evidenceQuality());
+        assertEquals("edge-a", firstPayloads.get(0).confidenceSummary().selectedCandidateId());
+        assertEquals(List.of("CANDIDATE_COMPARISONS_AVAILABLE", "FACTOR_EVIDENCE_AVAILABLE",
+                        "NO_STATUS_WARNINGS", "SELECTED_CANDIDATE_CONFIRMED"),
+                firstPayloads.get(0).confidenceSummary().statusReasons());
         assertEquals(List.of("edge-a:healthState", "edge-z:p95LatencyMillis"),
                 firstPayloads.get(0).factorContributions().stream()
                         .map(factor -> factor.candidateId() + ":" + factor.factorName())
@@ -107,6 +113,8 @@ class DecisionExplorerPayloadServiceTest {
         assertTrue(payload.candidateComparisons().isEmpty());
         assertTrue(payload.factorContributions().isEmpty());
         assertTrue(payload.factorDrilldowns().isEmpty());
+        assertEquals("DEGRADED", payload.confidenceSummary().status());
+        assertEquals(List.of("DECISION_STATUS_FAILED"), payload.confidenceSummary().statusReasons());
         assertTrue(payload.decisionDiffReadouts().isEmpty());
         assertEquals("future-evidence-packet", payload.evidencePacketReadouts().get(0).referenceId());
         assertTrue(payload.warnings().contains("Selected candidate was not returned."));
@@ -123,6 +131,8 @@ class DecisionExplorerPayloadServiceTest {
         DecisionExplorerPayloadV1 payload = payloads.get(0);
         assertEquals("routing-compare/unknown/unknown", payload.decisionId());
         assertEquals("UNKNOWN", payload.decisionReadout().status());
+        assertEquals("UNKNOWN", payload.confidenceSummary().status());
+        assertEquals(List.of("NO_ROUTING_EVIDENCE_RETURNED"), payload.confidenceSummary().statusReasons());
         assertTrue(payload.warnings().get(0).contains("did not include result evidence"));
         assertTrue(payload.policyGateReadouts().stream()
                 .anyMatch(gate -> gate.gateId().equals("boundary-read-only") && gate.outcome().equals("PASS")));
@@ -165,6 +175,9 @@ class DecisionExplorerPayloadServiceTest {
         assertTrue(partialDrilldown.unknowns().contains("numeric contribution value"));
         assertTrue(partialDrilldown.sourceReferenceIds()
                 .contains("factor-contribution:alternative-a:latency"));
+        assertEquals("PARTIAL", payload.confidenceSummary().status());
+        assertTrue(payload.confidenceSummary().statusReasons().contains("PARTIAL_CANDIDATE_COMPARISON_EVIDENCE"));
+        assertTrue(payload.confidenceSummary().statusReasons().contains("PARTIAL_FACTOR_EVIDENCE"));
         assertNull(payload.decisionDiffReadouts().get(0).finalScoreGap());
         assertEquals(List.of("latency", "queueDepth"), payload.decisionDiffReadouts().get(0).comparedFactorNames());
         assertTrue(payload.evidencePacketReadouts().get(0).unavailableReasons()
@@ -174,7 +187,9 @@ class DecisionExplorerPayloadServiceTest {
     @Test
     void sourceDoesNotUseRoutingCalculatorEnvironmentOrExternalSideEffects() throws Exception {
         String source = Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
-                + "DecisionExplorerPayloadService.java"), StandardCharsets.UTF_8);
+                + "DecisionExplorerPayloadService.java"), StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerConfidenceSummaryService.java"), StandardCharsets.UTF_8);
         String normalized = source.toLowerCase(Locale.ROOT);
 
         assertFalse(source.contains("ServerScoreCalculator"));

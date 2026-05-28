@@ -95,6 +95,8 @@ class RoutingOpenApiContractTest {
         assertArrayRef(required(explorerProperties, "/candidateSet"), "#/components/schemas/CandidateReadoutV1");
         assertArrayRef(required(explorerProperties, "/candidateComparisons"),
                 "#/components/schemas/DecisionExplorerCandidateComparisonRowV1");
+        assertRef(required(explorerProperties, "/confidenceSummary"),
+                "#/components/schemas/DecisionExplorerConfidenceSummaryV1");
         assertArrayRef(required(explorerProperties, "/factorContributions"),
                 "#/components/schemas/FactorContributionV1");
         assertArrayRef(required(explorerProperties, "/factorDrilldowns"),
@@ -186,6 +188,35 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(candidateComparisonProperties, "/warnings/type").asText());
         assertEquals("array", required(candidateComparisonProperties, "/unknowns/type").asText());
         assertEquals("string", required(candidateComparisonProperties, "/boundaryNote/type").asText());
+
+        JsonNode confidenceSummaryProperties = required(docs,
+                "/components/schemas/DecisionExplorerConfidenceSummaryV1/properties");
+        assertEquals("boolean", required(confidenceSummaryProperties, "/readOnly/type").asText());
+        assertEquals("boolean", required(confidenceSummaryProperties, "/simulationOnly/type").asText());
+        assertEquals("string", required(confidenceSummaryProperties, "/summaryObject/type").asText());
+        assertEquals("string", required(confidenceSummaryProperties, "/contractVersion/type").asText());
+        assertEquals("string", required(confidenceSummaryProperties, "/status/type").asText());
+        assertEquals("string", required(confidenceSummaryProperties, "/evidenceQuality/type").asText());
+        assertEquals("string", required(confidenceSummaryProperties, "/selectedCandidateId/type").asText());
+        assertEquals("integer", required(confidenceSummaryProperties, "/candidateCount/type").asText());
+        assertEquals("integer", required(confidenceSummaryProperties, "/candidateComparisonCount/type").asText());
+        assertEquals("integer", required(confidenceSummaryProperties, "/availableFactorCount/type").asText());
+        assertEquals("integer", required(confidenceSummaryProperties, "/partialFactorCount/type").asText());
+        assertEquals("integer", required(confidenceSummaryProperties, "/unknownFactorCount/type").asText());
+        assertEquals("integer", required(confidenceSummaryProperties, "/warningCount/type").asText());
+        assertEquals("integer", required(confidenceSummaryProperties, "/unknownCount/type").asText());
+        assertEquals("integer", required(confidenceSummaryProperties, "/sourceReferenceCount/type").asText());
+        assertEquals("array", required(confidenceSummaryProperties, "/evidenceSignals/type").asText());
+        assertEquals("string", required(confidenceSummaryProperties, "/evidenceSignals/items/type").asText());
+        assertEquals("array", required(confidenceSummaryProperties, "/statusReasons/type").asText());
+        assertEquals("string", required(confidenceSummaryProperties, "/statusReasons/items/type").asText());
+        assertEquals("array", required(confidenceSummaryProperties, "/warnings/type").asText());
+        assertEquals("string", required(confidenceSummaryProperties, "/warnings/items/type").asText());
+        assertEquals("array", required(confidenceSummaryProperties, "/unknowns/type").asText());
+        assertEquals("string", required(confidenceSummaryProperties, "/unknowns/items/type").asText());
+        assertEquals("array", required(confidenceSummaryProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(confidenceSummaryProperties, "/sourceReferenceIds/items/type").asText());
+        assertEquals("string", required(confidenceSummaryProperties, "/boundaryNote/type").asText());
 
         JsonNode factorReadoutProperties = required(docs,
                 "/components/schemas/FactorContributionV1/properties");

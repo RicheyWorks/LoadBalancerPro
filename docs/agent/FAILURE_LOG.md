@@ -24,6 +24,42 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T17:27-07:00
+
+Branch/PR: codex/lase-routing-intelligence-confidence-summary / no PR yet
+
+Failure type: local PowerShell selector quoting
+
+Failing check: `mvn -q -Dtest=DecisionExplorerConfidenceSummaryServiceTest,DecisionExplorerPayloadServiceTest,DecisionExplorerPayloadV1Test,DecisionExplorerApiContractHardeningTest,RoutingOpenApiContractTest test`
+
+Suspected cause: PowerShell parsed the comma-separated Maven test selector as a parameter list before Maven received it.
+
+Fix attempted: reran the same focused selector with the `-Dtest=...` argument quoted.
+
+Result: Maven received the focused selector and ran the test suite; a separate endpoint expectation mismatch is logged below.
+
+Follow-up action: keep Maven selector arguments quoted in this PowerShell session.
+
+## Entry
+
+Date/time: 2026-05-27T17:28-07:00
+
+Branch/PR: codex/lase-routing-intelligence-confidence-summary / no PR yet
+
+Failure type: focused API contract expectation mismatch
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerConfidenceSummaryServiceTest,DecisionExplorerPayloadServiceTest,DecisionExplorerPayloadV1Test,DecisionExplorerApiContractHardeningTest,RoutingOpenApiContractTest" test`
+
+Suspected cause: the real Decision Explorer endpoint includes partial/not-exposed factor evidence and calculator exactness warnings, so the new computed confidence summary correctly classified the endpoint payload as `PARTIAL` rather than `STRONG`.
+
+Fix attempted: updated the endpoint contract expectation to assert the grounded `PARTIAL` confidence status and evidence quality.
+
+Result: the focused selector rerun passed with 21 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with broader local verification for the implementation slice.
+
+## Entry
+
 Date/time: 2026-05-27T16:47-07:00
 
 Branch/PR: codex/decision-explorer-phase2-final-handoff / no PR yet

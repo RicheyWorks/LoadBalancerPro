@@ -50,6 +50,8 @@ class DecisionExplorerPayloadV1Test {
         assertEquals("selected-candidate", payload.decisionReadout().selectedCandidateId());
         assertEquals("candidate-a", payload.selectedCandidate().candidateId());
         assertEquals("candidate-a", payload.candidateComparisons().get(0).candidateId());
+        assertEquals("DecisionExplorerConfidenceSummaryV1", payload.confidenceSummary().summaryObject());
+        assertEquals("STRONG", payload.confidenceSummary().status());
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertEquals("policy-health", payload.policyGateReadouts().get(0).gateId());
         assertEquals("candidate-a", payload.decisionDiffReadouts().get(0).baselineCandidateId());
@@ -125,6 +127,7 @@ class DecisionExplorerPayloadV1Test {
         assertTrue(payload.warnings().isEmpty());
         assertTrue(payload.unknowns().isEmpty());
         assertTrue(payload.notProvenBoundaries().isEmpty());
+        assertEquals("UNKNOWN", payload.confidenceSummary().status());
         assertEquals("UNKNOWN", payload.decisionReadout().summary());
         assertTrue(payload.selectedCandidate().visibleSignals().isEmpty());
         assertTrue(payload.agentStructuredOutput().stableFieldNames().isEmpty());
@@ -160,6 +163,7 @@ class DecisionExplorerPayloadV1Test {
                 selectedCandidate(),
                 List.of(selectedCandidate(), nonSelectedCandidate()),
                 List.of(candidateComparisonRow()),
+                confidenceSummary(),
                 List.of(factorContribution()),
                 List.of(),
                 List.of(policyGate()),
@@ -170,6 +174,31 @@ class DecisionExplorerPayloadV1Test {
                 List.of("non-selected candidate internals are not exposed"),
                 notProvenBoundaries(),
                 "read-only simulation-only DTO skeleton");
+    }
+
+    private static DecisionExplorerConfidenceSummaryV1 confidenceSummary() {
+        return new DecisionExplorerConfidenceSummaryV1(
+                true,
+                true,
+                "DecisionExplorerConfidenceSummaryV1",
+                "v1",
+                "STRONG",
+                "COMPLETE",
+                "candidate-a",
+                2,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                3,
+                List.of("candidateCount=2", "decisionStatus=AVAILABLE"),
+                List.of("CANDIDATE_COMPARISONS_AVAILABLE", "FACTOR_EVIDENCE_AVAILABLE"),
+                List.of(),
+                List.of(),
+                List.of("decision-vector", "decision-vector:candidate-a", "phase1-scope"),
+                "confidence summary is read-only and simulation-only");
     }
 
     private static DecisionReadoutV1 decisionReadout() {

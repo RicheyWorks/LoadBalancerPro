@@ -58,6 +58,8 @@ public class DecisionExplorerConfidenceSummaryService {
                 statusWarnings,
                 statusUnknowns,
                 reasons);
+        String evidenceQuality = DecisionExplorerConfidenceSummaryV1.evidenceQualityFor(status);
+        List<String> statusReasons = distinctSorted(reasons);
 
         List<String> evidenceSignals = evidenceSignals(
                 decisionStatus,
@@ -72,6 +74,17 @@ public class DecisionExplorerConfidenceSummaryService {
                 sourceReferenceIds.size(),
                 candidateConfidenceDetails.size(),
                 factorStatusDetails.size());
+        DecisionExplorerStatusExplanationV1 statusExplanation = statusExplanation(
+                status,
+                evidenceQuality,
+                selectedCandidateId,
+                candidateConfidenceDetails,
+                factorStatusDetails,
+                statusReasons,
+                statusWarnings,
+                statusUnknowns,
+                sourceReferenceIds,
+                boundaryNote);
 
         return new DecisionExplorerConfidenceSummaryV1(
                 true,
@@ -79,7 +92,7 @@ public class DecisionExplorerConfidenceSummaryService {
                 DecisionExplorerConfidenceSummaryV1.SUMMARY_OBJECT,
                 DecisionExplorerConfidenceSummaryV1.CONTRACT_VERSION,
                 status,
-                DecisionExplorerConfidenceSummaryV1.evidenceQualityFor(status),
+                evidenceQuality,
                 selectedCandidateId,
                 candidates.size(),
                 comparisons.size(),
@@ -91,8 +104,9 @@ public class DecisionExplorerConfidenceSummaryService {
                 sourceReferenceIds.size(),
                 candidateConfidenceDetails,
                 factorStatusDetails,
+                statusExplanation,
                 evidenceSignals,
-                distinctSorted(reasons),
+                statusReasons,
                 statusWarnings,
                 statusUnknowns,
                 sourceReferenceIds,
@@ -297,6 +311,130 @@ public class DecisionExplorerConfidenceSummaryService {
                 .filter(unknown -> !isBoundaryLimitation(unknown))
                 .forEach(unknowns::add);
         return distinctSorted(unknowns);
+    }
+
+    private static DecisionExplorerStatusExplanationV1 statusExplanation(
+            String status,
+            String evidenceQuality,
+            String selectedCandidateId,
+            List<DecisionExplorerCandidateConfidenceV1> candidateConfidenceDetails,
+            List<DecisionExplorerFactorStatusV1> factorStatusDetails,
+            List<String> statusReasons,
+            List<String> warnings,
+            List<String> unknowns,
+            List<String> sourceReferenceIds,
+            String boundaryNote) {
+        DecisionExplorerCandidateConfidenceV1 selectedCandidateConfidence =
+                selectedCandidateConfidence(candidateConfidenceDetails, selectedCandidateId);
+        String selectedConfidenceStatus = selectedCandidateConfidence == null
+                ? DecisionExplorerConfidenceSummaryV1.STATUS_UNKNOWN
+                : selectedCandidateConfidence.confidenceStatus();
+        String selectedHealthState = selectedCandidateConfidence == null
+                ? DecisionExplorerCandidateConfidenceV1.UNKNOWN
+                : selectedCandidateConfidence.healthEvidenceState();
+        String factorStatusRollup = factorStatusRollup(factorStatusDetails);
+        return new DecisionExplorerStatusExplanationV1(
+                DecisionExplorerStatusExplanationV1.EXPLANATION_OBJECT,
+                DecisionExplorerStatusExplanationV1.CONTRACT_VERSION,
+                status,
+                evidenceQuality,
+                selectedCandidateId,
+                selectedConfidenceStatus,
+                selectedHealthState,
+                factorStatusRollup,
+                summaryText(status, selectedCandidateId, selectedConfidenceStatus, factorStatusRollup, statusReasons),
+                statusReasons,
+                evidenceHighlights(
+                        selectedConfidenceStatus,
+                        selectedHealthState,
+                        factorStatusRollup,
+                        candidateConfidenceDetails.size(),
+                        factorStatusDetails.size(),
+                        sourceReferenceIds.size()),
+                cautionNotes(warnings, unknowns),
+                sourceReferenceIds,
+                boundaryNote);
+    }
+
+    private static DecisionExplorerCandidateConfidenceV1 selectedCandidateConfidence(
+            List<DecisionExplorerCandidateConfidenceV1> candidateConfidenceDetails,
+            String selectedCandidateId) {
+        String normalizedSelectedCandidateId = DecisionExplorerDtoSupport.valueOrUnknown(selectedCandidateId);
+        return candidateConfidenceDetails.stream()
+                .filter(DecisionExplorerCandidateConfidenceV1::selected)
+                .filter(candidate -> normalizedSelectedCandidateId.equals(DecisionExplorerDtoSupport.valueOrUnknown(
+                        candidate.candidateId())))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private static String factorStatusRollup(List<DecisionExplorerFactorStatusV1> factorStatusDetails) {
+        if (factorStatusDetails.isEmpty()) {
+            return DecisionExplorerConfidenceSummaryV1.STATUS_UNKNOWN;
+        }
+        if (factorStatusHasStatus(factorStatusDetails, DecisionExplorerConfidenceSummaryV1.STATUS_DEGRADED)) {
+            return DecisionExplorerConfidenceSummaryV1.STATUS_DEGRADED;
+        }
+        if (factorStatusHasStatus(factorStatusDetails, DecisionExplorerConfidenceSummaryV1.STATUS_PARTIAL)) {
+            return DecisionExplorerConfidenceSummaryV1.STATUS_PARTIAL;
+        }
+        if (factorStatusHasStatus(factorStatusDetails, DecisionExplorerConfidenceSummaryV1.STATUS_UNKNOWN)) {
+            return DecisionExplorerConfidenceSummaryV1.STATUS_UNKNOWN;
+        }
+        return DecisionExplorerConfidenceSummaryV1.STATUS_STRONG;
+    }
+
+    private static String summaryText(
+            String status,
+            String selectedCandidateId,
+            String selectedCandidateConfidenceStatus,
+            String factorStatusRollup,
+            List<String> statusReasons) {
+        String primaryReason = statusReasons.isEmpty() ? "NO_STATUS_REASON_RETURNED" : statusReasons.get(0);
+        return switch (status) {
+            case DecisionExplorerConfidenceSummaryV1.STATUS_STRONG ->
+                    "Decision Explorer marks selected candidate " + selectedCandidateId
+                            + " as STRONG because candidate confidence is " + selectedCandidateConfidenceStatus
+                            + " and factor status rollup is " + factorStatusRollup + ".";
+            case DecisionExplorerConfidenceSummaryV1.STATUS_DEGRADED ->
+                    "Decision Explorer marks selected candidate " + selectedCandidateId
+                            + " as DEGRADED because " + primaryReason + ".";
+            case DecisionExplorerConfidenceSummaryV1.STATUS_UNKNOWN ->
+                    "Decision Explorer marks confidence as UNKNOWN because " + primaryReason + ".";
+            default ->
+                    "Decision Explorer marks selected candidate " + selectedCandidateId
+                            + " as PARTIAL because " + primaryReason + ".";
+        };
+    }
+
+    private static List<String> evidenceHighlights(
+            String selectedCandidateConfidenceStatus,
+            String selectedHealthState,
+            String factorStatusRollup,
+            int candidateConfidenceDetailCount,
+            int factorStatusDetailCount,
+            int sourceReferenceCount) {
+        return List.of(
+                "candidateConfidenceDetailCount=" + candidateConfidenceDetailCount,
+                "factorStatusDetailCount=" + factorStatusDetailCount,
+                "factorStatusRollup=" + factorStatusRollup,
+                "selectedCandidateConfidenceStatus=" + selectedCandidateConfidenceStatus,
+                "selectedCandidateHealthEvidenceState=" + selectedHealthState,
+                "sourceReferenceCount=" + sourceReferenceCount);
+    }
+
+    private static List<String> cautionNotes(List<String> warnings, List<String> unknowns) {
+        List<String> notes = new ArrayList<>();
+        warnings.stream()
+                .map(warning -> "warning:" + warning)
+                .forEach(notes::add);
+        unknowns.stream()
+                .map(unknown -> "unknown:" + unknown)
+                .forEach(notes::add);
+        if (notes.isEmpty()) {
+            notes.add("no status warnings or unknowns surfaced");
+        }
+        return distinctSorted(notes);
     }
 
     private static List<DecisionExplorerFactorStatusV1> factorStatusDetails(

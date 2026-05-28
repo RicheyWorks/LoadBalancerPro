@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T18:45-07:00
+
+Branch/PR: codex/lase-routing-intelligence-status-explanation / no PR yet
+
+Failure type: focused status-explanation expectation mismatch
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerConfidenceSummaryServiceTest,DecisionExplorerPayloadServiceTest,DecisionExplorerPayloadV1Test,DecisionExplorerApiContractHardeningTest,RoutingOpenApiContractTest" test`
+
+Suspected cause: the new unknown-status explanation test expected the generated summary text to include `NO_ROUTING_EVIDENCE_RETURNED`, while the default unknown explanation used a generic routing-evidence-unavailable sentence.
+
+Fix attempted: changed the default unknown explanation text to include the deterministic reason code already carried by the explanation DTO.
+
+Result: focused selector rerun passed with 25 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with broader local verification.
+
+## Entry
+
 Date/time: 2026-05-27T17:58-07:00
 
 Branch/PR: codex/lase-routing-intelligence-candidate-confidence / no PR yet

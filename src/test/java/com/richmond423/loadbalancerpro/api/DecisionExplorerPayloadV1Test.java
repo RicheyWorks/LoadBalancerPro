@@ -54,6 +54,9 @@ class DecisionExplorerPayloadV1Test {
         assertEquals("STRONG", payload.confidenceSummary().status());
         assertEquals("candidate-a", payload.confidenceSummary().candidateConfidenceDetails().get(0).candidateId());
         assertEquals("latency", payload.confidenceSummary().factorStatusDetails().get(0).factorName());
+        assertEquals("DecisionExplorerStatusExplanationV1",
+                payload.confidenceSummary().statusExplanation().explanationObject());
+        assertEquals("STRONG", payload.confidenceSummary().statusExplanation().status());
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertEquals("policy-health", payload.policyGateReadouts().get(0).gateId());
         assertEquals("candidate-a", payload.decisionDiffReadouts().get(0).baselineCandidateId());
@@ -131,6 +134,7 @@ class DecisionExplorerPayloadV1Test {
         assertTrue(payload.notProvenBoundaries().isEmpty());
         assertEquals("UNKNOWN", payload.confidenceSummary().status());
         assertTrue(payload.confidenceSummary().factorStatusDetails().isEmpty());
+        assertEquals("UNKNOWN", payload.confidenceSummary().statusExplanation().status());
         assertEquals("UNKNOWN", payload.decisionReadout().summary());
         assertTrue(payload.selectedCandidate().visibleSignals().isEmpty());
         assertTrue(payload.agentStructuredOutput().stableFieldNames().isEmpty());
@@ -198,6 +202,7 @@ class DecisionExplorerPayloadV1Test {
                 3,
                 List.of(candidateConfidence()),
                 List.of(factorStatus()),
+                statusExplanation(),
                 List.of("candidateCount=2", "decisionStatus=AVAILABLE"),
                 List.of("CANDIDATE_COMPARISONS_AVAILABLE", "FACTOR_EVIDENCE_AVAILABLE"),
                 List.of(),
@@ -244,6 +249,25 @@ class DecisionExplorerPayloadV1Test {
                 List.of(),
                 List.of("decision-vector:candidate-a", "factor-contribution:candidate-a:latency"),
                 "factor status is read-only and simulation-only");
+    }
+
+    private static DecisionExplorerStatusExplanationV1 statusExplanation() {
+        return new DecisionExplorerStatusExplanationV1(
+                "DecisionExplorerStatusExplanationV1",
+                "v1",
+                "STRONG",
+                "COMPLETE",
+                "candidate-a",
+                "STRONG",
+                "HEALTHY",
+                "STRONG",
+                "Decision Explorer marks selected candidate candidate-a as STRONG because candidate confidence is "
+                        + "STRONG and factor status rollup is STRONG.",
+                List.of("CANDIDATE_COMPARISONS_AVAILABLE", "FACTOR_EVIDENCE_AVAILABLE"),
+                List.of("candidateConfidenceDetailCount=1", "factorStatusDetailCount=1"),
+                List.of("no status warnings or unknowns surfaced"),
+                List.of("decision-vector:candidate-a", "factor-contribution:candidate-a:latency"),
+                "status explanation is read-only and simulation-only");
     }
 
     private static DecisionReadoutV1 decisionReadout() {

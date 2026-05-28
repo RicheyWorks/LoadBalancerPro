@@ -103,6 +103,10 @@ class DecisionExplorerApiContractHardeningTest {
         assertTrue(payload.at("/confidenceSummary/factorStatusDetails").isArray());
         assertTrue(payload.at("/confidenceSummary/factorStatusDetails").size() > 0);
         assertFalse(payload.at("/confidenceSummary/factorStatusDetails/0/factorStatus").isMissingNode());
+        assertEquals("DecisionExplorerStatusExplanationV1",
+                payload.at("/confidenceSummary/statusExplanation/explanationObject").asText());
+        assertEquals("PARTIAL", payload.at("/confidenceSummary/statusExplanation/status").asText());
+        assertFalse(payload.at("/confidenceSummary/statusExplanation/summaryText").asText().isBlank());
         assertTrue(payload.path("factorDrilldowns").isArray());
         assertTrue(payload.path("factorDrilldowns").size() > 0);
         assertTrue(payload.path("notProvenBoundaries").isArray());
@@ -144,6 +148,7 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals("UNKNOWN", json.at("/confidenceSummary/status").asText());
         assertEquals(0, json.at("/confidenceSummary/candidateConfidenceDetails").size());
         assertEquals(0, json.at("/confidenceSummary/factorStatusDetails").size());
+        assertEquals("UNKNOWN", json.at("/confidenceSummary/statusExplanation/status").asText());
         assertTrue(json.path("factorContributions").isArray());
         assertEquals(1, json.path("factorContributions").size());
         assertNoUnsupportedClaims(json);
@@ -161,6 +166,7 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals("UNKNOWN", json.at("/confidenceSummary/status").asText());
         assertEquals(0, json.at("/confidenceSummary/candidateConfidenceDetails").size());
         assertEquals(0, json.at("/confidenceSummary/factorStatusDetails").size());
+        assertEquals("UNKNOWN", json.at("/confidenceSummary/statusExplanation/status").asText());
         assertTrue(json.path("factorContributions").isArray());
         assertTrue(json.path("factorDrilldowns").isArray());
         assertEquals(0, json.path("candidateSet").size());

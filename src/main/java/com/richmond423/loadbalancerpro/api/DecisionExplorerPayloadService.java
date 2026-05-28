@@ -52,6 +52,15 @@ public class DecisionExplorerPayloadService {
             Comparator.comparing(PolicyGateReadoutV1::gateId);
     private static final Comparator<EvidencePacketReadoutV1> BY_REFERENCE_ID =
             Comparator.comparing(EvidencePacketReadoutV1::referenceId);
+    private final DecisionExplorerConfidenceSummaryService confidenceSummaryService;
+
+    public DecisionExplorerPayloadService() {
+        this(new DecisionExplorerConfidenceSummaryService());
+    }
+
+    DecisionExplorerPayloadService(DecisionExplorerConfidenceSummaryService confidenceSummaryService) {
+        this.confidenceSummaryService = Objects.requireNonNull(confidenceSummaryService);
+    }
 
     public List<DecisionExplorerPayloadV1> buildPayloads(RoutingComparisonResponse comparison) {
         if (comparison == null || comparison.results() == null || comparison.results().isEmpty()) {
@@ -85,6 +94,17 @@ public class DecisionExplorerPayloadService {
         List<DecisionDiffReadoutV1> decisionDiffReadouts = decisionDiffReadouts(result, selectedCandidateId);
         List<EvidencePacketReadoutV1> evidencePacketReadouts = evidencePacketReadouts(result);
         List<String> warnings = warnings(result, candidates, factorContributions, decisionDiffReadouts);
+        List<String> unknowns = unknowns(result);
+        DecisionReadoutV1 decisionReadout = decisionReadout(result, selectedCandidateId);
+        DecisionExplorerConfidenceSummaryV1 confidenceSummary = confidenceSummaryService.buildSummary(
+                decisionReadout,
+                selectedCandidate,
+                candidates,
+                candidateComparisons,
+                factorDrilldowns,
+                warnings,
+                unknowns,
+                BOUNDARY_NOTE);
 
         return new DecisionExplorerPayloadV1(
                 true,
@@ -93,10 +113,11 @@ public class DecisionExplorerPayloadService {
                 DecisionExplorerPayloadV1.CONTRACT_VERSION,
                 SOURCE,
                 decisionId(result.strategyId(), selectedCandidateId),
-                decisionReadout(result, selectedCandidateId),
+                decisionReadout,
                 selectedCandidate,
                 candidates,
                 candidateComparisons,
+                confidenceSummary,
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -104,7 +125,7 @@ public class DecisionExplorerPayloadService {
                 evidencePacketReadouts,
                 agentStructuredOutput(),
                 warnings,
-                unknowns(result),
+                unknowns,
                 NOT_PROVEN_BOUNDARIES,
                 BOUNDARY_NOTE);
     }
@@ -140,6 +161,8 @@ public class DecisionExplorerPayloadService {
                         BOUNDARY_NOTE),
                 unknownCandidate,
                 List.of(),
+                List.of(),
+                DecisionExplorerConfidenceSummaryV1.unknown(BOUNDARY_NOTE),
                 List.of(),
                 List.of(),
                 policyGateReadouts(null),
@@ -621,6 +644,7 @@ public class DecisionExplorerPayloadService {
                         "selectedCandidate",
                         "candidateSet",
                         "candidateComparisons",
+                        "confidenceSummary",
                         "factorContributions",
                         "factorDrilldowns",
                         "policyGateReadouts",

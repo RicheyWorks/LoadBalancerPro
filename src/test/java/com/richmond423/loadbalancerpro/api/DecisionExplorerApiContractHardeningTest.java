@@ -73,6 +73,7 @@ class DecisionExplorerApiContractHardeningTest {
                 "selectedCandidate",
                 "candidateSet",
                 "candidateComparisons",
+                "confidenceSummary",
                 "factorContributions",
                 "factorDrilldowns",
                 "policyGateReadouts",
@@ -92,6 +93,9 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals("green", payload.at("/candidateComparisons/0/candidateId").asText());
         assertEquals(1, payload.at("/candidateComparisons/0/displayOrder").asInt());
         assertEquals("SELECTED", payload.at("/candidateComparisons/0/comparisonStatus").asText());
+        assertEquals("PARTIAL", payload.at("/confidenceSummary/status").asText());
+        assertEquals("PARTIAL", payload.at("/confidenceSummary/evidenceQuality").asText());
+        assertEquals("green", payload.at("/confidenceSummary/selectedCandidateId").asText());
         assertTrue(payload.path("factorDrilldowns").isArray());
         assertTrue(payload.path("factorDrilldowns").size() > 0);
         assertTrue(payload.path("notProvenBoundaries").isArray());
@@ -130,6 +134,7 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals(0, json.path("candidateComparisons").size());
         assertTrue(json.path("factorDrilldowns").isArray());
         assertEquals(0, json.path("factorDrilldowns").size());
+        assertEquals("UNKNOWN", json.at("/confidenceSummary/status").asText());
         assertTrue(json.path("factorContributions").isArray());
         assertEquals(1, json.path("factorContributions").size());
         assertNoUnsupportedClaims(json);
@@ -144,6 +149,7 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals("UNKNOWN", json.at("/selectedCandidate/candidateId").asText());
         assertTrue(json.path("candidateSet").isArray());
         assertTrue(json.path("candidateComparisons").isArray());
+        assertEquals("UNKNOWN", json.at("/confidenceSummary/status").asText());
         assertTrue(json.path("factorContributions").isArray());
         assertTrue(json.path("factorDrilldowns").isArray());
         assertEquals(0, json.path("candidateSet").size());

@@ -8,13 +8,13 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T15:16-07:00
+Timestamp: 2026-05-28T16:07-07:00
 
 Goal name: LASE Routing Intelligence Phase 4
 
 Current PR slot: LASE-P4-G01
 
-Checkpoint: LASE-P4-G01 PR #405 opened; preparing PR-created checkpoint commit
+Checkpoint: LASE-P4-G01 PR #405 remote watch timeout logged; preparing failure-log commit
 
 Started from main SHA: `144be5daa22e52295ad3e3d1e69fbe60b49be396`
 
@@ -24,11 +24,12 @@ PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/405
 
 PR creation head: `1c86f4c6daeb1b8df077b1c7fceeb63886dcb949`
 
-Current branch head: `1c86f4c6daeb1b8df077b1c7fceeb63886dcb949` plus uncommitted PR-created checkpoint update
+Current branch head: `53c7eedd0e766040ef5db8c23ef8c812860f1a20` plus uncommitted remote-watch timeout log
 
 Changed files for this slice:
 
 - docs/agent/SESSION_MANAGER.md
+- docs/agent/FAILURE_LOG.md
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityEvaluationV1.java
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityService.java
 - src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityServiceTest.java
@@ -48,6 +49,9 @@ Checks run:
   `git diff --cached --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
 - LASE-P4-G01 committed as `1c86f4c6daeb1b8df077b1c7fceeb63886dcb949`, pushed to origin, and opened as
   PR #405: https://github.com/RicheyWorks/LoadBalancerPro/pull/405.
+- LASE-P4-G01 PR-created checkpoint committed as `53c7eedd0e766040ef5db8c23ef8c812860f1a20` and pushed to origin.
+- `gh pr checks 405 --watch --interval 30` exceeded the local command timeout after printing passing check statuses;
+  the tooling timeout is logged in `docs/agent/FAILURE_LOG.md`.
 
 LASE-P3-G09 changed files:
 

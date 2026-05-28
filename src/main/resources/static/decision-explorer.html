@@ -341,6 +341,11 @@
       background: var(--soft-green);
     }
 
+    .reviewer-badge.strong {
+      border-color: var(--green);
+      background: var(--soft-green);
+    }
+
     .reviewer-badge.warning {
       border-color: var(--amber);
       background: #fff7e6;
@@ -364,6 +369,49 @@
     .reviewer-badge.boundary {
       border-color: var(--red);
       background: var(--soft-red);
+    }
+
+    .reviewer-badge.degraded {
+      border-color: var(--red);
+      background: var(--soft-red);
+    }
+
+    .confidence-summary {
+      display: grid;
+      gap: 12px;
+    }
+
+    .confidence-status {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 32px;
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      background: #eef2f7;
+      color: #526173;
+    }
+
+    .confidence-status.strong {
+      background: var(--soft-green);
+      color: var(--green);
+    }
+
+    .confidence-status.partial {
+      background: var(--soft-amber);
+      color: var(--amber);
+    }
+
+    .confidence-status.degraded {
+      background: var(--soft-red);
+      color: var(--red);
+    }
+
+    .confidence-status.unknown {
+      background: #eef2f7;
+      color: #526173;
     }
 
     pre {
@@ -508,6 +556,10 @@
       <h2 id="decision-title">Decision Summary</h2>
       <div id="decision-summary" class="empty">Run the sample to inspect the selected decision.</div>
     </section>
+    <section class="panel" aria-labelledby="confidence-summary-title">
+      <h2 id="confidence-summary-title">Routing Intelligence Status</h2>
+      <div id="confidence-summary" class="empty">No confidence summary loaded yet.</div>
+    </section>
     <section class="panel" aria-labelledby="reviewer-badges-title">
       <h2 id="reviewer-badges-title">Reviewer Explanation Badges</h2>
       <p class="scenario-note">Display-only labels from returned payload fields; badges do not enforce or prove runtime decisions.</p>
@@ -533,6 +585,11 @@
     <div id="candidate-comparisons" class="empty">No candidate comparison rows loaded yet.</div>
   </section>
 
+  <section class="panel" aria-labelledby="candidate-confidence-title">
+    <h2 id="candidate-confidence-title">Candidate Confidence</h2>
+    <div id="candidate-confidence" class="empty">No candidate confidence rows loaded yet.</div>
+  </section>
+
   <section class="panel" aria-labelledby="factors-title">
     <h2 id="factors-title">Factor Contributions</h2>
     <div id="factor-contributions" class="empty">No factor contribution readouts loaded yet.</div>
@@ -541,6 +598,11 @@
   <section class="panel" aria-labelledby="factor-drilldown-title">
     <h2 id="factor-drilldown-title">Factor Drill-Down</h2>
     <div id="factor-drilldowns" class="empty">No factor drill-down readouts loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="factor-status-title">
+    <h2 id="factor-status-title">Factor Status</h2>
+    <div id="factor-status" class="empty">No factor status rows loaded yet.</div>
   </section>
 
   <section class="panel" aria-labelledby="policy-title">
@@ -632,13 +694,16 @@
     scenarioCatalogStatus: document.getElementById("scenario-catalog-status"),
     scenarioCatalogList: document.getElementById("scenario-catalog-list"),
     decisionSummary: document.getElementById("decision-summary"),
+    confidenceSummary: document.getElementById("confidence-summary"),
     reviewerBadges: document.getElementById("reviewer-badges"),
     selectedCandidate: document.getElementById("selected-candidate"),
     notProven: document.getElementById("not-proven"),
     candidateSet: document.getElementById("candidate-set"),
     candidateComparisons: document.getElementById("candidate-comparisons"),
+    candidateConfidence: document.getElementById("candidate-confidence"),
     factorContributions: document.getElementById("factor-contributions"),
     factorDrilldowns: document.getElementById("factor-drilldowns"),
+    factorStatus: document.getElementById("factor-status"),
     policyGates: document.getElementById("policy-gates"),
     decisionDiffs: document.getElementById("decision-diffs"),
     evidencePackets: document.getElementById("evidence-packets"),
@@ -863,13 +928,22 @@
       ["Summary", value(first.decisionReadout && first.decisionReadout.summary)],
       ["Boundary", value(first.boundaryNote)]
     ]);
+    renderConfidenceSummary(elements.confidenceSummary, first.confidenceSummary);
     renderReviewerBadges(elements.reviewerBadges, first, selectedScenario());
     renderKeyValues(elements.selectedCandidate, candidateRows(first.selectedCandidate));
     renderChips(elements.notProven, first.notProvenBoundaries, "not-proven");
     renderCandidateTable(elements.candidateSet, first.candidateSet || []);
     renderCandidateComparisonTable(elements.candidateComparisons, first.candidateComparisons || []);
+    renderCandidateConfidenceTable(
+      elements.candidateConfidence,
+      first.confidenceSummary && first.confidenceSummary.candidateConfidenceDetails || []
+    );
     renderFactorTable(elements.factorContributions, first.factorContributions || []);
     renderFactorDrilldownTable(elements.factorDrilldowns, first.factorDrilldowns || []);
+    renderFactorStatusTable(
+      elements.factorStatus,
+      first.confidenceSummary && first.confidenceSummary.factorStatusDetails || []
+    );
     renderPolicyTable(elements.policyGates, first.policyGateReadouts || []);
     renderDecisionDiffTable(elements.decisionDiffs, first.decisionDiffReadouts || []);
     renderEvidencePacketTable(elements.evidencePackets, first.evidencePacketReadouts || []);
@@ -881,13 +955,16 @@
   function renderError(error) {
     elements.rawOutput.textContent = error.message;
     setEmpty(elements.decisionSummary, error.message);
+    setEmpty(elements.confidenceSummary, "No confidence summary available.");
     setEmpty(elements.reviewerBadges, "No reviewer badges available.");
     setEmpty(elements.selectedCandidate, "No selected candidate available.");
     setEmpty(elements.notProven, "No boundaries available.");
     setEmpty(elements.candidateSet, "No candidate readouts available.");
     setEmpty(elements.candidateComparisons, "No candidate comparison rows available.");
+    setEmpty(elements.candidateConfidence, "No candidate confidence rows available.");
     setEmpty(elements.factorContributions, "No factor contribution readouts available.");
     setEmpty(elements.factorDrilldowns, "No factor drill-down readouts available.");
+    setEmpty(elements.factorStatus, "No factor status rows available.");
     setEmpty(elements.policyGates, "No policy gate readouts available.");
     setEmpty(elements.decisionDiffs, "No decision diff readouts available.");
     setEmpty(elements.evidencePackets, "No evidence packet readouts available.");
@@ -910,8 +987,47 @@
     ];
   }
 
+  function renderConfidenceSummary(target, summary) {
+    target.replaceChildren();
+    if (!summary) {
+      setEmpty(target, "No confidence summary returned.");
+      return;
+    }
+    const explanation = summary.statusExplanation || {};
+    const wrapper = document.createElement("div");
+    wrapper.className = "confidence-summary";
+    const badge = document.createElement("span");
+    badge.className = `confidence-status ${confidenceStatusType(summary.status)}`;
+    badge.textContent = `${value(summary.status)} / ${value(summary.evidenceQuality)}`;
+    wrapper.append(badge);
+    wrapper.append(keyValueTable([
+      ["Selected candidate", value(summary.selectedCandidateId)],
+      ["Candidate count", String(summary.candidateCount == null ? 0 : summary.candidateCount)],
+      ["Candidate confidence rows", countText(listLength(summary.candidateConfidenceDetails), "candidate confidence row")],
+      ["Factor status rows", countText(listLength(summary.factorStatusDetails), "factor status row")],
+      ["Warnings", String(summary.warningCount == null ? listLength(summary.warnings) : summary.warningCount)],
+      ["Unknowns", String(summary.unknownCount == null ? listLength(summary.unknowns) : summary.unknownCount)],
+      ["Factor rollup", value(explanation.factorStatusRollup)],
+      ["Selected confidence", value(explanation.selectedCandidateConfidenceStatus)],
+      ["Health evidence", value(explanation.selectedCandidateHealthEvidenceState)],
+      ["Explanation", value(explanation.summaryText)],
+      ["Reason codes", listText(uniqueList(mergeLists(summary.statusReasons, explanation.reasonCodes)))],
+      ["Evidence highlights", listText(explanation.evidenceHighlights)],
+      ["Caution notes", listText(explanation.cautionNotes)],
+      ["Source refs", listText(uniqueList(mergeLists(summary.sourceReferenceIds, explanation.sourceReferenceIds)))],
+      ["Boundary", value(summary.boundaryNote)]
+    ]));
+    target.append(wrapper);
+    target.classList.remove("empty");
+  }
+
   function renderKeyValues(target, rows) {
     target.replaceChildren();
+    target.append(keyValueTable(rows));
+    target.classList.remove("empty");
+  }
+
+  function keyValueTable(rows) {
     const table = document.createElement("table");
     const tbody = document.createElement("tbody");
     rows.forEach(([label, detail]) => {
@@ -924,8 +1040,7 @@
       tbody.append(row);
     });
     table.append(tbody);
-    target.append(table);
-    target.classList.remove("empty");
+    return table;
   }
 
   function renderReviewerBadges(target, payload, scenario) {
@@ -957,8 +1072,14 @@
     const partial = hasPartialEvidence(payload, scenario);
     const boundaries = Array.isArray(payload.notProvenBoundaries) ? payload.notProvenBoundaries.length : 0;
     const selectedCandidate = value(payload.decisionReadout && payload.decisionReadout.selectedCandidateId);
+    const confidenceSummary = payload.confidenceSummary || {};
     return [
       { type: "selected", label: "Selected route", detail: selectedCandidate },
+      {
+        type: confidenceStatusType(confidenceSummary.status),
+        label: "Confidence status",
+        detail: `${value(confidenceSummary.status)} / ${value(confidenceSummary.evidenceQuality)}`
+      },
       {
         type: warnings.length ? "warning" : "deterministic",
         label: "Warning",
@@ -1024,6 +1145,38 @@
     ], "No candidate comparison rows returned.");
   }
 
+  function renderCandidateConfidenceTable(target, rows) {
+    renderTable(target, [
+      "Order",
+      "Candidate",
+      "Selected",
+      "Confidence",
+      "Health evidence",
+      "Comparison",
+      "Final score",
+      "Delta",
+      "Visible",
+      "Unknown",
+      "Reasons",
+      "Warning/unknown",
+      "Source refs"
+    ], rows, (row, index) => [
+      row.displayOrder == null ? String(index + 1) : String(row.displayOrder),
+      value(row.candidateLabel || row.candidateId),
+      row.selected ? "yes" : "no",
+      value(row.confidenceStatus),
+      value(row.healthEvidenceState),
+      value(row.comparisonStatus),
+      row.finalScore == null ? "UNKNOWN" : String(row.finalScore),
+      row.scoreDeltaFromSelected == null ? "UNKNOWN" : String(row.scoreDeltaFromSelected),
+      String(row.visibleSignalCount == null ? 0 : row.visibleSignalCount),
+      String(row.unknownSignalCount == null ? 0 : row.unknownSignalCount),
+      listText(row.confidenceReasons),
+      listText(mergeLists(row.warnings, row.unknowns)),
+      listText(row.sourceReferenceIds)
+    ], "No candidate confidence rows returned.");
+  }
+
   function renderFactorTable(target, factors) {
     renderTable(target, ["Rank", "Candidate", "Factor", "Direction", "Value", "Exactness"], factors, (factor, index) => [
       String(index + 1),
@@ -1057,6 +1210,34 @@
       listText(mergeLists(drilldown.warnings, drilldown.unknowns)),
       listText(drilldown.sourceReferenceIds)
     ], "No factor drill-down readouts returned.");
+  }
+
+  function renderFactorStatusTable(target, rows) {
+    renderTable(target, [
+      "Order",
+      "Candidate",
+      "Factor",
+      "Status",
+      "Evidence",
+      "Observed",
+      "Influence",
+      "Interpretation",
+      "Reasons",
+      "Warning/unknown",
+      "Source refs"
+    ], rows, (row, index) => [
+      row.displayOrder == null ? String(index + 1) : String(row.displayOrder),
+      value(row.candidateId),
+      value(row.factorName),
+      value(row.factorStatus),
+      value(row.evidenceStatus),
+      value(row.observedValueOrStatus),
+      value(row.influenceCategory),
+      value(row.interpretation),
+      listText(row.statusReasons),
+      listText(mergeLists(row.warnings, row.unknowns)),
+      listText(row.sourceReferenceIds)
+    ], "No factor status rows returned.");
   }
 
   function renderPolicyTable(target, gates) {
@@ -1183,8 +1364,15 @@
   function collectReviewerWarnings(payload) {
     const comparisons = Array.isArray(payload.candidateComparisons) ? payload.candidateComparisons : [];
     const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
+    const summary = payload.confidenceSummary || {};
+    const candidateConfidence = Array.isArray(summary.candidateConfidenceDetails) ? summary.candidateConfidenceDetails : [];
+    const factorStatus = Array.isArray(summary.factorStatusDetails) ? summary.factorStatusDetails : [];
     return uniqueList(mergeLists(
       payload.warnings,
+      summary.warnings,
+      explanationNotes(summary, "warning:"),
+      candidateConfidence.flatMap(row => row.warnings),
+      factorStatus.flatMap(row => row.warnings),
       comparisons.flatMap(row => row.warnings),
       drilldowns.flatMap(row => row.warnings)
     ));
@@ -1193,8 +1381,15 @@
   function collectReviewerUnknowns(payload) {
     const comparisons = Array.isArray(payload.candidateComparisons) ? payload.candidateComparisons : [];
     const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
+    const summary = payload.confidenceSummary || {};
+    const candidateConfidence = Array.isArray(summary.candidateConfidenceDetails) ? summary.candidateConfidenceDetails : [];
+    const factorStatus = Array.isArray(summary.factorStatusDetails) ? summary.factorStatusDetails : [];
     return uniqueList(mergeLists(
       payload.unknowns,
+      summary.unknowns,
+      explanationNotes(summary, "unknown:"),
+      candidateConfidence.flatMap(row => row.unknowns),
+      factorStatus.flatMap(row => row.unknowns),
       comparisons.flatMap(row => mergeLists(row.unknownSignals, row.unknowns)),
       drilldowns.flatMap(row => row.unknowns)
     ));
@@ -1203,10 +1398,12 @@
   function hasPartialEvidence(payload, scenario) {
     const comparisons = Array.isArray(payload.candidateComparisons) ? payload.candidateComparisons : [];
     const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
+    const summaryStatus = payload.confidenceSummary && payload.confidenceSummary.status;
     const scenarioIsPartial = scenario && !statusIs(scenario.evidenceStatus, "AVAILABLE");
     const comparisonIsPartial = comparisons.some(row => !statusIs(row.comparisonStatus, "SELECTED", "ALTERNATIVE"));
     const drilldownIsPartial = drilldowns.some(row => !statusIs(row.evidenceStatus, "AVAILABLE"));
-    return Boolean(scenarioIsPartial || comparisonIsPartial || drilldownIsPartial);
+    const summaryIsPartial = statusIs(summaryStatus, "PARTIAL", "UNKNOWN", "DEGRADED");
+    return Boolean(scenarioIsPartial || comparisonIsPartial || drilldownIsPartial || summaryIsPartial);
   }
 
   function mergeLists(...groups) {
@@ -1215,6 +1412,30 @@
 
   function uniqueList(values) {
     return Array.from(new Set(values.filter(item => item != null && item !== "").map(String))).sort();
+  }
+
+  function listLength(values) {
+    return Array.isArray(values) ? values.length : 0;
+  }
+
+  function explanationNotes(summary, prefix) {
+    const explanation = summary.statusExplanation || {};
+    const notes = Array.isArray(explanation.cautionNotes) ? explanation.cautionNotes : [];
+    return notes.filter(note => value(note).startsWith(prefix));
+  }
+
+  function confidenceStatusType(status) {
+    const normalized = value(status).toUpperCase();
+    if (normalized === "STRONG") {
+      return "strong";
+    }
+    if (normalized === "PARTIAL") {
+      return "partial";
+    }
+    if (normalized === "DEGRADED") {
+      return "degraded";
+    }
+    return "unknown";
   }
 
   function statusIs(status, ...allowed) {
@@ -1241,6 +1462,10 @@
       `decisionId: ${value(first.decisionId)}`,
       `selectedCandidate: ${value(first.decisionReadout && first.decisionReadout.selectedCandidateId)}`,
       `strategy: ${value(first.decisionReadout && first.decisionReadout.selectedStrategy)}`,
+      `confidenceStatus: ${value(first.confidenceSummary && first.confidenceSummary.status)}`,
+      `confidenceExplanation: ${value(first.confidenceSummary
+        && first.confidenceSummary.statusExplanation
+        && first.confidenceSummary.statusExplanation.summaryText)}`,
       `readOnly: ${first.readOnly === true}`,
       `simulationOnly: ${first.simulationOnly === true}`,
       `notProven: ${listText(first.notProvenBoundaries)}`

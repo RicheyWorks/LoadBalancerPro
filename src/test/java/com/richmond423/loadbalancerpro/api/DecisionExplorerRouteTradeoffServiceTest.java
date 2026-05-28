@@ -46,6 +46,8 @@ class DecisionExplorerRouteTradeoffServiceTest {
                 "edge-a:STRONG:SELECTED_BASELINE_SCORE_PRESENT:STRONG:BASELINE",
                 "edge-b:STRONG:ALTERNATIVE_DELTA_PRESENT:STRONG:MATERIAL"),
                 scoringFingerprint(analysis));
+        assertEquals(List.of("edge-b:latency:NEUTRAL:SUPPORTING:SUPPORTING:MATERIAL:5.0"),
+                factorDeltaFingerprint(analysis));
         assertTrue(analysis.tradeoffReasons().contains("ROUTE_TRADEOFF_CATEGORY_SELECTED_ADVANTAGE"));
         assertTrue(analysis.candidateTradeoffs().get(1).benefitSignals()
                 .contains("alternative trails selected by returned score delta"));
@@ -103,7 +105,38 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertEquals("ALTERNATIVE_DELTA_UNKNOWN", alternativeExplanation.scoreEvidenceState());
         assertTrue(alternativeExplanation.limitationSignals()
                 .contains("score evidence is incomplete for tradeoff explanation"));
+        assertEquals(List.of("edge-b:latency:UNKNOWN:UNKNOWN:WARNING:UNKNOWN_GAP:null"),
+                factorDeltaFingerprint(analysis));
+        DecisionExplorerFactorTradeoffDeltaV1 factorDelta = analysis.factorTradeoffDeltas().get(0);
+        assertTrue(factorDelta.limitationSignals().contains("selected factor evidence was not returned"));
+        assertTrue(factorDelta.reasonCodes().contains("SELECTED_FACTOR_MISSING"));
         assertTrue(analysis.unknowns().contains("score delta from selected candidate"));
+    }
+
+    @Test
+    void factorTradeoffDeltasClassifySelectedAdvantageAndDisadvantageFromFactorEvidence() {
+        DecisionExplorerRouteTradeoffAnalysisV1 advantage = tradeoffs(selectedFactorAdvantageFixture());
+        DecisionExplorerFactorTradeoffDeltaV1 advantageDelta = advantage.factorTradeoffDeltas().get(0);
+
+        assertEquals("ADVANTAGE", advantageDelta.deltaClassification());
+        assertEquals("latency", advantageDelta.factorName());
+        assertEquals("SUPPORTING", advantageDelta.selectedContribution());
+        assertEquals("WARNING", advantageDelta.alternativeContribution());
+        assertTrue(advantageDelta.summaryText().contains("selected=edge-a versus alternative edge-b")
+                || advantageDelta.summaryText().contains("selected candidate edge-a versus alternative edge-b"));
+        assertTrue(advantageDelta.limitationSignals()
+                .contains("alternative warning: influenceCategory=WEAKENS_SELECTION"));
+        assertTrue(advantageDelta.reasonCodes().contains("FACTOR_TRADEOFF_DELTA_ADVANTAGE"));
+
+        DecisionExplorerRouteTradeoffAnalysisV1 disadvantage = tradeoffs(selectedFactorDisadvantageFixture());
+        DecisionExplorerFactorTradeoffDeltaV1 disadvantageDelta = disadvantage.factorTradeoffDeltas().get(0);
+
+        assertEquals("DISADVANTAGE", disadvantageDelta.deltaClassification());
+        assertEquals("WARNING", disadvantageDelta.selectedContribution());
+        assertEquals("SUPPORTING", disadvantageDelta.alternativeContribution());
+        assertTrue(disadvantageDelta.limitationSignals()
+                .contains("selected warning: influenceCategory=WEAKENS_SELECTION"));
+        assertTrue(disadvantageDelta.reasonCodes().contains("FACTOR_TRADEOFF_DELTA_DISADVANTAGE"));
     }
 
     @Test
@@ -127,6 +160,19 @@ class DecisionExplorerRouteTradeoffServiceTest {
     }
 
     @Test
+    void degradedFactorTradeoffDeltaDoesNotInventHealthyComparison() {
+        DecisionExplorerRouteTradeoffAnalysisV1 analysis = tradeoffs(degradedFactorComparisonFixture());
+
+        assertEquals(List.of("edge-b:healthState:DEGRADED:DEGRADED:SUPPORTING:MATERIAL:5.0"),
+                factorDeltaFingerprint(analysis));
+        DecisionExplorerFactorTradeoffDeltaV1 delta = analysis.factorTradeoffDeltas().get(0);
+        assertTrue(delta.limitationSignals().contains("factor tradeoff delta includes degraded evidence"));
+        assertTrue(delta.limitationSignals().stream()
+                .anyMatch(signal -> signal.contains("selected degraded: health evidence value is degraded")));
+        assertTrue(delta.reasonCodes().contains("FACTOR_TRADEOFF_DELTA_DEGRADED"));
+    }
+
+    @Test
     void nullInputsReturnUnknownWithoutInventingTradeoffEvidence() {
         DecisionExplorerRouteTradeoffAnalysisV1 analysis =
                 tradeoffService.buildTradeoffs(null, null, null);
@@ -139,6 +185,7 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertEquals(0, analysis.alternativeCount());
         assertTrue(analysis.candidateTradeoffs().isEmpty());
         assertTrue(analysis.candidateScoringExplanations().isEmpty());
+        assertTrue(analysis.factorTradeoffDeltas().isEmpty());
         assertEquals(List.of("ROUTING_DIAGNOSTICS_UNAVAILABLE"), analysis.tradeoffReasons());
         assertTrue(analysis.unknowns().contains("route tradeoff diagnostics were unavailable"));
         assertEquals("UNKNOWN", analysis.boundaryNote());
@@ -152,6 +199,8 @@ class DecisionExplorerRouteTradeoffServiceTest {
                         + "DecisionExplorerCandidateTradeoffScoringExplanationV1.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerRouteTradeoffAnalysisV1.java"), StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerFactorTradeoffDeltaV1.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerRouteTradeoffRowV1.java"), StandardCharsets.UTF_8);
         String normalized = source.toLowerCase(Locale.ROOT);
@@ -211,6 +260,15 @@ class DecisionExplorerRouteTradeoffServiceTest {
                 .toList();
     }
 
+    private static List<String> factorDeltaFingerprint(DecisionExplorerRouteTradeoffAnalysisV1 analysis) {
+        return analysis.factorTradeoffDeltas().stream()
+                .map(delta -> delta.alternativeCandidateId() + ":" + delta.factorName() + ":"
+                        + delta.deltaClassification() + ":" + delta.selectedContribution() + ":"
+                        + delta.alternativeContribution() + ":" + delta.scoreGapCategory() + ":"
+                        + delta.alternativeScoreDeltaFromSelected())
+                .toList();
+    }
+
     private static TradeoffFixture strongFixture() {
         CandidateReadoutV1 selected = candidate("edge-a", true, 10.0, List.of("healthState=healthy"));
         CandidateReadoutV1 alternative = candidate("edge-b", false, 15.0, List.of("healthState=healthy"));
@@ -223,7 +281,7 @@ class DecisionExplorerRouteTradeoffServiceTest {
                         comparison("edge-b", false, "COMPARED_TO_SELECTED", 15.0, 5.0,
                                 List.of("healthState=healthy"), List.of(), List.of())),
                 List.of(
-                        factor("edge-a", "healthState", "AVAILABLE", List.of(), List.of()),
+                        factor("edge-a", "latency", "AVAILABLE", List.of(), List.of()),
                         factor("edge-b", "latency", "AVAILABLE", List.of(), List.of())),
                 List.of(),
                 List.of("hidden routing internals"));
@@ -266,6 +324,46 @@ class DecisionExplorerRouteTradeoffServiceTest {
                 List.of("hidden routing internals"));
     }
 
+    private static TradeoffFixture selectedFactorAdvantageFixture() {
+        CandidateReadoutV1 selected = candidate("edge-a", true, 10.0, List.of("healthState=healthy"));
+        CandidateReadoutV1 alternative = candidate("edge-b", false, 15.0, List.of("healthState=healthy"));
+        return fixture(
+                selected,
+                List.of(selected, alternative),
+                List.of(
+                        comparison("edge-a", true, "SELECTED", 10.0, 0.0,
+                                List.of("healthState=healthy"), List.of(), List.of()),
+                        comparison("edge-b", false, "COMPARED_TO_SELECTED", 15.0, 5.0,
+                                List.of("healthState=healthy"), List.of(), List.of())),
+                List.of(
+                        factorWithInfluence("edge-a", "latency", "raw value", "SUPPORTS_SELECTION",
+                                "AVAILABLE", List.of(), List.of()),
+                        factorWithInfluence("edge-b", "latency", "raw value", "WEAKENS_SELECTION",
+                                "AVAILABLE", List.of(), List.of())),
+                List.of(),
+                List.of("hidden routing internals"));
+    }
+
+    private static TradeoffFixture selectedFactorDisadvantageFixture() {
+        CandidateReadoutV1 selected = candidate("edge-a", true, 10.0, List.of("healthState=healthy"));
+        CandidateReadoutV1 alternative = candidate("edge-b", false, 15.0, List.of("healthState=healthy"));
+        return fixture(
+                selected,
+                List.of(selected, alternative),
+                List.of(
+                        comparison("edge-a", true, "SELECTED", 10.0, 0.0,
+                                List.of("healthState=healthy"), List.of(), List.of()),
+                        comparison("edge-b", false, "COMPARED_TO_SELECTED", 15.0, 5.0,
+                                List.of("healthState=healthy"), List.of(), List.of())),
+                List.of(
+                        factorWithInfluence("edge-a", "latency", "raw value", "WEAKENS_SELECTION",
+                                "AVAILABLE", List.of(), List.of()),
+                        factorWithInfluence("edge-b", "latency", "raw value", "SUPPORTS_SELECTION",
+                                "AVAILABLE", List.of(), List.of())),
+                List.of(),
+                List.of("hidden routing internals"));
+    }
+
     private static TradeoffFixture degradedSelectedFixture() {
         CandidateReadoutV1 selected = candidate("edge-a", true, 10.0, List.of("healthState=false"));
         return fixture(
@@ -275,6 +373,26 @@ class DecisionExplorerRouteTradeoffServiceTest {
                         List.of("healthState=false"), List.of(), List.of())),
                 List.of(factorWithObserved("edge-a", "healthState", "false", "AVAILABLE",
                         List.of(), List.of())),
+                List.of(),
+                List.of());
+    }
+
+    private static TradeoffFixture degradedFactorComparisonFixture() {
+        CandidateReadoutV1 selected = candidate("edge-a", true, 10.0, List.of("healthState=false"));
+        CandidateReadoutV1 alternative = candidate("edge-b", false, 15.0, List.of("healthState=healthy"));
+        return fixture(
+                selected,
+                List.of(selected, alternative),
+                List.of(
+                        comparison("edge-a", true, "SELECTED", 10.0, 0.0,
+                                List.of("healthState=false"), List.of(), List.of()),
+                        comparison("edge-b", false, "COMPARED_TO_SELECTED", 15.0, 5.0,
+                                List.of("healthState=healthy"), List.of(), List.of())),
+                List.of(
+                        factorWithObserved("edge-a", "healthState", "false", "AVAILABLE",
+                                List.of(), List.of()),
+                        factorWithObserved("edge-b", "healthState", "true", "AVAILABLE",
+                                List.of(), List.of())),
                 List.of(),
                 List.of());
     }
@@ -374,11 +492,23 @@ class DecisionExplorerRouteTradeoffServiceTest {
             String evidenceStatus,
             List<String> warnings,
             List<String> unknowns) {
+        return factorWithInfluence(candidateId, factorName, observedValue, "SUPPORTS_SELECTION", evidenceStatus,
+                warnings, unknowns);
+    }
+
+    private static DecisionFactorDrilldownV1 factorWithInfluence(
+            String candidateId,
+            String factorName,
+            String observedValue,
+            String influenceCategory,
+            String evidenceStatus,
+            List<String> warnings,
+            List<String> unknowns) {
         return new DecisionFactorDrilldownV1(
                 factorName,
                 candidateId,
                 observedValue,
-                "SUPPORTS_SELECTION",
+                influenceCategory,
                 evidenceStatus,
                 "factor explanation",
                 warnings,

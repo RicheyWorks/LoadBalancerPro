@@ -24,6 +24,27 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-28T01:20-07:00
+
+Branch/PR: codex/lase-phase3-factor-tradeoff-deltas / no PR yet
+
+Failure type: focused route tradeoff test expectation mismatch
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerRouteTradeoffServiceTest" test`
+
+Suspected cause: the new factor delta fingerprint expected the unknown alternative score gap text to be `UNKNOWN`,
+but `DecisionExplorerRouteTradeoffRowV1.scoreGapCategoryFor` intentionally normalizes missing alternative score
+deltas as `UNKNOWN_GAP`.
+
+Fix attempted: updated the factor delta test expectation to `UNKNOWN_GAP`.
+
+Result: focused route tradeoff service test rerun passed, then the broader Decision Explorer diagnostics selector
+also passed.
+
+Follow-up action: continue with full LASE-P3-G03 local verification.
+
+## Entry
+
 Date/time: 2026-05-27T23:01-07:00
 
 Branch/PR: codex/lase-phase2-compatibility-closeout / no PR yet

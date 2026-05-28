@@ -1898,6 +1898,28 @@ reported no browser console errors.
 
 Follow-up action: continue DX-P2-G08 commit and PR creation.
 
+## Entry
+
+Date/time: 2026-05-28T00:34-07:00
+
+Branch/PR: codex/lase-phase3-route-tradeoff-foundation / no PR yet
+
+Failure type: local focused test expectation and classification mismatch
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerRouteTradeoffServiceTest" test`
+
+Suspected cause: the first route-tradeoff foundation tests expected selected baseline rows to omit the returned
+`0.0` baseline score delta, and the low-risk trailing alternative classification treated common hidden-internal
+unknown signals as enough to downgrade the selected-advantage classification.
+
+Fix attempted: update the expected selected-baseline fingerprint and narrow unknown classification so known trailing
+alternatives are not downgraded solely by generic hidden-internal unknown signals.
+
+Result: focused rerun passed after updating the expected selected-baseline fingerprint and the tradeoff
+classification rule.
+
+Follow-up action: continue PR 1 broader local verification before opening the route-tradeoff foundation PR.
+
 ## Notes
 
 - Keep entries factual.

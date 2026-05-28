@@ -381,6 +381,11 @@
       gap: 12px;
     }
 
+    .diagnostic-summary {
+      display: grid;
+      gap: 12px;
+    }
+
     .confidence-status {
       display: inline-flex;
       align-items: center;
@@ -560,6 +565,10 @@
       <h2 id="confidence-summary-title">Routing Intelligence Status</h2>
       <div id="confidence-summary" class="empty">No confidence summary loaded yet.</div>
     </section>
+    <section class="panel" aria-labelledby="routing-diagnostics-title">
+      <h2 id="routing-diagnostics-title">Routing Diagnostics</h2>
+      <div id="routing-diagnostics" class="empty">No routing diagnostics loaded yet.</div>
+    </section>
     <section class="panel" aria-labelledby="reviewer-badges-title">
       <h2 id="reviewer-badges-title">Reviewer Explanation Badges</h2>
       <p class="scenario-note">Display-only labels from returned payload fields; badges do not enforce or prove runtime decisions.</p>
@@ -590,6 +599,16 @@
     <div id="candidate-confidence" class="empty">No candidate confidence rows loaded yet.</div>
   </section>
 
+  <section class="panel" aria-labelledby="candidate-diagnostics-title">
+    <h2 id="candidate-diagnostics-title">Candidate Diagnostics</h2>
+    <div id="candidate-diagnostics" class="empty">No candidate diagnostic rows loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="evidence-diagnostics-title">
+    <h2 id="evidence-diagnostics-title">Evidence Diagnostics</h2>
+    <div id="evidence-diagnostics" class="empty">No evidence diagnostic rows loaded yet.</div>
+  </section>
+
   <section class="panel" aria-labelledby="factors-title">
     <h2 id="factors-title">Factor Contributions</h2>
     <div id="factor-contributions" class="empty">No factor contribution readouts loaded yet.</div>
@@ -604,6 +623,26 @@
     <h2 id="factor-status-title">Factor Status</h2>
     <div id="factor-status" class="empty">No factor status rows loaded yet.</div>
   </section>
+
+  <section class="panel" aria-labelledby="factor-diagnostics-title">
+    <h2 id="factor-diagnostics-title">Factor Diagnostics</h2>
+    <div id="factor-diagnostics" class="empty">No factor diagnostic rows loaded yet.</div>
+  </section>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="degradation-reasons-title">
+      <h2 id="degradation-reasons-title">Degradation Reasons</h2>
+      <div id="degradation-reasons" class="empty">No degradation reasons loaded yet.</div>
+    </section>
+    <section class="panel" aria-labelledby="partial-evidence-reasons-title">
+      <h2 id="partial-evidence-reasons-title">Partial Evidence Reasons</h2>
+      <div id="partial-evidence-reasons" class="empty">No partial evidence reasons loaded yet.</div>
+    </section>
+    <section class="panel" aria-labelledby="unknown-evidence-reasons-title">
+      <h2 id="unknown-evidence-reasons-title">Unknown Evidence Reasons</h2>
+      <div id="unknown-evidence-reasons" class="empty">No unknown evidence reasons loaded yet.</div>
+    </section>
+  </div>
 
   <section class="panel" aria-labelledby="policy-title">
     <h2 id="policy-title">Policy Gates</h2>
@@ -695,15 +734,22 @@
     scenarioCatalogList: document.getElementById("scenario-catalog-list"),
     decisionSummary: document.getElementById("decision-summary"),
     confidenceSummary: document.getElementById("confidence-summary"),
+    routingDiagnostics: document.getElementById("routing-diagnostics"),
     reviewerBadges: document.getElementById("reviewer-badges"),
     selectedCandidate: document.getElementById("selected-candidate"),
     notProven: document.getElementById("not-proven"),
     candidateSet: document.getElementById("candidate-set"),
     candidateComparisons: document.getElementById("candidate-comparisons"),
     candidateConfidence: document.getElementById("candidate-confidence"),
+    candidateDiagnostics: document.getElementById("candidate-diagnostics"),
+    evidenceDiagnostics: document.getElementById("evidence-diagnostics"),
     factorContributions: document.getElementById("factor-contributions"),
     factorDrilldowns: document.getElementById("factor-drilldowns"),
     factorStatus: document.getElementById("factor-status"),
+    factorDiagnostics: document.getElementById("factor-diagnostics"),
+    degradationReasons: document.getElementById("degradation-reasons"),
+    partialEvidenceReasons: document.getElementById("partial-evidence-reasons"),
+    unknownEvidenceReasons: document.getElementById("unknown-evidence-reasons"),
     policyGates: document.getElementById("policy-gates"),
     decisionDiffs: document.getElementById("decision-diffs"),
     evidencePackets: document.getElementById("evidence-packets"),
@@ -928,7 +974,9 @@
       ["Summary", value(first.decisionReadout && first.decisionReadout.summary)],
       ["Boundary", value(first.boundaryNote)]
     ]);
+    const routingDiagnostics = first.routingDiagnostics || {};
     renderConfidenceSummary(elements.confidenceSummary, first.confidenceSummary);
+    renderRoutingDiagnosticsSummary(elements.routingDiagnostics, routingDiagnostics);
     renderReviewerBadges(elements.reviewerBadges, first, selectedScenario());
     renderKeyValues(elements.selectedCandidate, candidateRows(first.selectedCandidate));
     renderChips(elements.notProven, first.notProvenBoundaries, "not-proven");
@@ -938,12 +986,18 @@
       elements.candidateConfidence,
       first.confidenceSummary && first.confidenceSummary.candidateConfidenceDetails || []
     );
+    renderCandidateDiagnosticsTable(elements.candidateDiagnostics, routingDiagnostics.candidateDiagnostics || []);
+    renderEvidenceDiagnosticsTable(elements.evidenceDiagnostics, routingDiagnostics.evidenceDiagnostics || []);
     renderFactorTable(elements.factorContributions, first.factorContributions || []);
     renderFactorDrilldownTable(elements.factorDrilldowns, first.factorDrilldowns || []);
     renderFactorStatusTable(
       elements.factorStatus,
       first.confidenceSummary && first.confidenceSummary.factorStatusDetails || []
     );
+    renderFactorDiagnosticsTable(elements.factorDiagnostics, routingDiagnostics.factorDiagnostics || []);
+    renderChips(elements.degradationReasons, routingDiagnostics.degradationReasons, "warning");
+    renderChips(elements.partialEvidenceReasons, routingDiagnostics.partialEvidenceReasons, "warning");
+    renderChips(elements.unknownEvidenceReasons, routingDiagnostics.unknownEvidenceReasons, "unknown");
     renderPolicyTable(elements.policyGates, first.policyGateReadouts || []);
     renderDecisionDiffTable(elements.decisionDiffs, first.decisionDiffReadouts || []);
     renderEvidencePacketTable(elements.evidencePackets, first.evidencePacketReadouts || []);
@@ -956,15 +1010,22 @@
     elements.rawOutput.textContent = error.message;
     setEmpty(elements.decisionSummary, error.message);
     setEmpty(elements.confidenceSummary, "No confidence summary available.");
+    setEmpty(elements.routingDiagnostics, "No routing diagnostics available.");
     setEmpty(elements.reviewerBadges, "No reviewer badges available.");
     setEmpty(elements.selectedCandidate, "No selected candidate available.");
     setEmpty(elements.notProven, "No boundaries available.");
     setEmpty(elements.candidateSet, "No candidate readouts available.");
     setEmpty(elements.candidateComparisons, "No candidate comparison rows available.");
     setEmpty(elements.candidateConfidence, "No candidate confidence rows available.");
+    setEmpty(elements.candidateDiagnostics, "No candidate diagnostic rows available.");
+    setEmpty(elements.evidenceDiagnostics, "No evidence diagnostic rows available.");
     setEmpty(elements.factorContributions, "No factor contribution readouts available.");
     setEmpty(elements.factorDrilldowns, "No factor drill-down readouts available.");
     setEmpty(elements.factorStatus, "No factor status rows available.");
+    setEmpty(elements.factorDiagnostics, "No factor diagnostic rows available.");
+    setEmpty(elements.degradationReasons, "No degradation reasons available.");
+    setEmpty(elements.partialEvidenceReasons, "No partial evidence reasons available.");
+    setEmpty(elements.unknownEvidenceReasons, "No unknown evidence reasons available.");
     setEmpty(elements.policyGates, "No policy gate readouts available.");
     setEmpty(elements.decisionDiffs, "No decision diff readouts available.");
     setEmpty(elements.evidencePackets, "No evidence packet readouts available.");
@@ -1021,6 +1082,61 @@
     target.classList.remove("empty");
   }
 
+  function renderRoutingDiagnosticsSummary(target, diagnostics) {
+    target.replaceChildren();
+    if (!diagnostics || !diagnostics.diagnosticsObject) {
+      setEmpty(target, "No routing diagnostics returned.");
+      return;
+    }
+    const selectedDiagnostic = diagnostics.selectedCandidateDiagnostic || {};
+    const wrapper = document.createElement("div");
+    wrapper.className = "diagnostic-summary";
+    const badge = document.createElement("span");
+    badge.className = `confidence-status ${confidenceStatusType(diagnostics.overallStatus)}`;
+    badge.textContent = `${value(diagnostics.overallStatus)} / ${value(diagnostics.evidenceQuality)}`;
+    wrapper.append(badge);
+    wrapper.append(keyValueTable([
+      ["Selected candidate", value(diagnostics.selectedCandidateId)],
+      ["Selected diagnostic", selectedDiagnosticText(selectedDiagnostic)],
+      ["Diagnostic count", String(diagnostics.diagnosticCount == null ? 0 : diagnostics.diagnosticCount)],
+      ["Evidence counts", evidenceCountText(diagnostics)],
+      ["Evidence diagnostic rows", countText(listLength(diagnostics.evidenceDiagnostics), "evidence diagnostic row")],
+      ["Candidate diagnostic rows", countText(listLength(diagnostics.candidateDiagnostics), "candidate diagnostic row")],
+      ["Factor diagnostic rows", countText(listLength(diagnostics.factorDiagnostics), "factor diagnostic row")],
+      ["Degradation reasons", countText(listLength(diagnostics.degradationReasons), "degradation reason")],
+      ["Partial evidence reasons", countText(listLength(diagnostics.partialEvidenceReasons), "partial evidence reason")],
+      ["Unknown evidence reasons", countText(listLength(diagnostics.unknownEvidenceReasons), "unknown evidence reason")],
+      ["Diagnostic reasons", listText(diagnostics.diagnosticReasons)],
+      ["Warnings", listText(diagnostics.warnings)],
+      ["Unknowns", listText(diagnostics.unknowns)],
+      ["Source refs", listText(diagnostics.sourceReferenceIds)],
+      ["Boundary", value(diagnostics.boundaryNote)]
+    ]));
+    target.append(wrapper);
+    target.classList.remove("empty");
+  }
+
+  function selectedDiagnosticText(diagnostic) {
+    if (!diagnostic || !diagnostic.candidateId) {
+      return "UNKNOWN";
+    }
+    return [
+      value(diagnostic.candidateLabel || diagnostic.candidateId),
+      value(diagnostic.diagnosticStatus),
+      value(diagnostic.riskLevel)
+    ].join(" / ");
+  }
+
+  function evidenceCountText(diagnostics) {
+    return [
+      `present ${diagnostics.presentEvidenceCount == null ? 0 : diagnostics.presentEvidenceCount}`,
+      `partial ${diagnostics.partialEvidenceCount == null ? 0 : diagnostics.partialEvidenceCount}`,
+      `missing ${diagnostics.missingEvidenceCount == null ? 0 : diagnostics.missingEvidenceCount}`,
+      `degraded ${diagnostics.degradedEvidenceCount == null ? 0 : diagnostics.degradedEvidenceCount}`,
+      `unknown ${diagnostics.unknownEvidenceCount == null ? 0 : diagnostics.unknownEvidenceCount}`
+    ].join(", ");
+  }
+
   function renderKeyValues(target, rows) {
     target.replaceChildren();
     target.append(keyValueTable(rows));
@@ -1073,12 +1189,24 @@
     const boundaries = Array.isArray(payload.notProvenBoundaries) ? payload.notProvenBoundaries.length : 0;
     const selectedCandidate = value(payload.decisionReadout && payload.decisionReadout.selectedCandidateId);
     const confidenceSummary = payload.confidenceSummary || {};
+    const diagnostics = payload.routingDiagnostics || {};
+    const degraded = listLength(diagnostics.degradationReasons);
     return [
       { type: "selected", label: "Selected route", detail: selectedCandidate },
       {
         type: confidenceStatusType(confidenceSummary.status),
         label: "Confidence status",
         detail: `${value(confidenceSummary.status)} / ${value(confidenceSummary.evidenceQuality)}`
+      },
+      {
+        type: confidenceStatusType(diagnostics.overallStatus),
+        label: "Diagnostics status",
+        detail: `${value(diagnostics.overallStatus)} / ${value(diagnostics.evidenceQuality)}`
+      },
+      {
+        type: degraded ? "degraded" : "deterministic",
+        label: "Degraded signals",
+        detail: degraded ? countText(degraded, "degraded reason") : "none returned"
       },
       {
         type: warnings.length ? "warning" : "deterministic",
@@ -1177,6 +1305,45 @@
     ], "No candidate confidence rows returned.");
   }
 
+  function renderCandidateDiagnosticsTable(target, rows) {
+    renderTable(target, [
+      "Order",
+      "Candidate",
+      "Role",
+      "Status",
+      "Risk",
+      "Health",
+      "Score",
+      "Delta",
+      "Signals",
+      "Summary",
+      "Strengths",
+      "Weak/degraded/unknown",
+      "Reasons",
+      "Source refs"
+    ], rows, (row, index) => [
+      row.displayOrder == null ? String(index + 1) : String(row.displayOrder),
+      value(row.candidateLabel || row.candidateId),
+      value(row.selectionRole),
+      value(row.diagnosticStatus),
+      value(row.riskLevel),
+      value(row.healthEvidenceState),
+      row.finalScore == null ? "UNKNOWN" : String(row.finalScore),
+      row.scoreDeltaFromSelected == null ? "UNKNOWN" : String(row.scoreDeltaFromSelected),
+      [
+        `visible ${row.visibleSignalCount == null ? 0 : row.visibleSignalCount}`,
+        `warning ${row.warningCount == null ? 0 : row.warningCount}`,
+        `unknown ${row.unknownSignalCount == null ? 0 : row.unknownSignalCount}`,
+        `degraded ${row.degradedSignalCount == null ? 0 : row.degradedSignalCount}`
+      ].join(", "),
+      value(row.summaryText),
+      listText(row.strengthSignals),
+      listText(uniqueList(mergeLists(row.weakSignals, row.degradedSignals, row.unknownSignals))),
+      listText(row.reasonCodes),
+      listText(row.sourceReferenceIds)
+    ], "No candidate diagnostic rows returned.");
+  }
+
   function renderFactorTable(target, factors) {
     renderTable(target, ["Rank", "Candidate", "Factor", "Direction", "Value", "Exactness"], factors, (factor, index) => [
       String(index + 1),
@@ -1238,6 +1405,71 @@
       listText(mergeLists(row.warnings, row.unknowns)),
       listText(row.sourceReferenceIds)
     ], "No factor status rows returned.");
+  }
+
+  function renderEvidenceDiagnosticsTable(target, rows) {
+    renderTable(target, [
+      "Diagnostic",
+      "Category",
+      "Status",
+      "Severity",
+      "Evidence count",
+      "Summary",
+      "Reasons",
+      "Source refs"
+    ], rows, row => [
+      value(row.diagnosticId),
+      value(row.category),
+      value(row.status),
+      value(row.severity),
+      String(row.evidenceCount == null ? 0 : row.evidenceCount),
+      value(row.summaryText),
+      listText(row.reasonCodes),
+      listText(row.sourceReferenceIds)
+    ], "No evidence diagnostic rows returned.");
+  }
+
+  function renderFactorDiagnosticsTable(target, rows) {
+    renderTable(target, [
+      "Order",
+      "Candidate",
+      "Factor",
+      "Contribution",
+      "Severity",
+      "Status",
+      "Evidence",
+      "Observed",
+      "Influence",
+      "Signals",
+      "Summary",
+      "Reasons",
+      "Source refs"
+    ], rows, (row, index) => [
+      row.displayOrder == null ? String(index + 1) : String(row.displayOrder),
+      value(row.candidateId),
+      value(row.factorName),
+      value(row.contribution),
+      value(row.severity),
+      value(row.factorStatus),
+      value(row.evidenceStatus),
+      value(row.observedValueOrStatus),
+      value(row.influenceCategory),
+      [
+        `warning ${row.warningCount == null ? 0 : row.warningCount}`,
+        `unknown ${row.unknownCount == null ? 0 : row.unknownCount}`,
+        `degraded ${row.degradedSignalCount == null ? 0 : row.degradedSignalCount}`,
+        `missing ${row.missingSignalCount == null ? 0 : row.missingSignalCount}`
+      ].join(", "),
+      value(row.summaryText),
+      listText(uniqueList(mergeLists(
+        row.reasonCodes,
+        row.supportingSignals,
+        row.warningSignals,
+        row.unknownSignals,
+        row.degradedSignals
+      ))),
+      listText(row.sourceReferenceIds)
+    ], "No factor diagnostic rows returned.");
   }
 
   function renderPolicyTable(target, gates) {
@@ -1365,14 +1597,22 @@
     const comparisons = Array.isArray(payload.candidateComparisons) ? payload.candidateComparisons : [];
     const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
     const summary = payload.confidenceSummary || {};
+    const diagnostics = payload.routingDiagnostics || {};
     const candidateConfidence = Array.isArray(summary.candidateConfidenceDetails) ? summary.candidateConfidenceDetails : [];
     const factorStatus = Array.isArray(summary.factorStatusDetails) ? summary.factorStatusDetails : [];
+    const candidateDiagnostics = Array.isArray(diagnostics.candidateDiagnostics) ? diagnostics.candidateDiagnostics : [];
+    const factorDiagnostics = Array.isArray(diagnostics.factorDiagnostics) ? diagnostics.factorDiagnostics : [];
     return uniqueList(mergeLists(
       payload.warnings,
       summary.warnings,
+      diagnostics.warnings,
+      diagnostics.degradationReasons,
+      diagnostics.partialEvidenceReasons,
       explanationNotes(summary, "warning:"),
       candidateConfidence.flatMap(row => row.warnings),
       factorStatus.flatMap(row => row.warnings),
+      candidateDiagnostics.flatMap(row => mergeLists(row.weakSignals, row.degradedSignals)),
+      factorDiagnostics.flatMap(row => mergeLists(row.warningSignals, row.degradedSignals)),
       comparisons.flatMap(row => row.warnings),
       drilldowns.flatMap(row => row.warnings)
     ));
@@ -1382,14 +1622,21 @@
     const comparisons = Array.isArray(payload.candidateComparisons) ? payload.candidateComparisons : [];
     const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
     const summary = payload.confidenceSummary || {};
+    const diagnostics = payload.routingDiagnostics || {};
     const candidateConfidence = Array.isArray(summary.candidateConfidenceDetails) ? summary.candidateConfidenceDetails : [];
     const factorStatus = Array.isArray(summary.factorStatusDetails) ? summary.factorStatusDetails : [];
+    const candidateDiagnostics = Array.isArray(diagnostics.candidateDiagnostics) ? diagnostics.candidateDiagnostics : [];
+    const factorDiagnostics = Array.isArray(diagnostics.factorDiagnostics) ? diagnostics.factorDiagnostics : [];
     return uniqueList(mergeLists(
       payload.unknowns,
       summary.unknowns,
+      diagnostics.unknowns,
+      diagnostics.unknownEvidenceReasons,
       explanationNotes(summary, "unknown:"),
       candidateConfidence.flatMap(row => row.unknowns),
       factorStatus.flatMap(row => row.unknowns),
+      candidateDiagnostics.flatMap(row => row.unknownSignals),
+      factorDiagnostics.flatMap(row => row.unknownSignals),
       comparisons.flatMap(row => mergeLists(row.unknownSignals, row.unknowns)),
       drilldowns.flatMap(row => row.unknowns)
     ));
@@ -1398,12 +1645,18 @@
   function hasPartialEvidence(payload, scenario) {
     const comparisons = Array.isArray(payload.candidateComparisons) ? payload.candidateComparisons : [];
     const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
+    const diagnostics = payload.routingDiagnostics || {};
     const summaryStatus = payload.confidenceSummary && payload.confidenceSummary.status;
     const scenarioIsPartial = scenario && !statusIs(scenario.evidenceStatus, "AVAILABLE");
     const comparisonIsPartial = comparisons.some(row => !statusIs(row.comparisonStatus, "SELECTED", "ALTERNATIVE"));
     const drilldownIsPartial = drilldowns.some(row => !statusIs(row.evidenceStatus, "AVAILABLE"));
     const summaryIsPartial = statusIs(summaryStatus, "PARTIAL", "UNKNOWN", "DEGRADED");
-    return Boolean(scenarioIsPartial || comparisonIsPartial || drilldownIsPartial || summaryIsPartial);
+    const diagnosticsIsPartial = statusIs(diagnostics.overallStatus, "PARTIAL", "UNKNOWN", "DEGRADED")
+      || listLength(diagnostics.partialEvidenceReasons) > 0
+      || listLength(diagnostics.unknownEvidenceReasons) > 0
+      || listLength(diagnostics.degradationReasons) > 0;
+    return Boolean(scenarioIsPartial || comparisonIsPartial || drilldownIsPartial
+      || summaryIsPartial || diagnosticsIsPartial);
   }
 
   function mergeLists(...groups) {
@@ -1457,6 +1710,7 @@
       return;
     }
     const first = latestPayload[0];
+    const routingDiagnostics = first.routingDiagnostics || {};
     const text = [
       "Decision Explorer reviewer summary",
       `decisionId: ${value(first.decisionId)}`,
@@ -1466,6 +1720,12 @@
       `confidenceExplanation: ${value(first.confidenceSummary
         && first.confidenceSummary.statusExplanation
         && first.confidenceSummary.statusExplanation.summaryText)}`,
+      `diagnosticsStatus: ${value(routingDiagnostics.overallStatus)}`,
+      `diagnosticsEvidenceQuality: ${value(routingDiagnostics.evidenceQuality)}`,
+      `diagnosticsReasons: ${listText(routingDiagnostics.diagnosticReasons)}`,
+      `degradationReasons: ${listText(routingDiagnostics.degradationReasons)}`,
+      `partialEvidenceReasons: ${listText(routingDiagnostics.partialEvidenceReasons)}`,
+      `unknownEvidenceReasons: ${listText(routingDiagnostics.unknownEvidenceReasons)}`,
       `readOnly: ${first.readOnly === true}`,
       `simulationOnly: ${first.simulationOnly === true}`,
       `notProven: ${listText(first.notProvenBoundaries)}`

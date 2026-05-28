@@ -87,13 +87,20 @@ class DecisionExplorerStaticPageTest {
         for (String expected : List.of(
                 "Decision Summary",
                 "Routing Intelligence Status",
+                "Routing Diagnostics",
                 "Selected Candidate",
                 "Candidate Set",
                 "Candidate Comparison",
                 "Candidate Confidence",
+                "Candidate Diagnostics",
+                "Evidence Diagnostics",
                 "Factor Contributions",
                 "Factor Drill-Down",
                 "Factor Status",
+                "Factor Diagnostics",
+                "Degradation Reasons",
+                "Partial Evidence Reasons",
+                "Unknown Evidence Reasons",
                 "Policy Gates",
                 "Decision Diffs",
                 "Evidence Packet Readouts",
@@ -112,6 +119,8 @@ class DecisionExplorerStaticPageTest {
                 "Reviewer Explanation Badges",
                 "Selected route",
                 "Confidence status",
+                "Diagnostics status",
+                "Degraded signals",
                 "Warning",
                 "Unknown",
                 "Partial evidence",
@@ -145,13 +154,29 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("candidate-comparisons"));
         assertTrue(page.contains("factor-drilldowns"));
         assertTrue(page.contains("confidence-summary"));
+        assertTrue(page.contains("routing-diagnostics"));
         assertTrue(page.contains("candidate-confidence"));
+        assertTrue(page.contains("candidate-diagnostics"));
+        assertTrue(page.contains("evidence-diagnostics"));
         assertTrue(page.contains("factor-status"));
+        assertTrue(page.contains("factor-diagnostics"));
+        assertTrue(page.contains("degradation-reasons"));
+        assertTrue(page.contains("partial-evidence-reasons"));
+        assertTrue(page.contains("unknown-evidence-reasons"));
         assertTrue(page.contains("first.confidenceSummary"));
+        assertTrue(page.contains("first.routingDiagnostics"));
         assertTrue(page.contains("renderConfidenceSummary"));
+        assertTrue(page.contains("renderRoutingDiagnosticsSummary"));
         assertTrue(page.contains("renderCandidateConfidenceTable"));
+        assertTrue(page.contains("renderCandidateDiagnosticsTable"));
+        assertTrue(page.contains("renderEvidenceDiagnosticsTable"));
         assertTrue(page.contains("renderFactorStatusTable"));
+        assertTrue(page.contains("renderFactorDiagnosticsTable"));
         assertTrue(page.contains("statusExplanation"));
+        assertTrue(page.contains("routingDiagnostics"));
+        assertTrue(page.contains("degradationReasons"));
+        assertTrue(page.contains("partialEvidenceReasons"));
+        assertTrue(page.contains("unknownEvidenceReasons"));
         assertTrue(page.contains("confidenceStatusType"));
         assertTrue(page.contains("Candidate confidence rows"));
         assertTrue(page.contains("Factor status rows"));
@@ -224,6 +249,16 @@ class DecisionExplorerStaticPageTest {
                     .andExpect(jsonPath("$[0].confidenceSummary.candidateConfidenceDetails[0].candidateId",
                             is("green")))
                     .andExpect(jsonPath("$[0].confidenceSummary.factorStatusDetails[0].factorName").exists())
+                    .andExpect(jsonPath("$[0].routingDiagnostics.diagnosticsObject",
+                            is("DecisionExplorerRoutingDiagnosticsV1")))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.overallStatus", is("PARTIAL")))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.selectedCandidateId", is("green")))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.evidenceDiagnostics[0].diagnosticId").exists())
+                    .andExpect(jsonPath("$[0].routingDiagnostics.selectedCandidateDiagnostic.candidateId",
+                            is("green")))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.candidateDiagnostics[0].candidateId",
+                            is("green")))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.factorDiagnostics[0].factorName").exists())
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].gateId", is("boundary-read-only")))
                     .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no production readiness")))
                     .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no storage proof")))

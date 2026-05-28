@@ -118,6 +118,21 @@ class DecisionExplorerPayloadServiceTest {
                         .map(diagnostic -> diagnostic.candidateId() + ":" + diagnostic.factorName()
                                 + ":" + diagnostic.contribution())
                         .toList());
+        assertEquals("DecisionExplorerRouteTradeoffAnalysisV1",
+                firstPayloads.get(0).routeTradeoffAnalysis().analysisObject());
+        assertEquals("STRONG", firstPayloads.get(0).routeTradeoffAnalysis().overallStatus());
+        assertEquals("SELECTED_ADVANTAGE", firstPayloads.get(0).routeTradeoffAnalysis().tradeoffCategory());
+        assertEquals("edge-a", firstPayloads.get(0).routeTradeoffAnalysis().selectedCandidateId());
+        assertEquals(2, firstPayloads.get(0).routeTradeoffAnalysis().candidateTradeoffCount());
+        assertEquals(1, firstPayloads.get(0).routeTradeoffAnalysis().comparedAlternativeCount());
+        assertEquals("edge-z", firstPayloads.get(0).routeTradeoffAnalysis().closestAlternativeCandidateId());
+        assertEquals("TRADEOFF_READY",
+                firstPayloads.get(0).routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
+        assertFalse(firstPayloads.get(0).routeTradeoffAnalysis()
+                .replayReadinessDiagnostic().replayExecutionAvailable());
+        assertTrue(firstPayloads.get(0).routeTradeoffAnalysis()
+                .replayReadinessDiagnostic().missingEvidenceSignals()
+                .contains("diagnostic fingerprint evidence has not been computed yet"));
         assertEquals(List.of("edge-a:healthState", "edge-z:p95LatencyMillis"),
                 firstPayloads.get(0).factorContributions().stream()
                         .map(factor -> factor.candidateId() + ":" + factor.factorName())
@@ -168,6 +183,11 @@ class DecisionExplorerPayloadServiceTest {
                 .contains("selected candidate UNKNOWN as DEGRADED"));
         assertTrue(payload.routingDiagnostics().diagnosticReasons().contains("DECISION_STATUS_FAILED"));
         assertEquals("UNKNOWN", payload.routingDiagnostics().selectedCandidateDiagnostic().candidateId());
+        assertEquals("DEGRADED", payload.routeTradeoffAnalysis().overallStatus());
+        assertEquals("DEGRADED", payload.routeTradeoffAnalysis().tradeoffCategory());
+        assertTrue(payload.routeTradeoffAnalysis().candidateTradeoffs().isEmpty());
+        assertEquals("DEGRADED", payload.routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
+        assertFalse(payload.routeTradeoffAnalysis().replayReadinessDiagnostic().replayExecutionAvailable());
         assertTrue(payload.decisionDiffReadouts().isEmpty());
         assertEquals("future-evidence-packet", payload.evidencePacketReadouts().get(0).referenceId());
         assertTrue(payload.warnings().contains("Selected candidate was not returned."));
@@ -195,6 +215,11 @@ class DecisionExplorerPayloadServiceTest {
                 .contains("NO_CONFIDENCE_SUMMARY_RETURNED"));
         assertEquals(List.of("NO_CONFIDENCE_SUMMARY_RETURNED"), payload.routingDiagnostics().diagnosticReasons());
         assertTrue(payload.routingDiagnostics().unknowns().contains("confidence summary evidence was unavailable"));
+        assertEquals("UNKNOWN", payload.routeTradeoffAnalysis().overallStatus());
+        assertEquals("UNKNOWN", payload.routeTradeoffAnalysis().tradeoffCategory());
+        assertEquals("INSUFFICIENT", payload.routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
+        assertEquals("UNKNOWN",
+                payload.routeTradeoffAnalysis().replayReadinessDiagnostic().readinessStatus());
         assertTrue(payload.warnings().get(0).contains("did not include result evidence"));
         assertTrue(payload.policyGateReadouts().stream()
                 .anyMatch(gate -> gate.gateId().equals("boundary-read-only") && gate.outcome().equals("PASS")));
@@ -260,6 +285,12 @@ class DecisionExplorerPayloadServiceTest {
         assertTrue(payload.routingDiagnostics().partialEvidenceReasons().stream()
                 .anyMatch(reason -> reason.contains("alternative-a:latency")));
         assertTrue(payload.routingDiagnostics().unknowns().contains("score delta from selected candidate"));
+        assertEquals("PARTIAL", payload.routeTradeoffAnalysis().overallStatus());
+        assertEquals("PARTIAL_TRADEOFF", payload.routeTradeoffAnalysis().tradeoffCategory());
+        assertEquals("BASIC_DIAGNOSTICS_ONLY",
+                payload.routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
+        assertEquals("PARTIAL",
+                payload.routeTradeoffAnalysis().replayReadinessDiagnostic().scoreEvidenceStatus());
         assertNull(payload.decisionDiffReadouts().get(0).finalScoreGap());
         assertEquals(List.of("latency", "queueDepth"), payload.decisionDiffReadouts().get(0).comparedFactorNames());
         assertTrue(payload.evidencePacketReadouts().get(0).unavailableReasons()

@@ -75,6 +75,11 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals(List.of("CANDIDATE_COMPARISONS_AVAILABLE", "FACTOR_EVIDENCE_AVAILABLE",
                         "NO_STATUS_WARNINGS", "SELECTED_CANDIDATE_CONFIRMED"),
                 firstPayloads.get(0).confidenceSummary().statusReasons());
+        assertEquals(List.of("1:edge-a:STRONG:HEALTHY", "2:edge-z:STRONG:HEALTHY"),
+                firstPayloads.get(0).confidenceSummary().candidateConfidenceDetails().stream()
+                        .map(detail -> detail.displayOrder() + ":" + detail.candidateId() + ":"
+                                + detail.confidenceStatus() + ":" + detail.healthEvidenceState())
+                        .toList());
         assertEquals(List.of("edge-a:healthState", "edge-z:p95LatencyMillis"),
                 firstPayloads.get(0).factorContributions().stream()
                         .map(factor -> factor.candidateId() + ":" + factor.factorName())
@@ -115,6 +120,7 @@ class DecisionExplorerPayloadServiceTest {
         assertTrue(payload.factorDrilldowns().isEmpty());
         assertEquals("DEGRADED", payload.confidenceSummary().status());
         assertEquals(List.of("DECISION_STATUS_FAILED"), payload.confidenceSummary().statusReasons());
+        assertTrue(payload.confidenceSummary().candidateConfidenceDetails().isEmpty());
         assertTrue(payload.decisionDiffReadouts().isEmpty());
         assertEquals("future-evidence-packet", payload.evidencePacketReadouts().get(0).referenceId());
         assertTrue(payload.warnings().contains("Selected candidate was not returned."));
@@ -178,6 +184,11 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("PARTIAL", payload.confidenceSummary().status());
         assertTrue(payload.confidenceSummary().statusReasons().contains("PARTIAL_CANDIDATE_COMPARISON_EVIDENCE"));
         assertTrue(payload.confidenceSummary().statusReasons().contains("PARTIAL_FACTOR_EVIDENCE"));
+        DecisionExplorerCandidateConfidenceV1 alternativeConfidence =
+                payload.confidenceSummary().candidateConfidenceDetails().get(1);
+        assertEquals("alternative-a", alternativeConfidence.candidateId());
+        assertEquals("PARTIAL", alternativeConfidence.confidenceStatus());
+        assertTrue(alternativeConfidence.confidenceReasons().contains("FINAL_SCORE_UNKNOWN"));
         assertNull(payload.decisionDiffReadouts().get(0).finalScoreGap());
         assertEquals(List.of("latency", "queueDepth"), payload.decisionDiffReadouts().get(0).comparedFactorNames());
         assertTrue(payload.evidencePacketReadouts().get(0).unavailableReasons()

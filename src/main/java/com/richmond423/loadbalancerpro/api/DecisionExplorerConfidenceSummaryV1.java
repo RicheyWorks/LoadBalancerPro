@@ -18,6 +18,7 @@ public record DecisionExplorerConfidenceSummaryV1(
         int warningCount,
         int unknownCount,
         int sourceReferenceCount,
+        List<DecisionExplorerCandidateConfidenceV1> candidateConfidenceDetails,
         List<String> evidenceSignals,
         List<String> statusReasons,
         List<String> warnings,
@@ -51,6 +52,7 @@ public record DecisionExplorerConfidenceSummaryV1(
         warningCount = Math.max(0, warningCount);
         unknownCount = Math.max(0, unknownCount);
         sourceReferenceCount = Math.max(0, sourceReferenceCount);
+        candidateConfidenceDetails = DecisionExplorerDtoSupport.copyOrEmpty(candidateConfidenceDetails);
         evidenceSignals = DecisionExplorerDtoSupport.copyOrEmpty(evidenceSignals);
         statusReasons = DecisionExplorerDtoSupport.copyOrEmpty(statusReasons);
         warnings = DecisionExplorerDtoSupport.copyOrEmpty(warnings);
@@ -76,11 +78,58 @@ public record DecisionExplorerConfidenceSummaryV1(
                 0,
                 1,
                 0,
+                List.of(),
                 List.of("routingEvidence=unavailable"),
                 List.of("NO_ROUTING_EVIDENCE_RETURNED"),
                 List.of(),
                 List.of("routing comparison result evidence was unavailable"),
                 List.of(),
+                boundaryNote);
+    }
+
+    public DecisionExplorerConfidenceSummaryV1(
+            boolean readOnly,
+            boolean simulationOnly,
+            String summaryObject,
+            String contractVersion,
+            String status,
+            String evidenceQuality,
+            String selectedCandidateId,
+            int candidateCount,
+            int candidateComparisonCount,
+            int availableFactorCount,
+            int partialFactorCount,
+            int unknownFactorCount,
+            int warningCount,
+            int unknownCount,
+            int sourceReferenceCount,
+            List<String> evidenceSignals,
+            List<String> statusReasons,
+            List<String> warnings,
+            List<String> unknowns,
+            List<String> sourceReferenceIds,
+            String boundaryNote) {
+        this(readOnly,
+                simulationOnly,
+                summaryObject,
+                contractVersion,
+                status,
+                evidenceQuality,
+                selectedCandidateId,
+                candidateCount,
+                candidateComparisonCount,
+                availableFactorCount,
+                partialFactorCount,
+                unknownFactorCount,
+                warningCount,
+                unknownCount,
+                sourceReferenceCount,
+                List.of(),
+                evidenceSignals,
+                statusReasons,
+                warnings,
+                unknowns,
+                sourceReferenceIds,
                 boundaryNote);
     }
 

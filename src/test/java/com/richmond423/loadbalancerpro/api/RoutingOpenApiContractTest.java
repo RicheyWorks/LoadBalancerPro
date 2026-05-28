@@ -206,6 +206,8 @@ class RoutingOpenApiContractTest {
         assertEquals("integer", required(confidenceSummaryProperties, "/warningCount/type").asText());
         assertEquals("integer", required(confidenceSummaryProperties, "/unknownCount/type").asText());
         assertEquals("integer", required(confidenceSummaryProperties, "/sourceReferenceCount/type").asText());
+        assertArrayRef(required(confidenceSummaryProperties, "/candidateConfidenceDetails"),
+                "#/components/schemas/DecisionExplorerCandidateConfidenceV1");
         assertEquals("array", required(confidenceSummaryProperties, "/evidenceSignals/type").asText());
         assertEquals("string", required(confidenceSummaryProperties, "/evidenceSignals/items/type").asText());
         assertEquals("array", required(confidenceSummaryProperties, "/statusReasons/type").asText());
@@ -217,6 +219,32 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(confidenceSummaryProperties, "/sourceReferenceIds/type").asText());
         assertEquals("string", required(confidenceSummaryProperties, "/sourceReferenceIds/items/type").asText());
         assertEquals("string", required(confidenceSummaryProperties, "/boundaryNote/type").asText());
+
+        JsonNode candidateConfidenceProperties = required(docs,
+                "/components/schemas/DecisionExplorerCandidateConfidenceV1/properties");
+        assertEquals("string", required(candidateConfidenceProperties, "/candidateId/type").asText());
+        assertEquals("string", required(candidateConfidenceProperties, "/candidateLabel/type").asText());
+        assertEquals("boolean", required(candidateConfidenceProperties, "/selected/type").asText());
+        assertEquals("integer", required(candidateConfidenceProperties, "/displayOrder/type").asText());
+        assertEquals("string", required(candidateConfidenceProperties, "/confidenceStatus/type").asText());
+        assertEquals("string", required(candidateConfidenceProperties, "/healthEvidenceState/type").asText());
+        assertEquals("string", required(candidateConfidenceProperties, "/comparisonStatus/type").asText());
+        assertEquals("number", required(candidateConfidenceProperties, "/finalScore/type").asText());
+        assertEquals("number", required(candidateConfidenceProperties, "/scoreDeltaFromSelected/type").asText());
+        assertEquals("integer", required(candidateConfidenceProperties, "/visibleSignalCount/type").asText());
+        assertEquals("integer", required(candidateConfidenceProperties, "/unknownSignalCount/type").asText());
+        assertEquals("integer", required(candidateConfidenceProperties, "/availableFactorCount/type").asText());
+        assertEquals("integer", required(candidateConfidenceProperties, "/partialFactorCount/type").asText());
+        assertEquals("integer", required(candidateConfidenceProperties, "/unknownFactorCount/type").asText());
+        assertEquals("array", required(candidateConfidenceProperties, "/confidenceReasons/type").asText());
+        assertEquals("string", required(candidateConfidenceProperties, "/confidenceReasons/items/type").asText());
+        assertEquals("array", required(candidateConfidenceProperties, "/warnings/type").asText());
+        assertEquals("string", required(candidateConfidenceProperties, "/warnings/items/type").asText());
+        assertEquals("array", required(candidateConfidenceProperties, "/unknowns/type").asText());
+        assertEquals("string", required(candidateConfidenceProperties, "/unknowns/items/type").asText());
+        assertEquals("array", required(candidateConfidenceProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(candidateConfidenceProperties, "/sourceReferenceIds/items/type").asText());
+        assertEquals("string", required(candidateConfidenceProperties, "/boundaryNote/type").asText());
 
         JsonNode factorReadoutProperties = required(docs,
                 "/components/schemas/FactorContributionV1/properties");

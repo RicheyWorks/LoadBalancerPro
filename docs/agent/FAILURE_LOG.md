@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T17:58-07:00
+
+Branch/PR: codex/lase-routing-intelligence-candidate-confidence / no PR yet
+
+Failure type: focused candidate-confidence fixture mismatch
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerConfidenceSummaryServiceTest,DecisionExplorerPayloadServiceTest,DecisionExplorerPayloadV1Test,DecisionExplorerApiContractHardeningTest,RoutingOpenApiContractTest" test`
+
+Suspected cause: the new strong-summary unit fixture gave the non-selected candidate no factor drill-down evidence, so the new candidate-confidence row correctly classified that candidate as `PARTIAL` while the test expected `STRONG`.
+
+Fix attempted: added available factor evidence for the non-selected candidate in the strong fixture and updated the expected available-factor count.
+
+Result: focused selector rerun passed with 23 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with broader local verification.
+
+## Entry
+
 Date/time: 2026-05-27T17:27-07:00
 
 Branch/PR: codex/lase-routing-intelligence-confidence-summary / no PR yet

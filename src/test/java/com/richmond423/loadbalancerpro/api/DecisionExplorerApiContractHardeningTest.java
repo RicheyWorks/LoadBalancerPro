@@ -96,6 +96,10 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals("PARTIAL", payload.at("/confidenceSummary/status").asText());
         assertEquals("PARTIAL", payload.at("/confidenceSummary/evidenceQuality").asText());
         assertEquals("green", payload.at("/confidenceSummary/selectedCandidateId").asText());
+        assertTrue(payload.at("/confidenceSummary/candidateConfidenceDetails").isArray());
+        assertEquals("green", payload.at("/confidenceSummary/candidateConfidenceDetails/0/candidateId").asText());
+        assertEquals("HEALTHY", payload.at("/confidenceSummary/candidateConfidenceDetails/0/healthEvidenceState")
+                .asText());
         assertTrue(payload.path("factorDrilldowns").isArray());
         assertTrue(payload.path("factorDrilldowns").size() > 0);
         assertTrue(payload.path("notProvenBoundaries").isArray());
@@ -135,6 +139,7 @@ class DecisionExplorerApiContractHardeningTest {
         assertTrue(json.path("factorDrilldowns").isArray());
         assertEquals(0, json.path("factorDrilldowns").size());
         assertEquals("UNKNOWN", json.at("/confidenceSummary/status").asText());
+        assertEquals(0, json.at("/confidenceSummary/candidateConfidenceDetails").size());
         assertTrue(json.path("factorContributions").isArray());
         assertEquals(1, json.path("factorContributions").size());
         assertNoUnsupportedClaims(json);
@@ -150,6 +155,7 @@ class DecisionExplorerApiContractHardeningTest {
         assertTrue(json.path("candidateSet").isArray());
         assertTrue(json.path("candidateComparisons").isArray());
         assertEquals("UNKNOWN", json.at("/confidenceSummary/status").asText());
+        assertEquals(0, json.at("/confidenceSummary/candidateConfidenceDetails").size());
         assertTrue(json.path("factorContributions").isArray());
         assertTrue(json.path("factorDrilldowns").isArray());
         assertEquals(0, json.path("candidateSet").size());

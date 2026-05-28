@@ -91,6 +91,8 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("STRONG", firstPayloads.get(0).confidenceSummary().statusExplanation().factorStatusRollup());
         assertEquals("STRONG", firstPayloads.get(0).routingDiagnostics().overallStatus());
         assertEquals("COMPLETE", firstPayloads.get(0).routingDiagnostics().evidenceQuality());
+        assertTrue(firstPayloads.get(0).routingDiagnostics().explanationText()
+                .contains("selected candidate edge-a as STRONG"));
         assertEquals(List.of(
                         "CANDIDATE:candidate-comparisons:PRESENT",
                         "CANDIDATE:candidate-confidence:PRESENT",
@@ -162,6 +164,8 @@ class DecisionExplorerPayloadServiceTest {
         assertTrue(payload.confidenceSummary().statusExplanation().summaryText().contains("DECISION_STATUS_FAILED"));
         assertEquals("DEGRADED", payload.routingDiagnostics().overallStatus());
         assertEquals("DEGRADED", payload.routingDiagnostics().evidenceQuality());
+        assertTrue(payload.routingDiagnostics().explanationText()
+                .contains("selected candidate UNKNOWN as DEGRADED"));
         assertTrue(payload.routingDiagnostics().diagnosticReasons().contains("DECISION_STATUS_FAILED"));
         assertEquals("UNKNOWN", payload.routingDiagnostics().selectedCandidateDiagnostic().candidateId());
         assertTrue(payload.decisionDiffReadouts().isEmpty());
@@ -187,6 +191,8 @@ class DecisionExplorerPayloadServiceTest {
         assertTrue(payload.confidenceSummary().statusExplanation().summaryText()
                 .contains("NO_ROUTING_EVIDENCE_RETURNED"));
         assertEquals("UNKNOWN", payload.routingDiagnostics().overallStatus());
+        assertTrue(payload.routingDiagnostics().explanationText()
+                .contains("NO_CONFIDENCE_SUMMARY_RETURNED"));
         assertEquals(List.of("NO_CONFIDENCE_SUMMARY_RETURNED"), payload.routingDiagnostics().diagnosticReasons());
         assertTrue(payload.routingDiagnostics().unknowns().contains("confidence summary evidence was unavailable"));
         assertTrue(payload.warnings().get(0).contains("did not include result evidence"));
@@ -249,6 +255,8 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("PARTIAL", payload.confidenceSummary().statusExplanation().status());
         assertEquals("PARTIAL", payload.confidenceSummary().statusExplanation().factorStatusRollup());
         assertEquals("PARTIAL", payload.routingDiagnostics().overallStatus());
+        assertTrue(payload.routingDiagnostics().explanationText()
+                .contains("selected candidate selected-b as PARTIAL"));
         assertTrue(payload.routingDiagnostics().partialEvidenceReasons().stream()
                 .anyMatch(reason -> reason.contains("alternative-a:latency")));
         assertTrue(payload.routingDiagnostics().unknowns().contains("score delta from selected candidate"));

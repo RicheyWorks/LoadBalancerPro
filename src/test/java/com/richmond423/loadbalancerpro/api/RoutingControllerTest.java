@@ -119,6 +119,8 @@ class RoutingControllerTest {
                             is("DecisionExplorerRoutingDiagnosticsV1")))
                     .andExpect(jsonPath("$[0].routingDiagnostics.overallStatus", is("PARTIAL")))
                     .andExpect(jsonPath("$[0].routingDiagnostics.selectedCandidateId", is("green")))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.explanationText",
+                            containsString("selected candidate green as PARTIAL")))
                     .andExpect(jsonPath("$[0].routingDiagnostics.evidenceDiagnostics[0].diagnosticId").exists())
                     .andExpect(jsonPath("$[0].routingDiagnostics.selectedCandidateDiagnostic.candidateId",
                             is("green")))

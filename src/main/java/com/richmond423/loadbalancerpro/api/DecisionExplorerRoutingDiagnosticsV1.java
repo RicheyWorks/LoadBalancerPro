@@ -24,6 +24,7 @@ public record DecisionExplorerRoutingDiagnosticsV1(
         List<String> degradationReasons,
         List<String> partialEvidenceReasons,
         List<String> unknownEvidenceReasons,
+        String explanationText,
         List<String> diagnosticReasons,
         List<String> warnings,
         List<String> unknowns,
@@ -56,6 +57,7 @@ public record DecisionExplorerRoutingDiagnosticsV1(
         degradationReasons = DecisionExplorerDtoSupport.copyOrEmpty(degradationReasons);
         partialEvidenceReasons = DecisionExplorerDtoSupport.copyOrEmpty(partialEvidenceReasons);
         unknownEvidenceReasons = DecisionExplorerDtoSupport.copyOrEmpty(unknownEvidenceReasons);
+        explanationText = DecisionExplorerDtoSupport.valueOrUnknown(explanationText);
         diagnosticReasons = DecisionExplorerDtoSupport.copyOrEmpty(diagnosticReasons);
         warnings = DecisionExplorerDtoSupport.copyOrEmpty(warnings);
         unknowns = DecisionExplorerDtoSupport.copyOrEmpty(unknowns);
@@ -96,6 +98,8 @@ public record DecisionExplorerRoutingDiagnosticsV1(
                 List.of(),
                 List.of(),
                 List.of(),
+                "Routing diagnostics mark selected candidate UNKNOWN as UNKNOWN because "
+                        + "NO_CONFIDENCE_SUMMARY_RETURNED; confidence summary evidence was unavailable.",
                 List.of("NO_CONFIDENCE_SUMMARY_RETURNED"),
                 List.of(),
                 List.of("confidence summary evidence was unavailable"),

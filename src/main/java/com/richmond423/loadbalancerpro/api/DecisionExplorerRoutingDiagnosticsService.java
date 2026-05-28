@@ -50,6 +50,13 @@ public class DecisionExplorerRoutingDiagnosticsService {
                         confidenceSummary, candidateSet, candidateComparisons, boundaryNote);
         List<DecisionExplorerFactorDiagnosticV1> factorDiagnostics =
                 factorDiagnosticsService.buildFactorDiagnostics(confidenceSummary, factorDrilldowns, boundaryNote);
+        DecisionExplorerCandidateDiagnosticV1 selectedCandidateDiagnostic =
+                candidateDiagnosticsService.selectedCandidateDiagnostic(candidateDiagnostics, boundaryNote);
+        List<DecisionExplorerCandidateDiagnosticV1> alternativeCandidateDiagnostics =
+                candidateDiagnosticsService.alternativeCandidateDiagnostics(candidateDiagnostics);
+        List<String> degradationReasons = factorDiagnosticsService.degradationReasons(factorDiagnostics);
+        List<String> partialEvidenceReasons = factorDiagnosticsService.partialEvidenceReasons(factorDiagnostics);
+        List<String> unknownEvidenceReasons = factorDiagnosticsService.unknownEvidenceReasons(factorDiagnostics);
 
         return new DecisionExplorerRoutingDiagnosticsV1(
                 true,
@@ -66,18 +73,93 @@ public class DecisionExplorerRoutingDiagnosticsService {
                 countStatus(sortedDiagnostics, DecisionExplorerEvidenceDiagnosticV1.STATUS_DEGRADED),
                 countStatus(sortedDiagnostics, DecisionExplorerEvidenceDiagnosticV1.STATUS_UNKNOWN),
                 sortedDiagnostics,
-                candidateDiagnosticsService.selectedCandidateDiagnostic(candidateDiagnostics, boundaryNote),
-                candidateDiagnosticsService.alternativeCandidateDiagnostics(candidateDiagnostics),
+                selectedCandidateDiagnostic,
+                alternativeCandidateDiagnostics,
                 candidateDiagnostics,
                 factorDiagnostics,
-                factorDiagnosticsService.degradationReasons(factorDiagnostics),
-                factorDiagnosticsService.partialEvidenceReasons(factorDiagnostics),
-                factorDiagnosticsService.unknownEvidenceReasons(factorDiagnostics),
+                degradationReasons,
+                partialEvidenceReasons,
+                unknownEvidenceReasons,
+                explanationText(
+                        confidenceSummary,
+                        selectedCandidateDiagnostic,
+                        alternativeCandidateDiagnostics,
+                        factorDiagnostics,
+                        sortedDiagnostics,
+                        degradationReasons,
+                        partialEvidenceReasons,
+                        unknownEvidenceReasons,
+                        diagnosticReasons),
                 diagnosticReasons,
                 warnings,
                 unknowns,
                 confidenceSummary.sourceReferenceIds(),
                 boundaryNote);
+    }
+
+    private static String explanationText(
+            DecisionExplorerConfidenceSummaryV1 summary,
+            DecisionExplorerCandidateDiagnosticV1 selectedCandidateDiagnostic,
+            List<DecisionExplorerCandidateDiagnosticV1> alternativeCandidateDiagnostics,
+            List<DecisionExplorerFactorDiagnosticV1> factorDiagnostics,
+            List<DecisionExplorerEvidenceDiagnosticV1> evidenceDiagnostics,
+            List<String> degradationReasons,
+            List<String> partialEvidenceReasons,
+            List<String> unknownEvidenceReasons,
+            List<String> diagnosticReasons) {
+        String selectedCandidateId = DecisionExplorerDtoSupport.valueOrUnknown(summary.selectedCandidateId());
+        String selectedDiagnosticStatus = selectedCandidateDiagnostic == null
+                ? DecisionExplorerConfidenceSummaryV1.STATUS_UNKNOWN
+                : DecisionExplorerDtoSupport.valueOrUnknown(selectedCandidateDiagnostic.diagnosticStatus());
+        String selectedRisk = selectedCandidateDiagnostic == null
+                ? DecisionExplorerCandidateDiagnosticV1.RISK_UNKNOWN
+                : DecisionExplorerDtoSupport.valueOrUnknown(selectedCandidateDiagnostic.riskLevel());
+        String evidenceCounts = evidenceCountPhrase(evidenceDiagnostics);
+        int alternativeCount = copyNonNull(alternativeCandidateDiagnostics).size();
+        int factorDiagnosticCount = copyNonNull(factorDiagnostics).size();
+        return switch (DecisionExplorerDtoSupport.valueOrUnknown(summary.status())) {
+            case DecisionExplorerConfidenceSummaryV1.STATUS_STRONG ->
+                    "Routing diagnostics mark selected candidate " + selectedCandidateId
+                            + " as STRONG because selected candidate diagnostics are "
+                            + selectedDiagnosticStatus + "/" + selectedRisk
+                            + ", evidence quality is " + summary.evidenceQuality()
+                            + ", " + alternativeCount + " alternative candidate(s) are available for comparison, "
+                            + "and " + factorDiagnosticCount + " factor diagnostic row(s) were computed.";
+            case DecisionExplorerConfidenceSummaryV1.STATUS_DEGRADED ->
+                    "Routing diagnostics mark selected candidate " + selectedCandidateId
+                            + " as DEGRADED because " + primaryReason(degradationReasons, diagnosticReasons)
+                            + "; selected risk is " + selectedRisk + " and evidence counts are "
+                            + evidenceCounts + ".";
+            case DecisionExplorerConfidenceSummaryV1.STATUS_UNKNOWN ->
+                    "Routing diagnostics mark selected candidate " + selectedCandidateId
+                            + " as UNKNOWN because " + primaryReason(unknownEvidenceReasons, diagnosticReasons)
+                            + "; selected risk is " + selectedRisk + " and evidence counts are "
+                            + evidenceCounts + ".";
+            default ->
+                    "Routing diagnostics mark selected candidate " + selectedCandidateId
+                            + " as PARTIAL because " + primaryReason(partialEvidenceReasons, diagnosticReasons)
+                            + "; selected risk is " + selectedRisk + ", " + alternativeCount
+                            + " alternative candidate(s) are available for comparison, and evidence counts are "
+                            + evidenceCounts + ".";
+        };
+    }
+
+    private static String primaryReason(List<String> preferredReasons, List<String> fallbackReasons) {
+        List<String> preferred = copyNonNull(preferredReasons);
+        if (!preferred.isEmpty()) {
+            return preferred.get(0);
+        }
+        List<String> fallback = copyNonNull(fallbackReasons);
+        return fallback.isEmpty() ? "NO_DIAGNOSTIC_REASON_RETURNED" : fallback.get(0);
+    }
+
+    private static String evidenceCountPhrase(List<DecisionExplorerEvidenceDiagnosticV1> evidenceDiagnostics) {
+        List<DecisionExplorerEvidenceDiagnosticV1> diagnostics = copyNonNull(evidenceDiagnostics);
+        return "present=" + countStatus(diagnostics, DecisionExplorerEvidenceDiagnosticV1.STATUS_PRESENT)
+                + ", partial=" + countStatus(diagnostics, DecisionExplorerEvidenceDiagnosticV1.STATUS_PARTIAL)
+                + ", missing=" + countStatus(diagnostics, DecisionExplorerEvidenceDiagnosticV1.STATUS_MISSING)
+                + ", degraded=" + countStatus(diagnostics, DecisionExplorerEvidenceDiagnosticV1.STATUS_DEGRADED)
+                + ", unknown=" + countStatus(diagnostics, DecisionExplorerEvidenceDiagnosticV1.STATUS_UNKNOWN);
     }
 
     private static DecisionExplorerEvidenceDiagnosticV1 decisionStatusDiagnostic(

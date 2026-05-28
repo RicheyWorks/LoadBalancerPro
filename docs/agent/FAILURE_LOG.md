@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T20:16-07:00
+
+Branch/PR: codex/lase-phase2-evidence-diagnostics-foundation / no PR yet
+
+Failure type: focused routing-diagnostics expectation mismatch
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerRoutingDiagnosticsServiceTest" test`
+
+Suspected cause: the new diagnostics service sorted diagnostic categories alphabetically, de-duplicated source references across all evidence sources, classified only one partial fixture row as fully present, and marked decision status plus selected candidate/factor rows as degraded in the degraded fixture. The first test expectations were narrower than the implemented grounded behavior.
+
+Fix attempted: update deterministic diagnostic fingerprints and count expectations to match the computed read-only diagnostics. The first rerun found two additional exact expectation mismatches: the reason rollup includes factor-count and health-signal codes, and the partial fixture has seven partial diagnostic rows. The second rerun found the partial fixture fingerprint still using the old category order and source-reference count.
+
+Result: focused routing diagnostics test rerun passed with 5 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with broader verification.
+
+## Entry
+
 Date/time: 2026-05-27T19:53-07:00
 
 Branch/PR: codex/lase-routing-intelligence-final-closeout / no PR yet

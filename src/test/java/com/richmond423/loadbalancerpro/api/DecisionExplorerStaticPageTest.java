@@ -86,11 +86,14 @@ class DecisionExplorerStaticPageTest {
 
         for (String expected : List.of(
                 "Decision Summary",
+                "Routing Intelligence Status",
                 "Selected Candidate",
                 "Candidate Set",
                 "Candidate Comparison",
+                "Candidate Confidence",
                 "Factor Contributions",
                 "Factor Drill-Down",
+                "Factor Status",
                 "Policy Gates",
                 "Decision Diffs",
                 "Evidence Packet Readouts",
@@ -108,6 +111,7 @@ class DecisionExplorerStaticPageTest {
                 "Evidence filter",
                 "Reviewer Explanation Badges",
                 "Selected route",
+                "Confidence status",
                 "Warning",
                 "Unknown",
                 "Partial evidence",
@@ -140,6 +144,18 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("renderScenarioCatalog"));
         assertTrue(page.contains("candidate-comparisons"));
         assertTrue(page.contains("factor-drilldowns"));
+        assertTrue(page.contains("confidence-summary"));
+        assertTrue(page.contains("candidate-confidence"));
+        assertTrue(page.contains("factor-status"));
+        assertTrue(page.contains("first.confidenceSummary"));
+        assertTrue(page.contains("renderConfidenceSummary"));
+        assertTrue(page.contains("renderCandidateConfidenceTable"));
+        assertTrue(page.contains("renderFactorStatusTable"));
+        assertTrue(page.contains("statusExplanation"));
+        assertTrue(page.contains("confidenceStatusType"));
+        assertTrue(page.contains("Candidate confidence rows"));
+        assertTrue(page.contains("Factor status rows"));
+        assertTrue(page.contains("Caution notes"));
         assertTrue(page.contains("renderCandidateComparisonTable"));
         assertTrue(page.contains("renderFactorDrilldownTable"));
         assertTrue(page.contains("reviewer-badges"));
@@ -199,6 +215,15 @@ class DecisionExplorerStaticPageTest {
                     .andExpect(jsonPath("$[0].decisionReadout.selectedCandidateId", is("green")))
                     .andExpect(jsonPath("$[0].selectedCandidate.candidateId", is("green")))
                     .andExpect(jsonPath("$[0].candidateSet[0].selected", is(true)))
+                    .andExpect(jsonPath("$[0].confidenceSummary.summaryObject",
+                            is("DecisionExplorerConfidenceSummaryV1")))
+                    .andExpect(jsonPath("$[0].confidenceSummary.status", is("PARTIAL")))
+                    .andExpect(jsonPath("$[0].confidenceSummary.statusExplanation.explanationObject",
+                            is("DecisionExplorerStatusExplanationV1")))
+                    .andExpect(jsonPath("$[0].confidenceSummary.statusExplanation.status", is("PARTIAL")))
+                    .andExpect(jsonPath("$[0].confidenceSummary.candidateConfidenceDetails[0].candidateId",
+                            is("green")))
+                    .andExpect(jsonPath("$[0].confidenceSummary.factorStatusDetails[0].factorName").exists())
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].gateId", is("boundary-read-only")))
                     .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no production readiness")))
                     .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no storage proof")))

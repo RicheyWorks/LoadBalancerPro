@@ -31,6 +31,12 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("REPLAY_STYLE_READY", evaluation.evidenceSufficiencyLevel());
         assertEquals("READY", evaluation.replayReadinessStatus());
         assertEquals(2, evaluation.candidateOutcomeCount());
+        assertEquals(2, evaluation.candidateOutcomeComparisons().size());
+        assertEquals("SELECTED_BASELINE", evaluation.candidateOutcomeComparisons().get(0).outcomeLabel());
+        assertEquals("SUPPORTS_DECISION", evaluation.candidateOutcomeComparisons().get(0).qualityImpact());
+        assertEquals("edge-a", evaluation.candidateOutcomeComparisons().get(0).candidateId());
+        assertEquals("ACCEPTABLE_ALTERNATIVE", evaluation.candidateOutcomeComparisons().get(1).outcomeLabel());
+        assertEquals("edge-b", evaluation.candidateOutcomeComparisons().get(1).candidateId());
         assertTrue(evaluation.evidenceBasis().contains("routeTradeoffCategory=SELECTED_ADVANTAGE"));
         assertTrue(evaluation.evidenceBasis().contains("replayExecutionAvailable=false"));
         assertTrue(evaluation.selectedCandidateBasis().contains("selectedCandidateId=edge-a"));
@@ -50,6 +56,11 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("MEDIUM", evaluation.qualityBand());
         assertEquals(75, evaluation.qualityScore());
         assertEquals("SELECTED_CHALLENGED", evaluation.tradeoffCategory());
+        assertEquals("SAFER_ALTERNATIVE", evaluation.candidateOutcomeComparisons().get(1).outcomeLabel());
+        assertEquals("REVIEW_SIGNAL", evaluation.candidateOutcomeComparisons().get(1).qualityImpact());
+        assertTrue(evaluation.candidateOutcomeComparisons().get(1).summaryText()
+                .contains("returned score delta of -2.0"));
+        assertTrue(evaluation.qualityReasons().contains("SHADOW_CANDIDATE_OUTCOME_SAFER_ALTERNATIVE"));
         assertTrue(evaluation.qualityReasons().contains("ROUTE_TRADEOFF_CATEGORY_SELECTED_CHALLENGED"));
         assertTrue(evaluation.evidenceBasisSummary()
                 .contains("route tradeoff SELECTED_CHALLENGED"));
@@ -81,7 +92,30 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("DEGRADED", evaluation.evidenceSufficiencyLevel());
         assertEquals("DEGRADED", evaluation.replayReadinessStatus());
         assertTrue(evaluation.selectedCandidateBasis().contains("selectedRiskLevel=HIGH"));
+        assertEquals("DEGRADED_SELECTED", evaluation.candidateOutcomeComparisons().get(0).outcomeLabel());
+        assertEquals("RISK_SIGNAL", evaluation.candidateOutcomeComparisons().get(0).qualityImpact());
+        assertTrue(evaluation.candidateOutcomeComparisons().get(0).degradedSignals()
+                .contains("health evidence state is degraded"));
         assertTrue(evaluation.qualityReasons().contains("SHADOW_DECISION_QUALITY_DEGRADED_DECISION"));
+    }
+
+    @Test
+    void unknownAlternativeOutcomeIsDeterministicAndConservative() {
+        DecisionExplorerShadowDecisionQualityEvaluationV1 evaluation = evaluate(unknownAlternative());
+
+        assertEquals("REVIEW_RECOMMENDED", evaluation.qualityLabel());
+        assertEquals(2, evaluation.candidateOutcomeCount());
+        assertEquals("SELECTED_BASELINE", evaluation.candidateOutcomeComparisons().get(0).outcomeLabel());
+        DecisionExplorerShadowCandidateOutcomeV1 unknownAlternative =
+                evaluation.candidateOutcomeComparisons().get(1);
+        assertEquals("edge-b", unknownAlternative.candidateId());
+        assertEquals("UNKNOWN_ALTERNATIVE", unknownAlternative.outcomeLabel());
+        assertEquals("UNKNOWN", unknownAlternative.qualityImpact());
+        assertEquals("UNKNOWN_GAP", unknownAlternative.scoreGapCategory());
+        assertTrue(unknownAlternative.unknownSignals().contains("candidate score evidence unknown"));
+        assertTrue(unknownAlternative.summaryText()
+                .contains("cannot be fully compared because score or diagnostic evidence is unknown"));
+        assertTrue(evaluation.qualityReasons().contains("SHADOW_CANDIDATE_OUTCOME_UNKNOWN_ALTERNATIVE"));
     }
 
     @Test
@@ -96,6 +130,7 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("UNKNOWN", evaluation.confidenceStatus());
         assertEquals("UNKNOWN", evaluation.replayReadinessStatus());
         assertEquals(0, evaluation.candidateOutcomeCount());
+        assertTrue(evaluation.candidateOutcomeComparisons().isEmpty());
         assertTrue(evaluation.evidenceBasis().isEmpty());
         assertTrue(evaluation.selectedCandidateBasis().isEmpty());
         assertTrue(evaluation.unknowns().contains("shadow decision-quality input evidence was unavailable"));
@@ -146,6 +181,7 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("UNKNOWN", evaluation.replayReadinessStatus());
         assertEquals(0, evaluation.evidenceBasisCount());
         assertEquals(0, evaluation.selectedCandidateBasisCount());
+        assertTrue(evaluation.candidateOutcomeComparisons().isEmpty());
         assertTrue(evaluation.evidenceBasis().isEmpty());
         assertTrue(evaluation.qualityReasons().isEmpty());
     }
@@ -155,7 +191,9 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         String source = Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                 + "DecisionExplorerShadowDecisionQualityService.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
-                        + "DecisionExplorerShadowDecisionQualityEvaluationV1.java"), StandardCharsets.UTF_8);
+                        + "DecisionExplorerShadowDecisionQualityEvaluationV1.java"), StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerShadowCandidateOutcomeV1.java"), StandardCharsets.UTF_8);
         String normalized = source.toLowerCase(Locale.ROOT);
 
         for (String forbidden : List.of(
@@ -241,6 +279,24 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
                 List.of(),
                 List.of("selected candidate health evidence is degraded"),
                 List.of());
+    }
+
+    private static FoundationFixture unknownAlternative() {
+        return fixture(
+                "PARTIAL",
+                "PARTIAL",
+                "PARTIAL_TRADEOFF",
+                "BASIC_DIAGNOSTICS_ONLY",
+                55,
+                "PARTIAL",
+                List.of(
+                        row("edge-a", true, "SELECTED_BASELINE", "BASELINE", "PARTIAL", "REVIEW", 10.0, 0.0),
+                        row("edge-b", false, "ALTERNATIVE_UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN",
+                                null, null, List.of(), List.of("candidate score evidence unknown"))),
+                candidateDiagnostic("edge-a", true, "PARTIAL", "REVIEW", "HEALTHY", 10.0, 0.0),
+                List.of(candidateDiagnostic("edge-b", false, "UNKNOWN", "UNKNOWN", "UNKNOWN", null, null)),
+                List.of("alternative candidate score evidence is partial"),
+                List.of("candidate score evidence unknown"));
     }
 
     private static FoundationFixture fixture(
@@ -484,7 +540,7 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
             Double finalScore,
             Double scoreDelta) {
         return row(candidateId, selected, tradeoffCategory, classification, status, riskLevel, finalScore,
-                scoreDelta, List.of());
+                scoreDelta, List.of(), List.of());
     }
 
     private static DecisionExplorerRouteTradeoffRowV1 row(
@@ -497,6 +553,21 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
             Double finalScore,
             Double scoreDelta,
             List<String> degradedSignals) {
+        return row(candidateId, selected, tradeoffCategory, classification, status, riskLevel, finalScore,
+                scoreDelta, degradedSignals, List.of());
+    }
+
+    private static DecisionExplorerRouteTradeoffRowV1 row(
+            String candidateId,
+            boolean selected,
+            String tradeoffCategory,
+            String classification,
+            String status,
+            String riskLevel,
+            Double finalScore,
+            Double scoreDelta,
+            List<String> degradedSignals,
+            List<String> unknownSignals) {
         return new DecisionExplorerRouteTradeoffRowV1(
                 candidateId,
                 candidateId,
@@ -509,13 +580,13 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
                 "DEGRADED".equals(status) ? "DEGRADED" : "HEALTHY",
                 finalScore,
                 scoreDelta,
-                selected ? "BASELINE" : "MATERIAL",
+                DecisionExplorerRouteTradeoffRowV1.scoreGapCategoryFor(selected, scoreDelta),
                 "scoring explanation",
                 "evidence summary",
                 selected ? List.of("selected candidate is baseline") : List.of("alternative evidence returned"),
                 "RISK".equals(classification) ? List.of("alternative beats selected by returned score delta")
                         : List.of(),
-                List.of(),
+                unknownSignals,
                 degradedSignals,
                 List.of("TRADEOFF_CATEGORY_" + tradeoffCategory),
                 List.of("route-tradeoff:" + candidateId),

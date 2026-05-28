@@ -210,6 +210,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/DecisionExplorerCandidateConfidenceV1");
         assertArrayRef(required(confidenceSummaryProperties, "/factorStatusDetails"),
                 "#/components/schemas/DecisionExplorerFactorStatusV1");
+        assertRef(required(confidenceSummaryProperties, "/statusExplanation"),
+                "#/components/schemas/DecisionExplorerStatusExplanationV1");
         assertEquals("array", required(confidenceSummaryProperties, "/evidenceSignals/type").asText());
         assertEquals("string", required(confidenceSummaryProperties, "/evidenceSignals/items/type").asText());
         assertEquals("array", required(confidenceSummaryProperties, "/statusReasons/type").asText());
@@ -267,6 +269,29 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(factorStatusProperties, "/sourceReferenceIds/type").asText());
         assertEquals("string", required(factorStatusProperties, "/sourceReferenceIds/items/type").asText());
         assertEquals("string", required(factorStatusProperties, "/boundaryNote/type").asText());
+
+        JsonNode statusExplanationProperties = required(docs,
+                "/components/schemas/DecisionExplorerStatusExplanationV1/properties");
+        assertEquals("string", required(statusExplanationProperties, "/explanationObject/type").asText());
+        assertEquals("string", required(statusExplanationProperties, "/contractVersion/type").asText());
+        assertEquals("string", required(statusExplanationProperties, "/status/type").asText());
+        assertEquals("string", required(statusExplanationProperties, "/evidenceQuality/type").asText());
+        assertEquals("string", required(statusExplanationProperties, "/selectedCandidateId/type").asText());
+        assertEquals("string", required(statusExplanationProperties,
+                "/selectedCandidateConfidenceStatus/type").asText());
+        assertEquals("string", required(statusExplanationProperties,
+                "/selectedCandidateHealthEvidenceState/type").asText());
+        assertEquals("string", required(statusExplanationProperties, "/factorStatusRollup/type").asText());
+        assertEquals("string", required(statusExplanationProperties, "/summaryText/type").asText());
+        assertEquals("array", required(statusExplanationProperties, "/reasonCodes/type").asText());
+        assertEquals("string", required(statusExplanationProperties, "/reasonCodes/items/type").asText());
+        assertEquals("array", required(statusExplanationProperties, "/evidenceHighlights/type").asText());
+        assertEquals("string", required(statusExplanationProperties, "/evidenceHighlights/items/type").asText());
+        assertEquals("array", required(statusExplanationProperties, "/cautionNotes/type").asText());
+        assertEquals("string", required(statusExplanationProperties, "/cautionNotes/items/type").asText());
+        assertEquals("array", required(statusExplanationProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(statusExplanationProperties, "/sourceReferenceIds/items/type").asText());
+        assertEquals("string", required(statusExplanationProperties, "/boundaryNote/type").asText());
 
         JsonNode factorReadoutProperties = required(docs,
                 "/components/schemas/FactorContributionV1/properties");

@@ -20,6 +20,7 @@ public record DecisionExplorerConfidenceSummaryV1(
         int sourceReferenceCount,
         List<DecisionExplorerCandidateConfidenceV1> candidateConfidenceDetails,
         List<DecisionExplorerFactorStatusV1> factorStatusDetails,
+        DecisionExplorerStatusExplanationV1 statusExplanation,
         List<String> evidenceSignals,
         List<String> statusReasons,
         List<String> warnings,
@@ -55,6 +56,9 @@ public record DecisionExplorerConfidenceSummaryV1(
         sourceReferenceCount = Math.max(0, sourceReferenceCount);
         candidateConfidenceDetails = DecisionExplorerDtoSupport.copyOrEmpty(candidateConfidenceDetails);
         factorStatusDetails = DecisionExplorerDtoSupport.copyOrEmpty(factorStatusDetails);
+        statusExplanation = statusExplanation == null
+                ? DecisionExplorerStatusExplanationV1.unknown(boundaryNote)
+                : statusExplanation;
         evidenceSignals = DecisionExplorerDtoSupport.copyOrEmpty(evidenceSignals);
         statusReasons = DecisionExplorerDtoSupport.copyOrEmpty(statusReasons);
         warnings = DecisionExplorerDtoSupport.copyOrEmpty(warnings);
@@ -82,6 +86,7 @@ public record DecisionExplorerConfidenceSummaryV1(
                 0,
                 List.of(),
                 List.of(),
+                DecisionExplorerStatusExplanationV1.unknown(boundaryNote),
                 List.of("routingEvidence=unavailable"),
                 List.of("NO_ROUTING_EVIDENCE_RETURNED"),
                 List.of(),
@@ -176,6 +181,56 @@ public record DecisionExplorerConfidenceSummaryV1(
                 sourceReferenceCount,
                 candidateConfidenceDetails,
                 List.of(),
+                evidenceSignals,
+                statusReasons,
+                warnings,
+                unknowns,
+                sourceReferenceIds,
+                boundaryNote);
+    }
+
+    public DecisionExplorerConfidenceSummaryV1(
+            boolean readOnly,
+            boolean simulationOnly,
+            String summaryObject,
+            String contractVersion,
+            String status,
+            String evidenceQuality,
+            String selectedCandidateId,
+            int candidateCount,
+            int candidateComparisonCount,
+            int availableFactorCount,
+            int partialFactorCount,
+            int unknownFactorCount,
+            int warningCount,
+            int unknownCount,
+            int sourceReferenceCount,
+            List<DecisionExplorerCandidateConfidenceV1> candidateConfidenceDetails,
+            List<DecisionExplorerFactorStatusV1> factorStatusDetails,
+            List<String> evidenceSignals,
+            List<String> statusReasons,
+            List<String> warnings,
+            List<String> unknowns,
+            List<String> sourceReferenceIds,
+            String boundaryNote) {
+        this(readOnly,
+                simulationOnly,
+                summaryObject,
+                contractVersion,
+                status,
+                evidenceQuality,
+                selectedCandidateId,
+                candidateCount,
+                candidateComparisonCount,
+                availableFactorCount,
+                partialFactorCount,
+                unknownFactorCount,
+                warningCount,
+                unknownCount,
+                sourceReferenceCount,
+                candidateConfidenceDetails,
+                factorStatusDetails,
+                DecisionExplorerStatusExplanationV1.unknown(boundaryNote),
                 evidenceSignals,
                 statusReasons,
                 warnings,

@@ -51,6 +51,15 @@ class DecisionExplorerConfidenceSummaryServiceTest {
                 "FACTOR_EVIDENCE_AVAILABLE",
                 "NO_STATUS_WARNINGS",
                 "SELECTED_CANDIDATE_CONFIRMED"), summary.statusReasons());
+        assertEquals("STRONG", summary.statusExplanation().status());
+        assertEquals("COMPLETE", summary.statusExplanation().evidenceQuality());
+        assertEquals("STRONG", summary.statusExplanation().selectedCandidateConfidenceStatus());
+        assertEquals("STRONG", summary.statusExplanation().factorStatusRollup());
+        assertEquals("Decision Explorer marks selected candidate edge-a as STRONG because candidate confidence is "
+                        + "STRONG and factor status rollup is STRONG.",
+                summary.statusExplanation().summaryText());
+        assertTrue(summary.statusExplanation().evidenceHighlights()
+                .contains("candidateConfidenceDetailCount=2"));
     }
 
     @Test
@@ -86,6 +95,11 @@ class DecisionExplorerConfidenceSummaryServiceTest {
         assertTrue(summary.statusReasons().contains("FACTOR_STATUS_PARTIAL"));
         assertTrue(summary.statusReasons().contains("STATUS_WARNINGS_PRESENT"));
         assertTrue(summary.statusReasons().contains("STATUS_UNKNOWNS_PRESENT"));
+        assertEquals("PARTIAL", summary.statusExplanation().status());
+        assertEquals("PARTIAL", summary.statusExplanation().factorStatusRollup());
+        assertTrue(summary.statusExplanation().summaryText().contains("PARTIAL"));
+        assertTrue(summary.statusExplanation().cautionNotes()
+                .contains("unknown:numeric contribution value"));
     }
 
     @Test
@@ -109,6 +123,9 @@ class DecisionExplorerConfidenceSummaryServiceTest {
         assertTrue(summary.candidateConfidenceDetails().isEmpty());
         assertTrue(summary.factorStatusDetails().isEmpty());
         assertEquals(List.of("NO_ROUTING_EVIDENCE_RETURNED"), summary.statusReasons());
+        assertEquals("UNKNOWN", summary.statusExplanation().status());
+        assertEquals(List.of("NO_ROUTING_EVIDENCE_RETURNED"), summary.statusExplanation().reasonCodes());
+        assertTrue(summary.statusExplanation().summaryText().contains("NO_ROUTING_EVIDENCE_RETURNED"));
         assertEquals("UNKNOWN", summary.boundaryNote());
     }
 
@@ -184,6 +201,9 @@ class DecisionExplorerConfidenceSummaryServiceTest {
         assertEquals("DEGRADED", summary.factorStatusDetails().get(0).factorStatus());
         assertEquals(List.of("FACTOR_EVIDENCE_DEGRADED"), summary.factorStatusDetails().get(0).statusReasons());
         assertEquals(List.of("SELECTED_FACTOR_STATUS_DEGRADED"), summary.statusReasons());
+        assertEquals("DEGRADED", summary.statusExplanation().status());
+        assertEquals("DEGRADED", summary.statusExplanation().factorStatusRollup());
+        assertTrue(summary.statusExplanation().summaryText().contains("SELECTED_FACTOR_STATUS_DEGRADED"));
     }
 
     @Test

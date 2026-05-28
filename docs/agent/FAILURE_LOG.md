@@ -1665,6 +1665,52 @@ Follow-up action: push the PR checkpoint and wait for PR checks.
 
 ## Entry
 
+Date/time: 2026-05-27T22:11-07:00
+
+Branch/PR: codex/lase-phase2-ui-routing-diagnostics / no PR yet
+
+Failure type: local rendered-page verification setup retries
+
+Failing check: packaged Decision Explorer rendered-page verification on `http://127.0.0.1:18081/decision-explorer.html`
+
+Suspected cause: the first app start command attempted to redirect stdout and stderr to the same PowerShell log file,
+and the first browser verification call used an unsupported `networkidle` wait-state in the in-app browser runtime.
+
+Fix attempted: restarted the packaged app with separate stdout/stderr logs, retried the browser verification with the
+supported `load` wait-state, and kept the page interaction read-only aside from posting the sample request to the
+same-origin local endpoint.
+
+Result: retry passed. The rendered page loaded one payload, displayed routing diagnostics, evidence diagnostics,
+candidate diagnostics, and factor diagnostics, rendered 2 candidate diagnostic rows, 9 evidence diagnostic rows, 34
+factor diagnostic rows, and reported no browser console errors.
+
+Follow-up action: finish whitespace/staging checks, commit, push, open the diagnostics UI PR, and wait for remote
+checks before merge.
+
+## Entry
+
+Date/time: 2026-05-27T22:04-07:00
+
+Branch/PR: codex/lase-phase2-ui-routing-diagnostics / no PR yet
+
+Failure type: local DTO path lookup and patch ordering mistakes
+
+Failing check: DTO inspection and first broad static-page patch while wiring routing diagnostics UI
+
+Suspected cause: I looked for the routing diagnostics DTOs under a stale `api/dto` package path, then attempted one
+large static-page patch with hunks out of file order.
+
+Fix attempted: located the DTOs with `rg --files`, split the static-page edits into smaller ordered patches, and
+kept the uncommitted diagnostics UI work on the same branch.
+
+Result: DTO inspection succeeded after using the correct `com.richmond423.loadbalancerpro.api` package paths, and the
+ordered patches applied cleanly.
+
+Follow-up action: run focused UI/API tests, rendered-page verification, and the standard PR verification set before
+opening the diagnostics UI PR.
+
+## Entry
+
 Date/time: 2026-05-27T14:06-07:00
 
 Branch/PR: codex/decision-explorer-phase2-ui-drilldown-comparison / no PR yet

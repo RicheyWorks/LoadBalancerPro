@@ -17,6 +17,7 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
         String evidenceSufficiencyLevel,
         String replayReadinessStatus,
         int candidateOutcomeCount,
+        List<DecisionExplorerShadowCandidateOutcomeV1> candidateOutcomeComparisons,
         int evidenceBasisCount,
         int selectedCandidateBasisCount,
         String evidenceBasisSummary,
@@ -55,7 +56,10 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
         tradeoffCategory = DecisionExplorerDtoSupport.valueOrUnknown(tradeoffCategory);
         evidenceSufficiencyLevel = normalizeSufficiencyLevel(evidenceSufficiencyLevel);
         replayReadinessStatus = normalizeReplayReadinessStatus(replayReadinessStatus);
-        candidateOutcomeCount = Math.max(0, candidateOutcomeCount);
+        candidateOutcomeComparisons = DecisionExplorerDtoSupport.copyOrEmpty(candidateOutcomeComparisons);
+        candidateOutcomeCount = candidateOutcomeComparisons.isEmpty()
+                ? Math.max(0, candidateOutcomeCount)
+                : candidateOutcomeComparisons.size();
         evidenceBasis = DecisionExplorerDtoSupport.copyOrEmpty(evidenceBasis);
         selectedCandidateBasis = DecisionExplorerDtoSupport.copyOrEmpty(selectedCandidateBasis);
         evidenceBasisCount = evidenceBasis.size();
@@ -67,6 +71,61 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
         unknowns = DecisionExplorerDtoSupport.copyOrEmpty(unknowns);
         sourceReferenceIds = DecisionExplorerDtoSupport.copyOrEmpty(sourceReferenceIds);
         boundaryNote = DecisionExplorerDtoSupport.valueOrUnknown(boundaryNote);
+    }
+
+    public DecisionExplorerShadowDecisionQualityEvaluationV1(
+            boolean readOnly,
+            boolean simulationOnly,
+            String evaluationObject,
+            String contractVersion,
+            String qualityLabel,
+            String qualityBand,
+            int qualityScore,
+            String selectedCandidateId,
+            String confidenceStatus,
+            String evidenceQuality,
+            String tradeoffCategory,
+            String evidenceSufficiencyLevel,
+            String replayReadinessStatus,
+            int candidateOutcomeCount,
+            int evidenceBasisCount,
+            int selectedCandidateBasisCount,
+            String evidenceBasisSummary,
+            String selectedCandidateBasisSummary,
+            List<String> evidenceBasis,
+            List<String> selectedCandidateBasis,
+            List<String> qualityReasons,
+            List<String> warnings,
+            List<String> unknowns,
+            List<String> sourceReferenceIds,
+            String boundaryNote) {
+        this(
+                readOnly,
+                simulationOnly,
+                evaluationObject,
+                contractVersion,
+                qualityLabel,
+                qualityBand,
+                qualityScore,
+                selectedCandidateId,
+                confidenceStatus,
+                evidenceQuality,
+                tradeoffCategory,
+                evidenceSufficiencyLevel,
+                replayReadinessStatus,
+                candidateOutcomeCount,
+                List.of(),
+                evidenceBasisCount,
+                selectedCandidateBasisCount,
+                evidenceBasisSummary,
+                selectedCandidateBasisSummary,
+                evidenceBasis,
+                selectedCandidateBasis,
+                qualityReasons,
+                warnings,
+                unknowns,
+                sourceReferenceIds,
+                boundaryNote);
     }
 
     public static DecisionExplorerShadowDecisionQualityEvaluationV1 unknown(String boundaryNote) {

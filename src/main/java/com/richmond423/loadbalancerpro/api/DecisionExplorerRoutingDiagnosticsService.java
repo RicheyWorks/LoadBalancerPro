@@ -9,6 +9,8 @@ import java.util.Objects;
 import java.util.Set;
 
 public class DecisionExplorerRoutingDiagnosticsService {
+    private final DecisionExplorerCandidateDiagnosticsService candidateDiagnosticsService =
+            new DecisionExplorerCandidateDiagnosticsService();
 
     public DecisionExplorerRoutingDiagnosticsV1 buildDiagnostics(
             DecisionExplorerConfidenceSummaryV1 confidenceSummary,
@@ -41,6 +43,9 @@ public class DecisionExplorerRoutingDiagnosticsService {
         List<String> warnings = distinctSorted(concat(confidenceSummary.warnings(), payloadWarnings));
         List<String> unknowns = distinctSorted(concat(confidenceSummary.unknowns(), payloadUnknowns));
         List<String> diagnosticReasons = diagnosticReasons(confidenceSummary, sortedDiagnostics);
+        List<DecisionExplorerCandidateDiagnosticV1> candidateDiagnostics =
+                candidateDiagnosticsService.buildCandidateDiagnostics(
+                        confidenceSummary, candidateSet, candidateComparisons, boundaryNote);
 
         return new DecisionExplorerRoutingDiagnosticsV1(
                 true,
@@ -57,6 +62,9 @@ public class DecisionExplorerRoutingDiagnosticsService {
                 countStatus(sortedDiagnostics, DecisionExplorerEvidenceDiagnosticV1.STATUS_DEGRADED),
                 countStatus(sortedDiagnostics, DecisionExplorerEvidenceDiagnosticV1.STATUS_UNKNOWN),
                 sortedDiagnostics,
+                candidateDiagnosticsService.selectedCandidateDiagnostic(candidateDiagnostics, boundaryNote),
+                candidateDiagnosticsService.alternativeCandidateDiagnostics(candidateDiagnostics),
+                candidateDiagnostics,
                 diagnosticReasons,
                 warnings,
                 unknowns,

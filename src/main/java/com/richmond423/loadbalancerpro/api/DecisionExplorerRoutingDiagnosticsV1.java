@@ -17,6 +17,9 @@ public record DecisionExplorerRoutingDiagnosticsV1(
         int degradedEvidenceCount,
         int unknownEvidenceCount,
         List<DecisionExplorerEvidenceDiagnosticV1> evidenceDiagnostics,
+        DecisionExplorerCandidateDiagnosticV1 selectedCandidateDiagnostic,
+        List<DecisionExplorerCandidateDiagnosticV1> alternativeCandidateDiagnostics,
+        List<DecisionExplorerCandidateDiagnosticV1> candidateDiagnostics,
         List<String> diagnosticReasons,
         List<String> warnings,
         List<String> unknowns,
@@ -40,6 +43,11 @@ public record DecisionExplorerRoutingDiagnosticsV1(
         degradedEvidenceCount = Math.max(0, degradedEvidenceCount);
         unknownEvidenceCount = Math.max(0, unknownEvidenceCount);
         evidenceDiagnostics = DecisionExplorerDtoSupport.copyOrEmpty(evidenceDiagnostics);
+        selectedCandidateDiagnostic = selectedCandidateDiagnostic == null
+                ? DecisionExplorerCandidateDiagnosticV1.unknownSelected(boundaryNote)
+                : selectedCandidateDiagnostic;
+        alternativeCandidateDiagnostics = DecisionExplorerDtoSupport.copyOrEmpty(alternativeCandidateDiagnostics);
+        candidateDiagnostics = DecisionExplorerDtoSupport.copyOrEmpty(candidateDiagnostics);
         diagnosticReasons = DecisionExplorerDtoSupport.copyOrEmpty(diagnosticReasons);
         warnings = DecisionExplorerDtoSupport.copyOrEmpty(warnings);
         unknowns = DecisionExplorerDtoSupport.copyOrEmpty(unknowns);
@@ -73,6 +81,9 @@ public record DecisionExplorerRoutingDiagnosticsV1(
                 0,
                 1,
                 List.of(diagnostic),
+                DecisionExplorerCandidateDiagnosticV1.unknownSelected(boundaryNote),
+                List.of(),
+                List.of(),
                 List.of("NO_CONFIDENCE_SUMMARY_RETURNED"),
                 List.of(),
                 List.of("confidence summary evidence was unavailable"),

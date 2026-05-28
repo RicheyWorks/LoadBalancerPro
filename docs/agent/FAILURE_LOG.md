@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T20:44-07:00
+
+Branch/PR: codex/lase-phase2-candidate-diagnostics / no PR yet
+
+Failure type: focused candidate-diagnostics expectation mismatch
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerCandidateDiagnosticsServiceTest,DecisionExplorerRoutingDiagnosticsServiceTest" test`
+
+Suspected cause: the new candidate diagnostics service preserved boundary unknown signals such as hidden routing internals in candidate unknown counts, while the initial assertions treated strong candidate rows as having zero unknowns and expected lower degraded-signal counts than the computed health evidence produced.
+
+Fix attempted: adjusted risk/status rules so STRONG confidence is not downgraded solely by boundary unknown signals, updated deterministic fingerprints to preserve boundary unknown counts, and updated the selected-candidate reason rollup expectation to include confidence-service reason codes.
+
+Result: focused candidate/routing diagnostics test rerun passed with 10 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with broader verification.
+
+## Entry
+
 Date/time: 2026-05-27T20:16-07:00
 
 Branch/PR: codex/lase-phase2-evidence-diagnostics-foundation / no PR yet

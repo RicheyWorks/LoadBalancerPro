@@ -14,17 +14,17 @@ Goal name: LASE Routing Intelligence Phase 4
 
 Current PR slot: LASE-P4-G02
 
-Checkpoint: LASE-P4-G01 merged-main-green; LASE-P4-G02 active local implementation
+Checkpoint: LASE-P4-G02 PR #406 opened; current-head checks pending
 
 Started from main SHA: `144be5daa22e52295ad3e3d1e69fbe60b49be396`
 
 Current branch: codex/lase-phase4-candidate-outcomes
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/406
 
-PR creation head: pending
+PR creation head: `5321f0c18045f3f2c6c5f5f2aac3d567dd334e53`
 
-Current branch head: `6502e27f25650226652c77d6d40f088b60f83b59` plus uncommitted LASE-P4-G02 runtime/test work
+Current branch head: `5321f0c18045f3f2c6c5f5f2aac3d567dd334e53` plus uncommitted PR-created checkpoint
 
 Changed files for this slice:
 
@@ -55,6 +55,8 @@ Checks run:
 - LASE-P4-G02 full local verification passed before commit/PR creation: `mvn -q test`,
   `mvn -q "-DskipTests" package`, `mvn -B package` with 2,780 tests, `git diff --check`,
   `git diff --cached --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P4-G02 committed as `5321f0c18045f3f2c6c5f5f2aac3d567dd334e53`, pushed to origin, and opened as
+  PR #406: https://github.com/RicheyWorks/LoadBalancerPro/pull/406.
 
 LASE-P4-G01 changed files:
 

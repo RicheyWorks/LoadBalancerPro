@@ -88,16 +88,22 @@ class DecisionExplorerStaticPageTest {
                 "Decision Summary",
                 "Routing Intelligence Status",
                 "Routing Diagnostics",
+                "Route Tradeoff Intelligence",
+                "Evidence Sufficiency",
+                "Replay Readiness",
                 "Selected Candidate",
                 "Candidate Set",
                 "Candidate Comparison",
                 "Candidate Confidence",
                 "Candidate Diagnostics",
+                "Route Candidate Tradeoffs",
+                "Candidate Tradeoff Scoring",
                 "Evidence Diagnostics",
                 "Factor Contributions",
                 "Factor Drill-Down",
                 "Factor Status",
                 "Factor Diagnostics",
+                "Factor Tradeoff Deltas",
                 "Degradation Reasons",
                 "Partial Evidence Reasons",
                 "Unknown Evidence Reasons",
@@ -120,6 +126,9 @@ class DecisionExplorerStaticPageTest {
                 "Selected route",
                 "Confidence status",
                 "Diagnostics status",
+                "Tradeoff status",
+                "Evidence sufficiency",
+                "Replay readiness",
                 "Degraded signals",
                 "Warning",
                 "Unknown",
@@ -155,32 +164,50 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("factor-drilldowns"));
         assertTrue(page.contains("confidence-summary"));
         assertTrue(page.contains("routing-diagnostics"));
+        assertTrue(page.contains("route-tradeoff-summary"));
+        assertTrue(page.contains("evidence-sufficiency"));
+        assertTrue(page.contains("replay-readiness"));
         assertTrue(page.contains("candidate-confidence"));
         assertTrue(page.contains("candidate-diagnostics"));
+        assertTrue(page.contains("route-candidate-tradeoffs"));
+        assertTrue(page.contains("candidate-tradeoff-scoring"));
         assertTrue(page.contains("evidence-diagnostics"));
         assertTrue(page.contains("factor-status"));
         assertTrue(page.contains("factor-diagnostics"));
+        assertTrue(page.contains("factor-tradeoff-deltas"));
         assertTrue(page.contains("degradation-reasons"));
         assertTrue(page.contains("partial-evidence-reasons"));
         assertTrue(page.contains("unknown-evidence-reasons"));
         assertTrue(page.contains("first.confidenceSummary"));
         assertTrue(page.contains("first.routingDiagnostics"));
+        assertTrue(page.contains("first.routeTradeoffAnalysis"));
         assertTrue(page.contains("renderConfidenceSummary"));
         assertTrue(page.contains("renderRoutingDiagnosticsSummary"));
+        assertTrue(page.contains("renderRouteTradeoffSummary"));
+        assertTrue(page.contains("renderEvidenceSufficiencySummary"));
+        assertTrue(page.contains("renderReplayReadinessSummary"));
         assertTrue(page.contains("renderCandidateConfidenceTable"));
         assertTrue(page.contains("renderCandidateDiagnosticsTable"));
+        assertTrue(page.contains("renderRouteTradeoffTable"));
+        assertTrue(page.contains("renderCandidateTradeoffScoringTable"));
         assertTrue(page.contains("renderEvidenceDiagnosticsTable"));
         assertTrue(page.contains("renderFactorStatusTable"));
         assertTrue(page.contains("renderFactorDiagnosticsTable"));
+        assertTrue(page.contains("renderFactorTradeoffDeltaTable"));
         assertTrue(page.contains("statusExplanation"));
         assertTrue(page.contains("routingDiagnostics"));
+        assertTrue(page.contains("routeTradeoffAnalysis"));
         assertTrue(page.contains("diagnostics.explanationText"));
         assertTrue(page.contains("degradationReasons"));
         assertTrue(page.contains("partialEvidenceReasons"));
         assertTrue(page.contains("unknownEvidenceReasons"));
         assertTrue(page.contains("confidenceStatusType"));
+        assertTrue(page.contains("sufficiencyStatusType"));
+        assertTrue(page.contains("replayReadinessStatusType"));
         assertTrue(page.contains("Candidate confidence rows"));
         assertTrue(page.contains("Factor status rows"));
+        assertTrue(page.contains("closestAlternativeText"));
+        assertTrue(page.contains("readinessScoreText"));
         assertTrue(page.contains("Caution notes"));
         assertTrue(page.contains("renderCandidateComparisonTable"));
         assertTrue(page.contains("renderFactorDrilldownTable"));
@@ -268,10 +295,18 @@ class DecisionExplorerStaticPageTest {
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.selectedCandidateId", is("green")))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.candidateTradeoffs[0].candidateId",
                             is("green")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.candidateScoringExplanations[0].candidateId",
+                            is("green")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.factorTradeoffDeltas[0].factorName").exists())
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.evidenceSufficiency.diagnosticObject",
                             is("DecisionExplorerEvidenceSufficiencyV1")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.evidenceSufficiency.readinessScore").exists())
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.diagnosticObject",
                             is("DecisionExplorerReplayReadinessDiagnosticV1")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.replayExecutionAvailable",
+                            is(false)))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.replayStorageAvailable",
+                            is(false)))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.replayExportAvailable",
                             is(false)))
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].gateId", is("boundary-read-only")))

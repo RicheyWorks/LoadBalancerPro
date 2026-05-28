@@ -8,31 +8,31 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T01:27-07:00
+Timestamp: 2026-05-28T02:12-07:00
 
 Goal name: LASE Routing Intelligence Infrastructure Phase 3
 
-Current PR slot: LASE-P3-G03
+Current PR slot: LASE-P3-G04
 
-Checkpoint: PR #397 opened for factor tradeoff deltas; PR-created checkpoint verified locally
+Checkpoint: PR #398 opened for evidence sufficiency and replay-readiness diagnostics; PR-created checkpoint verified locally
 
-Started from main SHA: `e77792af4ea747ae193e37610b1dad304a950450`
+Started from main SHA: `b95fcfdc45ae5ec0417f093be2f190cbbfc3314a`
 
-Current branch: codex/lase-phase3-factor-tradeoff-deltas
+Current branch: codex/lase-phase3-evidence-readiness-diagnostics
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/397
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/398
 
-PR creation head: `2f7fd14559b8aeeb004dc151557b589f140d6e92`
+PR creation head: `0a8bfd685266924b362ca8c0d5a646970d5b79c2`
 
-Current branch head: uncommitted PR-created checkpoint update; re-read before checkpoint commit and push
+Current branch head: uncommitted PR-created checkpoint verification update; re-read before checkpoint commit and push
 
 Changed files for this slice:
 
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerFactorTradeoffDeltaV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerEvidenceSufficiencyV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerReplayReadinessDiagnosticV1.java
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffAnalysisV1.java
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffService.java
 - src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffServiceTest.java
-- docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
 
 Checks run:
@@ -83,10 +83,36 @@ Checks run:
 - LASE-P3-G03 PR-created checkpoint full local verification passed: `mvn -q test`,
   `mvn -q "-DskipTests" package`, `mvn -B package` with 2,767 tests, `git diff --check`,
   and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P3-G03 checkpoint committed as `53fa6069493c288337835fc230b41cebc07dd695`.
+- LASE-P3-G03 current-head PR checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and
+  Dependency Review.
+- LASE-P3-G03 merged as `b95fcfdc45ae5ec0417f093be2f190cbbfc3314a`.
+- LASE-P3-G03 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,767 tests, `git diff --check`,
+  `git diff --cached --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P3-G03 main CI and CodeQL passed for `b95fcfdc45ae5ec0417f093be2f190cbbfc3314a`.
+- LASE-P3-G04 branch `codex/lase-phase3-evidence-readiness-diagnostics` was created from clean synced main at
+  `b95fcfdc45ae5ec0417f093be2f190cbbfc3314a`.
+- LASE-P3-G04 adds read-only evidence sufficiency and replay-readiness diagnostics derived from route tradeoff,
+  candidate scoring, factor delta, and routing diagnostics data. It does not execute replay, persist replay state,
+  export evidence, or change production routing/scoring/proxy behavior.
+- LASE-P3-G04 focused test passed:
+  `mvn -q "-Dtest=DecisionExplorerRouteTradeoffServiceTest" test`.
+- LASE-P3-G04 broader focused selector passed:
+  `mvn -q "-Dtest=DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerRoutingDiagnosticsServiceTest,DecisionExplorerFactorDiagnosticsServiceTest,DecisionExplorerCandidateDiagnosticsServiceTest,DecisionExplorerPayloadServiceTest,DecisionExplorerPayloadV1Test,DecisionExplorerRoutingDiagnosticsFixtureCatalogTest" test`.
+- LASE-P3-G04 full local verification passed before commit/PR creation: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,767 tests, `git diff --check`,
+  `git diff --cached --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P3-G04 committed as `0a8bfd685266924b362ca8c0d5a646970d5b79c2`.
+- LASE-P3-G04 pushed to origin and opened as PR #398:
+  https://github.com/RicheyWorks/LoadBalancerPro/pull/398.
+- LASE-P3-G04 PR-created checkpoint full local verification passed: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,767 tests, `git diff --check`,
+  `git diff --cached --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
 
 Blockers: none.
 
-Next action: commit and push the PR-created checkpoint update, then wait for PR #397 current-head remote checks.
+Next action: commit/push the PR-created checkpoint update, then wait for current-head remote checks.
 
 ## Historical Decision Explorer Phase 2 Campaign Checkpoint
 

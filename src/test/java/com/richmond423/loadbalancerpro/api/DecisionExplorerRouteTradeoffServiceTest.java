@@ -48,6 +48,20 @@ class DecisionExplorerRouteTradeoffServiceTest {
                 scoringFingerprint(analysis));
         assertEquals(List.of("edge-b:latency:NEUTRAL:SUPPORTING:SUPPORTING:MATERIAL:5.0"),
                 factorDeltaFingerprint(analysis));
+        assertEquals("REPLAY_STYLE_READY", analysis.evidenceSufficiency().sufficiencyLevel());
+        assertEquals(100, analysis.evidenceSufficiency().readinessScore());
+        assertTrue(analysis.evidenceSufficiency().basicDiagnosticsReady());
+        assertTrue(analysis.evidenceSufficiency().tradeoffAnalysisReady());
+        assertTrue(analysis.evidenceSufficiency().replayStyleAnalysisReady());
+        assertEquals("PARTIAL", analysis.replayReadinessDiagnostic().readinessStatus());
+        assertEquals("AVAILABLE", analysis.replayReadinessDiagnostic().candidateEvidenceStatus());
+        assertEquals("AVAILABLE", analysis.replayReadinessDiagnostic().alternativeEvidenceStatus());
+        assertEquals("AVAILABLE", analysis.replayReadinessDiagnostic().scoreEvidenceStatus());
+        assertEquals("AVAILABLE", analysis.replayReadinessDiagnostic().factorEvidenceStatus());
+        assertEquals("UNKNOWN", analysis.replayReadinessDiagnostic().fingerprintEvidenceStatus());
+        assertFalse(analysis.replayReadinessDiagnostic().replayExecutionAvailable());
+        assertTrue(analysis.replayReadinessDiagnostic().missingEvidenceSignals()
+                .contains("diagnostic fingerprint evidence has not been computed yet"));
         assertTrue(analysis.tradeoffReasons().contains("ROUTE_TRADEOFF_CATEGORY_SELECTED_ADVANTAGE"));
         assertTrue(analysis.candidateTradeoffs().get(1).benefitSignals()
                 .contains("alternative trails selected by returned score delta"));
@@ -107,6 +121,18 @@ class DecisionExplorerRouteTradeoffServiceTest {
                 .contains("score evidence is incomplete for tradeoff explanation"));
         assertEquals(List.of("edge-b:latency:UNKNOWN:UNKNOWN:WARNING:UNKNOWN_GAP:null"),
                 factorDeltaFingerprint(analysis));
+        assertEquals("BASIC_DIAGNOSTICS_ONLY", analysis.evidenceSufficiency().sufficiencyLevel());
+        assertTrue(analysis.evidenceSufficiency().basicDiagnosticsReady());
+        assertFalse(analysis.evidenceSufficiency().tradeoffAnalysisReady());
+        assertFalse(analysis.evidenceSufficiency().replayStyleAnalysisReady());
+        assertTrue(analysis.evidenceSufficiency().partialEvidenceSignals()
+                .contains("score evidence is partial for candidate edge-b"));
+        assertTrue(analysis.evidenceSufficiency().missingEvidenceSignals()
+                .contains("score-comparable alternative evidence was not returned"));
+        assertEquals("PARTIAL", analysis.replayReadinessDiagnostic().readinessStatus());
+        assertEquals("PARTIAL", analysis.replayReadinessDiagnostic().alternativeEvidenceStatus());
+        assertEquals("PARTIAL", analysis.replayReadinessDiagnostic().scoreEvidenceStatus());
+        assertEquals("PARTIAL", analysis.replayReadinessDiagnostic().factorEvidenceStatus());
         DecisionExplorerFactorTradeoffDeltaV1 factorDelta = analysis.factorTradeoffDeltas().get(0);
         assertTrue(factorDelta.limitationSignals().contains("selected factor evidence was not returned"));
         assertTrue(factorDelta.reasonCodes().contains("SELECTED_FACTOR_MISSING"));
@@ -153,6 +179,10 @@ class DecisionExplorerRouteTradeoffServiceTest {
                 fingerprint(analysis));
         assertEquals(List.of("edge-a:DEGRADED:SELECTED_BASELINE_SCORE_PRESENT:DEGRADED:BASELINE"),
                 scoringFingerprint(analysis));
+        assertEquals("DEGRADED", analysis.evidenceSufficiency().sufficiencyLevel());
+        assertFalse(analysis.evidenceSufficiency().tradeoffAnalysisReady());
+        assertEquals("DEGRADED", analysis.replayReadinessDiagnostic().readinessStatus());
+        assertEquals("DEGRADED", analysis.replayReadinessDiagnostic().sufficiencyLevel());
         assertTrue(analysis.candidateScoringExplanations().get(0).limitationSignals()
                 .stream()
                 .anyMatch(signal -> signal.contains("healthState=false")
@@ -186,6 +216,13 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertTrue(analysis.candidateTradeoffs().isEmpty());
         assertTrue(analysis.candidateScoringExplanations().isEmpty());
         assertTrue(analysis.factorTradeoffDeltas().isEmpty());
+        assertEquals("INSUFFICIENT", analysis.evidenceSufficiency().sufficiencyLevel());
+        assertEquals(0, analysis.evidenceSufficiency().readinessScore());
+        assertFalse(analysis.evidenceSufficiency().basicDiagnosticsReady());
+        assertEquals("UNKNOWN", analysis.replayReadinessDiagnostic().readinessStatus());
+        assertEquals("UNKNOWN", analysis.replayReadinessDiagnostic().candidateEvidenceStatus());
+        assertFalse(analysis.replayReadinessDiagnostic().replayStorageAvailable());
+        assertFalse(analysis.replayReadinessDiagnostic().replayExportAvailable());
         assertEquals(List.of("ROUTING_DIAGNOSTICS_UNAVAILABLE"), analysis.tradeoffReasons());
         assertTrue(analysis.unknowns().contains("route tradeoff diagnostics were unavailable"));
         assertEquals("UNKNOWN", analysis.boundaryNote());
@@ -201,6 +238,10 @@ class DecisionExplorerRouteTradeoffServiceTest {
                         + "DecisionExplorerRouteTradeoffAnalysisV1.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerFactorTradeoffDeltaV1.java"), StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerEvidenceSufficiencyV1.java"), StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerReplayReadinessDiagnosticV1.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerRouteTradeoffRowV1.java"), StandardCharsets.UTF_8);
         String normalized = source.toLowerCase(Locale.ROOT);

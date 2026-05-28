@@ -21,6 +21,8 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
         List<DecisionExplorerRouteTradeoffRowV1> candidateTradeoffs,
         List<DecisionExplorerCandidateTradeoffScoringExplanationV1> candidateScoringExplanations,
         List<DecisionExplorerFactorTradeoffDeltaV1> factorTradeoffDeltas,
+        DecisionExplorerEvidenceSufficiencyV1 evidenceSufficiency,
+        DecisionExplorerReplayReadinessDiagnosticV1 replayReadinessDiagnostic,
         List<String> tradeoffReasons,
         List<String> warnings,
         List<String> unknowns,
@@ -48,6 +50,12 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
         candidateTradeoffs = DecisionExplorerDtoSupport.copyOrEmpty(candidateTradeoffs);
         candidateScoringExplanations = DecisionExplorerDtoSupport.copyOrEmpty(candidateScoringExplanations);
         factorTradeoffDeltas = DecisionExplorerDtoSupport.copyOrEmpty(factorTradeoffDeltas);
+        evidenceSufficiency = evidenceSufficiency == null
+                ? DecisionExplorerEvidenceSufficiencyV1.unknown(boundaryNote)
+                : evidenceSufficiency;
+        replayReadinessDiagnostic = replayReadinessDiagnostic == null
+                ? DecisionExplorerReplayReadinessDiagnosticV1.unknown(boundaryNote)
+                : replayReadinessDiagnostic;
         tradeoffReasons = DecisionExplorerDtoSupport.copyOrEmpty(tradeoffReasons);
         warnings = DecisionExplorerDtoSupport.copyOrEmpty(warnings);
         unknowns = DecisionExplorerDtoSupport.copyOrEmpty(unknowns);
@@ -77,6 +85,8 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
                 List.of(),
                 List.of(),
                 List.of(),
+                DecisionExplorerEvidenceSufficiencyV1.unknown(boundaryNote),
+                DecisionExplorerReplayReadinessDiagnosticV1.unknown(boundaryNote),
                 List.of("ROUTING_DIAGNOSTICS_UNAVAILABLE"),
                 List.of(),
                 List.of("route tradeoff diagnostics were unavailable"),

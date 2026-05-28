@@ -24,6 +24,46 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-28T03:08-07:00
+
+Branch/PR: codex/lase-phase3-tradeoff-ui / no PR yet
+
+Failure type: browser verification tooling retry
+
+Failing check: Browser runtime script for Decision Explorer UI verification.
+
+Suspected cause: the persistent browser automation session already had a top-level `runButton` binding from an
+earlier interaction, so redeclaring it with `const` failed before page assertions ran.
+
+Fix attempted: retried the browser verification with slice-specific `var deUi...` bindings.
+
+Result: retry passed. The page loaded one Decision Explorer payload, rendered route tradeoff, evidence sufficiency,
+replay-readiness, candidate tradeoff, candidate scoring, and factor delta UI data, and reported no browser console
+errors.
+
+Follow-up action: continue the PR local verification and commit flow.
+
+## Entry
+
+Date/time: 2026-05-28T03:08-07:00
+
+Branch/PR: codex/lase-phase3-tradeoff-ui / no PR yet
+
+Failure type: browser screenshot tooling timeout
+
+Failing check: Browser screenshot capture after Decision Explorer UI verification.
+
+Suspected cause: the browser backend timed out during `Page.captureScreenshot`; the already-completed DOM/UI
+verification had passed and did not depend on the screenshot.
+
+Fix attempted: recorded the tooling timeout and kept the successful browser DOM verification as the UI evidence.
+
+Result: no application failure found; console errors were empty and computed tradeoff/readiness panels rendered.
+
+Follow-up action: continue with commit and PR creation after updating the session checkpoint.
+
+## Entry
+
 Date/time: 2026-05-28T02:29-07:00
 
 Branch/PR: codex/lase-phase3-route-tradeoff-api / no PR yet

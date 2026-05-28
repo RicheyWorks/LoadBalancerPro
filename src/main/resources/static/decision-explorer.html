@@ -569,6 +569,18 @@
       <h2 id="routing-diagnostics-title">Routing Diagnostics</h2>
       <div id="routing-diagnostics" class="empty">No routing diagnostics loaded yet.</div>
     </section>
+    <section class="panel" aria-labelledby="route-tradeoff-title">
+      <h2 id="route-tradeoff-title">Route Tradeoff Intelligence</h2>
+      <div id="route-tradeoff-summary" class="empty">No route tradeoff analysis loaded yet.</div>
+    </section>
+    <section class="panel" aria-labelledby="evidence-sufficiency-title">
+      <h2 id="evidence-sufficiency-title">Evidence Sufficiency</h2>
+      <div id="evidence-sufficiency" class="empty">No evidence sufficiency diagnostics loaded yet.</div>
+    </section>
+    <section class="panel" aria-labelledby="replay-readiness-title">
+      <h2 id="replay-readiness-title">Replay Readiness</h2>
+      <div id="replay-readiness" class="empty">No replay-readiness diagnostics loaded yet.</div>
+    </section>
     <section class="panel" aria-labelledby="reviewer-badges-title">
       <h2 id="reviewer-badges-title">Reviewer Explanation Badges</h2>
       <p class="scenario-note">Display-only labels from returned payload fields; badges do not enforce or prove runtime decisions.</p>
@@ -604,6 +616,16 @@
     <div id="candidate-diagnostics" class="empty">No candidate diagnostic rows loaded yet.</div>
   </section>
 
+  <section class="panel" aria-labelledby="route-candidate-tradeoffs-title">
+    <h2 id="route-candidate-tradeoffs-title">Route Candidate Tradeoffs</h2>
+    <div id="route-candidate-tradeoffs" class="empty">No route candidate tradeoff rows loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="candidate-tradeoff-scoring-title">
+    <h2 id="candidate-tradeoff-scoring-title">Candidate Tradeoff Scoring</h2>
+    <div id="candidate-tradeoff-scoring" class="empty">No candidate tradeoff scoring rows loaded yet.</div>
+  </section>
+
   <section class="panel" aria-labelledby="evidence-diagnostics-title">
     <h2 id="evidence-diagnostics-title">Evidence Diagnostics</h2>
     <div id="evidence-diagnostics" class="empty">No evidence diagnostic rows loaded yet.</div>
@@ -627,6 +649,11 @@
   <section class="panel" aria-labelledby="factor-diagnostics-title">
     <h2 id="factor-diagnostics-title">Factor Diagnostics</h2>
     <div id="factor-diagnostics" class="empty">No factor diagnostic rows loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="factor-tradeoff-deltas-title">
+    <h2 id="factor-tradeoff-deltas-title">Factor Tradeoff Deltas</h2>
+    <div id="factor-tradeoff-deltas" class="empty">No factor tradeoff delta rows loaded yet.</div>
   </section>
 
   <div class="grid">
@@ -735,6 +762,9 @@
     decisionSummary: document.getElementById("decision-summary"),
     confidenceSummary: document.getElementById("confidence-summary"),
     routingDiagnostics: document.getElementById("routing-diagnostics"),
+    routeTradeoffSummary: document.getElementById("route-tradeoff-summary"),
+    evidenceSufficiency: document.getElementById("evidence-sufficiency"),
+    replayReadiness: document.getElementById("replay-readiness"),
     reviewerBadges: document.getElementById("reviewer-badges"),
     selectedCandidate: document.getElementById("selected-candidate"),
     notProven: document.getElementById("not-proven"),
@@ -742,11 +772,14 @@
     candidateComparisons: document.getElementById("candidate-comparisons"),
     candidateConfidence: document.getElementById("candidate-confidence"),
     candidateDiagnostics: document.getElementById("candidate-diagnostics"),
+    routeCandidateTradeoffs: document.getElementById("route-candidate-tradeoffs"),
+    candidateTradeoffScoring: document.getElementById("candidate-tradeoff-scoring"),
     evidenceDiagnostics: document.getElementById("evidence-diagnostics"),
     factorContributions: document.getElementById("factor-contributions"),
     factorDrilldowns: document.getElementById("factor-drilldowns"),
     factorStatus: document.getElementById("factor-status"),
     factorDiagnostics: document.getElementById("factor-diagnostics"),
+    factorTradeoffDeltas: document.getElementById("factor-tradeoff-deltas"),
     degradationReasons: document.getElementById("degradation-reasons"),
     partialEvidenceReasons: document.getElementById("partial-evidence-reasons"),
     unknownEvidenceReasons: document.getElementById("unknown-evidence-reasons"),
@@ -975,8 +1008,12 @@
       ["Boundary", value(first.boundaryNote)]
     ]);
     const routingDiagnostics = first.routingDiagnostics || {};
+    const routeTradeoffAnalysis = first.routeTradeoffAnalysis || {};
     renderConfidenceSummary(elements.confidenceSummary, first.confidenceSummary);
     renderRoutingDiagnosticsSummary(elements.routingDiagnostics, routingDiagnostics);
+    renderRouteTradeoffSummary(elements.routeTradeoffSummary, routeTradeoffAnalysis);
+    renderEvidenceSufficiencySummary(elements.evidenceSufficiency, routeTradeoffAnalysis.evidenceSufficiency);
+    renderReplayReadinessSummary(elements.replayReadiness, routeTradeoffAnalysis.replayReadinessDiagnostic);
     renderReviewerBadges(elements.reviewerBadges, first, selectedScenario());
     renderKeyValues(elements.selectedCandidate, candidateRows(first.selectedCandidate));
     renderChips(elements.notProven, first.notProvenBoundaries, "not-proven");
@@ -987,6 +1024,11 @@
       first.confidenceSummary && first.confidenceSummary.candidateConfidenceDetails || []
     );
     renderCandidateDiagnosticsTable(elements.candidateDiagnostics, routingDiagnostics.candidateDiagnostics || []);
+    renderRouteTradeoffTable(elements.routeCandidateTradeoffs, routeTradeoffAnalysis.candidateTradeoffs || []);
+    renderCandidateTradeoffScoringTable(
+      elements.candidateTradeoffScoring,
+      routeTradeoffAnalysis.candidateScoringExplanations || []
+    );
     renderEvidenceDiagnosticsTable(elements.evidenceDiagnostics, routingDiagnostics.evidenceDiagnostics || []);
     renderFactorTable(elements.factorContributions, first.factorContributions || []);
     renderFactorDrilldownTable(elements.factorDrilldowns, first.factorDrilldowns || []);
@@ -995,6 +1037,7 @@
       first.confidenceSummary && first.confidenceSummary.factorStatusDetails || []
     );
     renderFactorDiagnosticsTable(elements.factorDiagnostics, routingDiagnostics.factorDiagnostics || []);
+    renderFactorTradeoffDeltaTable(elements.factorTradeoffDeltas, routeTradeoffAnalysis.factorTradeoffDeltas || []);
     renderChips(elements.degradationReasons, routingDiagnostics.degradationReasons, "warning");
     renderChips(elements.partialEvidenceReasons, routingDiagnostics.partialEvidenceReasons, "warning");
     renderChips(elements.unknownEvidenceReasons, routingDiagnostics.unknownEvidenceReasons, "unknown");
@@ -1011,6 +1054,9 @@
     setEmpty(elements.decisionSummary, error.message);
     setEmpty(elements.confidenceSummary, "No confidence summary available.");
     setEmpty(elements.routingDiagnostics, "No routing diagnostics available.");
+    setEmpty(elements.routeTradeoffSummary, "No route tradeoff analysis available.");
+    setEmpty(elements.evidenceSufficiency, "No evidence sufficiency diagnostics available.");
+    setEmpty(elements.replayReadiness, "No replay-readiness diagnostics available.");
     setEmpty(elements.reviewerBadges, "No reviewer badges available.");
     setEmpty(elements.selectedCandidate, "No selected candidate available.");
     setEmpty(elements.notProven, "No boundaries available.");
@@ -1018,11 +1064,14 @@
     setEmpty(elements.candidateComparisons, "No candidate comparison rows available.");
     setEmpty(elements.candidateConfidence, "No candidate confidence rows available.");
     setEmpty(elements.candidateDiagnostics, "No candidate diagnostic rows available.");
+    setEmpty(elements.routeCandidateTradeoffs, "No route candidate tradeoff rows available.");
+    setEmpty(elements.candidateTradeoffScoring, "No candidate tradeoff scoring rows available.");
     setEmpty(elements.evidenceDiagnostics, "No evidence diagnostic rows available.");
     setEmpty(elements.factorContributions, "No factor contribution readouts available.");
     setEmpty(elements.factorDrilldowns, "No factor drill-down readouts available.");
     setEmpty(elements.factorStatus, "No factor status rows available.");
     setEmpty(elements.factorDiagnostics, "No factor diagnostic rows available.");
+    setEmpty(elements.factorTradeoffDeltas, "No factor tradeoff delta rows available.");
     setEmpty(elements.degradationReasons, "No degradation reasons available.");
     setEmpty(elements.partialEvidenceReasons, "No partial evidence reasons available.");
     setEmpty(elements.unknownEvidenceReasons, "No unknown evidence reasons available.");
@@ -1128,6 +1177,145 @@
     ].join(" / ");
   }
 
+  function renderRouteTradeoffSummary(target, analysis) {
+    target.replaceChildren();
+    if (!analysis || !analysis.analysisObject) {
+      setEmpty(target, "No route tradeoff analysis returned.");
+      return;
+    }
+    const sufficiency = analysis.evidenceSufficiency || {};
+    const readiness = analysis.replayReadinessDiagnostic || {};
+    const wrapper = document.createElement("div");
+    wrapper.className = "diagnostic-summary";
+    const badge = document.createElement("span");
+    badge.className = `confidence-status ${confidenceStatusType(analysis.overallStatus)}`;
+    badge.textContent = `${value(analysis.overallStatus)} / ${value(analysis.tradeoffCategory)}`;
+    wrapper.append(badge);
+    wrapper.append(keyValueTable([
+      ["Selected candidate", value(analysis.selectedCandidateId)],
+      ["Closest alternative", closestAlternativeText(analysis)],
+      ["Candidate tradeoffs", countText(analysis.candidateTradeoffCount == null ? 0 : analysis.candidateTradeoffCount,
+        "candidate tradeoff row")],
+      ["Alternatives", `${analysis.alternativeCount == null ? 0 : analysis.alternativeCount} returned, `
+        + `${analysis.comparedAlternativeCount == null ? 0 : analysis.comparedAlternativeCount} comparable`],
+      ["Evidence sufficiency", `${value(sufficiency.sufficiencyLevel)} / score ${readinessScoreText(sufficiency)}`],
+      ["Replay readiness", replayReadinessText(readiness)],
+      ["Selected summary", value(analysis.selectedCandidateSummary)],
+      ["Alternative summary", value(analysis.alternativeCandidateSummary)],
+      ["Tradeoff reasons", listText(analysis.tradeoffReasons)],
+      ["Warnings", listText(analysis.warnings)],
+      ["Unknowns", listText(analysis.unknowns)],
+      ["Source refs", listText(analysis.sourceReferenceIds)],
+      ["Boundary", value(analysis.boundaryNote)]
+    ]));
+    target.append(wrapper);
+    target.classList.remove("empty");
+  }
+
+  function renderEvidenceSufficiencySummary(target, sufficiency) {
+    target.replaceChildren();
+    if (!sufficiency || !sufficiency.diagnosticObject) {
+      setEmpty(target, "No evidence sufficiency diagnostics returned.");
+      return;
+    }
+    const wrapper = document.createElement("div");
+    wrapper.className = "diagnostic-summary";
+    const badge = document.createElement("span");
+    badge.className = `confidence-status ${sufficiencyStatusType(sufficiency.sufficiencyLevel)}`;
+    badge.textContent = `${value(sufficiency.sufficiencyLevel)} / score ${readinessScoreText(sufficiency)}`;
+    wrapper.append(badge);
+    wrapper.append(keyValueTable([
+      ["Basic diagnostics ready", String(sufficiency.basicDiagnosticsReady === true)],
+      ["Tradeoff analysis ready", String(sufficiency.tradeoffAnalysisReady === true)],
+      ["Replay-style analysis ready", String(sufficiency.replayStyleAnalysisReady === true)],
+      ["Candidate evidence", String(sufficiency.candidateEvidenceCount == null ? 0 : sufficiency.candidateEvidenceCount)],
+      ["Comparable alternatives", String(sufficiency.comparableAlternativeCount == null ? 0
+        : sufficiency.comparableAlternativeCount)],
+      ["Factor deltas", String(sufficiency.factorDeltaCount == null ? 0 : sufficiency.factorDeltaCount)],
+      ["Evidence counts", readinessEvidenceCountText(sufficiency)],
+      ["Readiness reasons", listText(sufficiency.readinessReasons)],
+      ["Present signals", listText(sufficiency.presentEvidenceSignals)],
+      ["Partial signals", listText(sufficiency.partialEvidenceSignals)],
+      ["Missing signals", listText(sufficiency.missingEvidenceSignals)],
+      ["Degraded signals", listText(sufficiency.degradedEvidenceSignals)],
+      ["Unknown signals", listText(sufficiency.unknownEvidenceSignals)],
+      ["Source refs", listText(sufficiency.sourceReferenceIds)],
+      ["Boundary", value(sufficiency.boundaryNote)]
+    ]));
+    target.append(wrapper);
+    target.classList.remove("empty");
+  }
+
+  function renderReplayReadinessSummary(target, readiness) {
+    target.replaceChildren();
+    if (!readiness || !readiness.diagnosticObject) {
+      setEmpty(target, "No replay-readiness diagnostics returned.");
+      return;
+    }
+    const wrapper = document.createElement("div");
+    wrapper.className = "diagnostic-summary";
+    const badge = document.createElement("span");
+    badge.className = `confidence-status ${replayReadinessStatusType(readiness.readinessStatus)}`;
+    badge.textContent = `${value(readiness.readinessStatus)} / ${value(readiness.sufficiencyLevel)}`;
+    wrapper.append(badge);
+    wrapper.append(keyValueTable([
+      ["Readiness score", readinessScoreText(readiness)],
+      ["Replay execution available", String(readiness.replayExecutionAvailable === true)],
+      ["Replay storage available", String(readiness.replayStorageAvailable === true)],
+      ["Replay export available", String(readiness.replayExportAvailable === true)],
+      ["Candidate evidence", value(readiness.candidateEvidenceStatus)],
+      ["Alternative evidence", value(readiness.alternativeEvidenceStatus)],
+      ["Score evidence", value(readiness.scoreEvidenceStatus)],
+      ["Factor evidence", value(readiness.factorEvidenceStatus)],
+      ["Fingerprint evidence", value(readiness.fingerprintEvidenceStatus)],
+      ["Explanation", value(readiness.explanationText)],
+      ["Readiness checklist", listText(readiness.readinessChecklist)],
+      ["Limitations", listText(readiness.limitationSignals)],
+      ["Present signals", listText(readiness.presentEvidenceSignals)],
+      ["Partial signals", listText(readiness.partialEvidenceSignals)],
+      ["Missing signals", listText(readiness.missingEvidenceSignals)],
+      ["Degraded signals", listText(readiness.degradedEvidenceSignals)],
+      ["Incompatible signals", listText(readiness.incompatibleEvidenceSignals)],
+      ["Source refs", listText(readiness.sourceReferenceIds)],
+      ["Boundary", value(readiness.boundaryNote)]
+    ]));
+    target.append(wrapper);
+    target.classList.remove("empty");
+  }
+
+  function closestAlternativeText(analysis) {
+    if (!analysis || !analysis.closestAlternativeCandidateId) {
+      return "UNKNOWN";
+    }
+    const delta = analysis.closestAlternativeScoreDelta == null
+      ? "UNKNOWN delta"
+      : `delta ${analysis.closestAlternativeScoreDelta}`;
+    return `${value(analysis.closestAlternativeCandidateId)} / ${delta}`;
+  }
+
+  function readinessScoreText(item) {
+    return item && item.readinessScore != null ? String(item.readinessScore) : "UNKNOWN";
+  }
+
+  function replayReadinessText(readiness) {
+    if (!readiness) {
+      return "UNKNOWN";
+    }
+    return `${value(readiness.readinessStatus)} / execution ${readiness.replayExecutionAvailable === true
+      ? "available"
+      : "unavailable"}`;
+  }
+
+  function readinessEvidenceCountText(item) {
+    return [
+      `present ${item.presentEvidenceCount == null ? 0 : item.presentEvidenceCount}`,
+      `partial ${item.partialEvidenceCount == null ? 0 : item.partialEvidenceCount}`,
+      `missing ${item.missingEvidenceCount == null ? 0 : item.missingEvidenceCount}`,
+      `degraded ${item.degradedEvidenceCount == null ? 0 : item.degradedEvidenceCount}`,
+      `unknown ${item.unknownEvidenceCount == null ? 0 : item.unknownEvidenceCount}`
+    ].join(", ");
+  }
+
   function evidenceCountText(diagnostics) {
     return [
       `present ${diagnostics.presentEvidenceCount == null ? 0 : diagnostics.presentEvidenceCount}`,
@@ -1191,6 +1379,9 @@
     const selectedCandidate = value(payload.decisionReadout && payload.decisionReadout.selectedCandidateId);
     const confidenceSummary = payload.confidenceSummary || {};
     const diagnostics = payload.routingDiagnostics || {};
+    const tradeoff = payload.routeTradeoffAnalysis || {};
+    const sufficiency = tradeoff.evidenceSufficiency || {};
+    const replayReadiness = tradeoff.replayReadinessDiagnostic || {};
     const degraded = listLength(diagnostics.degradationReasons);
     return [
       { type: "selected", label: "Selected route", detail: selectedCandidate },
@@ -1203,6 +1394,21 @@
         type: confidenceStatusType(diagnostics.overallStatus),
         label: "Diagnostics status",
         detail: `${value(diagnostics.overallStatus)} / ${value(diagnostics.evidenceQuality)}`
+      },
+      {
+        type: confidenceStatusType(tradeoff.overallStatus),
+        label: "Tradeoff status",
+        detail: `${value(tradeoff.overallStatus)} / ${value(tradeoff.tradeoffCategory)}`
+      },
+      {
+        type: sufficiencyStatusType(sufficiency.sufficiencyLevel),
+        label: "Evidence sufficiency",
+        detail: `${value(sufficiency.sufficiencyLevel)} / score ${readinessScoreText(sufficiency)}`
+      },
+      {
+        type: replayReadinessStatusType(replayReadiness.readinessStatus),
+        label: "Replay readiness",
+        detail: replayReadinessText(replayReadiness)
       },
       {
         type: degraded ? "degraded" : "deterministic",
@@ -1345,6 +1551,86 @@
     ], "No candidate diagnostic rows returned.");
   }
 
+  function renderRouteTradeoffTable(target, rows) {
+    renderTable(target, [
+      "Order",
+      "Candidate",
+      "Selected",
+      "Tradeoff",
+      "Risk/benefit",
+      "Status",
+      "Risk",
+      "Health",
+      "Final score",
+      "Delta",
+      "Gap",
+      "Scoring explanation",
+      "Evidence summary",
+      "Benefit signals",
+      "Risk/degraded/unknown",
+      "Reasons",
+      "Source refs"
+    ], rows, (row, index) => [
+      row.displayOrder == null ? String(index + 1) : String(row.displayOrder),
+      value(row.candidateLabel || row.candidateId),
+      row.selected ? "yes" : "no",
+      value(row.tradeoffCategory),
+      value(row.riskBenefitClassification),
+      value(row.diagnosticStatus),
+      value(row.riskLevel),
+      value(row.healthEvidenceState),
+      row.finalScore == null ? "UNKNOWN" : String(row.finalScore),
+      row.scoreDeltaFromSelected == null ? "UNKNOWN" : String(row.scoreDeltaFromSelected),
+      value(row.scoreGapCategory),
+      value(row.scoringExplanation),
+      value(row.evidenceSummary),
+      listText(row.benefitSignals),
+      listText(uniqueList(mergeLists(row.riskSignals, row.degradedSignals, row.unknownSignals))),
+      listText(row.reasonCodes),
+      listText(row.sourceReferenceIds)
+    ], "No route candidate tradeoff rows returned.");
+  }
+
+  function renderCandidateTradeoffScoringTable(target, rows) {
+    renderTable(target, [
+      "Order",
+      "Candidate",
+      "Selected",
+      "Explanation status",
+      "Score evidence",
+      "Gap",
+      "Tradeoff",
+      "Risk/benefit",
+      "Candidate status",
+      "Factor rollup",
+      "Final score",
+      "Delta",
+      "Summary",
+      "Scoring signals",
+      "Limitations",
+      "Reasons",
+      "Source refs"
+    ], rows, (row, index) => [
+      row.displayOrder == null ? String(index + 1) : String(row.displayOrder),
+      value(row.candidateLabel || row.candidateId),
+      row.selected ? "yes" : "no",
+      value(row.explanationStatus),
+      value(row.scoreEvidenceState),
+      value(row.scoreGapCategory),
+      value(row.tradeoffCategory),
+      value(row.riskBenefitClassification),
+      value(row.candidateDiagnosticStatus),
+      value(row.factorStatusRollup),
+      row.finalScore == null ? "UNKNOWN" : String(row.finalScore),
+      row.scoreDeltaFromSelected == null ? "UNKNOWN" : String(row.scoreDeltaFromSelected),
+      value(row.summaryText),
+      listText(row.scoringSignals),
+      listText(row.limitationSignals),
+      listText(row.reasonCodes),
+      listText(row.sourceReferenceIds)
+    ], "No candidate tradeoff scoring rows returned.");
+  }
+
   function renderFactorTable(target, factors) {
     renderTable(target, ["Rank", "Candidate", "Factor", "Direction", "Value", "Exactness"], factors, (factor, index) => [
       String(index + 1),
@@ -1473,6 +1759,48 @@
     ], "No factor diagnostic rows returned.");
   }
 
+  function renderFactorTradeoffDeltaTable(target, rows) {
+    renderTable(target, [
+      "Order",
+      "Factor",
+      "Selected candidate",
+      "Alternative candidate",
+      "Delta",
+      "Selected contribution",
+      "Alternative contribution",
+      "Selected evidence",
+      "Alternative evidence",
+      "Tradeoff",
+      "Score gap",
+      "Score delta",
+      "Summary",
+      "Selected signals",
+      "Alternative signals",
+      "Limitations",
+      "Reasons",
+      "Source refs"
+    ], rows, (row, index) => [
+      row.displayOrder == null ? String(index + 1) : String(row.displayOrder),
+      value(row.factorName),
+      value(row.selectedCandidateId),
+      value(row.alternativeCandidateId),
+      value(row.deltaClassification),
+      `${value(row.selectedContribution)} / ${value(row.selectedFactorStatus)}`,
+      `${value(row.alternativeContribution)} / ${value(row.alternativeFactorStatus)}`,
+      `${value(row.selectedEvidenceStatus)} / ${value(row.selectedObservedValueOrStatus)}`,
+      `${value(row.alternativeEvidenceStatus)} / ${value(row.alternativeObservedValueOrStatus)}`,
+      value(row.candidateTradeoffCategory),
+      value(row.scoreGapCategory),
+      row.alternativeScoreDeltaFromSelected == null ? "UNKNOWN" : String(row.alternativeScoreDeltaFromSelected),
+      value(row.summaryText),
+      listText(row.selectedSignals),
+      listText(row.alternativeSignals),
+      listText(row.limitationSignals),
+      listText(row.reasonCodes),
+      listText(row.sourceReferenceIds)
+    ], "No factor tradeoff delta rows returned.");
+  }
+
   function renderPolicyTable(target, gates) {
     renderTable(target, ["Rank", "Gate", "Status", "Outcome", "Explanation"], gates, (gate, index) => [
       String(index + 1),
@@ -1599,21 +1927,40 @@
     const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
     const summary = payload.confidenceSummary || {};
     const diagnostics = payload.routingDiagnostics || {};
+    const tradeoff = payload.routeTradeoffAnalysis || {};
+    const sufficiency = tradeoff.evidenceSufficiency || {};
+    const replayReadiness = tradeoff.replayReadinessDiagnostic || {};
     const candidateConfidence = Array.isArray(summary.candidateConfidenceDetails) ? summary.candidateConfidenceDetails : [];
     const factorStatus = Array.isArray(summary.factorStatusDetails) ? summary.factorStatusDetails : [];
     const candidateDiagnostics = Array.isArray(diagnostics.candidateDiagnostics) ? diagnostics.candidateDiagnostics : [];
     const factorDiagnostics = Array.isArray(diagnostics.factorDiagnostics) ? diagnostics.factorDiagnostics : [];
+    const routeTradeoffs = Array.isArray(tradeoff.candidateTradeoffs) ? tradeoff.candidateTradeoffs : [];
+    const scoringExplanations = Array.isArray(tradeoff.candidateScoringExplanations)
+      ? tradeoff.candidateScoringExplanations
+      : [];
+    const factorDeltas = Array.isArray(tradeoff.factorTradeoffDeltas) ? tradeoff.factorTradeoffDeltas : [];
     return uniqueList(mergeLists(
       payload.warnings,
       summary.warnings,
       diagnostics.warnings,
       diagnostics.degradationReasons,
       diagnostics.partialEvidenceReasons,
+      tradeoff.warnings,
+      sufficiency.partialEvidenceSignals,
+      sufficiency.missingEvidenceSignals,
+      sufficiency.degradedEvidenceSignals,
+      replayReadiness.partialEvidenceSignals,
+      replayReadiness.degradedEvidenceSignals,
+      replayReadiness.incompatibleEvidenceSignals,
+      replayReadiness.limitationSignals,
       explanationNotes(summary, "warning:"),
       candidateConfidence.flatMap(row => row.warnings),
       factorStatus.flatMap(row => row.warnings),
       candidateDiagnostics.flatMap(row => mergeLists(row.weakSignals, row.degradedSignals)),
       factorDiagnostics.flatMap(row => mergeLists(row.warningSignals, row.degradedSignals)),
+      routeTradeoffs.flatMap(row => mergeLists(row.riskSignals, row.degradedSignals)),
+      scoringExplanations.flatMap(row => row.limitationSignals),
+      factorDeltas.flatMap(row => row.limitationSignals),
       comparisons.flatMap(row => row.warnings),
       drilldowns.flatMap(row => row.warnings)
     ));
@@ -1624,20 +1971,31 @@
     const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
     const summary = payload.confidenceSummary || {};
     const diagnostics = payload.routingDiagnostics || {};
+    const tradeoff = payload.routeTradeoffAnalysis || {};
+    const sufficiency = tradeoff.evidenceSufficiency || {};
+    const replayReadiness = tradeoff.replayReadinessDiagnostic || {};
     const candidateConfidence = Array.isArray(summary.candidateConfidenceDetails) ? summary.candidateConfidenceDetails : [];
     const factorStatus = Array.isArray(summary.factorStatusDetails) ? summary.factorStatusDetails : [];
     const candidateDiagnostics = Array.isArray(diagnostics.candidateDiagnostics) ? diagnostics.candidateDiagnostics : [];
     const factorDiagnostics = Array.isArray(diagnostics.factorDiagnostics) ? diagnostics.factorDiagnostics : [];
+    const routeTradeoffs = Array.isArray(tradeoff.candidateTradeoffs) ? tradeoff.candidateTradeoffs : [];
+    const factorDeltas = Array.isArray(tradeoff.factorTradeoffDeltas) ? tradeoff.factorTradeoffDeltas : [];
     return uniqueList(mergeLists(
       payload.unknowns,
       summary.unknowns,
       diagnostics.unknowns,
       diagnostics.unknownEvidenceReasons,
+      tradeoff.unknowns,
+      sufficiency.unknownEvidenceSignals,
+      sufficiency.missingEvidenceSignals,
+      replayReadiness.missingEvidenceSignals,
       explanationNotes(summary, "unknown:"),
       candidateConfidence.flatMap(row => row.unknowns),
       factorStatus.flatMap(row => row.unknowns),
       candidateDiagnostics.flatMap(row => row.unknownSignals),
       factorDiagnostics.flatMap(row => row.unknownSignals),
+      routeTradeoffs.flatMap(row => row.unknownSignals),
+      factorDeltas.flatMap(row => row.deltaClassification === "UNKNOWN" ? row.limitationSignals : []),
       comparisons.flatMap(row => mergeLists(row.unknownSignals, row.unknowns)),
       drilldowns.flatMap(row => row.unknowns)
     ));
@@ -1647,6 +2005,11 @@
     const comparisons = Array.isArray(payload.candidateComparisons) ? payload.candidateComparisons : [];
     const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
     const diagnostics = payload.routingDiagnostics || {};
+    const tradeoff = payload.routeTradeoffAnalysis || {};
+    const sufficiency = tradeoff.evidenceSufficiency || {};
+    const replayReadiness = tradeoff.replayReadinessDiagnostic || {};
+    const routeTradeoffs = Array.isArray(tradeoff.candidateTradeoffs) ? tradeoff.candidateTradeoffs : [];
+    const factorDeltas = Array.isArray(tradeoff.factorTradeoffDeltas) ? tradeoff.factorTradeoffDeltas : [];
     const summaryStatus = payload.confidenceSummary && payload.confidenceSummary.status;
     const scenarioIsPartial = scenario && !statusIs(scenario.evidenceStatus, "AVAILABLE");
     const comparisonIsPartial = comparisons.some(row => !statusIs(row.comparisonStatus, "SELECTED", "ALTERNATIVE"));
@@ -1656,8 +2019,15 @@
       || listLength(diagnostics.partialEvidenceReasons) > 0
       || listLength(diagnostics.unknownEvidenceReasons) > 0
       || listLength(diagnostics.degradationReasons) > 0;
+    const tradeoffIsPartial = statusIs(tradeoff.overallStatus, "PARTIAL", "UNKNOWN", "DEGRADED")
+      || !statusIs(sufficiency.sufficiencyLevel, "REPLAY_STYLE_READY", "TRADEOFF_READY")
+      || !statusIs(replayReadiness.readinessStatus, "READY")
+      || routeTradeoffs.some(row => statusIs(row.tradeoffCategory, "ALTERNATIVE_UNKNOWN", "UNKNOWN")
+        || listLength(row.unknownSignals) > 0
+        || listLength(row.degradedSignals) > 0)
+      || factorDeltas.some(row => statusIs(row.deltaClassification, "UNKNOWN", "DEGRADED"));
     return Boolean(scenarioIsPartial || comparisonIsPartial || drilldownIsPartial
-      || summaryIsPartial || diagnosticsIsPartial);
+      || summaryIsPartial || diagnosticsIsPartial || tradeoffIsPartial);
   }
 
   function mergeLists(...groups) {
@@ -1692,6 +2062,34 @@
     return "unknown";
   }
 
+  function sufficiencyStatusType(level) {
+    const normalized = value(level).toUpperCase();
+    if (normalized === "REPLAY_STYLE_READY" || normalized === "TRADEOFF_READY") {
+      return "strong";
+    }
+    if (normalized === "BASIC_DIAGNOSTICS_ONLY") {
+      return "partial";
+    }
+    if (normalized === "DEGRADED") {
+      return "degraded";
+    }
+    return "unknown";
+  }
+
+  function replayReadinessStatusType(status) {
+    const normalized = value(status).toUpperCase();
+    if (normalized === "READY") {
+      return "strong";
+    }
+    if (normalized === "PARTIAL") {
+      return "partial";
+    }
+    if (normalized === "DEGRADED") {
+      return "degraded";
+    }
+    return "unknown";
+  }
+
   function statusIs(status, ...allowed) {
     const normalized = value(status).toUpperCase();
     return allowed.some(item => normalized === item);
@@ -1712,6 +2110,9 @@
     }
     const first = latestPayload[0];
     const routingDiagnostics = first.routingDiagnostics || {};
+    const routeTradeoffAnalysis = first.routeTradeoffAnalysis || {};
+    const evidenceSufficiency = routeTradeoffAnalysis.evidenceSufficiency || {};
+    const replayReadiness = routeTradeoffAnalysis.replayReadinessDiagnostic || {};
     const text = [
       "Decision Explorer reviewer summary",
       `decisionId: ${value(first.decisionId)}`,
@@ -1727,6 +2128,12 @@
       `degradationReasons: ${listText(routingDiagnostics.degradationReasons)}`,
       `partialEvidenceReasons: ${listText(routingDiagnostics.partialEvidenceReasons)}`,
       `unknownEvidenceReasons: ${listText(routingDiagnostics.unknownEvidenceReasons)}`,
+      `routeTradeoffStatus: ${value(routeTradeoffAnalysis.overallStatus)}`,
+      `routeTradeoffCategory: ${value(routeTradeoffAnalysis.tradeoffCategory)}`,
+      `closestAlternative: ${closestAlternativeText(routeTradeoffAnalysis)}`,
+      `tradeoffReasons: ${listText(routeTradeoffAnalysis.tradeoffReasons)}`,
+      `evidenceSufficiency: ${value(evidenceSufficiency.sufficiencyLevel)} / score ${readinessScoreText(evidenceSufficiency)}`,
+      `replayReadiness: ${replayReadinessText(replayReadiness)}`,
       `readOnly: ${first.readOnly === true}`,
       `simulationOnly: ${first.simulationOnly === true}`,
       `notProven: ${listText(first.notProvenBoundaries)}`

@@ -8,34 +8,28 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T02:40-07:00
+Timestamp: 2026-05-28T03:09-07:00
 
 Goal name: LASE Routing Intelligence Infrastructure Phase 3
 
-Current PR slot: LASE-P3-G05
+Current PR slot: LASE-P3-G06
 
-Checkpoint: PR #399 opened for route tradeoff API integration; PR-created checkpoint committed locally
+Checkpoint: UI tradeoff/readiness slice local verification passed; ready to commit and open PR
 
-Started from main SHA: `cde076b28fbd370ddf3967e73ba9a2eac8d07476`
+Started from main SHA: `14b36231e0d8e412e21272d984e4483ec73ab353`
 
-Current branch: codex/lase-phase3-route-tradeoff-api
+Current branch: codex/lase-phase3-tradeoff-ui
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/399
+PR URL: not opened yet
 
-PR creation head: `eb0b694fd51bdf9b9cdfc38cb90c18e0f6aa2058`
+PR creation head: not created yet
 
-Current branch head: latest PR-created checkpoint commit before push; re-read before remote checks
+Current branch head: `14b36231e0d8e412e21272d984e4483ec73ab353` plus uncommitted verified UI changes
 
 Changed files for this slice:
 
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadService.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerApiContractHardeningTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1Test.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadServiceTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/RoutingControllerTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/RoutingOpenApiContractTest.java
 - src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerStaticPageTest.java
+- src/main/resources/static/decision-explorer.html
 - docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
 
@@ -144,11 +138,38 @@ Checks run:
   https://github.com/RicheyWorks/LoadBalancerPro/pull/399.
 - LASE-P3-G05 checkpoint commit command initially failed due PowerShell `&&` syntax; the tooling failure is logged in
   `docs/agent/FAILURE_LOG.md`.
-- LASE-P3-G05 PR-created checkpoint committed locally; re-read branch head before remote-check audit.
+- LASE-P3-G05 PR-created checkpoint was committed and pushed as
+  `f8f34565774b6475c9cd01b86a31de6384bdcabd`.
+- LASE-P3-G05 current-head PR checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and
+  Dependency Review.
+- LASE-P3-G05 merged as `14b36231e0d8e412e21272d984e4483ec73ab353`.
+- LASE-P3-G05 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,767 tests, `git diff --check`,
+  `git diff --cached --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P3-G05 main CI and CodeQL passed for `14b36231e0d8e412e21272d984e4483ec73ab353`; Dependency Review
+  was not failing.
+- LASE-P3-G06 branch `codex/lase-phase3-tradeoff-ui` was created from clean synced main at
+  `14b36231e0d8e412e21272d984e4483ec73ab353`.
+- LASE-P3-G06 will expose the already-computed read-only `routeTradeoffAnalysis` fields in the Decision Explorer UI:
+  selected-vs-alternative tradeoffs, candidate scoring explanations, factor deltas, evidence sufficiency, and
+  replay-readiness diagnostics. This slice remains same-origin, page-memory-only, and display-only.
+- LASE-P3-G06 focused static/API-backed test passed:
+  `mvn -q "-Dtest=DecisionExplorerStaticPageTest" test`.
+- LASE-P3-G06 broader focused selector passed:
+  `mvn -q "-Dtest=DecisionExplorerStaticPageTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerRouteTradeoffServiceTest,RoutingControllerTest,RoutingOpenApiContractTest" test`.
+- LASE-P3-G06 full local verification passed before commit/PR creation: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,767 tests, `git diff --check`,
+  `git diff --cached --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P3-G06 browser DOM verification passed against a loopback packaged app on port 18081: the Decision Explorer
+  page loaded one payload, rendered route tradeoff, evidence sufficiency, replay-readiness, candidate tradeoff,
+  candidate scoring, and factor delta rows, kept replay execution/storage/export unavailable, and reported no console
+  errors.
+- LASE-P3-G06 browser verification had two tooling hiccups: a persistent browser variable redeclaration and a
+  screenshot capture timeout. Both are logged in `docs/agent/FAILURE_LOG.md`; the retry DOM verification passed.
 
 Blockers: none.
 
-Next action: push the PR-created checkpoint update, then wait for current-head remote checks.
+Next action: commit, push, open the UI tradeoff/readiness PR, then wait for current-head remote checks.
 
 ## Historical Decision Explorer Phase 2 Campaign Checkpoint
 

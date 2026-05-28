@@ -24,6 +24,25 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-28T03:45-07:00
+
+Branch/PR: codex/lase-phase3-diagnostic-fingerprints / PR #401
+
+Failure type: remote check watch timeout
+
+Failing check: `gh pr checks 401 --watch --interval 20`
+
+Suspected cause: the watch command exceeded the local 300-second command timeout before returning final status.
+
+Fix attempted: queried `gh pr checks 401` directly after the timeout.
+
+Result: current-head remote checks were reported passing for Build/Test/Package/Smoke, Analyze Java / CodeQL, and
+Dependency Review.
+
+Follow-up action: keep using direct check inspection if the long watch command times out.
+
+## Entry
+
 Date/time: 2026-05-28T03:32-07:00
 
 Branch/PR: codex/lase-phase3-diagnostic-fingerprints / no PR yet

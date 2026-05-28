@@ -41,6 +41,11 @@ class DecisionExplorerConfidenceSummaryServiceTest {
                         .map(detail -> detail.candidateId() + ":" + detail.confidenceStatus() + ":"
                                 + detail.healthEvidenceState())
                         .toList());
+        assertEquals(List.of("1:edge-a:healthState:STRONG", "2:edge-b:healthState:STRONG"),
+                summary.factorStatusDetails().stream()
+                        .map(detail -> detail.displayOrder() + ":" + detail.candidateId() + ":"
+                                + detail.factorName() + ":" + detail.factorStatus())
+                        .toList());
         assertEquals(List.of(
                 "CANDIDATE_COMPARISONS_AVAILABLE",
                 "FACTOR_EVIDENCE_AVAILABLE",
@@ -74,8 +79,11 @@ class DecisionExplorerConfidenceSummaryServiceTest {
         assertEquals("PARTIAL", summary.candidateConfidenceDetails().get(1).confidenceStatus());
         assertEquals(List.of("numeric contribution value", "score delta from selected candidate"),
                 summary.candidateConfidenceDetails().get(1).unknowns());
+        assertEquals("PARTIAL", summary.factorStatusDetails().get(0).factorStatus());
+        assertTrue(summary.factorStatusDetails().get(0).statusReasons().contains("FACTOR_EVIDENCE_PARTIAL"));
         assertTrue(summary.statusReasons().contains("PARTIAL_CANDIDATE_COMPARISON_EVIDENCE"));
         assertTrue(summary.statusReasons().contains("PARTIAL_FACTOR_EVIDENCE"));
+        assertTrue(summary.statusReasons().contains("FACTOR_STATUS_PARTIAL"));
         assertTrue(summary.statusReasons().contains("STATUS_WARNINGS_PRESENT"));
         assertTrue(summary.statusReasons().contains("STATUS_UNKNOWNS_PRESENT"));
     }
@@ -99,6 +107,7 @@ class DecisionExplorerConfidenceSummaryServiceTest {
         assertEquals(0, summary.candidateComparisonCount());
         assertEquals(0, summary.sourceReferenceCount());
         assertTrue(summary.candidateConfidenceDetails().isEmpty());
+        assertTrue(summary.factorStatusDetails().isEmpty());
         assertEquals(List.of("NO_ROUTING_EVIDENCE_RETURNED"), summary.statusReasons());
         assertEquals("UNKNOWN", summary.boundaryNote());
     }
@@ -156,6 +165,57 @@ class DecisionExplorerConfidenceSummaryServiceTest {
         assertEquals("DEGRADED", summary.candidateConfidenceDetails().get(0).confidenceStatus());
         assertEquals("DEGRADED", summary.candidateConfidenceDetails().get(0).healthEvidenceState());
         assertEquals(List.of("SELECTED_CANDIDATE_CONFIDENCE_DEGRADED"), summary.statusReasons());
+    }
+
+    @Test
+    void selectedCandidateWithDegradedHealthFactorDegradesTheSummary() {
+        DecisionExplorerConfidenceSummaryV1 summary = service.buildSummary(
+                decisionReadout("SUCCESS", "edge-a"),
+                candidate("edge-a", true),
+                List.of(candidate("edge-a", true)),
+                List.of(comparison("edge-a", true, "SELECTED", List.of(), List.of())),
+                List.of(factorWithObserved("edge-a", "healthState", "false", "AVAILABLE",
+                        List.of(), List.of())),
+                List.of(),
+                List.of(),
+                BOUNDARY_NOTE);
+
+        assertEquals("DEGRADED", summary.status());
+        assertEquals("DEGRADED", summary.factorStatusDetails().get(0).factorStatus());
+        assertEquals(List.of("FACTOR_EVIDENCE_DEGRADED"), summary.factorStatusDetails().get(0).statusReasons());
+        assertEquals(List.of("SELECTED_FACTOR_STATUS_DEGRADED"), summary.statusReasons());
+    }
+
+    @Test
+    void factorStatusDetailsClassifyRowsDeterministically() {
+        DecisionExplorerConfidenceSummaryV1 summary = service.buildSummary(
+                decisionReadout("SUCCESS", "edge-a"),
+                candidate("edge-a", true),
+                List.of(candidate("edge-a", true), candidate("edge-b", false), candidate("edge-c", false)),
+                List.of(
+                        comparison("edge-c", false, "COMPARED_TO_SELECTED", List.of(), List.of()),
+                        comparison("edge-a", true, "SELECTED", List.of(), List.of()),
+                        comparison("edge-b", false, "COMPARED_TO_SELECTED", List.of(), List.of())),
+                List.of(
+                        factorWithObserved("edge-c", "queueDepth", "UNKNOWN", "UNKNOWN", List.of(), List.of()),
+                        factorWithObserved("edge-b", "latency", "raw value", "PARTIAL",
+                                List.of("factor evidence is partial"), List.of("numeric contribution value")),
+                        factorWithObserved("edge-a", "healthState", "true", "AVAILABLE", List.of(), List.of())),
+                List.of(),
+                List.of(),
+                BOUNDARY_NOTE);
+
+        assertEquals(List.of(
+                "1:edge-a:healthState:STRONG:FACTOR_EVIDENCE_AVAILABLE|FACTOR_SOURCE_REFERENCES_AVAILABLE",
+                "2:edge-b:latency:PARTIAL:FACTOR_EVIDENCE_PARTIAL|FACTOR_UNKNOWNS_PRESENT|FACTOR_WARNINGS_PRESENT",
+                "3:edge-c:queueDepth:UNKNOWN:FACTOR_EVIDENCE_UNKNOWN"),
+                summary.factorStatusDetails().stream()
+                        .map(detail -> detail.displayOrder() + ":" + detail.candidateId() + ":"
+                                + detail.factorName() + ":" + detail.factorStatus() + ":"
+                                + String.join("|", detail.statusReasons()))
+                        .toList());
+        assertTrue(summary.statusReasons().contains("FACTOR_STATUS_PARTIAL"));
+        assertTrue(summary.statusReasons().contains("FACTOR_STATUS_UNKNOWN"));
     }
 
     private static DecisionReadoutV1 decisionReadout(String status, String selectedCandidateId) {
@@ -231,10 +291,20 @@ class DecisionExplorerConfidenceSummaryServiceTest {
             String evidenceStatus,
             List<String> warnings,
             List<String> unknowns) {
+        return factorWithObserved(candidateId, factorName, "raw value", evidenceStatus, warnings, unknowns);
+    }
+
+    private static DecisionFactorDrilldownV1 factorWithObserved(
+            String candidateId,
+            String factorName,
+            String observedValue,
+            String evidenceStatus,
+            List<String> warnings,
+            List<String> unknowns) {
         return new DecisionFactorDrilldownV1(
                 factorName,
                 candidateId,
-                "raw value",
+                observedValue,
                 "SUPPORTS_SELECTION",
                 evidenceStatus,
                 "factor explanation",

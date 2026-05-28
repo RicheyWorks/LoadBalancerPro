@@ -80,6 +80,11 @@ class DecisionExplorerPayloadServiceTest {
                         .map(detail -> detail.displayOrder() + ":" + detail.candidateId() + ":"
                                 + detail.confidenceStatus() + ":" + detail.healthEvidenceState())
                         .toList());
+        assertEquals(List.of("1:edge-a:healthState:STRONG", "2:edge-z:p95LatencyMillis:STRONG"),
+                firstPayloads.get(0).confidenceSummary().factorStatusDetails().stream()
+                        .map(detail -> detail.displayOrder() + ":" + detail.candidateId() + ":"
+                                + detail.factorName() + ":" + detail.factorStatus())
+                        .toList());
         assertEquals(List.of("edge-a:healthState", "edge-z:p95LatencyMillis"),
                 firstPayloads.get(0).factorContributions().stream()
                         .map(factor -> factor.candidateId() + ":" + factor.factorName())
@@ -121,6 +126,7 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("DEGRADED", payload.confidenceSummary().status());
         assertEquals(List.of("DECISION_STATUS_FAILED"), payload.confidenceSummary().statusReasons());
         assertTrue(payload.confidenceSummary().candidateConfidenceDetails().isEmpty());
+        assertTrue(payload.confidenceSummary().factorStatusDetails().isEmpty());
         assertTrue(payload.decisionDiffReadouts().isEmpty());
         assertEquals("future-evidence-packet", payload.evidencePacketReadouts().get(0).referenceId());
         assertTrue(payload.warnings().contains("Selected candidate was not returned."));
@@ -139,6 +145,7 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("UNKNOWN", payload.decisionReadout().status());
         assertEquals("UNKNOWN", payload.confidenceSummary().status());
         assertEquals(List.of("NO_ROUTING_EVIDENCE_RETURNED"), payload.confidenceSummary().statusReasons());
+        assertTrue(payload.confidenceSummary().factorStatusDetails().isEmpty());
         assertTrue(payload.warnings().get(0).contains("did not include result evidence"));
         assertTrue(payload.policyGateReadouts().stream()
                 .anyMatch(gate -> gate.gateId().equals("boundary-read-only") && gate.outcome().equals("PASS")));
@@ -189,6 +196,13 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("alternative-a", alternativeConfidence.candidateId());
         assertEquals("PARTIAL", alternativeConfidence.confidenceStatus());
         assertTrue(alternativeConfidence.confidenceReasons().contains("FINAL_SCORE_UNKNOWN"));
+        DecisionExplorerFactorStatusV1 alternativeFactorStatus =
+                payload.confidenceSummary().factorStatusDetails().get(0);
+        assertEquals("alternative-a", alternativeFactorStatus.candidateId());
+        assertEquals("latency", alternativeFactorStatus.factorName());
+        assertEquals("PARTIAL", alternativeFactorStatus.factorStatus());
+        assertTrue(alternativeFactorStatus.statusReasons().contains("FACTOR_EVIDENCE_PARTIAL"));
+        assertTrue(payload.confidenceSummary().statusReasons().contains("FACTOR_STATUS_PARTIAL"));
         assertNull(payload.decisionDiffReadouts().get(0).finalScoreGap());
         assertEquals(List.of("latency", "queueDepth"), payload.decisionDiffReadouts().get(0).comparedFactorNames());
         assertTrue(payload.evidencePacketReadouts().get(0).unavailableReasons()

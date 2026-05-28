@@ -1920,6 +1920,25 @@ classification rule.
 
 Follow-up action: continue PR 1 broader local verification before opening the route-tradeoff foundation PR.
 
+## Entry
+
+Date/time: 2026-05-28T00:52-07:00
+
+Branch/PR: codex/lase-phase3-candidate-tradeoff-explanations / no PR yet
+
+Failure type: local focused test expectation mismatch
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerRouteTradeoffServiceTest" test`
+
+Suspected cause: the new candidate scoring explanation test expected a higher-level degraded factor phrase in
+`limitationSignals`, while the implementation preserved the lower-level returned candidate degradation signal.
+
+Fix attempted: update the assertion to verify the computed degraded signal without requiring a remapped phrase.
+
+Result: focused rerun passed after updating the assertion to verify the preserved degraded signal.
+
+Follow-up action: continue PR 2 focused selector and full local verification.
+
 ## Notes
 
 - Keep entries factual.

@@ -42,9 +42,15 @@ class DecisionExplorerRouteTradeoffServiceTest {
                 "edge-a:SELECTED_BASELINE:BASELINE:BASELINE:0.0",
                 "edge-b:ALTERNATIVE_TRAILS_SELECTED:SELECTED_ADVANTAGE:MATERIAL:5.0"),
                 fingerprint(analysis));
+        assertEquals(List.of(
+                "edge-a:STRONG:SELECTED_BASELINE_SCORE_PRESENT:STRONG:BASELINE",
+                "edge-b:STRONG:ALTERNATIVE_DELTA_PRESENT:STRONG:MATERIAL"),
+                scoringFingerprint(analysis));
         assertTrue(analysis.tradeoffReasons().contains("ROUTE_TRADEOFF_CATEGORY_SELECTED_ADVANTAGE"));
         assertTrue(analysis.candidateTradeoffs().get(1).benefitSignals()
                 .contains("alternative trails selected by returned score delta"));
+        assertTrue(analysis.candidateScoringExplanations().get(1).summaryText()
+                .contains("alternative scoring explanation"));
     }
 
     @Test
@@ -65,6 +71,15 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertTrue(alternative.scoringExplanation().contains("score delta -2.0 from selected"));
         assertTrue(alternative.riskSignals().contains("alternative beats selected by returned score delta"));
         assertTrue(alternative.reasonCodes().contains("TRADEOFF_CATEGORY_ALTERNATIVE_BEATS_SELECTED"));
+        DecisionExplorerCandidateTradeoffScoringExplanationV1 alternativeExplanation =
+                analysis.candidateScoringExplanations().get(1);
+        assertEquals("DEGRADED", alternativeExplanation.explanationStatus());
+        assertEquals("ALTERNATIVE_DELTA_PRESENT", alternativeExplanation.scoreEvidenceState());
+        assertEquals("STRONG", alternativeExplanation.factorStatusRollup());
+        assertTrue(alternativeExplanation.limitationSignals()
+                .contains("alternative beats selected by returned score delta"));
+        assertTrue(alternativeExplanation.reasonCodes()
+                .contains("SCORING_EXPLANATION_STATUS_DEGRADED"));
     }
 
     @Test
@@ -82,6 +97,12 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertEquals("UNKNOWN", alternative.riskBenefitClassification());
         assertTrue(alternative.scoringExplanation()
                 .contains("could not be score-compared because its score delta from selected was unavailable"));
+        DecisionExplorerCandidateTradeoffScoringExplanationV1 alternativeExplanation =
+                analysis.candidateScoringExplanations().get(1);
+        assertEquals("UNKNOWN", alternativeExplanation.explanationStatus());
+        assertEquals("ALTERNATIVE_DELTA_UNKNOWN", alternativeExplanation.scoreEvidenceState());
+        assertTrue(alternativeExplanation.limitationSignals()
+                .contains("score evidence is incomplete for tradeoff explanation"));
         assertTrue(analysis.unknowns().contains("score delta from selected candidate"));
     }
 
@@ -97,6 +118,12 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertTrue(analysis.tradeoffReasons().contains("CANDIDATE_DIAGNOSTIC_STATUS_DEGRADED"));
         assertEquals(List.of("edge-a:SELECTED_BASELINE:BASELINE:BASELINE:0.0"),
                 fingerprint(analysis));
+        assertEquals(List.of("edge-a:DEGRADED:SELECTED_BASELINE_SCORE_PRESENT:DEGRADED:BASELINE"),
+                scoringFingerprint(analysis));
+        assertTrue(analysis.candidateScoringExplanations().get(0).limitationSignals()
+                .stream()
+                .anyMatch(signal -> signal.contains("healthState=false")
+                        || signal.contains("health evidence state is degraded")));
     }
 
     @Test
@@ -111,6 +138,7 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertEquals(0, analysis.candidateTradeoffCount());
         assertEquals(0, analysis.alternativeCount());
         assertTrue(analysis.candidateTradeoffs().isEmpty());
+        assertTrue(analysis.candidateScoringExplanations().isEmpty());
         assertEquals(List.of("ROUTING_DIAGNOSTICS_UNAVAILABLE"), analysis.tradeoffReasons());
         assertTrue(analysis.unknowns().contains("route tradeoff diagnostics were unavailable"));
         assertEquals("UNKNOWN", analysis.boundaryNote());
@@ -120,6 +148,8 @@ class DecisionExplorerRouteTradeoffServiceTest {
     void tradeoffSourceDoesNotUseRoutingMutationExternalServicesOrPersistence() throws Exception {
         String source = Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                 + "DecisionExplorerRouteTradeoffService.java"), StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerCandidateTradeoffScoringExplanationV1.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerRouteTradeoffAnalysisV1.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
@@ -170,6 +200,14 @@ class DecisionExplorerRouteTradeoffServiceTest {
                 .map(row -> row.candidateId() + ":" + row.tradeoffCategory() + ":"
                         + row.riskBenefitClassification() + ":" + row.scoreGapCategory() + ":"
                         + row.scoreDeltaFromSelected())
+                .toList();
+    }
+
+    private static List<String> scoringFingerprint(DecisionExplorerRouteTradeoffAnalysisV1 analysis) {
+        return analysis.candidateScoringExplanations().stream()
+                .map(explanation -> explanation.candidateId() + ":" + explanation.explanationStatus() + ":"
+                        + explanation.scoreEvidenceState() + ":" + explanation.factorStatusRollup() + ":"
+                        + explanation.scoreGapCategory())
                 .toList();
     }
 

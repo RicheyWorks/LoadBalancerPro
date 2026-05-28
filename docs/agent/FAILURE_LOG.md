@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T21:13-07:00
+
+Branch/PR: codex/lase-phase2-factor-diagnostics / no PR yet
+
+Failure type: focused factor-diagnostics compilation failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerFactorDiagnosticsServiceTest,DecisionExplorerRoutingDiagnosticsServiceTest" test`
+
+Suspected cause: the new factor diagnostics service used a `thenComparing(FactorEvidence::observedValueOrStatus)` method reference in a comparator chain where Java inferred an ambiguous overload. After that compile fix, the first rerun found deterministic expectation mismatches because the computed factor diagnostics preserved `FACTOR_UNKNOWNS_PRESENT`, `FACTOR_WARNINGS_PRESENT`, and the available drill-down explanation differently than the initial assertions.
+
+Fix attempted: replaced the method reference with an explicitly typed lambda in the comparator chain, then updated deterministic factor diagnostic fingerprints and partial/unknown reason expectations to match grounded computed evidence.
+
+Result: focused factor/routing diagnostics test rerun passed with 10 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with broader verification.
+
+## Entry
+
 Date/time: 2026-05-27T20:44-07:00
 
 Branch/PR: codex/lase-phase2-candidate-diagnostics / no PR yet

@@ -53,6 +53,7 @@ class DecisionExplorerPayloadV1Test {
         assertEquals("DecisionExplorerConfidenceSummaryV1", payload.confidenceSummary().summaryObject());
         assertEquals("STRONG", payload.confidenceSummary().status());
         assertEquals("candidate-a", payload.confidenceSummary().candidateConfidenceDetails().get(0).candidateId());
+        assertEquals("latency", payload.confidenceSummary().factorStatusDetails().get(0).factorName());
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertEquals("policy-health", payload.policyGateReadouts().get(0).gateId());
         assertEquals("candidate-a", payload.decisionDiffReadouts().get(0).baselineCandidateId());
@@ -129,6 +130,7 @@ class DecisionExplorerPayloadV1Test {
         assertTrue(payload.unknowns().isEmpty());
         assertTrue(payload.notProvenBoundaries().isEmpty());
         assertEquals("UNKNOWN", payload.confidenceSummary().status());
+        assertTrue(payload.confidenceSummary().factorStatusDetails().isEmpty());
         assertEquals("UNKNOWN", payload.decisionReadout().summary());
         assertTrue(payload.selectedCandidate().visibleSignals().isEmpty());
         assertTrue(payload.agentStructuredOutput().stableFieldNames().isEmpty());
@@ -195,6 +197,7 @@ class DecisionExplorerPayloadV1Test {
                 0,
                 3,
                 List.of(candidateConfidence()),
+                List.of(factorStatus()),
                 List.of("candidateCount=2", "decisionStatus=AVAILABLE"),
                 List.of("CANDIDATE_COMPARISONS_AVAILABLE", "FACTOR_EVIDENCE_AVAILABLE"),
                 List.of(),
@@ -224,6 +227,23 @@ class DecisionExplorerPayloadV1Test {
                 List.of(),
                 List.of("decision-vector:candidate-a", "phase1-scope"),
                 "candidate confidence is read-only and simulation-only");
+    }
+
+    private static DecisionExplorerFactorStatusV1 factorStatus() {
+        return new DecisionExplorerFactorStatusV1(
+                "candidate-a",
+                "latency",
+                1,
+                "STRONG",
+                "AVAILABLE",
+                "12ms",
+                "SUPPORTS_SELECTION",
+                "Factor latency has available evidence for candidate candidate-a.",
+                List.of("FACTOR_EVIDENCE_AVAILABLE", "FACTOR_SOURCE_REFERENCES_AVAILABLE"),
+                List.of(),
+                List.of(),
+                List.of("decision-vector:candidate-a", "factor-contribution:candidate-a:latency"),
+                "factor status is read-only and simulation-only");
     }
 
     private static DecisionReadoutV1 decisionReadout() {

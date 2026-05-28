@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-28T16:07-07:00
+
+Branch/PR: codex/lase-phase4-decision-quality-foundation / PR #405
+
+Failure type: remote check watch timeout
+
+Failing check: `gh pr checks 405 --watch --interval 30`
+
+Suspected cause: the local watch command exceeded its command timeout after printing passing check statuses.
+
+Fix attempted: record the timeout and inspect the PR check rollup directly before any merge decision.
+
+Result: pending direct check inspection.
+
+Follow-up action: push this failure-log entry on the same branch and wait for the new PR head checks before merge.
+
+## Entry
+
 Date/time: 2026-05-28T13:45-07:00
 
 Branch/PR: codex/lase-phase3-compatibility-hardening / no PR yet

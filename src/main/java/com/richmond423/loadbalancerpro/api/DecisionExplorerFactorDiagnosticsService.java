@@ -214,7 +214,9 @@ public class DecisionExplorerFactorDiagnosticsService {
 
     private static List<String> unknownSignals(FactorEvidence evidence) {
         List<String> signals = new ArrayList<>();
-        signals.addAll(evidence.unknowns);
+        evidence.unknowns.stream()
+                .filter(unknown -> !isBoundaryLimitation(unknown))
+                .forEach(signals::add);
         if ("UNKNOWN".equals(evidence.candidateId)) {
             signals.add("factor candidate id was not returned");
         }
@@ -321,6 +323,21 @@ public class DecisionExplorerFactorDiagnosticsService {
                 || normalized.contains("unhealthy")
                 || normalized.contains("health=false")
                 || normalized.contains("healthstate=false");
+    }
+
+    private static boolean isBoundaryLimitation(String value) {
+        if (value == null) {
+            return true;
+        }
+        String normalized = value.toLowerCase(Locale.ROOT);
+        return normalized.contains("read-only")
+                || normalized.contains("simulation-only")
+                || normalized.contains("hidden routing internals")
+                || normalized.contains("exact production scoring")
+                || normalized.contains("live-cloud")
+                || normalized.contains("real-tenant")
+                || normalized.contains("benchmark/load/stress")
+                || normalized.contains("replay/export/storage");
     }
 
     private static boolean isDegradedEvidenceStatus(String evidenceStatus) {

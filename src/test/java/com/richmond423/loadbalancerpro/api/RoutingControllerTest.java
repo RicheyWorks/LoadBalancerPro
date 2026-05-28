@@ -113,6 +113,18 @@ class RoutingControllerTest {
                     .andExpect(jsonPath("$[0].candidateSet[0].selected", is(true)))
                     .andExpect(jsonPath("$[0].candidateSet[1].candidateId", is("blue")))
                     .andExpect(jsonPath("$[0].factorContributions[0].factorName").exists())
+                    .andExpect(jsonPath("$[0].routingDiagnostics.readOnly", is(true)))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.simulationOnly", is(true)))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.diagnosticsObject",
+                            is("DecisionExplorerRoutingDiagnosticsV1")))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.overallStatus", is("PARTIAL")))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.selectedCandidateId", is("green")))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.evidenceDiagnostics[0].diagnosticId").exists())
+                    .andExpect(jsonPath("$[0].routingDiagnostics.selectedCandidateDiagnostic.candidateId",
+                            is("green")))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.candidateDiagnostics[0].candidateId",
+                            is("green")))
+                    .andExpect(jsonPath("$[0].routingDiagnostics.factorDiagnostics[0].factorName").exists())
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].gateId", is("boundary-read-only")))
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].outcome", is("PASS")))
                     .andExpect(jsonPath("$[0].agentStructuredOutput.schemaName", is("AgentStructuredOutputV1")))

@@ -53,13 +53,21 @@ public class DecisionExplorerPayloadService {
     private static final Comparator<EvidencePacketReadoutV1> BY_REFERENCE_ID =
             Comparator.comparing(EvidencePacketReadoutV1::referenceId);
     private final DecisionExplorerConfidenceSummaryService confidenceSummaryService;
+    private final DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService;
 
     public DecisionExplorerPayloadService() {
-        this(new DecisionExplorerConfidenceSummaryService());
+        this(new DecisionExplorerConfidenceSummaryService(), new DecisionExplorerRoutingDiagnosticsService());
     }
 
     DecisionExplorerPayloadService(DecisionExplorerConfidenceSummaryService confidenceSummaryService) {
+        this(confidenceSummaryService, new DecisionExplorerRoutingDiagnosticsService());
+    }
+
+    DecisionExplorerPayloadService(
+            DecisionExplorerConfidenceSummaryService confidenceSummaryService,
+            DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService) {
         this.confidenceSummaryService = Objects.requireNonNull(confidenceSummaryService);
+        this.routingDiagnosticsService = Objects.requireNonNull(routingDiagnosticsService);
     }
 
     public List<DecisionExplorerPayloadV1> buildPayloads(RoutingComparisonResponse comparison) {
@@ -105,6 +113,14 @@ public class DecisionExplorerPayloadService {
                 warnings,
                 unknowns,
                 BOUNDARY_NOTE);
+        DecisionExplorerRoutingDiagnosticsV1 routingDiagnostics = routingDiagnosticsService.buildDiagnostics(
+                confidenceSummary,
+                candidates,
+                candidateComparisons,
+                factorDrilldowns,
+                warnings,
+                unknowns,
+                BOUNDARY_NOTE);
 
         return new DecisionExplorerPayloadV1(
                 true,
@@ -118,6 +134,7 @@ public class DecisionExplorerPayloadService {
                 candidates,
                 candidateComparisons,
                 confidenceSummary,
+                routingDiagnostics,
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -163,6 +180,7 @@ public class DecisionExplorerPayloadService {
                 List.of(),
                 List.of(),
                 DecisionExplorerConfidenceSummaryV1.unknown(BOUNDARY_NOTE),
+                DecisionExplorerRoutingDiagnosticsV1.unknown(BOUNDARY_NOTE),
                 List.of(),
                 List.of(),
                 policyGateReadouts(null),
@@ -645,6 +663,7 @@ public class DecisionExplorerPayloadService {
                         "candidateSet",
                         "candidateComparisons",
                         "confidenceSummary",
+                        "routingDiagnostics",
                         "factorContributions",
                         "factorDrilldowns",
                         "policyGateReadouts",
@@ -660,6 +679,7 @@ public class DecisionExplorerPayloadService {
                         "sort repeated readouts deterministically"),
                 List.of(
                         "Which candidate was selected?",
+                        "Which routing diagnostics need review?",
                         "Which visible factors contributed to the selected decision?",
                         "Which boundaries remain not proven?"),
                 List.of(

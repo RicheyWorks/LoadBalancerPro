@@ -17,8 +17,10 @@ class DecisionExplorerFactorDiagnosticsServiceTest {
     @Test
     void factorDiagnosticsClassifySupportingAndNeutralContributionsDeterministically() {
         FactorFixture fixture = fixture(List.of(
-                factor("edge-a", "healthState", "true", "SUPPORTS_SELECTION", "AVAILABLE", List.of(), List.of()),
-                factor("edge-a", "latencyWindow", "22ms", "NEUTRAL", "AVAILABLE", List.of(), List.of())));
+                factor("edge-a", "healthState", "true", "SUPPORTS_SELECTION", "AVAILABLE", List.of(),
+                        List.of("hidden routing internals")),
+                factor("edge-a", "latencyWindow", "22ms", "NEUTRAL", "AVAILABLE", List.of(),
+                        List.of("hidden routing internals"))));
 
         List<DecisionExplorerFactorDiagnosticV1> diagnostics =
                 factorDiagnosticsService.buildFactorDiagnostics(

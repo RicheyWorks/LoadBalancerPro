@@ -57,6 +57,7 @@ class DecisionExplorerPayloadV1Test {
         assertEquals("DecisionExplorerStatusExplanationV1",
                 payload.confidenceSummary().statusExplanation().explanationObject());
         assertEquals("STRONG", payload.confidenceSummary().statusExplanation().status());
+        assertEquals("DecisionExplorerRoutingDiagnosticsV1", payload.routingDiagnostics().diagnosticsObject());
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertEquals("policy-health", payload.policyGateReadouts().get(0).gateId());
         assertEquals("candidate-a", payload.decisionDiffReadouts().get(0).baselineCandidateId());
@@ -135,6 +136,8 @@ class DecisionExplorerPayloadV1Test {
         assertEquals("UNKNOWN", payload.confidenceSummary().status());
         assertTrue(payload.confidenceSummary().factorStatusDetails().isEmpty());
         assertEquals("UNKNOWN", payload.confidenceSummary().statusExplanation().status());
+        assertEquals("UNKNOWN", payload.routingDiagnostics().overallStatus());
+        assertTrue(payload.routingDiagnostics().candidateDiagnostics().isEmpty());
         assertEquals("UNKNOWN", payload.decisionReadout().summary());
         assertTrue(payload.selectedCandidate().visibleSignals().isEmpty());
         assertTrue(payload.agentStructuredOutput().stableFieldNames().isEmpty());

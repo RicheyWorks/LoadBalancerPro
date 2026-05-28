@@ -97,6 +97,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/DecisionExplorerCandidateComparisonRowV1");
         assertRef(required(explorerProperties, "/confidenceSummary"),
                 "#/components/schemas/DecisionExplorerConfidenceSummaryV1");
+        assertRef(required(explorerProperties, "/routingDiagnostics"),
+                "#/components/schemas/DecisionExplorerRoutingDiagnosticsV1");
         assertArrayRef(required(explorerProperties, "/factorContributions"),
                 "#/components/schemas/FactorContributionV1");
         assertArrayRef(required(explorerProperties, "/factorDrilldowns"),
@@ -292,6 +294,112 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(statusExplanationProperties, "/sourceReferenceIds/type").asText());
         assertEquals("string", required(statusExplanationProperties, "/sourceReferenceIds/items/type").asText());
         assertEquals("string", required(statusExplanationProperties, "/boundaryNote/type").asText());
+
+        JsonNode routingDiagnosticsProperties = required(docs,
+                "/components/schemas/DecisionExplorerRoutingDiagnosticsV1/properties");
+        assertEquals("boolean", required(routingDiagnosticsProperties, "/readOnly/type").asText());
+        assertEquals("boolean", required(routingDiagnosticsProperties, "/simulationOnly/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/diagnosticsObject/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/contractVersion/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/overallStatus/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/evidenceQuality/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/selectedCandidateId/type").asText());
+        assertEquals("integer", required(routingDiagnosticsProperties, "/diagnosticCount/type").asText());
+        assertEquals("integer", required(routingDiagnosticsProperties, "/presentEvidenceCount/type").asText());
+        assertEquals("integer", required(routingDiagnosticsProperties, "/partialEvidenceCount/type").asText());
+        assertEquals("integer", required(routingDiagnosticsProperties, "/missingEvidenceCount/type").asText());
+        assertEquals("integer", required(routingDiagnosticsProperties, "/degradedEvidenceCount/type").asText());
+        assertEquals("integer", required(routingDiagnosticsProperties, "/unknownEvidenceCount/type").asText());
+        assertArrayRef(required(routingDiagnosticsProperties, "/evidenceDiagnostics"),
+                "#/components/schemas/DecisionExplorerEvidenceDiagnosticV1");
+        assertRef(required(routingDiagnosticsProperties, "/selectedCandidateDiagnostic"),
+                "#/components/schemas/DecisionExplorerCandidateDiagnosticV1");
+        assertArrayRef(required(routingDiagnosticsProperties, "/alternativeCandidateDiagnostics"),
+                "#/components/schemas/DecisionExplorerCandidateDiagnosticV1");
+        assertArrayRef(required(routingDiagnosticsProperties, "/candidateDiagnostics"),
+                "#/components/schemas/DecisionExplorerCandidateDiagnosticV1");
+        assertArrayRef(required(routingDiagnosticsProperties, "/factorDiagnostics"),
+                "#/components/schemas/DecisionExplorerFactorDiagnosticV1");
+        assertEquals("array", required(routingDiagnosticsProperties, "/degradationReasons/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/degradationReasons/items/type").asText());
+        assertEquals("array", required(routingDiagnosticsProperties, "/partialEvidenceReasons/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/partialEvidenceReasons/items/type").asText());
+        assertEquals("array", required(routingDiagnosticsProperties, "/unknownEvidenceReasons/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/unknownEvidenceReasons/items/type").asText());
+        assertEquals("array", required(routingDiagnosticsProperties, "/diagnosticReasons/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/diagnosticReasons/items/type").asText());
+        assertEquals("array", required(routingDiagnosticsProperties, "/warnings/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/warnings/items/type").asText());
+        assertEquals("array", required(routingDiagnosticsProperties, "/unknowns/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/unknowns/items/type").asText());
+        assertEquals("array", required(routingDiagnosticsProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/sourceReferenceIds/items/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/boundaryNote/type").asText());
+
+        JsonNode evidenceDiagnosticProperties = required(docs,
+                "/components/schemas/DecisionExplorerEvidenceDiagnosticV1/properties");
+        assertEquals("string", required(evidenceDiagnosticProperties, "/diagnosticId/type").asText());
+        assertEquals("string", required(evidenceDiagnosticProperties, "/category/type").asText());
+        assertEquals("string", required(evidenceDiagnosticProperties, "/status/type").asText());
+        assertEquals("string", required(evidenceDiagnosticProperties, "/severity/type").asText());
+        assertEquals("integer", required(evidenceDiagnosticProperties, "/evidenceCount/type").asText());
+        assertEquals("string", required(evidenceDiagnosticProperties, "/summaryText/type").asText());
+        assertEquals("array", required(evidenceDiagnosticProperties, "/reasonCodes/type").asText());
+        assertEquals("string", required(evidenceDiagnosticProperties, "/reasonCodes/items/type").asText());
+        assertEquals("array", required(evidenceDiagnosticProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(evidenceDiagnosticProperties, "/sourceReferenceIds/items/type").asText());
+        assertEquals("string", required(evidenceDiagnosticProperties, "/boundaryNote/type").asText());
+
+        JsonNode candidateDiagnosticProperties = required(docs,
+                "/components/schemas/DecisionExplorerCandidateDiagnosticV1/properties");
+        assertEquals("string", required(candidateDiagnosticProperties, "/candidateId/type").asText());
+        assertEquals("string", required(candidateDiagnosticProperties, "/candidateLabel/type").asText());
+        assertEquals("boolean", required(candidateDiagnosticProperties, "/selected/type").asText());
+        assertEquals("integer", required(candidateDiagnosticProperties, "/displayOrder/type").asText());
+        assertEquals("string", required(candidateDiagnosticProperties, "/selectionRole/type").asText());
+        assertEquals("string", required(candidateDiagnosticProperties, "/diagnosticStatus/type").asText());
+        assertEquals("string", required(candidateDiagnosticProperties, "/riskLevel/type").asText());
+        assertEquals("string", required(candidateDiagnosticProperties, "/healthEvidenceState/type").asText());
+        assertEquals("string", required(candidateDiagnosticProperties, "/comparisonStatus/type").asText());
+        assertEquals("number", required(candidateDiagnosticProperties, "/finalScore/type").asText());
+        assertEquals("number", required(candidateDiagnosticProperties, "/scoreDeltaFromSelected/type").asText());
+        assertEquals("integer", required(candidateDiagnosticProperties, "/visibleSignalCount/type").asText());
+        assertEquals("integer", required(candidateDiagnosticProperties, "/warningCount/type").asText());
+        assertEquals("integer", required(candidateDiagnosticProperties, "/unknownSignalCount/type").asText());
+        assertEquals("integer", required(candidateDiagnosticProperties, "/degradedSignalCount/type").asText());
+        assertEquals("string", required(candidateDiagnosticProperties, "/scoreInterpretation/type").asText());
+        assertEquals("string", required(candidateDiagnosticProperties, "/summaryText/type").asText());
+        assertEquals("array", required(candidateDiagnosticProperties, "/strengthSignals/type").asText());
+        assertEquals("array", required(candidateDiagnosticProperties, "/weakSignals/type").asText());
+        assertEquals("array", required(candidateDiagnosticProperties, "/degradedSignals/type").asText());
+        assertEquals("array", required(candidateDiagnosticProperties, "/unknownSignals/type").asText());
+        assertEquals("array", required(candidateDiagnosticProperties, "/reasonCodes/type").asText());
+        assertEquals("array", required(candidateDiagnosticProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(candidateDiagnosticProperties, "/boundaryNote/type").asText());
+
+        JsonNode factorDiagnosticProperties = required(docs,
+                "/components/schemas/DecisionExplorerFactorDiagnosticV1/properties");
+        assertEquals("string", required(factorDiagnosticProperties, "/candidateId/type").asText());
+        assertEquals("string", required(factorDiagnosticProperties, "/factorName/type").asText());
+        assertEquals("integer", required(factorDiagnosticProperties, "/displayOrder/type").asText());
+        assertEquals("string", required(factorDiagnosticProperties, "/contribution/type").asText());
+        assertEquals("string", required(factorDiagnosticProperties, "/factorStatus/type").asText());
+        assertEquals("string", required(factorDiagnosticProperties, "/evidenceStatus/type").asText());
+        assertEquals("string", required(factorDiagnosticProperties, "/observedValueOrStatus/type").asText());
+        assertEquals("string", required(factorDiagnosticProperties, "/influenceCategory/type").asText());
+        assertEquals("string", required(factorDiagnosticProperties, "/severity/type").asText());
+        assertEquals("integer", required(factorDiagnosticProperties, "/warningCount/type").asText());
+        assertEquals("integer", required(factorDiagnosticProperties, "/unknownCount/type").asText());
+        assertEquals("integer", required(factorDiagnosticProperties, "/degradedSignalCount/type").asText());
+        assertEquals("integer", required(factorDiagnosticProperties, "/missingSignalCount/type").asText());
+        assertEquals("string", required(factorDiagnosticProperties, "/summaryText/type").asText());
+        assertEquals("array", required(factorDiagnosticProperties, "/supportingSignals/type").asText());
+        assertEquals("array", required(factorDiagnosticProperties, "/warningSignals/type").asText());
+        assertEquals("array", required(factorDiagnosticProperties, "/unknownSignals/type").asText());
+        assertEquals("array", required(factorDiagnosticProperties, "/degradedSignals/type").asText());
+        assertEquals("array", required(factorDiagnosticProperties, "/reasonCodes/type").asText());
+        assertEquals("array", required(factorDiagnosticProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(factorDiagnosticProperties, "/boundaryNote/type").asText());
 
         JsonNode factorReadoutProperties = required(docs,
                 "/components/schemas/FactorContributionV1/properties");

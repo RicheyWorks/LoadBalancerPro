@@ -8,28 +8,37 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T03:11-07:00
+Timestamp: 2026-05-28T03:38-07:00
 
 Goal name: LASE Routing Intelligence Infrastructure Phase 3
 
-Current PR slot: LASE-P3-G06
+Current PR slot: LASE-P3-G07
 
-Checkpoint: PR #400 opened for Decision Explorer tradeoff/readiness UI exposure
+Checkpoint: LASE-P3-G07 local verification passed; ready to commit and open PR
 
-Started from main SHA: `14b36231e0d8e412e21272d984e4483ec73ab353`
+Started from main SHA: `bf6dea65228e5a74e20929d2aced256406bd7feb`
 
-Current branch: codex/lase-phase3-tradeoff-ui
+Current branch: codex/lase-phase3-diagnostic-fingerprints
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/400
+PR URL: not opened yet
 
-PR creation head: `c52d59dc7884651def2ac707511e509dfbbe60ac`
+PR creation head: not created yet
 
-Current branch head: `c52d59dc7884651def2ac707511e509dfbbe60ac` plus uncommitted PR-created checkpoint update
+Current branch head: `bf6dea65228e5a74e20929d2aced256406bd7feb` plus local verified fingerprint changes
 
 Changed files for this slice:
 
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerStaticPageTest.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffAnalysisV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerEvidenceSufficiencyV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerReplayReadinessDiagnosticV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffService.java
 - src/main/resources/static/decision-explorer.html
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadServiceTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffServiceTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerApiContractHardeningTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerStaticPageTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/RoutingControllerTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/RoutingOpenApiContractTest.java
 - docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
 
@@ -169,10 +178,29 @@ Checks run:
 - LASE-P3-G06 committed as `c52d59dc7884651def2ac707511e509dfbbe60ac`.
 - LASE-P3-G06 pushed to origin and opened as PR #400:
   https://github.com/RicheyWorks/LoadBalancerPro/pull/400.
+- LASE-P3-G06 PR-created checkpoint was committed and pushed as
+  `78594572eb9be5317b688ab5a8772fc452c81d1d`.
+- LASE-P3-G06 current-head PR checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and
+  Dependency Review.
+- LASE-P3-G06 merged as `bf6dea65228e5a74e20929d2aced256406bd7feb`.
+- LASE-P3-G06 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,767 tests, `git diff --check`,
+  `git diff --cached --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P3-G06 main CI and CodeQL passed for `bf6dea65228e5a74e20929d2aced256406bd7feb`.
+- LASE-P3-G07 branch `codex/lase-phase3-diagnostic-fingerprints` was created from clean synced main at
+  `bf6dea65228e5a74e20929d2aced256406bd7feb`.
+- LASE-P3-G07 is adding deterministic non-cryptographic diagnostic fingerprints/reproducibility keys derived from
+  already-computed route tradeoff, evidence sufficiency, and replay-readiness fields. This remains read-only and does
+  not add replay execution, storage, export, routing mutation, clocks, randomness, environment, or external services.
+- LASE-P3-G07 focused selector passed:
+  `mvn -q "-Dtest=DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingOpenApiContractTest,RoutingControllerTest,DecisionExplorerStaticPageTest" test`.
+- LASE-P3-G07 full local verification passed before commit/PR creation: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,768 tests, `git diff --check`,
+  `git diff --cached --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
 
 Blockers: none.
 
-Next action: commit and push this PR-created checkpoint update, then wait for current-head remote checks.
+Next action: commit, push, open PR, then wait for current-head remote checks.
 
 ## Historical Decision Explorer Phase 2 Campaign Checkpoint
 

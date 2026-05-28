@@ -13,6 +13,8 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class DecisionExplorerRouteTradeoffService {
+    public static final String FINGERPRINT_ALGORITHM = "stable-field-concat-v1";
+
     private static final Comparator<DecisionExplorerRouteTradeoffRowV1> BY_SELECTED_THEN_ORDER = Comparator
             .comparing(DecisionExplorerRouteTradeoffRowV1::selected)
             .reversed()
@@ -55,6 +57,22 @@ public class DecisionExplorerRouteTradeoffService {
                 factorTradeoffDeltas,
                 routingDiagnostics,
                 boundaryNote);
+        List<String> tradeoffReasons = tradeoffReasons(confidenceSummary, routingDiagnostics, rows, tradeoffCategory);
+        List<String> warnings = distinctSorted(routingDiagnostics.warnings());
+        List<String> unknowns = tradeoffUnknowns(routingDiagnostics, rows);
+        List<String> sourceReferenceIds = distinctSorted(routingDiagnostics.sourceReferenceIds());
+        List<String> fingerprintInputs = routeTradeoffFingerprintInputs(
+                confidenceSummary,
+                rows,
+                alternatives,
+                closestAlternative,
+                tradeoffCategory,
+                evidenceSufficiency,
+                replayReadinessDiagnostic,
+                tradeoffReasons,
+                warnings,
+                unknowns,
+                sourceReferenceIds);
 
         return new DecisionExplorerRouteTradeoffAnalysisV1(
                 true,
@@ -77,10 +95,20 @@ public class DecisionExplorerRouteTradeoffService {
                 factorTradeoffDeltas,
                 evidenceSufficiency,
                 replayReadinessDiagnostic,
-                tradeoffReasons(confidenceSummary, routingDiagnostics, rows, tradeoffCategory),
-                distinctSorted(routingDiagnostics.warnings()),
-                tradeoffUnknowns(routingDiagnostics, rows),
-                distinctSorted(routingDiagnostics.sourceReferenceIds()),
+                FINGERPRINT_ALGORITHM,
+                diagnosticFingerprint("route-tradeoff|v1", fingerprintInputs),
+                routeTradeoffReproducibilityKey(
+                        confidenceSummary,
+                        rows,
+                        alternatives,
+                        tradeoffCategory,
+                        evidenceSufficiency,
+                        replayReadinessDiagnostic),
+                fingerprintInputs,
+                tradeoffReasons,
+                warnings,
+                unknowns,
+                sourceReferenceIds,
                 boundaryNote);
     }
 
@@ -401,14 +429,32 @@ public class DecisionExplorerRouteTradeoffService {
                 scoreEvidenceComplete,
                 safeDeltas.size(),
                 degradedEvidence);
+        int readinessScore = readinessScore(selectedKnown, safeRows, comparableAlternativeCount,
+                scoreEvidenceComplete, factorDeltasPresent, routingDiagnostics, degradedEvidence);
+        List<String> sourceReferenceIds = distinctSorted(routingDiagnostics.sourceReferenceIds());
+        List<String> fingerprintInputs = evidenceSufficiencyFingerprintInputs(
+                level,
+                readinessScore,
+                basicReady,
+                tradeoffReady,
+                replayStyleReady,
+                safeRows.size(),
+                comparableAlternativeCount,
+                safeDeltas.size(),
+                presentSignals,
+                partialSignals,
+                missingSignals,
+                degradedSignals,
+                unknownSignals,
+                readinessReasons,
+                sourceReferenceIds);
         return new DecisionExplorerEvidenceSufficiencyV1(
                 true,
                 true,
                 DecisionExplorerEvidenceSufficiencyV1.DIAGNOSTIC_OBJECT,
                 DecisionExplorerEvidenceSufficiencyV1.CONTRACT_VERSION,
                 level,
-                readinessScore(selectedKnown, safeRows, comparableAlternativeCount, scoreEvidenceComplete,
-                        factorDeltasPresent, routingDiagnostics, degradedEvidence),
+                readinessScore,
                 basicReady,
                 tradeoffReady,
                 replayStyleReady,
@@ -426,7 +472,12 @@ public class DecisionExplorerRouteTradeoffService {
                 degradedSignals,
                 unknownSignals,
                 readinessReasons,
-                distinctSorted(routingDiagnostics.sourceReferenceIds()),
+                FINGERPRINT_ALGORITHM,
+                diagnosticFingerprint("evidence-sufficiency|v1", fingerprintInputs),
+                evidenceSufficiencyReproducibilityKey(level, readinessScore, safeRows.size(),
+                        comparableAlternativeCount, safeDeltas.size()),
+                fingerprintInputs,
+                sourceReferenceIds,
                 boundaryNote);
     }
 
@@ -449,10 +500,9 @@ public class DecisionExplorerRouteTradeoffService {
                 sufficiency.comparableAlternativeCount());
         String scoreEvidenceStatus = scoreReadinessStatus(safeScoring);
         String factorEvidenceStatus = factorReadinessStatus(safeDeltas);
-        String fingerprintEvidenceStatus = DecisionExplorerReplayReadinessDiagnosticV1.EVIDENCE_UNKNOWN;
+        String fingerprintEvidenceStatus = DecisionExplorerReplayReadinessDiagnosticV1.EVIDENCE_AVAILABLE;
         String readinessStatus = replayReadinessStatus(sufficiency, fingerprintEvidenceStatus);
         List<String> missingSignals = new ArrayList<>(sufficiency.missingEvidenceSignals());
-        missingSignals.add("diagnostic fingerprint evidence has not been computed yet");
         List<String> incompatibleSignals = List.of(
                 "replay execution is intentionally unavailable in this read-only diagnostic",
                 "server-side replay storage is intentionally unavailable",
@@ -468,6 +518,19 @@ public class DecisionExplorerRouteTradeoffService {
         limitationSignals.addAll(missingSignals);
         limitationSignals.addAll(sufficiency.degradedEvidenceSignals());
         limitationSignals.addAll(incompatibleSignals);
+        List<String> limitationSignalsSorted = distinctSorted(limitationSignals);
+        List<String> sourceReferenceIds = distinctSorted(routingDiagnostics.sourceReferenceIds());
+        List<String> fingerprintInputs = replayReadinessFingerprintInputs(
+                readinessStatus,
+                sufficiency,
+                candidateEvidenceStatus,
+                alternativeEvidenceStatus,
+                scoreEvidenceStatus,
+                factorEvidenceStatus,
+                fingerprintEvidenceStatus,
+                checklist,
+                limitationSignalsSorted,
+                sourceReferenceIds);
         return new DecisionExplorerReplayReadinessDiagnosticV1(
                 true,
                 true,
@@ -490,8 +553,14 @@ public class DecisionExplorerRouteTradeoffService {
                 sufficiency.degradedEvidenceSignals(),
                 incompatibleSignals,
                 checklist,
-                distinctSorted(limitationSignals),
-                distinctSorted(routingDiagnostics.sourceReferenceIds()),
+                limitationSignalsSorted,
+                FINGERPRINT_ALGORITHM,
+                diagnosticFingerprint("replay-readiness|v1", fingerprintInputs),
+                replayReadinessReproducibilityKey(readinessStatus, sufficiency,
+                        candidateEvidenceStatus, alternativeEvidenceStatus, scoreEvidenceStatus,
+                        factorEvidenceStatus, fingerprintEvidenceStatus),
+                fingerprintInputs,
+                sourceReferenceIds,
                 replayReadinessExplanation(readinessStatus, sufficiency, fingerprintEvidenceStatus),
                 boundaryNote);
     }
@@ -1180,6 +1249,234 @@ public class DecisionExplorerRouteTradeoffService {
                         row.scoreDeltaFromSelected() == null ? null : row.scoreDeltaFromSelected().toString())
                 + ", tradeoff category " + row.tradeoffCategory() + ", and factor rollup "
                 + factorStatusRollup + ".";
+    }
+
+    private static List<String> routeTradeoffFingerprintInputs(
+            DecisionExplorerConfidenceSummaryV1 confidenceSummary,
+            List<DecisionExplorerRouteTradeoffRowV1> rows,
+            List<DecisionExplorerRouteTradeoffRowV1> alternatives,
+            DecisionExplorerRouteTradeoffRowV1 closestAlternative,
+            String tradeoffCategory,
+            DecisionExplorerEvidenceSufficiencyV1 evidenceSufficiency,
+            DecisionExplorerReplayReadinessDiagnosticV1 replayReadinessDiagnostic,
+            List<String> tradeoffReasons,
+            List<String> warnings,
+            List<String> unknowns,
+            List<String> sourceReferenceIds) {
+        List<String> inputs = new ArrayList<>();
+        inputs.add(input("analysisObject", DecisionExplorerRouteTradeoffAnalysisV1.ANALYSIS_OBJECT));
+        inputs.add(input("contractVersion", DecisionExplorerRouteTradeoffAnalysisV1.CONTRACT_VERSION));
+        inputs.add(input("overallStatus", confidenceSummary.status()));
+        inputs.add(input("evidenceQuality", confidenceSummary.evidenceQuality()));
+        inputs.add(input("selectedCandidateId", confidenceSummary.selectedCandidateId()));
+        inputs.add(input("tradeoffCategory", tradeoffCategory));
+        inputs.add(input("candidateTradeoffCount", copyNonNull(rows).size()));
+        inputs.add(input("alternativeCount", copyNonNull(alternatives).size()));
+        inputs.add(input("comparedAlternativeCount", comparedAlternativeCount(copyNonNull(alternatives))));
+        inputs.add(input("closestAlternativeCandidateId",
+                closestAlternative == null ? "UNKNOWN" : closestAlternative.candidateId()));
+        inputs.add(input("closestAlternativeScoreDelta",
+                closestAlternative == null ? null : closestAlternative.scoreDeltaFromSelected()));
+        copyNonNull(rows).forEach(row -> inputs.add(input("candidateTradeoff", tradeoffRowFingerprint(row))));
+        copyNonNull(evidenceSufficiency == null ? null : evidenceSufficiency.fingerprintInputs()).stream()
+                .map(value -> "evidenceSufficiency." + value)
+                .forEach(inputs::add);
+        copyNonNull(replayReadinessDiagnostic == null ? null : replayReadinessDiagnostic.fingerprintInputs())
+                .stream()
+                .map(value -> "replayReadiness." + value)
+                .forEach(inputs::add);
+        inputs.add(input("tradeoffReasons", tradeoffReasons));
+        inputs.add(input("warnings", warnings));
+        inputs.add(input("unknowns", unknowns));
+        inputs.add(input("sourceReferenceIds", sourceReferenceIds));
+        return canonicalInputs(inputs);
+    }
+
+    private static List<String> evidenceSufficiencyFingerprintInputs(
+            String level,
+            int readinessScore,
+            boolean basicReady,
+            boolean tradeoffReady,
+            boolean replayStyleReady,
+            int candidateEvidenceCount,
+            int comparableAlternativeCount,
+            int factorDeltaCount,
+            List<String> presentSignals,
+            List<String> partialSignals,
+            List<String> missingSignals,
+            List<String> degradedSignals,
+            List<String> unknownSignals,
+            List<String> readinessReasons,
+            List<String> sourceReferenceIds) {
+        return canonicalInputs(List.of(
+                input("diagnosticObject", DecisionExplorerEvidenceSufficiencyV1.DIAGNOSTIC_OBJECT),
+                input("contractVersion", DecisionExplorerEvidenceSufficiencyV1.CONTRACT_VERSION),
+                input("sufficiencyLevel", level),
+                input("readinessScore", readinessScore),
+                input("basicDiagnosticsReady", basicReady),
+                input("tradeoffAnalysisReady", tradeoffReady),
+                input("replayStyleAnalysisReady", replayStyleReady),
+                input("candidateEvidenceCount", candidateEvidenceCount),
+                input("comparableAlternativeCount", comparableAlternativeCount),
+                input("factorDeltaCount", factorDeltaCount),
+                input("presentEvidenceSignals", presentSignals),
+                input("partialEvidenceSignals", partialSignals),
+                input("missingEvidenceSignals", missingSignals),
+                input("degradedEvidenceSignals", degradedSignals),
+                input("unknownEvidenceSignals", unknownSignals),
+                input("readinessReasons", readinessReasons),
+                input("sourceReferenceIds", sourceReferenceIds)));
+    }
+
+    private static List<String> replayReadinessFingerprintInputs(
+            String readinessStatus,
+            DecisionExplorerEvidenceSufficiencyV1 sufficiency,
+            String candidateEvidenceStatus,
+            String alternativeEvidenceStatus,
+            String scoreEvidenceStatus,
+            String factorEvidenceStatus,
+            String fingerprintEvidenceStatus,
+            List<String> readinessChecklist,
+            List<String> limitationSignals,
+            List<String> sourceReferenceIds) {
+        return canonicalInputs(List.of(
+                input("diagnosticObject", DecisionExplorerReplayReadinessDiagnosticV1.DIAGNOSTIC_OBJECT),
+                input("contractVersion", DecisionExplorerReplayReadinessDiagnosticV1.CONTRACT_VERSION),
+                input("readinessStatus", readinessStatus),
+                input("sufficiencyLevel", sufficiency.sufficiencyLevel()),
+                input("readinessScore", sufficiency.readinessScore()),
+                input("candidateEvidenceStatus", candidateEvidenceStatus),
+                input("alternativeEvidenceStatus", alternativeEvidenceStatus),
+                input("scoreEvidenceStatus", scoreEvidenceStatus),
+                input("factorEvidenceStatus", factorEvidenceStatus),
+                input("fingerprintEvidenceStatus", fingerprintEvidenceStatus),
+                input("sufficiencyFingerprint", sufficiency.diagnosticFingerprint()),
+                input("readinessChecklist", readinessChecklist),
+                input("limitationSignals", limitationSignals),
+                input("sourceReferenceIds", sourceReferenceIds),
+                input("replayExecutionAvailable", false),
+                input("replayStorageAvailable", false),
+                input("replayExportAvailable", false)));
+    }
+
+    private static String routeTradeoffReproducibilityKey(
+            DecisionExplorerConfidenceSummaryV1 confidenceSummary,
+            List<DecisionExplorerRouteTradeoffRowV1> rows,
+            List<DecisionExplorerRouteTradeoffRowV1> alternatives,
+            String tradeoffCategory,
+            DecisionExplorerEvidenceSufficiencyV1 evidenceSufficiency,
+            DecisionExplorerReplayReadinessDiagnosticV1 replayReadinessDiagnostic) {
+        return String.join(":",
+                "route-tradeoff",
+                DecisionExplorerRouteTradeoffAnalysisV1.CONTRACT_VERSION,
+                fingerprintValue(confidenceSummary.status()),
+                fingerprintValue(confidenceSummary.selectedCandidateId()),
+                fingerprintValue(tradeoffCategory),
+                "rows=" + copyNonNull(rows).size(),
+                "alternatives=" + copyNonNull(alternatives).size(),
+                "sufficiency=" + fingerprintValue(evidenceSufficiency.sufficiencyLevel()),
+                "replay=" + fingerprintValue(replayReadinessDiagnostic.readinessStatus()));
+    }
+
+    private static String evidenceSufficiencyReproducibilityKey(
+            String level,
+            int readinessScore,
+            int candidateEvidenceCount,
+            int comparableAlternativeCount,
+            int factorDeltaCount) {
+        return String.join(":",
+                "evidence-sufficiency",
+                DecisionExplorerEvidenceSufficiencyV1.CONTRACT_VERSION,
+                fingerprintValue(level),
+                "score=" + readinessScore,
+                "candidates=" + candidateEvidenceCount,
+                "alternatives=" + comparableAlternativeCount,
+                "factorDeltas=" + factorDeltaCount);
+    }
+
+    private static String replayReadinessReproducibilityKey(
+            String readinessStatus,
+            DecisionExplorerEvidenceSufficiencyV1 sufficiency,
+            String candidateEvidenceStatus,
+            String alternativeEvidenceStatus,
+            String scoreEvidenceStatus,
+            String factorEvidenceStatus,
+            String fingerprintEvidenceStatus) {
+        return String.join(":",
+                "replay-readiness",
+                DecisionExplorerReplayReadinessDiagnosticV1.CONTRACT_VERSION,
+                fingerprintValue(readinessStatus),
+                fingerprintValue(sufficiency.sufficiencyLevel()),
+                "score=" + sufficiency.readinessScore(),
+                "candidate=" + fingerprintValue(candidateEvidenceStatus),
+                "alternative=" + fingerprintValue(alternativeEvidenceStatus),
+                "scoreEvidence=" + fingerprintValue(scoreEvidenceStatus),
+                "factor=" + fingerprintValue(factorEvidenceStatus),
+                "fingerprint=" + fingerprintValue(fingerprintEvidenceStatus));
+    }
+
+    private static String diagnosticFingerprint(String namespace, List<String> inputs) {
+        List<String> canonicalInputs = canonicalInputs(inputs);
+        String safeNamespace = namespace == null || namespace.isBlank()
+                ? "diagnostic|v1"
+                : namespace.trim().replace('\r', ' ').replace('\n', ' ').replaceAll("\\s+", " ");
+        if (canonicalInputs.isEmpty()) {
+            return safeNamespace + "|inputs=none";
+        }
+        return safeNamespace + "|" + String.join("|", canonicalInputs);
+    }
+
+    private static String tradeoffRowFingerprint(DecisionExplorerRouteTradeoffRowV1 row) {
+        return String.join(",",
+                "candidate=" + fingerprintValue(row.candidateId()),
+                "selected=" + row.selected(),
+                "category=" + fingerprintValue(row.tradeoffCategory()),
+                "classification=" + fingerprintValue(row.riskBenefitClassification()),
+                "status=" + fingerprintValue(row.diagnosticStatus()),
+                "risk=" + fingerprintValue(row.riskLevel()),
+                "health=" + fingerprintValue(row.healthEvidenceState()),
+                "finalScore=" + fingerprintValue(row.finalScore()),
+                "delta=" + fingerprintValue(row.scoreDeltaFromSelected()),
+                "gap=" + fingerprintValue(row.scoreGapCategory()),
+                "reasons=" + fingerprintValue(row.reasonCodes()));
+    }
+
+    private static String input(String key, Object value) {
+        return fingerprintValue(key) + "=" + fingerprintValue(value);
+    }
+
+    private static List<String> canonicalInputs(Collection<String> values) {
+        if (values == null) {
+            return List.of();
+        }
+        return values.stream()
+                .filter(value -> value != null && !value.isBlank())
+                .map(DecisionExplorerRouteTradeoffService::fingerprintValue)
+                .toList();
+    }
+
+    private static String fingerprintValue(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        if (value instanceof Collection<?> collection) {
+            if (collection.isEmpty()) {
+                return "[]";
+            }
+            return collection.stream()
+                    .map(DecisionExplorerRouteTradeoffService::fingerprintValue)
+                    .sorted()
+                    .collect(Collectors.joining(";"));
+        }
+        if (value instanceof Double number && !Double.isFinite(number)) {
+            return "null";
+        }
+        return String.valueOf(value)
+                .trim()
+                .replace('\r', ' ')
+                .replace('\n', ' ')
+                .replace('|', '/')
+                .replaceAll("\\s+", " ");
     }
 
     private static <T> List<T> copyNonNull(List<T> values) {

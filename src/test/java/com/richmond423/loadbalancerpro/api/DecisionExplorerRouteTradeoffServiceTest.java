@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -53,15 +54,39 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertTrue(analysis.evidenceSufficiency().basicDiagnosticsReady());
         assertTrue(analysis.evidenceSufficiency().tradeoffAnalysisReady());
         assertTrue(analysis.evidenceSufficiency().replayStyleAnalysisReady());
-        assertEquals("PARTIAL", analysis.replayReadinessDiagnostic().readinessStatus());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                analysis.evidenceSufficiency().fingerprintAlgorithm());
+        assertEquals("evidence-sufficiency:v1:REPLAY_STYLE_READY:score=100:candidates=2:alternatives=1:"
+                + "factorDeltas=1", analysis.evidenceSufficiency().reproducibilityKey());
+        assertTrue(analysis.evidenceSufficiency().diagnosticFingerprint()
+                .startsWith("evidence-sufficiency|v1|"));
+        assertTrue(analysis.evidenceSufficiency().fingerprintInputs()
+                .contains("sufficiencyLevel=REPLAY_STYLE_READY"));
+        assertEquals("READY", analysis.replayReadinessDiagnostic().readinessStatus());
         assertEquals("AVAILABLE", analysis.replayReadinessDiagnostic().candidateEvidenceStatus());
         assertEquals("AVAILABLE", analysis.replayReadinessDiagnostic().alternativeEvidenceStatus());
         assertEquals("AVAILABLE", analysis.replayReadinessDiagnostic().scoreEvidenceStatus());
         assertEquals("AVAILABLE", analysis.replayReadinessDiagnostic().factorEvidenceStatus());
-        assertEquals("UNKNOWN", analysis.replayReadinessDiagnostic().fingerprintEvidenceStatus());
+        assertEquals("AVAILABLE", analysis.replayReadinessDiagnostic().fingerprintEvidenceStatus());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                analysis.replayReadinessDiagnostic().fingerprintAlgorithm());
+        assertEquals("replay-readiness:v1:READY:REPLAY_STYLE_READY:score=100:candidate=AVAILABLE:"
+                + "alternative=AVAILABLE:scoreEvidence=AVAILABLE:factor=AVAILABLE:fingerprint=AVAILABLE",
+                analysis.replayReadinessDiagnostic().reproducibilityKey());
+        assertTrue(analysis.replayReadinessDiagnostic().diagnosticFingerprint()
+                .startsWith("replay-readiness|v1|"));
+        assertTrue(analysis.replayReadinessDiagnostic().fingerprintInputs()
+                .contains("fingerprintEvidenceStatus=AVAILABLE"));
         assertFalse(analysis.replayReadinessDiagnostic().replayExecutionAvailable());
-        assertTrue(analysis.replayReadinessDiagnostic().missingEvidenceSignals()
+        assertFalse(analysis.replayReadinessDiagnostic().missingEvidenceSignals()
                 .contains("diagnostic fingerprint evidence has not been computed yet"));
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                analysis.fingerprintAlgorithm());
+        assertEquals("route-tradeoff:v1:STRONG:edge-a:SELECTED_ADVANTAGE:rows=2:alternatives=1:"
+                + "sufficiency=REPLAY_STYLE_READY:replay=READY", analysis.reproducibilityKey());
+        assertTrue(analysis.diagnosticFingerprint().startsWith("route-tradeoff|v1|"));
+        assertTrue(analysis.fingerprintInputs().contains("selectedCandidateId=edge-a"));
+        assertTrue(analysis.fingerprintInputs().contains("replayReadiness.readinessStatus=READY"));
         assertTrue(analysis.tradeoffReasons().contains("ROUTE_TRADEOFF_CATEGORY_SELECTED_ADVANTAGE"));
         assertTrue(analysis.candidateTradeoffs().get(1).benefitSignals()
                 .contains("alternative trails selected by returned score delta"));
@@ -219,13 +244,43 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertEquals("INSUFFICIENT", analysis.evidenceSufficiency().sufficiencyLevel());
         assertEquals(0, analysis.evidenceSufficiency().readinessScore());
         assertFalse(analysis.evidenceSufficiency().basicDiagnosticsReady());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                analysis.fingerprintAlgorithm());
+        assertTrue(analysis.diagnosticFingerprint().startsWith("route-tradeoff|v1|"));
+        assertEquals("route-tradeoff:v1:UNKNOWN:UNKNOWN:0:INSUFFICIENT:UNKNOWN",
+                analysis.reproducibilityKey());
+        assertTrue(analysis.fingerprintInputs().contains("candidateTradeoffCount=0"));
+        assertTrue(analysis.evidenceSufficiency().diagnosticFingerprint()
+                .startsWith("evidence-sufficiency|v1|"));
         assertEquals("UNKNOWN", analysis.replayReadinessDiagnostic().readinessStatus());
         assertEquals("UNKNOWN", analysis.replayReadinessDiagnostic().candidateEvidenceStatus());
+        assertTrue(analysis.replayReadinessDiagnostic().diagnosticFingerprint()
+                .startsWith("replay-readiness|v1|"));
         assertFalse(analysis.replayReadinessDiagnostic().replayStorageAvailable());
         assertFalse(analysis.replayReadinessDiagnostic().replayExportAvailable());
         assertEquals(List.of("ROUTING_DIAGNOSTICS_UNAVAILABLE"), analysis.tradeoffReasons());
         assertTrue(analysis.unknowns().contains("route tradeoff diagnostics were unavailable"));
         assertEquals("UNKNOWN", analysis.boundaryNote());
+    }
+
+    @Test
+    void diagnosticFingerprintsAreStableAndReflectComputedEvidenceChanges() {
+        DecisionExplorerRouteTradeoffAnalysisV1 first = tradeoffs(strongFixture());
+        DecisionExplorerRouteTradeoffAnalysisV1 second = tradeoffs(strongFixture());
+        DecisionExplorerRouteTradeoffAnalysisV1 partial = tradeoffs(unknownAlternativeFixture());
+
+        assertEquals(first.diagnosticFingerprint(), second.diagnosticFingerprint());
+        assertEquals(first.reproducibilityKey(), second.reproducibilityKey());
+        assertEquals(first.evidenceSufficiency().diagnosticFingerprint(),
+                second.evidenceSufficiency().diagnosticFingerprint());
+        assertEquals(first.replayReadinessDiagnostic().diagnosticFingerprint(),
+                second.replayReadinessDiagnostic().diagnosticFingerprint());
+
+        assertNotEquals(first.diagnosticFingerprint(), partial.diagnosticFingerprint());
+        assertNotEquals(first.evidenceSufficiency().diagnosticFingerprint(),
+                partial.evidenceSufficiency().diagnosticFingerprint());
+        assertNotEquals(first.replayReadinessDiagnostic().diagnosticFingerprint(),
+                partial.replayReadinessDiagnostic().diagnosticFingerprint());
     }
 
     @Test

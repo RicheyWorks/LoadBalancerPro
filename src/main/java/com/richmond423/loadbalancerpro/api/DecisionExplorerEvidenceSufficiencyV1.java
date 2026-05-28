@@ -26,6 +26,10 @@ public record DecisionExplorerEvidenceSufficiencyV1(
         List<String> degradedEvidenceSignals,
         List<String> unknownEvidenceSignals,
         List<String> readinessReasons,
+        String fingerprintAlgorithm,
+        String diagnosticFingerprint,
+        String reproducibilityKey,
+        List<String> fingerprintInputs,
         List<String> sourceReferenceIds,
         String boundaryNote) {
     public static final String DIAGNOSTIC_OBJECT = "DecisionExplorerEvidenceSufficiencyV1";
@@ -57,6 +61,11 @@ public record DecisionExplorerEvidenceSufficiencyV1(
         degradedEvidenceSignals = DecisionExplorerDtoSupport.copyOrEmpty(degradedEvidenceSignals);
         unknownEvidenceSignals = DecisionExplorerDtoSupport.copyOrEmpty(unknownEvidenceSignals);
         readinessReasons = DecisionExplorerDtoSupport.copyOrEmpty(readinessReasons);
+        fingerprintAlgorithm = DecisionExplorerDtoSupport.valueOrDefault(fingerprintAlgorithm,
+                DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM);
+        diagnosticFingerprint = DecisionExplorerDtoSupport.valueOrUnknown(diagnosticFingerprint);
+        reproducibilityKey = DecisionExplorerDtoSupport.valueOrUnknown(reproducibilityKey);
+        fingerprintInputs = DecisionExplorerDtoSupport.copyOrEmpty(fingerprintInputs);
         sourceReferenceIds = DecisionExplorerDtoSupport.copyOrEmpty(sourceReferenceIds);
         boundaryNote = DecisionExplorerDtoSupport.valueOrUnknown(boundaryNote);
     }
@@ -89,6 +98,19 @@ public record DecisionExplorerEvidenceSufficiencyV1(
                 List.of(),
                 List.of("route tradeoff evidence sufficiency could not be computed"),
                 List.of("EVIDENCE_SUFFICIENCY_INSUFFICIENT"),
+                DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                "evidence-sufficiency|v1|level=INSUFFICIENT|score=0|candidates=0|alternatives=0|"
+                        + "factorDeltas=0|present=0|partial=0|missing=3|degraded=0|unknown=1",
+                "evidence-sufficiency:v1:INSUFFICIENT:0:0:0:0",
+                List.of(
+                        "diagnosticObject=" + DIAGNOSTIC_OBJECT,
+                        "sufficiencyLevel=INSUFFICIENT",
+                        "readinessScore=0",
+                        "candidateEvidenceCount=0",
+                        "comparableAlternativeCount=0",
+                        "factorDeltaCount=0",
+                        "missingEvidenceCount=3",
+                        "unknownEvidenceCount=1"),
                 List.of(),
                 boundaryNote);
     }

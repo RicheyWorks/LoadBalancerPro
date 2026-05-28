@@ -23,6 +23,10 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
         List<DecisionExplorerFactorTradeoffDeltaV1> factorTradeoffDeltas,
         DecisionExplorerEvidenceSufficiencyV1 evidenceSufficiency,
         DecisionExplorerReplayReadinessDiagnosticV1 replayReadinessDiagnostic,
+        String fingerprintAlgorithm,
+        String diagnosticFingerprint,
+        String reproducibilityKey,
+        List<String> fingerprintInputs,
         List<String> tradeoffReasons,
         List<String> warnings,
         List<String> unknowns,
@@ -56,6 +60,11 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
         replayReadinessDiagnostic = replayReadinessDiagnostic == null
                 ? DecisionExplorerReplayReadinessDiagnosticV1.unknown(boundaryNote)
                 : replayReadinessDiagnostic;
+        fingerprintAlgorithm = DecisionExplorerDtoSupport.valueOrDefault(fingerprintAlgorithm,
+                DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM);
+        diagnosticFingerprint = DecisionExplorerDtoSupport.valueOrUnknown(diagnosticFingerprint);
+        reproducibilityKey = DecisionExplorerDtoSupport.valueOrUnknown(reproducibilityKey);
+        fingerprintInputs = DecisionExplorerDtoSupport.copyOrEmpty(fingerprintInputs);
         tradeoffReasons = DecisionExplorerDtoSupport.copyOrEmpty(tradeoffReasons);
         warnings = DecisionExplorerDtoSupport.copyOrEmpty(warnings);
         unknowns = DecisionExplorerDtoSupport.copyOrEmpty(unknowns);
@@ -87,6 +96,18 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
                 List.of(),
                 DecisionExplorerEvidenceSufficiencyV1.unknown(boundaryNote),
                 DecisionExplorerReplayReadinessDiagnosticV1.unknown(boundaryNote),
+                DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                "route-tradeoff|v1|status=UNKNOWN|selected=UNKNOWN|category=UNKNOWN|rows=0|"
+                        + "alternatives=0|sufficiency=INSUFFICIENT|replay=UNKNOWN",
+                "route-tradeoff:v1:UNKNOWN:UNKNOWN:0:INSUFFICIENT:UNKNOWN",
+                List.of(
+                        "analysisObject=" + ANALYSIS_OBJECT,
+                        "overallStatus=UNKNOWN",
+                        "selectedCandidateId=UNKNOWN",
+                        "tradeoffCategory=UNKNOWN",
+                        "candidateTradeoffCount=0",
+                        "evidenceSufficiency=INSUFFICIENT",
+                        "replayReadiness=UNKNOWN"),
                 List.of("ROUTING_DIAGNOSTICS_UNAVAILABLE"),
                 List.of(),
                 List.of("route tradeoff diagnostics were unavailable"),

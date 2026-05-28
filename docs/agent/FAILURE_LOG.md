@@ -24,6 +24,44 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-28T03:32-07:00
+
+Branch/PR: codex/lase-phase3-diagnostic-fingerprints / no PR yet
+
+Failure type: local inspection command truncation
+
+Failing check: targeted `git diff` inspection piped through `Select-Object -First`.
+
+Suspected cause: the native `git diff` process returned non-zero after the PowerShell pipeline closed early while
+truncating output for inspection.
+
+Fix attempted: continued with focused diffs, focused tests, full Maven verification, diff checks, and smoke workflow.
+
+Result: no code behavior, formatting, or verification failure remained.
+
+Follow-up action: proceed with the verified fingerprint PR.
+
+## Entry
+
+Date/time: 2026-05-28T03:24-07:00
+
+Branch/PR: codex/lase-phase3-diagnostic-fingerprints / no PR yet
+
+Failure type: local inspection path typo
+
+Failing check: file inspection for `RoutingOpenApiContractTest.java`.
+
+Suspected cause: the read command used `src/main/java/.../RoutingOpenApiContractTest.java`; the contract test lives
+under `src/test/java/...`.
+
+Fix attempted: reran the read against the test source path.
+
+Result: source inspection continued; no application behavior or verification check failed.
+
+Follow-up action: continue implementing deterministic diagnostic fingerprints with focused tests.
+
+## Entry
+
 Date/time: 2026-05-28T03:08-07:00
 
 Branch/PR: codex/lase-phase3-tradeoff-ui / no PR yet

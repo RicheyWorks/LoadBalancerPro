@@ -366,6 +366,10 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/DecisionExplorerEvidenceSufficiencyV1");
         assertRef(required(routeTradeoffProperties, "/replayReadinessDiagnostic"),
                 "#/components/schemas/DecisionExplorerReplayReadinessDiagnosticV1");
+        assertEquals("string", required(routeTradeoffProperties, "/fingerprintAlgorithm/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/diagnosticFingerprint/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/reproducibilityKey/type").asText());
+        assertEquals("array", required(routeTradeoffProperties, "/fingerprintInputs/type").asText());
         assertEquals("array", required(routeTradeoffProperties, "/tradeoffReasons/type").asText());
         assertEquals("array", required(routeTradeoffProperties, "/warnings/type").asText());
         assertEquals("array", required(routeTradeoffProperties, "/unknowns/type").asText());
@@ -447,6 +451,10 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(evidenceSufficiencyProperties, "/degradedEvidenceSignals/type").asText());
         assertEquals("array", required(evidenceSufficiencyProperties, "/unknownEvidenceSignals/type").asText());
         assertEquals("array", required(evidenceSufficiencyProperties, "/readinessReasons/type").asText());
+        assertEquals("string", required(evidenceSufficiencyProperties, "/fingerprintAlgorithm/type").asText());
+        assertEquals("string", required(evidenceSufficiencyProperties, "/diagnosticFingerprint/type").asText());
+        assertEquals("string", required(evidenceSufficiencyProperties, "/reproducibilityKey/type").asText());
+        assertEquals("array", required(evidenceSufficiencyProperties, "/fingerprintInputs/type").asText());
         assertEquals("array", required(evidenceSufficiencyProperties, "/sourceReferenceIds/type").asText());
 
         JsonNode replayReadinessProperties = required(docs,
@@ -467,6 +475,10 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(replayReadinessProperties, "/fingerprintEvidenceStatus/type").asText());
         assertEquals("array", required(replayReadinessProperties, "/readinessChecklist/type").asText());
         assertEquals("array", required(replayReadinessProperties, "/limitationSignals/type").asText());
+        assertEquals("string", required(replayReadinessProperties, "/fingerprintAlgorithm/type").asText());
+        assertEquals("string", required(replayReadinessProperties, "/diagnosticFingerprint/type").asText());
+        assertEquals("string", required(replayReadinessProperties, "/reproducibilityKey/type").asText());
+        assertEquals("array", required(replayReadinessProperties, "/fingerprintInputs/type").asText());
         assertEquals("string", required(replayReadinessProperties, "/explanationText/type").asText());
 
         JsonNode evidenceDiagnosticProperties = required(docs,

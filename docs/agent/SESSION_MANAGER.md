@@ -14,15 +14,15 @@ Goal name: LASE Routing Intelligence Infrastructure Phase 3
 
 Current PR slot: LASE-P3-G01
 
-Checkpoint: branch created; route tradeoff DTO/service foundation implemented; focused tests passing
+Checkpoint: PR #395 opened for route tradeoff DTO/service foundation
 
 Started from main SHA: `340fd2331415707db57c0cb77b1f0147ab97a22a`
 
 Current branch: codex/lase-phase3-route-tradeoff-foundation
 
-PR URL: not opened yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/395
 
-Current branch head: uncommitted working tree; re-read before commit and PR creation
+Current branch head: `8d8dc9ae` before PR-URL checkpoint update; re-read before merge
 
 Changed files for this slice:
 
@@ -47,7 +47,8 @@ Checks run:
 
 Blockers: none.
 
-Next action: stage, run `git diff --cached --check`, commit, push, and open PR #395 candidate.
+Next action: push the PR-URL checkpoint update, wait for PR #395 checks, and merge only if current-head
+required checks are green.
 
 ## Historical Decision Explorer Phase 2 Campaign Checkpoint
 

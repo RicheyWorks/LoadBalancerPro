@@ -11,6 +11,8 @@ import java.util.Set;
 public class DecisionExplorerRoutingDiagnosticsService {
     private final DecisionExplorerCandidateDiagnosticsService candidateDiagnosticsService =
             new DecisionExplorerCandidateDiagnosticsService();
+    private final DecisionExplorerFactorDiagnosticsService factorDiagnosticsService =
+            new DecisionExplorerFactorDiagnosticsService();
 
     public DecisionExplorerRoutingDiagnosticsV1 buildDiagnostics(
             DecisionExplorerConfidenceSummaryV1 confidenceSummary,
@@ -46,6 +48,8 @@ public class DecisionExplorerRoutingDiagnosticsService {
         List<DecisionExplorerCandidateDiagnosticV1> candidateDiagnostics =
                 candidateDiagnosticsService.buildCandidateDiagnostics(
                         confidenceSummary, candidateSet, candidateComparisons, boundaryNote);
+        List<DecisionExplorerFactorDiagnosticV1> factorDiagnostics =
+                factorDiagnosticsService.buildFactorDiagnostics(confidenceSummary, factorDrilldowns, boundaryNote);
 
         return new DecisionExplorerRoutingDiagnosticsV1(
                 true,
@@ -65,6 +69,10 @@ public class DecisionExplorerRoutingDiagnosticsService {
                 candidateDiagnosticsService.selectedCandidateDiagnostic(candidateDiagnostics, boundaryNote),
                 candidateDiagnosticsService.alternativeCandidateDiagnostics(candidateDiagnostics),
                 candidateDiagnostics,
+                factorDiagnostics,
+                factorDiagnosticsService.degradationReasons(factorDiagnostics),
+                factorDiagnosticsService.partialEvidenceReasons(factorDiagnostics),
+                factorDiagnosticsService.unknownEvidenceReasons(factorDiagnostics),
                 diagnosticReasons,
                 warnings,
                 unknowns,

@@ -20,6 +20,10 @@ public record DecisionExplorerRoutingDiagnosticsV1(
         DecisionExplorerCandidateDiagnosticV1 selectedCandidateDiagnostic,
         List<DecisionExplorerCandidateDiagnosticV1> alternativeCandidateDiagnostics,
         List<DecisionExplorerCandidateDiagnosticV1> candidateDiagnostics,
+        List<DecisionExplorerFactorDiagnosticV1> factorDiagnostics,
+        List<String> degradationReasons,
+        List<String> partialEvidenceReasons,
+        List<String> unknownEvidenceReasons,
         List<String> diagnosticReasons,
         List<String> warnings,
         List<String> unknowns,
@@ -48,6 +52,10 @@ public record DecisionExplorerRoutingDiagnosticsV1(
                 : selectedCandidateDiagnostic;
         alternativeCandidateDiagnostics = DecisionExplorerDtoSupport.copyOrEmpty(alternativeCandidateDiagnostics);
         candidateDiagnostics = DecisionExplorerDtoSupport.copyOrEmpty(candidateDiagnostics);
+        factorDiagnostics = DecisionExplorerDtoSupport.copyOrEmpty(factorDiagnostics);
+        degradationReasons = DecisionExplorerDtoSupport.copyOrEmpty(degradationReasons);
+        partialEvidenceReasons = DecisionExplorerDtoSupport.copyOrEmpty(partialEvidenceReasons);
+        unknownEvidenceReasons = DecisionExplorerDtoSupport.copyOrEmpty(unknownEvidenceReasons);
         diagnosticReasons = DecisionExplorerDtoSupport.copyOrEmpty(diagnosticReasons);
         warnings = DecisionExplorerDtoSupport.copyOrEmpty(warnings);
         unknowns = DecisionExplorerDtoSupport.copyOrEmpty(unknowns);
@@ -82,6 +90,10 @@ public record DecisionExplorerRoutingDiagnosticsV1(
                 1,
                 List.of(diagnostic),
                 DecisionExplorerCandidateDiagnosticV1.unknownSelected(boundaryNote),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
                 List.of(),
                 List.of(),
                 List.of("NO_CONFIDENCE_SUMMARY_RETURNED"),

@@ -54,20 +54,33 @@ public class DecisionExplorerPayloadService {
             Comparator.comparing(EvidencePacketReadoutV1::referenceId);
     private final DecisionExplorerConfidenceSummaryService confidenceSummaryService;
     private final DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService;
+    private final DecisionExplorerRouteTradeoffService routeTradeoffService;
 
     public DecisionExplorerPayloadService() {
-        this(new DecisionExplorerConfidenceSummaryService(), new DecisionExplorerRoutingDiagnosticsService());
+        this(new DecisionExplorerConfidenceSummaryService(),
+                new DecisionExplorerRoutingDiagnosticsService(),
+                new DecisionExplorerRouteTradeoffService());
     }
 
     DecisionExplorerPayloadService(DecisionExplorerConfidenceSummaryService confidenceSummaryService) {
-        this(confidenceSummaryService, new DecisionExplorerRoutingDiagnosticsService());
+        this(confidenceSummaryService,
+                new DecisionExplorerRoutingDiagnosticsService(),
+                new DecisionExplorerRouteTradeoffService());
     }
 
     DecisionExplorerPayloadService(
             DecisionExplorerConfidenceSummaryService confidenceSummaryService,
             DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService) {
+        this(confidenceSummaryService, routingDiagnosticsService, new DecisionExplorerRouteTradeoffService());
+    }
+
+    DecisionExplorerPayloadService(
+            DecisionExplorerConfidenceSummaryService confidenceSummaryService,
+            DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService,
+            DecisionExplorerRouteTradeoffService routeTradeoffService) {
         this.confidenceSummaryService = Objects.requireNonNull(confidenceSummaryService);
         this.routingDiagnosticsService = Objects.requireNonNull(routingDiagnosticsService);
+        this.routeTradeoffService = Objects.requireNonNull(routeTradeoffService);
     }
 
     public List<DecisionExplorerPayloadV1> buildPayloads(RoutingComparisonResponse comparison) {
@@ -121,6 +134,10 @@ public class DecisionExplorerPayloadService {
                 warnings,
                 unknowns,
                 BOUNDARY_NOTE);
+        DecisionExplorerRouteTradeoffAnalysisV1 routeTradeoffAnalysis = routeTradeoffService.buildTradeoffs(
+                confidenceSummary,
+                routingDiagnostics,
+                BOUNDARY_NOTE);
 
         return new DecisionExplorerPayloadV1(
                 true,
@@ -135,6 +152,7 @@ public class DecisionExplorerPayloadService {
                 candidateComparisons,
                 confidenceSummary,
                 routingDiagnostics,
+                routeTradeoffAnalysis,
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -181,6 +199,7 @@ public class DecisionExplorerPayloadService {
                 List.of(),
                 DecisionExplorerConfidenceSummaryV1.unknown(BOUNDARY_NOTE),
                 DecisionExplorerRoutingDiagnosticsV1.unknown(BOUNDARY_NOTE),
+                DecisionExplorerRouteTradeoffAnalysisV1.unknown(BOUNDARY_NOTE),
                 List.of(),
                 List.of(),
                 policyGateReadouts(null),
@@ -664,6 +683,7 @@ public class DecisionExplorerPayloadService {
                         "candidateComparisons",
                         "confidenceSummary",
                         "routingDiagnostics",
+                        "routeTradeoffAnalysis",
                         "factorContributions",
                         "factorDrilldowns",
                         "policyGateReadouts",

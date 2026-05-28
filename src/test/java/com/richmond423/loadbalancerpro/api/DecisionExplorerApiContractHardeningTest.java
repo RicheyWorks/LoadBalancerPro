@@ -75,6 +75,7 @@ class DecisionExplorerApiContractHardeningTest {
                 "candidateComparisons",
                 "confidenceSummary",
                 "routingDiagnostics",
+                "routeTradeoffAnalysis",
                 "factorContributions",
                 "factorDrilldowns",
                 "policyGateReadouts",
@@ -123,6 +124,26 @@ class DecisionExplorerApiContractHardeningTest {
         assertTrue(payload.at("/routingDiagnostics/explanationText").asText()
                 .contains("selected candidate green as PARTIAL"));
         assertTrue(payload.at("/routingDiagnostics/unknowns").isArray());
+        assertEquals("DecisionExplorerRouteTradeoffAnalysisV1",
+                payload.at("/routeTradeoffAnalysis/analysisObject").asText());
+        assertEquals("PARTIAL", payload.at("/routeTradeoffAnalysis/overallStatus").asText());
+        assertEquals("green", payload.at("/routeTradeoffAnalysis/selectedCandidateId").asText());
+        assertTrue(payload.at("/routeTradeoffAnalysis/candidateTradeoffs").isArray());
+        assertTrue(payload.at("/routeTradeoffAnalysis/candidateTradeoffs").size() > 0);
+        assertTrue(payload.at("/routeTradeoffAnalysis/candidateScoringExplanations").isArray());
+        assertTrue(payload.at("/routeTradeoffAnalysis/candidateScoringExplanations").size() > 0);
+        assertTrue(payload.at("/routeTradeoffAnalysis/factorTradeoffDeltas").isArray());
+        assertEquals("DecisionExplorerEvidenceSufficiencyV1",
+                payload.at("/routeTradeoffAnalysis/evidenceSufficiency/diagnosticObject").asText());
+        assertFalse(payload.at("/routeTradeoffAnalysis/evidenceSufficiency/sufficiencyLevel").asText().isBlank());
+        assertEquals("DecisionExplorerReplayReadinessDiagnosticV1",
+                payload.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/diagnosticObject").asText());
+        assertFalse(payload.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/replayExecutionAvailable")
+                .asBoolean());
+        assertFalse(payload.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/replayStorageAvailable")
+                .asBoolean());
+        assertFalse(payload.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/replayExportAvailable")
+                .asBoolean());
         assertTrue(payload.path("factorDrilldowns").isArray());
         assertTrue(payload.path("factorDrilldowns").size() > 0);
         assertTrue(payload.path("notProvenBoundaries").isArray());
@@ -171,6 +192,15 @@ class DecisionExplorerApiContractHardeningTest {
         assertTrue(json.at("/routingDiagnostics/evidenceDiagnostics").isArray());
         assertTrue(json.at("/routingDiagnostics/explanationText").asText()
                 .contains("NO_CONFIDENCE_SUMMARY_RETURNED"));
+        assertEquals("DecisionExplorerRouteTradeoffAnalysisV1",
+                json.at("/routeTradeoffAnalysis/analysisObject").asText());
+        assertEquals("UNKNOWN", json.at("/routeTradeoffAnalysis/overallStatus").asText());
+        assertTrue(json.at("/routeTradeoffAnalysis/candidateTradeoffs").isArray());
+        assertEquals(0, json.at("/routeTradeoffAnalysis/candidateTradeoffs").size());
+        assertEquals("INSUFFICIENT",
+                json.at("/routeTradeoffAnalysis/evidenceSufficiency/sufficiencyLevel").asText());
+        assertFalse(json.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/replayExecutionAvailable")
+                .asBoolean());
         assertTrue(json.path("factorContributions").isArray());
         assertEquals(1, json.path("factorContributions").size());
         assertNoUnsupportedClaims(json);
@@ -195,6 +225,14 @@ class DecisionExplorerApiContractHardeningTest {
         assertTrue(json.at("/routingDiagnostics/explanationText").asText()
                 .contains("NO_CONFIDENCE_SUMMARY_RETURNED"));
         assertTrue(json.at("/routingDiagnostics/unknowns").isArray());
+        assertEquals("UNKNOWN", json.at("/routeTradeoffAnalysis/overallStatus").asText());
+        assertEquals("UNKNOWN", json.at("/routeTradeoffAnalysis/tradeoffCategory").asText());
+        assertEquals("INSUFFICIENT",
+                json.at("/routeTradeoffAnalysis/evidenceSufficiency/sufficiencyLevel").asText());
+        assertEquals("UNKNOWN",
+                json.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/readinessStatus").asText());
+        assertFalse(json.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/replayExecutionAvailable")
+                .asBoolean());
         assertTrue(json.path("factorContributions").isArray());
         assertTrue(json.path("factorDrilldowns").isArray());
         assertEquals(0, json.path("candidateSet").size());

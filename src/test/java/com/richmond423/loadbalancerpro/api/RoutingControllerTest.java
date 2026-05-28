@@ -127,6 +127,22 @@ class RoutingControllerTest {
                     .andExpect(jsonPath("$[0].routingDiagnostics.candidateDiagnostics[0].candidateId",
                             is("green")))
                     .andExpect(jsonPath("$[0].routingDiagnostics.factorDiagnostics[0].factorName").exists())
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.readOnly", is(true)))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.simulationOnly", is(true)))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.analysisObject",
+                            is("DecisionExplorerRouteTradeoffAnalysisV1")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.overallStatus", is("PARTIAL")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.selectedCandidateId", is("green")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.candidateTradeoffs[0].candidateId",
+                            is("green")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.candidateScoringExplanations[0].candidateId",
+                            is("green")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.evidenceSufficiency.diagnosticObject",
+                            is("DecisionExplorerEvidenceSufficiencyV1")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.diagnosticObject",
+                            is("DecisionExplorerReplayReadinessDiagnosticV1")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.replayExecutionAvailable",
+                            is(false)))
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].gateId", is("boundary-read-only")))
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].outcome", is("PASS")))
                     .andExpect(jsonPath("$[0].agentStructuredOutput.schemaName", is("AgentStructuredOutputV1")))

@@ -24,6 +24,45 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-28T02:29-07:00
+
+Branch/PR: codex/lase-phase3-route-tradeoff-api / no PR yet
+
+Failure type: focused API/payload test compilation failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`
+
+Suspected cause: the OpenAPI contract test added a new local variable named `factorDeltaProperties` while the same
+large schema test already used that name later for `ScoreFactorDeltaResponse`.
+
+Fix attempted: renamed the new route-tradeoff factor delta schema variable and reran the focused selector.
+
+Result: focused API/payload selector rerun passed.
+
+Follow-up action: continue with broader Decision Explorer diagnostics verification for the slice.
+
+## Entry
+
+Date/time: 2026-05-28T02:33-07:00
+
+Branch/PR: codex/lase-phase3-route-tradeoff-api / no PR yet
+
+Failure type: full local test compatibility guard failure
+
+Failing check: `mvn -q test`
+
+Suspected cause: `DecisionExplorerApiContractHardeningTest` intentionally asserts exact Decision Explorer top-level
+payload field order and had not yet been updated for the additive `routeTradeoffAnalysis` API field.
+
+Fix attempted: updated the compatibility guard to include `routeTradeoffAnalysis` with concrete JSON assertions for
+endpoint, legacy constructor, and unknown-payload fallback behavior.
+
+Result: focused hardening/API selector rerun passed.
+
+Follow-up action: rerun full local verification.
+
+## Entry
+
 Date/time: 2026-05-28T01:20-07:00
 
 Branch/PR: codex/lase-phase3-factor-tradeoff-deltas / no PR yet

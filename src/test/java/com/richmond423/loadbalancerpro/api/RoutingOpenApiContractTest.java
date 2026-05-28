@@ -99,6 +99,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/DecisionExplorerConfidenceSummaryV1");
         assertRef(required(explorerProperties, "/routingDiagnostics"),
                 "#/components/schemas/DecisionExplorerRoutingDiagnosticsV1");
+        assertRef(required(explorerProperties, "/routeTradeoffAnalysis"),
+                "#/components/schemas/DecisionExplorerRouteTradeoffAnalysisV1");
         assertArrayRef(required(explorerProperties, "/factorContributions"),
                 "#/components/schemas/FactorContributionV1");
         assertArrayRef(required(explorerProperties, "/factorDrilldowns"),
@@ -336,6 +338,136 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(routingDiagnosticsProperties, "/sourceReferenceIds/type").asText());
         assertEquals("string", required(routingDiagnosticsProperties, "/sourceReferenceIds/items/type").asText());
         assertEquals("string", required(routingDiagnosticsProperties, "/boundaryNote/type").asText());
+
+        JsonNode routeTradeoffProperties = required(docs,
+                "/components/schemas/DecisionExplorerRouteTradeoffAnalysisV1/properties");
+        assertEquals("boolean", required(routeTradeoffProperties, "/readOnly/type").asText());
+        assertEquals("boolean", required(routeTradeoffProperties, "/simulationOnly/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/analysisObject/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/contractVersion/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/overallStatus/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/evidenceQuality/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/selectedCandidateId/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/tradeoffCategory/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/selectedCandidateSummary/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/alternativeCandidateSummary/type").asText());
+        assertEquals("integer", required(routeTradeoffProperties, "/candidateTradeoffCount/type").asText());
+        assertEquals("integer", required(routeTradeoffProperties, "/alternativeCount/type").asText());
+        assertEquals("integer", required(routeTradeoffProperties, "/comparedAlternativeCount/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/closestAlternativeCandidateId/type").asText());
+        assertEquals("number", required(routeTradeoffProperties, "/closestAlternativeScoreDelta/type").asText());
+        assertArrayRef(required(routeTradeoffProperties, "/candidateTradeoffs"),
+                "#/components/schemas/DecisionExplorerRouteTradeoffRowV1");
+        assertArrayRef(required(routeTradeoffProperties, "/candidateScoringExplanations"),
+                "#/components/schemas/DecisionExplorerCandidateTradeoffScoringExplanationV1");
+        assertArrayRef(required(routeTradeoffProperties, "/factorTradeoffDeltas"),
+                "#/components/schemas/DecisionExplorerFactorTradeoffDeltaV1");
+        assertRef(required(routeTradeoffProperties, "/evidenceSufficiency"),
+                "#/components/schemas/DecisionExplorerEvidenceSufficiencyV1");
+        assertRef(required(routeTradeoffProperties, "/replayReadinessDiagnostic"),
+                "#/components/schemas/DecisionExplorerReplayReadinessDiagnosticV1");
+        assertEquals("array", required(routeTradeoffProperties, "/tradeoffReasons/type").asText());
+        assertEquals("array", required(routeTradeoffProperties, "/warnings/type").asText());
+        assertEquals("array", required(routeTradeoffProperties, "/unknowns/type").asText());
+        assertEquals("array", required(routeTradeoffProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/boundaryNote/type").asText());
+
+        JsonNode routeTradeoffRowProperties = required(docs,
+                "/components/schemas/DecisionExplorerRouteTradeoffRowV1/properties");
+        assertEquals("string", required(routeTradeoffRowProperties, "/candidateId/type").asText());
+        assertEquals("string", required(routeTradeoffRowProperties, "/candidateLabel/type").asText());
+        assertEquals("boolean", required(routeTradeoffRowProperties, "/selected/type").asText());
+        assertEquals("integer", required(routeTradeoffRowProperties, "/displayOrder/type").asText());
+        assertEquals("string", required(routeTradeoffRowProperties, "/tradeoffCategory/type").asText());
+        assertEquals("string", required(routeTradeoffRowProperties, "/riskBenefitClassification/type").asText());
+        assertEquals("string", required(routeTradeoffRowProperties, "/diagnosticStatus/type").asText());
+        assertEquals("string", required(routeTradeoffRowProperties, "/riskLevel/type").asText());
+        assertEquals("string", required(routeTradeoffRowProperties, "/healthEvidenceState/type").asText());
+        assertEquals("number", required(routeTradeoffRowProperties, "/finalScore/type").asText());
+        assertEquals("number", required(routeTradeoffRowProperties, "/scoreDeltaFromSelected/type").asText());
+        assertEquals("string", required(routeTradeoffRowProperties, "/scoreGapCategory/type").asText());
+        assertEquals("string", required(routeTradeoffRowProperties, "/scoringExplanation/type").asText());
+        assertEquals("string", required(routeTradeoffRowProperties, "/evidenceSummary/type").asText());
+        assertEquals("array", required(routeTradeoffRowProperties, "/benefitSignals/type").asText());
+        assertEquals("array", required(routeTradeoffRowProperties, "/riskSignals/type").asText());
+        assertEquals("array", required(routeTradeoffRowProperties, "/unknownSignals/type").asText());
+        assertEquals("array", required(routeTradeoffRowProperties, "/degradedSignals/type").asText());
+        assertEquals("array", required(routeTradeoffRowProperties, "/reasonCodes/type").asText());
+        assertEquals("array", required(routeTradeoffRowProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(routeTradeoffRowProperties, "/boundaryNote/type").asText());
+
+        JsonNode scoringExplanationProperties = required(docs,
+                "/components/schemas/DecisionExplorerCandidateTradeoffScoringExplanationV1/properties");
+        assertEquals("string", required(scoringExplanationProperties, "/candidateId/type").asText());
+        assertEquals("boolean", required(scoringExplanationProperties, "/selected/type").asText());
+        assertEquals("integer", required(scoringExplanationProperties, "/displayOrder/type").asText());
+        assertEquals("string", required(scoringExplanationProperties, "/explanationStatus/type").asText());
+        assertEquals("string", required(scoringExplanationProperties, "/scoreEvidenceState/type").asText());
+        assertEquals("string", required(scoringExplanationProperties, "/factorStatusRollup/type").asText());
+        assertEquals("string", required(scoringExplanationProperties, "/summaryText/type").asText());
+        assertEquals("array", required(scoringExplanationProperties, "/scoringSignals/type").asText());
+        assertEquals("array", required(scoringExplanationProperties, "/limitationSignals/type").asText());
+        assertEquals("array", required(scoringExplanationProperties, "/reasonCodes/type").asText());
+        assertEquals("array", required(scoringExplanationProperties, "/sourceReferenceIds/type").asText());
+
+        JsonNode tradeoffFactorDeltaProperties = required(docs,
+                "/components/schemas/DecisionExplorerFactorTradeoffDeltaV1/properties");
+        assertEquals("string", required(tradeoffFactorDeltaProperties, "/factorName/type").asText());
+        assertEquals("string", required(tradeoffFactorDeltaProperties, "/selectedCandidateId/type").asText());
+        assertEquals("string", required(tradeoffFactorDeltaProperties, "/alternativeCandidateId/type").asText());
+        assertEquals("integer", required(tradeoffFactorDeltaProperties, "/displayOrder/type").asText());
+        assertEquals("string", required(tradeoffFactorDeltaProperties, "/deltaClassification/type").asText());
+        assertEquals("string", required(tradeoffFactorDeltaProperties, "/selectedContribution/type").asText());
+        assertEquals("string", required(tradeoffFactorDeltaProperties, "/alternativeContribution/type").asText());
+        assertEquals("string", required(tradeoffFactorDeltaProperties, "/selectedFactorStatus/type").asText());
+        assertEquals("string", required(tradeoffFactorDeltaProperties, "/alternativeFactorStatus/type").asText());
+        assertEquals("number", required(tradeoffFactorDeltaProperties,
+                "/alternativeScoreDeltaFromSelected/type").asText());
+        assertEquals("string", required(tradeoffFactorDeltaProperties, "/summaryText/type").asText());
+        assertEquals("array", required(tradeoffFactorDeltaProperties, "/limitationSignals/type").asText());
+        assertEquals("array", required(tradeoffFactorDeltaProperties, "/reasonCodes/type").asText());
+        assertEquals("array", required(tradeoffFactorDeltaProperties, "/sourceReferenceIds/type").asText());
+
+        JsonNode evidenceSufficiencyProperties = required(docs,
+                "/components/schemas/DecisionExplorerEvidenceSufficiencyV1/properties");
+        assertEquals("boolean", required(evidenceSufficiencyProperties, "/readOnly/type").asText());
+        assertEquals("boolean", required(evidenceSufficiencyProperties, "/simulationOnly/type").asText());
+        assertEquals("string", required(evidenceSufficiencyProperties, "/diagnosticObject/type").asText());
+        assertEquals("string", required(evidenceSufficiencyProperties, "/sufficiencyLevel/type").asText());
+        assertEquals("integer", required(evidenceSufficiencyProperties, "/readinessScore/type").asText());
+        assertEquals("boolean", required(evidenceSufficiencyProperties, "/basicDiagnosticsReady/type").asText());
+        assertEquals("boolean", required(evidenceSufficiencyProperties, "/tradeoffAnalysisReady/type").asText());
+        assertEquals("boolean", required(evidenceSufficiencyProperties, "/replayStyleAnalysisReady/type").asText());
+        assertEquals("integer", required(evidenceSufficiencyProperties, "/candidateEvidenceCount/type").asText());
+        assertEquals("integer", required(evidenceSufficiencyProperties, "/comparableAlternativeCount/type").asText());
+        assertEquals("integer", required(evidenceSufficiencyProperties, "/factorDeltaCount/type").asText());
+        assertEquals("array", required(evidenceSufficiencyProperties, "/presentEvidenceSignals/type").asText());
+        assertEquals("array", required(evidenceSufficiencyProperties, "/partialEvidenceSignals/type").asText());
+        assertEquals("array", required(evidenceSufficiencyProperties, "/missingEvidenceSignals/type").asText());
+        assertEquals("array", required(evidenceSufficiencyProperties, "/degradedEvidenceSignals/type").asText());
+        assertEquals("array", required(evidenceSufficiencyProperties, "/unknownEvidenceSignals/type").asText());
+        assertEquals("array", required(evidenceSufficiencyProperties, "/readinessReasons/type").asText());
+        assertEquals("array", required(evidenceSufficiencyProperties, "/sourceReferenceIds/type").asText());
+
+        JsonNode replayReadinessProperties = required(docs,
+                "/components/schemas/DecisionExplorerReplayReadinessDiagnosticV1/properties");
+        assertEquals("boolean", required(replayReadinessProperties, "/readOnly/type").asText());
+        assertEquals("boolean", required(replayReadinessProperties, "/simulationOnly/type").asText());
+        assertEquals("string", required(replayReadinessProperties, "/diagnosticObject/type").asText());
+        assertEquals("string", required(replayReadinessProperties, "/readinessStatus/type").asText());
+        assertEquals("string", required(replayReadinessProperties, "/sufficiencyLevel/type").asText());
+        assertEquals("integer", required(replayReadinessProperties, "/readinessScore/type").asText());
+        assertEquals("boolean", required(replayReadinessProperties, "/replayExecutionAvailable/type").asText());
+        assertEquals("boolean", required(replayReadinessProperties, "/replayStorageAvailable/type").asText());
+        assertEquals("boolean", required(replayReadinessProperties, "/replayExportAvailable/type").asText());
+        assertEquals("string", required(replayReadinessProperties, "/candidateEvidenceStatus/type").asText());
+        assertEquals("string", required(replayReadinessProperties, "/alternativeEvidenceStatus/type").asText());
+        assertEquals("string", required(replayReadinessProperties, "/scoreEvidenceStatus/type").asText());
+        assertEquals("string", required(replayReadinessProperties, "/factorEvidenceStatus/type").asText());
+        assertEquals("string", required(replayReadinessProperties, "/fingerprintEvidenceStatus/type").asText());
+        assertEquals("array", required(replayReadinessProperties, "/readinessChecklist/type").asText());
+        assertEquals("array", required(replayReadinessProperties, "/limitationSignals/type").asText());
+        assertEquals("string", required(replayReadinessProperties, "/explanationText/type").asText());
 
         JsonNode evidenceDiagnosticProperties = required(docs,
                 "/components/schemas/DecisionExplorerEvidenceDiagnosticV1/properties");

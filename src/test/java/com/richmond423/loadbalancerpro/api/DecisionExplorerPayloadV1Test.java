@@ -59,6 +59,10 @@ class DecisionExplorerPayloadV1Test {
         assertEquals("STRONG", payload.confidenceSummary().statusExplanation().status());
         assertEquals("DecisionExplorerRoutingDiagnosticsV1", payload.routingDiagnostics().diagnosticsObject());
         assertTrue(payload.routingDiagnostics().explanationText().contains("NO_CONFIDENCE_SUMMARY_RETURNED"));
+        assertEquals("DecisionExplorerRouteTradeoffAnalysisV1", payload.routeTradeoffAnalysis().analysisObject());
+        assertEquals("UNKNOWN", payload.routeTradeoffAnalysis().overallStatus());
+        assertTrue(payload.routeTradeoffAnalysis().tradeoffReasons()
+                .contains("ROUTING_DIAGNOSTICS_UNAVAILABLE"));
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertEquals("policy-health", payload.policyGateReadouts().get(0).gateId());
         assertEquals("candidate-a", payload.decisionDiffReadouts().get(0).baselineCandidateId());
@@ -140,6 +144,9 @@ class DecisionExplorerPayloadV1Test {
         assertEquals("UNKNOWN", payload.routingDiagnostics().overallStatus());
         assertTrue(payload.routingDiagnostics().explanationText().contains("NO_CONFIDENCE_SUMMARY_RETURNED"));
         assertTrue(payload.routingDiagnostics().candidateDiagnostics().isEmpty());
+        assertEquals("UNKNOWN", payload.routeTradeoffAnalysis().overallStatus());
+        assertEquals("INSUFFICIENT", payload.routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
+        assertFalse(payload.routeTradeoffAnalysis().replayReadinessDiagnostic().replayExecutionAvailable());
         assertEquals("UNKNOWN", payload.decisionReadout().summary());
         assertTrue(payload.selectedCandidate().visibleSignals().isEmpty());
         assertTrue(payload.agentStructuredOutput().stableFieldNames().isEmpty());

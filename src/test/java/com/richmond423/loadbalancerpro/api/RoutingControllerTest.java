@@ -137,6 +137,8 @@ class RoutingControllerTest {
                             is(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM)))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.diagnosticFingerprint",
                             containsString("route-tradeoff|v1|")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.explanationText",
+                            containsString("selected candidate green is PARTIAL")))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.evidenceSufficiency.diagnosticFingerprint",
                             containsString("evidence-sufficiency|v1|")))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.diagnosticFingerprint",

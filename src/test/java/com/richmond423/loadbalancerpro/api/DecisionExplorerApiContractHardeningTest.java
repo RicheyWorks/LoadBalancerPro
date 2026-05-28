@@ -133,6 +133,10 @@ class DecisionExplorerApiContractHardeningTest {
         assertTrue(payload.at("/routeTradeoffAnalysis/diagnosticFingerprint").asText()
                 .startsWith("route-tradeoff|v1|"));
         assertFalse(payload.at("/routeTradeoffAnalysis/reproducibilityKey").asText().isBlank());
+        assertTrue(payload.at("/routeTradeoffAnalysis/explanationText").asText()
+                .contains("selected candidate green is PARTIAL"));
+        assertTrue(payload.at("/routeTradeoffAnalysis/explanationText").asText()
+                .contains("replay execution unavailable"));
         assertTrue(payload.at("/routeTradeoffAnalysis/fingerprintInputs").isArray());
         assertTrue(payload.at("/routeTradeoffAnalysis/fingerprintInputs").size() > 0);
         assertTrue(payload.at("/routeTradeoffAnalysis/candidateTradeoffs").isArray());
@@ -221,6 +225,8 @@ class DecisionExplorerApiContractHardeningTest {
         assertTrue(json.at("/routeTradeoffAnalysis/diagnosticFingerprint").asText()
                 .startsWith("route-tradeoff|v1|"));
         assertFalse(json.at("/routeTradeoffAnalysis/reproducibilityKey").asText().isBlank());
+        assertTrue(json.at("/routeTradeoffAnalysis/explanationText").asText()
+                .contains("Route tradeoff explanation is UNKNOWN"));
         assertTrue(json.at("/routeTradeoffAnalysis/fingerprintInputs").isArray());
         assertTrue(json.at("/routeTradeoffAnalysis/candidateTradeoffs").isArray());
         assertEquals(0, json.at("/routeTradeoffAnalysis/candidateTradeoffs").size());
@@ -262,6 +268,8 @@ class DecisionExplorerApiContractHardeningTest {
                 json.at("/routeTradeoffAnalysis/fingerprintAlgorithm").asText());
         assertTrue(json.at("/routeTradeoffAnalysis/diagnosticFingerprint").asText()
                 .startsWith("route-tradeoff|v1|"));
+        assertTrue(json.at("/routeTradeoffAnalysis/explanationText").asText()
+                .contains("Route tradeoff explanation is UNKNOWN"));
         assertEquals("INSUFFICIENT",
                 json.at("/routeTradeoffAnalysis/evidenceSufficiency/sufficiencyLevel").asText());
         assertEquals("UNKNOWN",

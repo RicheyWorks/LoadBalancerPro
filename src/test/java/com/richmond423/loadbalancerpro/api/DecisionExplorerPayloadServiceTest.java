@@ -128,6 +128,10 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("edge-z", firstPayloads.get(0).routeTradeoffAnalysis().closestAlternativeCandidateId());
         assertEquals("TRADEOFF_READY",
                 firstPayloads.get(0).routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
+        assertTrue(firstPayloads.get(0).routeTradeoffAnalysis().explanationText()
+                .contains("selected candidate edge-a is STRONG with category SELECTED_ADVANTAGE"));
+        assertTrue(firstPayloads.get(0).routeTradeoffAnalysis().explanationText()
+                .contains("replay readiness PARTIAL with replay execution unavailable"));
         assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
                 firstPayloads.get(0).routeTradeoffAnalysis().fingerprintAlgorithm());
         assertTrue(firstPayloads.get(0).routeTradeoffAnalysis().diagnosticFingerprint()
@@ -203,6 +207,8 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("UNKNOWN", payload.routingDiagnostics().selectedCandidateDiagnostic().candidateId());
         assertEquals("DEGRADED", payload.routeTradeoffAnalysis().overallStatus());
         assertEquals("DEGRADED", payload.routeTradeoffAnalysis().tradeoffCategory());
+        assertTrue(payload.routeTradeoffAnalysis().explanationText()
+                .contains("selected candidate UNKNOWN is DEGRADED with category DEGRADED"));
         assertTrue(payload.routeTradeoffAnalysis().candidateTradeoffs().isEmpty());
         assertEquals("DEGRADED", payload.routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
         assertFalse(payload.routeTradeoffAnalysis().replayReadinessDiagnostic().replayExecutionAvailable());
@@ -235,6 +241,8 @@ class DecisionExplorerPayloadServiceTest {
         assertTrue(payload.routingDiagnostics().unknowns().contains("confidence summary evidence was unavailable"));
         assertEquals("UNKNOWN", payload.routeTradeoffAnalysis().overallStatus());
         assertEquals("UNKNOWN", payload.routeTradeoffAnalysis().tradeoffCategory());
+        assertTrue(payload.routeTradeoffAnalysis().explanationText()
+                .contains("Route tradeoff explanation is UNKNOWN"));
         assertEquals("INSUFFICIENT", payload.routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
         assertEquals("UNKNOWN",
                 payload.routeTradeoffAnalysis().replayReadinessDiagnostic().readinessStatus());
@@ -305,6 +313,8 @@ class DecisionExplorerPayloadServiceTest {
         assertTrue(payload.routingDiagnostics().unknowns().contains("score delta from selected candidate"));
         assertEquals("PARTIAL", payload.routeTradeoffAnalysis().overallStatus());
         assertEquals("PARTIAL_TRADEOFF", payload.routeTradeoffAnalysis().tradeoffCategory());
+        assertTrue(payload.routeTradeoffAnalysis().explanationText()
+                .contains("selected candidate selected-b is PARTIAL with category PARTIAL_TRADEOFF"));
         assertEquals("BASIC_DIAGNOSTICS_ONLY",
                 payload.routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
         assertEquals("PARTIAL",

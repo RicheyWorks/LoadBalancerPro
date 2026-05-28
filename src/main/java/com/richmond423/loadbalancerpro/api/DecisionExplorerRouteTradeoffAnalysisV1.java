@@ -20,6 +20,7 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
         Double closestAlternativeScoreDelta,
         List<DecisionExplorerRouteTradeoffRowV1> candidateTradeoffs,
         List<DecisionExplorerCandidateTradeoffScoringExplanationV1> candidateScoringExplanations,
+        List<DecisionExplorerFactorTradeoffDeltaV1> factorTradeoffDeltas,
         List<String> tradeoffReasons,
         List<String> warnings,
         List<String> unknowns,
@@ -46,6 +47,7 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
         closestAlternativeScoreDelta = finiteOrNull(closestAlternativeScoreDelta);
         candidateTradeoffs = DecisionExplorerDtoSupport.copyOrEmpty(candidateTradeoffs);
         candidateScoringExplanations = DecisionExplorerDtoSupport.copyOrEmpty(candidateScoringExplanations);
+        factorTradeoffDeltas = DecisionExplorerDtoSupport.copyOrEmpty(factorTradeoffDeltas);
         tradeoffReasons = DecisionExplorerDtoSupport.copyOrEmpty(tradeoffReasons);
         warnings = DecisionExplorerDtoSupport.copyOrEmpty(warnings);
         unknowns = DecisionExplorerDtoSupport.copyOrEmpty(unknowns);
@@ -72,6 +74,7 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
                 0,
                 "UNKNOWN",
                 null,
+                List.of(),
                 List.of(),
                 List.of(),
                 List.of("ROUTING_DIAGNOSTICS_UNAVAILABLE"),

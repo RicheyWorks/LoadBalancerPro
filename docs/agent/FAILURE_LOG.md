@@ -24,6 +24,85 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-28T13:45-07:00
+
+Branch/PR: codex/lase-phase3-compatibility-hardening / no PR yet
+
+Failure type: focused test expectation failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerRouteTradeoffCompatibilityRegressionTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerPayloadV1Test,DecisionExplorerApiContractHardeningTest" test`
+
+Suspected cause: the new compatibility regression expected the local strong fixture to be replay-style ready even
+though its selected and alternative factor names differ, leaving no factor-level tradeoff delta.
+
+Fix attempted: updated the test expectation to assert bounded tradeoff readiness without overstating replay-style
+readiness.
+
+Result: focused selector rerun passed.
+
+Follow-up action: continue broader local verification.
+
+## Entry
+
+Date/time: 2026-05-28T13:44-07:00
+
+Branch/PR: codex/lase-phase3-compatibility-hardening / no PR yet
+
+Failure type: focused test failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerRouteTradeoffCompatibilityRegressionTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerPayloadV1Test,DecisionExplorerApiContractHardeningTest" test`
+
+Suspected cause: route tradeoff category logic classified an UNKNOWN/no-routing-evidence fixture as
+`NO_ALTERNATIVE`, which overstates the evidence state.
+
+Fix attempted: hardened the route tradeoff category logic so unknown confidence stays `UNKNOWN` instead of turning
+into a no-alternative tradeoff conclusion.
+
+Result: focused selector rerun passed after the service hardening and expectation correction.
+
+Follow-up action: keep the UNKNOWN fixture in compatibility regression coverage.
+
+## Entry
+
+Date/time: 2026-05-28T11:34-07:00
+
+Branch/PR: codex/lase-phase3-explanation-synthesis / PR #402
+
+Failure type: remote check polling timeout
+
+Failing check: custom `gh pr checks 402` polling loop.
+
+Suspected cause: the polling command exceeded the local command timeout before returning final status, while remote
+checks were still pending in earlier poll output.
+
+Fix attempted: queried `gh pr checks 402` directly after the timeout.
+
+Result: current-head remote checks were reported passing for Build/Test/Package/Smoke, Analyze Java / CodeQL, and
+Dependency Review.
+
+Follow-up action: use direct status inspection when polling exceeds the local command timeout.
+
+## Entry
+
+Date/time: 2026-05-28T13:32-07:00
+
+Branch/PR: main after PR #402 merge
+
+Failure type: local verification timeout with stale process
+
+Failing check: post-merge `mvn -q test`
+
+Suspected cause: the test command exceeded the local command timeout and left Maven/Surefire Java processes running.
+
+Fix attempted: inspected Java process command lines, stopped the stale Maven and Surefire processes, and reran
+verification from a clean shell.
+
+Result: rerun passed with `mvn -q test` on main at `858d3d5a8b60d2357be3a70899c76a5fec9e2a2b`.
+
+Follow-up action: use longer command timeouts for full post-merge verification in this repository.
+
+## Entry
+
 Date/time: 2026-05-28T07:35-07:00
 
 Branch/PR: codex/lase-phase3-explanation-synthesis / no PR yet

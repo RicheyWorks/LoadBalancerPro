@@ -50,16 +50,16 @@ public record DecisionExplorerEvidenceSufficiencyV1(
         candidateEvidenceCount = Math.max(0, candidateEvidenceCount);
         comparableAlternativeCount = Math.max(0, comparableAlternativeCount);
         factorDeltaCount = Math.max(0, factorDeltaCount);
-        presentEvidenceCount = Math.max(0, presentEvidenceCount);
-        partialEvidenceCount = Math.max(0, partialEvidenceCount);
-        missingEvidenceCount = Math.max(0, missingEvidenceCount);
-        degradedEvidenceCount = Math.max(0, degradedEvidenceCount);
-        unknownEvidenceCount = Math.max(0, unknownEvidenceCount);
         presentEvidenceSignals = DecisionExplorerDtoSupport.copyOrEmpty(presentEvidenceSignals);
         partialEvidenceSignals = DecisionExplorerDtoSupport.copyOrEmpty(partialEvidenceSignals);
         missingEvidenceSignals = DecisionExplorerDtoSupport.copyOrEmpty(missingEvidenceSignals);
         degradedEvidenceSignals = DecisionExplorerDtoSupport.copyOrEmpty(degradedEvidenceSignals);
         unknownEvidenceSignals = DecisionExplorerDtoSupport.copyOrEmpty(unknownEvidenceSignals);
+        presentEvidenceCount = presentEvidenceSignals.size();
+        partialEvidenceCount = partialEvidenceSignals.size();
+        missingEvidenceCount = missingEvidenceSignals.size();
+        degradedEvidenceCount = degradedEvidenceSignals.size();
+        unknownEvidenceCount = unknownEvidenceSignals.size();
         readinessReasons = DecisionExplorerDtoSupport.copyOrEmpty(readinessReasons);
         fingerprintAlgorithm = DecisionExplorerDtoSupport.valueOrDefault(fingerprintAlgorithm,
                 DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM);

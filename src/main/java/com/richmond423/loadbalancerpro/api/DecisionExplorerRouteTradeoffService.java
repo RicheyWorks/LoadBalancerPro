@@ -230,6 +230,9 @@ public class DecisionExplorerRouteTradeoffService {
         if (DecisionExplorerConfidenceSummaryV1.STATUS_DEGRADED.equals(confidenceSummary.status())) {
             return "DEGRADED";
         }
+        if (DecisionExplorerConfidenceSummaryV1.STATUS_UNKNOWN.equals(confidenceSummary.status())) {
+            return "UNKNOWN";
+        }
         if (alternatives.isEmpty()) {
             return "NO_ALTERNATIVE";
         }

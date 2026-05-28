@@ -45,16 +45,20 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
         evidenceQuality = normalizeEvidenceQuality(evidenceQuality, overallStatus);
         selectedCandidateId = DecisionExplorerDtoSupport.valueOrUnknown(selectedCandidateId);
         tradeoffCategory = normalizeTradeoffCategory(tradeoffCategory);
-        selectedCandidateSummary = DecisionExplorerDtoSupport.valueOrUnknown(selectedCandidateSummary);
-        alternativeCandidateSummary = DecisionExplorerDtoSupport.valueOrUnknown(alternativeCandidateSummary);
-        candidateTradeoffCount = Math.max(0, candidateTradeoffCount);
-        alternativeCount = Math.max(0, alternativeCount);
-        comparedAlternativeCount = Math.max(0, comparedAlternativeCount);
-        closestAlternativeCandidateId = DecisionExplorerDtoSupport.valueOrUnknown(closestAlternativeCandidateId);
-        closestAlternativeScoreDelta = finiteOrNull(closestAlternativeScoreDelta);
         candidateTradeoffs = DecisionExplorerDtoSupport.copyOrEmpty(candidateTradeoffs);
         candidateScoringExplanations = DecisionExplorerDtoSupport.copyOrEmpty(candidateScoringExplanations);
         factorTradeoffDeltas = DecisionExplorerDtoSupport.copyOrEmpty(factorTradeoffDeltas);
+        selectedCandidateSummary = DecisionExplorerDtoSupport.valueOrUnknown(selectedCandidateSummary);
+        alternativeCandidateSummary = DecisionExplorerDtoSupport.valueOrUnknown(alternativeCandidateSummary);
+        candidateTradeoffCount = candidateTradeoffs.size();
+        alternativeCount = (int) candidateTradeoffs.stream()
+                .filter(row -> !row.selected())
+                .count();
+        comparedAlternativeCount = (int) candidateTradeoffs.stream()
+                .filter(row -> !row.selected() && row.scoreDeltaFromSelected() != null)
+                .count();
+        closestAlternativeCandidateId = DecisionExplorerDtoSupport.valueOrUnknown(closestAlternativeCandidateId);
+        closestAlternativeScoreDelta = finiteOrNull(closestAlternativeScoreDelta);
         evidenceSufficiency = evidenceSufficiency == null
                 ? DecisionExplorerEvidenceSufficiencyV1.unknown(boundaryNote)
                 : evidenceSufficiency;

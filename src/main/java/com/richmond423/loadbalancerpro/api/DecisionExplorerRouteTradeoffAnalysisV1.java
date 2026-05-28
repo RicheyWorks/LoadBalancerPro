@@ -26,6 +26,7 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
         String fingerprintAlgorithm,
         String diagnosticFingerprint,
         String reproducibilityKey,
+        String explanationText,
         List<String> fingerprintInputs,
         List<String> tradeoffReasons,
         List<String> warnings,
@@ -64,6 +65,7 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
                 DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM);
         diagnosticFingerprint = DecisionExplorerDtoSupport.valueOrUnknown(diagnosticFingerprint);
         reproducibilityKey = DecisionExplorerDtoSupport.valueOrUnknown(reproducibilityKey);
+        explanationText = DecisionExplorerDtoSupport.valueOrUnknown(explanationText);
         fingerprintInputs = DecisionExplorerDtoSupport.copyOrEmpty(fingerprintInputs);
         tradeoffReasons = DecisionExplorerDtoSupport.copyOrEmpty(tradeoffReasons);
         warnings = DecisionExplorerDtoSupport.copyOrEmpty(warnings);
@@ -100,6 +102,9 @@ public record DecisionExplorerRouteTradeoffAnalysisV1(
                 "route-tradeoff|v1|status=UNKNOWN|selected=UNKNOWN|category=UNKNOWN|rows=0|"
                         + "alternatives=0|sufficiency=INSUFFICIENT|replay=UNKNOWN",
                 "route-tradeoff:v1:UNKNOWN:UNKNOWN:0:INSUFFICIENT:UNKNOWN",
+                "Route tradeoff explanation is UNKNOWN because routing diagnostics were unavailable; "
+                        + "evidence sufficiency is INSUFFICIENT, replay readiness is UNKNOWN, and no replay "
+                        + "execution, storage, export, or production routing action is produced.",
                 List.of(
                         "analysisObject=" + ANALYSIS_OBJECT,
                         "overallStatus=UNKNOWN",

@@ -39,6 +39,15 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertTrue(analysis.selectedCandidateSummary().contains("Selected candidate edge-a is the tradeoff baseline"));
         assertTrue(analysis.alternativeCandidateSummary()
                 .contains("closest alternative edge-b with score delta 5.0"));
+        assertTrue(analysis.explanationText()
+                .contains("selected candidate edge-a is STRONG with category SELECTED_ADVANTAGE"));
+        assertTrue(analysis.explanationText()
+                .contains("closest alternative edge-b has score delta 5.0"));
+        assertTrue(analysis.explanationText()
+                .contains("evidence sufficiency REPLAY_STYLE_READY with readiness score 100"));
+        assertTrue(analysis.explanationText()
+                .contains("replay readiness READY with replay execution unavailable"));
+        assertTrue(analysis.explanationText().contains(analysis.reproducibilityKey()));
         assertEquals(List.of(
                 "edge-a:SELECTED_BASELINE:BASELINE:BASELINE:0.0",
                 "edge-b:ALTERNATIVE_TRAILS_SELECTED:SELECTED_ADVANTAGE:MATERIAL:5.0"),
@@ -103,6 +112,10 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertEquals("SELECTED_CHALLENGED", analysis.tradeoffCategory());
         assertEquals("edge-b", analysis.closestAlternativeCandidateId());
         assertEquals(-2.0, analysis.closestAlternativeScoreDelta());
+        assertTrue(analysis.explanationText()
+                .contains("selected candidate edge-a is STRONG with category SELECTED_CHALLENGED"));
+        assertTrue(analysis.explanationText()
+                .contains("closest alternative edge-b has score delta -2.0"));
         DecisionExplorerRouteTradeoffRowV1 alternative = analysis.candidateTradeoffs().get(1);
         assertEquals("edge-b", alternative.candidateId());
         assertFalse(alternative.selected());
@@ -133,6 +146,12 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertEquals(0, analysis.comparedAlternativeCount());
         assertEquals("UNKNOWN", analysis.closestAlternativeCandidateId());
         assertNull(analysis.closestAlternativeScoreDelta());
+        assertTrue(analysis.explanationText()
+                .contains("selected candidate edge-a is PARTIAL with category PARTIAL_TRADEOFF"));
+        assertTrue(analysis.explanationText()
+                .contains("no score-comparable alternative was returned"));
+        assertTrue(analysis.explanationText()
+                .contains("evidence sufficiency BASIC_DIAGNOSTICS_ONLY"));
         DecisionExplorerRouteTradeoffRowV1 alternative = analysis.candidateTradeoffs().get(1);
         assertEquals("ALTERNATIVE_UNKNOWN", alternative.tradeoffCategory());
         assertEquals("UNKNOWN", alternative.riskBenefitClassification());
@@ -256,6 +275,8 @@ class DecisionExplorerRouteTradeoffServiceTest {
         assertEquals("UNKNOWN", analysis.replayReadinessDiagnostic().candidateEvidenceStatus());
         assertTrue(analysis.replayReadinessDiagnostic().diagnosticFingerprint()
                 .startsWith("replay-readiness|v1|"));
+        assertTrue(analysis.explanationText().contains("Route tradeoff explanation is UNKNOWN"));
+        assertTrue(analysis.explanationText().contains("routing diagnostics were unavailable"));
         assertFalse(analysis.replayReadinessDiagnostic().replayStorageAvailable());
         assertFalse(analysis.replayReadinessDiagnostic().replayExportAvailable());
         assertEquals(List.of("ROUTING_DIAGNOSTICS_UNAVAILABLE"), analysis.tradeoffReasons());
@@ -275,8 +296,10 @@ class DecisionExplorerRouteTradeoffServiceTest {
                 second.evidenceSufficiency().diagnosticFingerprint());
         assertEquals(first.replayReadinessDiagnostic().diagnosticFingerprint(),
                 second.replayReadinessDiagnostic().diagnosticFingerprint());
+        assertEquals(first.explanationText(), second.explanationText());
 
         assertNotEquals(first.diagnosticFingerprint(), partial.diagnosticFingerprint());
+        assertNotEquals(first.explanationText(), partial.explanationText());
         assertNotEquals(first.evidenceSufficiency().diagnosticFingerprint(),
                 partial.evidenceSufficiency().diagnosticFingerprint());
         assertNotEquals(first.replayReadinessDiagnostic().diagnosticFingerprint(),

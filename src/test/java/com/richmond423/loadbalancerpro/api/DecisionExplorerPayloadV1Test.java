@@ -61,6 +61,8 @@ class DecisionExplorerPayloadV1Test {
         assertTrue(payload.routingDiagnostics().explanationText().contains("NO_CONFIDENCE_SUMMARY_RETURNED"));
         assertEquals("DecisionExplorerRouteTradeoffAnalysisV1", payload.routeTradeoffAnalysis().analysisObject());
         assertEquals("UNKNOWN", payload.routeTradeoffAnalysis().overallStatus());
+        assertTrue(payload.routeTradeoffAnalysis().explanationText()
+                .contains("Route tradeoff explanation is UNKNOWN"));
         assertTrue(payload.routeTradeoffAnalysis().tradeoffReasons()
                 .contains("ROUTING_DIAGNOSTICS_UNAVAILABLE"));
         assertEquals("latency", payload.factorContributions().get(0).factorName());
@@ -145,6 +147,8 @@ class DecisionExplorerPayloadV1Test {
         assertTrue(payload.routingDiagnostics().explanationText().contains("NO_CONFIDENCE_SUMMARY_RETURNED"));
         assertTrue(payload.routingDiagnostics().candidateDiagnostics().isEmpty());
         assertEquals("UNKNOWN", payload.routeTradeoffAnalysis().overallStatus());
+        assertTrue(payload.routeTradeoffAnalysis().explanationText()
+                .contains("Route tradeoff explanation is UNKNOWN"));
         assertEquals("INSUFFICIENT", payload.routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
         assertFalse(payload.routeTradeoffAnalysis().replayReadinessDiagnostic().replayExecutionAvailable());
         assertEquals("UNKNOWN", payload.decisionReadout().summary());

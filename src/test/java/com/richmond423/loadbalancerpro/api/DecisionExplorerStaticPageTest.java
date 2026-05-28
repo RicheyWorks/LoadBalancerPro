@@ -200,6 +200,8 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("fingerprintAlgorithm"));
         assertTrue(page.contains("diagnosticFingerprint"));
         assertTrue(page.contains("reproducibilityKey"));
+        assertTrue(page.contains("analysis.explanationText"));
+        assertTrue(page.contains("routeTradeoffExplanation"));
         assertTrue(page.contains("routeTradeoffFingerprint"));
         assertTrue(page.contains("replayReadinessFingerprint"));
         assertTrue(page.contains("diagnostics.explanationText"));
@@ -303,6 +305,8 @@ class DecisionExplorerStaticPageTest {
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.diagnosticFingerprint",
                             containsString("route-tradeoff|v1|")))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.reproducibilityKey").exists())
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.explanationText",
+                            containsString("selected candidate green is PARTIAL")))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.fingerprintInputs[0]").exists())
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.candidateTradeoffs[0].candidateId",
                             is("green")))

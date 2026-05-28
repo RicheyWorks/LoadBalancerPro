@@ -369,6 +369,7 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(routeTradeoffProperties, "/fingerprintAlgorithm/type").asText());
         assertEquals("string", required(routeTradeoffProperties, "/diagnosticFingerprint/type").asText());
         assertEquals("string", required(routeTradeoffProperties, "/reproducibilityKey/type").asText());
+        assertEquals("string", required(routeTradeoffProperties, "/explanationText/type").asText());
         assertEquals("array", required(routeTradeoffProperties, "/fingerprintInputs/type").asText());
         assertEquals("array", required(routeTradeoffProperties, "/tradeoffReasons/type").asText());
         assertEquals("array", required(routeTradeoffProperties, "/warnings/type").asText());

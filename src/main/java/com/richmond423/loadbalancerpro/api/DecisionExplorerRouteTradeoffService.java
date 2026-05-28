@@ -73,6 +73,24 @@ public class DecisionExplorerRouteTradeoffService {
                 warnings,
                 unknowns,
                 sourceReferenceIds);
+        String diagnosticFingerprint = diagnosticFingerprint("route-tradeoff|v1", fingerprintInputs);
+        String reproducibilityKey = routeTradeoffReproducibilityKey(
+                confidenceSummary,
+                rows,
+                alternatives,
+                tradeoffCategory,
+                evidenceSufficiency,
+                replayReadinessDiagnostic);
+        String explanationText = routeTradeoffExplanationText(
+                confidenceSummary,
+                closestAlternative,
+                tradeoffCategory,
+                evidenceSufficiency,
+                replayReadinessDiagnostic,
+                tradeoffReasons,
+                warnings,
+                unknowns,
+                reproducibilityKey);
 
         return new DecisionExplorerRouteTradeoffAnalysisV1(
                 true,
@@ -96,14 +114,9 @@ public class DecisionExplorerRouteTradeoffService {
                 evidenceSufficiency,
                 replayReadinessDiagnostic,
                 FINGERPRINT_ALGORITHM,
-                diagnosticFingerprint("route-tradeoff|v1", fingerprintInputs),
-                routeTradeoffReproducibilityKey(
-                        confidenceSummary,
-                        rows,
-                        alternatives,
-                        tradeoffCategory,
-                        evidenceSufficiency,
-                        replayReadinessDiagnostic),
+                diagnosticFingerprint,
+                reproducibilityKey,
+                explanationText,
                 fingerprintInputs,
                 tradeoffReasons,
                 warnings,
@@ -1249,6 +1262,50 @@ public class DecisionExplorerRouteTradeoffService {
                         row.scoreDeltaFromSelected() == null ? null : row.scoreDeltaFromSelected().toString())
                 + ", tradeoff category " + row.tradeoffCategory() + ", and factor rollup "
                 + factorStatusRollup + ".";
+    }
+
+    private static String routeTradeoffExplanationText(
+            DecisionExplorerConfidenceSummaryV1 confidenceSummary,
+            DecisionExplorerRouteTradeoffRowV1 closestAlternative,
+            String tradeoffCategory,
+            DecisionExplorerEvidenceSufficiencyV1 evidenceSufficiency,
+            DecisionExplorerReplayReadinessDiagnosticV1 replayReadinessDiagnostic,
+            List<String> tradeoffReasons,
+            List<String> warnings,
+            List<String> unknowns,
+            String reproducibilityKey) {
+        String alternativeText = closestAlternative == null
+                ? "no score-comparable alternative was returned"
+                : "closest alternative " + closestAlternative.candidateId() + " has score delta "
+                        + DecisionExplorerDtoSupport.valueOrUnknown(
+                                closestAlternative.scoreDeltaFromSelected() == null
+                                        ? null
+                                        : closestAlternative.scoreDeltaFromSelected().toString());
+        String primaryReason = firstOrUnknown(tradeoffReasons);
+        return "Route tradeoff explanation: selected candidate "
+                + DecisionExplorerDtoSupport.valueOrUnknown(confidenceSummary.selectedCandidateId())
+                + " is " + DecisionExplorerDtoSupport.valueOrUnknown(confidenceSummary.status())
+                + " with category " + DecisionExplorerDtoSupport.valueOrUnknown(tradeoffCategory)
+                + "; " + alternativeText
+                + "; evidence sufficiency " + DecisionExplorerDtoSupport.valueOrUnknown(
+                        evidenceSufficiency.sufficiencyLevel())
+                + " with readiness score " + evidenceSufficiency.readinessScore()
+                + "; replay readiness " + DecisionExplorerDtoSupport.valueOrUnknown(
+                        replayReadinessDiagnostic.readinessStatus())
+                + " with replay execution "
+                + (replayReadinessDiagnostic.replayExecutionAvailable() ? "available" : "unavailable")
+                + "; primary reason " + primaryReason
+                + "; warnings " + copyNonNull(warnings).size()
+                + "; unknowns " + copyNonNull(unknowns).size()
+                + "; reproducibility key "
+                + DecisionExplorerDtoSupport.valueOrUnknown(reproducibilityKey) + ".";
+    }
+
+    private static String firstOrUnknown(List<String> values) {
+        return copyNonNull(values).stream()
+                .filter(value -> value != null && !value.isBlank())
+                .findFirst()
+                .orElse("UNKNOWN");
     }
 
     private static List<String> routeTradeoffFingerprintInputs(

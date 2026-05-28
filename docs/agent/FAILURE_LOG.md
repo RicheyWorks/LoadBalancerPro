@@ -24,6 +24,44 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-28T07:35-07:00
+
+Branch/PR: codex/lase-phase3-explanation-synthesis / no PR yet
+
+Failure type: local git stash quoting error
+
+Failing check: `git stash pop stash@{0}` during branch setup.
+
+Suspected cause: PowerShell interpreted the unquoted `@{0}` stash reference as syntax rather than passing it to Git.
+
+Fix attempted: reran the command as `git stash pop 'stash@{0}'`.
+
+Result: the stashed failure-log update was restored on the new implementation branch.
+
+Follow-up action: quote stash references in PowerShell commands.
+
+## Entry
+
+Date/time: 2026-05-28T07:32-07:00
+
+Branch/PR: main after PR #401 merge
+
+Failure type: local verification timeout
+
+Failing check: post-merge `mvn -B package`
+
+Suspected cause: the package command exceeded the local command timeout during post-merge verification.
+
+Fix attempted: inspected running Java/Maven processes, confirmed no obvious active Maven command remained, stashed the
+failure-log edit to keep main clean, and reran the package check cleanly.
+
+Result: rerun passed with `mvn -B package` on main at
+`3844d7ee43541c28cbd3b0be0a79dfa56d5f5a3e` with 2,768 tests.
+
+Follow-up action: carry this log entry in the next implementation PR rather than dirtying main directly.
+
+## Entry
+
 Date/time: 2026-05-28T03:45-07:00
 
 Branch/PR: codex/lase-phase3-diagnostic-fingerprints / PR #401

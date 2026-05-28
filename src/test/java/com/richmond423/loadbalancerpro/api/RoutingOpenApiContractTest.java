@@ -326,6 +326,7 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(routingDiagnosticsProperties, "/partialEvidenceReasons/items/type").asText());
         assertEquals("array", required(routingDiagnosticsProperties, "/unknownEvidenceReasons/type").asText());
         assertEquals("string", required(routingDiagnosticsProperties, "/unknownEvidenceReasons/items/type").asText());
+        assertEquals("string", required(routingDiagnosticsProperties, "/explanationText/type").asText());
         assertEquals("array", required(routingDiagnosticsProperties, "/diagnosticReasons/type").asText());
         assertEquals("string", required(routingDiagnosticsProperties, "/diagnosticReasons/items/type").asText());
         assertEquals("array", required(routingDiagnosticsProperties, "/warnings/type").asText());

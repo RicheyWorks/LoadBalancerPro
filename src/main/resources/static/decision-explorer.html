@@ -1106,6 +1106,7 @@
       ["Degradation reasons", countText(listLength(diagnostics.degradationReasons), "degradation reason")],
       ["Partial evidence reasons", countText(listLength(diagnostics.partialEvidenceReasons), "partial evidence reason")],
       ["Unknown evidence reasons", countText(listLength(diagnostics.unknownEvidenceReasons), "unknown evidence reason")],
+      ["Explanation", value(diagnostics.explanationText)],
       ["Diagnostic reasons", listText(diagnostics.diagnosticReasons)],
       ["Warnings", listText(diagnostics.warnings)],
       ["Unknowns", listText(diagnostics.unknowns)],

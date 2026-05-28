@@ -24,6 +24,96 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T22:45-07:00
+
+Branch/PR: codex/lase-phase2-diagnostic-fixtures-explanations / no PR yet
+
+Failure type: cleanup verification command returned nonzero after stopping loopback app
+
+Failing check: `Stop-Process -Id 23408 ...; Get-NetTCPConnection -LocalPort 18081 -State Listen ...`
+
+Suspected cause: the verification pipeline returned a nonzero shell status when no listener existed after the packaged app was stopped.
+
+Fix attempted: reran cleanup verification with explicit listener and process checks.
+
+Result: port 18081 had zero listeners and process 23408 was no longer running.
+
+Follow-up action: continue PR6 verification and commit preparation.
+
+## Entry
+
+Date/time: 2026-05-27T22:44-07:00
+
+Branch/PR: codex/lase-phase2-diagnostic-fixtures-explanations / no PR yet
+
+Failure type: browser verification variable reuse error
+
+Failing check: packaged Decision Explorer browser verification against `http://127.0.0.1:18081/decision-explorer.html`
+
+Suspected cause: the persistent browser automation context already had a `runButton` binding from an earlier UI verification pass.
+
+Fix attempted: reran the browser verification with fresh PR6-specific variable names.
+
+Result: packaged Decision Explorer UI rendered the computed routing diagnostics explanation, candidate/evidence/factor diagnostics rows were present, and no browser console errors were reported.
+
+Follow-up action: continue PR6 verification and commit preparation.
+
+## Entry
+
+Date/time: 2026-05-27T22:38-07:00
+
+Branch/PR: codex/lase-phase2-diagnostic-fixtures-explanations / no PR yet
+
+Failure type: focused diagnostics fixture fingerprint mismatch
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerRoutingDiagnosticsFixtureCatalogTest,DecisionExplorerRoutingDiagnosticsServiceTest,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest,DecisionExplorerPayloadV1Test" test`
+
+Suspected cause: the degraded diagnostic explanation included the grounded factor-level reason `health evidence value is degraded`, while the initial expected fixture fingerprint only included the status code and factor status.
+
+Fix attempted: updated the degraded fixture explanation fingerprint to include the full computed degradation reason.
+
+Result: focused Decision Explorer diagnostics/API/UI test rerun passed.
+
+Follow-up action: continue with broader local verification for PR6.
+
+## Entry
+
+Date/time: 2026-05-27T22:37-07:00
+
+Branch/PR: codex/lase-phase2-diagnostic-fixtures-explanations / no PR yet
+
+Failure type: GitHub CLI field selection error
+
+Failing check: `gh pr view 392 --json merged,mergeCommit,url`
+
+Suspected cause: the `merged` field is not available in this GitHub CLI JSON schema.
+
+Fix attempted: retried with supported fields: `state`, `mergedAt`, `mergeCommit`, `url`, and `headRefOid`.
+
+Result: merge details for PR #392 were recovered successfully.
+
+Follow-up action: continue PR6 from the merged main recovery point.
+
+## Entry
+
+Date/time: 2026-05-27T22:37-07:00
+
+Branch/PR: codex/lase-phase2-diagnostic-fixtures-explanations / no PR yet
+
+Failure type: stale source-path lookup during explanation-synthesis exploration
+
+Failing check: attempted read of `src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerStatusExplanationService.java`
+
+Suspected cause: deterministic status explanation synthesis lives in `DecisionExplorerConfidenceSummaryService`; there is no separate status explanation service file.
+
+Fix attempted: inspected the existing confidence summary and routing diagnostics services instead.
+
+Result: explanation hardening continued against the actual routing diagnostics service surface.
+
+Follow-up action: continue focused implementation and verification for PR6.
+
+## Entry
+
 Date/time: 2026-05-27T21:36-07:00
 
 Branch/PR: codex/lase-phase2-routing-diagnostics-api / no PR yet

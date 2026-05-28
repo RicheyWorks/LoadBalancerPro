@@ -123,6 +123,20 @@ final class DecisionExplorerConfidenceSummaryFixtureCatalog {
                     unknowns,
                     BOUNDARY_NOTE);
         }
+
+        DecisionExplorerRoutingDiagnosticsV1 buildDiagnostics(
+                DecisionExplorerConfidenceSummaryService summaryService,
+                DecisionExplorerRoutingDiagnosticsService diagnosticsService) {
+            DecisionExplorerConfidenceSummaryV1 summary = build(summaryService);
+            return diagnosticsService.buildDiagnostics(
+                    summary,
+                    candidateSet,
+                    candidateComparisons,
+                    factorDrilldowns,
+                    warnings,
+                    unknowns,
+                    BOUNDARY_NOTE);
+        }
     }
 
     private static DecisionReadoutV1 decisionReadout(String status, String selectedCandidateId) {

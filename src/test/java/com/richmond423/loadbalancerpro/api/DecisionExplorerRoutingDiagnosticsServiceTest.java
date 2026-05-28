@@ -34,6 +34,8 @@ class DecisionExplorerRoutingDiagnosticsServiceTest {
         assertEquals("STRONG", diagnostics.overallStatus());
         assertEquals("COMPLETE", diagnostics.evidenceQuality());
         assertEquals("edge-a", diagnostics.selectedCandidateId());
+        assertTrue(diagnostics.explanationText().contains("selected candidate edge-a as STRONG"));
+        assertTrue(diagnostics.explanationText().contains("2 factor diagnostic row(s) were computed"));
         assertEquals(9, diagnostics.diagnosticCount());
         assertEquals(9, diagnostics.presentEvidenceCount());
         assertEquals(0, diagnostics.partialEvidenceCount());
@@ -74,6 +76,8 @@ class DecisionExplorerRoutingDiagnosticsServiceTest {
 
         assertEquals("PARTIAL", diagnostics.overallStatus());
         assertEquals("PARTIAL", diagnostics.evidenceQuality());
+        assertTrue(diagnostics.explanationText().contains("selected candidate edge-a as PARTIAL"));
+        assertTrue(diagnostics.explanationText().contains("selected risk is REVIEW"));
         assertEquals(1, diagnostics.presentEvidenceCount());
         assertEquals(7, diagnostics.partialEvidenceCount());
         assertEquals(0, diagnostics.missingEvidenceCount());
@@ -110,6 +114,8 @@ class DecisionExplorerRoutingDiagnosticsServiceTest {
 
         assertEquals("DEGRADED", diagnostics.overallStatus());
         assertEquals("DEGRADED", diagnostics.evidenceQuality());
+        assertTrue(diagnostics.explanationText().contains("selected candidate edge-a as DEGRADED"));
+        assertTrue(diagnostics.explanationText().contains("selected risk is HIGH"));
         assertEquals(5, diagnostics.degradedEvidenceCount());
         assertTrue(diagnostics.diagnosticReasons().contains("SELECTED_CANDIDATE_CONFIDENCE_DEGRADED"));
         assertTrue(diagnostics.diagnosticReasons().contains("FACTOR_EVIDENCE_DEGRADED"));
@@ -132,6 +138,7 @@ class DecisionExplorerRoutingDiagnosticsServiceTest {
 
         assertEquals("UNKNOWN", diagnostics.overallStatus());
         assertEquals("UNKNOWN", diagnostics.evidenceQuality());
+        assertTrue(diagnostics.explanationText().contains("NO_CONFIDENCE_SUMMARY_RETURNED"));
         assertEquals("UNKNOWN", diagnostics.selectedCandidateId());
         assertEquals(1, diagnostics.diagnosticCount());
         assertEquals(1, diagnostics.unknownEvidenceCount());

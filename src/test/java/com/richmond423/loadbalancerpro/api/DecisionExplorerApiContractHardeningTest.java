@@ -120,6 +120,8 @@ class DecisionExplorerApiContractHardeningTest {
         assertTrue(payload.at("/routingDiagnostics/factorDiagnostics").isArray());
         assertTrue(payload.at("/routingDiagnostics/factorDiagnostics").size() > 0);
         assertTrue(payload.at("/routingDiagnostics/partialEvidenceReasons").isArray());
+        assertTrue(payload.at("/routingDiagnostics/explanationText").asText()
+                .contains("selected candidate green as PARTIAL"));
         assertTrue(payload.at("/routingDiagnostics/unknowns").isArray());
         assertTrue(payload.path("factorDrilldowns").isArray());
         assertTrue(payload.path("factorDrilldowns").size() > 0);
@@ -167,6 +169,8 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals("DecisionExplorerRoutingDiagnosticsV1",
                 json.at("/routingDiagnostics/diagnosticsObject").asText());
         assertTrue(json.at("/routingDiagnostics/evidenceDiagnostics").isArray());
+        assertTrue(json.at("/routingDiagnostics/explanationText").asText()
+                .contains("NO_CONFIDENCE_SUMMARY_RETURNED"));
         assertTrue(json.path("factorContributions").isArray());
         assertEquals(1, json.path("factorContributions").size());
         assertNoUnsupportedClaims(json);
@@ -188,6 +192,8 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals("UNKNOWN", json.at("/routingDiagnostics/overallStatus").asText());
         assertEquals("UNKNOWN", json.at("/routingDiagnostics/evidenceQuality").asText());
         assertEquals(1, json.at("/routingDiagnostics/unknownEvidenceCount").asInt());
+        assertTrue(json.at("/routingDiagnostics/explanationText").asText()
+                .contains("NO_CONFIDENCE_SUMMARY_RETURNED"));
         assertTrue(json.at("/routingDiagnostics/unknowns").isArray());
         assertTrue(json.path("factorContributions").isArray());
         assertTrue(json.path("factorDrilldowns").isArray());

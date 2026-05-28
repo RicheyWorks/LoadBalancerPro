@@ -52,6 +52,7 @@ class DecisionExplorerPayloadV1Test {
         assertEquals("candidate-a", payload.candidateComparisons().get(0).candidateId());
         assertEquals("DecisionExplorerConfidenceSummaryV1", payload.confidenceSummary().summaryObject());
         assertEquals("STRONG", payload.confidenceSummary().status());
+        assertEquals("candidate-a", payload.confidenceSummary().candidateConfidenceDetails().get(0).candidateId());
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertEquals("policy-health", payload.policyGateReadouts().get(0).gateId());
         assertEquals("candidate-a", payload.decisionDiffReadouts().get(0).baselineCandidateId());
@@ -193,12 +194,36 @@ class DecisionExplorerPayloadV1Test {
                 0,
                 0,
                 3,
+                List.of(candidateConfidence()),
                 List.of("candidateCount=2", "decisionStatus=AVAILABLE"),
                 List.of("CANDIDATE_COMPARISONS_AVAILABLE", "FACTOR_EVIDENCE_AVAILABLE"),
                 List.of(),
                 List.of(),
                 List.of("decision-vector", "decision-vector:candidate-a", "phase1-scope"),
                 "confidence summary is read-only and simulation-only");
+    }
+
+    private static DecisionExplorerCandidateConfidenceV1 candidateConfidence() {
+        return new DecisionExplorerCandidateConfidenceV1(
+                "candidate-a",
+                "candidate-a",
+                true,
+                1,
+                "STRONG",
+                "HEALTHY",
+                "SELECTED",
+                10.0,
+                0.0,
+                2,
+                1,
+                1,
+                0,
+                0,
+                List.of("CANDIDATE_COMPARISON_AVAILABLE", "HEALTH_SIGNAL_HEALTHY"),
+                List.of(),
+                List.of(),
+                List.of("decision-vector:candidate-a", "phase1-scope"),
+                "candidate confidence is read-only and simulation-only");
     }
 
     private static DecisionReadoutV1 decisionReadout() {

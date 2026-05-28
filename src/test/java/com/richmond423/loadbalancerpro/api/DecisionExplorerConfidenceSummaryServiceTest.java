@@ -21,7 +21,9 @@ class DecisionExplorerConfidenceSummaryServiceTest {
                         comparison("edge-a", true, "SELECTED", List.of(), List.of("hidden routing internals")),
                         comparison("edge-b", false, "COMPARED_TO_SELECTED", List.of(),
                                 List.of("hidden routing internals"))),
-                List.of(factor("edge-a", "healthState", "AVAILABLE", List.of(), List.of("hidden routing internals"))),
+                List.of(
+                        factor("edge-a", "healthState", "AVAILABLE", List.of(), List.of("hidden routing internals")),
+                        factor("edge-b", "healthState", "AVAILABLE", List.of(), List.of("hidden routing internals"))),
                 List.of("Decision Explorer payload is read-only and simulation-only; it does not change routing."),
                 List.of("hidden routing internals", "live-cloud behavior"),
                 BOUNDARY_NOTE);
@@ -31,9 +33,14 @@ class DecisionExplorerConfidenceSummaryServiceTest {
         assertEquals("edge-a", summary.selectedCandidateId());
         assertEquals(2, summary.candidateCount());
         assertEquals(2, summary.candidateComparisonCount());
-        assertEquals(1, summary.availableFactorCount());
+        assertEquals(2, summary.availableFactorCount());
         assertEquals(0, summary.warningCount());
         assertEquals(0, summary.unknownCount());
+        assertEquals(List.of("edge-a:STRONG:HEALTHY", "edge-b:STRONG:HEALTHY"),
+                summary.candidateConfidenceDetails().stream()
+                        .map(detail -> detail.candidateId() + ":" + detail.confidenceStatus() + ":"
+                                + detail.healthEvidenceState())
+                        .toList());
         assertEquals(List.of(
                 "CANDIDATE_COMPARISONS_AVAILABLE",
                 "FACTOR_EVIDENCE_AVAILABLE",
@@ -64,6 +71,9 @@ class DecisionExplorerConfidenceSummaryServiceTest {
         assertEquals(1, summary.partialFactorCount());
         assertEquals(2, summary.warningCount());
         assertEquals(2, summary.unknownCount());
+        assertEquals("PARTIAL", summary.candidateConfidenceDetails().get(1).confidenceStatus());
+        assertEquals(List.of("numeric contribution value", "score delta from selected candidate"),
+                summary.candidateConfidenceDetails().get(1).unknowns());
         assertTrue(summary.statusReasons().contains("PARTIAL_CANDIDATE_COMPARISON_EVIDENCE"));
         assertTrue(summary.statusReasons().contains("PARTIAL_FACTOR_EVIDENCE"));
         assertTrue(summary.statusReasons().contains("STATUS_WARNINGS_PRESENT"));
@@ -88,6 +98,7 @@ class DecisionExplorerConfidenceSummaryServiceTest {
         assertEquals(0, summary.candidateCount());
         assertEquals(0, summary.candidateComparisonCount());
         assertEquals(0, summary.sourceReferenceCount());
+        assertTrue(summary.candidateConfidenceDetails().isEmpty());
         assertEquals(List.of("NO_ROUTING_EVIDENCE_RETURNED"), summary.statusReasons());
         assertEquals("UNKNOWN", summary.boundaryNote());
     }
@@ -128,6 +139,25 @@ class DecisionExplorerConfidenceSummaryServiceTest {
         assertTrue(summary.statusReasons().contains("DECISION_STATUS_PARTIAL"));
     }
 
+    @Test
+    void selectedCandidateWithUnhealthyVisibleSignalDegradesTheSummary() {
+        DecisionExplorerConfidenceSummaryV1 summary = service.buildSummary(
+                decisionReadout("SUCCESS", "edge-a"),
+                candidate("edge-a", true),
+                List.of(candidate("edge-a", true)),
+                List.of(comparisonWithSignals("edge-a", true, "SELECTED",
+                        List.of("healthState=false"), List.of(), List.of())),
+                List.of(factor("edge-a", "healthState", "AVAILABLE", List.of(), List.of())),
+                List.of(),
+                List.of(),
+                BOUNDARY_NOTE);
+
+        assertEquals("DEGRADED", summary.status());
+        assertEquals("DEGRADED", summary.candidateConfidenceDetails().get(0).confidenceStatus());
+        assertEquals("DEGRADED", summary.candidateConfidenceDetails().get(0).healthEvidenceState());
+        assertEquals(List.of("SELECTED_CANDIDATE_CONFIDENCE_DEGRADED"), summary.statusReasons());
+    }
+
     private static DecisionReadoutV1 decisionReadout(String status, String selectedCandidateId) {
         return new DecisionReadoutV1(
                 "decision-1",
@@ -161,6 +191,22 @@ class DecisionExplorerConfidenceSummaryServiceTest {
             String comparisonStatus,
             List<String> warnings,
             List<String> unknowns) {
+        return comparisonWithSignals(
+                candidateId,
+                selected,
+                comparisonStatus,
+                List.of("healthState=healthy"),
+                warnings,
+                unknowns);
+    }
+
+    private static DecisionExplorerCandidateComparisonRowV1 comparisonWithSignals(
+            String candidateId,
+            boolean selected,
+            String comparisonStatus,
+            List<String> visibleSignals,
+            List<String> warnings,
+            List<String> unknowns) {
         return new DecisionExplorerCandidateComparisonRowV1(
                 candidateId,
                 candidateId,
@@ -169,7 +215,7 @@ class DecisionExplorerConfidenceSummaryServiceTest {
                 comparisonStatus,
                 selected ? 10.0 : 15.0,
                 selected ? 0.0 : 5.0,
-                List.of("healthState=healthy"),
+                visibleSignals,
                 unknowns,
                 List.of(selected ? "SELECTED_CANDIDATE" : "NON_SELECTED_CANDIDATE"),
                 List.of("boundary-read-only", "boundary-simulation-only"),

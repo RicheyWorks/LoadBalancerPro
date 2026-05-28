@@ -25,6 +25,10 @@ public record DecisionExplorerReplayReadinessDiagnosticV1(
         List<String> incompatibleEvidenceSignals,
         List<String> readinessChecklist,
         List<String> limitationSignals,
+        String fingerprintAlgorithm,
+        String diagnosticFingerprint,
+        String reproducibilityKey,
+        List<String> fingerprintInputs,
         List<String> sourceReferenceIds,
         String explanationText,
         String boundaryNote) {
@@ -63,6 +67,11 @@ public record DecisionExplorerReplayReadinessDiagnosticV1(
         incompatibleEvidenceSignals = DecisionExplorerDtoSupport.copyOrEmpty(incompatibleEvidenceSignals);
         readinessChecklist = DecisionExplorerDtoSupport.copyOrEmpty(readinessChecklist);
         limitationSignals = DecisionExplorerDtoSupport.copyOrEmpty(limitationSignals);
+        fingerprintAlgorithm = DecisionExplorerDtoSupport.valueOrDefault(fingerprintAlgorithm,
+                DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM);
+        diagnosticFingerprint = DecisionExplorerDtoSupport.valueOrUnknown(diagnosticFingerprint);
+        reproducibilityKey = DecisionExplorerDtoSupport.valueOrUnknown(reproducibilityKey);
+        fingerprintInputs = DecisionExplorerDtoSupport.copyOrEmpty(fingerprintInputs);
         sourceReferenceIds = DecisionExplorerDtoSupport.copyOrEmpty(sourceReferenceIds);
         explanationText = DecisionExplorerDtoSupport.valueOrUnknown(explanationText);
         boundaryNote = DecisionExplorerDtoSupport.valueOrUnknown(boundaryNote);
@@ -93,6 +102,24 @@ public record DecisionExplorerReplayReadinessDiagnosticV1(
                 List.of("candidate evidence unavailable", "score evidence unavailable",
                         "factor evidence unavailable"),
                 List.of("Replay-readiness diagnostics are read-only and do not execute replay."),
+                DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                "replay-readiness|v1|status=UNKNOWN|level=INSUFFICIENT|score=0|candidate=UNKNOWN|"
+                        + "alternative=UNKNOWN|scoreEvidence=UNKNOWN|factor=UNKNOWN|fingerprint=UNKNOWN|"
+                        + "execution=false|storage=false|export=false",
+                "replay-readiness:v1:UNKNOWN:INSUFFICIENT:0:UNKNOWN:UNKNOWN",
+                List.of(
+                        "diagnosticObject=" + DIAGNOSTIC_OBJECT,
+                        "readinessStatus=UNKNOWN",
+                        "sufficiencyLevel=INSUFFICIENT",
+                        "readinessScore=0",
+                        "candidateEvidenceStatus=UNKNOWN",
+                        "alternativeEvidenceStatus=UNKNOWN",
+                        "scoreEvidenceStatus=UNKNOWN",
+                        "factorEvidenceStatus=UNKNOWN",
+                        "fingerprintEvidenceStatus=UNKNOWN",
+                        "replayExecutionAvailable=false",
+                        "replayStorageAvailable=false",
+                        "replayExportAvailable=false"),
                 List.of(),
                 "Replay-readiness diagnostics are UNKNOWN because route tradeoff evidence was unavailable. "
                         + "No replay execution, storage, export, or proof is produced.",

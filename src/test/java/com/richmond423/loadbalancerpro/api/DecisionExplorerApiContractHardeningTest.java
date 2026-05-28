@@ -128,6 +128,13 @@ class DecisionExplorerApiContractHardeningTest {
                 payload.at("/routeTradeoffAnalysis/analysisObject").asText());
         assertEquals("PARTIAL", payload.at("/routeTradeoffAnalysis/overallStatus").asText());
         assertEquals("green", payload.at("/routeTradeoffAnalysis/selectedCandidateId").asText());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                payload.at("/routeTradeoffAnalysis/fingerprintAlgorithm").asText());
+        assertTrue(payload.at("/routeTradeoffAnalysis/diagnosticFingerprint").asText()
+                .startsWith("route-tradeoff|v1|"));
+        assertFalse(payload.at("/routeTradeoffAnalysis/reproducibilityKey").asText().isBlank());
+        assertTrue(payload.at("/routeTradeoffAnalysis/fingerprintInputs").isArray());
+        assertTrue(payload.at("/routeTradeoffAnalysis/fingerprintInputs").size() > 0);
         assertTrue(payload.at("/routeTradeoffAnalysis/candidateTradeoffs").isArray());
         assertTrue(payload.at("/routeTradeoffAnalysis/candidateTradeoffs").size() > 0);
         assertTrue(payload.at("/routeTradeoffAnalysis/candidateScoringExplanations").isArray());
@@ -136,8 +143,22 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals("DecisionExplorerEvidenceSufficiencyV1",
                 payload.at("/routeTradeoffAnalysis/evidenceSufficiency/diagnosticObject").asText());
         assertFalse(payload.at("/routeTradeoffAnalysis/evidenceSufficiency/sufficiencyLevel").asText().isBlank());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                payload.at("/routeTradeoffAnalysis/evidenceSufficiency/fingerprintAlgorithm").asText());
+        assertTrue(payload.at("/routeTradeoffAnalysis/evidenceSufficiency/diagnosticFingerprint").asText()
+                .startsWith("evidence-sufficiency|v1|"));
+        assertFalse(payload.at("/routeTradeoffAnalysis/evidenceSufficiency/reproducibilityKey")
+                .asText().isBlank());
+        assertTrue(payload.at("/routeTradeoffAnalysis/evidenceSufficiency/fingerprintInputs").isArray());
         assertEquals("DecisionExplorerReplayReadinessDiagnosticV1",
                 payload.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/diagnosticObject").asText());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                payload.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/fingerprintAlgorithm").asText());
+        assertTrue(payload.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/diagnosticFingerprint").asText()
+                .startsWith("replay-readiness|v1|"));
+        assertFalse(payload.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/reproducibilityKey")
+                .asText().isBlank());
+        assertTrue(payload.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/fingerprintInputs").isArray());
         assertFalse(payload.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/replayExecutionAvailable")
                 .asBoolean());
         assertFalse(payload.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/replayStorageAvailable")
@@ -195,10 +216,20 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals("DecisionExplorerRouteTradeoffAnalysisV1",
                 json.at("/routeTradeoffAnalysis/analysisObject").asText());
         assertEquals("UNKNOWN", json.at("/routeTradeoffAnalysis/overallStatus").asText());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                json.at("/routeTradeoffAnalysis/fingerprintAlgorithm").asText());
+        assertTrue(json.at("/routeTradeoffAnalysis/diagnosticFingerprint").asText()
+                .startsWith("route-tradeoff|v1|"));
+        assertFalse(json.at("/routeTradeoffAnalysis/reproducibilityKey").asText().isBlank());
+        assertTrue(json.at("/routeTradeoffAnalysis/fingerprintInputs").isArray());
         assertTrue(json.at("/routeTradeoffAnalysis/candidateTradeoffs").isArray());
         assertEquals(0, json.at("/routeTradeoffAnalysis/candidateTradeoffs").size());
         assertEquals("INSUFFICIENT",
                 json.at("/routeTradeoffAnalysis/evidenceSufficiency/sufficiencyLevel").asText());
+        assertTrue(json.at("/routeTradeoffAnalysis/evidenceSufficiency/diagnosticFingerprint").asText()
+                .startsWith("evidence-sufficiency|v1|"));
+        assertTrue(json.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/diagnosticFingerprint").asText()
+                .startsWith("replay-readiness|v1|"));
         assertFalse(json.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/replayExecutionAvailable")
                 .asBoolean());
         assertTrue(json.path("factorContributions").isArray());
@@ -227,10 +258,16 @@ class DecisionExplorerApiContractHardeningTest {
         assertTrue(json.at("/routingDiagnostics/unknowns").isArray());
         assertEquals("UNKNOWN", json.at("/routeTradeoffAnalysis/overallStatus").asText());
         assertEquals("UNKNOWN", json.at("/routeTradeoffAnalysis/tradeoffCategory").asText());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                json.at("/routeTradeoffAnalysis/fingerprintAlgorithm").asText());
+        assertTrue(json.at("/routeTradeoffAnalysis/diagnosticFingerprint").asText()
+                .startsWith("route-tradeoff|v1|"));
         assertEquals("INSUFFICIENT",
                 json.at("/routeTradeoffAnalysis/evidenceSufficiency/sufficiencyLevel").asText());
         assertEquals("UNKNOWN",
                 json.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/readinessStatus").asText());
+        assertTrue(json.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/diagnosticFingerprint").asText()
+                .startsWith("replay-readiness|v1|"));
         assertFalse(json.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/replayExecutionAvailable")
                 .asBoolean());
         assertTrue(json.path("factorContributions").isArray());

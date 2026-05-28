@@ -257,6 +257,7 @@
       padding: 9px 7px;
       text-align: left;
       vertical-align: top;
+      overflow-wrap: anywhere;
     }
 
     th { color: #3b4655; }
@@ -1200,6 +1201,9 @@
         + `${analysis.comparedAlternativeCount == null ? 0 : analysis.comparedAlternativeCount} comparable`],
       ["Evidence sufficiency", `${value(sufficiency.sufficiencyLevel)} / score ${readinessScoreText(sufficiency)}`],
       ["Replay readiness", replayReadinessText(readiness)],
+      ["Fingerprint algorithm", value(analysis.fingerprintAlgorithm)],
+      ["Diagnostic fingerprint", value(analysis.diagnosticFingerprint)],
+      ["Reproducibility key", value(analysis.reproducibilityKey)],
       ["Selected summary", value(analysis.selectedCandidateSummary)],
       ["Alternative summary", value(analysis.alternativeCandidateSummary)],
       ["Tradeoff reasons", listText(analysis.tradeoffReasons)],
@@ -1239,6 +1243,9 @@
       ["Missing signals", listText(sufficiency.missingEvidenceSignals)],
       ["Degraded signals", listText(sufficiency.degradedEvidenceSignals)],
       ["Unknown signals", listText(sufficiency.unknownEvidenceSignals)],
+      ["Fingerprint algorithm", value(sufficiency.fingerprintAlgorithm)],
+      ["Diagnostic fingerprint", value(sufficiency.diagnosticFingerprint)],
+      ["Reproducibility key", value(sufficiency.reproducibilityKey)],
       ["Source refs", listText(sufficiency.sourceReferenceIds)],
       ["Boundary", value(sufficiency.boundaryNote)]
     ]));
@@ -1276,6 +1283,9 @@
       ["Missing signals", listText(readiness.missingEvidenceSignals)],
       ["Degraded signals", listText(readiness.degradedEvidenceSignals)],
       ["Incompatible signals", listText(readiness.incompatibleEvidenceSignals)],
+      ["Fingerprint algorithm", value(readiness.fingerprintAlgorithm)],
+      ["Diagnostic fingerprint", value(readiness.diagnosticFingerprint)],
+      ["Reproducibility key", value(readiness.reproducibilityKey)],
       ["Source refs", listText(readiness.sourceReferenceIds)],
       ["Boundary", value(readiness.boundaryNote)]
     ]));
@@ -2132,8 +2142,12 @@
       `routeTradeoffCategory: ${value(routeTradeoffAnalysis.tradeoffCategory)}`,
       `closestAlternative: ${closestAlternativeText(routeTradeoffAnalysis)}`,
       `tradeoffReasons: ${listText(routeTradeoffAnalysis.tradeoffReasons)}`,
+      `routeTradeoffFingerprint: ${value(routeTradeoffAnalysis.diagnosticFingerprint)}`,
+      `routeTradeoffReproducibilityKey: ${value(routeTradeoffAnalysis.reproducibilityKey)}`,
       `evidenceSufficiency: ${value(evidenceSufficiency.sufficiencyLevel)} / score ${readinessScoreText(evidenceSufficiency)}`,
+      `evidenceSufficiencyFingerprint: ${value(evidenceSufficiency.diagnosticFingerprint)}`,
       `replayReadiness: ${replayReadinessText(replayReadiness)}`,
+      `replayReadinessFingerprint: ${value(replayReadiness.diagnosticFingerprint)}`,
       `readOnly: ${first.readOnly === true}`,
       `simulationOnly: ${first.simulationOnly === true}`,
       `notProven: ${listText(first.notProvenBoundaries)}`

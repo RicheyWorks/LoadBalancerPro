@@ -133,6 +133,14 @@ class RoutingControllerTest {
                             is("DecisionExplorerRouteTradeoffAnalysisV1")))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.overallStatus", is("PARTIAL")))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.selectedCandidateId", is("green")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.fingerprintAlgorithm",
+                            is(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM)))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.diagnosticFingerprint",
+                            containsString("route-tradeoff|v1|")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.evidenceSufficiency.diagnosticFingerprint",
+                            containsString("evidence-sufficiency|v1|")))
+                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.diagnosticFingerprint",
+                            containsString("replay-readiness|v1|")))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.candidateTradeoffs[0].candidateId",
                             is("green")))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.candidateScoringExplanations[0].candidateId",

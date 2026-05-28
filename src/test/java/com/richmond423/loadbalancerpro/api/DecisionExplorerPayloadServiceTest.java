@@ -128,9 +128,27 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("edge-z", firstPayloads.get(0).routeTradeoffAnalysis().closestAlternativeCandidateId());
         assertEquals("TRADEOFF_READY",
                 firstPayloads.get(0).routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                firstPayloads.get(0).routeTradeoffAnalysis().fingerprintAlgorithm());
+        assertTrue(firstPayloads.get(0).routeTradeoffAnalysis().diagnosticFingerprint()
+                .startsWith("route-tradeoff|v1|"));
+        assertTrue(firstPayloads.get(0).routeTradeoffAnalysis().fingerprintInputs()
+                .contains("selectedCandidateId=edge-a"));
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                firstPayloads.get(0).routeTradeoffAnalysis().evidenceSufficiency().fingerprintAlgorithm());
+        assertTrue(firstPayloads.get(0).routeTradeoffAnalysis().evidenceSufficiency()
+                .diagnosticFingerprint().startsWith("evidence-sufficiency|v1|"));
+        assertEquals("AVAILABLE",
+                firstPayloads.get(0).routeTradeoffAnalysis()
+                        .replayReadinessDiagnostic().fingerprintEvidenceStatus());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                firstPayloads.get(0).routeTradeoffAnalysis()
+                        .replayReadinessDiagnostic().fingerprintAlgorithm());
+        assertTrue(firstPayloads.get(0).routeTradeoffAnalysis()
+                .replayReadinessDiagnostic().diagnosticFingerprint().startsWith("replay-readiness|v1|"));
         assertFalse(firstPayloads.get(0).routeTradeoffAnalysis()
                 .replayReadinessDiagnostic().replayExecutionAvailable());
-        assertTrue(firstPayloads.get(0).routeTradeoffAnalysis()
+        assertFalse(firstPayloads.get(0).routeTradeoffAnalysis()
                 .replayReadinessDiagnostic().missingEvidenceSignals()
                 .contains("diagnostic fingerprint evidence has not been computed yet"));
         assertEquals(List.of("edge-a:healthState", "edge-z:p95LatencyMillis"),

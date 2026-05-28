@@ -37,6 +37,11 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("edge-a", evaluation.candidateOutcomeComparisons().get(0).candidateId());
         assertEquals("ACCEPTABLE_ALTERNATIVE", evaluation.candidateOutcomeComparisons().get(1).outcomeLabel());
         assertEquals("edge-b", evaluation.candidateOutcomeComparisons().get(1).candidateId());
+        assertEquals("LOW", evaluation.policySensitivityDiagnostic().sensitivityLevel());
+        assertEquals("STABLE", evaluation.policySensitivityDiagnostic().sensitivityCategory());
+        assertEquals(15, evaluation.policySensitivityDiagnostic().sensitivityScore());
+        assertTrue(evaluation.policySensitivityDiagnostic().stableSignals()
+                .contains("selected candidate has route tradeoff advantage"));
         assertTrue(evaluation.evidenceBasis().contains("routeTradeoffCategory=SELECTED_ADVANTAGE"));
         assertTrue(evaluation.evidenceBasis().contains("replayExecutionAvailable=false"));
         assertTrue(evaluation.selectedCandidateBasis().contains("selectedCandidateId=edge-a"));
@@ -60,7 +65,12 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("REVIEW_SIGNAL", evaluation.candidateOutcomeComparisons().get(1).qualityImpact());
         assertTrue(evaluation.candidateOutcomeComparisons().get(1).summaryText()
                 .contains("returned score delta of -2.0"));
+        assertEquals("MEDIUM", evaluation.policySensitivityDiagnostic().sensitivityLevel());
+        assertEquals("CLOSE_ALTERNATIVE", evaluation.policySensitivityDiagnostic().sensitivityCategory());
+        assertTrue(evaluation.policySensitivityDiagnostic().reviewSignals()
+                .contains("candidate edge-b is a SAFER_ALTERNATIVE review signal"));
         assertTrue(evaluation.qualityReasons().contains("SHADOW_CANDIDATE_OUTCOME_SAFER_ALTERNATIVE"));
+        assertTrue(evaluation.qualityReasons().contains("SHADOW_POLICY_SENSITIVITY_MEDIUM"));
         assertTrue(evaluation.qualityReasons().contains("ROUTE_TRADEOFF_CATEGORY_SELECTED_CHALLENGED"));
         assertTrue(evaluation.evidenceBasisSummary()
                 .contains("route tradeoff SELECTED_CHALLENGED"));
@@ -77,6 +87,8 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals(0, evaluation.qualityScore());
         assertEquals("INSUFFICIENT", evaluation.evidenceSufficiencyLevel());
         assertEquals("UNKNOWN", evaluation.replayReadinessStatus());
+        assertEquals("UNKNOWN", evaluation.policySensitivityDiagnostic().sensitivityLevel());
+        assertEquals("UNKNOWN", evaluation.policySensitivityDiagnostic().sensitivityCategory());
         assertTrue(evaluation.qualityReasons().contains("EVIDENCE_SUFFICIENCY_INSUFFICIENT"));
         assertTrue(evaluation.unknowns().contains("route tradeoff evidence was unavailable"));
     }
@@ -96,6 +108,10 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("RISK_SIGNAL", evaluation.candidateOutcomeComparisons().get(0).qualityImpact());
         assertTrue(evaluation.candidateOutcomeComparisons().get(0).degradedSignals()
                 .contains("health evidence state is degraded"));
+        assertEquals("HIGH", evaluation.policySensitivityDiagnostic().sensitivityLevel());
+        assertEquals("DEGRADED_EVIDENCE", evaluation.policySensitivityDiagnostic().sensitivityCategory());
+        assertTrue(evaluation.policySensitivityDiagnostic().degradedSignals()
+                .contains("selected candidate edge-a has degraded outcome evidence"));
         assertTrue(evaluation.qualityReasons().contains("SHADOW_DECISION_QUALITY_DEGRADED_DECISION"));
     }
 
@@ -112,6 +128,10 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("UNKNOWN_ALTERNATIVE", unknownAlternative.outcomeLabel());
         assertEquals("UNKNOWN", unknownAlternative.qualityImpact());
         assertEquals("UNKNOWN_GAP", unknownAlternative.scoreGapCategory());
+        assertEquals("MEDIUM", evaluation.policySensitivityDiagnostic().sensitivityLevel());
+        assertEquals("MISSING_EVIDENCE", evaluation.policySensitivityDiagnostic().sensitivityCategory());
+        assertTrue(evaluation.policySensitivityDiagnostic().missingEvidenceSignals()
+                .contains("candidate edge-b has unknown alternative outcome evidence"));
         assertTrue(unknownAlternative.unknownSignals().contains("candidate score evidence unknown"));
         assertTrue(unknownAlternative.summaryText()
                 .contains("cannot be fully compared because score or diagnostic evidence is unknown"));
@@ -131,6 +151,7 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("UNKNOWN", evaluation.replayReadinessStatus());
         assertEquals(0, evaluation.candidateOutcomeCount());
         assertTrue(evaluation.candidateOutcomeComparisons().isEmpty());
+        assertEquals("UNKNOWN", evaluation.policySensitivityDiagnostic().sensitivityLevel());
         assertTrue(evaluation.evidenceBasis().isEmpty());
         assertTrue(evaluation.selectedCandidateBasis().isEmpty());
         assertTrue(evaluation.unknowns().contains("shadow decision-quality input evidence was unavailable"));
@@ -179,6 +200,7 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("UNKNOWN", evaluation.evidenceQuality());
         assertEquals("INSUFFICIENT", evaluation.evidenceSufficiencyLevel());
         assertEquals("UNKNOWN", evaluation.replayReadinessStatus());
+        assertEquals("UNKNOWN", evaluation.policySensitivityDiagnostic().sensitivityLevel());
         assertEquals(0, evaluation.evidenceBasisCount());
         assertEquals(0, evaluation.selectedCandidateBasisCount());
         assertTrue(evaluation.candidateOutcomeComparisons().isEmpty());
@@ -193,7 +215,9 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerShadowDecisionQualityEvaluationV1.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
-                        + "DecisionExplorerShadowCandidateOutcomeV1.java"), StandardCharsets.UTF_8);
+                        + "DecisionExplorerShadowCandidateOutcomeV1.java"), StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerShadowPolicySensitivityDiagnosticV1.java"), StandardCharsets.UTF_8);
         String normalized = source.toLowerCase(Locale.ROOT);
 
         for (String forbidden : List.of(

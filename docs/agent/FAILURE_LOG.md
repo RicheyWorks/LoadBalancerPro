@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T19:26-07:00
+
+Branch/PR: codex/lase-routing-intelligence-status-fixtures / no PR yet
+
+Failure type: focused fixture fingerprint expectation mismatch
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerConfidenceSummaryFixtureCatalogTest" test`
+
+Suspected cause: the fixture expectation kept the selected candidate at `STRONG` and expected `SELECTED_FACTOR_STATUS_PARTIAL`, while the implemented summary correctly marks selected-candidate confidence as `PARTIAL` when the fixture carries warning/unknown evidence.
+
+Fix attempted: update the deterministic PARTIAL fixture fingerprint to the grounded selected-candidate confidence reason and candidate-confidence row.
+
+Result: focused fixture catalog test rerun passed with 4 tests, 0 failures, 0 errors, and 0 skipped.
+
+Follow-up action: continue with broader local verification.
+
+## Entry
+
 Date/time: 2026-05-27T18:45-07:00
 
 Branch/PR: codex/lase-routing-intelligence-status-explanation / no PR yet

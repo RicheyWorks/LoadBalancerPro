@@ -24,6 +24,42 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T23:01-07:00
+
+Branch/PR: codex/lase-phase2-compatibility-closeout / no PR yet
+
+Failure type: focused compatibility regression test compilation failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerRoutingDiagnosticsCompatibilityRegressionTest" test`
+
+Suspected cause: the new diagnostics fingerprint helper used a non-existent `DecisionExplorerFactorDiagnosticV1.diagnosticStatus()` accessor instead of the actual `factorStatus()` field.
+
+Fix attempted: changed the fingerprint helper to use `factorStatus()`.
+
+Result: focused rerun compiled and surfaced a separate expected-fingerprint mismatch for the STRONG fixture evidence counts.
+
+Follow-up action: update the STRONG fixture expected count fingerprint and rerun the focused compatibility regression test.
+
+## Entry
+
+Date/time: 2026-05-27T23:02-07:00
+
+Branch/PR: codex/lase-phase2-compatibility-closeout / no PR yet
+
+Failure type: focused compatibility regression fingerprint mismatch
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerRoutingDiagnosticsCompatibilityRegressionTest" test`
+
+Suspected cause: the STRONG fixture preserves one hidden-internals unknown signal, so the routing diagnostics counts are `present=8, partial=0, missing=0, degraded=0, unknown=1`, not `present=9, partial=0, missing=0, degraded=0, unknown=0`.
+
+Fix attempted: updated the STRONG compatibility fingerprint expectation to `9:8/0/0/0/1`.
+
+Result: focused compatibility regression test rerun passed.
+
+Follow-up action: continue with broader final-branch verification.
+
+## Entry
+
 Date/time: 2026-05-27T22:45-07:00
 
 Branch/PR: codex/lase-phase2-diagnostic-fixtures-explanations / no PR yet

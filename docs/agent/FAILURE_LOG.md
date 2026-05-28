@@ -24,6 +24,24 @@ Follow-up action:
 
 ## Entry
 
+Date/time: 2026-05-27T21:36-07:00
+
+Branch/PR: codex/lase-phase2-routing-diagnostics-api / no PR yet
+
+Failure type: focused Decision Explorer API diagnostics test failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerRoutingDiagnosticsServiceTest,DecisionExplorerFactorDiagnosticsServiceTest,DecisionExplorerCandidateDiagnosticsServiceTest" test`
+
+Suspected cause: after wiring routing diagnostics into the real Decision Explorer payload, factor diagnostics treated the generic `hidden routing internals` boundary unknown as a factor-level unknown signal. That downgraded an available supporting `healthState` factor to `UNKNOWN` even though the concrete factor evidence was present.
+
+Fix attempted: filtered generic boundary limitations such as `hidden routing internals` out of factor-level unknown-signal classification while preserving them in the overall payload/routing diagnostics unknown lists, then added focused coverage that available supporting/neutral factors are not downgraded by boundary-only unknowns.
+
+Result: focused Decision Explorer API diagnostics suite reran successfully.
+
+Follow-up action: continue with broader local verification.
+
+## Entry
+
 Date/time: 2026-05-27T21:13-07:00
 
 Branch/PR: codex/lase-phase2-factor-diagnostics / no PR yet

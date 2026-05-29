@@ -6,6 +6,27 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-29T01:14-07:00
+
+Branch/PR: codex/modularity-route-tradeoff-fingerprint-builders / PR #424
+
+Failure type: local GitHub CLI watcher timeout
+
+Failing check: `gh pr checks 424 --watch --interval 30`
+
+Suspected cause: the watcher process exceeded the local tool timeout boundary even though its final streamed output
+showed current-head checks had reached passing states.
+
+Fix attempted: verify the PR status directly with
+`gh pr view 424 --json number,state,headRefOid,mergeStateStatus,statusCheckRollup,url`.
+
+Result: direct PR inspection confirmed current head `0389e242a39f8e0ca414ef941e720aef5ecb2cf5` was clean and all
+required current-head checks were successful; Dependency Review was success/skipped and not failing.
+
+Follow-up action: prefer direct PR status polling after a watcher timeout before making any merge decision.
+
+## Entry
+
 Date/time: 2026-05-29T00:38-07:00
 
 Branch/PR: codex/modularity-replay-readiness-evaluator / no PR yet

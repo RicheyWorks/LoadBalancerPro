@@ -241,6 +241,9 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
                         + "DecisionExplorerCounterfactualExplanationBuilder.java"),
                         StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerCounterfactualFingerprintBuilder.java"),
+                        StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerCounterfactualFactorWeightDeltaEvaluator.java"),
                         StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"

@@ -76,6 +76,9 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
         assertTrue(analysis.stableSignals().contains("confidence status is STRONG"));
         assertTrue(analysis.stableSignals()
                 .contains("selected candidate has returned-evidence tradeoff advantage"));
+        assertTrue(analysis.summaryText().contains("Policy scenarios show baseline BASELINE_RETURNED_EVIDENCE/STABLE"));
+        assertTrue(analysis.summaryText().contains("Candidate outcomes show selected edge-a as SELECTED_STABLE"));
+        assertTrue(analysis.summaryText().contains("Factor-weight deltas show STABILIZING=1"));
         assertTrue(analysis.summaryText().contains("no production routing, scoring, proxying"));
         assertTrue(analysis.reasonCodes().contains("COUNTERFACTUAL_ANALYSIS_STABLE"));
         assertTrue(analysis.diagnosticFingerprint().startsWith("counterfactual-analysis|v1|"));
@@ -233,6 +236,9 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
                         StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerCounterfactualCandidateOutcomeV1.java"),
+                        StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerCounterfactualExplanationBuilder.java"),
                         StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerCounterfactualFactorWeightDeltaEvaluator.java"),

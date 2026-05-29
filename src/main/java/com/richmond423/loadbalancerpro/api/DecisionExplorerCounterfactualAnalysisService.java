@@ -18,6 +18,8 @@ public class DecisionExplorerCounterfactualAnalysisService {
             new DecisionExplorerCounterfactualCandidateOutcomeEvaluator();
     private final DecisionExplorerCounterfactualFactorWeightDeltaEvaluator factorWeightDeltaEvaluator =
             new DecisionExplorerCounterfactualFactorWeightDeltaEvaluator();
+    private final DecisionExplorerCounterfactualExplanationBuilder explanationBuilder =
+            new DecisionExplorerCounterfactualExplanationBuilder();
 
     public DecisionExplorerCounterfactualAnalysisV1 buildAnalysis(
             DecisionExplorerConfidenceSummaryV1 confidenceSummary,
@@ -91,6 +93,16 @@ public class DecisionExplorerCounterfactualAnalysisService {
                 policyWeightScenarios,
                 counterfactualCandidateOutcomes,
                 factorWeightDeltas);
+        String explanationText = explanationBuilder.build(
+                counterfactualLabel,
+                summary,
+                tradeoff,
+                sufficiency,
+                replayReadiness,
+                policyWeightScenarios,
+                counterfactualCandidateOutcomes,
+                factorWeightDeltas,
+                reproducibilityKey);
 
         return new DecisionExplorerCounterfactualAnalysisV1(
                 true,
@@ -115,8 +127,7 @@ public class DecisionExplorerCounterfactualAnalysisService {
                 factorWeightDeltas.size(),
                 quality.candidateOutcomeCount(),
                 tradeoff.factorTradeoffDeltas().size(),
-                summaryText(counterfactualLabel, summary, tradeoff, sufficiency, replayReadiness,
-                        policyWeightScenarios, counterfactualCandidateOutcomes, factorWeightDeltas),
+                explanationText,
                 stableSignals,
                 sensitivitySignals,
                 limitationSignals,
@@ -354,24 +365,4 @@ public class DecisionExplorerCounterfactualAnalysisService {
                 + ":factorWeightDeltas=" + factorWeightDeltas.size();
     }
 
-    private static String summaryText(
-            String counterfactualLabel,
-            DecisionExplorerConfidenceSummaryV1 summary,
-            DecisionExplorerRouteTradeoffAnalysisV1 tradeoff,
-            DecisionExplorerEvidenceSufficiencyV1 sufficiency,
-            DecisionExplorerReplayReadinessDiagnosticV1 replayReadiness,
-            List<DecisionExplorerCounterfactualPolicyWeightScenarioV1> policyWeightScenarios,
-            List<DecisionExplorerCounterfactualCandidateOutcomeV1> counterfactualCandidateOutcomes,
-            List<DecisionExplorerCounterfactualFactorWeightDeltaV1> factorWeightDeltas) {
-        return "Local counterfactual foundation classifies selected candidate "
-                + summary.selectedCandidateId() + " as " + counterfactualLabel
-                + " using returned-evidence tradeoff category " + tradeoff.tradeoffCategory()
-                + ", evidence sufficiency " + sufficiency.sufficiencyLevel()
-                + ", and replay-readiness " + replayReadiness.readinessStatus()
-                + " with " + policyWeightScenarios.size() + " bounded local policy-weight scenarios"
-                + " and " + counterfactualCandidateOutcomes.size() + " counterfactual candidate outcomes"
-                + " plus " + factorWeightDeltas.size() + " factor-weight deltas"
-                + "; no production routing, scoring, proxying, replay execution, storage, export, or traffic "
-                + "shifting is performed.";
-    }
 }

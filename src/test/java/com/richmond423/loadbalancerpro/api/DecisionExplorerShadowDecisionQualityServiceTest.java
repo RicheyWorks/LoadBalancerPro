@@ -366,6 +366,10 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerShadowScenarioInputQualityEvaluator.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerShadowQualityFingerprintBuilder.java"), StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerShadowQualityExplanationBuilder.java"), StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerShadowDecisionQualityEvaluationV1.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerShadowCandidateOutcomeV1.java"), StandardCharsets.UTF_8)

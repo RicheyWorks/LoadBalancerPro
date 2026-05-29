@@ -8,34 +8,65 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T21:59-07:00
+Timestamp: 2026-05-28T22:19-07:00
 
 Goal name: Decision Explorer / LASE Codebase Modularity Refactor Phase 1
 
-Current PR slot: MOD-P1-G04
+Current PR slot: MOD-P1-G05
 
-Checkpoint: MOD-P1-G04 PR #418 opened; current-head checks pending
+Checkpoint: MOD-P1-G05 branch created; focused shadow-quality extraction tests passed
 
-Started from main SHA: `96012f9e588e179a22c21bb3657058ad1d5530d2`
+Started from main SHA: `36a8865bd99adabb8674be47fc631aaca4d40324`
 
-Current branch: codex/modularity-scenario-input-quality-evaluator
+Current branch: codex/modularity-shadow-quality-fingerprint-builder
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/418
+PR URL: not opened yet
 
-PR creation head: `ce558154bdf9c5a06913f2264647ea78605e8191`
+PR creation head: not created yet
 
-Current branch head: `ce558154bdf9c5a06913f2264647ea78605e8191`
+Current branch head: pending commit
 
 Changed files for this slice:
 
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityService.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowScenarioInputQualityEvaluator.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowScenarioInputQualityEvaluatorTest.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowQualityExplanationBuilder.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowQualityFingerprintBuilder.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityServiceTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowQualityExplanationBuilderTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowQualityFingerprintBuilderTest.java
 - docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
 
 Checks run:
 
+- MOD-P1-G05 branch `codex/modularity-shadow-quality-fingerprint-builder` was created from clean synced main at
+  `36a8865bd99adabb8674be47fc631aaca4d40324`.
+- MOD-P1-G05 is extracting shadow decision-quality fingerprint input, diagnostic fingerprint, reproducibility key,
+  evidence/selected summary, and explanation text logic into focused builders while preserving existing API payloads,
+  fingerprint/reproducibility behavior, UI behavior, and production routing behavior.
+- MOD-P1-G04 PR #418 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency
+  Review was not failing.
+- MOD-P1-G04 merged as `36a8865bd99adabb8674be47fc631aaca4d40324`.
+- MOD-P1-G04 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,809 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- MOD-P1-G04 main CI and CodeQL passed for `36a8865bd99adabb8674be47fc631aaca4d40324`; Dependency Review was not
+  failing.
+- MOD-P1-G05 logged one Windows wildcard `rg` tooling failure in `docs/agent/FAILURE_LOG.md`; subsequent explicit file
+  reads and searches succeeded.
+- MOD-P1-G05 extracted shadow decision-quality fingerprint/reproducibility and explanation helper logic into
+  `DecisionExplorerShadowQualityFingerprintBuilder` and `DecisionExplorerShadowQualityExplanationBuilder`, reducing
+  `DecisionExplorerShadowDecisionQualityService` from 532 lines to 286 lines while keeping it behavior-preserving.
+- MOD-P1-G05 focused verification passed:
+  `mvn -q "-Dtest=DecisionExplorerShadowQualityFingerprintBuilderTest,DecisionExplorerShadowQualityExplanationBuilderTest,DecisionExplorerShadowScenarioInputQualityEvaluatorTest,DecisionExplorerShadowPolicySensitivityEvaluatorTest,DecisionExplorerShadowCandidateOutcomeBuilderTest,DecisionExplorerShadowQualityLabelEvaluatorTest,DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest" test`.
+- MOD-P1-G05 broader Decision Explorer/API/static selector passed:
+  `mvn -q "-Dtest=DecisionExplorerShadowQualityFingerprintBuilderTest,DecisionExplorerShadowQualityExplanationBuilderTest,DecisionExplorerShadowScenarioInputQualityEvaluatorTest,DecisionExplorerShadowPolicySensitivityEvaluatorTest,DecisionExplorerShadowCandidateOutcomeBuilderTest,DecisionExplorerShadowQualityLabelEvaluatorTest,DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`.
+- MOD-P1-G05 full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  `mvn -B package` with 2,814 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- `git diff --cached --check` passed after staging the MOD-P1-G05 slice.
+- MOD-P1-G05 commit, push, PR creation, and remote checks are pending.
+- Historical MOD-P1-G04, MOD-P1-G03, MOD-P1-G02, MOD-P1-G01, and Phase 4 checkpoints remain below for recovery context.
 - MOD-P1-G04 branch `codex/modularity-scenario-input-quality-evaluator` was created from clean synced main at
   `96012f9e588e179a22c21bb3657058ad1d5530d2`.
 - MOD-P1-G04 is extracting scenario-input quality label, score, evidence-count, signal, reason, summary, and

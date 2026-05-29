@@ -30,6 +30,7 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
         List<String> warnings,
         List<String> unknowns,
         List<String> sourceReferenceIds,
+        String explanationText,
         String fingerprintAlgorithm,
         String diagnosticFingerprint,
         String reproducibilityKey,
@@ -83,6 +84,7 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
         warnings = DecisionExplorerDtoSupport.copyOrEmpty(warnings);
         unknowns = DecisionExplorerDtoSupport.copyOrEmpty(unknowns);
         sourceReferenceIds = DecisionExplorerDtoSupport.copyOrEmpty(sourceReferenceIds);
+        explanationText = DecisionExplorerDtoSupport.valueOrUnknown(explanationText);
         fingerprintAlgorithm = DecisionExplorerDtoSupport.valueOrDefault(fingerprintAlgorithm,
                 DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM);
         diagnosticFingerprint = DecisionExplorerDtoSupport.valueOrUnknown(diagnosticFingerprint);
@@ -145,6 +147,7 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
                 warnings,
                 unknowns,
                 sourceReferenceIds,
+                DecisionExplorerDtoSupport.valueOrUnknown(evidenceBasisSummary),
                 DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
                 "UNKNOWN",
                 "UNKNOWN",
@@ -193,6 +196,8 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
                 List.of(),
                 List.of("shadow decision-quality input evidence was unavailable"),
                 List.of(),
+                "Shadow decision-quality explanation is UNKNOWN because computed Decision Explorer evidence was "
+                        + "unavailable; no production routing decision is changed.",
                 DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
                 FINGERPRINT_NAMESPACE + "|" + String.join("|", fingerprintInputs),
                 "shadow-decision-quality:v1:UNKNOWN:UNKNOWN:UNKNOWN:outcomes=0:policy=UNKNOWN:scenario=UNKNOWN:"

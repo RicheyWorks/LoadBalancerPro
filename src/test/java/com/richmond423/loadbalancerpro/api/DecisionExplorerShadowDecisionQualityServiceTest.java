@@ -71,6 +71,10 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertTrue(evaluation.evidenceBasisSummary()
                 .contains("classified selected candidate edge-a as ACCEPTABLE"));
         assertTrue(evaluation.evidenceBasisSummary().contains("no production routing decision is changed"));
+        assertTrue(evaluation.explanationText()
+                .contains("Shadow decision-quality explanation is ACCEPTABLE for selected candidate edge-a"));
+        assertTrue(evaluation.explanationText().contains(evaluation.reproducibilityKey()));
+        assertTrue(evaluation.explanationText().contains("no production routing decision is changed"));
         assertFalse(evaluation.warnings().contains("production routing decision changed"));
     }
 
@@ -97,6 +101,8 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
                 .contains("route tradeoff SELECTED_CHALLENGED"));
         assertTrue(evaluation.selectedCandidateBasisSummary()
                 .contains("closest alternative edge-b has score delta -2.0"));
+        assertTrue(evaluation.explanationText()
+                .contains("alternative edge-b as SAFER_ALTERNATIVE/REVIEW_SIGNAL"));
     }
 
     @Test
@@ -208,6 +214,7 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
                 + "scenario=UNKNOWN:sufficiency=INSUFFICIENT:replay=UNKNOWN",
                 evaluation.reproducibilityKey());
         assertTrue(evaluation.fingerprintInputs().contains("qualityLabel=UNKNOWN"));
+        assertTrue(evaluation.explanationText().contains("computed Decision Explorer evidence was unavailable"));
         assertEquals("UNKNOWN", evaluation.boundaryNote());
     }
 
@@ -264,6 +271,7 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("UNKNOWN", evaluation.diagnosticFingerprint());
         assertEquals("UNKNOWN", evaluation.reproducibilityKey());
         assertTrue(evaluation.fingerprintInputs().isEmpty());
+        assertEquals("UNKNOWN", evaluation.explanationText());
     }
 
     @Test

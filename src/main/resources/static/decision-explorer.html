@@ -1361,6 +1361,7 @@
         : evaluation.candidateOutcomeCount, "candidate outcome row")],
       ["Policy sensitivity", `${value(policy.sensitivityLevel)} / ${value(policy.sensitivityCategory)}`],
       ["Scenario input quality", `${value(scenarioInput.inputQualityLabel)} / ${value(scenarioInput.supportBand)}`],
+      ["Explanation", value(evaluation.explanationText)],
       ["Evidence basis summary", value(evaluation.evidenceBasisSummary)],
       ["Selected basis summary", value(evaluation.selectedCandidateBasisSummary)],
       ["Evidence basis", listText(evaluation.evidenceBasis)],
@@ -2443,6 +2444,7 @@
       `replayReadinessFingerprint: ${value(replayReadiness.diagnosticFingerprint)}`,
       `shadowDecisionQuality: ${value(shadowQuality.qualityLabel)} / ${value(shadowQuality.qualityBand)}`
         + ` / score ${qualityScoreText(shadowQuality.qualityScore)}`,
+      `shadowDecisionQualityExplanation: ${value(shadowQuality.explanationText)}`,
       `shadowDecisionQualityReasons: ${listText(shadowQuality.qualityReasons)}`,
       `shadowDecisionQualityFingerprint: ${value(shadowQuality.diagnosticFingerprint)}`,
       `shadowDecisionQualityReproducibilityKey: ${value(shadowQuality.reproducibilityKey)}`,

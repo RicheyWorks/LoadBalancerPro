@@ -66,6 +66,25 @@ public class DecisionExplorerShadowDecisionQualityService {
                 warnings,
                 unknowns,
                 sourceReferenceIds);
+        String reproducibilityKey = shadowQualityReproducibilityKey(
+                qualityLabel,
+                summary,
+                tradeoff,
+                sufficiency,
+                replayReadiness,
+                candidateOutcomes,
+                policySensitivity,
+                scenarioInputQuality);
+        String explanationText = shadowQualityExplanationText(
+                qualityLabel,
+                summary,
+                tradeoff,
+                sufficiency,
+                replayReadiness,
+                candidateOutcomes,
+                policySensitivity,
+                scenarioInputQuality,
+                reproducibilityKey);
 
         return new DecisionExplorerShadowDecisionQualityEvaluationV1(
                 true,
@@ -95,19 +114,12 @@ public class DecisionExplorerShadowDecisionQualityService {
                 warnings,
                 unknowns,
                 sourceReferenceIds,
+                explanationText,
                 DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
                 diagnosticFingerprint(
                         DecisionExplorerShadowDecisionQualityEvaluationV1.FINGERPRINT_NAMESPACE,
                         fingerprintInputs),
-                shadowQualityReproducibilityKey(
-                        qualityLabel,
-                        summary,
-                        tradeoff,
-                        sufficiency,
-                        replayReadiness,
-                        candidateOutcomes,
-                        policySensitivity,
-                        scenarioInputQuality),
+                reproducibilityKey,
                 fingerprintInputs,
                 boundaryNote);
     }
@@ -1204,6 +1216,61 @@ public class DecisionExplorerShadowDecisionQualityService {
                 "scenario=" + fingerprintValue(scenarioInputQuality.inputQualityLabel()),
                 "sufficiency=" + fingerprintValue(sufficiency.sufficiencyLevel()),
                 "replay=" + fingerprintValue(replayReadiness.readinessStatus()));
+    }
+
+    private static String shadowQualityExplanationText(
+            String qualityLabel,
+            DecisionExplorerConfidenceSummaryV1 summary,
+            DecisionExplorerRouteTradeoffAnalysisV1 tradeoff,
+            DecisionExplorerEvidenceSufficiencyV1 sufficiency,
+            DecisionExplorerReplayReadinessDiagnosticV1 replayReadiness,
+            List<DecisionExplorerShadowCandidateOutcomeV1> candidateOutcomes,
+            DecisionExplorerShadowPolicySensitivityDiagnosticV1 policySensitivity,
+            DecisionExplorerShadowScenarioInputQualityV1 scenarioInputQuality,
+            String reproducibilityKey) {
+        return "Shadow decision-quality explanation is " + qualityLabel
+                + " for selected candidate "
+                + DecisionExplorerDtoSupport.valueOrUnknown(summary.selectedCandidateId())
+                + " from confidence " + summary.status()
+                + ", route tradeoff " + tradeoff.tradeoffCategory()
+                + ", evidence sufficiency " + sufficiency.sufficiencyLevel()
+                + ", replay readiness " + replayReadiness.readinessStatus()
+                + ", policy sensitivity " + policySensitivity.sensitivityLevel()
+                + "/" + policySensitivity.sensitivityCategory()
+                + ", and scenario input " + scenarioInputQuality.inputQualityLabel()
+                + "/" + scenarioInputQuality.supportBand()
+                + ". " + candidateOutcomeExplanation(candidateOutcomes)
+                + " Reproducibility key " + DecisionExplorerDtoSupport.valueOrUnknown(reproducibilityKey)
+                + " is derived from returned diagnostic fields only; no production routing decision is changed.";
+    }
+
+    private static String candidateOutcomeExplanation(
+            List<DecisionExplorerShadowCandidateOutcomeV1> candidateOutcomes) {
+        List<DecisionExplorerShadowCandidateOutcomeV1> rows = copyNonNull(candidateOutcomes);
+        if (rows.isEmpty()) {
+            return "Candidate outcome comparison rows were unavailable.";
+        }
+        DecisionExplorerShadowCandidateOutcomeV1 selected = rows.stream()
+                .filter(DecisionExplorerShadowCandidateOutcomeV1::selected)
+                .findFirst()
+                .orElse(null);
+        DecisionExplorerShadowCandidateOutcomeV1 reviewAlternative = rows.stream()
+                .filter(row -> !row.selected())
+                .filter(row -> DecisionExplorerShadowCandidateOutcomeV1.IMPACT_REVIEW_SIGNAL.equals(
+                        row.qualityImpact())
+                        || DecisionExplorerShadowCandidateOutcomeV1.IMPACT_RISK_SIGNAL.equals(row.qualityImpact())
+                        || DecisionExplorerShadowCandidateOutcomeV1.IMPACT_UNKNOWN.equals(row.qualityImpact()))
+                .findFirst()
+                .orElse(null);
+        String selectedText = selected == null
+                ? "selected outcome UNKNOWN"
+                : "selected outcome " + selected.outcomeLabel() + " for " + selected.candidateId();
+        if (reviewAlternative == null) {
+            return "Candidate outcomes show " + selectedText + " with no alternative review signal.";
+        }
+        return "Candidate outcomes show " + selectedText + " and alternative "
+                + reviewAlternative.candidateId() + " as " + reviewAlternative.outcomeLabel()
+                + "/" + reviewAlternative.qualityImpact() + ".";
     }
 
     private static String candidateOutcomeFingerprint(DecisionExplorerShadowCandidateOutcomeV1 row) {

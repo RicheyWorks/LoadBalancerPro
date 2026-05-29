@@ -516,6 +516,7 @@ class RoutingOpenApiContractTest {
         assertEquals("array", required(shadowQualityProperties, "/warnings/type").asText());
         assertEquals("array", required(shadowQualityProperties, "/unknowns/type").asText());
         assertEquals("array", required(shadowQualityProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/explanationText/type").asText());
         assertEquals("string", required(shadowQualityProperties, "/fingerprintAlgorithm/type").asText());
         assertEquals("string", required(shadowQualityProperties, "/diagnosticFingerprint/type").asText());
         assertEquals("string", required(shadowQualityProperties, "/reproducibilityKey/type").asText());

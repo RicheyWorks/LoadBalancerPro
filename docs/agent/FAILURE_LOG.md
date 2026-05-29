@@ -2785,6 +2785,27 @@ Follow-up action: rerun the shadow decision-quality focused test after the DTO c
 
 ## Entry
 
+Date/time: 2026-05-29T10:08-07:00
+
+Branch/PR: codex/lase-phase5-counterfactual-foundation / no PR yet
+
+Failure type: focused local test calibration
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerCounterfactualAnalysisServiceTest" test`
+
+Suspected cause: the initial counterfactual label precedence classified a fully strong selected-advantage fixture as
+`SENSITIVE` because existing shadow policy-sensitivity evidence was evaluated before the stable criteria; the source
+guard also matched the new boundary sentence that explicitly says no proxying is performed.
+
+Fix attempted: give fully stable returned-evidence criteria precedence after degraded/unknown/insufficient/close-call
+checks, and narrow the source guard to mutation/API tokens instead of matching safety wording.
+
+Result: focused rerun passed.
+
+Follow-up action: include the counterfactual foundation test in broader PR verification.
+
+## Entry
+
 Date/time: 2026-05-29T08:52-07:00
 
 Branch/PR: codex/modularity-regression-hardening / no PR yet

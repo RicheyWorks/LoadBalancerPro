@@ -6,6 +6,69 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-28T21:23-07:00
+
+Branch/PR: codex/modularity-policy-sensitivity-evaluator / no PR yet
+
+Failure type: focused compilation failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerShadowPolicySensitivityEvaluatorTest,DecisionExplorerShadowCandidateOutcomeBuilderTest,DecisionExplorerShadowQualityLabelEvaluatorTest,DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest" test`
+
+Suspected cause: the extracted policy-sensitivity evaluator passed a `Collection<String>` into
+`DecisionExplorerDtoSupport.copyOrEmpty`, which accepts `List<T>`.
+
+Fix attempted: copied the collection through a null-safe list before building the distinct set.
+
+Result: the compilation failure was resolved; the focused selector later passed after direct-test expectation
+calibration.
+
+Follow-up action: none for this failure.
+
+## Entry
+
+Date/time: 2026-05-28T21:24-07:00
+
+Branch/PR: codex/modularity-policy-sensitivity-evaluator / no PR yet
+
+Failure type: focused test expectation failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerShadowPolicySensitivityEvaluatorTest,DecisionExplorerShadowCandidateOutcomeBuilderTest,DecisionExplorerShadowQualityLabelEvaluatorTest,DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest" test`
+
+Suspected cause: the new direct policy-sensitivity evaluator test asserted that candidate reason strings are copied into
+`missingEvidenceSignals`, but the extracted behavior keeps unknown candidate reason codes in `reviewSignals` and adds a
+candidate-specific missing-evidence signal.
+
+Fix attempted: updated the direct test away from `missingEvidenceSignals` for candidate helper text without changing
+production evaluator behavior.
+
+Result: this specific expectation was replaced; a subsequent assertion still required calibration and was logged below.
+
+Follow-up action: see the next MOD-P1-G03 entry.
+
+## Entry
+
+Date/time: 2026-05-28T21:25-07:00
+
+Branch/PR: codex/modularity-policy-sensitivity-evaluator / no PR yet
+
+Failure type: focused test expectation failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerShadowPolicySensitivityEvaluatorTest,DecisionExplorerShadowCandidateOutcomeBuilderTest,DecisionExplorerShadowQualityLabelEvaluatorTest,DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest" test`
+
+Suspected cause: the adjusted assertion still expected the candidate helper's unknown-signal text to appear in policy
+reason codes, but candidate outcome reason codes are stable `SHADOW_CANDIDATE_OUTCOME_*` values and policy missing
+signals are sourced from summary, diagnostics, tradeoff, replay-readiness, sufficiency, and the unknown-alternative label.
+
+Fix attempted: replaced the assertion with checks for the stable missing-signal contract from summary/tradeoff and
+unknown-alternative classification.
+
+Result: focused selector passed, followed by the broader Decision Explorer/API/static selector and full local
+verification stack.
+
+Follow-up action: none.
+
+## Entry
+
 Date/time: 2026-05-28T19:49-07:00
 
 Branch/PR: codex/lase-phase4-compatibility-regression / no PR yet

@@ -74,6 +74,11 @@ class DecisionExplorerPayloadV1Test {
                 payload.shadowDecisionQualityEvaluation().policySensitivityDiagnostic().sensitivityLevel());
         assertEquals("UNKNOWN",
                 payload.shadowDecisionQualityEvaluation().scenarioInputQuality().inputQualityLabel());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                payload.shadowDecisionQualityEvaluation().fingerprintAlgorithm());
+        assertTrue(payload.shadowDecisionQualityEvaluation().diagnosticFingerprint()
+                .startsWith("shadow-decision-quality|v1|"));
+        assertFalse(payload.shadowDecisionQualityEvaluation().reproducibilityKey().isBlank());
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertEquals("policy-health", payload.policyGateReadouts().get(0).gateId());
         assertEquals("candidate-a", payload.decisionDiffReadouts().get(0).baselineCandidateId());

@@ -30,9 +30,14 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
         List<String> warnings,
         List<String> unknowns,
         List<String> sourceReferenceIds,
+        String fingerprintAlgorithm,
+        String diagnosticFingerprint,
+        String reproducibilityKey,
+        List<String> fingerprintInputs,
         String boundaryNote) {
     public static final String EVALUATION_OBJECT = "DecisionExplorerShadowDecisionQualityEvaluationV1";
     public static final String CONTRACT_VERSION = "v1";
+    public static final String FINGERPRINT_NAMESPACE = "shadow-decision-quality|v1";
     public static final String LABEL_ACCEPTABLE = "ACCEPTABLE";
     public static final String LABEL_REVIEW_RECOMMENDED = "REVIEW_RECOMMENDED";
     public static final String LABEL_INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE";
@@ -78,6 +83,11 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
         warnings = DecisionExplorerDtoSupport.copyOrEmpty(warnings);
         unknowns = DecisionExplorerDtoSupport.copyOrEmpty(unknowns);
         sourceReferenceIds = DecisionExplorerDtoSupport.copyOrEmpty(sourceReferenceIds);
+        fingerprintAlgorithm = DecisionExplorerDtoSupport.valueOrDefault(fingerprintAlgorithm,
+                DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM);
+        diagnosticFingerprint = DecisionExplorerDtoSupport.valueOrUnknown(diagnosticFingerprint);
+        reproducibilityKey = DecisionExplorerDtoSupport.valueOrUnknown(reproducibilityKey);
+        fingerprintInputs = DecisionExplorerDtoSupport.copyOrEmpty(fingerprintInputs);
         boundaryNote = DecisionExplorerDtoSupport.valueOrUnknown(boundaryNote);
     }
 
@@ -135,10 +145,25 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
                 warnings,
                 unknowns,
                 sourceReferenceIds,
+                DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                "UNKNOWN",
+                "UNKNOWN",
+                List.of(),
                 boundaryNote);
     }
 
     public static DecisionExplorerShadowDecisionQualityEvaluationV1 unknown(String boundaryNote) {
+        List<String> fingerprintInputs = List.of(
+                "evaluationObject=" + EVALUATION_OBJECT,
+                "contractVersion=" + CONTRACT_VERSION,
+                "qualityLabel=UNKNOWN",
+                "qualityBand=UNKNOWN",
+                "selectedCandidateId=UNKNOWN",
+                "confidenceStatus=UNKNOWN",
+                "tradeoffCategory=UNKNOWN",
+                "candidateOutcomeCount=0",
+                "policySensitivity=UNKNOWN",
+                "scenarioInputQuality=UNKNOWN");
         return new DecisionExplorerShadowDecisionQualityEvaluationV1(
                 true,
                 true,
@@ -154,6 +179,9 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
                 DecisionExplorerEvidenceSufficiencyV1.LEVEL_INSUFFICIENT,
                 DecisionExplorerReplayReadinessDiagnosticV1.STATUS_UNKNOWN,
                 0,
+                List.of(),
+                DecisionExplorerShadowPolicySensitivityDiagnosticV1.unknown(boundaryNote),
+                DecisionExplorerShadowScenarioInputQualityV1.unknown(boundaryNote),
                 0,
                 0,
                 "Shadow decision-quality evaluation could not classify decision quality because computed "
@@ -165,6 +193,11 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
                 List.of(),
                 List.of("shadow decision-quality input evidence was unavailable"),
                 List.of(),
+                DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                FINGERPRINT_NAMESPACE + "|" + String.join("|", fingerprintInputs),
+                "shadow-decision-quality:v1:UNKNOWN:UNKNOWN:UNKNOWN:outcomes=0:policy=UNKNOWN:scenario=UNKNOWN:"
+                        + "sufficiency=INSUFFICIENT:replay=UNKNOWN",
+                fingerprintInputs,
                 boundaryNote);
     }
 

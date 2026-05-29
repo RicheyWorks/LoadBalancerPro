@@ -161,6 +161,12 @@ class RoutingControllerTest {
                             is("REVIEW_RECOMMENDED")))
                     .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.selectedCandidateId",
                             is("green")))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.fingerprintAlgorithm",
+                            is(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM)))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.diagnosticFingerprint",
+                            containsString("shadow-decision-quality|v1|")))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.reproducibilityKey").exists())
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.fingerprintInputs[0]").exists())
                     .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.candidateOutcomeComparisons[0].candidateId",
                             is("green")))
                     .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.policySensitivityDiagnostic.diagnosticObject",

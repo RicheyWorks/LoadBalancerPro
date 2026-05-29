@@ -3028,3 +3028,21 @@ fingerprint, reproducibility key, and fingerprint inputs populated from same-ori
 Result: browser verification passed despite the non-blocking telemetry error.
 
 Follow-up action: continue local pre-PR verification and PR preparation.
+# 2026-05-29T11:52-07:00 - LASE-P5-PR4 focused counterfactual factor test compile failure
+
+- Branch: `codex/lase-phase5-factor-weight-deltas`
+- Command: `mvn -q "-Dtest=DecisionExplorerCounterfactualFactorWeightDeltaEvaluatorTest,DecisionExplorerCounterfactualAnalysisServiceTest" test`
+- Result: failed during test compilation because the new `DecisionExplorerCounterfactualFactorWeightDeltaEvaluatorTest`
+  helper referenced non-existent `DecisionExplorerConfidenceSummaryV1.EVIDENCE_QUALITY_STRONG`.
+- Recovery: update the helper to use the existing `EVIDENCE_QUALITY_COMPLETE` constant, then rerun the focused
+  counterfactual selector before broader verification.
+
+# 2026-05-29T11:52-07:00 - LASE-P5-PR4 focused counterfactual factor expectation calibration
+
+- Branch: `codex/lase-phase5-factor-weight-deltas`
+- Command: `mvn -q "-Dtest=DecisionExplorerCounterfactualFactorWeightDeltaEvaluatorTest,DecisionExplorerCounterfactualAnalysisServiceTest" test`
+- Result: failed after compilation because the degraded service fixture has no alternative candidate, so no factor
+  tradeoff deltas are available for counterfactual factor interpretation, and the evaluator's stable scenario fixture
+  incorrectly marked the alternative-support case as close.
+- Recovery: keep the degraded service assertion grounded in the returned factor delta count, and correct the evaluator
+  stable scenario so only the explicit factor disadvantage row reports an alternative challenge.

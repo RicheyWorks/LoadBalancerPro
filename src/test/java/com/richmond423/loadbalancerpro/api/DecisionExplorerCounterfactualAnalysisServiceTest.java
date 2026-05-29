@@ -47,6 +47,7 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
         assertEquals(3, analysis.policyWeightScenarioCount());
         assertEquals(2, analysis.candidateOutcomeCount());
         assertEquals(1, analysis.factorDeltaCount());
+        assertEquals(1, analysis.factorWeightDeltaCount());
         assertEquals(List.of(
                         "BASELINE_RETURNED_EVIDENCE",
                         "SELECTED_SUPPORT_PLUS_10",
@@ -68,6 +69,10 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
                 analysis.counterfactualCandidateOutcomes().stream()
                         .map(DecisionExplorerCounterfactualCandidateOutcomeV1::counterfactualOutcomeLabel)
                         .toList());
+        assertEquals(List.of("STABILIZING"), analysis.factorWeightDeltas().stream()
+                .map(DecisionExplorerCounterfactualFactorWeightDeltaV1::factorWeightDeltaClassification)
+                .toList());
+        assertTrue(analysis.factorWeightDeltas().get(0).selectedSupportStabilizesDecision());
         assertTrue(analysis.stableSignals().contains("confidence status is STRONG"));
         assertTrue(analysis.stableSignals()
                 .contains("selected candidate has returned-evidence tradeoff advantage"));
@@ -75,7 +80,7 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
         assertTrue(analysis.reasonCodes().contains("COUNTERFACTUAL_ANALYSIS_STABLE"));
         assertTrue(analysis.diagnosticFingerprint().startsWith("counterfactual-analysis|v1|"));
         assertEquals("counterfactual:v1:STABLE:edge-a:SELECTED_ADVANTAGE:quality=ACCEPTABLE:"
-                + "sufficiency=REPLAY_STYLE_READY:replay=READY:scenarios=3:outcomes=2",
+                + "sufficiency=REPLAY_STYLE_READY:replay=READY:scenarios=3:outcomes=2:factorWeightDeltas=1",
                 analysis.reproducibilityKey());
     }
 
@@ -97,6 +102,9 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
                 analysis.counterfactualCandidateOutcomes().stream()
                         .map(DecisionExplorerCounterfactualCandidateOutcomeV1::counterfactualOutcomeLabel)
                         .toList());
+        assertEquals(List.of("NEUTRAL"), analysis.factorWeightDeltas().stream()
+                .map(DecisionExplorerCounterfactualFactorWeightDeltaV1::factorWeightDeltaClassification)
+                .toList());
         assertTrue(analysis.reasonCodes().contains("COUNTERFACTUAL_ANALYSIS_CLOSE_CALL"));
     }
 
@@ -118,6 +126,9 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
                 analysis.counterfactualCandidateOutcomes().stream()
                         .map(DecisionExplorerCounterfactualCandidateOutcomeV1::counterfactualOutcomeLabel)
                         .toList());
+        assertEquals(List.of("UNKNOWN"), analysis.factorWeightDeltas().stream()
+                .map(DecisionExplorerCounterfactualFactorWeightDeltaV1::factorWeightDeltaClassification)
+                .toList());
         assertTrue(analysis.limitationSignals().contains("score-comparable alternative evidence was not returned"));
         assertTrue(analysis.unknowns().contains("score delta from selected candidate"));
     }
@@ -141,6 +152,7 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
                 analysis.counterfactualCandidateOutcomes().stream()
                         .map(DecisionExplorerCounterfactualCandidateOutcomeV1::counterfactualOutcomeLabel)
                         .toList());
+        assertEquals(0, analysis.factorWeightDeltaCount());
         assertTrue(analysis.reasonCodes().contains("COUNTERFACTUAL_ANALYSIS_DEGRADED"));
     }
 
@@ -167,6 +179,7 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
         assertEquals(1, analysis.policyWeightScenarioCount());
         assertEquals("INSUFFICIENT_EVIDENCE", analysis.policyWeightScenarios().get(0).sensitivityLabel());
         assertEquals(0, analysis.counterfactualCandidateOutcomeCount());
+        assertEquals(0, analysis.factorWeightDeltaCount());
         assertTrue(analysis.reasonCodes().contains("COUNTERFACTUAL_ANALYSIS_INSUFFICIENT_EVIDENCE"));
     }
 
@@ -180,12 +193,13 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
         assertEquals("UNKNOWN", analysis.selectedCandidateId());
         assertEquals(0, analysis.policyWeightScenarioCount());
         assertEquals(0, analysis.counterfactualCandidateOutcomeCount());
+        assertEquals(0, analysis.factorWeightDeltaCount());
         assertEquals(0, analysis.candidateOutcomeCount());
         assertEquals(0, analysis.factorDeltaCount());
         assertTrue(analysis.limitationSignals()
                 .contains("computed Decision Explorer evidence was unavailable"));
         assertEquals("counterfactual:v1:UNKNOWN:UNKNOWN:UNKNOWN:quality=UNKNOWN:"
-                + "sufficiency=INSUFFICIENT:replay=UNKNOWN:scenarios=0:outcomes=0",
+                + "sufficiency=INSUFFICIENT:replay=UNKNOWN:scenarios=0:outcomes=0:factorWeightDeltas=0",
                 analysis.reproducibilityKey());
     }
 
@@ -219,6 +233,12 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
                         StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerCounterfactualCandidateOutcomeV1.java"),
+                        StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerCounterfactualFactorWeightDeltaEvaluator.java"),
+                        StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerCounterfactualFactorWeightDeltaV1.java"),
                         StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerCounterfactualAnalysisV1.java"), StandardCharsets.UTF_8);

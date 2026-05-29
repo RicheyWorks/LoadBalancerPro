@@ -219,6 +219,7 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("routeTradeoffFingerprint"));
         assertTrue(page.contains("replayReadinessFingerprint"));
         assertTrue(page.contains("shadowDecisionQuality"));
+        assertTrue(page.contains("shadowDecisionQualityExplanation"));
         assertTrue(page.contains("shadowDecisionQualityReasons"));
         assertTrue(page.contains("shadowDecisionQualityFingerprint"));
         assertTrue(page.contains("shadowDecisionQualityReproducibilityKey"));
@@ -364,6 +365,8 @@ class DecisionExplorerStaticPageTest {
                             containsString("shadow-decision-quality|v1|")))
                     .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.reproducibilityKey").exists())
                     .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.fingerprintInputs[0]").exists())
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.explanationText",
+                            containsString("Shadow decision-quality explanation is REVIEW_RECOMMENDED")))
                     .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.candidateOutcomeComparisons[0].candidateId",
                             is("green")))
                     .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.policySensitivityDiagnostic.diagnosticObject",

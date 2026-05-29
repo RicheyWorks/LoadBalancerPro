@@ -79,6 +79,8 @@ class DecisionExplorerPayloadV1Test {
         assertTrue(payload.shadowDecisionQualityEvaluation().diagnosticFingerprint()
                 .startsWith("shadow-decision-quality|v1|"));
         assertFalse(payload.shadowDecisionQualityEvaluation().reproducibilityKey().isBlank());
+        assertTrue(payload.shadowDecisionQualityEvaluation().explanationText()
+                .contains("Shadow decision-quality explanation is UNKNOWN"));
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertEquals("policy-health", payload.policyGateReadouts().get(0).gateId());
         assertEquals("candidate-a", payload.decisionDiffReadouts().get(0).baselineCandidateId());

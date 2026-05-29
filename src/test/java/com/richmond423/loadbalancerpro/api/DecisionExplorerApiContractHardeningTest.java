@@ -188,6 +188,8 @@ class DecisionExplorerApiContractHardeningTest {
         assertFalse(payload.at("/shadowDecisionQualityEvaluation/reproducibilityKey").asText().isBlank());
         assertTrue(payload.at("/shadowDecisionQualityEvaluation/fingerprintInputs").isArray());
         assertTrue(payload.at("/shadowDecisionQualityEvaluation/fingerprintInputs").size() > 0);
+        assertTrue(payload.at("/shadowDecisionQualityEvaluation/explanationText").asText()
+                .contains("Shadow decision-quality explanation is REVIEW_RECOMMENDED"));
         assertTrue(payload.at("/shadowDecisionQualityEvaluation/candidateOutcomeComparisons").isArray());
         assertEquals("green",
                 payload.at("/shadowDecisionQualityEvaluation/candidateOutcomeComparisons/0/candidateId")
@@ -278,6 +280,8 @@ class DecisionExplorerApiContractHardeningTest {
                 .startsWith("shadow-decision-quality|v1|"));
         assertFalse(json.at("/shadowDecisionQualityEvaluation/reproducibilityKey").asText().isBlank());
         assertTrue(json.at("/shadowDecisionQualityEvaluation/fingerprintInputs").isArray());
+        assertTrue(json.at("/shadowDecisionQualityEvaluation/explanationText").asText()
+                .contains("Shadow decision-quality explanation is UNKNOWN"));
         assertTrue(json.at("/shadowDecisionQualityEvaluation/candidateOutcomeComparisons").isArray());
         assertEquals(0, json.at("/shadowDecisionQualityEvaluation/candidateOutcomeComparisons").size());
         assertEquals("UNKNOWN",
@@ -329,6 +333,8 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals("UNKNOWN", json.at("/shadowDecisionQualityEvaluation/replayReadinessStatus").asText());
         assertTrue(json.at("/shadowDecisionQualityEvaluation/diagnosticFingerprint").asText()
                 .startsWith("shadow-decision-quality|v1|"));
+        assertTrue(json.at("/shadowDecisionQualityEvaluation/explanationText").asText()
+                .contains("computed Decision Explorer evidence was unavailable"));
         assertTrue(json.at("/shadowDecisionQualityEvaluation/unknowns").isArray());
         assertStringArrayContains(json.at("/shadowDecisionQualityEvaluation/unknowns"),
                 "shadow decision-quality input evidence was unavailable");

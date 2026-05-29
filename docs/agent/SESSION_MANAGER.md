@@ -8,40 +8,56 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T19:29-07:00
+Timestamp: 2026-05-28T19:55-07:00
 
 Goal name: LASE Routing Intelligence Phase 4
 
-Current PR slot: LASE-P4-G08
+Current PR slot: LASE-P4-G09
 
-Checkpoint: LASE-P4-G08 shadow decision-quality explanation synthesis PR #412 opened; current-head checks pending
+Checkpoint: LASE-P4-G09 compatibility/regression hardening local verification passed; PR pending
 
 Started from main SHA: `144be5daa22e52295ad3e3d1e69fbe60b49be396`
 
-Current branch: codex/lase-phase4-quality-explanations
+Current branch: codex/lase-phase4-compatibility-regression
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/412
+PR URL: pending
 
-PR creation head: `8710bddeb6a960ee0de31c71451e25dd4c8a6381`
+PR creation head: pending
 
-Current branch head: `8710bddeb6a960ee0de31c71451e25dd4c8a6381`
+Current branch head: `1aa09443d7e8e3bc3aab0f869a78a992d5f566b0` plus uncommitted LASE-P4-G09 regression
+hardening tests and checkpoint updates
 
 Changed files for this slice:
 
+- docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityEvaluationV1.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityService.java
-- src/main/resources/static/decision-explorer.html
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerApiContractHardeningTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadServiceTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1Test.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityServiceTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerStaticPageTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/RoutingControllerTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/RoutingOpenApiContractTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest.java
 
 Checks run:
 
+- LASE-P4-G09 branch `codex/lase-phase4-compatibility-regression` was created from clean synced main at
+  `1aa09443d7e8e3bc3aab0f869a78a992d5f566b0`.
+- LASE-P4-G09 adds executable compatibility/regression coverage for additive shadow decision-quality JSON field order,
+  deterministic fixture fingerprints, unknown fallback arrays/fingerprint fields, and no-overclaim/no-routing-mutation
+  boundaries. This test-harness slice remains read-only and does not change production routing/scoring/proxy behavior.
+- LASE-P4-G09 logged one Windows wildcard `rg` tooling failure in `docs/agent/FAILURE_LOG.md`; subsequent explicit
+  file discovery succeeded.
+- LASE-P4-G09 focused regression expectation failures were logged in `docs/agent/FAILURE_LOG.md` while calibrating the
+  test to actual safe fallback behavior; the final focused rerun passed:
+  `mvn -q "-Dtest=DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest" test`.
+- LASE-P4-G09 broader Decision Explorer/API/static selector passed:
+  `mvn -q "-Dtest=DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest,DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`.
+- LASE-P4-G09 full local verification passed on the current working tree: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,785 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P4-G08 PR #412 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency
+  Review was not failing.
+- LASE-P4-G08 merged as `1aa09443d7e8e3bc3aab0f869a78a992d5f566b0`.
+- LASE-P4-G08 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,784 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P4-G08 main CI and CodeQL passed for `1aa09443d7e8e3bc3aab0f869a78a992d5f566b0`; Dependency Review was not
+  failing.
 - LASE-P4-G08 adds additive `explanationText` to `shadowDecisionQualityEvaluation` and generates it from computed
   quality label, selected candidate, candidate outcomes, policy sensitivity, scenario-input quality, evidence
   sufficiency, replay-readiness, and reproducibility-key fields. The slice remains read-only and does not change

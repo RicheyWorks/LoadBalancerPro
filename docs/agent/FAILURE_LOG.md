@@ -6,6 +6,27 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-29T10:55-07:00
+
+Branch/PR: codex/lase-phase5-policy-weight-sensitivity / no PR yet
+
+Failure type: focused local test expectation calibration
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerCounterfactualAnalysisServiceTest" test`
+
+Suspected cause: the PR2 policy-weight scenario model intentionally changes the counterfactual foundation from zero
+policy-weight scenarios to a bounded local scenario set, while the existing foundation test still asserted
+`policyWeightScenarioCount == 0`.
+
+Fix attempted: update the counterfactual analysis assertions to verify the computed bounded scenario rows and add
+focused tests for the new policy-weight scenario builder.
+
+Result: focused counterfactual rerun passed after updating scenario-count assertions and source safety coverage.
+
+Follow-up action: include the counterfactual-focused selector in the broader PR2 verification set.
+
+## Entry
+
 Date/time: 2026-05-29T01:14-07:00
 
 Branch/PR: codex/modularity-route-tradeoff-fingerprint-builders / PR #424

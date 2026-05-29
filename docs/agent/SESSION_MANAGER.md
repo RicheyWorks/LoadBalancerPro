@@ -8,37 +8,59 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-29T11:33-07:00
+Timestamp: 2026-05-29T11:59-07:00
 
 Goal name: LASE Routing Intelligence Phase 5 - Local Counterfactual Decision Analysis and Policy-Weight Sensitivity
 
-Current PR slot: LASE-P5-PR3
+Current PR slot: LASE-P5-PR4
 
-Checkpoint: LASE-P5-PR3 PR opened; awaiting remote checks
+Checkpoint: LASE-P5-PR4 local verification passed; ready to stage and commit
 
 Started from main SHA: `dbbef3510708698297e82cf6d1209810e93b9c55`
 
-Current branch: codex/lase-phase5-counterfactual-candidate-outcomes
+Current branch: codex/lase-phase5-factor-weight-deltas
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/430
+PR URL: pending
 
-PR creation head: `7eb5ee51a4e0afcd914e9e75691898cec09c7f24`
+PR creation head: pending
 
-Current branch head: `7eb5ee51a4e0afcd914e9e75691898cec09c7f24` at PR opening; PR-created checkpoint commit is pending.
+Current branch head: `7b11212a53c839ef473a8d3d7f47e926ce22869f` before commit; LASE-P5-PR4 local verification passed.
 
 Changed files for this slice:
 
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualAnalysisV1.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualAnalysisService.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualCandidateOutcomeEvaluator.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualCandidateOutcomeV1.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualAnalysisServiceTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualCandidateOutcomeEvaluatorTest.java
-- docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
+- docs/agent/FAILURE_LOG.md
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualAnalysisService.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualAnalysisV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualFactorWeightDeltaEvaluator.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualFactorWeightDeltaV1.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualAnalysisServiceTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualFactorWeightDeltaEvaluatorTest.java
 
 Checks run:
 
+- LASE-P5-PR3 PR #430 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, CodeQL, and
+  Dependency Review was success/skipped and not failing.
+- LASE-P5-PR3 merged as `7b11212a53c839ef473a8d3d7f47e926ce22869f`.
+- LASE-P5-PR3 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, redirected-output `mvn -B package` with 2,862 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P5-PR3 main CI and CodeQL passed for `7b11212a53c839ef473a8d3d7f47e926ce22869f`; Dependency Review was not
+  failing.
+- LASE-P5-PR4 branch `codex/lase-phase5-factor-weight-deltas` was created from clean synced main at
+  `7b11212a53c839ef473a8d3d7f47e926ce22869f`.
+- LASE-P5-PR4 is adding local-only counterfactual factor-weight deltas as a focused collaborator that derives factor
+  sensitivity from existing route tradeoff factor deltas and policy-weight scenarios without changing production
+  routing, scoring, proxying, replay execution, storage, export, or traffic shifting.
+- LASE-P5-PR4 focused counterfactual selector initially failed on a stale test helper constant and fixture expectation
+  calibration; both failures were logged in `docs/agent/FAILURE_LOG.md` and corrected.
+- LASE-P5-PR4 focused verification passed:
+  `mvn -q "-Dtest=DecisionExplorerCounterfactualFactorWeightDeltaEvaluatorTest,DecisionExplorerCounterfactualAnalysisServiceTest" test`.
+- LASE-P5-PR4 broader Decision Explorer/API/modularity selector passed:
+  `mvn -q "-Dtest=DecisionExplorerCounterfactualFactorWeightDeltaEvaluatorTest,DecisionExplorerCounterfactualAnalysisServiceTest,DecisionExplorerCounterfactualCandidateOutcomeEvaluatorTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerModularityRegressionTest,DecisionExplorerDiagnosticListSupportTest,DecisionExplorerDiagnosticFingerprintSupportTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`.
+- LASE-P5-PR4 full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  redirected-output `mvn -B package` with 2,867 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
 - LASE-P5-PR1 PR #428 current-head checks passed: Build/Test/Package/Smoke and CodeQL; Dependency Review was not
   failing.
 - LASE-P5-PR1 merged as `b401e28351613e17f496e2ed074eea76dbe1def5`.

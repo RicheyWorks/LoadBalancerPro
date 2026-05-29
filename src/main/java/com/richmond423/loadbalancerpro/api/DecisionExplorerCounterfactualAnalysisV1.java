@@ -21,6 +21,8 @@ public record DecisionExplorerCounterfactualAnalysisV1(
         int policyWeightScenarioCount,
         List<DecisionExplorerCounterfactualCandidateOutcomeV1> counterfactualCandidateOutcomes,
         int counterfactualCandidateOutcomeCount,
+        List<DecisionExplorerCounterfactualFactorWeightDeltaV1> factorWeightDeltas,
+        int factorWeightDeltaCount,
         int candidateOutcomeCount,
         int factorDeltaCount,
         String summaryText,
@@ -75,6 +77,8 @@ public record DecisionExplorerCounterfactualAnalysisV1(
         counterfactualCandidateOutcomes =
                 DecisionExplorerDiagnosticListSupport.copyNonNull(counterfactualCandidateOutcomes);
         counterfactualCandidateOutcomeCount = counterfactualCandidateOutcomes.size();
+        factorWeightDeltas = DecisionExplorerDiagnosticListSupport.copyNonNull(factorWeightDeltas);
+        factorWeightDeltaCount = factorWeightDeltas.size();
         candidateOutcomeCount = Math.max(0, candidateOutcomeCount);
         factorDeltaCount = Math.max(0, factorDeltaCount);
         summaryText = DecisionExplorerDtoSupport.valueOrUnknown(summaryText);
@@ -109,6 +113,8 @@ public record DecisionExplorerCounterfactualAnalysisV1(
                 "policyWeightScenarioCount=0",
                 "counterfactualCandidateOutcomes=[]",
                 "counterfactualCandidateOutcomeCount=0",
+                "factorWeightDeltas=[]",
+                "factorWeightDeltaCount=0",
                 "candidateOutcomeCount=0",
                 "factorDeltaCount=0");
         return new DecisionExplorerCounterfactualAnalysisV1(
@@ -130,6 +136,8 @@ public record DecisionExplorerCounterfactualAnalysisV1(
                 0,
                 List.of(),
                 0,
+                List.of(),
+                0,
                 0,
                 0,
                 "Counterfactual analysis is UNKNOWN because computed Decision Explorer evidence was unavailable; "
@@ -144,7 +152,7 @@ public record DecisionExplorerCounterfactualAnalysisV1(
                 DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
                 FINGERPRINT_NAMESPACE + "|" + String.join("|", fingerprintInputs),
                 "counterfactual:v1:UNKNOWN:UNKNOWN:UNKNOWN:quality=UNKNOWN:sufficiency=INSUFFICIENT:"
-                        + "replay=UNKNOWN:scenarios=0:outcomes=0",
+                        + "replay=UNKNOWN:scenarios=0:outcomes=0:factorWeightDeltas=0",
                 fingerprintInputs,
                 boundaryNote);
     }

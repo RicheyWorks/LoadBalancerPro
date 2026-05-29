@@ -6,6 +6,26 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-29T00:38-07:00
+
+Branch/PR: codex/modularity-replay-readiness-evaluator / no PR yet
+
+Failure type: local tooling/PR creation command failure
+
+Failing check: `gh pr create --title "Extract replay readiness evaluator" --body @- --base main --head codex/modularity-replay-readiness-evaluator`
+
+Suspected cause: PowerShell parsed `@-` as invalid syntax before the GitHub CLI received the body argument.
+
+Fix attempted: retry PR creation with a PowerShell-safe multiline body variable, then edit the PR body to remove the
+bad shell-parsed control character from the smoke-command line.
+
+Result: PR #423 was opened successfully at https://github.com/RicheyWorks/LoadBalancerPro/pull/423 and the PR body
+was repaired.
+
+Follow-up action: prefer `--body-file` for multiline PR bodies in this PowerShell session.
+
+## Entry
+
 Date/time: 2026-05-29T00:04-07:00
 
 Branch/PR: codex/modularity-evidence-sufficiency-evaluator / PR #422

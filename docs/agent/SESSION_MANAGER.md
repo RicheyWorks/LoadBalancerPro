@@ -8,23 +8,23 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T17:05-07:00
+Timestamp: 2026-05-28T17:23-07:00
 
 Goal name: LASE Routing Intelligence Phase 4
 
 Current PR slot: LASE-P4-G04
 
-Checkpoint: LASE-P4-G03 merged-main-green; LASE-P4-G04 scenario-input quality branch created
+Checkpoint: LASE-P4-G04 PR #408 opened; current-head checks pending
 
 Started from main SHA: `144be5daa22e52295ad3e3d1e69fbe60b49be396`
 
 Current branch: codex/lase-phase4-scenario-input-quality
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/408
 
-PR creation head: pending
+PR creation head: `33078f25839b842c902d7a2efe12e659ba2eaaaa`
 
-Current branch head: `7dc86d943cffca61ca6836adc23a8e05d142042c` plus this uncommitted branch-created checkpoint
+Current branch head: `33078f25839b842c902d7a2efe12e659ba2eaaaa` plus this uncommitted PR-created checkpoint
 
 Changed files for this slice:
 
@@ -61,6 +61,8 @@ Checks run:
 - LASE-P4-G04 full local verification passed before commit/PR creation: `mvn -q test`,
   `mvn -q "-DskipTests" package`, `mvn -B package` with 2,783 tests, `git diff --check`,
   `git diff --cached --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P4-G04 committed as `33078f25839b842c902d7a2efe12e659ba2eaaaa`, pushed to origin, and opened as
+  PR #408: https://github.com/RicheyWorks/LoadBalancerPro/pull/408.
 
 LASE-P4-G03 changed files:
 

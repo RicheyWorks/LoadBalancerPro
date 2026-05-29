@@ -8,24 +8,23 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T19:55-07:00
+Timestamp: 2026-05-28T19:56-07:00
 
 Goal name: LASE Routing Intelligence Phase 4
 
 Current PR slot: LASE-P4-G09
 
-Checkpoint: LASE-P4-G09 compatibility/regression hardening local verification passed; PR pending
+Checkpoint: LASE-P4-G09 compatibility/regression hardening PR #413 opened; current-head checks pending
 
 Started from main SHA: `144be5daa22e52295ad3e3d1e69fbe60b49be396`
 
 Current branch: codex/lase-phase4-compatibility-regression
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/413
 
-PR creation head: pending
+PR creation head: `c552122c78a2d4e1d980505be43ff0f60c219046`
 
-Current branch head: `1aa09443d7e8e3bc3aab0f869a78a992d5f566b0` plus uncommitted LASE-P4-G09 regression
-hardening tests and checkpoint updates
+Current branch head: `c552122c78a2d4e1d980505be43ff0f60c219046`
 
 Changed files for this slice:
 
@@ -50,6 +49,10 @@ Checks run:
 - LASE-P4-G09 full local verification passed on the current working tree: `mvn -q test`,
   `mvn -q "-DskipTests" package`, `mvn -B package` with 2,785 tests, `git diff --check`, and
   `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- `git diff --cached --check` passed after staging the LASE-P4-G09 slice.
+- LASE-P4-G09 committed as `c552122c78a2d4e1d980505be43ff0f60c219046`, pushed to origin, and opened as
+  PR #413: https://github.com/RicheyWorks/LoadBalancerPro/pull/413.
+- Current-head PR checks are pending for PR #413 after PR creation.
 - LASE-P4-G08 PR #412 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency
   Review was not failing.
 - LASE-P4-G08 merged as `1aa09443d7e8e3bc3aab0f869a78a992d5f566b0`.

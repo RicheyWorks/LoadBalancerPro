@@ -6,6 +6,47 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-28T23:50-07:00
+
+Branch/PR: codex/modularity-evidence-sufficiency-evaluator / no PR yet
+
+Failure type: focused test assertion calibration failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerEvidenceSufficiencyEvaluatorTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerRouteTradeoffCompatibilityRegressionTest" test`
+
+Suspected cause: the new isolated evaluator test expected a degraded readiness score of 45, but the preserved logic
+still counts selected candidate evidence, candidate rows, complete score evidence, factor deltas, and source references
+before applying the existing degraded-evidence penalty, producing score 55.
+
+Fix attempted: update the test assertion to the preserved computed score while keeping the degraded-level and
+readiness-fallback expectations unchanged.
+
+Result: the assertion was corrected and the focused selector passed on rerun.
+
+Follow-up action: use the existing end-to-end route-tradeoff expectations as the source of truth when calibrating
+isolated extracted-collaborator tests.
+
+## Entry
+
+Date/time: 2026-05-28T23:40-07:00
+
+Branch/PR: codex/modularity-evidence-sufficiency-evaluator / no PR yet
+
+Failure type: local tooling/search command failure
+
+Failing check: `rg -n "static .*comparedAlternativeCount|comparedAlternativeCount\\(" src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffService.java src/main/java/com/richmond423/loadbalancerpro/api/*.java`
+
+Suspected cause: PowerShell passed the wildcard Java file path literally on Windows, and `rg` reported the wildcard
+path as invalid.
+
+Fix attempted: continue with explicit file paths and targeted file reads.
+
+Result: evidence sufficiency extraction proceeded from explicit route-tradeoff service inspection.
+
+Follow-up action: keep Windows `rg` calls on explicit paths or search directories instead of wildcard file paths.
+
+## Entry
+
 Date/time: 2026-05-28T22:43-07:00
 
 Branch/PR: codex/modularity-route-tradeoff-row-builders / no PR yet

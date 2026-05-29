@@ -8,34 +8,60 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T23:31-07:00
+Timestamp: 2026-05-28T23:56-07:00
 
 Goal name: Decision Explorer / LASE Codebase Modularity Refactor Phase 1
 
-Current PR slot: MOD-P1-G07
+Current PR slot: MOD-P1-G08
 
-Checkpoint: MOD-P1-G07 PR opened; factor tradeoff delta extraction awaiting remote checks
+Checkpoint: MOD-P1-G08 local verification passed; evidence sufficiency evaluator extraction ready for staging
 
-Started from main SHA: `8b0a928a934e6a4904286cbcce19595f70619756`
+Started from main SHA: `eef93db0b9b1b9aa4dc6b2afe924ff7dda2f6415`
 
-Current branch: codex/modularity-factor-tradeoff-delta-builder
+Current branch: codex/modularity-evidence-sufficiency-evaluator
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/421
+PR URL: not opened yet
 
-PR creation head: `e0cc0fd96d564bb125f878aef0717a010f69966c`
+PR creation head: not created yet
 
-Current branch head: PR checkpoint commit pending push.
+Current branch head: local refactor commit created; push pending.
 
 Changed files for this slice:
 
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffService.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerFactorTradeoffDeltaBuilder.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerEvidenceSufficiencyEvaluator.java
 - src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffServiceTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerFactorTradeoffDeltaBuilderTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerEvidenceSufficiencyEvaluatorTest.java
+- docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
 
 Checks run:
 
+- MOD-P1-G08 branch `codex/modularity-evidence-sufficiency-evaluator` was created from clean synced main at
+  `eef93db0b9b1b9aa4dc6b2afe924ff7dda2f6415`.
+- MOD-P1-G08 extracted evidence sufficiency construction into `DecisionExplorerEvidenceSufficiencyEvaluator`, reducing
+  `DecisionExplorerRouteTradeoffService` from 1,045 lines to 663 lines while preserving sufficiency levels,
+  readiness scores, present/partial/missing/degraded/unknown evidence signals, fingerprint inputs, reproducibility
+  keys, replay-readiness consumers, and production routing behavior.
+- MOD-P1-G08 added focused evaluator tests for `REPLAY_STYLE_READY`, `BASIC_DIAGNOSTICS_ONLY`, `DEGRADED`, and
+  `INSUFFICIENT` summaries with deterministic fingerprint/fallback assertions.
+- MOD-P1-G08 logged one Windows wildcard `rg` search failure and one test assertion calibration failure in
+  `docs/agent/FAILURE_LOG.md`; both were resolved without behavior changes.
+- MOD-P1-G08 focused verification passed:
+  `mvn -q "-Dtest=DecisionExplorerEvidenceSufficiencyEvaluatorTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerRouteTradeoffCompatibilityRegressionTest" test`.
+- MOD-P1-G08 broader Decision Explorer/API/static selector passed:
+  `mvn -q "-Dtest=DecisionExplorerEvidenceSufficiencyEvaluatorTest,DecisionExplorerFactorTradeoffDeltaBuilderTest,DecisionExplorerRouteTradeoffRowBuilderTest,DecisionExplorerCandidateTradeoffScoringBuilderTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerRouteTradeoffCompatibilityRegressionTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`.
+- MOD-P1-G08 full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  `mvn -B package` with 2,827 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- MOD-P1-G07 PR #421 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency
+  Review was success/skipped and not failing.
+- MOD-P1-G07 merged as `eef93db0b9b1b9aa4dc6b2afe924ff7dda2f6415`.
+- MOD-P1-G07 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,823 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- MOD-P1-G07 main CI and CodeQL passed for `eef93db0b9b1b9aa4dc6b2afe924ff7dda2f6415`; Dependency Review was not
+  failing.
 - MOD-P1-G07 branch `codex/modularity-factor-tradeoff-delta-builder` was created from clean synced main at
   `8b0a928a934e6a4904286cbcce19595f70619756`.
 - MOD-P1-G07 extracted factor tradeoff delta construction into `DecisionExplorerFactorTradeoffDeltaBuilder`, reducing

@@ -317,6 +317,8 @@ class DecisionExplorerRouteTradeoffServiceTest {
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerFactorTradeoffDeltaBuilder.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerEvidenceSufficiencyEvaluator.java"), StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerCandidateTradeoffScoringExplanationV1.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerRouteTradeoffAnalysisV1.java"), StandardCharsets.UTF_8)

@@ -6,6 +6,27 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-28T17:12-07:00
+
+Branch/PR: codex/lase-phase4-scenario-input-quality / no PR yet
+
+Failure type: focused test expectation/rule failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerShadowDecisionQualityServiceTest" test`
+
+Suspected cause: the new scenario-input quality diagnostic treated generic warning-style signals from partial
+alternative evidence as degraded input, so an unknown-alternative fixture was classified as `DEGRADED_INPUT` instead
+of the intended conservative `PARTIAL_INPUT`.
+
+Fix attempted: narrowed degraded scenario-input detection to actual degraded statuses, degraded evidence signals,
+degradation reasons, and degraded selected-candidate outcomes.
+
+Result: focused selector rerun passed.
+
+Follow-up action: continue broader local verification for the slice.
+
+## Entry
+
 Date/time:
 
 Branch/PR:

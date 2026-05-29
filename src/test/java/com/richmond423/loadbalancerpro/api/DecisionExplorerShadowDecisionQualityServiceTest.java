@@ -42,6 +42,16 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals(15, evaluation.policySensitivityDiagnostic().sensitivityScore());
         assertTrue(evaluation.policySensitivityDiagnostic().stableSignals()
                 .contains("selected candidate has route tradeoff advantage"));
+        assertEquals("EVALUABLE", evaluation.scenarioInputQuality().inputQualityLabel());
+        assertEquals("HIGH", evaluation.scenarioInputQuality().supportBand());
+        assertEquals(100, evaluation.scenarioInputQuality().inputQualityScore());
+        assertEquals(2, evaluation.scenarioInputQuality().candidateEvidenceCount());
+        assertEquals(1, evaluation.scenarioInputQuality().factorEvidenceCount());
+        assertEquals(0, evaluation.scenarioInputQuality().missingSignalCount());
+        assertTrue(evaluation.scenarioInputQuality().candidateInputSignals()
+                .contains("candidateOutcomeCount=2"));
+        assertTrue(evaluation.scenarioInputQuality().factorInputSignals()
+                .contains("factorEvidenceCount=1"));
         assertTrue(evaluation.evidenceBasis().contains("routeTradeoffCategory=SELECTED_ADVANTAGE"));
         assertTrue(evaluation.evidenceBasis().contains("replayExecutionAvailable=false"));
         assertTrue(evaluation.selectedCandidateBasis().contains("selectedCandidateId=edge-a"));
@@ -130,6 +140,12 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("UNKNOWN_GAP", unknownAlternative.scoreGapCategory());
         assertEquals("MEDIUM", evaluation.policySensitivityDiagnostic().sensitivityLevel());
         assertEquals("MISSING_EVIDENCE", evaluation.policySensitivityDiagnostic().sensitivityCategory());
+        assertEquals("PARTIAL_INPUT", evaluation.scenarioInputQuality().inputQualityLabel());
+        assertEquals("MEDIUM", evaluation.scenarioInputQuality().supportBand());
+        assertTrue(evaluation.scenarioInputQuality().partialInputSignals()
+                .contains("candidate edge-b alternative comparison is unknown"));
+        assertTrue(evaluation.scenarioInputQuality().missingInputSignals()
+                .contains("candidate score evidence unknown"));
         assertTrue(evaluation.policySensitivityDiagnostic().missingEvidenceSignals()
                 .contains("candidate edge-b has unknown alternative outcome evidence"));
         assertTrue(unknownAlternative.unknownSignals().contains("candidate score evidence unknown"));
@@ -152,6 +168,9 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals(0, evaluation.candidateOutcomeCount());
         assertTrue(evaluation.candidateOutcomeComparisons().isEmpty());
         assertEquals("UNKNOWN", evaluation.policySensitivityDiagnostic().sensitivityLevel());
+        assertEquals("UNKNOWN", evaluation.scenarioInputQuality().inputQualityLabel());
+        assertEquals(0, evaluation.scenarioInputQuality().candidateEvidenceCount());
+        assertEquals(0, evaluation.scenarioInputQuality().factorEvidenceCount());
         assertTrue(evaluation.evidenceBasis().isEmpty());
         assertTrue(evaluation.selectedCandidateBasis().isEmpty());
         assertTrue(evaluation.unknowns().contains("shadow decision-quality input evidence was unavailable"));
@@ -201,11 +220,93 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertEquals("INSUFFICIENT", evaluation.evidenceSufficiencyLevel());
         assertEquals("UNKNOWN", evaluation.replayReadinessStatus());
         assertEquals("UNKNOWN", evaluation.policySensitivityDiagnostic().sensitivityLevel());
+        assertEquals("UNKNOWN", evaluation.scenarioInputQuality().inputQualityLabel());
         assertEquals(0, evaluation.evidenceBasisCount());
         assertEquals(0, evaluation.selectedCandidateBasisCount());
         assertTrue(evaluation.candidateOutcomeComparisons().isEmpty());
         assertTrue(evaluation.evidenceBasis().isEmpty());
         assertTrue(evaluation.qualityReasons().isEmpty());
+    }
+
+    @Test
+    void missingCandidateInputIsClassifiedWithoutInventingScenarioEvidence() {
+        DecisionExplorerShadowDecisionQualityEvaluationV1 evaluation = evaluate(missingCandidateInput());
+
+        assertEquals("MISSING_CANDIDATE_INPUT", evaluation.scenarioInputQuality().inputQualityLabel());
+        assertEquals("INSUFFICIENT", evaluation.scenarioInputQuality().supportBand());
+        assertEquals(35, evaluation.scenarioInputQuality().inputQualityScore());
+        assertEquals(0, evaluation.scenarioInputQuality().candidateEvidenceCount());
+        assertEquals(1, evaluation.scenarioInputQuality().factorEvidenceCount());
+        assertTrue(evaluation.scenarioInputQuality().missingInputSignals()
+                .contains("candidate input evidence was unavailable"));
+        assertTrue(evaluation.scenarioInputQuality().reasonCodes()
+                .contains("SHADOW_SCENARIO_INPUT_CANDIDATE_EVIDENCE_MISSING"));
+        assertTrue(evaluation.qualityReasons().contains("SHADOW_SCENARIO_INPUT_QUALITY_MISSING_CANDIDATE_INPUT"));
+    }
+
+    @Test
+    void missingFactorInputIsClassifiedSeparatelyFromCandidateInputs() {
+        DecisionExplorerShadowDecisionQualityEvaluationV1 evaluation = evaluate(missingFactorInput());
+
+        assertEquals("MISSING_FACTOR_INPUT", evaluation.scenarioInputQuality().inputQualityLabel());
+        assertEquals("INSUFFICIENT", evaluation.scenarioInputQuality().supportBand());
+        assertEquals(35, evaluation.scenarioInputQuality().inputQualityScore());
+        assertEquals(2, evaluation.scenarioInputQuality().candidateEvidenceCount());
+        assertEquals(0, evaluation.scenarioInputQuality().factorEvidenceCount());
+        assertTrue(evaluation.scenarioInputQuality().candidateInputSignals()
+                .contains("candidateOutcomeCount=2"));
+        assertTrue(evaluation.scenarioInputQuality().missingInputSignals()
+                .contains("factor input evidence was unavailable"));
+        assertTrue(evaluation.scenarioInputQuality().reasonCodes()
+                .contains("SHADOW_SCENARIO_INPUT_FACTOR_EVIDENCE_MISSING"));
+    }
+
+    @Test
+    void scenarioInputQualityDtoNormalizesInvalidValuesToSafeFallbacks() {
+        DecisionExplorerShadowScenarioInputQualityV1 quality =
+                new DecisionExplorerShadowScenarioInputQualityV1(
+                        false,
+                        false,
+                        "",
+                        "",
+                        "INVALID",
+                        "INVALID",
+                        250,
+                        "",
+                        "INVALID",
+                        "INVALID",
+                        "INVALID",
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        -1,
+                        "",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        "");
+
+        assertTrue(quality.readOnly());
+        assertTrue(quality.simulationOnly());
+        assertEquals("DecisionExplorerShadowScenarioInputQualityV1", quality.evaluationObject());
+        assertEquals("v1", quality.contractVersion());
+        assertEquals("UNKNOWN", quality.inputQualityLabel());
+        assertEquals("UNKNOWN", quality.supportBand());
+        assertEquals(100, quality.inputQualityScore());
+        assertEquals("UNKNOWN", quality.selectedCandidateId());
+        assertEquals("UNKNOWN", quality.confidenceStatus());
+        assertEquals("INSUFFICIENT", quality.evidenceSufficiencyLevel());
+        assertEquals("UNKNOWN", quality.replayReadinessStatus());
+        assertEquals(0, quality.candidateEvidenceCount());
+        assertEquals(0, quality.factorEvidenceCount());
+        assertTrue(quality.missingInputSignals().isEmpty());
+        assertEquals("UNKNOWN", quality.boundaryNote());
     }
 
     @Test
@@ -217,7 +318,9 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerShadowCandidateOutcomeV1.java"), StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
-                        + "DecisionExplorerShadowPolicySensitivityDiagnosticV1.java"), StandardCharsets.UTF_8);
+                        + "DecisionExplorerShadowPolicySensitivityDiagnosticV1.java"), StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerShadowScenarioInputQualityV1.java"), StandardCharsets.UTF_8);
         String normalized = source.toLowerCase(Locale.ROOT);
 
         for (String forbidden : List.of(
@@ -323,6 +426,101 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
                 List.of("candidate score evidence unknown"));
     }
 
+    private static FoundationFixture missingCandidateInput() {
+        DecisionExplorerConfidenceSummaryV1 summary = summary(
+                "STRONG",
+                "COMPLETE",
+                "UNKNOWN",
+                0,
+                0,
+                1,
+                0,
+                0,
+                List.of(),
+                List.of("candidate input evidence unavailable"));
+        DecisionExplorerRoutingDiagnosticsV1 diagnostics = new DecisionExplorerRoutingDiagnosticsV1(
+                true,
+                true,
+                DecisionExplorerRoutingDiagnosticsV1.DIAGNOSTICS_OBJECT,
+                DecisionExplorerRoutingDiagnosticsV1.CONTRACT_VERSION,
+                "STRONG",
+                "COMPLETE",
+                "UNKNOWN",
+                1,
+                1,
+                0,
+                1,
+                0,
+                0,
+                List.of(),
+                DecisionExplorerCandidateDiagnosticV1.unknownSelected(BOUNDARY_NOTE),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of("selected candidate input identity was unavailable"),
+                "diagnostics missing candidate input",
+                List.of("DIAGNOSTICS_STATUS_STRONG"),
+                List.of(),
+                List.of("candidate input evidence unavailable"),
+                List.of("routing-diagnostics"),
+                BOUNDARY_NOTE);
+        DecisionExplorerEvidenceSufficiencyV1 sufficiency =
+                sufficiency("BASIC_DIAGNOSTICS_ONLY", 40, 0, 0, 1);
+        DecisionExplorerRouteTradeoffAnalysisV1 tradeoff = tradeoff(
+                "STRONG",
+                "COMPLETE",
+                "NO_ALTERNATIVE",
+                "BASIC_DIAGNOSTICS_ONLY",
+                40,
+                "PARTIAL",
+                List.of(),
+                List.of(),
+                List.of("candidate input evidence unavailable"),
+                sufficiency);
+        return new FoundationFixture(summary, diagnostics, tradeoff);
+    }
+
+    private static FoundationFixture missingFactorInput() {
+        List<DecisionExplorerRouteTradeoffRowV1> rows = List.of(
+                row("edge-a", true, "SELECTED_BASELINE", "BASELINE", "STRONG", "LOW", 10.0, 0.0),
+                row("edge-b", false, "ALTERNATIVE_TRAILS_SELECTED", "SELECTED_ADVANTAGE", "STRONG",
+                        "LOW", 15.0, 5.0));
+        DecisionExplorerConfidenceSummaryV1 summary = summary(
+                "STRONG",
+                "COMPLETE",
+                "edge-a",
+                2,
+                2,
+                0,
+                0,
+                0,
+                List.of(),
+                List.of());
+        DecisionExplorerRoutingDiagnosticsV1 diagnostics = diagnostics(
+                "STRONG",
+                "COMPLETE",
+                candidateDiagnostic("edge-a", true, "STRONG", "LOW", "HEALTHY", 10.0, 0.0),
+                List.of(candidateDiagnostic("edge-b", false, "STRONG", "LOW", "HEALTHY", 15.0, 5.0)),
+                List.of(),
+                List.of());
+        DecisionExplorerEvidenceSufficiencyV1 sufficiency =
+                sufficiency("TRADEOFF_READY", 75, 2, 1, 0);
+        DecisionExplorerRouteTradeoffAnalysisV1 tradeoff = tradeoff(
+                "STRONG",
+                "COMPLETE",
+                "SELECTED_ADVANTAGE",
+                "TRADEOFF_READY",
+                75,
+                "PARTIAL",
+                rows,
+                List.of(),
+                List.of(),
+                sufficiency);
+        return new FoundationFixture(summary, diagnostics, tradeoff);
+    }
+
     private static FoundationFixture fixture(
             String status,
             String evidenceQuality,
@@ -361,11 +559,7 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
             String evidenceQuality,
             List<String> warnings,
             List<String> unknowns) {
-        return new DecisionExplorerConfidenceSummaryV1(
-                true,
-                true,
-                DecisionExplorerConfidenceSummaryV1.SUMMARY_OBJECT,
-                DecisionExplorerConfidenceSummaryV1.CONTRACT_VERSION,
+        return summary(
                 status,
                 evidenceQuality,
                 "edge-a",
@@ -374,6 +568,34 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
                 "DEGRADED".equals(status) ? 0 : 1,
                 "PARTIAL".equals(status) ? 1 : 0,
                 "UNKNOWN".equals(status) ? 1 : 0,
+                warnings,
+                unknowns);
+    }
+
+    private static DecisionExplorerConfidenceSummaryV1 summary(
+            String status,
+            String evidenceQuality,
+            String selectedCandidateId,
+            int candidateCount,
+            int candidateComparisonCount,
+            int availableFactorCount,
+            int partialFactorCount,
+            int unknownFactorCount,
+            List<String> warnings,
+            List<String> unknowns) {
+        return new DecisionExplorerConfidenceSummaryV1(
+                true,
+                true,
+                DecisionExplorerConfidenceSummaryV1.SUMMARY_OBJECT,
+                DecisionExplorerConfidenceSummaryV1.CONTRACT_VERSION,
+                status,
+                evidenceQuality,
+                selectedCandidateId,
+                candidateCount,
+                candidateComparisonCount,
+                availableFactorCount,
+                partialFactorCount,
+                unknownFactorCount,
                 warnings.size(),
                 unknowns.size(),
                 2,
@@ -438,11 +660,35 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
             List<DecisionExplorerRouteTradeoffRowV1> rows,
             List<String> warnings,
             List<String> unknowns) {
+        DecisionExplorerEvidenceSufficiencyV1 sufficiency = sufficiency(sufficiencyLevel, readinessScore);
+        return tradeoff(
+                status,
+                evidenceQuality,
+                tradeoffCategory,
+                sufficiencyLevel,
+                readinessScore,
+                replayStatus,
+                rows,
+                warnings,
+                unknowns,
+                sufficiency);
+    }
+
+    private static DecisionExplorerRouteTradeoffAnalysisV1 tradeoff(
+            String status,
+            String evidenceQuality,
+            String tradeoffCategory,
+            String sufficiencyLevel,
+            int readinessScore,
+            String replayStatus,
+            List<DecisionExplorerRouteTradeoffRowV1> rows,
+            List<String> warnings,
+            List<String> unknowns,
+            DecisionExplorerEvidenceSufficiencyV1 sufficiency) {
         DecisionExplorerRouteTradeoffRowV1 closestAlternative = rows.stream()
                 .filter(row -> !row.selected())
                 .findFirst()
                 .orElse(null);
-        DecisionExplorerEvidenceSufficiencyV1 sufficiency = sufficiency(sufficiencyLevel, readinessScore);
         DecisionExplorerReplayReadinessDiagnosticV1 replayReadiness = replayReadiness(
                 replayStatus,
                 sufficiency,
@@ -481,6 +727,15 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
     }
 
     private static DecisionExplorerEvidenceSufficiencyV1 sufficiency(String level, int readinessScore) {
+        return sufficiency(level, readinessScore, 2, 1, 1);
+    }
+
+    private static DecisionExplorerEvidenceSufficiencyV1 sufficiency(
+            String level,
+            int readinessScore,
+            int candidateEvidenceCount,
+            int comparableAlternativeCount,
+            int factorDeltaCount) {
         return new DecisionExplorerEvidenceSufficiencyV1(
                 true,
                 true,
@@ -492,9 +747,9 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
                 DecisionExplorerEvidenceSufficiencyV1.LEVEL_TRADEOFF_READY.equals(level)
                         || DecisionExplorerEvidenceSufficiencyV1.LEVEL_REPLAY_STYLE_READY.equals(level),
                 DecisionExplorerEvidenceSufficiencyV1.LEVEL_REPLAY_STYLE_READY.equals(level),
-                2,
-                1,
-                1,
+                candidateEvidenceCount,
+                comparableAlternativeCount,
+                factorDeltaCount,
                 0,
                 0,
                 0,

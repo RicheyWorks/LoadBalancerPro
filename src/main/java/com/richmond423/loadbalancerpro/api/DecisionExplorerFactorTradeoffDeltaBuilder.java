@@ -1,5 +1,7 @@
 package com.richmond423.loadbalancerpro.api;
 
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticListSupport.copyNonNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -264,15 +266,6 @@ final class DecisionExplorerFactorTradeoffDeltaBuilder {
 
     private static String observedValueOf(DecisionExplorerFactorDiagnosticV1 factor) {
         return factor == null ? "UNKNOWN" : factor.observedValueOrStatus();
-    }
-
-    private static <T> List<T> copyNonNull(List<T> values) {
-        if (values == null || values.isEmpty()) {
-            return List.of();
-        }
-        return values.stream()
-                .filter(value -> value != null)
-                .toList();
     }
 
     private static List<String> distinctSorted(Collection<String> values) {

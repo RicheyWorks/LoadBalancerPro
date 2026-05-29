@@ -1,7 +1,8 @@
 package com.richmond423.loadbalancerpro.api;
 
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticListSupport.copyNonNull;
+
 import java.util.List;
-import java.util.Objects;
 
 final class DecisionExplorerRouteTradeoffExplanationBuilder {
     String build(
@@ -52,11 +53,4 @@ final class DecisionExplorerRouteTradeoffExplanationBuilder {
                 .orElse("UNKNOWN");
     }
 
-    private static <T> List<T> copyNonNull(List<T> values) {
-        return values == null
-                ? List.of()
-                : values.stream()
-                        .filter(Objects::nonNull)
-                        .toList();
-    }
 }

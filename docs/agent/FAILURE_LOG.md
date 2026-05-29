@@ -2785,6 +2785,24 @@ Follow-up action: rerun the shadow decision-quality focused test after the DTO c
 
 ## Entry
 
+Date/time: 2026-05-29T03:46-07:00
+
+Branch/PR: codex/modularity-diagnostic-support-helpers / no PR yet
+
+Failure type: local search tooling invocation
+
+Failing check: `rg -n ... src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorer*Tradeoff* ...`
+
+Suspected cause: PowerShell passed wildcard path arguments to `rg` as literal invalid Windows paths.
+
+Fix attempted: use explicit directories or `rg --files`/`rg` path filters rather than wildcard path operands.
+
+Result: The parallel compile check `mvn -q "-DskipTests" test` passed; source search will be rerun with explicit paths.
+
+Follow-up action: continue the behavior-preserving helper extraction and avoid wildcard path operands with `rg`.
+
+## Entry
+
 Date/time: 2026-05-28T18:58-07:00
 
 Branch/PR: codex/lase-phase4-quality-fingerprints / no PR yet

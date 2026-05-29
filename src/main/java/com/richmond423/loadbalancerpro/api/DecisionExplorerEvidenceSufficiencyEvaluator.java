@@ -1,12 +1,14 @@
 package com.richmond423.loadbalancerpro.api;
 
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticFingerprintSupport.canonicalInputs;
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticFingerprintSupport.diagnosticFingerprint;
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticFingerprintSupport.fingerprintValue;
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticFingerprintSupport.input;
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticListSupport.copyNonNull;
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticListSupport.distinctSortedNormalizedWhitespace;
+
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 final class DecisionExplorerEvidenceSufficiencyEvaluator {
     DecisionExplorerEvidenceSufficiencyV1 build(
@@ -71,7 +73,7 @@ final class DecisionExplorerEvidenceSufficiencyEvaluator {
                 degradedEvidence);
         int readinessScore = readinessScore(selectedKnown, safeRows, comparableAlternativeCount,
                 scoreEvidenceComplete, factorDeltasPresent, routingDiagnostics, degradedEvidence);
-        List<String> sourceReferenceIds = distinctSorted(routingDiagnostics.sourceReferenceIds());
+        List<String> sourceReferenceIds = distinctSortedNormalizedWhitespace(routingDiagnostics.sourceReferenceIds());
         List<String> fingerprintInputs = fingerprintInputs(
                 level,
                 readinessScore,
@@ -193,7 +195,7 @@ final class DecisionExplorerEvidenceSufficiencyEvaluator {
         if (!routingDiagnostics.sourceReferenceIds().isEmpty()) {
             signals.add("source references are present");
         }
-        return distinctSorted(signals);
+        return distinctSortedNormalizedWhitespace(signals);
     }
 
     private static List<String> partialEvidenceSignals(
@@ -211,7 +213,7 @@ final class DecisionExplorerEvidenceSufficiencyEvaluator {
                 .map(delta -> "factor delta is unknown for " + delta.selectedCandidateId()
                         + " versus " + delta.alternativeCandidateId() + " on " + delta.factorName())
                 .forEach(signals::add);
-        return distinctSorted(signals);
+        return distinctSortedNormalizedWhitespace(signals);
     }
 
     private static List<String> missingEvidenceSignals(
@@ -240,7 +242,7 @@ final class DecisionExplorerEvidenceSufficiencyEvaluator {
         if (routingDiagnostics.sourceReferenceIds().isEmpty()) {
             signals.add("source reference evidence was not returned");
         }
-        return distinctSorted(signals);
+        return distinctSortedNormalizedWhitespace(signals);
     }
 
     private static List<String> degradedEvidenceSignals(
@@ -261,7 +263,7 @@ final class DecisionExplorerEvidenceSufficiencyEvaluator {
                 .map(delta -> "degraded factor delta for " + delta.selectedCandidateId()
                         + " versus " + delta.alternativeCandidateId() + " on " + delta.factorName())
                 .forEach(signals::add);
-        return distinctSorted(signals);
+        return distinctSortedNormalizedWhitespace(signals);
     }
 
     private static List<String> unknownEvidenceSignals(
@@ -282,7 +284,7 @@ final class DecisionExplorerEvidenceSufficiencyEvaluator {
                         .equals(delta.deltaClassification()))
                 .map(delta -> "factor tradeoff delta unknown for " + delta.factorName())
                 .forEach(signals::add);
-        return distinctSorted(signals);
+        return distinctSortedNormalizedWhitespace(signals);
     }
 
     private static String sufficiencyLevel(
@@ -354,7 +356,7 @@ final class DecisionExplorerEvidenceSufficiencyEvaluator {
         if (degradedEvidence) {
             reasons.add("DEGRADED_EVIDENCE_PRESENT");
         }
-        return distinctSorted(reasons);
+        return distinctSortedNormalizedWhitespace(reasons);
     }
 
     private static List<String> fingerprintInputs(
@@ -409,73 +411,4 @@ final class DecisionExplorerEvidenceSufficiencyEvaluator {
                 "factorDeltas=" + factorDeltaCount);
     }
 
-    private static String diagnosticFingerprint(String namespace, List<String> inputs) {
-        List<String> canonicalInputs = canonicalInputs(inputs);
-        String safeNamespace = namespace == null || namespace.isBlank()
-                ? "diagnostic|v1"
-                : namespace.trim().replace('\r', ' ').replace('\n', ' ').replaceAll("\\s+", " ");
-        if (canonicalInputs.isEmpty()) {
-            return safeNamespace + "|inputs=none";
-        }
-        return safeNamespace + "|" + String.join("|", canonicalInputs);
-    }
-
-    private static String input(String key, Object value) {
-        return fingerprintValue(key) + "=" + fingerprintValue(value);
-    }
-
-    private static List<String> canonicalInputs(Collection<String> values) {
-        if (values == null) {
-            return List.of();
-        }
-        return values.stream()
-                .filter(value -> value != null && !value.isBlank())
-                .map(DecisionExplorerEvidenceSufficiencyEvaluator::fingerprintValue)
-                .toList();
-    }
-
-    private static String fingerprintValue(Object value) {
-        if (value == null) {
-            return "null";
-        }
-        if (value instanceof Collection<?> collection) {
-            if (collection.isEmpty()) {
-                return "[]";
-            }
-            return collection.stream()
-                    .map(DecisionExplorerEvidenceSufficiencyEvaluator::fingerprintValue)
-                    .sorted()
-                    .collect(Collectors.joining(";"));
-        }
-        if (value instanceof Double number && !Double.isFinite(number)) {
-            return "null";
-        }
-        return String.valueOf(value)
-                .trim()
-                .replace('\r', ' ')
-                .replace('\n', ' ')
-                .replace('|', '/')
-                .replaceAll("\\s+", " ");
-    }
-
-    private static <T> List<T> copyNonNull(List<T> values) {
-        return values == null
-                ? List.of()
-                : values.stream()
-                        .filter(Objects::nonNull)
-                        .toList();
-    }
-
-    private static List<String> distinctSorted(Collection<String> values) {
-        if (values == null) {
-            return List.of();
-        }
-        Set<String> distinct = values.stream()
-                .filter(value -> value != null && !value.isBlank())
-                .map(value -> value.trim().replace('\r', ' ').replace('\n', ' ').replaceAll("\\s+", " "))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        return distinct.stream()
-                .sorted()
-                .toList();
-    }
 }

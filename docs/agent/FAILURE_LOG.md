@@ -2399,3 +2399,84 @@ Result: focused selector rerun passed after assertion updates. Broader `Decision
 selector also passed.
 
 Follow-up action: continue LASE-P4-G05 full local verification.
+
+## Entry
+
+Date/time: 2026-05-28T18:50-07:00
+
+Branch/PR: codex/lase-phase4-quality-fingerprints / no PR yet
+
+Failure type: local focused compile failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerShadowDecisionQualityServiceTest" test`
+
+Suspected cause: the shadow decision-quality unknown fallback was updated with additive fingerprint fields but still
+called the older compact DTO constructor shape.
+
+Fix attempted: update the unknown fallback to use the full DTO constructor with explicit empty candidate outcomes,
+unknown policy/scenario sub-objects, and deterministic fingerprint fields.
+
+Result: focused rerun passed after updating the unknown fallback constructor call.
+
+Follow-up action: rerun the shadow decision-quality focused test after the DTO constructor fix.
+
+## Entry
+
+Date/time: 2026-05-28T18:58-07:00
+
+Branch/PR: codex/lase-phase4-quality-fingerprints / no PR yet
+
+Failure type: local browser tooling variable collision
+
+Failing check: packaged Decision Explorer browser verification at `http://127.0.0.1:18082/decision-explorer.html`
+
+Suspected cause: the persistent browser automation session already had a `runButton` binding from earlier UI
+verification work.
+
+Fix attempted: rerun the browser verification using scoped local variables and the existing tab binding.
+
+Result: browser rerun reached the page, but follow-on verification used the wrong button label; logged below.
+
+Follow-up action: retry the packaged Decision Explorer UI verification and stop the temporary app process afterward.
+
+## Entry
+
+Date/time: 2026-05-28T18:58-07:00
+
+Branch/PR: codex/lase-phase4-quality-fingerprints / no PR yet
+
+Failure type: local browser verification locator mismatch
+
+Failing check: packaged Decision Explorer browser verification at `http://127.0.0.1:18082/decision-explorer.html`
+
+Suspected cause: the browser verification expected exactly one accessible button named `Run sample`, but the
+loaded page state did not expose that locator.
+
+Fix attempted: inspect the current browser page title, URL, and DOM snapshot excerpt before choosing the next stable
+interaction path.
+
+Result: browser inspection showed the packaged page exposes the button as `Run Decision Explorer`. Browser
+verification passed after using that label; the shadow decision-quality panel displayed the new fingerprint,
+reproducibility key, and fingerprint inputs from API data. The temporary app process on port 18082 was stopped.
+
+Follow-up action: continue local pre-PR verification and PR preparation.
+
+## Entry
+
+Date/time: 2026-05-28T18:59-07:00
+
+Branch/PR: codex/lase-phase4-quality-fingerprints / no PR yet
+
+Failure type: non-blocking browser tooling telemetry network error
+
+Failing check: packaged Decision Explorer browser verification at `http://127.0.0.1:18082/decision-explorer.html`
+
+Suspected cause: the browser automation runtime emitted a non-app Statsig networking error while returning the
+successful local page verification result.
+
+Fix attempted: no app fix required; verified the returned local page state showed the shadow decision-quality
+fingerprint, reproducibility key, and fingerprint inputs populated from same-origin API data.
+
+Result: browser verification passed despite the non-blocking telemetry error.
+
+Follow-up action: continue local pre-PR verification and PR preparation.

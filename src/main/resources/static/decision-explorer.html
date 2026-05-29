@@ -1369,6 +1369,10 @@
       ["Warnings", listText(evaluation.warnings)],
       ["Unknowns", listText(evaluation.unknowns)],
       ["Source refs", listText(evaluation.sourceReferenceIds)],
+      ["Fingerprint algorithm", value(evaluation.fingerprintAlgorithm)],
+      ["Diagnostic fingerprint", value(evaluation.diagnosticFingerprint)],
+      ["Reproducibility key", value(evaluation.reproducibilityKey)],
+      ["Fingerprint inputs", listText(evaluation.fingerprintInputs)],
       ["Boundary", value(evaluation.boundaryNote)]
     ]));
     target.append(wrapper);
@@ -2440,6 +2444,8 @@
       `shadowDecisionQuality: ${value(shadowQuality.qualityLabel)} / ${value(shadowQuality.qualityBand)}`
         + ` / score ${qualityScoreText(shadowQuality.qualityScore)}`,
       `shadowDecisionQualityReasons: ${listText(shadowQuality.qualityReasons)}`,
+      `shadowDecisionQualityFingerprint: ${value(shadowQuality.diagnosticFingerprint)}`,
+      `shadowDecisionQualityReproducibilityKey: ${value(shadowQuality.reproducibilityKey)}`,
       `candidateOutcomeCount: ${shadowQuality.candidateOutcomeCount == null ? 0 : shadowQuality.candidateOutcomeCount}`,
       `policySensitivity: ${value(policySensitivity.sensitivityLevel)} / ${value(policySensitivity.sensitivityCategory)}`,
       `scenarioInputQuality: ${value(scenarioInputQuality.inputQualityLabel)}`

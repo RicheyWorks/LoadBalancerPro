@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
@@ -56,6 +57,16 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertTrue(evaluation.evidenceBasis().contains("replayExecutionAvailable=false"));
         assertTrue(evaluation.selectedCandidateBasis().contains("selectedCandidateId=edge-a"));
         assertTrue(evaluation.selectedCandidateBasis().contains("closestAlternativeScoreDelta=5.0"));
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM, evaluation.fingerprintAlgorithm());
+        assertTrue(evaluation.diagnosticFingerprint().startsWith("shadow-decision-quality|v1|"));
+        assertEquals("shadow-decision-quality:v1:ACCEPTABLE:edge-a:SELECTED_ADVANTAGE:outcomes=2:"
+                + "policy=LOW:scenario=EVALUABLE:sufficiency=REPLAY_STYLE_READY:replay=READY",
+                evaluation.reproducibilityKey());
+        assertTrue(evaluation.fingerprintInputs().contains("qualityLabel=ACCEPTABLE"));
+        assertTrue(evaluation.fingerprintInputs().contains("candidateOutcomeCount=2"));
+        assertTrue(evaluation.fingerprintInputs().stream()
+                .anyMatch(input -> input.startsWith("candidateOutcome=candidate=edge-a")));
+        assertTrue(evaluation.fingerprintInputs().contains("replayReadinessStatus=READY"));
         assertTrue(evaluation.qualityReasons().contains("SHADOW_DECISION_QUALITY_ACCEPTABLE"));
         assertTrue(evaluation.evidenceBasisSummary()
                 .contains("classified selected candidate edge-a as ACCEPTABLE"));
@@ -155,6 +166,23 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
     }
 
     @Test
+    void diagnosticFingerprintsAreStableAndReflectComputedEvidenceChanges() {
+        DecisionExplorerShadowDecisionQualityEvaluationV1 first = evaluate(strongSelectedAdvantage());
+        DecisionExplorerShadowDecisionQualityEvaluationV1 second = evaluate(strongSelectedAdvantage());
+        DecisionExplorerShadowDecisionQualityEvaluationV1 review = evaluate(selectedChallenged());
+
+        assertEquals(first.diagnosticFingerprint(), second.diagnosticFingerprint());
+        assertEquals(first.reproducibilityKey(), second.reproducibilityKey());
+        assertEquals(first.fingerprintInputs(), second.fingerprintInputs());
+
+        assertNotEquals(first.diagnosticFingerprint(), review.diagnosticFingerprint());
+        assertNotEquals(first.reproducibilityKey(), review.reproducibilityKey());
+        assertTrue(review.fingerprintInputs().contains("qualityLabel=REVIEW_RECOMMENDED"));
+        assertTrue(review.fingerprintInputs().stream()
+                .anyMatch(input -> input.startsWith("candidateOutcome=candidate=edge-b")));
+    }
+
+    @Test
     void nullInputsReturnUnknownWithoutInventingEvidence() {
         DecisionExplorerShadowDecisionQualityEvaluationV1 evaluation =
                 service.buildEvaluation(null, null, null, null);
@@ -174,6 +202,12 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertTrue(evaluation.evidenceBasis().isEmpty());
         assertTrue(evaluation.selectedCandidateBasis().isEmpty());
         assertTrue(evaluation.unknowns().contains("shadow decision-quality input evidence was unavailable"));
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM, evaluation.fingerprintAlgorithm());
+        assertTrue(evaluation.diagnosticFingerprint().startsWith("shadow-decision-quality|v1|"));
+        assertEquals("shadow-decision-quality:v1:UNKNOWN:UNKNOWN:UNKNOWN:outcomes=0:policy=UNKNOWN:"
+                + "scenario=UNKNOWN:sufficiency=INSUFFICIENT:replay=UNKNOWN",
+                evaluation.reproducibilityKey());
+        assertTrue(evaluation.fingerprintInputs().contains("qualityLabel=UNKNOWN"));
         assertEquals("UNKNOWN", evaluation.boundaryNote());
     }
 
@@ -226,6 +260,10 @@ class DecisionExplorerShadowDecisionQualityServiceTest {
         assertTrue(evaluation.candidateOutcomeComparisons().isEmpty());
         assertTrue(evaluation.evidenceBasis().isEmpty());
         assertTrue(evaluation.qualityReasons().isEmpty());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM, evaluation.fingerprintAlgorithm());
+        assertEquals("UNKNOWN", evaluation.diagnosticFingerprint());
+        assertEquals("UNKNOWN", evaluation.reproducibilityKey());
+        assertTrue(evaluation.fingerprintInputs().isEmpty());
     }
 
     @Test

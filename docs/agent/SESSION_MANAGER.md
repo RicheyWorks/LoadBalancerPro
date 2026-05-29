@@ -8,33 +8,72 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T18:28-07:00
+Timestamp: 2026-05-28T18:59-07:00
 
 Goal name: LASE Routing Intelligence Phase 4
 
-Current PR slot: LASE-P4-G06
+Current PR slot: LASE-P4-G07
 
-Checkpoint: LASE-P4-G06 shadow decision-quality UI PR opened
+Checkpoint: LASE-P4-G07 shadow decision-quality fingerprints local verification passed; PR pending
 
 Started from main SHA: `144be5daa22e52295ad3e3d1e69fbe60b49be396`
 
-Current branch: codex/lase-phase4-shadow-quality-ui
+Current branch: codex/lase-phase4-quality-fingerprints
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/410
+PR URL: pending
 
-PR creation head: `45fd5147503aca0da572e5fbcc0f0307bd3225bb`
+PR creation head: pending
 
-Current branch head: `45fd5147503aca0da572e5fbcc0f0307bd3225bb` plus this uncommitted PR-created checkpoint
+Current branch head: `a8f8cd20a1cd944c963cb294fd5fbb648704e114` plus uncommitted LASE-P4-G07 fingerprint
+implementation, tests, UI exposure, and session/failure checkpoints
 
 Changed files for this slice:
 
-- docs/agent/SESSION_MANAGER.md
 - docs/agent/FAILURE_LOG.md
+- docs/agent/SESSION_MANAGER.md
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityEvaluationV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityService.java
 - src/main/resources/static/decision-explorer.html
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerReviewerNavigationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerApiContractHardeningTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadServiceTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1Test.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityServiceTest.java
 - src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerStaticPageTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/RoutingControllerTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/RoutingOpenApiContractTest.java
 
 Checks run:
+
+- LASE-P4-G07 adds deterministic shadow decision-quality fingerprint fields (`fingerprintAlgorithm`,
+  `diagnosticFingerprint`, `reproducibilityKey`, and `fingerprintInputs`) derived from existing computed confidence,
+  routing diagnostics, route tradeoff, evidence sufficiency, replay-readiness, candidate outcome, policy-sensitivity,
+  and scenario-input quality data. The slice remains read-only and does not change production routing/scoring/proxy
+  behavior.
+- LASE-P4-G07 logged one local DTO constructor compile failure and three browser/tooling verification issues in
+  `docs/agent/FAILURE_LOG.md`; all were resolved or non-blocking before continuing.
+- LASE-P4-G07 focused shadow evaluator test passed:
+  `mvn -q "-Dtest=DecisionExplorerShadowDecisionQualityServiceTest" test`.
+- LASE-P4-G07 focused Decision Explorer/API/static selector passed:
+  `mvn -q "-Dtest=DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`.
+- LASE-P4-G07 full local verification passed on the current working tree: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,784 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P4-G07 browser verification passed against the packaged app on
+  `http://127.0.0.1:18082/decision-explorer.html`: page loaded, sample run completed with the actual
+  `Run Decision Explorer` button, and the shadow decision-quality panel displayed the new fingerprint,
+  reproducibility key, and fingerprint inputs from returned same-origin API data. The temporary process was stopped.
+- LASE-P4-G06 PR #410 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency
+  Review was not failing.
+- LASE-P4-G06 merged as `a8f8cd20a1cd944c963cb294fd5fbb648704e114`.
+- LASE-P4-G06 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,783 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P4-G06 main CI and CodeQL passed for `a8f8cd20a1cd944c963cb294fd5fbb648704e114`; Dependency Review was not
+  failing.
+- LASE-P4-G07 branch `codex/lase-phase4-quality-fingerprints` was created from clean synced main at
+  `a8f8cd20a1cd944c963cb294fd5fbb648704e114`.
+- LASE-P4-G07 will add deterministic fingerprints/reproducibility keys for shadow decision-quality evaluations. The
+  slice remains read-only and will not change production routing/scoring/proxy behavior.
 
 - LASE-P4-G06 adds Decision Explorer UI rendering for computed `shadowDecisionQualityEvaluation` data, including
   shadow decision-quality summary, candidate outcome rows, policy-sensitivity diagnostics, scenario-input quality, and

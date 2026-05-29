@@ -181,6 +181,13 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals("PARTIAL", payload.at("/shadowDecisionQualityEvaluation/confidenceStatus").asText());
         assertEquals("PARTIAL", payload.at("/shadowDecisionQualityEvaluation/evidenceQuality").asText());
         assertEquals("READY", payload.at("/shadowDecisionQualityEvaluation/replayReadinessStatus").asText());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                payload.at("/shadowDecisionQualityEvaluation/fingerprintAlgorithm").asText());
+        assertTrue(payload.at("/shadowDecisionQualityEvaluation/diagnosticFingerprint").asText()
+                .startsWith("shadow-decision-quality|v1|"));
+        assertFalse(payload.at("/shadowDecisionQualityEvaluation/reproducibilityKey").asText().isBlank());
+        assertTrue(payload.at("/shadowDecisionQualityEvaluation/fingerprintInputs").isArray());
+        assertTrue(payload.at("/shadowDecisionQualityEvaluation/fingerprintInputs").size() > 0);
         assertTrue(payload.at("/shadowDecisionQualityEvaluation/candidateOutcomeComparisons").isArray());
         assertEquals("green",
                 payload.at("/shadowDecisionQualityEvaluation/candidateOutcomeComparisons/0/candidateId")
@@ -267,6 +274,10 @@ class DecisionExplorerApiContractHardeningTest {
                 json.at("/shadowDecisionQualityEvaluation/evaluationObject").asText());
         assertEquals("UNKNOWN", json.at("/shadowDecisionQualityEvaluation/qualityLabel").asText());
         assertEquals("UNKNOWN", json.at("/shadowDecisionQualityEvaluation/qualityBand").asText());
+        assertTrue(json.at("/shadowDecisionQualityEvaluation/diagnosticFingerprint").asText()
+                .startsWith("shadow-decision-quality|v1|"));
+        assertFalse(json.at("/shadowDecisionQualityEvaluation/reproducibilityKey").asText().isBlank());
+        assertTrue(json.at("/shadowDecisionQualityEvaluation/fingerprintInputs").isArray());
         assertTrue(json.at("/shadowDecisionQualityEvaluation/candidateOutcomeComparisons").isArray());
         assertEquals(0, json.at("/shadowDecisionQualityEvaluation/candidateOutcomeComparisons").size());
         assertEquals("UNKNOWN",
@@ -316,6 +327,8 @@ class DecisionExplorerApiContractHardeningTest {
                 .asBoolean());
         assertEquals("UNKNOWN", json.at("/shadowDecisionQualityEvaluation/qualityLabel").asText());
         assertEquals("UNKNOWN", json.at("/shadowDecisionQualityEvaluation/replayReadinessStatus").asText());
+        assertTrue(json.at("/shadowDecisionQualityEvaluation/diagnosticFingerprint").asText()
+                .startsWith("shadow-decision-quality|v1|"));
         assertTrue(json.at("/shadowDecisionQualityEvaluation/unknowns").isArray());
         assertStringArrayContains(json.at("/shadowDecisionQualityEvaluation/unknowns"),
                 "shadow decision-quality input evidence was unavailable");

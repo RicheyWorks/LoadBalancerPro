@@ -176,6 +176,16 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("PARTIAL_INPUT",
                 firstPayloads.get(0).shadowDecisionQualityEvaluation()
                         .scenarioInputQuality().inputQualityLabel());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                firstPayloads.get(0).shadowDecisionQualityEvaluation().fingerprintAlgorithm());
+        assertTrue(firstPayloads.get(0).shadowDecisionQualityEvaluation().diagnosticFingerprint()
+                .startsWith("shadow-decision-quality|v1|"));
+        assertTrue(firstPayloads.get(0).shadowDecisionQualityEvaluation().reproducibilityKey()
+                .startsWith("shadow-decision-quality:v1:REVIEW_RECOMMENDED:edge-a:SELECTED_ADVANTAGE"));
+        assertTrue(firstPayloads.get(0).shadowDecisionQualityEvaluation().fingerprintInputs()
+                .contains("selectedCandidateId=edge-a"));
+        assertTrue(firstPayloads.get(0).shadowDecisionQualityEvaluation().fingerprintInputs()
+                .contains("candidateOutcomeCount=2"));
         assertTrue(firstPayloads.get(0).shadowDecisionQualityEvaluation().qualityReasons()
                 .contains("SHADOW_DECISION_QUALITY_REVIEW_RECOMMENDED"));
         assertTrue(firstPayloads.get(0).shadowDecisionQualityEvaluation().evidenceBasisSummary()

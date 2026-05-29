@@ -8,33 +8,60 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T21:33-07:00
+Timestamp: 2026-05-28T21:58-07:00
 
 Goal name: Decision Explorer / LASE Codebase Modularity Refactor Phase 1
 
-Current PR slot: MOD-P1-G03
+Current PR slot: MOD-P1-G04
 
-Checkpoint: MOD-P1-G03 PR #417 opened; current-head checks pending
+Checkpoint: MOD-P1-G04 local verification passed; ready to stage and commit
 
-Started from main SHA: `cb7a8a7cbbe6f54215a9219622914d1a0ac41fab`
+Started from main SHA: `96012f9e588e179a22c21bb3657058ad1d5530d2`
 
-Current branch: codex/modularity-policy-sensitivity-evaluator
+Current branch: codex/modularity-scenario-input-quality-evaluator
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/417
+PR URL: not opened yet
 
-PR creation head: `a23f2a0063f8bf95c957041dc775bc82d4100189`
+PR creation head: not created yet
 
-Current branch head: `a23f2a0063f8bf95c957041dc775bc82d4100189`
+Current branch head: `96012f9e588e179a22c21bb3657058ad1d5530d2`
 
 Changed files for this slice:
 
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityService.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowPolicySensitivityEvaluator.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowPolicySensitivityEvaluatorTest.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowScenarioInputQualityEvaluator.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowScenarioInputQualityEvaluatorTest.java
+- docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
 
 Checks run:
 
+- MOD-P1-G04 branch `codex/modularity-scenario-input-quality-evaluator` was created from clean synced main at
+  `96012f9e588e179a22c21bb3657058ad1d5530d2`.
+- MOD-P1-G04 is extracting scenario-input quality label, score, evidence-count, signal, reason, summary, and
+  source-reference logic into a focused evaluator while preserving existing output and production routing behavior.
+- MOD-P1-G03 PR #417 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency
+  Review was not failing.
+- MOD-P1-G03 merged as `96012f9e588e179a22c21bb3657058ad1d5530d2`.
+- MOD-P1-G03 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,803 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- MOD-P1-G03 main CI and CodeQL passed for `96012f9e588e179a22c21bb3657058ad1d5530d2`; Dependency Review was not
+  failing.
+- MOD-P1-G04 logged one Windows wildcard `rg` tooling failure in `docs/agent/FAILURE_LOG.md`; subsequent explicit
+  service/test searches succeeded.
+- MOD-P1-G04 extracted scenario-input quality label, score, evidence-count, signal, reason, summary, and
+  source-reference logic into `DecisionExplorerShadowScenarioInputQualityEvaluator`, preserving existing scenario input
+  labels, support bands, scores, signal strings, reason codes, source references, fingerprints, API payloads, UI
+  behavior, and production routing behavior.
+- MOD-P1-G04 focused verification passed:
+  `mvn -q "-Dtest=DecisionExplorerShadowScenarioInputQualityEvaluatorTest,DecisionExplorerShadowPolicySensitivityEvaluatorTest,DecisionExplorerShadowCandidateOutcomeBuilderTest,DecisionExplorerShadowQualityLabelEvaluatorTest,DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest" test`.
+- MOD-P1-G04 focused Decision Explorer/API/static selector passed:
+  `mvn -q "-Dtest=DecisionExplorerShadowScenarioInputQualityEvaluatorTest,DecisionExplorerShadowPolicySensitivityEvaluatorTest,DecisionExplorerShadowCandidateOutcomeBuilderTest,DecisionExplorerShadowQualityLabelEvaluatorTest,DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`.
+- MOD-P1-G04 full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  `mvn -B package` with 2,809 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- Historical MOD-P1-G03, MOD-P1-G02, MOD-P1-G01, and Phase 4 checkpoints remain below for recovery context.
 - MOD-P1-G03 branch `codex/modularity-policy-sensitivity-evaluator` was created from clean synced main at
   `cb7a8a7cbbe6f54215a9219622914d1a0ac41fab`.
 - MOD-P1-G03 is extracting policy-sensitivity level, category, signal, reason, summary, and source-reference logic into

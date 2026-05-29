@@ -1,6 +1,5 @@
 package com.richmond423.loadbalancerpro.api;
 
-import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticFingerprintSupport.input;
 import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticListSupport.distinctSorted;
 
 import java.util.ArrayList;
@@ -18,6 +17,8 @@ public class DecisionExplorerCounterfactualAnalysisService {
             new DecisionExplorerCounterfactualCandidateOutcomeEvaluator();
     private final DecisionExplorerCounterfactualFactorWeightDeltaEvaluator factorWeightDeltaEvaluator =
             new DecisionExplorerCounterfactualFactorWeightDeltaEvaluator();
+    private final DecisionExplorerCounterfactualFingerprintBuilder fingerprintBuilder =
+            new DecisionExplorerCounterfactualFingerprintBuilder();
     private final DecisionExplorerCounterfactualExplanationBuilder explanationBuilder =
             new DecisionExplorerCounterfactualExplanationBuilder();
 
@@ -66,7 +67,8 @@ public class DecisionExplorerCounterfactualAnalysisService {
         List<String> warnings = warnings(summary, diagnostics, tradeoff, quality);
         List<String> unknowns = unknowns(summary, diagnostics, tradeoff, quality, replayReadiness);
         List<String> sourceReferenceIds = sourceReferenceIds(summary, diagnostics, tradeoff, quality);
-        List<String> fingerprintInputs = fingerprintInputs(
+        DecisionExplorerCounterfactualFingerprintBuilder.FingerprintResult fingerprintResult =
+                fingerprintBuilder.build(
                 counterfactualLabel,
                 summary,
                 tradeoff,
@@ -83,16 +85,6 @@ public class DecisionExplorerCounterfactualAnalysisService {
                 warnings,
                 unknowns,
                 sourceReferenceIds);
-        String reproducibilityKey = reproducibilityKey(
-                counterfactualLabel,
-                summary,
-                tradeoff,
-                quality,
-                sufficiency,
-                replayReadiness,
-                policyWeightScenarios,
-                counterfactualCandidateOutcomes,
-                factorWeightDeltas);
         String explanationText = explanationBuilder.build(
                 counterfactualLabel,
                 summary,
@@ -102,7 +94,7 @@ public class DecisionExplorerCounterfactualAnalysisService {
                 policyWeightScenarios,
                 counterfactualCandidateOutcomes,
                 factorWeightDeltas,
-                reproducibilityKey);
+                fingerprintResult.reproducibilityKey());
 
         return new DecisionExplorerCounterfactualAnalysisV1(
                 true,
@@ -136,11 +128,9 @@ public class DecisionExplorerCounterfactualAnalysisService {
                 unknowns,
                 sourceReferenceIds,
                 DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
-                DecisionExplorerDiagnosticFingerprintSupport.diagnosticFingerprint(
-                        DecisionExplorerCounterfactualAnalysisV1.FINGERPRINT_NAMESPACE,
-                        fingerprintInputs),
-                reproducibilityKey,
-                fingerprintInputs,
+                fingerprintResult.diagnosticFingerprint(),
+                fingerprintResult.reproducibilityKey(),
+                fingerprintResult.fingerprintInputs(),
                 boundaryNote);
     }
 
@@ -292,77 +282,6 @@ public class DecisionExplorerCounterfactualAnalysisService {
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
                 .toList());
-    }
-
-    private static List<String> fingerprintInputs(
-            String counterfactualLabel,
-            DecisionExplorerConfidenceSummaryV1 summary,
-            DecisionExplorerRouteTradeoffAnalysisV1 tradeoff,
-            DecisionExplorerShadowDecisionQualityEvaluationV1 quality,
-            DecisionExplorerEvidenceSufficiencyV1 sufficiency,
-            DecisionExplorerReplayReadinessDiagnosticV1 replayReadiness,
-            List<DecisionExplorerCounterfactualPolicyWeightScenarioV1> policyWeightScenarios,
-            List<DecisionExplorerCounterfactualCandidateOutcomeV1> counterfactualCandidateOutcomes,
-            List<DecisionExplorerCounterfactualFactorWeightDeltaV1> factorWeightDeltas,
-            List<String> stableSignals,
-            List<String> sensitivitySignals,
-            List<String> limitationSignals,
-            List<String> reasonCodes,
-            List<String> warnings,
-            List<String> unknowns,
-            List<String> sourceReferenceIds) {
-        return List.of(
-                input("analysisObject", DecisionExplorerCounterfactualAnalysisV1.ANALYSIS_OBJECT),
-                input("contractVersion", DecisionExplorerCounterfactualAnalysisV1.CONTRACT_VERSION),
-                input("counterfactualLabel", counterfactualLabel),
-                input("sensitivityBand", DecisionExplorerCounterfactualAnalysisV1.bandFor(counterfactualLabel)),
-                input("selectedCandidateId", summary.selectedCandidateId()),
-                input("confidenceStatus", summary.status()),
-                input("decisionQualityLabel", quality.qualityLabel()),
-                input("tradeoffCategory", tradeoff.tradeoffCategory()),
-                input("evidenceSufficiencyLevel", sufficiency.sufficiencyLevel()),
-                input("replayReadinessStatus", replayReadiness.readinessStatus()),
-                input("policyWeightScenarioCount", policyWeightScenarios.size()),
-                input("policyWeightScenarios", policyWeightScenarios.stream()
-                        .map(DecisionExplorerCounterfactualPolicyWeightScenarioV1::fingerprintInput)
-                        .toList()),
-                input("counterfactualCandidateOutcomeCount", counterfactualCandidateOutcomes.size()),
-                input("counterfactualCandidateOutcomes", counterfactualCandidateOutcomes.stream()
-                        .map(DecisionExplorerCounterfactualCandidateOutcomeV1::fingerprintInput)
-                        .toList()),
-                input("factorWeightDeltaCount", factorWeightDeltas.size()),
-                input("factorWeightDeltas", factorWeightDeltas.stream()
-                        .map(DecisionExplorerCounterfactualFactorWeightDeltaV1::fingerprintInput)
-                        .toList()),
-                input("candidateOutcomeCount", quality.candidateOutcomeCount()),
-                input("factorDeltaCount", tradeoff.factorTradeoffDeltas().size()),
-                input("stableSignals", stableSignals),
-                input("sensitivitySignals", sensitivitySignals),
-                input("limitationSignals", limitationSignals),
-                input("reasonCodes", reasonCodes),
-                input("warnings", warnings),
-                input("unknowns", unknowns),
-                input("sourceReferenceIds", sourceReferenceIds));
-    }
-
-    private static String reproducibilityKey(
-            String counterfactualLabel,
-            DecisionExplorerConfidenceSummaryV1 summary,
-            DecisionExplorerRouteTradeoffAnalysisV1 tradeoff,
-            DecisionExplorerShadowDecisionQualityEvaluationV1 quality,
-            DecisionExplorerEvidenceSufficiencyV1 sufficiency,
-            DecisionExplorerReplayReadinessDiagnosticV1 replayReadiness,
-            List<DecisionExplorerCounterfactualPolicyWeightScenarioV1> policyWeightScenarios,
-            List<DecisionExplorerCounterfactualCandidateOutcomeV1> counterfactualCandidateOutcomes,
-            List<DecisionExplorerCounterfactualFactorWeightDeltaV1> factorWeightDeltas) {
-        return "counterfactual:v1:" + counterfactualLabel + ":" + summary.selectedCandidateId()
-                + ":" + tradeoff.tradeoffCategory()
-                + ":quality=" + quality.qualityLabel()
-                + ":sufficiency=" + sufficiency.sufficiencyLevel()
-                + ":replay=" + replayReadiness.readinessStatus()
-                + ":scenarios=" + policyWeightScenarios.size()
-                + ":outcomes=" + counterfactualCandidateOutcomes.size()
-                + ":factorWeightDeltas=" + factorWeightDeltas.size();
     }
 
 }

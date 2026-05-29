@@ -3046,3 +3046,11 @@ Follow-up action: continue local pre-PR verification and PR preparation.
   incorrectly marked the alternative-support case as close.
 - Recovery: keep the degraded service assertion grounded in the returned factor delta count, and correct the evaluator
   stable scenario so only the explicit factor disadvantage row reports an alternative challenge.
+# 2026-05-29T12:38-07:00 - LASE-P5-PR6 focused counterfactual fingerprint assertion calibration
+
+- Branch: `codex/lase-phase5-counterfactual-fingerprints`
+- Command: `mvn -q "-Dtest=DecisionExplorerCounterfactualFingerprintBuilderTest,DecisionExplorerCounterfactualAnalysisServiceTest" test`
+- Result: failed because the new focused fingerprint test used a too-specific `startsWith(...)` assertion for the
+  factor-weight delta fingerprint-input list serialization.
+- Recovery: loosen the assertion to check for the stable factor-weight delta content within the serialized input, then
+  rerun the focused selector before broader verification.

@@ -1,10 +1,13 @@
 package com.richmond423.loadbalancerpro.api;
 
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticFingerprintSupport.canonicalInputs;
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticFingerprintSupport.diagnosticFingerprint;
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticFingerprintSupport.fingerprintValue;
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticFingerprintSupport.input;
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticListSupport.copyNonNull;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 final class DecisionExplorerRouteTradeoffFingerprintBuilder {
     Result build(
@@ -112,17 +115,6 @@ final class DecisionExplorerRouteTradeoffFingerprintBuilder {
                         replayReadinessDiagnostic == null ? null : replayReadinessDiagnostic.readinessStatus()));
     }
 
-    private static String diagnosticFingerprint(String namespace, List<String> inputs) {
-        List<String> canonicalInputs = canonicalInputs(inputs);
-        String safeNamespace = namespace == null || namespace.isBlank()
-                ? "diagnostic|v1"
-                : namespace.trim().replace('\r', ' ').replace('\n', ' ').replaceAll("\\s+", " ");
-        if (canonicalInputs.isEmpty()) {
-            return safeNamespace + "|inputs=none";
-        }
-        return safeNamespace + "|" + String.join("|", canonicalInputs);
-    }
-
     private static String tradeoffRowFingerprint(DecisionExplorerRouteTradeoffRowV1 row) {
         return String.join(",",
                 "candidate=" + fingerprintValue(row.candidateId()),
@@ -136,52 +128,6 @@ final class DecisionExplorerRouteTradeoffFingerprintBuilder {
                 "delta=" + fingerprintValue(row.scoreDeltaFromSelected()),
                 "gap=" + fingerprintValue(row.scoreGapCategory()),
                 "reasons=" + fingerprintValue(row.reasonCodes()));
-    }
-
-    private static String input(String key, Object value) {
-        return fingerprintValue(key) + "=" + fingerprintValue(value);
-    }
-
-    private static List<String> canonicalInputs(Collection<String> values) {
-        if (values == null) {
-            return List.of();
-        }
-        return values.stream()
-                .filter(value -> value != null && !value.isBlank())
-                .map(DecisionExplorerRouteTradeoffFingerprintBuilder::fingerprintValue)
-                .toList();
-    }
-
-    private static String fingerprintValue(Object value) {
-        if (value == null) {
-            return "null";
-        }
-        if (value instanceof Collection<?> collection) {
-            if (collection.isEmpty()) {
-                return "[]";
-            }
-            return collection.stream()
-                    .map(DecisionExplorerRouteTradeoffFingerprintBuilder::fingerprintValue)
-                    .sorted()
-                    .collect(Collectors.joining(";"));
-        }
-        if (value instanceof Double number && !Double.isFinite(number)) {
-            return "null";
-        }
-        return String.valueOf(value)
-                .trim()
-                .replace('\r', ' ')
-                .replace('\n', ' ')
-                .replace('|', '/')
-                .replaceAll("\\s+", " ");
-    }
-
-    private static <T> List<T> copyNonNull(List<T> values) {
-        return values == null
-                ? List.of()
-                : values.stream()
-                        .filter(Objects::nonNull)
-                        .toList();
     }
 
     record Result(

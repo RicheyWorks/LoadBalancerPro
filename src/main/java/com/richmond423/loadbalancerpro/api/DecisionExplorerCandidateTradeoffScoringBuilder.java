@@ -1,12 +1,11 @@
 package com.richmond423.loadbalancerpro.api;
 
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticListSupport.copyNonNull;
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticListSupport.distinctSorted;
+
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 final class DecisionExplorerCandidateTradeoffScoringBuilder {
@@ -172,23 +171,4 @@ final class DecisionExplorerCandidateTradeoffScoringBuilder {
                 + factorStatusRollup + ".";
     }
 
-    private static List<String> distinctSorted(Collection<String> values) {
-        if (values == null) {
-            return List.of();
-        }
-        Set<String> distinct = new LinkedHashSet<>();
-        values.stream()
-                .filter(value -> value != null && !value.isBlank())
-                .map(String::trim)
-                .forEach(distinct::add);
-        return distinct.stream().sorted().toList();
-    }
-
-    private static <T> List<T> copyNonNull(List<T> values) {
-        return values == null
-                ? List.of()
-                : values.stream()
-                        .filter(Objects::nonNull)
-                        .toList();
-    }
 }

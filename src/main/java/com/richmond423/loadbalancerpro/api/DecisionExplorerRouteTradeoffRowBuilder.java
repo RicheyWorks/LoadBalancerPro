@@ -1,12 +1,11 @@
 package com.richmond423.loadbalancerpro.api;
 
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticListSupport.distinctSorted;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 final class DecisionExplorerRouteTradeoffRowBuilder {
     static final Comparator<DecisionExplorerRouteTradeoffRowV1> BY_SELECTED_THEN_ORDER = Comparator
@@ -124,15 +123,4 @@ final class DecisionExplorerRouteTradeoffRowBuilder {
         return distinctSorted(signals);
     }
 
-    private static List<String> distinctSorted(Collection<String> values) {
-        if (values == null) {
-            return List.of();
-        }
-        Set<String> distinct = new LinkedHashSet<>();
-        values.stream()
-                .filter(value -> value != null && !value.isBlank())
-                .map(String::trim)
-                .forEach(distinct::add);
-        return distinct.stream().sorted().toList();
-    }
 }

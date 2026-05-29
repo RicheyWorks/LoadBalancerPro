@@ -8,36 +8,78 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-29T00:55-07:00
+Timestamp: 2026-05-29T03:57-07:00
 
 Goal name: Decision Explorer / LASE Codebase Modularity Refactor Phase 1
 
-Current PR slot: MOD-P1-G10
+Current PR slot: MOD-P1-G11
 
-Checkpoint: MOD-P1-G10 PR opened; route tradeoff fingerprint/explanation builder extraction awaiting remote checks
+Checkpoint: MOD-P1-G11 PR opened; shared diagnostic support helper extraction awaiting remote checks
 
-Started from main SHA: `6334c2a4373aa739b2650b2ab6a78436e9df9483`
+Started from main SHA: `81aff70287a4e8c370561bce8733dd7ec34da0b8`
 
-Current branch: codex/modularity-route-tradeoff-fingerprint-builders
+Current branch: codex/modularity-diagnostic-support-helpers
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/424
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/425
 
-PR creation head: `77062c6160cb3bcedf6ea6f99a1d9f1b5d711cd3`
+PR creation head: `41ba4a1131d63f92e47d1374f3f699f4b3d281da`
 
-Current branch head: PR-created checkpoint commit pending push.
+Current branch head: `41ba4a1131d63f92e47d1374f3f699f4b3d281da` at PR opening; PR-created checkpoint commit is pending push.
 
 Changed files for this slice:
 
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffService.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerDiagnosticListSupport.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerDiagnosticFingerprintSupport.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerEvidenceSufficiencyEvaluator.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerReplayReadinessEvaluator.java
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffFingerprintBuilder.java
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffExplanationBuilder.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffServiceTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffFingerprintBuilderTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffExplanationBuilderTest.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffRowBuilder.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffService.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowQualityFingerprintBuilder.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowQualityExplanationBuilder.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityService.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCandidateTradeoffScoringBuilder.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerFactorTradeoffDeltaBuilder.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerDiagnosticListSupportTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerDiagnosticFingerprintSupportTest.java
 - docs/agent/SESSION_MANAGER.md
+- docs/agent/FAILURE_LOG.md
 
 Checks run:
 
+- MOD-P1-G11 branch `codex/modularity-diagnostic-support-helpers` was created from clean synced main at
+  `81aff70287a4e8c370561bce8733dd7ec34da0b8`.
+- MOD-P1-G11 is extracting shared diagnostic list and fingerprint helper support from duplicated Decision Explorer /
+  LASE evaluator and builder logic while preserving existing payload strings, deterministic fingerprints,
+  reproducibility keys, null/empty fallback behavior, read-only boundaries, and production routing behavior.
+- MOD-P1-G11 preliminary compile check passed: `mvn -q "-DskipTests" test`.
+- MOD-P1-G11 logged one local `rg` wildcard path invocation failure in `docs/agent/FAILURE_LOG.md`; the compile
+  check passed and source search will continue with explicit paths.
+- MOD-P1-G11 extracted `DecisionExplorerDiagnosticListSupport` and
+  `DecisionExplorerDiagnosticFingerprintSupport`, then rewired route-tradeoff, replay-readiness,
+  evidence-sufficiency, shadow-quality fingerprint/explanation, row, and scoring builders to use the shared support.
+- MOD-P1-G11 preserved the evidence-sufficiency whitespace-normalizing sort path separately from trim-only diagnostic
+  list sorting so canonical signals and fingerprints do not drift.
+- MOD-P1-G11 focused verification passed:
+  `mvn -q "-Dtest=DecisionExplorerDiagnosticListSupportTest,DecisionExplorerDiagnosticFingerprintSupportTest,DecisionExplorerRouteTradeoffFingerprintBuilderTest,DecisionExplorerShadowQualityFingerprintBuilderTest,DecisionExplorerEvidenceSufficiencyEvaluatorTest,DecisionExplorerReplayReadinessEvaluatorTest,DecisionExplorerRouteTradeoffRowBuilderTest,DecisionExplorerCandidateTradeoffScoringBuilderTest,DecisionExplorerFactorTradeoffDeltaBuilderTest,DecisionExplorerRouteTradeoffExplanationBuilderTest,DecisionExplorerShadowQualityExplanationBuilderTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerRouteTradeoffCompatibilityRegressionTest" test`.
+- MOD-P1-G11 broader Decision Explorer/API/static selector passed:
+  `mvn -q "-Dtest=DecisionExplorerDiagnosticListSupportTest,DecisionExplorerDiagnosticFingerprintSupportTest,DecisionExplorerRouteTradeoffFingerprintBuilderTest,DecisionExplorerShadowQualityFingerprintBuilderTest,DecisionExplorerEvidenceSufficiencyEvaluatorTest,DecisionExplorerReplayReadinessEvaluatorTest,DecisionExplorerFactorTradeoffDeltaBuilderTest,DecisionExplorerRouteTradeoffRowBuilderTest,DecisionExplorerCandidateTradeoffScoringBuilderTest,DecisionExplorerRouteTradeoffExplanationBuilderTest,DecisionExplorerShadowQualityExplanationBuilderTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerRouteTradeoffCompatibilityRegressionTest,DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`.
+- MOD-P1-G11 full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  `mvn -B package` with 2,844 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- `git diff --cached --check` passed after staging the MOD-P1-G11 slice.
+- MOD-P1-G11 branch `codex/modularity-diagnostic-support-helpers` was pushed to origin.
+- MOD-P1-G11 PR #425 was opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/425 with behavior-preserving
+  refactor scope, local verification, safety confirmations, and next-slice notes.
+- MOD-P1-G10 PR #424 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency
+  Review was success/skipped and not failing.
+- MOD-P1-G10 merged as `81aff70287a4e8c370561bce8733dd7ec34da0b8`.
+- MOD-P1-G10 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,837 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- MOD-P1-G10 main CI and CodeQL passed for `81aff70287a4e8c370561bce8733dd7ec34da0b8`; Dependency Review was not
+  failing.
 - MOD-P1-G10 branch `codex/modularity-route-tradeoff-fingerprint-builders` was created from clean synced main at
   `6334c2a4373aa739b2650b2ab6a78436e9df9483`.
 - MOD-P1-G10 is extracting route-tradeoff fingerprint input, diagnostic fingerprint, reproducibility key, and

@@ -1,11 +1,10 @@
 package com.richmond423.loadbalancerpro.api;
 
+import static com.richmond423.loadbalancerpro.api.DecisionExplorerDiagnosticListSupport.distinctSorted;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 public class DecisionExplorerRouteTradeoffService {
     public static final String FINGERPRINT_ALGORITHM = "stable-field-concat-v1";
@@ -227,15 +226,4 @@ public class DecisionExplorerRouteTradeoffService {
         return distinctSorted(unknowns);
     }
 
-    private static List<String> distinctSorted(Collection<String> values) {
-        if (values == null) {
-            return List.of();
-        }
-        Set<String> distinct = new LinkedHashSet<>();
-        values.stream()
-                .filter(value -> value != null && !value.isBlank())
-                .map(String::trim)
-                .forEach(distinct::add);
-        return distinct.stream().sorted().toList();
-    }
 }

@@ -16,6 +16,7 @@ public record DecisionExplorerPayloadV1(
         DecisionExplorerConfidenceSummaryV1 confidenceSummary,
         DecisionExplorerRoutingDiagnosticsV1 routingDiagnostics,
         DecisionExplorerRouteTradeoffAnalysisV1 routeTradeoffAnalysis,
+        DecisionExplorerShadowDecisionQualityEvaluationV1 shadowDecisionQualityEvaluation,
         List<FactorContributionV1> factorContributions,
         List<DecisionFactorDrilldownV1> factorDrilldowns,
         List<PolicyGateReadoutV1> policyGateReadouts,
@@ -50,6 +51,9 @@ public record DecisionExplorerPayloadV1(
         routeTradeoffAnalysis = routeTradeoffAnalysis == null
                 ? DecisionExplorerRouteTradeoffAnalysisV1.unknown(boundaryNote)
                 : routeTradeoffAnalysis;
+        shadowDecisionQualityEvaluation = shadowDecisionQualityEvaluation == null
+                ? DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(boundaryNote)
+                : shadowDecisionQualityEvaluation;
         factorContributions = DecisionExplorerDtoSupport.copyOrEmpty(factorContributions);
         factorDrilldowns = DecisionExplorerDtoSupport.copyOrEmpty(factorDrilldowns);
         policyGateReadouts = DecisionExplorerDtoSupport.copyOrEmpty(policyGateReadouts);
@@ -95,6 +99,7 @@ public record DecisionExplorerPayloadV1(
                 confidenceSummary,
                 DecisionExplorerRoutingDiagnosticsV1.unknown(boundaryNote),
                 DecisionExplorerRouteTradeoffAnalysisV1.unknown(boundaryNote),
+                DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(boundaryNote),
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -143,6 +148,7 @@ public record DecisionExplorerPayloadV1(
                 confidenceSummary,
                 routingDiagnostics,
                 DecisionExplorerRouteTradeoffAnalysisV1.unknown(boundaryNote),
+                DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(boundaryNote),
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -189,6 +195,7 @@ public record DecisionExplorerPayloadV1(
                 DecisionExplorerConfidenceSummaryV1.unknown(boundaryNote),
                 DecisionExplorerRoutingDiagnosticsV1.unknown(boundaryNote),
                 DecisionExplorerRouteTradeoffAnalysisV1.unknown(boundaryNote),
+                DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(boundaryNote),
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -234,6 +241,7 @@ public record DecisionExplorerPayloadV1(
                 DecisionExplorerConfidenceSummaryV1.unknown(boundaryNote),
                 DecisionExplorerRoutingDiagnosticsV1.unknown(boundaryNote),
                 DecisionExplorerRouteTradeoffAnalysisV1.unknown(boundaryNote),
+                DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(boundaryNote),
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -278,6 +286,7 @@ public record DecisionExplorerPayloadV1(
                 DecisionExplorerConfidenceSummaryV1.unknown(boundaryNote),
                 DecisionExplorerRoutingDiagnosticsV1.unknown(boundaryNote),
                 DecisionExplorerRouteTradeoffAnalysisV1.unknown(boundaryNote),
+                DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(boundaryNote),
                 factorContributions,
                 List.of(),
                 policyGateReadouts,

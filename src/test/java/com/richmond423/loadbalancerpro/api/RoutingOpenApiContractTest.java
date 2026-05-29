@@ -101,6 +101,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/DecisionExplorerRoutingDiagnosticsV1");
         assertRef(required(explorerProperties, "/routeTradeoffAnalysis"),
                 "#/components/schemas/DecisionExplorerRouteTradeoffAnalysisV1");
+        assertRef(required(explorerProperties, "/shadowDecisionQualityEvaluation"),
+                "#/components/schemas/DecisionExplorerShadowDecisionQualityEvaluationV1");
         assertArrayRef(required(explorerProperties, "/factorContributions"),
                 "#/components/schemas/FactorContributionV1");
         assertArrayRef(required(explorerProperties, "/factorDrilldowns"),
@@ -481,6 +483,117 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(replayReadinessProperties, "/reproducibilityKey/type").asText());
         assertEquals("array", required(replayReadinessProperties, "/fingerprintInputs/type").asText());
         assertEquals("string", required(replayReadinessProperties, "/explanationText/type").asText());
+
+        JsonNode shadowQualityProperties = required(docs,
+                "/components/schemas/DecisionExplorerShadowDecisionQualityEvaluationV1/properties");
+        assertEquals("boolean", required(shadowQualityProperties, "/readOnly/type").asText());
+        assertEquals("boolean", required(shadowQualityProperties, "/simulationOnly/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/evaluationObject/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/contractVersion/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/qualityLabel/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/qualityBand/type").asText());
+        assertEquals("integer", required(shadowQualityProperties, "/qualityScore/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/selectedCandidateId/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/confidenceStatus/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/evidenceQuality/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/tradeoffCategory/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/evidenceSufficiencyLevel/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/replayReadinessStatus/type").asText());
+        assertEquals("integer", required(shadowQualityProperties, "/candidateOutcomeCount/type").asText());
+        assertArrayRef(required(shadowQualityProperties, "/candidateOutcomeComparisons"),
+                "#/components/schemas/DecisionExplorerShadowCandidateOutcomeV1");
+        assertRef(required(shadowQualityProperties, "/policySensitivityDiagnostic"),
+                "#/components/schemas/DecisionExplorerShadowPolicySensitivityDiagnosticV1");
+        assertRef(required(shadowQualityProperties, "/scenarioInputQuality"),
+                "#/components/schemas/DecisionExplorerShadowScenarioInputQualityV1");
+        assertEquals("integer", required(shadowQualityProperties, "/evidenceBasisCount/type").asText());
+        assertEquals("integer", required(shadowQualityProperties, "/selectedCandidateBasisCount/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/evidenceBasisSummary/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/selectedCandidateBasisSummary/type").asText());
+        assertEquals("array", required(shadowQualityProperties, "/evidenceBasis/type").asText());
+        assertEquals("array", required(shadowQualityProperties, "/selectedCandidateBasis/type").asText());
+        assertEquals("array", required(shadowQualityProperties, "/qualityReasons/type").asText());
+        assertEquals("array", required(shadowQualityProperties, "/warnings/type").asText());
+        assertEquals("array", required(shadowQualityProperties, "/unknowns/type").asText());
+        assertEquals("array", required(shadowQualityProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(shadowQualityProperties, "/boundaryNote/type").asText());
+
+        JsonNode shadowCandidateOutcomeProperties = required(docs,
+                "/components/schemas/DecisionExplorerShadowCandidateOutcomeV1/properties");
+        assertEquals("string", required(shadowCandidateOutcomeProperties, "/candidateId/type").asText());
+        assertEquals("string", required(shadowCandidateOutcomeProperties, "/candidateLabel/type").asText());
+        assertEquals("boolean", required(shadowCandidateOutcomeProperties, "/selected/type").asText());
+        assertEquals("integer", required(shadowCandidateOutcomeProperties, "/displayOrder/type").asText());
+        assertEquals("string", required(shadowCandidateOutcomeProperties, "/outcomeLabel/type").asText());
+        assertEquals("string", required(shadowCandidateOutcomeProperties, "/qualityImpact/type").asText());
+        assertEquals("string", required(shadowCandidateOutcomeProperties, "/tradeoffCategory/type").asText());
+        assertEquals("string",
+                required(shadowCandidateOutcomeProperties, "/riskBenefitClassification/type").asText());
+        assertEquals("string", required(shadowCandidateOutcomeProperties, "/diagnosticStatus/type").asText());
+        assertEquals("string", required(shadowCandidateOutcomeProperties, "/riskLevel/type").asText());
+        assertEquals("string", required(shadowCandidateOutcomeProperties, "/scoreGapCategory/type").asText());
+        assertEquals("number", required(shadowCandidateOutcomeProperties, "/finalScore/type").asText());
+        assertEquals("number", required(shadowCandidateOutcomeProperties, "/scoreDeltaFromSelected/type").asText());
+        assertEquals("string", required(shadowCandidateOutcomeProperties, "/summaryText/type").asText());
+        assertEquals("array", required(shadowCandidateOutcomeProperties, "/benefitSignals/type").asText());
+        assertEquals("array", required(shadowCandidateOutcomeProperties, "/riskSignals/type").asText());
+        assertEquals("array", required(shadowCandidateOutcomeProperties, "/unknownSignals/type").asText());
+        assertEquals("array", required(shadowCandidateOutcomeProperties, "/degradedSignals/type").asText());
+        assertEquals("array", required(shadowCandidateOutcomeProperties, "/reasonCodes/type").asText());
+        assertEquals("array", required(shadowCandidateOutcomeProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(shadowCandidateOutcomeProperties, "/boundaryNote/type").asText());
+
+        JsonNode shadowPolicyProperties = required(docs,
+                "/components/schemas/DecisionExplorerShadowPolicySensitivityDiagnosticV1/properties");
+        assertEquals("boolean", required(shadowPolicyProperties, "/readOnly/type").asText());
+        assertEquals("boolean", required(shadowPolicyProperties, "/simulationOnly/type").asText());
+        assertEquals("string", required(shadowPolicyProperties, "/diagnosticObject/type").asText());
+        assertEquals("string", required(shadowPolicyProperties, "/contractVersion/type").asText());
+        assertEquals("string", required(shadowPolicyProperties, "/sensitivityLevel/type").asText());
+        assertEquals("string", required(shadowPolicyProperties, "/sensitivityCategory/type").asText());
+        assertEquals("integer", required(shadowPolicyProperties, "/sensitivityScore/type").asText());
+        assertEquals("string", required(shadowPolicyProperties, "/selectedCandidateId/type").asText());
+        assertEquals("string", required(shadowPolicyProperties, "/tradeoffCategory/type").asText());
+        assertEquals("string", required(shadowPolicyProperties, "/evidenceSufficiencyLevel/type").asText());
+        assertEquals("string", required(shadowPolicyProperties, "/replayReadinessStatus/type").asText());
+        assertEquals("integer", required(shadowPolicyProperties, "/candidateOutcomeCount/type").asText());
+        assertEquals("string", required(shadowPolicyProperties, "/summaryText/type").asText());
+        assertEquals("array", required(shadowPolicyProperties, "/stableSignals/type").asText());
+        assertEquals("array", required(shadowPolicyProperties, "/reviewSignals/type").asText());
+        assertEquals("array", required(shadowPolicyProperties, "/missingEvidenceSignals/type").asText());
+        assertEquals("array", required(shadowPolicyProperties, "/degradedSignals/type").asText());
+        assertEquals("array", required(shadowPolicyProperties, "/reasonCodes/type").asText());
+        assertEquals("array", required(shadowPolicyProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(shadowPolicyProperties, "/boundaryNote/type").asText());
+
+        JsonNode shadowScenarioInputProperties = required(docs,
+                "/components/schemas/DecisionExplorerShadowScenarioInputQualityV1/properties");
+        assertEquals("boolean", required(shadowScenarioInputProperties, "/readOnly/type").asText());
+        assertEquals("boolean", required(shadowScenarioInputProperties, "/simulationOnly/type").asText());
+        assertEquals("string", required(shadowScenarioInputProperties, "/evaluationObject/type").asText());
+        assertEquals("string", required(shadowScenarioInputProperties, "/contractVersion/type").asText());
+        assertEquals("string", required(shadowScenarioInputProperties, "/inputQualityLabel/type").asText());
+        assertEquals("string", required(shadowScenarioInputProperties, "/supportBand/type").asText());
+        assertEquals("integer", required(shadowScenarioInputProperties, "/inputQualityScore/type").asText());
+        assertEquals("string", required(shadowScenarioInputProperties, "/selectedCandidateId/type").asText());
+        assertEquals("string", required(shadowScenarioInputProperties, "/confidenceStatus/type").asText());
+        assertEquals("string", required(shadowScenarioInputProperties, "/evidenceSufficiencyLevel/type").asText());
+        assertEquals("string", required(shadowScenarioInputProperties, "/replayReadinessStatus/type").asText());
+        assertEquals("integer", required(shadowScenarioInputProperties, "/candidateEvidenceCount/type").asText());
+        assertEquals("integer", required(shadowScenarioInputProperties, "/factorEvidenceCount/type").asText());
+        assertEquals("integer", required(shadowScenarioInputProperties, "/candidateOutcomeCount/type").asText());
+        assertEquals("integer", required(shadowScenarioInputProperties, "/partialSignalCount/type").asText());
+        assertEquals("integer", required(shadowScenarioInputProperties, "/missingSignalCount/type").asText());
+        assertEquals("integer", required(shadowScenarioInputProperties, "/degradedSignalCount/type").asText());
+        assertEquals("string", required(shadowScenarioInputProperties, "/summaryText/type").asText());
+        assertEquals("array", required(shadowScenarioInputProperties, "/candidateInputSignals/type").asText());
+        assertEquals("array", required(shadowScenarioInputProperties, "/factorInputSignals/type").asText());
+        assertEquals("array", required(shadowScenarioInputProperties, "/partialInputSignals/type").asText());
+        assertEquals("array", required(shadowScenarioInputProperties, "/missingInputSignals/type").asText());
+        assertEquals("array", required(shadowScenarioInputProperties, "/degradedInputSignals/type").asText());
+        assertEquals("array", required(shadowScenarioInputProperties, "/reasonCodes/type").asText());
+        assertEquals("array", required(shadowScenarioInputProperties, "/sourceReferenceIds/type").asText());
+        assertEquals("string", required(shadowScenarioInputProperties, "/boundaryNote/type").asText());
 
         JsonNode evidenceDiagnosticProperties = required(docs,
                 "/components/schemas/DecisionExplorerEvidenceDiagnosticV1/properties");

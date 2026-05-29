@@ -2278,3 +2278,43 @@ Follow-up action: continue PR 2 focused selector and full local verification.
 - Include exact failing test names or job names when available.
 - Distinguish local failures from remote PR failures.
 - Do not treat a fixed local failure as remotely green until current remote checks complete successfully.
+
+## Entry
+
+Date/time: 2026-05-28T17:46-07:00
+
+Branch/PR: codex/lase-phase4-shadow-quality-api / no PR yet
+
+Failure type: local tooling invocation error
+
+Failing check: `mvn -q -Dtest=DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest test`
+
+Suspected cause: PowerShell parsed the comma-separated Maven test selector as a parameter list before Maven received it.
+
+Fix attempted: reran the same focused selector with the `-Dtest=...` argument quoted.
+
+Result: quoted Maven invocation reached test execution; follow-on assertion calibration failures are logged below.
+
+Follow-up action: continue LASE-P4-G05 focused API verification after the quoted Maven invocation.
+
+## Entry
+
+Date/time: 2026-05-28T17:45-07:00
+
+Branch/PR: codex/lase-phase4-shadow-quality-api / no PR yet
+
+Failure type: local focused test expectation mismatch
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`
+
+Suspected cause: new API contract assertions guessed a replay-readiness status and scenario-input quality labels instead
+of matching the evaluator's computed payload behavior for the existing fixtures.
+
+Fix attempted: updated assertions to expect the endpoint fixture's `READY` replay-readiness status, deterministic
+`PARTIAL_INPUT` for strong tradeoff evidence with partial replay inputs, and `MISSING_CANDIDATE_INPUT` when a failed
+partial result has no candidate evidence.
+
+Result: focused selector rerun passed after assertion updates. Broader `DecisionExplorer*Test,RoutingControllerTest,RoutingOpenApiContractTest`
+selector also passed.
+
+Follow-up action: continue LASE-P4-G05 full local verification.

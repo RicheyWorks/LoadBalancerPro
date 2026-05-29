@@ -328,6 +328,16 @@ class DecisionExplorerStaticPageTest {
                             is(false)))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.replayExportAvailable",
                             is(false)))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.evaluationObject",
+                            is("DecisionExplorerShadowDecisionQualityEvaluationV1")))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.qualityLabel",
+                            is("REVIEW_RECOMMENDED")))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.candidateOutcomeComparisons[0].candidateId",
+                            is("green")))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.policySensitivityDiagnostic.diagnosticObject",
+                            is("DecisionExplorerShadowPolicySensitivityDiagnosticV1")))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.scenarioInputQuality.evaluationObject",
+                            is("DecisionExplorerShadowScenarioInputQualityV1")))
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].gateId", is("boundary-read-only")))
                     .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no production readiness")))
                     .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no storage proof")))

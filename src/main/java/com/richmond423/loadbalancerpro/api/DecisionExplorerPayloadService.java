@@ -55,32 +55,50 @@ public class DecisionExplorerPayloadService {
     private final DecisionExplorerConfidenceSummaryService confidenceSummaryService;
     private final DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService;
     private final DecisionExplorerRouteTradeoffService routeTradeoffService;
+    private final DecisionExplorerShadowDecisionQualityService shadowDecisionQualityService;
 
     public DecisionExplorerPayloadService() {
         this(new DecisionExplorerConfidenceSummaryService(),
                 new DecisionExplorerRoutingDiagnosticsService(),
-                new DecisionExplorerRouteTradeoffService());
+                new DecisionExplorerRouteTradeoffService(),
+                new DecisionExplorerShadowDecisionQualityService());
     }
 
     DecisionExplorerPayloadService(DecisionExplorerConfidenceSummaryService confidenceSummaryService) {
         this(confidenceSummaryService,
                 new DecisionExplorerRoutingDiagnosticsService(),
-                new DecisionExplorerRouteTradeoffService());
+                new DecisionExplorerRouteTradeoffService(),
+                new DecisionExplorerShadowDecisionQualityService());
     }
 
     DecisionExplorerPayloadService(
             DecisionExplorerConfidenceSummaryService confidenceSummaryService,
             DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService) {
-        this(confidenceSummaryService, routingDiagnosticsService, new DecisionExplorerRouteTradeoffService());
+        this(confidenceSummaryService,
+                routingDiagnosticsService,
+                new DecisionExplorerRouteTradeoffService(),
+                new DecisionExplorerShadowDecisionQualityService());
     }
 
     DecisionExplorerPayloadService(
             DecisionExplorerConfidenceSummaryService confidenceSummaryService,
             DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService,
             DecisionExplorerRouteTradeoffService routeTradeoffService) {
+        this(confidenceSummaryService,
+                routingDiagnosticsService,
+                routeTradeoffService,
+                new DecisionExplorerShadowDecisionQualityService());
+    }
+
+    DecisionExplorerPayloadService(
+            DecisionExplorerConfidenceSummaryService confidenceSummaryService,
+            DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService,
+            DecisionExplorerRouteTradeoffService routeTradeoffService,
+            DecisionExplorerShadowDecisionQualityService shadowDecisionQualityService) {
         this.confidenceSummaryService = Objects.requireNonNull(confidenceSummaryService);
         this.routingDiagnosticsService = Objects.requireNonNull(routingDiagnosticsService);
         this.routeTradeoffService = Objects.requireNonNull(routeTradeoffService);
+        this.shadowDecisionQualityService = Objects.requireNonNull(shadowDecisionQualityService);
     }
 
     public List<DecisionExplorerPayloadV1> buildPayloads(RoutingComparisonResponse comparison) {
@@ -138,6 +156,12 @@ public class DecisionExplorerPayloadService {
                 confidenceSummary,
                 routingDiagnostics,
                 BOUNDARY_NOTE);
+        DecisionExplorerShadowDecisionQualityEvaluationV1 shadowDecisionQualityEvaluation =
+                shadowDecisionQualityService.buildEvaluation(
+                        confidenceSummary,
+                        routingDiagnostics,
+                        routeTradeoffAnalysis,
+                        BOUNDARY_NOTE);
 
         return new DecisionExplorerPayloadV1(
                 true,
@@ -153,6 +177,7 @@ public class DecisionExplorerPayloadService {
                 confidenceSummary,
                 routingDiagnostics,
                 routeTradeoffAnalysis,
+                shadowDecisionQualityEvaluation,
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -200,6 +225,7 @@ public class DecisionExplorerPayloadService {
                 DecisionExplorerConfidenceSummaryV1.unknown(BOUNDARY_NOTE),
                 DecisionExplorerRoutingDiagnosticsV1.unknown(BOUNDARY_NOTE),
                 DecisionExplorerRouteTradeoffAnalysisV1.unknown(BOUNDARY_NOTE),
+                DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(BOUNDARY_NOTE),
                 List.of(),
                 List.of(),
                 policyGateReadouts(null),
@@ -684,6 +710,7 @@ public class DecisionExplorerPayloadService {
                         "confidenceSummary",
                         "routingDiagnostics",
                         "routeTradeoffAnalysis",
+                        "shadowDecisionQualityEvaluation",
                         "factorContributions",
                         "factorDrilldowns",
                         "policyGateReadouts",
@@ -700,6 +727,7 @@ public class DecisionExplorerPayloadService {
                 List.of(
                         "Which candidate was selected?",
                         "Which routing diagnostics need review?",
+                        "What local shadow decision-quality classification was derived?",
                         "Which visible factors contributed to the selected decision?",
                         "Which boundaries remain not proven?"),
                 List.of(

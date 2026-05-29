@@ -8,46 +8,59 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-29T03:57-07:00
+Timestamp: 2026-05-29T09:20-07:00
 
 Goal name: Decision Explorer / LASE Codebase Modularity Refactor Phase 1
 
-Current PR slot: MOD-P1-G11
+Current PR slot: MOD-P1-G12
 
-Checkpoint: MOD-P1-G11 PR opened; shared diagnostic support helper extraction awaiting remote checks
+Checkpoint: MOD-P1-G12 PR opened; modularity regression guards awaiting remote checks
 
-Started from main SHA: `81aff70287a4e8c370561bce8733dd7ec34da0b8`
+Started from main SHA: `ffb70e80dcbd493fc1e5798324ca666e8b7d7099`
 
-Current branch: codex/modularity-diagnostic-support-helpers
+Current branch: codex/modularity-regression-hardening
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/425
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/426
 
-PR creation head: `41ba4a1131d63f92e47d1374f3f699f4b3d281da`
+PR creation head: `1b0e3afadba410086a48eb4eb847d5996827a7af`
 
-Current branch head: `41ba4a1131d63f92e47d1374f3f699f4b3d281da` at PR opening; PR-created checkpoint commit is pending push.
+Current branch head: `1b0e3afadba410086a48eb4eb847d5996827a7af` at PR opening; PR-created checkpoint commit is pending push.
 
 Changed files for this slice:
 
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerDiagnosticListSupport.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerDiagnosticFingerprintSupport.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerEvidenceSufficiencyEvaluator.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerReplayReadinessEvaluator.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffFingerprintBuilder.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffExplanationBuilder.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffRowBuilder.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffService.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowQualityFingerprintBuilder.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowQualityExplanationBuilder.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityService.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCandidateTradeoffScoringBuilder.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerFactorTradeoffDeltaBuilder.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerDiagnosticListSupportTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerDiagnosticFingerprintSupportTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerModularityRegressionTest.java
 - docs/agent/SESSION_MANAGER.md
 - docs/agent/FAILURE_LOG.md
 
 Checks run:
 
+- MOD-P1-G12 branch `codex/modularity-regression-hardening` was created from clean synced main at
+  `ffb70e80dcbd493fc1e5798324ca666e8b7d7099`.
+- MOD-P1-G12 adds regression guards for refactored service class size, collaborator delegation, shared diagnostic
+  helper usage, and no production routing/proxy mutation from Decision Explorer diagnostic code.
+- MOD-P1-G12 focused modularity guard initially failed on an over-tight 260-line shadow-quality threshold and was
+  logged in `docs/agent/FAILURE_LOG.md`; the threshold was adjusted to a still-tight 275-line guard.
+- MOD-P1-G12 focused verification passed: `mvn -q "-Dtest=DecisionExplorerModularityRegressionTest" test`.
+- MOD-P1-G12 broader Decision Explorer/API/static selector passed:
+  `mvn -q "-Dtest=DecisionExplorerModularityRegressionTest,DecisionExplorerDiagnosticListSupportTest,DecisionExplorerDiagnosticFingerprintSupportTest,DecisionExplorerRouteTradeoffCompatibilityRegressionTest,DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`.
+- MOD-P1-G12 full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  redirected-output `mvn -B package` with 2,848 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- `git diff --cached --check` passed after staging the MOD-P1-G12 slice.
+- MOD-P1-G12 branch `codex/modularity-regression-hardening` was pushed to origin.
+- MOD-P1-G12 PR #426 was opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/426 with
+  behavior-preserving regression-hardening scope, local verification, safety confirmations, and final-closeout
+  next-slice notes.
+- MOD-P1-G11 PR #425 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency
+  Review was success/skipped and not failing.
+- MOD-P1-G11 merged as `ffb70e80dcbd493fc1e5798324ca666e8b7d7099`.
+- MOD-P1-G11 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, redirected-output `mvn -B package` with 2,844 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- MOD-P1-G11 logged two local `mvn -B package` output/tool timeout failures before the redirected-output rerun
+  passed; no Maven/Surefire processes remained after the second timeout.
+- MOD-P1-G11 main CI and CodeQL passed for `ffb70e80dcbd493fc1e5798324ca666e8b7d7099`; Dependency Review was not
+  failing.
 - MOD-P1-G11 branch `codex/modularity-diagnostic-support-helpers` was created from clean synced main at
   `81aff70287a4e8c370561bce8733dd7ec34da0b8`.
 - MOD-P1-G11 is extracting shared diagnostic list and fingerprint helper support from duplicated Decision Explorer /

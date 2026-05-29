@@ -2723,6 +2723,25 @@ Follow-up action: continue local pre-PR verification and PR preparation.
 
 ## Entry
 
+Date/time: 2026-05-28T23:05-07:00
+
+Branch/PR: codex/modularity-route-tradeoff-row-builders / PR #420
+
+Failure type: local GitHub CLI watcher timeout
+
+Failing check: `gh pr checks 420 --watch --interval 30`
+
+Suspected cause: the PR remote checks were still running longer than the 300-second local tool timeout.
+
+Fix attempted: poll the PR directly with `gh pr view 420 --json number,state,headRefOid,mergeStateStatus,statusCheckRollup,url`.
+
+Result: direct PR polling succeeded; CodeQL/Analyze Java had passed, Dependency Review was success/skipped and not
+failing, and Build/Test/Package/Smoke checks were still in progress at the time of logging.
+
+Follow-up action: continue polling PR #420 current-head checks; merge only after required checks are current-head green.
+
+## Entry
+
 Date/time: 2026-05-28T18:59-07:00
 
 Branch/PR: codex/lase-phase4-quality-fingerprints / no PR yet

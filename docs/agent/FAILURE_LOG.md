@@ -6,6 +6,47 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-28T22:43-07:00
+
+Branch/PR: codex/modularity-route-tradeoff-row-builders / no PR yet
+
+Failure type: focused test compilation failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerRouteTradeoffRowBuilderTest,DecisionExplorerCandidateTradeoffScoringBuilderTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerRouteTradeoffCompatibilityRegressionTest" test`
+
+Suspected cause: the new direct row-builder test asserted `SCORE_GAP_MATERIAL` and `SCORE_GAP_UNKNOWN` constants that
+do not exist; `DecisionExplorerRouteTradeoffRowV1` exposes those score-gap values as stable strings.
+
+Fix attempted: replace the test-only constant references with the existing stable string values.
+
+Result: the test-only constant references were replaced and the focused route-tradeoff selector passed.
+
+Follow-up action: prefer existing DTO constants when they exist, otherwise assert exact DTO strings already used by
+regression tests.
+
+## Entry
+
+Date/time: 2026-05-28T22:42-07:00
+
+Branch/PR: codex/modularity-route-tradeoff-row-builders / no PR yet
+
+Failure type: focused compilation failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerRouteTradeoffRowBuilderTest,DecisionExplorerCandidateTradeoffScoringBuilderTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerRouteTradeoffCompatibilityRegressionTest" test`
+
+Suspected cause: the first route-tradeoff row/scoring extraction removed `Map` and `Objects` imports that are still
+used by remaining factor-delta/fingerprint helpers, and one factor-delta sort still referenced the comparator after it
+moved into `DecisionExplorerRouteTradeoffRowBuilder`.
+
+Fix attempted: restore the still-needed imports and reference the moved comparator from the row builder.
+
+Result: the import/comparator fix compiled successfully; the next rerun exposed a test-only constant calibration issue
+logged above, and the subsequent focused route-tradeoff selector passed.
+
+Follow-up action: keep compiler-first focused verification after each route-tradeoff extraction.
+
+## Entry
+
 Date/time: 2026-05-28T22:26-07:00
 
 Branch/PR: codex/modularity-shadow-quality-fingerprint-builder / no PR yet
@@ -2679,6 +2720,25 @@ verification passed after using that label; the shadow decision-quality panel di
 reproducibility key, and fingerprint inputs from API data. The temporary app process on port 18082 was stopped.
 
 Follow-up action: continue local pre-PR verification and PR preparation.
+
+## Entry
+
+Date/time: 2026-05-28T23:05-07:00
+
+Branch/PR: codex/modularity-route-tradeoff-row-builders / PR #420
+
+Failure type: local GitHub CLI watcher timeout
+
+Failing check: `gh pr checks 420 --watch --interval 30`
+
+Suspected cause: the PR remote checks were still running longer than the 300-second local tool timeout.
+
+Fix attempted: poll the PR directly with `gh pr view 420 --json number,state,headRefOid,mergeStateStatus,statusCheckRollup,url`.
+
+Result: direct PR polling succeeded; CodeQL/Analyze Java had passed, Dependency Review was success/skipped and not
+failing, and Build/Test/Package/Smoke checks were still in progress at the time of logging.
+
+Follow-up action: continue polling PR #420 current-head checks; merge only after required checks are current-head green.
 
 ## Entry
 

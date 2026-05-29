@@ -8,37 +8,70 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T22:27-07:00
+Timestamp: 2026-05-28T23:00-07:00
 
 Goal name: Decision Explorer / LASE Codebase Modularity Refactor Phase 1
 
-Current PR slot: MOD-P1-G05
+Current PR slot: MOD-P1-G06
 
-Checkpoint: MOD-P1-G05 PR #419 opened; current-head checks pending
+Checkpoint: MOD-P1-G06 PR opened; route tradeoff row/scoring extraction awaiting remote checks
 
-Started from main SHA: `36a8865bd99adabb8674be47fc631aaca4d40324`
+Started from main SHA: `f230d4420fc2f17480f945b698c534ae4be94f3e`
 
-Current branch: codex/modularity-shadow-quality-fingerprint-builder
+Current branch: codex/modularity-route-tradeoff-row-builders
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/419
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/420
 
-PR creation head: `00b2c5cfba30af18b07661287daa6cad11e452df`
+PR creation head: `8b15a08dea6442efd74b630152728abd405b8c89`
 
-Current branch head: `00b2c5cfba30af18b07661287daa6cad11e452df`
+Current branch head: PR checkpoint commit pending push.
 
 Changed files for this slice:
 
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityService.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowQualityExplanationBuilder.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowQualityFingerprintBuilder.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityServiceTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowQualityExplanationBuilderTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowQualityFingerprintBuilderTest.java
-- docs/agent/FAILURE_LOG.md
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffService.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffRowBuilder.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCandidateTradeoffScoringBuilder.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffServiceTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerRouteTradeoffRowBuilderTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCandidateTradeoffScoringBuilderTest.java
 - docs/agent/SESSION_MANAGER.md
+- docs/agent/FAILURE_LOG.md
 
 Checks run:
 
+- MOD-P1-G06 branch `codex/modularity-route-tradeoff-row-builders` was created from clean synced main at
+  `f230d4420fc2f17480f945b698c534ae4be94f3e`.
+- MOD-P1-G06 is extracting route-tradeoff candidate row construction and candidate scoring explanation logic into
+  focused builders while preserving existing API payloads, fingerprints, reproducibility behavior, UI behavior, and
+  production routing behavior.
+- MOD-P1-G06 extracted candidate tradeoff row construction into `DecisionExplorerRouteTradeoffRowBuilder` and
+  candidate scoring explanation construction into `DecisionExplorerCandidateTradeoffScoringBuilder`, reducing
+  `DecisionExplorerRouteTradeoffService` from 1,561 lines to 1,296 lines while preserving row ordering, reason codes,
+  scoring explanation statuses, factor rollups, fingerprints, and production routing behavior.
+- MOD-P1-G06 logged two focused compile/test calibration failures in `docs/agent/FAILURE_LOG.md`; both were resolved
+  without behavior changes.
+- MOD-P1-G06 focused verification passed:
+  `mvn -q "-Dtest=DecisionExplorerRouteTradeoffRowBuilderTest,DecisionExplorerCandidateTradeoffScoringBuilderTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerRouteTradeoffCompatibilityRegressionTest" test`.
+- MOD-P1-G06 broader Decision Explorer/API/static selector passed:
+  `mvn -q "-Dtest=DecisionExplorerRouteTradeoffRowBuilderTest,DecisionExplorerCandidateTradeoffScoringBuilderTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerRouteTradeoffCompatibilityRegressionTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`.
+- MOD-P1-G06 full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  `mvn -B package` with 2,820 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- `git diff --cached --check` passed after staging the MOD-P1-G06 slice.
+- MOD-P1-G06 branch commit was created locally and pushed; remote PR checks are next.
+- MOD-P1-G06 branch `codex/modularity-route-tradeoff-row-builders` was pushed to origin.
+- MOD-P1-G06 PR #420 was opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/420 with behavior-preserving
+  refactor scope, local verification, safety confirmations, and next-slice notes.
+- MOD-P1-G05 PR #419 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency
+  Review was not failing.
+- MOD-P1-G05 merged as `f230d4420fc2f17480f945b698c534ae4be94f3e`.
+- MOD-P1-G05 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,814 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- MOD-P1-G05 main CI and CodeQL passed for `f230d4420fc2f17480f945b698c534ae4be94f3e`; Dependency Review was not
+  failing.
+- Historical MOD-P1-G05, MOD-P1-G04, MOD-P1-G03, MOD-P1-G02, MOD-P1-G01, and Phase 4 checkpoints remain below for
+  recovery context.
 - MOD-P1-G05 branch `codex/modularity-shadow-quality-fingerprint-builder` was created from clean synced main at
   `36a8865bd99adabb8674be47fc631aaca4d40324`.
 - MOD-P1-G05 is extracting shadow decision-quality fingerprint input, diagnostic fingerprint, reproducibility key,

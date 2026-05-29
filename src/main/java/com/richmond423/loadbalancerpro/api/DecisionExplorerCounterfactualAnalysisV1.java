@@ -17,6 +17,7 @@ public record DecisionExplorerCounterfactualAnalysisV1(
         String evidenceSufficiencyLevel,
         String replayReadinessStatus,
         String baselinePolicyProfile,
+        List<DecisionExplorerCounterfactualPolicyWeightScenarioV1> policyWeightScenarios,
         int policyWeightScenarioCount,
         int candidateOutcomeCount,
         int factorDeltaCount,
@@ -67,7 +68,8 @@ public record DecisionExplorerCounterfactualAnalysisV1(
         baselinePolicyProfile = DecisionExplorerDtoSupport.valueOrDefault(
                 baselinePolicyProfile,
                 "RETURNED_EVIDENCE_WEIGHTS");
-        policyWeightScenarioCount = Math.max(0, policyWeightScenarioCount);
+        policyWeightScenarios = DecisionExplorerDiagnosticListSupport.copyNonNull(policyWeightScenarios);
+        policyWeightScenarioCount = policyWeightScenarios.size();
         candidateOutcomeCount = Math.max(0, candidateOutcomeCount);
         factorDeltaCount = Math.max(0, factorDeltaCount);
         summaryText = DecisionExplorerDtoSupport.valueOrUnknown(summaryText);
@@ -98,6 +100,7 @@ public record DecisionExplorerCounterfactualAnalysisV1(
                 "tradeoffCategory=UNKNOWN",
                 "evidenceSufficiencyLevel=INSUFFICIENT",
                 "replayReadinessStatus=UNKNOWN",
+                "policyWeightScenarios=[]",
                 "policyWeightScenarioCount=0",
                 "candidateOutcomeCount=0",
                 "factorDeltaCount=0");
@@ -116,6 +119,7 @@ public record DecisionExplorerCounterfactualAnalysisV1(
                 DecisionExplorerEvidenceSufficiencyV1.LEVEL_INSUFFICIENT,
                 DecisionExplorerReplayReadinessDiagnosticV1.STATUS_UNKNOWN,
                 "RETURNED_EVIDENCE_WEIGHTS",
+                List.of(),
                 0,
                 0,
                 0,

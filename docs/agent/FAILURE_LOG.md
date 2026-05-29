@@ -6,6 +6,105 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-28T19:49-07:00
+
+Branch/PR: codex/lase-phase4-compatibility-regression / no PR yet
+
+Failure type: focused diagnostic test rerun
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest" test`
+
+Suspected cause: intentional self-reporting assertion rerun to capture the computed compatibility fingerprint for the
+no-routing-evidence fixture.
+
+Fix attempted: use the captured value to set the stable expectation: quality `UNKNOWN`, scenario input
+`MISSING_CANDIDATE_INPUT/INSUFFICIENT`, sufficiency `BASIC_DIAGNOSTICS_ONLY`, and replay readiness `PARTIAL`.
+
+Result: pending focused rerun.
+
+Follow-up action: rerun focused compatibility regression after replacing the diagnostic assertion.
+
+## Entry
+
+Date/time: 2026-05-28T19:48-07:00
+
+Branch/PR: codex/lase-phase4-compatibility-regression / no PR yet
+
+Failure type: focused test expectation failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest" test`
+
+Suspected cause: the new compatibility regression still used an index-specific scenario-input assertion whose exact
+computed fixture value needed to be inspected instead of inferred.
+
+Fix attempted: make the scenario assertion self-reporting for one focused rerun so the final deterministic expectation
+can be set from the actual computed compatibility string.
+
+Result: pending focused diagnostic rerun.
+
+Follow-up action: rerun the focused test, capture the computed string, then replace the diagnostic assertion with the
+stable expected value.
+
+## Entry
+
+Date/time: 2026-05-28T19:47-07:00
+
+Branch/PR: codex/lase-phase4-compatibility-regression / no PR yet
+
+Failure type: focused test expectation failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest" test`
+
+Suspected cause: the new compatibility regression expected `sufficiency=TRADEOFF_READY:` even though the
+shadow-quality compatibility fingerprint helper uses pipe-delimited fields (`sufficiency=TRADEOFF_READY|replay=...`).
+
+Fix attempted: update the assertion to match the deterministic helper format.
+
+Result: pending focused rerun.
+
+Follow-up action: rerun the focused regression test, then broaden verification if it passes.
+
+## Entry
+
+Date/time: 2026-05-28T19:46-07:00
+
+Branch/PR: codex/lase-phase4-compatibility-regression / no PR yet
+
+Failure type: focused test expectation failure
+
+Failing check: `mvn -q "-Dtest=DecisionExplorerShadowDecisionQualityCompatibilityRegressionTest" test`
+
+Suspected cause: the new compatibility regression expected the all-null fixture to classify as
+`INSUFFICIENT_EVIDENCE`, but the shadow evaluator correctly returns its explicit `UNKNOWN` fallback when no computed
+Decision Explorer evidence objects are available at all.
+
+Fix attempted: update the expected fixture compatibility vector to preserve the safe `UNKNOWN` fallback contract.
+
+Result: pending focused rerun.
+
+Follow-up action: rerun the focused regression test, then broaden verification if it passes.
+
+## Entry
+
+Date/time: 2026-05-28T19:43-07:00
+
+Branch/PR: codex/lase-phase4-compatibility-regression / no PR yet
+
+Failure type: local tooling/search command failure
+
+Failing check: `rg -n "shadowDecisionQuality|ShadowDecisionQuality|production routing|mutat|DecisionExplorerPayloadV1|confidenceSummary|routingDiagnostics|routeTradeoff|replayReadiness" src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorer*Test.java src/test/java/com/richmond423/loadbalancerpro/api/RoutingControllerTest.java`
+
+Suspected cause: PowerShell passed the wildcard path literally on Windows, and `rg` reported the path as invalid.
+
+Fix attempted: log the failed search and continue with explicit file lists or `rg --files` output for Windows-safe
+test inspection.
+
+Result: repository state remained unchanged; subsequent file discovery commands succeeded.
+
+Follow-up action: continue the LASE-P4-G09 compatibility/regression hardening slice with Windows-safe commands.
+
+## Entry
+
 Date/time: 2026-05-28T17:12-07:00
 
 Branch/PR: codex/lase-phase4-scenario-input-quality / no PR yet

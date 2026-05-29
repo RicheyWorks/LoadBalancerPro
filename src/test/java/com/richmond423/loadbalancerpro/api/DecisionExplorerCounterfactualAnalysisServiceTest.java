@@ -63,6 +63,11 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
         assertFalse(analysis.policyWeightScenarios().get(2).alternativeBecomesCloseOrPreferable());
         assertTrue(analysis.policyWeightScenarios().get(0).summaryText()
                 .contains("does not change production scoring or routing"));
+        assertEquals(2, analysis.counterfactualCandidateOutcomeCount());
+        assertEquals(List.of("SELECTED_STABLE", "ALTERNATIVE_TRAILING"),
+                analysis.counterfactualCandidateOutcomes().stream()
+                        .map(DecisionExplorerCounterfactualCandidateOutcomeV1::counterfactualOutcomeLabel)
+                        .toList());
         assertTrue(analysis.stableSignals().contains("confidence status is STRONG"));
         assertTrue(analysis.stableSignals()
                 .contains("selected candidate has returned-evidence tradeoff advantage"));
@@ -70,7 +75,7 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
         assertTrue(analysis.reasonCodes().contains("COUNTERFACTUAL_ANALYSIS_STABLE"));
         assertTrue(analysis.diagnosticFingerprint().startsWith("counterfactual-analysis|v1|"));
         assertEquals("counterfactual:v1:STABLE:edge-a:SELECTED_ADVANTAGE:quality=ACCEPTABLE:"
-                + "sufficiency=REPLAY_STYLE_READY:replay=READY:scenarios=3",
+                + "sufficiency=REPLAY_STYLE_READY:replay=READY:scenarios=3:outcomes=2",
                 analysis.reproducibilityKey());
     }
 
@@ -88,6 +93,10 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
         assertEquals(3, analysis.policyWeightScenarioCount());
         assertTrue(analysis.policyWeightScenarios().get(2).alternativeBecomesCloseOrPreferable());
         assertEquals("CLOSE_CALL", analysis.policyWeightScenarios().get(2).sensitivityLabel());
+        assertEquals(List.of("SELECTED_SENSITIVE", "ALTERNATIVE_CLOSE_CALL"),
+                analysis.counterfactualCandidateOutcomes().stream()
+                        .map(DecisionExplorerCounterfactualCandidateOutcomeV1::counterfactualOutcomeLabel)
+                        .toList());
         assertTrue(analysis.reasonCodes().contains("COUNTERFACTUAL_ANALYSIS_CLOSE_CALL"));
     }
 
@@ -104,6 +113,10 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
         assertEquals(List.of("SENSITIVE", "SENSITIVE", "SENSITIVE"),
                 analysis.policyWeightScenarios().stream()
                         .map(DecisionExplorerCounterfactualPolicyWeightScenarioV1::sensitivityLabel)
+                        .toList());
+        assertEquals(List.of("SELECTED_SENSITIVE", "ALTERNATIVE_UNKNOWN"),
+                analysis.counterfactualCandidateOutcomes().stream()
+                        .map(DecisionExplorerCounterfactualCandidateOutcomeV1::counterfactualOutcomeLabel)
                         .toList());
         assertTrue(analysis.limitationSignals().contains("score-comparable alternative evidence was not returned"));
         assertTrue(analysis.unknowns().contains("score delta from selected candidate"));
@@ -123,6 +136,10 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
         assertEquals(List.of("DEGRADED", "DEGRADED", "DEGRADED"),
                 analysis.policyWeightScenarios().stream()
                         .map(DecisionExplorerCounterfactualPolicyWeightScenarioV1::sensitivityLabel)
+                        .toList());
+        assertEquals(List.of("SELECTED_DEGRADED"),
+                analysis.counterfactualCandidateOutcomes().stream()
+                        .map(DecisionExplorerCounterfactualCandidateOutcomeV1::counterfactualOutcomeLabel)
                         .toList());
         assertTrue(analysis.reasonCodes().contains("COUNTERFACTUAL_ANALYSIS_DEGRADED"));
     }
@@ -149,6 +166,7 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
                 .contains("shadow decision quality reports INSUFFICIENT_EVIDENCE"));
         assertEquals(1, analysis.policyWeightScenarioCount());
         assertEquals("INSUFFICIENT_EVIDENCE", analysis.policyWeightScenarios().get(0).sensitivityLabel());
+        assertEquals(0, analysis.counterfactualCandidateOutcomeCount());
         assertTrue(analysis.reasonCodes().contains("COUNTERFACTUAL_ANALYSIS_INSUFFICIENT_EVIDENCE"));
     }
 
@@ -161,12 +179,13 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
         assertEquals("UNKNOWN", analysis.sensitivityBand());
         assertEquals("UNKNOWN", analysis.selectedCandidateId());
         assertEquals(0, analysis.policyWeightScenarioCount());
+        assertEquals(0, analysis.counterfactualCandidateOutcomeCount());
         assertEquals(0, analysis.candidateOutcomeCount());
         assertEquals(0, analysis.factorDeltaCount());
         assertTrue(analysis.limitationSignals()
                 .contains("computed Decision Explorer evidence was unavailable"));
         assertEquals("counterfactual:v1:UNKNOWN:UNKNOWN:UNKNOWN:quality=UNKNOWN:"
-                + "sufficiency=INSUFFICIENT:replay=UNKNOWN:scenarios=0",
+                + "sufficiency=INSUFFICIENT:replay=UNKNOWN:scenarios=0:outcomes=0",
                 analysis.reproducibilityKey());
     }
 
@@ -194,6 +213,12 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
                         StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerCounterfactualPolicyWeightScenarioV1.java"),
+                        StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerCounterfactualCandidateOutcomeEvaluator.java"),
+                        StandardCharsets.UTF_8)
+                + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
+                        + "DecisionExplorerCounterfactualCandidateOutcomeV1.java"),
                         StandardCharsets.UTF_8)
                 + Files.readString(Path.of("src/main/java/com/richmond423/loadbalancerpro/api/"
                         + "DecisionExplorerCounterfactualAnalysisV1.java"), StandardCharsets.UTF_8);

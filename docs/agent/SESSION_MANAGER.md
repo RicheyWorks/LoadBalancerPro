@@ -8,31 +8,32 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-29T11:05-07:00
+Timestamp: 2026-05-29T11:18-07:00
 
 Goal name: LASE Routing Intelligence Phase 5 - Local Counterfactual Decision Analysis and Policy-Weight Sensitivity
 
-Current PR slot: LASE-P5-PR2
+Current PR slot: LASE-P5-PR3
 
-Checkpoint: LASE-P5-PR2 PR opened; awaiting remote checks
+Checkpoint: LASE-P5-PR2 merged-main-green; LASE-P5-PR3 branch created for counterfactual candidate outcomes
 
 Started from main SHA: `dbbef3510708698297e82cf6d1209810e93b9c55`
 
-Current branch: codex/lase-phase5-policy-weight-sensitivity
+Current branch: codex/lase-phase5-counterfactual-candidate-outcomes
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/429
+PR URL: pending
 
-PR creation head: `ddfe2ce8d8b35cd4aa69ee5c380c67e99809aba8`
+PR creation head: pending
 
-Current branch head: `ddfe2ce8d8b35cd4aa69ee5c380c67e99809aba8` at PR opening; PR-created checkpoint commit is pending.
+Current branch head: `be2d748a54b9bf9cdd27701be42f45419b744bfc` at branch creation; implementation commit is pending.
 
 Changed files for this slice:
 
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualAnalysisV1.java
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualAnalysisService.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualPolicyWeightScenarioBuilder.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualPolicyWeightScenarioV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualCandidateOutcomeEvaluator.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualCandidateOutcomeV1.java
 - src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualAnalysisServiceTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerCounterfactualCandidateOutcomeEvaluatorTest.java
 - docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
 
@@ -68,6 +69,33 @@ Checks run:
 - LASE-P5-PR2 PR #429 was opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/429 with local-only
   policy-weight scenario scope, collaborator/modularity notes, local verification, safety confirmations, and
   next-slice notes.
+- LASE-P5-PR2 PR #429 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, CodeQL, and
+  Dependency Review was success/skipped and not failing.
+- LASE-P5-PR2 merged as `be2d748a54b9bf9cdd27701be42f45419b744bfc`.
+- LASE-P5-PR2 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, redirected-output `mvn -B package` with 2,856 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P5-PR2 main CI and CodeQL passed for `be2d748a54b9bf9cdd27701be42f45419b744bfc`; Dependency Review was not
+  failing.
+- LASE-P5-PR3 branch `codex/lase-phase5-counterfactual-candidate-outcomes` was created from clean synced main at
+  `be2d748a54b9bf9cdd27701be42f45419b744bfc`.
+- LASE-P5-PR3 is adding local-only counterfactual candidate outcome evaluation using the policy-weight scenario model,
+  route-tradeoff rows, and shadow candidate outcome evidence.
+- LASE-P5-PR3 adds `DecisionExplorerCounterfactualCandidateOutcomeV1` and
+  `DecisionExplorerCounterfactualCandidateOutcomeEvaluator` to classify selected-stable, selected-sensitive,
+  selected-degraded, alternative-trailing, alternative-close-call, alternative-challenging, alternative-unknown, and
+  insufficient-evidence candidate outcomes from existing computed diagnostics and policy-weight scenarios.
+- LASE-P5-PR3 compile verification initially failed on an accessor mismatch and was logged in
+  `docs/agent/FAILURE_LOG.md`; the evaluator was corrected to use `candidateOutcomeComparisons()`.
+- LASE-P5-PR3 focused counterfactual selector initially failed on reproducibility-key expectation updates and was
+  logged in `docs/agent/FAILURE_LOG.md`; the service assertions were updated for outcome-aware keys.
+- LASE-P5-PR3 focused verification passed:
+  `mvn -q "-Dtest=DecisionExplorerCounterfactualCandidateOutcomeEvaluatorTest,DecisionExplorerCounterfactualAnalysisServiceTest" test`.
+- LASE-P5-PR3 broader Decision Explorer/API/modularity selector passed:
+  `mvn -q "-Dtest=DecisionExplorerCounterfactualCandidateOutcomeEvaluatorTest,DecisionExplorerCounterfactualAnalysisServiceTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerShadowCandidateOutcomeBuilderTest,DecisionExplorerModularityRegressionTest,DecisionExplorerDiagnosticListSupportTest,DecisionExplorerDiagnosticFingerprintSupportTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`.
+- LASE-P5-PR3 full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  redirected-output `mvn -B package` with 2,862 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
 - LASE-P5-PR1 branch `codex/lase-phase5-counterfactual-foundation` was created from clean synced main at
   `dbbef3510708698297e82cf6d1209810e93b9c55`.
 - LASE-P5-PR1 is adding a local-only, read-only counterfactual analysis DTO/service foundation that derives from the

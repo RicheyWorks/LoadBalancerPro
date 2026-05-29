@@ -91,6 +91,7 @@ class DecisionExplorerStaticPageTest {
                 "Route Tradeoff Intelligence",
                 "Evidence Sufficiency",
                 "Replay Readiness",
+                "Shadow Decision Quality",
                 "Selected Candidate",
                 "Candidate Set",
                 "Candidate Comparison",
@@ -98,6 +99,9 @@ class DecisionExplorerStaticPageTest {
                 "Candidate Diagnostics",
                 "Route Candidate Tradeoffs",
                 "Candidate Tradeoff Scoring",
+                "Shadow Candidate Outcomes",
+                "Policy Sensitivity",
+                "Scenario Input Quality",
                 "Evidence Diagnostics",
                 "Factor Contributions",
                 "Factor Drill-Down",
@@ -129,6 +133,7 @@ class DecisionExplorerStaticPageTest {
                 "Tradeoff status",
                 "Evidence sufficiency",
                 "Replay readiness",
+                "Decision quality",
                 "Degraded signals",
                 "Warning",
                 "Unknown",
@@ -167,6 +172,10 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("route-tradeoff-summary"));
         assertTrue(page.contains("evidence-sufficiency"));
         assertTrue(page.contains("replay-readiness"));
+        assertTrue(page.contains("shadow-decision-quality"));
+        assertTrue(page.contains("shadow-candidate-outcomes"));
+        assertTrue(page.contains("shadow-policy-sensitivity"));
+        assertTrue(page.contains("shadow-scenario-input-quality"));
         assertTrue(page.contains("candidate-confidence"));
         assertTrue(page.contains("candidate-diagnostics"));
         assertTrue(page.contains("route-candidate-tradeoffs"));
@@ -181,11 +190,16 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("first.confidenceSummary"));
         assertTrue(page.contains("first.routingDiagnostics"));
         assertTrue(page.contains("first.routeTradeoffAnalysis"));
+        assertTrue(page.contains("first.shadowDecisionQualityEvaluation"));
         assertTrue(page.contains("renderConfidenceSummary"));
         assertTrue(page.contains("renderRoutingDiagnosticsSummary"));
         assertTrue(page.contains("renderRouteTradeoffSummary"));
         assertTrue(page.contains("renderEvidenceSufficiencySummary"));
         assertTrue(page.contains("renderReplayReadinessSummary"));
+        assertTrue(page.contains("renderShadowDecisionQualitySummary"));
+        assertTrue(page.contains("renderShadowCandidateOutcomeTable"));
+        assertTrue(page.contains("renderShadowPolicySensitivitySummary"));
+        assertTrue(page.contains("renderShadowScenarioInputQualitySummary"));
         assertTrue(page.contains("renderCandidateConfidenceTable"));
         assertTrue(page.contains("renderCandidateDiagnosticsTable"));
         assertTrue(page.contains("renderRouteTradeoffTable"));
@@ -204,6 +218,10 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("routeTradeoffExplanation"));
         assertTrue(page.contains("routeTradeoffFingerprint"));
         assertTrue(page.contains("replayReadinessFingerprint"));
+        assertTrue(page.contains("shadowDecisionQuality"));
+        assertTrue(page.contains("shadowDecisionQualityReasons"));
+        assertTrue(page.contains("policySensitivity"));
+        assertTrue(page.contains("scenarioInputQuality"));
         assertTrue(page.contains("diagnostics.explanationText"));
         assertTrue(page.contains("degradationReasons"));
         assertTrue(page.contains("partialEvidenceReasons"));
@@ -211,8 +229,14 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("confidenceStatusType"));
         assertTrue(page.contains("sufficiencyStatusType"));
         assertTrue(page.contains("replayReadinessStatusType"));
+        assertTrue(page.contains("shadowQualityStatusType"));
+        assertTrue(page.contains("policySensitivityStatusType"));
+        assertTrue(page.contains("scenarioInputStatusType"));
         assertTrue(page.contains("Candidate confidence rows"));
         assertTrue(page.contains("Factor status rows"));
+        assertTrue(page.contains("Candidate outcomes"));
+        assertTrue(page.contains("Policy sensitivity"));
+        assertTrue(page.contains("Scenario input quality"));
         assertTrue(page.contains("closestAlternativeText"));
         assertTrue(page.contains("readinessScoreText"));
         assertTrue(page.contains("Caution notes"));

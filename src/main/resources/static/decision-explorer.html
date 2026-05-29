@@ -582,6 +582,10 @@
       <h2 id="replay-readiness-title">Replay Readiness</h2>
       <div id="replay-readiness" class="empty">No replay-readiness diagnostics loaded yet.</div>
     </section>
+    <section class="panel" aria-labelledby="shadow-quality-title">
+      <h2 id="shadow-quality-title">Shadow Decision Quality</h2>
+      <div id="shadow-decision-quality" class="empty">No shadow decision-quality evaluation loaded yet.</div>
+    </section>
     <section class="panel" aria-labelledby="reviewer-badges-title">
       <h2 id="reviewer-badges-title">Reviewer Explanation Badges</h2>
       <p class="scenario-note">Display-only labels from returned payload fields; badges do not enforce or prove runtime decisions.</p>
@@ -626,6 +630,22 @@
     <h2 id="candidate-tradeoff-scoring-title">Candidate Tradeoff Scoring</h2>
     <div id="candidate-tradeoff-scoring" class="empty">No candidate tradeoff scoring rows loaded yet.</div>
   </section>
+
+  <section class="panel" aria-labelledby="shadow-candidate-outcomes-title">
+    <h2 id="shadow-candidate-outcomes-title">Shadow Candidate Outcomes</h2>
+    <div id="shadow-candidate-outcomes" class="empty">No shadow candidate outcome rows loaded yet.</div>
+  </section>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="policy-sensitivity-title">
+      <h2 id="policy-sensitivity-title">Policy Sensitivity</h2>
+      <div id="shadow-policy-sensitivity" class="empty">No policy-sensitivity diagnostics loaded yet.</div>
+    </section>
+    <section class="panel" aria-labelledby="scenario-input-quality-title">
+      <h2 id="scenario-input-quality-title">Scenario Input Quality</h2>
+      <div id="shadow-scenario-input-quality" class="empty">No scenario-input quality evaluation loaded yet.</div>
+    </section>
+  </div>
 
   <section class="panel" aria-labelledby="evidence-diagnostics-title">
     <h2 id="evidence-diagnostics-title">Evidence Diagnostics</h2>
@@ -766,6 +786,10 @@
     routeTradeoffSummary: document.getElementById("route-tradeoff-summary"),
     evidenceSufficiency: document.getElementById("evidence-sufficiency"),
     replayReadiness: document.getElementById("replay-readiness"),
+    shadowDecisionQuality: document.getElementById("shadow-decision-quality"),
+    shadowCandidateOutcomes: document.getElementById("shadow-candidate-outcomes"),
+    shadowPolicySensitivity: document.getElementById("shadow-policy-sensitivity"),
+    shadowScenarioInputQuality: document.getElementById("shadow-scenario-input-quality"),
     reviewerBadges: document.getElementById("reviewer-badges"),
     selectedCandidate: document.getElementById("selected-candidate"),
     notProven: document.getElementById("not-proven"),
@@ -1010,11 +1034,25 @@
     ]);
     const routingDiagnostics = first.routingDiagnostics || {};
     const routeTradeoffAnalysis = first.routeTradeoffAnalysis || {};
+    const shadowDecisionQuality = first.shadowDecisionQualityEvaluation || {};
     renderConfidenceSummary(elements.confidenceSummary, first.confidenceSummary);
     renderRoutingDiagnosticsSummary(elements.routingDiagnostics, routingDiagnostics);
     renderRouteTradeoffSummary(elements.routeTradeoffSummary, routeTradeoffAnalysis);
     renderEvidenceSufficiencySummary(elements.evidenceSufficiency, routeTradeoffAnalysis.evidenceSufficiency);
     renderReplayReadinessSummary(elements.replayReadiness, routeTradeoffAnalysis.replayReadinessDiagnostic);
+    renderShadowDecisionQualitySummary(elements.shadowDecisionQuality, shadowDecisionQuality);
+    renderShadowCandidateOutcomeTable(
+      elements.shadowCandidateOutcomes,
+      shadowDecisionQuality.candidateOutcomeComparisons || []
+    );
+    renderShadowPolicySensitivitySummary(
+      elements.shadowPolicySensitivity,
+      shadowDecisionQuality.policySensitivityDiagnostic
+    );
+    renderShadowScenarioInputQualitySummary(
+      elements.shadowScenarioInputQuality,
+      shadowDecisionQuality.scenarioInputQuality
+    );
     renderReviewerBadges(elements.reviewerBadges, first, selectedScenario());
     renderKeyValues(elements.selectedCandidate, candidateRows(first.selectedCandidate));
     renderChips(elements.notProven, first.notProvenBoundaries, "not-proven");
@@ -1058,6 +1096,10 @@
     setEmpty(elements.routeTradeoffSummary, "No route tradeoff analysis available.");
     setEmpty(elements.evidenceSufficiency, "No evidence sufficiency diagnostics available.");
     setEmpty(elements.replayReadiness, "No replay-readiness diagnostics available.");
+    setEmpty(elements.shadowDecisionQuality, "No shadow decision-quality evaluation available.");
+    setEmpty(elements.shadowCandidateOutcomes, "No shadow candidate outcome rows available.");
+    setEmpty(elements.shadowPolicySensitivity, "No policy-sensitivity diagnostics available.");
+    setEmpty(elements.shadowScenarioInputQuality, "No scenario-input quality evaluation available.");
     setEmpty(elements.reviewerBadges, "No reviewer badges available.");
     setEmpty(elements.selectedCandidate, "No selected candidate available.");
     setEmpty(elements.notProven, "No boundaries available.");
@@ -1294,6 +1336,158 @@
     target.classList.remove("empty");
   }
 
+  function renderShadowDecisionQualitySummary(target, evaluation) {
+    target.replaceChildren();
+    if (!evaluation || !evaluation.evaluationObject) {
+      setEmpty(target, "No shadow decision-quality evaluation returned.");
+      return;
+    }
+    const policy = evaluation.policySensitivityDiagnostic || {};
+    const scenarioInput = evaluation.scenarioInputQuality || {};
+    const wrapper = document.createElement("div");
+    wrapper.className = "diagnostic-summary";
+    const badge = document.createElement("span");
+    badge.className = `confidence-status ${shadowQualityStatusType(evaluation.qualityLabel)}`;
+    badge.textContent = `${value(evaluation.qualityLabel)} / ${value(evaluation.qualityBand)} / score `
+      + `${qualityScoreText(evaluation.qualityScore)}`;
+    wrapper.append(badge);
+    wrapper.append(keyValueTable([
+      ["Selected candidate", value(evaluation.selectedCandidateId)],
+      ["Confidence/evidence", `${value(evaluation.confidenceStatus)} / ${value(evaluation.evidenceQuality)}`],
+      ["Tradeoff category", value(evaluation.tradeoffCategory)],
+      ["Evidence sufficiency", value(evaluation.evidenceSufficiencyLevel)],
+      ["Replay readiness", value(evaluation.replayReadinessStatus)],
+      ["Candidate outcomes", countText(evaluation.candidateOutcomeCount == null ? 0
+        : evaluation.candidateOutcomeCount, "candidate outcome row")],
+      ["Policy sensitivity", `${value(policy.sensitivityLevel)} / ${value(policy.sensitivityCategory)}`],
+      ["Scenario input quality", `${value(scenarioInput.inputQualityLabel)} / ${value(scenarioInput.supportBand)}`],
+      ["Evidence basis summary", value(evaluation.evidenceBasisSummary)],
+      ["Selected basis summary", value(evaluation.selectedCandidateBasisSummary)],
+      ["Evidence basis", listText(evaluation.evidenceBasis)],
+      ["Selected basis", listText(evaluation.selectedCandidateBasis)],
+      ["Quality reasons", listText(evaluation.qualityReasons)],
+      ["Warnings", listText(evaluation.warnings)],
+      ["Unknowns", listText(evaluation.unknowns)],
+      ["Source refs", listText(evaluation.sourceReferenceIds)],
+      ["Boundary", value(evaluation.boundaryNote)]
+    ]));
+    target.append(wrapper);
+    target.classList.remove("empty");
+  }
+
+  function renderShadowCandidateOutcomeTable(target, rows) {
+    renderTable(target, [
+      "Order",
+      "Candidate",
+      "Selected",
+      "Outcome",
+      "Impact",
+      "Tradeoff",
+      "Risk/benefit",
+      "Status",
+      "Risk",
+      "Gap",
+      "Final score",
+      "Delta",
+      "Summary",
+      "Benefit signals",
+      "Risk/degraded/unknown",
+      "Reasons",
+      "Source refs"
+    ], rows, (row, index) => [
+      row.displayOrder == null ? String(index + 1) : String(row.displayOrder),
+      value(row.candidateLabel || row.candidateId),
+      row.selected ? "yes" : "no",
+      value(row.outcomeLabel),
+      value(row.qualityImpact),
+      value(row.tradeoffCategory),
+      value(row.riskBenefitClassification),
+      value(row.diagnosticStatus),
+      value(row.riskLevel),
+      value(row.scoreGapCategory),
+      row.finalScore == null ? "UNKNOWN" : String(row.finalScore),
+      row.scoreDeltaFromSelected == null ? "UNKNOWN" : String(row.scoreDeltaFromSelected),
+      value(row.summaryText),
+      listText(row.benefitSignals),
+      listText(uniqueList(mergeLists(row.riskSignals, row.degradedSignals, row.unknownSignals))),
+      listText(row.reasonCodes),
+      listText(row.sourceReferenceIds)
+    ], "No shadow candidate outcome rows returned.");
+  }
+
+  function renderShadowPolicySensitivitySummary(target, diagnostic) {
+    target.replaceChildren();
+    if (!diagnostic || !diagnostic.diagnosticObject) {
+      setEmpty(target, "No policy-sensitivity diagnostics returned.");
+      return;
+    }
+    const wrapper = document.createElement("div");
+    wrapper.className = "diagnostic-summary";
+    const badge = document.createElement("span");
+    badge.className = `confidence-status ${policySensitivityStatusType(diagnostic.sensitivityLevel)}`;
+    badge.textContent = `${value(diagnostic.sensitivityLevel)} / ${value(diagnostic.sensitivityCategory)}`
+      + ` / score ${qualityScoreText(diagnostic.sensitivityScore)}`;
+    wrapper.append(badge);
+    wrapper.append(keyValueTable([
+      ["Selected candidate", value(diagnostic.selectedCandidateId)],
+      ["Tradeoff category", value(diagnostic.tradeoffCategory)],
+      ["Evidence sufficiency", value(diagnostic.evidenceSufficiencyLevel)],
+      ["Replay readiness", value(diagnostic.replayReadinessStatus)],
+      ["Candidate outcomes", countText(diagnostic.candidateOutcomeCount == null ? 0
+        : diagnostic.candidateOutcomeCount, "candidate outcome row")],
+      ["Summary", value(diagnostic.summaryText)],
+      ["Stable signals", listText(diagnostic.stableSignals)],
+      ["Review signals", listText(diagnostic.reviewSignals)],
+      ["Missing evidence", listText(diagnostic.missingEvidenceSignals)],
+      ["Degraded signals", listText(diagnostic.degradedSignals)],
+      ["Reasons", listText(diagnostic.reasonCodes)],
+      ["Source refs", listText(diagnostic.sourceReferenceIds)],
+      ["Boundary", value(diagnostic.boundaryNote)]
+    ]));
+    target.append(wrapper);
+    target.classList.remove("empty");
+  }
+
+  function renderShadowScenarioInputQualitySummary(target, quality) {
+    target.replaceChildren();
+    if (!quality || !quality.evaluationObject) {
+      setEmpty(target, "No scenario-input quality evaluation returned.");
+      return;
+    }
+    const wrapper = document.createElement("div");
+    wrapper.className = "diagnostic-summary";
+    const badge = document.createElement("span");
+    badge.className = `confidence-status ${scenarioInputStatusType(quality.inputQualityLabel)}`;
+    badge.textContent = `${value(quality.inputQualityLabel)} / ${value(quality.supportBand)}`
+      + ` / score ${qualityScoreText(quality.inputQualityScore)}`;
+    wrapper.append(badge);
+    wrapper.append(keyValueTable([
+      ["Selected candidate", value(quality.selectedCandidateId)],
+      ["Confidence status", value(quality.confidenceStatus)],
+      ["Evidence sufficiency", value(quality.evidenceSufficiencyLevel)],
+      ["Replay readiness", value(quality.replayReadinessStatus)],
+      ["Candidate evidence", String(quality.candidateEvidenceCount == null ? 0 : quality.candidateEvidenceCount)],
+      ["Factor evidence", String(quality.factorEvidenceCount == null ? 0 : quality.factorEvidenceCount)],
+      ["Candidate outcomes", String(quality.candidateOutcomeCount == null ? 0 : quality.candidateOutcomeCount)],
+      ["Input signal counts", [
+        `partial ${quality.partialSignalCount == null ? 0 : quality.partialSignalCount}`,
+        `missing ${quality.missingSignalCount == null ? 0 : quality.missingSignalCount}`,
+        `degraded ${quality.degradedSignalCount == null ? 0 : quality.degradedSignalCount}`
+      ].join(", ")],
+      ["Summary", value(quality.summaryText)],
+      ["Candidate input signals", listText(quality.candidateInputSignals)],
+      ["Factor input signals", listText(quality.factorInputSignals)],
+      ["Partial input signals", listText(quality.partialInputSignals)],
+      ["Missing input signals", listText(quality.missingInputSignals)],
+      ["Degraded input signals", listText(quality.degradedInputSignals)],
+      ["Reasons", listText(quality.reasonCodes)],
+      ["Source refs", listText(quality.sourceReferenceIds)],
+      ["Boundary", value(quality.boundaryNote)]
+    ]));
+    target.append(wrapper);
+    target.classList.remove("empty");
+  }
+
   function closestAlternativeText(analysis) {
     if (!analysis || !analysis.closestAlternativeCandidateId) {
       return "UNKNOWN";
@@ -1306,6 +1500,10 @@
 
   function readinessScoreText(item) {
     return item && item.readinessScore != null ? String(item.readinessScore) : "UNKNOWN";
+  }
+
+  function qualityScoreText(score) {
+    return score == null ? "UNKNOWN" : String(score);
   }
 
   function replayReadinessText(readiness) {
@@ -1393,6 +1591,7 @@
     const tradeoff = payload.routeTradeoffAnalysis || {};
     const sufficiency = tradeoff.evidenceSufficiency || {};
     const replayReadiness = tradeoff.replayReadinessDiagnostic || {};
+    const shadowQuality = payload.shadowDecisionQualityEvaluation || {};
     const degraded = listLength(diagnostics.degradationReasons);
     return [
       { type: "selected", label: "Selected route", detail: selectedCandidate },
@@ -1420,6 +1619,11 @@
         type: replayReadinessStatusType(replayReadiness.readinessStatus),
         label: "Replay readiness",
         detail: replayReadinessText(replayReadiness)
+      },
+      {
+        type: shadowQualityStatusType(shadowQuality.qualityLabel),
+        label: "Decision quality",
+        detail: `${value(shadowQuality.qualityLabel)} / ${value(shadowQuality.qualityBand)}`
       },
       {
         type: degraded ? "degraded" : "deterministic",
@@ -1939,13 +2143,19 @@
     const summary = payload.confidenceSummary || {};
     const diagnostics = payload.routingDiagnostics || {};
     const tradeoff = payload.routeTradeoffAnalysis || {};
+    const shadowQuality = payload.shadowDecisionQualityEvaluation || {};
     const sufficiency = tradeoff.evidenceSufficiency || {};
     const replayReadiness = tradeoff.replayReadinessDiagnostic || {};
+    const policySensitivity = shadowQuality.policySensitivityDiagnostic || {};
+    const scenarioInput = shadowQuality.scenarioInputQuality || {};
     const candidateConfidence = Array.isArray(summary.candidateConfidenceDetails) ? summary.candidateConfidenceDetails : [];
     const factorStatus = Array.isArray(summary.factorStatusDetails) ? summary.factorStatusDetails : [];
     const candidateDiagnostics = Array.isArray(diagnostics.candidateDiagnostics) ? diagnostics.candidateDiagnostics : [];
     const factorDiagnostics = Array.isArray(diagnostics.factorDiagnostics) ? diagnostics.factorDiagnostics : [];
     const routeTradeoffs = Array.isArray(tradeoff.candidateTradeoffs) ? tradeoff.candidateTradeoffs : [];
+    const shadowOutcomes = Array.isArray(shadowQuality.candidateOutcomeComparisons)
+      ? shadowQuality.candidateOutcomeComparisons
+      : [];
     const scoringExplanations = Array.isArray(tradeoff.candidateScoringExplanations)
       ? tradeoff.candidateScoringExplanations
       : [];
@@ -1964,12 +2174,20 @@
       replayReadiness.degradedEvidenceSignals,
       replayReadiness.incompatibleEvidenceSignals,
       replayReadiness.limitationSignals,
+      shadowQuality.warnings,
+      policySensitivity.reviewSignals,
+      policySensitivity.missingEvidenceSignals,
+      policySensitivity.degradedSignals,
+      scenarioInput.partialInputSignals,
+      scenarioInput.missingInputSignals,
+      scenarioInput.degradedInputSignals,
       explanationNotes(summary, "warning:"),
       candidateConfidence.flatMap(row => row.warnings),
       factorStatus.flatMap(row => row.warnings),
       candidateDiagnostics.flatMap(row => mergeLists(row.weakSignals, row.degradedSignals)),
       factorDiagnostics.flatMap(row => mergeLists(row.warningSignals, row.degradedSignals)),
       routeTradeoffs.flatMap(row => mergeLists(row.riskSignals, row.degradedSignals)),
+      shadowOutcomes.flatMap(row => mergeLists(row.riskSignals, row.degradedSignals)),
       scoringExplanations.flatMap(row => row.limitationSignals),
       factorDeltas.flatMap(row => row.limitationSignals),
       comparisons.flatMap(row => row.warnings),
@@ -1983,13 +2201,19 @@
     const summary = payload.confidenceSummary || {};
     const diagnostics = payload.routingDiagnostics || {};
     const tradeoff = payload.routeTradeoffAnalysis || {};
+    const shadowQuality = payload.shadowDecisionQualityEvaluation || {};
     const sufficiency = tradeoff.evidenceSufficiency || {};
     const replayReadiness = tradeoff.replayReadinessDiagnostic || {};
+    const policySensitivity = shadowQuality.policySensitivityDiagnostic || {};
+    const scenarioInput = shadowQuality.scenarioInputQuality || {};
     const candidateConfidence = Array.isArray(summary.candidateConfidenceDetails) ? summary.candidateConfidenceDetails : [];
     const factorStatus = Array.isArray(summary.factorStatusDetails) ? summary.factorStatusDetails : [];
     const candidateDiagnostics = Array.isArray(diagnostics.candidateDiagnostics) ? diagnostics.candidateDiagnostics : [];
     const factorDiagnostics = Array.isArray(diagnostics.factorDiagnostics) ? diagnostics.factorDiagnostics : [];
     const routeTradeoffs = Array.isArray(tradeoff.candidateTradeoffs) ? tradeoff.candidateTradeoffs : [];
+    const shadowOutcomes = Array.isArray(shadowQuality.candidateOutcomeComparisons)
+      ? shadowQuality.candidateOutcomeComparisons
+      : [];
     const factorDeltas = Array.isArray(tradeoff.factorTradeoffDeltas) ? tradeoff.factorTradeoffDeltas : [];
     return uniqueList(mergeLists(
       payload.unknowns,
@@ -2000,12 +2224,16 @@
       sufficiency.unknownEvidenceSignals,
       sufficiency.missingEvidenceSignals,
       replayReadiness.missingEvidenceSignals,
+      shadowQuality.unknowns,
+      policySensitivity.missingEvidenceSignals,
+      scenarioInput.missingInputSignals,
       explanationNotes(summary, "unknown:"),
       candidateConfidence.flatMap(row => row.unknowns),
       factorStatus.flatMap(row => row.unknowns),
       candidateDiagnostics.flatMap(row => row.unknownSignals),
       factorDiagnostics.flatMap(row => row.unknownSignals),
       routeTradeoffs.flatMap(row => row.unknownSignals),
+      shadowOutcomes.flatMap(row => row.unknownSignals),
       factorDeltas.flatMap(row => row.deltaClassification === "UNKNOWN" ? row.limitationSignals : []),
       comparisons.flatMap(row => mergeLists(row.unknownSignals, row.unknowns)),
       drilldowns.flatMap(row => row.unknowns)
@@ -2017,8 +2245,11 @@
     const drilldowns = Array.isArray(payload.factorDrilldowns) ? payload.factorDrilldowns : [];
     const diagnostics = payload.routingDiagnostics || {};
     const tradeoff = payload.routeTradeoffAnalysis || {};
+    const shadowQuality = payload.shadowDecisionQualityEvaluation || {};
     const sufficiency = tradeoff.evidenceSufficiency || {};
     const replayReadiness = tradeoff.replayReadinessDiagnostic || {};
+    const policySensitivity = shadowQuality.policySensitivityDiagnostic || {};
+    const scenarioInput = shadowQuality.scenarioInputQuality || {};
     const routeTradeoffs = Array.isArray(tradeoff.candidateTradeoffs) ? tradeoff.candidateTradeoffs : [];
     const factorDeltas = Array.isArray(tradeoff.factorTradeoffDeltas) ? tradeoff.factorTradeoffDeltas : [];
     const summaryStatus = payload.confidenceSummary && payload.confidenceSummary.status;
@@ -2037,8 +2268,19 @@
         || listLength(row.unknownSignals) > 0
         || listLength(row.degradedSignals) > 0)
       || factorDeltas.some(row => statusIs(row.deltaClassification, "UNKNOWN", "DEGRADED"));
+    const shadowQualityIsPartial = statusIs(
+      shadowQuality.qualityLabel,
+      "REVIEW_RECOMMENDED",
+      "INSUFFICIENT_EVIDENCE",
+      "DEGRADED_DECISION",
+      "UNKNOWN"
+    )
+      || statusIs(policySensitivity.sensitivityLevel, "MEDIUM", "HIGH", "UNKNOWN")
+      || !statusIs(scenarioInput.inputQualityLabel, "EVALUABLE")
+      || listLength(shadowQuality.warnings) > 0
+      || listLength(shadowQuality.unknowns) > 0;
     return Boolean(scenarioIsPartial || comparisonIsPartial || drilldownIsPartial
-      || summaryIsPartial || diagnosticsIsPartial || tradeoffIsPartial);
+      || summaryIsPartial || diagnosticsIsPartial || tradeoffIsPartial || shadowQualityIsPartial);
   }
 
   function mergeLists(...groups) {
@@ -2101,6 +2343,48 @@
     return "unknown";
   }
 
+  function shadowQualityStatusType(label) {
+    const normalized = value(label).toUpperCase();
+    if (normalized === "ACCEPTABLE") {
+      return "strong";
+    }
+    if (normalized === "REVIEW_RECOMMENDED" || normalized === "INSUFFICIENT_EVIDENCE") {
+      return "partial";
+    }
+    if (normalized === "DEGRADED_DECISION") {
+      return "degraded";
+    }
+    return "unknown";
+  }
+
+  function policySensitivityStatusType(level) {
+    const normalized = value(level).toUpperCase();
+    if (normalized === "LOW") {
+      return "strong";
+    }
+    if (normalized === "MEDIUM") {
+      return "partial";
+    }
+    if (normalized === "HIGH") {
+      return "degraded";
+    }
+    return "unknown";
+  }
+
+  function scenarioInputStatusType(label) {
+    const normalized = value(label).toUpperCase();
+    if (normalized === "EVALUABLE") {
+      return "strong";
+    }
+    if (normalized === "PARTIAL_INPUT") {
+      return "partial";
+    }
+    if (normalized === "DEGRADED_INPUT") {
+      return "degraded";
+    }
+    return "unknown";
+  }
+
   function statusIs(status, ...allowed) {
     const normalized = value(status).toUpperCase();
     return allowed.some(item => normalized === item);
@@ -2124,6 +2408,9 @@
     const routeTradeoffAnalysis = first.routeTradeoffAnalysis || {};
     const evidenceSufficiency = routeTradeoffAnalysis.evidenceSufficiency || {};
     const replayReadiness = routeTradeoffAnalysis.replayReadinessDiagnostic || {};
+    const shadowQuality = first.shadowDecisionQualityEvaluation || {};
+    const policySensitivity = shadowQuality.policySensitivityDiagnostic || {};
+    const scenarioInputQuality = shadowQuality.scenarioInputQuality || {};
     const text = [
       "Decision Explorer reviewer summary",
       `decisionId: ${value(first.decisionId)}`,
@@ -2150,6 +2437,13 @@
       `evidenceSufficiencyFingerprint: ${value(evidenceSufficiency.diagnosticFingerprint)}`,
       `replayReadiness: ${replayReadinessText(replayReadiness)}`,
       `replayReadinessFingerprint: ${value(replayReadiness.diagnosticFingerprint)}`,
+      `shadowDecisionQuality: ${value(shadowQuality.qualityLabel)} / ${value(shadowQuality.qualityBand)}`
+        + ` / score ${qualityScoreText(shadowQuality.qualityScore)}`,
+      `shadowDecisionQualityReasons: ${listText(shadowQuality.qualityReasons)}`,
+      `candidateOutcomeCount: ${shadowQuality.candidateOutcomeCount == null ? 0 : shadowQuality.candidateOutcomeCount}`,
+      `policySensitivity: ${value(policySensitivity.sensitivityLevel)} / ${value(policySensitivity.sensitivityCategory)}`,
+      `scenarioInputQuality: ${value(scenarioInputQuality.inputQualityLabel)}`
+        + ` / ${value(scenarioInputQuality.supportBand)}`,
       `readOnly: ${first.readOnly === true}`,
       `simulationOnly: ${first.simulationOnly === true}`,
       `notProven: ${listText(first.notProvenBoundaries)}`

@@ -27,6 +27,87 @@ Follow-up action: continue broader local verification for the slice.
 
 ## Entry
 
+Date/time: 2026-05-28T18:18-07:00
+
+Branch/PR: codex/lase-phase4-shadow-quality-ui / no PR yet
+
+Failure type: local browser verification tooling failure
+
+Failing check: `java -jar target/LoadBalancerPro-2.5.0.jar --server.port=18080`
+
+Suspected cause: port 18080 was already occupied by an existing local Java process before the Decision Explorer
+browser verification app could bind.
+
+Fix attempted: log the port collision before continuing and retry browser verification on an unused loopback port.
+
+Result: retry on port 18081 started successfully; browser verification completed and the temporary process was
+stopped.
+
+Follow-up action: continue local verification for the UI slice.
+
+## Entry
+
+Date/time: 2026-05-28T18:19-07:00
+
+Branch/PR: codex/lase-phase4-shadow-quality-ui / no PR yet
+
+Failure type: local browser verification tooling failure
+
+Failing check: Browser automation setup for `http://localhost:18081/decision-explorer.html`
+
+Suspected cause: the persistent browser automation session already had a top-level `title` binding, and the setup
+cell attempted to redeclare it.
+
+Fix attempted: log the session-variable collision before retrying with collision-safe variable names.
+
+Result: later scoped browser verification completed successfully.
+
+Follow-up action: continue local verification for the UI slice.
+
+## Entry
+
+Date/time: 2026-05-28T18:20-07:00
+
+Branch/PR: codex/lase-phase4-shadow-quality-ui / no PR yet
+
+Failure type: local browser verification tooling failure
+
+Failing check: Browser automation retry for `http://localhost:18081/decision-explorer.html`
+
+Suspected cause: the persistent browser automation session also had a stale top-level `runButtonCount` binding,
+so even a `var` retry collided with an existing lexical binding.
+
+Fix attempted: log the retry collision before rerunning the browser check inside a scoped block with state kept on
+`globalThis`.
+
+Result: scoped browser verification loaded the page, ran the sample, and confirmed shadow decision-quality panels
+populated from returned API data.
+
+Follow-up action: continue local verification for the UI slice.
+
+## Entry
+
+Date/time: 2026-05-28T18:21-07:00
+
+Branch/PR: codex/lase-phase4-shadow-quality-ui / no PR yet
+
+Failure type: local browser verification tooling failure
+
+Failing check: Browser storage sanity check after Decision Explorer sample run
+
+Suspected cause: the browser plugin's read-only page evaluation context did not expose `window.localStorage`, causing
+the direct `.length` read to fail even though static guard tests already check for no persistent storage APIs.
+
+Fix attempted: log the sandbox-specific failure before retrying with a guarded `typeof` check and relying on static
+source assertions for no `window.localStorage`, `window.sessionStorage`, or storage API calls.
+
+Result: guarded browser check confirmed the page source had no `window.localStorage`, `window.sessionStorage`,
+`localStorage.`, or `sessionStorage.` calls in addition to the passing static source assertions.
+
+Follow-up action: continue local verification for the UI slice.
+
+## Entry
+
 Date/time:
 
 Branch/PR:

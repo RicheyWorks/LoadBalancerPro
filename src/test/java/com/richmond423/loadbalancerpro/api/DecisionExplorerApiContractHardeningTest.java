@@ -76,6 +76,7 @@ class DecisionExplorerApiContractHardeningTest {
                 "confidenceSummary",
                 "routingDiagnostics",
                 "routeTradeoffAnalysis",
+                "shadowDecisionQualityEvaluation",
                 "factorContributions",
                 "factorDrilldowns",
                 "policyGateReadouts",
@@ -169,6 +170,30 @@ class DecisionExplorerApiContractHardeningTest {
                 .asBoolean());
         assertFalse(payload.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/replayExportAvailable")
                 .asBoolean());
+        assertEquals("DecisionExplorerShadowDecisionQualityEvaluationV1",
+                payload.at("/shadowDecisionQualityEvaluation/evaluationObject").asText());
+        assertTrue(payload.at("/shadowDecisionQualityEvaluation/readOnly").asBoolean());
+        assertTrue(payload.at("/shadowDecisionQualityEvaluation/simulationOnly").asBoolean());
+        assertEquals("REVIEW_RECOMMENDED",
+                payload.at("/shadowDecisionQualityEvaluation/qualityLabel").asText());
+        assertEquals("MEDIUM", payload.at("/shadowDecisionQualityEvaluation/qualityBand").asText());
+        assertEquals("green", payload.at("/shadowDecisionQualityEvaluation/selectedCandidateId").asText());
+        assertEquals("PARTIAL", payload.at("/shadowDecisionQualityEvaluation/confidenceStatus").asText());
+        assertEquals("PARTIAL", payload.at("/shadowDecisionQualityEvaluation/evidenceQuality").asText());
+        assertEquals("READY", payload.at("/shadowDecisionQualityEvaluation/replayReadinessStatus").asText());
+        assertTrue(payload.at("/shadowDecisionQualityEvaluation/candidateOutcomeComparisons").isArray());
+        assertEquals("green",
+                payload.at("/shadowDecisionQualityEvaluation/candidateOutcomeComparisons/0/candidateId")
+                        .asText());
+        assertFalse(payload.at("/shadowDecisionQualityEvaluation/evidenceBasisSummary").asText().isBlank());
+        assertFalse(payload.at("/shadowDecisionQualityEvaluation/selectedCandidateBasisSummary").asText().isBlank());
+        assertEquals("DecisionExplorerShadowPolicySensitivityDiagnosticV1",
+                payload.at("/shadowDecisionQualityEvaluation/policySensitivityDiagnostic/diagnosticObject")
+                        .asText());
+        assertEquals("DecisionExplorerShadowScenarioInputQualityV1",
+                payload.at("/shadowDecisionQualityEvaluation/scenarioInputQuality/evaluationObject").asText());
+        assertTrue(payload.at("/shadowDecisionQualityEvaluation/qualityReasons").isArray());
+        assertTrue(payload.at("/shadowDecisionQualityEvaluation/sourceReferenceIds").isArray());
         assertTrue(payload.path("factorDrilldowns").isArray());
         assertTrue(payload.path("factorDrilldowns").size() > 0);
         assertTrue(payload.path("notProvenBoundaries").isArray());
@@ -238,6 +263,17 @@ class DecisionExplorerApiContractHardeningTest {
                 .startsWith("replay-readiness|v1|"));
         assertFalse(json.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/replayExecutionAvailable")
                 .asBoolean());
+        assertEquals("DecisionExplorerShadowDecisionQualityEvaluationV1",
+                json.at("/shadowDecisionQualityEvaluation/evaluationObject").asText());
+        assertEquals("UNKNOWN", json.at("/shadowDecisionQualityEvaluation/qualityLabel").asText());
+        assertEquals("UNKNOWN", json.at("/shadowDecisionQualityEvaluation/qualityBand").asText());
+        assertTrue(json.at("/shadowDecisionQualityEvaluation/candidateOutcomeComparisons").isArray());
+        assertEquals(0, json.at("/shadowDecisionQualityEvaluation/candidateOutcomeComparisons").size());
+        assertEquals("UNKNOWN",
+                json.at("/shadowDecisionQualityEvaluation/policySensitivityDiagnostic/sensitivityLevel")
+                        .asText());
+        assertEquals("UNKNOWN",
+                json.at("/shadowDecisionQualityEvaluation/scenarioInputQuality/inputQualityLabel").asText());
         assertTrue(json.path("factorContributions").isArray());
         assertEquals(1, json.path("factorContributions").size());
         assertNoUnsupportedClaims(json);
@@ -278,6 +314,11 @@ class DecisionExplorerApiContractHardeningTest {
                 .startsWith("replay-readiness|v1|"));
         assertFalse(json.at("/routeTradeoffAnalysis/replayReadinessDiagnostic/replayExecutionAvailable")
                 .asBoolean());
+        assertEquals("UNKNOWN", json.at("/shadowDecisionQualityEvaluation/qualityLabel").asText());
+        assertEquals("UNKNOWN", json.at("/shadowDecisionQualityEvaluation/replayReadinessStatus").asText());
+        assertTrue(json.at("/shadowDecisionQualityEvaluation/unknowns").isArray());
+        assertStringArrayContains(json.at("/shadowDecisionQualityEvaluation/unknowns"),
+                "shadow decision-quality input evidence was unavailable");
         assertTrue(json.path("factorContributions").isArray());
         assertTrue(json.path("factorDrilldowns").isArray());
         assertEquals(0, json.path("candidateSet").size());

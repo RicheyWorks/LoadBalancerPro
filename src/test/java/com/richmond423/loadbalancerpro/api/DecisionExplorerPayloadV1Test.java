@@ -65,6 +65,15 @@ class DecisionExplorerPayloadV1Test {
                 .contains("Route tradeoff explanation is UNKNOWN"));
         assertTrue(payload.routeTradeoffAnalysis().tradeoffReasons()
                 .contains("ROUTING_DIAGNOSTICS_UNAVAILABLE"));
+        assertEquals("DecisionExplorerShadowDecisionQualityEvaluationV1",
+                payload.shadowDecisionQualityEvaluation().evaluationObject());
+        assertEquals("UNKNOWN", payload.shadowDecisionQualityEvaluation().qualityLabel());
+        assertEquals("UNKNOWN", payload.shadowDecisionQualityEvaluation().qualityBand());
+        assertTrue(payload.shadowDecisionQualityEvaluation().candidateOutcomeComparisons().isEmpty());
+        assertEquals("UNKNOWN",
+                payload.shadowDecisionQualityEvaluation().policySensitivityDiagnostic().sensitivityLevel());
+        assertEquals("UNKNOWN",
+                payload.shadowDecisionQualityEvaluation().scenarioInputQuality().inputQualityLabel());
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertEquals("policy-health", payload.policyGateReadouts().get(0).gateId());
         assertEquals("candidate-a", payload.decisionDiffReadouts().get(0).baselineCandidateId());
@@ -151,6 +160,10 @@ class DecisionExplorerPayloadV1Test {
                 .contains("Route tradeoff explanation is UNKNOWN"));
         assertEquals("INSUFFICIENT", payload.routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
         assertFalse(payload.routeTradeoffAnalysis().replayReadinessDiagnostic().replayExecutionAvailable());
+        assertEquals("UNKNOWN", payload.shadowDecisionQualityEvaluation().qualityLabel());
+        assertEquals("UNKNOWN", payload.shadowDecisionQualityEvaluation().qualityBand());
+        assertTrue(payload.shadowDecisionQualityEvaluation().evidenceBasis().isEmpty());
+        assertTrue(payload.shadowDecisionQualityEvaluation().selectedCandidateBasis().isEmpty());
         assertEquals("UNKNOWN", payload.decisionReadout().summary());
         assertTrue(payload.selectedCandidate().visibleSignals().isEmpty());
         assertTrue(payload.agentStructuredOutput().stableFieldNames().isEmpty());

@@ -8,25 +8,72 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T17:23-07:00
+Timestamp: 2026-05-28T17:55-07:00
 
 Goal name: LASE Routing Intelligence Phase 4
 
-Current PR slot: LASE-P4-G04
+Current PR slot: LASE-P4-G05
 
-Checkpoint: LASE-P4-G04 PR #408 opened; current-head checks pending
+Checkpoint: LASE-P4-G05 shadow decision-quality API PR opened
 
 Started from main SHA: `144be5daa22e52295ad3e3d1e69fbe60b49be396`
 
-Current branch: codex/lase-phase4-scenario-input-quality
+Current branch: codex/lase-phase4-shadow-quality-api
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/408
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/409
 
-PR creation head: `33078f25839b842c902d7a2efe12e659ba2eaaaa`
+PR creation head: `77eea00f11cb36ee2466f9b8cac8a1bb4940f39a`
 
-Current branch head: `33078f25839b842c902d7a2efe12e659ba2eaaaa` plus this uncommitted PR-created checkpoint
+Current branch head: `77eea00f11cb36ee2466f9b8cac8a1bb4940f39a` plus this uncommitted PR-created checkpoint
 
 Changed files for this slice:
+
+- docs/agent/FAILURE_LOG.md
+- docs/agent/SESSION_MANAGER.md
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadService.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerApiContractHardeningTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadServiceTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1Test.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerStaticPageTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/RoutingControllerTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/RoutingOpenApiContractTest.java
+
+Checks run:
+
+- LASE-P4-G05 exposes `shadowDecisionQualityEvaluation` additively on `DecisionExplorerPayloadV1`, builds it from
+  existing confidence summary, routing diagnostics, and route tradeoff analysis, and preserves read-only/simulation-only
+  behavior without changing production routing/scoring/proxy paths.
+- LASE-P4-G05 logged one local PowerShell Maven selector invocation error and one focused assertion-calibration failure
+  in `docs/agent/FAILURE_LOG.md`; both were fixed and rerun.
+- LASE-P4-G05 focused API selector passed:
+  `mvn -q "-Dtest=DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,DecisionExplorerStaticPageTest" test`.
+- LASE-P4-G05 broader Decision Explorer/API/routing selector passed:
+  `mvn -q "-Dtest=DecisionExplorer*Test,RoutingControllerTest,RoutingOpenApiContractTest" test`.
+- LASE-P4-G05 full local verification passed before commit/PR creation: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,783 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- `git diff --cached --check` passed after staging.
+- LASE-P4-G05 committed as `77eea00f11cb36ee2466f9b8cac8a1bb4940f39a`, pushed to origin, and opened as
+  PR #409: https://github.com/RicheyWorks/LoadBalancerPro/pull/409.
+- Current-head PR checks are pending for PR #409 after this checkpoint commit is pushed.
+
+- LASE-P4-G04 PR-created checkpoint committed as `972ac76d0c5910877e56fef09604df9df6f57f2a` and pushed to
+  PR #408.
+- LASE-P4-G04 current-head PR checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review
+  was not failing.
+- LASE-P4-G04 merged as `13d601cdf0f35e8ba4593fd9dc7dc3eb0f4a3de9`.
+- LASE-P4-G04 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,783 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P4-G04 main CI and CodeQL passed for `13d601cdf0f35e8ba4593fd9dc7dc3eb0f4a3de9`; Dependency Review was not
+  failing.
+- LASE-P4-G05 branch `codex/lase-phase4-shadow-quality-api` was created from clean synced main at
+  `13d601cdf0f35e8ba4593fd9dc7dc3eb0f4a3de9`.
+- LASE-P4-G05 will expose shadow decision-quality evaluation additively through Decision Explorer API payloads and
+  contract tests. The slice is read-only and will not change production routing/scoring/proxy behavior.
+
+LASE-P4-G04 changed files:
 
 - docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
@@ -34,8 +81,6 @@ Changed files for this slice:
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityService.java
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowScenarioInputQualityV1.java
 - src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityServiceTest.java
-
-Checks run:
 
 - LASE-P4-G03 PR-created checkpoint committed as `3b6c9fbe43f4955b6447c05cf571e84b09cbeb20` and pushed to
   PR #407.

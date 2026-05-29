@@ -155,6 +155,31 @@ class DecisionExplorerPayloadServiceTest {
         assertFalse(firstPayloads.get(0).routeTradeoffAnalysis()
                 .replayReadinessDiagnostic().missingEvidenceSignals()
                 .contains("diagnostic fingerprint evidence has not been computed yet"));
+        assertEquals("DecisionExplorerShadowDecisionQualityEvaluationV1",
+                firstPayloads.get(0).shadowDecisionQualityEvaluation().evaluationObject());
+        assertEquals("REVIEW_RECOMMENDED", firstPayloads.get(0).shadowDecisionQualityEvaluation().qualityLabel());
+        assertEquals("MEDIUM", firstPayloads.get(0).shadowDecisionQualityEvaluation().qualityBand());
+        assertEquals("edge-a", firstPayloads.get(0).shadowDecisionQualityEvaluation().selectedCandidateId());
+        assertEquals("STRONG", firstPayloads.get(0).shadowDecisionQualityEvaluation().confidenceStatus());
+        assertEquals("SELECTED_ADVANTAGE",
+                firstPayloads.get(0).shadowDecisionQualityEvaluation().tradeoffCategory());
+        assertEquals("TRADEOFF_READY",
+                firstPayloads.get(0).shadowDecisionQualityEvaluation().evidenceSufficiencyLevel());
+        assertEquals("PARTIAL", firstPayloads.get(0).shadowDecisionQualityEvaluation().replayReadinessStatus());
+        assertEquals(List.of("SELECTED_BASELINE", "ACCEPTABLE_ALTERNATIVE"),
+                firstPayloads.get(0).shadowDecisionQualityEvaluation().candidateOutcomeComparisons().stream()
+                        .map(DecisionExplorerShadowCandidateOutcomeV1::outcomeLabel)
+                        .toList());
+        assertEquals("MEDIUM",
+                firstPayloads.get(0).shadowDecisionQualityEvaluation()
+                        .policySensitivityDiagnostic().sensitivityLevel());
+        assertEquals("PARTIAL_INPUT",
+                firstPayloads.get(0).shadowDecisionQualityEvaluation()
+                        .scenarioInputQuality().inputQualityLabel());
+        assertTrue(firstPayloads.get(0).shadowDecisionQualityEvaluation().qualityReasons()
+                .contains("SHADOW_DECISION_QUALITY_REVIEW_RECOMMENDED"));
+        assertTrue(firstPayloads.get(0).shadowDecisionQualityEvaluation().evidenceBasisSummary()
+                .contains("no production routing decision is changed"));
         assertEquals(List.of("edge-a:healthState", "edge-z:p95LatencyMillis"),
                 firstPayloads.get(0).factorContributions().stream()
                         .map(factor -> factor.candidateId() + ":" + factor.factorName())
@@ -212,6 +237,14 @@ class DecisionExplorerPayloadServiceTest {
         assertTrue(payload.routeTradeoffAnalysis().candidateTradeoffs().isEmpty());
         assertEquals("DEGRADED", payload.routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
         assertFalse(payload.routeTradeoffAnalysis().replayReadinessDiagnostic().replayExecutionAvailable());
+        assertEquals("DEGRADED_DECISION", payload.shadowDecisionQualityEvaluation().qualityLabel());
+        assertEquals("LOW", payload.shadowDecisionQualityEvaluation().qualityBand());
+        assertEquals("DEGRADED", payload.shadowDecisionQualityEvaluation().confidenceStatus());
+        assertEquals("DEGRADED", payload.shadowDecisionQualityEvaluation().evidenceSufficiencyLevel());
+        assertEquals("MISSING_CANDIDATE_INPUT",
+                payload.shadowDecisionQualityEvaluation().scenarioInputQuality().inputQualityLabel());
+        assertTrue(payload.shadowDecisionQualityEvaluation().qualityReasons()
+                .contains("SHADOW_DECISION_QUALITY_DEGRADED_DECISION"));
         assertTrue(payload.decisionDiffReadouts().isEmpty());
         assertEquals("future-evidence-packet", payload.evidencePacketReadouts().get(0).referenceId());
         assertTrue(payload.warnings().contains("Selected candidate was not returned."));
@@ -246,6 +279,11 @@ class DecisionExplorerPayloadServiceTest {
         assertEquals("INSUFFICIENT", payload.routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
         assertEquals("UNKNOWN",
                 payload.routeTradeoffAnalysis().replayReadinessDiagnostic().readinessStatus());
+        assertEquals("UNKNOWN", payload.shadowDecisionQualityEvaluation().qualityLabel());
+        assertEquals("UNKNOWN", payload.shadowDecisionQualityEvaluation().qualityBand());
+        assertTrue(payload.shadowDecisionQualityEvaluation().candidateOutcomeComparisons().isEmpty());
+        assertTrue(payload.shadowDecisionQualityEvaluation().unknowns()
+                .contains("shadow decision-quality input evidence was unavailable"));
         assertTrue(payload.warnings().get(0).contains("did not include result evidence"));
         assertTrue(payload.policyGateReadouts().stream()
                 .anyMatch(gate -> gate.gateId().equals("boundary-read-only") && gate.outcome().equals("PASS")));
@@ -319,6 +357,14 @@ class DecisionExplorerPayloadServiceTest {
                 payload.routeTradeoffAnalysis().evidenceSufficiency().sufficiencyLevel());
         assertEquals("PARTIAL",
                 payload.routeTradeoffAnalysis().replayReadinessDiagnostic().scoreEvidenceStatus());
+        assertEquals("REVIEW_RECOMMENDED", payload.shadowDecisionQualityEvaluation().qualityLabel());
+        assertEquals("PARTIAL_TRADEOFF", payload.shadowDecisionQualityEvaluation().tradeoffCategory());
+        assertEquals("BASIC_DIAGNOSTICS_ONLY",
+                payload.shadowDecisionQualityEvaluation().evidenceSufficiencyLevel());
+        assertEquals("UNKNOWN_ALTERNATIVE",
+                payload.shadowDecisionQualityEvaluation().candidateOutcomeComparisons().get(1).outcomeLabel());
+        assertEquals("PARTIAL_INPUT",
+                payload.shadowDecisionQualityEvaluation().scenarioInputQuality().inputQualityLabel());
         assertNull(payload.decisionDiffReadouts().get(0).finalScoreGap());
         assertEquals(List.of("latency", "queueDepth"), payload.decisionDiffReadouts().get(0).comparedFactorNames());
         assertTrue(payload.evidencePacketReadouts().get(0).unavailableReasons()

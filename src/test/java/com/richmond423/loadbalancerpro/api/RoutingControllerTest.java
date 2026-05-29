@@ -153,6 +153,20 @@ class RoutingControllerTest {
                             is("DecisionExplorerReplayReadinessDiagnosticV1")))
                     .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.replayExecutionAvailable",
                             is(false)))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.readOnly", is(true)))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.simulationOnly", is(true)))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.evaluationObject",
+                            is("DecisionExplorerShadowDecisionQualityEvaluationV1")))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.qualityLabel",
+                            is("REVIEW_RECOMMENDED")))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.selectedCandidateId",
+                            is("green")))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.candidateOutcomeComparisons[0].candidateId",
+                            is("green")))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.policySensitivityDiagnostic.diagnosticObject",
+                            is("DecisionExplorerShadowPolicySensitivityDiagnosticV1")))
+                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.scenarioInputQuality.evaluationObject",
+                            is("DecisionExplorerShadowScenarioInputQualityV1")))
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].gateId", is("boundary-read-only")))
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].outcome", is("PASS")))
                     .andExpect(jsonPath("$[0].agentStructuredOutput.schemaName", is("AgentStructuredOutputV1")))

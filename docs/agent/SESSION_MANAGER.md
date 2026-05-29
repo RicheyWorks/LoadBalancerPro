@@ -8,23 +8,23 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T22:56-07:00
+Timestamp: 2026-05-28T23:00-07:00
 
 Goal name: Decision Explorer / LASE Codebase Modularity Refactor Phase 1
 
 Current PR slot: MOD-P1-G06
 
-Checkpoint: MOD-P1-G06 local verification passed; route tradeoff row/scoring extraction ready for commit
+Checkpoint: MOD-P1-G06 PR opened; route tradeoff row/scoring extraction awaiting remote checks
 
 Started from main SHA: `f230d4420fc2f17480f945b698c534ae4be94f3e`
 
 Current branch: codex/modularity-route-tradeoff-row-builders
 
-PR URL: not opened yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/420
 
-PR creation head: pending push
+PR creation head: `8b15a08dea6442efd74b630152728abd405b8c89`
 
-Current branch head: committed locally; exact pushed head will be recorded at PR creation.
+Current branch head: PR checkpoint commit pending push.
 
 Changed files for this slice:
 
@@ -58,7 +58,10 @@ Checks run:
   `mvn -B package` with 2,820 tests, `git diff --check`, and
   `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
 - `git diff --cached --check` passed after staging the MOD-P1-G06 slice.
-- MOD-P1-G06 branch commit was created locally; push and PR creation are next.
+- MOD-P1-G06 branch commit was created locally and pushed; remote PR checks are next.
+- MOD-P1-G06 branch `codex/modularity-route-tradeoff-row-builders` was pushed to origin.
+- MOD-P1-G06 PR #420 was opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/420 with behavior-preserving
+  refactor scope, local verification, safety confirmations, and next-slice notes.
 - MOD-P1-G05 PR #419 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency
   Review was not failing.
 - MOD-P1-G05 merged as `f230d4420fc2f17480f945b698c534ae4be94f3e`.

@@ -6,6 +6,43 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-28T22:26-07:00
+
+Branch/PR: codex/modularity-shadow-quality-fingerprint-builder / no PR yet
+
+Failure type: local tooling/staging command failure
+
+Failing check: `git add docs\agent\SESSION_MANAGER.md && git diff --cached --check`
+
+Suspected cause: PowerShell in this environment rejected `&&` as a statement separator.
+
+Fix attempted: log the failure and rerun staging and cached diff verification as separate commands.
+
+Result: the separate staging command and `git diff --cached --check` rerun passed.
+
+Follow-up action: keep PowerShell commands single-purpose in this session.
+
+## Entry
+
+Date/time: 2026-05-28T22:12-07:00
+
+Branch/PR: codex/modularity-shadow-quality-fingerprint-builder / no PR yet
+
+Failure type: local tooling/search command failure
+
+Failing check: `rg -n "diagnosticFingerprint|fingerprintValue|FINGERPRINT_ALGORITHM|reproducibility" src\main\java\com\richmond423\loadbalancerpro\api\DecisionExplorerRouteTradeoffService.java src\main\java\com\richmond423\loadbalancerpro\api\*.java`
+
+Suspected cause: PowerShell passed the wildcard Java file path literally on Windows, and `rg` reported the wildcard
+path as invalid.
+
+Fix attempted: continued with explicit file paths and Windows-safe targeted file reads.
+
+Result: the required route-tradeoff and DTO context was gathered without changing repository behavior.
+
+Follow-up action: use explicit paths or `rg --files` output for this slice.
+
+## Entry
+
 Date/time: 2026-05-28T21:46-07:00
 
 Branch/PR: codex/modularity-scenario-input-quality-evaluator / no PR yet

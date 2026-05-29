@@ -19,7 +19,9 @@ Suspected cause: this installed `gh pr checks` command does not expose a `conclu
 
 Fix attempted: rerun remote check inspection using supported fields or the non-JSON watch output.
 
-Result: pending rerun.
+Result: supported `gh pr checks 422 --json name,state,bucket,link,startedAt,completedAt,workflow` inspection
+succeeded; CodeQL/Analyze Java and Dependency Review were green at first poll, with Build/Test/Package/Smoke still
+running.
 
 Follow-up action: prefer `gh pr checks <number> --watch` or supported JSON fields for this repository.
 

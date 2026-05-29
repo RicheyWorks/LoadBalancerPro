@@ -6,6 +6,25 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-29T00:04-07:00
+
+Branch/PR: codex/modularity-evidence-sufficiency-evaluator / PR #422
+
+Failure type: local tooling/remote-check command failure
+
+Failing check: `gh pr checks 422 --json name,state,conclusion,detailsUrl,startedAt,completedAt,workflow --watch`
+
+Suspected cause: this installed `gh pr checks` command does not expose a `conclusion` JSON field; valid fields include
+`bucket`, `completedAt`, `description`, `event`, `link`, `name`, `startedAt`, `state`, and `workflow`.
+
+Fix attempted: rerun remote check inspection using supported fields or the non-JSON watch output.
+
+Result: pending rerun.
+
+Follow-up action: prefer `gh pr checks <number> --watch` or supported JSON fields for this repository.
+
+## Entry
+
 Date/time: 2026-05-28T23:50-07:00
 
 Branch/PR: codex/modularity-evidence-sufficiency-evaluator / no PR yet

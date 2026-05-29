@@ -8,33 +8,67 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-28T16:45-07:00
+Timestamp: 2026-05-28T17:05-07:00
 
 Goal name: LASE Routing Intelligence Phase 4
 
-Current PR slot: LASE-P4-G03
+Current PR slot: LASE-P4-G04
 
-Checkpoint: LASE-P4-G03 PR #407 opened; current-head checks pending
+Checkpoint: LASE-P4-G03 merged-main-green; LASE-P4-G04 scenario-input quality branch created
 
 Started from main SHA: `144be5daa22e52295ad3e3d1e69fbe60b49be396`
 
-Current branch: codex/lase-phase4-policy-sensitivity
+Current branch: codex/lase-phase4-scenario-input-quality
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/407
+PR URL: pending
 
-PR creation head: `1bedad463e9c94acbf271b683570eb90fb2c9d6e`
+PR creation head: pending
 
-Current branch head: `1bedad463e9c94acbf271b683570eb90fb2c9d6e` plus uncommitted PR-created checkpoint
+Current branch head: `7dc86d943cffca61ca6836adc23a8e05d142042c` plus this uncommitted branch-created checkpoint
 
 Changed files for this slice:
+
+- docs/agent/FAILURE_LOG.md
+- docs/agent/SESSION_MANAGER.md
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityEvaluationV1.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityService.java
+- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowScenarioInputQualityV1.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityServiceTest.java
+
+Checks run:
+
+- LASE-P4-G03 PR-created checkpoint committed as `3b6c9fbe43f4955b6447c05cf571e84b09cbeb20` and pushed to
+  PR #407.
+- LASE-P4-G03 current-head PR checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, and Dependency Review
+  was not failing.
+- LASE-P4-G03 merged as `7dc86d943cffca61ca6836adc23a8e05d142042c`.
+- LASE-P4-G03 post-merge local verification passed on main: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,780 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P4-G03 main CI and CodeQL passed for `7dc86d943cffca61ca6836adc23a8e05d142042c`; Dependency Review was not
+  failing.
+- LASE-P4-G04 branch `codex/lase-phase4-scenario-input-quality` was created from clean synced main at
+  `7dc86d943cffca61ca6836adc23a8e05d142042c`.
+- LASE-P4-G04 adds local-only scenario-input quality evaluation derived from existing confidence, diagnostics,
+  candidate outcome, policy-sensitivity, route tradeoff, evidence sufficiency, and replay-readiness fields. The slice
+  is read-only and does not change production routing/scoring/proxy behavior.
+- LASE-P4-G04 focused selector initially failed because generic partial-warning signals were treated as degraded
+  scenario input; the failure is logged in `docs/agent/FAILURE_LOG.md`.
+- LASE-P4-G04 focused selector passed after narrowing degraded scenario-input detection:
+  `mvn -q "-Dtest=DecisionExplorerShadowDecisionQualityServiceTest" test`.
+- LASE-P4-G04 broader focused selector passed:
+  `mvn -q "-Dtest=DecisionExplorerShadowDecisionQualityServiceTest,DecisionExplorerRouteTradeoffServiceTest,DecisionExplorerRoutingDiagnosticsServiceTest,DecisionExplorerConfidenceSummaryServiceTest,DecisionExplorerPayloadV1Test,DecisionExplorerPayloadServiceTest" test`.
+- LASE-P4-G04 full local verification passed before commit/PR creation: `mvn -q test`,
+  `mvn -q "-DskipTests" package`, `mvn -B package` with 2,783 tests, `git diff --check`,
+  `git diff --cached --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+
+LASE-P4-G03 changed files:
 
 - docs/agent/SESSION_MANAGER.md
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowPolicySensitivityDiagnosticV1.java
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityEvaluationV1.java
 - src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityService.java
 - src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerShadowDecisionQualityServiceTest.java
-
-Checks run:
 
 - LASE-P4-G02 PR-created checkpoint committed as `2a0d47901393c50b967cfd864ae0a7af01044b3f` and pushed to
   PR #406.

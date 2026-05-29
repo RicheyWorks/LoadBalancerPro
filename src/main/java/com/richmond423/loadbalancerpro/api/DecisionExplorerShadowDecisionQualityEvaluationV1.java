@@ -19,6 +19,7 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
         int candidateOutcomeCount,
         List<DecisionExplorerShadowCandidateOutcomeV1> candidateOutcomeComparisons,
         DecisionExplorerShadowPolicySensitivityDiagnosticV1 policySensitivityDiagnostic,
+        DecisionExplorerShadowScenarioInputQualityV1 scenarioInputQuality,
         int evidenceBasisCount,
         int selectedCandidateBasisCount,
         String evidenceBasisSummary,
@@ -64,6 +65,9 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
         policySensitivityDiagnostic = policySensitivityDiagnostic == null
                 ? DecisionExplorerShadowPolicySensitivityDiagnosticV1.unknown(boundaryNote)
                 : policySensitivityDiagnostic;
+        scenarioInputQuality = scenarioInputQuality == null
+                ? DecisionExplorerShadowScenarioInputQualityV1.unknown(boundaryNote)
+                : scenarioInputQuality;
         evidenceBasis = DecisionExplorerDtoSupport.copyOrEmpty(evidenceBasis);
         selectedCandidateBasis = DecisionExplorerDtoSupport.copyOrEmpty(selectedCandidateBasis);
         evidenceBasisCount = evidenceBasis.size();
@@ -120,6 +124,7 @@ public record DecisionExplorerShadowDecisionQualityEvaluationV1(
                 candidateOutcomeCount,
                 List.of(),
                 DecisionExplorerShadowPolicySensitivityDiagnosticV1.unknown(boundaryNote),
+                DecisionExplorerShadowScenarioInputQualityV1.unknown(boundaryNote),
                 evidenceBasisCount,
                 selectedCandidateBasisCount,
                 evidenceBasisSummary,

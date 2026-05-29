@@ -6,6 +6,48 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-29T11:27-07:00
+
+Branch/PR: codex/lase-phase5-counterfactual-candidate-outcomes / no PR yet
+
+Failure type: focused local test expectation calibration
+
+Failing check:
+`mvn -q "-Dtest=DecisionExplorerCounterfactualCandidateOutcomeEvaluatorTest,DecisionExplorerCounterfactualAnalysisServiceTest" test`
+
+Suspected cause: the PR3 evaluator adds deterministic counterfactual candidate outcome counts to the top-level
+reproducibility key, while the existing counterfactual analysis service tests still expected the PR2 key shape without
+`:outcomes=...`.
+
+Fix attempted: update the existing service assertions to verify the new outcome-aware key shape and top-level outcome
+rows.
+
+Result: focused counterfactual candidate outcome rerun passed after updating the service assertions.
+
+Follow-up action: include the counterfactual candidate outcome selector in the broader PR3 verification set.
+
+## Entry
+
+Date/time: 2026-05-29T11:22-07:00
+
+Branch/PR: codex/lase-phase5-counterfactual-candidate-outcomes / no PR yet
+
+Failure type: local compile failure
+
+Failing check: `mvn -q "-DskipTests" test`
+
+Suspected cause: the first counterfactual candidate outcome evaluator draft called
+`DecisionExplorerShadowDecisionQualityEvaluationV1.candidateOutcomes()`, but the existing DTO exposes the shadow rows
+under a different accessor name.
+
+Fix attempted: inspect the DTO contract, update the evaluator to the correct accessor, and rerun the compile check.
+
+Result: compile rerun passed after switching to `candidateOutcomeComparisons()`.
+
+Follow-up action: continue focused counterfactual candidate outcome tests.
+
+## Entry
+
 Date/time: 2026-05-29T10:55-07:00
 
 Branch/PR: codex/lase-phase5-policy-weight-sensitivity / no PR yet

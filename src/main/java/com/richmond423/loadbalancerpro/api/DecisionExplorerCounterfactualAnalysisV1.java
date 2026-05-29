@@ -19,6 +19,8 @@ public record DecisionExplorerCounterfactualAnalysisV1(
         String baselinePolicyProfile,
         List<DecisionExplorerCounterfactualPolicyWeightScenarioV1> policyWeightScenarios,
         int policyWeightScenarioCount,
+        List<DecisionExplorerCounterfactualCandidateOutcomeV1> counterfactualCandidateOutcomes,
+        int counterfactualCandidateOutcomeCount,
         int candidateOutcomeCount,
         int factorDeltaCount,
         String summaryText,
@@ -70,6 +72,9 @@ public record DecisionExplorerCounterfactualAnalysisV1(
                 "RETURNED_EVIDENCE_WEIGHTS");
         policyWeightScenarios = DecisionExplorerDiagnosticListSupport.copyNonNull(policyWeightScenarios);
         policyWeightScenarioCount = policyWeightScenarios.size();
+        counterfactualCandidateOutcomes =
+                DecisionExplorerDiagnosticListSupport.copyNonNull(counterfactualCandidateOutcomes);
+        counterfactualCandidateOutcomeCount = counterfactualCandidateOutcomes.size();
         candidateOutcomeCount = Math.max(0, candidateOutcomeCount);
         factorDeltaCount = Math.max(0, factorDeltaCount);
         summaryText = DecisionExplorerDtoSupport.valueOrUnknown(summaryText);
@@ -102,6 +107,8 @@ public record DecisionExplorerCounterfactualAnalysisV1(
                 "replayReadinessStatus=UNKNOWN",
                 "policyWeightScenarios=[]",
                 "policyWeightScenarioCount=0",
+                "counterfactualCandidateOutcomes=[]",
+                "counterfactualCandidateOutcomeCount=0",
                 "candidateOutcomeCount=0",
                 "factorDeltaCount=0");
         return new DecisionExplorerCounterfactualAnalysisV1(
@@ -121,6 +128,8 @@ public record DecisionExplorerCounterfactualAnalysisV1(
                 "RETURNED_EVIDENCE_WEIGHTS",
                 List.of(),
                 0,
+                List.of(),
+                0,
                 0,
                 0,
                 "Counterfactual analysis is UNKNOWN because computed Decision Explorer evidence was unavailable; "
@@ -135,7 +144,7 @@ public record DecisionExplorerCounterfactualAnalysisV1(
                 DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
                 FINGERPRINT_NAMESPACE + "|" + String.join("|", fingerprintInputs),
                 "counterfactual:v1:UNKNOWN:UNKNOWN:UNKNOWN:quality=UNKNOWN:sufficiency=INSUFFICIENT:"
-                        + "replay=UNKNOWN:scenarios=0",
+                        + "replay=UNKNOWN:scenarios=0:outcomes=0",
                 fingerprintInputs,
                 boundaryNote);
     }

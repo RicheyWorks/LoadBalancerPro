@@ -14,6 +14,8 @@ public class DecisionExplorerCounterfactualAnalysisService {
             new DecisionExplorerCounterfactualLabelEvaluator();
     private final DecisionExplorerCounterfactualPolicyWeightScenarioBuilder policyWeightScenarioBuilder =
             new DecisionExplorerCounterfactualPolicyWeightScenarioBuilder();
+    private final DecisionExplorerCounterfactualCandidateOutcomeEvaluator candidateOutcomeEvaluator =
+            new DecisionExplorerCounterfactualCandidateOutcomeEvaluator();
 
     public DecisionExplorerCounterfactualAnalysisV1 buildAnalysis(
             DecisionExplorerConfidenceSummaryV1 confidenceSummary,
@@ -47,6 +49,8 @@ public class DecisionExplorerCounterfactualAnalysisService {
         List<DecisionExplorerCounterfactualPolicyWeightScenarioV1> policyWeightScenarios =
                 policyWeightScenarioBuilder.buildScenarios(summary, diagnostics, tradeoff, quality,
                         counterfactualLabel, boundaryNote);
+        List<DecisionExplorerCounterfactualCandidateOutcomeV1> counterfactualCandidateOutcomes =
+                candidateOutcomeEvaluator.evaluate(tradeoff, quality, policyWeightScenarios, boundaryNote);
         List<String> stableSignals = stableSignals(summary, tradeoff, quality, sufficiency, replayReadiness);
         List<String> sensitivitySignals = sensitivitySignals(summary, diagnostics, tradeoff, quality, replayReadiness);
         List<String> limitationSignals = limitationSignals(summary, diagnostics, tradeoff, quality, sufficiency,
@@ -64,6 +68,7 @@ public class DecisionExplorerCounterfactualAnalysisService {
                 sufficiency,
                 replayReadiness,
                 policyWeightScenarios,
+                counterfactualCandidateOutcomes,
                 stableSignals,
                 sensitivitySignals,
                 limitationSignals,
@@ -78,7 +83,8 @@ public class DecisionExplorerCounterfactualAnalysisService {
                 quality,
                 sufficiency,
                 replayReadiness,
-                policyWeightScenarios);
+                policyWeightScenarios,
+                counterfactualCandidateOutcomes);
 
         return new DecisionExplorerCounterfactualAnalysisV1(
                 true,
@@ -97,10 +103,12 @@ public class DecisionExplorerCounterfactualAnalysisService {
                 "RETURNED_EVIDENCE_WEIGHTS",
                 policyWeightScenarios,
                 policyWeightScenarios.size(),
+                counterfactualCandidateOutcomes,
+                counterfactualCandidateOutcomes.size(),
                 quality.candidateOutcomeCount(),
                 tradeoff.factorTradeoffDeltas().size(),
                 summaryText(counterfactualLabel, summary, tradeoff, sufficiency, replayReadiness,
-                        policyWeightScenarios),
+                        policyWeightScenarios, counterfactualCandidateOutcomes),
                 stableSignals,
                 sensitivitySignals,
                 limitationSignals,
@@ -275,6 +283,7 @@ public class DecisionExplorerCounterfactualAnalysisService {
             DecisionExplorerEvidenceSufficiencyV1 sufficiency,
             DecisionExplorerReplayReadinessDiagnosticV1 replayReadiness,
             List<DecisionExplorerCounterfactualPolicyWeightScenarioV1> policyWeightScenarios,
+            List<DecisionExplorerCounterfactualCandidateOutcomeV1> counterfactualCandidateOutcomes,
             List<String> stableSignals,
             List<String> sensitivitySignals,
             List<String> limitationSignals,
@@ -297,6 +306,10 @@ public class DecisionExplorerCounterfactualAnalysisService {
                 input("policyWeightScenarios", policyWeightScenarios.stream()
                         .map(DecisionExplorerCounterfactualPolicyWeightScenarioV1::fingerprintInput)
                         .toList()),
+                input("counterfactualCandidateOutcomeCount", counterfactualCandidateOutcomes.size()),
+                input("counterfactualCandidateOutcomes", counterfactualCandidateOutcomes.stream()
+                        .map(DecisionExplorerCounterfactualCandidateOutcomeV1::fingerprintInput)
+                        .toList()),
                 input("candidateOutcomeCount", quality.candidateOutcomeCount()),
                 input("factorDeltaCount", tradeoff.factorTradeoffDeltas().size()),
                 input("stableSignals", stableSignals),
@@ -315,13 +328,15 @@ public class DecisionExplorerCounterfactualAnalysisService {
             DecisionExplorerShadowDecisionQualityEvaluationV1 quality,
             DecisionExplorerEvidenceSufficiencyV1 sufficiency,
             DecisionExplorerReplayReadinessDiagnosticV1 replayReadiness,
-            List<DecisionExplorerCounterfactualPolicyWeightScenarioV1> policyWeightScenarios) {
+            List<DecisionExplorerCounterfactualPolicyWeightScenarioV1> policyWeightScenarios,
+            List<DecisionExplorerCounterfactualCandidateOutcomeV1> counterfactualCandidateOutcomes) {
         return "counterfactual:v1:" + counterfactualLabel + ":" + summary.selectedCandidateId()
                 + ":" + tradeoff.tradeoffCategory()
                 + ":quality=" + quality.qualityLabel()
                 + ":sufficiency=" + sufficiency.sufficiencyLevel()
                 + ":replay=" + replayReadiness.readinessStatus()
-                + ":scenarios=" + policyWeightScenarios.size();
+                + ":scenarios=" + policyWeightScenarios.size()
+                + ":outcomes=" + counterfactualCandidateOutcomes.size();
     }
 
     private static String summaryText(
@@ -330,13 +345,15 @@ public class DecisionExplorerCounterfactualAnalysisService {
             DecisionExplorerRouteTradeoffAnalysisV1 tradeoff,
             DecisionExplorerEvidenceSufficiencyV1 sufficiency,
             DecisionExplorerReplayReadinessDiagnosticV1 replayReadiness,
-            List<DecisionExplorerCounterfactualPolicyWeightScenarioV1> policyWeightScenarios) {
+            List<DecisionExplorerCounterfactualPolicyWeightScenarioV1> policyWeightScenarios,
+            List<DecisionExplorerCounterfactualCandidateOutcomeV1> counterfactualCandidateOutcomes) {
         return "Local counterfactual foundation classifies selected candidate "
                 + summary.selectedCandidateId() + " as " + counterfactualLabel
                 + " using returned-evidence tradeoff category " + tradeoff.tradeoffCategory()
                 + ", evidence sufficiency " + sufficiency.sufficiencyLevel()
                 + ", and replay-readiness " + replayReadiness.readinessStatus()
                 + " with " + policyWeightScenarios.size() + " bounded local policy-weight scenarios"
+                + " and " + counterfactualCandidateOutcomes.size() + " counterfactual candidate outcomes"
                 + "; no production routing, scoring, proxying, replay execution, storage, export, or traffic "
                 + "shifting is performed.";
     }

@@ -6,6 +6,27 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-29T20:41-07:00
+
+Branch/PR: codex/lase-phase6-trust-map-path / no PR yet
+
+Failure type: full local docs guard failure
+
+Failing check: `mvn -q test`
+
+Suspected cause: the first LASE-P6-PR2 trust-map wording used the phrase `autonomous production action`, which is an
+unsupported Decision Explorer overclaim phrase rejected by the existing reviewer trust-map guard.
+
+Fix attempted: replaced the wording with bounded no-automation language, updated the Phase 6 guard expectation, and
+reran focused plus full verification.
+
+Result: focused docs guard verification passed, then `mvn -q test` passed after the wording fix.
+
+Follow-up action: keep the failure recovery in the PR report and include the trust-map guard in PR2 focused
+verification.
+
+## Entry
+
 Date/time: 2026-05-29T11:27-07:00
 
 Branch/PR: codex/lase-phase5-counterfactual-candidate-outcomes / no PR yet

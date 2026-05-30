@@ -6,6 +6,89 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-05-29T21:51-07:00
+
+Branch/PR: codex/lase-phase6-api-contract-terminology / no PR yet
+
+Failure type: focused local documentation guard expectation calibration
+
+Failing check:
+`mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest" test`
+
+Suspected cause: the API-contract UI-to-field shorthand wrapped `Routing Diagnostics ->` and `routingDiagnostics`
+across adjacent Markdown lines, while the new alignment guard checks the exact mapping string shared with the trust
+map.
+
+Fix attempted: rewrite the shorthand as one mapping per bullet so the API contract is easier to scan and the guard can
+verify exact trust-map alignment.
+
+Result: focused guard rerun passed after rewriting the shorthand as one mapping per bullet.
+
+Follow-up action: include this guard calibration in the PR3 report.
+
+## Entry
+
+Date/time: 2026-05-29T21:50-07:00
+
+Branch/PR: codex/lase-phase6-api-contract-terminology / no PR yet
+
+Failure type: focused local documentation guard expectation calibration
+
+Failing check:
+`mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest" test`
+
+Suspected cause: after the first PR3 guard calibration, the same API-contract test still checked `change schemas` as a
+literal substring even though the Markdown paragraph wrapped between `change` and `schemas`.
+
+Fix attempted: move the no-schema-change assertion to the whitespace-normalized API-contract string.
+
+Result: focused guard rerun passed after moving the no-schema-change assertion to normalized text.
+
+Follow-up action: include this guard calibration in the PR3 report.
+
+## Entry
+
+Date/time: 2026-05-29T21:49-07:00
+
+Branch/PR: codex/lase-phase6-api-contract-terminology / no PR yet
+
+Failure type: focused local documentation guard expectation calibration
+
+Failing check:
+`mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest" test`
+
+Suspected cause: the first PR3 API-contract normalization guard checked `existing additive fields` as a literal
+substring, while the Markdown paragraph wrapped between `additive` and `fields`.
+
+Fix attempted: keep the API-contract wording and move that assertion to the whitespace-normalized document string.
+
+Result: focused guard rerun passed after moving the existing-additive-fields assertion to normalized text.
+
+Follow-up action: include the calibration and recovery in the PR3 report.
+
+## Entry
+
+Date/time: 2026-05-29T21:46-07:00
+
+Branch/PR: codex/lase-phase6-api-contract-terminology / no PR yet
+
+Failure type: local tooling search command failure
+
+Failing check:
+`rg -n "Path\\.of\\(\"docs/API_CONTRACTS\\.md|API_CONTRACTS\\.md|API_CONTRACTS" src/test/java/com/richmond423/loadbalancerpro/docs src/test/java/com/richmond423/loadbalancerpro/api`
+
+Suspected cause: the first PR3 audit search mixed PowerShell double-quoted parsing with an embedded regex double quote,
+so PowerShell reported a missing string terminator before `rg` could run.
+
+Fix attempted: reran the audit search with a single-quoted regex pattern and continued the API-contract guard audit.
+
+Result: the corrected search completed and identified the existing API-contract documentation guard locations.
+
+Follow-up action: keep the logged tooling recovery in the PR3 report and use single-quoted regex patterns for
+PowerShell audit searches that include literal double quotes.
+
+## Entry
+
 Date/time: 2026-05-29T20:41-07:00
 
 Branch/PR: codex/lase-phase6-trust-map-path / no PR yet

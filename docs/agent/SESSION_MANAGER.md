@@ -8,77 +8,81 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-29T20:49-07:00
+Timestamp: 2026-05-29T21:59-07:00
 
 Goal name: LASE Routing Intelligence Phase 6 - Reviewer Evidence Normalization
 
-Current PR slot: LASE-P6-PR2
+Current PR slot: LASE-P6-PR3
 
-Checkpoint: LASE-P6-PR2 PR opened after local verification
+Checkpoint: LASE-P6-PR3 API-contract terminology normalization implemented; full local verification passed before initial commit
 
-Started from main SHA: `115f17d8cf0d29c466a77bac91c90647c1620d1c`
+Started from main SHA: `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`
 
-Current branch: codex/lase-phase6-trust-map-path
+Current branch: codex/lase-phase6-api-contract-terminology
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/439
+PR URL: pending
 
-PR creation head: `0a30ccd2fec5ad932e53f89e76bfacff918773c2`
+PR creation head: pending
 
-Current branch head: `0a30ccd2fec5ad932e53f89e76bfacff918773c2` after PR creation; a PR metadata checkpoint commit
-is pending.
+Current branch head: `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe` after branch creation; docs/test-only
+working-tree changes are pending local verification.
 
 Changed files for this slice:
 
-- docs/REVIEWER_TRUST_MAP.md
+- docs/API_CONTRACTS.md
 - docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest.java
 
 Checks run:
 
-- LASE-P6-PR1 PR #438 merged as `115f17d8cf0d29c466a77bac91c90647c1620d1c`; post-merge local verification passed
-  and main CI run `26673231985` plus CodeQL run `26673232000` are green for that SHA.
-- LASE-P6-PR2 started from clean main at `115f17d8cf0d29c466a77bac91c90647c1620d1c`.
-- Main CI and CodeQL are green for `115f17d8cf0d29c466a77bac91c90647c1620d1c`.
-- LASE-P6-PR2 branch `codex/lase-phase6-trust-map-path` was created from clean main.
-- LASE-P6-PR2 will add a focused docs/test-only reviewer trust-map path from `/decision-explorer.html` into the
-  current additive evidence groups `confidenceSummary`, `routingDiagnostics`, `routeTradeoffAnalysis`,
-  `shadowDecisionQualityEvaluation`, and `counterfactualAnalysis`, cross-linked to the Phase 6 normalization anchor.
-- LASE-P6-PR2 remains docs/test-only: no production routing, scoring, proxying, allocation, replay execution,
-  storage/export, evidence-packet generation, traffic shifting, runtime enforcement, Maven, CI, Docker, Compose,
-  secret, cloud, tenant, private-network, or external-target changes.
-- Focused PR2 docs guard verification passed:
-  `mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest" test`.
-- First `mvn -q test` failed because the initial trust-map wording used the forbidden overclaim phrase
-  `autonomous production action`; the failure was logged in `docs/agent/FAILURE_LOG.md`.
-- Recovery focused docs guard verification passed:
-  `mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest" test`.
-- Recovery `mvn -q test` passed after replacing the phrase with bounded no-automation wording.
-- Required full local verification passed after recovery: `mvn -q test`, `mvn -q "-DskipTests" package`, direct
-  `mvn -B package` with 2,887 tests, `git diff --check`, and
-  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
-- Post-checkpoint focused docs guard verification passed:
-  `mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentDecisionExplorerReadmeTrustMapDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest" test`.
-- Post-checkpoint `git diff --check` passed.
-- `git diff --cached --check` passed after staging the LASE-P6-PR2 slice.
-- LASE-P6-PR2 implementation commit `0a30ccd2fec5ad932e53f89e76bfacff918773c2` was created.
-- LASE-P6-PR2 branch `codex/lase-phase6-trust-map-path` was pushed to origin.
-- LASE-P6-PR2 PR #439 was opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/439 with docs/test-only
-  trust-map normalization-path scope, local verification, logged recovery notes, safety confirmations, and a PR3
-  recommendation.
-- This PR metadata checkpoint will create a new PR head after commit and push, so the merge gate must re-read remote
-  checks for the final PR head before any merge decision.
+- LASE-P6-PR2 PR #439 merged as `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`; final PR head was
+  `18b69a9ce39ff58c586952ef1d899dc965a18710`.
+- Main CI run `26673911823` and CodeQL run `26673911834` are green for
+  `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`.
+- LASE-P6-PR3 started from clean main at `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`.
+- LASE-P6-PR3 branch `codex/lase-phase6-api-contract-terminology` was created from clean main.
+- PR3 audit found `docs/API_CONTRACTS.md` already linked the Phase 6 normalization anchor but still needed a
+  reviewer-facing terminology mapping, a clear API_CONTRACTS -> REVIEWER_TRUST_MAP -> Phase 6 anchor path, and a
+  replacement for stale `counterfactualAnalysis` Phase 5 wording.
+- A PowerShell audit-search quoting failure was logged in `docs/agent/FAILURE_LOG.md` and recovered with a
+  single-quoted `rg` search.
+- Three focused guard expectation calibrations were logged in `docs/agent/FAILURE_LOG.md` and recovered by using
+  whitespace-normalized assertions for wrapped prose plus one mapping-per-bullet API-contract shorthand.
+- PR3 edits remain docs/test-only and add documentation-only terminology normalization for current additive Decision
+  Explorer fields without endpoint, schema, runtime API behavior, routing, scoring, proxying, allocation, replay,
+  storage/export, evidence-packet, traffic-shifting, enforcement, Maven, CI, Docker, Compose, secret, cloud, tenant,
+  private-network, or external-target changes.
+- Focused PR3 docs/API navigation guard verification passed:
+  `mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest" test`.
+- PR3 stale/overclaim API-contract sweep found no matches for stale Phase 5 terminology or unsupported overclaim
+  phrases.
+- Required full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`, direct `mvn -B package`
+  with 2,888 tests, `git diff --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
 
-Remote status: main CI and CodeQL are green for `115f17d8cf0d29c466a77bac91c90647c1620d1c`; PR #439 checks are in
-progress for implementation head `0a30ccd2fec5ad932e53f89e76bfacff918773c2`, and must be re-read after the metadata
-checkpoint is pushed.
+Remote status: main CI and CodeQL are green for `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`; no PR is open for
+LASE-P6-PR3 yet.
 
 Blocker: none.
 
-Next action: commit and push this PR-created checkpoint, wait for current-head PR #439 checks, and merge only if fully
-green.
+Next action: stage, run `git diff --cached --check`, commit, push, open LASE-P6-PR3, and wait for current-head remote
+checks.
 
 Decision: continue.
+
+## Historical LASE Phase 6 PR2 Checkpoint
+
+- LASE-P6-PR2 branch `codex/lase-phase6-trust-map-path` was created from clean main at
+  `115f17d8cf0d29c466a77bac91c90647c1620d1c`.
+- LASE-P6-PR2 added a docs/test-only reviewer trust-map path from `/decision-explorer.html` into the current additive
+  evidence groups `confidenceSummary`, `routingDiagnostics`, `routeTradeoffAnalysis`,
+  `shadowDecisionQualityEvaluation`, and `counterfactualAnalysis`, cross-linked to the Phase 6 normalization anchor.
+- LASE-P6-PR2 logged and recovered a full local docs guard failure caused by the forbidden phrase
+  `autonomous production action` in initial trust-map wording.
+- LASE-P6-PR2 PR #439 merged as `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`; final PR head was
+  `18b69a9ce39ff58c586952ef1d899dc965a18710`.
+- LASE-P6-PR2 post-merge local verification passed, and main CI run `26673911823` plus CodeQL run `26673911834`
+  are green for `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`.
 
 ## Historical LASE Phase 6 PR1 Checkpoint
 

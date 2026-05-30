@@ -14,21 +14,10 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
 class DecisionExplorerCounterfactualAnalysisServiceTest {
-    private static final String BOUNDARY_NOTE = "local-only counterfactual diagnostics";
-    private final DecisionExplorerConfidenceSummaryService confidenceSummaryService =
-            new DecisionExplorerConfidenceSummaryService();
-    private final DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService =
-            new DecisionExplorerRoutingDiagnosticsService();
-    private final DecisionExplorerRouteTradeoffService routeTradeoffService =
-            new DecisionExplorerRouteTradeoffService();
-    private final DecisionExplorerShadowDecisionQualityService shadowDecisionQualityService =
-            new DecisionExplorerShadowDecisionQualityService();
-    private final DecisionExplorerCounterfactualAnalysisService counterfactualService =
-            new DecisionExplorerCounterfactualAnalysisService();
-
     @Test
     void strongSelectedAdvantageClassifiesAsStableWithoutPolicyMutation() {
-        DecisionExplorerCounterfactualAnalysisV1 analysis = counterfactual(strongFixture());
+        DecisionExplorerCounterfactualAnalysisV1 analysis =
+                DecisionExplorerCounterfactualFixtureCatalog.stableSelectedAdvantage().analysis();
 
         assertTrue(analysis.readOnly());
         assertTrue(analysis.simulationOnly());
@@ -89,7 +78,8 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
 
     @Test
     void closeAlternativeClassifiesAsCloseCallFromComputedTradeoff() {
-        DecisionExplorerCounterfactualAnalysisV1 analysis = counterfactual(closeAlternativeFixture());
+        DecisionExplorerCounterfactualAnalysisV1 analysis =
+                DecisionExplorerCounterfactualFixtureCatalog.closeAlternative().analysis();
 
         assertEquals("CLOSE_CALL", analysis.counterfactualLabel());
         assertEquals("MEDIUM", analysis.sensitivityBand());
@@ -113,7 +103,8 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
 
     @Test
     void partialTradeoffClassifiesAsSensitiveWithSafeLimitations() {
-        DecisionExplorerCounterfactualAnalysisV1 analysis = counterfactual(partialAlternativeFixture());
+        DecisionExplorerCounterfactualAnalysisV1 analysis =
+                DecisionExplorerCounterfactualFixtureCatalog.sensitivePartialEvidence().analysis();
 
         assertEquals("SENSITIVE", analysis.counterfactualLabel());
         assertEquals("MEDIUM", analysis.sensitivityBand());
@@ -138,7 +129,8 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
 
     @Test
     void degradedEvidenceClassifiesAsDegradedBeforeSensitivity() {
-        DecisionExplorerCounterfactualAnalysisV1 analysis = counterfactual(degradedSelectedFixture());
+        DecisionExplorerCounterfactualAnalysisV1 analysis =
+                DecisionExplorerCounterfactualFixtureCatalog.degradedSelected().analysis();
 
         assertEquals("DEGRADED", analysis.counterfactualLabel());
         assertEquals("HIGH", analysis.sensitivityBand());
@@ -161,18 +153,8 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
 
     @Test
     void insufficientShadowQualityClassifiesAsInsufficientEvidence() {
-        DecisionExplorerConfidenceSummaryV1 summary = DecisionExplorerConfidenceSummaryV1.unknown(BOUNDARY_NOTE);
-        DecisionExplorerRoutingDiagnosticsV1 diagnostics = DecisionExplorerRoutingDiagnosticsV1.unknown(BOUNDARY_NOTE);
-        DecisionExplorerRouteTradeoffAnalysisV1 tradeoff =
-                DecisionExplorerRouteTradeoffAnalysisV1.unknown(BOUNDARY_NOTE);
-        DecisionExplorerShadowDecisionQualityEvaluationV1 quality = insufficientQuality();
-
-        DecisionExplorerCounterfactualAnalysisV1 analysis = counterfactualService.buildAnalysis(
-                summary,
-                diagnostics,
-                tradeoff,
-                quality,
-                BOUNDARY_NOTE);
+        DecisionExplorerCounterfactualAnalysisV1 analysis =
+                DecisionExplorerCounterfactualFixtureCatalog.insufficientEvidence().analysis();
 
         assertEquals("INSUFFICIENT_EVIDENCE", analysis.counterfactualLabel());
         assertEquals("INSUFFICIENT", analysis.sensitivityBand());
@@ -189,7 +171,7 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
     @Test
     void nullInputsReturnUnknownWithoutInventingCounterfactualEvidence() {
         DecisionExplorerCounterfactualAnalysisV1 analysis =
-                counterfactualService.buildAnalysis(null, null, null, null, null);
+                DecisionExplorerCounterfactualFixtureCatalog.unknownEmptyEvidence().analysis();
 
         assertEquals("UNKNOWN", analysis.counterfactualLabel());
         assertEquals("UNKNOWN", analysis.sensitivityBand());
@@ -208,9 +190,12 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
 
     @Test
     void fingerprintsAreStableAndChangeWhenComputedEvidenceChanges() {
-        DecisionExplorerCounterfactualAnalysisV1 first = counterfactual(strongFixture());
-        DecisionExplorerCounterfactualAnalysisV1 second = counterfactual(strongFixture());
-        DecisionExplorerCounterfactualAnalysisV1 close = counterfactual(closeAlternativeFixture());
+        DecisionExplorerCounterfactualAnalysisV1 first =
+                DecisionExplorerCounterfactualFixtureCatalog.stableSelectedAdvantage().analysis();
+        DecisionExplorerCounterfactualAnalysisV1 second =
+                DecisionExplorerCounterfactualFixtureCatalog.stableSelectedAdvantage().analysis();
+        DecisionExplorerCounterfactualAnalysisV1 close =
+                DecisionExplorerCounterfactualFixtureCatalog.closeAlternative().analysis();
 
         assertEquals(first.diagnosticFingerprint(), second.diagnosticFingerprint());
         assertEquals(first.reproducibilityKey(), second.reproducibilityKey());
@@ -273,242 +258,4 @@ class DecisionExplorerCounterfactualAnalysisServiceTest {
         }
     }
 
-    private DecisionExplorerCounterfactualAnalysisV1 counterfactual(CounterfactualFixture fixture) {
-        DecisionExplorerConfidenceSummaryV1 summary = confidenceSummaryService.buildSummary(
-                fixture.decisionReadout(),
-                fixture.selectedCandidate(),
-                fixture.candidateSet(),
-                fixture.candidateComparisons(),
-                fixture.factorDrilldowns(),
-                fixture.warnings(),
-                fixture.unknowns(),
-                BOUNDARY_NOTE);
-        DecisionExplorerRoutingDiagnosticsV1 diagnostics = routingDiagnosticsService.buildDiagnostics(
-                summary,
-                fixture.candidateSet(),
-                fixture.candidateComparisons(),
-                fixture.factorDrilldowns(),
-                fixture.warnings(),
-                fixture.unknowns(),
-                BOUNDARY_NOTE);
-        DecisionExplorerRouteTradeoffAnalysisV1 tradeoff = routeTradeoffService.buildTradeoffs(
-                summary,
-                diagnostics,
-                BOUNDARY_NOTE);
-        DecisionExplorerShadowDecisionQualityEvaluationV1 quality = shadowDecisionQualityService.buildEvaluation(
-                summary,
-                diagnostics,
-                tradeoff,
-                BOUNDARY_NOTE);
-        return counterfactualService.buildAnalysis(summary, diagnostics, tradeoff, quality, BOUNDARY_NOTE);
-    }
-
-    private static CounterfactualFixture strongFixture() {
-        CandidateReadoutV1 selected = candidate("edge-a", true, 10.0, List.of("healthState=healthy"));
-        CandidateReadoutV1 alternative = candidate("edge-b", false, 15.0, List.of("healthState=healthy"));
-        return fixture(
-                selected,
-                List.of(selected, alternative),
-                List.of(
-                        comparison("edge-a", true, "SELECTED", 10.0, 0.0,
-                                List.of("healthState=healthy"), List.of(), List.of()),
-                        comparison("edge-b", false, "COMPARED_TO_SELECTED", 15.0, 5.0,
-                                List.of("healthState=healthy"), List.of(), List.of())),
-                List.of(
-                        factor("edge-a", "latency", "SUPPORTS_SELECTION", "AVAILABLE", List.of(), List.of()),
-                        factor("edge-b", "latency", "WEAKENS_SELECTION", "AVAILABLE", List.of(), List.of())),
-                List.of(),
-                List.of("hidden routing internals"));
-    }
-
-    private static CounterfactualFixture closeAlternativeFixture() {
-        CandidateReadoutV1 selected = candidate("edge-a", true, 10.0, List.of("healthState=healthy"));
-        CandidateReadoutV1 alternative = candidate("edge-b", false, 10.5, List.of("healthState=healthy"));
-        return fixture(
-                selected,
-                List.of(selected, alternative),
-                List.of(
-                        comparison("edge-a", true, "SELECTED", 10.0, 0.0,
-                                List.of("healthState=healthy"), List.of(), List.of()),
-                        comparison("edge-b", false, "COMPARED_TO_SELECTED", 10.5, 0.5,
-                                List.of("healthState=healthy"), List.of(), List.of())),
-                List.of(
-                        factor("edge-a", "latency", "SUPPORTS_SELECTION", "AVAILABLE", List.of(), List.of()),
-                        factor("edge-b", "latency", "SUPPORTS_SELECTION", "AVAILABLE", List.of(), List.of())),
-                List.of(),
-                List.of("hidden routing internals"));
-    }
-
-    private static CounterfactualFixture partialAlternativeFixture() {
-        CandidateReadoutV1 selected = candidate("edge-a", true, 10.0, List.of("healthState=healthy"));
-        CandidateReadoutV1 alternative = candidate("edge-b", false, null, List.of());
-        return fixture(
-                selected,
-                List.of(selected, alternative),
-                List.of(
-                        comparison("edge-a", true, "SELECTED", 10.0, 0.0,
-                                List.of("healthState=healthy"), List.of(), List.of()),
-                        comparison("edge-b", false, "PARTIAL_EVIDENCE", null, null,
-                                List.of(), List.of("candidate final score was not returned"),
-                                List.of("score delta from selected candidate"))),
-                List.of(factor("edge-b", "latency", "SUPPORTS_SELECTION", "PARTIAL",
-                        List.of("factor evidence is partial"), List.of("numeric contribution value"))),
-                List.of(),
-                List.of("hidden routing internals"));
-    }
-
-    private static CounterfactualFixture degradedSelectedFixture() {
-        CandidateReadoutV1 selected = candidate("edge-a", true, 10.0, List.of("healthState=false"));
-        return fixture(
-                selected,
-                List.of(selected),
-                List.of(comparison("edge-a", true, "SELECTED", 10.0, 0.0,
-                        List.of("healthState=false"), List.of(), List.of())),
-                List.of(factor("edge-a", "healthState", "SUPPORTS_SELECTION", "AVAILABLE",
-                        List.of("health evidence value is degraded"), List.of())),
-                List.of(),
-                List.of());
-    }
-
-    private static CounterfactualFixture fixture(
-            CandidateReadoutV1 selected,
-            List<CandidateReadoutV1> candidates,
-            List<DecisionExplorerCandidateComparisonRowV1> comparisons,
-            List<DecisionFactorDrilldownV1> factors,
-            List<String> warnings,
-            List<String> unknowns) {
-        return new CounterfactualFixture(
-                new DecisionReadoutV1(
-                        "decision-1",
-                        "SUCCESS",
-                        selected.candidateId(),
-                        "TAIL_LATENCY_POWER_OF_TWO",
-                        "summary",
-                        List.of("SELECTED_CANDIDATE_RETURNED"),
-                        List.of("routing-comparison-result", "decision-vector"),
-                        BOUNDARY_NOTE),
-                selected,
-                candidates,
-                comparisons,
-                factors,
-                warnings,
-                unknowns);
-    }
-
-    private static CandidateReadoutV1 candidate(
-            String candidateId,
-            boolean selected,
-            Double finalScore,
-            List<String> visibleSignals) {
-        return new CandidateReadoutV1(
-                candidateId,
-                candidateId,
-                selected,
-                selected ? "SELECTED" : "NOT_SELECTED",
-                finalScore,
-                visibleSignals,
-                List.of("hidden routing internals"),
-                List.of(selected ? "SELECTED_CANDIDATE" : "NON_SELECTED_CANDIDATE"),
-                List.of("boundary-read-only", "boundary-simulation-only"),
-                finalScore == null
-                        ? List.of("decision-vector:" + candidateId)
-                        : List.of("decision-vector:" + candidateId, "scores:" + candidateId),
-                BOUNDARY_NOTE);
-    }
-
-    private static DecisionExplorerCandidateComparisonRowV1 comparison(
-            String candidateId,
-            boolean selected,
-            String comparisonStatus,
-            Double finalScore,
-            Double scoreDelta,
-            List<String> visibleSignals,
-            List<String> warnings,
-            List<String> unknowns) {
-        return new DecisionExplorerCandidateComparisonRowV1(
-                candidateId,
-                candidateId,
-                selected,
-                selected ? 1 : 2,
-                comparisonStatus,
-                finalScore,
-                scoreDelta,
-                visibleSignals,
-                unknowns,
-                List.of(selected ? "SELECTED_CANDIDATE" : "NON_SELECTED_CANDIDATE"),
-                List.of("boundary-read-only", "boundary-simulation-only"),
-                finalScore == null
-                        ? List.of("decision-vector:" + candidateId)
-                        : List.of("decision-vector:" + candidateId, "scores:" + candidateId),
-                warnings,
-                unknowns,
-                BOUNDARY_NOTE);
-    }
-
-    private static DecisionFactorDrilldownV1 factor(
-            String candidateId,
-            String factorName,
-            String influenceCategory,
-            String evidenceStatus,
-            List<String> warnings,
-            List<String> unknowns) {
-        return new DecisionFactorDrilldownV1(
-                factorName,
-                candidateId,
-                "raw value",
-                influenceCategory,
-                evidenceStatus,
-                "factor explanation",
-                warnings,
-                unknowns,
-                List.of("decision-vector:" + candidateId, "factor-contribution:" + candidateId + ":" + factorName),
-                BOUNDARY_NOTE);
-    }
-
-    private static DecisionExplorerShadowDecisionQualityEvaluationV1 insufficientQuality() {
-        return new DecisionExplorerShadowDecisionQualityEvaluationV1(
-                true,
-                true,
-                DecisionExplorerShadowDecisionQualityEvaluationV1.EVALUATION_OBJECT,
-                DecisionExplorerShadowDecisionQualityEvaluationV1.CONTRACT_VERSION,
-                DecisionExplorerShadowDecisionQualityEvaluationV1.LABEL_INSUFFICIENT_EVIDENCE,
-                DecisionExplorerShadowDecisionQualityEvaluationV1.BAND_INSUFFICIENT,
-                15,
-                "UNKNOWN",
-                DecisionExplorerConfidenceSummaryV1.STATUS_UNKNOWN,
-                DecisionExplorerConfidenceSummaryV1.EVIDENCE_QUALITY_UNKNOWN,
-                "UNKNOWN",
-                DecisionExplorerEvidenceSufficiencyV1.LEVEL_INSUFFICIENT,
-                DecisionExplorerReplayReadinessDiagnosticV1.STATUS_UNKNOWN,
-                0,
-                List.of(),
-                DecisionExplorerShadowPolicySensitivityDiagnosticV1.unknown(BOUNDARY_NOTE),
-                DecisionExplorerShadowScenarioInputQualityV1.unknown(BOUNDARY_NOTE),
-                0,
-                0,
-                "insufficient evidence",
-                "selected basis unavailable",
-                List.of(),
-                List.of(),
-                List.of("SHADOW_DECISION_QUALITY_INSUFFICIENT_EVIDENCE"),
-                List.of(),
-                List.of("shadow quality evidence was insufficient"),
-                List.of("shadow-quality"),
-                "insufficient explanation",
-                DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
-                "shadow-decision-quality|test|insufficient",
-                "shadow-decision-quality:v1:INSUFFICIENT_EVIDENCE",
-                List.of("qualityLabel=INSUFFICIENT_EVIDENCE"),
-                BOUNDARY_NOTE);
-    }
-
-    private record CounterfactualFixture(
-            DecisionReadoutV1 decisionReadout,
-            CandidateReadoutV1 selectedCandidate,
-            List<CandidateReadoutV1> candidateSet,
-            List<DecisionExplorerCandidateComparisonRowV1> candidateComparisons,
-            List<DecisionFactorDrilldownV1> factorDrilldowns,
-            List<String> warnings,
-            List<String> unknowns) {
-    }
 }

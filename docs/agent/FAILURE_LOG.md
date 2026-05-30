@@ -3054,3 +3054,21 @@ Follow-up action: continue local pre-PR verification and PR preparation.
   factor-weight delta fingerprint-input list serialization.
 - Recovery: loosen the assertion to check for the stable factor-weight delta content within the serialized input, then
   rerun the focused selector before broader verification.
+
+# 2026-05-29T13:05-07:00 - LASE-P5-PR7 focused counterfactual fixture boundary-note calibration
+
+- Branch: `codex/lase-phase5-counterfactual-fixtures`
+- Command: `mvn -q "-Dtest=DecisionExplorerCounterfactualFixtureCatalogTest,DecisionExplorerCounterfactualAnalysisServiceTest" test`
+- Result: failed because the new unknown-empty counterfactual fixture passed a null boundary note, so the DTO correctly
+  normalized the boundary note to `UNKNOWN` instead of the local-only fixture boundary note expected by the catalog test.
+- Recovery: pass the fixture catalog boundary note into the unknown-empty analysis call, then rerun the focused
+  counterfactual fixture selector before broader verification.
+
+# 2026-05-29T17:27-07:00 - LASE-P5-PR7 merge command empty-body flag failure
+
+- Branch: `codex/lase-phase5-counterfactual-fixtures`
+- Command: `gh pr merge 434 --merge --subject "Add counterfactual fixture catalog" --body ""`
+- Result: failed before any merge because PowerShell/GitHub CLI treated the empty `--body` value as a missing flag
+  argument.
+- Recovery: rerun the merge command with a non-empty merge body after recording this failure and refreshing
+  current-head PR checks for the resulting metadata-only failure-log checkpoint.

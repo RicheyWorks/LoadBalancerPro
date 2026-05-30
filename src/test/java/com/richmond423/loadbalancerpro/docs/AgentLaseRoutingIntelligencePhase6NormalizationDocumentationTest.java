@@ -124,6 +124,67 @@ class AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest {
     }
 
     @Test
+    void trustMapExposesDecisionExplorerUiPathToNormalizedEvidenceGroups() throws IOException {
+        String trustMap = read(TRUST_MAP);
+        String normalized = trustMap.toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+
+        for (String expected : List.of(
+                "Decision Explorer Phase 6 reviewer normalization path",
+                "open `/decision-explorer.html`, load the scenario catalog, run the read-only sample",
+                "Routing Intelligence Status -> `confidenceSummary`",
+                "Routing Diagnostics -> `routingDiagnostics`",
+                "Route Tradeoff Intelligence -> `routeTradeoffAnalysis`",
+                "Shadow Decision Quality -> `shadowDecisionQualityEvaluation`",
+                "Counterfactual Analysis -> `counterfactualAnalysis`",
+                "I want to inspect the LASE Phase 6 normalized evidence path",
+                "normalized LASE evidence groups",
+                "agent/LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md",
+                "docs/test-only reviewer navigation")) {
+            assertTrue(trustMap.contains(expected), "trust map should expose PR2 reviewer path item " + expected);
+        }
+
+        assertAppearsInOrder(trustMap,
+                "/decision-explorer.html",
+                "Routing Intelligence Status -> `confidenceSummary`",
+                "Routing Diagnostics -> `routingDiagnostics`",
+                "Route Tradeoff Intelligence -> `routeTradeoffAnalysis`",
+                "Shadow Decision Quality -> `shadowDecisionQualityEvaluation`",
+                "Counterfactual Analysis -> `counterfactualAnalysis`",
+                "API_CONTRACTS.md",
+                "LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md");
+
+        for (String expected : List.of(
+                "does not add endpoints",
+                "does not change production routing",
+                "runtime api behavior",
+                "replay execution",
+                "storage/export",
+                "evidence-packet generation",
+                "traffic shifting",
+                "production readiness",
+                "certification",
+                "benchmark/load/stress",
+                "throughput/p95/p99",
+                "automated production action",
+                "production action automation")) {
+            assertTrue(normalized.contains(expected), "trust map path should preserve boundary " + expected);
+        }
+
+        for (String forbidden : List.of(
+                "production readiness is proven",
+                "certified production",
+                "live-cloud validated",
+                "real tenant validated",
+                "benchmark proven",
+                "throughput proven",
+                "runtime enforcement is enabled",
+                "traffic shifting enabled",
+                "autonomous production action is enabled")) {
+            assertFalse(normalized.contains(forbidden), "trust map path must not overclaim " + forbidden);
+        }
+    }
+
+    @Test
     void phase5CloseoutNoLongerContainsStalePendingCloseoutWording() throws IOException {
         String closeout = read(PHASE5_CLOSEOUT);
         String normalized = closeout.toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
@@ -169,5 +230,15 @@ class AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest {
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");
         return Files.readString(path, StandardCharsets.UTF_8);
+    }
+
+    private static void assertAppearsInOrder(String text, String... expectedItems) {
+        int previousIndex = -1;
+        for (String expected : expectedItems) {
+            int nextIndex = text.indexOf(expected, previousIndex + 1);
+            assertTrue(nextIndex >= 0, "expected to find " + expected);
+            assertTrue(nextIndex > previousIndex, expected + " should appear after the previous path item");
+            previousIndex = nextIndex;
+        }
     }
 }

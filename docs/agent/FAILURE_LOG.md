@@ -3094,3 +3094,20 @@ Follow-up action: continue local pre-PR verification and PR preparation.
 - Recovery: rerun the same package check with explicit stdout/stderr redirection:
   `mvn -B package > target\lase-p5-pr9-mvn-package-rerun.log 2>&1`; the rerun exited 0 and ended with
   `BUILD SUCCESS` and `Tests run: 2877, Failures: 0, Errors: 0, Skipped: 0`.
+
+# 2026-05-29T18:53-07:00 - LASE-P5-PR10 PR metadata table command syntax failure
+
+- Branch: `codex/lase-phase5-closeout-report`
+- Command: PowerShell loop over `gh pr view 428..436` piped directly to `Format-Table`.
+- Result: failed before any repository change because the command shape left PowerShell with an empty pipe element.
+- Recovery: record the tooling failure, then rerun PR metadata collection with a simpler command shape before writing
+  the Phase 5 closeout report.
+
+# 2026-05-29T19:03-07:00 - LASE-P5-PR10 redirected package exit-code mismatch
+
+- Branch: `codex/lase-phase5-closeout-report`
+- Command: `mvn -B package > target\lase-p5-pr10-mvn-package.log 2>&1`
+- Result: local shell returned exit code 1 even though the redirected Maven log ended with `BUILD SUCCESS` and
+  `Tests run: 2881, Failures: 0, Errors: 0, Skipped: 0`.
+- Recovery: rerun the package check with a direct Maven invocation before local verification is counted green for the
+  closeout branch.

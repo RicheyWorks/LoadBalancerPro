@@ -586,6 +586,10 @@
       <h2 id="shadow-quality-title">Shadow Decision Quality</h2>
       <div id="shadow-decision-quality" class="empty">No shadow decision-quality evaluation loaded yet.</div>
     </section>
+    <section class="panel" aria-labelledby="counterfactual-analysis-title">
+      <h2 id="counterfactual-analysis-title">Counterfactual Analysis</h2>
+      <div id="counterfactual-analysis" class="empty">No counterfactual analysis loaded yet.</div>
+    </section>
     <section class="panel" aria-labelledby="reviewer-badges-title">
       <h2 id="reviewer-badges-title">Reviewer Explanation Badges</h2>
       <p class="scenario-note">Display-only labels from returned payload fields; badges do not enforce or prove runtime decisions.</p>
@@ -634,6 +638,21 @@
   <section class="panel" aria-labelledby="shadow-candidate-outcomes-title">
     <h2 id="shadow-candidate-outcomes-title">Shadow Candidate Outcomes</h2>
     <div id="shadow-candidate-outcomes" class="empty">No shadow candidate outcome rows loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="counterfactual-policy-scenarios-title">
+    <h2 id="counterfactual-policy-scenarios-title">Counterfactual Policy Scenarios</h2>
+    <div id="counterfactual-policy-scenarios" class="empty">No counterfactual policy scenario rows loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="counterfactual-candidate-outcomes-title">
+    <h2 id="counterfactual-candidate-outcomes-title">Counterfactual Candidate Outcomes</h2>
+    <div id="counterfactual-candidate-outcomes" class="empty">No counterfactual candidate outcome rows loaded yet.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="counterfactual-factor-weight-deltas-title">
+    <h2 id="counterfactual-factor-weight-deltas-title">Counterfactual Factor Weight Deltas</h2>
+    <div id="counterfactual-factor-weight-deltas" class="empty">No counterfactual factor weight delta rows loaded yet.</div>
   </section>
 
   <div class="grid">
@@ -787,7 +806,11 @@
     evidenceSufficiency: document.getElementById("evidence-sufficiency"),
     replayReadiness: document.getElementById("replay-readiness"),
     shadowDecisionQuality: document.getElementById("shadow-decision-quality"),
+    counterfactualAnalysis: document.getElementById("counterfactual-analysis"),
     shadowCandidateOutcomes: document.getElementById("shadow-candidate-outcomes"),
+    counterfactualPolicyScenarios: document.getElementById("counterfactual-policy-scenarios"),
+    counterfactualCandidateOutcomes: document.getElementById("counterfactual-candidate-outcomes"),
+    counterfactualFactorWeightDeltas: document.getElementById("counterfactual-factor-weight-deltas"),
     shadowPolicySensitivity: document.getElementById("shadow-policy-sensitivity"),
     shadowScenarioInputQuality: document.getElementById("shadow-scenario-input-quality"),
     reviewerBadges: document.getElementById("reviewer-badges"),
@@ -1035,15 +1058,29 @@
     const routingDiagnostics = first.routingDiagnostics || {};
     const routeTradeoffAnalysis = first.routeTradeoffAnalysis || {};
     const shadowDecisionQuality = first.shadowDecisionQualityEvaluation || {};
+    const counterfactualAnalysis = first.counterfactualAnalysis || {};
     renderConfidenceSummary(elements.confidenceSummary, first.confidenceSummary);
     renderRoutingDiagnosticsSummary(elements.routingDiagnostics, routingDiagnostics);
     renderRouteTradeoffSummary(elements.routeTradeoffSummary, routeTradeoffAnalysis);
     renderEvidenceSufficiencySummary(elements.evidenceSufficiency, routeTradeoffAnalysis.evidenceSufficiency);
     renderReplayReadinessSummary(elements.replayReadiness, routeTradeoffAnalysis.replayReadinessDiagnostic);
     renderShadowDecisionQualitySummary(elements.shadowDecisionQuality, shadowDecisionQuality);
+    renderCounterfactualAnalysisSummary(elements.counterfactualAnalysis, counterfactualAnalysis);
     renderShadowCandidateOutcomeTable(
       elements.shadowCandidateOutcomes,
       shadowDecisionQuality.candidateOutcomeComparisons || []
+    );
+    renderCounterfactualPolicyScenarioTable(
+      elements.counterfactualPolicyScenarios,
+      counterfactualAnalysis.policyWeightScenarios || []
+    );
+    renderCounterfactualCandidateOutcomeTable(
+      elements.counterfactualCandidateOutcomes,
+      counterfactualAnalysis.counterfactualCandidateOutcomes || []
+    );
+    renderCounterfactualFactorWeightDeltaTable(
+      elements.counterfactualFactorWeightDeltas,
+      counterfactualAnalysis.factorWeightDeltas || []
     );
     renderShadowPolicySensitivitySummary(
       elements.shadowPolicySensitivity,
@@ -1097,7 +1134,11 @@
     setEmpty(elements.evidenceSufficiency, "No evidence sufficiency diagnostics available.");
     setEmpty(elements.replayReadiness, "No replay-readiness diagnostics available.");
     setEmpty(elements.shadowDecisionQuality, "No shadow decision-quality evaluation available.");
+    setEmpty(elements.counterfactualAnalysis, "No counterfactual analysis available.");
     setEmpty(elements.shadowCandidateOutcomes, "No shadow candidate outcome rows available.");
+    setEmpty(elements.counterfactualPolicyScenarios, "No counterfactual policy scenario rows available.");
+    setEmpty(elements.counterfactualCandidateOutcomes, "No counterfactual candidate outcome rows available.");
+    setEmpty(elements.counterfactualFactorWeightDeltas, "No counterfactual factor weight delta rows available.");
     setEmpty(elements.shadowPolicySensitivity, "No policy-sensitivity diagnostics available.");
     setEmpty(elements.shadowScenarioInputQuality, "No scenario-input quality evaluation available.");
     setEmpty(elements.reviewerBadges, "No reviewer badges available.");
@@ -1380,6 +1421,49 @@
     target.classList.remove("empty");
   }
 
+  function renderCounterfactualAnalysisSummary(target, analysis) {
+    target.replaceChildren();
+    if (!analysis || !analysis.analysisObject) {
+      setEmpty(target, "No counterfactual analysis returned.");
+      return;
+    }
+    const wrapper = document.createElement("div");
+    wrapper.className = "diagnostic-summary";
+    const badge = document.createElement("span");
+    badge.className = `confidence-status ${counterfactualStatusType(analysis.counterfactualLabel)}`;
+    badge.textContent = `${value(analysis.counterfactualLabel)} / ${value(analysis.sensitivityBand)}`;
+    wrapper.append(badge);
+    wrapper.append(keyValueTable([
+      ["Selected candidate", value(analysis.selectedCandidateId)],
+      ["Baseline policy profile", value(analysis.baselinePolicyProfile)],
+      ["Confidence/quality", `${value(analysis.confidenceStatus)} / ${value(analysis.decisionQualityLabel)}`],
+      ["Tradeoff category", value(analysis.tradeoffCategory)],
+      ["Evidence sufficiency", value(analysis.evidenceSufficiencyLevel)],
+      ["Replay readiness", value(analysis.replayReadinessStatus)],
+      ["Policy scenarios", countText(analysis.policyWeightScenarioCount == null ? 0
+        : analysis.policyWeightScenarioCount, "policy scenario row")],
+      ["Candidate outcomes", countText(analysis.counterfactualCandidateOutcomeCount == null ? 0
+        : analysis.counterfactualCandidateOutcomeCount, "counterfactual outcome row")],
+      ["Factor weight deltas", countText(analysis.factorWeightDeltaCount == null ? 0
+        : analysis.factorWeightDeltaCount, "factor weight delta row")],
+      ["Summary", value(analysis.summaryText)],
+      ["Stable signals", listText(analysis.stableSignals)],
+      ["Sensitivity signals", listText(analysis.sensitivitySignals)],
+      ["Limitations", listText(analysis.limitationSignals)],
+      ["Reasons", listText(analysis.reasonCodes)],
+      ["Warnings", listText(analysis.warnings)],
+      ["Unknowns", listText(analysis.unknowns)],
+      ["Source refs", listText(analysis.sourceReferenceIds)],
+      ["Fingerprint algorithm", value(analysis.fingerprintAlgorithm)],
+      ["Diagnostic fingerprint", value(analysis.diagnosticFingerprint)],
+      ["Reproducibility key", value(analysis.reproducibilityKey)],
+      ["Fingerprint inputs", listText(analysis.fingerprintInputs)],
+      ["Boundary", value(analysis.boundaryNote)]
+    ]));
+    target.append(wrapper);
+    target.classList.remove("empty");
+  }
+
   function renderShadowCandidateOutcomeTable(target, rows) {
     renderTable(target, [
       "Order",
@@ -1418,6 +1502,128 @@
       listText(row.reasonCodes),
       listText(row.sourceReferenceIds)
     ], "No shadow candidate outcome rows returned.");
+  }
+
+  function renderCounterfactualPolicyScenarioTable(target, rows) {
+    renderTable(target, [
+      "Order",
+      "Scenario",
+      "Profile",
+      "Shift",
+      "Sensitivity",
+      "Selected supported",
+      "Alternative close",
+      "Delta",
+      "Summary",
+      "Stabilizing signals",
+      "Sensitivity signals",
+      "Limitations",
+      "Reasons",
+      "Source refs"
+    ], rows, (row, index) => [
+      row.displayOrder == null ? String(index + 1) : String(row.displayOrder),
+      value(row.scenarioId),
+      value(row.policyWeightProfile),
+      `${row.localAssumptionWeightShiftPercent == null ? 0 : row.localAssumptionWeightShiftPercent}%`,
+      `${value(row.sensitivityLabel)} / ${value(row.sensitivityBand)}`,
+      row.selectedCandidateRemainsSupported ? "yes" : "no",
+      row.alternativeBecomesCloseOrPreferable ? "yes" : "no",
+      row.closestAlternativeScoreDelta == null ? "UNKNOWN" : String(row.closestAlternativeScoreDelta),
+      value(row.summaryText),
+      listText(row.stabilizingSignals),
+      listText(row.sensitivitySignals),
+      listText(row.limitationSignals),
+      listText(row.reasonCodes),
+      listText(row.sourceReferenceIds)
+    ], "No counterfactual policy scenario rows returned.");
+  }
+
+  function renderCounterfactualCandidateOutcomeTable(target, rows) {
+    renderTable(target, [
+      "Order",
+      "Candidate",
+      "Selected",
+      "Baseline",
+      "Counterfactual",
+      "Influence",
+      "Strongest scenario",
+      "Tradeoff",
+      "Risk/benefit",
+      "Gap",
+      "Final score",
+      "Delta",
+      "Summary",
+      "Supporting scenarios",
+      "Challenging scenarios",
+      "Signals",
+      "Reasons",
+      "Source refs"
+    ], rows, (row, index) => [
+      row.displayOrder == null ? String(index + 1) : String(row.displayOrder),
+      value(row.candidateLabel || row.candidateId),
+      row.selected ? "yes" : "no",
+      value(row.baselineOutcomeLabel),
+      value(row.counterfactualOutcomeLabel),
+      value(row.policyScenarioInfluence),
+      value(row.strongestScenarioId),
+      value(row.tradeoffCategory),
+      value(row.riskBenefitClassification),
+      value(row.scoreGapCategory),
+      row.finalScore == null ? "UNKNOWN" : String(row.finalScore),
+      row.scoreDeltaFromSelected == null ? "UNKNOWN" : String(row.scoreDeltaFromSelected),
+      value(row.summaryText),
+      listText(row.supportingScenarioIds),
+      listText(row.challengingScenarioIds),
+      listText(uniqueList(mergeLists(row.benefitSignals, row.riskSignals, row.degradedSignals, row.unknownSignals))),
+      listText(row.reasonCodes),
+      listText(row.sourceReferenceIds)
+    ], "No counterfactual candidate outcome rows returned.");
+  }
+
+  function renderCounterfactualFactorWeightDeltaTable(target, rows) {
+    renderTable(target, [
+      "Order",
+      "Factor",
+      "Selected candidate",
+      "Alternative candidate",
+      "Classification",
+      "Baseline delta",
+      "Selected contribution",
+      "Alternative contribution",
+      "Strongest scenario",
+      "Shift",
+      "Selected stabilizes",
+      "Alternative challenges",
+      "Score gap",
+      "Delta",
+      "Summary",
+      "Stabilizing signals",
+      "Destabilizing signals",
+      "Limitations",
+      "Reasons",
+      "Source refs"
+    ], rows, (row, index) => [
+      row.displayOrder == null ? String(index + 1) : String(row.displayOrder),
+      value(row.factorName),
+      value(row.selectedCandidateId),
+      value(row.alternativeCandidateId),
+      value(row.factorWeightDeltaClassification),
+      value(row.baselineDeltaClassification),
+      value(row.selectedContribution),
+      value(row.alternativeContribution),
+      value(row.strongestScenarioId),
+      `${row.localAssumptionWeightShiftPercent == null ? 0 : row.localAssumptionWeightShiftPercent}%`,
+      row.selectedSupportStabilizesDecision ? "yes" : "no",
+      row.alternativeSupportCanChallengeSelection ? "yes" : "no",
+      value(row.scoreGapCategory),
+      row.alternativeScoreDeltaFromSelected == null ? "UNKNOWN" : String(row.alternativeScoreDeltaFromSelected),
+      value(row.summaryText),
+      listText(row.stabilizingSignals),
+      listText(row.destabilizingSignals),
+      listText(row.limitationSignals),
+      listText(row.reasonCodes),
+      listText(row.sourceReferenceIds)
+    ], "No counterfactual factor weight delta rows returned.");
   }
 
   function renderShadowPolicySensitivitySummary(target, diagnostic) {
@@ -1597,6 +1803,7 @@
     const sufficiency = tradeoff.evidenceSufficiency || {};
     const replayReadiness = tradeoff.replayReadinessDiagnostic || {};
     const shadowQuality = payload.shadowDecisionQualityEvaluation || {};
+    const counterfactual = payload.counterfactualAnalysis || {};
     const degraded = listLength(diagnostics.degradationReasons);
     return [
       { type: "selected", label: "Selected route", detail: selectedCandidate },
@@ -1629,6 +1836,11 @@
         type: shadowQualityStatusType(shadowQuality.qualityLabel),
         label: "Decision quality",
         detail: `${value(shadowQuality.qualityLabel)} / ${value(shadowQuality.qualityBand)}`
+      },
+      {
+        type: counterfactualStatusType(counterfactual.counterfactualLabel),
+        label: "Counterfactual sensitivity",
+        detail: `${value(counterfactual.counterfactualLabel)} / ${value(counterfactual.sensitivityBand)}`
       },
       {
         type: degraded ? "degraded" : "deterministic",
@@ -2153,6 +2365,7 @@
     const replayReadiness = tradeoff.replayReadinessDiagnostic || {};
     const policySensitivity = shadowQuality.policySensitivityDiagnostic || {};
     const scenarioInput = shadowQuality.scenarioInputQuality || {};
+    const counterfactual = payload.counterfactualAnalysis || {};
     const candidateConfidence = Array.isArray(summary.candidateConfidenceDetails) ? summary.candidateConfidenceDetails : [];
     const factorStatus = Array.isArray(summary.factorStatusDetails) ? summary.factorStatusDetails : [];
     const candidateDiagnostics = Array.isArray(diagnostics.candidateDiagnostics) ? diagnostics.candidateDiagnostics : [];
@@ -2165,6 +2378,15 @@
       ? tradeoff.candidateScoringExplanations
       : [];
     const factorDeltas = Array.isArray(tradeoff.factorTradeoffDeltas) ? tradeoff.factorTradeoffDeltas : [];
+    const counterfactualScenarios = Array.isArray(counterfactual.policyWeightScenarios)
+      ? counterfactual.policyWeightScenarios
+      : [];
+    const counterfactualOutcomes = Array.isArray(counterfactual.counterfactualCandidateOutcomes)
+      ? counterfactual.counterfactualCandidateOutcomes
+      : [];
+    const counterfactualFactorDeltas = Array.isArray(counterfactual.factorWeightDeltas)
+      ? counterfactual.factorWeightDeltas
+      : [];
     return uniqueList(mergeLists(
       payload.warnings,
       summary.warnings,
@@ -2186,6 +2408,9 @@
       scenarioInput.partialInputSignals,
       scenarioInput.missingInputSignals,
       scenarioInput.degradedInputSignals,
+      counterfactual.warnings,
+      counterfactual.sensitivitySignals,
+      counterfactual.limitationSignals,
       explanationNotes(summary, "warning:"),
       candidateConfidence.flatMap(row => row.warnings),
       factorStatus.flatMap(row => row.warnings),
@@ -2195,6 +2420,9 @@
       shadowOutcomes.flatMap(row => mergeLists(row.riskSignals, row.degradedSignals)),
       scoringExplanations.flatMap(row => row.limitationSignals),
       factorDeltas.flatMap(row => row.limitationSignals),
+      counterfactualScenarios.flatMap(row => mergeLists(row.sensitivitySignals, row.limitationSignals)),
+      counterfactualOutcomes.flatMap(row => mergeLists(row.riskSignals, row.degradedSignals)),
+      counterfactualFactorDeltas.flatMap(row => mergeLists(row.destabilizingSignals, row.limitationSignals)),
       comparisons.flatMap(row => row.warnings),
       drilldowns.flatMap(row => row.warnings)
     ));
@@ -2211,6 +2439,7 @@
     const replayReadiness = tradeoff.replayReadinessDiagnostic || {};
     const policySensitivity = shadowQuality.policySensitivityDiagnostic || {};
     const scenarioInput = shadowQuality.scenarioInputQuality || {};
+    const counterfactual = payload.counterfactualAnalysis || {};
     const candidateConfidence = Array.isArray(summary.candidateConfidenceDetails) ? summary.candidateConfidenceDetails : [];
     const factorStatus = Array.isArray(summary.factorStatusDetails) ? summary.factorStatusDetails : [];
     const candidateDiagnostics = Array.isArray(diagnostics.candidateDiagnostics) ? diagnostics.candidateDiagnostics : [];
@@ -2220,6 +2449,12 @@
       ? shadowQuality.candidateOutcomeComparisons
       : [];
     const factorDeltas = Array.isArray(tradeoff.factorTradeoffDeltas) ? tradeoff.factorTradeoffDeltas : [];
+    const counterfactualOutcomes = Array.isArray(counterfactual.counterfactualCandidateOutcomes)
+      ? counterfactual.counterfactualCandidateOutcomes
+      : [];
+    const counterfactualFactorDeltas = Array.isArray(counterfactual.factorWeightDeltas)
+      ? counterfactual.factorWeightDeltas
+      : [];
     return uniqueList(mergeLists(
       payload.unknowns,
       summary.unknowns,
@@ -2232,6 +2467,7 @@
       shadowQuality.unknowns,
       policySensitivity.missingEvidenceSignals,
       scenarioInput.missingInputSignals,
+      counterfactual.unknowns,
       explanationNotes(summary, "unknown:"),
       candidateConfidence.flatMap(row => row.unknowns),
       factorStatus.flatMap(row => row.unknowns),
@@ -2240,6 +2476,10 @@
       routeTradeoffs.flatMap(row => row.unknownSignals),
       shadowOutcomes.flatMap(row => row.unknownSignals),
       factorDeltas.flatMap(row => row.deltaClassification === "UNKNOWN" ? row.limitationSignals : []),
+      counterfactualOutcomes.flatMap(row => row.unknownSignals),
+      counterfactualFactorDeltas.flatMap(row => row.factorWeightDeltaClassification === "UNKNOWN"
+        ? row.limitationSignals
+        : []),
       comparisons.flatMap(row => mergeLists(row.unknownSignals, row.unknowns)),
       drilldowns.flatMap(row => row.unknowns)
     ));
@@ -2255,8 +2495,18 @@
     const replayReadiness = tradeoff.replayReadinessDiagnostic || {};
     const policySensitivity = shadowQuality.policySensitivityDiagnostic || {};
     const scenarioInput = shadowQuality.scenarioInputQuality || {};
+    const counterfactual = payload.counterfactualAnalysis || {};
     const routeTradeoffs = Array.isArray(tradeoff.candidateTradeoffs) ? tradeoff.candidateTradeoffs : [];
     const factorDeltas = Array.isArray(tradeoff.factorTradeoffDeltas) ? tradeoff.factorTradeoffDeltas : [];
+    const counterfactualScenarios = Array.isArray(counterfactual.policyWeightScenarios)
+      ? counterfactual.policyWeightScenarios
+      : [];
+    const counterfactualOutcomes = Array.isArray(counterfactual.counterfactualCandidateOutcomes)
+      ? counterfactual.counterfactualCandidateOutcomes
+      : [];
+    const counterfactualFactorDeltas = Array.isArray(counterfactual.factorWeightDeltas)
+      ? counterfactual.factorWeightDeltas
+      : [];
     const summaryStatus = payload.confidenceSummary && payload.confidenceSummary.status;
     const scenarioIsPartial = scenario && !statusIs(scenario.evidenceStatus, "AVAILABLE");
     const comparisonIsPartial = comparisons.some(row => !statusIs(row.comparisonStatus, "SELECTED", "ALTERNATIVE"));
@@ -2284,8 +2534,30 @@
       || !statusIs(scenarioInput.inputQualityLabel, "EVALUABLE")
       || listLength(shadowQuality.warnings) > 0
       || listLength(shadowQuality.unknowns) > 0;
+    const counterfactualIsPartial = !statusIs(counterfactual.counterfactualLabel, "STABLE")
+      || !statusIs(counterfactual.sensitivityBand, "LOW")
+      || listLength(counterfactual.warnings) > 0
+      || listLength(counterfactual.unknowns) > 0
+      || counterfactualScenarios.some(row => !statusIs(row.sensitivityLabel, "STABLE"))
+      || counterfactualOutcomes.some(row => statusIs(
+        row.counterfactualOutcomeLabel,
+        "SELECTED_SENSITIVE",
+        "SELECTED_DEGRADED",
+        "ALTERNATIVE_CLOSE_CALL",
+        "ALTERNATIVE_CHALLENGES_SELECTED",
+        "ALTERNATIVE_UNKNOWN",
+        "INSUFFICIENT_EVIDENCE",
+        "UNKNOWN"
+      ))
+      || counterfactualFactorDeltas.some(row => statusIs(
+        row.factorWeightDeltaClassification,
+        "DESTABILIZING",
+        "DEGRADED",
+        "UNKNOWN"
+      ));
     return Boolean(scenarioIsPartial || comparisonIsPartial || drilldownIsPartial
-      || summaryIsPartial || diagnosticsIsPartial || tradeoffIsPartial || shadowQualityIsPartial);
+      || summaryIsPartial || diagnosticsIsPartial || tradeoffIsPartial || shadowQualityIsPartial
+      || counterfactualIsPartial);
   }
 
   function mergeLists(...groups) {
@@ -2362,6 +2634,20 @@
     return "unknown";
   }
 
+  function counterfactualStatusType(label) {
+    const normalized = value(label).toUpperCase();
+    if (normalized === "STABLE") {
+      return "strong";
+    }
+    if (normalized === "SENSITIVE" || normalized === "CLOSE_CALL" || normalized === "INSUFFICIENT_EVIDENCE") {
+      return "partial";
+    }
+    if (normalized === "DEGRADED") {
+      return "degraded";
+    }
+    return "unknown";
+  }
+
   function policySensitivityStatusType(level) {
     const normalized = value(level).toUpperCase();
     if (normalized === "LOW") {
@@ -2416,6 +2702,7 @@
     const shadowQuality = first.shadowDecisionQualityEvaluation || {};
     const policySensitivity = shadowQuality.policySensitivityDiagnostic || {};
     const scenarioInputQuality = shadowQuality.scenarioInputQuality || {};
+    const counterfactual = first.counterfactualAnalysis || {};
     const text = [
       "Decision Explorer reviewer summary",
       `decisionId: ${value(first.decisionId)}`,
@@ -2452,6 +2739,20 @@
       `policySensitivity: ${value(policySensitivity.sensitivityLevel)} / ${value(policySensitivity.sensitivityCategory)}`,
       `scenarioInputQuality: ${value(scenarioInputQuality.inputQualityLabel)}`
         + ` / ${value(scenarioInputQuality.supportBand)}`,
+      `counterfactualAnalysis: ${value(counterfactual.counterfactualLabel)} / ${value(counterfactual.sensitivityBand)}`,
+      `counterfactualSummary: ${value(counterfactual.summaryText)}`,
+      `counterfactualScenarios: ${counterfactual.policyWeightScenarioCount == null
+        ? 0
+        : counterfactual.policyWeightScenarioCount}`,
+      `counterfactualCandidateOutcomes: ${counterfactual.counterfactualCandidateOutcomeCount == null
+        ? 0
+        : counterfactual.counterfactualCandidateOutcomeCount}`,
+      `counterfactualFactorWeightDeltas: ${counterfactual.factorWeightDeltaCount == null
+        ? 0
+        : counterfactual.factorWeightDeltaCount}`,
+      `counterfactualReasons: ${listText(counterfactual.reasonCodes)}`,
+      `counterfactualFingerprint: ${value(counterfactual.diagnosticFingerprint)}`,
+      `counterfactualReproducibilityKey: ${value(counterfactual.reproducibilityKey)}`,
       `readOnly: ${first.readOnly === true}`,
       `simulationOnly: ${first.simulationOnly === true}`,
       `notProven: ${listText(first.notProvenBoundaries)}`

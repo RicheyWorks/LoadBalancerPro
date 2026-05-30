@@ -92,6 +92,7 @@ class DecisionExplorerStaticPageTest {
                 "Evidence Sufficiency",
                 "Replay Readiness",
                 "Shadow Decision Quality",
+                "Counterfactual Analysis",
                 "Selected Candidate",
                 "Candidate Set",
                 "Candidate Comparison",
@@ -100,6 +101,9 @@ class DecisionExplorerStaticPageTest {
                 "Route Candidate Tradeoffs",
                 "Candidate Tradeoff Scoring",
                 "Shadow Candidate Outcomes",
+                "Counterfactual Policy Scenarios",
+                "Counterfactual Candidate Outcomes",
+                "Counterfactual Factor Weight Deltas",
                 "Policy Sensitivity",
                 "Scenario Input Quality",
                 "Evidence Diagnostics",
@@ -134,6 +138,7 @@ class DecisionExplorerStaticPageTest {
                 "Evidence sufficiency",
                 "Replay readiness",
                 "Decision quality",
+                "Counterfactual sensitivity",
                 "Degraded signals",
                 "Warning",
                 "Unknown",
@@ -173,7 +178,11 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("evidence-sufficiency"));
         assertTrue(page.contains("replay-readiness"));
         assertTrue(page.contains("shadow-decision-quality"));
+        assertTrue(page.contains("counterfactual-analysis"));
         assertTrue(page.contains("shadow-candidate-outcomes"));
+        assertTrue(page.contains("counterfactual-policy-scenarios"));
+        assertTrue(page.contains("counterfactual-candidate-outcomes"));
+        assertTrue(page.contains("counterfactual-factor-weight-deltas"));
         assertTrue(page.contains("shadow-policy-sensitivity"));
         assertTrue(page.contains("shadow-scenario-input-quality"));
         assertTrue(page.contains("candidate-confidence"));
@@ -191,13 +200,18 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("first.routingDiagnostics"));
         assertTrue(page.contains("first.routeTradeoffAnalysis"));
         assertTrue(page.contains("first.shadowDecisionQualityEvaluation"));
+        assertTrue(page.contains("first.counterfactualAnalysis"));
         assertTrue(page.contains("renderConfidenceSummary"));
         assertTrue(page.contains("renderRoutingDiagnosticsSummary"));
         assertTrue(page.contains("renderRouteTradeoffSummary"));
         assertTrue(page.contains("renderEvidenceSufficiencySummary"));
         assertTrue(page.contains("renderReplayReadinessSummary"));
         assertTrue(page.contains("renderShadowDecisionQualitySummary"));
+        assertTrue(page.contains("renderCounterfactualAnalysisSummary"));
         assertTrue(page.contains("renderShadowCandidateOutcomeTable"));
+        assertTrue(page.contains("renderCounterfactualPolicyScenarioTable"));
+        assertTrue(page.contains("renderCounterfactualCandidateOutcomeTable"));
+        assertTrue(page.contains("renderCounterfactualFactorWeightDeltaTable"));
         assertTrue(page.contains("renderShadowPolicySensitivitySummary"));
         assertTrue(page.contains("renderShadowScenarioInputQualitySummary"));
         assertTrue(page.contains("renderCandidateConfidenceTable"));
@@ -223,6 +237,11 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("shadowDecisionQualityReasons"));
         assertTrue(page.contains("shadowDecisionQualityFingerprint"));
         assertTrue(page.contains("shadowDecisionQualityReproducibilityKey"));
+        assertTrue(page.contains("counterfactualAnalysis"));
+        assertTrue(page.contains("counterfactualSummary"));
+        assertTrue(page.contains("counterfactualReasons"));
+        assertTrue(page.contains("counterfactualFingerprint"));
+        assertTrue(page.contains("counterfactualReproducibilityKey"));
         assertTrue(page.contains("policySensitivity"));
         assertTrue(page.contains("scenarioInputQuality"));
         assertTrue(page.contains("diagnostics.explanationText"));
@@ -233,6 +252,7 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("sufficiencyStatusType"));
         assertTrue(page.contains("replayReadinessStatusType"));
         assertTrue(page.contains("shadowQualityStatusType"));
+        assertTrue(page.contains("counterfactualStatusType"));
         assertTrue(page.contains("policySensitivityStatusType"));
         assertTrue(page.contains("scenarioInputStatusType"));
         assertTrue(page.contains("Candidate confidence rows"));
@@ -373,6 +393,22 @@ class DecisionExplorerStaticPageTest {
                             is("DecisionExplorerShadowPolicySensitivityDiagnosticV1")))
                     .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.scenarioInputQuality.evaluationObject",
                             is("DecisionExplorerShadowScenarioInputQualityV1")))
+                    .andExpect(jsonPath("$[0].counterfactualAnalysis.analysisObject",
+                            is("DecisionExplorerCounterfactualAnalysisV1")))
+                    .andExpect(jsonPath("$[0].counterfactualAnalysis.readOnly", is(true)))
+                    .andExpect(jsonPath("$[0].counterfactualAnalysis.localOnly", is(true)))
+                    .andExpect(jsonPath("$[0].counterfactualAnalysis.counterfactualLabel").exists())
+                    .andExpect(jsonPath("$[0].counterfactualAnalysis.sensitivityBand").exists())
+                    .andExpect(jsonPath("$[0].counterfactualAnalysis.policyWeightScenarios[0].scenarioObject",
+                            is("DecisionExplorerCounterfactualPolicyWeightScenarioV1")))
+                    .andExpect(jsonPath("$[0].counterfactualAnalysis.counterfactualCandidateOutcomes[0].outcomeObject",
+                            is("DecisionExplorerCounterfactualCandidateOutcomeV1")))
+                    .andExpect(jsonPath("$[0].counterfactualAnalysis.factorWeightDeltas[0].deltaObject",
+                            is("DecisionExplorerCounterfactualFactorWeightDeltaV1")))
+                    .andExpect(jsonPath("$[0].counterfactualAnalysis.diagnosticFingerprint",
+                            containsString("counterfactual-analysis|v1|")))
+                    .andExpect(jsonPath("$[0].counterfactualAnalysis.reproducibilityKey",
+                            containsString("counterfactual:v1:")))
                     .andExpect(jsonPath("$[0].policyGateReadouts[0].gateId", is("boundary-read-only")))
                     .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no production readiness")))
                     .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no storage proof")))

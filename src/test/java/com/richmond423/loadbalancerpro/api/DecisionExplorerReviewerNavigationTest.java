@@ -76,15 +76,24 @@ class DecisionExplorerReviewerNavigationTest {
                 "Selected route",
                 "Shadow Decision Quality",
                 "Shadow Candidate Outcomes",
+                "Counterfactual Analysis",
+                "Counterfactual Policy Scenarios",
+                "Counterfactual Candidate Outcomes",
+                "Counterfactual Factor Weight Deltas",
                 "Policy Sensitivity",
                 "Scenario Input Quality",
                 "Decision quality",
+                "Counterfactual sensitivity",
                 "Partial evidence",
                 "Deterministic evidence",
                 "No candidate comparison rows returned.",
                 "No factor drill-down readouts returned.",
                 "No shadow decision-quality evaluation returned.",
                 "No shadow candidate outcome rows returned.",
+                "No counterfactual analysis returned.",
+                "No counterfactual policy scenario rows returned.",
+                "No counterfactual candidate outcome rows returned.",
+                "No counterfactual factor weight delta rows returned.",
                 "Decision Diffs",
                 "Evidence Packet Readouts",
                 "Agent Structured Output",
@@ -112,7 +121,9 @@ class DecisionExplorerReviewerNavigationTest {
                 "memory-only",
                 "read-only",
                 "simulation-only",
-                "DecisionExplorerPayloadV1")) {
+                "DecisionExplorerPayloadV1",
+                "counterfactualAnalysis",
+                "DecisionExplorerCounterfactualAnalysisV1")) {
             assertTrue(combined.contains(expected), "reviewer docs should contain " + expected);
         }
     }

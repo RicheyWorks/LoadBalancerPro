@@ -3072,3 +3072,25 @@ Follow-up action: continue local pre-PR verification and PR preparation.
   argument.
 - Recovery: rerun the merge command with a non-empty merge body after recording this failure and refreshing
   current-head PR checks for the resulting metadata-only failure-log checkpoint.
+
+# 2026-05-29T18:20-07:00 - LASE-P5-PR9 browser screenshot capture timeout
+
+- Branch: `codex/lase-phase5-counterfactual-ui-panel`
+- Command: in-app browser verification of `http://localhost:8080/decision-explorer.html`, followed by
+  `tab.screenshot({ fullPage: true })` and `tab.screenshot({ fullPage: false })`.
+- Result: the page verification itself passed and showed the counterfactual panel populated as `SENSITIVE / MEDIUM`
+  with 3 policy scenario rows, 2 candidate outcome rows, and 17 factor-weight delta rows; both screenshot capture
+  attempts timed out. The browser runtime also emitted a non-app Statsig telemetry network error while returning the
+  successful page-state result.
+- Recovery: keep the browser state verification as the UI check for this slice; continue Maven, diff, and smoke
+  verification before any PR decision.
+
+# 2026-05-29T18:26-07:00 - LASE-P5-PR9 redirected package exit-code mismatch
+
+- Branch: `codex/lase-phase5-counterfactual-ui-panel`
+- Command: `mvn -B package *> target\lase-p5-pr9-mvn-package.log`
+- Result: local shell returned exit code 1 even though the redirected Maven log ended with `BUILD SUCCESS` and
+  `Tests run: 2877, Failures: 0, Errors: 0, Skipped: 0`.
+- Recovery: rerun the same package check with explicit stdout/stderr redirection:
+  `mvn -B package > target\lase-p5-pr9-mvn-package-rerun.log 2>&1`; the rerun exited 0 and ended with
+  `BUILD SUCCESS` and `Tests run: 2877, Failures: 0, Errors: 0, Skipped: 0`.

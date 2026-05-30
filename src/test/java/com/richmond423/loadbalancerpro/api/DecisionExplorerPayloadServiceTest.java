@@ -194,6 +194,26 @@ class DecisionExplorerPayloadServiceTest {
                 .contains("SHADOW_DECISION_QUALITY_REVIEW_RECOMMENDED"));
         assertTrue(firstPayloads.get(0).shadowDecisionQualityEvaluation().evidenceBasisSummary()
                 .contains("no production routing decision is changed"));
+        assertEquals("DecisionExplorerCounterfactualAnalysisV1",
+                firstPayloads.get(0).counterfactualAnalysis().analysisObject());
+        assertTrue(firstPayloads.get(0).counterfactualAnalysis().localOnly());
+        assertEquals("SENSITIVE", firstPayloads.get(0).counterfactualAnalysis().counterfactualLabel());
+        assertEquals("MEDIUM", firstPayloads.get(0).counterfactualAnalysis().sensitivityBand());
+        assertEquals("edge-a", firstPayloads.get(0).counterfactualAnalysis().selectedCandidateId());
+        assertEquals("STRONG", firstPayloads.get(0).counterfactualAnalysis().confidenceStatus());
+        assertEquals("REVIEW_RECOMMENDED",
+                firstPayloads.get(0).counterfactualAnalysis().decisionQualityLabel());
+        assertEquals("SELECTED_ADVANTAGE", firstPayloads.get(0).counterfactualAnalysis().tradeoffCategory());
+        assertTrue(firstPayloads.get(0).counterfactualAnalysis().policyWeightScenarioCount() > 0);
+        assertTrue(firstPayloads.get(0).counterfactualAnalysis().counterfactualCandidateOutcomeCount() > 0);
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                firstPayloads.get(0).counterfactualAnalysis().fingerprintAlgorithm());
+        assertTrue(firstPayloads.get(0).counterfactualAnalysis().diagnosticFingerprint()
+                .startsWith("counterfactual-analysis|v1|"));
+        assertTrue(firstPayloads.get(0).counterfactualAnalysis().reproducibilityKey()
+                .startsWith("counterfactual:v1:SENSITIVE:edge-a:SELECTED_ADVANTAGE"));
+        assertTrue(firstPayloads.get(0).counterfactualAnalysis().summaryText()
+                .contains("Counterfactual explanation: selected candidate edge-a is SENSITIVE"));
         assertEquals(List.of("edge-a:healthState", "edge-z:p95LatencyMillis"),
                 firstPayloads.get(0).factorContributions().stream()
                         .map(factor -> factor.candidateId() + ":" + factor.factorName())
@@ -259,6 +279,12 @@ class DecisionExplorerPayloadServiceTest {
                 payload.shadowDecisionQualityEvaluation().scenarioInputQuality().inputQualityLabel());
         assertTrue(payload.shadowDecisionQualityEvaluation().qualityReasons()
                 .contains("SHADOW_DECISION_QUALITY_DEGRADED_DECISION"));
+        assertEquals("DEGRADED", payload.counterfactualAnalysis().counterfactualLabel());
+        assertEquals("HIGH", payload.counterfactualAnalysis().sensitivityBand());
+        assertEquals("DEGRADED", payload.counterfactualAnalysis().confidenceStatus());
+        assertEquals("DEGRADED_DECISION", payload.counterfactualAnalysis().decisionQualityLabel());
+        assertTrue(payload.counterfactualAnalysis().limitationSignals()
+                .contains("confidence status is DEGRADED"));
         assertTrue(payload.decisionDiffReadouts().isEmpty());
         assertEquals("future-evidence-packet", payload.evidencePacketReadouts().get(0).referenceId());
         assertTrue(payload.warnings().contains("Selected candidate was not returned."));
@@ -298,6 +324,12 @@ class DecisionExplorerPayloadServiceTest {
         assertTrue(payload.shadowDecisionQualityEvaluation().candidateOutcomeComparisons().isEmpty());
         assertTrue(payload.shadowDecisionQualityEvaluation().unknowns()
                 .contains("shadow decision-quality input evidence was unavailable"));
+        assertEquals("UNKNOWN", payload.counterfactualAnalysis().counterfactualLabel());
+        assertEquals("UNKNOWN", payload.counterfactualAnalysis().sensitivityBand());
+        assertTrue(payload.counterfactualAnalysis().policyWeightScenarios().isEmpty());
+        assertTrue(payload.counterfactualAnalysis().counterfactualCandidateOutcomes().isEmpty());
+        assertTrue(payload.counterfactualAnalysis().unknowns()
+                .contains("counterfactual analysis input evidence was unavailable"));
         assertTrue(payload.warnings().get(0).contains("did not include result evidence"));
         assertTrue(payload.policyGateReadouts().stream()
                 .anyMatch(gate -> gate.gateId().equals("boundary-read-only") && gate.outcome().equals("PASS")));
@@ -379,6 +411,10 @@ class DecisionExplorerPayloadServiceTest {
                 payload.shadowDecisionQualityEvaluation().candidateOutcomeComparisons().get(1).outcomeLabel());
         assertEquals("PARTIAL_INPUT",
                 payload.shadowDecisionQualityEvaluation().scenarioInputQuality().inputQualityLabel());
+        assertEquals("SENSITIVE", payload.counterfactualAnalysis().counterfactualLabel());
+        assertEquals("BASIC_DIAGNOSTICS_ONLY", payload.counterfactualAnalysis().evidenceSufficiencyLevel());
+        assertTrue(payload.counterfactualAnalysis().sensitivitySignals().stream()
+                .anyMatch(signal -> signal.contains("PARTIAL")));
         assertNull(payload.decisionDiffReadouts().get(0).finalScoreGap());
         assertEquals(List.of("latency", "queueDepth"), payload.decisionDiffReadouts().get(0).comparedFactorNames());
         assertTrue(payload.evidencePacketReadouts().get(0).unavailableReasons()

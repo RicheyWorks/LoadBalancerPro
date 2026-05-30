@@ -56,19 +56,22 @@ public class DecisionExplorerPayloadService {
     private final DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService;
     private final DecisionExplorerRouteTradeoffService routeTradeoffService;
     private final DecisionExplorerShadowDecisionQualityService shadowDecisionQualityService;
+    private final DecisionExplorerCounterfactualAnalysisService counterfactualAnalysisService;
 
     public DecisionExplorerPayloadService() {
         this(new DecisionExplorerConfidenceSummaryService(),
                 new DecisionExplorerRoutingDiagnosticsService(),
                 new DecisionExplorerRouteTradeoffService(),
-                new DecisionExplorerShadowDecisionQualityService());
+                new DecisionExplorerShadowDecisionQualityService(),
+                new DecisionExplorerCounterfactualAnalysisService());
     }
 
     DecisionExplorerPayloadService(DecisionExplorerConfidenceSummaryService confidenceSummaryService) {
         this(confidenceSummaryService,
                 new DecisionExplorerRoutingDiagnosticsService(),
                 new DecisionExplorerRouteTradeoffService(),
-                new DecisionExplorerShadowDecisionQualityService());
+                new DecisionExplorerShadowDecisionQualityService(),
+                new DecisionExplorerCounterfactualAnalysisService());
     }
 
     DecisionExplorerPayloadService(
@@ -77,7 +80,8 @@ public class DecisionExplorerPayloadService {
         this(confidenceSummaryService,
                 routingDiagnosticsService,
                 new DecisionExplorerRouteTradeoffService(),
-                new DecisionExplorerShadowDecisionQualityService());
+                new DecisionExplorerShadowDecisionQualityService(),
+                new DecisionExplorerCounterfactualAnalysisService());
     }
 
     DecisionExplorerPayloadService(
@@ -87,7 +91,8 @@ public class DecisionExplorerPayloadService {
         this(confidenceSummaryService,
                 routingDiagnosticsService,
                 routeTradeoffService,
-                new DecisionExplorerShadowDecisionQualityService());
+                new DecisionExplorerShadowDecisionQualityService(),
+                new DecisionExplorerCounterfactualAnalysisService());
     }
 
     DecisionExplorerPayloadService(
@@ -95,10 +100,24 @@ public class DecisionExplorerPayloadService {
             DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService,
             DecisionExplorerRouteTradeoffService routeTradeoffService,
             DecisionExplorerShadowDecisionQualityService shadowDecisionQualityService) {
+        this(confidenceSummaryService,
+                routingDiagnosticsService,
+                routeTradeoffService,
+                shadowDecisionQualityService,
+                new DecisionExplorerCounterfactualAnalysisService());
+    }
+
+    DecisionExplorerPayloadService(
+            DecisionExplorerConfidenceSummaryService confidenceSummaryService,
+            DecisionExplorerRoutingDiagnosticsService routingDiagnosticsService,
+            DecisionExplorerRouteTradeoffService routeTradeoffService,
+            DecisionExplorerShadowDecisionQualityService shadowDecisionQualityService,
+            DecisionExplorerCounterfactualAnalysisService counterfactualAnalysisService) {
         this.confidenceSummaryService = Objects.requireNonNull(confidenceSummaryService);
         this.routingDiagnosticsService = Objects.requireNonNull(routingDiagnosticsService);
         this.routeTradeoffService = Objects.requireNonNull(routeTradeoffService);
         this.shadowDecisionQualityService = Objects.requireNonNull(shadowDecisionQualityService);
+        this.counterfactualAnalysisService = Objects.requireNonNull(counterfactualAnalysisService);
     }
 
     public List<DecisionExplorerPayloadV1> buildPayloads(RoutingComparisonResponse comparison) {
@@ -162,6 +181,12 @@ public class DecisionExplorerPayloadService {
                         routingDiagnostics,
                         routeTradeoffAnalysis,
                         BOUNDARY_NOTE);
+        DecisionExplorerCounterfactualAnalysisV1 counterfactualAnalysis = counterfactualAnalysisService.buildAnalysis(
+                confidenceSummary,
+                routingDiagnostics,
+                routeTradeoffAnalysis,
+                shadowDecisionQualityEvaluation,
+                BOUNDARY_NOTE);
 
         return new DecisionExplorerPayloadV1(
                 true,
@@ -178,6 +203,7 @@ public class DecisionExplorerPayloadService {
                 routingDiagnostics,
                 routeTradeoffAnalysis,
                 shadowDecisionQualityEvaluation,
+                counterfactualAnalysis,
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -226,6 +252,7 @@ public class DecisionExplorerPayloadService {
                 DecisionExplorerRoutingDiagnosticsV1.unknown(BOUNDARY_NOTE),
                 DecisionExplorerRouteTradeoffAnalysisV1.unknown(BOUNDARY_NOTE),
                 DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(BOUNDARY_NOTE),
+                DecisionExplorerCounterfactualAnalysisV1.unknown(BOUNDARY_NOTE),
                 List.of(),
                 List.of(),
                 policyGateReadouts(null),

@@ -103,6 +103,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/DecisionExplorerRouteTradeoffAnalysisV1");
         assertRef(required(explorerProperties, "/shadowDecisionQualityEvaluation"),
                 "#/components/schemas/DecisionExplorerShadowDecisionQualityEvaluationV1");
+        assertRef(required(explorerProperties, "/counterfactualAnalysis"),
+                "#/components/schemas/DecisionExplorerCounterfactualAnalysisV1");
         assertArrayRef(required(explorerProperties, "/factorContributions"),
                 "#/components/schemas/FactorContributionV1");
         assertArrayRef(required(explorerProperties, "/factorDrilldowns"),

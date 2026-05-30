@@ -81,6 +81,18 @@ class DecisionExplorerPayloadV1Test {
         assertFalse(payload.shadowDecisionQualityEvaluation().reproducibilityKey().isBlank());
         assertTrue(payload.shadowDecisionQualityEvaluation().explanationText()
                 .contains("Shadow decision-quality explanation is UNKNOWN"));
+        assertEquals("DecisionExplorerCounterfactualAnalysisV1", payload.counterfactualAnalysis().analysisObject());
+        assertEquals("UNKNOWN", payload.counterfactualAnalysis().counterfactualLabel());
+        assertEquals("UNKNOWN", payload.counterfactualAnalysis().sensitivityBand());
+        assertTrue(payload.counterfactualAnalysis().localOnly());
+        assertTrue(payload.counterfactualAnalysis().policyWeightScenarios().isEmpty());
+        assertTrue(payload.counterfactualAnalysis().counterfactualCandidateOutcomes().isEmpty());
+        assertTrue(payload.counterfactualAnalysis().factorWeightDeltas().isEmpty());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                payload.counterfactualAnalysis().fingerprintAlgorithm());
+        assertTrue(payload.counterfactualAnalysis().diagnosticFingerprint()
+                .startsWith("counterfactual-analysis|v1|"));
+        assertFalse(payload.counterfactualAnalysis().reproducibilityKey().isBlank());
         assertEquals("latency", payload.factorContributions().get(0).factorName());
         assertEquals("policy-health", payload.policyGateReadouts().get(0).gateId());
         assertEquals("candidate-a", payload.decisionDiffReadouts().get(0).baselineCandidateId());
@@ -171,6 +183,11 @@ class DecisionExplorerPayloadV1Test {
         assertEquals("UNKNOWN", payload.shadowDecisionQualityEvaluation().qualityBand());
         assertTrue(payload.shadowDecisionQualityEvaluation().evidenceBasis().isEmpty());
         assertTrue(payload.shadowDecisionQualityEvaluation().selectedCandidateBasis().isEmpty());
+        assertEquals("UNKNOWN", payload.counterfactualAnalysis().counterfactualLabel());
+        assertEquals("INSUFFICIENT", payload.counterfactualAnalysis().evidenceSufficiencyLevel());
+        assertTrue(payload.counterfactualAnalysis().policyWeightScenarios().isEmpty());
+        assertTrue(payload.counterfactualAnalysis().counterfactualCandidateOutcomes().isEmpty());
+        assertTrue(payload.counterfactualAnalysis().factorWeightDeltas().isEmpty());
         assertEquals("UNKNOWN", payload.decisionReadout().summary());
         assertTrue(payload.selectedCandidate().visibleSignals().isEmpty());
         assertTrue(payload.agentStructuredOutput().stableFieldNames().isEmpty());

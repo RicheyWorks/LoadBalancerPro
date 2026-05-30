@@ -77,6 +77,7 @@ class DecisionExplorerApiContractHardeningTest {
                 "routingDiagnostics",
                 "routeTradeoffAnalysis",
                 "shadowDecisionQualityEvaluation",
+                "counterfactualAnalysis",
                 "factorContributions",
                 "factorDrilldowns",
                 "policyGateReadouts",
@@ -203,6 +204,29 @@ class DecisionExplorerApiContractHardeningTest {
                 payload.at("/shadowDecisionQualityEvaluation/scenarioInputQuality/evaluationObject").asText());
         assertTrue(payload.at("/shadowDecisionQualityEvaluation/qualityReasons").isArray());
         assertTrue(payload.at("/shadowDecisionQualityEvaluation/sourceReferenceIds").isArray());
+        assertEquals("DecisionExplorerCounterfactualAnalysisV1",
+                payload.at("/counterfactualAnalysis/analysisObject").asText());
+        assertTrue(payload.at("/counterfactualAnalysis/readOnly").asBoolean());
+        assertTrue(payload.at("/counterfactualAnalysis/simulationOnly").asBoolean());
+        assertTrue(payload.at("/counterfactualAnalysis/localOnly").asBoolean());
+        assertEquals("SENSITIVE", payload.at("/counterfactualAnalysis/counterfactualLabel").asText());
+        assertEquals("MEDIUM", payload.at("/counterfactualAnalysis/sensitivityBand").asText());
+        assertEquals("green", payload.at("/counterfactualAnalysis/selectedCandidateId").asText());
+        assertEquals("PARTIAL", payload.at("/counterfactualAnalysis/confidenceStatus").asText());
+        assertEquals("REVIEW_RECOMMENDED",
+                payload.at("/counterfactualAnalysis/decisionQualityLabel").asText());
+        assertEquals(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM,
+                payload.at("/counterfactualAnalysis/fingerprintAlgorithm").asText());
+        assertTrue(payload.at("/counterfactualAnalysis/diagnosticFingerprint").asText()
+                .startsWith("counterfactual-analysis|v1|"));
+        assertFalse(payload.at("/counterfactualAnalysis/reproducibilityKey").asText().isBlank());
+        assertTrue(payload.at("/counterfactualAnalysis/policyWeightScenarios").isArray());
+        assertTrue(payload.at("/counterfactualAnalysis/policyWeightScenarios").size() > 0);
+        assertTrue(payload.at("/counterfactualAnalysis/counterfactualCandidateOutcomes").isArray());
+        assertTrue(payload.at("/counterfactualAnalysis/counterfactualCandidateOutcomes").size() > 0);
+        assertTrue(payload.at("/counterfactualAnalysis/factorWeightDeltas").isArray());
+        assertTrue(payload.at("/counterfactualAnalysis/summaryText").asText()
+                .contains("no production routing, scoring, proxying"));
         assertTrue(payload.path("factorDrilldowns").isArray());
         assertTrue(payload.path("factorDrilldowns").size() > 0);
         assertTrue(payload.path("notProvenBoundaries").isArray());
@@ -289,6 +313,18 @@ class DecisionExplorerApiContractHardeningTest {
                         .asText());
         assertEquals("UNKNOWN",
                 json.at("/shadowDecisionQualityEvaluation/scenarioInputQuality/inputQualityLabel").asText());
+        assertEquals("DecisionExplorerCounterfactualAnalysisV1",
+                json.at("/counterfactualAnalysis/analysisObject").asText());
+        assertEquals("UNKNOWN", json.at("/counterfactualAnalysis/counterfactualLabel").asText());
+        assertEquals("UNKNOWN", json.at("/counterfactualAnalysis/sensitivityBand").asText());
+        assertTrue(json.at("/counterfactualAnalysis/policyWeightScenarios").isArray());
+        assertEquals(0, json.at("/counterfactualAnalysis/policyWeightScenarios").size());
+        assertTrue(json.at("/counterfactualAnalysis/counterfactualCandidateOutcomes").isArray());
+        assertEquals(0, json.at("/counterfactualAnalysis/counterfactualCandidateOutcomes").size());
+        assertTrue(json.at("/counterfactualAnalysis/factorWeightDeltas").isArray());
+        assertEquals(0, json.at("/counterfactualAnalysis/factorWeightDeltas").size());
+        assertTrue(json.at("/counterfactualAnalysis/diagnosticFingerprint").asText()
+                .startsWith("counterfactual-analysis|v1|"));
         assertTrue(json.path("factorContributions").isArray());
         assertEquals(1, json.path("factorContributions").size());
         assertNoUnsupportedClaims(json);
@@ -338,6 +374,11 @@ class DecisionExplorerApiContractHardeningTest {
         assertTrue(json.at("/shadowDecisionQualityEvaluation/unknowns").isArray());
         assertStringArrayContains(json.at("/shadowDecisionQualityEvaluation/unknowns"),
                 "shadow decision-quality input evidence was unavailable");
+        assertEquals("UNKNOWN", json.at("/counterfactualAnalysis/counterfactualLabel").asText());
+        assertEquals("INSUFFICIENT", json.at("/counterfactualAnalysis/evidenceSufficiencyLevel").asText());
+        assertTrue(json.at("/counterfactualAnalysis/unknowns").isArray());
+        assertStringArrayContains(json.at("/counterfactualAnalysis/unknowns"),
+                "counterfactual analysis input evidence was unavailable");
         assertTrue(json.path("factorContributions").isArray());
         assertTrue(json.path("factorDrilldowns").isArray());
         assertEquals(0, json.path("candidateSet").size());

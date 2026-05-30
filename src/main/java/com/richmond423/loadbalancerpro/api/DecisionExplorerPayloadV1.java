@@ -17,6 +17,7 @@ public record DecisionExplorerPayloadV1(
         DecisionExplorerRoutingDiagnosticsV1 routingDiagnostics,
         DecisionExplorerRouteTradeoffAnalysisV1 routeTradeoffAnalysis,
         DecisionExplorerShadowDecisionQualityEvaluationV1 shadowDecisionQualityEvaluation,
+        DecisionExplorerCounterfactualAnalysisV1 counterfactualAnalysis,
         List<FactorContributionV1> factorContributions,
         List<DecisionFactorDrilldownV1> factorDrilldowns,
         List<PolicyGateReadoutV1> policyGateReadouts,
@@ -54,6 +55,9 @@ public record DecisionExplorerPayloadV1(
         shadowDecisionQualityEvaluation = shadowDecisionQualityEvaluation == null
                 ? DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(boundaryNote)
                 : shadowDecisionQualityEvaluation;
+        counterfactualAnalysis = counterfactualAnalysis == null
+                ? DecisionExplorerCounterfactualAnalysisV1.unknown(boundaryNote)
+                : counterfactualAnalysis;
         factorContributions = DecisionExplorerDtoSupport.copyOrEmpty(factorContributions);
         factorDrilldowns = DecisionExplorerDtoSupport.copyOrEmpty(factorDrilldowns);
         policyGateReadouts = DecisionExplorerDtoSupport.copyOrEmpty(policyGateReadouts);
@@ -62,6 +66,58 @@ public record DecisionExplorerPayloadV1(
         warnings = DecisionExplorerDtoSupport.copyOrEmpty(warnings);
         unknowns = DecisionExplorerDtoSupport.copyOrEmpty(unknowns);
         notProvenBoundaries = DecisionExplorerDtoSupport.copyOrEmpty(notProvenBoundaries);
+    }
+
+    public DecisionExplorerPayloadV1(
+            boolean readOnly,
+            boolean simulationOnly,
+            String payloadObject,
+            String contractVersion,
+            String source,
+            String decisionId,
+            DecisionReadoutV1 decisionReadout,
+            CandidateReadoutV1 selectedCandidate,
+            List<CandidateReadoutV1> candidateSet,
+            List<DecisionExplorerCandidateComparisonRowV1> candidateComparisons,
+            DecisionExplorerConfidenceSummaryV1 confidenceSummary,
+            DecisionExplorerRoutingDiagnosticsV1 routingDiagnostics,
+            DecisionExplorerRouteTradeoffAnalysisV1 routeTradeoffAnalysis,
+            DecisionExplorerShadowDecisionQualityEvaluationV1 shadowDecisionQualityEvaluation,
+            List<FactorContributionV1> factorContributions,
+            List<DecisionFactorDrilldownV1> factorDrilldowns,
+            List<PolicyGateReadoutV1> policyGateReadouts,
+            List<DecisionDiffReadoutV1> decisionDiffReadouts,
+            List<EvidencePacketReadoutV1> evidencePacketReadouts,
+            AgentStructuredOutputV1 agentStructuredOutput,
+            List<String> warnings,
+            List<String> unknowns,
+            List<String> notProvenBoundaries,
+            String boundaryNote) {
+        this(readOnly,
+                simulationOnly,
+                payloadObject,
+                contractVersion,
+                source,
+                decisionId,
+                decisionReadout,
+                selectedCandidate,
+                candidateSet,
+                candidateComparisons,
+                confidenceSummary,
+                routingDiagnostics,
+                routeTradeoffAnalysis,
+                shadowDecisionQualityEvaluation,
+                DecisionExplorerCounterfactualAnalysisV1.unknown(boundaryNote),
+                factorContributions,
+                factorDrilldowns,
+                policyGateReadouts,
+                decisionDiffReadouts,
+                evidencePacketReadouts,
+                agentStructuredOutput,
+                warnings,
+                unknowns,
+                notProvenBoundaries,
+                boundaryNote);
     }
 
     public DecisionExplorerPayloadV1(
@@ -100,6 +156,7 @@ public record DecisionExplorerPayloadV1(
                 DecisionExplorerRoutingDiagnosticsV1.unknown(boundaryNote),
                 DecisionExplorerRouteTradeoffAnalysisV1.unknown(boundaryNote),
                 DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(boundaryNote),
+                DecisionExplorerCounterfactualAnalysisV1.unknown(boundaryNote),
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -149,6 +206,7 @@ public record DecisionExplorerPayloadV1(
                 routingDiagnostics,
                 DecisionExplorerRouteTradeoffAnalysisV1.unknown(boundaryNote),
                 DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(boundaryNote),
+                DecisionExplorerCounterfactualAnalysisV1.unknown(boundaryNote),
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -196,6 +254,7 @@ public record DecisionExplorerPayloadV1(
                 DecisionExplorerRoutingDiagnosticsV1.unknown(boundaryNote),
                 DecisionExplorerRouteTradeoffAnalysisV1.unknown(boundaryNote),
                 DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(boundaryNote),
+                DecisionExplorerCounterfactualAnalysisV1.unknown(boundaryNote),
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -242,6 +301,7 @@ public record DecisionExplorerPayloadV1(
                 DecisionExplorerRoutingDiagnosticsV1.unknown(boundaryNote),
                 DecisionExplorerRouteTradeoffAnalysisV1.unknown(boundaryNote),
                 DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(boundaryNote),
+                DecisionExplorerCounterfactualAnalysisV1.unknown(boundaryNote),
                 factorContributions,
                 factorDrilldowns,
                 policyGateReadouts,
@@ -287,6 +347,7 @@ public record DecisionExplorerPayloadV1(
                 DecisionExplorerRoutingDiagnosticsV1.unknown(boundaryNote),
                 DecisionExplorerRouteTradeoffAnalysisV1.unknown(boundaryNote),
                 DecisionExplorerShadowDecisionQualityEvaluationV1.unknown(boundaryNote),
+                DecisionExplorerCounterfactualAnalysisV1.unknown(boundaryNote),
                 factorContributions,
                 List.of(),
                 policyGateReadouts,

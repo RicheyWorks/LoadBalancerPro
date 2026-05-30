@@ -104,6 +104,7 @@ class AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest {
 
         for (String expected : List.of(
                 "LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md",
+                "REVIEWER_TRUST_MAP.md",
                 "reviewer-facing Decision Explorer evidence groups",
                 "confidenceSummary",
                 "routingDiagnostics",
@@ -120,6 +121,91 @@ class AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest {
                 "does not add endpoints",
                 "does not prove production readiness")) {
             assertTrue(trustMap.contains(expected), "trust map should point to " + expected);
+        }
+    }
+
+    @Test
+    void apiContractsNormalizeDecisionExplorerReviewerEvidenceVocabulary() throws IOException {
+        String apiContracts = read(API_CONTRACTS);
+        String trustMap = read(TRUST_MAP);
+        String normalizedApiContracts = apiContracts.toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+
+        for (String expected : List.of(
+                "### Reviewer-Facing Decision Explorer Terminology Normalization",
+                "documentation-only normalization",
+                "does not add endpoints",
+                "rename JSON fields",
+                "change runtime API behavior",
+                "REVIEWER_TRUST_MAP.md",
+                "agent/LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md",
+                "Decision Explorer reviewer concept",
+                "Normalized reviewer-evidence group",
+                "Current API field or surface",
+                "Decision Explorer payload",
+                "Confidence summary",
+                "Routing diagnostics",
+                "Route tradeoff analysis",
+                "Shadow decision quality",
+                "Counterfactual analysis",
+                "Static reviewer page",
+                "Scenario catalog",
+                "`DecisionExplorerPayloadV1`",
+                "`GET /api/routing/decision-explorer/scenarios`")) {
+            assertTrue(apiContracts.contains(expected), "API contracts should normalize " + expected);
+        }
+        assertTrue(normalizedApiContracts.contains("existing additive fields"),
+                "API contracts should normalize existing additive fields");
+        assertTrue(normalizedApiContracts.contains("change schemas"),
+                "API contracts should preserve no-schema-change wording");
+
+        for (String alignedMapping : List.of(
+                "Routing Intelligence Status -> `confidenceSummary`",
+                "Routing Diagnostics -> `routingDiagnostics`",
+                "Route Tradeoff Intelligence -> `routeTradeoffAnalysis`",
+                "Shadow Decision Quality -> `shadowDecisionQualityEvaluation`",
+                "Counterfactual Analysis -> `counterfactualAnalysis`")) {
+            assertTrue(apiContracts.contains(alignedMapping), "API contracts should contain " + alignedMapping);
+            assertTrue(trustMap.contains(alignedMapping), "trust map should align on " + alignedMapping);
+        }
+
+        assertAppearsInOrder(apiContracts,
+                "Reviewer-Facing Decision Explorer Terminology Normalization",
+                "documentation-only normalization",
+                "REVIEWER_TRUST_MAP.md",
+                "LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md",
+                "Routing Intelligence Status",
+                "Confidence summary",
+                "Routing Diagnostics",
+                "Routing diagnostics",
+                "Route Tradeoff Intelligence",
+                "Route tradeoff analysis",
+                "Shadow Decision Quality",
+                "Shadow decision quality",
+                "Counterfactual Analysis",
+                "Counterfactual analysis");
+
+        for (String stale : List.of(
+                "additive phase 5 field",
+                "phase 5 counterfactual field",
+                "phase 5 normalized evidence group",
+                "phase 5 reviewer-evidence vocabulary")) {
+            assertFalse(normalizedApiContracts.contains(stale), "API contracts should reject stale wording " + stale);
+        }
+
+        for (String forbidden : List.of(
+                "production readiness is proven",
+                "certified production",
+                "live-cloud validated",
+                "real tenant validated",
+                "benchmark proven",
+                "throughput proven",
+                "runtime enforcement is enabled",
+                "traffic shifting enabled",
+                "phase 6 adds a new endpoint",
+                "phase 6 changes schemas",
+                "phase 6 changes runtime api behavior",
+                "autonomous production action is enabled")) {
+            assertFalse(normalizedApiContracts.contains(forbidden), "API contracts must not overclaim " + forbidden);
         }
     }
 

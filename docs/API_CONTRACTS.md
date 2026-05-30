@@ -96,13 +96,37 @@ behavior, or fabricate missing evidence. Its root-page and reviewer-doc navigati
 inspection surface only. The page does not add storage, export, replay execution, evidence-packet generation, live
 traffic shifting, production approval controls, cloud controls, tenant controls, or benchmark/load/stress claims.
 
-For reviewer-facing Decision Explorer evidence groups, use
-[`agent/LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md`](agent/LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md)
-as the current naming anchor for `confidenceSummary`, `routingDiagnostics`, `routeTradeoffAnalysis`,
-`shadowDecisionQualityEvaluation`, and `counterfactualAnalysis`. That anchor is documentation/test-only and does not
-add an endpoint, DTO, runtime behavior, or new production claim.
+### Reviewer-Facing Decision Explorer Terminology Normalization
 
-`DecisionExplorerPayloadV1.counterfactualAnalysis` is an additive Phase 5 field derived from already-returned local
+For reviewer-facing API contract prose, Decision Explorer uses the Phase 6 normalized vocabulary below for
+reviewer-facing Decision Explorer evidence groups. This is documentation-only normalization for existing additive
+fields: it does not add endpoints, rename JSON fields, change
+schemas, change runtime API behavior, execute replay, write storage/export artifacts, generate evidence packets, shift
+traffic, or prove production readiness. Reviewers should use this contract for field shape, then
+[`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md) for the `/decision-explorer.html` navigation path, then
+[`agent/LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md`](agent/LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md)
+for naming rules and not-proven boundaries.
+
+| Decision Explorer reviewer concept | Normalized reviewer-evidence group | Current API field or surface |
+| --- | --- | --- |
+| Top-level payload readout | Decision Explorer payload | `DecisionExplorerPayloadV1` |
+| Routing Intelligence Status | Confidence summary | `confidenceSummary` |
+| Routing Diagnostics | Routing diagnostics | `routingDiagnostics` |
+| Route Tradeoff Intelligence | Route tradeoff analysis | `routeTradeoffAnalysis` |
+| Shadow Decision Quality | Shadow decision quality | `shadowDecisionQualityEvaluation` |
+| Counterfactual Analysis | Counterfactual analysis | `counterfactualAnalysis` |
+| Static browser reviewer path | Static reviewer page | `/decision-explorer.html` |
+| Scenario catalog orientation | Scenario catalog | `GET /api/routing/decision-explorer/scenarios` |
+
+The UI-to-field shorthand is:
+
+- Routing Intelligence Status -> `confidenceSummary`;
+- Routing Diagnostics -> `routingDiagnostics`;
+- Route Tradeoff Intelligence -> `routeTradeoffAnalysis`;
+- Shadow Decision Quality -> `shadowDecisionQualityEvaluation`;
+- Counterfactual Analysis -> `counterfactualAnalysis`.
+
+`DecisionExplorerPayloadV1.counterfactualAnalysis` is a current additive field derived from already-returned local
 Decision Explorer evidence. It exposes local-only `DecisionExplorerCounterfactualAnalysisV1` summary labels,
 policy-weight sensitivity scenario rows, candidate outcome rows, factor-weight delta rows, fingerprints, and
 reproducibility keys. These counterfactual readouts do not recompute production routing scores, change routing

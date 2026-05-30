@@ -85,14 +85,24 @@ The static Decision Explorer first-pass page is served at `GET /decision-explore
 `GET /api/routing/decision-explorer/scenarios` route for deterministic scenario catalog metadata. It keeps the optional
 API key in page memory only, renders scenario selector, scenario category filtering, evidence-status filtering,
 decision summary, reviewer explanation badges, selected candidate, candidate set, candidate comparison rows, factor
-contributions, factor drill-down readouts, policy gates, decision diffs, evidence packet readouts, agent structured
-output, warnings, unknowns, not-proven boundaries, and raw payload locally in the browser, and writes no runtime files.
+contributions, factor drill-down readouts, counterfactual analysis, counterfactual policy scenario rows,
+counterfactual candidate outcome rows, counterfactual factor-weight delta rows, policy gates, decision diffs, evidence
+packet readouts, agent structured output, warnings, unknowns, not-proven boundaries, and raw payload locally in the
+browser, and writes no runtime files.
 Scenario selection is reviewer orientation only and does not run routing by itself. Candidate comparison, factor
-drill-down, and reviewer badge display use fields already returned by `DecisionExplorerPayloadV1` plus selected
-same-origin scenario metadata; the page does not compute new scores, enforce decisions, prove runtime behavior, or
-fabricate missing evidence. Its root-page and reviewer-doc navigation points to the page as a local inspection surface
-only. The page does not add storage, export, replay execution, evidence-packet generation, live traffic shifting,
-production approval controls, cloud controls, tenant controls, or benchmark/load/stress claims.
+drill-down, counterfactual, and reviewer badge display use fields already returned by `DecisionExplorerPayloadV1` plus
+selected same-origin scenario metadata; the page does not compute new scores, enforce decisions, prove runtime
+behavior, or fabricate missing evidence. Its root-page and reviewer-doc navigation points to the page as a local
+inspection surface only. The page does not add storage, export, replay execution, evidence-packet generation, live
+traffic shifting, production approval controls, cloud controls, tenant controls, or benchmark/load/stress claims.
+
+`DecisionExplorerPayloadV1.counterfactualAnalysis` is an additive Phase 5 field derived from already-returned local
+Decision Explorer evidence. It exposes local-only `DecisionExplorerCounterfactualAnalysisV1` summary labels,
+policy-weight sensitivity scenario rows, candidate outcome rows, factor-weight delta rows, fingerprints, and
+reproducibility keys. These counterfactual readouts do not recompute production routing scores, change routing
+behavior, mutate proxy behavior, persist storage, export evidence, execute replay, generate evidence packets, call
+external systems, or prove benchmark/load/stress, throughput/p95/p99, live-cloud, real-tenant, production-readiness,
+or broader automation behavior.
 
 `DecisionExplorerPayloadV1.factorDrilldowns` is an additive Phase 2 field derived from already-returned
 `ScoreFactorContributionResponse` evidence. Each `DecisionFactorDrilldownV1` readout names the factor and candidate,

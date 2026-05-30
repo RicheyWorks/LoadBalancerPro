@@ -8,37 +8,74 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-29T17:54-07:00
+Timestamp: 2026-05-29T18:33-07:00
 
 Goal name: LASE Routing Intelligence Phase 5 - Local Counterfactual Decision Analysis and Policy-Weight Sensitivity
 
-Current PR slot: LASE-P5-PR8
+Current PR slot: LASE-P5-PR9
 
-Checkpoint: LASE-P5-PR8 PR opened after local verification
+Checkpoint: LASE-P5-PR9 PR opened after local verification
 
-Started from main SHA: `dbbef3510708698297e82cf6d1209810e93b9c55`
+Started from main SHA: `3bcc0529ad085866f0aec2ac49635e6126fa34f5`
 
-Current branch: codex/lase-phase5-counterfactual-payload-exposure
+Current branch: codex/lase-phase5-counterfactual-ui-panel
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/435
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/436
 
-PR creation head: `82c1745eb8db8efb0bcebef709878733651ed2bb`
+PR creation head: `c32ebada3ac510eb905f9d6f3648c094e6611723`
 
-Current branch head: `82c1745eb8db8efb0bcebef709878733651ed2bb` after the implementation commit; a PR metadata
-checkpoint commit is pending.
+Current branch head: `c32ebada3ac510eb905f9d6f3648c094e6611723` after the local verification checkpoint commit; a
+PR metadata checkpoint commit is pending.
 
 Changed files for this slice:
 
 - docs/agent/SESSION_MANAGER.md
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadService.java
-- src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerApiContractHardeningTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadServiceTest.java
-- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerPayloadV1Test.java
-- src/test/java/com/richmond423/loadbalancerpro/api/RoutingOpenApiContractTest.java
+- docs/agent/FAILURE_LOG.md
+- docs/API_CONTRACTS.md
+- src/main/resources/static/decision-explorer.html
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerReviewerNavigationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerStaticPageTest.java
 
 Checks run:
 
+- LASE-P5-PR8 PR #435 metadata checkpoint commit `8127c4cd5e55b04e216b0ccfba5c6768b5f9c1c7` was pushed.
+- LASE-P5-PR8 PR #435 current-head checks passed for final head
+  `8127c4cd5e55b04e216b0ccfba5c6768b5f9c1c7`: both Build/Test/Package/Smoke runs, Analyze Java / CodeQL, CodeQL, and
+  Dependency Review was success/skipped and not failing.
+- LASE-P5-PR8 PR #435 merged as `3bcc0529ad085866f0aec2ac49635e6126fa34f5`.
+- LASE-P5-PR8 post-merge local verification passed on main: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  redirected-output `mvn -B package` with 2,877 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P5-PR8 main CI and CodeQL passed for `3bcc0529ad085866f0aec2ac49635e6126fa34f5`; Dependency Review was not
+  failing.
+- LASE-P5-PR9 branch `codex/lase-phase5-counterfactual-ui-panel` was created from clean synced main at
+  `3bcc0529ad085866f0aec2ac49635e6126fa34f5`.
+- LASE-P5-PR9 will add read-only, simulation-only static Decision Explorer UI exposure for the already-returned
+  `DecisionExplorerCounterfactualAnalysisV1` payload field without changing production routing, scoring, proxying,
+  replay execution, storage, export, evidence packets, or traffic shifting.
+- LASE-P5-PR9 focused static page/reviewer navigation verification passed:
+  `mvn -q "-Dtest=DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest" test`.
+- LASE-P5-PR9 broader page/API/docs guard selector passed:
+  `mvn -q "-Dtest=DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest,DecisionExplorerApiContractHardeningTest,RoutingControllerTest,RoutingOpenApiContractTest,AgentWorkflowQuickstartDocumentationTest,AgentCampaignMergeGateDocumentationTest,AgentCampaignRemoteCheckAuditDocumentationTest,AgentCampaignScopeAuditChecklistDocumentationTest,AdvancedReadmeAgentContractDocumentationTest" test`.
+- LASE-P5-PR9 in-app browser verification passed for `http://localhost:8080/decision-explorer.html`: running the
+  sample loaded 1 payload and populated the counterfactual panel as `SENSITIVE / MEDIUM` with 3 policy scenario rows,
+  2 candidate outcome rows, and 17 factor-weight delta rows.
+- LASE-P5-PR9 browser screenshot capture timed out after the successful page-state check; the tooling failure was
+  logged in `docs/agent/FAILURE_LOG.md` and did not change app behavior.
+- LASE-P5-PR9 full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`, redirected-output
+  `mvn -B package > target\lase-p5-pr9-mvn-package-rerun.log 2>&1` with 2,877 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- The first redirected `mvn -B package *> target\lase-p5-pr9-mvn-package.log` command returned exit code 1 despite a
+  `BUILD SUCCESS` log with 2,877 tests; the mismatch was logged in `docs/agent/FAILURE_LOG.md` and recovered by the
+  successful explicit-redirection rerun.
+- Post-checkpoint metadata guard passed:
+  `mvn -q "-Dtest=DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest,AgentWorkflowQuickstartDocumentationTest,AgentCampaignMergeGateDocumentationTest,AgentCampaignRemoteCheckAuditDocumentationTest,AgentCampaignScopeAuditChecklistDocumentationTest,AdvancedReadmeAgentContractDocumentationTest" test`.
+- `git diff --cached --check` passed after staging the LASE-P5-PR9 slice.
+- LASE-P5-PR9 implementation commit `85a7d8f54b6a3e9b3d3394a04621395a5b121b57` was created.
+- LASE-P5-PR9 metadata checkpoint commit `c32ebada3ac510eb905f9d6f3648c094e6611723` was created and pushed.
+- LASE-P5-PR9 PR #436 was opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/436 with static-page
+  counterfactual UI scope, local verification, logged tooling recovery notes, safety confirmations, and next-slice
+  notes.
 - LASE-P5-PR7 failure-log checkpoint commit `3973e7e19bade4d4b3c6cb4d326dd1c3bc259d33` was pushed to PR #434.
 - LASE-P5-PR7 PR #434 current-head checks passed for final head
   `3973e7e19bade4d4b3c6cb4d326dd1c3bc259d33`: both Build/Test/Package/Smoke runs, Analyze Java / CodeQL, CodeQL, and
@@ -110,13 +147,13 @@ Checks run:
 - This failure-log checkpoint will create a new metadata-only PR head after commit and push, so the merge gate must
   re-read remote checks for the final PR head again before any merge decision.
 
-Remote status: main CI and CodeQL are green for `5f6a184486f0960e61cf5cc7e670b2c1c1a6efbb`; PR #435 current-head
-checks started after PR creation and are pending.
+Remote status: main CI and CodeQL are green for `3bcc0529ad085866f0aec2ac49635e6126fa34f5`; PR #436 checks started
+after PR creation and are pending.
 
-Blocker: none for local verification; merge is gated on current-head PR #435 checks.
+Blocker: none.
 
-Next action: commit and push this PR-created checkpoint, wait for current-head PR #435 checks, merge only if fully
-green, then fast-forward main and run post-merge local and remote verification before advancing LASE-P5.
+Next action: commit and push this PR-created checkpoint, wait for current-head PR #436 checks, and merge only if fully
+green.
 
 Decision: continue.
 

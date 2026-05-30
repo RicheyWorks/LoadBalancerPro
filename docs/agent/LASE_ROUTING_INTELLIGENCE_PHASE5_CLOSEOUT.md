@@ -10,10 +10,12 @@ Classification: WARN / pending LASE-P5-PR10 merge-health gate.
 
 Final closeout branch: `codex/lase-phase5-closeout-report`.
 
+Final closeout PR: [#437](https://github.com/RicheyWorks/LoadBalancerPro/pull/437).
+
 Implementation-complete main SHA before this closeout PR: `f1b9d33c2469b4fcea32dc12d243e9d4b2f41665`.
 
-Final closeout PR, final closeout merge SHA, and final main SHA are recorded in the final operator response after this
-closeout PR is merged, local main is synced, local verification passes, and main CI plus CodeQL are green.
+Final closeout merge SHA and final main SHA are recorded in the final operator response after this closeout PR is
+merged, local main is synced, local verification passes, and main CI plus CodeQL are green.
 
 ## Merged PRs
 

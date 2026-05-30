@@ -8,33 +8,81 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Campaign Checkpoint
 
-Timestamp: 2026-05-29T19:07-07:00
+Timestamp: 2026-05-29T20:19-07:00
 
-Goal name: LASE Routing Intelligence Phase 5 - Local Counterfactual Decision Analysis and Policy-Weight Sensitivity
+Goal name: LASE Routing Intelligence Phase 6 - Reviewer Evidence Normalization
 
-Current PR slot: LASE-P5-PR10
+Current PR slot: LASE-P6-PR1
 
-Checkpoint: LASE-P5-PR10 PR opened after local closeout verification
+Checkpoint: LASE-P6-PR1 PR opened after local verification
 
-Started from main SHA: `f1b9d33c2469b4fcea32dc12d243e9d4b2f41665`
+Started from main SHA: `9d135fa9e2d451cc35379e003da7aa35d15e1f45`
 
-Current branch: codex/lase-phase5-closeout-report
+Current branch: codex/lase-phase6-normalization-anchor
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/437
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/438
 
-PR creation head: `e1c45c895d95ebe7e2e585014b0083125e505b92`
+PR creation head: `7cf953a0b814ece7b5b8c2679e882e2794b45872`
 
-Current branch head: `e1c45c895d95ebe7e2e585014b0083125e505b92` after PR creation; a PR metadata checkpoint
+Current branch head: `7cf953a0b814ece7b5b8c2679e882e2794b45872` after PR creation; a PR metadata checkpoint
 commit is pending.
 
 Changed files for this slice:
 
-- docs/agent/SESSION_MANAGER.md
-- docs/agent/FAILURE_LOG.md
+- docs/API_CONTRACTS.md
+- docs/REVIEWER_TRUST_MAP.md
 - docs/agent/LASE_ROUTING_INTELLIGENCE_PHASE5_CLOSEOUT.md
+- docs/agent/LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md
+- docs/agent/SESSION_MANAGER.md
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest.java
 
 Checks run:
+
+- LASE-P6-PR1 started as a fresh campaign from clean main at `9d135fa9e2d451cc35379e003da7aa35d15e1f45`; Phase 5
+  closed with PR #437 and is not being continued on the old branch.
+- Main CI and CodeQL are green for `9d135fa9e2d451cc35379e003da7aa35d15e1f45`.
+- LASE-P6-PR1 branch `codex/lase-phase6-normalization-anchor` was created from clean main.
+- LASE-P6-PR1 will audit reviewer-facing LASE evidence normalization gaps and add a docs/test-only normalization
+  anchor plus guard test without production routing, scoring, proxying, allocation, replay, storage/export,
+  evidence-packet, traffic-shifting, runtime, Maven, CI, Docker, Compose, secret, cloud, tenant, private-network, or
+  external-target changes.
+- LASE-P6-PR1 audit found that Phase 5 closeout was merged and main-green, but the closeout document and guard still
+  used stale candidate/pending wording; the PR1 slice updates those docs/test-only records to final merged facts.
+- LASE-P6-PR1 adds a small reviewer evidence normalization anchor for current Decision Explorer evidence group names,
+  cross-links it from `docs/API_CONTRACTS.md` and `docs/REVIEWER_TRUST_MAP.md`, and guards the naming/boundary
+  vocabulary without changing runtime API behavior.
+- Focused Phase 6/Phase 5 guard verification passed:
+  `mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest" test`.
+- Broader docs guard selector passed:
+  `mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AgentCampaignMergeGateDocumentationTest,AgentCampaignRemoteCheckAuditDocumentationTest,AgentCampaignScopeAuditChecklistDocumentationTest,AdvancedReadmeAgentContractDocumentationTest" test`.
+- `git diff --check` passed for the current working tree.
+- Required full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`, direct
+  `mvn -B package` with 2,886 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- Post-checkpoint focused guard verification passed:
+  `mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest" test`.
+- Post-checkpoint `git diff --check` passed.
+- `git diff --cached --check` passed after staging the LASE-P6-PR1 slice.
+- LASE-P6-PR1 implementation commit `7cf953a0b814ece7b5b8c2679e882e2794b45872` was created.
+- LASE-P6-PR1 branch `codex/lase-phase6-normalization-anchor` was pushed to origin.
+- LASE-P6-PR1 PR #438 was opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/438 with docs/test-only
+  normalization-anchor scope, local verification, safety confirmations, and a PR2 recommendation.
+- This PR metadata checkpoint will create a new PR head after commit and push, so the merge gate must re-read remote
+  checks for the final PR head before any merge decision.
+
+Remote status: main CI and CodeQL are green for `9d135fa9e2d451cc35379e003da7aa35d15e1f45`; PR #438 checks are in
+progress for implementation head `7cf953a0b814ece7b5b8c2679e882e2794b45872`, and must be re-read after the metadata
+checkpoint is pushed.
+
+Blocker: none.
+
+Next action: commit and push this PR-created checkpoint, wait for current-head PR #438 checks, and merge only if fully
+green.
+
+Decision: continue.
+
+## Historical LASE Phase 5 Campaign Checkpoint
 
 - LASE-P5-PR10 audit found Phase 5 implementation-complete after PRs #428 through #436: local counterfactual
   foundation, policy-weight scenarios, candidate outcomes, factor-weight deltas, explanations, fingerprints, fixture
@@ -185,16 +233,6 @@ Checks run:
   argument by PowerShell/GitHub CLI; the failure was logged in `docs/agent/FAILURE_LOG.md`.
 - This failure-log checkpoint will create a new metadata-only PR head after commit and push, so the merge gate must
   re-read remote checks for the final PR head again before any merge decision.
-
-Remote status: main CI and CodeQL are green for `f1b9d33c2469b4fcea32dc12d243e9d4b2f41665`; PR #437 checks must be
-read against the final PR head after this metadata checkpoint is pushed.
-
-Blocker: none.
-
-Next action: commit and push this PR-created checkpoint, wait for current-head PR #437 checks, and merge only if fully
-green.
-
-Decision: continue.
 
 - LASE-P5-PR5 PR #432 current-head checks passed: Build/Test/Package/Smoke, Analyze Java / CodeQL, CodeQL, and
   Dependency Review was success/skipped and not failing.

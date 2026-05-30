@@ -26,9 +26,13 @@ class AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest {
         for (String expected : List.of(
                 "# LASE Routing Intelligence Phase 5 Closeout",
                 "LASE Routing Intelligence Phase 5 - Local Counterfactual Decision Analysis",
-                "Classification: WARN / pending LASE-P5-PR10 merge-health gate.",
+                "Status: final closeout complete.",
+                "Classification: PASS / Phase 5 implementation and closeout merged.",
                 "Final closeout branch: `codex/lase-phase5-closeout-report`.",
                 "Final closeout PR: [#437](https://github.com/RicheyWorks/LoadBalancerPro/pull/437).",
+                "Final closeout head SHA: `dac438bb68fe58a97adb748577435467320b4f12`.",
+                "Final closeout merge SHA and final main SHA: "
+                        + "`9d135fa9e2d451cc35379e003da7aa35d15e1f45`.",
                 "Implementation-complete main SHA before this closeout PR: "
                         + "`f1b9d33c2469b4fcea32dc12d243e9d4b2f41665`",
                 "#428",
@@ -150,6 +154,8 @@ class AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest {
                 ".\\scripts\\smoke\\enterprise-lab-workflow.ps1 -package",
                 "main ci run `26671006920`",
                 "main codeql run `26671006915`",
+                "main ci run `26671719015`",
+                "main codeql run `26671719007`",
                 "build/test/package/smoke",
                 "dependency review")) {
             assertTrue(normalized.contains(expected), "closeout should record " + expected);

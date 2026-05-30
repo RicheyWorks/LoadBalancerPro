@@ -96,6 +96,12 @@ behavior, or fabricate missing evidence. Its root-page and reviewer-doc navigati
 inspection surface only. The page does not add storage, export, replay execution, evidence-packet generation, live
 traffic shifting, production approval controls, cloud controls, tenant controls, or benchmark/load/stress claims.
 
+For reviewer-facing Decision Explorer evidence groups, use
+[`agent/LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md`](agent/LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md)
+as the current naming anchor for `confidenceSummary`, `routingDiagnostics`, `routeTradeoffAnalysis`,
+`shadowDecisionQualityEvaluation`, and `counterfactualAnalysis`. That anchor is documentation/test-only and does not
+add an endpoint, DTO, runtime behavior, or new production claim.
+
 `DecisionExplorerPayloadV1.counterfactualAnalysis` is an additive Phase 5 field derived from already-returned local
 Decision Explorer evidence. It exposes local-only `DecisionExplorerCounterfactualAnalysisV1` summary labels,
 policy-weight sensitivity scenario rows, candidate outcome rows, factor-weight delta rows, fingerprints, and

@@ -4,7 +4,7 @@ Date: 2026-05-29
 
 Campaign: LASE Routing Intelligence Phase 6 - Reviewer Evidence Normalization.
 
-Status: PR1 anchor.
+Status: PR4 panel vocabulary guard.
 
 Classification: WARN / docs-test-only normalization campaign.
 
@@ -81,6 +81,30 @@ Use these group names when documenting or cross-linking reviewer-facing LASE evi
 - Keep `evidence packet readouts` distinct from evidence-packet generation, storage, export, upload, download, PDF, or
   ZIP behavior.
 
+## Static-Page Panel Vocabulary Guard
+
+PR4 locks the current `/decision-explorer.html` title-case panel labels to the normalized API field vocabulary. This is
+a documentation/guard-test alignment pass only. It does not rename panels, does not change static-page behavior, does
+not add fields, does not add endpoints, does not change schemas, does not execute replay, does not export or store
+evidence, does not generate evidence packets, does not shift traffic, does not enforce runtime decisions, and does not
+prove production readiness or create production action automation.
+
+| Static-page panel label | Normalized reviewer-evidence group | Current API field or surface |
+| --- | --- | --- |
+| Scenario Catalog | Scenario catalog | `GET /api/routing/decision-explorer/scenarios` |
+| Routing Intelligence Status | Confidence summary | `confidenceSummary` |
+| Routing Diagnostics | Routing diagnostics | `routingDiagnostics` |
+| Route Tradeoff Intelligence | Route tradeoff analysis | `routeTradeoffAnalysis` |
+| Evidence Sufficiency | Route tradeoff analysis | `routeTradeoffAnalysis.evidenceSufficiency` |
+| Replay Readiness | Route tradeoff analysis | `routeTradeoffAnalysis.replayReadinessDiagnostic` |
+| Shadow Decision Quality | Shadow decision quality | `shadowDecisionQualityEvaluation` |
+| Counterfactual Analysis | Counterfactual analysis | `counterfactualAnalysis` |
+| Not-Proven Boundaries | Decision Explorer payload | `notProvenBoundaries` |
+
+The guard should compare this table with the actual static page and reviewer documents. If a later PR intentionally
+renames a panel or moves evidence between fields, update the page, `docs/API_CONTRACTS.md`,
+`docs/REVIEWER_TRUST_MAP.md`, this anchor, and the guard in the same scoped change.
+
 ## Required Boundary Phrase Family
 
 Phase 6 docs should preserve this boundary family when discussing reviewer-facing LASE evidence:
@@ -122,8 +146,7 @@ API behavior, or introduce new evidence types. Later Phase 6 PRs may make narrow
 rows, API contract grouping, reviewer walkthroughs, examples, or stale wording guards after the current PR is merged
 and main CI/CodeQL are green.
 
-## Recommended PR2
+## Recommended PR5
 
-After PR1 merges and main is green, PR2 should update the reviewer trust map with a focused Decision Explorer/LASE
-normalization path that points from `/decision-explorer.html` to the current additive evidence groups, without adding
-runtime behavior or broad copy rewrites.
+After PR4 merges and main is green, PR5 should audit reviewer walkthrough or example docs for the same Phase 6
+vocabulary and only add a narrow docs/test-only update if a concrete stale reviewer path remains.

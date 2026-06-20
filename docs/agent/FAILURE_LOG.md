@@ -6,6 +6,28 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-06-04T03:46-07:00
+
+Branch/PR: codex/lase-phase6-panel-vocabulary-guards / no PR yet
+
+Failure type: focused local documentation guard expectation calibration
+
+Failing check:
+`mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest" test`
+
+Suspected cause: the new PR4 panel-vocabulary guard checked the exact phrase `does not prove production readiness`,
+while the first PR4 anchor draft only preserved the broader `no production readiness` boundary family elsewhere in the
+same document.
+
+Fix attempted: tighten the PR4 panel-vocabulary paragraph to include the exact no-production-proof wording before
+rerunning the focused selector.
+
+Result: focused selector rerun passed after tightening the PR4 no-production-proof wording.
+
+Follow-up action: include this guard calibration and recovery in the PR4 report.
+
+## Entry
+
 Date/time: 2026-05-29T21:51-07:00
 
 Branch/PR: codex/lase-phase6-api-contract-terminology / no PR yet

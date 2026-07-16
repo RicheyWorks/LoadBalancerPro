@@ -8,19 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Loopback Experiment PR1 Checkpoint
 
-Timestamp: 2026-07-16T11:52-07:00
+Timestamp: 2026-07-16T11:54-07:00
 
 Goal name: bounded Enterprise Lab loopback experiment lifecycle
 
 Current PR slot: LOOPBACK-PR1 - real loopback request observation capture
 
-Checkpoint: current-head local verification complete; ready for the implementation commit
+Checkpoint: implementation committed, PR created, and PR-body input recovery verified
 
 Started from main SHA: `f52b6e878d6a81a97f2aaff7ec6148320b797286`
 
 Current branch: codex/loopback-observation-capture
 
-PR URL: not opened
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/455
+
+Implementation commit: `40ae39ee935b21fc25bebafcbdcfeea7a6f96b35`
 
 Runtime capability: add a bounded Enterprise Lab loopback request client and observation ingress that measure actual
 request outcomes, classify success/HTTP failure/timeout/connection failure, and append accepted events to the existing
@@ -58,8 +60,13 @@ test, or new production-network path. No
 cloud, tenant, public-network, production routing, arbitrary operator URL, secret, dependency, Maven, workflow,
 Docker, Compose, persistence, native executable, or production-activation change.
 
-Next action: run the focused campaign-documentation guard selector, stage and audit the exact candidate, then create and
-push the PR1 implementation commit before opening its pull request.
+PR creation checkpoint: the implementation commit was pushed and PR #455 was created against `main`. The first
+non-interactive `--body-file -` invocation left the PR description empty; that tooling failure and recovery are logged
+in `FAILURE_LOG.md`. A single-command body update succeeded, and `gh pr view` read back the intended bounded
+description at implementation head `40ae39ee935b21fc25bebafcbdcfeea7a6f96b35`.
+
+Next action: rerun the focused campaign-documentation guards, commit this PR checkpoint, push the exact candidate,
+then require exact-head CI, CodeQL, and dependency-review success before merge.
 
 Decision: continue LOOPBACK-PR1; do not open LOOPBACK-PR2 until PR1 is merged and exact merge-main CI/CodeQL are green.
 

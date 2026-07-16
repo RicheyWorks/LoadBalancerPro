@@ -6,6 +6,30 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T11:54-07:00
+
+Branch/PR: codex/loopback-observation-capture / PR #455
+
+Failure type: pull-request description input failure
+
+Failing check: post-create `gh pr view 455 --json body,headRefOid`
+
+Observed failure: PR #455 was created at the correct implementation head, but its description was empty because
+`gh pr create --body-file -` received immediate end-of-input from the non-interactive command invocation.
+
+Root cause: the command runner did not keep standard input open after starting the otherwise successful `gh` process,
+so the intended follow-up body write could not occur.
+
+Correction: provide the bounded reviewed body to `gh pr edit --body-file -` through one PowerShell pipeline, verify the
+stored body and exact head through `gh pr view`, then include this recovery and the PR checkpoint in the next commit.
+
+Final verification: `gh pr edit 455 --body ...` completed successfully and `gh pr view 455 --json body,headRefOid`
+read back the intended bounded description at implementation head `40ae39ee935b21fc25bebafcbdcfeea7a6f96b35`.
+
+Follow-up action: commit and push the PR-creation checkpoint before waiting on required remote checks.
+
+## Entry
+
 Date/time: 2026-07-16T11:38-07:00
 
 Branch/PR: codex/loopback-observation-capture / no PR yet

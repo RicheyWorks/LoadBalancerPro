@@ -8,19 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Loopback Experiment PR2 Checkpoint
 
-Timestamp: 2026-07-16T12:26-07:00
+Timestamp: 2026-07-16T12:28-07:00
 
 Goal name: bounded Enterprise Lab loopback experiment lifecycle
 
 Current PR slot: LOOPBACK-PR2 - atomic loopback-only allocation application
 
-Checkpoint: current-head local verification complete; ready for the PR2 implementation commit
+Checkpoint: implementation committed, pushed, and PR created
 
 Started from main SHA: `d2762a57f971adee84fd3323deaeae1d5eb73ecd`
 
 Current branch: codex/loopback-allocation-application
 
-PR URL: not opened
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/456
+
+Implementation commit: `f216284c1a6a41e1e2b804d0004f21d5e142fe8c`
 
 Prior slot closure: PR #455 merged normally as `d2762a57f971adee84fd3323deaeae1d5eb73ecd` from exact head
 `732367f18c6f42448ebac13b518b632dc24f143a`. Exact-merge main CI run `29526429185` passed the full
@@ -68,8 +70,12 @@ change is in scope for this slot. Corrected source scans found no production URL
 cloud/tenant call, or non-loopback target path; the only URL matches are test-owned literal `127.0.0.1` targets.
 `git diff --check` passed.
 
-Next action: run the focused campaign-documentation guards, stage and audit the exact candidate, then commit and push
-the PR2 implementation before opening its pull request.
+PR creation checkpoint: the exact implementation commit was pushed and PR #456 was created against `main`. `gh pr
+view` read back the full bounded scope, verification, safety, evidence-boundary, composition, and exact-head body at
+`f216284c1a6a41e1e2b804d0004f21d5e142fe8c`.
+
+Next action: rerun the focused campaign-documentation guards, commit and push this PR checkpoint, then require
+exact-head CI, CodeQL, and dependency-review success before merge.
 
 Decision: continue LOOPBACK-PR2; do not open LOOPBACK-PR3 until PR2 is merged and exact merge-main CI/CodeQL are green.
 

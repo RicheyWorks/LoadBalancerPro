@@ -14,11 +14,13 @@ Goal name: LoadBalancerPro executable adaptive traffic-control core
 
 Current PR slot: CORE-PR4 - structured allocation guardrails and explicit safe modes
 
-Checkpoint: implementation and required local verification complete; ready for commit and PR creation
+Checkpoint: implementation committed after required local verification; ready for push and PR creation
 
 Started from main SHA: `b30bd2547174680bb2bc212999c9775bb226afec`
 
 Current branch: codex/adaptive-core-allocation-guardrails
+
+Implementation commit SHA: `bf7be753afe246411560871cf611bd216b8d4283`
 
 PR URL: pending
 
@@ -42,7 +44,7 @@ tests with zero failures, errors, or skips. Enterprise Lab package smoke passed 
 
 Remote status: exact branch-base main CI and CodeQL green; PR checks do not exist yet.
 
-Next action: run the checkpoint documentation guard and final diff/scope audit, then commit, push, and open PR4.
+Next action: commit this required checkpoint, push the branch, open PR4, and verify exact-head remote checks.
 
 Decision: continue CORE-PR4; do not open CORE-PR5 until PR4 and post-merge main are green.
 

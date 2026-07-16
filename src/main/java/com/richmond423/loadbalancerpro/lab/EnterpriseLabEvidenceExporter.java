@@ -32,7 +32,7 @@ public final class EnterpriseLabEvidenceExporter {
                                                 List<EnterpriseLabScenarioMetadata> scenarios,
                                                 EnterpriseLabRun run,
                                                 String gitCommit) throws IOException {
-        Path safeOutputDirectory = requireTargetPath(outputDirectory);
+        Path safeOutputDirectory = EnterpriseLabEvidenceOutputPolicy.requireTargetPath(outputDirectory);
         Files.createDirectories(safeOutputDirectory);
 
         Path catalogPath = safeOutputDirectory.resolve(CATALOG_FILE);
@@ -65,7 +65,7 @@ public final class EnterpriseLabEvidenceExporter {
 
     private void writeJson(Path path, Object value) throws IOException {
         String json = objectMapper.writeValueAsString(value);
-        assertNoSecretLikeText(json);
+        EnterpriseLabEvidenceOutputPolicy.assertNoSecretLikeText(json);
         Files.writeString(path, json + System.lineSeparator(), StandardCharsets.UTF_8);
     }
 
@@ -158,26 +158,6 @@ public final class EnterpriseLabEvidenceExporter {
 
     private static void appendScore(StringBuilder builder, String label, int value) {
         builder.append("| ").append(label).append(" | ").append(value).append(" |").append(System.lineSeparator());
-    }
-
-    private static Path requireTargetPath(Path outputDirectory) {
-        Path targetRoot = Path.of("target").toAbsolutePath().normalize();
-        Path resolvedOutput = outputDirectory.toAbsolutePath().normalize();
-        if (!resolvedOutput.startsWith(targetRoot)) {
-            throw new IllegalArgumentException("Enterprise Lab evidence output must stay under target/: "
-                    + outputDirectory);
-        }
-        return resolvedOutput;
-    }
-
-    private static void assertNoSecretLikeText(String text) {
-        String normalized = text.toLowerCase();
-        if (normalized.contains("bearer ")
-                || normalized.contains("x-api-key")
-                || normalized.contains("change_me_local_api_key")
-                || normalized.matches("(?s).*(password|secret|credential|token)\\s*[:=]\\s*[a-z0-9._~+/-]{8,}.*")) {
-            throw new IllegalArgumentException("Refusing to write Enterprise Lab evidence that looks secret-bearing");
-        }
     }
 
     private static String display(String value) {

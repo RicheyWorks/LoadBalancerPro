@@ -208,6 +208,28 @@ class EnterpriseLabExperimentLifecycleTest {
     }
 
     @Test
+    void holdDownAcceptsOnlyRemainingBoundedCandidateEvidenceUntilExpiration() {
+        Fixture fixture = fixture(true, 3, 1, 2, Duration.ofSeconds(5), CREATED_AT.plusSeconds(20));
+        EnterpriseLabExperimentLifecycle lifecycle = armedAndRunning(fixture);
+        assertEquals(ProgressStatus.RECORDED,
+                lifecycle.recordRequestProgress("hold-request-1", true, CREATED_AT.plusSeconds(2)).status());
+        assertEquals(EnterpriseLabExperimentState.HOLDING,
+                lifecycle.advance("advance-to-hold", CREATED_AT.plusSeconds(6)).snapshot().state());
+
+        assertEquals(ProgressStatus.RECORDED,
+                lifecycle.recordRequestProgress("hold-request-2", true, CREATED_AT.plusSeconds(7)).status());
+        assertTrue(lifecycle.recordRequestProgress(
+                "hold-request-3", true, CREATED_AT.plusSeconds(8)).boundaryReached());
+        assertEquals(ProgressStatus.DENIED,
+                lifecycle.recordRequestProgress("hold-request-over-limit", true, CREATED_AT.plusSeconds(9)).status());
+        assertEquals(ProgressStatus.DENIED,
+                lifecycle.recordRequestProgress("hold-request-expired", true, CREATED_AT.plusSeconds(20)).status());
+        assertEquals(3, lifecycle.snapshot().requestCount());
+        assertEquals(3, lifecycle.snapshot().evidenceCount());
+        assertEquals(EnterpriseLabExperimentState.HOLDING, lifecycle.snapshot().state());
+    }
+
+    @Test
     void invalidAuthorizationGuardrailAndIllegalTerminalRequestsFailClosed() {
         Fixture unauthorized = fixture(false, 3, 1, 1, Duration.ofSeconds(10), CREATED_AT.plusSeconds(30));
         EnterpriseLabExperimentLifecycle rejected = new EnterpriseLabExperimentLifecycle();

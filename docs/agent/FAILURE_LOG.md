@@ -6,6 +6,37 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T08:14-07:00
+
+Branch/PR: codex/adaptive-core-observation-state / no PR yet
+
+Failure type: combined local-gate invocation and XML report-rollup tooling
+
+Failing checks: a combined `mvn -q test` plus Enterprise Lab workflow invocation completed the Maven suite but did
+not launch the lab phase, the first PowerShell report audit incorrectly reported 120 errors, the later high-output
+direct package wrapper returned before its Maven/Surefire child processes exited, and a combined agent-documentation
+guard/checkpoint-commit/push invocation stopped after the commit without pushing it.
+
+Suspected cause: the unified process backend returned early around high-output Maven child processes instead of
+reliably continuing to the PowerShell lab script or reporting the eventual parent exit. Separately, the report audit
+read PowerShell's XML `errors` property instead of the `testsuite` `errors` attribute, allowing nested XML content to
+be coerced into a false aggregate.
+
+Fix attempted: recompute the Maven totals with `testsuite.GetAttribute('errors')`, run the Enterprise Lab workflow as
+its own command with an explicit exit-code check, and let the detached package processes finish naturally before
+checking the refreshed JAR and completed Surefire reports.
+
+Result: the corrected full-suite and completed package rollups are 2,926 tests with zero failures, errors, or skips;
+the packaged JAR was refreshed after the child processes exited. The unpushed checkpoint was detected by comparing
+local and remote branch SHAs and recovered with a standalone push. The independent
+`scripts/smoke/enterprise-lab-workflow.ps1 -Package` run passed in bounded shadow mode and wrote ignored evidence only
+under `target/enterprise-lab-runs`.
+
+Follow-up action: keep Maven, lab, commit, and push commands separate; use explicit XML attribute access for later
+test rollups; and compare local, remote, and PR head SHAs after every push before accepting checks.
+
+## Entry
+
 Date/time: 2026-07-16T07:15-07:00
 
 Branch/PR: codex/lase-phase6-reviewer-walkthrough-normalization / PR #448

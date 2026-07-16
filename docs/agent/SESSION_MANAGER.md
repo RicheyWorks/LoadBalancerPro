@@ -6,7 +6,101 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active LASE Phase 6 PR5 Checkpoint
+## Active Adaptive Core PR1 Checkpoint
+
+Timestamp: 2026-07-16T08:22-07:00
+
+Goal name: LoadBalancerPro executable adaptive traffic-control core
+
+Current PR slot: CORE-PR1 - bounded observation ingestion and rolling signal state
+
+Checkpoint: PR #449 opened; final-head remote audit pending
+
+Started from main SHA: `24e5d85f7f5f2140df8ede652b4b2a6c76cfef8f`
+
+Current branch: codex/adaptive-core-observation-state
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/449
+
+Implementation commit: `4d634959516a77fc91f7f80faca5d0c4688d0f44`
+
+PR creation head: `82e3c255de096db7dd4642a23414982984cd8959`; this PR-creation checkpoint will
+create a new exact head before remote checks are accepted
+
+PR-creation checkpoint commit: `ec5e80e6b2ce653ebf7505d9c9cd32ea19ba9a0d`; the tooling-recovery record in
+this checkpoint will create the final exact head before remote checks are accepted
+
+Changed files for this slice:
+
+- immutable bounded server observation and rolling signal-state production types under
+  `src/main/java/com/richmond423/loadbalancerpro/core`
+- a narrow adapter into the existing `ServerStateVector` and `ServerScoreCalculator` path
+- focused behavioral tests under `src/test/java/com/richmond423/loadbalancerpro/core`
+- this checkpoint and the significant tooling-recovery entry in `docs/agent/FAILURE_LOG.md`
+
+Checks run:
+
+- Fetched `origin/main` and confirmed local main and `origin/main` were clean and synchronized at
+  `24e5d85f7f5f2140df8ede652b4b2a6c76cfef8f` before branch creation.
+- Main CI run `29506306083` and CodeQL run `29506306013` passed on that exact merge commit.
+- Audited the current observation, latency-window, state-vector, score-breakdown, distribution, routing-policy, and
+  Enterprise Lab seams before selecting this slot.
+- Confirmed that `LatencyWindowSignal`, `ServerStateVector`, `NetworkAwarenessSignal`, and
+  `ServerScoreCalculator` are the existing signal/score abstractions to extend; no bounded outcome observation window
+  or partial-degradation rolling state currently exists.
+- Confirmed the existing `LoadDistributionPlanner` allocates load against mutable server capacity and the existing
+  `AdaptiveRoutingPolicyEngine` gates a single string backend choice, so neither is a substitute for the scoped
+  observation/state foundation.
+- Added bounded local observation source and outcome types, validated immutable observation records, an immutable
+  size-bounded and deterministically ordered observation window, explicit missing/stale/sparse/sufficient evidence,
+  confidence, partial-degradation/failure/recovery state, derived network risk, and strict public-record invariants.
+- Added `ServerStateVector.fromObservationState(...)` so sufficient rolling state feeds the existing
+  `LatencyWindowSignal`, `NetworkAwarenessSignal`, `ServerStateVector`, and explainable `ServerScoreCalculator` path.
+  Missing, stale, sparse, recovering, and failed state is ineligible and therefore receives the existing score-path
+  health penalty; sufficient partial degradation remains eligible but carries its measured failure/network penalty.
+- Focused observation/state/integration and existing latency/vector/score selector passed:
+  `mvn -q "-Dtest=ServerObservationTest,ServerObservationWindowTest,ServerRollingSignalStateTest,ServerObservationScoreIntegrationTest,LatencyWindowSignalTest,ServerStateVectorSignalExpansionTest,ServerScoreCalculatorFactorContributionTest" test`.
+- Full `mvn -q test` passed. The corrected exact XML attribute rollup reports 2,926 tests with zero failures, errors,
+  or skips.
+- `mvn -q -DskipTests package` passed. A direct `mvn -B --no-transfer-progress package` completed naturally after
+  the process wrapper returned early; the final report rollup remained 2,926 / 0 / 0 / 0 and the packaged
+  `target/LoadBalancerPro-2.5.0.jar` was refreshed at 08:16:46 local time.
+- `scripts/smoke/enterprise-lab-workflow.ps1 -Package` passed independently in bounded shadow mode for 10 scenarios
+  and wrote ignored evidence only under `target/enterprise-lab-runs`; it performed no API server, live-cloud,
+  external-network, release, tag, asset, container, or registry action.
+- The significant combined-command/XML-rollup recovery is recorded in `docs/agent/FAILURE_LOG.md`; no product defect
+  was found.
+- `git diff --check` passed. The changed-path audit is limited to 10 production core files, four focused behavioral
+  test files, and the two required agent checkpoint/failure records. It found no dependency, Maven, workflow,
+  Docker, Compose, script, external target, secret, credential, or production-activation change.
+- `git diff --cached --check` passed for the exact 16-file slice. CORE-PR1 implementation commit
+  `4d634959516a77fc91f7f80faca5d0c4688d0f44` was created with 1,312 insertions and one deletion: 731 production
+  core lines, 475 behavioral-test lines, and 107 required campaign/failure-record lines.
+- Post-verification checkpoint commit `82e3c255de096db7dd4642a23414982984cd8959` was created, the branch was pushed,
+  and PR #449 was opened with the implementation-first scope, exact local verification record, safety boundaries, and
+  remaining not-proven claims.
+- PR-creation checkpoint commit `ec5e80e6b2ce653ebf7505d9c9cd32ea19ba9a0d` was created. The combined
+  documentation-guard/commit/push wrapper stopped before its push, so the local/remote SHA mismatch was detected and
+  recovered with a standalone `git push`; the recurring wrapper behavior is included in the current failure-log
+  entry. Checks started on `82e3c255de096db7dd4642a23414982984cd8959` are stale.
+
+Scope and safety: this slot adds only deterministic in-memory domain computation and tests. It does not add external
+telemetry, live-cloud or tenant access, network targets, autonomous traffic changes, production activation, secrets,
+dependencies, Maven/CI/Docker/Compose behavior, persistence, or runtime enforcement. Missing, stale, and sparse
+evidence must fail closed for adaptive recommendation eligibility. Partial degradation remains explicit rather than
+being collapsed into binary health.
+
+Remote status: main CI and CodeQL are green at the exact branch base. PR checks on either pre-recovery head are stale;
+require the complete final-head rollup after this tooling-recovery checkpoint is pushed.
+
+Blocker: none.
+
+Next action: commit this factual tooling-recovery checkpoint, push it with a standalone command, then require
+exact-head CI, CodeQL, and dependency review before merge.
+
+Decision: continue CORE-PR1 on this branch; do not open CORE-PR2 until PR1 merges and exact-head main checks are green.
+
+## Historical LASE Phase 6 PR5 Checkpoint
 
 Timestamp: 2026-07-16T06:54-07:00
 

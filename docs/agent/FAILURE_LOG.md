@@ -6,6 +6,30 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T07:15-07:00
+
+Branch/PR: codex/lase-phase6-reviewer-walkthrough-normalization / PR #448
+
+Failure type: read-only GitHub CLI status-summary command composition and watch interruption
+
+Failing checks: four `gh run view ... --jq` status-summary invocations and an attempted interrupt of the active
+`gh pr checks --watch` process
+
+Suspected cause: PowerShell split the inline `--jq` expressions into multiple GitHub CLI arguments, and the unified
+process backend does not support interrupting that watch process through its standard-input channel.
+
+Fix attempted: do not use the quoted `--jq` form or attempt another unsupported interrupt. Leave the read-only watch
+to finish naturally, use native `gh pr view --json` and `gh run list --json` output for later audits, and push this
+required failure-log checkpoint before treating any remote result as current-head evidence.
+
+Result: both failed diagnostics were read-only and changed no local Git content or GitHub state. Recovery will use the
+supported JSON commands after this log entry is committed and pushed.
+
+Follow-up action: run the final-head documentation/checkpoint guards, commit and push this log entry, then restart the
+current-head remote audit for the new exact SHA.
+
+## Entry
+
 Date/time: 2026-07-16T07:04-07:00
 
 Branch/PR: codex/lase-phase6-reviewer-walkthrough-normalization / no PR yet

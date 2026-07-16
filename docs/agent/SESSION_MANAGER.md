@@ -79,18 +79,21 @@ Checks run:
   pushed to origin.
 - LASE-P6-PR5 PR #448 was opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/448 with the four-file
   docs/test-only scope, verification record, logged recovery notes, safety audit, and remaining not-proven boundaries.
+- A read-only GitHub CLI `--jq` status-summary command and a follow-on watch-interrupt attempt failed because of local
+  quoting and process-backend limitations. Neither changed GitHub state; both are recorded in `docs/agent/FAILURE_LOG.md`.
 
 Scope and safety: this slot is limited to one reviewer walkthrough, its read-only documentation guard, and this
 checkpoint. It does not change production code, endpoints, API schemas, runtime behavior, Maven, CI, Docker, Compose,
 scripts, routing, scoring, proxying, allocation, replay, storage/export, evidence-packet generation, traffic, secrets,
 cloud/tenant/private-network/external targets, or automation.
 
-Remote status: PR #448 current-head checks will be re-read after this metadata checkpoint is committed and pushed.
+Remote status: this failure-log checkpoint will create a new PR head, so all earlier pending or successful PR results
+must be treated as stale after push and the complete current-head rollup must be re-read.
 
 Blocker: none.
 
-Next action: commit and push this PR metadata checkpoint, run final-head checkpoint and diff guards, then require all
-current-head PR checks to complete successfully before merge.
+Next action: commit and push this failure-log checkpoint, run final-head checkpoint and diff guards, then require all
+new current-head PR checks to complete successfully before merge.
 
 Decision: continue this narrow docs/test-only slot; do not merge until the final current-head checks are green.
 

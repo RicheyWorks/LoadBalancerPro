@@ -6,6 +6,52 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T11:38-07:00
+
+Branch/PR: codex/loopback-observation-capture / no PR yet
+
+Failure type: focused completion-idempotency behavioral failure
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabLoopbackObservationIngressTest,EnterpriseLabLoopbackRequestClientTest" test`
+
+Observed failure: 1 of 12 tests failed because a repeated completion returned `REJECTED` instead of
+`DUPLICATE_IGNORED` after the first completion had correctly removed the request from the in-flight map.
+
+Root cause: completion ownership was checked only through current in-flight membership. The completed token still
+retained its ingress owner and completed flag, but that explicit idempotency evidence was evaluated too late.
+
+Correction: recognize an already-completed token owned by this ingress before consulting current in-flight membership,
+and return a structured duplicate receipt with the current bounded window size.
+
+Final verification: the identical 12-test selector rerun passed after the ordering correction.
+
+Follow-up action: continue with the broader observation/adaptive-core/Enterprise Lab compatibility selector.
+
+## Entry
+
+Date/time: 2026-07-16T11:36-07:00
+
+Branch/PR: codex/loopback-observation-capture / no PR yet
+
+Failure type: initial production compile wiring errors
+
+Failing check: `mvn -q "-DskipTests" test`
+
+Observed failure: `EnterpriseLabLoopbackRequestClient` omitted the `java.util.List` import used by its target summary
+and called an observation-receipt rejection factory that was private to the ingress record.
+
+Root cause: the first production edit introduced the two new types together without compiling the cross-type factory
+visibility and import surface first. This is campaign-introduced and not present on the clean starting baseline.
+
+Correction: add the missing import and make the bounded rejection factory package-visible so only the adjacent lab
+client can construct the structured no-request receipt.
+
+Final verification: the identical `mvn -q "-DskipTests" test` rerun passed after the two corrections.
+
+Follow-up action: continue with focused behavioral and real loopback request tests.
+
+## Entry
+
 Date/time: 2026-07-16T11:03-07:00
 
 Branch/PR: codex/adaptive-core-enterprise-lab-integration / no PR yet

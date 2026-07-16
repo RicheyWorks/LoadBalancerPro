@@ -59,11 +59,11 @@ public final class AdaptiveTrafficDecisionOrchestrator {
             scoreBreakdowns.put(candidate.serverId(), scoreBreakdown);
         }
 
-        TrafficAllocationRecommendation allocationRecommendation = LoadDistributionPlanner.recommendTrafficShares(
-                List.copyOf(stateVectors.values()),
-                scoreBreakdowns,
-                request.baselineAllocations(),
-                policy.allocationPolicy());
+        TrafficAllocationRecommendation allocationRecommendation = allocationRecommendation(
+                request,
+                policy,
+                stateVectors,
+                scoreBreakdowns);
         boolean signalsFresh = rollingStates.values().stream()
                 .noneMatch(state -> state.stale() || state.missing());
         boolean evidenceSufficient = rollingStates.values().stream()
@@ -98,6 +98,26 @@ public final class AdaptiveTrafficDecisionOrchestrator {
                 allocationRecommendation,
                 guardrailDecision,
                 reasons);
+    }
+
+    private static TrafficAllocationRecommendation allocationRecommendation(
+            AdaptiveTrafficDecisionRequest request,
+            AdaptiveTrafficDecisionPolicy policy,
+            Map<String, ServerStateVector> stateVectors,
+            Map<String, ServerScoreBreakdown> scoreBreakdowns) {
+        if (request.mode() == AdaptiveRoutingPolicyMode.OFF) {
+            return TrafficAllocationRecommendation.noAllocation(
+                    Map.of(), List.of("policy mode off; no allocation recommendation calculated"));
+        }
+        if (request.mode() == AdaptiveRoutingPolicyMode.OBSERVE) {
+            return TrafficAllocationRecommendation.noAllocation(
+                    Map.of(), List.of("observe mode calculates signals and scores only; no allocation recommended"));
+        }
+        return LoadDistributionPlanner.recommendTrafficShares(
+                List.copyOf(stateVectors.values()),
+                scoreBreakdowns,
+                request.baselineAllocations(),
+                policy.allocationPolicy());
     }
 
     private static List<String> reasons(

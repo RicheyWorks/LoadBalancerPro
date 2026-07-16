@@ -7,6 +7,9 @@ import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPrometheusFormatter;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingObservabilityMetrics;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingObservabilitySnapshot;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyStatus;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabAdaptiveDecision;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabAdaptiveDecisionService;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabMode;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabRun;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabRunService;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabRunSummary;
@@ -32,11 +35,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class EnterpriseLabController {
     private final EnterpriseLabRunService runService;
     private final AdaptiveRoutingPolicyProperties policyProperties;
+    private final EnterpriseLabAdaptiveDecisionService adaptiveDecisionService;
 
     public EnterpriseLabController(EnterpriseLabRunService runService,
-                                   AdaptiveRoutingPolicyProperties policyProperties) {
+                                   AdaptiveRoutingPolicyProperties policyProperties,
+                                   EnterpriseLabAdaptiveDecisionService adaptiveDecisionService) {
         this.runService = runService;
         this.policyProperties = policyProperties;
+        this.adaptiveDecisionService = adaptiveDecisionService;
     }
 
     @GetMapping("/scenarios")
@@ -46,7 +52,7 @@ public class EnterpriseLabController {
                 scenarios.size(),
                 scenarios,
                 "adaptive-routing-fixtures-v1",
-                List.of("off", "shadow", "recommend", "active-experiment"),
+                EnterpriseLabMode.wireValues(),
                 "lab evidence only / not production activation");
     }
 
@@ -65,6 +71,21 @@ public class EnterpriseLabController {
                 ? new EnterpriseLabRunRequest(null, null, "summary")
                 : request;
         return runService.run(safeRequest.scenarioIds(), safeRequest.mode(), safeRequest.detailLevel());
+    }
+
+    @PostMapping("/decisions")
+    public EnterpriseLabAdaptiveDecision createAdaptiveDecision(
+            @RequestBody(required = false) EnterpriseLabAdaptiveDecisionRequest request) {
+        EnterpriseLabAdaptiveDecisionRequest safeRequest = request == null
+                ? new EnterpriseLabAdaptiveDecisionRequest(
+                        "normal-balanced-load", "shadow", false, false, false)
+                : request;
+        return adaptiveDecisionService.decide(
+                safeRequest.scenarioId(),
+                safeRequest.mode(),
+                safeRequest.explicitExperimentContext(),
+                safeRequest.cooldownActive(),
+                safeRequest.operatorStopRequested());
     }
 
     @GetMapping("/runs")
@@ -125,6 +146,14 @@ public class EnterpriseLabController {
             String detailLevel) {
     }
 
+    public record EnterpriseLabAdaptiveDecisionRequest(
+            String scenarioId,
+            String mode,
+            boolean explicitExperimentContext,
+            boolean cooldownActive,
+            boolean operatorStopRequested) {
+    }
+
     public record EnterpriseLabRunListResponse(
             int count,
             List<EnterpriseLabRunSummary> runs,
@@ -154,6 +183,11 @@ public class EnterpriseLabController {
                     EnterpriseLabRunService.DEFAULT_MAX_SCENARIOS_PER_RUN,
                     policyAuditLog,
                     observabilityMetrics);
+        }
+
+        @Bean
+        EnterpriseLabAdaptiveDecisionService enterpriseLabAdaptiveDecisionService() {
+            return new EnterpriseLabAdaptiveDecisionService();
         }
     }
 }

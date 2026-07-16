@@ -250,6 +250,34 @@ class OAuth2AuthorizationTest {
     }
 
     @Test
+    void oauth2ModeRequiresOperatorRoleForAdaptiveLabDecisions() throws Exception {
+        String body = "{\"scenarioId\":\"normal-balanced-load\",\"mode\":\"recommend\"}";
+
+        mockMvc.perform(post("/api/lab/decisions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status", is(401)))
+                .andExpect(jsonPath("$.path", is("/api/lab/decisions")));
+
+        mockMvc.perform(post("/api/lab/decisions")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status", is(403)))
+                .andExpect(jsonPath("$.path", is("/api/lab/decisions")));
+
+        mockMvc.perform(post("/api/lab/decisions")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.decision.mode", is("RECOMMEND")))
+                .andExpect(jsonPath("$.trafficActionPerformed", is(false)));
+    }
+
+    @Test
     void oauth2ModeRequiresOperatorRoleForLabPolicyStatusAndAuditEvents() throws Exception {
         mockMvc.perform(get("/api/lab/policy"))
                 .andExpect(status().isUnauthorized())

@@ -6,7 +6,60 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Adaptive Core PR5 Checkpoint
+## Active Adaptive Core PR6 Checkpoint
+
+Timestamp: 2026-07-16T11:07-07:00
+
+Goal name: LoadBalancerPro executable adaptive traffic-control core
+
+Current PR slot: CORE-PR6 - Enterprise Lab adaptive decision integration and campaign closeout
+
+Checkpoint: PR #454 created; required PR-creation checkpoint pending commit and push
+
+Started from main SHA: `5c252e09c3d6caa59900ea0cad74e16158a0a658`
+
+Current branch: codex/adaptive-core-enterprise-lab-integration
+
+Implementation commit SHA: `17f97bfff6e3c19d0cce0fa9f59a572b0934c508`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/454
+
+Implemented slice: connected the immutable adaptive decision orchestrator to `POST /api/lab/decisions` using only the
+fixed ten-scenario catalog. The service derives five bounded synthetic local observations per backend, calculates
+rolling state and typed factor scores, produces mode-bounded allocation recommendations, evaluates structured
+guardrails, and returns the complete immutable request/policy/decision record with rollback target, schema versions,
+SHA-256 content fingerprint, reasons, and `trafficActionPerformed=false`. Off and observe return no allocation
+recommendation; shadow and recommend retain baseline; active-experiment changes response data only after explicit
+opt-in and passing guardrails. Observe was appended to existing wire metadata without reordering legacy values.
+
+Verification baseline: PR #453 passed exact-head push CI `29519504486`, PR CI and dependency review `29519504603`,
+and CodeQL `29519504650` at `40cce504e3b8f17b431c68a6054d7ed0313db458`, then merged as
+`5c252e09c3d6caa59900ea0cad74e16158a0a658`. Post-merge focused orchestration/guardrail compatibility passed; main CI
+`29519971567` and CodeQL `29519971620` passed on that exact merge SHA; local main matched `origin/main` before branch
+creation.
+
+Scope/safety: local deterministic Enterprise Lab decision evidence only; no traffic execution, proxy mutation,
+external telemetry, cloud/tenant, secret, dependency, build, workflow, container, persistence, or production activation.
+
+Local verification: focused core/lab/API selectors passed, including nominal, stale, conflicting, all-unhealthy,
+recovery, off/observe, guarded active-experiment, bad-request, prod API-key, OAuth2 operator-role, OpenAPI,
+rate-limit, legacy workflow, CLI, and documentation compatibility. `mvn -B dependency:tree
+"-Dincludes=org.apache.tomcat.embed"`, `mvn -q test`, `mvn -q "-DskipTests" package`, and `mvn -B package` passed;
+the fresh package summary is 2,950 tests with zero failures, errors, or skips. The packaged Enterprise Lab smoke passed
+for all 10 scenarios in shadow mode and wrote ignored `target/enterprise-lab-runs/` evidence only. `git diff --check`
+passed; forbidden-path, secret/external-target, and campaign/documentation guard audits passed. Public contract
+documentation is limited to eight added lines; mandatory failure/session records are kept separate from the 665
+implementation/test lines.
+
+Remote status: PR created from the verified implementation commit; required checkpoint push and exact-head PR checks
+pending.
+
+Next action: commit and push this required PR-creation checkpoint, confirm local/remote/PR head equality, and require
+exact-head CI, CodeQL, and dependency review green before merge.
+
+Decision: continue CORE-PR6; do not close the campaign until PR6 and post-merge main are green.
+
+## Historical Adaptive Core PR5 Checkpoint
 
 Timestamp: 2026-07-16T10:22-07:00
 

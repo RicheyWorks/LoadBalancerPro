@@ -48,6 +48,7 @@ class EnterpriseLabWorkflowDocumentationTest {
 
         for (String expected : List.of(
                 "GET /api/lab/scenarios",
+                "POST /api/lab/decisions",
                 "POST /api/lab/runs",
                 "GET /api/lab/runs/{runId}",
                 "GET /api/lab/policy",

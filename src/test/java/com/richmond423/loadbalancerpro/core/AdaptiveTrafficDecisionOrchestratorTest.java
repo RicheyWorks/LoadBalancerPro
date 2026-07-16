@@ -84,6 +84,14 @@ class AdaptiveTrafficDecisionOrchestratorTest {
                 request(AdaptiveRoutingPolicyMode.OBSERVE, goodCandidates(), false, false, false, false),
                 AdaptiveTrafficDecisionPolicy.localLabDefaults());
         assertEquals(TrafficAllocationGuardrailAction.DENY, observe.guardrailDecision().action());
+        assertTrue(observe.allocationRecommendation().allocations().isEmpty());
+        assertTrue(observe.reasons().stream().anyMatch(reason -> reason.contains("signals and scores only")));
+
+        AdaptiveTrafficDecisionRecord off = orchestrator.decide(
+                request(AdaptiveRoutingPolicyMode.OFF, goodCandidates(), false, false, false, false),
+                AdaptiveTrafficDecisionPolicy.localLabDefaults());
+        assertTrue(off.allocationRecommendation().allocations().isEmpty());
+        assertEquals(TrafficAllocationGuardrailAction.DENY, off.guardrailDecision().action());
 
         AdaptiveTrafficDecisionRecord conflict = orchestrator.decide(
                 request(AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT, goodCandidates(), true, false, true, false),
@@ -100,7 +108,7 @@ class AdaptiveTrafficDecisionOrchestratorTest {
                 AdaptiveTrafficDecisionPolicy.localLabDefaults());
         assertTrue(stopped.guardrailDecision().reasons().contains("operator stop requested"));
 
-        for (AdaptiveTrafficDecisionRecord record : List.of(observe, conflict, cooldown, stopped)) {
+        for (AdaptiveTrafficDecisionRecord record : List.of(observe, off, conflict, cooldown, stopped)) {
             assertEquals(BASELINE, record.effectiveAllocations());
             assertFalse(record.trafficActionPerformed());
         }

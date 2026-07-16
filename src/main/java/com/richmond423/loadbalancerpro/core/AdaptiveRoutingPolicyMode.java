@@ -7,13 +7,15 @@ public enum AdaptiveRoutingPolicyMode {
     OFF("off", false),
     SHADOW("shadow", false),
     RECOMMEND("recommend", false),
-    ACTIVE_EXPERIMENT("active-experiment", true);
+    ACTIVE_EXPERIMENT("active-experiment", true),
+    OBSERVE("observe", false);
 
     private static final List<String> WIRE_VALUES = List.of(
             OFF.wireValue,
             SHADOW.wireValue,
             RECOMMEND.wireValue,
-            ACTIVE_EXPERIMENT.wireValue);
+            ACTIVE_EXPERIMENT.wireValue,
+            OBSERVE.wireValue);
 
     private final String wireValue;
     private final boolean activeInfluenceAllowed;
@@ -42,11 +44,12 @@ public enum AdaptiveRoutingPolicyMode {
         String normalized = normalize(value);
         return switch (normalized) {
             case "off", "disabled" -> OFF;
+            case "observe", "observe-only", "observation" -> OBSERVE;
             case "shadow", "shadow-only" -> SHADOW;
             case "recommend", "recommendation" -> RECOMMEND;
             case "active-experiment", "active", "influence", "all" -> ACTIVE_EXPERIMENT;
             default -> throw new IllegalArgumentException("Unsupported adaptive routing policy mode: " + value
-                    + ". Valid values: off, shadow, recommend, active-experiment");
+                    + ". Valid values: off, observe, shadow, recommend, active-experiment");
         };
     }
 

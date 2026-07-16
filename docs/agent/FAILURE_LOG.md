@@ -6,6 +6,26 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T09:37-07:00
+
+Branch/PR: codex/adaptive-core-allocation-guardrails / no PR yet
+
+Failure type: focused compatibility assertion omitted new observe-mode wording
+
+Failing check: `mvn -q "-Dtest=TrafficAllocationGuardrailDecisionTest,AdaptiveRoutingPolicyEngineTest,TrafficAllocationRecommendationTest,AdaptiveRoutingExperimentServiceTest" test`
+
+Suspected cause: the legacy non-influence assertion was expanded to cover `OBSERVE`, but its accepted rollback wording
+still listed only baseline, shadow, and recommendation phrases.
+
+Fix attempted: retain the existing behavioral assertions and add the explicit observe rollback phrase to the accepted
+safe-mode wording.
+
+Result: the same 26-test focused selector passed with zero failures, errors, or skips.
+
+Follow-up action: rerun the same 26-test selector before broader verification.
+
+## Entry
+
 Date/time: 2026-07-16T09:15-07:00
 
 Branch/PR: codex/adaptive-core-score-allocation / no PR yet

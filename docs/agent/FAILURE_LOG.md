@@ -6,6 +6,102 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T12:21-07:00
+
+Branch/PR: codex/loopback-allocation-application / no PR yet
+
+Failure type: Windows source-audit glob invocation failure
+
+Failing check: focused `rg` safety and secret scans using wildcard path arguments
+
+Observed failure: `rg` returned Windows error 123 because PowerShell passed the `EnterpriseLabLoopbackAllocation*.java`
+path arguments literally instead of expanding them.
+
+Root cause: the audit used shell-style filename wildcards as positional paths on Windows rather than ripgrep's own
+`-g` include filters.
+
+Correction: rerun both scans from the lab source/test directories with explicit `-g` filters and verify the expected
+literal-loopback-only matches separately from forbidden runtime-target findings.
+
+Final verification: the corrected runtime/scheduler/tenant and secret scans returned no matches. The URL scan returned
+only two test-owned literal `127.0.0.1` target constructions; production allocation types contain no URL. `git diff
+--check` also passed.
+
+Follow-up action: continue through the dependency, full test, package, and packaged-smoke verification ladder.
+
+## Entry
+
+Date/time: 2026-07-16T12:18-07:00
+
+Branch/PR: codex/loopback-allocation-application / no PR yet
+
+Failure type: focused allocation-router test-assumption failures
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabLoopbackAllocationSnapshotTest,EnterpriseLabLoopbackAllocationRouterTest" test`
+
+Observed failure: 2 of 8 tests failed. One compared the guardrail candidate map by exact `Map.equals` after the snapshot
+had corrected a floating-point residual of approximately `1.1e-16`. The other expected a uniform three-way baseline
+to differ from the tail-latency fixture, whose three equally weighted healthy backends actually produce that baseline.
+
+Root cause: both assertions encoded incorrect test assumptions; the snapshot remained within the existing `1e-9`
+allocation equality invariant and the allegedly mismatched baseline was identical to the recorded fixture baseline.
+
+Correction: compare the normalized candidate through the bounded allocation tolerance and use a genuinely different
+normalized `0.5/0.25/0.25` baseline for the fail-closed mismatch case.
+
+Final verification: the identical eight-test snapshot/router selector rerun passed with zero failures, errors, or skips.
+
+Follow-up action: expand to the observation, adaptive-decision, guardrail, and existing loopback compatibility selector.
+
+## Entry
+
+Date/time: 2026-07-16T12:12-07:00
+
+Branch/PR: codex/loopback-allocation-application / no PR yet
+
+Failure type: exploratory JShell runtime-classpath failure
+
+Failing check: corrected piped JShell probe of active-experiment allocation outputs
+
+Observed failure: the disposable first line isolated the PowerShell byte-order mark and the required import/service
+construction succeeded, but decision evaluation failed with `NoClassDefFoundError: org/apache/logging/log4j/LogManager`.
+
+Root cause: `target/classes` alone does not contain the Maven runtime dependency classpath required by the adaptive
+decision service.
+
+Correction: stop using ad hoc JShell for this repository-integrated behavior; capture the allocation maps through the
+focused Maven/JUnit tests that already execute on the repository's declared classpath.
+
+Final verification: the encoding recovery was proven by the successful import and service construction. Allocation
+behavior remains to be verified through the PR2 Maven selector.
+
+Follow-up action: implement the guarded routing tests on the repo-native test path and avoid another classpath probe.
+
+## Entry
+
+Date/time: 2026-07-16T12:11-07:00
+
+Branch/PR: codex/loopback-allocation-application / no PR yet
+
+Failure type: exploratory JShell input-encoding failure
+
+Failing check: piped JShell probe of active-experiment allocation outputs
+
+Observed failure: JShell rejected the first import with illegal character `\ufeff`; the remaining probe statements then
+could not resolve `EnterpriseLabAdaptiveDecisionService` because that import had failed.
+
+Root cause: the PowerShell native-command pipeline prefixed the first piped line with a byte-order mark.
+
+Correction: prepend a disposable comment line so the byte-order mark cannot corrupt the required import, then rerun
+the same read-only allocation probe.
+
+Final verification: the corrected probe accepted the required import and constructed the service; a separate missing
+runtime dependency then stopped evaluation and is recorded in the newer failure entry.
+
+Follow-up action: verify fixture allocation behavior through the repo-native PR2 Maven tests.
+
+## Entry
+
 Date/time: 2026-07-16T11:54-07:00
 
 Branch/PR: codex/loopback-observation-capture / PR #455

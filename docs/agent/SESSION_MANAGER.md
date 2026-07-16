@@ -6,6 +6,79 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Loopback Experiment PR2 Checkpoint
+
+Timestamp: 2026-07-16T12:28-07:00
+
+Goal name: bounded Enterprise Lab loopback experiment lifecycle
+
+Current PR slot: LOOPBACK-PR2 - atomic loopback-only allocation application
+
+Checkpoint: implementation committed, pushed, and PR created
+
+Started from main SHA: `d2762a57f971adee84fd3323deaeae1d5eb73ecd`
+
+Current branch: codex/loopback-allocation-application
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/456
+
+Implementation commit: `f216284c1a6a41e1e2b804d0004f21d5e142fe8c`
+
+Prior slot closure: PR #455 merged normally as `d2762a57f971adee84fd3323deaeae1d5eb73ecd` from exact head
+`732367f18c6f42448ebac13b518b632dc24f143a`. Exact-merge main CI run `29526429185` passed the full
+test, coverage, package, packaged-JAR smoke, SBOM, Docker build/runtime smoke, dry-run evidence, and image-scan path.
+Exact-merge main CodeQL run `29526429166` passed. The focused 14-test loopback client/ingress selector also passed
+locally on the merge commit, and local `main` matched `origin/main` with no working-tree changes.
+
+Runtime capability: add an immutable, catalog-bound allocation snapshot and an atomic local router that can replace
+only the Enterprise Lab loopback allocation after explicit enablement and an existing active-experiment guardrail
+approval, route a bounded request deterministically through the PR1 client, and restore the recorded safe baseline.
+
+Implementation audit: PR1 already enforces literal loopback HTTP, no redirects, approved target identities, bounded
+timeouts/concurrency/observation windows, and structured outcome recording. The adaptive core already produces
+normalized baseline/candidate allocations and an `ACTIVE_EXPERIMENT` guardrail decision with explicit opt-in,
+allow/clamp/deny action, and `influenceAllowed`. PR2 therefore needs no second allocator, proxy, target registry, or
+adaptive engine. The narrow missing seam is immutable normalization over the fixed scenario backend set, stable
+zero-share eligibility filtering, deterministic weighted selection, atomic snapshot replacement, and baseline restore.
+
+Edit batch: added an immutable versioned loopback allocation snapshot that completes missing approved shares with
+zero, rejects unknown/non-finite/out-of-range/non-normalized maps, corrects bounded floating residuals, exposes stable
+eligible/excluded backend lists, and performs deterministic bounded weighted selection. Added a catalog-bound router
+that requires the exact three backends for one fixed scenario, records an immutable baseline, keeps the current
+allocation behind an `AtomicReference`, serializes writes, permits candidate replacement only after explicit enablement
+and an existing allowed/clamped `ACTIVE_EXPERIMENT` guardrail decision, returns structured denial/no-op/apply/restore
+receipts with accurate local action flags, routes through the PR1 client, and atomically restores the safe baseline.
+
+Focused verification: eight new tests passed for immutable exact normalization, zero-share exclusion, deterministic
+weighted distribution, invalid/oversized allocation rejection, catalog target enforcement, explicit enablement,
+mode/guardrail/scenario/baseline fail-closed behavior, idempotent apply/restore, real three-backend loopback requests,
+observation recording, post-restore routing, accurate action indicators, and concurrent selection during repeated
+atomic replacement. The 66-test observation/client/adaptive-decision/guardrail/controller compatibility selector also
+passed. Four development/tooling failures and their successful bounded recoveries are recorded in `FAILURE_LOG.md`.
+
+Current-head verification: `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"` passed with Spring Boot
+`3.5.14` and Tomcat `10.1.55`. `mvn -q test`, `mvn -q "-DskipTests" package`, and `mvn -B package` passed; the
+non-quiet package reported 2,972 tests, zero failures/errors/skips, a repackaged executable JAR, and `BUILD SUCCESS`.
+The packaged Enterprise Lab workflow smoke passed all ten fixed shadow scenarios and wrote target-only evidence while
+performing no API server, cloud, external-network, release, container, or registry action. The test count is eight
+above the PR1 exact-main baseline of 2,964.
+
+Scope/safety: production Enterprise Lab loopback components and behavioral tests only, plus mandatory campaign
+records. No API, authorization, lifecycle scheduler, cloud, tenant, public/private remote target, DNS target, general
+reverse-proxy, dependency, Maven, workflow, Docker, Compose, persistence, native executable, or production-activation
+change is in scope for this slot. Corrected source scans found no production URL, secret-like value, scheduler, queue,
+cloud/tenant call, or non-loopback target path; the only URL matches are test-owned literal `127.0.0.1` targets.
+`git diff --check` passed.
+
+PR creation checkpoint: the exact implementation commit was pushed and PR #456 was created against `main`. `gh pr
+view` read back the full bounded scope, verification, safety, evidence-boundary, composition, and exact-head body at
+`f216284c1a6a41e1e2b804d0004f21d5e142fe8c`.
+
+Next action: rerun the focused campaign-documentation guards, commit and push this PR checkpoint, then require
+exact-head CI, CodeQL, and dependency-review success before merge.
+
+Decision: continue LOOPBACK-PR2; do not open LOOPBACK-PR3 until PR2 is merged and exact merge-main CI/CodeQL are green.
+
 ## Active Loopback Experiment PR1 Checkpoint
 
 Timestamp: 2026-07-16T11:54-07:00

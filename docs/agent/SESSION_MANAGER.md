@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Loopback Experiment PR4 Checkpoint
 
-Timestamp: 2026-07-16T13:44-07:00
+Timestamp: 2026-07-16T13:46-07:00
 
 Goal name: bounded Enterprise Lab loopback experiment lifecycle
 
@@ -51,8 +51,9 @@ scope for this slot.
 
 Failure audit: one read-only Windows `rg` command used an invalid positional `test*` wildcard and returned error 123;
 one test-expansion patch used the wrong file anchor; one partial-degradation test ordered evidence into the existing
-`RECOVERING` state rather than `PARTIALLY_DEGRADED`; and one secret scan used an unterminated PowerShell quote. Each
-cause, correction, and successful bounded recovery is recorded in `FAILURE_LOG.md` before continuing.
+`RECOVERING` state rather than `PARTIALLY_DEGRADED`; one secret scan used an unterminated PowerShell quote; and the
+first exact-head PR-body replacement parsed `$1` plus a SHA beginning in `4` as capture group `$14`. Each cause,
+correction, and bounded recovery is recorded in `FAILURE_LOG.md` before continuing.
 
 Edit batch: added an immutable pre-candidate observation baseline captured from the real bounded ingress; immutable
 per-backend and aggregate evaluation evidence with restoration indicators and a SHA-256 predecessor chain; and a

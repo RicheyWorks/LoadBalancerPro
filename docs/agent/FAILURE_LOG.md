@@ -6,6 +6,29 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T13:45-07:00
+
+Branch/PR: codex/loopback-rollback-evaluator / PR #458
+
+Failure type: PR body exact-head replacement-group ambiguity
+
+Failing check: PowerShell regex replacement of the PR body candidate-head line after the checkpoint push
+
+Observed failure: the readback body ended with `$14b82e488...` instead of the `## Candidate head` heading plus the
+40-character SHA, while `headRefOid` correctly reported `4b82e488a2ff34cd3d7fca835f7cee15ae71644e`.
+
+Root cause: PowerShell/.NET parsed the adjacent replacement text `$1` plus a SHA beginning in `4` as capture group
+`$14` rather than capture group 1 followed by the SHA.
+
+Correction: commit this failure checkpoint, then rewrite the final body section with an unambiguous literal heading
+and candidate SHA (or `${1}` syntax) and read it back before accepting the remote gate.
+
+Final verification: pending corrected PR-body readback. Branch content, exact head, and CI triggers were unaffected.
+
+Follow-up action: push the failure checkpoint, update the body to the new exact head, and verify the full final section.
+
+## Entry
+
 Date/time: 2026-07-16T13:39-07:00
 
 Branch/PR: codex/loopback-rollback-evaluator / no PR yet

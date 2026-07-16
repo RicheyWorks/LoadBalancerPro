@@ -262,7 +262,8 @@ public final class EnterpriseLabExperimentEvaluator {
             invariant.add(Trigger.REQUEST_LIMIT_EXCEEDED);
         }
         Instant maximumEnd = snapshot.startedAt().orElseThrow().plus(configuration.maximumDuration());
-        if (evaluatedAt.isAfter(maximumEnd) || !evaluatedAt.isBefore(configuration.expiresAt())) {
+        if ((snapshot.state() == EnterpriseLabExperimentState.RUNNING && evaluatedAt.isAfter(maximumEnd))
+                || !evaluatedAt.isBefore(configuration.expiresAt())) {
             invariant.add(Trigger.DURATION_EXCEEDED);
         }
         if (lifecycle.recordedEvidenceRequestIds().size() != snapshot.evidenceCount()

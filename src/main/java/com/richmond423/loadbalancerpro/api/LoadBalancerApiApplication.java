@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.api;
 
 import com.richmond423.loadbalancerpro.cli.AdaptiveRoutingExperimentCommand;
+import com.richmond423.loadbalancerpro.cli.EnterpriseLabExperimentProofCommand;
 import com.richmond423.loadbalancerpro.cli.EnterpriseLabWorkflowCommand;
 import com.richmond423.loadbalancerpro.cli.LaseDemoCommand;
 import com.richmond423.loadbalancerpro.cli.LaseReplayCommand;
@@ -17,6 +18,14 @@ public class LoadBalancerApiApplication {
             return;
         }
         if (!shouldStartApi(args)) {
+            EnterpriseLabExperimentProofCommand.Result proofResult =
+                    EnterpriseLabExperimentProofCommand.runIfRequested(args, System.out, System.err);
+            if (proofResult.requested()) {
+                if (proofResult.exitCode() != 0) {
+                    System.exit(proofResult.exitCode());
+                }
+                return;
+            }
             AdaptiveRoutingExperimentCommand.Result experimentResult =
                     AdaptiveRoutingExperimentCommand.runIfRequested(args, System.out, System.err);
             if (experimentResult.requested()) {
@@ -51,6 +60,7 @@ public class LoadBalancerApiApplication {
 
     static boolean shouldStartApi(String[] args) {
         return !isVersionRequested(args)
+                && !EnterpriseLabExperimentProofCommand.isRequested(args)
                 && !AdaptiveRoutingExperimentCommand.isRequested(args)
                 && !EnterpriseLabWorkflowCommand.isRequested(args)
                 && !LaseDemoCommand.isRequested(args)

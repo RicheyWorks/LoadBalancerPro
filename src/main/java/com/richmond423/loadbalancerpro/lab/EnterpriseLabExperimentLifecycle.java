@@ -183,13 +183,16 @@ public final class EnterpriseLabExperimentLifecycle {
         if (duplicate != null) {
             return duplicate;
         }
-        if (state != EnterpriseLabExperimentState.RUNNING || !candidateAllocationActive) {
+        boolean running = state == EnterpriseLabExperimentState.RUNNING;
+        boolean holding = state == EnterpriseLabExperimentState.HOLDING;
+        if ((!running && !holding) || !candidateAllocationActive) {
             return progressWithoutRecord(
-                    ProgressStatus.DENIED, safeRequestId, "requests are accepted only while candidate routing is running");
+                    ProgressStatus.DENIED, safeRequestId,
+                    "requests are accepted only while candidate routing is running or holding");
         }
         if (safeTime.isBefore(startedAt)
                 || !safeTime.isBefore(configuration.expiresAt())
-                || !safeTime.isBefore(startedAt.plus(configuration.maximumDuration()))) {
+                || (running && !safeTime.isBefore(startedAt.plus(configuration.maximumDuration())))) {
             return progressWithoutRecord(
                     ProgressStatus.DENIED, safeRequestId, "request is outside the bounded experiment time window");
         }

@@ -6,6 +6,183 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T15:49-07:00
+
+Branch/PR: codex/loopback-e2e-proof / no PR yet
+
+Failure type: GitHub CLI authentication/service probe failure before PR6 publication
+
+Failing check: `gh auth status` followed by the read-only `gh api user` probe
+
+Observed/root cause: Git transport fetched exact `origin/main`, but the CLI reported its keyring token invalid; the
+API probe then received GitHub's HTTP 503 Unicorn page. This is remote credential/service state, not a repository diff.
+
+Correction/result: preserve the clean exact-base branch and audit available non-secret authentication paths before
+push or PR creation; no check, security control, repository state, or credential value was altered or exposed.
+
+Follow-up: retry bounded read-only GitHub access, then continue only through authenticated normal PR operations.
+
+## Entry
+
+Date/time: 2026-07-16T15:35-07:00
+
+Branch/PR: codex/loopback-e2e-proof / no PR yet
+
+Failure type: PR6 scope-scan regex and Windows glob errors
+
+Failing check: first final scope scan over new proof sources
+
+Observed/root cause: read-only `rg` used a PCRE look-ahead without `--pcre2` and a Unix-style filename glob as a
+Windows path; no repository or network state changed.
+
+Correction/result: rerun with `--pcre2`, `-g`, and exact paths. It found no non-loopback URL, executor, scheduler,
+process launcher, CloudManager, or network command; only literal `127.0.0.1` remained, and `git diff --check` passed.
+
+Follow-up: reuse the corrected scan shape for pre-commit and exact-head audits.
+
+## Entry
+
+Date/time: 2026-07-16T15:33-07:00
+
+Branch/PR: codex/loopback-e2e-proof / no PR yet
+
+Failure type: PR6 hold-down proof exposed a missing lifecycle correlation seam
+
+Failing check: focused all-suite proof after partial-degradation calibration
+
+Observed/root cause: real post-hold requests were observed but not correlated because PR3 accepted only `RUNNING`,
+while PR5 admitted `HOLDING`; the evaluator also treated every post-duration hold evaluation as an invariant.
+
+Correction/result: correlate `RUNNING` or `HOLDING`, keep running bounded by duration, and bound holding by request
+count plus expiration. Focused hold, all-suite loopback, and broader lifecycle/evaluator/operator/proof tests passed.
+
+Follow-up: run both packaged proof suites before broader verification.
+
+## Entry
+
+Date/time: 2026-07-16T15:31-07:00
+
+Branch/PR: codex/loopback-e2e-proof / no PR yet
+
+Failure type: PR6 partial-degradation behavior calibration
+
+Failing check: focused all-suite real-loopback proof
+
+Observed/root cause: three failures in 26 requests ended with only two successes, correctly yielding `RECOVERING`
+instead of `PARTIALLY_DEGRADED`; every-eighth failure placed the last failure at ordinal 24.
+
+Correction/result: fail every seventh request, retaining a non-consecutive partial failure rate with five final
+successes. The proof then reached `PARTIAL_DEGRADATION`; its later hold failure is logged separately.
+
+Follow-up: retain the deterministic script and exact-trigger assertion.
+
+## Entry
+
+Date/time: 2026-07-16T15:29-07:00
+
+Branch/PR: codex/loopback-e2e-proof / no PR yet
+
+Failure type: PR6 duration-boundary proof clock overshoot
+
+Failing check: focused all-suite real-loopback proof after guardrail expectation correction
+
+Observed/root cause: duration completion evaluated 200 ms late because two batches had already advanced the clock by
+100 ms each before a full one-second advance.
+
+Correction/result: advance 800 ms to the exact boundary, also for hold entry. Duration completion passed at 60 of 64
+requests; the independent partial-degradation issue is logged separately.
+
+Follow-up: retain start-relative timing assertions.
+
+## Entry
+
+Date/time: 2026-07-16T15:27-07:00
+
+Branch/PR: codex/loopback-e2e-proof / no PR yet
+
+Failure type: PR6 initial proof guardrail expectation mismatch
+
+Failing check: focused proof runner and command selector
+
+Observed/root cause: `tail-latency-pressure` is `ALLOW`, not `CLAMP`; no catalog fixture exceeds default limits, and
+the first proof inferred a different test policy. The command failed safely.
+
+Correction/result: report actual approval and test clamp deterministically through the existing policy engine without
+changing catalog or defaults. Both clamp calculation and end-to-end approval passed.
+
+Follow-up: keep calculations deterministic and lifecycle outcomes on real loopback.
+
+## Entry
+
+Date/time: 2026-07-16T15:25-07:00
+
+Branch/PR: codex/loopback-e2e-proof / no PR yet
+
+Failure type: PR6 read-only guardrail inspection tooling errors
+
+Failing check: JShell inspection of repository scenario guardrail actions
+
+Observed/root cause: JShell attempts hit PowerShell BOM/PTY submission issues and then a `target/classes`-only Log4j
+classpath gap; no network state changed and the ignored script was removed.
+
+Correction/result: a temporary Maven/JUnit inspection confirmed eligible fixtures are `ALLOW`, unsafe fixtures are
+`DENY`, and none default to `CLAMP`; it passed and was removed before permanent policy-engine clamp coverage was added.
+
+Follow-up: use the repository test runtime for dependency-bearing inspection.
+
+## Entry
+
+Date/time: 2026-07-16T15:24-07:00
+
+Branch/PR: codex/loopback-e2e-proof / no PR yet
+
+Failure type: PR6 core-test audit path error
+
+Failing check: combined read of adaptive decision service, guardrail test, and policy engine
+
+Observed/root cause: the read-only audit used `src/main/java` for a JUnit file that lives under `src/test/java`.
+
+Correction/result: resolve the exact test path and reuse its clamp pattern; the new assertion compiled and passed.
+
+Follow-up: use paths resolved by `rg --files`.
+
+## Entry
+
+Date/time: 2026-07-16T15:12-07:00
+
+Branch/PR: codex/loopback-e2e-proof / no PR yet
+
+Failure type: PR6 application-entrypoint audit path error
+
+Failing check: combined source read for `EnterpriseLabWorkflowCommand` and `LoadBalancerApiApplication`
+
+Observed/root cause: the workflow read succeeded, but the read-only command omitted the application's `api` package.
+
+Correction/result: `rg --files` resolved the exact entrypoint; its dispatch was inspected and the proof command stayed
+separate from the recommendation-only workflow.
+
+Follow-up: resolve entrypoints before combined reads.
+
+## Entry
+
+Date/time: 2026-07-16T15:09-07:00
+
+Branch/PR: codex/loopback-e2e-proof / no PR yet
+
+Failure type: PR6 implementation-audit search command errors
+
+Failing check: parallel repository audit for loopback bind patterns and ignored proof-output paths
+
+Observed/root cause: a read-only `rg` lost nested quote text and another named nonexistent `BUILD_CONTRACT.md` instead
+of the actual campaign verification protocol; no repository or network state changed.
+
+Correction/result: fixed-string/exact-path searches confirmed loopback binding, ignored `target/`, packaged command,
+timing seam, and `GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`.
+
+Follow-up: inspect the identified launchers and PR5 seam with exact paths.
+
+## Entry
+
 Date/time: 2026-07-16T14:52-07:00
 
 Branch/PR: codex/loopback-operator-api-evidence / PR #459

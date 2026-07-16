@@ -1,214 +1,205 @@
 # Decision Explorer Reviewer/Operator Walkthrough
 
-Status: planned / docs-test-only.
+Status: current / docs-and-guard normalization.
 
-Classification: WARN / decision-explorer-bootstrap.
+Classification: WARN / local reviewer evidence.
 
-Campaign slot: DX-G09.
+Historical campaign slot: DX-G09.
 
-Related implementation plan: [`DECISION_EXPLORER_IMPLEMENTATION_PLAN.md`](DECISION_EXPLORER_IMPLEMENTATION_PLAN.md).
+Normalization campaign slot: LASE-P6-PR5.
 
-Related Phase 0 gate: [`DECISION_EXPLORER_PHASE0_VERIFICATION_GATE.md`](DECISION_EXPLORER_PHASE0_VERIFICATION_GATE.md).
+Related current API contract: [`../API_CONTRACTS.md`](../API_CONTRACTS.md).
 
-Related data contract: [`DECISION_EXPLORER_DATA_CONTRACT.md`](DECISION_EXPLORER_DATA_CONTRACT.md).
+Related reviewer trust map: [`../REVIEWER_TRUST_MAP.md`](../REVIEWER_TRUST_MAP.md).
 
-Related agent schema contract: [`DECISION_EXPLORER_AGENT_SCHEMA_CONTRACT.md`](DECISION_EXPLORER_AGENT_SCHEMA_CONTRACT.md).
+Related Phase 6 naming anchor:
+[`LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md`](LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md).
 
-Related evidence lane: [`DECISION_EXPLORER_EVIDENCE_LANE.md`](DECISION_EXPLORER_EVIDENCE_LANE.md).
-
-Related campaign board: [`DECISION_EXPLORER_CAMPAIGN_BOARD.md`](DECISION_EXPLORER_CAMPAIGN_BOARD.md).
+Historical bootstrap context remains in
+[`DECISION_EXPLORER_IMPLEMENTATION_PLAN.md`](DECISION_EXPLORER_IMPLEMENTATION_PLAN.md) and
+[`DECISION_EXPLORER_PHASE0_VERIFICATION_GATE.md`](DECISION_EXPLORER_PHASE0_VERIFICATION_GATE.md).
 
 ## Purpose
 
-This walkthrough describes how a future reviewer, operator, or AI agent should inspect a planned Interactive Decision
-Explorer readout. It is a source-visible review script for human reviewer understanding and AI-agent structured
-understanding.
+This walkthrough explains how a human reviewer, operator reviewer, or AI agent can inspect the current local Decision
+Explorer surface without confusing reviewer evidence with production proof. The current source-controlled surface is:
 
-This walkthrough is documentation only. It does not add Java classes, endpoints, runtime behavior, UI implementation,
-storage behavior, export behavior, replay execution, evidence-packet implementation, automation, deployment behavior,
-cloud behavior, tenant behavior, production traffic-control behavior, Maven changes, Docker changes, Compose changes,
-CI changes, scripts, secrets, credentials, or external targets.
+- `/decision-explorer.html`, a same-origin static reviewer page;
+- `GET /api/routing/decision-explorer/scenarios`, a read-only synthetic scenario catalog; and
+- `POST /api/routing/decision-explorer`, a read-only and simulation-only payload surface grounded in routing
+  comparison evidence already computed for the request.
 
-The Decision Explorer remains planned, read-only, simulation-only, and docs-test-only. DX-G09 provides walkthrough
-language only and makes no runtime endpoint/UI/storage/export/replay implementation claim.
+The page and APIs are implemented repository surfaces, but this walkthrough is documentation and guard-test only. It
+does not add or change Java classes, endpoints, API schemas, runtime behavior, UI behavior, routing, scoring, proxying,
+allocation, traffic shifting, replay execution, storage, export, evidence-packet generation, Maven, CI, Docker,
+Compose, scripts, secrets, credentials, cloud targets, tenant targets, private-network targets, external targets, or
+automation.
 
 ## Pre-Walkthrough Gate
 
-Before using this walkthrough, reviewers and agents should confirm:
+Before using this walkthrough, confirm:
 
-- current `main` CI and CodeQL were green before the branch started;
-- the active branch is scoped to the walkthrough document and guard test;
-- the Decision Explorer implementation plan, Phase 0 gate, data contract, agent schema contract, evidence lane, and
-  campaign board remain source-visible;
-- the planned readout still uses read-only and simulation-only language;
-- no endpoint, UI, runtime storage, export, replay, or evidence packet behavior is claimed as implemented;
-- current-head PR checks are complete and successful before any merge decision.
+- the application under review is a local instance built from the intended revision;
+- `/decision-explorer.html` and the two same-origin API paths above match [`../API_CONTRACTS.md`](../API_CONTRACTS.md);
+- `readOnly`, `simulationOnly`, warnings, unknowns, and `notProvenBoundaries` remain visible in returned evidence;
+- any optional API key remains in browser memory only and is not persisted by the page;
+- the active change, if any, has current local and remote verification; and
+- required checks are complete and successful before a merge decision.
 
-This gate is not runtime enforcement, branch protection, authorization, deployment approval, traffic-control approval,
-or production readiness evidence.
+This gate is reviewer procedure, not runtime enforcement, branch protection, authorization, deployment approval,
+traffic-control approval, production certification, or production-readiness evidence.
 
 ## Walkthrough Roles
 
-The planned walkthrough supports three reader roles:
-
 | Role | Walkthrough focus | Boundary |
 | --- | --- | --- |
-| Human reviewer | Understand why a simulated decision appears in a planned readout. | Review aid only; not production approval. |
-| Operator reviewer | Check visible inputs, policy gate display, source cards, and stop conditions. | No live mutation, no traffic shifting, no runtime enforcement. |
-| AI agent | Parse stable structured fields and boundary flags for low-ambiguity summaries. | Structured understanding only; no autonomous production action. |
+| Human reviewer | Understand why a simulated routing comparison selected a candidate. | Review aid only; not production approval. |
+| Operator reviewer | Inspect visible inputs, diagnostics, policy-gate display, warnings, and stop conditions. | No live mutation, traffic shifting, or runtime enforcement. |
+| AI agent | Parse stable field names and boundary flags into a low-ambiguity summary. | Structured understanding only; no autonomous production action. |
 
-The same source-visible readout should support both narrative review and agent-readable parsing without hidden side
-effects.
+The same returned evidence supports narrative review and agent-readable parsing without hidden writes, hidden approvals,
+or hidden network calls from this walkthrough.
 
 ## Walkthrough Steps
 
-### Step 1 - Confirm Source-Visible Scope
+### Step 1 - Confirm The Current Local Surface
 
-Start with the source-visible planning documents. The reviewer should confirm that the active readout is described as
-planned, read-only, simulation-only, and docs-test-only.
+Open `/decision-explorer.html` from the same local application origin. Confirm that the page identifies the payload as
+`DecisionExplorerPayloadV1` and retains the `read-only`, `simulation-only`, and `Not-Proven Boundaries` cues.
 
-Expected source cues:
+The page is a local reviewer surface. Its presence does not prove a public deployment, production operation,
+authorization boundary, or certification.
 
-- `Decision Explorer Reviewer/Operator Walkthrough`;
-- `DecisionExplorerPayloadV1`;
-- `AgentStructuredOutputV1`;
-- `DECISION_EXPLORER_IMPLEMENTATION_PLAN.md`;
-- `DECISION_EXPLORER_PHASE0_VERIFICATION_GATE.md`;
-- `DECISION_EXPLORER_EVIDENCE_LANE.md`.
+### Step 2 - Load The Scenario Catalog
 
-Stop if the wording claims runtime endpoint/UI/storage/export/replay implementation, evidence packet implementation,
-production readiness, live-cloud validation, real-tenant validation, benchmark proof, throughput proof, or broader
-automation.
+Load the `Scenario Catalog` through `GET /api/routing/decision-explorer/scenarios`. Review scenario identifiers,
+categories, evidence status, and warnings before selecting a sample.
 
-### Step 2 - Read The Planned Decision Summary
+The catalog contains deterministic local synthetic metadata. Loading or selecting a scenario does not by itself run
+routing, mutate state, contact a cloud or tenant system, or shift traffic.
 
-Inspect the planned `DecisionReadoutV1` section first. A future readout should identify the simulated decision, selected
-candidate, visible strategy name, known visible signals, unknown or unavailable signals, and boundary flags.
+### Step 3 - Run The Read-Only Sample
 
-The reviewer should treat the decision summary as an explanation aid. It must not be interpreted as routing authority,
-production traffic-control authority, deployment approval, runtime enforcement, or certification.
+Run a sample through `POST /api/routing/decision-explorer`. Confirm the response reports `readOnly: true`,
+`simulationOnly: true`, the selected candidate, candidate set, warnings, unknowns, and `notProvenBoundaries`.
 
-### Step 3 - Compare Candidate Readouts
+Treat the returned decision summary as an explanation aid. It is not routing authority, production traffic-control
+authority, deployment approval, runtime enforcement, or certification.
 
-Review each planned `CandidateReadoutV1` and `FactorContributionV1` item. The walkthrough should help readers compare:
+### Step 4 - Map Panels To Normalized Evidence Groups
 
-- selected and non-selected candidates;
-- visible factor contribution names;
-- visible factor contribution values;
-- known visible signals;
-- unknown or unexposed signals;
-- exactness boundaries and not-proven boundaries.
+Use the Phase 6 vocabulary consistently:
 
-Candidate comparison must not infer hidden scoring, invent missing metrics, mutate routing state, shift live traffic, or
-claim exact production scoring.
+| Static-page panel | Current API field or surface | Reviewer use |
+| --- | --- | --- |
+| Scenario Catalog | `GET /api/routing/decision-explorer/scenarios` | Orient the review with deterministic local scenario metadata. |
+| Routing Intelligence Status | `confidenceSummary` | Review status, confidence details, warnings, unknowns, and explanation context. |
+| Routing Diagnostics | `routingDiagnostics` | Inspect candidate, factor, evidence, degradation, partial-evidence, and unknown-evidence diagnostics. |
+| Route Tradeoff Intelligence | `routeTradeoffAnalysis` | Compare the selected candidate with alternatives and inspect score-gap and factor-delta context. |
+| Evidence Sufficiency | `routeTradeoffAnalysis.evidenceSufficiency` | Inspect whether returned evidence is sufficient for the bounded explanation. |
+| Replay Readiness | `routeTradeoffAnalysis.replayReadinessDiagnostic` | Inspect readiness diagnostics without treating them as replay execution. |
+| Shadow Decision Quality | `shadowDecisionQualityEvaluation` | Review local shadow-quality labels, outcomes, inputs, fingerprints, and explanations. |
+| Counterfactual Analysis | `counterfactualAnalysis` | Review returned local policy-weight and factor-weight sensitivity rows. |
+| Not-Proven Boundaries | `notProvenBoundaries` | Keep unsupported claims attached to every review. |
 
-### Step 4 - Review Policy Gate Visualization
+These fields organize already-returned reviewer evidence. They do not change the routing decision, recompute
+production scores, retune live weights, or enforce policy.
 
-Inspect the planned `PolicyGateReadoutV1` area next. The walkthrough should make policy gate visualization display-only.
-Future gate states may include `ALLOWED`, `WARNED`, `BLOCKED`, `REQUIRES_REVIEW`, `NOT_EVALUATED`, and `UNKNOWN`.
+### Step 5 - Compare Candidates, Factors, And Policy Gates
 
-Policy gate visualization is not authorization, branch protection, required-check governance, deployment approval,
-production traffic-control approval, and not runtime enforcement.
+Use `decisionReadout`, `selectedCandidate`, `candidateSet`, and the available factor rows to compare selected and
+non-selected candidates, visible factor contributions, known signals, and unknown or unavailable signals. Treat policy
+gate states as display-only reviewer cues.
 
-### Step 5 - Inspect What-If And Counterfactual Readouts
+Do not infer hidden scoring, invent missing metrics, claim exact production scoring, or treat a displayed policy gate
+as authorization, branch protection, required-check governance, deployment approval, or runtime enforcement.
 
-Review the planned `DecisionDiffReadoutV1` section only as a simulation-only explanation path. What-if and
-counterfactual readouts may help explain how visible inputs could change a planned decision summary.
+### Step 6 - Inspect Tradeoffs, Replay Readiness, And Counterfactuals
 
-They must not execute replay, mutate routing, write storage, export packets, call cloud or tenant targets, approve
-production action, or claim benchmark/load/stress proof.
+Use `routeTradeoffAnalysis`, `shadowDecisionQualityEvaluation`, and `counterfactualAnalysis` only for bounded local
+interpretation of returned evidence. Preserve fingerprints, reproducibility keys, warnings, explanations, partial
+states, and unknown states when summarizing them.
 
-### Step 6 - Validate Evidence And Source Cards
+Replay readiness is distinct from replay execution. Counterfactual rows do not retune live weights, recompute
+production scores, mutate routing, write storage, export packets, call cloud or tenant targets, approve production
+action, or prove benchmark/load/stress behavior.
 
-Use the evidence lane to inspect source cards and planned evidence references. The walkthrough should preserve:
+### Step 7 - Validate Evidence And Structured Output
 
-- source-card template fields;
-- research intake rules;
-- stale-information retirement policy;
-- repo bloat prevention;
-- compacting policy;
-- no raw research dumps;
-- evidence packet future path.
+Review source references, warnings, unknowns, `agentStructuredOutput`, and any evidence-packet readout fields after the
+human-readable summary. Preserve stable identifiers, JSON field names, enum values, null and unknown handling,
+parseability, and low-ambiguity boundary flags.
 
-Evidence and source cards are reviewer context only. They do not prove live-cloud validation, real-tenant validation,
-production readiness, replay/export proof, storage proof, or evidence-packet implementation.
-
-### Step 7 - Read Agent Structured Output
-
-Inspect planned `AgentStructuredOutputV1` fields after the human summary. Agent output should preserve stable
-identifiers, including exact stable identifiers wording, JSON field naming rules, enum stability expectations, null and
-unknown handling, including exact null and unknown handling wording, parseability, and low-ambiguity boundary flags.
-
-Agent structured output supports AI-agent structured understanding. It must not authorize autonomous production action,
-live mutation, no hidden writes, no hidden approvals, no hidden network calls, or broader automation.
+An evidence-packet readout is not evidence-packet generation, storage, export, upload, download, PDF, or ZIP behavior.
+Source references are reviewer context only; they do not prove live-cloud validation, real-tenant validation,
+production readiness, replay/export proof, or storage proof.
 
 ### Step 8 - Record Review Questions And Stop Conditions
 
-The reviewer should record questions without converting the walkthrough into implementation proof. Stop before
-Java/backend/UI/runtime work; exact stop before Java/backend/UI/runtime work wording applies when:
+Record questions without converting the walkthrough into implementation proof. Stop and report when:
 
-- a required planning source is missing, stale, unguarded, or overclaiming;
+- a required source is missing, stale, unguarded, or overclaiming;
 - current-head checks are stale, failed, cancelled, pending, skipped-only, or duplicate-only;
-- wording implies endpoint/UI/runtime/storage/export/replay/evidence-packet implementation exists;
-- source cards contain raw research dumps, secrets, external targets, production-looking defaults, or mutation handles;
+- returned evidence is missing its read-only, simulation-only, warning, unknown, or not-proven cues;
+- wording implies replay execution, storage/export, evidence-packet generation, runtime enforcement, or production
+  action that the scoped evidence does not prove;
+- source material contains secrets, external targets, production-looking defaults, or mutation handles; or
 - wording claims production readiness, production certification, live-cloud validation, real-tenant validation,
-  benchmark proof, throughput/p95/p99 proof, replay/export proof, storage proof, or broader automation.
+  benchmark/load/stress proof, throughput/p95/p99 proof, or broader automation.
 
-Stop conditions are review signals only. They do not enforce runtime policy, mutate repositories, change rulesets,
-delete branches, block traffic, or approve deployment.
+Stop conditions are review signals only. They do not mutate repositories, change rulesets, delete branches, block
+traffic, or approve deployment.
 
 ## AI-Agent Walkthrough Questions
 
-An AI agent should be able to answer these planned questions from a future readout without inventing facts:
+An AI agent should be able to answer these questions from the current returned evidence without inventing facts:
 
-- What source-visible payload version is being reviewed?
-- Which candidate was selected, and which candidates were not selected?
-- Which visible factors contributed to the explanation?
-- Which policy gate display state is shown?
-- Which fields are unknown, unavailable, not applicable, or not implemented?
-- Which source cards support the explanation?
-- Which not-proven boundaries apply?
-- Which stop condition should block implementation or merge work?
+- What payload version and scenario are being reviewed?
+- Which candidate was selected, and which candidates were alternatives?
+- What do `confidenceSummary` and `routingDiagnostics` say about evidence quality and unknowns?
+- What tradeoffs, evidence-sufficiency state, and replay-readiness state are returned?
+- What shadow-quality and counterfactual rows are present, partial, unavailable, or unknown?
+- Which policy gates are display-only?
+- Which source references, fingerprints, and reproducibility keys support the explanation?
+- Which `notProvenBoundaries` apply?
+- Which stop condition should block a merge or stronger claim?
 
 These questions support structured understanding only. They do not create autonomous action, production approval,
-runtime mutation, storage writes, export handles, replay behavior, or evidence packet generation.
+runtime mutation, storage writes, export handles, replay behavior, or evidence-packet generation.
 
 ## Reviewer Checklist
 
-Before treating a planned readout as reviewable, confirm:
+Before treating the local readout as reviewable, confirm:
 
-- the readout states planned, read-only, simulation-only, and docs-test-only scope;
-- `DecisionExplorerPayloadV1`, `DecisionReadoutV1`, `CandidateReadoutV1`, `FactorContributionV1`,
-  `PolicyGateReadoutV1`, `DecisionDiffReadoutV1`, `EvidencePacketReadoutV1`, and `AgentStructuredOutputV1` remain
-  planning vocabulary;
-- source references are repository-relative or explicitly unavailable;
-- source cards are compact and do not include raw research dumps;
-- policy gate visualization remains display-only;
-- what-if and counterfactual language remains simulation-only;
-- evidence packet references remain a future path;
-- no runtime endpoint/UI/storage/export/replay implementation claim is present;
-- not-proven boundaries remain visible.
+- the page and API paths are same-origin;
+- the payload is read-only and simulation-only;
+- optional API-key handling is memory-only;
+- the panel labels map to the current normalized field names;
+- warnings, unknowns, partial states, and not-proven boundaries remain visible;
+- policy-gate visualization remains display-only;
+- replay readiness is not described as replay execution;
+- counterfactual evidence is not described as live retuning or production score recomputation;
+- evidence-packet readouts are not described as generation, storage, or export; and
+- unsupported behavior remains named as unknown, unavailable, not applicable, not implemented, or not proven.
 
-## Relationship To Future DX Slots
+## Historical Relationship
 
-- DX-G09 provides this reviewer/operator walkthrough for human and AI-agent consumption.
-- DX-G10 should close the bootstrap and preserve not-proven boundaries.
-- Future implementation work should be a separate Decision Explorer Implementation Phase 1 campaign with explicit
-  scope, current-head green checks, post-merge main verification, and new proof before any claims change.
+DX-G09 created the first source-visible reviewer walkthrough while Decision Explorer was still a planned bootstrap.
+The historical contract stated that DX-G10 should close the bootstrap and preserve not-proven boundaries. DX-G10
+subsequently closed that bootstrap and handed off to separately scoped implementation phases, which added the bounded
+local page and API surfaces. LASE-P6-PR5 updates this walkthrough to describe that current repository evidence and the
+Phase 6 normalized vocabulary; it does not retroactively turn the historical planning documents into runtime proof.
 
 ## Not-Proven Boundaries
 
-This reviewer/operator walkthrough does not prove:
+This reviewer/operator walkthrough and the current bounded local surface do not prove:
 
-- production readiness;
-- production certification;
-- live-cloud validation;
-- real-tenant validation;
-- benchmark/load/stress evidence;
-- throughput/p95/p99 evidence;
-- replay/export behavior;
-- storage behavior;
-- runtime endpoint/UI/storage/evidence-packet implementation;
-- evidence packet implementation;
-- autonomous production action;
+- production readiness or production certification;
+- live-cloud validation or real-tenant validation;
+- runtime enforcement or production authorization;
+- benchmark/load/stress evidence or throughput/p95/p99 evidence;
+- production routing, scoring, proxy, or allocation behavior;
+- replay execution or replay/export behavior;
+- storage behavior or evidence-packet generation;
+- traffic shifting or autonomous production action; or
 - broader automation.

@@ -6,6 +6,85 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active LASE Phase 6 PR5 Checkpoint
+
+Timestamp: 2026-07-16T06:54-07:00
+
+Goal name: LASE Routing Intelligence Phase 6 - Reviewer Evidence Normalization
+
+Current PR slot: LASE-P6-PR5
+
+Checkpoint: reviewer walkthrough normalized; full local verification and pre-commit scope audit passed; commit pending
+
+Started from main SHA: `3ede7f49978a382c21577201dbe960bf73e85e35`
+
+Current branch: codex/lase-phase6-reviewer-walkthrough-normalization
+
+PR URL: pending
+
+Current head before the implementation commit: `3ede7f49978a382c21577201dbe960bf73e85e35`; re-read the branch head after
+commit and before PR creation
+
+Changed files planned for this slice:
+
+- docs/agent/DECISION_EXPLORER_REVIEWER_WALKTHROUGH.md
+- docs/agent/FAILURE_LOG.md
+- docs/agent/SESSION_MANAGER.md
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentDecisionExplorerReviewerWalkthroughDocumentationTest.java
+
+Checks run:
+
+- LASE-P6-PR4 PR #444 passed current-head CI, CodeQL, and Dependency Review and merged as
+  `3ede7f49978a382c21577201dbe960bf73e85e35`.
+- Post-merge main CI run `29503711903` and CodeQL run `29503711974` passed on that exact merge commit; the CI path
+  included tests, package verification, SBOM generation, JAR smoke, Docker build, container runtime smoke, dry-run
+  evidence capture, and the enforced container-image scan.
+- Local main and `origin/main` were clean and synchronized at
+  `3ede7f49978a382c21577201dbe960bf73e85e35` before branch creation.
+- The PR5 audit found one concrete stale reviewer path:
+  `docs/agent/DECISION_EXPLORER_REVIEWER_WALKTHROUGH.md` still describes the Decision Explorer as planned and
+  unimplemented even though the current repository has the bounded same-origin static page, scenario catalog, and
+  read-only simulation-only payload API guarded by current tests.
+- PR5 updates that walkthrough to the current local surface, maps the Phase 6 panel labels to
+  `confidenceSummary`, `routingDiagnostics`, `routeTradeoffAnalysis`, `shadowDecisionQualityEvaluation`, and
+  `counterfactualAnalysis`, and preserves explicit replay, storage/export, evidence-packet, production, performance,
+  runtime-enforcement, traffic, and automation boundaries.
+- The first two focused walkthrough-guard attempts failed on overly exact source-string expectations. Both failures,
+  their narrow calibration recoveries, and the final result are recorded in `docs/agent/FAILURE_LOG.md`.
+- Focused walkthrough guard passed after recovery:
+  `mvn -q "-Dtest=AgentDecisionExplorerReviewerWalkthroughDocumentationTest" test`.
+- The broader Decision Explorer reviewer, Phase 6, static-page, navigation, and API hardening selector passed:
+  `mvn -q "-Dtest=AgentDecisionExplorerReviewerWalkthroughDocumentationTest,AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentDecisionExplorerPhase1ReviewerExamplesDocumentationTest,AgentDecisionExplorerPhase2ReviewerExamplesDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,DecisionExplorerReviewerNavigationTest,DecisionExplorerStaticPageTest,DecisionExplorerApiContractHardeningTest" test`.
+- The first full `mvn -q test` attempt ran 2,888 tests with one failure, zero errors, and zero skips. The historical
+  bootstrap-closeout guard correctly identified that the walkthrough no longer contained its DX-G10 closeout link;
+  the failure and bounded wording recovery are recorded in `docs/agent/FAILURE_LOG.md`.
+- Focused recovery passed:
+  `mvn -q "-Dtest=AgentDecisionExplorerReviewerWalkthroughDocumentationTest,AgentDecisionExplorerBootstrapCloseoutDocumentationTest" test`.
+- Full local verification passed after recovery: `mvn -q test`, `mvn -q "-DskipTests" package`, and direct
+  `mvn -B --no-transfer-progress package`. The direct package run executed 2,888 tests with zero failures, errors, or
+  skips and produced `target/LoadBalancerPro-2.5.0.jar`.
+- `scripts/smoke/enterprise-lab-workflow.ps1 -Package` passed in bounded shadow mode and wrote ignored evidence only
+  under `target/enterprise-lab-runs`; it performed no API server, live-cloud, external-network, release, tag, asset,
+  container, or registry action.
+- `git diff --check` passed. The working-tree changed-file audit found exactly the four intended Markdown/guard paths,
+  zero forbidden production/build/workflow/Docker/Compose/runtime/script paths, zero added unsupported proof phrases,
+  and zero CVE IDs in `.trivyignore`.
+- The post-checkpoint walkthrough, bootstrap-closeout, Phase 6, static-page, reviewer-navigation, session, campaign, and
+  README guard selector passed.
+
+Scope and safety: this slot is limited to one reviewer walkthrough, its read-only documentation guard, and this
+checkpoint. It does not change production code, endpoints, API schemas, runtime behavior, Maven, CI, Docker, Compose,
+scripts, routing, scoring, proxying, allocation, replay, storage/export, evidence-packet generation, traffic, secrets,
+cloud/tenant/private-network/external targets, or automation.
+
+Remote status: PR creation and current-head checks are pending.
+
+Blocker: none.
+
+Next action: stage and commit the slice, run final-head checkpoint and diff guards, push the branch, and open the PR.
+
+Decision: continue this narrow docs/test-only slot; do not merge until the final current-head checks are green.
+
 ## Historical Security-Maintenance Checkpoint
 
 Timestamp: 2026-07-16T06:34-07:00

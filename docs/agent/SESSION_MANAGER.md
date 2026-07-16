@@ -6,6 +6,62 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Loopback Experiment PR5 Checkpoint
+
+Timestamp: 2026-07-16T14:49-07:00
+
+Goal name: bounded Enterprise Lab loopback experiment lifecycle
+
+Current PR slot: LOOPBACK-PR5 - authenticated operator control and immutable evidence API
+
+Checkpoint: implementation and final local verification complete; commit and PR creation pending
+
+Started from main SHA: `aacf5999a2a4e3fa59cf584528579fd8c489d1df`
+
+Current branch: codex/loopback-operator-api-evidence
+
+PR URL: not opened
+
+Prior slot closure: PR #458 merged normally as `aacf5999a2a4e3fa59cf584528579fd8c489d1df` from exact head
+`69ccfd9282b9a93f7adc2a7f04436bd590877228`; exact-merge main CI `29533929044` and CodeQL
+`29533926848` passed before this branch was created.
+
+Runtime capability: an authenticated `/api/lab/experiments` operator contract now composes the single PR1-PR4
+observation, loopback router, lifecycle, and evaluator path for arm, baseline request, explicit start, candidate
+request, evaluation, cancellation, status, list, and terminal evidence retrieval. The immutable process-local record
+contains bounded configuration, lifecycle, baseline, allocation, evaluation, and fingerprint-chained action evidence.
+
+Safety behavior: the production target catalog is immutable and empty by default; API request bodies contain no
+address field. Injected bindings must use literal HTTP loopback targets and exactly match the repository scenario
+backend set. Active-experiment mode plus explicit enablement, one-active-experiment exclusion, expiry, duration/count/
+timeout bounds, transition checks, request-batch exclusion, reserved terminal capacity, cancel/shutdown restoration,
+and post-rollback in-flight completion evidence all fail closed without a scheduler, executor, queue, or persistence.
+
+Local verification: the final focused operator/HTTP integration selector passed; the PR1-PR5 compatibility selector
+passed; `mvn -q test` passed; `mvn -q "-DskipTests" package` passed; and `mvn -B package` passed 3,005 tests with zero
+failures, errors, or skips. The final dependency tree resolved Tomcat embed core/websocket/EL `10.1.55`, the packaged
+jar contained the new operator classes, and `scripts/smoke/enterprise-lab-workflow.ps1 -Package` passed.
+
+Scope audit: `git diff --check` passed. No POM, Maven, workflow, Docker, or Compose diff exists. Production-source
+scans found no external URL, cloud manager, environment-secret read, process, thread, executor, scheduler, async,
+socket, or second HTTP-client primitive. The only controller URI reads are existing-style error-path reporting; no
+caller target is accepted or returned. Executable/test additions are 90.10 percent of all additions including 299
+lines of mandatory session/failure records; excluding those mandatory campaign ledgers, the deliverable is over 99
+percent executable/test implementation.
+
+Failure audit: focused expectation, Optional serialization, Spring test-bean naming, command quoting/globbing, and
+the terminal-capacity/request-queue audit finding are recorded with bounded corrections in `FAILURE_LOG.md`. All
+corrected focused and complete gates passed; no unresolved local failure remains.
+
+Evidence boundary: PR5 proves only authenticated, explicitly invoked, process-local literal-loopback behavior. It does
+not prove durable audit storage, background automation, arbitrary replay, external telemetry, production routing,
+live cloud or tenant behavior, load/stress/benchmark results, or production readiness.
+
+Next action: run the focused campaign documentation guards on this checkpoint, commit, push, open PR5, require exact-
+head CI/CodeQL/dependency review, merge normally, and require exact merge-main CI/CodeQL before opening LOOPBACK-PR6.
+
+Decision: continue LOOPBACK-PR5; do not open LOOPBACK-PR6 until PR5 is merged and exact merge-main CI/CodeQL are green.
+
 ## Active Loopback Experiment PR4 Checkpoint
 
 Timestamp: 2026-07-16T13:46-07:00

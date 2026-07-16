@@ -6,6 +6,249 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T14:38-07:00
+
+Branch/PR: codex/loopback-operator-api-evidence / no PR yet
+
+Failure type: PR5 scope/safety audit found terminal-capacity and request-queue edge cases
+
+Failing check: pre-full-suite manual review of bounded command/action capacity and concurrent request-batch behavior
+
+Observed failure: the first implementation allowed distinct request batches to wait on the per-session request lock,
+and exhausting the bounded command or action history could deny a later manual cancellation while candidate allocation
+was still active. No external or non-loopback request occurred, and focused tests were green before this review.
+
+Root cause: command/action capacity treated every slot uniformly instead of reserving terminal evidence, while the
+in-progress marker was checked by start but not by a second request batch or evaluation.
+
+Correction: reserve command and action slots for safe termination and one in-flight completion, make capacity
+exhaustion terminate a non-terminal experiment through the existing cancellation/restore path, keep manual cancel
+available and idempotent at the boundary, and reject rather than queue a second request batch or interleaved
+evaluation.
+
+Final verification: the focused operator-service suite passed with explicit coverage for a denied second batch,
+start exclusion during an in-flight baseline request, manual cancellation at bounded command capacity, concurrent
+status reads, cancellation during an in-flight candidate request, and post-rollback outcome retention. The complete
+PR1-PR5 compatibility selector also passed after the correction.
+
+Follow-up action: run full tests, package gates, dependency resolution, packaged workflow smoke, and the final scope
+scan before commit.
+
+## Entry
+
+Date/time: 2026-07-16T14:43-07:00
+
+Branch/PR: codex/loopback-operator-api-evidence / no PR yet
+
+Failure type: PR5 loopback controller integration test bean-name collision
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabExperimentControllerLoopbackIntegrationTest" test`
+
+Observed failure: the Spring test context stopped before test execution with `BeanDefinitionOverrideException` because
+the test configuration and the production fallback configuration both registered a bean named
+`enterpriseLabExperimentTargetCatalog`. No fake backend or HTTP operator request ran.
+
+Root cause: the test factory method reused the production fallback bean method name. Conditional processing occurred
+before the imported test bean could suppress the fallback definition, so identical bean names collided while bean
+overrides correctly remained disabled.
+
+Correction: give the injected test catalog a distinct bean name and mark it `@Primary`, allowing the production
+fallback to remain present but ensuring the test-only operator service receives the validated ephemeral loopback
+catalog. Do not enable bean overriding or weaken the production conditional.
+
+Final verification: the identical integration test rerun passed the complete HTTP
+arm/baseline-request/start/candidate-request/cancel/final-record flow against three test-owned ephemeral
+`127.0.0.1` backends.
+
+Follow-up action: run the combined PR1-PR5 compatibility selector and then audit the full branch diff.
+
+## Entry
+
+Date/time: 2026-07-16T14:40-07:00
+
+Branch/PR: codex/loopback-operator-api-evidence / no PR yet
+
+Failure type: PR5 controller empty-Optional JSON assertion mismatch
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabExperimentControllerTest" test`
+
+Observed failure: 3 controller tests ran with 1 failure and no errors or skips. The default empty target catalog
+correctly returned `DENIED`, `APPROVED_TARGETS_UNAVAILABLE`, `trafficActionPerformed=false`, and no target address, but
+the test expected `experimentRecord.present=false`. Jackson serialized the empty Optional as JSON `null`.
+
+Root cause: the focused assertion assumed an Optional wrapper representation that is not used by the repository's
+configured Jackson modules.
+
+Correction: assert the actual null/empty `experimentRecord` value. Do not change the API serializer or denial shape.
+
+Final verification: the identical `EnterpriseLabExperimentControllerTest` rerun passed all three tests after changing
+only the empty-Optional assertion.
+
+Follow-up action: add the existing API-key and OAuth2 authorization assertions, then run the combined PR5 selector.
+
+## Entry
+
+Date/time: 2026-07-16T14:36-07:00
+
+Branch/PR: codex/loopback-operator-api-evidence / no PR yet
+
+Failure type: PR5 focused real-loopback completion expectation failure
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabExperimentOperatorServiceTest" test`
+
+Observed failure: 4 tests ran with 1 failure and no errors or skips. The authenticated real-loopback workflow expected
+the terminal state `COMPLETED`, but the evaluator safely returned `ROLLED_BACK`. The explicit-enable/catalog/conflict,
+cancellation/shutdown restoration, and unsafe-input/request-limit tests passed.
+
+Root cause: the diagnostic single-method rerun returned `ROLLED_BACK_INSUFFICIENT` with
+`SPARSE_EVIDENCE_AT_BOUNDARY`. The smallest positive candidate allocation received only four of the 30 candidate
+requests, and the 15 baseline requests did not provide the default five tail-latency samples for every candidate
+backend. The evaluator correctly kept aggregate candidate and baseline p95/p99 empty and restored the baseline.
+
+Correction: keep the production window and rollback policies unchanged; raise only the deterministic test's baseline
+and candidate traffic to 60 requests each, issued as two permitted 30-request batches. That remains inside the API's
+64-request experiment ceiling and 32-request batch ceiling while providing enough evidence to every positive-share
+backend.
+
+Final verification: the corrected single completion method passed, then the full
+`EnterpriseLabExperimentOperatorServiceTest` class passed all four tests. The production evidence and rollback
+policies were not changed.
+
+Follow-up action: add controller and authentication coverage, then run the combined PR1-PR5 compatibility selector.
+
+## Entry
+
+Date/time: 2026-07-16T14:09-07:00
+
+Branch/PR: codex/loopback-operator-api-evidence / no PR yet
+
+Failure type: PR5 exception-handler audit filename mismatch
+
+Failing check: `Get-Content src/main/java/com/richmond423/loadbalancerpro/api/ApiExceptionHandler.java`
+
+Observed failure: PowerShell reported that the path did not exist. The preceding search in the same read-only command
+had correctly identified the repository advice as `RestExceptionHandler.java`.
+
+Root cause: the follow-up filename was typed from a generic class name rather than copied from the successful search
+result.
+
+Correction: read `RestExceptionHandler.java` by its exact discovered path. No repository content was changed.
+
+Final verification: the search already showed `RestExceptionHandler` maps `IllegalArgumentException` and unreadable
+JSON to bounded `400` `ApiErrorResponse` objects rather than returning exception traces.
+
+Follow-up action: preserve that exception-sanitization convention for malformed PR5 API requests while returning
+domain command denials as structured operator receipts.
+
+## Entry
+
+Date/time: 2026-07-16T14:06-07:00
+
+Branch/PR: codex/loopback-operator-api-evidence / no PR yet
+
+Failure type: PR5 audit unquoted Maven property invocation failure
+
+Failing check: an unnecessary read-only `mvn ... -Dexec.mainClass=... exec:java -- --help` attempt to inspect the Lab
+command surface
+
+Observed failure: Maven received `.mainClass=...` as an unknown lifecycle phase and exited before compilation or
+execution.
+
+Root cause: the PowerShell command did not quote the complete `-Dexec.mainClass=...` property argument, and the audit
+did not need Maven execution because the scenario catalog and command source are directly inspectable.
+
+Correction: do not retry the unnecessary command; inspect the repository-controlled fixture catalog and Java source
+directly. Quote complete Maven `-D...` arguments in later required verification commands.
+
+Final verification: Maven stopped at command parsing, no lifecycle phase ran, and `git status` continues to contain
+only the intentional PR5 campaign-record edits.
+
+Follow-up action: complete the PR5 composition design from source and reserve Maven for focused test verification.
+
+## Entry
+
+Date/time: 2026-07-16T14:04-07:00
+
+Branch/PR: codex/loopback-operator-api-evidence / no PR yet
+
+Failure type: PR5 loopback-harness inventory Windows filename-glob failure
+
+Failing check: repository search that passed `docker-compose*.yml` and `compose*.yml` as positional ripgrep paths
+
+Observed failure: Windows returned error 123 for both wildcard paths. Ripgrep still searched the explicit script,
+resource, documentation, and test directories and returned the relevant loopback-harness matches.
+
+Root cause: positional filename wildcards are not expanded in this PowerShell/ripgrep command shape and are invalid
+Windows path arguments.
+
+Correction: use `rg --files -g 'docker-compose*.yml' -g 'compose*.yml'` before any targeted content search, and keep
+source/test searches on explicit directories. The failed read-only path arguments made no repository change.
+
+Final verification: explicit test-path results showed the PR1-PR4 real loopback harnesses bind literal `127.0.0.1`
+on test-owned ephemeral ports; no application-owned fake-backend process or unrestricted production target catalog was
+identified by that inventory.
+
+Follow-up action: design PR5 so request bodies contain no backend URI and the operator service accepts only an
+already-validated repository-controlled target set, with the default application surface failing closed when no
+approved loopback harness is bound.
+
+## Entry
+
+Date/time: 2026-07-16T14:02-07:00
+
+Branch/PR: codex/loopback-operator-api-evidence / no PR yet
+
+Failure type: PR5 audit Windows recursive-glob path failure
+
+Failing check: `rg` search for Enterprise Lab bean construction using the positional path
+`src/main/java/com/richmond423/loadbalancerpro/**/*.java`
+
+Observed failure: Windows returned error 123 because the positional recursive wildcard was treated as an invalid file
+path. The same parallel audit call still returned the explicitly named `EnterpriseLabController.java` matches.
+
+Root cause: ripgrep performs recursive directory traversal itself; a Unix-style `**` positional wildcard is not a
+valid Windows path argument in this command shape.
+
+Correction: use the explicit `src/main/java` directory with a file/type filter, or name the exact Java files under
+inspection. No repository content was changed by the failed read-only command.
+
+Final verification: the exact controller read showed its nested Spring configuration creates the current Lab run and
+adaptive-decision services, and the security configuration read showed `/api/lab/**` is protected by the existing
+OAuth2 allocation role while the production API-key filter covers non-public `/api/**` routes.
+
+Follow-up action: finish the PR5 audit with explicit paths before implementing the operator service and controller.
+
+## Entry
+
+Date/time: 2026-07-16T13:59-07:00
+
+Branch/PR: main after codex/loopback-rollback-evaluator / merged PR #458
+
+Failure type: optional GitHub check-list query PowerShell quoting failure
+
+Failing check: the secondary `gh api .../check-runs --jq` query that attempted to select the check named `CodeQL`
+after the authoritative exact-merge CodeQL workflow query
+
+Observed failure: GitHub CLI reported `function not defined: CodeQL/0` for the jq expression. The preceding
+`gh run view 29533926848 --json ...` in the same read-only command had already returned a completed successful CodeQL
+workflow for exact merge SHA `aacf5999a2a4e3fa59cf584528579fd8c489d1df`.
+
+Root cause: nested JavaScript, PowerShell, and jq quoting removed the string quoting required around the CodeQL check
+name before jq evaluated the filter.
+
+Correction: use the successful exact-run query as the authoritative CodeQL result and avoid the redundant nested jq
+filter. The separate exact-merge CI watcher completed successfully through the image build, runtime smoke, dry-run
+evidence, and Trivy image scan for the same SHA.
+
+Final verification: exact-merge CI run `29533929044` concluded success and exact-merge CodeQL run `29533926848`
+concluded success for `aacf5999a2a4e3fa59cf584528579fd8c489d1df`; local `main` and `origin/main` matched that SHA with
+a clean worktree before this mandatory failure-log edit.
+
+Follow-up action: include this mandatory log entry in the next PR checkpoint without reopening PR4, then start PR5
+only from the verified PR4 merge commit.
+
+## Entry
+
 Date/time: 2026-07-16T13:45-07:00
 
 Branch/PR: codex/loopback-rollback-evaluator / PR #458

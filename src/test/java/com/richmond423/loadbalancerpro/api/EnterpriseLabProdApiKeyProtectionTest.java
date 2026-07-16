@@ -83,6 +83,40 @@ class EnterpriseLabProdApiKeyProtectionTest {
     }
 
     @Test
+    void prodApiKeyModeProtectsExperimentOperatorWorkflow() throws Exception {
+        mockMvc.perform(get("/api/lab/experiments"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/lab/experiments")));
+
+        mockMvc.perform(get("/api/lab/experiments").header("X-API-Key", API_KEY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count", is(0)))
+                .andExpect(jsonPath("$.activeExperimentEnabled", is(false)));
+
+        String body = """
+                {
+                  "operatorRequestId":"prod-arm-1",
+                  "experimentId":"prod-experiment-1",
+                  "scenarioId":"tail-latency-pressure"
+                }
+                """;
+        mockMvc.perform(post("/api/lab/experiments/arm")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/lab/experiments/arm")));
+
+        mockMvc.perform(post("/api/lab/experiments/arm")
+                        .header("X-API-Key", API_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("DENIED")))
+                .andExpect(jsonPath("$.reasonCode", is("EXPLICIT_ENABLEMENT_REQUIRED")))
+                .andExpect(jsonPath("$.trafficActionPerformed", is(false)));
+    }
+
+    @Test
     void prodApiKeyModeProtectsPolicyStatusAndAuditEvents() throws Exception {
         mockMvc.perform(get("/api/lab/policy"))
                 .andExpect(status().isUnauthorized())

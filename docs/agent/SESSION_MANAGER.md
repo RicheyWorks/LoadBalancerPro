@@ -6,7 +6,52 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Adaptive Core PR2 Checkpoint
+## Active Adaptive Core PR3 Checkpoint
+
+Timestamp: 2026-07-16T09:18-07:00
+
+Goal name: LoadBalancerPro executable adaptive traffic-control core
+
+Current PR slot: CORE-PR3 - bounded score-based traffic allocation recommendation
+
+Checkpoint: PR #451 created; required PR-creation checkpoint pending commit and push
+
+Started from main SHA: `84b4eb2f742a2b3567968f28faaa753ada274956`
+
+Current branch: codex/adaptive-core-score-allocation
+
+Implementation commit SHA: `6ceea9ecb8609036e1949fa045153bb1ba57b949`
+
+Pre-PR checkpoint SHA: `57c10bf01e8e33ccc168b0661cc0c2539f33466b`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/451
+
+Implemented slice: extended the existing `LoadDistributionPlanner` with deterministic lower-score-to-higher-share
+recommendations; added immutable allocation policy/result types; enforced exact normalization, per-backend min/max
+bounds, per-decision share-change limits, unhealthy/ineligible exclusion, canonical IDs, and no-allocation safe fallback;
+added eight behavioral tests and only required agent checkpoints.
+
+Verification baseline: PR #450 passed both final-head CI runs, CodeQL, and dependency review at
+`ed3795c8a76a503de50c6acf25330526a9b49e1e`, then merged as
+`84b4eb2f742a2b3567968f28faaa753ada274956`. Main CI `29513303912` and CodeQL `29513303933` passed on that exact merge
+SHA, and local main matched `origin/main` before branch creation.
+
+Local verification: focused 91-test allocation/scoring/core compatibility bundle passed; `mvn -q test`, `mvn -q package`,
+`mvn -q "-DskipTests" package`, and `mvn -B package` passed. The fresh full-package summary is 2,914 tests with zero
+failures, errors, or skips. Enterprise Lab package smoke passed in bounded shadow mode. `git diff --check` passed. A
+25-test stale-report inflation in raw persistent XML totals is corrected in `FAILURE_LOG.md`.
+
+Scope/safety: deterministic in-memory recommendation only; no live traffic, proxy, external telemetry, cloud/tenant,
+secret, dependency, build configuration, workflow, container, persistence, runtime enforcement, or production activation.
+
+Remote status: PR created from the verified pre-PR checkpoint; final checkpoint push and exact-head PR checks pending.
+
+Next action: commit and push this required checkpoint, confirm local/remote/PR head equality, then require exact-head CI,
+CodeQL, and dependency review green before merge.
+
+Decision: continue CORE-PR3; do not open CORE-PR4 until PR3 and post-merge main are green.
+
+## Historical Adaptive Core PR2 Checkpoint
 
 Timestamp: 2026-07-16T08:50-07:00
 

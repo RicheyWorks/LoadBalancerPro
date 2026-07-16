@@ -8,13 +8,13 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Adaptive Core PR5 Checkpoint
 
-Timestamp: 2026-07-16T10:18-07:00
+Timestamp: 2026-07-16T10:22-07:00
 
 Goal name: LoadBalancerPro executable adaptive traffic-control core
 
 Current PR slot: CORE-PR5 - immutable adaptive decision orchestration
 
-Checkpoint: implementation and full local verification complete; implementation commit pending
+Checkpoint: PR #453 created; required PR-creation checkpoint pending commit and push
 
 Started from main SHA: `5955e22fc97b93b5da52a9926fd04e4ac2b1d259`
 
@@ -22,7 +22,9 @@ Current branch: codex/adaptive-core-decision-orchestration
 
 Implementation commit SHA: `01cbaf86aaa1990e00fd1bcb1380abc5d111abc4`
 
-PR URL: pending
+Pre-PR checkpoint SHA: `441b2cb4e20bfa74b2e84e6a68489a7460e608f5`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/453
 
 Implemented slice: added immutable candidate, request, policy, and versioned decision-record contracts plus a narrow
 orchestrator that composes bounded observations, rolling signal state, state vectors, factor-level scores,
@@ -43,12 +45,12 @@ selectors passed; `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"`,
 `mvn -q "-DskipTests" package`, and `mvn -B package` passed. The fresh package summary is 2,934 tests with zero
 failures, errors, or skips. Enterprise Lab package smoke passed in bounded shadow mode for 10 scenarios and wrote
 ignored target-local evidence only. `git diff --check` and the forbidden-path audit passed. The current diff is 757
-production/test lines and 47 required checkpoint lines, approximately 94% implementation/test.
+production/test lines and 49 required checkpoint lines, approximately 94% implementation/test.
 
-Remote status: exact branch-base main CI and CodeQL green; PR checks do not exist yet because the PR is not open.
+Remote status: PR created from the verified pre-PR checkpoint; final checkpoint push and exact-head PR checks pending.
 
-Next action: run the final agent guard and scope/secret audit, create the implementation and verification-checkpoint
-commits, push the branch, and open CORE-PR5.
+Next action: commit and push this required PR-creation checkpoint, confirm local/remote/PR head equality, then require
+exact-head CI, CodeQL, and dependency review green before merge.
 
 Decision: continue CORE-PR5; do not open CORE-PR6 until PR5 and post-merge main are green.
 

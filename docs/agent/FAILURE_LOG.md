@@ -6,6 +6,91 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T06:35-07:00
+
+Branch/PR: codex/lase-phase6-panel-vocabulary-guards / PR #444
+
+Failure type: green-main integration conflict
+
+Failing check: `git merge --no-edit main`
+
+Suspected cause: both the security-maintenance prerequisite and PR #444 prepend factual entries to the shared
+`docs/agent/FAILURE_LOG.md` checkpoint history.
+
+Fix attempted: preserve the complete PR #444 failure entries, preserve the complete security-maintenance failure
+entries from green main, remove only the merge markers, and keep the older common history once.
+
+Result: the conflict is resolved as additive documentation history only; no production, workflow, Dockerfile, Maven,
+Compose, script, secret, cloud, tenant, private-network, or external-target behavior is changed by the resolution.
+
+Follow-up action: update the active session checkpoint, run focused and full verification on the merged PR head, and
+push only after the combined diff passes its scope and whitespace audits.
+
+## Entry
+
+Date/time: 2026-07-16T06:34-07:00
+
+Branch/PR: codex/lase-phase6-panel-vocabulary-guards / PR #444
+
+Failure type: local branch-switch command composition
+
+Failing check: conditional tracking-branch switch after fetching the PR branch
+
+Suspected cause: the PowerShell `if` expression did not translate the native `git show-ref --verify --quiet` exit code
+into the intended Boolean branch-exists test, so the fallback attempted to create a branch that already existed.
+
+Fix attempted: stop using the conditional wrapper and switch directly to the existing local tracking branch.
+
+Result: direct `git switch codex/lase-phase6-panel-vocabulary-guards` succeeded at the expected current PR head
+`46f09ca39965b30ed3ae283bdc5d08b6e3ed74a3` with a clean worktree.
+
+Follow-up action: use direct branch switching after confirming the local branch from the failed command output.
+
+## Entry
+
+Date/time: 2026-07-16T06:34-07:00
+
+Branch/PR: codex/lase-phase6-panel-vocabulary-guards / PR #444
+
+Failure type: local GitHub CLI option compatibility
+
+Failing check: `gh pr update-branch 444 --merge`
+
+Suspected cause: the installed GitHub CLI exposes `--rebase` but does not accept an explicit `--merge` flag; merge is
+the default update strategy for this CLI version.
+
+Fix attempted: record the tooling mismatch and continue with the supported default update path after the required
+post-merge main CI and CodeQL runs passed.
+
+Result: the unsupported command made no remote PR-branch change.
+
+Follow-up action: merge green main locally into the PR branch, resolve only checkpoint-document conflicts if any,
+rerun current-head verification, and push the audited update.
+
+## Entry
+
+Date/time: 2026-06-04T03:46-07:00
+
+Branch/PR: codex/lase-phase6-panel-vocabulary-guards / no PR yet
+
+Failure type: focused local documentation guard expectation calibration
+
+Failing check:
+`mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest" test`
+
+Suspected cause: the new PR4 panel-vocabulary guard checked the exact phrase `does not prove production readiness`,
+while the first PR4 anchor draft only preserved the broader `no production readiness` boundary family elsewhere in the
+same document.
+
+Fix attempted: tighten the PR4 panel-vocabulary paragraph to include the exact no-production-proof wording before
+rerunning the focused selector.
+
+Result: focused selector rerun passed after tightening the PR4 no-production-proof wording.
+
+Follow-up action: include this guard calibration and recovery in the PR4 report.
+
+## Entry
+
 Date/time: 2026-07-16T06:08-07:00
 
 Branch/PR: codex/security-netty-openssl-runtime-fix / no PR yet

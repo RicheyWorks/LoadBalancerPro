@@ -6,15 +6,15 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Security-Maintenance Checkpoint
+## Historical Security-Maintenance Checkpoint
 
-Timestamp: 2026-07-16T06:19-07:00
+Timestamp: 2026-07-16T06:34-07:00
 
 Goal name: Restore the enforced container vulnerability gate without allowlist exceptions
 
 Current PR slot: out-of-band security-maintenance prerequisite; this does not count as a LASE Phase 6 campaign slot
 
-Checkpoint: isolated security patch committed, pushed, and opened as prerequisite PR #447
+Checkpoint: prerequisite PR #447 merged and post-merge main CI and CodeQL passed
 
 Started from main SHA: `591554e21037bbd27591bb3f01f40ad2ccd4fbdc`
 
@@ -24,7 +24,9 @@ PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/447
 
 PR creation head: `dffd9fff9affc87d18eb017c8ccdfb03b4a7b4c4`
 
-Current branch head: `dffd9fff9affc87d18eb017c8ccdfb03b4a7b4c4`; a PR metadata checkpoint commit is pending
+Final PR head: `074a02a4406e8a07b47c6579a878d2bb59c6d434`
+
+Merge commit: `254c4d7b59ad86b80dedd595e1000d9a6cad3a1e`
 
 Changed files for this slice:
 
@@ -78,97 +80,130 @@ Checks run:
 - `git diff --check` passed for the nine-file working-tree diff.
 - `.trivyignore` remains empty of vulnerability IDs; no CVE suppression was added.
 
-Remote status: main scheduled CodeQL run `29259832211` is green for
-`591554e21037bbd27591bb3f01f40ad2ccd4fbdc`, but no current main push CI run exists after the June vulnerability
-database update. PR #447 is open and mergeable but blocked while current-head push CI run `29501650879`, PR CI run
-`29501672790`, and CodeQL run `29501672852` are in progress. PR #444 remains remotely failed at its current head
-because of the five recorded Trivy findings.
+Remote status: PR #447 current-head push CI run `29501734641`, PR CI run `29501738566`, CodeQL run `29501738553`,
+and Dependency Review passed before merge. Post-merge main CI run `29502174583` and CodeQL run `29502174557` passed
+for merge commit `254c4d7b59ad86b80dedd595e1000d9a6cad3a1e`, including the complete Docker build, container runtime smoke,
+dry-run evidence capture, and complete-image Trivy scan.
 
-Local boundary: complete Docker image build/runtime smoke/Trivy verification is unavailable until a Docker daemon is
-running. This is not a merge exception; current-head remote CI must pass the complete container path before merge.
+Local boundary: the Docker Desktop Linux engine remained unavailable, so no local complete-image build, container
+runtime smoke, or complete-image scan is claimed. Current-head PR CI and post-merge main CI proved those remote paths.
 
-Next action: commit and push this PR metadata checkpoint, then merge only if the resulting current-head CI, CodeQL,
-Dependency Review, Docker runtime smoke, and complete-image Trivy are green. After main is green for the merge commit,
-update PR #444 from green main and rerun its current-head checks.
+Next action: completed; resume PR #444 from green main without counting this prerequisite as a LASE campaign slot.
 
-Decision: continue the isolated security-maintenance prerequisite; do not merge or count PR #444 while its checks are
-failed.
+Decision: security prerequisite complete; continue the active LASE Phase 6 PR #444 only after integrating green main.
 
-## Historical LASE Phase 6 PR3 Checkpoint
+## Active LASE Phase 6 PR4 Checkpoint
 
-Timestamp: 2026-05-29T22:01-07:00
+Timestamp: 2026-07-16T06:40-07:00
 
 Goal name: LASE Routing Intelligence Phase 6 - Reviewer Evidence Normalization
 
-Current PR slot: LASE-P6-PR3
+Current PR slot: LASE-P6-PR4
 
-Checkpoint: LASE-P6-PR3 PR opened after local verification
+Checkpoint: green security-maintenance main merged locally; full current-head verification passed; push pending
 
-Started from main SHA: `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`
+Started from main SHA: `591554e21037bbd27591bb3f01f40ad2ccd4fbdc`
 
-Current branch: codex/lase-phase6-api-contract-terminology
+Current branch: codex/lase-phase6-panel-vocabulary-guards
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/440
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/444
 
-PR creation head: `4c8feba8c54808198764f7a4c5be93de39d2a3f6`
+PR creation head: `593235ac3d0477a575ac1a568b6f995ccfd81121`
 
-Current branch head: `4c8feba8c54808198764f7a4c5be93de39d2a3f6` after PR creation; a PR metadata checkpoint commit
-is pending.
+Last remote PR head: `46f09ca39965b30ed3ae283bdc5d08b6e3ed74a3`
 
-Changed files for this slice:
+Verified integration head: `bb76083dc7d83a7bde810499c3ba2452c31b8ebb`; a post-verification metadata
+checkpoint commit is pending
 
-- docs/API_CONTRACTS.md
+Changed files for this slice so far:
+
+- docs/agent/LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md
 - docs/agent/FAILURE_LOG.md
 - docs/agent/SESSION_MANAGER.md
 - src/test/java/com/richmond423/loadbalancerpro/docs/AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest.java
 
 Checks run:
 
-- LASE-P6-PR2 PR #439 merged as `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`; final PR head was
-  `18b69a9ce39ff58c586952ef1d899dc965a18710`.
-- Main CI run `26673911823` and CodeQL run `26673911834` are green for
-  `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`.
-- LASE-P6-PR3 started from clean main at `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`.
-- LASE-P6-PR3 branch `codex/lase-phase6-api-contract-terminology` was created from clean main.
-- PR3 audit found `docs/API_CONTRACTS.md` already linked the Phase 6 normalization anchor but still needed a
-  reviewer-facing terminology mapping, a clear API_CONTRACTS -> REVIEWER_TRUST_MAP -> Phase 6 anchor path, and a
-  replacement for stale `counterfactualAnalysis` Phase 5 wording.
-- A PowerShell audit-search quoting failure was logged in `docs/agent/FAILURE_LOG.md` and recovered with a
-  single-quoted `rg` search.
-- Three focused guard expectation calibrations were logged in `docs/agent/FAILURE_LOG.md` and recovered by using
-  whitespace-normalized assertions for wrapped prose plus one mapping-per-bullet API-contract shorthand.
-- PR3 edits remain docs/test-only and add documentation-only terminology normalization for current additive Decision
-  Explorer fields without endpoint, schema, runtime API behavior, routing, scoring, proxying, allocation, replay,
-  storage/export, evidence-packet, traffic-shifting, enforcement, Maven, CI, Docker, Compose, secret, cloud, tenant,
-  private-network, or external-target changes.
-- Focused PR3 docs/API navigation guard verification passed:
-  `mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest" test`.
-- PR3 stale/overclaim API-contract sweep found no matches for stale Phase 5 terminology or unsupported overclaim
-  phrases.
-- Required full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`, direct `mvn -B package`
-  with 2,888 tests, `git diff --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
-- Post-checkpoint focused docs/API navigation guard verification passed:
-  `mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,DecisionExplorerReviewerNavigationTest,AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest" test`.
+- LASE-P6-PR3 PR #440 merged as `591554e21037bbd27591bb3f01f40ad2ccd4fbdc`; final PR head was
+  `1c4e5f7dde9e6a6e6dda627a832cfbd1258f9f1f`.
+- PR #440 current-head checks were green before merge: Build/Test/Package/Smoke, Analyze Java / CodeQL, CodeQL, and
+  Dependency Review success/skipped with no failing required check.
+- Main CI run `26675338677` and CodeQL run `26675338671` are green for
+  `591554e21037bbd27591bb3f01f40ad2ccd4fbdc`; latest main CodeQL run `26785746435` is also green for the same head.
+- LASE-P6-PR4 branch `codex/lase-phase6-panel-vocabulary-guards` is clean at current main head
+  `591554e21037bbd27591bb3f01f40ad2ccd4fbdc`.
+- Pre-edit focused Phase 6/static-page/reviewer navigation guard verification passed:
+  `mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest" test`.
+- PR4 adds a docs/test-only static-page panel vocabulary mapping to the Phase 6 anchor and extends the Phase 6 guard
+  to compare `/decision-explorer.html`, `docs/API_CONTRACTS.md`, `docs/REVIEWER_TRUST_MAP.md`, and the Phase 6 anchor
+  for current panel-to-field terminology.
+- PR4 focused guard initially failed on an exact no-production-proof phrase calibration; the failure is logged in
+  `docs/agent/FAILURE_LOG.md` and was recovered by tightening the PR4 boundary wording.
+- Focused PR4 Phase 6/static-page/reviewer navigation selector passed after recovery:
+  `mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest" test`.
+- Required full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`, direct
+  `mvn -B package` with 2,889 tests, `git diff --check`, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- Post-checkpoint Phase 6/static-page/reviewer/session docs guard selector passed:
+  `mvn -q "-Dtest=AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest,DecisionExplorerStaticPageTest,DecisionExplorerReviewerNavigationTest,AgentDecisionExplorerPhase2NavigationPolishDocumentationTest,AgentWorkflowQuickstartDocumentationTest,AgentCampaignMergeGateDocumentationTest,AgentCampaignRemoteCheckAuditDocumentationTest,AgentCampaignScopeAuditChecklistDocumentationTest,AdvancedReadmeAgentContractDocumentationTest" test`.
 - Post-checkpoint `git diff --check` passed.
-- `git diff --cached --check` passed after staging the LASE-P6-PR3 slice.
-- LASE-P6-PR3 implementation commit `4c8feba8c54808198764f7a4c5be93de39d2a3f6` was created.
-- LASE-P6-PR3 branch `codex/lase-phase6-api-contract-terminology` was pushed to origin.
-- LASE-P6-PR3 PR #440 was opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/440 with docs/test-only
-  API-contract terminology normalization scope, local verification, logged recovery notes, safety confirmations, and a
-  PR4 recommendation.
+- `git diff --cached --check` passed after staging the LASE-P6-PR4 slice.
+- LASE-P6-PR4 implementation commit `593235ac3d0477a575ac1a568b6f995ccfd81121` was created.
+- LASE-P6-PR4 branch `codex/lase-phase6-panel-vocabulary-guards` was pushed to origin.
+- LASE-P6-PR4 PR #444 was opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/444 with docs/test-only
+  static-page panel vocabulary guard scope, local verification, logged recovery notes, safety confirmations, and a PR5
+  recommendation.
 - This PR metadata checkpoint will create a new PR head after commit and push, so the merge gate must re-read remote
   checks for the final PR head before any merge decision.
+- Out-of-band security-maintenance PR #447 passed current-head CI, CodeQL, and Dependency Review, merged as
+  `254c4d7b59ad86b80dedd595e1000d9a6cad3a1e`, and passed post-merge main CI run `29502174583` plus CodeQL run
+  `29502174557` on that exact merge commit.
+- The first `gh pr update-branch 444 --merge` attempt failed because the installed GitHub CLI does not expose an
+  explicit `--merge` option; a follow-on conditional local branch-switch command also attempted to recreate the
+  existing branch. Both tooling failures and their recoveries are logged in `docs/agent/FAILURE_LOG.md`.
+- Local `git merge --no-edit main` produced one expected additive-history conflict in
+  `docs/agent/FAILURE_LOG.md`. The resolution preserves the complete PR4 and security-maintenance histories once and
+  changes no runtime or automation behavior.
+- The combined post-merge Phase 6, static-page, reviewer-navigation, security-evidence, session, and campaign guard
+  selector passed on the integrated branch.
+- Full current-head local verification passed after integration: `mvn -q test`, `mvn -q "-DskipTests" package`,
+  direct `mvn -B package` with 2,889 tests and zero failures, errors, or skips, and
+  `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package` in bounded shadow mode.
+- The packaged executable-JAR Trivy `v0.70.0` rootfs scan inspected the nested Java dependencies and reported zero
+  HIGH/CRITICAL fixed findings with `--ignore-unfixed --exit-code 1`.
+- `git diff --check` and `git diff main...HEAD --check` passed. The PR diff against green main remains exactly the
+  four intended docs/test files, with no `src/main`, workflow, Maven, Dockerfile, Compose, script, secret, cloud,
+  tenant, private-network, or external-target change and no CVE entry in `.trivyignore`.
 
-Remote status: main CI and CodeQL are green for `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`; PR #440 checks are in
-progress for implementation head `4c8feba8c54808198764f7a4c5be93de39d2a3f6`, and must be re-read after the metadata
-checkpoint is pushed.
+Remote status: main CI run `29502174583` and CodeQL run `29502174557` are green for
+`254c4d7b59ad86b80dedd595e1000d9a6cad3a1e`. PR #444 still shows the stale failed CI results for remote head
+`46f09ca39965b30ed3ae283bdc5d08b6e3ed74a3`; the locally integrated head is not pushed yet.
 
 Blocker: none.
 
-Next action: commit and push this PR-created checkpoint, wait for current-head PR #440 checks, and merge only if fully
-green.
+Next action: commit and push the post-verification metadata checkpoint, then merge only if the resulting current-head
+CI, CodeQL, Dependency Review, Docker runtime smoke, and complete-image Trivy checks are green.
 
 Decision: continue.
+
+## Historical LASE Phase 6 PR3 Checkpoint
+
+- LASE-P6-PR3 branch `codex/lase-phase6-api-contract-terminology` was created from clean main at
+  `cd6d604b55c84b0e057f641a10aa7f3e85db8ffe`.
+- LASE-P6-PR3 added docs/test-only API-contract terminology normalization for current additive Decision Explorer
+  fields, a clear API_CONTRACTS -> REVIEWER_TRUST_MAP -> Phase 6 anchor path, and stale Phase 5 wording replacement
+  without endpoint, schema, runtime API behavior, routing, scoring, proxying, allocation, replay, storage/export,
+  evidence-packet, traffic-shifting, enforcement, Maven, CI, Docker, Compose, secret, cloud, tenant, private-network,
+  or external-target changes.
+- LASE-P6-PR3 logged and recovered one PowerShell audit-search quoting failure plus three focused guard expectation
+  calibrations for wrapped prose and API-contract shorthand.
+- LASE-P6-PR3 local verification passed: focused docs/API navigation guard, stale/overclaim API-contract sweep,
+  `mvn -q test`, `mvn -q "-DskipTests" package`, direct `mvn -B package` with 2,888 tests, `git diff --check`,
+  `git diff --cached --check`, and `.\scripts\smoke\enterprise-lab-workflow.ps1 -Package`.
+- LASE-P6-PR3 PR #440 opened at https://github.com/RicheyWorks/LoadBalancerPro/pull/440, passed current-head remote
+  checks, and merged as `591554e21037bbd27591bb3f01f40ad2ccd4fbdc`; final PR head was
+  `1c4e5f7dde9e6a6e6dda627a832cfbd1258f9f1f`.
+- Main CI and CodeQL are green for `591554e21037bbd27591bb3f01f40ad2ccd4fbdc`.
 
 ## Historical LASE Phase 6 PR2 Checkpoint
 

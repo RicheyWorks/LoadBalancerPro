@@ -19,6 +19,8 @@ class AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest {
             Path.of("docs/agent/LASE_ROUTING_INTELLIGENCE_PHASE5_CLOSEOUT.md");
     private static final Path API_CONTRACTS = Path.of("docs/API_CONTRACTS.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
+    private static final Path DECISION_EXPLORER_PAGE =
+            Path.of("src/main/resources/static/decision-explorer.html");
     private static final Path SOURCE = Path.of(
             "src/test/java/com/richmond423/loadbalancerpro/docs/"
                     + "AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest.java");
@@ -94,6 +96,68 @@ class AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest {
                 "traffic shifting enabled",
                 "autonomous production action is enabled")) {
             assertFalse(normalized.contains(forbidden), "normalization anchor must not overclaim " + forbidden);
+        }
+    }
+
+    @Test
+    void staticPagePanelLabelsAlignWithPhase6Vocabulary() throws IOException {
+        String anchor = read(NORMALIZATION);
+        String apiContracts = read(API_CONTRACTS);
+        String trustMap = read(TRUST_MAP);
+        String page = read(DECISION_EXPLORER_PAGE);
+        String normalizedAnchor = anchor.toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+
+        for (String expected : List.of(
+                "Status: PR4 panel vocabulary guard.",
+                "## Static-Page Panel Vocabulary Guard",
+                "PR4 locks the current `/decision-explorer.html` title-case panel labels",
+                "documentation/guard-test alignment pass only",
+                "does not rename panels",
+                "change static-page behavior",
+                "Current API field or surface")) {
+            assertTrue(anchor.contains(expected), "Phase 6 anchor should describe PR4 panel guard " + expected);
+        }
+
+        assertPanelAlignment(anchor, page, "Scenario Catalog", "Scenario catalog",
+                "`GET /api/routing/decision-explorer/scenarios`");
+        assertPanelAlignment(anchor, page, "Routing Intelligence Status", "Confidence summary",
+                "`confidenceSummary`");
+        assertPanelAlignment(anchor, page, "Routing Diagnostics", "Routing diagnostics",
+                "`routingDiagnostics`");
+        assertPanelAlignment(anchor, page, "Route Tradeoff Intelligence", "Route tradeoff analysis",
+                "`routeTradeoffAnalysis`");
+        assertPanelAlignment(anchor, page, "Evidence Sufficiency", "Route tradeoff analysis",
+                "`routeTradeoffAnalysis.evidenceSufficiency`");
+        assertPanelAlignment(anchor, page, "Replay Readiness", "Route tradeoff analysis",
+                "`routeTradeoffAnalysis.replayReadinessDiagnostic`");
+        assertPanelAlignment(anchor, page, "Shadow Decision Quality", "Shadow decision quality",
+                "`shadowDecisionQualityEvaluation`");
+        assertPanelAlignment(anchor, page, "Counterfactual Analysis", "Counterfactual analysis",
+                "`counterfactualAnalysis`");
+        assertPanelAlignment(anchor, page, "Not-Proven Boundaries", "Decision Explorer payload",
+                "`notProvenBoundaries`");
+
+        for (String alignedMapping : List.of(
+                "Routing Intelligence Status -> `confidenceSummary`",
+                "Routing Diagnostics -> `routingDiagnostics`",
+                "Route Tradeoff Intelligence -> `routeTradeoffAnalysis`",
+                "Shadow Decision Quality -> `shadowDecisionQualityEvaluation`",
+                "Counterfactual Analysis -> `counterfactualAnalysis`")) {
+            String panelLabel = alignedMapping.substring(0, alignedMapping.indexOf(" -> "));
+            assertTrue(page.contains(">" + panelLabel + "<"),
+                    "static page should expose aligned title-case panel label " + panelLabel);
+            assertTrue(apiContracts.contains(alignedMapping), "API contracts should keep " + alignedMapping);
+            assertTrue(trustMap.contains(alignedMapping), "trust map should keep " + alignedMapping);
+        }
+
+        for (String expected : List.of(
+                "does not rename panels",
+                "does not add fields",
+                "does not add endpoints",
+                "does not change schemas",
+                "does not prove production readiness",
+                "production action automation")) {
+            assertTrue(normalizedAnchor.contains(expected), "PR4 panel guard should preserve boundary " + expected);
         }
     }
 
@@ -316,6 +380,14 @@ class AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest {
     private static String read(Path path) throws IOException {
         assertTrue(Files.exists(path), path + " should exist");
         return Files.readString(path, StandardCharsets.UTF_8);
+    }
+
+    private static void assertPanelAlignment(String anchor, String page, String panelLabel, String normalizedGroup,
+            String apiFieldOrSurface) {
+        assertTrue(page.contains(">" + panelLabel + "<"),
+                "static page should expose title-case panel label " + panelLabel);
+        assertTrue(anchor.contains("| " + panelLabel + " | " + normalizedGroup + " | " + apiFieldOrSurface + " |"),
+                "Phase 6 anchor should map " + panelLabel + " to " + apiFieldOrSurface);
     }
 
     private static void assertAppearsInOrder(String text, String... expectedItems) {

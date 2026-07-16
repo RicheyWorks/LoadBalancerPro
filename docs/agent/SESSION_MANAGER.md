@@ -8,19 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Adaptive Core PR6 Checkpoint
 
-Timestamp: 2026-07-16T11:02-07:00
+Timestamp: 2026-07-16T11:07-07:00
 
 Goal name: LoadBalancerPro executable adaptive traffic-control core
 
 Current PR slot: CORE-PR6 - Enterprise Lab adaptive decision integration and campaign closeout
 
-Checkpoint: implementation and full local verification complete; pre-PR commit pending
+Checkpoint: PR #454 created; required PR-creation checkpoint pending commit and push
 
 Started from main SHA: `5c252e09c3d6caa59900ea0cad74e16158a0a658`
 
 Current branch: codex/adaptive-core-enterprise-lab-integration
 
-PR URL: pending
+Implementation commit SHA: `17f97bfff6e3c19d0cce0fa9f59a572b0934c508`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/454
 
 Implemented slice: connected the immutable adaptive decision orchestrator to `POST /api/lab/decisions` using only the
 fixed ten-scenario catalog. The service derives five bounded synthetic local observations per backend, calculates
@@ -49,9 +51,10 @@ passed; forbidden-path, secret/external-target, and campaign/documentation guard
 documentation is limited to eight added lines; mandatory failure/session records are kept separate from the 665
 implementation/test lines.
 
-Remote status: exact branch-base main CI and CodeQL green; PR checks do not exist yet.
+Remote status: PR created from the verified implementation commit; required checkpoint push and exact-head PR checks
+pending.
 
-Next action: commit the verified implementation, push, open the final campaign PR, record its exact head, and require
+Next action: commit and push this required PR-creation checkpoint, confirm local/remote/PR head equality, and require
 exact-head CI, CodeQL, and dependency review green before merge.
 
 Decision: continue CORE-PR6; do not close the campaign until PR6 and post-merge main are green.

@@ -6,6 +6,76 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Loopback Experiment PR3 Checkpoint
+
+Timestamp: 2026-07-16T13:02-07:00
+
+Goal name: bounded Enterprise Lab loopback experiment lifecycle
+
+Current PR slot: LOOPBACK-PR3 - deterministic bounded experiment lifecycle
+
+Checkpoint: lifecycle implementation and full local verification complete; preparing the exact PR3 candidate
+
+Started from main SHA: `2aac1636823ce35dd1cfcf4c3645712e91ae645e`
+
+Current branch: codex/loopback-experiment-lifecycle
+
+PR URL: not opened
+
+Prior slot closure: PR #456 merged normally as `2aac1636823ce35dd1cfcf4c3645712e91ae645e` from exact head
+`58cf59e117dc62665b373d3e630d594974d984eb`. Exact-merge main CI run `29528639802` passed the full
+test, coverage, package, packaged-JAR smoke, SBOM, Docker build/runtime smoke, dry-run evidence, and image-scan path.
+Exact-merge main CodeQL run `29528639754` passed. The focused eight-test allocation snapshot/router selector also
+passed locally on the merge commit, and local `main` matched `origin/main` with no working-tree changes.
+
+Runtime capability: one explicit synchronized state machine now runs a single bounded Enterprise Lab experiment. It
+reuses the existing adaptive decision and allocation snapshot/router receipts, requires a bounded immutable
+configuration, accepts explicit commands/cycles rather than a scheduler, validates every state change, makes command
+retries idempotent and conflicts fail closed, records a fingerprint-chained immutable transition history, caps request
+and evidence progress, and requires safe-baseline confirmation before completed or rolled-back terminal states.
+
+Implementation audit: the repository has no compatible Enterprise Lab experiment lifecycle. PR1 provides actual
+bounded observations, PR2 provides candidate application and safe-baseline restoration receipts, and the adaptive
+decision already contains scenario, mode, candidate reference, baseline, guardrail, and fingerprint evidence. PR3
+therefore needs no scheduler, second allocator, second observation model, or API. A bounded configuration can directly
+reference those existing immutable types and carry the still-unevaluated rollback thresholds for PR4.
+
+Scope/safety: production Enterprise Lab lifecycle/configuration/transition types and behavioral tests only, plus
+mandatory campaign records. No background thread, executor, queue, API, authorization wiring, cloud, tenant,
+public/private remote target, DNS target, reverse-proxy, dependency, Maven, workflow, Docker, Compose, persistence,
+native executable, or production-activation change is in scope for this slot.
+
+Edit batch: added bounded immutable experiment state, rollback-policy, configuration, transition, and lifecycle types.
+The lifecycle supports explicit arm/start/advance/hold/complete/rollback/cancel/fail commands, validates active-mode
+guardrail influence and actual allocation receipts, derives public request progress only from real PR2 route execution
+and PR1 observation receipts, caps retained command/request/hold/transition state, rejects time regression and unsafe
+terminal transitions, restores the recorded baseline before completion or rollback, and fingerprints every transition
+against its predecessor. Added ten tests covering configuration bounds, happy-path and terminal state sequences,
+idempotency/conflicts, request/duration/expiry triggers, authorization and guardrail rejection, fail-closed active
+cancellation/failure, real three-server ephemeral `127.0.0.1` routing, command-ledger bounds, and fingerprint chaining.
+
+Focused and compatibility verification: the ten-test lifecycle/configuration selector passed. The 76-test selector
+covering PR1 observation/client, PR2 allocation/router, adaptive decision/guardrail/orchestrator/policy/controller, and
+PR3 lifecycle/configuration passed. The embedded-Tomcat dependency tree resolves Spring Boot `3.5.14` and Tomcat
+`10.1.55`.
+
+Current-head verification: `mvn -q test`, `mvn -q "-DskipTests" package`, and `mvn -B package` passed. The non-quiet
+package reported 2,982 tests, zero failures/errors/skips, a repackaged executable JAR, and `BUILD SUCCESS`; that is ten
+tests above the PR2 exact-main baseline. The packaged Enterprise Lab workflow smoke passed all ten fixed shadow
+scenarios and wrote target-only evidence while performing no API server, cloud, external-network, release, container,
+or registry action. `git diff --check` passed. Corrected source scans found no production URL, secret-like value,
+scheduler, executor, queue, cloud/tenant call, or non-loopback target path; the only URL matches are test-owned literal
+`127.0.0.1` targets. No PR3 development or tooling failure has occurred to log.
+
+Evidence boundary: configuration carries bounded rollback thresholds for the next slot, but PR3 does not yet evaluate
+those thresholds or initiate automatic hold/rollback decisions. It exposes no API and makes no production-readiness,
+live-cloud, real-tenant, benchmark, or production-routing claim.
+
+Next action: run the campaign-documentation guard selector, audit and stage the bounded diff, commit and push the exact
+candidate, then open PR3 and require exact-head CI, CodeQL, and dependency-review success before merge.
+
+Decision: continue LOOPBACK-PR3; do not open LOOPBACK-PR4 until PR3 is merged and exact merge-main CI/CodeQL are green.
+
 ## Active Loopback Experiment PR2 Checkpoint
 
 Timestamp: 2026-07-16T12:28-07:00

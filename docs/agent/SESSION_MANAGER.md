@@ -8,19 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Adaptive Core PR1 Checkpoint
 
-Timestamp: 2026-07-16T08:17-07:00
+Timestamp: 2026-07-16T08:19-07:00
 
 Goal name: LoadBalancerPro executable adaptive traffic-control core
 
 Current PR slot: CORE-PR1 - bounded observation ingestion and rolling signal state
 
-Checkpoint: implementation and local verification complete; commit pending
+Checkpoint: implementation commit created; post-verification checkpoint commit pending
 
 Started from main SHA: `24e5d85f7f5f2140df8ede652b4b2a6c76cfef8f`
 
 Current branch: codex/adaptive-core-observation-state
 
 PR URL: pending
+
+Implementation commit: `4d634959516a77fc91f7f80faca5d0c4688d0f44`
 
 Changed files for this slice:
 
@@ -65,6 +67,9 @@ Checks run:
 - `git diff --check` passed. The changed-path audit is limited to 10 production core files, four focused behavioral
   test files, and the two required agent checkpoint/failure records. It found no dependency, Maven, workflow,
   Docker, Compose, script, external target, secret, credential, or production-activation change.
+- `git diff --cached --check` passed for the exact 16-file slice. CORE-PR1 implementation commit
+  `4d634959516a77fc91f7f80faca5d0c4688d0f44` was created with 1,312 insertions and one deletion: 731 production
+  core lines, 475 behavioral-test lines, and 107 required campaign/failure-record lines.
 
 Scope and safety: this slot adds only deterministic in-memory domain computation and tests. It does not add external
 telemetry, live-cloud or tenant access, network targets, autonomous traffic changes, production activation, secrets,
@@ -77,8 +82,8 @@ is committed, pushed, and opened.
 
 Blocker: none.
 
-Next action: stage the intended files, run cached-diff guards, create the PR1 implementation/checkpoint commit, push,
-open the PR, and require exact-head CI, CodeQL, and dependency review before merge.
+Next action: commit this factual checkpoint, push the branch, open PR1, and require exact-head CI, CodeQL, and
+dependency review before merge.
 
 Decision: continue CORE-PR1 on this branch; do not open CORE-PR2 until PR1 merges and exact-head main checks are green.
 

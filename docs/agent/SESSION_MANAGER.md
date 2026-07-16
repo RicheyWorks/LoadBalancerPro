@@ -8,21 +8,24 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Adaptive Core PR1 Checkpoint
 
-Timestamp: 2026-07-16T08:19-07:00
+Timestamp: 2026-07-16T08:20-07:00
 
 Goal name: LoadBalancerPro executable adaptive traffic-control core
 
 Current PR slot: CORE-PR1 - bounded observation ingestion and rolling signal state
 
-Checkpoint: implementation commit created; post-verification checkpoint commit pending
+Checkpoint: PR #449 opened; PR-creation checkpoint commit pending
 
 Started from main SHA: `24e5d85f7f5f2140df8ede652b4b2a6c76cfef8f`
 
 Current branch: codex/adaptive-core-observation-state
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/449
 
 Implementation commit: `4d634959516a77fc91f7f80faca5d0c4688d0f44`
+
+PR creation head: `82e3c255de096db7dd4642a23414982984cd8959`; this PR-creation checkpoint will
+create a new exact head before remote checks are accepted
 
 Changed files for this slice:
 
@@ -70,6 +73,9 @@ Checks run:
 - `git diff --cached --check` passed for the exact 16-file slice. CORE-PR1 implementation commit
   `4d634959516a77fc91f7f80faca5d0c4688d0f44` was created with 1,312 insertions and one deletion: 731 production
   core lines, 475 behavioral-test lines, and 107 required campaign/failure-record lines.
+- Post-verification checkpoint commit `82e3c255de096db7dd4642a23414982984cd8959` was created, the branch was pushed,
+  and PR #449 was opened with the implementation-first scope, exact local verification record, safety boundaries, and
+  remaining not-proven claims.
 
 Scope and safety: this slot adds only deterministic in-memory domain computation and tests. It does not add external
 telemetry, live-cloud or tenant access, network targets, autonomous traffic changes, production activation, secrets,
@@ -77,13 +83,13 @@ dependencies, Maven/CI/Docker/Compose behavior, persistence, or runtime enforcem
 evidence must fail closed for adaptive recommendation eligibility. Partial degradation remains explicit rather than
 being collapsed into binary health.
 
-Remote status: main CI and CodeQL are green at the exact branch base; PR checks do not exist until the verified slice
-is committed, pushed, and opened.
+Remote status: main CI and CodeQL are green at the exact branch base. PR checks started before this PR-creation
+checkpoint is pushed are stale; require the complete final-head rollup after the new checkpoint commit.
 
 Blocker: none.
 
-Next action: commit this factual checkpoint, push the branch, open PR1, and require exact-head CI, CodeQL, and
-dependency review before merge.
+Next action: commit and push this factual PR-creation checkpoint, then require exact-head CI, CodeQL, and dependency
+review before merge.
 
 Decision: continue CORE-PR1 on this branch; do not open CORE-PR2 until PR1 merges and exact-head main checks are green.
 

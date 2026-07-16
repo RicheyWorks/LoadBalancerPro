@@ -6,6 +6,88 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Loopback Experiment PR4 Checkpoint
+
+Timestamp: 2026-07-16T13:42-07:00
+
+Goal name: bounded Enterprise Lab loopback experiment lifecycle
+
+Current PR slot: LOOPBACK-PR4 - real hold-down and automatic local rollback evaluation
+
+Checkpoint: evaluator implementation and full local verification complete; preparing the exact PR4 candidate
+
+Started from main SHA: `d8d6858b73b4c709abe070316219e802b089f81d`
+
+Current branch: codex/loopback-rollback-evaluator
+
+PR URL: not opened
+
+Prior slot closure: PR #457 merged normally as `d8d6858b73b4c709abe070316219e802b089f81d` from exact head
+`c1c5fc91c442b9163d6711c8ff9a5cfcad5bbb2e`. Exact-merge main CI run `29530928097` passed the full
+test, coverage, package, packaged-JAR smoke, SBOM, Docker build/runtime smoke, dry-run evidence, and image-scan path.
+Exact-merge main CodeQL run `29530928089` passed. The focused ten-test lifecycle/configuration selector also passed
+locally on the merge commit, and local `main` matched `origin/main` with no working-tree changes.
+
+Runtime capability: one deterministic bounded evaluator now correlates only PR3 lifecycle-recorded candidate request
+IDs with actual PR1 ingress observations, evaluates the configured rollback policy and current PR2 allocation safety,
+records immutable fingerprint-chained evaluation evidence, advances healthy experiments through configured hold cycles
+and safe completion, and atomically restores and confirms the recorded baseline for harmful, insufficient, stale, or
+invariant-violating evidence. Explicit active cancellation uses the same verified restoration path.
+
+Implementation audit: PR1 already retains bounded real loopback observations and exposes rolling-signal snapshots;
+PR2 owns the only candidate allocation and atomic baseline restore seam; PR3 owns the bounded lifecycle, candidate
+request/evidence counts, hold cycles, and terminal baseline confirmation. The narrow missing seam is candidate-request
+correlation plus deterministic policy evaluation and orchestration. PR4 needs no second observation model, adaptive
+engine, allocator, router, lifecycle, target registry, scheduler, or API. A pre-application immutable observation
+baseline is needed only to make p95/p99 regression evaluation evidence-backed rather than fixture-derived.
+
+Scope/safety: production Enterprise Lab evaluator/baseline/evidence types, the minimum lifecycle accessor needed for
+candidate observation correlation, and behavioral tests only, plus mandatory campaign records. No background thread,
+executor, queue, API, authorization wiring, cloud, tenant, public/private remote target, DNS target, reverse-proxy,
+dependency, Maven, workflow, Docker, Compose, persistence, native executable, or production-activation change is in
+scope for this slot.
+
+Failure audit: one read-only Windows `rg` command used an invalid positional `test*` wildcard and returned error 123;
+one test-expansion patch used the wrong file anchor; one partial-degradation test ordered evidence into the existing
+`RECOVERING` state rather than `PARTIALLY_DEGRADED`; and one secret scan used an unterminated PowerShell quote. Each
+cause, correction, and successful bounded recovery is recorded in `FAILURE_LOG.md` before continuing.
+
+Edit batch: added an immutable pre-candidate observation baseline captured from the real bounded ingress; immutable
+per-backend and aggregate evaluation evidence with restoration indicators and a SHA-256 predecessor chain; and a
+synchronized evaluator capped at 1,024 retained evaluations. The evaluator rebuilds rolling signals only from retained
+`ENTERPRISE_LAB_LOOPBACK` observations whose request IDs were accepted by the active lifecycle, checks failure/timeout
+rates, p95/p99 regression, partial degradation, healthy-backend floor, consecutive transport failures, evidence
+freshness/sufficiency/loss, allocation/guardrail drift, duration/request/invariant limits, and baseline viability, then
+continues running, records a hold cycle, completes safely, or restores and confirms the baseline. Added bounded policy
+fields for partially degraded backends and observation loss, plus the narrow immutable lifecycle request-ID and ingress
+window-policy accessors needed for correlation. No second observation, allocation, routing, lifecycle, or adaptive model
+was introduced.
+
+Focused verification: ten new evaluator tests plus the ten PR3 lifecycle/configuration tests passed. They cover real
+ephemeral three-backend `127.0.0.1` candidate routing through PR2 and PR1 into healthy hold/completion, timeout/failure
+rollback, latency regression, partial degradation, healthy-backend floor, capture loss, stale/missing evidence,
+duration overrun, allocation drift, operator cancellation, idempotency/conflict, immutable baselines, fingerprint
+chains, 1,024-evaluation capacity, composition mismatch rejection, and a failed-closed lifecycle-confirmation case
+that proves candidate routing is removed even when terminal confirmation capacity is unavailable. The 86-test
+PR1/PR2/adaptive/lifecycle/evaluator/controller compatibility selector also passed.
+
+Current-head verification: the embedded-Tomcat dependency tree resolves Spring Boot `3.5.14` and Tomcat `10.1.55`.
+`mvn -q test`, `mvn -q "-DskipTests" package`, and `mvn -B package` passed. The non-quiet package reported 2,992 tests,
+zero failures/errors/skips, a repackaged executable JAR, and `BUILD SUCCESS`; that is ten tests above the PR3 exact-main
+baseline. The packaged Enterprise Lab workflow smoke passed all ten fixed shadow scenarios and wrote target-only
+evidence while performing no API server, cloud, external-network, release, container, or registry action. `git diff
+--check` passed. Corrected scans found no scheduler/executor/queue/cloud/tenant hook, production URL/target, credential
+value, or secret material; authorization matches are the existing explicit operator guard and its test.
+
+Evidence boundary: this evaluator is synchronous, explicitly invoked, in-memory, and Enterprise Lab loopback-only. It
+does not expose operator APIs yet, persist evidence, schedule work, control production routing, validate live cloud or
+tenant behavior, or provide load/stress/benchmark evidence. Those remain not proven.
+
+Next action: run the campaign-documentation guard selector, audit and stage the bounded diff, commit and push the exact
+candidate, then open PR4 and require exact-head CI, CodeQL, and dependency-review success before merge.
+
+Decision: continue LOOPBACK-PR4; do not open LOOPBACK-PR5 until PR4 is merged and exact merge-main CI/CodeQL are green.
+
 ## Active Loopback Experiment PR3 Checkpoint
 
 Timestamp: 2026-07-16T13:04-07:00

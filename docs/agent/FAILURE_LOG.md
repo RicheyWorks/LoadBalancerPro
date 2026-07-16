@@ -6,6 +6,105 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T13:39-07:00
+
+Branch/PR: codex/loopback-rollback-evaluator / no PR yet
+
+Failure type: PR4 secret-scan PowerShell quoting failure
+
+Failing check: focused `rg` secret-assignment scan over the PR4 Enterprise Lab source/test files
+
+Observed failure: PowerShell reported `The string is missing the terminator: '` before ripgrep executed.
+
+Root cause: the command embedded both single- and double-quote character classes inside a doubly nested JavaScript and
+PowerShell string, leaving PowerShell with an unterminated quoted argument.
+
+Correction: rerun a shell-safe keyword/assignment scan without embedded quote character classes, then inspect any
+matches directly rather than relying on fragile multi-shell escaping.
+
+Final verification: the corrected scan returned only the existing explicit-operator-authorization guard and its
+focused lifecycle test name; it found no credential value or secret material. The separate scheduler/runtime/tenant
+scan and production-target URL scan both returned no matches, and `git diff --check` passed.
+
+Follow-up action: run the corrected secret scan before the authoritative package and smoke gates.
+
+## Entry
+
+Date/time: 2026-07-16T13:35-07:00
+
+Branch/PR: codex/loopback-rollback-evaluator / no PR yet
+
+Failure type: PR4 partial-degradation test-assumption failure
+
+Failing check: `mvn -q
+"-Dtest=EnterpriseLabExperimentConfigurationTest,EnterpriseLabExperimentLifecycleTest,EnterpriseLabExperimentEvaluatorTest"
+test`
+
+Observed failure: 1 of 20 tests failed. The partial-degradation case expected `ROLLED_BACK_HARMFUL` but the evaluator
+completed normally.
+
+Root cause: the test recorded failure followed by success for the affected backend. The existing rolling-signal model
+correctly classifies that ordered sequence as `RECOVERING`, not `PARTIALLY_DEGRADED`, so the partial-backend threshold
+was not crossed.
+
+Correction: retain the same counts/rates and record success followed by failure, producing the intended current
+`PARTIALLY_DEGRADED` state without changing evaluator behavior.
+
+Final verification: the identical 20-test selector rerun passed with zero failures, errors, or skips after correcting
+only the evidence order.
+
+Follow-up action: rerun the focused selector and then expand to PR1/PR2/adaptive compatibility tests.
+
+## Entry
+
+Date/time: 2026-07-16T13:34-07:00
+
+Branch/PR: codex/loopback-rollback-evaluator / no PR yet
+
+Failure type: PR4 test expansion patch context failure
+
+Failing check: `apply_patch` insertion of partial-degradation, healthy-floor, missing-evidence, and duration tests
+
+Observed failure: patch verification could not find `private static String boundedActionReason(String value)` in
+`EnterpriseLabExperimentEvaluatorTest.java`; the patch made no changes.
+
+Root cause: the final context anchor was copied from the production evaluator rather than the focused test class.
+
+Correction: locate the exact adjacent test-method boundary in the test file and reapply only the intended test
+insertion with that local anchor.
+
+Final verification: `apply_patch` reported verification failure before mutation. The corrected insertion applied at
+the exact test-method boundary, and the resulting identical focused selector passed after the separately logged
+evidence-order test correction.
+
+Follow-up action: reapply against the exact `tailLatencyRegression...` / `guardrailDrift...` method boundary.
+
+## Entry
+
+Date/time: 2026-07-16T13:18-07:00
+
+Branch/PR: codex/loopback-rollback-evaluator / no PR yet
+
+Failure type: Windows source-audit path invocation failure
+
+Failing check: `rg -n "new EnterpriseLabExperimentRollbackPolicy" src test* . -g "*.java" -g "!target/**"`
+
+Observed failure: `rg` returned Windows error 123 for the positional `test*` path, although it still reported the
+relevant matches under `src` and the current directory.
+
+Root cause: the read-only audit mixed a shell-style wildcard path with ripgrep's own glob filters on Windows.
+
+Correction: use the repository source root as the only positional path and apply include/exclude patterns exclusively
+through `-g` arguments for subsequent searches.
+
+Final verification: the successful portion of the same output established that direct rollback-policy construction is
+limited to the policy implementation and its focused configuration test; a corrected source-root-only search will be
+included in the PR4 scope audit.
+
+Follow-up action: continue the narrow evaluator audit and use ripgrep `-g` filters for all Windows file selection.
+
+## Entry
+
 Date/time: 2026-07-16T12:21-07:00
 
 Branch/PR: codex/loopback-allocation-application / no PR yet

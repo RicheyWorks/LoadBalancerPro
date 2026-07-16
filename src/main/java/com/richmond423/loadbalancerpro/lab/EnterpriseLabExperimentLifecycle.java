@@ -12,10 +12,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Synchronous, bounded command/cycle runner for one Enterprise Lab experiment.
@@ -31,6 +33,7 @@ public final class EnterpriseLabExperimentLifecycle {
     private final Map<String, CachedCommand> commandResults = new LinkedHashMap<>();
     private final Map<String, CachedProgress> requestResults = new LinkedHashMap<>();
     private final Map<String, CachedProgress> holdCycleResults = new LinkedHashMap<>();
+    private final Set<String> evidenceRequestIds = new LinkedHashSet<>();
 
     private EnterpriseLabExperimentState state = EnterpriseLabExperimentState.IDLE;
     private EnterpriseLabExperimentConfiguration configuration;
@@ -198,6 +201,7 @@ public final class EnterpriseLabExperimentLifecycle {
         requestCount++;
         if (observationRecorded) {
             evidenceCount++;
+            evidenceRequestIds.add(safeRequestId);
         }
         if (lastActivityAt == null || safeTime.isAfter(lastActivityAt)) {
             lastActivityAt = safeTime;
@@ -435,6 +439,13 @@ public final class EnterpriseLabExperimentLifecycle {
 
     public synchronized List<EnterpriseLabExperimentTransition> transitionHistory() {
         return List.copyOf(transitions);
+    }
+
+    /**
+     * Bounded identifiers for actual candidate routes whose PR1 observation receipts were recorded.
+     */
+    public synchronized List<String> recordedEvidenceRequestIds() {
+        return List.copyOf(evidenceRequestIds);
     }
 
     public synchronized Optional<EnterpriseLabExperimentConfiguration> configuration() {

@@ -8,7 +8,9 @@ public record EnterpriseLabExperimentRollbackPolicy(
         double maximumTimeoutRate,
         double maximumLatencyRegressionRatio,
         int minimumHealthyBackends,
-        int maximumConsecutiveTransportFailures) {
+        int maximumConsecutiveTransportFailures,
+        int maximumPartiallyDegradedBackends,
+        double maximumObservationLossRate) {
 
     public EnterpriseLabExperimentRollbackPolicy {
         requireRate(maximumFailureRate, "maximumFailureRate");
@@ -27,10 +29,15 @@ public record EnterpriseLabExperimentRollbackPolicy(
             throw new IllegalArgumentException(
                     "maximumConsecutiveTransportFailures must be between 1 and 1000");
         }
+        if (maximumPartiallyDegradedBackends < 0
+                || maximumPartiallyDegradedBackends > EnterpriseLabLoopbackAllocationSnapshot.HARD_MAX_BACKENDS) {
+            throw new IllegalArgumentException("maximumPartiallyDegradedBackends must be between 0 and 64");
+        }
+        requireRate(maximumObservationLossRate, "maximumObservationLossRate");
     }
 
     public static EnterpriseLabExperimentRollbackPolicy localLabDefaults() {
-        return new EnterpriseLabExperimentRollbackPolicy(0.25, 0.10, 1.50, 2, 3);
+        return new EnterpriseLabExperimentRollbackPolicy(0.25, 0.10, 1.50, 2, 3, 0, 0.10);
     }
 
     private static void requireRate(double value, String fieldName) {

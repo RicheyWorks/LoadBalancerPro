@@ -170,6 +170,10 @@ public final class EnterpriseLabLoopbackObservationIngress {
         return maxInFlightRequests;
     }
 
+    public ServerObservationWindowPolicy observationWindowPolicy() {
+        return windowPolicy;
+    }
+
     private ObservationReceipt rejectCompletion(RequestAttempt attempt, String reason) {
         if (alreadyCompleted(attempt)) {
             return duplicateReceipt(attempt);

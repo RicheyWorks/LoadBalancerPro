@@ -8,21 +8,23 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Security-Maintenance Checkpoint
 
-Timestamp: 2026-07-16T06:16-07:00
+Timestamp: 2026-07-16T06:19-07:00
 
 Goal name: Restore the enforced container vulnerability gate without allowlist exceptions
 
 Current PR slot: out-of-band security-maintenance prerequisite; this does not count as a LASE Phase 6 campaign slot
 
-Checkpoint: isolated security patch audited and locally verified; ready to commit and open the prerequisite PR
+Checkpoint: isolated security patch committed, pushed, and opened as prerequisite PR #447
 
 Started from main SHA: `591554e21037bbd27591bb3f01f40ad2ccd4fbdc`
 
 Current branch: codex/security-netty-openssl-runtime-fix
 
-PR URL: none yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/447
 
-Current branch head: `591554e21037bbd27591bb3f01f40ad2ccd4fbdc`; the security-maintenance diff is not committed yet
+PR creation head: `dffd9fff9affc87d18eb017c8ccdfb03b4a7b4c4`
+
+Current branch head: `dffd9fff9affc87d18eb017c8ccdfb03b4a7b4c4`; a PR metadata checkpoint commit is pending
 
 Changed files for this slice:
 
@@ -78,14 +80,16 @@ Checks run:
 
 Remote status: main scheduled CodeQL run `29259832211` is green for
 `591554e21037bbd27591bb3f01f40ad2ccd4fbdc`, but no current main push CI run exists after the June vulnerability
-database update. PR #444 remains remotely failed at its current head because of the five recorded Trivy findings.
+database update. PR #447 is open and mergeable but blocked while current-head push CI run `29501650879`, PR CI run
+`29501672790`, and CodeQL run `29501672852` are in progress. PR #444 remains remotely failed at its current head
+because of the five recorded Trivy findings.
 
 Local boundary: complete Docker image build/runtime smoke/Trivy verification is unavailable until a Docker daemon is
 running. This is not a merge exception; current-head remote CI must pass the complete container path before merge.
 
-Next action: commit and open the isolated prerequisite PR, then merge only if current-head CI, CodeQL, Dependency
-Review, Docker runtime smoke, and complete-image Trivy are green. After main is green for the merge commit, update PR
-#444 from green main and rerun its current-head checks.
+Next action: commit and push this PR metadata checkpoint, then merge only if the resulting current-head CI, CodeQL,
+Dependency Review, Docker runtime smoke, and complete-image Trivy are green. After main is green for the merge commit,
+update PR #444 from green main and rerun its current-head checks.
 
 Decision: continue the isolated security-maintenance prerequisite; do not merge or count PR #444 while its checks are
 failed.

@@ -4,13 +4,20 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.TreeMap;
 
 public final class AdaptiveRoutingPolicyEngine {
 
     public AdaptiveRoutingPolicyDecision decide(AdaptiveRoutingPolicyInput input) {
         if (input.mode() == AdaptiveRoutingPolicyMode.OFF) {
             return AdaptiveRoutingPolicyDecision.disabled(input.contextId(), input.baselineDecision());
+        }
+
+        if (input.mode() == AdaptiveRoutingPolicyMode.OBSERVE) {
+            return blocked(input, "observe mode records inputs only", "observe mode cannot alter allocation",
+                    "LASE recorded the decision inputs, but observe mode keeps the baseline final.");
         }
 
         if (input.failureReason() != null) {
@@ -30,6 +37,109 @@ public final class AdaptiveRoutingPolicyEngine {
         }
 
         return activeExperiment(input);
+    }
+
+    public TrafficAllocationGuardrailDecision evaluateAllocation(
+            TrafficAllocationGuardrailInput input,
+            TrafficAllocationGuardrailPolicy policy) {
+        Objects.requireNonNull(input, "input cannot be null");
+        Objects.requireNonNull(policy, "policy cannot be null");
+        Map<String, Double> requested = input.recommendation().allocations();
+        List<String> reasons = new ArrayList<>();
+
+        if (input.mode() == AdaptiveRoutingPolicyMode.OFF) {
+            reasons.add("policy mode off");
+        } else if (input.mode() == AdaptiveRoutingPolicyMode.OBSERVE) {
+            reasons.add("observe mode records allocation inputs only");
+        }
+        if (input.recommendation().fallbackApplied() || requested.isEmpty()) {
+            reasons.add("allocation recommendation is in safe fallback");
+        }
+        if (!input.signalsFresh()) {
+            reasons.add("stale allocation signals");
+        }
+        if (!input.evidenceSufficient()) {
+            reasons.add("insufficient allocation evidence");
+        }
+        if (input.conflictingSignals()) {
+            reasons.add("conflicting allocation signals");
+        }
+        if (input.cooldownActive()) {
+            reasons.add("allocation cooldown is active");
+        }
+        if (input.operatorStopRequested()) {
+            reasons.add("operator stop requested");
+        }
+        if (input.mode() == AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT
+                && !input.explicitExperimentContext()) {
+            reasons.add("active-experiment requires explicit bounded experiment context");
+        }
+        if (!requested.isEmpty() && TrafficAllocationMaps.hasPositiveShareMissingFrom(
+                input.baselineAllocations(), requested.keySet())) {
+            reasons.add("candidate omits a backend with positive baseline allocation");
+        }
+        if (!reasons.isEmpty()) {
+            return deniedAllocation(input, reasons);
+        }
+
+        Optional<Map<String, Double>> capped = capBackendShares(requested, policy.maximumBackendShare());
+        if (capped.isEmpty()) {
+            return deniedAllocation(input, List.of(
+                    "maximum backend share is infeasible for the candidate backend count"));
+        }
+
+        Map<String, Double> approved = capped.get();
+        boolean clamped = !TrafficAllocationMaps.same(requested, approved);
+        if (clamped) {
+            reasons.add("candidate clamped to maximum backend share");
+        }
+
+        double movement = TrafficAllocationMaps.totalVariation(input.baselineAllocations(), approved);
+        if (movement > policy.maximumTotalShareMovement() + TrafficAllocationMaps.EPSILON) {
+            double factor = policy.maximumTotalShareMovement() == 0.0
+                    ? 0.0
+                    : policy.maximumTotalShareMovement() / movement;
+            approved = TrafficAllocationMaps.interpolate(input.baselineAllocations(), approved, factor);
+            clamped = true;
+            reasons.add("candidate clamped to maximum total share movement");
+        }
+        if (approved.values().stream()
+                .anyMatch(share -> share > policy.maximumBackendShare() + TrafficAllocationMaps.EPSILON)) {
+            return deniedAllocation(input, List.of(
+                    "share-movement limit cannot bring allocation within maximum backend share"));
+        }
+
+        TrafficAllocationGuardrailAction action = clamped
+                ? TrafficAllocationGuardrailAction.CLAMP
+                : TrafficAllocationGuardrailAction.ALLOW;
+        if (!clamped) {
+            reasons.add("allocation passed all configured guardrails");
+        }
+        boolean influenceAllowed = input.mode() == AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT;
+        if (input.mode() == AdaptiveRoutingPolicyMode.SHADOW) {
+            reasons.add("shadow mode retains baseline while recording the approved candidate");
+        } else if (input.mode() == AdaptiveRoutingPolicyMode.RECOMMEND) {
+            reasons.add("recommend mode retains baseline until explicit bounded experiment review");
+        } else if (influenceAllowed) {
+            reasons.add("active-experiment allocation decision passed; no traffic action is performed here");
+        }
+        Map<String, Double> effective = influenceAllowed ? approved : input.baselineAllocations();
+        boolean changed = !TrafficAllocationMaps.same(input.baselineAllocations(), effective);
+        String rollbackReason = influenceAllowed
+                ? "baseline allocation remains the rollback target for the bounded experiment"
+                : "baseline allocation retained because the selected mode does not permit influence";
+        return new TrafficAllocationGuardrailDecision(
+                input.contextId(),
+                input.mode(),
+                action,
+                influenceAllowed,
+                input.baselineAllocations(),
+                requested,
+                approved,
+                effective,
+                changed,
+                reasons,
+                rollbackReason);
     }
 
     private AdaptiveRoutingPolicyDecision activeExperiment(AdaptiveRoutingPolicyInput input) {
@@ -135,6 +245,51 @@ public final class AdaptiveRoutingPolicyEngine {
         return input.servers().stream()
                 .filter(server -> input.recommendedDecision().equals(server.getServerId()))
                 .findFirst();
+    }
+
+    private static TrafficAllocationGuardrailDecision deniedAllocation(
+            TrafficAllocationGuardrailInput input,
+            List<String> reasons) {
+        return new TrafficAllocationGuardrailDecision(
+                input.contextId(),
+                input.mode(),
+                TrafficAllocationGuardrailAction.DENY,
+                false,
+                input.baselineAllocations(),
+                input.recommendation().allocations(),
+                Map.of(),
+                input.baselineAllocations(),
+                false,
+                reasons,
+                "baseline allocation retained by allocation guardrail");
+    }
+
+    private static Optional<Map<String, Double>> capBackendShares(
+            Map<String, Double> requested,
+            double maximumBackendShare) {
+        if (requested.size() * maximumBackendShare < 1.0 - TrafficAllocationMaps.EPSILON) {
+            return Optional.empty();
+        }
+        Map<String, Double> capped = new TreeMap<>();
+        double excess = 0.0;
+        for (Map.Entry<String, Double> entry : requested.entrySet()) {
+            double share = Math.min(entry.getValue(), maximumBackendShare);
+            capped.put(entry.getKey(), share);
+            excess += entry.getValue() - share;
+        }
+        if (excess > TrafficAllocationMaps.EPSILON) {
+            double room = capped.values().stream()
+                    .mapToDouble(share -> maximumBackendShare - share)
+                    .sum();
+            if (room < excess - TrafficAllocationMaps.EPSILON) {
+                return Optional.empty();
+            }
+            for (String serverId : capped.keySet()) {
+                double available = maximumBackendShare - capped.get(serverId);
+                capped.put(serverId, capped.get(serverId) + (excess * available / room));
+            }
+        }
+        return Optional.of(TrafficAllocationMaps.immutableNormalized(capped, "cappedAllocations", false));
     }
 
     private static double totalHealthyCapacity(List<Server> servers) {

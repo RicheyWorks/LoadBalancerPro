@@ -15,9 +15,10 @@ class AdaptiveRoutingPolicyEngineTest {
     private final AdaptiveRoutingPolicyEngine engine = new AdaptiveRoutingPolicyEngine();
 
     @Test
-    void offShadowAndRecommendNeverChangeFinalDecision() {
+    void offObserveShadowAndRecommendNeverChangeFinalDecision() {
         for (AdaptiveRoutingPolicyMode mode : List.of(
                 AdaptiveRoutingPolicyMode.OFF,
+                AdaptiveRoutingPolicyMode.OBSERVE,
                 AdaptiveRoutingPolicyMode.SHADOW,
                 AdaptiveRoutingPolicyMode.RECOMMEND)) {
             AdaptiveRoutingPolicyDecision decision = engine.decide(input(mode, true, false, true, "green"));
@@ -26,6 +27,7 @@ class AdaptiveRoutingPolicyEngineTest {
             assertFalse(decision.influenceAllowed(), mode.name());
             assertEquals("blue", decision.finalDecision(), mode.name());
             assertTrue(decision.rollbackReason().contains("baseline")
+                    || decision.rollbackReason().contains("observe")
                     || decision.rollbackReason().contains("shadow")
                     || decision.rollbackReason().contains("recommendation"));
         }

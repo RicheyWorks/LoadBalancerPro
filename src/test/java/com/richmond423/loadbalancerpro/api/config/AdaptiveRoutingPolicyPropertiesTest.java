@@ -30,4 +30,13 @@ class AdaptiveRoutingPolicyPropertiesTest {
         properties.setActiveExperimentEnabled(true);
         assertEquals(AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT, properties.resolvedMode());
     }
+
+    @Test
+    void observeModeIsExplicitAndDoesNotRequireActiveExperimentEnablement() {
+        AdaptiveRoutingPolicyProperties properties = new AdaptiveRoutingPolicyProperties();
+        properties.setMode("observe-only");
+
+        assertEquals(AdaptiveRoutingPolicyMode.OBSERVE, properties.configuredMode());
+        assertEquals(AdaptiveRoutingPolicyMode.OBSERVE, properties.resolvedMode());
+    }
 }

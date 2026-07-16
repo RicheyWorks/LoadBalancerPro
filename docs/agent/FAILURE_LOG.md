@@ -6,6 +6,120 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T06:08-07:00
+
+Branch/PR: codex/security-netty-openssl-runtime-fix / no PR yet
+
+Failure type: local packaged-JAR vulnerability gate
+
+Failing check: extracted packaged-JAR Trivy rootfs scan with HIGH/CRITICAL severity and `--exit-code 1`
+
+Suspected cause: the current vulnerability database reports `CVE-2026-54512` and `CVE-2026-54513` against
+`com.fasterxml.jackson.core:jackson-databind` `2.21.2`; both findings list `2.21.4` as a fixed version on the active
+Jackson line.
+
+Fix attempted: add a centrally managed Jackson BOM `2.21.4` ahead of the imported Spring Boot BOM, verify Maven
+resolves `jackson-core` and `jackson-databind` `2.21.4`, and rebuild and rescan the executable JAR.
+
+Result: focused JSON/API tests passed, the rebuilt archive contains `jackson-databind-2.21.4.jar`, and the recovered
+extracted-JAR scan inspected one Java dependency target with zero HIGH/CRITICAL findings.
+
+Follow-up action: rerun full test/package/smoke verification and require current-head complete-image CI scanning before
+merge.
+
+## Entry
+
+Date/time: 2026-07-16T06:07-07:00
+
+Branch/PR: codex/security-netty-openssl-runtime-fix / no PR yet
+
+Failure type: local packaged-JAR vulnerability scan invocation
+
+Failing check: `trivy fs --scanners vuln --pkg-types library --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 target/LoadBalancerPro-2.5.0.jar`
+
+Suspected cause: Trivy filesystem mode did not inspect the executable Spring Boot JAR as an archive and reported
+`Supported files for scanner(s) not found` with zero language-specific files.
+
+Fix attempted: do not count the empty scan as green; extract the packaged JAR into ignored `target/` evidence and
+scan the extracted root filesystem so Trivy can inspect the nested `BOOT-INF/lib` dependency JARs.
+
+Result: extraction allowed Trivy to inspect the nested `BOOT-INF/lib` dependencies. The invocation recovery succeeded,
+but the actual scan failed on two additional Jackson HIGH findings recorded in the next failure entry.
+
+Follow-up action: repair the Jackson findings and require an actual Java target with zero HIGH/CRITICAL findings
+before continuing.
+
+## Entry
+
+Date/time: 2026-07-16T06:03-07:00
+
+Branch/PR: codex/lase-phase6-panel-vocabulary-guards / PR #444
+
+Failure type: remote current-head container vulnerability gate
+
+Failing check: GitHub Actions run `27854431314`, job `82439139530`, `Scan Docker image`
+
+Suspected cause: the CI artifact reported Ubuntu HIGH finding `CVE-2026-45447` against `libssl3` and `openssl`
+`3.0.2-0ubuntu1.23`, plus Java HIGH findings `CVE-2026-44249`, `CVE-2026-45416`, and `CVE-2026-50010`
+against `io.netty:netty-handler` `4.2.13.Final`.
+
+Fix attempted: keep PR #444's documentation/test scope unchanged and prepare a separate security-maintenance branch
+that updates the Netty BOM to `4.2.15.Final`, refreshes the digest-pinned Jammy runtime image to packages
+`3.0.2-0ubuntu1.25`, and adds no vulnerability allowlist entries.
+
+Result: prior PR #444 CI remains failed and must not be treated as green. The separate maintenance branch resolves the
+fixed versions locally but still requires current-head remote CI before it can unblock PR #444.
+
+Follow-up action: verify and merge the isolated security-maintenance prerequisite only if its local and remote gates
+pass, then update PR #444 from green main and rerun current-head checks.
+
+## Entry
+
+Date/time: 2026-07-16T06:00-07:00
+
+Branch/PR: codex/security-netty-openssl-runtime-fix / no PR yet
+
+Failure type: local container verification tooling unavailable
+
+Failing check: `docker version --format '{{.Server.Version}}'`
+
+Suspected cause: the Docker Desktop Linux engine pipe was unavailable, so the local client could not reach a Docker
+daemon.
+
+Fix attempted: preserve the Dockerfile change and use the existing remote CI container build, runtime smoke, and
+Trivy evidence as the available container-verification path for this audit.
+
+Result: local Docker build, package inspection, runtime smoke, and image scan remain pending until a Docker daemon is
+available; remote current-head CI must prove the refreshed image before merge.
+
+Follow-up action: continue Maven and documentation-guard verification locally, inspect prior CI failure artifacts,
+and require current-head remote container/Trivy success before any merge decision.
+
+## Entry
+
+Date/time: 2026-07-16T06:00-07:00
+
+Branch/PR: codex/security-netty-openssl-runtime-fix / no PR yet
+
+Failure type: local vulnerability scanner tooling unavailable
+
+Failing check: `trivy --version`
+
+Suspected cause: the Trivy CLI is not installed or not available on the local PowerShell path.
+
+Fix attempted: download the same official Trivy `v0.70.0` release used by CI into ignored `target/` tooling, keep
+`.trivyignore` empty of vulnerability IDs, inspect the existing CI artifact, and scan the refreshed runtime digest
+directly from the registry.
+
+Result: the recovered remote-image scan detected Ubuntu 22.04 with 143 packages and found zero HIGH/CRITICAL OS
+vulnerabilities. Package inventory confirmed `libssl3` and `openssl` `3.0.2-0ubuntu1.25`. A complete application-image
+scan still requires current-head CI because the local Docker daemon remains unavailable.
+
+Follow-up action: scan the packaged JAR locally, run focused and full Maven verification, then use remote CI as the
+required complete-image Trivy gate.
+
+## Entry
+
 Date/time: 2026-05-29T21:51-07:00
 
 Branch/PR: codex/lase-phase6-api-contract-terminology / no PR yet

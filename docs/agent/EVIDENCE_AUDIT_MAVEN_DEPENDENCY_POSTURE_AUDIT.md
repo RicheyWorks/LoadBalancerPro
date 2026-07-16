@@ -32,12 +32,18 @@ The compiler plugin uses `<release>${java.version}</release>` with `proc` set to
 
 The `dependencyManagement` section currently includes:
 
-- Netty BOM `io.netty:netty-bom` version `${netty.version}`, currently `4.2.13.Final`;
+- Jackson BOM `com.fasterxml.jackson:jackson-bom` version `${jackson.version}`, currently `2.21.4`;
+- Netty BOM `io.netty:netty-bom` version `${netty.version}`, currently `4.2.15.Final`;
 - Spring Boot dependency BOM `org.springframework.boot:spring-boot-dependencies` version `${spring-boot.version}`, currently `3.5.14`;
 - explicit Tomcat embedded overrides for `tomcat-embed-core`, `tomcat-embed-el`, and `tomcat-embed-websocket` at `${tomcat.version}`, currently `10.1.55`;
 - AWS SDK v2 BOM `software.amazon.awssdk:bom` version `${aws-sdk-v2.version}`, currently `2.44.4`.
 
 This posture centralizes several high-impact version families. It does not prove dependency freshness, absence of future vulnerabilities, absence of transitive risk, runtime safety, or production suitability.
+
+The later 2026-07-16 security-maintenance refresh moved the centrally managed Netty family from `4.2.13.Final` to
+`4.2.15.Final` and added Jackson BOM `2.21.4` ahead of Spring Boot's imported BOM so the packaged Jackson family no
+longer resolves to vulnerable `jackson-databind` `2.21.2`; the historical slot 6 audit itself remained
+documentation/test-only.
 
 ## Runtime Dependency Families
 

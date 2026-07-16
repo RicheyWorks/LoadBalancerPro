@@ -6,7 +6,95 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Campaign Checkpoint
+## Active Security-Maintenance Checkpoint
+
+Timestamp: 2026-07-16T06:19-07:00
+
+Goal name: Restore the enforced container vulnerability gate without allowlist exceptions
+
+Current PR slot: out-of-band security-maintenance prerequisite; this does not count as a LASE Phase 6 campaign slot
+
+Checkpoint: isolated security patch committed, pushed, and opened as prerequisite PR #447
+
+Started from main SHA: `591554e21037bbd27591bb3f01f40ad2ccd4fbdc`
+
+Current branch: codex/security-netty-openssl-runtime-fix
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/447
+
+PR creation head: `dffd9fff9affc87d18eb017c8ccdfb03b4a7b4c4`
+
+Current branch head: `dffd9fff9affc87d18eb017c8ccdfb03b4a7b4c4`; a PR metadata checkpoint commit is pending
+
+Changed files for this slice:
+
+- Dockerfile
+- pom.xml
+- docs/agent/EVIDENCE_AUDIT_DOCKERFILE_RUNTIME_AUDIT.md
+- docs/agent/EVIDENCE_AUDIT_MAVEN_DEPENDENCY_POSTURE_AUDIT.md
+- docs/agent/FAILURE_LOG.md
+- docs/agent/SESSION_MANAGER.md
+- src/test/java/com/richmond423/loadbalancerpro/api/SupplyChainEvidenceDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest.java
+- src/test/java/com/richmond423/loadbalancerpro/docs/AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest.java
+
+Checks run:
+
+- Fetched `origin/main` and confirmed local main, remote main, and this branch base are
+  `591554e21037bbd27591bb3f01f40ad2ccd4fbdc`.
+- Confirmed GitHub Dependabot and code-scanning APIs report no open repository alerts; this slice instead responds to
+  the enforced CI Trivy failure recorded below.
+- Audited LASE Phase 6 PR #444 at current head `46f09ca39965b30ed3ae283bdc5d08b6e3ed74a3`: CodeQL passed, but both
+  Build/Test/Package/Smoke checks failed and the PR remains blocked.
+- Downloaded PR #444 run `27854431314` container evidence and confirmed the failure was the enforced Trivy gate:
+  Ubuntu HIGH `CVE-2026-45447` in `libssl3` and `openssl` `3.0.2-0ubuntu1.23`, plus Java HIGH
+  `CVE-2026-44249`, `CVE-2026-45416`, and `CVE-2026-50010` in `io.netty:netty-handler` `4.2.13.Final`.
+- Confirmed the refreshed `eclipse-temurin:17-jre-jammy` digest resolves as a valid multi-platform OCI image index.
+- Maven dependency-tree resolution passed and confirmed the AWS SDK Netty runtime family resolves consistently to
+  `4.2.15.Final`, including `io.netty:netty-handler`.
+- The first valid extracted-JAR scan identified current HIGH findings `CVE-2026-54512` and `CVE-2026-54513` in
+  `com.fasterxml.jackson.core:jackson-databind` `2.21.2`. The failure is recorded in `docs/agent/FAILURE_LOG.md`.
+- A centrally managed Jackson BOM `2.21.4` now precedes the imported Spring Boot BOM. Maven dependency-tree
+  resolution confirms `jackson-core` and `jackson-databind` `2.21.4`, and the packaged archive contains
+  `jackson-databind-2.21.4.jar`.
+- Focused security documentation guards passed:
+  `mvn -q "-Dtest=SupplyChainEvidenceDocumentationTest,AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest,AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest" test`.
+- Focused JSON/API compatibility and security documentation guards passed after the Jackson update:
+  `mvn -q "-Dtest=SupplyChainEvidenceDocumentationTest,AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest,AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest,ApiContractTest,DecisionExplorerApiContractHardeningTest,UtilsTest" test`.
+- The local Docker daemon check failed because the Docker Desktop Linux engine was unavailable; the failure and
+  boundary are recorded in `docs/agent/FAILURE_LOG.md`.
+- The installed-path Trivy check initially failed because Trivy was absent. Recovery used the same official Trivy
+  `v0.70.0` release as CI from ignored `target/` tooling.
+- The recovered Trivy remote-image scan found zero HIGH/CRITICAL OS vulnerabilities in the refreshed runtime digest;
+  its package inventory confirmed `libssl3` and `openssl` `3.0.2-0ubuntu1.25`.
+- Full local verification passed: `mvn -q test`, `mvn -q "-DskipTests" package`, and direct `mvn -B package`.
+  The direct package run executed 2,888 current test cases with zero failures, errors, or skips and produced the
+  executable `target/LoadBalancerPro-2.5.0.jar`.
+- The final extracted executable-JAR Trivy rootfs scan inspected the nested Java dependencies and reported zero
+  HIGH/CRITICAL fixed findings with `--ignore-unfixed --exit-code 1`.
+- `scripts/smoke/enterprise-lab-workflow.ps1 -Package` passed in bounded shadow mode and wrote ignored evidence only
+  under `target/enterprise-lab-runs`; it performed no API server, live-cloud, external-network, release, container,
+  or registry action.
+- `git diff --check` passed for the nine-file working-tree diff.
+- `.trivyignore` remains empty of vulnerability IDs; no CVE suppression was added.
+
+Remote status: main scheduled CodeQL run `29259832211` is green for
+`591554e21037bbd27591bb3f01f40ad2ccd4fbdc`, but no current main push CI run exists after the June vulnerability
+database update. PR #447 is open and mergeable but blocked while current-head push CI run `29501650879`, PR CI run
+`29501672790`, and CodeQL run `29501672852` are in progress. PR #444 remains remotely failed at its current head
+because of the five recorded Trivy findings.
+
+Local boundary: complete Docker image build/runtime smoke/Trivy verification is unavailable until a Docker daemon is
+running. This is not a merge exception; current-head remote CI must pass the complete container path before merge.
+
+Next action: commit and push this PR metadata checkpoint, then merge only if the resulting current-head CI, CodeQL,
+Dependency Review, Docker runtime smoke, and complete-image Trivy are green. After main is green for the merge commit,
+update PR #444 from green main and rerun its current-head checks.
+
+Decision: continue the isolated security-maintenance prerequisite; do not merge or count PR #444 while its checks are
+failed.
+
+## Historical LASE Phase 6 PR3 Checkpoint
 
 Timestamp: 2026-05-29T22:01-07:00
 

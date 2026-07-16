@@ -19,6 +19,7 @@ class SupplyChainEvidenceDocumentationTest {
     private static final Path CODEQL_WORKFLOW = Path.of(".github/workflows/codeql.yml");
     private static final Path DOCKERFILE = Path.of("Dockerfile");
     private static final Path POM = Path.of("pom.xml");
+    private static final Path TRIVY_IGNORE = Path.of(".trivyignore");
     private static final Path HARDENING_GUIDE = Path.of("docs/DEPLOYMENT_HARDENING_GUIDE.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path EXECUTIVE_SUMMARY = Path.of("docs/EXECUTIVE_SUMMARY.md");
@@ -95,9 +96,13 @@ class SupplyChainEvidenceDocumentationTest {
             assertTrue(pom.contains(expected), "pom should contain " + expected);
         }
         assertTrue(evidence.contains("Netty BOM"));
-        assertTrue(pom.contains("<netty.version>4.2.13.Final</netty.version>"));
+        assertTrue(pom.contains("<netty.version>4.2.15.Final</netty.version>"));
+        assertTrue(pom.contains("<jackson.version>2.21.4</jackson.version>"));
         assertTrue(ci.contains("cyclonedx-maven-plugin:2.9.1:makeAggregateBom"));
         assertTrue(ci.contains("aquasecurity/trivy-action@0.36.0"));
+        assertTrue(ci.contains("severity: HIGH,CRITICAL"));
+        assertTrue(ci.contains("exit-code: '1'"));
+        assertFalse(read(TRIVY_IGNORE).contains("CVE-"), "Trivy allowlist should remain empty of vulnerability IDs");
         assertTrue(ci.contains("actions/dependency-review-action@v4.8.0"));
         assertTrue(ci.contains("actions/dependency-review-action@56339e523c0409420f6c2c9a2f4292bbb3c07dd3"));
         assertFalse(ci.contains("actions/dependency-review-action@v5.0.0"));

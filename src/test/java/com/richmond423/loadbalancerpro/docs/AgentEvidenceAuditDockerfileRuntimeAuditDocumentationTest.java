@@ -14,6 +14,8 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 class AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest {
+    private static final String PATCHED_RUNTIME_IMAGE = "eclipse-temurin:17-jre-jammy@sha256:"
+            + "475d8e96b4b2bfe08999e5e854755c773af1581acdf959a4545d88f0696a2339";
     private static final Path AUDIT = Path.of("docs/agent/EVIDENCE_AUDIT_DOCKERFILE_RUNTIME_AUDIT.md");
     private static final Path DOCKERFILE = Path.of("Dockerfile");
     private static final Path README = Path.of("README.md");
@@ -82,6 +84,10 @@ class AgentEvidenceAuditDockerfileRuntimeAuditDocumentationTest {
                 .matcher(dockerfile).find(), "builder base image should remain digest pinned");
         assertTrue(Pattern.compile("FROM eclipse-temurin:17-jre-jammy@sha256:[0-9a-f]{64}")
                 .matcher(dockerfile).find(), "runtime base image should remain digest pinned");
+        assertTrue(dockerfile.contains("FROM " + PATCHED_RUNTIME_IMAGE),
+                "runtime base image should retain the reviewed patched digest");
+        assertTrue(read(AUDIT).contains("runtime image: `" + PATCHED_RUNTIME_IMAGE + "`"),
+                "runtime audit should match the Dockerfile's reviewed patched digest");
 
         for (String expected : List.of(
                 "workdir /workspace",

@@ -6,6 +6,24 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T15:52-07:00
+
+Branch/PR: codex/loopback-e2e-proof / PR #460
+
+Failure type: PR body exact-head update argument-shape error
+
+Failing check: first `gh pr edit --body` update after the mandatory checkpoint push
+
+Observed/root cause: PowerShell retained the multi-line PR body as an array, so the CLI received later lines as flags;
+the edit was rejected, while the repository, remote branch, PR content, and checks remained unchanged.
+
+Correction/result: join the retrieved lines explicitly and send the body through standard input with `--body-file -`;
+then verify the PR-reported head and body contain the final checkpoint SHA.
+
+Follow-up: use stdin for later multi-line PR body replacements.
+
+## Entry
+
 Date/time: 2026-07-16T15:49-07:00
 
 Branch/PR: codex/loopback-e2e-proof / no PR yet

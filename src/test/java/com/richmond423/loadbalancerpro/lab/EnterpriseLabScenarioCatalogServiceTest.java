@@ -24,7 +24,8 @@ class EnterpriseLabScenarioCatalogServiceTest {
                 .map(EnterpriseLabScenarioMetadata::scenarioId)
                 .toList()).size());
         assertTrue(scenarios.stream().allMatch(scenario ->
-                scenario.supportedModes().equals(List.of("off", "shadow", "recommend", "active-experiment"))));
+                scenario.supportedModes().equals(
+                        List.of("off", "shadow", "recommend", "active-experiment", "observe"))));
         assertTrue(scenarios.stream().allMatch(scenario ->
                 EnterpriseLabScenarioCatalogService.FIXTURE_VERSION.equals(scenario.deterministicFixtureVersion())));
     }

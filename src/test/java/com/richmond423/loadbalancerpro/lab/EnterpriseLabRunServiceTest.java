@@ -47,6 +47,21 @@ class EnterpriseLabRunServiceTest {
     }
 
     @Test
+    void observeRunRetainsBaselineAndRecordsNoInfluence() {
+        EnterpriseLabRunService service = new EnterpriseLabRunService();
+
+        EnterpriseLabRun run = service.run(List.of("normal-balanced-load"), "observe", "summary");
+
+        assertEquals("observe", run.mode());
+        assertFalse(run.activeInfluenceEnabled());
+        assertEquals("observe", run.results().get(0).policyDecision().mode());
+        assertFalse(run.results().get(0).policyDecision().influenceAllowed());
+        assertFalse(run.results().get(0).resultChanged());
+        assertEquals(run.results().get(0).baselineSelectedBackend(),
+                run.results().get(0).policyDecision().finalDecision());
+    }
+
+    @Test
     void invalidModeUnknownScenarioAndTooManyScenariosFailClosed() {
         EnterpriseLabRunService service = new EnterpriseLabRunService();
 

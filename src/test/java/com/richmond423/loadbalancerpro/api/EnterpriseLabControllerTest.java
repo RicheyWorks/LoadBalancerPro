@@ -36,6 +36,7 @@ class EnterpriseLabControllerTest {
                 .andExpect(jsonPath("$.supportedModes[1]", is("shadow")))
                 .andExpect(jsonPath("$.supportedModes[2]", is("recommend")))
                 .andExpect(jsonPath("$.supportedModes[3]", is("active-experiment")))
+                .andExpect(jsonPath("$.supportedModes[4]", is("observe")))
                 .andExpect(jsonPath("$.scenarios[0].scenarioId", is("normal-balanced-load")))
                 .andExpect(jsonPath("$.scenarios[0].signalsInvolved[0]", is("request")))
                 .andExpect(jsonPath("$.scenarios[0].expectedGuardrails[0]", containsString("active-experiment")))

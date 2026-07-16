@@ -9,7 +9,8 @@ public enum EnterpriseLabMode {
     OFF("off", AdaptiveRoutingPolicyMode.OFF),
     SHADOW("shadow", AdaptiveRoutingPolicyMode.SHADOW),
     RECOMMEND("recommend", AdaptiveRoutingPolicyMode.RECOMMEND),
-    ACTIVE_EXPERIMENT("active-experiment", AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT);
+    ACTIVE_EXPERIMENT("active-experiment", AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT),
+    OBSERVE("observe", AdaptiveRoutingPolicyMode.OBSERVE);
 
     private final String wireValue;
     private final AdaptiveRoutingPolicyMode policyMode;
@@ -32,7 +33,12 @@ public enum EnterpriseLabMode {
     }
 
     public static List<String> wireValues() {
-        return List.of(OFF.wireValue, SHADOW.wireValue, RECOMMEND.wireValue, ACTIVE_EXPERIMENT.wireValue);
+        return List.of(
+                OFF.wireValue,
+                SHADOW.wireValue,
+                RECOMMEND.wireValue,
+                ACTIVE_EXPERIMENT.wireValue,
+                OBSERVE.wireValue);
     }
 
     public static EnterpriseLabMode from(String value) {
@@ -49,7 +55,7 @@ public enum EnterpriseLabMode {
             }
         }
         throw new IllegalArgumentException("Unsupported lab mode: " + value
-                + ". Valid values: off, shadow, recommend, active-experiment");
+                + ". Valid values: off, observe, shadow, recommend, active-experiment");
     }
 }
 

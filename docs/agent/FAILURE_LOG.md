@@ -6,6 +6,89 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T11:03-07:00
+
+Branch/PR: codex/adaptive-core-enterprise-lab-integration / no PR yet
+
+Failure type: final secret-scan tool invocation
+
+Failing check: the initial added-line secret/external-target `rg` audit exited with a regex parse error.
+
+Suspected cause: the expression used a negative lookahead, while ripgrep's default regex engine does not support
+look-around.
+
+Fix attempted: rerun the same bounded diff scan with `rg --pcre2` so the lookahead is evaluated by the supported
+engine.
+
+Result: the repaired tracked-diff and untracked-file scans passed with no secret material or non-loopback external
+targets found.
+
+Follow-up action: continue with the remaining exact-candidate scope and documentation checks.
+
+## Entry
+
+Date/time: 2026-07-16T10:49-07:00
+
+Branch/PR: codex/adaptive-core-enterprise-lab-integration / no PR yet
+
+Failure type: focused API JSON numeric test-harness mismatch
+
+Failing check: the repaired 38-test API/service/security selector failed in
+`EnterpriseLabAdaptiveDecisionControllerTest.explicitlyOptedInActiveExperimentReturnsBoundedDecisionDataOnly` after
+the endpoint returned `200` with the complete expected decision record.
+
+Suspected cause: Jayway JsonPath materialized allocation decimals as `BigDecimal`, while the test declared the parsed
+map as `Map<String, Double>`, causing a test-only `ClassCastException` during summation.
+
+Fix attempted: widen the parsed allocation map value type to `Number` and retain the same normalization assertion.
+
+Result: the identical 38-test API/service/security selector passed with zero failures, errors, or skips.
+
+Follow-up action: continue with documentation-contract updates and broader compatibility verification.
+
+## Entry
+
+Date/time: 2026-07-16T10:48-07:00
+
+Branch/PR: codex/adaptive-core-enterprise-lab-integration / no PR yet
+
+Failure type: focused API test compilation ambiguity
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabAdaptiveDecisionControllerTest,EnterpriseLabAdaptiveDecisionServiceTest,EnterpriseLabControllerTest,EnterpriseLabProdApiKeyProtectionTest,AdaptiveTrafficDecisionOrchestratorTest,EnterpriseLabScenarioCatalogServiceTest" test`
+
+Suspected cause: two untyped `JsonPath.read(...)` calls were passed directly to `assertEquals`, leaving Java unable to
+select a JUnit overload during test compilation.
+
+Fix attempted: assign the baseline and effective-allocation JSON objects to explicit `Map<String, Object>` variables
+before comparing them.
+
+Result: the identical 38-test API/service/security selector passed with zero failures, errors, or skips after the
+explicit map typing repair.
+
+Follow-up action: continue with documentation-contract updates and broader compatibility verification.
+
+## Entry
+
+Date/time: 2026-07-16T10:47-07:00
+
+Branch/PR: codex/adaptive-core-enterprise-lab-integration / no PR yet
+
+Failure type: focused Enterprise Lab mode-catalog compatibility assertion
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabAdaptiveDecisionServiceTest,AdaptiveTrafficDecisionOrchestratorTest,EnterpriseLabScenarioCatalogServiceTest,EnterpriseLabRunServiceTest" test`
+
+Suspected cause: `EnterpriseLabMode.OBSERVE` was added while the enum's explicit `wireValues()` compatibility list
+still returned only the legacy four modes, so scenario catalog metadata omitted observe.
+
+Fix attempted: append `OBSERVE.wireValue` to the existing ordered compatibility list without changing the indices of
+the four established modes.
+
+Result: the identical 25-test selector passed with zero failures, errors, or skips after the ordered list repair.
+
+Follow-up action: continue with focused API integration and security-boundary tests.
+
+## Entry
+
 Date/time: 2026-07-16T09:37-07:00
 
 Branch/PR: codex/adaptive-core-allocation-guardrails / no PR yet

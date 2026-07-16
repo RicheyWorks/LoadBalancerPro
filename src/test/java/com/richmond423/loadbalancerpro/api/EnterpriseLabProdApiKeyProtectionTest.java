@@ -64,6 +64,25 @@ class EnterpriseLabProdApiKeyProtectionTest {
     }
 
     @Test
+    void prodApiKeyModeProtectsAdaptiveDecisionEvaluation() throws Exception {
+        String body = "{\"scenarioId\":\"normal-balanced-load\",\"mode\":\"recommend\"}";
+
+        mockMvc.perform(post("/api/lab/decisions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/lab/decisions")));
+
+        mockMvc.perform(post("/api/lab/decisions")
+                        .header("X-API-Key", API_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.scenarioId", is("normal-balanced-load")))
+                .andExpect(jsonPath("$.trafficActionPerformed", is(false)));
+    }
+
+    @Test
     void prodApiKeyModeProtectsPolicyStatusAndAuditEvents() throws Exception {
         mockMvc.perform(get("/api/lab/policy"))
                 .andExpect(status().isUnauthorized())

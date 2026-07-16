@@ -6,7 +6,55 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Adaptive Core PR4 Checkpoint
+## Active Adaptive Core PR5 Checkpoint
+
+Timestamp: 2026-07-16T10:22-07:00
+
+Goal name: LoadBalancerPro executable adaptive traffic-control core
+
+Current PR slot: CORE-PR5 - immutable adaptive decision orchestration
+
+Checkpoint: PR #453 created; required PR-creation checkpoint pending commit and push
+
+Started from main SHA: `5955e22fc97b93b5da52a9926fd04e4ac2b1d259`
+
+Current branch: codex/adaptive-core-decision-orchestration
+
+Implementation commit SHA: `01cbaf86aaa1990e00fd1bcb1380abc5d111abc4`
+
+Pre-PR checkpoint SHA: `441b2cb4e20bfa74b2e84e6a68489a7460e608f5`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/453
+
+Implemented slice: added immutable candidate, request, policy, and versioned decision-record contracts plus a narrow
+orchestrator that composes bounded observations, rolling signal state, state vectors, factor-level scores,
+deterministic allocation recommendations, and structured guardrails. Candidate and sample counts are policy-bounded;
+request inputs and policy are retained for audit; canonical ordering and length-framed SHA-256 content fingerprints
+are deterministic; every mode remains record-only and performs no traffic action.
+
+Verification baseline: PR #452 passed both final-head CI runs, CodeQL, and dependency review at
+`9bf4cc6d9702c39b3363df2a113c325ae65311fd`, then merged as
+`5955e22fc97b93b5da52a9926fd04e4ac2b1d259`. Main CI `29517642747` and CodeQL `29517642896` passed on that exact merge
+SHA, and local main matched `origin/main` before branch creation.
+
+Scope/safety: deterministic in-memory decision composition only; no traffic execution, proxy, external telemetry,
+cloud/tenant, secret, dependency, build, workflow, container, persistence, or production-activation change.
+
+Local verification: focused orchestration plus observation/scoring/allocation/guardrail/legacy-policy compatibility
+selectors passed; `mvn -B dependency:tree "-Dincludes=org.apache.tomcat.embed"`, `mvn -q test`,
+`mvn -q "-DskipTests" package`, and `mvn -B package` passed. The fresh package summary is 2,934 tests with zero
+failures, errors, or skips. Enterprise Lab package smoke passed in bounded shadow mode for 10 scenarios and wrote
+ignored target-local evidence only. `git diff --check` and the forbidden-path audit passed. The current diff is 757
+production/test lines and 49 required checkpoint lines, approximately 94% implementation/test.
+
+Remote status: PR created from the verified pre-PR checkpoint; final checkpoint push and exact-head PR checks pending.
+
+Next action: commit and push this required PR-creation checkpoint, confirm local/remote/PR head equality, then require
+exact-head CI, CodeQL, and dependency review green before merge.
+
+Decision: continue CORE-PR5; do not open CORE-PR6 until PR5 and post-merge main are green.
+
+## Historical Adaptive Core PR4 Checkpoint
 
 Timestamp: 2026-07-16T09:49-07:00
 

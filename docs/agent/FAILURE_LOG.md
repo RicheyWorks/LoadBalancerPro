@@ -29,17 +29,19 @@ Date/time: 2026-07-16T15:49-07:00
 
 Branch/PR: codex/loopback-e2e-proof / no PR yet
 
-Failure type: GitHub CLI authentication/service probe failure before PR6 publication
+Failure type: GitHub API service instability during PR6 publication and check monitoring
 
-Failing check: `gh auth status` followed by the read-only `gh api user` probe
+Failing check: `gh auth status`, `gh api user`, and later read-only Actions run-detail probes
 
 Observed/root cause: Git transport fetched exact `origin/main`, but the CLI reported its keyring token invalid; the
-API probe then received GitHub's HTTP 503 Unicorn page. This is remote credential/service state, not a repository diff.
+user API and Actions job-detail endpoints returned HTTP 503/Unicorn responses while authenticated rate-limit, PR list,
+PR create/edit, and check-rollup operations worked. This is remote service state, not a repository diff.
 
 Correction/result: no token environment override was present; a bounded retry returned the authenticated 5,000-call
-rate limit, PR listing worked, and both Git push and normal PR #460 creation succeeded without credential changes.
+rate limit, and Git push plus normal PR #460 creation/edit succeeded without credential changes. Continue through the
+working PR check-rollup endpoint and avoid nonessential job-detail probes; no gate or security control was weakened.
 
-Follow-up: require exact-final-head checks; treat any repeated user-endpoint HTML/503 as remote service instability.
+Follow-up: require exact-final-head checks through the working rollup and retry details only if a check fails.
 
 ## Entry
 

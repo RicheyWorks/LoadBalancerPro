@@ -8,21 +8,23 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Adaptive Core PR3 Checkpoint
 
-Timestamp: 2026-07-16T09:15-07:00
+Timestamp: 2026-07-16T09:18-07:00
 
 Goal name: LoadBalancerPro executable adaptive traffic-control core
 
 Current PR slot: CORE-PR3 - bounded score-based traffic allocation recommendation
 
-Checkpoint: implementation committed after required local verification; ready for push and PR creation
+Checkpoint: PR #451 created; required PR-creation checkpoint pending commit and push
 
 Started from main SHA: `84b4eb2f742a2b3567968f28faaa753ada274956`
 
 Current branch: codex/adaptive-core-score-allocation
 
-Current head SHA: `6ceea9ecb8609036e1949fa045153bb1ba57b949`
+Implementation commit SHA: `6ceea9ecb8609036e1949fa045153bb1ba57b949`
 
-PR URL: pending
+Pre-PR checkpoint SHA: `57c10bf01e8e33ccc168b0661cc0c2539f33466b`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/451
 
 Implemented slice: extended the existing `LoadDistributionPlanner` with deterministic lower-score-to-higher-share
 recommendations; added immutable allocation policy/result types; enforced exact normalization, per-backend min/max
@@ -42,9 +44,10 @@ failures, errors, or skips. Enterprise Lab package smoke passed in bounded shado
 Scope/safety: deterministic in-memory recommendation only; no live traffic, proxy, external telemetry, cloud/tenant,
 secret, dependency, build configuration, workflow, container, persistence, runtime enforcement, or production activation.
 
-Remote status: exact branch-base main CI and CodeQL green; PR checks do not exist yet.
+Remote status: PR created from the verified pre-PR checkpoint; final checkpoint push and exact-head PR checks pending.
 
-Next action: commit this required checkpoint, push the branch, open PR3, and verify exact-head remote checks.
+Next action: commit and push this required checkpoint, confirm local/remote/PR head equality, then require exact-head CI,
+CodeQL, and dependency review green before merge.
 
 Decision: continue CORE-PR3; do not open CORE-PR4 until PR3 and post-merge main are green.
 

@@ -14,11 +14,13 @@ Goal name: LoadBalancerPro executable adaptive traffic-control core
 
 Current PR slot: CORE-PR3 - bounded score-based traffic allocation recommendation
 
-Checkpoint: implementation and required local verification complete; ready for commit and PR creation
+Checkpoint: implementation committed after required local verification; ready for push and PR creation
 
 Started from main SHA: `84b4eb2f742a2b3567968f28faaa753ada274956`
 
 Current branch: codex/adaptive-core-score-allocation
+
+Current head SHA: `6ceea9ecb8609036e1949fa045153bb1ba57b949`
 
 PR URL: pending
 
@@ -42,7 +44,7 @@ secret, dependency, build configuration, workflow, container, persistence, runti
 
 Remote status: exact branch-base main CI and CodeQL green; PR checks do not exist yet.
 
-Next action: run the checkpoint documentation guard and final diff/scope audit, then commit, push, and open PR3.
+Next action: commit this required checkpoint, push the branch, open PR3, and verify exact-head remote checks.
 
 Decision: continue CORE-PR3; do not open CORE-PR4 until PR3 and post-merge main are green.
 

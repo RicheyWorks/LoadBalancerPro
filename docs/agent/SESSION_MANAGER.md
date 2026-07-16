@@ -8,13 +8,13 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Adaptive Core PR4 Checkpoint
 
-Timestamp: 2026-07-16T09:46-07:00
+Timestamp: 2026-07-16T09:49-07:00
 
 Goal name: LoadBalancerPro executable adaptive traffic-control core
 
 Current PR slot: CORE-PR4 - structured allocation guardrails and explicit safe modes
 
-Checkpoint: implementation committed after required local verification; ready for push and PR creation
+Checkpoint: PR #452 created; required PR-creation checkpoint pending commit and push
 
 Started from main SHA: `b30bd2547174680bb2bc212999c9775bb226afec`
 
@@ -22,7 +22,9 @@ Current branch: codex/adaptive-core-allocation-guardrails
 
 Implementation commit SHA: `bf7be753afe246411560871cf611bd216b8d4283`
 
-PR URL: pending
+Pre-PR checkpoint SHA: `ba19bc678ce7383bf8c36c23820cdcd60e0d1d1c`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/452
 
 Implemented slice: extended the existing adaptive policy engine with typed allocation allow/deny/clamp decisions; added
 an explicit observe mode while preserving off compatibility; enforced freshness, evidence, conflict, cooldown, operator
@@ -42,9 +44,10 @@ assertion repair; the broader policy-properties, allocator/API, CLI compatibilit
 `mvn -q test`, `mvn -q "-DskipTests" package`, and `mvn -B package` passed. The fresh full-package summary is 2,925
 tests with zero failures, errors, or skips. Enterprise Lab package smoke passed in bounded shadow mode.
 
-Remote status: exact branch-base main CI and CodeQL green; PR checks do not exist yet.
+Remote status: PR created from the verified pre-PR checkpoint; final checkpoint push and exact-head PR checks pending.
 
-Next action: commit this required checkpoint, push the branch, open PR4, and verify exact-head remote checks.
+Next action: commit and push this required checkpoint, confirm local/remote/PR head equality, then require exact-head CI,
+CodeQL, and dependency review green before merge.
 
 Decision: continue CORE-PR4; do not open CORE-PR5 until PR4 and post-merge main are green.
 

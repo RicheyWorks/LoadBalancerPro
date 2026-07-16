@@ -6,6 +6,99 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T07:15-07:00
+
+Branch/PR: codex/lase-phase6-reviewer-walkthrough-normalization / PR #448
+
+Failure type: read-only GitHub CLI status-summary command composition and watch interruption
+
+Failing checks: four `gh run view ... --jq` status-summary invocations and an attempted interrupt of the active
+`gh pr checks --watch` process
+
+Suspected cause: PowerShell split the inline `--jq` expressions into multiple GitHub CLI arguments, and the unified
+process backend does not support interrupting that watch process through its standard-input channel.
+
+Fix attempted: do not use the quoted `--jq` form or attempt another unsupported interrupt. Leave the read-only watch
+to finish naturally, use native `gh pr view --json` and `gh run list --json` output for later audits, and push this
+required failure-log checkpoint before treating any remote result as current-head evidence.
+
+Result: both failed diagnostics were read-only and changed no local Git content or GitHub state. Recovery will use the
+supported JSON commands after this log entry is committed and pushed.
+
+Follow-up action: run the final-head documentation/checkpoint guards, commit and push this log entry, then restart the
+current-head remote audit for the new exact SHA.
+
+## Entry
+
+Date/time: 2026-07-16T07:04-07:00
+
+Branch/PR: codex/lase-phase6-reviewer-walkthrough-normalization / no PR yet
+
+Failure type: full-suite historical documentation cross-link guard
+
+Failing check: `mvn -q test`
+
+Suspected cause: the PR5 rewrite removed the exact historical phrase `DX-G10 should close the bootstrap` that
+`AgentDecisionExplorerBootstrapCloseoutDocumentationTest` uses to keep the DX-G09 walkthrough linked to the DX-G10
+bootstrap closeout. The rest of the suite ran 2,888 tests with this single failure and no errors or skips.
+
+Fix attempted: restore the historical DX-G10 contract phrase in the walkthrough's historical-relationship section and
+clarify that the bootstrap subsequently closed and handed off to the bounded implementation phases. Do not restore the
+obsolete claim that the current Decision Explorer surface remains planned.
+
+Result: the focused walkthrough plus bootstrap-closeout guard recovery passed, and the full-suite rerun passed.
+
+Follow-up action: include the recovered historical cross-link in the PR report and continue with package, smoke, and
+scope verification.
+
+## Entry
+
+Date/time: 2026-07-16T07:02-07:00
+
+Branch/PR: codex/lase-phase6-reviewer-walkthrough-normalization / no PR yet
+
+Failure type: focused documentation guard recovery calibration
+
+Failing check: first recovery rerun of
+`mvn -q "-Dtest=AgentDecisionExplorerReviewerWalkthroughDocumentationTest" test`
+
+Suspected cause: the narrowed assertion still grouped `docs/REVIEWER_TRUST_MAP.md` with sources that use the exact
+`notProvenBoundaries` JSON spelling. The trust map instead preserves the normalized human-facing phrase
+`not-proven boundaries`.
+
+Fix attempted: require the exact JSON spelling only in the walkthrough, Phase 6 anchor, and static page, and require
+the semantic reviewer phrase in the trust map.
+
+Result: the second recovery rerun passed all six focused walkthrough-guard tests.
+
+Follow-up action: continue with the broader Decision Explorer reviewer, Phase 6, static-page, navigation, and API
+contract selector.
+
+## Entry
+
+Date/time: 2026-07-16T07:00-07:00
+
+Branch/PR: codex/lase-phase6-reviewer-walkthrough-normalization / no PR yet
+
+Failure type: focused documentation guard expectation calibration
+
+Failing check: `mvn -q "-Dtest=AgentDecisionExplorerReviewerWalkthroughDocumentationTest" test`
+
+Suspected cause: the first PR5 guard draft required `hidden approvals` as one contiguous Markdown phrase even though a
+line wrap separated the words, and it required `notProvenBoundaries` verbatim in `docs/API_CONTRACTS.md` even though
+that document preserves the boundary semantically without that exact JSON spelling.
+
+Fix attempted: keep the safety phrase contiguous in the walkthrough; require the five Phase 6 evidence-group field
+names across every current source; and check `notProvenBoundaries` only in the walkthrough, trust map, Phase 6 anchor,
+and static page where the exact spelling is present.
+
+Result: the first recovery rerun still failed because the trust-map expectation remained too exact; that follow-on
+failure and narrower recovery are recorded in the entry above.
+
+Follow-up action: rerun the focused walkthrough guard, then continue only if it passes.
+
+## Entry
+
 Date/time: 2026-07-16T06:35-07:00
 
 Branch/PR: codex/lase-phase6-panel-vocabulary-guards / PR #444

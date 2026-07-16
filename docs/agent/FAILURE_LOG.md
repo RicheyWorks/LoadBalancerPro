@@ -17,10 +17,10 @@ Failing check: `gh auth status` followed by the read-only `gh api user` probe
 Observed/root cause: Git transport fetched exact `origin/main`, but the CLI reported its keyring token invalid; the
 API probe then received GitHub's HTTP 503 Unicorn page. This is remote credential/service state, not a repository diff.
 
-Correction/result: preserve the clean exact-base branch and audit available non-secret authentication paths before
-push or PR creation; no check, security control, repository state, or credential value was altered or exposed.
+Correction/result: no token environment override was present; a bounded retry returned the authenticated 5,000-call
+rate limit, PR listing worked, and both Git push and normal PR #460 creation succeeded without credential changes.
 
-Follow-up: retry bounded read-only GitHub access, then continue only through authenticated normal PR operations.
+Follow-up: require exact-final-head checks; treat any repeated user-endpoint HTML/503 as remote service instability.
 
 ## Entry
 

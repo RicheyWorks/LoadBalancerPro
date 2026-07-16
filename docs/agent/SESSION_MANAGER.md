@@ -8,19 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Loopback Experiment PR6 Checkpoint
 
-Timestamp: 2026-07-16T15:48-07:00
+Timestamp: 2026-07-16T15:51-07:00
 
 Goal name: bounded Enterprise Lab loopback experiment lifecycle
 
 Current PR slot: LOOPBACK-PR6 - end-to-end real-loopback completion and rollback proof
 
-Checkpoint: executable proof complete; exact-worktree local gate set and final scope audit green
+Checkpoint: implementation committed and pushed; PR created; exact-head remote checks pending
 
 Started from main SHA: `b5d0b19adc2a7af6a0882f1eca9df1a19e5b6b33`
 
 Current branch: codex/loopback-e2e-proof
 
-PR URL: not opened
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/460
+
+Implementation commit: `6a5fe504918b032c43c82f5cf0ab462a68241a66`
 
 Prior slot closure: PR #459 merged normally as `b5d0b19adc2a7af6a0882f1eca9df1a19e5b6b33` from exact head
 `f27b10fdfec9361dada894e74dc60a45ccbc6e16`. Exact-head CI runs `29537621793` and `29537636839`,

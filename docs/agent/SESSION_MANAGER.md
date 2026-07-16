@@ -8,19 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Loopback Experiment PR4 Checkpoint
 
-Timestamp: 2026-07-16T13:42-07:00
+Timestamp: 2026-07-16T13:44-07:00
 
 Goal name: bounded Enterprise Lab loopback experiment lifecycle
 
 Current PR slot: LOOPBACK-PR4 - real hold-down and automatic local rollback evaluation
 
-Checkpoint: evaluator implementation and full local verification complete; preparing the exact PR4 candidate
+Checkpoint: implementation committed, pushed, and PR created
 
 Started from main SHA: `d8d6858b73b4c709abe070316219e802b089f81d`
 
 Current branch: codex/loopback-rollback-evaluator
 
-PR URL: not opened
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/458
+
+Implementation commit: `3484454a9ecccbc947c339db3eff414e792aa35a`
 
 Prior slot closure: PR #457 merged normally as `d8d6858b73b4c709abe070316219e802b089f81d` from exact head
 `c1c5fc91c442b9163d6711c8ff9a5cfcad5bbb2e`. Exact-merge main CI run `29530928097` passed the full
@@ -83,8 +85,12 @@ Evidence boundary: this evaluator is synchronous, explicitly invoked, in-memory,
 does not expose operator APIs yet, persist evidence, schedule work, control production routing, validate live cloud or
 tenant behavior, or provide load/stress/benchmark evidence. Those remain not proven.
 
-Next action: run the campaign-documentation guard selector, audit and stage the bounded diff, commit and push the exact
-candidate, then open PR4 and require exact-head CI, CodeQL, and dependency-review success before merge.
+PR creation checkpoint: the exact implementation commit was pushed and PR #458 was created against `main`. `gh pr
+view` read back the full bounded scope, verification, safety, evidence-boundary, composition/recovery, and exact-head
+body at `3484454a9ecccbc947c339db3eff414e792aa35a`.
+
+Next action: rerun the focused campaign-documentation guards, commit and push this PR checkpoint, update the PR body to
+the resulting exact candidate head, then require exact-head CI, CodeQL, and dependency-review success before merge.
 
 Decision: continue LOOPBACK-PR4; do not open LOOPBACK-PR5 until PR4 is merged and exact merge-main CI/CodeQL are green.
 

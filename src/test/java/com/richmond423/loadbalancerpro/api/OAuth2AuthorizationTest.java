@@ -278,6 +278,47 @@ class OAuth2AuthorizationTest {
     }
 
     @Test
+    void oauth2ModeRequiresOperatorRoleForExperimentOperatorWorkflow() throws Exception {
+        mockMvc.perform(get("/api/lab/experiments"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/lab/experiments")));
+
+        mockMvc.perform(get("/api/lab/experiments")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.path", is("/api/lab/experiments")));
+
+        mockMvc.perform(get("/api/lab/experiments")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count", is(0)))
+                .andExpect(jsonPath("$.activeExperimentEnabled", is(false)));
+
+        String body = """
+                {
+                  "operatorRequestId":"oauth-arm-1",
+                  "experimentId":"oauth-experiment-1",
+                  "scenarioId":"tail-latency-pressure"
+                }
+                """;
+        mockMvc.perform(post("/api/lab/experiments/arm")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.path", is("/api/lab/experiments/arm")));
+
+        mockMvc.perform(post("/api/lab/experiments/arm")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("DENIED")))
+                .andExpect(jsonPath("$.reasonCode", is("EXPLICIT_ENABLEMENT_REQUIRED")))
+                .andExpect(jsonPath("$.trafficActionPerformed", is(false)));
+    }
+
+    @Test
     void oauth2ModeRequiresOperatorRoleForLabPolicyStatusAndAuditEvents() throws Exception {
         mockMvc.perform(get("/api/lab/policy"))
                 .andExpect(status().isUnauthorized())

@@ -10,15 +10,16 @@ Date/time: 2026-07-16T15:52-07:00
 
 Branch/PR: codex/loopback-e2e-proof / PR #460
 
-Failure type: PR body exact-head update argument-shape error
+Failure type: PR body exact-head update argument-shape errors
 
-Failing check: first `gh pr edit --body` update after the mandatory checkpoint push
+Failing check: first `gh pr edit --body` update and its first post-edit verification command
 
 Observed/root cause: PowerShell retained the multi-line PR body as an array, so the CLI received later lines as flags;
-the edit was rejected, while the repository, remote branch, PR content, and checks remained unchanged.
+the edit was rejected. The corrected stdin edit then succeeded, but a complex inline `--jq` expression was split into
+extra native arguments, so only that read-only verification failed; repository and PR content remained intact.
 
 Correction/result: join the retrieved lines explicitly and send the body through standard input with `--body-file -`;
-then verify the PR-reported head and body contain the final checkpoint SHA.
+retrieve the head and body separately and validate both with PowerShell string operations rather than inline jq.
 
 Follow-up: use stdin for later multi-line PR body replacements.
 

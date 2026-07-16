@@ -6,6 +6,29 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T14:52-07:00
+
+Branch/PR: codex/loopback-operator-api-evidence / PR #459
+
+Failure type: PR5 checkpoint implementation-SHA transcription error
+
+Failing check: `git rev-parse c0d86e11`
+
+Observed failure: the first PR-creation checkpoint expanded the correct short commit prefix to an incorrect full SHA.
+The repository commit, pushed branch, PR head, implementation, and verification evidence were unchanged.
+
+Root cause: the full SHA was transcribed before reading it from Git.
+
+Correction: replace the checkpoint value with Git's authoritative
+`c0d86e11243467ba216466e651d3831e4af58c37` output; do not infer full object identifiers from prefixes.
+
+Final verification: the focused campaign checkpoint/failure/scope documentation selector passed before the factual
+correction; rerun it after correcting this entry and checkpoint, then commit and push the metadata-only update.
+
+Follow-up action: audit PR #459 only against the final pushed metadata head.
+
+## Entry
+
 Date/time: 2026-07-16T14:38-07:00
 
 Branch/PR: codex/loopback-operator-api-evidence / no PR yet

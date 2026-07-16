@@ -8,19 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Loopback Experiment PR5 Checkpoint
 
-Timestamp: 2026-07-16T14:49-07:00
+Timestamp: 2026-07-16T14:51-07:00
 
 Goal name: bounded Enterprise Lab loopback experiment lifecycle
 
 Current PR slot: LOOPBACK-PR5 - authenticated operator control and immutable evidence API
 
-Checkpoint: implementation and final local verification complete; commit and PR creation pending
+Checkpoint: implementation committed and pushed; PR created; exact-head remote checks pending
 
 Started from main SHA: `aacf5999a2a4e3fa59cf584528579fd8c489d1df`
 
 Current branch: codex/loopback-operator-api-evidence
 
-PR URL: not opened
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/459
+
+Implementation commit: `c0d86e11243467ba216466e651d3831e4af58c37`
 
 Prior slot closure: PR #458 merged normally as `aacf5999a2a4e3fa59cf584528579fd8c489d1df` from exact head
 `69ccfd9282b9a93f7adc2a7f04436bd590877228`; exact-merge main CI `29533929044` and CodeQL
@@ -45,9 +47,9 @@ jar contained the new operator classes, and `scripts/smoke/enterprise-lab-workfl
 Scope audit: `git diff --check` passed. No POM, Maven, workflow, Docker, or Compose diff exists. Production-source
 scans found no external URL, cloud manager, environment-secret read, process, thread, executor, scheduler, async,
 socket, or second HTTP-client primitive. The only controller URI reads are existing-style error-path reporting; no
-caller target is accepted or returned. Executable/test additions are 90.10 percent of all additions including 299
-lines of mandatory session/failure records; excluding those mandatory campaign ledgers, the deliverable is over 99
-percent executable/test implementation.
+caller target is accepted or returned. The implementation commit's additions are 90.10 percent executable/test even
+including 299 lines of mandatory session/failure records; excluding those mandatory campaign ledgers, the deliverable
+is over 99 percent executable/test implementation. Later PR checkpoint metadata does not change the executable scope.
 
 Failure audit: focused expectation, Optional serialization, Spring test-bean naming, command quoting/globbing, and
 the terminal-capacity/request-queue audit finding are recorded with bounded corrections in `FAILURE_LOG.md`. All
@@ -57,8 +59,9 @@ Evidence boundary: PR5 proves only authenticated, explicitly invoked, process-lo
 not prove durable audit storage, background automation, arbitrary replay, external telemetry, production routing,
 live cloud or tenant behavior, load/stress/benchmark results, or production readiness.
 
-Next action: run the focused campaign documentation guards on this checkpoint, commit, push, open PR5, require exact-
-head CI/CodeQL/dependency review, merge normally, and require exact merge-main CI/CodeQL before opening LOOPBACK-PR6.
+Next action: commit and push this PR-creation checkpoint, then require exact-head CI, CodeQL, and dependency review;
+merge normally only when all required checks are current-head green, and require exact merge-main CI/CodeQL before
+opening LOOPBACK-PR6.
 
 Decision: continue LOOPBACK-PR5; do not open LOOPBACK-PR6 until PR5 is merged and exact merge-main CI/CodeQL are green.
 

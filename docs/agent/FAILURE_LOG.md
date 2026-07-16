@@ -6,6 +6,29 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T09:15-07:00
+
+Branch/PR: codex/adaptive-core-score-allocation / no PR yet
+
+Failure type: stale Surefire report inflation in historical XML rollups
+
+Failing check: the initial raw `target/surefire-reports/TEST-*.xml` rollup reported 2,939 tests after the full PR3
+suite, while Maven's fresh non-quiet package summary reported 2,914.
+
+Suspected cause: five reports containing 25 tests were last written in May 2026 and remained under `target`; Maven
+does not clean unrelated focused-selector reports before a later full run. This also inflated the previously recorded
+CORE-PR1 and CORE-PR2 XML-only totals by 25, without changing their zero-failure results or remote green checks.
+
+Fix attempted: compare report timestamps to the completed full package window and use Maven's fresh-run summary rather
+than an unfiltered persistent-directory rollup.
+
+Result: the current `mvn -B package` run passed with 2,914 tests and zero failures, errors, or skips; 420 reports were
+freshly written during that run and the five stale reports account for the exact 25-test difference.
+
+Follow-up action: use the Maven full-run summary or clean/timestamp-bounded XML reports for later exact test totals.
+
+## Entry
+
 Date/time: 2026-07-16T08:41-07:00
 
 Branch/PR: codex/adaptive-core-bounded-scoring / no PR yet

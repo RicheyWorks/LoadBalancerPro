@@ -6,6 +6,31 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T08:41-07:00
+
+Branch/PR: codex/adaptive-core-bounded-scoring / no PR yet
+
+Failure type: known high-output Maven wrapper returned before child completion
+
+Failing checks: the `mvn -q test` and later `mvn -q package` command wrappers returned while their Maven and Surefire
+Java child processes were still running, so the wrappers' missing exit codes could not be accepted as results.
+
+Suspected cause: the same unified process-backend behavior recorded during CORE-PR1 recurred for a high-output full
+suite; no test or product failure was reported.
+
+Fix attempted: leave both child processes untouched, wait for the Maven parent to exit naturally, confirm no matching
+Java process remains, and aggregate only the final Surefire `tests`, `failures`, `errors`, and `skipped` XML
+attributes.
+
+Result: both completed report sets contain 2,931 tests with zero failures, errors, or skips, and the full package run
+refreshed `target/LoadBalancerPro-2.5.0.jar`. Focused tests, package-without-tests, and the independent Enterprise Lab
+shadow smoke also passed.
+
+Follow-up action: keep later Maven/package commands standalone and verify process completion plus exact XML attributes
+before accepting their results.
+
+## Entry
+
 Date/time: 2026-07-16T08:14-07:00
 
 Branch/PR: codex/adaptive-core-observation-state / no PR yet

@@ -6,7 +6,88 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Adaptive Core PR1 Checkpoint
+## Active Adaptive Core PR2 Checkpoint
+
+Timestamp: 2026-07-16T08:46-07:00
+
+Goal name: LoadBalancerPro executable adaptive traffic-control core
+
+Current PR slot: CORE-PR2 - structured bounded recommendation scoring
+
+Checkpoint: implementation and local verification complete; commit pending
+
+Started from main SHA: `07c70661009b9fe3cbd63f5db920ce11f23aeb1e`
+
+Current branch: codex/adaptive-core-bounded-scoring
+
+PR URL: pending
+
+Changed files planned for this slice:
+
+- extend the existing `ScoreFactorContribution`, `ServerScoreBreakdown`, and `ServerScoreCalculator` contracts with
+  typed raw/normalized/weight values and a bounded recommendation-score path
+- add a small immutable scoring-policy bounds record rather than a parallel calculator abstraction
+- focused behavioral tests for normalization, clamping, confidence/degradation penalties, determinism, and
+  missing/stale/sparse fail-closed behavior
+- required session/failure checkpoints only
+
+Checks run:
+
+- CORE-PR1 PR #449 passed both exact-head CI event runs, CodeQL Java analysis, and the applicable dependency review
+  at final head `b3a4d862e172d4bd34859092a2f9ec7d2140f8a3`.
+- PR #449 merged as `07c70661009b9fe3cbd63f5db920ce11f23aeb1e`.
+- Post-merge main CI run `29511318851` passed on that exact SHA, including 2,926 tests with zero skips, coverage,
+  executable packaging, artifact verification, SBOM, command/JAR smokes, Docker build, container runtime smoke,
+  dry-run evidence, and the enforced image scan.
+- Post-merge main CodeQL run `29511318949` passed on that exact SHA.
+- Local main and `origin/main` were clean and synchronized at the exact merge SHA before PR2 branch creation.
+- The PR2 audit confirmed the repository already has one lower-is-better `ServerScoreCalculator`, structured
+  `ScoreFactorContribution` descriptions/directions, and `ServerScoreBreakdown`; this slot will evolve those types
+  rather than introduce another scoring model.
+- The audit also confirmed the current factor record lacks typed raw, normalized, and weight values, and the existing
+  legacy score is unbounded. The new recommendation path will be explicitly bounded while the legacy route-strategy
+  method remains compatibility-preserving.
+- Extended `ScoreFactorContribution` with optional typed raw, normalized, and weight values while preserving its
+  existing constructor and downstream API mapping compatibility. Structured exact contributions reject malformed
+  normalized ranges, weights, or `normalized * weight` arithmetic.
+- Strengthened `ServerScoreBreakdown` so its total must equal its exact factor-contribution total.
+- Added `ServerRecommendationScorePolicy` with finite positive latency, jitter, and ineligibility bounds, and added
+  `ServerScoreCalculator.recommendationScore(...)` / `recommendationScoreBreakdown(...)` instead of introducing a
+  parallel calculator.
+- The bounded path exposes 12 deterministic factors: average/p95/p99 latency, in-flight, queue, recent error,
+  timeout, connection failure, jitter, confidence, degradation, and recommendation eligibility. The base factor
+  weights derive to a 100-point maximum, and the configurable ineligibility penalty produces a finite explicit upper
+  bound; legacy score behavior remains unchanged.
+- Focused scoring/observation compatibility selector passed:
+  `mvn -q "-Dtest=ServerRecommendationScoreTest,ServerScoreCalculatorFactorContributionTest,ServerObservationScoreIntegrationTest,ServerRollingSignalStateTest,LatencyWindowSignalTest,ServerStateVectorSignalExpansionTest" test`.
+- The post-audit focused rerun passed:
+  `mvn -q "-Dtest=ServerRecommendationScoreTest,ServerScoreCalculatorFactorContributionTest,ServerObservationScoreIntegrationTest" test`.
+- Full `mvn -q test` completed with 2,931 tests and zero failures, errors, or skips.
+- `mvn -q -DskipTests package` passed. Full `mvn -q package` completed with the same 2,931 / 0 / 0 / 0 rollup and
+  refreshed `target/LoadBalancerPro-2.5.0.jar`.
+- `scripts/smoke/enterprise-lab-workflow.ps1 -Package` passed independently in bounded shadow mode for 10 scenarios
+  and performed no API server, live-cloud, external-network, release, tag, asset, container, or registry action.
+- The known high-output command-wrapper behavior recurred for the full test and package commands. Both Maven child
+  processes were left untouched, allowed to complete, and verified through final process absence and exact XML
+  attributes; the recovery is recorded in `docs/agent/FAILURE_LOG.md`.
+- `git diff --check` passed.
+
+Scope and safety: this slot is deterministic in-memory scoring and behavioral tests only. It does not change live
+routing, traffic, proxy behavior, external telemetry, cloud or tenant access, production activation, dependencies,
+Maven, CI, Docker, Compose, persistence, or runtime enforcement. The bounded recommendation score remains local-lab
+decision support and is not production scoring, performance, or telemetry proof.
+
+Remote status: main CI and CodeQL are green at the exact PR2 branch base; PR checks do not exist until the verified
+slice is committed, pushed, and opened.
+
+Blocker: none.
+
+Next action: complete the changed-path/security audit, run the agent-documentation guards, stage the exact slice,
+create the implementation/checkpoint commits, push, and open PR2.
+
+Decision: continue CORE-PR2; do not open CORE-PR3 until PR2 merges and exact-head main checks are green.
+
+## Historical Adaptive Core PR1 Checkpoint
 
 Timestamp: 2026-07-16T08:22-07:00
 

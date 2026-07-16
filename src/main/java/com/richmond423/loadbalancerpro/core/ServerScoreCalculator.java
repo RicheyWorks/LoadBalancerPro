@@ -19,6 +19,28 @@ public final class ServerScoreCalculator {
     private static final double LATENCY_JITTER_WEIGHT = 0.50;
     private static final double RECENT_ERROR_BURST_PENALTY = 250.0;
     private static final double REQUEST_TIMEOUT_COUNT_WEIGHT = 20.0;
+    private static final double RECOMMENDATION_AVERAGE_LATENCY_WEIGHT = 5.0;
+    private static final double RECOMMENDATION_P95_LATENCY_WEIGHT = 12.0;
+    private static final double RECOMMENDATION_P99_LATENCY_WEIGHT = 18.0;
+    private static final double RECOMMENDATION_IN_FLIGHT_WEIGHT = 10.0;
+    private static final double RECOMMENDATION_QUEUE_WEIGHT = 5.0;
+    private static final double RECOMMENDATION_ERROR_RATE_WEIGHT = 15.0;
+    private static final double RECOMMENDATION_TIMEOUT_RATE_WEIGHT = 8.0;
+    private static final double RECOMMENDATION_CONNECTION_FAILURE_WEIGHT = 8.0;
+    private static final double RECOMMENDATION_JITTER_WEIGHT = 4.0;
+    private static final double RECOMMENDATION_CONFIDENCE_WEIGHT = 5.0;
+    private static final double RECOMMENDATION_DEGRADATION_WEIGHT = 10.0;
+    private static final double RECOMMENDATION_BASE_WEIGHT_TOTAL = RECOMMENDATION_AVERAGE_LATENCY_WEIGHT
+            + RECOMMENDATION_P95_LATENCY_WEIGHT
+            + RECOMMENDATION_P99_LATENCY_WEIGHT
+            + RECOMMENDATION_IN_FLIGHT_WEIGHT
+            + RECOMMENDATION_QUEUE_WEIGHT
+            + RECOMMENDATION_ERROR_RATE_WEIGHT
+            + RECOMMENDATION_TIMEOUT_RATE_WEIGHT
+            + RECOMMENDATION_CONNECTION_FAILURE_WEIGHT
+            + RECOMMENDATION_JITTER_WEIGHT
+            + RECOMMENDATION_CONFIDENCE_WEIGHT
+            + RECOMMENDATION_DEGRADATION_WEIGHT;
 
     public double score(ServerStateVector state) {
         Objects.requireNonNull(state, "state cannot be null");
@@ -40,6 +62,135 @@ public final class ServerScoreCalculator {
                 .mapToDouble(contribution -> contribution.contributionValue().orElseThrow())
                 .sum();
         return new ServerScoreBreakdown(state.serverId(), totalScore, contributions);
+    }
+
+    public double recommendationScore(
+            ServerStateVector state,
+            ServerRollingSignalState signalState,
+            ServerRecommendationScorePolicy policy) {
+        return recommendationScoreBreakdown(state, signalState, policy).totalScore();
+    }
+
+    public ServerScoreBreakdown recommendationScoreBreakdown(
+            ServerStateVector state,
+            ServerRollingSignalState signalState,
+            ServerRecommendationScorePolicy policy) {
+        Objects.requireNonNull(state, "state cannot be null");
+        Objects.requireNonNull(signalState, "signalState cannot be null");
+        Objects.requireNonNull(policy, "policy cannot be null");
+        if (!state.serverId().equals(signalState.serverId())) {
+            throw new IllegalArgumentException("state serverId must match signalState serverId");
+        }
+        if (!state.timestamp().equals(signalState.evaluatedAt())) {
+            throw new IllegalArgumentException("state timestamp must match signalState evaluatedAt");
+        }
+        requireSameRate(state.recentErrorRate(), signalState.failureRate(),
+                "state recentErrorRate must match signalState failureRate");
+        requireSameRate(state.networkAwarenessSignal().timeoutRate(), signalState.timeoutRate(),
+                "state timeoutRate must match signalState timeoutRate");
+        requireSameRate(state.networkAwarenessSignal().connectionFailureRate(), signalState.connectionFailureRate(),
+                "state connectionFailureRate must match signalState connectionFailureRate");
+
+        List<ScoreFactorContribution> contributions = List.of(
+                recommendationFactor(
+                        "boundedAverageLatency",
+                        state.effectiveAverageLatencyMillis(),
+                        normalize(state.effectiveAverageLatencyMillis(), policy.maximumLatencyMillis()),
+                        RECOMMENDATION_AVERAGE_LATENCY_WEIGHT,
+                        ScoreFactorDirection.NEUTRAL,
+                        "Effective average latency is clamped to the configured recommendation latency bound."),
+                recommendationFactor(
+                        "boundedP95Latency",
+                        state.effectiveP95LatencyMillis(),
+                        normalize(state.effectiveP95LatencyMillis(), policy.maximumLatencyMillis()),
+                        RECOMMENDATION_P95_LATENCY_WEIGHT,
+                        ScoreFactorDirection.NEUTRAL,
+                        "Effective p95 latency is clamped to the configured recommendation latency bound."),
+                recommendationFactor(
+                        "boundedP99Latency",
+                        state.effectiveP99LatencyMillis(),
+                        normalize(state.effectiveP99LatencyMillis(), policy.maximumLatencyMillis()),
+                        RECOMMENDATION_P99_LATENCY_WEIGHT,
+                        ScoreFactorDirection.NEUTRAL,
+                        "Effective p99 latency is clamped to the configured recommendation latency bound."),
+                recommendationFactor(
+                        "boundedInFlightPressure",
+                        state.inFlightPressure(),
+                        state.boundedInFlightPressure(),
+                        RECOMMENDATION_IN_FLIGHT_WEIGHT,
+                        ScoreFactorDirection.NEUTRAL,
+                        "In-flight pressure is clamped to the unit interval."),
+                recommendationFactor(
+                        "boundedQueuePressure",
+                        state.queuePressure(),
+                        state.boundedQueuePressure(),
+                        RECOMMENDATION_QUEUE_WEIGHT,
+                        ScoreFactorDirection.NEUTRAL,
+                        "Queue pressure is clamped to the unit interval."),
+                recommendationFactor(
+                        "boundedRecentErrorRate",
+                        state.recentErrorRate(),
+                        clampUnit(state.recentErrorRate()),
+                        RECOMMENDATION_ERROR_RATE_WEIGHT,
+                        ScoreFactorDirection.NEUTRAL,
+                        "Recent error rate is already a validated unit-interval signal."),
+                recommendationFactor(
+                        "boundedTimeoutRate",
+                        signalState.timeoutRate(),
+                        clampUnit(signalState.timeoutRate()),
+                        RECOMMENDATION_TIMEOUT_RATE_WEIGHT,
+                        ScoreFactorDirection.NEUTRAL,
+                        "Timeout rate is already a validated unit-interval rolling signal."),
+                recommendationFactor(
+                        "boundedConnectionFailureRate",
+                        signalState.connectionFailureRate(),
+                        clampUnit(signalState.connectionFailureRate()),
+                        RECOMMENDATION_CONNECTION_FAILURE_WEIGHT,
+                        ScoreFactorDirection.NEUTRAL,
+                        "Connection failure rate is already a validated unit-interval rolling signal."),
+                recommendationFactor(
+                        "boundedLatencyJitter",
+                        state.networkAwarenessSignal().latencyJitterMillis(),
+                        normalize(state.networkAwarenessSignal().latencyJitterMillis(),
+                                policy.maximumJitterMillis()),
+                        RECOMMENDATION_JITTER_WEIGHT,
+                        ScoreFactorDirection.NEUTRAL,
+                        "Latency jitter is clamped to the configured recommendation jitter bound."),
+                recommendationFactor(
+                        "confidencePenalty",
+                        confidencePenalty(signalState.confidence()),
+                        confidencePenalty(signalState.confidence()),
+                        RECOMMENDATION_CONFIDENCE_WEIGHT,
+                        ScoreFactorDirection.SUPPORTS_SELECTION,
+                        "Confidence maps deterministically to a bounded evidence penalty."),
+                recommendationFactor(
+                        "degradationPenalty",
+                        degradationPenalty(signalState.degradationState()),
+                        degradationPenalty(signalState.degradationState()),
+                        RECOMMENDATION_DEGRADATION_WEIGHT,
+                        ScoreFactorDirection.SUPPORTS_SELECTION,
+                        "Degradation state maps deterministically to a bounded state penalty."),
+                recommendationFactor(
+                        "recommendationEligibilityPenalty",
+                        state.healthy() ? 0.0 : 1.0,
+                        state.healthy() ? 0.0 : 1.0,
+                        policy.ineligiblePenaltyWeight(),
+                        ScoreFactorDirection.SUPPORTS_SELECTION,
+                        "Ineligible score vectors receive the explicit configured fail-closed penalty."));
+
+        double totalScore = contributions.stream()
+                .mapToDouble(contribution -> contribution.contributionValue().orElseThrow())
+                .sum();
+        double maximumScore = maximumRecommendationScore(policy);
+        if (totalScore < 0.0 || totalScore > maximumScore + 0.000000001) {
+            throw new IllegalStateException("recommendation score exceeded its configured bounds");
+        }
+        return new ServerScoreBreakdown(state.serverId(), totalScore, contributions);
+    }
+
+    public double maximumRecommendationScore(ServerRecommendationScorePolicy policy) {
+        Objects.requireNonNull(policy, "policy cannot be null");
+        return RECOMMENDATION_BASE_WEIGHT_TOTAL + policy.ineligiblePenaltyWeight();
     }
 
     public List<ScoreFactorContribution> factorContributions(ServerStateVector state) {
@@ -250,6 +401,64 @@ public final class ServerScoreCalculator {
                 ScoreFactorExactness.NOT_EXPOSED,
                 contributionDescription,
                 boundaryNote);
+    }
+
+    private ScoreFactorContribution recommendationFactor(
+            String factorName,
+            double rawValue,
+            double normalizedValue,
+            double weight,
+            ScoreFactorDirection zeroDirection,
+            String explanation) {
+        double contributionValue = normalizedValue * weight;
+        ScoreFactorDirection direction = contributionValue > 0.0
+                ? ScoreFactorDirection.WEAKENS_SELECTION
+                : zeroDirection;
+        return new ScoreFactorContribution(
+                factorName,
+                "rawValue=" + format(rawValue) + ", normalizedValue=" + format(normalizedValue),
+                "weight=" + format(weight),
+                direction,
+                "contribution = normalizedValue * weight = " + format(contributionValue),
+                OptionalDouble.of(contributionValue),
+                ScoreFactorExactness.EXACT_FROM_CALCULATOR,
+                explanation + " Lower bounded additive score favors selection.",
+                "This is deterministic local recommendation scoring, not production telemetry or routing proof.",
+                OptionalDouble.of(rawValue),
+                OptionalDouble.of(normalizedValue),
+                OptionalDouble.of(weight));
+    }
+
+    private double confidencePenalty(ServerSignalConfidence confidence) {
+        return switch (confidence) {
+            case NONE -> 1.0;
+            case LOW -> 0.75;
+            case MEDIUM -> 0.25;
+            case HIGH -> 0.0;
+        };
+    }
+
+    private double degradationPenalty(ServerDegradationState state) {
+        return switch (state) {
+            case UNKNOWN, FAILED -> 1.0;
+            case RECOVERING -> 0.75;
+            case PARTIALLY_DEGRADED -> 0.50;
+            case HEALTHY -> 0.0;
+        };
+    }
+
+    private double normalize(double value, double maximum) {
+        return clampUnit(value / maximum);
+    }
+
+    private double clampUnit(double value) {
+        return Math.max(0.0, Math.min(1.0, value));
+    }
+
+    private void requireSameRate(double first, double second, String message) {
+        if (Math.abs(first - second) > 0.000000001) {
+            throw new IllegalArgumentException(message);
+        }
     }
 
     private ScoreFactorDirection directionForPositivePenalty(double value) {

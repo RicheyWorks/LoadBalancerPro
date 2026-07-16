@@ -6,6 +6,70 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Loopback Experiment PR1 Checkpoint
+
+Timestamp: 2026-07-16T11:54-07:00
+
+Goal name: bounded Enterprise Lab loopback experiment lifecycle
+
+Current PR slot: LOOPBACK-PR1 - real loopback request observation capture
+
+Checkpoint: implementation committed, PR created, and PR-body input recovery verified
+
+Started from main SHA: `f52b6e878d6a81a97f2aaff7ec6148320b797286`
+
+Current branch: codex/loopback-observation-capture
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/455
+
+Implementation commit: `40ae39ee935b21fc25bebafcbdcfeea7a6f96b35`
+
+Runtime capability: add a bounded Enterprise Lab loopback request client and observation ingress that measure actual
+request outcomes, classify success/HTTP failure/timeout/connection failure, and append accepted events to the existing
+`ServerObservationWindow` model without changing the general reverse-proxy routing path.
+
+Implementation audit: the repository already has a real `ReverseProxyService`, the existing bounded observation and
+adaptive-decision models, a fixed ten-scenario Enterprise Lab catalog, and test-scope loopback fake servers plus
+traffic clients. The narrow runtime gap is a production local-lab-only request/outcome seam. The new seam will reuse
+the existing observation model, reject unknown backend identities, allow only literal loopback HTTP targets, never
+follow redirects, bound concurrency/timeouts/latency/windows, and expose structured recording results. It will not
+create another proxy, adaptive engine, scenario catalog, or production backend registry.
+
+Edit batch and focused verification: added an immutable literal-loopback target contract, a bounded atomic observation
+ingress, a bounded no-redirect HTTP client, and the explicit `ENTERPRISE_LAB_LOOPBACK` source. Actual loopback 204,
+302, and 503 responses were measured through a real ephemeral `127.0.0.1` HTTP server; deterministic transports cover
+timeout and connection-failure classification without sleeps. The ingress rejects unknown/duplicate/malformed events,
+caps approved backends, in-flight work, ID size, request timeout, measured latency, and retained observations, and
+returns structured recording failure evidence without throwing into the request path. The focused 14-test client and
+ingress selector passed. The broader observation, rolling-state, decision-orchestrator, Enterprise Lab, and existing
+reverse-proxy compatibility selector passed with 56 tests and zero failures, errors, or skips. `git diff --check`
+passed. Two development failures and their successful recoveries are recorded in `FAILURE_LOG.md`.
+
+Current-head verification: the embedded-Tomcat dependency tree resolves Spring Boot `3.5.14` and Tomcat `10.1.55`.
+`mvn -q test`, `mvn -q "-DskipTests" package`, and `mvn -B package` passed; the non-quiet package reported 2,964 tests,
+zero failures/errors/skips, a repackaged executable JAR, and `BUILD SUCCESS`. The packaged Enterprise Lab workflow
+smoke passed all ten fixed shadow scenarios and wrote target-only evidence while explicitly performing no API server,
+cloud, external-network, release, container, or registry action. The test count is 14 above the 2,950-test baseline.
+
+Verification baseline: local `main` and `origin/main` matched the clean starting SHA. Main CI run `29523040609` and
+CodeQL run `29523041002` passed on that exact SHA, including the 2,950-test package baseline.
+
+Scope/safety: production local-lab components and focused behavioral tests only, plus mandatory campaign records. The
+diff and source scans found no secret-like value, non-loopback runtime target, unbounded executor/queue, sleep-based
+test, or new production-network path. No
+cloud, tenant, public-network, production routing, arbitrary operator URL, secret, dependency, Maven, workflow,
+Docker, Compose, persistence, native executable, or production-activation change.
+
+PR creation checkpoint: the implementation commit was pushed and PR #455 was created against `main`. The first
+non-interactive `--body-file -` invocation left the PR description empty; that tooling failure and recovery are logged
+in `FAILURE_LOG.md`. A single-command body update succeeded, and `gh pr view` read back the intended bounded
+description at implementation head `40ae39ee935b21fc25bebafcbdcfeea7a6f96b35`.
+
+Next action: rerun the focused campaign-documentation guards, commit this PR checkpoint, push the exact candidate,
+then require exact-head CI, CodeQL, and dependency-review success before merge.
+
+Decision: continue LOOPBACK-PR1; do not open LOOPBACK-PR2 until PR1 is merged and exact merge-main CI/CodeQL are green.
+
 ## Active Adaptive Core PR6 Checkpoint
 
 Timestamp: 2026-07-16T11:07-07:00

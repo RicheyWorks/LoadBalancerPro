@@ -6,5 +6,6 @@ package com.richmond423.loadbalancerpro.core;
 public enum ServerObservationSource {
     LOCAL_ROUTING_PATH,
     LOCAL_HEALTH_CHECK,
-    ENTERPRISE_LAB
+    ENTERPRISE_LAB,
+    ENTERPRISE_LAB_LOOPBACK
 }

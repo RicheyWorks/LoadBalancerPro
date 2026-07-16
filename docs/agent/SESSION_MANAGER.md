@@ -6,7 +6,83 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active LASE Phase 6 PR5 Checkpoint
+## Active Adaptive Core PR1 Checkpoint
+
+Timestamp: 2026-07-16T08:17-07:00
+
+Goal name: LoadBalancerPro executable adaptive traffic-control core
+
+Current PR slot: CORE-PR1 - bounded observation ingestion and rolling signal state
+
+Checkpoint: implementation and local verification complete; commit pending
+
+Started from main SHA: `24e5d85f7f5f2140df8ede652b4b2a6c76cfef8f`
+
+Current branch: codex/adaptive-core-observation-state
+
+PR URL: pending
+
+Changed files for this slice:
+
+- immutable bounded server observation and rolling signal-state production types under
+  `src/main/java/com/richmond423/loadbalancerpro/core`
+- a narrow adapter into the existing `ServerStateVector` and `ServerScoreCalculator` path
+- focused behavioral tests under `src/test/java/com/richmond423/loadbalancerpro/core`
+- this checkpoint and the significant tooling-recovery entry in `docs/agent/FAILURE_LOG.md`
+
+Checks run:
+
+- Fetched `origin/main` and confirmed local main and `origin/main` were clean and synchronized at
+  `24e5d85f7f5f2140df8ede652b4b2a6c76cfef8f` before branch creation.
+- Main CI run `29506306083` and CodeQL run `29506306013` passed on that exact merge commit.
+- Audited the current observation, latency-window, state-vector, score-breakdown, distribution, routing-policy, and
+  Enterprise Lab seams before selecting this slot.
+- Confirmed that `LatencyWindowSignal`, `ServerStateVector`, `NetworkAwarenessSignal`, and
+  `ServerScoreCalculator` are the existing signal/score abstractions to extend; no bounded outcome observation window
+  or partial-degradation rolling state currently exists.
+- Confirmed the existing `LoadDistributionPlanner` allocates load against mutable server capacity and the existing
+  `AdaptiveRoutingPolicyEngine` gates a single string backend choice, so neither is a substitute for the scoped
+  observation/state foundation.
+- Added bounded local observation source and outcome types, validated immutable observation records, an immutable
+  size-bounded and deterministically ordered observation window, explicit missing/stale/sparse/sufficient evidence,
+  confidence, partial-degradation/failure/recovery state, derived network risk, and strict public-record invariants.
+- Added `ServerStateVector.fromObservationState(...)` so sufficient rolling state feeds the existing
+  `LatencyWindowSignal`, `NetworkAwarenessSignal`, `ServerStateVector`, and explainable `ServerScoreCalculator` path.
+  Missing, stale, sparse, recovering, and failed state is ineligible and therefore receives the existing score-path
+  health penalty; sufficient partial degradation remains eligible but carries its measured failure/network penalty.
+- Focused observation/state/integration and existing latency/vector/score selector passed:
+  `mvn -q "-Dtest=ServerObservationTest,ServerObservationWindowTest,ServerRollingSignalStateTest,ServerObservationScoreIntegrationTest,LatencyWindowSignalTest,ServerStateVectorSignalExpansionTest,ServerScoreCalculatorFactorContributionTest" test`.
+- Full `mvn -q test` passed. The corrected exact XML attribute rollup reports 2,926 tests with zero failures, errors,
+  or skips.
+- `mvn -q -DskipTests package` passed. A direct `mvn -B --no-transfer-progress package` completed naturally after
+  the process wrapper returned early; the final report rollup remained 2,926 / 0 / 0 / 0 and the packaged
+  `target/LoadBalancerPro-2.5.0.jar` was refreshed at 08:16:46 local time.
+- `scripts/smoke/enterprise-lab-workflow.ps1 -Package` passed independently in bounded shadow mode for 10 scenarios
+  and wrote ignored evidence only under `target/enterprise-lab-runs`; it performed no API server, live-cloud,
+  external-network, release, tag, asset, container, or registry action.
+- The significant combined-command/XML-rollup recovery is recorded in `docs/agent/FAILURE_LOG.md`; no product defect
+  was found.
+- `git diff --check` passed. The changed-path audit is limited to 10 production core files, four focused behavioral
+  test files, and the two required agent checkpoint/failure records. It found no dependency, Maven, workflow,
+  Docker, Compose, script, external target, secret, credential, or production-activation change.
+
+Scope and safety: this slot adds only deterministic in-memory domain computation and tests. It does not add external
+telemetry, live-cloud or tenant access, network targets, autonomous traffic changes, production activation, secrets,
+dependencies, Maven/CI/Docker/Compose behavior, persistence, or runtime enforcement. Missing, stale, and sparse
+evidence must fail closed for adaptive recommendation eligibility. Partial degradation remains explicit rather than
+being collapsed into binary health.
+
+Remote status: main CI and CodeQL are green at the exact branch base; PR checks do not exist until the verified slice
+is committed, pushed, and opened.
+
+Blocker: none.
+
+Next action: stage the intended files, run cached-diff guards, create the PR1 implementation/checkpoint commit, push,
+open the PR, and require exact-head CI, CodeQL, and dependency review before merge.
+
+Decision: continue CORE-PR1 on this branch; do not open CORE-PR2 until PR1 merges and exact-head main checks are green.
+
+## Historical LASE Phase 6 PR5 Checkpoint
 
 Timestamp: 2026-07-16T06:54-07:00
 

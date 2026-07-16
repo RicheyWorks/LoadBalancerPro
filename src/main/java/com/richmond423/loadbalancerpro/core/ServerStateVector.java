@@ -144,6 +144,47 @@ public record ServerStateVector(
                 NetworkAwarenessSignal.neutral(server.getServerId(), timestamp), LatencyWindowSignal.empty(), timestamp);
     }
 
+    /**
+     * Builds a score-facing vector whose health flag also enforces adaptive evidence eligibility.
+     */
+    public static ServerStateVector fromObservationState(
+            Server server,
+            ServerRollingSignalState signalState,
+            int inFlightRequestCount,
+            OptionalDouble estimatedConcurrencyLimit,
+            OptionalInt queueDepth) {
+        Objects.requireNonNull(server, "server cannot be null");
+        Objects.requireNonNull(signalState, "signalState cannot be null");
+        Objects.requireNonNull(estimatedConcurrencyLimit, "estimatedConcurrencyLimit cannot be null");
+        Objects.requireNonNull(queueDepth, "queueDepth cannot be null");
+        if (!server.getServerId().equals(signalState.serverId())) {
+            throw new IllegalArgumentException("serverId must match signalState serverId");
+        }
+
+        LatencyWindowSignal latency = signalState.latencyWindowSignal();
+        double averageLatency = latency.rollingAverageLatencyMillis()
+                .orElseGet(() -> latency.ewmaLatencyMillis().orElse(0.0));
+        double p95Latency = latency.rollingP95LatencyMillis().orElse(averageLatency);
+        double p99Latency = latency.rollingP99LatencyMillis().orElse(p95Latency);
+        boolean recommendationEligible = server.isHealthy() && signalState.recommendationEligible();
+
+        return new ServerStateVector(
+                server.getServerId(),
+                recommendationEligible,
+                inFlightRequestCount,
+                OptionalDouble.of(server.getCapacity()),
+                estimatedConcurrencyLimit,
+                server.getWeight(),
+                averageLatency,
+                p95Latency,
+                p99Latency,
+                signalState.failureRate(),
+                queueDepth,
+                signalState.networkAwarenessSignal(),
+                latency,
+                signalState.evaluatedAt());
+    }
+
     public double capacityBasis() {
         if (estimatedConcurrencyLimit.isPresent()) {
             return Math.max(MINIMUM_CAPACITY_BASIS, estimatedConcurrencyLimit.getAsDouble());

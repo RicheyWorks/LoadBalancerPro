@@ -66,7 +66,9 @@ class AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest {
                 "tomcat",
                 "10.1.55",
                 "netty-bom",
-                "4.2.13.final",
+                "4.2.15.final",
+                "jackson-bom",
+                "2.21.4",
                 "aws sdk v2",
                 "2.44.4",
                 "javafx",
@@ -92,7 +94,8 @@ class AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest {
         assertEquals("17", property(pom, "java.version"));
         assertEquals("3.5.14", property(pom, "spring-boot.version"));
         assertEquals("10.1.55", property(pom, "tomcat.version"));
-        assertEquals("4.2.13.Final", property(pom, "netty.version"));
+        assertEquals("4.2.15.Final", property(pom, "netty.version"));
+        assertEquals("2.21.4", property(pom, "jackson.version"));
         assertEquals("2.44.4", property(pom, "aws-sdk-v2.version"));
         assertEquals("17.0.19", property(pom, "javafx.version"));
         assertEquals("0.8.13", property(pom, "jacoco.version"));
@@ -120,6 +123,7 @@ class AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest {
         }
 
         for (String managed : List.of(
+                "com.fasterxml.jackson:jackson-bom:${jackson.version}",
                 "io.netty:netty-bom:${netty.version}",
                 "org.springframework.boot:spring-boot-dependencies:${spring-boot.version}",
                 "org.apache.tomcat.embed:tomcat-embed-core:${tomcat.version}",

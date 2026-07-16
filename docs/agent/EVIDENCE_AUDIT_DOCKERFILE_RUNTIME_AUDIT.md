@@ -21,9 +21,12 @@ This audit gives reviewers a source-readable summary of the container build and 
 The Dockerfile currently uses digest-pinned base images:
 
 - builder image: `maven:3-eclipse-temurin-26@sha256:1fc9415e0626a5893bbc352149d25a413e334a7ac5cd514bd99a2828fb082071`;
-- runtime image: `eclipse-temurin:17-jre-jammy@sha256:642d45bf22d3cb9face159181732ed9fa70873b2681e50445eff7d4785c176bb`.
+- runtime image: `eclipse-temurin:17-jre-jammy@sha256:475d8e96b4b2bfe08999e5e854755c773af1581acdf959a4545d88f0696a2339`.
 
 The digest pins make the reviewed source more stable, but they do not prove future image freshness, future vulnerability absence, registry availability, provenance, signing, SBOM completeness, or production readiness.
+
+The later 2026-07-16 security-maintenance refresh moved the runtime pin to a Jammy image whose installed `libssl3`
+and `openssl` packages are `3.0.2-0ubuntu1.25`; the historical slot 7 audit itself remained documentation/test-only.
 
 ## Build Stage Posture
 

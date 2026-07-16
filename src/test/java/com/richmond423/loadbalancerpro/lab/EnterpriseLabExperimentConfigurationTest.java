@@ -78,15 +78,19 @@ class EnterpriseLabExperimentConfigurationTest {
                 policy(), CREATED_AT, CREATED_AT.plusSeconds(60)));
 
         assertThrows(IllegalArgumentException.class,
-                () -> new EnterpriseLabExperimentRollbackPolicy(-0.1, 0.1, 1.5, 2, 3));
+                () -> new EnterpriseLabExperimentRollbackPolicy(-0.1, 0.1, 1.5, 2, 3, 0, 0.1));
         assertThrows(IllegalArgumentException.class,
-                () -> new EnterpriseLabExperimentRollbackPolicy(0.2, 1.1, 1.5, 2, 3));
+                () -> new EnterpriseLabExperimentRollbackPolicy(0.2, 1.1, 1.5, 2, 3, 0, 0.1));
         assertThrows(IllegalArgumentException.class,
-                () -> new EnterpriseLabExperimentRollbackPolicy(0.2, 0.1, 0.9, 2, 3));
+                () -> new EnterpriseLabExperimentRollbackPolicy(0.2, 0.1, 0.9, 2, 3, 0, 0.1));
         assertThrows(IllegalArgumentException.class,
-                () -> new EnterpriseLabExperimentRollbackPolicy(0.2, 0.1, 1.5, 65, 3));
+                () -> new EnterpriseLabExperimentRollbackPolicy(0.2, 0.1, 1.5, 65, 3, 0, 0.1));
         assertThrows(IllegalArgumentException.class,
-                () -> new EnterpriseLabExperimentRollbackPolicy(0.2, 0.1, 1.5, 2, 1_001));
+                () -> new EnterpriseLabExperimentRollbackPolicy(0.2, 0.1, 1.5, 2, 1_001, 0, 0.1));
+        assertThrows(IllegalArgumentException.class,
+                () -> new EnterpriseLabExperimentRollbackPolicy(0.2, 0.1, 1.5, 2, 3, 65, 0.1));
+        assertThrows(IllegalArgumentException.class,
+                () -> new EnterpriseLabExperimentRollbackPolicy(0.2, 0.1, 1.5, 2, 3, 0, 1.1));
     }
 
     private static EnterpriseLabExperimentConfiguration configuration(

@@ -19,6 +19,14 @@ public record ServerScoreBreakdown(
         for (ScoreFactorContribution contribution : factorContributions) {
             Objects.requireNonNull(contribution, "factorContributions cannot contain null values");
         }
+        double exactContributionTotal = factorContributions.stream()
+                .filter(ScoreFactorContribution::hasExactContributionValue)
+                .mapToDouble(contribution -> contribution.contributionValue().orElseThrow())
+                .sum();
+        double tolerance = Math.max(1.0, Math.abs(totalScore)) * 0.000000001;
+        if (Math.abs(totalScore - exactContributionTotal) > tolerance) {
+            throw new IllegalArgumentException("totalScore must equal the exact contribution total");
+        }
     }
 
     public double exactContributionTotal() {

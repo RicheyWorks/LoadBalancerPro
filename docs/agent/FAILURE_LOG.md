@@ -23,7 +23,8 @@ Root cause: PowerShell/.NET parsed the adjacent replacement text `$1` plus a SHA
 Correction: commit this failure checkpoint, then rewrite the final body section with an unambiguous literal heading
 and candidate SHA (or `${1}` syntax) and read it back before accepting the remote gate.
 
-Final verification: pending corrected PR-body readback. Branch content, exact head, and CI triggers were unaffected.
+Final verification: the full PR body was rewritten from a literal here-string and read back with the intact heading and
+exact candidate SHA. Branch content and CI triggering remained unaffected throughout the recovery.
 
 Follow-up action: push the failure checkpoint, update the body to the new exact head, and verify the full final section.
 

@@ -8,13 +8,13 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Adaptive Core PR1 Checkpoint
 
-Timestamp: 2026-07-16T08:20-07:00
+Timestamp: 2026-07-16T08:22-07:00
 
 Goal name: LoadBalancerPro executable adaptive traffic-control core
 
 Current PR slot: CORE-PR1 - bounded observation ingestion and rolling signal state
 
-Checkpoint: PR #449 opened; PR-creation checkpoint commit pending
+Checkpoint: PR #449 opened; final-head remote audit pending
 
 Started from main SHA: `24e5d85f7f5f2140df8ede652b4b2a6c76cfef8f`
 
@@ -26,6 +26,9 @@ Implementation commit: `4d634959516a77fc91f7f80faca5d0c4688d0f44`
 
 PR creation head: `82e3c255de096db7dd4642a23414982984cd8959`; this PR-creation checkpoint will
 create a new exact head before remote checks are accepted
+
+PR-creation checkpoint commit: `ec5e80e6b2ce653ebf7505d9c9cd32ea19ba9a0d`; the tooling-recovery record in
+this checkpoint will create the final exact head before remote checks are accepted
 
 Changed files for this slice:
 
@@ -76,6 +79,10 @@ Checks run:
 - Post-verification checkpoint commit `82e3c255de096db7dd4642a23414982984cd8959` was created, the branch was pushed,
   and PR #449 was opened with the implementation-first scope, exact local verification record, safety boundaries, and
   remaining not-proven claims.
+- PR-creation checkpoint commit `ec5e80e6b2ce653ebf7505d9c9cd32ea19ba9a0d` was created. The combined
+  documentation-guard/commit/push wrapper stopped before its push, so the local/remote SHA mismatch was detected and
+  recovered with a standalone `git push`; the recurring wrapper behavior is included in the current failure-log
+  entry. Checks started on `82e3c255de096db7dd4642a23414982984cd8959` are stale.
 
 Scope and safety: this slot adds only deterministic in-memory domain computation and tests. It does not add external
 telemetry, live-cloud or tenant access, network targets, autonomous traffic changes, production activation, secrets,
@@ -83,13 +90,13 @@ dependencies, Maven/CI/Docker/Compose behavior, persistence, or runtime enforcem
 evidence must fail closed for adaptive recommendation eligibility. Partial degradation remains explicit rather than
 being collapsed into binary health.
 
-Remote status: main CI and CodeQL are green at the exact branch base. PR checks started before this PR-creation
-checkpoint is pushed are stale; require the complete final-head rollup after the new checkpoint commit.
+Remote status: main CI and CodeQL are green at the exact branch base. PR checks on either pre-recovery head are stale;
+require the complete final-head rollup after this tooling-recovery checkpoint is pushed.
 
 Blocker: none.
 
-Next action: commit and push this factual PR-creation checkpoint, then require exact-head CI, CodeQL, and dependency
-review before merge.
+Next action: commit this factual tooling-recovery checkpoint, push it with a standalone command, then require
+exact-head CI, CodeQL, and dependency review before merge.
 
 Decision: continue CORE-PR1 on this branch; do not open CORE-PR2 until PR1 merges and exact-head main checks are green.
 

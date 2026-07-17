@@ -8,19 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Durable Experiment Journal PR6 Checkpoint
 
-Timestamp: 2026-07-17T00:50-07:00
+Timestamp: 2026-07-17T00:54-07:00
 
 Goal name: crash-safe append-only experiment evidence journal with verified replay and restart reconciliation
 
 Current PR slot: JOURNAL-PR6 - live transition journaling, bounded retention/compaction, operator evidence, and packaged proof
 
-Checkpoint: implementation, exact-candidate package, and scope/composition audit green; packaged proof rerun and PR creation next
+Checkpoint: PR #466 opened from the verified executable commit; final checkpoint push and exact-head remote gates next
 
 Started from main SHA: `ae61b00296890f200b7389e696ab70b9779a47ee`
 
 Current branch: codex/journal-retention-operator-proof
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/466
+
+Executable commit: `ebd287ee68c7fef0e38563eebebe2f36c4ec9e40`
 
 Prior slot closure: PR #465 merged normally as `ae61b00296890f200b7389e696ab70b9779a47ee` from exact final head
 `9736539c2c5a48145c41da0cad80925d7fbc64a2` and executable commit
@@ -66,8 +68,11 @@ implementation/test/script lines and 307 net documentation lines
 --check` passed, and the scope contains no dependency, workflow, Docker, or Compose changes. Docker Desktop and local Trivy
 are unavailable, so exact CI Docker/runtime/Trivy remains required.
 
-Decision: continue to packaged proof rerun, final artifact/scope checks, commit/push/PR, exact-head gates, normal merge, and
-exact-merge main gates. Do not advance or close the campaign until those remote gates are current-head green.
+PR status: branch pushed and PR #466 opened. Required final-head CI, CodeQL, code scanning, dependency review, packaged
+runtime, Docker runtime, and Trivy checks are pending on the checkpoint head that will include this metadata update.
+
+Decision: push this checkpoint, then wait for exact-head gates, merge normally without deleting the source branch only if
+all gates are green, and require exact-merge main gates before campaign closeout.
 
 ## Active Durable Experiment Journal PR5 Checkpoint
 

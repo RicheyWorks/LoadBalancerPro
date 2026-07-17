@@ -6,6 +6,60 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Single-Host Evidence Ownership PR2 Checkpoint
+
+Timestamp: 2026-07-17T16:25-07:00
+
+Current slot: OWNERSHIP-PR2 - OS-backed exclusive lock, durable owner publication, and orderly release
+
+Started from clean synchronized main: `69521c41cd4ad271998d10e77675439051afa79a`
+
+Current branch: `codex/ownership-filelock-durable-record`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/468
+
+Executable commits: baseline `dfa0f69c497c1dbe9420d5127f949719647c33fa`; correction `8ec19227748c44d92aafd26a11675e93ae18710d`
+
+Prior slot closure: PR #467 merged normally from exact head `e81d46d73c62611276798535b75ade87dc74e9d6`
+as `69521c41cd4ad271998d10e77675439051afa79a`. Exact-head PR CI `29618492311`, push CI `29618490222`,
+CodeQL `29618492307`, code scanning, and dependency review passed. Exact merge-main CI `29618834573` and CodeQL
+`29618834601` passed 3,124 zero-skipped tests plus package, coverage, SBOM, packaged runtime, Docker runtime, and Trivy.
+
+Executable scope: acquire the fixed local lock file through non-blocking exclusive JDK `FileLock`, publish and verify
+the canonical owner record only after lock acquisition, hold channel and lock for the complete lease lifetime, refuse
+same-process duplicates and live competing owners, bound attempts and retry delay, preserve the lock file, and durably
+record release before idempotently releasing/closing resources. PR2 does not add renewal, takeover, startup wiring,
+mutation fencing, APIs, schedulers, separate-process proof, external targets, or multi-host behavior.
+
+Implemented: a process-local reservation plus a non-blocking exclusive `FileLock`; a reopened-path overlap probe that
+detects lock-file replacement before publication; internally generated bounded owner identity; fixed-path canonical
+record storage with temporary and installed file force, atomic move, POSIX directory metadata force, and exact read-back;
+one final live resource retaining the private lock/channel; and durable `RELEASED` publication before bounded idempotent
+resource close. Existing owner evidence is preserved and refused until the later takeover slice. After exact-head Linux
+CI reused the test lock's inode, storage identity was bound to file key plus creation identity, never owner liveness.
+
+Local verification: production compilation passed. The 39-test ownership selector and 89-test ownership/journal/campaign
+bundle passed with zero failures, errors, or skips. `mvn -q test` passed 3,141 tests in 446 suites with zero failures,
+errors, or skips. Embedded Tomcat resolution passed at 10.1.55; current-head skip-test packaging passed; the packaged JAR
+contains the manager, record store, and live lease. The 13-scenario/837-request experiment proof and 124-request durable
+recovery proof passed. JaCoCo analyzed 824 classes; CycloneDX generated and validated 144-component XML/JSON BOMs.
+The normal exact-candidate `mvn -B package` passed the same 3,141 zero-skipped tests and rebuilt the JAR. Its packaged
+experiment proof passed at fingerprint `2f5dae64bf39507dbbda3dc9fb1b06eb19a00888535417d71a4c8f5a1d3cba1b`;
+the durable proof passed at `3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2ed839ff7afd6a`.
+After correction, the 39-test selector and `mvn -B package` passed; full package again passed all 3,141 zero-skipped tests.
+
+Remote gate status: rejected head `123af9677bab1778371d259329221bc62ba6b73c` failed both CI paths on Linux inode reuse.
+Corrected head `7af5393bf70bd39fcb4fa567f1595ef1ba43f8d8` started fresh gates, but they become stale after the required local
+tooling-failure checkpoint. Require another exact-head cycle; neither stale head is merge evidence.
+
+Scope audit: no dependency, POM, workflow, Docker, Compose, controller, scheduler, external/non-loopback target, caller
+owner/generation override, production lock deletion, force-unlock path, or generated evidence is present. The deliberate
+test-only released-lock deletion proves replacement detection. `git diff --check` passed. PR2 has 1,443 implementation/
+test and 209 documentation/process changed lines (87.35% / 12.65%); the PR1-PR2 campaign aggregate is 3,243 and 430
+(88.29% / 11.71%). Local Docker/Trivy is not claimed; the exact remote image/runtime/scan lane remains mandatory.
+
+Decision: push a corrected PR checkpoint and require new full exact-head and merge-main gates before OWNERSHIP-PR3.
+
 ## Active Single-Host Evidence Ownership PR1 Checkpoint
 
 Timestamp: 2026-07-17T15:39-07:00

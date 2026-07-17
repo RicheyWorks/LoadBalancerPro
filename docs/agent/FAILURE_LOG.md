@@ -4671,3 +4671,75 @@ the exact-head remote jobs continued normally.
 
 Correction/result: leave the read-only watcher to exit with its GitHub run and use bounded `gh run view`/`gh pr view`
 polls for subsequent gate audits. Treat all results on the prior SHA as stale after this checkpoint update.
+
+# 2026-07-17 - Ownership PR2 audit used a nonexistent test filename
+
+Branch/PR: `codex/ownership-filelock-durable-record` / pending
+
+Failing check: read-only source audit for journal-directory durability helpers and their tests.
+
+Observed/root cause: the command named `EnterpriseLabExperimentJournalDirectoryTest.java`, but this repository splits
+those cases across differently named journal security, retention, compaction, and local-journal tests. Source results
+were returned, but `rg` correctly reported the nonexistent explicit test path. No file or runtime state changed.
+
+Correction/result: discover the exact journal test filenames with `rg --files`, then inspect only the relevant existing
+files. Retain the repository's atomic-move, force, fixed-path, and Windows behavior as the PR2 reference contract.
+
+# 2026-07-17 - Ownership PR2 final source scan repeated a Windows glob error
+
+Branch/PR: `codex/ownership-filelock-durable-record` / pending
+
+Failing check: read-only unresolved-work, unbounded-loop, and lock-deletion scan over ownership production sources.
+
+Observed/root cause: one scan reused a wildcard-bearing Windows path instead of the already established directory plus
+`rg -g` form, so that production-source argument was rejected. The explicit manager test path still scanned and found
+only the deliberate test fixture that removes a released lock file to prove replacement detection. No product file or
+runtime state changed.
+
+Correction/result: rerun against the exact source directory with `-g 'EnterpriseLabEvidenceOwnership*.java'`, keep test
+fixtures separate from production findings, and require no product lock deletion, force unlock, unbounded loop, or TODO.
+
+# 2026-07-17 - Ownership PR2 exact-head CI detected Linux lock-file identity reuse
+
+Branch/PR: `codex/ownership-filelock-durable-record` / PR #468
+
+Failing checks: exact-head PR CI run `29620230062` and push CI run `29620228162` at
+`123af9677bab1778371d259329221bc62ba6b73c`.
+
+Observed/root cause: both independent CI runs failed the same executable replacement proof,
+`EnterpriseLabEvidenceOwnershipManagerTest.replacedLockFileIsDetectedBeforeAnyNewOwnerRecordCanBePublished`. The lock
+file was deleted only by the test after orderly release and recreated at the fixed path. Linux immediately reused the
+same provider file key, while the storage identity included creation time only when no provider file key existed. The
+replacement therefore produced the same fingerprint. This was a real fail-closed identity gap; packaging, Docker,
+runtime smoke, and Trivy steps correctly did not run after the test gate failed. CodeQL and dependency review passed.
+
+Correction/result: bind every controlled storage identity to both the provider file key, when available, and the file
+creation identity. Creation identity is used only to distinguish storage objects; it is not owner liveness or stale-owner
+evidence. Re-run focused replacement proofs, the compatibility selector, full verification, and new exact-head remote
+gates before merge.
+
+# 2026-07-17 - Ownership PR2 failure inspection repeated a Windows wildcard argument
+
+Branch/PR: `codex/ownership-filelock-durable-record` / PR #468
+
+Failing operation: a read-only post-CI source search passed `docs/agent/ENTERPRISE_LAB_EVIDENCE_OWNERSHIP*` directly to
+`rg` on Windows while collecting lock-identity references.
+
+Observed/root cause: Windows rejected the wildcard-bearing path. The Java source and test portions still returned the
+needed references, and separate exact-file reads supplied the contract. No repository or remote state changed.
+
+Correction/result: use an exact document path or `rg -g` for every later repository search; do not weaken or rerun a
+gate because of the local inspection error.
+
+# 2026-07-17 - Ownership PR2 step-progress filter was altered by PowerShell quoting
+
+Branch/PR: `codex/ownership-filelock-durable-record` / PR #468
+
+Failing operation: read-only `gh run view --jq` queries for the active CI and CodeQL step names on corrected head
+`7af5393bf70bd39fcb4fa567f1595ef1ba43f8d8`.
+
+Observed/root cause: PowerShell argument handling removed the intended string quoting inside the inline jq selector, so
+jq interpreted `in_progress` as a function name and rejected the local filter. GitHub runs were not changed or retried.
+
+Correction/result: use `gh` JSON output without inline jq and parse it after retrieval. Treat the currently running
+checks as stale after this required failure-log checkpoint; require fresh exact-head checks before merge.

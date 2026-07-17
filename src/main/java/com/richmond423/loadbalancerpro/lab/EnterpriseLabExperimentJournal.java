@@ -12,6 +12,8 @@ public interface EnterpriseLabExperimentJournal extends AutoCloseable {
 
     ReadResult read();
 
+    EnterpriseLabExperimentJournalVerifier.VerificationResult verify();
+
     String journalId();
 
     @Override

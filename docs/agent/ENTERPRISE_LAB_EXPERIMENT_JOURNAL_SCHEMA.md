@@ -4,8 +4,9 @@
 
 `enterprise-lab-experiment-journal-event/v1` is the canonical, data-only envelope for durable single-instance
 Enterprise Lab experiment evidence. `enterprise-lab-experiment-journal-payload/v1` is its bounded generic payload
-schema. PR1 implements the immutable model, canonical codec, and content fingerprint only; it does not write files,
-verify a multi-entry chain, replay an experiment, or reconcile startup state.
+schema. PR1 implements the immutable model, canonical codec, and content fingerprint; PR2 supplies the controlled local
+append boundary; and PR3 supplies bounded read-only chain verification. Replay and startup reconciliation remain later
+campaign slots.
 
 The envelope records sequence, experiment and scenario identity, event type, lifecycle states, logical cycle, injected
 timestamp, configuration/decision/baseline/candidate/applied allocation fingerprint references, structured reason,
@@ -79,6 +80,27 @@ retained. These stages report completed JDK and operating-system calls only. The
 persistence, power-loss survival on every filesystem, directory-entry persistence, hardware atomicity, remote-filesystem
 semantics, or multi-process exclusion.
 
+## Read-only Chain Verification
+
+The PR3 verifier reads only the controlled hashed journal selected by experiment identity and never exposes its path.
+It validates regular-file storage, declared and observed byte bounds, LF framing, entry and count bounds, strict decoding,
+canonical bytes, current and predecessor fingerprints, contiguous sequence, experiment identity, nondecreasing event
+time, lifecycle continuity, the existing lifecycle transition graph, and terminal-state behavior. A valid result carries
+the immutable verified events, last sequence, and last fingerprint for the later replay boundary. Invalid results carry
+one bounded first-failure classification and no replayable event list, so a malformed middle frame is never skipped.
+
+Structured classifications distinguish unsupported schema, malformed or non-canonical entries, current or predecessor
+fingerprint mismatch, missing/reordered/duplicated/otherwise-invalid sequence evidence, identity mismatch, illegal or
+post-terminal transitions, timestamp regression, unexpected trailing data, unsafe storage, I/O failure, and exceeded
+entry/count/journal bounds. The verifier preserves the original bytes; it does not truncate, repair, quarantine, append,
+rename, or replace the source.
+
+A non-LF-terminated final byte range is recoverable-tail evidence only when every complete prior frame forms a valid
+chain and the tail begins like a canonical JSON object. Arbitrary trailing bytes, empty complete frames, and any invalid
+LF-terminated frame remain invalid. Verification through an owning writer is serialized with append and close;
+independent competing verification is reported unavailable. Recovery policy, replay, repair, and quarantine mutation are
+not authorized by a verification result and remain later slots.
+
 ## Failure Semantics
 
 Append validation occurs before the first byte write. A failure before writing therefore leaves an empty or previously
@@ -93,4 +115,5 @@ Independent reads are rejected while a writer owns the journal; the owning write
 
 Failure injection proves these call boundaries and bounded-write rejection. It does not simulate an operating-system
 kernel crash, sudden power removal, torn storage-sector behavior, or an adversarial second process. Those remain explicit
-not-proven boundaries, and PR3 owns structured read-only corruption classification rather than PR2 mutation.
+not-proven boundaries. Fingerprint verification detects integrity changes but still does not authenticate an author,
+prove non-repudiation, establish tamper-proof storage, or prove operating-system crash durability.

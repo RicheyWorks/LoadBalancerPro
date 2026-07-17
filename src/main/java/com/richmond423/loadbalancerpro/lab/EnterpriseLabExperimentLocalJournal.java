@@ -7,6 +7,9 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournal.SyncPo
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalDirectory.FailureInjector;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalDirectory.WriteCheckpoint;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalStorageException.Failure;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier.Classification;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier.Outcome;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier.VerificationResult;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -33,6 +36,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
     private String previousFingerprint;
     private long totalBytes;
     private int entryCount;
+    private EnterpriseLabExperimentJournalEvent lastEvent;
     private boolean failed;
     private boolean closed;
     private boolean ownershipReleased;
@@ -58,6 +62,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
         this.failureInjector = Objects.requireNonNull(failureInjector, "failureInjector cannot be null");
         this.releaseOwnership = Objects.requireNonNull(releaseOwnership, "releaseOwnership cannot be null");
         this.entryCount = existing.events().size();
+        this.lastEvent = entryCount == 0 ? null : existing.events().get(entryCount - 1);
         this.nextSequence = entryCount + 1L;
         this.previousFingerprint = entryCount == 0
                 ? EnterpriseLabExperimentJournalEvent.GENESIS_FINGERPRINT
@@ -117,6 +122,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
             entryCount++;
             nextSequence++;
             previousFingerprint = event.currentEntryFingerprint();
+            lastEvent = event;
             totalBytes += frameBytes;
             return new AppendReceipt(
                     journalId,
@@ -149,6 +155,16 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
             failAndClose();
             throw exception;
         }
+    }
+
+    @Override
+    public synchronized VerificationResult verify() {
+        ensureOpen();
+        VerificationResult result = directory.verifyOwned(journalPath, journalId, experimentId);
+        if (result.outcome() != Outcome.VALID) {
+            failAndClose();
+        }
+        return result;
     }
 
     @Override
@@ -215,6 +231,13 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
         if (!previousFingerprint.equals(event.previousEntryFingerprint())) {
             throw EnterpriseLabExperimentJournalDirectory.failure(
                     Failure.PREDECESSOR_MISMATCH, "journal event predecessor fingerprint does not match");
+        }
+        Classification lifecycleFailure =
+                EnterpriseLabExperimentJournalVerifier.nextEventFailure(lastEvent, event);
+        if (lifecycleFailure != null) {
+            throw EnterpriseLabExperimentJournalDirectory.failure(
+                    Failure.VERIFICATION_FAILED,
+                    "journal event failed lifecycle verification: " + lifecycleFailure.name());
         }
     }
 

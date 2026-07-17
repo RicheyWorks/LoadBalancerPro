@@ -14,13 +14,15 @@ Goal name: crash-safe append-only experiment evidence journal with verified repl
 
 Current PR slot: JOURNAL-PR1 - canonical journal event model and codec
 
-Checkpoint: implementation and complete local verification green; ready to commit and publish
+Checkpoint: implementation committed and pushed; PR created; exact-head remote checks pending
 
 Started from main SHA: `3229a145d96d65ae689b606a2b93aa06a94e3427`
 
 Current branch: codex/journal-event-codec
 
-PR URL: not created
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/461
+
+Implementation commit: `08e01747fc9527078728baf8e89c1ef9395cdc20`
 
 Prior campaign closure: PR #460 merged normally as `3229a145d96d65ae689b606a2b93aa06a94e3427`. Local `main`
 was clean and equal to `origin/main` after a fresh fetch. Exact-merge main Build, Test, Package, Smoke and CodeQL checks
@@ -54,8 +56,8 @@ XML/JSON generation passed. The executable JAR contains every new journal class.
 loopback completion/rollback proof passed 837 requests with every baseline restored; the ten-scenario active-experiment
 workflow smoke also passed. Staged diff, forbidden-path, generated-evidence, secret-pattern, non-loopback/network,
 filesystem/process/execution, and dependency/scope scans passed. No POM, dependency, workflow, Docker, Compose,
-application configuration, API, or production route changed. The staged composition is 1,229 production/test lines and
-153 documentation/process lines: 88.93 percent executable and 11.07 percent documentation/process.
+application configuration, API, or production route changed. The branch composition is 1,229 production/test lines and
+154 documentation/process lines: 88.87 percent executable and 11.13 percent documentation/process.
 
 Decision: continue JOURNAL-PR1 through focused and full verification, exact-head remote checks, normal merge, and exact-
 merge main gates before starting JOURNAL-PR2.

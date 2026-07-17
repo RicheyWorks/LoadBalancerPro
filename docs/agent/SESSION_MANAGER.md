@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Single-Host Evidence Ownership PR1 Checkpoint
 
-Timestamp: 2026-07-17T15:31-07:00
+Timestamp: 2026-07-17T15:35-07:00
 
 Goal: restart-safe single-host writer ownership, stale-owner detection, and bounded takeover
 
@@ -18,7 +18,9 @@ Started from clean synchronized main: `a3fc534fd7d5d9ab80a7cd556ca2dbc9e129eb82`
 
 Current branch: `codex/ownership-domain-controlled-paths`
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/467
+
+Executable commit: `0b32c5ac44883943649b1d84f493c2dd200bf1c6`
 
 Prior campaign closure: durable journal PRs #461 through #466 merged normally. Exact merge-main CI `29564912097` and
 CodeQL `29564912093` are green on `a3fc534fd7d5d9ab80a7cd556ca2dbc9e129eb82`; the suite starts at 3,102 tests.
@@ -53,15 +55,15 @@ with interrupted rollback, corruption quarantine, and terminal compaction true a
 and validated XML/JSON BOMs with 144 components. `git diff --check` passed; generated target evidence is ignored; no
 production external/non-loopback target, secret input, force-unlock behavior, owner override, controller path, dependency,
 POM, workflow, Docker, or Compose change exists. The deliberate `FORCE_UNLOCKED` codec test is rejection evidence, not a
-runtime state or API. PR1 has 1,800 implementation/test changed lines and 205 documentation/process changed lines
-(89.78% / 10.22%). Local Docker/Trivy is not claimed; the unaffected repository image lane remains mandatory remotely.
+runtime state or API. PR1 has 1,800 implementation/test changed lines and 207 documentation/process changed lines
+(89.69% / 10.31%). Local Docker/Trivy is not claimed; the unaffected repository image lane remains mandatory remotely.
 
 Scope: no lock acquisition, mutation authority, startup wiring, traffic action, journal schema change, dependency, POM,
 workflow, Docker, Compose, external target, scheduler, API, force-unlock behavior, or generated evidence is added in PR1.
 
-Decision: finish the scope/composition audit, then create PR1, require exact-head CI, CodeQL, scanning, dependency review,
-packaged runtime, Docker/runtime, and Trivy, merge normally without branch deletion, and require exact-merge main gates
-before OWNERSHIP-PR2.
+Decision: push this PR checkpoint, require exact-head CI, CodeQL, scanning, dependency review, packaged runtime,
+Docker/runtime, and Trivy, merge normally without branch deletion, and require exact-merge main gates before
+OWNERSHIP-PR2.
 
 ## Active Durable Experiment Journal PR6 Checkpoint
 

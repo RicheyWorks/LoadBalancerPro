@@ -2,19 +2,26 @@ package com.richmond423.loadbalancerpro.api;
 
 import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyMode;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalDirectory;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorRecord;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.ArmRequest;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.OperatorReceipt;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.RequestBatchReceipt;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.RequestBatchRequest;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentRecoveryGate;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentStartupReconciler;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentTargetCatalog;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabProcessLocalAllocationRecovery;
 
+import java.nio.file.Path;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -229,8 +236,25 @@ public class EnterpriseLabExperimentController {
         @Bean(destroyMethod = "close")
         @ConditionalOnMissingBean(EnterpriseLabExperimentOperatorService.class)
         EnterpriseLabExperimentOperatorService enterpriseLabExperimentOperatorService(
-                EnterpriseLabExperimentTargetCatalog targetCatalog) {
-            return new EnterpriseLabExperimentOperatorService(targetCatalog);
+                EnterpriseLabExperimentTargetCatalog targetCatalog,
+                @Value("${loadbalancer.enterprise-lab.experiment-journal-data-directory:}")
+                String journalDataDirectory) {
+            if (journalDataDirectory == null || journalDataDirectory.isBlank()) {
+                return new EnterpriseLabExperimentOperatorService(targetCatalog);
+            }
+            if (!journalDataDirectory.equals(journalDataDirectory.trim())) {
+                throw new IllegalArgumentException(
+                        "experiment journal data directory must not contain surrounding whitespace");
+            }
+            EnterpriseLabExperimentJournalDirectory directory =
+                    EnterpriseLabExperimentJournalDirectory.create(Path.of(journalDataDirectory));
+            EnterpriseLabExperimentRecoveryGate gate = EnterpriseLabExperimentRecoveryGate.pending();
+            new EnterpriseLabExperimentStartupReconciler(
+                    directory,
+                    new EnterpriseLabProcessLocalAllocationRecovery(targetCatalog),
+                    gate,
+                    Clock.systemUTC()).initialize();
+            return new EnterpriseLabExperimentOperatorService(targetCatalog, gate);
         }
     }
 }

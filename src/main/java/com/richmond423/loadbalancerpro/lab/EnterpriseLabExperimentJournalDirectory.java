@@ -15,6 +15,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
@@ -25,9 +26,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HexFormat;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -39,9 +42,13 @@ import java.util.regex.Pattern;
 public final class EnterpriseLabExperimentJournalDirectory {
     public static final long HARD_MAX_JOURNAL_BYTES = 16L * 1024L * 1024L;
     public static final int HARD_MAX_JOURNAL_ENTRIES = 4_096;
+    public static final int HARD_MAX_DISCOVERED_JOURNALS = 256;
 
     private static final String NAMESPACE = "enterprise-lab-experiment-journals-v1";
     private static final String JOURNALS = "journals";
+    private static final String QUARANTINE = "quarantine";
+    private static final Pattern JOURNAL_FILE_NAME =
+            Pattern.compile("journal-v1-[0-9a-f]{64}\\.jsonl");
     private static final Pattern CANONICAL_EXPERIMENT_ID = Pattern.compile("[A-Za-z0-9._:-]+");
     private static final Set<PosixFilePermission> DIRECTORY_PERMISSIONS =
             PosixFilePermissions.fromString("rwx------");
@@ -51,6 +58,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
     private static final FailureInjector NO_FAILURE = (checkpoint, bytesWritten) -> { };
 
     private final Path journalsDirectory;
+    private final Path quarantineDirectory;
     private final EnterpriseLabExperimentJournalCodec codec;
     private final long maxJournalBytes;
     private final int maxJournalEntries;
@@ -73,6 +81,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
         Path root = validateTrustedRoot(trustedRoot);
         Path namespace = controlledDirectory(root, NAMESPACE);
         this.journalsDirectory = controlledDirectory(namespace, JOURNALS);
+        this.quarantineDirectory = controlledDirectory(namespace, QUARANTINE);
     }
 
     public static EnterpriseLabExperimentJournalDirectory create(Path trustedRoot) {
@@ -199,6 +208,145 @@ public final class EnterpriseLabExperimentJournalDirectory {
                         maxJournalBytes,
                         EnterpriseLabExperimentJournalReplayEngine.HARD_MAX_OPERATIONS);
         return new EnterpriseLabExperimentJournalReplayEngine(replayLimits).replay(verify(experimentId));
+    }
+
+    /**
+     * Discovers the bounded controlled journal namespace without accepting caller paths.
+     * The experiment identity is recovered only from a canonical first frame whose hash
+     * matches the controlled filename.
+     */
+    public List<JournalDiscovery> discover() {
+        List<Path> paths = new ArrayList<>();
+        try (var entries = Files.newDirectoryStream(journalsDirectory)) {
+            for (Path path : entries) {
+                if (paths.size() >= HARD_MAX_DISCOVERED_JOURNALS) {
+                    throw failure(Failure.DISCOVERY_LIMIT_EXCEEDED,
+                            "journal discovery exceeds the bounded journal count");
+                }
+                paths.add(path);
+            }
+        } catch (EnterpriseLabExperimentJournalStorageException exception) {
+            throw exception;
+        } catch (IOException exception) {
+            throw failure(Failure.IO_FAILURE, "controlled journal discovery failed", exception);
+        }
+        paths.sort(Comparator.comparing(path -> path.getFileName().toString()));
+        List<JournalDiscovery> discoveries = new ArrayList<>(paths.size());
+        for (Path path : paths) {
+            discoveries.add(discover(path));
+        }
+        return List.copyOf(discoveries);
+    }
+
+    /** Moves one discovered invalid journal into the controlled forensic quarantine namespace. */
+    QuarantineRecord quarantine(JournalDiscovery discovery, java.time.Clock clock, String reasonCode) {
+        JournalDiscovery safeDiscovery = Objects.requireNonNull(discovery, "discovery cannot be null");
+        java.time.Instant quarantinedAt = Objects.requireNonNull(clock, "clock cannot be null").instant();
+        String safeReason = requireReasonCode(reasonCode);
+        if (!safeDiscovery.journalId().matches("journal-v1-[0-9a-f]{64}")) {
+            throw new IllegalArgumentException(
+                    "only a recognized controlled journal file can be quarantined");
+        }
+        Path source = journalPath(safeDiscovery.journalId());
+        Object owner = claim(source);
+        try {
+            validateJournalFile(source);
+            String quarantineId = safeDiscovery.journalId() + "-"
+                    + quarantinedAt.toEpochMilli() + "-" + quarantinedAt.getNano();
+            Path destination = quarantinePath(quarantineId);
+            try {
+                restrictPermissions(source, FILE_PERMISSIONS);
+                Files.move(source, destination, StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException exception) {
+                throw failure(Failure.QUARANTINE_FAILED,
+                        "journal could not be atomically preserved in quarantine", exception);
+            }
+            return new QuarantineRecord(
+                    quarantineId,
+                    safeDiscovery.journalId(),
+                    safeDiscovery.experimentId(),
+                    safeDiscovery.classification(),
+                    safeReason,
+                    quarantinedAt,
+                    true);
+        } finally {
+            ACTIVE_WRITERS.remove(source, owner);
+        }
+    }
+
+    private JournalDiscovery discover(Path path) {
+        String fileName = path.getFileName().toString();
+        if (!JOURNAL_FILE_NAME.matcher(fileName).matches()) {
+            return JournalDiscovery.unrecognized(opaqueJournalId(fileName));
+        }
+        String discoveredJournalId = fileName.substring(0, fileName.length() - ".jsonl".length());
+        Object owner;
+        try {
+            owner = claim(path);
+        } catch (EnterpriseLabExperimentJournalStorageException exception) {
+            return JournalDiscovery.unavailable(discoveredJournalId);
+        }
+        try {
+            validateJournalFile(path);
+            Optional<EnterpriseLabExperimentJournalEvent> first = readCanonicalFirstFrame(path);
+            if (first.isEmpty()) {
+                return JournalDiscovery.unidentified(discoveredJournalId);
+            }
+            EnterpriseLabExperimentJournalEvent event = first.orElseThrow();
+            if (event.sequence() != 1
+                    || !event.previousEntryFingerprint().equals(
+                            EnterpriseLabExperimentJournalEvent.GENESIS_FINGERPRINT)
+                    || !journalId(event.experimentId()).equals(discoveredJournalId)) {
+                return JournalDiscovery.identityMismatch(discoveredJournalId);
+            }
+            VerificationResult verification = verifyOwned(path, discoveredJournalId, event.experimentId());
+            return JournalDiscovery.verified(discoveredJournalId, event.experimentId(), verification);
+        } catch (EnterpriseLabExperimentJournalStorageException exception) {
+            return JournalDiscovery.storageFailure(discoveredJournalId, exception.failure().name());
+        } finally {
+            ACTIVE_WRITERS.remove(path, owner);
+        }
+    }
+
+    private Optional<EnterpriseLabExperimentJournalEvent> readCanonicalFirstFrame(Path path) {
+        ByteArrayOutputStream frame = new ByteArrayOutputStream();
+        try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
+            if (channel.size() > maxJournalBytes) {
+                return Optional.empty();
+            }
+            ByteBuffer one = ByteBuffer.allocate(1);
+            int zeroReads = 0;
+            while (frame.size() <= EnterpriseLabExperimentJournalCodec.HARD_MAX_ENTRY_BYTES) {
+                int read = channel.read(one);
+                if (read < 0) {
+                    return Optional.empty();
+                }
+                if (read == 0) {
+                    if (++zeroReads >= 3) {
+                        return Optional.empty();
+                    }
+                    continue;
+                }
+                zeroReads = 0;
+                one.flip();
+                byte value = one.get();
+                one.clear();
+                if (value == '\n') {
+                    if (frame.size() == 0) {
+                        return Optional.empty();
+                    }
+                    byte[] encoded = frame.toByteArray();
+                    EnterpriseLabExperimentJournalEvent event = codec.decode(encoded);
+                    return Arrays.equals(encoded, codec.encode(event))
+                            ? Optional.of(event)
+                            : Optional.empty();
+                }
+                frame.write(value);
+            }
+            return Optional.empty();
+        } catch (IOException | RuntimeException exception) {
+            return Optional.empty();
+        }
     }
 
     VerificationResult verifyOwned(Path journalPath, String journalId, String experimentId) {
@@ -434,6 +582,15 @@ public final class EnterpriseLabExperimentJournalDirectory {
         return candidate;
     }
 
+    private Path quarantinePath(String quarantineId) {
+        Path candidate = quarantineDirectory.resolve(quarantineId + ".quarantined").normalize();
+        if (!candidate.startsWith(quarantineDirectory)
+                || !candidate.getParent().equals(quarantineDirectory)) {
+            throw failure(Failure.UNSAFE_PATH, "quarantine path escaped its controlled namespace");
+        }
+        return candidate;
+    }
+
     private static Object claim(Path path) {
         Object owner = new Object();
         if (ACTIVE_WRITERS.putIfAbsent(path, owner) != null) {
@@ -462,6 +619,23 @@ public final class EnterpriseLabExperimentJournalDirectory {
         } catch (NoSuchAlgorithmException exception) {
             throw new IllegalStateException("SHA-256 is unavailable", exception);
         }
+    }
+
+    private static String opaqueJournalId(String value) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(value.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return "unrecognized-v1-" + HexFormat.of().formatHex(digest);
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 is unavailable", exception);
+        }
+    }
+
+    private static String requireReasonCode(String value) {
+        if (value == null || !value.matches("[A-Z0-9][A-Z0-9_.:-]{0,63}")) {
+            throw new IllegalArgumentException("reasonCode must be a bounded canonical code");
+        }
+        return value;
     }
 
     private static void createDirectory(Path directory) throws IOException {
@@ -526,5 +700,114 @@ public final class EnterpriseLabExperimentJournalDirectory {
         AFTER_WRITE_CHUNK,
         AFTER_APPEND_BEFORE_SYNC,
         AFTER_SYNC
+    }
+
+    public enum DiscoveryOutcome {
+        VERIFIED,
+        UNIDENTIFIED_CONTENT,
+        IDENTITY_MISMATCH,
+        UNRECOGNIZED_NAMESPACE_ENTRY,
+        UNAVAILABLE,
+        STORAGE_FAILURE
+    }
+
+    /** Sanitized discovery result; no backing path or raw malformed content is exposed. */
+    public record JournalDiscovery(
+            String journalId,
+            Optional<String> experimentId,
+            DiscoveryOutcome outcome,
+            String classification,
+            Optional<VerificationResult> verification) {
+        public JournalDiscovery {
+            journalId = requireBoundedDiscoveryText(journalId, "journalId", 96);
+            experimentId = Objects.requireNonNull(experimentId, "experimentId cannot be null");
+            outcome = Objects.requireNonNull(outcome, "outcome cannot be null");
+            classification = requireBoundedDiscoveryText(classification, "classification", 64);
+            verification = Objects.requireNonNull(verification, "verification cannot be null");
+            if ((outcome == DiscoveryOutcome.VERIFIED) != experimentId.isPresent()
+                    || (outcome == DiscoveryOutcome.VERIFIED) != verification.isPresent()) {
+                throw new IllegalArgumentException("verified discovery requires identity and verification evidence");
+            }
+            if (verification.isPresent()
+                    && !journalId.equals(verification.orElseThrow().journalId())) {
+                throw new IllegalArgumentException("discovery and verification journal identities differ");
+            }
+        }
+
+        private static JournalDiscovery verified(
+                String journalId,
+                String experimentId,
+                VerificationResult verification) {
+            return new JournalDiscovery(
+                    journalId,
+                    Optional.of(experimentId),
+                    DiscoveryOutcome.VERIFIED,
+                    verification.classification().name(),
+                    Optional.of(verification));
+        }
+
+        private static JournalDiscovery unidentified(String journalId) {
+            return rejected(journalId, DiscoveryOutcome.UNIDENTIFIED_CONTENT,
+                    "UNIDENTIFIED_CONTENT");
+        }
+
+        private static JournalDiscovery identityMismatch(String journalId) {
+            return rejected(journalId, DiscoveryOutcome.IDENTITY_MISMATCH, "IDENTITY_MISMATCH");
+        }
+
+        private static JournalDiscovery unrecognized(String journalId) {
+            return rejected(journalId, DiscoveryOutcome.UNRECOGNIZED_NAMESPACE_ENTRY,
+                    "UNRECOGNIZED_NAMESPACE_ENTRY");
+        }
+
+        private static JournalDiscovery unavailable(String journalId) {
+            return rejected(journalId, DiscoveryOutcome.UNAVAILABLE, "WRITER_ALREADY_ACTIVE");
+        }
+
+        private static JournalDiscovery storageFailure(String journalId, String classification) {
+            return rejected(journalId, DiscoveryOutcome.STORAGE_FAILURE, classification);
+        }
+
+        private static JournalDiscovery rejected(
+                String journalId,
+                DiscoveryOutcome outcome,
+                String classification) {
+            return new JournalDiscovery(
+                    journalId, Optional.empty(), outcome, classification, Optional.empty());
+        }
+    }
+
+    /** Evidence that the original bytes were atomically moved, never deleted or rewritten. */
+    public record QuarantineRecord(
+            String quarantineId,
+            String sourceJournalId,
+            Optional<String> experimentId,
+            String sourceClassification,
+            String reasonCode,
+            java.time.Instant quarantinedAt,
+            boolean originalBytesPreserved) {
+        public QuarantineRecord {
+            quarantineId = requireBoundedDiscoveryText(quarantineId, "quarantineId", 160);
+            sourceJournalId = requireBoundedDiscoveryText(sourceJournalId, "sourceJournalId", 96);
+            experimentId = Objects.requireNonNull(experimentId, "experimentId cannot be null");
+            sourceClassification = requireBoundedDiscoveryText(
+                    sourceClassification, "sourceClassification", 64);
+            reasonCode = requireReasonCode(reasonCode);
+            quarantinedAt = Objects.requireNonNull(quarantinedAt, "quarantinedAt cannot be null");
+            if (!originalBytesPreserved) {
+                throw new IllegalArgumentException("quarantine must preserve the original bytes");
+            }
+        }
+    }
+
+    private static String requireBoundedDiscoveryText(
+            String value,
+            String fieldName,
+            int maximumLength) {
+        if (value == null || value.isBlank() || !value.equals(value.trim())
+                || value.length() > maximumLength) {
+            throw new IllegalArgumentException(fieldName + " must be trimmed and bounded");
+        }
+        return value;
     }
 }

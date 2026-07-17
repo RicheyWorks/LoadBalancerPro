@@ -1,6 +1,15 @@
 package com.richmond423.loadbalancerpro.api;
 
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalStorageException;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentRecoveryGate.InitializationState;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentTargetCatalog;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,6 +20,9 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -25,6 +37,28 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class EnterpriseLabExperimentControllerTest {
     @Autowired
     private MockMvc mockMvc;
+
+    @TempDir
+    Path journalRoot;
+
+    @Test
+    void configuredAbsoluteJournalRootCompletesRecoveryBeforeServiceAdmission() {
+        var configuration = new EnterpriseLabExperimentController.EnterpriseLabExperimentConfiguration();
+        try (EnterpriseLabExperimentOperatorService service =
+                configuration.enterpriseLabExperimentOperatorService(
+                        EnterpriseLabExperimentTargetCatalog.empty(), journalRoot.toString())) {
+            var status = service.recoveryStatus();
+
+            assertEquals(InitializationState.READY, status.state());
+            assertTrue(status.admissionAllowed());
+            assertTrue(status.recoveryReport().isPresent());
+            assertTrue(Files.isDirectory(
+                    journalRoot.resolve("enterprise-lab-experiment-journals-v1/journals")));
+        }
+        assertThrows(EnterpriseLabExperimentJournalStorageException.class,
+                () -> configuration.enterpriseLabExperimentOperatorService(
+                        EnterpriseLabExperimentTargetCatalog.empty(), "target/relative-journal-root"));
+    }
 
     @Test
     void defaultApplicationTargetCatalogFailsClosedWithoutAddressExposure() throws Exception {

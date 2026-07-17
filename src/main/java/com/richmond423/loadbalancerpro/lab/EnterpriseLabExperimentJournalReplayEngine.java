@@ -372,7 +372,9 @@ public final class EnterpriseLabExperimentJournalReplayEngine {
             }
             if (state == EnterpriseLabExperimentState.ARMED && appliedKind == Kind.CANDIDATE
                     && event.eventType()
-                    != EnterpriseLabExperimentJournalEventType.CANDIDATE_ALLOCATION_APPLIED) {
+                    != EnterpriseLabExperimentJournalEventType.CANDIDATE_ALLOCATION_APPLIED
+                    && event.eventType()
+                    != EnterpriseLabExperimentJournalEventType.RECOVERY_ACTION) {
                 semanticFailure(event, "armed state can record candidate allocation only at its apply boundary");
             }
             if ((state == EnterpriseLabExperimentState.RUNNING || state == EnterpriseLabExperimentState.HOLDING)
@@ -390,10 +392,18 @@ public final class EnterpriseLabExperimentJournalReplayEngine {
             RollbackStatus rollback = checkpoint.rollbackStatus();
             RestorationStatus restoration = checkpoint.restorationStatus();
             switch (state) {
-                case IDLE, ARMED, RUNNING, HOLDING -> {
+                case IDLE, RUNNING, HOLDING -> {
                     if (rollback != RollbackStatus.NOT_REQUESTED
                             || restoration != RestorationStatus.NOT_ATTEMPTED) {
                         semanticFailure(event, "pre-recovery state has impossible rollback or restoration status");
+                    }
+                }
+                case ARMED -> {
+                    if (rollback != RollbackStatus.NOT_REQUESTED
+                            || restoration != RestorationStatus.NOT_ATTEMPTED
+                            && event.eventType() != EnterpriseLabExperimentJournalEventType.RECOVERY_ACTION) {
+                        semanticFailure(event,
+                                "armed recovery status requires explicit same-state recovery evidence");
                     }
                 }
                 case COMPLETING -> {
@@ -420,10 +430,24 @@ public final class EnterpriseLabExperimentJournalReplayEngine {
                         semanticFailure(event, "completed state requires verified baseline restoration");
                     }
                 }
-                case REJECTED, FAILED, CANCELLED -> {
+                case REJECTED, FAILED -> {
                     if (rollback != RollbackStatus.NOT_REQUESTED
-                            || restoration != RestorationStatus.NOT_ATTEMPTED) {
+                            || restoration != RestorationStatus.NOT_ATTEMPTED
+                            && event.eventType() != EnterpriseLabExperimentJournalEventType.RECOVERY_ACTION) {
                         semanticFailure(event, "inactive terminal state has impossible recovery status");
+                    }
+                }
+                case CANCELLED -> {
+                    boolean recoveredCancellation = previousEvent != null
+                            && previousEvent.eventType()
+                            == EnterpriseLabExperimentJournalEventType.RECOVERY_ACTION
+                            && previousEvent.stateAfter() == EnterpriseLabExperimentState.ARMED;
+                    if (rollback != RollbackStatus.NOT_REQUESTED
+                            || restoration != RestorationStatus.NOT_ATTEMPTED
+                            && event.eventType() != EnterpriseLabExperimentJournalEventType.RECOVERY_ACTION
+                            && !recoveredCancellation) {
+                        semanticFailure(event,
+                                "cancelled recovery status requires explicit recovery evidence");
                     }
                 }
             }

@@ -8,17 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Durable Experiment Journal PR4 Checkpoint
 
-Timestamp: 2026-07-16T22:20-07:00
+Timestamp: 2026-07-16T22:33-07:00
 
 Goal name: crash-safe append-only experiment evidence journal with verified replay and restart reconciliation
 
 Current PR slot: JOURNAL-PR4 - deterministic replay and state reconstruction
 
-Checkpoint: implementation and complete local candidate verification green; executable commit pending
+Checkpoint: implementation committed and pushed; PR created; exact-head remote checks pending
 
 Started from main SHA: `7502d4cf199d0118b344ed15a3ee10fc70b9cd52`
 
 Current branch: codex/journal-replay-reconstruction
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/464
+
+Implementation commit: `31bea2f159fd859a0e4325ed1ae548efd9664e3b`
 
 Prior slot closure: PR #463 merged normally as `7502d4cf199d0118b344ed15a3ee10fc70b9cd52` from exact final head
 `a27bb5a591fea3f4e1a95b9f4800eddf9fd0e0c3` and executable commit
@@ -62,12 +66,12 @@ shadow workflow and healthy/overloaded/invalid LASE CLI smoke passed. Cached dif
 URL, non-loopback target, filesystem, network, thread, process, scheduler, dependency, POM, workflow, container, Compose,
 application-resource, API, controller, security, or tracked target change. Local Docker remains unavailable and Trivy is
 not installed as previously logged; exact-head remote Docker/runtime/Trivy evidence remains mandatory. Current composition
-is 2,029 production/test additions and 98 documentation/process additions: 95.39 percent executable and 4.61 percent
-documentation/process. Across PR1 through PR4 the campaign is 5,925 production/test additions and 477
-documentation/process additions: 92.49 percent executable and 7.45 percent documentation/process.
+is 2,029 production/test additions and 102 documentation/process additions: 95.21 percent executable and 4.79 percent
+documentation/process. Across PR1 through PR4 the campaign is 5,925 production/test additions and 481
+documentation/process additions: 92.49 percent executable and 7.51 percent documentation/process.
 
-Remote status: exact PR3 merge-main CI and CodeQL are green. PR4 has not been committed, pushed, or opened; exact-head
-CI, CodeQL, dependency review, code scanning, and the remote container/Trivy lane remain pending.
+Remote status: exact PR3 merge-main CI and CodeQL are green. PR4 exact-head CI, CodeQL, dependency review, code
+scanning, and the remote container/Trivy lane started after PR creation and remain pending.
 
 Decision: continue JOURNAL-PR4 through full local verification, commit, PR creation, exact-head gates, normal merge, and
 exact-merge main gates before starting JOURNAL-PR5.

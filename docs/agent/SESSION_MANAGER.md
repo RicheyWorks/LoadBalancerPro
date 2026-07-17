@@ -8,21 +8,23 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Durable Experiment Journal PR5 Checkpoint
 
-Timestamp: 2026-07-16T23:44-07:00
+Timestamp: 2026-07-16T23:47-07:00
 
 Goal name: crash-safe append-only experiment evidence journal with verified replay and restart reconciliation
 
 Current PR slot: JOURNAL-PR5 - startup reconciliation and safe recovery actions
 
-Checkpoint: executable commit and exact committed-candidate local gates pass; PR creation next
+Checkpoint: PR created from locally verified head; final checkpoint push and exact-head remote gates next
 
 Started from main SHA: `e15a05835223f64abbcef17d61b3c8644347c1bf`
 
 Current branch: codex/journal-startup-reconciliation
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/465
 
 Executable commit: `ca1c2d4e59b2d87db917e9e2f05f6f0f6a068a71`
+
+Locally verified pre-PR checkpoint head: `81f50ace0dcedb07e996328a1f2ed47eac05a5f9`
 
 Prior slot closure: PR #464 merged normally as `e15a05835223f64abbcef17d61b3c8644347c1bf` from exact final head
 `10789bbc0f828fd9e0baa37a1e38c233cc5dadd4` and executable commit
@@ -69,9 +71,9 @@ mandatory.
 
 Diff and scope audit: no POM, dependency, workflow, Docker, Compose, application-resource, auth-policy, external-target,
 cloud, tenant, scheduler, executor, background-worker, or arbitrary API-path change is present. Secret and non-loopback URL
-scans are empty. Current composition is 2,033 production/test additions and 131 documentation/process additions: 93.95
-percent executable and 6.05 percent documentation/process. Across PR1 through PR5 so far, the campaign has 7,958
-production/test additions and 612 documentation/process additions: 92.86 percent executable and 7.14 percent
+scans are empty. Current composition is 2,033 production/test additions and 141 documentation/process additions: 93.51
+percent executable and 6.49 percent documentation/process. Across PR1 through PR5 so far, the campaign has 7,958
+production/test additions and 622 documentation/process additions: 92.75 percent executable and 7.25 percent
 documentation/process.
 
 Scope/safety: recovery is synchronous, bounded, local-filesystem-only, and single-process. Pure replay still has no traffic
@@ -85,8 +87,11 @@ cloud or tenant recovery, automatic corrupt-evidence remediation, or admission a
 transition recording, bounded retention/terminal compaction, authenticated durable-evidence endpoints, and packaged
 restart/corruption proofs remain explicitly scoped to JOURNAL-PR6.
 
-Decision: continue through PR creation, exact-head gates, normal merge, and exact-merge main gates before starting
-JOURNAL-PR6.
+Remote status: PR #465 is open. The final checkpoint push and exact-head CI, CodeQL, dependency review, and code-scanning
+results are pending.
+
+Decision: push this PR checkpoint, require all exact-head gates, merge normally without deleting the source branch, and
+require exact-merge main CI and CodeQL before starting JOURNAL-PR6.
 
 ## Active Durable Experiment Journal PR4 Checkpoint
 

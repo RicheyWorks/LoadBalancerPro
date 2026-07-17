@@ -6,6 +6,69 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Durable Experiment Journal PR6 Checkpoint
+
+Timestamp: 2026-07-17T00:50-07:00
+
+Goal name: crash-safe append-only experiment evidence journal with verified replay and restart reconciliation
+
+Current PR slot: JOURNAL-PR6 - live transition journaling, bounded retention/compaction, operator evidence, and packaged proof
+
+Checkpoint: implementation, exact-candidate package, and scope/composition audit green; packaged proof rerun and PR creation next
+
+Started from main SHA: `ae61b00296890f200b7389e696ab70b9779a47ee`
+
+Current branch: codex/journal-retention-operator-proof
+
+PR URL: pending
+
+Prior slot closure: PR #465 merged normally as `ae61b00296890f200b7389e696ab70b9779a47ee` from exact final head
+`9736539c2c5a48145c41da0cad80925d7fbc64a2` and executable commit
+`ca1c2d4e59b2d87db917e9e2f05f6f0f6a068a71`. Exact-head PR CI `29561099121`, push CI `29561098121`,
+CodeQL `29561099153`, code scanning `87824048005`, and dependency review passed. Exact-merge main CI
+`29561429954` passed 3,094 zero-skipped tests plus package, coverage, SBOM, packaged runtime, Docker runtime, and Trivy;
+exact-merge main CodeQL `29561429958` passed. Merge-focused startup recovery and long-goal tests also passed locally.
+
+PR6 executable contract: durably record live safety-relevant operator transitions through the existing journal model;
+retain fail-closed behavior if durable append or synchronization fails; expose only bounded sanitized durable verification,
+recovery, quarantine, compaction, and evidence summaries beneath the existing `/api/lab/**` authorization boundary; compact
+only exactly verified terminal journals into a versioned fingerprint-bound manifest; reject active, corrupted, unresolved,
+or caller-path-directed mutation; enforce hard journal/manifest/count/byte bounds; and add a packaged literal-loopback proof
+for interrupted recovery, repeated restart, corruption quarantine, terminal preservation, and compaction verification.
+
+Scope/safety: remain single-instance and local-filesystem-only. No arbitrary path API, external target, public listener,
+cloud/tenant storage, database, queue, watcher, scheduler, unbounded retry, new dependency, workflow bypass, or automatic
+experiment resume is permitted. Compaction may remove a verified terminal source journal only after a canonical bounded
+manifest is durably installed and independently verified; unresolved or corrupt evidence must remain preserved.
+
+Decision: implement production behavior first, then focused failure-injection/security/proof tests, full local gates, PR,
+exact-head gates, normal merge without source-branch deletion, exact-merge main gates, and campaign closeout.
+
+Implemented: the live operator service now force-synchronizes accepted lifecycle/allocation facts to the existing canonical
+journal and fails the recovery gate closed on persistence rejection. Exactly valid terminal journals can be replaced only
+after a canonical fingerprinted terminal manifest is force-synchronized, atomically installed, re-read, and verified.
+Retention supports bounded dry-run/apply by terminal count and never compacts active or unresolved evidence. Authenticated
+operator routes expose bounded summaries, verification, recovery, reconstructed export, compaction, quarantine metadata,
+and retention without path or raw-byte access. The packaged durable proof composes real loopback requests, interruption,
+two restarts, normal completion/rollback preservation, corruption quarantine, partial-tail quarantine, unresolved retention,
+active-compaction rejection, and terminal compaction.
+
+Local verification: the 129-test focused journal/replay/recovery/operator/API-key/OAuth2/proof bundle passed. `mvn -q test`
+passed 3,102 tests with zero failures, errors, or skips. `mvn -q "-DskipTests" package` passed. The packaged durable proof
+passed with 124 actual loopback requests and all recovery/corruption/compaction checks true; the existing packaged
+completion/rollback proof passed 13 scenarios and 837 actual loopback requests. Embedded Tomcat dependency-tree resolution
+passed at `10.1.55`. The final exact-candidate `mvn -B package` passed 3,102 tests with zero failures, errors, or skips and
+produced the packaged application. The packaged durable proof was then rerun from that JAR and again passed with 124
+literal-loopback requests, interrupted state `ROLLED_BACK`, corruption quarantine and terminal compaction true, and report
+fingerprint `3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2ed839ff7afd6a`. PR6 is 2,642 net
+implementation/test/script lines and 307 net documentation lines
+(89.6% / 10.4%); the six-PR campaign is approximately 92.1% implementation/test/script and 7.9% documentation. `git diff
+--check` passed, and the scope contains no dependency, workflow, Docker, or Compose changes. Docker Desktop and local Trivy
+are unavailable, so exact CI Docker/runtime/Trivy remains required.
+
+Decision: continue to packaged proof rerun, final artifact/scope checks, commit/push/PR, exact-head gates, normal merge, and
+exact-merge main gates. Do not advance or close the campaign until those remote gates are current-head green.
+
 ## Active Durable Experiment Journal PR5 Checkpoint
 
 Timestamp: 2026-07-16T23:47-07:00

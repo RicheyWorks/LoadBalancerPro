@@ -294,6 +294,16 @@ class OAuth2AuthorizationTest {
                 .andExpect(jsonPath("$.count", is(0)))
                 .andExpect(jsonPath("$.activeExperimentEnabled", is(false)));
 
+        mockMvc.perform(get("/api/lab/experiments/durable")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.path", is("/api/lab/experiments/durable")));
+
+        mockMvc.perform(get("/api/lab/experiments/durable")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.reasonCode", is("DURABLE_EVIDENCE_NOT_CONFIGURED")));
+
         String body = """
                 {
                   "operatorRequestId":"oauth-arm-1",

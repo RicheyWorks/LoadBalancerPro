@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Single-Host Evidence Ownership PR2 Checkpoint
 
-Timestamp: 2026-07-17T16:12-07:00
+Timestamp: 2026-07-17T16:16-07:00
 
 Current slot: OWNERSHIP-PR2 - OS-backed exclusive lock, durable owner publication, and orderly release
 
@@ -16,7 +16,9 @@ Started from clean synchronized main: `69521c41cd4ad271998d10e77675439051afa79a`
 
 Current branch: `codex/ownership-filelock-durable-record`
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/468
+
+Executable commit: `dfa0f69c497c1dbe9420d5127f949719647c33fa`
 
 Prior slot closure: PR #467 merged normally from exact head `e81d46d73c62611276798535b75ade87dc74e9d6`
 as `69521c41cd4ad271998d10e77675439051afa79a`. Exact-head PR CI `29618492311`, push CI `29618490222`,
@@ -47,10 +49,10 @@ the durable proof passed at `3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2
 Scope audit: no dependency, POM, workflow, Docker, Compose, controller, scheduler, external/non-loopback target, caller
 owner/generation override, production lock deletion, force-unlock path, or generated evidence is present. The deliberate
 test-only released-lock deletion proves replacement detection. `git diff --check` passed. PR2 has 1,437 implementation/
-test changed lines and 156 documentation/process changed lines (90.21% / 9.79%). Local Docker/Trivy is not claimed;
+test changed lines and 158 documentation/process changed lines (90.09% / 9.91%). Local Docker/Trivy is not claimed;
 the exact remote image/runtime/scan lane remains mandatory.
 
-Decision: create PR2 from this verified candidate and require full exact-head and merge-main gates before OWNERSHIP-PR3.
+Decision: push this PR checkpoint and require full exact-head and merge-main gates before OWNERSHIP-PR3.
 
 ## Active Single-Host Evidence Ownership PR1 Checkpoint
 

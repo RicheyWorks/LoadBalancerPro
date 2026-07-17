@@ -71,9 +71,9 @@ mandatory.
 
 Diff and scope audit: no POM, dependency, workflow, Docker, Compose, application-resource, auth-policy, external-target,
 cloud, tenant, scheduler, executor, background-worker, or arbitrary API-path change is present. Secret and non-loopback URL
-scans are empty. Current composition is 2,033 production/test additions and 141 documentation/process additions: 93.51
-percent executable and 6.49 percent documentation/process. Across PR1 through PR5 so far, the campaign has 7,958
-production/test additions and 622 documentation/process additions: 92.75 percent executable and 7.25 percent
+scans are empty. Current composition is 2,033 production/test additions and 126 documentation/process additions: 94.16
+percent executable and 5.84 percent documentation/process. Across PR1 through PR5 so far, the campaign has 7,958
+production/test additions and 607 documentation/process additions: 92.91 percent executable and 7.09 percent
 documentation/process.
 
 Scope/safety: recovery is synchronous, bounded, local-filesystem-only, and single-process. Pure replay still has no traffic

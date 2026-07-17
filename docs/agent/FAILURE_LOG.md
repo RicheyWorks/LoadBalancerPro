@@ -4698,3 +4698,35 @@ runtime state changed.
 
 Correction/result: rerun against the exact source directory with `-g 'EnterpriseLabEvidenceOwnership*.java'`, keep test
 fixtures separate from production findings, and require no product lock deletion, force unlock, unbounded loop, or TODO.
+
+# 2026-07-17 - Ownership PR2 exact-head CI detected Linux lock-file identity reuse
+
+Branch/PR: `codex/ownership-filelock-durable-record` / PR #468
+
+Failing checks: exact-head PR CI run `29620230062` and push CI run `29620228162` at
+`123af9677bab1778371d259329221bc62ba6b73c`.
+
+Observed/root cause: both independent CI runs failed the same executable replacement proof,
+`EnterpriseLabEvidenceOwnershipManagerTest.replacedLockFileIsDetectedBeforeAnyNewOwnerRecordCanBePublished`. The lock
+file was deleted only by the test after orderly release and recreated at the fixed path. Linux immediately reused the
+same provider file key, while the storage identity included creation time only when no provider file key existed. The
+replacement therefore produced the same fingerprint. This was a real fail-closed identity gap; packaging, Docker,
+runtime smoke, and Trivy steps correctly did not run after the test gate failed. CodeQL and dependency review passed.
+
+Correction/result: bind every controlled storage identity to both the provider file key, when available, and the file
+creation identity. Creation identity is used only to distinguish storage objects; it is not owner liveness or stale-owner
+evidence. Re-run focused replacement proofs, the compatibility selector, full verification, and new exact-head remote
+gates before merge.
+
+# 2026-07-17 - Ownership PR2 failure inspection repeated a Windows wildcard argument
+
+Branch/PR: `codex/ownership-filelock-durable-record` / PR #468
+
+Failing operation: a read-only post-CI source search passed `docs/agent/ENTERPRISE_LAB_EVIDENCE_OWNERSHIP*` directly to
+`rg` on Windows while collecting lock-identity references.
+
+Observed/root cause: Windows rejected the wildcard-bearing path. The Java source and test portions still returned the
+needed references, and separate exact-file reads supplied the contract. No repository or remote state changed.
+
+Correction/result: use an exact document path or `rg -g` for every later repository search; do not weaken or rerun a
+gate because of the local inspection error.

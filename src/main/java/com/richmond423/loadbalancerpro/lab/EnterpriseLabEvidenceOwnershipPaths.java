@@ -526,10 +526,12 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
                         "controlled ownership storage type changed");
             }
             String fileKey = attributes.fileKey() == null
-                    ? "NO_FILE_KEY:" + attributes.creationTime().toInstant()
+                    ? "NO_FILE_KEY"
                     : attributes.fileKey().toString();
             return "enterprise-lab-storage-identity/v1\n"
-                    + path.toRealPath() + "\n" + fileKey;
+                    + path.toRealPath() + "\n"
+                    + fileKey + "\n"
+                    + attributes.creationTime().toInstant();
         } catch (EnterpriseLabEvidenceOwnershipException exception) {
             throw exception;
         } catch (AccessDeniedException exception) {

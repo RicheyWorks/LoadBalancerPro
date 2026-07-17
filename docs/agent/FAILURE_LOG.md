@@ -4730,3 +4730,16 @@ needed references, and separate exact-file reads supplied the contract. No repos
 
 Correction/result: use an exact document path or `rg -g` for every later repository search; do not weaken or rerun a
 gate because of the local inspection error.
+
+# 2026-07-17 - Ownership PR2 step-progress filter was altered by PowerShell quoting
+
+Branch/PR: `codex/ownership-filelock-durable-record` / PR #468
+
+Failing operation: read-only `gh run view --jq` queries for the active CI and CodeQL step names on corrected head
+`7af5393bf70bd39fcb4fa567f1595ef1ba43f8d8`.
+
+Observed/root cause: PowerShell argument handling removed the intended string quoting inside the inline jq selector, so
+jq interpreted `in_progress` as a function name and rejected the local filter. GitHub runs were not changed or retried.
+
+Correction/result: use `gh` JSON output without inline jq and parse it after retrieval. Treat the currently running
+checks as stale after this required failure-log checkpoint; require fresh exact-head checks before merge.

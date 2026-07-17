@@ -48,15 +48,15 @@ experiment proof passed at fingerprint `2f5dae64bf39507dbbda3dc9fb1b06eb19a00888
 the durable proof passed at `3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2ed839ff7afd6a`.
 After correction, the 39-test selector and `mvn -B package` passed; full package again passed all 3,141 zero-skipped tests.
 
-Remote gate status: rejected head `123af9677bab1778371d259329221bc62ba6b73c` failed PR CI `29620230062` and push CI
-`29620228162` on Linux inode reuse; CodeQL `29620230054`, code scanning, and dependency review passed. New exact-head
-gates are required and the failed head will not be merged.
+Remote gate status: rejected head `123af9677bab1778371d259329221bc62ba6b73c` failed both CI paths on Linux inode reuse.
+Corrected head `7af5393bf70bd39fcb4fa567f1595ef1ba43f8d8` started fresh gates, but they become stale after the required local
+tooling-failure checkpoint. Require another exact-head cycle; neither stale head is merge evidence.
 
 Scope audit: no dependency, POM, workflow, Docker, Compose, controller, scheduler, external/non-loopback target, caller
 owner/generation override, production lock deletion, force-unlock path, or generated evidence is present. The deliberate
 test-only released-lock deletion proves replacement detection. `git diff --check` passed. PR2 has 1,443 implementation/
-test changed lines and 196 documentation/process changed lines (88.04% / 11.96%). Local Docker/Trivy is not claimed;
-the exact remote image/runtime/scan lane remains mandatory.
+test and 209 documentation/process changed lines (87.35% / 12.65%); the PR1-PR2 campaign aggregate is 3,243 and 430
+(88.29% / 11.71%). Local Docker/Trivy is not claimed; the exact remote image/runtime/scan lane remains mandatory.
 
 Decision: push a corrected PR checkpoint and require new full exact-head and merge-main gates before OWNERSHIP-PR3.
 

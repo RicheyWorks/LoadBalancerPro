@@ -294,7 +294,8 @@ public final class EnterpriseLabExperimentJournalVerifier {
         if (before == after) {
             return requiresStateChange(event.eventType()) ? Classification.ILLEGAL_TRANSITION : null;
         }
-        if (!allowedStateChange(before, after) || !eventTypeMatchesStateChange(event.eventType(), after)) {
+        if (!EnterpriseLabExperimentLifecycle.allowsStateChange(before, after)
+                || !eventTypeMatchesStateChange(event.eventType(), after)) {
             return Classification.ILLEGAL_TRANSITION;
         }
         return null;
@@ -323,26 +324,6 @@ public final class EnterpriseLabExperimentJournalVerifier {
             case EXPERIMENT_FAILED -> after == EnterpriseLabExperimentState.FAILED;
             case LIFECYCLE_TRANSITION -> true;
             default -> false;
-        };
-    }
-
-    private static boolean allowedStateChange(
-            EnterpriseLabExperimentState before,
-            EnterpriseLabExperimentState after) {
-        return switch (before) {
-            case IDLE -> after == EnterpriseLabExperimentState.ARMED
-                    || after == EnterpriseLabExperimentState.REJECTED;
-            case ARMED -> after == EnterpriseLabExperimentState.RUNNING
-                    || after == EnterpriseLabExperimentState.CANCELLED
-                    || after == EnterpriseLabExperimentState.FAILED;
-            case RUNNING -> after == EnterpriseLabExperimentState.HOLDING
-                    || after == EnterpriseLabExperimentState.ROLLING_BACK;
-            case HOLDING -> after == EnterpriseLabExperimentState.COMPLETING
-                    || after == EnterpriseLabExperimentState.ROLLING_BACK;
-            case COMPLETING -> after == EnterpriseLabExperimentState.COMPLETED
-                    || after == EnterpriseLabExperimentState.ROLLING_BACK;
-            case ROLLING_BACK -> after == EnterpriseLabExperimentState.ROLLED_BACK;
-            case ROLLED_BACK, COMPLETED, REJECTED, FAILED, CANCELLED -> false;
         };
     }
 

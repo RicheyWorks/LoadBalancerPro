@@ -191,6 +191,16 @@ public final class EnterpriseLabExperimentJournalDirectory {
         }
     }
 
+    /** Verifies and deterministically reconstructs one closed controlled journal. */
+    public EnterpriseLabExperimentJournalReplayEngine.ReplayResult replay(String experimentId) {
+        EnterpriseLabExperimentJournalReplayEngine.ReplayLimits replayLimits =
+                new EnterpriseLabExperimentJournalReplayEngine.ReplayLimits(
+                        maxJournalEntries,
+                        maxJournalBytes,
+                        EnterpriseLabExperimentJournalReplayEngine.HARD_MAX_OPERATIONS);
+        return new EnterpriseLabExperimentJournalReplayEngine(replayLimits).replay(verify(experimentId));
+    }
+
     VerificationResult verifyOwned(Path journalPath, String journalId, String experimentId) {
         return new EnterpriseLabExperimentJournalVerifier(
                 codec, maxJournalBytes, maxJournalEntries)

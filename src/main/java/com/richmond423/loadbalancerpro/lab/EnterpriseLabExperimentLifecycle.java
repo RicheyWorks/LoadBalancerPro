@@ -24,7 +24,7 @@ import java.util.Set;
  */
 public final class EnterpriseLabExperimentLifecycle {
     public static final String SNAPSHOT_SCHEMA_VERSION = "enterprise-lab-experiment-lifecycle/v1";
-    private static final int MAX_TRANSITIONS = 16;
+    static final int MAX_TRANSITIONS = 16;
     private static final int MAX_COMMAND_RESULTS = 64;
     private static final int MAX_ID_LENGTH = 128;
     private static final int MAX_REASON_LENGTH = 256;
@@ -702,6 +702,32 @@ public final class EnterpriseLabExperimentLifecycle {
                 lastFingerprint,
                 state.terminal(),
                 reason);
+    }
+
+    /**
+     * Shared state-change contract used by durable verification and replay.
+     * Keeping it here prevents recovery code from inventing a second lifecycle graph.
+     */
+    static boolean allowsStateChange(
+            EnterpriseLabExperimentState before,
+            EnterpriseLabExperimentState after) {
+        Objects.requireNonNull(before, "before cannot be null");
+        Objects.requireNonNull(after, "after cannot be null");
+        return switch (before) {
+            case IDLE -> after == EnterpriseLabExperimentState.ARMED
+                    || after == EnterpriseLabExperimentState.REJECTED;
+            case ARMED -> after == EnterpriseLabExperimentState.RUNNING
+                    || after == EnterpriseLabExperimentState.CANCELLED
+                    || after == EnterpriseLabExperimentState.FAILED;
+            case RUNNING -> after == EnterpriseLabExperimentState.HOLDING
+                    || after == EnterpriseLabExperimentState.ROLLING_BACK;
+            case HOLDING -> after == EnterpriseLabExperimentState.COMPLETING
+                    || after == EnterpriseLabExperimentState.ROLLING_BACK;
+            case COMPLETING -> after == EnterpriseLabExperimentState.COMPLETED
+                    || after == EnterpriseLabExperimentState.ROLLING_BACK;
+            case ROLLING_BACK -> after == EnterpriseLabExperimentState.ROLLED_BACK;
+            case ROLLED_BACK, COMPLETED, REJECTED, FAILED, CANCELLED -> false;
+        };
     }
 
     private String countersSignature() {

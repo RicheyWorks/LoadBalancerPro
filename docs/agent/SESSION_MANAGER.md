@@ -6,6 +6,72 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Durable Experiment Journal PR4 Checkpoint
+
+Timestamp: 2026-07-16T22:20-07:00
+
+Goal name: crash-safe append-only experiment evidence journal with verified replay and restart reconciliation
+
+Current PR slot: JOURNAL-PR4 - deterministic replay and state reconstruction
+
+Checkpoint: implementation and complete local candidate verification green; executable commit pending
+
+Started from main SHA: `7502d4cf199d0118b344ed15a3ee10fc70b9cd52`
+
+Current branch: codex/journal-replay-reconstruction
+
+Prior slot closure: PR #463 merged normally as `7502d4cf199d0118b344ed15a3ee10fc70b9cd52` from exact final head
+`a27bb5a591fea3f4e1a95b9f4800eddf9fd0e0c3` and executable commit
+`b61c47f7f526a714245aad3ed468bc66035d1130`. Exact-head PR CI `29555650743`, push CI `29555649005`,
+CodeQL `29555650742`, code-scanning result `87807398944`, and dependency review passed. Exact-merge main CI
+`29555925444` passed 3,063 zero-skipped tests, coverage, package/artifact checks, SBOM, packaged-JAR smoke, Docker
+image/runtime smoke, dry-run evidence, and Trivy; exact-merge main CodeQL `29555925459` passed. The focused verifier
+and long-goal guard passed 15 tests on the merge commit before PR4 branch creation.
+
+PR4 contract: decode a strict versioned replay checkpoint only from an exactly valid verification result, then rebuild
+immutable existing lifecycle transition/snapshot and loopback allocation evidence. Reconstruct configuration limits and
+rollback policy, candidate-apply/running/holding/completing/rollback state, request/observation/hold counters, restoration
+status, terminal outcome and reason, and latest journal sequence/fingerprint. Reject any unsupported payload, inconsistent
+reference, changed configuration/allocation, regressing counter/status, illegal semantic combination, forged chain, or
+exceeded event/byte/operation bound without returning partial state.
+
+Scope/safety: replay is pure and synchronous. It has no filesystem API, append capability, traffic client, allocation
+router, lifecycle command, network, external system, scheduler, executor, thread, process, sleep, or wall-clock dependency.
+Directory replay verifies only the controlled hashed journal and never exposes a path. PR4 adds no startup hook,
+allocation restoration, automatic resume, repair, quarantine mutation, retention, compaction, API, authorization,
+dependency, POM, workflow, Docker, Compose, application-resource, or production routing change.
+
+Current local evidence: production compilation passes. Fifteen new replay tests plus the fourteen verifier tests and
+twenty-one local-journal tests pass with zero failures, errors, or skips. Tests cover strict checkpoint round trip,
+map-order-independent allocation references, real append/verify/replay with byte preservation, deterministic repeated
+replay, candidate-apply crash state, running/holding/rollback reconstruction, completed and rolled-back terminal records,
+post-terminal record anchoring, partial/invalid/unavailable/empty source rejection, unsupported/malformed payloads,
+fingerprint and identity mismatch, configuration/allocation mutation, counter and recovery-status regression, semantic
+contradiction, forged verification results, event/byte/operation bounds, and immutable output collections.
+
+A fresh clean package, an independent quiet full test, and the verbose exact-candidate package passed. Surefire reports
+3,078 tests with zero failures, errors, or skips; the skip-test package also passed. The full dependency tree and focused
+trees resolve unchanged Jackson 2.21.4, Tomcat 10.1.55, and Netty 4.2.15.Final. JaCoCo analyzed 748 classes at 85.24
+percent instructions, 68.80 percent branches, and 85.07 percent lines. CycloneDX 2.9.1 validated XML and JSON v1.6 BOMs
+with 144 components. The 94.6 MB executable JAR has SHA-256
+`e1ed9b25c8ba3de63e435fe3569bee56275d95df3fc20475db68f1f3801e1f06`, contains all required resources and eighteen
+replay nested classes, and returned HTTP 200 from literal loopback before graceful shutdown.
+
+The existing all proof passed thirteen scenarios and 837 actual loopback requests with every check green; the ten-scenario
+shadow workflow and healthy/overloaded/invalid LASE CLI smoke passed. Cached diff checks pass. Scans found no new secret,
+URL, non-loopback target, filesystem, network, thread, process, scheduler, dependency, POM, workflow, container, Compose,
+application-resource, API, controller, security, or tracked target change. Local Docker remains unavailable and Trivy is
+not installed as previously logged; exact-head remote Docker/runtime/Trivy evidence remains mandatory. Current composition
+is 2,029 production/test additions and 98 documentation/process additions: 95.39 percent executable and 4.61 percent
+documentation/process. Across PR1 through PR4 the campaign is 5,925 production/test additions and 477
+documentation/process additions: 92.49 percent executable and 7.45 percent documentation/process.
+
+Remote status: exact PR3 merge-main CI and CodeQL are green. PR4 has not been committed, pushed, or opened; exact-head
+CI, CodeQL, dependency review, code scanning, and the remote container/Trivy lane remain pending.
+
+Decision: continue JOURNAL-PR4 through full local verification, commit, PR creation, exact-head gates, normal merge, and
+exact-merge main gates before starting JOURNAL-PR5.
+
 ## Active Durable Experiment Journal PR3 Checkpoint
 
 Timestamp: 2026-07-16T21:45-07:00

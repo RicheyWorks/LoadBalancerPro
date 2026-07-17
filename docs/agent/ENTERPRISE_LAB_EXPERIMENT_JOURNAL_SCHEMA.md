@@ -5,8 +5,8 @@
 `enterprise-lab-experiment-journal-event/v1` is the canonical, data-only envelope for durable single-instance
 Enterprise Lab experiment evidence. `enterprise-lab-experiment-journal-payload/v1` is its bounded generic payload
 schema. PR1 implements the immutable model, canonical codec, and content fingerprint; PR2 supplies the controlled local
-append boundary; and PR3 supplies bounded read-only chain verification. Replay and startup reconciliation remain later
-campaign slots.
+append boundary; PR3 supplies bounded read-only chain verification; and PR4 supplies strict replay checkpoints and pure
+deterministic reconstruction. Startup reconciliation remains a later campaign slot.
 
 The envelope records sequence, experiment and scenario identity, event type, lifecycle states, logical cycle, injected
 timestamp, configuration/decision/baseline/candidate/applied allocation fingerprint references, structured reason,
@@ -98,8 +98,36 @@ rename, or replace the source.
 A non-LF-terminated final byte range is recoverable-tail evidence only when every complete prior frame forms a valid
 chain and the tail begins like a canonical JSON object. Arbitrary trailing bytes, empty complete frames, and any invalid
 LF-terminated frame remain invalid. Verification through an owning writer is serialized with append and close;
-independent competing verification is reported unavailable. Recovery policy, replay, repair, and quarantine mutation are
-not authorized by a verification result and remain later slots.
+independent competing verification is reported unavailable. Recovery policy, repair, and quarantine mutation are not
+authorized by a verification result and remain later slots.
+
+## Replay Checkpoint And Deterministic Reconstruction
+
+`enterprise-lab-experiment-replay-checkpoint/v1` is a strict typed interpretation of the generic v1 payload. It retains
+bounded configuration evidence: configuration and decision fingerprints, request/duration/evidence/hold limits, the
+existing rollback policy, operating mode, authorization fact, and creation/expiration bounds. It also retains immutable
+baseline, candidate, and last-applied loopback allocation snapshots; request, observation, and hold counters; and explicit
+rollback and restoration status. Unknown, missing, malformed, or future replay-checkpoint fields fail closed.
+
+The replay engine accepts only an exactly `VALID` verification result. A recoverable partial tail remains evidence that
+must be handled by a later explicit recovery policy and is not replayed automatically. Replay independently rechecks
+sequence, predecessor, identity, lifecycle continuity, envelope-to-payload fingerprint references, stable configuration
+and allocation evidence, nondecreasing counters and logical cycles, event-type semantics, terminal behavior, and the
+verification summary. It shares the state-change graph owned by `EnterpriseLabExperimentLifecycle` rather than carrying
+a second recovery-only graph.
+
+Successful replay returns immutable reconstruction evidence using the existing lifecycle transition, lifecycle snapshot,
+and loopback allocation models. It identifies candidate-apply crash boundaries, running/holding/completing/rollback
+state, hold progress, request and observation counts, baseline-restoration status, terminal outcome and reason, and the
+latest journal sequence/fingerprint. A terminal record is anchored to the first terminal event and cannot be rewritten by
+later permitted terminal recovery evidence.
+
+Replay is bounded by the verified directory byte and event limits plus a deterministic operation budget. Any failure
+returns one structured classification and no partial reconstructed state. The engine has no filesystem, journal append,
+traffic client, allocation router, lifecycle command, network, scheduler, thread, process, external system, or wall-clock
+capability. Directory replay verifies a controlled hashed journal and then invokes this pure boundary; it does not expose
+the path or mutate forensic bytes. Startup enumeration, live allocation reconciliation, baseline restoration actions,
+automatic resume, repair, quarantine, retention, compaction, and operator APIs remain unimplemented by PR4.
 
 ## Failure Semantics
 

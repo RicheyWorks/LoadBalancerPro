@@ -6,6 +6,63 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Single-Host Evidence Ownership PR1 Checkpoint
+
+Timestamp: 2026-07-17T15:31-07:00
+
+Goal: restart-safe single-host writer ownership, stale-owner detection, and bounded takeover
+
+Current slot: OWNERSHIP-PR1 - ownership domain, canonical record codec, and controlled paths
+
+Started from clean synchronized main: `a3fc534fd7d5d9ab80a7cd556ca2dbc9e129eb82`
+
+Current branch: `codex/ownership-domain-controlled-paths`
+
+PR URL: pending
+
+Prior campaign closure: durable journal PRs #461 through #466 merged normally. Exact merge-main CI `29564912097` and
+CodeQL `29564912093` are green on `a3fc534fd7d5d9ab80a7cd556ca2dbc9e129eb82`; the suite starts at 3,102 tests.
+
+Audit result: current journal exclusion is a static in-JVM `ACTIVE_WRITERS` map. Durable startup constructs the journal
+directory, synchronously reconciles, then publishes the operator service, but no OS lock fences a second JVM. The narrow
+ownership seam is the existing controlled journal namespace before directory/reconciler/repository construction. Later
+slots must carry one authoritative live ownership capability through append, allocation restoration, compaction,
+retention, reconciliation, admission, and shutdown rather than adding a second lifecycle or repository.
+
+PR1 capability: immutable bounded ownership policy, identity, record, state, stale/takeover/result, and failure models;
+strict canonical JSON owner-record v1 encoding; deterministic SHA-256 evidence; monotonic generation/overflow rules; fixed
+ownership, lock, record, temporary, history, and directory-marker names beneath the existing namespace; restrictive
+permissions where supported; no path/owner/generation caller input; and live directory-replacement detection.
+
+Focused verification: production compilation passed. The ownership model/codec/path selector passes 22 tests with zero
+failures, errors, or skips; this includes eight simultaneous initializers converging on one forced marker, strict
+canonical timestamps, generation/overflow rules, result-state invariants, directory replacement, fixed-file identity,
+and conditional native-link assertions. An initial Windows replacement failure exposed filesystem identity reuse and is
+logged; a force-synchronized non-secret marker now detects replacement without trusting timestamps alone. Marker readers
+use at most eight one-millisecond retries when another initializer has created but not yet completed the marker write.
+
+Compatibility and full verification: the 72-test ownership/journal/long-goal compatibility bundle passed with zero
+failures, errors, or skips. `mvn -q test` passed 3,124 tests in 445 suites with zero failures, errors, or skips. Embedded
+Tomcat dependency resolution passed at 10.1.55. Current-head skip-test packaging passed, and the executable JAR contains
+the ownership model, codec, exception, path capability, and nested result/state classes. The final normal exact-candidate
+`mvn -B package` passed the same 3,124 zero-skipped tests and rebuilt the executable JAR. Its packaged experiment proof
+passed 13 scenarios and 837 literal-loopback requests with fingerprint
+`0e87e7956548609a025822c247fa135317ceac4dcc1294a99c787c8bcef37182`; the durable recovery proof passed 124 requests
+with interrupted rollback, corruption quarantine, and terminal compaction true at fingerprint
+`3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2ed839ff7afd6a`. JaCoCo analyzed 817 classes. CycloneDX generated
+and validated XML/JSON BOMs with 144 components. `git diff --check` passed; generated target evidence is ignored; no
+production external/non-loopback target, secret input, force-unlock behavior, owner override, controller path, dependency,
+POM, workflow, Docker, or Compose change exists. The deliberate `FORCE_UNLOCKED` codec test is rejection evidence, not a
+runtime state or API. PR1 has 1,800 implementation/test changed lines and 205 documentation/process changed lines
+(89.78% / 10.22%). Local Docker/Trivy is not claimed; the unaffected repository image lane remains mandatory remotely.
+
+Scope: no lock acquisition, mutation authority, startup wiring, traffic action, journal schema change, dependency, POM,
+workflow, Docker, Compose, external target, scheduler, API, force-unlock behavior, or generated evidence is added in PR1.
+
+Decision: finish the scope/composition audit, then create PR1, require exact-head CI, CodeQL, scanning, dependency review,
+packaged runtime, Docker/runtime, and Trivy, merge normally without branch deletion, and require exact-merge main gates
+before OWNERSHIP-PR2.
+
 ## Active Durable Experiment Journal PR6 Checkpoint
 
 Timestamp: 2026-07-17T00:54-07:00

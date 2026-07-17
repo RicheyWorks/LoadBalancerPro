@@ -4603,3 +4603,57 @@ build or scan began. This matches the known PR5 local tool boundary and is not e
 
 Recovery: retain the exact repository CI Docker/runtime/Trivy job as a required final-head and merge-main gate. Do not
 weaken or suppress the scan; local packaged-JAR and target-only data-directory proofs remain green.
+# 2026-07-17 - Ownership PR1 Windows directory replacement identity reuse
+
+Branch/PR: `codex/ownership-domain-controlled-paths` / pending
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabEvidenceOwnershipCodecTest,EnterpriseLabEvidenceOwnershipPathsTest" test`
+
+Ownership boundary: detection of a controlled ownership-directory replacement while an owner still relies on the
+captured directory identity.
+
+Observed behavior: 21 focused tests ran; the replacement test expected a structured directory-identity mismatch, but
+Windows immediately reused the observable file-key/timestamp inputs and the recomputed hash matched. Two symbolic-link
+tests were skipped because local link creation was unavailable; all other focused cases passed.
+
+Root cause and baseline: the new uncommitted PR1 identity design relied only on filesystem attributes whose reuse is
+permitted; the baseline has no cross-process ownership-directory identity. The test exposed an actual design weakness.
+
+Correction: add a fixed, bounded, force-synchronized random identity marker inside the controlled ownership namespace;
+hash it with the filesystem identity, retain its value in the live path capability, and classify a missing, replaced, or
+malformed marker as `DIRECTORY_IDENTITY_MISMATCH`. The marker contains no path, username, process data, or secret.
+
+Final verification: the same 21-test focused selector reran with zero failures, errors, or skips and the replacement case
+passing. Link-specific assertions remain conditional on host link capability; exact-head Linux CI must exercise its native
+link boundary and remain zero-skipped. Broader PR1 gates remain pending.
+
+Residual limitation: a full evidence-root replacement between application runs cannot be detected without an identity
+anchor outside that root; this campaign detects replacement during a live ownership lifetime and fails closed on missing
+or inconsistent in-root evidence. Network filesystems remain unsupported.
+
+# 2026-07-17 - Ownership PR1 Windows audit glob rejected
+
+Branch/PR: `codex/ownership-domain-controlled-paths` / pending
+
+Failing check: read-only ownership source audit with `rg` and shell-expanded `EnterpriseLabEvidenceOwnership*.java`
+path arguments.
+
+Observed/root cause: PowerShell passed the wildcard-bearing paths literally and Windows rejected them as invalid path
+names. Line-count output completed, but the intended method and forbidden-surface scan did not run. No source, evidence,
+process, or remote state changed.
+
+Correction/result: rerun the audit against the exact source and test directories with `rg -g` include patterns. Retain
+the same checks for lock, deletion, caller path/property input, external targets, sleeps, and unresolved work markers.
+
+# 2026-07-17 - Ownership PR1 focused-report aggregation syntax error
+
+Branch/PR: `codex/ownership-domain-controlled-paths` / pending
+
+Failing check: read-only PowerShell formatting of the two ownership Surefire XML reports after the focused Maven command.
+
+Observed/root cause: the command placed a pipeline directly after a `foreach` statement without grouping it, so
+PowerShell rejected an empty pipe element before reading or changing any report or repository file. The focused Maven
+selector itself had already exited green.
+
+Correction/result: group the collected report objects before piping them to `Format-Table`, then confirm exact focused
+test, failure, error, and skip counts. No verification criterion is changed.

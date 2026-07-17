@@ -46,7 +46,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
     public static final int HARD_MAX_JOURNAL_ENTRIES = 4_096;
     public static final int HARD_MAX_DISCOVERED_JOURNALS = 256;
 
-    private static final String NAMESPACE = "enterprise-lab-experiment-journals-v1";
+    static final String NAMESPACE = "enterprise-lab-experiment-journals-v1";
     private static final String JOURNALS = "journals";
     private static final String QUARANTINE = "quarantine";
     private static final String COMPACTED = "compacted";

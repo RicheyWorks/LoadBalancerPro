@@ -4657,3 +4657,17 @@ selector itself had already exited green.
 
 Correction/result: group the collected report objects before piping them to `Format-Table`, then confirm exact focused
 test, failure, error, and skip counts. No verification criterion is changed.
+
+# 2026-07-17 - Ownership PR1 run-watch interruption unsupported
+
+Branch/PR: `codex/ownership-domain-controlled-paths` / PR #467
+
+Failing operation: attempted to interrupt the verbose local `gh run watch` helper after switching to quieter exact-SHA
+JSON polling.
+
+Observed/root cause: the command process backend does not support interrupt input for that watcher, so the local helper
+continued waiting on the already-running GitHub Actions run. No workflow was cancelled, retried, bypassed, or changed;
+the exact-head remote jobs continued normally.
+
+Correction/result: leave the read-only watcher to exit with its GitHub run and use bounded `gh run view`/`gh pr view`
+polls for subsequent gate audits. Treat all results on the prior SHA as stale after this checkpoint update.

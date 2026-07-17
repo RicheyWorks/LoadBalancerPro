@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Single-Host Evidence Ownership PR1 Checkpoint
 
-Timestamp: 2026-07-17T15:35-07:00
+Timestamp: 2026-07-17T15:39-07:00
 
 Goal: restart-safe single-host writer ownership, stale-owner detection, and bounded takeover
 
@@ -55,8 +55,8 @@ with interrupted rollback, corruption quarantine, and terminal compaction true a
 and validated XML/JSON BOMs with 144 components. `git diff --check` passed; generated target evidence is ignored; no
 production external/non-loopback target, secret input, force-unlock behavior, owner override, controller path, dependency,
 POM, workflow, Docker, or Compose change exists. The deliberate `FORCE_UNLOCKED` codec test is rejection evidence, not a
-runtime state or API. PR1 has 1,800 implementation/test changed lines and 207 documentation/process changed lines
-(89.69% / 10.31%). Local Docker/Trivy is not claimed; the unaffected repository image lane remains mandatory remotely.
+runtime state or API. PR1 has 1,800 implementation/test changed lines and 221 documentation/process changed lines
+(89.06% / 10.94%). Local Docker/Trivy is not claimed; the unaffected repository image lane remains mandatory remotely.
 
 Scope: no lock acquisition, mutation authority, startup wiring, traffic action, journal schema change, dependency, POM,
 workflow, Docker, Compose, external target, scheduler, API, force-unlock behavior, or generated evidence is added in PR1.

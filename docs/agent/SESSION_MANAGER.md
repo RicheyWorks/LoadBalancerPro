@@ -6,6 +6,68 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Durable Experiment Journal PR2 Checkpoint
+
+Timestamp: 2026-07-16T21:03-07:00
+
+Goal name: crash-safe append-only experiment evidence journal with verified replay and restart reconciliation
+
+Current PR slot: JOURNAL-PR2 - crash-aware append-only local journal
+
+Checkpoint: implementation and focused/full local verification green; remaining artifact and security gates in progress
+
+Started from main SHA: `403b399699d28117365409ce50adbbac84f726d4`
+
+Current branch: codex/local-append-only-journal
+
+PR URL: not created
+
+Prior slot closure: PR #461 merged normally as `403b399699d28117365409ce50adbbac84f726d4` from exact head
+`9cfcba0273d6b62088f6110169637f6b1dfa93ee` and executable commit
+`08e01747fc9527078728baf8e89c1ef9395cdc20`. Exact-head CI runs `29552497043` and `29552495255`,
+CodeQL `29552497006`, code-scanning result `87798315171`, and dependency review passed. Exact-merge main CI
+`29552780346` passed 3,028 zero-skipped tests, coverage, package/artifact checks, SBOM, packaged-JAR smoke, Docker
+image/runtime smoke, dry-run evidence, and Trivy; exact-merge main CodeQL `29552780393` passed. The focused codec,
+lifecycle, and configuration selector passed locally on the merge commit, and local `main` matched `origin/main` before
+branching. PR1 final composition was 1,229 production/test lines and 155 documentation/process lines: 88.80 percent
+executable and 11.20 percent documentation/process.
+
+PR2 contract: add a narrow local journal abstraction and controlled-directory implementation with canonical JSONL
+framing, safe hashed filenames, append-only creation/reopen, deterministic sequence and predecessor enforcement,
+process-local single-writer ownership, bounded write loops, maximum entry/journal/count limits, explicit write/force-data/
+force-metadata policies, restrictive permissions where supported, read-only complete-entry scans, and distinct partial-
+tail detection. Add failure injection at before-write, partial-write, post-write/pre-force, and post-force boundaries.
+
+Scope/safety: require an explicitly supplied trusted existing local data root; accept no path or filename from an API;
+reject traversal, symbolic links, non-regular files, identity mismatch, overwrite, concurrent writer, and ambiguous reopen.
+Use only JDK file APIs and the PR1 codec. Add no dependency, database, network storage, external target, traffic action,
+startup integration, scheduler, unbounded retry, Maven/workflow/Docker/Compose change, or production routing behavior.
+
+Evidence boundary: `FileChannel.write` completion means bytes were handed to the operating-system file path, not durable
+media. `force(false)` and `force(true)` completion record the requested synchronization boundary but do not prove disk-
+controller persistence, power-loss survival, filesystem atomicity beyond the exercised platform, or multi-process leases.
+Chain-wide corruption classification, replay, recovery, quarantine, retention, and compaction remain later slots.
+
+Current local evidence: the focused codec/storage selector passed 37 tests with zero failures, errors, or skips. A fresh
+`mvn -B clean package` compiled 430 production and 482 test source files, passed 3,049 tests with zero failures, errors,
+or skips, and rebuilt the executable JAR. The 21 new storage tests exercise canonical append/read/reopen, default and
+optional synchronization policies, all four injected failure boundaries, partial-tail preservation, bounded entry/count/
+size behavior, malformed and non-canonical frames, identity/sequence/predecessor rejection, process-local ownership,
+serialized append/read and append/close behavior, restrictive permissions where supported, hashed filenames, absolute-
+local-root enforcement including UNC rejection, symlink rejection, and controlled-directory unavailability.
+The independent `mvn -q test` report set also totals 3,049/0/0/0, and `mvn -q -DskipTests package` passed. Full and
+Tomcat-filtered dependency trees passed with unchanged Tomcat 10.1.55 and existing Jackson 2.21.4; no dependency changed.
+JaCoCo analyzed 724 classes at 85.23 percent instructions, 69.05 percent branches, and 85.00 percent lines. CycloneDX
+validated XML and JSON BOMs with 144 components. The executable JAR contains all journal classes, has local SHA-256
+`89f1c3f0fddbd461bb56f86e5c00e6b1e86f00967532d706dbff7ce15febe0b8`, and returned HTTP 200 with the expected bounded
+health body on `127.0.0.1:18080`. The existing all proof passed 13 scenarios and 837 actual loopback requests with every
+check and restoration invariant green; the 10-scenario workflow smoke passed. Local Docker/Trivy were not run because
+the Docker Desktop Linux engine pipe and host Trivy command are unavailable; this is logged in `FAILURE_LOG.md`, and the
+exact remote image/runtime/Trivy lane remains a mandatory merge gate.
+
+Decision: continue JOURNAL-PR2 through focused failure/concurrency/path tests, full verification, exact-head remote gates,
+normal merge, and exact-merge main gates before starting JOURNAL-PR3.
+
 ## Active Durable Experiment Journal PR1 Checkpoint
 
 Timestamp: 2026-07-16T16:06-07:00
@@ -57,7 +119,7 @@ loopback completion/rollback proof passed 837 requests with every baseline resto
 workflow smoke also passed. Staged diff, forbidden-path, generated-evidence, secret-pattern, non-loopback/network,
 filesystem/process/execution, and dependency/scope scans passed. No POM, dependency, workflow, Docker, Compose,
 application configuration, API, or production route changed. The branch composition is 1,229 production/test lines and
-154 documentation/process lines: 88.87 percent executable and 11.13 percent documentation/process.
+155 documentation/process lines: 88.80 percent executable and 11.20 percent documentation/process.
 
 Decision: continue JOURNAL-PR1 through focused and full verification, exact-head remote checks, normal merge, and exact-
 merge main gates before starting JOURNAL-PR2.

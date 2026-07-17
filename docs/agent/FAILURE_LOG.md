@@ -6,6 +6,50 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T20:19-07:00
+
+Branch/PR: codex/journal-event-codec / no PR yet
+
+Failure type: local CycloneDX Maven property argument split
+
+Failing check: first local `cyclonedx-maven-plugin:2.9.1:makeAggregateBom` invocation
+
+Observed/root cause: PowerShell split the unquoted dotted `-Dcyclonedx.skipAttach=true` property, so CycloneDX wrote
+and validated both BOM files but Maven then treated `.skipAttach=true` as an unknown lifecycle phase and exited nonzero.
+This was a local command-shape issue, not a dependency, journal, SBOM-content, baseline, or security-gate failure.
+
+Correction/result: reran the repository workflow command with every Maven property quoted. CycloneDX resolved 144
+components, wrote and validated `target/bom.xml` and `target/bom.json`, skipped attachment as intended, and exited green.
+
+Follow-up: quote dotted Maven `-D` properties in PowerShell as well as comma-separated test selectors. No residual issue.
+
+## Entry
+
+Date/time: 2026-07-16T16:06-07:00
+
+Branch/PR: codex/journal-event-codec / no PR yet
+
+Failure type: initial recovery-gap audit path and Windows glob command-shape errors
+
+Failing check: read-only `rg` and `Get-Content` audit probes for API sources, Compose files, and the operator service
+
+Observed/root cause: two commands used Unix-style filename wildcards as Windows paths, one confused the GitHub owner
+name with the separate Java package path `com.richmond423.loadbalancerpro`, and one looked for the operator service under
+`api` instead of `lab`. The failures affected audit output only; no journal, recovery, repository, or remote state changed,
+and they were not present in the baseline product.
+
+Correction/result: retained the correct GitHub remote `RicheyWorks/LoadBalancerPro`, reran source searches with exact
+paths and `-g` filters, and inspected the service and controller successfully. The audit confirmed process-local in-memory
+ownership, controller-managed shutdown, loopback-only allocation restoration, authenticated `/api/lab/**` boundaries,
+and no existing durable experiment journal.
+
+Follow-up: keep GitHub owner, filesystem repository name, and Java package path distinct. The first PR1 scope scan then
+repeated the Windows wildcard mistake; it was corrected immediately with an exact directory plus `rg -g`, and the
+first final secret regex had an unmatched PowerShell quote. The corrected staged-diff scans found only the intentional
+synthetic bearer value in the rejection test and no network, filesystem, process, or execution API. No residual issue.
+
+## Entry
+
 Date/time: 2026-07-16T15:52-07:00
 
 Branch/PR: codex/loopback-e2e-proof / PR #460

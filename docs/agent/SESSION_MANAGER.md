@@ -6,6 +6,60 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Durable Experiment Journal PR1 Checkpoint
+
+Timestamp: 2026-07-16T16:06-07:00
+
+Goal name: crash-safe append-only experiment evidence journal with verified replay and restart reconciliation
+
+Current PR slot: JOURNAL-PR1 - canonical journal event model and codec
+
+Checkpoint: implementation and complete local verification green; ready to commit and publish
+
+Started from main SHA: `3229a145d96d65ae689b606a2b93aa06a94e3427`
+
+Current branch: codex/journal-event-codec
+
+PR URL: not created
+
+Prior campaign closure: PR #460 merged normally as `3229a145d96d65ae689b606a2b93aa06a94e3427`. Local `main`
+was clean and equal to `origin/main` after a fresh fetch. Exact-merge main Build, Test, Package, Smoke and CodeQL checks
+passed; dependency review was skipped on the main push as expected.
+
+PR1 contract: add a bounded, versioned durable event envelope, exhaustive safety-relevant event vocabulary, strict
+canonical JSON codec, deterministic SHA-256 content fingerprint, ordered predecessor reference, and deliberate rejection
+of malformed, oversized, secret-like, duplicate-field, unknown-field, and unsupported-version input. Canonical bytes must
+be stable across equivalent map and payload field order. This slot does not write files or connect the event model to the
+live lifecycle; those remain later campaign slots.
+
+Scope/safety: reuse Jackson already present in the build without default typing or native serialization; keep payloads
+data-only, bounded, and free of credentials or stack traces. Add no dependency, database, network storage, target input,
+external traffic, production routing, signing keys, scheduler, retry loop, Maven/workflow/Docker/Compose behavior, or
+filesystem write behavior.
+
+Evidence boundary: fingerprints detect canonical content change but do not authenticate an author, prove non-repudiation,
+or make storage tamper-proof. Crash-aware append, chain verification, replay, startup reconciliation, quarantine,
+retention, compaction, operator endpoints, and packaged recovery proof remain unimplemented until their scoped PRs.
+
+Current implementation: one immutable event envelope reuses the existing lifecycle states and covers sixteen safety-
+relevant event types. A strict data-only codec recursively canonicalizes metadata, payload objects, unordered payload
+collections, and numeric values; computes and verifies lowercase SHA-256 content fingerprints; enforces genesis and
+predecessor shapes; rejects duplicate/unknown/malformed/unsupported input; bounds every entry and payload dimension; and
+rejects credential-like or stack-trace evidence. Payload access is defensive even within the package.
+
+Local verification: 16 focused codec tests and the lifecycle/configuration compatibility selector passed. Fresh
+`mvn -B clean package` and final-current-production `mvn -B package` each passed 3,028 tests with zero failures, errors,
+or skips; `mvn -q -DskipTests package`, dependency-tree resolution, JaCoCo report generation, and corrected CycloneDX
+XML/JSON generation passed. The executable JAR contains every new journal class. The existing thirteen-scenario real-
+loopback completion/rollback proof passed 837 requests with every baseline restored; the ten-scenario active-experiment
+workflow smoke also passed. Staged diff, forbidden-path, generated-evidence, secret-pattern, non-loopback/network,
+filesystem/process/execution, and dependency/scope scans passed. No POM, dependency, workflow, Docker, Compose,
+application configuration, API, or production route changed. The staged composition is 1,229 production/test lines and
+153 documentation/process lines: 88.93 percent executable and 11.07 percent documentation/process.
+
+Decision: continue JOURNAL-PR1 through focused and full verification, exact-head remote checks, normal merge, and exact-
+merge main gates before starting JOURNAL-PR2.
+
 ## Active Loopback Experiment PR6 Checkpoint
 
 Timestamp: 2026-07-16T15:51-07:00

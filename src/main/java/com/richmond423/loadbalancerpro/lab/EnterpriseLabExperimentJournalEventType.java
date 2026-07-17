@@ -1,0 +1,23 @@
+package com.richmond423.loadbalancerpro.lab;
+
+/**
+ * Safety-relevant facts that may cross the durable experiment journal boundary.
+ */
+public enum EnterpriseLabExperimentJournalEventType {
+    EXPERIMENT_ARMED,
+    EXPERIMENT_STARTED,
+    CANDIDATE_ALLOCATION_APPLIED,
+    LIFECYCLE_TRANSITION,
+    OBSERVATION_CHECKPOINT,
+    HOLD_EVALUATED,
+    ROLLBACK_REQUESTED,
+    BASELINE_RESTORATION_ATTEMPTED,
+    BASELINE_RESTORED,
+    EXPERIMENT_CANCELLED,
+    EXPERIMENT_COMPLETED,
+    EXPERIMENT_ROLLED_BACK,
+    EXPERIMENT_REJECTED,
+    EXPERIMENT_FAILED,
+    RECOVERY_ACTION,
+    QUARANTINE_FINDING
+}

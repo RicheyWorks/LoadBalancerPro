@@ -8,19 +8,21 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Durable Experiment Journal PR5 Checkpoint
 
-Timestamp: 2026-07-16T23:40-07:00
+Timestamp: 2026-07-16T23:44-07:00
 
 Goal name: crash-safe append-only experiment evidence journal with verified replay and restart reconciliation
 
 Current PR slot: JOURNAL-PR5 - startup reconciliation and safe recovery actions
 
-Checkpoint: production implementation, focused verification, full test, and broad local evidence pass; exact committed-candidate package pending
+Checkpoint: executable commit and exact committed-candidate local gates pass; PR creation next
 
 Started from main SHA: `e15a05835223f64abbcef17d61b3c8644347c1bf`
 
 Current branch: codex/journal-startup-reconciliation
 
 PR URL: pending
+
+Executable commit: `ca1c2d4e59b2d87db917e9e2f05f6f0f6a068a71`
 
 Prior slot closure: PR #464 merged normally as `e15a05835223f64abbcef17d61b3c8644347c1bf` from exact final head
 `10789bbc0f828fd9e0baa37a1e38c233cc5dadd4` and executable commit
@@ -54,19 +56,22 @@ control was weakened.
 
 Current local evidence: the final expanded selector passes 63 tests with zero failures, errors, or skips. Full
 `mvn -q test` passes 3,094 tests across 441 reports with zero failures, errors, or skips. JaCoCo analyzes 764 classes at
-85.07 percent instructions, 68.62 percent branches, and 84.84 percent lines. Dependency trees remain unchanged at
+85.24 percent instructions, 68.80 percent branches, and 85.07 percent lines. Dependency trees remain unchanged at
 Jackson 2.21.4, Tomcat 10.1.55, and Netty 4.2.15.Final. CycloneDX 2.9.1 validates XML and JSON v1.6 BOMs with 144
-components. Skip-test packaging, the thirteen-scenario/837-request loopback experiment proof, and the ten-scenario shadow
-workflow pass. The packaged JAR contains the recovery classes and starts on literal loopback with the configured absolute
+components. The exact committed-candidate `mvn -B clean package` passes, compiling 436 main and 485 test source files and
+running the same 3,094 zero-skipped tests. The 94.6 MB executable JAR has SHA-256
+`7970B001C801468F2A8D7810FC2E2B7032100E06BAA4B246BC1BC29F2E91212F`; its required artifact resources and recovery
+classes are present. Skip-test packaging, the thirteen-scenario/837-request loopback experiment proof, and the ten-scenario
+shadow workflow pass. The packaged JAR starts on literal loopback with the configured absolute
 journal root, returns health HTTP 200, exposes zero recovered experiments for an empty root, and is stopped during bounded
 cleanup. Local Docker and Trivy remain unavailable as previously logged, so exact-head remote Docker/runtime/Trivy remains
 mandatory.
 
 Diff and scope audit: no POM, dependency, workflow, Docker, Compose, application-resource, auth-policy, external-target,
 cloud, tenant, scheduler, executor, background-worker, or arbitrary API-path change is present. Secret and non-loopback URL
-scans are empty. Current composition is 2,033 production/test additions and 116 documentation/process additions: 94.60
-percent executable and 5.40 percent documentation/process. Across PR1 through PR5 so far, the campaign has 7,958
-production/test additions and 597 documentation/process additions: 93.02 percent executable and 6.98 percent
+scans are empty. Current composition is 2,033 production/test additions and 131 documentation/process additions: 93.95
+percent executable and 6.05 percent documentation/process. Across PR1 through PR5 so far, the campaign has 7,958
+production/test additions and 612 documentation/process additions: 92.86 percent executable and 7.14 percent
 documentation/process.
 
 Scope/safety: recovery is synchronous, bounded, local-filesystem-only, and single-process. Pure replay still has no traffic
@@ -80,8 +85,8 @@ cloud or tenant recovery, automatic corrupt-evidence remediation, or admission a
 transition recording, bounded retention/terminal compaction, authenticated durable-evidence endpoints, and packaged
 restart/corruption proofs remain explicitly scoped to JOURNAL-PR6.
 
-Decision: commit JOURNAL-PR5, run the exact committed-candidate package and final docs-sensitive verification, then continue through PR, exact-head gates, normal
-merge, and exact-merge main gates before starting JOURNAL-PR6.
+Decision: continue through PR creation, exact-head gates, normal merge, and exact-merge main gates before starting
+JOURNAL-PR6.
 
 ## Active Durable Experiment Journal PR4 Checkpoint
 

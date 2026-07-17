@@ -149,7 +149,103 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
         return temporaryRecordFile;
     }
 
+    FileChannel openLockChannel() {
+        verifyDirectoryIdentity();
+        try {
+            if (!Files.exists(lockFile, LinkOption.NOFOLLOW_LINKS)) {
+                try {
+                    createControlledFile(lockFile);
+                } catch (FileAlreadyExistsException ignored) {
+                    // A concurrent creator is accepted only after strict validation below.
+                }
+            }
+            validateControlledRegularFile(lockFile, "ownership lock file");
+            restrictPermissions(lockFile, FILE_PERMISSIONS);
+            return FileChannel.open(lockFile,
+                    StandardOpenOption.READ,
+                    StandardOpenOption.WRITE,
+                    LinkOption.NOFOLLOW_LINKS);
+        } catch (EnterpriseLabEvidenceOwnershipException exception) {
+            throw exception;
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    "ownership lock file permission was denied", exception);
+        } catch (UnsupportedOperationException exception) {
+            throw failure(FailureClassification.LOCK_UNSUPPORTED,
+                    "ownership lock file options are unsupported", exception);
+        } catch (IOException exception) {
+            throw failure(FailureClassification.STORAGE_UNAVAILABLE,
+                    "ownership lock file could not be opened", exception);
+        }
+    }
+
+    FileChannel createTemporaryRecordChannel() {
+        verifyDirectoryIdentity();
+        try {
+            if (Files.exists(temporaryRecordFile, LinkOption.NOFOLLOW_LINKS)) {
+                throw failure(FailureClassification.RECORD_REPLACED,
+                        "ownership temporary record already exists");
+            }
+            return openControlledFileForCreation(temporaryRecordFile);
+        } catch (EnterpriseLabEvidenceOwnershipException exception) {
+            throw exception;
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    "ownership temporary record permission was denied", exception);
+        } catch (FileAlreadyExistsException exception) {
+            throw failure(FailureClassification.RECORD_REPLACED,
+                    "ownership temporary record appeared concurrently", exception);
+        } catch (IOException exception) {
+            throw failure(FailureClassification.STORAGE_UNAVAILABLE,
+                    "ownership temporary record could not be created", exception);
+        }
+    }
+
+    void validateControlledRecordFile(Path file) {
+        Path safe = requireControlledFile(file);
+        validateControlledRegularFile(safe, "ownership record file");
+    }
+
+    void restrictControlledFilePermissions(Path file) {
+        Path safe = requireControlledFile(file);
+        try {
+            restrictPermissions(safe, FILE_PERMISSIONS);
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    "ownership file permission was denied", exception);
+        } catch (IOException exception) {
+            throw failure(FailureClassification.STORAGE_UNAVAILABLE,
+                    "ownership file permissions could not be applied", exception);
+        }
+    }
+
+    void forceOwnershipDirectoryMetadataIfSupported() {
+        verifyDirectoryIdentity();
+        if (Files.getFileAttributeView(
+                ownershipDirectory,
+                java.nio.file.attribute.PosixFileAttributeView.class,
+                LinkOption.NOFOLLOW_LINKS) == null) {
+            return;
+        }
+        try (FileChannel channel = FileChannel.open(
+                ownershipDirectory, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
+            channel.force(true);
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    "ownership directory metadata cannot be synchronized", exception);
+        } catch (IOException | UnsupportedOperationException exception) {
+            throw failure(FailureClassification.STORAGE_UNAVAILABLE,
+                    "ownership directory metadata synchronization is unavailable", exception);
+        }
+    }
+
     String identityOfControlledRegularFile(Path file) {
+        verifyDirectoryIdentity();
+        Path safe = requireControlledFile(file);
+        return identity(safe, false);
+    }
+
+    private Path requireControlledFile(Path file) {
         Path safe = Objects.requireNonNull(file, "file cannot be null").toAbsolutePath().normalize();
         if (!safe.getParent().equals(ownershipDirectory)
                 || !safe.startsWith(ownershipDirectory)
@@ -158,7 +254,7 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
             throw failure(FailureClassification.UNSAFE_PATH,
                     "ownership file is outside the fixed controlled set");
         }
-        return identity(safe, false);
+        return safe;
     }
 
     private static Path validateTrustedRoot(Path value) {
@@ -301,6 +397,47 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
             }
         } catch (FileAlreadyExistsException ignored) {
             return null;
+        }
+    }
+
+    private static FileChannel openControlledFileForCreation(Path file) throws IOException {
+        try {
+            return FileChannel.open(file,
+                    Set.of(StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE,
+                            LinkOption.NOFOLLOW_LINKS),
+                    fileAttribute());
+        } catch (UnsupportedOperationException exception) {
+            return FileChannel.open(file,
+                    StandardOpenOption.CREATE_NEW,
+                    StandardOpenOption.WRITE,
+                    LinkOption.NOFOLLOW_LINKS);
+        }
+    }
+
+    private static void createControlledFile(Path file) throws IOException {
+        try {
+            Files.createFile(file, fileAttribute());
+        } catch (UnsupportedOperationException exception) {
+            Files.createFile(file);
+        }
+    }
+
+    private static void validateControlledRegularFile(Path file, String subject) {
+        try {
+            BasicFileAttributes attributes = Files.readAttributes(
+                    file, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+            if (!attributes.isRegularFile() || attributes.isSymbolicLink()) {
+                throw failure(FailureClassification.UNSAFE_PATH,
+                        subject + " must be a non-symbolic-link regular file");
+            }
+        } catch (EnterpriseLabEvidenceOwnershipException exception) {
+            throw exception;
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    subject + " cannot be inspected", exception);
+        } catch (IOException exception) {
+            throw failure(FailureClassification.STORAGE_UNAVAILABLE,
+                    subject + " is unavailable", exception);
         }
     }
 

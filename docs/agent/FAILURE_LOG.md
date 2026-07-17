@@ -4671,3 +4671,30 @@ the exact-head remote jobs continued normally.
 
 Correction/result: leave the read-only watcher to exit with its GitHub run and use bounded `gh run view`/`gh pr view`
 polls for subsequent gate audits. Treat all results on the prior SHA as stale after this checkpoint update.
+
+# 2026-07-17 - Ownership PR2 audit used a nonexistent test filename
+
+Branch/PR: `codex/ownership-filelock-durable-record` / pending
+
+Failing check: read-only source audit for journal-directory durability helpers and their tests.
+
+Observed/root cause: the command named `EnterpriseLabExperimentJournalDirectoryTest.java`, but this repository splits
+those cases across differently named journal security, retention, compaction, and local-journal tests. Source results
+were returned, but `rg` correctly reported the nonexistent explicit test path. No file or runtime state changed.
+
+Correction/result: discover the exact journal test filenames with `rg --files`, then inspect only the relevant existing
+files. Retain the repository's atomic-move, force, fixed-path, and Windows behavior as the PR2 reference contract.
+
+# 2026-07-17 - Ownership PR2 final source scan repeated a Windows glob error
+
+Branch/PR: `codex/ownership-filelock-durable-record` / pending
+
+Failing check: read-only unresolved-work, unbounded-loop, and lock-deletion scan over ownership production sources.
+
+Observed/root cause: one scan reused a wildcard-bearing Windows path instead of the already established directory plus
+`rg -g` form, so that production-source argument was rejected. The explicit manager test path still scanned and found
+only the deliberate test fixture that removes a released lock file to prove replacement detection. No product file or
+runtime state changed.
+
+Correction/result: rerun against the exact source directory with `-g 'EnterpriseLabEvidenceOwnership*.java'`, keep test
+fixtures separate from production findings, and require no product lock deletion, force unlock, unbounded loop, or TODO.

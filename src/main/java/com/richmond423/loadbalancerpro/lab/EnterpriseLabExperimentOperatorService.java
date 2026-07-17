@@ -54,6 +54,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
     private final LongSupplier monotonicNanos;
     private final int maxRetainedExperiments;
     private final EnterpriseLabExperimentRecoveryGate recoveryGate;
+    private final Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence;
     private final Map<String, Session> sessions = new LinkedHashMap<>();
     private boolean closed;
 
@@ -71,7 +72,23 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 Clock.systemUTC(),
                 System::nanoTime,
                 DEFAULT_MAX_RETAINED_EXPERIMENTS,
-                recoveryGate);
+                recoveryGate,
+                Optional.empty());
+    }
+
+    public EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            EnterpriseLabExperimentDurableEvidenceRepository durableEvidence) {
+        this(
+                targetCatalog,
+                new EnterpriseLabScenarioCatalogService(),
+                new EnterpriseLabAdaptiveDecisionService(),
+                Clock.systemUTC(),
+                System::nanoTime,
+                DEFAULT_MAX_RETAINED_EXPERIMENTS,
+                recoveryGate,
+                Optional.of(Objects.requireNonNull(durableEvidence, "durableEvidence cannot be null")));
     }
 
     EnterpriseLabExperimentOperatorService(
@@ -82,7 +99,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             LongSupplier monotonicNanos,
             int maxRetainedExperiments) {
         this(targetCatalog, scenarioCatalog, decisionService, clock, monotonicNanos,
-                maxRetainedExperiments, EnterpriseLabExperimentRecoveryGate.inMemoryOnly());
+                maxRetainedExperiments, EnterpriseLabExperimentRecoveryGate.inMemoryOnly(), Optional.empty());
     }
 
     EnterpriseLabExperimentOperatorService(
@@ -93,12 +110,27 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             LongSupplier monotonicNanos,
             int maxRetainedExperiments,
             EnterpriseLabExperimentRecoveryGate recoveryGate) {
+        this(targetCatalog, scenarioCatalog, decisionService, clock, monotonicNanos,
+                maxRetainedExperiments, recoveryGate, Optional.empty());
+    }
+
+    EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabScenarioCatalogService scenarioCatalog,
+            EnterpriseLabAdaptiveDecisionService decisionService,
+            Clock clock,
+            LongSupplier monotonicNanos,
+            int maxRetainedExperiments,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence) {
         this.targetCatalog = Objects.requireNonNull(targetCatalog, "targetCatalog cannot be null");
         this.scenarioCatalog = Objects.requireNonNull(scenarioCatalog, "scenarioCatalog cannot be null");
         this.decisionService = Objects.requireNonNull(decisionService, "decisionService cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
         this.monotonicNanos = Objects.requireNonNull(monotonicNanos, "monotonicNanos cannot be null");
         this.recoveryGate = Objects.requireNonNull(recoveryGate, "recoveryGate cannot be null");
+        this.durableEvidence = Objects.requireNonNull(
+                durableEvidence, "durableEvidence cannot be null");
         if (maxRetainedExperiments < 1 || maxRetainedExperiments > DEFAULT_MAX_RETAINED_EXPERIMENTS) {
             throw new IllegalArgumentException("maxRetainedExperiments must be between 1 and 128");
         }
@@ -542,31 +574,40 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         return recoveryGate.admissionStatus();
     }
 
+    public Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence() {
+        return durableEvidence;
+    }
+
     @Override
     public synchronized void close() {
         if (closed) {
             return;
         }
-        activeSession().ifPresent(session -> {
-            String requestId = "service-shutdown-" + (session.actions.size() + 1L);
-            try {
-                cancelInternal(session, requestId,
-                        "application shutdown requested safe experiment termination", "shutdown");
-            } catch (RuntimeException exception) {
-                AllocationChangeReceipt restored = session.router.restoreBaseline("shutdown fail-closed restoration");
-                LifecycleSnapshot before = session.lifecycle.snapshot();
-                if (before.candidateAllocationActive()) {
-                    session.lifecycle.beginRollback(requestId + "-begin", "shutdown fail-closed restoration", clock.instant());
-                    session.lifecycle.confirmRollback(requestId + "-confirm", restored, clock.instant());
-                } else if (before.state() == EnterpriseLabExperimentState.ARMED) {
-                    session.lifecycle.cancel(requestId + "-cancel", "application shutdown before start", clock.instant());
+        try {
+            activeSession().ifPresent(session -> {
+                String requestId = "service-shutdown-" + (session.actions.size() + 1L);
+                try {
+                    cancelInternal(session, requestId,
+                            "application shutdown requested safe experiment termination", "shutdown");
+                } catch (RuntimeException exception) {
+                    AllocationChangeReceipt restored = session.router.restoreBaseline(
+                            "shutdown fail-closed restoration");
+                    LifecycleSnapshot before = session.lifecycle.snapshot();
+                    if (before.candidateAllocationActive()) {
+                        session.lifecycle.beginRollback(
+                                requestId + "-begin", "shutdown fail-closed restoration", clock.instant());
+                        session.lifecycle.confirmRollback(requestId + "-confirm", restored, clock.instant());
+                    } else if (before.state() == EnterpriseLabExperimentState.ARMED) {
+                        session.lifecycle.cancel(
+                                requestId + "-cancel", "application shutdown before start", clock.instant());
+                    }
+                    throw exception;
                 }
-                LifecycleSnapshot after = session.lifecycle.snapshot();
-                recordAction(session, requestId, "shutdown", clock.instant(), before.state(), after.state(),
-                        restored.trafficActionPerformed(), "shutdown used fail-closed baseline restoration");
-            }
-        });
-        closed = true;
+            });
+        } finally {
+            durableEvidence.ifPresent(EnterpriseLabExperimentDurableEvidenceRepository::close);
+            closed = true;
+        }
     }
 
     private OperatorReceipt cancelInternal(
@@ -641,6 +682,50 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 trafficActionPerformed,
                 reason,
                 previous));
+        durableEvidence.ifPresent(repository -> {
+            try {
+                repository.record(
+                        session.configuration,
+                        snapshot,
+                        session.router.currentSnapshot(),
+                        requestId,
+                        operation,
+                        occurredAt,
+                        before,
+                        after,
+                        trafficActionPerformed,
+                        reason);
+            } catch (RuntimeException exception) {
+                failClosedAfterDurableAppend(session, requestId, exception);
+            }
+        });
+    }
+
+    private void failClosedAfterDurableAppend(
+            Session session,
+            String requestId,
+            RuntimeException appendFailure) {
+        recoveryGate.fail("DURABLE_APPEND_FAILED");
+        LifecycleSnapshot snapshot = session.lifecycle.snapshot();
+        if (snapshot.candidateAllocationActive()) {
+            AllocationChangeReceipt restored = session.router.restoreBaseline(
+                    "durable journal append failed closed");
+            String internalId = internalRequestId("durable-append-failure", requestId);
+            if (snapshot.state() == EnterpriseLabExperimentState.RUNNING
+                    || snapshot.state() == EnterpriseLabExperimentState.HOLDING) {
+                session.lifecycle.beginRollback(
+                        internalId + "-begin",
+                        "durable journal append failed closed",
+                        clock.instant());
+                session.lifecycle.confirmRollback(
+                        internalId + "-confirm",
+                        restored,
+                        clock.instant());
+            }
+        }
+        throw new IllegalStateException(
+                "durable journal append failed; active loopback allocation was restored fail closed",
+                appendFailure);
     }
 
     private EnterpriseLabExperimentOperatorRecord record(Session session) {

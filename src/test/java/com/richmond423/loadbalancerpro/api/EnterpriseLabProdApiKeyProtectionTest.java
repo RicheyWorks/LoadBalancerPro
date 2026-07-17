@@ -93,6 +93,15 @@ class EnterpriseLabProdApiKeyProtectionTest {
                 .andExpect(jsonPath("$.count", is(0)))
                 .andExpect(jsonPath("$.activeExperimentEnabled", is(false)));
 
+        mockMvc.perform(get("/api/lab/experiments/durable"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/lab/experiments/durable")));
+
+        mockMvc.perform(get("/api/lab/experiments/durable")
+                        .header("X-API-Key", API_KEY))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.reasonCode", is("DURABLE_EVIDENCE_NOT_CONFIGURED")));
+
         String body = """
                 {
                   "operatorRequestId":"prod-arm-1",

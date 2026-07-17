@@ -16,6 +16,8 @@ class LoadBalancerApiApplicationTest {
         assertFalse(LoadBalancerApiApplication.shouldStartApi(new String[]{"--adaptive-routing-experiment=all"}));
         assertFalse(LoadBalancerApiApplication.shouldStartApi(
                 new String[]{"--enterprise-lab-experiment-proof=completion"}));
+        assertFalse(LoadBalancerApiApplication.shouldStartApi(
+                new String[]{"--enterprise-lab-durable-recovery-proof"}));
         assertFalse(LoadBalancerApiApplication.shouldStartApi(new String[]{"--version"}));
         assertTrue(LoadBalancerApiApplication.shouldStartApi(new String[]{"--server.port=18080"}));
         assertTrue(LoadBalancerApiApplication.shouldStartApi(new String[]{}));

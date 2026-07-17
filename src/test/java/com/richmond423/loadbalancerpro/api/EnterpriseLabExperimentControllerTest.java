@@ -4,6 +4,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalStorage
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentRecoveryGate.InitializationState;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentTargetCatalog;
+import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,6 +55,15 @@ class EnterpriseLabExperimentControllerTest {
             assertTrue(status.recoveryReport().isPresent());
             assertTrue(Files.isDirectory(
                     journalRoot.resolve("enterprise-lab-experiment-journals-v1/journals")));
+            EnterpriseLabExperimentController controller = new EnterpriseLabExperimentController(
+                    service, new AdaptiveRoutingPolicyProperties());
+            var journals = (EnterpriseLabExperimentController.DurableJournalListResponse)
+                    controller.durableJournals().getBody();
+            assertEquals(0, journals.count());
+            assertEquals(0, ((com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalDirectory.RetentionReport)
+                    controller.enforceDurableRetention(
+                            new EnterpriseLabExperimentController.RetentionRequest(0, true)).getBody())
+                    .actions().size());
         }
         assertThrows(EnterpriseLabExperimentJournalStorageException.class,
                 () -> configuration.enterpriseLabExperimentOperatorService(
@@ -71,6 +81,12 @@ class EnterpriseLabExperimentControllerTest {
                         is("request bodies cannot supply or reveal backend target addresses")))
                 .andExpect(content().string(not(containsString("http://"))))
                 .andExpect(content().string(not(containsString("requestUri"))));
+
+        mockMvc.perform(get("/api/lab/experiments/durable"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.configured", is(false)))
+                .andExpect(jsonPath("$.reasonCode", is("DURABLE_EVIDENCE_NOT_CONFIGURED")))
+                .andExpect(content().string(not(containsString(journalRoot.toString()))));
 
         String armBody = """
                 {

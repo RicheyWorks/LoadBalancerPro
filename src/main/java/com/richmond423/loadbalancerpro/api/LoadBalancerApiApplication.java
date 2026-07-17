@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.api;
 
 import com.richmond423.loadbalancerpro.cli.AdaptiveRoutingExperimentCommand;
+import com.richmond423.loadbalancerpro.cli.EnterpriseLabDurableRecoveryProofCommand;
 import com.richmond423.loadbalancerpro.cli.EnterpriseLabExperimentProofCommand;
 import com.richmond423.loadbalancerpro.cli.EnterpriseLabWorkflowCommand;
 import com.richmond423.loadbalancerpro.cli.LaseDemoCommand;
@@ -18,6 +19,14 @@ public class LoadBalancerApiApplication {
             return;
         }
         if (!shouldStartApi(args)) {
+            EnterpriseLabDurableRecoveryProofCommand.Result durableProofResult =
+                    EnterpriseLabDurableRecoveryProofCommand.runIfRequested(args, System.out, System.err);
+            if (durableProofResult.requested()) {
+                if (durableProofResult.exitCode() != 0) {
+                    System.exit(durableProofResult.exitCode());
+                }
+                return;
+            }
             EnterpriseLabExperimentProofCommand.Result proofResult =
                     EnterpriseLabExperimentProofCommand.runIfRequested(args, System.out, System.err);
             if (proofResult.requested()) {
@@ -60,6 +69,7 @@ public class LoadBalancerApiApplication {
 
     static boolean shouldStartApi(String[] args) {
         return !isVersionRequested(args)
+                && !EnterpriseLabDurableRecoveryProofCommand.isRequested(args)
                 && !EnterpriseLabExperimentProofCommand.isRequested(args)
                 && !AdaptiveRoutingExperimentCommand.isRequested(args)
                 && !EnterpriseLabWorkflowCommand.isRequested(args)

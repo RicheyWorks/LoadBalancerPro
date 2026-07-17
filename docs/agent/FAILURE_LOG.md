@@ -4546,3 +4546,60 @@ Corrective action: expose the existing structured report in assertion output, id
 Final verification: corrected writer-owned verification so recovery verifies through the active journal before close, then reran the two failed cases successfully. The expanded focused bundle subsequently passed with startup reconciliation, replay, verifier, directory, operator-service, and controller coverage.
 
 Residual limitation: none for this failure; both recovery success paths now produce exactly valid replayable terminal journals without weakening verification.
+
+# 2026-07-17 - PR6 durable append failure test exception contract
+
+Branch/PR: `codex/journal-retention-operator-proof` / pending
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabExperimentDurableEvidenceRepositoryTest" test`
+
+Observed failure: the append-capacity test expected the low-level journal storage exception directly, while the
+operator boundary correctly wrapped it in the service's fail-closed `IllegalStateException` after restoring the
+recorded baseline and failing new-experiment admission.
+
+Corrective action: assert the public fail-closed exception and retain an assertion that its cause is the bounded
+journal storage exception; rerun the focused selector before broader verification.
+
+# 2026-07-17 - PR6 completion projection and packaged-proof recovery
+
+Branch/PR: `codex/journal-retention-operator-proof` / pending
+
+Failing checks: focused durable repository completion replay and packaged durable recovery proof selectors.
+
+Observed failures: the first proof fixture did not reach the existing healthy completion evidence threshold. After using
+the established 60-request/hold path, replay rejected the completion chain because the terminal evaluation's hold event
+used the already restored baseline snapshot while its durable state was still `HOLDING`. A later bundle rerun reused an
+old generated target proof directory and correctly rejected the non-contiguous existing journal sequence.
+
+Root cause and correction: record the hold checkpoint from the prior candidate allocation before appending completion
+restoration evidence; retain the strict replay check. Give each command test a fresh ignored target output directory so
+generated evidence from earlier red-green runs is never treated as a new journal. The focused completion replay, packaged
+interruption/corruption/compaction proof, and 129-test journal/recovery/security bundle then pass without weakening a
+verifier, replay invariant, synchronization policy, or path boundary.
+
+Residual limitation: the packaged interruption is a closed-writer equivalent crash boundary, not an operating-system or
+power-loss simulation; that boundary is explicit in the report and durable evidence contract.
+
+# 2026-07-17 - PR6 generated-proof cleanup command blocked before execution
+
+Branch/PR: `codex/journal-retention-operator-proof` / pending
+
+Command: guarded PowerShell removal of one exact generated directory under `target/` before rerunning the proof test.
+
+Observed failure: the command execution policy rejected the recursive cleanup before it ran; no repository or generated
+file was changed by the command.
+
+Recovery: do not bypass the command policy. Use a fresh ignored target output name in the proof test and continue with the
+same bounded packaged command path.
+
+# 2026-07-17 - PR6 local container and Trivy tools unavailable
+
+Branch/PR: `codex/journal-retention-operator-proof` / pending
+
+Commands: `docker version --format '{{.Server.Version}}'` and `trivy --version`.
+
+Observed failure: the Docker Desktop Linux engine pipe does not exist and `trivy` is not installed on the host. No image
+build or scan began. This matches the known PR5 local tool boundary and is not evidence about the branch image.
+
+Recovery: retain the exact repository CI Docker/runtime/Trivy job as a required final-head and merge-main gate. Do not
+weaken or suppress the scan; local packaged-JAR and target-only data-directory proofs remain green.

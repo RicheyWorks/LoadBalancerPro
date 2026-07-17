@@ -3,6 +3,11 @@ package com.richmond423.loadbalancerpro.api;
 import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyMode;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalDirectory;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentDurableEvidenceRepository;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalReplayEngine;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalStorageException;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentTerminalManifest;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorRecord;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.ArmRequest;
@@ -169,6 +174,123 @@ public class EnterpriseLabExperimentController {
                 "request bodies cannot supply or reveal backend target addresses");
     }
 
+    @GetMapping("/durable")
+    public ResponseEntity<?> durableJournals() {
+        return durableEvidence().<ResponseEntity<?>>map(repository -> {
+            List<DurableJournalSummary> journals = repository.discover().stream()
+                    .map(DurableJournalSummary::from)
+                    .toList();
+            return ResponseEntity.ok(new DurableJournalListResponse(
+                    journals.size(), journals,
+                    EnterpriseLabExperimentJournalDirectory.HARD_MAX_DISCOVERED_JOURNALS,
+                    "sanitized summaries only; no filesystem paths or raw journal bytes"));
+        }).orElseGet(this::durableUnavailable);
+    }
+
+    @GetMapping("/durable/recovery")
+    public ResponseEntity<?> durableRecoveryStatus() {
+        return durableEvidence().<ResponseEntity<?>>map(repository ->
+                ResponseEntity.ok(repository.recoveryStatus()))
+                .orElseGet(this::durableUnavailable);
+    }
+
+    @GetMapping("/durable/{experimentId}/verification")
+    public ResponseEntity<?> durableVerification(
+            @PathVariable("experimentId") String experimentId) {
+        return durableEvidence().<ResponseEntity<?>>map(repository ->
+                ResponseEntity.ok(VerificationSummary.from(repository.verify(experimentId))))
+                .orElseGet(this::durableUnavailable);
+    }
+
+    @PostMapping("/durable/{experimentId}/verify")
+    public ResponseEntity<?> requestDurableVerification(
+            @PathVariable("experimentId") String experimentId) {
+        return durableVerification(experimentId);
+    }
+
+    @GetMapping("/durable/{experimentId}/export")
+    public ResponseEntity<?> exportDurableEvidence(
+            @PathVariable("experimentId") String experimentId) {
+        return durableEvidence().<ResponseEntity<?>>map(repository -> {
+            EnterpriseLabExperimentJournalVerifier.VerificationResult verification =
+                    repository.verify(experimentId);
+            EnterpriseLabExperimentJournalReplayEngine.ReplayResult replay =
+                    repository.replay(experimentId);
+            return ResponseEntity.ok(new DurableEvidenceExport(
+                    VerificationSummary.from(verification),
+                    replay.outcome(), replay.classification(), replay.reconstructedState(),
+                    "bounded reconstructed evidence; raw source bytes and backing paths are not exported"));
+        }).orElseGet(this::durableUnavailable);
+    }
+
+    @PostMapping("/durable/{experimentId}/compact")
+    public ResponseEntity<?> compactTerminalEvidence(
+            @PathVariable("experimentId") String experimentId) {
+        return durableEvidence().<ResponseEntity<?>>map(repository -> {
+            try {
+                return ResponseEntity.ok(repository.compactTerminal(experimentId));
+            } catch (EnterpriseLabExperimentJournalStorageException exception) {
+                return durableActionRejected(exception);
+            }
+        })
+                .orElseGet(this::durableUnavailable);
+    }
+
+    @GetMapping("/durable/compacted")
+    public ResponseEntity<?> compactedEvidence() {
+        return durableEvidence().<ResponseEntity<?>>map(repository -> {
+            List<EnterpriseLabExperimentTerminalManifest> manifests = repository.compactedManifests();
+            return ResponseEntity.ok(new CompactedEvidenceResponse(
+                    manifests.size(), manifests,
+                    EnterpriseLabExperimentJournalDirectory.HARD_MAX_DISCOVERED_JOURNALS));
+        }).orElseGet(this::durableUnavailable);
+    }
+
+    @GetMapping("/durable/quarantine")
+    public ResponseEntity<?> quarantineEvidence() {
+        return durableEvidence().<ResponseEntity<?>>map(repository -> {
+            List<EnterpriseLabExperimentJournalDirectory.QuarantineMetadata> entries =
+                    repository.quarantineMetadata();
+            return ResponseEntity.ok(new QuarantineEvidenceResponse(
+                    entries.size(), entries,
+                    "forensic bytes retained; no raw content or backing path is exposed"));
+        }).orElseGet(this::durableUnavailable);
+    }
+
+    @PostMapping("/durable/retention")
+    public ResponseEntity<?> enforceDurableRetention(
+            @RequestBody(required = false) RetentionRequest request) {
+        RetentionRequest safe = requireBody(request);
+        return durableEvidence().<ResponseEntity<?>>map(repository -> {
+            try {
+                return ResponseEntity.ok(
+                        repository.enforceRetention(safe.maximumTerminalJournals(), safe.dryRun()));
+            } catch (EnterpriseLabExperimentJournalStorageException exception) {
+                return durableActionRejected(exception);
+            }
+        })
+                .orElseGet(this::durableUnavailable);
+    }
+
+    private Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence() {
+        return operatorService.durableEvidence();
+    }
+
+    private ResponseEntity<?> durableUnavailable() {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new DurableUnavailableResponse(
+                false,
+                "DURABLE_EVIDENCE_NOT_CONFIGURED",
+                "set the explicit local experiment journal data directory before using durable evidence APIs"));
+    }
+
+    private ResponseEntity<?> durableActionRejected(
+            EnterpriseLabExperimentJournalStorageException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new DurableActionResponse(
+                false,
+                exception.failure().name(),
+                "durable evidence action was rejected without changing unresolved or active history"));
+    }
+
     private boolean activeExperimentEnabled() {
         return policyProperties.isActiveExperimentEnabled()
                 && policyProperties.configuredMode() == AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT;
@@ -225,6 +347,82 @@ public class EnterpriseLabExperimentController {
             String targetBoundary) {
     }
 
+    public record DurableUnavailableResponse(boolean configured, String reasonCode, String reason) {
+    }
+
+    public record DurableActionResponse(boolean applied, String reasonCode, String reason) {
+    }
+
+    public record DurableJournalListResponse(
+            int count,
+            List<DurableJournalSummary> journals,
+            int maximumCount,
+            String evidenceBoundary) {
+    }
+
+    public record DurableJournalSummary(
+            String journalId,
+            Optional<String> experimentId,
+            EnterpriseLabExperimentJournalDirectory.DiscoveryOutcome outcome,
+            String classification,
+            Optional<EnterpriseLabExperimentJournalVerifier.Outcome> verificationOutcome,
+            int verifiedEventCount,
+            long totalBytes) {
+        private static DurableJournalSummary from(
+                EnterpriseLabExperimentJournalDirectory.JournalDiscovery discovery) {
+            return new DurableJournalSummary(
+                    discovery.journalId(), discovery.experimentId(), discovery.outcome(),
+                    discovery.classification(),
+                    discovery.verification().map(
+                            EnterpriseLabExperimentJournalVerifier.VerificationResult::outcome),
+                    discovery.verification().map(value -> value.verifiedEvents().size()).orElse(0),
+                    discovery.verification().map(
+                            EnterpriseLabExperimentJournalVerifier.VerificationResult::totalBytes).orElse(0L));
+        }
+    }
+
+    public record VerificationSummary(
+            String journalId,
+            EnterpriseLabExperimentJournalVerifier.Outcome outcome,
+            EnterpriseLabExperimentJournalVerifier.Classification classification,
+            int verifiedEventCount,
+            long completeBytes,
+            long tailBytes,
+            long totalBytes,
+            List<EnterpriseLabExperimentJournalVerifier.Finding> findings) {
+        private static VerificationSummary from(
+                EnterpriseLabExperimentJournalVerifier.VerificationResult value) {
+            return new VerificationSummary(
+                    value.journalId(), value.outcome(), value.classification(),
+                    value.verifiedEvents().size(), value.completeBytes(), value.tailBytes(),
+                    value.totalBytes(), value.findings());
+        }
+    }
+
+    public record DurableEvidenceExport(
+            VerificationSummary verification,
+            EnterpriseLabExperimentJournalReplayEngine.Outcome replayOutcome,
+            EnterpriseLabExperimentJournalReplayEngine.Classification replayClassification,
+            Optional<EnterpriseLabExperimentJournalReplayEngine.ReconstructedExperimentState>
+                    reconstructedState,
+            String evidenceBoundary) {
+    }
+
+    public record CompactedEvidenceResponse(
+            int count,
+            List<EnterpriseLabExperimentTerminalManifest> manifests,
+            int maximumCount) {
+    }
+
+    public record QuarantineEvidenceResponse(
+            int count,
+            List<EnterpriseLabExperimentJournalDirectory.QuarantineMetadata> entries,
+            String evidenceBoundary) {
+    }
+
+    public record RetentionRequest(int maximumTerminalJournals, boolean dryRun) {
+    }
+
     @Configuration
     static class EnterpriseLabExperimentConfiguration {
         @Bean
@@ -249,12 +447,15 @@ public class EnterpriseLabExperimentController {
             EnterpriseLabExperimentJournalDirectory directory =
                     EnterpriseLabExperimentJournalDirectory.create(Path.of(journalDataDirectory));
             EnterpriseLabExperimentRecoveryGate gate = EnterpriseLabExperimentRecoveryGate.pending();
+            Clock clock = Clock.systemUTC();
             new EnterpriseLabExperimentStartupReconciler(
                     directory,
                     new EnterpriseLabProcessLocalAllocationRecovery(targetCatalog),
                     gate,
-                    Clock.systemUTC()).initialize();
-            return new EnterpriseLabExperimentOperatorService(targetCatalog, gate);
+                    clock).initialize();
+            EnterpriseLabExperimentDurableEvidenceRepository durableEvidence =
+                    new EnterpriseLabExperimentDurableEvidenceRepository(directory, gate, clock);
+            return new EnterpriseLabExperimentOperatorService(targetCatalog, gate, durableEvidence);
         }
     }
 }

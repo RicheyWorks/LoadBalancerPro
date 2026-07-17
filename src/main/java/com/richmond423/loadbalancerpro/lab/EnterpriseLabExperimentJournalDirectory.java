@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.Comparator;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -47,8 +49,11 @@ public final class EnterpriseLabExperimentJournalDirectory {
     private static final String NAMESPACE = "enterprise-lab-experiment-journals-v1";
     private static final String JOURNALS = "journals";
     private static final String QUARANTINE = "quarantine";
+    private static final String COMPACTED = "compacted";
     private static final Pattern JOURNAL_FILE_NAME =
             Pattern.compile("journal-v1-[0-9a-f]{64}\\.jsonl");
+    private static final Pattern MANIFEST_FILE_NAME =
+            Pattern.compile("terminal-v1-[0-9a-f]{64}\\.json");
     private static final Pattern CANONICAL_EXPERIMENT_ID = Pattern.compile("[A-Za-z0-9._:-]+");
     private static final Set<PosixFilePermission> DIRECTORY_PERMISSIONS =
             PosixFilePermissions.fromString("rwx------");
@@ -59,6 +64,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
 
     private final Path journalsDirectory;
     private final Path quarantineDirectory;
+    private final Path compactedDirectory;
     private final EnterpriseLabExperimentJournalCodec codec;
     private final long maxJournalBytes;
     private final int maxJournalEntries;
@@ -82,6 +88,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
         Path namespace = controlledDirectory(root, NAMESPACE);
         this.journalsDirectory = controlledDirectory(namespace, JOURNALS);
         this.quarantineDirectory = controlledDirectory(namespace, QUARANTINE);
+        this.compactedDirectory = controlledDirectory(namespace, COMPACTED);
     }
 
     public static EnterpriseLabExperimentJournalDirectory create(Path trustedRoot) {
@@ -236,6 +243,158 @@ public final class EnterpriseLabExperimentJournalDirectory {
             discoveries.add(discover(path));
         }
         return List.copyOf(discoveries);
+    }
+
+    /**
+     * Installs a verified, canonical terminal manifest before removing the exact
+     * controlled source journal. Active, invalid, or non-terminal journals are preserved.
+     */
+    public CompactionResult compactTerminal(String experimentId, Clock clock, String reasonCode) {
+        String safeExperimentId = requireExperimentId(experimentId);
+        Instant compactedAt = Objects.requireNonNull(clock, "clock cannot be null").instant();
+        String safeReasonCode = requireReasonCode(reasonCode);
+        String journalId = journalId(safeExperimentId);
+        Path source = journalPath(journalId);
+        Object owner = claim(source);
+        try {
+            if (!Files.exists(source, LinkOption.NOFOLLOW_LINKS)) {
+                Path existingPath = manifestPath(
+                        "terminal-v1-" + journalId.substring("journal-v1-".length()));
+                if (Files.exists(existingPath, LinkOption.NOFOLLOW_LINKS)) {
+                    EnterpriseLabExperimentTerminalManifest existing = readManifest(existingPath);
+                    if (!existing.experimentId().equals(safeExperimentId)
+                            || !existing.journalId().equals(journalId)) {
+                        throw failure(Failure.IDENTITY_MISMATCH,
+                                "existing terminal manifest identity does not match request");
+                    }
+                    return new CompactionResult(
+                            CompactionOutcome.COMPLETED_IDEMPOTENTLY,
+                            existing, true, "TERMINAL_MANIFEST_REUSED");
+                }
+                throw failure(Failure.VERIFICATION_FAILED,
+                        "no source journal or verified terminal manifest exists");
+            }
+            VerificationResult verification = verifyOwned(source, journalId, safeExperimentId);
+            if (verification.outcome() != Outcome.VALID) {
+                throw failure(Failure.VERIFICATION_FAILED,
+                        "only an exactly valid terminal journal can be compacted");
+            }
+            var replay = new EnterpriseLabExperimentJournalReplayEngine().replay(verification);
+            if (replay.outcome() != EnterpriseLabExperimentJournalReplayEngine.Outcome.RECONSTRUCTED
+                    || replay.reconstructedState().orElseThrow().terminalRecord().isEmpty()) {
+                throw failure(Failure.VERIFICATION_FAILED,
+                        "active or semantically invalid journals cannot be compacted");
+            }
+            EnterpriseLabExperimentTerminalManifest manifest =
+                    EnterpriseLabExperimentTerminalManifest.create(
+                            verification, replay.reconstructedState().orElseThrow(),
+                            compactedAt, safeReasonCode);
+            Path destination = manifestPath(manifest.manifestId());
+            boolean newlyInstalled = !Files.exists(destination, LinkOption.NOFOLLOW_LINKS)
+                    && installManifest(destination, manifest);
+            EnterpriseLabExperimentTerminalManifest installed = readManifest(destination);
+            if (newlyInstalled ? !installed.equals(manifest) : !sameSourceEvidence(installed, manifest)) {
+                throw failure(Failure.VERIFICATION_FAILED,
+                        "installed terminal manifest does not match verified source evidence");
+            }
+            validateJournalFile(source);
+            try {
+                Files.delete(source);
+            } catch (IOException exception) {
+                throw failure(Failure.IO_FAILURE,
+                        "verified terminal manifest was installed but source cleanup failed safely", exception);
+            }
+            return new CompactionResult(
+                    newlyInstalled ? CompactionOutcome.COMPACTED : CompactionOutcome.COMPLETED_IDEMPOTENTLY,
+                    installed, true,
+                    newlyInstalled ? "TERMINAL_MANIFEST_INSTALLED" : "TERMINAL_MANIFEST_REUSED");
+        } finally {
+            ACTIVE_WRITERS.remove(source, owner);
+        }
+    }
+
+    /** Lists verified canonical compacted manifests; no backing paths are exposed. */
+    public List<EnterpriseLabExperimentTerminalManifest> compactedManifests() {
+        List<Path> paths = boundedControlledEntries(compactedDirectory, "compacted manifest");
+        List<EnterpriseLabExperimentTerminalManifest> manifests = new ArrayList<>();
+        for (Path path : paths) {
+            if (!MANIFEST_FILE_NAME.matcher(path.getFileName().toString()).matches()) {
+                throw failure(Failure.VERIFICATION_FAILED,
+                        "unrecognized content exists in the compacted evidence namespace");
+            }
+            manifests.add(readManifest(path));
+        }
+        manifests.sort(Comparator.comparing(
+                EnterpriseLabExperimentTerminalManifest::terminalOccurredAt)
+                .thenComparing(EnterpriseLabExperimentTerminalManifest::manifestId));
+        return List.copyOf(manifests);
+    }
+
+    /** Sanitized quarantine inventory. Original corrupt bytes remain untouched. */
+    public List<QuarantineMetadata> quarantineMetadata() {
+        List<Path> paths = boundedControlledEntries(quarantineDirectory, "quarantine entry");
+        List<QuarantineMetadata> results = new ArrayList<>();
+        for (Path path : paths) {
+            try {
+                validateJournalFile(path);
+                results.add(new QuarantineMetadata(
+                        opaqueJournalId(path.getFileName().toString()),
+                        Files.size(path),
+                        Files.getLastModifiedTime(path, LinkOption.NOFOLLOW_LINKS).toInstant(),
+                        "FORENSIC_BYTES_RETAINED"));
+            } catch (IOException exception) {
+                throw failure(Failure.IO_FAILURE, "quarantine metadata could not be inspected", exception);
+            }
+        }
+        return List.copyOf(results);
+    }
+
+    /** Plans or applies bounded compaction of the oldest exactly valid terminal journals. */
+    public RetentionReport enforceRetention(RetentionPolicy policy, boolean dryRun, Clock clock) {
+        RetentionPolicy safePolicy = Objects.requireNonNull(policy, "policy cannot be null");
+        Clock safeClock = Objects.requireNonNull(clock, "clock cannot be null");
+        List<TerminalCandidate> terminal = new ArrayList<>();
+        int unresolved = 0;
+        for (JournalDiscovery discovery : discover()) {
+            if (discovery.outcome() != DiscoveryOutcome.VERIFIED
+                    || discovery.verification().orElseThrow().outcome() != Outcome.VALID) {
+                unresolved++;
+                continue;
+            }
+            var replay = new EnterpriseLabExperimentJournalReplayEngine()
+                    .replay(discovery.verification().orElseThrow());
+            if (replay.outcome() != EnterpriseLabExperimentJournalReplayEngine.Outcome.RECONSTRUCTED
+                    || replay.reconstructedState().orElseThrow().terminalRecord().isEmpty()) {
+                continue;
+            }
+            var state = replay.reconstructedState().orElseThrow();
+            terminal.add(new TerminalCandidate(
+                    state.experimentId(),
+                    state.terminalRecord().orElseThrow().completedAt(),
+                    discovery.verification().orElseThrow().totalBytes()));
+        }
+        terminal.sort(Comparator.comparing(TerminalCandidate::terminalAt)
+                .thenComparing(TerminalCandidate::experimentId));
+        int compactCount = Math.max(0, terminal.size() - safePolicy.maximumTerminalJournals());
+        List<RetentionAction> actions = new ArrayList<>();
+        for (int index = 0; index < compactCount; index++) {
+            TerminalCandidate candidate = terminal.get(index);
+            if (dryRun) {
+                actions.add(new RetentionAction(
+                        candidate.experimentId(), candidate.sourceBytes(), false,
+                        "TERMINAL_COMPACTION_PLANNED"));
+            } else {
+                CompactionResult result = compactTerminal(
+                        candidate.experimentId(), safeClock, "TERMINAL_RETENTION_LIMIT");
+                actions.add(new RetentionAction(
+                        candidate.experimentId(), candidate.sourceBytes(),
+                        result.sourceRemoved(), result.reasonCode()));
+            }
+        }
+        return new RetentionReport(
+                RetentionReport.SCHEMA_VERSION, dryRun, safeClock.instant(),
+                safePolicy.maximumTerminalJournals(), terminal.size(), unresolved,
+                quarantineMetadata().size(), actions);
     }
 
     /** Moves one discovered invalid journal into the controlled forensic quarantine namespace. */
@@ -591,6 +750,116 @@ public final class EnterpriseLabExperimentJournalDirectory {
         return candidate;
     }
 
+    private Path manifestPath(String manifestId) {
+        if (manifestId == null || !manifestId.matches("terminal-v1-[0-9a-f]{64}")) {
+            throw new IllegalArgumentException("manifestId must be a controlled terminal identifier");
+        }
+        Path candidate = compactedDirectory.resolve(manifestId + ".json").normalize();
+        if (!candidate.startsWith(compactedDirectory)
+                || !candidate.getParent().equals(compactedDirectory)) {
+            throw failure(Failure.UNSAFE_PATH, "compacted path escaped its controlled namespace");
+        }
+        return candidate;
+    }
+
+    private boolean installManifest(
+            Path destination,
+            EnterpriseLabExperimentTerminalManifest manifest) {
+        if (Files.exists(destination, LinkOption.NOFOLLOW_LINKS)) {
+            return false;
+        }
+        Path temporary = destination.resolveSibling(destination.getFileName() + ".installing").normalize();
+        if (!temporary.startsWith(compactedDirectory)
+                || !temporary.getParent().equals(compactedDirectory)) {
+            throw failure(Failure.UNSAFE_PATH, "manifest temporary path escaped its controlled namespace");
+        }
+        byte[] bytes = manifest.encode();
+        try (FileChannel channel = FileChannel.open(
+                temporary,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.TRUNCATE_EXISTING,
+                LinkOption.NOFOLLOW_LINKS)) {
+            restrictPermissions(temporary, FILE_PERMISSIONS);
+            ByteBuffer buffer = ByteBuffer.wrap(bytes);
+            while (buffer.hasRemaining()) {
+                channel.write(buffer);
+            }
+            channel.force(true);
+        } catch (IOException exception) {
+            throw failure(Failure.IO_FAILURE, "terminal manifest could not be synchronized", exception);
+        }
+        try {
+            Files.move(temporary, destination, StandardCopyOption.ATOMIC_MOVE);
+            restrictPermissions(destination, FILE_PERMISSIONS);
+            return true;
+        } catch (FileAlreadyExistsException exception) {
+            return false;
+        } catch (IOException exception) {
+            throw failure(Failure.IO_FAILURE,
+                    "atomic terminal manifest installation is unavailable; source was preserved", exception);
+        }
+    }
+
+    private EnterpriseLabExperimentTerminalManifest readManifest(Path path) {
+        validateJournalFile(path);
+        try {
+            long size = Files.size(path);
+            if (size < 1 || size > EnterpriseLabExperimentTerminalManifest.HARD_MAX_MANIFEST_BYTES) {
+                throw failure(Failure.VERIFICATION_FAILED,
+                        "terminal manifest is outside bounded size");
+            }
+            return EnterpriseLabExperimentTerminalManifest.decode(Files.readAllBytes(path));
+        } catch (EnterpriseLabExperimentJournalStorageException exception) {
+            throw exception;
+        } catch (IOException | RuntimeException exception) {
+            throw failure(Failure.VERIFICATION_FAILED,
+                    "terminal manifest failed canonical fingerprint verification", exception);
+        }
+    }
+
+    private static boolean sameSourceEvidence(
+            EnterpriseLabExperimentTerminalManifest left,
+            EnterpriseLabExperimentTerminalManifest right) {
+        return left.manifestId().equals(right.manifestId())
+                && left.journalId().equals(right.journalId())
+                && left.experimentId().equals(right.experimentId())
+                && left.scenarioId().equals(right.scenarioId())
+                && left.configurationFingerprint().equals(right.configurationFingerprint())
+                && left.decisionFingerprint().equals(right.decisionFingerprint())
+                && left.baselineAllocationFingerprint().equals(right.baselineAllocationFingerprint())
+                && left.candidateAllocationFingerprint().equals(right.candidateAllocationFingerprint())
+                && left.appliedAllocationFingerprint().equals(right.appliedAllocationFingerprint())
+                && left.terminalState() == right.terminalState()
+                && left.rollbackStatus() == right.rollbackStatus()
+                && left.restorationStatus() == right.restorationStatus()
+                && left.sourceEventCount() == right.sourceEventCount()
+                && left.sourceByteCount() == right.sourceByteCount()
+                && left.sourceTerminalSequence() == right.sourceTerminalSequence()
+                && left.sourceTerminalFingerprint().equals(right.sourceTerminalFingerprint())
+                && left.reconstructedStateFingerprint().equals(right.reconstructedStateFingerprint())
+                && left.terminalOccurredAt().equals(right.terminalOccurredAt());
+    }
+
+    private List<Path> boundedControlledEntries(Path directory, String contentName) {
+        List<Path> paths = new ArrayList<>();
+        try (var entries = Files.newDirectoryStream(directory)) {
+            for (Path path : entries) {
+                if (paths.size() >= HARD_MAX_DISCOVERED_JOURNALS) {
+                    throw failure(Failure.DISCOVERY_LIMIT_EXCEEDED,
+                            contentName + " discovery exceeds the bounded count");
+                }
+                paths.add(path);
+            }
+        } catch (EnterpriseLabExperimentJournalStorageException exception) {
+            throw exception;
+        } catch (IOException exception) {
+            throw failure(Failure.IO_FAILURE, contentName + " discovery failed", exception);
+        }
+        paths.sort(Comparator.comparing(path -> path.getFileName().toString()));
+        return paths;
+    }
+
     private static Object claim(Path path) {
         Object owner = new Object();
         if (ACTIVE_WRITERS.putIfAbsent(path, owner) != null) {
@@ -709,6 +978,98 @@ public final class EnterpriseLabExperimentJournalDirectory {
         UNRECOGNIZED_NAMESPACE_ENTRY,
         UNAVAILABLE,
         STORAGE_FAILURE
+    }
+
+    public enum CompactionOutcome {
+        COMPACTED,
+        COMPLETED_IDEMPOTENTLY
+    }
+
+    public record CompactionResult(
+            CompactionOutcome outcome,
+            EnterpriseLabExperimentTerminalManifest manifest,
+            boolean sourceRemoved,
+            String reasonCode) {
+        public CompactionResult {
+            outcome = Objects.requireNonNull(outcome, "outcome cannot be null");
+            manifest = Objects.requireNonNull(manifest, "manifest cannot be null");
+            reasonCode = requireReasonCode(reasonCode);
+            if (!sourceRemoved) {
+                throw new IllegalArgumentException("successful compaction must remove the verified source");
+            }
+        }
+    }
+
+    public record RetentionPolicy(int maximumTerminalJournals) {
+        public RetentionPolicy {
+            if (maximumTerminalJournals < 0
+                    || maximumTerminalJournals > HARD_MAX_DISCOVERED_JOURNALS) {
+                throw new IllegalArgumentException("maximumTerminalJournals is outside bounded retention limits");
+            }
+        }
+    }
+
+    public record RetentionAction(
+            String experimentId,
+            long sourceBytes,
+            boolean sourceRemoved,
+            String reasonCode) {
+        public RetentionAction {
+            experimentId = requireExperimentId(experimentId);
+            if (sourceBytes < 1 || sourceBytes > HARD_MAX_JOURNAL_BYTES) {
+                throw new IllegalArgumentException("retention sourceBytes is outside journal bounds");
+            }
+            reasonCode = requireReasonCode(reasonCode);
+        }
+    }
+
+    public record RetentionReport(
+            String schemaVersion,
+            boolean dryRun,
+            Instant evaluatedAt,
+            int maximumTerminalJournals,
+            int terminalJournalsObserved,
+            int unresolvedJournalsRetained,
+            int quarantineEntriesRetained,
+            List<RetentionAction> actions) {
+        public static final String SCHEMA_VERSION = "enterprise-lab-retention-report/v1";
+
+        public RetentionReport {
+            if (!SCHEMA_VERSION.equals(schemaVersion)) {
+                throw new IllegalArgumentException("unsupported retention report schemaVersion");
+            }
+            evaluatedAt = Objects.requireNonNull(evaluatedAt, "evaluatedAt cannot be null");
+            actions = List.copyOf(Objects.requireNonNull(actions, "actions cannot be null"));
+            if (maximumTerminalJournals < 0
+                    || maximumTerminalJournals > HARD_MAX_DISCOVERED_JOURNALS
+                    || terminalJournalsObserved < 0
+                    || terminalJournalsObserved > HARD_MAX_DISCOVERED_JOURNALS
+                    || unresolvedJournalsRetained < 0
+                    || unresolvedJournalsRetained > HARD_MAX_DISCOVERED_JOURNALS
+                    || quarantineEntriesRetained < 0
+                    || quarantineEntriesRetained > HARD_MAX_DISCOVERED_JOURNALS
+                    || actions.size() > HARD_MAX_DISCOVERED_JOURNALS) {
+                throw new IllegalArgumentException("retention report is outside bounded limits");
+            }
+        }
+    }
+
+    public record QuarantineMetadata(
+            String quarantineId,
+            long retainedBytes,
+            Instant lastModifiedAt,
+            String status) {
+        public QuarantineMetadata {
+            quarantineId = requireBoundedDiscoveryText(quarantineId, "quarantineId", 96);
+            if (retainedBytes < 0 || retainedBytes > HARD_MAX_JOURNAL_BYTES) {
+                throw new IllegalArgumentException("quarantine retainedBytes is outside bounds");
+            }
+            lastModifiedAt = Objects.requireNonNull(lastModifiedAt, "lastModifiedAt cannot be null");
+            status = requireBoundedDiscoveryText(status, "status", 64);
+        }
+    }
+
+    private record TerminalCandidate(String experimentId, Instant terminalAt, long sourceBytes) {
     }
 
     /** Sanitized discovery result; no backing path or raw malformed content is exposed. */

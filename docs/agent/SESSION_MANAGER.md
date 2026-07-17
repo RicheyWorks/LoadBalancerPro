@@ -6,6 +6,76 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Durable Experiment Journal PR3 Checkpoint
+
+Timestamp: 2026-07-16T21:45-07:00
+
+Goal name: crash-safe append-only experiment evidence journal with verified replay and restart reconciliation
+
+Current PR slot: JOURNAL-PR3 - read-only fingerprint-chain verification and corruption classification
+
+Checkpoint: implementation committed and pushed; PR created; exact-head remote checks pending
+
+Started from main SHA: `b7adc211e7a3375e5a4539e63fccb4ad3d90dcef`
+
+Current branch: codex/journal-chain-verifier
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/463
+
+Implementation commit: `b61c47f7f526a714245aad3ed468bc66035d1130`
+
+Prior slot closure: PR #462 merged normally as `b7adc211e7a3375e5a4539e63fccb4ad3d90dcef` from exact head
+`c0126eb93e3d72db28fb4dbb0a946400f43df562` and executable commit
+`fd7a1afa4a4dc02c082226f99272c0502d5827a2`. Exact-head PR CI `29554276357`, push CI `29554274492`,
+CodeQL `29554276373`, code-scanning result `87803503677`, and dependency review passed. Exact-merge main CI
+`29554542469` passed 3,049 zero-skipped tests, coverage, package/artifact checks, SBOM, packaged-JAR smoke, Docker
+image/runtime smoke, dry-run evidence, and Trivy; exact-merge main CodeQL `29554542511` passed. The focused local storage
+test passed on the merge commit, and local main matched origin/main before branching. PR2 final composition was 1,557
+production/test lines and 130 documentation/process lines: 92.29 percent executable and 7.71 percent documentation.
+Across PR1 and PR2 the campaign is 2,786 production/test lines and 285 documentation/process lines: 90.72 percent
+executable and 9.28 percent documentation/process.
+
+PR3 contract: add a bounded read-only verifier that returns immutable structured validity and first-failure evidence for
+canonical framing, entry/journal/count bounds, supported versions, current and predecessor fingerprints, contiguous
+sequence, experiment identity, lifecycle continuity, legal transitions, terminal behavior, duplicate/missing/reordered
+entries, malformed middle entries, and distinct recoverable final tails. Return verified entries only for a valid chain;
+never skip invalid middle content or mutate forensic bytes.
+
+Scope/safety: reuse the PR1 codec, PR2 controlled hashed paths, and the existing lifecycle state graph. Expose no backing
+path or arbitrary read capability. Add no repair, truncation, quarantine mutation, replay, allocation action, traffic,
+startup hook, API, scheduler, retry delay, dependency, database, network storage, Maven/workflow/Docker/Compose change,
+or production routing behavior. Independent verification remains unavailable while a writer owns the journal; the owning
+writer may request serialized verification and is failed closed if suspect bytes are detected.
+
+Current local evidence: the new verifier plus codec, local-storage, and long-goal focused selector passed 52 tests with
+zero failures, errors, or skips. Fourteen new tests cover a valid terminal chain, active-writer serialization, competing access,
+not-found behavior, recoverable partial final framing, arbitrary/empty trailing data, malformed middle content, current
+fingerprint modification, unsupported version, non-canonical JSON, deletion, reorder, duplication, inserted sequence
+collision, predecessor modification, cross-experiment substitution, lifecycle discontinuity, illegal transitions,
+terminal-state restrictions, timestamp regression, and journal/count/frame bounds. Verification-preservation assertions
+compare source bytes before and after; illegal appends are rejected before the first byte and invalid existing chains cannot
+be reopened for append.
+
+A fresh `mvn -B clean package` and independent `mvn -q test` each passed 3,063 tests with zero failures, errors, or skips;
+`mvn -q -DskipTests package` also passed. Full and Tomcat-filtered dependency trees passed with unchanged Jackson 2.21.4,
+Tomcat 10.1.55, and Netty 4.2.15.Final, and no dependency changed. JaCoCo analyzed 731 classes at 85.25 percent
+instructions, 69.02 percent branches, and 85.05 percent lines. CycloneDX validated XML and JSON BOMs with 144 components.
+The executable JAR contains the verifier and storage classes, has local SHA-256
+`379e8dd2fc01cdb686bc3c9542000f24e81cd29463ea77ad759c1f789ee6bd47`, and returned HTTP 200 with the expected health
+body on `127.0.0.1:18081` before graceful shutdown. The existing all proof passed 13 scenarios and 837 actual loopback
+requests with every check and restoration invariant green; the 10-scenario shadow workflow smoke passed. Scope scans
+found no added URL, secret-like value, production network/process/executor behavior, tracked generated evidence,
+dependency, POM, workflow, container, Compose, application-resource, API, or route change. Local Docker/Trivy remain
+unavailable as logged in PR2; the unchanged exact remote image/runtime/Trivy lane remains mandatory.
+
+PR3 composition is 1,110 production/test additions and 94 documentation/process additions: 92.19 percent executable and
+7.81 percent documentation/process. Across PR1 through PR3 the campaign is 3,896 production/test additions and 379
+documentation/process additions: 91.13 percent executable and 8.87 percent documentation/process. Exact-head remote
+evidence remains pending before a merge decision.
+
+Decision: continue JOURNAL-PR3 through focused review, full local verification, exact-head remote gates, normal merge, and
+exact-merge main gates before starting JOURNAL-PR4.
+
 ## Active Durable Experiment Journal PR2 Checkpoint
 
 Timestamp: 2026-07-16T21:12-07:00

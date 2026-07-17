@@ -655,12 +655,18 @@ class EnterpriseLabExperimentLocalJournalTest {
         ObjectNode payload = JsonNodeFactory.instance.objectNode();
         payload.put("requestCount", 4);
         payload.putArray("backendIds").add("loopback-b").add("loopback-a");
+        EnterpriseLabExperimentJournalEventType eventType = sequence == 1
+                ? EnterpriseLabExperimentJournalEventType.EXPERIMENT_STARTED
+                : EnterpriseLabExperimentJournalEventType.OBSERVATION_CHECKPOINT;
+        EnterpriseLabExperimentState stateBefore = sequence == 1
+                ? EnterpriseLabExperimentState.ARMED
+                : EnterpriseLabExperimentState.RUNNING;
         return EnterpriseLabExperimentJournalEvent.create(clock, new Draft(
                 sequence,
                 experimentId,
                 "stable-steady-state",
-                EnterpriseLabExperimentJournalEventType.EXPERIMENT_STARTED,
-                EnterpriseLabExperimentState.ARMED,
+                eventType,
+                stateBefore,
                 EnterpriseLabExperimentState.RUNNING,
                 2,
                 CONFIGURATION_FINGERPRINT,

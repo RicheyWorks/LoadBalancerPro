@@ -4,6 +4,8 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournal.ReadRe
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournal.SyncPolicy;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournal.TailStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalStorageException.Failure;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier.Outcome;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier.VerificationResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -107,10 +109,22 @@ public final class EnterpriseLabExperimentJournalDirectory {
         boolean handedOff = false;
         try {
             createJournalFileIfMissing(journalPath);
-            ReadResult existing = scan(journalPath, journalId, safeExperimentId);
-            if (existing.tailStatus() == TailStatus.TRUNCATED_TAIL) {
+            VerificationResult verification = verifyOwned(journalPath, journalId, safeExperimentId);
+            if (verification.outcome() == Outcome.VALID_WITH_RECOVERABLE_TRUNCATED_TAIL) {
                 throw failure(Failure.PARTIAL_TAIL, "journal has a truncated tail and was preserved unchanged");
             }
+            if (verification.outcome() != Outcome.VALID) {
+                throw failure(Failure.VERIFICATION_FAILED,
+                        "journal failed read-only chain verification: " + verification.classification().name());
+            }
+            ReadResult existing = new ReadResult(
+                    journalId,
+                    true,
+                    verification.verifiedEvents(),
+                    TailStatus.COMPLETE,
+                    verification.completeBytes(),
+                    0,
+                    verification.totalBytes());
             channel = FileChannel.open(
                     journalPath,
                     StandardOpenOption.WRITE,
@@ -154,6 +168,33 @@ public final class EnterpriseLabExperimentJournalDirectory {
         } finally {
             ACTIVE_WRITERS.remove(journalPath, owner);
         }
+    }
+
+    /** Verifies a closed journal without exposing or mutating its controlled backing path. */
+    public VerificationResult verify(String experimentId) {
+        String safeExperimentId = requireExperimentId(experimentId);
+        String journalId = journalId(safeExperimentId);
+        Path journalPath = journalPath(journalId);
+        Object owner;
+        try {
+            owner = claim(journalPath);
+        } catch (EnterpriseLabExperimentJournalStorageException exception) {
+            if (exception.failure() == Failure.WRITER_ALREADY_ACTIVE) {
+                return VerificationResult.unavailable(journalId);
+            }
+            throw exception;
+        }
+        try {
+            return verifyOwned(journalPath, journalId, safeExperimentId);
+        } finally {
+            ACTIVE_WRITERS.remove(journalPath, owner);
+        }
+    }
+
+    VerificationResult verifyOwned(Path journalPath, String journalId, String experimentId) {
+        return new EnterpriseLabExperimentJournalVerifier(
+                codec, maxJournalBytes, maxJournalEntries)
+                .verify(journalPath, journalId, experimentId);
     }
 
     ReadResult scanOwned(Path journalPath, String journalId, String experimentId) {

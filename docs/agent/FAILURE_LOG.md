@@ -6,6 +6,24 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T23:23-07:00
+
+Branch/PR: codex/journal-startup-reconciliation / no PR yet
+
+Failure type: packaged startup smoke inline command rejected before execution
+
+Failing check: first local PowerShell packaged-JAR startup reconciliation smoke
+
+Observed/root cause: the local command policy rejected the nested inline `Start-Process` quoting before execution.
+No Java process started and no runtime or repository state changed.
+
+Correction/result: retained the literal-loopback port, target-only journal directory, hidden process window, bounded health
+polling, and unconditional cleanup, but moved the command body into an ignored `target/` PowerShell script.
+
+Follow-up: record the replacement smoke result in the PR 5 session checkpoint. No product behavior or gate was weakened.
+
+## Entry
+
 Date/time: 2026-07-16T21:06-07:00
 
 Branch/PR: codex/local-append-only-journal / no PR yet
@@ -4507,3 +4525,24 @@ Follow-up action: continue local pre-PR verification and PR preparation.
   `Tests run: 2881, Failures: 0, Errors: 0, Skipped: 0`.
 - Recovery: rerun the package check with a direct Maven invocation before local verification is counted green for the
   closeout branch.
+# 2026-07-16 - PR5 startup reconciliation focused semantic failures
+
+Branch/PR: `codex/journal-startup-reconciliation` / pending
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabExperimentStartupReconcilerTest,EnterpriseLabExperimentJournalReplayEngineTest,EnterpriseLabExperimentJournalVerifierTest,EnterpriseLabExperimentJournalDirectoryTest,EnterpriseLabExperimentOperatorServiceTest" test`
+
+Failure type: new startup-reconciliation replay semantics
+
+Observed failure: 43 focused tests ran; two new success-path cases (`interruptedRunningExperimentRestoresBaselineTerminalizesAndRepeatsIdempotently` and `interruptedCompletionFinishesOnlyAfterBaselineVerification`) returned fail-closed recovery reports instead of admission-ready reports. The other five new reconciliation cases and all selected existing journal/operator tests passed.
+
+Journal or recovery boundary affected: durable recovery event sequencing after verified replay and baseline restoration.
+
+Suspected cause: one or more newly appended recovery checkpoints violate the strict PR4 replay state/status invariants; integrity verification remains enabled and rejected the result.
+
+Baseline status: introduced by the uncommitted PR5 implementation; not present on merged `main`.
+
+Corrective action: expose the existing structured report in assertion output, identify the exact replay classification, and repair the event/status mapping without weakening verifier or replay controls.
+
+Final verification: corrected writer-owned verification so recovery verifies through the active journal before close, then reran the two failed cases successfully. The expanded focused bundle subsequently passed with startup reconciliation, replay, verifier, directory, operator-service, and controller coverage.
+
+Residual limitation: none for this failure; both recovery success paths now produce exactly valid replayable terminal journals without weakening verification.

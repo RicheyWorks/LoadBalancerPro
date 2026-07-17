@@ -32,6 +32,8 @@ public final class EnterpriseLabExperimentJournalStorageException extends Illega
         PREDECESSOR_MISMATCH,
         ENTRY_LIMIT_EXCEEDED,
         JOURNAL_SIZE_EXCEEDED,
+        DISCOVERY_LIMIT_EXCEEDED,
+        QUARANTINE_FAILED,
         VERIFICATION_FAILED,
         IO_FAILURE,
         WRITER_FAILED,

@@ -53,17 +53,25 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
     private final Clock clock;
     private final LongSupplier monotonicNanos;
     private final int maxRetainedExperiments;
+    private final EnterpriseLabExperimentRecoveryGate recoveryGate;
     private final Map<String, Session> sessions = new LinkedHashMap<>();
     private boolean closed;
 
     public EnterpriseLabExperimentOperatorService(EnterpriseLabExperimentTargetCatalog targetCatalog) {
+        this(targetCatalog, EnterpriseLabExperimentRecoveryGate.inMemoryOnly());
+    }
+
+    public EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabExperimentRecoveryGate recoveryGate) {
         this(
                 targetCatalog,
                 new EnterpriseLabScenarioCatalogService(),
                 new EnterpriseLabAdaptiveDecisionService(),
                 Clock.systemUTC(),
                 System::nanoTime,
-                DEFAULT_MAX_RETAINED_EXPERIMENTS);
+                DEFAULT_MAX_RETAINED_EXPERIMENTS,
+                recoveryGate);
     }
 
     EnterpriseLabExperimentOperatorService(
@@ -73,11 +81,24 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             Clock clock,
             LongSupplier monotonicNanos,
             int maxRetainedExperiments) {
+        this(targetCatalog, scenarioCatalog, decisionService, clock, monotonicNanos,
+                maxRetainedExperiments, EnterpriseLabExperimentRecoveryGate.inMemoryOnly());
+    }
+
+    EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabScenarioCatalogService scenarioCatalog,
+            EnterpriseLabAdaptiveDecisionService decisionService,
+            Clock clock,
+            LongSupplier monotonicNanos,
+            int maxRetainedExperiments,
+            EnterpriseLabExperimentRecoveryGate recoveryGate) {
         this.targetCatalog = Objects.requireNonNull(targetCatalog, "targetCatalog cannot be null");
         this.scenarioCatalog = Objects.requireNonNull(scenarioCatalog, "scenarioCatalog cannot be null");
         this.decisionService = Objects.requireNonNull(decisionService, "decisionService cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
         this.monotonicNanos = Objects.requireNonNull(monotonicNanos, "monotonicNanos cannot be null");
+        this.recoveryGate = Objects.requireNonNull(recoveryGate, "recoveryGate cannot be null");
         if (maxRetainedExperiments < 1 || maxRetainedExperiments > DEFAULT_MAX_RETAINED_EXPERIMENTS) {
             throw new IllegalArgumentException("maxRetainedExperiments must be between 1 and 128");
         }
@@ -89,6 +110,11 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         if (closed) {
             return denied("arm", safeRequest.operatorRequestId(), safeRequest.experimentId(),
                     "SERVICE_CLOSED", "experiment operator service is closed");
+        }
+        if (!recoveryGate.admissionAllowed()) {
+            return denied("arm", safeRequest.operatorRequestId(), safeRequest.experimentId(),
+                    "RECOVERY_NOT_READY",
+                    "startup journal reconciliation has not reached a safe admission state");
         }
         Session existing = sessions.get(safeRequest.experimentId());
         if (existing != null) {
@@ -190,6 +216,11 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             boolean activeExperimentExplicitlyEnabled) {
         String safeExperimentId = requireCanonicalId(experimentId, "experimentId");
         String safeRequestId = requireCanonicalId(operatorRequestId, "operatorRequestId");
+        if (!recoveryGate.admissionAllowed()) {
+            return denied("start", safeRequestId, safeExperimentId,
+                    "RECOVERY_NOT_READY",
+                    "startup journal reconciliation has not reached a safe admission state");
+        }
         Session session = sessions.get(safeExperimentId);
         if (session == null) {
             return notFound("start", safeRequestId, safeExperimentId);
@@ -281,6 +312,9 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         Session session;
         String signature = safeRequest.signature(safeExperimentId);
         synchronized (this) {
+            if (!recoveryGate.admissionAllowed()) {
+                return recoveryBatchDenied(safeRequest, safeExperimentId);
+            }
             session = sessions.get(safeExperimentId);
             if (session == null) {
                 return batchNotFound(safeRequest.operatorRequestId(), safeExperimentId);
@@ -502,6 +536,10 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
 
     public List<String> boundScenarioIds() {
         return targetCatalog.boundScenarioIds();
+    }
+
+    public EnterpriseLabExperimentRecoveryGate.AdmissionStatus recoveryStatus() {
+        return recoveryGate.admissionStatus();
     }
 
     @Override
@@ -853,6 +891,24 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 false,
                 List.of(),
                 "experimentId is not present in the bounded operator store",
+                Optional.empty());
+    }
+
+    private RequestBatchReceipt recoveryBatchDenied(
+            RequestBatchRequest request,
+            String experimentId) {
+        return new RequestBatchReceipt(
+                OperatorStatus.DENIED,
+                request.operatorRequestId(),
+                experimentId,
+                "RECOVERY_NOT_READY",
+                request.count(),
+                0,
+                0,
+                0,
+                false,
+                List.of(),
+                "startup journal reconciliation has not reached a safe admission state",
                 Optional.empty());
     }
 

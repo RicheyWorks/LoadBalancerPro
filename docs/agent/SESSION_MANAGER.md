@@ -6,6 +6,83 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Durable Experiment Journal PR5 Checkpoint
+
+Timestamp: 2026-07-16T23:40-07:00
+
+Goal name: crash-safe append-only experiment evidence journal with verified replay and restart reconciliation
+
+Current PR slot: JOURNAL-PR5 - startup reconciliation and safe recovery actions
+
+Checkpoint: production implementation, focused verification, full test, and broad local evidence pass; exact committed-candidate package pending
+
+Started from main SHA: `e15a05835223f64abbcef17d61b3c8644347c1bf`
+
+Current branch: codex/journal-startup-reconciliation
+
+PR URL: pending
+
+Prior slot closure: PR #464 merged normally as `e15a05835223f64abbcef17d61b3c8644347c1bf` from exact final head
+`10789bbc0f828fd9e0baa37a1e38c233cc5dadd4` and executable commit
+`31bea2f159fd859a0e4325ed1ae548efd9664e3b`. Exact-head PR CI `29557509538`, push CI `29557507337`,
+CodeQL `29557509588`, code scanning `87813216911`, and dependency review passed. Exact-merge main CI
+`29557809489` passed 3,078 zero-skipped tests plus package, SBOM, packaged runtime, Docker, and Trivy checks;
+exact-merge main CodeQL `29557809487` passed. Focused replay and long-goal verification also passed on the merge commit.
+
+PR5 executable contract: enumerate at most 256 entries from the controlled hashed journal namespace; recover identity only
+from a canonical genesis frame whose experiment hash matches its filename; verify and replay exactly before inspecting an
+allocation; synchronously classify every recovered experiment; never resume candidate traffic; cancel armed experiments;
+return interrupted running/holding work through the existing rollback graph; continue interrupted completion or rollback;
+inspect and idempotently restore only a repository-approved process-local loopback router baseline; append force-synchronized
+recovery evidence; verify the resulting chain while the writer still owns it; preserve terminal records; atomically move
+invalid bytes into controlled quarantine; and keep admission failed closed for unresolved restoration, corrupt evidence,
+unrecognized namespace content, unavailable writers, or quarantine failure.
+
+Startup integration is opt-in through the explicit existing-directory property
+`loadbalancer.enterprise-lab.experiment-journal-data-directory`. Blank configuration preserves the prior in-memory-only
+service behavior. A configured absolute local root initializes reconciliation synchronously before constructing the operator
+service. Arm, start, and loopback request batches return `RECOVERY_NOT_READY` unless the recovery gate is ready. No caller
+or API supplies a file path, journal filename, external target, retry delay, background worker, database, cloud store, or
+multi-instance ownership mechanism.
+
+Focused evidence: the expanded startup-reconciliation test class passes running, holding, completing, rolling-back,
+armed-baseline, armed-candidate, completed-terminal, terminal-drift, restoration-failure, middle-corruption, partial-tail,
+active-writer, repeated-initialization, repeated-new-instance restart, process-local adapter, admission-blocking, and hard
+discovery-bound cases. The combined startup/replay/verifier/directory/operator/controller selector passes. One initial
+focused red-green failure was logged and corrected by verifying through the writer-owned journal; no verifier or replay
+control was weakened.
+
+Current local evidence: the final expanded selector passes 63 tests with zero failures, errors, or skips. Full
+`mvn -q test` passes 3,094 tests across 441 reports with zero failures, errors, or skips. JaCoCo analyzes 764 classes at
+85.07 percent instructions, 68.62 percent branches, and 84.84 percent lines. Dependency trees remain unchanged at
+Jackson 2.21.4, Tomcat 10.1.55, and Netty 4.2.15.Final. CycloneDX 2.9.1 validates XML and JSON v1.6 BOMs with 144
+components. Skip-test packaging, the thirteen-scenario/837-request loopback experiment proof, and the ten-scenario shadow
+workflow pass. The packaged JAR contains the recovery classes and starts on literal loopback with the configured absolute
+journal root, returns health HTTP 200, exposes zero recovered experiments for an empty root, and is stopped during bounded
+cleanup. Local Docker and Trivy remain unavailable as previously logged, so exact-head remote Docker/runtime/Trivy remains
+mandatory.
+
+Diff and scope audit: no POM, dependency, workflow, Docker, Compose, application-resource, auth-policy, external-target,
+cloud, tenant, scheduler, executor, background-worker, or arbitrary API-path change is present. Secret and non-loopback URL
+scans are empty. Current composition is 2,033 production/test additions and 116 documentation/process additions: 94.60
+percent executable and 5.40 percent documentation/process. Across PR1 through PR5 so far, the campaign has 7,958
+production/test additions and 597 documentation/process additions: 93.02 percent executable and 6.98 percent
+documentation/process.
+
+Scope/safety: recovery is synchronous, bounded, local-filesystem-only, and single-process. Pure replay still has no traffic
+or mutation capability. The only permitted recovery mutation is the existing atomic loopback baseline restoration. The
+adapter constructs no scheduler, executor, thread, watcher, request source, or external client call. Quarantine requires an
+atomic same-filesystem move; unavailable atomic preservation fails closed and leaves the source untouched. Fingerprints
+remain integrity evidence, not signer identity, non-repudiation, or tamper-proof storage.
+
+Not proven: cross-power-loss media durability, multi-process leases, network filesystem semantics, production routing,
+cloud or tenant recovery, automatic corrupt-evidence remediation, or admission after unresolved quarantine. Live operator
+transition recording, bounded retention/terminal compaction, authenticated durable-evidence endpoints, and packaged
+restart/corruption proofs remain explicitly scoped to JOURNAL-PR6.
+
+Decision: commit JOURNAL-PR5, run the exact committed-candidate package and final docs-sensitive verification, then continue through PR, exact-head gates, normal
+merge, and exact-merge main gates before starting JOURNAL-PR6.
+
 ## Active Durable Experiment Journal PR4 Checkpoint
 
 Timestamp: 2026-07-16T22:33-07:00

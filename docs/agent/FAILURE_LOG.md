@@ -6,6 +6,27 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-16T21:06-07:00
+
+Branch/PR: codex/local-append-only-journal / no PR yet
+
+Failure type: local Docker engine and Trivy tooling unavailable
+
+Failing check: local pre-PR `docker version` and `trivy --version` probes before the exact CI image build/runtime/scan lane
+
+Observed/root cause: the Docker CLI could not connect because the Docker Desktop Linux engine named pipe did not exist,
+and the host has no `trivy` command. This is a local environment/tooling limitation. The branch changes no POM,
+dependency, workflow, Dockerfile, runtime base image, Compose file, application configuration, or container behavior.
+
+Correction/result: no safe repository correction applies. Host Maven dependency resolution, 3,049 zero-skipped tests,
+package, JaCoCo, CycloneDX, executable-JAR contents, 13-scenario/837-request loopback proof, and workflow smoke are green.
+The PR cannot merge unless exact-head remote CI builds and smokes `loadbalancerpro:ci` and its HIGH/CRITICAL Trivy gate
+passes; exact-merge main must repeat those gates before the next slot.
+
+Follow-up: treat local Docker/runtime/Trivy as not run, not green. Do not weaken or suppress the remote security gate.
+
+## Entry
+
 Date/time: 2026-07-16T20:19-07:00
 
 Branch/PR: codex/journal-event-codec / no PR yet

@@ -53,3 +53,44 @@ The v1 vocabulary covers arming, start, candidate allocation, lifecycle transiti
 evaluation, rollback request, restoration attempt and success, cancellation, completion, rollback, rejection, failure,
 recovery action, and quarantine finding. Legal cross-entry lifecycle transitions and terminal behavior are verified by
 the later read-only chain verifier rather than guessed by the codec.
+
+## Local Append Boundary
+
+The PR2 local implementation frames each canonical entry as its exact codec bytes followed by one LF byte. It never
+adds a BOM, pretty printing, CRLF, or an alternate serialization. A final frame without LF is reported as a truncated
+tail even when its bytes happen to form complete JSON. Reads preserve all original bytes and refuse malformed or
+non-canonical complete frames; broader corruption and lifecycle classification belongs to the read-only PR3 verifier.
+
+Storage is restricted to an explicit, pre-existing, absolute local data root supplied by trusted application
+configuration. The implementation creates only its versioned namespace below that root. It rejects filesystem roots,
+relative or missing roots, symbolic links, non-regular targets, and namespace escape. Experiment IDs are validated,
+hashed with SHA-256, and represented by a fixed-length `journal-v1-<hash>.jsonl` filename; no path or filename is
+accepted from an operator API. Directories use mode 0700 and files mode 0600 where POSIX permissions are available.
+
+One process-local owner may open an experiment journal. Appends require the exact experiment identity, next sequence,
+and predecessor fingerprint, and enforce 65,536 bytes per entry, 16 MiB per journal, and 4,096 complete entries. The
+write and read loops stop after three consecutive no-progress results. There is no retry sleep, background queue,
+unbounded cache, external store, network write, multi-process lock, startup integration, or automatic recovery in PR2.
+
+The default sync policy calls `FileChannel.force(true)` after the complete LF-terminated frame. Optional policies call
+`force(false)` or stop after all bytes have been written through the file channel. Receipts distinguish operating-system
+write completion from data force and data-plus-metadata force completion and report that no application buffer is
+retained. These stages report completed JDK and operating-system calls only. They do not prove disk-controller cache
+persistence, power-loss survival on every filesystem, directory-entry persistence, hardware atomicity, remote-filesystem
+semantics, or multi-process exclusion.
+
+## Failure Semantics
+
+Append validation occurs before the first byte write. A failure before writing therefore leaves an empty or previously
+complete journal unchanged. A failure during a bounded write may leave a non-LF-terminated tail. A failure after the LF
+write but before `force` may leave a complete entry without the requested synchronization boundary. A failure after
+`force` may leave a complete synchronized entry even though the caller did not receive a success receipt.
+
+Every failed append closes and permanently fails that writer instance, releases process-local ownership, and requires a
+fresh verified open. Opening a writer refuses a partial tail and never truncates, repairs, replaces, or skips it. A read
+that discovers invalid storage also fails its active writer rather than allowing later appends to extend suspect bytes.
+Independent reads are rejected while a writer owns the journal; the owning writer may take a serialized snapshot.
+
+Failure injection proves these call boundaries and bounded-write rejection. It does not simulate an operating-system
+kernel crash, sudden power removal, torn storage-sector behavior, or an adversarial second process. Those remain explicit
+not-proven boundaries, and PR3 owns structured read-only corruption classification rather than PR2 mutation.

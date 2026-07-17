@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Single-Host Evidence Ownership PR2 Checkpoint
 
-Timestamp: 2026-07-17T16:16-07:00
+Timestamp: 2026-07-17T16:25-07:00
 
 Current slot: OWNERSHIP-PR2 - OS-backed exclusive lock, durable owner publication, and orderly release
 
@@ -18,7 +18,7 @@ Current branch: `codex/ownership-filelock-durable-record`
 
 PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/468
 
-Executable commit: `dfa0f69c497c1dbe9420d5127f949719647c33fa`
+Executable commits: baseline `dfa0f69c497c1dbe9420d5127f949719647c33fa`; correction `8ec19227748c44d92aafd26a11675e93ae18710d`
 
 Prior slot closure: PR #467 merged normally from exact head `e81d46d73c62611276798535b75ade87dc74e9d6`
 as `69521c41cd4ad271998d10e77675439051afa79a`. Exact-head PR CI `29618492311`, push CI `29618490222`,
@@ -35,7 +35,8 @@ Implemented: a process-local reservation plus a non-blocking exclusive `FileLock
 detects lock-file replacement before publication; internally generated bounded owner identity; fixed-path canonical
 record storage with temporary and installed file force, atomic move, POSIX directory metadata force, and exact read-back;
 one final live resource retaining the private lock/channel; and durable `RELEASED` publication before bounded idempotent
-resource close. Existing owner evidence is preserved and refused until the later takeover slice.
+resource close. Existing owner evidence is preserved and refused until the later takeover slice. After exact-head Linux
+CI reused the test lock's inode, storage identity was bound to file key plus creation identity, never owner liveness.
 
 Local verification: production compilation passed. The 39-test ownership selector and 89-test ownership/journal/campaign
 bundle passed with zero failures, errors, or skips. `mvn -q test` passed 3,141 tests in 446 suites with zero failures,
@@ -45,14 +46,19 @@ recovery proof passed. JaCoCo analyzed 824 classes; CycloneDX generated and vali
 The normal exact-candidate `mvn -B package` passed the same 3,141 zero-skipped tests and rebuilt the JAR. Its packaged
 experiment proof passed at fingerprint `2f5dae64bf39507dbbda3dc9fb1b06eb19a00888535417d71a4c8f5a1d3cba1b`;
 the durable proof passed at `3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2ed839ff7afd6a`.
+After correction, the 39-test selector and `mvn -B package` passed; full package again passed all 3,141 zero-skipped tests.
+
+Remote gate status: rejected head `123af9677bab1778371d259329221bc62ba6b73c` failed PR CI `29620230062` and push CI
+`29620228162` on Linux inode reuse; CodeQL `29620230054`, code scanning, and dependency review passed. New exact-head
+gates are required and the failed head will not be merged.
 
 Scope audit: no dependency, POM, workflow, Docker, Compose, controller, scheduler, external/non-loopback target, caller
 owner/generation override, production lock deletion, force-unlock path, or generated evidence is present. The deliberate
-test-only released-lock deletion proves replacement detection. `git diff --check` passed. PR2 has 1,437 implementation/
-test changed lines and 158 documentation/process changed lines (90.09% / 9.91%). Local Docker/Trivy is not claimed;
+test-only released-lock deletion proves replacement detection. `git diff --check` passed. PR2 has 1,443 implementation/
+test changed lines and 196 documentation/process changed lines (88.04% / 11.96%). Local Docker/Trivy is not claimed;
 the exact remote image/runtime/scan lane remains mandatory.
 
-Decision: push this PR checkpoint and require full exact-head and merge-main gates before OWNERSHIP-PR3.
+Decision: push a corrected PR checkpoint and require new full exact-head and merge-main gates before OWNERSHIP-PR3.
 
 ## Active Single-Host Evidence Ownership PR1 Checkpoint
 

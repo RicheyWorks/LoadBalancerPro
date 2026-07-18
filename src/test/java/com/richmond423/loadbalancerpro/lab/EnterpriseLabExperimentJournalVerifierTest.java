@@ -115,7 +115,7 @@ class EnterpriseLabExperimentJournalVerifierTest {
     @Test
     void reportsANotFoundJournalWithoutCreatingAFile() throws Exception {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
 
         VerificationResult result = directory.verify("verify-not-found");
 
@@ -301,7 +301,7 @@ class EnterpriseLabExperimentJournalVerifierTest {
     void enforcesJournalEntryAndFrameBoundsBeforeUnboundedWork() throws Exception {
         String countExperiment = "verify-count-bound";
         EnterpriseLabExperimentJournalDirectory countDirectory =
-                EnterpriseLabExperimentJournalDirectory.createForTesting(
+                EnterpriseLabMutationTestAuthority.ownedDirectory(
                         tempDirectory, EnterpriseLabExperimentJournalDirectory.HARD_MAX_JOURNAL_BYTES, 2);
         try (EnterpriseLabExperimentJournal ignored = countDirectory.openJournal(countExperiment)) {
             // Create only the controlled backing file; raw corruption is supplied below.
@@ -313,7 +313,7 @@ class EnterpriseLabExperimentJournalVerifierTest {
         Path sizeRoot = Files.createDirectory(tempDirectory.resolve("size"));
         String sizeExperiment = "verify-size-bound";
         EnterpriseLabExperimentJournalDirectory sizeDirectory =
-                EnterpriseLabExperimentJournalDirectory.createForTesting(sizeRoot, 1_024, 10);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(sizeRoot, 1_024, 10);
         try (EnterpriseLabExperimentJournal ignored = sizeDirectory.openJournal(sizeExperiment)) {
             // Create the controlled backing file.
         }
@@ -323,7 +323,7 @@ class EnterpriseLabExperimentJournalVerifierTest {
         Path frameRoot = Files.createDirectory(tempDirectory.resolve("frame"));
         String frameExperiment = "verify-frame-bound";
         EnterpriseLabExperimentJournalDirectory frameDirectory =
-                EnterpriseLabExperimentJournalDirectory.create(frameRoot);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(frameRoot);
         try (EnterpriseLabExperimentJournal ignored = frameDirectory.openJournal(frameExperiment)) {
             // Create the controlled backing file.
         }
@@ -336,7 +336,7 @@ class EnterpriseLabExperimentJournalVerifierTest {
 
     private EnterpriseLabExperimentJournalDirectory directory(String experimentId) {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         try (EnterpriseLabExperimentJournal ignored = directory.openJournal(experimentId)) {
             return directory;
         }

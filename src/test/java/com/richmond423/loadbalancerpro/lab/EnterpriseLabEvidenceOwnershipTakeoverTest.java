@@ -447,7 +447,7 @@ class EnterpriseLabEvidenceOwnershipTakeoverTest {
     private EnterpriseLabExperimentStartupReconciler reconciler(
             EnterpriseLabEvidenceOwnershipPaths paths) {
         return new EnterpriseLabExperimentStartupReconciler(
-                EnterpriseLabExperimentJournalDirectory.create(paths.trustedRoot()),
+                EnterpriseLabMutationTestAuthority.ownedDirectory(paths.trustedRoot()),
                 new AllocationRecoveryPort() {
                     @Override
                     public AllocationInspection inspect(ReconstructedExperimentState state) {

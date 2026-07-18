@@ -13,8 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
+
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceMutationAuthority.MutationAuthorization;
 
 /**
  * Atomic data-plane seam for explicitly enabled Enterprise Lab loopback experiments only.
@@ -28,12 +31,21 @@ public final class EnterpriseLabLoopbackAllocationRouter {
     private final EnterpriseLabLoopbackRequestClient requestClient;
     private final EnterpriseLabLoopbackAllocationSnapshot baseline;
     private final AtomicReference<EnterpriseLabLoopbackAllocationSnapshot> current;
+    private final Optional<EnterpriseLabEvidenceMutationAuthority> mutationAuthority;
     private long nextRevision;
 
     public EnterpriseLabLoopbackAllocationRouter(
             Collection<EnterpriseLabLoopbackTarget> targets,
             EnterpriseLabLoopbackObservationIngress observationIngress,
             Map<String, Double> baselineAllocations) {
+        this(targets, observationIngress, baselineAllocations, Optional.empty());
+    }
+
+    EnterpriseLabLoopbackAllocationRouter(
+            Collection<EnterpriseLabLoopbackTarget> targets,
+            EnterpriseLabLoopbackObservationIngress observationIngress,
+            Map<String, Double> baselineAllocations,
+            Optional<EnterpriseLabEvidenceMutationAuthority> mutationAuthority) {
         List<EnterpriseLabLoopbackTarget> safeTargets = List.copyOf(
                 Objects.requireNonNull(targets, "targets cannot be null"));
         if (safeTargets.isEmpty() || safeTargets.size() > EnterpriseLabLoopbackAllocationSnapshot.HARD_MAX_BACKENDS) {
@@ -58,6 +70,8 @@ public final class EnterpriseLabLoopbackAllocationRouter {
                 approvedBackendIds,
                 baselineAllocations);
         this.current = new AtomicReference<>(baseline);
+        this.mutationAuthority = Objects.requireNonNull(
+                mutationAuthority, "mutationAuthority cannot be null");
         this.nextRevision = 0;
     }
 
@@ -72,6 +86,7 @@ public final class EnterpriseLabLoopbackAllocationRouter {
     public synchronized AllocationChangeReceipt applyCandidate(
             EnterpriseLabAdaptiveDecision adaptiveDecision,
             boolean experimentExplicitlyEnabled) {
+        Optional<MutationAuthorization> authorization = requireMutationAuthorization();
         EnterpriseLabLoopbackAllocationSnapshot previous = current.get();
         if (!experimentExplicitlyEnabled) {
             return AllocationChangeReceipt.denied(previous, baseline,
@@ -125,6 +140,7 @@ public final class EnterpriseLabLoopbackAllocationRouter {
                     "approved allocation already matches the current loopback allocation");
         }
 
+        requireSameMutationAuthorization(authorization);
         nextRevision++;
         current.set(candidate);
         return AllocationChangeReceipt.applied(previous, candidate, baseline,
@@ -132,12 +148,14 @@ public final class EnterpriseLabLoopbackAllocationRouter {
     }
 
     public synchronized AllocationChangeReceipt restoreBaseline(String reason) {
+        Optional<MutationAuthorization> authorization = requireMutationAuthorization();
         String safeReason = requireBoundedReason(reason);
         EnterpriseLabLoopbackAllocationSnapshot previous = current.get();
         if (previous.sameAllocations(baseline)) {
             return AllocationChangeReceipt.noChange(previous, baseline,
                     "recorded baseline is already active: " + safeReason);
         }
+        requireSameMutationAuthorization(authorization);
         nextRevision++;
         EnterpriseLabLoopbackAllocationSnapshot restored =
                 EnterpriseLabLoopbackAllocationSnapshot.normalized(
@@ -156,8 +174,10 @@ public final class EnterpriseLabLoopbackAllocationRouter {
             String requestId,
             long selectionOrdinal,
             Duration timeout) {
+        Optional<MutationAuthorization> authorization = requireMutationAuthorization();
         EnterpriseLabLoopbackAllocationSnapshot selectedSnapshot = current.get();
         String backendId = selectedSnapshot.selectBackend(selectionOrdinal);
+        requireSameMutationAuthorization(authorization);
         Execution execution = requestClient.get(requestId, backendId, timeout);
         boolean candidateUsed = selectedSnapshot.kind() == Kind.CANDIDATE && execution.requestSent();
         return new RouteExecution(
@@ -169,6 +189,21 @@ public final class EnterpriseLabLoopbackAllocationRouter {
                 candidateUsed
                         ? "approved candidate allocation selected an Enterprise Lab loopback backend"
                         : "recorded safe allocation selected an Enterprise Lab loopback backend");
+    }
+
+    private Optional<MutationAuthorization> requireMutationAuthorization() {
+        return mutationAuthority.map(
+                EnterpriseLabEvidenceMutationAuthority::requireMutationAuthorization);
+    }
+
+    private void requireSameMutationAuthorization(
+            Optional<MutationAuthorization> expected) {
+        if (expected.isEmpty()) {
+            return;
+        }
+        MutationAuthorization currentAuthorization = mutationAuthority.orElseThrow()
+                .requireMutationAuthorization();
+        expected.orElseThrow().requireSameEpoch(currentAuthorization);
     }
 
     private static String singleScenarioId(List<EnterpriseLabLoopbackTarget> targets) {

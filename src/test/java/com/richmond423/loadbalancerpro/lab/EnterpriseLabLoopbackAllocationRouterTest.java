@@ -6,17 +6,20 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackAllocationSnapsh
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +37,9 @@ class EnterpriseLabLoopbackAllocationRouterTest {
     private static final String SCENARIO = "tail-latency-pressure";
     private static final Set<String> BACKEND_IDS = Set.of("blue", "green", "orange");
     private final EnterpriseLabAdaptiveDecisionService decisionService = new EnterpriseLabAdaptiveDecisionService();
+
+    @TempDir
+    Path temporaryDirectory;
 
     @Test
     void approvedCandidateIsAppliedIdempotentlyAndBaselineIsRestored() {
@@ -90,6 +96,29 @@ class EnterpriseLabLoopbackAllocationRouterTest {
         EnterpriseLabLoopbackAllocationRouter wrongBaseline = router(
                 targets(SCENARIO), Map.of("blue", 0.5, "green", 0.25, "orange", 0.25));
         assertDenied(wrongBaseline.applyCandidate(candidate, true), wrongBaseline.baselineSnapshot());
+    }
+
+    @Test
+    void ownershipCapabilityFencesCandidateRestoreAndRequestRoutingAtTheRouter() {
+        EnterpriseLabAdaptiveDecision candidate = activeDecision(SCENARIO);
+        List<EnterpriseLabLoopbackTarget> targets = targets(SCENARIO);
+        EnterpriseLabMutationTestAuthority ownership =
+                new EnterpriseLabMutationTestAuthority(temporaryDirectory);
+        EnterpriseLabLoopbackAllocationRouter router = new EnterpriseLabLoopbackAllocationRouter(
+                targets,
+                new EnterpriseLabLoopbackObservationIngress(BACKEND_IDS),
+                candidate.decision().request().baselineAllocations(),
+                Optional.of(ownership));
+        ownership.fail(EnterpriseLabEvidenceOwnership.FailureClassification.LOCK_LOST);
+
+        assertThrows(EnterpriseLabEvidenceOwnershipException.class,
+                () -> router.applyCandidate(candidate, true));
+        assertThrows(EnterpriseLabEvidenceOwnershipException.class,
+                () -> router.restoreBaseline("ownership lost"));
+        assertThrows(EnterpriseLabEvidenceOwnershipException.class,
+                () -> router.route("fenced-request", 0, Duration.ofSeconds(1)));
+        assertEquals(Kind.BASELINE, router.currentSnapshot().kind());
+        assertEquals(0L, router.currentSnapshot().revision());
     }
 
     @Test

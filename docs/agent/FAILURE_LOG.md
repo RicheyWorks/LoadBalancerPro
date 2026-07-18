@@ -6,6 +6,77 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-17T18:46-07:00
+
+Branch/PR: codex/ownership-mutation-fencing / no PR yet
+
+Failure type: PR5 startup-order constructor audit gap
+
+Failing check: staged-diff audit of renewer creation against the required ownership/reconciliation startup sequence
+
+Observed/root cause: the Spring controller constructs the owned service only after startup reconciliation reaches READY,
+but the public owned-service constructor could be called directly with a pending recovery gate. That would start the
+single-purpose renewer before readiness even though experiment admission remained closed. No test, proof, or packaged
+runtime exercised that unsafe construction path, and no external or durable state was changed by finding it.
+
+Correction/result: owned-service construction now rejects a pending or failed recovery gate before creating the renewer.
+A focused behavioral test proves construction fails, admission remains closed, and the caller-retained live OS lock is
+still valid for orderly cleanup.
+
+Follow-up: the corrected renewer/controller/startup selector passes 23 tests with zero failures, errors, or skips; rerun
+the exact-candidate package. The in-memory unowned service remains available for its existing non-durable tests and does
+not create an ownership renewer.
+
+## Entry
+
+Date/time: 2026-07-17T18:44-07:00
+
+Branch/PR: codex/ownership-mutation-fencing / no PR yet
+
+Failure type: local Docker engine and Trivy tooling unavailable
+
+Failing check: PR5 local packaged-runtime Docker and HIGH/CRITICAL image-scan probes
+
+Observed/root cause: Docker CLI 28.0.4 is installed, but the Desktop Linux engine named pipe does not exist, so the
+client cannot connect. The host still has no `trivy` command. No image build or scan began, and no repository, runtime,
+container, lock, journal, or ownership state changed. This matches the prior local environment limitation rather than a
+branch-specific product failure; PR5 changes no POM, dependency, workflow, Dockerfile, Compose file, or base image.
+
+Correction/result: no safe repository correction applies. Normal Maven package, 3,183 zero-skipped tests, JaCoCo,
+dependency tree, executable-JAR class inspection, CycloneDX, and both packaged loopback proofs are green. Local Docker
+runtime and Trivy remain not run, not green.
+
+Follow-up: require the unchanged repository-native exact-head CI image build, packaged runtime/container evidence, and
+Trivy gate before merge, then require the same exact merge-main gates before PR6. Do not suppress or weaken the scan.
+
+## Entry
+
+Date/time: 2026-07-17T18:37-07:00
+
+Branch/PR: codex/ownership-mutation-fencing / no PR yet
+
+Failure type: PR5 startup-order scope audit gap and first regression assertion mismatch
+
+Failing check: manual mutation-fencing audit followed by the focused ownership/startup selector
+
+Observed/root cause: a process can publish its first durable ownership record before the journal child directories are
+prepared. After that owner releases or dies, the controller's takeover path first constructed a read-only journal view,
+but that factory required every journal child directory to exist before the pending takeover authority could be installed.
+This could block a safe restart at that bounded startup interruption point. The first regression test then asserted that
+the shared ownership/journal parent namespace was absent, but ownership acquisition intentionally creates that parent;
+only its journal child directories are absent. The focused selector therefore failed one of 59 tests on the assertion,
+not on the corrected takeover behavior.
+
+Correction/result: read-only inspection now resolves absent controlled child paths without creating them or granting
+mutation. Rebinding the manager-confined pending takeover authority performs the guarded directory preparation while the
+exclusive OS lock is held. The regression assertion now checks the intentionally absent `journals` child before restart.
+
+Follow-up: the corrected focused ownership/startup selector passed 59 tests with zero failures, errors, or skips; rerun
+the full package gates. No path, lock, ownership-generation, or journal-integrity control was weakened; read-only
+construction remains unable to create or append journal evidence.
+
+## Entry
+
 Date/time: 2026-07-16T23:23-07:00
 
 Branch/PR: codex/journal-startup-reconciliation / no PR yet
@@ -4772,3 +4843,29 @@ process owns the lock and bounded `tryLock` returns null. The structured stale-o
 Correction/result: require `DUPLICATE_ACQUISITION` for this exact same-JVM fixture while retaining the live-owner stale
 classification. Separate-process exclusion remains reserved for the campaign proof-harness slot. Rerun the complete
 focused selector before treating PR4 locally green.
+
+# 2026-07-17 - Ownership PR5 initial mutation-authority compile found two Java declarations
+
+Branch/PR: `codex/ownership-mutation-fencing` / pending
+
+Failing check: initial `mvn -q -DskipTests compile` after introducing the internal ownership mutation authorization.
+
+Observed/root cause: `EnterpriseLabEvidenceOwnershipLease` exposed its package-private trusted root without importing
+`java.nio.file.Path`, and the nested authorization record's canonical constructor was package-private even though a
+record nested in an interface is implicitly public. No executable test ran and no durable evidence was mutated.
+
+Correction/result: import `Path` and make the canonical record constructor public, then rerun compilation before
+continuing production wiring. This is a source-shape correction only; no ownership check is removed or weakened.
+
+# 2026-07-17 - Ownership PR5 policy lookup repeated the Windows wildcard argument error
+
+Branch/PR: `codex/ownership-mutation-fencing` / pending
+
+Failing operation: a read-only lookup passed `EnterpriseLabEvidenceOwnership*` as a Windows path argument while
+locating ownership policy defaults after the corrected main-source compile had passed.
+
+Observed/root cause: Windows rejected the wildcard-bearing path; the exact ownership-model read in the same command
+still found `Policy.safetyFirstDefaults()`. No source, durable evidence, process, or remote state was changed.
+
+Correction/result: retain the exact-file result and use `rg -g 'EnterpriseLabEvidenceOwnership*.java'` for any later
+filtered lookup. The production compile remains green and no executable gate is weakened.

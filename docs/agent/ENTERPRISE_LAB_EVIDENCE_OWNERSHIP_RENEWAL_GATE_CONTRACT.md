@@ -1,6 +1,6 @@
 # Enterprise Lab Ownership Renewal and Verification Gate Contract
 
-Status: PR3 executable renewal/verification contract; takeover and mutation integration remain later gates.
+Status: PR5 executable renewal, takeover-reconciliation, and mutation-fencing contract.
 
 ## One authoritative gate
 
@@ -11,10 +11,30 @@ constructor is not public, and it cannot create a lock, owner identity, generati
 Its bounded operations verify without mutation, run one explicitly invoked renewal cycle, or require current ownership
 and throw a classified exception when mutation admission is closed.
 
-Later mutation integration must use this gate at meaningful commit boundaries. A cached owner record, timestamp,
-generation, process ID, or informal boolean is not mutation authority.
+Mutation-capable repository objects derive a narrow internal authorization from this gate. The authorization binds the
+controlled root, owner ID, and generation, and is revalidated at meaningful commit boundaries. A cached owner record,
+timestamp, generation, process ID, or informal boolean is not mutation authority.
 
-PR3 adds no scheduler. The later lifecycle cadence uses policy; the gate creates no thread, executor, queue, or loop.
+After startup reconciliation succeeds, the owned operator service starts one daemon scheduled task at the policy's
+bounded renewal interval. It has one periodic task, no user queue, no unbounded retry, and no work before ownership is
+published. Renewal failure closes experiment admission. Shutdown closes durable writers, stops this task, publishes the
+release record, and only then releases the OS lock and channel.
+
+## Mutation boundaries
+
+Fresh application startup acquires ownership before preparing the journal namespace. A prior record enters the bounded
+takeover path; while the manager holds the exclusive lock and the exact `TAKEOVER_PENDING` record, only a manager-confined
+authorization can run the existing reconciler. The live gate is published only after successful reconciliation.
+
+Journal creation and every append verify the same owner generation before write chunks and synchronization. Startup
+reconciliation verifies before admission, recovery append, quarantine, and baseline restoration. Terminal manifest
+installation, source deletion, and retention apply verify again at their commit points. The read-only directory factory
+cannot create a writer; verification, replay, discovery, dry-run retention, and bounded evidence reads remain non-mutating.
+
+The durable operator service and loopback router verify the same authorization before arm/start/evaluate/cancel state
+changes, candidate allocation, baseline restoration, and each loopback request dispatch. Existing journal event bytes and
+fingerprint chains are unchanged; owner generation is carried by the non-detachable mutation capability rather than a
+journal schema rewrite.
 
 ## Verification order
 
@@ -63,11 +83,11 @@ pre-install write failure preserves temporary evidence and closes the gate.
 
 ## Evidence and scope boundary
 
-Tests prove stable gate identity, current-owner verification, generation stability, durable renewal, idempotent same-time
-renewal, bounded retry success/exhaustion, write failure, post-install recovery, deadline closure with a still-contending
-OS lock, clock regression, owner/generation replacement, missing/corrupt records, directory replacement, unexpected lock
-channel closure, clean release after renewal, and permanent gate closure after release or uncertainty.
+Tests prove stable gate identity, current-owner verification, generation stability, durable periodic renewal, bounded
+retry success/exhaustion, deadline closure, startup live-owner denial, clean-release takeover, read-only writer denial,
+append generation fencing, reconciliation preflight, router fencing, and preservation during denied compaction and
+retention apply. Existing journal compatibility tests remain green.
 
-PR3 does not schedule renewal, acquire at startup, classify stale owners, increment generation, take over evidence,
-reconcile journals, or wire mutation paths. It does not prove separate-process, malicious-process, network-filesystem,
-multi-host, production-ownership, production-traffic, or production-readiness behavior.
+PR5 does not add ownership operator endpoints, separate-process contention or abrupt-kill proof, malicious-process
+resistance, network-filesystem correctness, multi-host or distributed fencing, production ownership, production traffic,
+or production-readiness claims. Those not-proven boundaries remain explicit; subprocess proof belongs to PR6.

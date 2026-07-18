@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceMutationAuthority.MutationAuthorization;
+
 /**
  * Force-synchronized durable projection of the existing operator lifecycle.
  * It does not own traffic or create a second lifecycle; it records already
@@ -149,6 +151,14 @@ public final class EnterpriseLabExperimentDurableEvidenceRepository implements A
 
     EnterpriseLabExperimentJournalDirectory directory() {
         return directory;
+    }
+
+    MutationAuthorization requireMutationAuthorization() {
+        return directory.requireMutationAuthorization();
+    }
+
+    void requireSameMutationAuthorization(MutationAuthorization expected) {
+        directory.requireSameMutationAuthorization(expected);
     }
 
     synchronized void simulateProcessInterruption() {

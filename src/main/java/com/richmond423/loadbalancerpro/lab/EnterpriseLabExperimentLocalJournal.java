@@ -10,6 +10,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalStorage
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier.Classification;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier.Outcome;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier.VerificationResult;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceMutationAuthority.MutationAuthorization;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -29,6 +30,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
     private final FileChannel channel;
     private final SyncPolicy syncPolicy;
     private final EnterpriseLabExperimentJournalCodec codec;
+    private final MutationAuthorization mutationAuthorization;
     private final FailureInjector failureInjector;
     private final Runnable releaseOwnership;
 
@@ -50,6 +52,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
             SyncPolicy syncPolicy,
             EnterpriseLabExperimentJournalCodec codec,
             ReadResult existing,
+            MutationAuthorization mutationAuthorization,
             FailureInjector failureInjector,
             Runnable releaseOwnership) {
         this.directory = Objects.requireNonNull(directory, "directory cannot be null");
@@ -59,6 +62,8 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
         this.channel = Objects.requireNonNull(channel, "channel cannot be null");
         this.syncPolicy = Objects.requireNonNull(syncPolicy, "syncPolicy cannot be null");
         this.codec = Objects.requireNonNull(codec, "codec cannot be null");
+        this.mutationAuthorization = Objects.requireNonNull(
+                mutationAuthorization, "mutationAuthorization cannot be null");
         this.failureInjector = Objects.requireNonNull(failureInjector, "failureInjector cannot be null");
         this.releaseOwnership = Objects.requireNonNull(releaseOwnership, "releaseOwnership cannot be null");
         this.entryCount = existing.events().size();
@@ -74,6 +79,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
     public synchronized AppendReceipt append(EnterpriseLabExperimentJournalEvent event) {
         ensureOpen();
         try {
+            directory.requireSameMutationAuthorization(mutationAuthorization);
             validateAppend(event);
             byte[] encoded = codec.encode(event);
             if (encoded.length > EnterpriseLabExperimentJournalCodec.HARD_MAX_ENTRY_BYTES) {
@@ -99,17 +105,20 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
             System.arraycopy(encoded, 0, frame, 0, encoded.length);
             frame[frame.length - 1] = '\n';
             failureInjector.checkpoint(WriteCheckpoint.BEFORE_APPEND, 0);
+            directory.requireSameMutationAuthorization(mutationAuthorization);
             writeFrame(frame);
             failureInjector.checkpoint(WriteCheckpoint.AFTER_APPEND_BEFORE_SYNC, frame.length);
 
             PersistenceStage stage;
             boolean forceCompleted;
             if (syncPolicy == SyncPolicy.FORCE_DATA) {
+                directory.requireSameMutationAuthorization(mutationAuthorization);
                 channel.force(false);
                 failureInjector.checkpoint(WriteCheckpoint.AFTER_SYNC, frame.length);
                 stage = PersistenceStage.DATA_FORCE_COMPLETE;
                 forceCompleted = true;
             } else if (syncPolicy == SyncPolicy.FORCE_DATA_AND_METADATA) {
+                directory.requireSameMutationAuthorization(mutationAuthorization);
                 channel.force(true);
                 failureInjector.checkpoint(WriteCheckpoint.AFTER_SYNC, frame.length);
                 stage = PersistenceStage.DATA_AND_METADATA_FORCE_COMPLETE;
@@ -196,6 +205,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
         ByteBuffer buffer = ByteBuffer.wrap(frame);
         int zeroWrites = 0;
         while (buffer.hasRemaining()) {
+            directory.requireSameMutationAuthorization(mutationAuthorization);
             int oldLimit = buffer.limit();
             buffer.limit(Math.min(oldLimit, buffer.position() + MAX_WRITE_CHUNK_BYTES));
             int written;

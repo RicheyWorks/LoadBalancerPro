@@ -97,7 +97,7 @@ class EnterpriseLabExperimentJournalReplayEngineTest {
     void replaysARealVerifiedCompletedJournalWithoutMutatingForensicBytes() throws Exception {
         List<EnterpriseLabExperimentJournalEvent> events = completedChain();
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         try (EnterpriseLabExperimentJournal journal = directory.openJournal(
                 EXPERIMENT_ID, SyncPolicy.FORCE_DATA_AND_METADATA)) {
             events.forEach(journal::append);

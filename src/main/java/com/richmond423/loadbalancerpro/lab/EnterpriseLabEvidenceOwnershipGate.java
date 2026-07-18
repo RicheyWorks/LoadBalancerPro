@@ -8,7 +8,8 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.Verifi
  * The single authoritative admission gate for ownership-bound local mutation.
  * It remains tied to the live lease and cannot manufacture ownership evidence.
  */
-public final class EnterpriseLabEvidenceOwnershipGate {
+public final class EnterpriseLabEvidenceOwnershipGate
+        implements EnterpriseLabEvidenceMutationAuthority {
     private final EnterpriseLabEvidenceOwnershipLease lease;
 
     EnterpriseLabEvidenceOwnershipGate(EnterpriseLabEvidenceOwnershipLease lease) {
@@ -30,5 +31,10 @@ public final class EnterpriseLabEvidenceOwnershipGate {
                     result.failure(), result.reasonCode());
         }
         return result.record().orElseThrow();
+    }
+
+    @Override
+    public MutationAuthorization requireMutationAuthorization() {
+        return MutationAuthorization.from(lease.trustedRoot(), requireCurrentOwnership());
     }
 }

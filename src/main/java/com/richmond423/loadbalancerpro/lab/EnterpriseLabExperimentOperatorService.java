@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.LongSupplier;
 
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceMutationAuthority.MutationAuthorization;
+
 /**
  * Auth-bound coordinator for one active, bounded Enterprise Lab loopback experiment.
  * It creates no targets, scheduler, executor, or background traffic source.
@@ -55,6 +57,8 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
     private final int maxRetainedExperiments;
     private final EnterpriseLabExperimentRecoveryGate recoveryGate;
     private final Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence;
+    private final Optional<EnterpriseLabEvidenceOwnershipLease> ownershipLease;
+    private final Optional<EnterpriseLabEvidenceOwnershipRenewer> ownershipRenewer;
     private final Map<String, Session> sessions = new LinkedHashMap<>();
     private boolean closed;
 
@@ -73,6 +77,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 System::nanoTime,
                 DEFAULT_MAX_RETAINED_EXPERIMENTS,
                 recoveryGate,
+                Optional.empty(),
                 Optional.empty());
     }
 
@@ -88,7 +93,25 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 System::nanoTime,
                 DEFAULT_MAX_RETAINED_EXPERIMENTS,
                 recoveryGate,
-                Optional.of(Objects.requireNonNull(durableEvidence, "durableEvidence cannot be null")));
+                Optional.of(Objects.requireNonNull(durableEvidence, "durableEvidence cannot be null")),
+                Optional.empty());
+    }
+
+    public EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            EnterpriseLabExperimentDurableEvidenceRepository durableEvidence,
+            EnterpriseLabEvidenceOwnershipLease ownershipLease) {
+        this(
+                targetCatalog,
+                new EnterpriseLabScenarioCatalogService(),
+                new EnterpriseLabAdaptiveDecisionService(),
+                Clock.systemUTC(),
+                System::nanoTime,
+                DEFAULT_MAX_RETAINED_EXPERIMENTS,
+                recoveryGate,
+                Optional.of(Objects.requireNonNull(durableEvidence, "durableEvidence cannot be null")),
+                Optional.of(Objects.requireNonNull(ownershipLease, "ownershipLease cannot be null")));
     }
 
     EnterpriseLabExperimentOperatorService(
@@ -99,7 +122,8 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             LongSupplier monotonicNanos,
             int maxRetainedExperiments) {
         this(targetCatalog, scenarioCatalog, decisionService, clock, monotonicNanos,
-                maxRetainedExperiments, EnterpriseLabExperimentRecoveryGate.inMemoryOnly(), Optional.empty());
+                maxRetainedExperiments, EnterpriseLabExperimentRecoveryGate.inMemoryOnly(),
+                Optional.empty(), Optional.empty());
     }
 
     EnterpriseLabExperimentOperatorService(
@@ -111,7 +135,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             int maxRetainedExperiments,
             EnterpriseLabExperimentRecoveryGate recoveryGate) {
         this(targetCatalog, scenarioCatalog, decisionService, clock, monotonicNanos,
-                maxRetainedExperiments, recoveryGate, Optional.empty());
+                maxRetainedExperiments, recoveryGate, Optional.empty(), Optional.empty());
     }
 
     EnterpriseLabExperimentOperatorService(
@@ -123,6 +147,20 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             int maxRetainedExperiments,
             EnterpriseLabExperimentRecoveryGate recoveryGate,
             Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence) {
+        this(targetCatalog, scenarioCatalog, decisionService, clock, monotonicNanos,
+                maxRetainedExperiments, recoveryGate, durableEvidence, Optional.empty());
+    }
+
+    EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabScenarioCatalogService scenarioCatalog,
+            EnterpriseLabAdaptiveDecisionService decisionService,
+            Clock clock,
+            LongSupplier monotonicNanos,
+            int maxRetainedExperiments,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence,
+            Optional<EnterpriseLabEvidenceOwnershipLease> ownershipLease) {
         this.targetCatalog = Objects.requireNonNull(targetCatalog, "targetCatalog cannot be null");
         this.scenarioCatalog = Objects.requireNonNull(scenarioCatalog, "scenarioCatalog cannot be null");
         this.decisionService = Objects.requireNonNull(decisionService, "decisionService cannot be null");
@@ -131,10 +169,23 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         this.recoveryGate = Objects.requireNonNull(recoveryGate, "recoveryGate cannot be null");
         this.durableEvidence = Objects.requireNonNull(
                 durableEvidence, "durableEvidence cannot be null");
+        this.ownershipLease = Objects.requireNonNull(
+                ownershipLease, "ownershipLease cannot be null");
+        if (ownershipLease.isPresent() && durableEvidence.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "owned service shutdown requires durable evidence");
+        }
+        if (ownershipLease.isPresent() && !recoveryGate.admissionAllowed()) {
+            throw new IllegalStateException(
+                    "owned service renewal requires completed startup reconciliation");
+        }
         if (maxRetainedExperiments < 1 || maxRetainedExperiments > DEFAULT_MAX_RETAINED_EXPERIMENTS) {
             throw new IllegalArgumentException("maxRetainedExperiments must be between 1 and 128");
         }
         this.maxRetainedExperiments = maxRetainedExperiments;
+        this.ownershipRenewer = ownershipLease.map(lease ->
+                new EnterpriseLabEvidenceOwnershipRenewer(
+                        lease.ownershipGate(), recoveryGate, lease.renewalInterval()));
     }
 
     public synchronized OperatorReceipt arm(ArmRequest request, boolean activeExperimentExplicitlyEnabled) {
@@ -148,6 +199,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                     "RECOVERY_NOT_READY",
                     "startup journal reconciliation has not reached a safe admission state");
         }
+        Optional<MutationAuthorization> authorization = requireMutationOwnership();
         Session existing = sessions.get(safeRequest.experimentId());
         if (existing != null) {
             return replayOrConflict(existing, safeRequest.operatorRequestId(), safeRequest.signature(), "arm");
@@ -199,7 +251,10 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         EnterpriseLabLoopbackAllocationRouter router = new EnterpriseLabLoopbackAllocationRouter(
                 targets,
                 ingress,
-                decision.decision().guardrailDecision().baselineAllocations());
+                decision.decision().guardrailDecision().baselineAllocations(),
+                durableEvidence.map(repository ->
+                        (EnterpriseLabEvidenceMutationAuthority)
+                                repository::requireMutationAuthorization));
         Instant now = clock.instant();
         EnterpriseLabExperimentConfiguration configuration = new EnterpriseLabExperimentConfiguration(
                 EnterpriseLabExperimentConfiguration.SCHEMA_VERSION,
@@ -217,9 +272,11 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 now.plus(safeRequest.expirationWindow()));
         EnterpriseLabExperimentLifecycle lifecycle = new EnterpriseLabExperimentLifecycle();
         EnterpriseLabExperimentState before = lifecycle.snapshot().state();
+        requireSameMutationOwnership(authorization);
         CommandReceipt lifecycleReceipt = lifecycle.arm(
                 safeRequest.operatorRequestId(), configuration, now);
         Session session = new Session(configuration, lifecycle, router, ingress);
+        requireSameMutationOwnership(authorization);
         sessions.put(configuration.experimentId(), session);
         recordAction(session, safeRequest.operatorRequestId(), "arm", now, before,
                 lifecycleReceipt.snapshot().state(), false, lifecycleReceipt.reason());
@@ -253,6 +310,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                     "RECOVERY_NOT_READY",
                     "startup journal reconciliation has not reached a safe admission state");
         }
+        Optional<MutationAuthorization> authorization = requireMutationOwnership();
         Session session = sessions.get(safeExperimentId);
         if (session == null) {
             return notFound("start", safeRequestId, safeExperimentId);
@@ -298,9 +356,11 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                     "no routing state altered",
                     "expired experiment cannot install a candidate allocation");
         } else {
+            requireSameMutationOwnership(authorization);
             allocation = session.router.applyCandidate(
                     session.configuration.candidateDecision(), true);
         }
+        requireSameMutationOwnership(authorization);
         CommandReceipt started = session.lifecycle.start(safeRequestId, allocation, now);
         boolean trafficAction = allocation.trafficActionPerformed();
         if (started.status() == CommandStatus.APPLIED
@@ -311,6 +371,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                     session.ingress,
                     session.observationBaseline);
         } else if (session.router.currentSnapshot().kind() == Kind.CANDIDATE) {
+            requireSameMutationOwnership(authorization);
             AllocationChangeReceipt restored = session.router.restoreBaseline("failed start rollback");
             trafficAction = trafficAction || restored.trafficActionPerformed();
         }
@@ -342,11 +403,13 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         String safeExperimentId = requireCanonicalId(experimentId, "experimentId");
         RequestBatchRequest safeRequest = Objects.requireNonNull(request, "request cannot be null");
         Session session;
+        Optional<MutationAuthorization> authorization;
         String signature = safeRequest.signature(safeExperimentId);
         synchronized (this) {
             if (!recoveryGate.admissionAllowed()) {
                 return recoveryBatchDenied(safeRequest, safeExperimentId);
             }
+            authorization = requireMutationOwnership();
             session = sessions.get(safeExperimentId);
             if (session == null) {
                 return batchNotFound(safeRequest.operatorRequestId(), safeExperimentId);
@@ -408,11 +471,13 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             }
 
             for (int index = 0; index < safeRequest.count(); index++) {
+                requireSameMutationOwnership(authorization);
                 String requestId = routeRequestId(safeExperimentId, ++session.nextRequestSequence);
                 RouteExecution route = session.router.route(
                         requestId,
                         session.selectionOrdinal++,
                         safeRequest.timeout());
+                requireSameMutationOwnership(authorization);
                 boolean observationRecorded = route.requestExecution().observationReceipt().status()
                         == ReceiptStatus.RECORDED;
                 if (observationRecorded) {
@@ -444,6 +509,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         }
 
         synchronized (this) {
+            requireSameMutationOwnership(authorization);
             Instant now = clock.instant();
             LifecycleSnapshot after = session.lifecycle.snapshot();
             recordAction(session, safeRequest.operatorRequestId(), "execute-requests", now,
@@ -496,12 +562,15 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                             "ILLEGAL_LIFECYCLE_TRANSITION", "experiment must start before evaluation"));
         }
 
+        Optional<MutationAuthorization> authorization = requireMutationOwnership();
         Instant now = clock.instant();
         LifecycleSnapshot before = session.lifecycle.snapshot();
+        requireSameMutationOwnership(authorization);
         EvaluationReceipt evaluation = activeExperimentExplicitlyEnabled
                 ? session.evaluator.evaluate(safeRequestId, now)
                 : session.evaluator.cancel(safeRequestId,
                         "active-experiment enablement was removed", now);
+        requireSameMutationOwnership(authorization);
         LifecycleSnapshot after = session.lifecycle.snapshot();
         boolean trafficAction = after.allocationRevision() != before.allocationRevision();
         recordAction(session, safeRequestId,
@@ -583,6 +652,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         if (closed) {
             return;
         }
+        closed = true;
         try {
             activeSession().ifPresent(session -> {
                 String requestId = "service-shutdown-" + (session.actions.size() + 1L);
@@ -590,6 +660,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                     cancelInternal(session, requestId,
                             "application shutdown requested safe experiment termination", "shutdown");
                 } catch (RuntimeException exception) {
+                    requireMutationOwnership();
                     AllocationChangeReceipt restored = session.router.restoreBaseline(
                             "shutdown fail-closed restoration");
                     LifecycleSnapshot before = session.lifecycle.snapshot();
@@ -605,8 +676,15 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 }
             });
         } finally {
-            durableEvidence.ifPresent(EnterpriseLabExperimentDurableEvidenceRepository::close);
-            closed = true;
+            try {
+                durableEvidence.ifPresent(EnterpriseLabExperimentDurableEvidenceRepository::close);
+            } finally {
+                try {
+                    ownershipRenewer.ifPresent(EnterpriseLabEvidenceOwnershipRenewer::close);
+                } finally {
+                    ownershipLease.ifPresent(EnterpriseLabEvidenceOwnershipLease::close);
+                }
+            }
         }
     }
 
@@ -615,12 +693,14 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             String requestId,
             String reason,
             String operation) {
+        Optional<MutationAuthorization> authorization = requireMutationOwnership();
         Instant now = clock.instant();
         LifecycleSnapshot before = session.lifecycle.snapshot();
         boolean trafficAction = false;
         String receiptReason;
         OperatorStatus status;
         String code;
+        requireSameMutationOwnership(authorization);
         if (session.evaluator != null) {
             EvaluationReceipt evaluation = session.evaluator.cancel(requestId, reason, now);
             LifecycleSnapshot after = session.lifecycle.snapshot();
@@ -638,6 +718,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             code = cancellation.status() == CommandStatus.APPLIED
                     ? "ARMED_EXPERIMENT_CANCELLED" : "CANCELLATION_REJECTED";
         }
+        requireSameMutationOwnership(authorization);
         LifecycleSnapshot after = session.lifecycle.snapshot();
         recordAction(session, requestId, operation, now, before.state(), after.state(),
                 trafficAction, receiptReason);
@@ -662,6 +743,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             EnterpriseLabExperimentState after,
             boolean trafficActionPerformed,
             String reason) {
+        Optional<MutationAuthorization> authorization = requireMutationOwnership();
         if (session.actions.size() >= EnterpriseLabExperimentOperatorRecord.MAX_OPERATOR_ACTIONS) {
             throw new IllegalStateException("bounded operator action history capacity is exhausted");
         }
@@ -669,6 +751,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 ? OperatorActionEvidence.GENESIS_FINGERPRINT
                 : session.actions.get(session.actions.size() - 1).contentFingerprint();
         LifecycleSnapshot snapshot = session.lifecycle.snapshot();
+        requireSameMutationOwnership(authorization);
         session.actions.add(OperatorActionEvidence.create(
                 session.actions.size() + 1L,
                 session.configuration.experimentId(),
@@ -708,24 +791,58 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         recoveryGate.fail("DURABLE_APPEND_FAILED");
         LifecycleSnapshot snapshot = session.lifecycle.snapshot();
         if (snapshot.candidateAllocationActive()) {
-            AllocationChangeReceipt restored = session.router.restoreBaseline(
-                    "durable journal append failed closed");
-            String internalId = internalRequestId("durable-append-failure", requestId);
-            if (snapshot.state() == EnterpriseLabExperimentState.RUNNING
-                    || snapshot.state() == EnterpriseLabExperimentState.HOLDING) {
-                session.lifecycle.beginRollback(
-                        internalId + "-begin",
-                        "durable journal append failed closed",
-                        clock.instant());
-                session.lifecycle.confirmRollback(
-                        internalId + "-confirm",
-                        restored,
-                        clock.instant());
+            try {
+                Optional<MutationAuthorization> authorization = requireMutationOwnership();
+                requireSameMutationOwnership(authorization);
+                AllocationChangeReceipt restored = session.router.restoreBaseline(
+                        "durable journal append failed closed");
+                String internalId = internalRequestId("durable-append-failure", requestId);
+                if (snapshot.state() == EnterpriseLabExperimentState.RUNNING
+                        || snapshot.state() == EnterpriseLabExperimentState.HOLDING) {
+                    session.lifecycle.beginRollback(
+                            internalId + "-begin",
+                            "durable journal append failed closed",
+                            clock.instant());
+                    session.lifecycle.confirmRollback(
+                            internalId + "-confirm",
+                            restored,
+                            clock.instant());
+                }
+            } catch (EnterpriseLabEvidenceOwnershipException ownershipFailure) {
+                appendFailure.addSuppressed(ownershipFailure);
             }
         }
         throw new IllegalStateException(
-                "durable journal append failed; active loopback allocation was restored fail closed",
+                "durable journal append failed; mutation admission closed fail safe",
                 appendFailure);
+    }
+
+    private Optional<MutationAuthorization> requireMutationOwnership() {
+        if (durableEvidence.isEmpty()) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(durableEvidence.orElseThrow().requireMutationAuthorization());
+        } catch (EnterpriseLabEvidenceOwnershipException exception) {
+            recoveryGate.fail("OWNERSHIP_UNCERTAIN");
+            throw exception;
+        }
+    }
+
+    private void requireSameMutationOwnership(
+            Optional<MutationAuthorization> expected) {
+        Optional<MutationAuthorization> safeExpected = Objects.requireNonNull(
+                expected, "expected ownership cannot be null");
+        if (safeExpected.isEmpty()) {
+            return;
+        }
+        try {
+            durableEvidence.orElseThrow().requireSameMutationAuthorization(
+                    safeExpected.orElseThrow());
+        } catch (EnterpriseLabEvidenceOwnershipException exception) {
+            recoveryGate.fail("OWNERSHIP_UNCERTAIN");
+            throw exception;
+        }
     }
 
     private EnterpriseLabExperimentOperatorRecord record(Session session) {

@@ -5148,3 +5148,19 @@ cancelled, rerun, suppressed, or reclassified.
 
 Correction/result: use raw `gh run view` JSON with local PowerShell JSON selection for later polling, record this
 tooling-only failure, and require a fresh exact-head remote run after this checkpoint is pushed.
+
+# 2026-07-18 - Ownership PR6 first Linux CI run returned a failed aggregate proof check
+
+Branch/PR: `codex/ownership-operator-proof-harness` / #472
+
+Failing gate: stale executable-head PR CI run `29636366099`, `mvn -B test` on Linux/JDK 17.
+
+Observed/root cause status: 3,187 pre-existing and other PR6 tests passed, while
+`EnterpriseLabEvidenceOwnershipProofCommandTest.commandProvesSeparateProcessExclusionTakeoverAndRestartRecovery`
+returned exit 1 after 15.31 seconds because the aggregate report had at least one false check. The command discarded the
+report before export and emitted only `one or more ownership proof checks failed`, so the remote log does not identify
+which fixed check diverged. CodeQL passed on the same stale executable SHA. Root cause is not yet proven.
+
+Correction/result: add bounded failure diagnostics containing only fixed check names, run stressed local repetitions,
+then correct the identified cross-platform behavior without weakening any ownership assertion. The failed/stale run is
+not merge evidence; all required gates must rerun on the eventual corrected head.

@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
@@ -160,6 +161,40 @@ public record EnterpriseLabEvidenceOwnershipProofReport(
                 takeoverRecoveryRecorded, repeatedRestartIdempotent,
                 simultaneousAcquisitionSingleWinner, competingTakeoverSingleWinner,
                 allPassed, fingerprint, boundaries);
+    }
+
+    /** Returns only fixed safe check names so a failed subprocess proof remains diagnosable. */
+    public List<String> failedChecks() {
+        List<String> failed = new ArrayList<>();
+        addFailure(failed, liveOwnerDenied, "liveOwnerDenied");
+        addFailure(failed, ownerAppendAndReconciliationVerified,
+                "ownerAppendAndReconciliationVerified");
+        addFailure(failed, nonOwnerAppendDenied, "nonOwnerAppendDenied");
+        addFailure(failed, nonOwnerCompactionDenied, "nonOwnerCompactionDenied");
+        addFailure(failed, nonOwnerRetentionDenied, "nonOwnerRetentionDenied");
+        addFailure(failed, nonOwnerExperimentStartDenied, "nonOwnerExperimentStartDenied");
+        addFailure(failed, nonOwnerAllocationChangeDenied, "nonOwnerAllocationChangeDenied");
+        addFailure(failed, renewalSucceeded, "renewalSucceeded");
+        addFailure(failed, cleanReleaseRecorded, "cleanReleaseRecorded");
+        addFailure(failed, repeatedReleaseIdempotent, "repeatedReleaseIdempotent");
+        addFailure(failed, cleanTakeoverClassified, "cleanTakeoverClassified");
+        addFailure(failed, restartedPriorOwnerDenied, "restartedPriorOwnerDenied");
+        addFailure(failed, abruptStaleOwnerClassified, "abruptStaleOwnerClassified");
+        addFailure(failed, journalsVerifiedAndReplayed, "journalsVerifiedAndReplayed");
+        addFailure(failed, interruptedExperimentRolledBack, "interruptedExperimentRolledBack");
+        addFailure(failed, baselineRestorationVerified, "baselineRestorationVerified");
+        addFailure(failed, takeoverRecoveryRecorded, "takeoverRecoveryRecorded");
+        addFailure(failed, repeatedRestartIdempotent, "repeatedRestartIdempotent");
+        addFailure(failed, simultaneousAcquisitionSingleWinner,
+                "simultaneousAcquisitionSingleWinner");
+        addFailure(failed, competingTakeoverSingleWinner, "competingTakeoverSingleWinner");
+        return List.copyOf(failed);
+    }
+
+    private static void addFailure(List<String> failed, boolean passed, String name) {
+        if (!passed) {
+            failed.add(name);
+        }
     }
 
     private static String fingerprint(Object... values) {

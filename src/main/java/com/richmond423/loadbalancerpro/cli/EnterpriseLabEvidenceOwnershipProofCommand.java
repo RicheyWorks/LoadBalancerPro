@@ -65,7 +65,8 @@ public final class EnterpriseLabEvidenceOwnershipProofCommand {
             EnterpriseLabEvidenceOwnershipProofReport report =
                     new EnterpriseLabEvidenceOwnershipProofRunner().run(output);
             if (!report.allPassed()) {
-                throw new IllegalStateException("one or more ownership proof checks failed");
+                throw new IllegalStateException("ownership proof checks failed: "
+                        + String.join(",", report.failedChecks()));
             }
             Path json = output.resolve("enterprise-lab-ownership-proof.json");
             Path summary = output.resolve("enterprise-lab-ownership-proof-summary.md");

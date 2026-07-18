@@ -139,6 +139,51 @@ class EnterpriseLabAllocationStateStoreTest {
     }
 
     @Test
+    void transactionPhasesCannotSkipVerificationOrBeSupersededWhileIncomplete() {
+        EnterpriseLabAllocationState baseline = baseline();
+        Draft preparedDraft = candidateDraft(
+                "allocation-tx-2", 2, baseline.currentRecordFingerprint());
+        EnterpriseLabAllocationState prepared = create(
+                authority, NOW.plusSeconds(1), preparedDraft);
+        String candidateFingerprint = EnterpriseLabAllocationStateCodec.canonicalAllocationFingerprint(
+                SCENARIO, CANDIDATE);
+        Draft skippedCommit = new Draft(
+                preparedDraft.allocationTransactionId(),
+                preparedDraft.experimentId(),
+                preparedDraft.scenarioId(),
+                preparedDraft.allocationGeneration(),
+                preparedDraft.allocationPurpose(),
+                preparedDraft.baselineAllocation(),
+                preparedDraft.requestedAllocation(),
+                preparedDraft.guardrailApprovedAllocation(),
+                CANDIDATE,
+                candidateFingerprint,
+                preparedDraft.previousCommittedAllocationFingerprint(),
+                TransactionPhase.COMMITTED,
+                new TransitionReason("SKIPPED_VERIFY", "invalid direct commit transition"),
+                true,
+                Optional.of(NOW.plusSeconds(2)),
+                VerificationResult.MATCHED,
+                RecoveryClassification.NOT_REQUIRED,
+                prepared.currentRecordFingerprint(),
+                preparedDraft.metadata());
+
+        try (EnterpriseLabAllocationStateStore store = ownedStore()) {
+            store.append(baseline);
+            store.append(prepared);
+
+            StoreException skipped = assertThrows(StoreException.class, () -> store.append(
+                    create(authority, NOW.plusSeconds(2), skippedCommit)));
+            assertEquals(Failure.ILLEGAL_PHASE_TRANSITION, skipped.failure());
+
+            StoreException superseded = assertThrows(StoreException.class, () -> store.append(
+                    candidate("allocation-tx-3", 3, prepared.currentRecordFingerprint())));
+            assertEquals(Failure.INCOMPLETE_TRANSACTION, superseded.failure());
+            assertEquals(List.of(baseline, prepared), store.replay().records());
+        }
+    }
+
+    @Test
     void mutationRequiresLiveOwnershipAndExactCurrentGeneration() {
         EnterpriseLabAllocationState staleBaseline = baseline();
         authority.replaceOwner("replacement-owner", 2);

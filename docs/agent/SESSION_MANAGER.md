@@ -6,7 +6,47 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Durable Allocation-State Supervision PR3 Checkpoint
+## Active Durable Allocation-State Supervision PR4 Checkpoint
+
+Timestamp: 2026-07-18T04:22-07:00
+
+Current slot: ALLOCATION-PR4 - crash-safe owned allocation transaction coordinator
+
+Started from clean synchronized main: `f83bb886b695b797101775c7541a4269695351f2`
+
+Current branch: `codex/allocation-transaction-coordinator`
+
+PR URL: not opened yet
+
+PR4 scope: connect one live ownership epoch, the fixed allocation store, existing guardrail authorization, atomic
+loopback router mutation, independent installed-state read-back, exact durable commit, and verified baseline restoration.
+Persist intent and applying evidence before mutation; never mark a traffic action before router apply; never commit
+before exact allocation fingerprint, router generation, and owner-generation verification. Preserve incomplete evidence
+for startup/takeover reconciliation and return failed-closed structured outcomes for mismatch, unavailable read-back,
+ownership loss, uncertain durable state, and unverifiable restoration.
+
+Pre-edit audit: the PR2 store durably forces and exactly replays canonical allocation records, and the PR3 router exposes
+the same complete atomic installed object used for new routes. The narrow missing seam is transaction ordering and
+epoch continuity across those existing components. The router now owns one side-effect-free candidate-intent validation
+seam reused by both coordinator preflight and apply, avoiding a second normalization implementation. The store now
+rejects skipped phase transitions and new transactions that would supersede an incomplete unsafe head.
+
+Current executable evidence: the coordinator/store/router selector passes 34 tests and the expanded eleven-class
+allocation, router, experiment, operator, and ownership selector passes 108, all with zero failures, errors, or skips.
+Coverage includes normal intent/apply/read-back/commit, illegal phase skips, crash after intent, crash after apply,
+response loss after commit, drifted replay, mismatched and unavailable read-back, verified and unverifiable restoration,
+owner replacement after intent/apply/read-back, wrong installed owner generation, and concurrent identical requests.
+
+Out of scope: startup/takeover reconciliation, readiness/admission integration, operator endpoints, proof subprocesses,
+schedulers, journal schema changes, POM/dependency/workflow/Docker/Compose changes, external targets, arbitrary paths,
+caller-selected generations or phases, databases/brokers, multi-host/network-filesystem behavior, production traffic,
+and production readiness. Preserve and exclude the unrelated untracked
+`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md`.
+
+Decision: continue PR4 through focused failure-boundary review, full local verification, exact-head remote gates, normal
+merge without source-branch deletion, and exact merge-main CI/CodeQL before PR5.
+
+## Completed Durable Allocation-State Supervision PR3 Checkpoint
 
 Timestamp: 2026-07-18T03:25-07:00
 
@@ -78,6 +118,14 @@ executable scope, local evidence, safety audit, composition, and not-proven boun
 `mvn -B "-DskipTests" package` and produced executable JAR SHA-256
 `e38a2cda7ce287712ed5298d7e4874d854b3086bfc3c78b46e4917f294449e74`. Commit and push this required checkpoint;
 all checks on the pre-checkpoint head are stale and cannot authorize merge.
+
+Closure: PR #475 merged normally from exact head `837c36429d129df907133b10ee39f725d863a145` as
+`f83bb886b695b797101775c7541a4269695351f2`; its source branch remains preserved. Exact-head push CI
+`29641389340`, PR CI `29641391098`, CodeQL `29641391124`, dependency review, code scanning, 3,222 zero-skipped
+tests, package, SBOM, packaged runtime, Docker/runtime, controlled evidence, and blocking Trivy passed. Exact
+merge-main CI `29641597337` and CodeQL `29641597346` passed the same complete gate path. Final PR3 additions were
+952 implementation/test and 164 required process lines (85.30% / 14.70%); campaign PR1-PR3 aggregate additions were
+3,793 executable and 519 process lines (87.96% / 12.04%), to be corrected by later executable proof slices.
 
 ## Completed Durable Allocation-State Supervision PR2 Checkpoint
 

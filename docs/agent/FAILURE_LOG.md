@@ -5211,3 +5211,97 @@ channel while the lock is held, and compare the controlled path identity after a
 lock-file replacement detection without reopening or closing the locked file. A focused 46-test ownership bundle and
 full `mvn -B package` pass 3,189 tests with zero failures, errors, or skips; three concurrent packaged proofs also pass
 all live-owner and one-winner checks. Fresh Linux exact-head CI remains mandatory before merge.
+
+# 2026-07-18 - Allocation-state gap audit used an incorrect package root
+
+Branch/PR: `main` / no PR (pre-branch audit)
+
+Failing operation: the first read-only allocation-state source search targeted
+`src/main/java/com/richmond423/loadbalancer` and the corresponding test path.
+
+Observed/root cause: the repository's Java package root is `com/richmond423/loadbalancerpro`, so ripgrep reported both
+guessed directories as missing. No source, test output, Git state, or remote check was changed.
+
+Correction/result: enumerate the relevant files from the repository root, use the discovered `loadbalancerpro` paths,
+and continue the required pre-branch gap audit only against verified files.
+
+# 2026-07-18 - Allocation-state audit line-count orchestration string was malformed
+
+Branch/PR: `main` / no PR (pre-branch audit)
+
+Failing operation: a parallel read-only line-count command embedded PowerShell interpolation in a malformed JavaScript
+template string, and the orchestration layer returned a syntax error before invoking any shell process.
+
+Observed/root cause: incompatible quoting and escape characters were combined while composing the command. No file,
+Git state, test result, or remote state changed.
+
+Correction/result: use simple literal PowerShell commands and repository-relative paths for subsequent source reads.
+
+# 2026-07-18 - Allocation-state security audit passed a wildcard as a Windows path
+
+Branch/PR: `codex/allocation-state-model-codec` / no PR
+
+Failing operation: a read-only ripgrep command included `EnterpriseLab*Codec.java` as a literal Windows path while
+searching for the existing sensitive-content policy.
+
+Observed/root cause: Windows rejected that wildcard path shape. Ripgrep still searched the other valid explicit path
+and glob roots and identified the journal event's existing credential and stack-trace rejection boundary. No source,
+test, Git, or remote state changed.
+
+Correction/result: use ripgrep `-g` selectors or explicit discovered files for future searches, and reuse the verified
+journal-model sensitive-content policy in the allocation-state model.
+
+# 2026-07-18 - Allocation PR1 first focused test used a control-bearing stack fixture
+
+Branch/PR: `codex/allocation-state-model-codec` / no PR
+
+Failing gate: the first 21-test model/codec/router selector reported one assertion failure in
+`metadataAndReasonRejectCredentialAndRawStackTraceContent`; the other 20 tests passed with zero errors or skips.
+
+Observed/root cause: the fixture used a newline before a Java stack frame. The model correctly rejected that control
+character at the bounded plain-text gate, producing `IllegalArgumentException` before the more specific
+`SENSITIVE_CONTENT` classifier expected by the test.
+
+Correction/result: use a single-line Java stack frame beginning with `at`, which contains no prohibited control
+character and directly exercises the stack-trace classifier. Rerun the full focused selector; the failed result is not
+green evidence.
+
+# 2026-07-18 - Allocation PR1 verification search named a non-existent protocol file
+
+Branch/PR: `codex/allocation-state-model-codec` / no PR
+
+Failing operation: a read-only verification-gate search included
+`docs/agent/CAMPAIGN_VERIFICATION_PROTOCOL.md`, which is not a repository file.
+
+Observed/root cause: the campaign verification rules are split across the actual campaign checklist/refinement files
+and `.github/workflows/ci.yml`; the guessed consolidated filename was wrong. Ripgrep still returned the authoritative
+POM and CI workflow phase definitions from the valid paths. No code, build, Git, or remote state changed.
+
+Correction/result: use `rg --files docs/agent` before naming campaign references and rely on the verified CI workflow
+for package, coverage, artifact, SBOM, Docker/runtime, and Trivy lane commands.
+
+# 2026-07-18 - Allocation PR1 first CycloneDX command left a dotted Maven property unquoted
+
+Branch/PR: `codex/allocation-state-model-codec` / no PR
+
+Failing gate: the first local CycloneDX invocation generated and validated 144-component XML and JSON BOMs but exited
+1 after Maven interpreted `.skipAttach=true` as an unknown lifecycle phase.
+
+Observed/root cause: PowerShell transformed the unquoted dotted `-Dcyclonedx.skipAttach=true` native-command argument.
+The BOM contents were produced, but a red Maven exit is not accepted as green evidence.
+
+Correction/result: quote the complete `-Dcyclonedx.skipAttach=true` argument and rerun the unchanged repository-native
+CycloneDX goal. Require exit 0 and validated XML/JSON outputs.
+
+# 2026-07-18 - Allocation PR1 scope scan used look-ahead without PCRE2
+
+Branch/PR: `codex/allocation-state-model-codec` / no PR
+
+Failing operation: the first staged executable-diff scan used a negative look-ahead in ripgrep's default regular
+expression engine, which rejected look-around syntax before scanning content.
+
+Observed/root cause: the command omitted `--pcre2`. No scope conclusion was drawn from the failed scan, and no file,
+build, Git, or remote state changed.
+
+Correction/result: rerun external-target detection with `rg --pcre2` and use separate literal security scans so required
+allocation record fields are not mistaken for caller-controlled API inputs.

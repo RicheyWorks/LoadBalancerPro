@@ -67,14 +67,15 @@ generation/phase, force/bypass surface, or production activation. It persists on
 the existing controlled single-host store and keeps startup/takeover reconciliation, readiness/admission integration,
 multi-host/network-filesystem correctness, malicious-process resistance, and production readiness not proven.
 
-Composition: PR4 has 1,922 executable/test additions and 174 required process additions (91.70% / 8.30%). The campaign
-aggregate through this checkpoint is 5,715 executable/test and 693 process additions (89.19% / 10.81%), inside the
+Composition: PR4 has 1,922 executable/test additions and 206 required process additions (90.32% / 9.68%). The campaign
+aggregate through this checkpoint is 5,715 executable/test and 725 process additions (88.74% / 11.26%), inside the
 goal's 88-92% executable and 8-12% documentation/process band.
 
 PR-creation checkpoint: PR #476 opened from verified pre-PR head
 `b8c16aefc097b6ba5df3e90602a254d1cd68e11f` with the complete executable scope, failure-boundary evidence, local
-verification, Docker/Trivy limitation, composition, and not-proven boundaries above. This required metadata checkpoint
-moves the branch again, so all checks on the pre-checkpoint head are stale and cannot authorize merge.
+verification, Docker/Trivy limitation, composition, and not-proven boundaries above. The subsequent status-query and
+watcher-interrupt tooling failures are logged; this required recovery checkpoint moves the branch again, so every check
+on the preceding heads is stale and cannot authorize merge.
 
 Decision: package, commit, and push this PR-created checkpoint; update the PR body to the resulting exact candidate head;
 then require every exact-head CI, CodeQL, dependency-review, Docker/runtime/evidence, and Trivy gate before a normal

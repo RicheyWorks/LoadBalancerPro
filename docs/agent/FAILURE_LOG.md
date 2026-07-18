@@ -5586,3 +5586,34 @@ router, ownership record, journal, Git remote, container, or external target cha
 
 Correction/result: discard the false-negative flags, rerun exact archive membership checks with the `lab` prefix, and
 restrict dependency evidence to `org.apache.tomcat.embed` coordinates. Use only the corrected results in the checkpoint.
+
+# 2026-07-18 - Allocation PR4 GitHub run-detail query piped directly from foreach
+
+Branch/PR: `codex/allocation-transaction-coordinator` / PR #476
+
+Failing operation: a read-only exact-head CI progress query attempted to pipe directly from a PowerShell `foreach`
+statement into `ConvertTo-Json`; PowerShell rejected the script with `An empty pipe element is not allowed` before any
+GitHub request in the loop ran.
+
+Observed/root cause: the command shape omitted an enclosing expression or result variable around the `foreach` output.
+No repository, PR metadata, workflow, allocation state, router, ownership record, journal, container, or external target
+changed. CodeQL and the two CI runs already in progress belong to the preceding head and become stale after this required
+failure-log checkpoint.
+
+Correction/result: assign the loop output to a PowerShell variable before JSON conversion. Commit and push this log,
+update the PR body to the resulting candidate SHA, and require fresh exact-head CI, CodeQL, dependency review,
+Docker/runtime evidence, and Trivy rather than relying on any check from the preceding head.
+
+# 2026-07-18 - Allocation PR4 check watcher backend rejected an injected interrupt
+
+Branch/PR: `codex/allocation-transaction-coordinator` / PR #476
+
+Failing operation: after the preceding head became stale, an attempt to send Ctrl+C to the read-only `gh pr checks
+--watch` terminal returned `process interrupt is not supported by this process backend`.
+
+Observed/root cause: this unified execution backend does not accept process-interrupt input for that watcher. The failed
+interrupt made no repository, PR, workflow, allocation, router, ownership, journal, container, or external-target change;
+the old-head watcher remains read-only and its results are not merge evidence for the next candidate SHA.
+
+Correction/result: do not inject another interrupt. Allow the watcher to exit naturally and audit the replacement runs
+with direct `gh pr view` and `gh run view` queries filtered to the newly pushed exact head.

@@ -16,7 +16,7 @@ Started from clean synchronized main: `ddf196181b307bb063a92b2af707c0b572b80fc5`
 
 Current branch: `codex/ownership-mutation-fencing`
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/471
 
 Executable commit: `ed4505a821d8535fca74d7e4e5f374675fca1555`
 
@@ -63,6 +63,12 @@ Executable-checkpoint result: exact commit `ed4505a821d8535fca74d7e4e5f374675fca
 `31060893582ec9cf23846bf10f6fa38ce2399b7654f659e0248006910e084fa4`. The worktree and exact 27-file head audit were
 clean before this required checkpoint update. Push the checkpoint commit and require fresh exact-head remote gates;
 pre-checkpoint results cannot authorize merge.
+
+PR-creation checkpoint: PR #471 opened from exact head `5cb2d1d993b19dd54972c8f13d8253b55bd57f53` with the
+executable scope, complete local evidence, local Docker/Trivy limitation, composition, and not-proven boundaries above.
+This required checkpoint moves the branch again; repackage and push it, then treat every check on the PR-created head as
+stale. Merge is prohibited until fresh CI, CodeQL, dependency review, Docker/runtime evidence, and Trivy report the final
+checkpoint SHA.
 
 ## Completed Single-Host Evidence Ownership PR4 Checkpoint
 

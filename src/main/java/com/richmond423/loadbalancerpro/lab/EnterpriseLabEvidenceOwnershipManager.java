@@ -125,6 +125,9 @@ public final class EnterpriseLabEvidenceOwnershipManager {
                     heldChannel,
                     heldLock,
                     verified,
+                    safePolicy,
+                    safeClock,
+                    safeFailureInjector,
                     () -> ACTIVE_LOCAL_OWNERS.remove(localKey, reservation));
             transferred = true;
             return new AcquisitionAttempt(
@@ -258,6 +261,7 @@ public final class EnterpriseLabEvidenceOwnershipManager {
             case LOCK_IDENTITY_MISMATCH -> "OWNERSHIP_LOCK_FILE_REPLACED";
             case GENERATION_REGRESSION -> "OWNER_GENERATION_REGRESSED";
             case GENERATION_EXHAUSTED -> "OWNER_GENERATION_EXHAUSTED";
+            case CLOCK_REGRESSION -> "OWNER_CLOCK_REGRESSION";
             case RENEWAL_DEADLINE_EXCEEDED -> "OWNER_RENEWAL_DEADLINE_EXCEEDED";
             case LOCK_LOST -> "OWNERSHIP_LOCK_LOST";
             case RECORD_REPLACED -> "OWNER_RECORD_REPLACED";
@@ -317,6 +321,10 @@ public final class EnterpriseLabEvidenceOwnershipManager {
         DURING_RECORD_WRITE,
         AFTER_RECORD_FORCE,
         AFTER_RECORD_INSTALL,
+        BEFORE_RENEWAL_ATTEMPT,
+        DURING_RENEWAL_RECORD_WRITE,
+        AFTER_RENEWAL_RECORD_FORCE,
+        AFTER_RENEWAL_RECORD_INSTALL,
         DURING_RELEASE_RECORD_WRITE,
         AFTER_RELEASE_RECORD_FORCE,
         AFTER_RELEASE_RECORD_INSTALL

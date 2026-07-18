@@ -6,6 +6,40 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Single-Host Evidence Ownership PR3 Checkpoint
+
+Timestamp: 2026-07-17T17:03-07:00
+
+Current slot: OWNERSHIP-PR3 - bounded renewal and authoritative continuous verification gate
+
+Started from clean synchronized main: `a1b1d4c83095b56c9e9681c5ece34d7c345b6fa8`
+
+Current branch: `codex/ownership-renewal-verification-gate`
+
+PR URL: pending
+
+Prior slot closure: PR #468 merged normally from exact head `ecf2f69c10976ad3ae74304d09982bd160a4f0fb`
+as `a1b1d4c83095b56c9e9681c5ece34d7c345b6fa8`. Exact-head PR CI `29620907452`, push CI
+`29620903060`, CodeQL `29620907455`, code scanning, and dependency review passed. Exact merge-main CI
+`29621202239` and CodeQL `29621202240` passed the full test, package, coverage, SBOM, packaged runtime, Docker runtime,
+and Trivy path.
+
+Implemented: one stable lease-bound gate; exact current-lock/path/record/owner/generation/deadline verification; permanent
+fail-closed latching; explicit bounded renewal preflight; idempotent same-instant renewal; and force/atomic-install/exact-
+read-back renewal publication with post-install recovery. No background thread or scheduler exists.
+
+Local verification: compilation passed; the 102-test ownership/journal/campaign bundle and exact `mvn -B package` passed,
+with full package reporting 3,157 tests and zero failures, errors, or skips. The packaged experiment proof passed 13
+scenarios/837 loopback requests at fingerprint `ebeaa71a3e49b8dd2b5234899084462d03e29515b02c7fc8bbfac80f7d0ad9f0`;
+the 124-request durable proof passed at `3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2ed839ff7afd6a`.
+Tomcat resolves at 10.1.55, the JAR contains the gate/lease/manager/store classes, and `git diff --check` passed.
+
+Scope audit: no POM, dependency, workflow, Docker, Compose, controller, journal, scheduler, external target, takeover,
+startup, or broad mutation-path change is present. PR3 remains a local-filesystem single-host capability and does not
+claim separate-process, production, network-filesystem, distributed, or malicious-process proof.
+
+Decision: checkpoint the executable candidate, create one PR, then require exact-head and merge-main gates before PR4.
+
 ## Active Single-Host Evidence Ownership PR2 Checkpoint
 
 Timestamp: 2026-07-17T16:25-07:00

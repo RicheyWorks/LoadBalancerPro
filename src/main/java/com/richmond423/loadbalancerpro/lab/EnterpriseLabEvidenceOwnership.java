@@ -387,6 +387,7 @@ public final class EnterpriseLabEvidenceOwnership {
         LOCK_IDENTITY_MISMATCH,
         GENERATION_REGRESSION,
         GENERATION_EXHAUSTED,
+        CLOCK_REGRESSION,
         RENEWAL_DEADLINE_EXCEEDED,
         LOCK_LOST,
         RECORD_REPLACED,

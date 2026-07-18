@@ -4743,3 +4743,16 @@ jq interpreted `in_progress` as a function name and rejected the local filter. G
 
 Correction/result: use `gh` JSON output without inline jq and parse it after retrieval. Treat the currently running
 checks as stale after this required failure-log checkpoint; require fresh exact-head checks before merge.
+
+# 2026-07-17 - Ownership PR3 initial source audit repeated the Windows wildcard error
+
+Branch/PR: `codex/ownership-renewal-verification-gate` / pending
+
+Failing operation: post-test scan for unresolved work, unbounded schedulers, and production lock deletion.
+
+Observed/root cause: the command again passed `EnterpriseLabEvidenceOwnership*.java` as a Windows path argument instead
+of using the already established source directory plus an `rg -g` filename filter. The preceding diff checks and status
+inspection succeeded, but the source scan was rejected. No file or runtime state changed.
+
+Correction/result: rerun the exact audit with `rg -g 'EnterpriseLabEvidenceOwnership*.java'` and retain the failure as a
+campaign tooling-discipline regression; do not weaken any executable or verification gate.

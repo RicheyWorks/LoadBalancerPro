@@ -166,7 +166,7 @@ class EnterpriseLabEvidenceOwnershipPathsTest {
     @Test
     void ownershipNamespaceCoexistsWithExistingJournalNamespaces() {
         EnterpriseLabEvidenceOwnershipPaths paths = create();
-        EnterpriseLabExperimentJournalDirectory.create(
+        EnterpriseLabMutationTestAuthority.ownedDirectory(
                 temporaryDirectory.toAbsolutePath().normalize());
 
         assertTrue(Files.isDirectory(paths.ownershipDirectory(), LinkOption.NOFOLLOW_LINKS));

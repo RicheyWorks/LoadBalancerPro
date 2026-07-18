@@ -11,6 +11,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalDirecto
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalEvent.Draft;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalEvent.Reason;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier.Outcome;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceMutationAuthority.MutationAuthorization;
 
 import java.nio.file.Path;
 import java.time.Clock;
@@ -49,8 +50,16 @@ public final class EnterpriseLabExperimentStartupReconciler {
     }
 
     public synchronized RecoveryReport initialize() {
+        MutationAuthorization authorization;
+        try {
+            authorization = directory.requireMutationAuthorization();
+        } catch (RuntimeException exception) {
+            gate.fail("OWNERSHIP_VERIFICATION_FAILED");
+            throw exception;
+        }
         Optional<RecoveryReport> existing = gate.admissionStatus().recoveryReport();
         if (existing.isPresent()) {
+            directory.requireSameMutationAuthorization(authorization);
             return existing.orElseThrow();
         }
         gate.begin();
@@ -71,6 +80,7 @@ public final class EnterpriseLabExperimentStartupReconciler {
                     startedAt,
                     completedAt,
                     results);
+            directory.requireSameMutationAuthorization(authorization);
             gate.complete(report);
             return report;
         } catch (RuntimeException exception) {
@@ -81,6 +91,15 @@ public final class EnterpriseLabExperimentStartupReconciler {
 
     Path trustedRoot() {
         return directory.trustedRoot();
+    }
+
+    EnterpriseLabExperimentStartupReconciler withMutationAuthority(
+            EnterpriseLabEvidenceMutationAuthority mutationAuthority) {
+        return new EnterpriseLabExperimentStartupReconciler(
+                directory.withMutationAuthority(mutationAuthority),
+                allocationRecovery,
+                gate,
+                clock);
     }
 
     private ExperimentRecoveryResult reconcile(JournalDiscovery discovery) {
@@ -525,8 +544,12 @@ public final class EnterpriseLabExperimentStartupReconciler {
     }
 
     private BaselineRestorationReceipt restoreBaseline(ReconstructedExperimentState state) {
+        MutationAuthorization authorization = directory.requireMutationAuthorization();
         try {
-            return allocationRecovery.restoreBaseline(state, RECOVERY_REASON);
+            BaselineRestorationReceipt receipt = allocationRecovery.restoreBaseline(
+                    state, RECOVERY_REASON);
+            directory.requireSameMutationAuthorization(authorization);
+            return receipt;
         } catch (RuntimeException exception) {
             throw new RestorationAttemptException(exception);
         }

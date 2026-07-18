@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class EnterpriseLabDurableRecoveryProofRunner {
     private static final String SCENARIO = "tail-latency-pressure";
     private static final Instant EPOCH = Instant.parse("2026-07-17T07:00:00Z");
+    private final List<EnterpriseLabEvidenceOwnershipLease> ownerships = new ArrayList<>();
 
     public EnterpriseLabDurableRecoveryProofReport run(Path outputDirectory) throws IOException {
         Path root = EnterpriseLabExperimentProofExporter.validateOutputDirectory(outputDirectory)
@@ -70,6 +71,11 @@ public final class EnterpriseLabDurableRecoveryProofRunner {
                     completed.directory.compactedManifests().size() == 1
                             && completed.directory.discover().isEmpty(),
                     manifest.manifestFingerprint());
+        } finally {
+            for (int index = ownerships.size() - 1; index >= 0; index--) {
+                ownerships.get(index).close();
+            }
+            ownerships.clear();
         }
     }
 
@@ -222,8 +228,13 @@ public final class EnterpriseLabDurableRecoveryProofRunner {
     }
 
     private boolean unresolvedQuarantineRetained(Path root, MutableClock clock) {
+        EnterpriseLabEvidenceOwnershipLease ownership = ownerships.stream()
+                .filter(value -> value.trustedRoot().equals(root.toAbsolutePath().normalize()))
+                .findFirst()
+                .orElseThrow();
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(root.toAbsolutePath().normalize());
+                EnterpriseLabExperimentJournalDirectory.create(
+                        root.toAbsolutePath().normalize(), ownership.ownershipGate());
         int before = directory.quarantineMetadata().size();
         var retention = directory.enforceRetention(
                 new EnterpriseLabExperimentJournalDirectory.RetentionPolicy(0), false, clock);
@@ -246,8 +257,18 @@ public final class EnterpriseLabDurableRecoveryProofRunner {
             EnterpriseLabExperimentTargetCatalog targets,
             MutableClock clock) throws IOException {
         Files.createDirectories(root);
+        var acquisition = EnterpriseLabEvidenceOwnershipManager.acquire(
+                root.toAbsolutePath().normalize(),
+                EnterpriseLabEvidenceOwnership.Policy.safetyFirstDefaults(),
+                clock);
+        EnterpriseLabEvidenceOwnershipLease ownership = acquisition.ownership().orElseThrow(
+                () -> new IllegalStateException(
+                        "durable recovery proof ownership failed: "
+                                + acquisition.result().failure().name()));
+        ownerships.add(ownership);
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(root.toAbsolutePath().normalize());
+                EnterpriseLabExperimentJournalDirectory.create(
+                        root.toAbsolutePath().normalize(), ownership.ownershipGate());
         EnterpriseLabExperimentRecoveryGate gate = EnterpriseLabExperimentRecoveryGate.pending();
         new EnterpriseLabExperimentStartupReconciler(
                 directory,

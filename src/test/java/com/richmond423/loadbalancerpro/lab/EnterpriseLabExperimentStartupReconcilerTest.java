@@ -152,7 +152,7 @@ class EnterpriseLabExperimentStartupReconcilerTest {
             throw new IllegalStateException(exception);
         }
         EnterpriseLabExperimentJournalDirectory rollbackDirectory =
-                EnterpriseLabExperimentJournalDirectory.create(rollbackRoot);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(rollbackRoot);
         try (EnterpriseLabExperimentJournal journal = rollbackDirectory.openJournal(EXPERIMENT_ID)) {
             rollingBackChain().forEach(journal::append);
         }
@@ -201,7 +201,7 @@ class EnterpriseLabExperimentStartupReconcilerTest {
         Path terminalRoot = tempDirectory.resolve("terminal-drift-root");
         Files.createDirectory(terminalRoot);
         EnterpriseLabExperimentJournalDirectory terminalDirectory =
-                EnterpriseLabExperimentJournalDirectory.create(terminalRoot);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(terminalRoot);
         try (EnterpriseLabExperimentJournal journal = terminalDirectory.openJournal(EXPERIMENT_ID)) {
             completedChain().forEach(journal::append);
         }
@@ -355,7 +355,7 @@ class EnterpriseLabExperimentStartupReconcilerTest {
         Path writerRoot = tempDirectory.resolve("active-writer-root");
         Files.createDirectory(writerRoot);
         EnterpriseLabExperimentJournalDirectory writerDirectory =
-                EnterpriseLabExperimentJournalDirectory.create(writerRoot);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(writerRoot);
         EnterpriseLabExperimentRecoveryGate writerGate = EnterpriseLabExperimentRecoveryGate.pending();
         try (EnterpriseLabExperimentJournal journal = writerDirectory.openJournal(EXPERIMENT_ID)) {
             armedChain().forEach(journal::append);
@@ -420,7 +420,7 @@ class EnterpriseLabExperimentStartupReconcilerTest {
         Path root = tempDirectory.resolve("discovery-bound-root");
         Files.createDirectory(root);
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(root);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(root);
         Path journals = Files.walk(root)
                 .filter(path -> path.getFileName().toString().equals("journals"))
                 .findFirst()
@@ -470,7 +470,7 @@ class EnterpriseLabExperimentStartupReconcilerTest {
     private EnterpriseLabExperimentJournalDirectory directoryWith(
             List<EnterpriseLabExperimentJournalEvent> events) {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         try (EnterpriseLabExperimentJournal journal = directory.openJournal(EXPERIMENT_ID)) {
             events.forEach(journal::append);
         }

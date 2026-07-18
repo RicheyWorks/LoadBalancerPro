@@ -53,7 +53,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void appendsReadsClosesAndReopensWithoutOverwritingHistory() {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         assertFalse(directory.read("experiment-append").exists());
 
         EnterpriseLabExperimentJournalEvent first = event(
@@ -91,7 +91,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void defaultWriterUsesTheSafetyFirstMetadataSynchronizationPolicy() {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         try (EnterpriseLabExperimentJournal journal = directory.openJournal("experiment-default-sync")) {
             AppendReceipt receipt = journal.append(event(
                     "experiment-default-sync", 1, EnterpriseLabExperimentJournalEvent.GENESIS_FINGERPRINT));
@@ -102,9 +102,48 @@ class EnterpriseLabExperimentLocalJournalTest {
     }
 
     @Test
+    void readOnlyInspectionFactoryCannotCreateOrAppendAJournal() {
+        EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
+        EnterpriseLabExperimentJournalDirectory readOnly =
+                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+
+        EnterpriseLabEvidenceOwnershipException failure = assertThrows(
+                EnterpriseLabEvidenceOwnershipException.class,
+                () -> readOnly.openJournal("read-only-bypass"));
+
+        assertEquals(EnterpriseLabEvidenceOwnership.FailureClassification.LOCK_LOST,
+                failure.classification());
+        assertFalse(readOnly.read("read-only-bypass").exists());
+    }
+
+    @Test
+    void appendRejectsAChangedOwnerGenerationBeforeWritingAnotherFrame() {
+        EnterpriseLabMutationTestAuthority ownership =
+                new EnterpriseLabMutationTestAuthority(tempDirectory);
+        EnterpriseLabExperimentJournalDirectory directory =
+                EnterpriseLabExperimentJournalDirectory.createOwned(tempDirectory, ownership);
+        EnterpriseLabExperimentJournalEvent first = event(
+                "generation-fenced", 1,
+                EnterpriseLabExperimentJournalEvent.GENESIS_FINGERPRINT);
+        EnterpriseLabExperimentJournal journal = directory.openJournal("generation-fenced");
+        journal.append(first);
+
+        ownership.replaceOwner("replacement-owner", 2L);
+        EnterpriseLabExperimentJournalEvent second = event(
+                "generation-fenced", 2, first.currentEntryFingerprint());
+        EnterpriseLabEvidenceOwnershipException failure = assertThrows(
+                EnterpriseLabEvidenceOwnershipException.class,
+                () -> journal.append(second));
+
+        assertEquals(EnterpriseLabEvidenceOwnership.FailureClassification.RECORD_REPLACED,
+                failure.classification());
+        assertEquals(List.of(first), directory.read("generation-fenced").events());
+    }
+
+    @Test
     void reportsEachSynchronizationBoundaryWithoutClaimingPowerLossDurability() {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         List<PersistenceStage> stages = new ArrayList<>();
         List<Boolean> forced = new ArrayList<>();
         AtomicInteger syncCheckpoints = new AtomicInteger();
@@ -139,7 +178,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void failureBeforeAppendLeavesAnEmptyJournalAndPermanentlyFailsThatWriter() {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         EnterpriseLabExperimentJournal journal = directory.openJournal(
                 "experiment-before",
                 SyncPolicy.FORCE_DATA_AND_METADATA,
@@ -161,7 +200,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void partialWriteFailureLeavesADetectableTailThatReadDoesNotMutate() throws Exception {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         EnterpriseLabExperimentJournal journal = directory.openJournal(
                 "experiment-partial",
                 SyncPolicy.FORCE_DATA_AND_METADATA,
@@ -189,9 +228,43 @@ class EnterpriseLabExperimentLocalJournalTest {
     }
 
     @Test
+    void ownershipLossBetweenWriteChunksStopsTheAppendAndPreservesADetectableTail() throws Exception {
+        EnterpriseLabMutationTestAuthority ownership =
+                new EnterpriseLabMutationTestAuthority(tempDirectory);
+        EnterpriseLabExperimentJournalDirectory directory =
+                EnterpriseLabExperimentJournalDirectory.createOwned(tempDirectory, ownership);
+        AtomicInteger chunks = new AtomicInteger();
+        EnterpriseLabExperimentJournal journal = directory.openJournal(
+                "ownership-lost-mid-append",
+                SyncPolicy.FORCE_DATA_AND_METADATA,
+                (checkpoint, bytesWritten) -> {
+                    if (checkpoint == WriteCheckpoint.AFTER_WRITE_CHUNK
+                            && chunks.incrementAndGet() == 1) {
+                        ownership.fail(
+                                EnterpriseLabEvidenceOwnership.FailureClassification.LOCK_LOST);
+                    }
+                });
+
+        EnterpriseLabEvidenceOwnershipException failure = assertThrows(
+                EnterpriseLabEvidenceOwnershipException.class,
+                () -> journal.append(event(
+                        "ownership-lost-mid-append",
+                        1,
+                        EnterpriseLabExperimentJournalEvent.GENESIS_FINGERPRINT)));
+
+        assertEquals(EnterpriseLabEvidenceOwnership.FailureClassification.LOCK_LOST,
+                failure.classification());
+        ownership.clearFailure();
+        ReadResult preserved = directory.read("ownership-lost-mid-append");
+        assertEquals(TailStatus.TRUNCATED_TAIL, preserved.tailStatus());
+        assertEquals(256L, preserved.tailBytes());
+        assertTrue(preserved.events().isEmpty());
+    }
+
+    @Test
     void failureAfterCompleteWriteBeforeForceMayLeaveOneCompleteEvent() {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         EnterpriseLabExperimentJournal journal = directory.openJournal(
                 "experiment-preforce",
                 SyncPolicy.FORCE_DATA_AND_METADATA,
@@ -212,7 +285,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void failureAfterForceMayLeaveOneCompleteEventWithoutReturningAReceipt() {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         EnterpriseLabExperimentJournal journal = directory.openJournal(
                 "experiment-postforce",
                 SyncPolicy.FORCE_DATA,
@@ -233,7 +306,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void rejectsIdentitySequenceAndPredecessorMismatchBeforeWritingBytes() {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
 
         EnterpriseLabExperimentJournal identity = directory.openJournal(
                 "experiment-identity", SyncPolicy.WRITE_TO_OS);
@@ -260,9 +333,9 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void enforcesProcessLocalExclusiveOwnershipAndAllowsOwnedSnapshots() {
         EnterpriseLabExperimentJournalDirectory firstDirectory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         EnterpriseLabExperimentJournalDirectory secondDirectory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         EnterpriseLabExperimentJournal writer = firstDirectory.openJournal(
                 "experiment-owned", SyncPolicy.WRITE_TO_OS);
         EnterpriseLabExperimentJournalEvent event = event(
@@ -284,7 +357,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void invalidOwnedSnapshotFailsTheWriterBeforeAnyLaterAppend() throws Exception {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         EnterpriseLabExperimentJournal writer = directory.openJournal(
                 "experiment-suspect", SyncPolicy.WRITE_TO_OS);
         EnterpriseLabExperimentJournalEvent first = event(
@@ -301,7 +374,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void statusReadWaitsForAnInFlightAppendAndThenObservesItsCompleteFrame() throws Exception {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         CountDownLatch appendReachedCheckpoint = new CountDownLatch(1);
         CountDownLatch permitAppend = new CountDownLatch(1);
         EnterpriseLabExperimentJournal journal = directory.openJournal(
@@ -355,7 +428,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void closeWaitsForAnInFlightAppendAndReleasesOwnershipAfterward() throws Exception {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         CountDownLatch appendReachedCheckpoint = new CountDownLatch(1);
         CountDownLatch permitAppend = new CountDownLatch(1);
         EnterpriseLabExperimentJournal journal = directory.openJournal(
@@ -408,7 +481,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     void reducedTestLimitsProveEntryCountAndJournalSizeStopBeforeAWrite() {
         Path countRoot = createDirectory("count-root");
         EnterpriseLabExperimentJournalDirectory countDirectory =
-                EnterpriseLabExperimentJournalDirectory.createForTesting(countRoot, 1_000_000, 1);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(countRoot, 1_000_000, 1);
         EnterpriseLabExperimentJournal countJournal = countDirectory.openJournal(
                 "experiment-count", SyncPolicy.WRITE_TO_OS);
         EnterpriseLabExperimentJournalEvent first = event(
@@ -420,7 +493,7 @@ class EnterpriseLabExperimentLocalJournalTest {
 
         Path sizeRoot = createDirectory("size-root");
         EnterpriseLabExperimentJournalDirectory sizeDirectory =
-                EnterpriseLabExperimentJournalDirectory.createForTesting(sizeRoot, 1, 10);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(sizeRoot, 1, 10);
         EnterpriseLabExperimentJournal sizeJournal = sizeDirectory.openJournal(
                 "experiment-size", SyncPolicy.WRITE_TO_OS);
         assertStorage(Failure.JOURNAL_SIZE_EXCEEDED, () -> sizeJournal.append(event(
@@ -431,7 +504,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void readerRejectsAnAlreadyOversizedFileWithoutAllocatingItsContents() throws Exception {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.createForTesting(tempDirectory, 1, 10);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory, 1, 10);
         EnterpriseLabExperimentJournal journal = directory.openJournal(
                 "experiment-oversized", SyncPolicy.WRITE_TO_OS);
         journal.close();
@@ -444,7 +517,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     void hashesCanonicalExperimentIdentityIntoAControlledFilename() throws Exception {
         String experimentId = "tenant:alpha.experiment-001";
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         String journalId;
         try (EnterpriseLabExperimentJournal journal = directory.openJournal(
                 experimentId, SyncPolicy.WRITE_TO_OS)) {
@@ -484,7 +557,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void unavailableControlledJournalDirectoryFailsClosedWithoutEscapingTheNamespace() throws Exception {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         Path journals = tempDirectory
                 .resolve("enterprise-lab-experiment-journals-v1")
                 .resolve("journals");
@@ -511,7 +584,7 @@ class EnterpriseLabExperimentLocalJournalTest {
                 () -> EnterpriseLabExperimentJournalDirectory.create(rootLink));
 
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(actualRoot);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(actualRoot);
         EnterpriseLabExperimentJournal journal = directory.openJournal(
                 "experiment-link", SyncPolicy.WRITE_TO_OS);
         journal.close();
@@ -529,7 +602,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     @Test
     void appliesRestrictivePosixPermissionsWhereSupported() throws Exception {
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(tempDirectory);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         EnterpriseLabExperimentJournal journal = directory.openJournal(
                 "experiment-permissions", SyncPolicy.WRITE_TO_OS);
         journal.close();
@@ -550,7 +623,7 @@ class EnterpriseLabExperimentLocalJournalTest {
     void refusesMalformedAndNonCanonicalCompleteFramesWithoutChangingThem() throws Exception {
         Path malformedRoot = createDirectory("malformed-root");
         EnterpriseLabExperimentJournalDirectory malformedDirectory =
-                EnterpriseLabExperimentJournalDirectory.create(malformedRoot);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(malformedRoot);
         EnterpriseLabExperimentJournal malformedJournal = malformedDirectory.openJournal(
                 "experiment-malformed", SyncPolicy.WRITE_TO_OS);
         malformedJournal.close();
@@ -563,7 +636,7 @@ class EnterpriseLabExperimentLocalJournalTest {
 
         Path canonicalRoot = createDirectory("canonical-root");
         EnterpriseLabExperimentJournalDirectory canonicalDirectory =
-                EnterpriseLabExperimentJournalDirectory.create(canonicalRoot);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(canonicalRoot);
         EnterpriseLabExperimentJournal canonicalJournal = canonicalDirectory.openJournal(
                 "experiment-noncanonical", SyncPolicy.WRITE_TO_OS);
         canonicalJournal.append(event(
@@ -597,7 +670,7 @@ class EnterpriseLabExperimentLocalJournalTest {
 
         Path root = createDirectory("predecessor-root");
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(root);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(root);
         EnterpriseLabExperimentJournal journal = directory.openJournal(
                 "experiment-predecessor-read", SyncPolicy.WRITE_TO_OS);
         journal.close();
@@ -626,7 +699,7 @@ class EnterpriseLabExperimentLocalJournalTest {
             Failure failure) throws Exception {
         Path root = createDirectory(rootName);
         EnterpriseLabExperimentJournalDirectory directory =
-                EnterpriseLabExperimentJournalDirectory.create(root);
+                EnterpriseLabMutationTestAuthority.ownedDirectory(root);
         EnterpriseLabExperimentJournal journal = directory.openJournal(
                 expectedExperimentId, SyncPolicy.WRITE_TO_OS);
         journal.close();

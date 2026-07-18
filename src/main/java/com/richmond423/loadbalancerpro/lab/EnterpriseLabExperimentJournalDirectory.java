@@ -37,6 +37,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceMutationAuthority.MutationAuthorization;
+
 /**
  * Creates journals only beneath a pre-existing, explicit, trusted local data root.
  * Experiment identifiers are hashed and never used as path components.
@@ -61,6 +63,11 @@ public final class EnterpriseLabExperimentJournalDirectory {
             PosixFilePermissions.fromString("rw-------");
     private static final Map<Path, Object> ACTIVE_WRITERS = new ConcurrentHashMap<>();
     private static final FailureInjector NO_FAILURE = (checkpoint, bytesWritten) -> { };
+    private static final EnterpriseLabEvidenceMutationAuthority READ_ONLY = () -> {
+        throw new EnterpriseLabEvidenceOwnershipException(
+                EnterpriseLabEvidenceOwnership.FailureClassification.LOCK_LOST,
+                "journal directory has no live ownership capability");
+    };
 
     private final Path trustedRoot;
     private final Path journalsDirectory;
@@ -69,15 +76,19 @@ public final class EnterpriseLabExperimentJournalDirectory {
     private final EnterpriseLabExperimentJournalCodec codec;
     private final long maxJournalBytes;
     private final int maxJournalEntries;
+    private final EnterpriseLabEvidenceMutationAuthority mutationAuthority;
 
     private EnterpriseLabExperimentJournalDirectory(Path trustedRoot) {
-        this(trustedRoot, HARD_MAX_JOURNAL_BYTES, HARD_MAX_JOURNAL_ENTRIES);
+        this(trustedRoot, HARD_MAX_JOURNAL_BYTES, HARD_MAX_JOURNAL_ENTRIES,
+                READ_ONLY, false);
     }
 
     private EnterpriseLabExperimentJournalDirectory(
             Path trustedRoot,
             long maxJournalBytes,
-            int maxJournalEntries) {
+            int maxJournalEntries,
+            EnterpriseLabEvidenceMutationAuthority mutationAuthority,
+            boolean prepareDirectories) {
         if (maxJournalBytes < 1 || maxJournalBytes > HARD_MAX_JOURNAL_BYTES
                 || maxJournalEntries < 1 || maxJournalEntries > HARD_MAX_JOURNAL_ENTRIES) {
             throw new IllegalArgumentException("journal test limits must remain within production hard limits");
@@ -85,27 +96,88 @@ public final class EnterpriseLabExperimentJournalDirectory {
         this.codec = new EnterpriseLabExperimentJournalCodec();
         this.maxJournalBytes = maxJournalBytes;
         this.maxJournalEntries = maxJournalEntries;
+        this.mutationAuthority = Objects.requireNonNull(
+                mutationAuthority, "mutationAuthority cannot be null");
         Path root = validateTrustedRoot(trustedRoot);
         this.trustedRoot = root;
-        Path namespace = controlledDirectory(root, NAMESPACE);
-        this.journalsDirectory = controlledDirectory(namespace, JOURNALS);
-        this.quarantineDirectory = controlledDirectory(namespace, QUARANTINE);
-        this.compactedDirectory = controlledDirectory(namespace, COMPACTED);
+        if (prepareDirectories) {
+            MutationAuthorization authorization = requireMutationAuthorization();
+            Path namespace = controlledDirectory(root, NAMESPACE);
+            requireSameMutationAuthorization(authorization);
+            this.journalsDirectory = controlledDirectory(namespace, JOURNALS);
+            requireSameMutationAuthorization(authorization);
+            this.quarantineDirectory = controlledDirectory(namespace, QUARANTINE);
+            requireSameMutationAuthorization(authorization);
+            this.compactedDirectory = controlledDirectory(namespace, COMPACTED);
+            requireSameMutationAuthorization(authorization);
+        } else {
+            Path namespace = controlledInspectionPath(root, NAMESPACE);
+            this.journalsDirectory = controlledInspectionPath(namespace, JOURNALS);
+            this.quarantineDirectory = controlledInspectionPath(namespace, QUARANTINE);
+            this.compactedDirectory = controlledInspectionPath(namespace, COMPACTED);
+        }
     }
 
+    /** Opens an existing namespace for bounded read-only inspection. */
     public static EnterpriseLabExperimentJournalDirectory create(Path trustedRoot) {
         return new EnterpriseLabExperimentJournalDirectory(trustedRoot);
+    }
+
+    /** Prepares a mutation-capable namespace bound to the live ownership gate. */
+    public static EnterpriseLabExperimentJournalDirectory create(
+            Path trustedRoot,
+            EnterpriseLabEvidenceOwnershipGate ownershipGate) {
+        return createOwned(trustedRoot, ownershipGate);
+    }
+
+    static EnterpriseLabExperimentJournalDirectory createOwned(
+            Path trustedRoot,
+            EnterpriseLabEvidenceMutationAuthority mutationAuthority) {
+        return new EnterpriseLabExperimentJournalDirectory(
+                trustedRoot, HARD_MAX_JOURNAL_BYTES, HARD_MAX_JOURNAL_ENTRIES,
+                mutationAuthority, true);
     }
 
     static EnterpriseLabExperimentJournalDirectory createForTesting(
             Path trustedRoot,
             long maxJournalBytes,
-            int maxJournalEntries) {
-        return new EnterpriseLabExperimentJournalDirectory(trustedRoot, maxJournalBytes, maxJournalEntries);
+            int maxJournalEntries,
+            EnterpriseLabEvidenceMutationAuthority mutationAuthority) {
+        return new EnterpriseLabExperimentJournalDirectory(
+                trustedRoot, maxJournalBytes, maxJournalEntries,
+                mutationAuthority, true);
+    }
+
+    EnterpriseLabExperimentJournalDirectory withMutationAuthority(
+            EnterpriseLabEvidenceMutationAuthority authority) {
+        MutationAuthorization authorization = Objects.requireNonNull(
+                authority, "authority cannot be null").requireMutationAuthorization();
+        if (!trustedRoot.equals(authorization.trustedRoot())) {
+            throw new EnterpriseLabEvidenceOwnershipException(
+                    EnterpriseLabEvidenceOwnership.FailureClassification.DIRECTORY_IDENTITY_MISMATCH,
+                    "ownership capability belongs to a different evidence directory");
+        }
+        return new EnterpriseLabExperimentJournalDirectory(
+                trustedRoot, maxJournalBytes, maxJournalEntries, authority, true);
     }
 
     Path trustedRoot() {
         return trustedRoot;
+    }
+
+    MutationAuthorization requireMutationAuthorization() {
+        MutationAuthorization authorization = mutationAuthority.requireMutationAuthorization();
+        if (!trustedRoot.equals(authorization.trustedRoot())) {
+            throw new EnterpriseLabEvidenceOwnershipException(
+                    EnterpriseLabEvidenceOwnership.FailureClassification.DIRECTORY_IDENTITY_MISMATCH,
+                    "ownership capability belongs to a different evidence directory");
+        }
+        return authorization;
+    }
+
+    void requireSameMutationAuthorization(MutationAuthorization expected) {
+        Objects.requireNonNull(expected, "expected authorization cannot be null")
+                .requireSameEpoch(requireMutationAuthorization());
     }
 
     /** Opens a writer using the safety-first data-and-metadata synchronization policy. */
@@ -121,6 +193,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
             String experimentId,
             SyncPolicy syncPolicy,
             FailureInjector failureInjector) {
+        MutationAuthorization authorization = requireMutationAuthorization();
         String safeExperimentId = requireExperimentId(experimentId);
         SyncPolicy safeSyncPolicy = Objects.requireNonNull(syncPolicy, "syncPolicy cannot be null");
         FailureInjector safeInjector = Objects.requireNonNull(failureInjector, "failureInjector cannot be null");
@@ -130,6 +203,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
         FileChannel channel = null;
         boolean handedOff = false;
         try {
+            requireSameMutationAuthorization(authorization);
             createJournalFileIfMissing(journalPath);
             VerificationResult verification = verifyOwned(journalPath, journalId, safeExperimentId);
             if (verification.outcome() == Outcome.VALID_WITH_RECOVERABLE_TRUNCATED_TAIL) {
@@ -155,6 +229,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
             if (channel.size() != existing.totalBytes()) {
                 throw failure(Failure.IO_FAILURE, "journal changed while its writer was opening");
             }
+            requireSameMutationAuthorization(authorization);
             EnterpriseLabExperimentLocalJournal journal = new EnterpriseLabExperimentLocalJournal(
                     this,
                     journalId,
@@ -164,6 +239,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
                     safeSyncPolicy,
                     codec,
                     existing,
+                    authorization,
                     safeInjector,
                     () -> ACTIVE_WRITERS.remove(journalPath, owner));
             handedOff = true;
@@ -256,6 +332,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
      * controlled source journal. Active, invalid, or non-terminal journals are preserved.
      */
     public CompactionResult compactTerminal(String experimentId, Clock clock, String reasonCode) {
+        MutationAuthorization authorization = requireMutationAuthorization();
         String safeExperimentId = requireExperimentId(experimentId);
         Instant compactedAt = Objects.requireNonNull(clock, "clock cannot be null").instant();
         String safeReasonCode = requireReasonCode(reasonCode);
@@ -296,6 +373,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
                             verification, replay.reconstructedState().orElseThrow(),
                             compactedAt, safeReasonCode);
             Path destination = manifestPath(manifest.manifestId());
+            requireSameMutationAuthorization(authorization);
             boolean newlyInstalled = !Files.exists(destination, LinkOption.NOFOLLOW_LINKS)
                     && installManifest(destination, manifest);
             EnterpriseLabExperimentTerminalManifest installed = readManifest(destination);
@@ -304,6 +382,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
                         "installed terminal manifest does not match verified source evidence");
             }
             validateJournalFile(source);
+            requireSameMutationAuthorization(authorization);
             try {
                 Files.delete(source);
             } catch (IOException exception) {
@@ -359,6 +438,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
     public RetentionReport enforceRetention(RetentionPolicy policy, boolean dryRun, Clock clock) {
         RetentionPolicy safePolicy = Objects.requireNonNull(policy, "policy cannot be null");
         Clock safeClock = Objects.requireNonNull(clock, "clock cannot be null");
+        MutationAuthorization authorization = dryRun ? null : requireMutationAuthorization();
         List<TerminalCandidate> terminal = new ArrayList<>();
         int unresolved = 0;
         for (JournalDiscovery discovery : discover()) {
@@ -390,6 +470,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
                         candidate.experimentId(), candidate.sourceBytes(), false,
                         "TERMINAL_COMPACTION_PLANNED"));
             } else {
+                requireSameMutationAuthorization(authorization);
                 CompactionResult result = compactTerminal(
                         candidate.experimentId(), safeClock, "TERMINAL_RETENTION_LIMIT");
                 actions.add(new RetentionAction(
@@ -405,6 +486,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
 
     /** Moves one discovered invalid journal into the controlled forensic quarantine namespace. */
     QuarantineRecord quarantine(JournalDiscovery discovery, java.time.Clock clock, String reasonCode) {
+        MutationAuthorization authorization = requireMutationAuthorization();
         JournalDiscovery safeDiscovery = Objects.requireNonNull(discovery, "discovery cannot be null");
         java.time.Instant quarantinedAt = Objects.requireNonNull(clock, "clock cannot be null").instant();
         String safeReason = requireReasonCode(reasonCode);
@@ -420,7 +502,9 @@ public final class EnterpriseLabExperimentJournalDirectory {
                     + quarantinedAt.toEpochMilli() + "-" + quarantinedAt.getNano();
             Path destination = quarantinePath(quarantineId);
             try {
+                requireSameMutationAuthorization(authorization);
                 restrictPermissions(source, FILE_PERMISSIONS);
+                requireSameMutationAuthorization(authorization);
                 Files.move(source, destination, StandardCopyOption.ATOMIC_MOVE);
             } catch (IOException exception) {
                 throw failure(Failure.QUARANTINE_FAILED,
@@ -706,6 +790,30 @@ public final class EnterpriseLabExperimentJournalDirectory {
         }
     }
 
+    private static Path controlledInspectionPath(Path parent, String name) {
+        Path directory = parent.resolve(name).normalize();
+        if (!directory.startsWith(parent) || !directory.getParent().equals(parent)) {
+            throw failure(Failure.UNSAFE_PATH, "journal namespace escaped its trusted root");
+        }
+        try {
+            if (!Files.exists(directory, LinkOption.NOFOLLOW_LINKS)) {
+                return directory;
+            }
+            BasicFileAttributes attributes = Files.readAttributes(
+                    directory, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+            if (!attributes.isDirectory() || attributes.isSymbolicLink()) {
+                throw failure(Failure.UNSAFE_PATH,
+                        "journal namespace must be a non-symbolic-link directory");
+            }
+            return directory;
+        } catch (EnterpriseLabExperimentJournalStorageException exception) {
+            throw exception;
+        } catch (IOException exception) {
+            throw failure(Failure.IO_FAILURE,
+                    "existing journal namespace could not be inspected", exception);
+        }
+    }
+
     private void createJournalFileIfMissing(Path journalPath) {
         try {
             if (!Files.exists(journalPath, LinkOption.NOFOLLOW_LINKS)) {
@@ -771,6 +879,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
     private boolean installManifest(
             Path destination,
             EnterpriseLabExperimentTerminalManifest manifest) {
+        MutationAuthorization authorization = requireMutationAuthorization();
         if (Files.exists(destination, LinkOption.NOFOLLOW_LINKS)) {
             return false;
         }
@@ -780,6 +889,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
             throw failure(Failure.UNSAFE_PATH, "manifest temporary path escaped its controlled namespace");
         }
         byte[] bytes = manifest.encode();
+        requireSameMutationAuthorization(authorization);
         try (FileChannel channel = FileChannel.open(
                 temporary,
                 StandardOpenOption.CREATE,
@@ -796,6 +906,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
             throw failure(Failure.IO_FAILURE, "terminal manifest could not be synchronized", exception);
         }
         try {
+            requireSameMutationAuthorization(authorization);
             Files.move(temporary, destination, StandardCopyOption.ATOMIC_MOVE);
             restrictPermissions(destination, FILE_PERMISSIONS);
             return true;

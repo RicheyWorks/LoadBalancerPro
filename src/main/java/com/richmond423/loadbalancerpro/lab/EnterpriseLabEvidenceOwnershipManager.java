@@ -221,7 +221,17 @@ public final class EnterpriseLabEvidenceOwnershipManager {
 
             EnterpriseLabExperimentStartupReconciler.RecoveryReport report;
             try {
-                report = safeReconciler.initialize();
+                EnterpriseLabEvidenceMutationAuthority takeoverAuthority =
+                        new PendingTakeoverMutationAuthority(
+                                safePaths,
+                                recordStore,
+                                channel,
+                                lock,
+                                verifiedPending,
+                                safeClock);
+                report = safeReconciler
+                        .withMutationAuthority(takeoverAuthority)
+                        .initialize();
             } catch (RuntimeException exception) {
                 OwnershipRecord failed = publishTakeoverFailure(
                         recordStore, verifiedPending, safePolicy, safeClock.instant());
@@ -767,6 +777,71 @@ public final class EnterpriseLabEvidenceOwnershipManager {
                     .digest(value.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException exception) {
             throw new IllegalStateException("SHA-256 is unavailable", exception);
+        }
+    }
+
+    /** Manager-confined authority used only while takeover reconciliation is pending. */
+    private static final class PendingTakeoverMutationAuthority
+            implements EnterpriseLabEvidenceMutationAuthority {
+        private final EnterpriseLabEvidenceOwnershipPaths paths;
+        private final EnterpriseLabEvidenceOwnershipRecordStore recordStore;
+        private final FileChannel channel;
+        private final FileLock lock;
+        private final OwnershipRecord pending;
+        private final Clock clock;
+
+        private PendingTakeoverMutationAuthority(
+                EnterpriseLabEvidenceOwnershipPaths paths,
+                EnterpriseLabEvidenceOwnershipRecordStore recordStore,
+                FileChannel channel,
+                FileLock lock,
+                OwnershipRecord pending,
+                Clock clock) {
+            this.paths = Objects.requireNonNull(paths, "paths cannot be null");
+            this.recordStore = Objects.requireNonNull(recordStore, "recordStore cannot be null");
+            this.channel = Objects.requireNonNull(channel, "channel cannot be null");
+            this.lock = Objects.requireNonNull(lock, "lock cannot be null");
+            this.pending = Objects.requireNonNull(pending, "pending cannot be null");
+            this.clock = Objects.requireNonNull(clock, "clock cannot be null");
+        }
+
+        @Override
+        public MutationAuthorization requireMutationAuthorization() {
+            if (!channel.isOpen() || !lock.isValid() || lock.isShared()) {
+                throw new EnterpriseLabEvidenceOwnershipException(
+                        FailureClassification.LOCK_LOST,
+                        "takeover reconciliation lost its exclusive ownership lock");
+            }
+            paths.verifyDirectoryIdentity();
+            String lockIdentity = paths.identityOfControlledRegularFile(paths.lockFile());
+            if (!pending.lockFileIdentity().equals(lockIdentity)) {
+                throw new EnterpriseLabEvidenceOwnershipException(
+                        FailureClassification.LOCK_IDENTITY_MISMATCH,
+                        "takeover reconciliation lock identity changed");
+            }
+            OwnershipRecord installed = recordStore.readIfPresentForTakeover()
+                    .orElseThrow(() -> new EnterpriseLabEvidenceOwnershipException(
+                            FailureClassification.RECORD_REPLACED,
+                            "takeover ownership record is absent"));
+            if (installed.state() != OwnershipState.TAKEOVER_PENDING
+                    || installed.reconciliationStatus() != ReconciliationStatus.IN_PROGRESS
+                    || !installed.equals(pending)) {
+                throw new EnterpriseLabEvidenceOwnershipException(
+                        FailureClassification.RECORD_REPLACED,
+                        "takeover ownership record changed before reconciliation commit");
+            }
+            Instant now = clock.instant();
+            if (now.isBefore(installed.lastRenewedAt())) {
+                throw new EnterpriseLabEvidenceOwnershipException(
+                        FailureClassification.CLOCK_REGRESSION,
+                        "takeover reconciliation clock regressed");
+            }
+            if (now.isAfter(installed.leaseExpiresAt())) {
+                throw new EnterpriseLabEvidenceOwnershipException(
+                        FailureClassification.RENEWAL_DEADLINE_EXCEEDED,
+                        "takeover reconciliation exceeded its ownership deadline");
+            }
+            return MutationAuthorization.from(paths.trustedRoot(), installed);
         }
     }
 

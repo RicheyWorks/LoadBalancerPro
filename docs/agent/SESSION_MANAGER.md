@@ -6,7 +6,71 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Single-Host Evidence Ownership PR4 Checkpoint
+## Active Single-Host Evidence Ownership PR5 Checkpoint
+
+Timestamp: 2026-07-17T18:50-07:00
+
+Current slot: OWNERSHIP-PR5 - ownership fencing across durable and traffic-affecting mutation paths
+
+Started from clean synchronized main: `ddf196181b307bb063a92b2af707c0b572b80fc5`
+
+Current branch: `codex/ownership-mutation-fencing`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/471
+
+Executable commit: `ed4505a821d8535fca74d7e4e5f374675fca1555`
+
+Prior slot closure: PR #470 merged normally from exact head `cd05ec1b67f93815d3c9ba7713c0a3bcacf7e504`
+as `ddf196181b307bb063a92b2af707c0b572b80fc5`. Exact-head PR CI `29623910410`, push CI
+`29623909016`, CodeQL `29623910369`, dependency review, and code scanning passed. Exact merge-main CI
+`29624147445` and CodeQL `29624147424` passed all 3,172 zero-skipped tests, coverage, package, artifact smoke, SBOM,
+packaged runtime, Docker build/runtime, container evidence, and Trivy.
+
+Executable scope: carry one authoritative live ownership gate and generation through the existing durable
+journal/repository, startup reconciliation, loopback allocation, experiment lifecycle, quarantine, compaction, and
+retention mutation paths; verify at meaningful commit boundaries; start one bounded lease renewer only after readiness;
+release after shutdown lifecycle and journal work; and preserve existing journal schema compatibility. Controller startup
+now acquires or takes over before mutation-capable construction and can safely recover if the prior owner stopped before
+the journal child namespace was initialized.
+PR5 does not add operator endpoints, subprocess proof, dependencies, external targets, multi-host/distributed behavior,
+network-filesystem claims, malicious-process resistance, or production readiness.
+
+Current verification: the focused ownership/startup selector passes 59 tests, including the absent-journal-namespace
+takeover regression; the final renewer/controller/startup selector passes 23 tests, including rejection before recovery
+readiness. Full `mvn -q test` passed 3,183 tests before that final regression was added. The complete executable diff then
+passed `mvn -B package` with 3,184 tests in 449 suites and zero failures, errors, or skips, producing the executable JAR at
+SHA-256 `c6588a1b90a6627d515210a59c79861c988254eeeda4c2dfe7a2cea088fe275f`. JaCoCo analyzes 830 classes; the dependency
+tree retains embedded Tomcat 10.1.55; CycloneDX validates 144-component XML and JSON BOMs. The final packaged
+13-scenario/837-request loopback proof passes at timestamp-bound report fingerprint
+`6db8ce059a3c40c893aaaf81688a1c9efad08b6c6f0f76d9f17ced11f876ffb0`; the 124-request durable recovery proof passes
+at `3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2ed839ff7afd6a`, with rollback, quarantine, compaction, and
+baseline restoration green.
+
+Scope and composition audit: `git diff --cached --check` passes with only line-ending conversion warnings. The 27-file
+slice contains no POM, dependency, workflow, Docker, Compose, generated evidence, secret, external target, coordination
+service, process/network API, caller owner/generation override, or force-unlock change. Through executable commit
+`ed4505a821d8535fca74d7e4e5f374675fca1555`, PR5 has 1,256 implementation/test and 191 required documentation/process
+changed lines (86.80% / 13.20%); the campaign diff from `a3fc534fd7d5d9ab80a7cd556ca2dbc9e129eb82` through that
+commit has 6,647 implementation/test and 793 documentation/process changed lines (89.34% / 10.66%), inside the requested
+campaign band. Docker CLI 28.0.4 cannot reach the absent local Desktop
+Linux engine and Trivy is not installed; that environment failure is logged, and those gates remain not run locally.
+
+Decision: push this PR-created checkpoint and require unchanged repository-native exact-head Docker/runtime/Trivy, CI,
+CodeQL, and dependency gates before merge and OWNERSHIP-PR6.
+
+Executable-checkpoint result: exact commit `ed4505a821d8535fca74d7e4e5f374675fca1555` passed
+`mvn -B "-DskipTests" package`; its executable JAR SHA-256 was
+`31060893582ec9cf23846bf10f6fa38ce2399b7654f659e0248006910e084fa4`. The worktree and exact 27-file head audit were
+clean before this required checkpoint update. Push the checkpoint commit and require fresh exact-head remote gates;
+pre-checkpoint results cannot authorize merge.
+
+PR-creation checkpoint: PR #471 opened from exact head `5cb2d1d993b19dd54972c8f13d8253b55bd57f53` with the
+executable scope, complete local evidence, local Docker/Trivy limitation, composition, and not-proven boundaries above.
+This required checkpoint moves the branch again; repackage and push it, then treat every check on the PR-created head as
+stale. Merge is prohibited until fresh CI, CodeQL, dependency review, Docker/runtime evidence, and Trivy report the final
+checkpoint SHA.
+
+## Completed Single-Host Evidence Ownership PR4 Checkpoint
 
 Timestamp: 2026-07-17T17:46-07:00
 

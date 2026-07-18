@@ -15,6 +15,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
@@ -77,6 +78,14 @@ public final class EnterpriseLabEvidenceOwnershipLease implements AutoCloseable 
 
     public EnterpriseLabEvidenceOwnershipGate ownershipGate() {
         return ownershipGate;
+    }
+
+    Path trustedRoot() {
+        return paths.trustedRoot();
+    }
+
+    java.time.Duration renewalInterval() {
+        return policy.renewalInterval();
     }
 
     synchronized VerificationResult verifyCurrentOwnership() {

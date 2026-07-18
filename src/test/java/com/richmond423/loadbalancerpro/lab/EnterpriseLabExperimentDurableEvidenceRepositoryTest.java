@@ -112,6 +112,112 @@ class EnterpriseLabExperimentDurableEvidenceRepositoryTest {
     }
 
     @Test
+    void ownershipLossRejectsArmBeforeSessionOrJournalMutation() throws Exception {
+        try (Fixture fixture = Fixture.start(temporaryDirectory, 128)) {
+            fixture.ownership.fail(
+                    EnterpriseLabEvidenceOwnership.FailureClassification.LOCK_LOST);
+
+            EnterpriseLabEvidenceOwnershipException failure = assertThrows(
+                    EnterpriseLabEvidenceOwnershipException.class,
+                    () -> fixture.service.arm(
+                            arm("arm-fenced", "ownership-fenced-arm"), true));
+
+            assertEquals(EnterpriseLabEvidenceOwnership.FailureClassification.LOCK_LOST,
+                    failure.classification());
+            assertTrue(fixture.service.records().isEmpty());
+            assertTrue(fixture.directory.discover().isEmpty());
+            assertFalse(fixture.gate.admissionAllowed());
+            assertEquals("OWNERSHIP_UNCERTAIN", fixture.gate.reasonCode());
+            fixture.ownership.clearFailure();
+        }
+    }
+
+    @Test
+    void ownershipLossFencesCandidateApplicationAndPreservesArmedBaseline() throws Exception {
+        try (Fixture fixture = Fixture.start(temporaryDirectory, 128)) {
+            fixture.service.arm(arm("arm-before-loss", "ownership-fenced-start"), true);
+            fixture.ownership.fail(
+                    EnterpriseLabEvidenceOwnership.FailureClassification.RECORD_REPLACED);
+
+            EnterpriseLabEvidenceOwnershipException failure = assertThrows(
+                    EnterpriseLabEvidenceOwnershipException.class,
+                    () -> fixture.service.start(
+                            "ownership-fenced-start", "start-after-loss", true));
+
+            assertEquals(EnterpriseLabEvidenceOwnership.FailureClassification.RECORD_REPLACED,
+                    failure.classification());
+            var record = fixture.service.findRecord("ownership-fenced-start").orElseThrow();
+            assertEquals(EnterpriseLabExperimentState.ARMED, record.lifecycle().state());
+            assertEquals(Kind.BASELINE, record.currentAllocation().kind());
+            assertEquals(0, fixture.backends.stream().mapToInt(Backend::requestCount).sum());
+            fixture.ownership.clearFailure();
+        }
+    }
+
+    @Test
+    void ownershipLossPreservesTerminalSourceDuringCompactionAndRetentionApply() throws Exception {
+        try (Fixture fixture = Fixture.start(temporaryDirectory, 128)) {
+            fixture.service.arm(arm("arm-terminal-fence", "terminal-fenced"), true);
+            fixture.service.cancel(
+                    "terminal-fenced", "cancel-terminal-fence", "prepare terminal source");
+            assertEquals(1, fixture.directory.discover().size());
+            fixture.ownership.fail(
+                    EnterpriseLabEvidenceOwnership.FailureClassification.LOCK_LOST);
+
+            assertThrows(EnterpriseLabEvidenceOwnershipException.class,
+                    () -> fixture.directory.compactTerminal(
+                            "terminal-fenced", fixture.clock, "TEST_REQUESTED"));
+            assertThrows(EnterpriseLabEvidenceOwnershipException.class,
+                    () -> fixture.directory.enforceRetention(
+                            new EnterpriseLabExperimentJournalDirectory.RetentionPolicy(0),
+                            false,
+                            fixture.clock));
+
+            assertEquals(1, fixture.directory.discover().size());
+            assertTrue(fixture.directory.compactedManifests().isEmpty());
+            var dryRun = fixture.directory.enforceRetention(
+                    new EnterpriseLabExperimentJournalDirectory.RetentionPolicy(0),
+                    true,
+                    fixture.clock);
+            assertEquals(1, dryRun.actions().size());
+            assertFalse(dryRun.actions().get(0).sourceRemoved());
+            fixture.ownership.clearFailure();
+        }
+    }
+
+    @Test
+    void startupReconciliationFailsBeforeInspectionWhenOwnershipIsUnverifiable() throws Exception {
+        Fixture fixture = Fixture.start(temporaryDirectory, 128);
+        try {
+            fixture.service.arm(arm("arm-reconcile-fence", "reconcile-fenced"), true);
+            fixture.repository.simulateProcessInterruption();
+            fixture.ownership.fail(
+                    EnterpriseLabEvidenceOwnership.FailureClassification.LOCK_LOST);
+            EnterpriseLabExperimentRecoveryGate restartedGate =
+                    EnterpriseLabExperimentRecoveryGate.pending();
+
+            EnterpriseLabEvidenceOwnershipException failure = assertThrows(
+                    EnterpriseLabEvidenceOwnershipException.class,
+                    () -> new EnterpriseLabExperimentStartupReconciler(
+                            fixture.directory,
+                            new EnterpriseLabProcessLocalAllocationRecovery(fixture.targets),
+                            restartedGate,
+                            fixture.clock).initialize());
+
+            assertEquals(EnterpriseLabEvidenceOwnership.FailureClassification.LOCK_LOST,
+                    failure.classification());
+            assertEquals(InitializationState.FAILED, restartedGate.admissionStatus().state());
+            assertEquals("OWNERSHIP_VERIFICATION_FAILED", restartedGate.reasonCode());
+            assertEquals(EnterpriseLabExperimentState.ARMED,
+                    fixture.directory.replay("reconcile-fenced")
+                            .reconstructedState().orElseThrow().lifecycle().state());
+            fixture.ownership.clearFailure();
+        } finally {
+            fixture.closeAfterInterruption();
+        }
+    }
+
+    @Test
     void terminalCompactionIsVerifiedBoundedAndIdempotentWhileActiveEvidenceIsRejected() throws Exception {
         try (Fixture fixture = Fixture.start(temporaryDirectory, 128)) {
             fixture.service.arm(arm("arm-compact", "durable-compact"), true);
@@ -224,6 +330,7 @@ class EnterpriseLabExperimentDurableEvidenceRepositoryTest {
         private final EnterpriseLabExperimentTargetCatalog targets;
         private final MutableClock clock;
         private final EnterpriseLabExperimentJournalDirectory directory;
+        private final EnterpriseLabMutationTestAuthority ownership;
         private final EnterpriseLabExperimentRecoveryGate gate;
         private final EnterpriseLabExperimentDurableEvidenceRepository repository;
         private final EnterpriseLabExperimentOperatorService service;
@@ -233,6 +340,7 @@ class EnterpriseLabExperimentDurableEvidenceRepositoryTest {
                 EnterpriseLabExperimentTargetCatalog targets,
                 MutableClock clock,
                 EnterpriseLabExperimentJournalDirectory directory,
+                EnterpriseLabMutationTestAuthority ownership,
                 EnterpriseLabExperimentRecoveryGate gate,
                 EnterpriseLabExperimentDurableEvidenceRepository repository,
                 EnterpriseLabExperimentOperatorService service) {
@@ -240,6 +348,7 @@ class EnterpriseLabExperimentDurableEvidenceRepositoryTest {
             this.targets = targets;
             this.clock = clock;
             this.directory = directory;
+            this.ownership = ownership;
             this.gate = gate;
             this.repository = repository;
             this.service = service;
@@ -257,10 +366,14 @@ class EnterpriseLabExperimentDurableEvidenceRepositoryTest {
                                         SCENARIO, backend.id, backend.uri()))
                                 .toList());
                 MutableClock clock = new MutableClock(NOW);
+                EnterpriseLabMutationTestAuthority ownership =
+                        new EnterpriseLabMutationTestAuthority(root);
                 EnterpriseLabExperimentJournalDirectory directory =
                         EnterpriseLabExperimentJournalDirectory.createForTesting(
-                                root, EnterpriseLabExperimentJournalDirectory.HARD_MAX_JOURNAL_BYTES,
-                                maximumEntries);
+                                root,
+                                EnterpriseLabExperimentJournalDirectory.HARD_MAX_JOURNAL_BYTES,
+                                maximumEntries,
+                                ownership);
                 EnterpriseLabExperimentRecoveryGate gate = EnterpriseLabExperimentRecoveryGate.pending();
                 new EnterpriseLabExperimentStartupReconciler(
                         directory,
@@ -279,7 +392,7 @@ class EnterpriseLabExperimentDurableEvidenceRepositoryTest {
                         8,
                         gate,
                         Optional.of(repository));
-                return new Fixture(List.copyOf(backends), targets, clock, directory, gate,
+                return new Fixture(List.copyOf(backends), targets, clock, directory, ownership, gate,
                         repository, service);
             } catch (IOException | RuntimeException exception) {
                 backends.forEach(Backend::close);

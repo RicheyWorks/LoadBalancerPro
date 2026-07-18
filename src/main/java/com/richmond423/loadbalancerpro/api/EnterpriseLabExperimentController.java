@@ -18,6 +18,9 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentRecoveryGate;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentStartupReconciler;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentTargetCatalog;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabProcessLocalAllocationRecovery;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipLease;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager;
 
 import java.nio.file.Path;
 import java.time.Clock;
@@ -444,18 +447,75 @@ public class EnterpriseLabExperimentController {
                 throw new IllegalArgumentException(
                         "experiment journal data directory must not contain surrounding whitespace");
             }
-            EnterpriseLabExperimentJournalDirectory directory =
-                    EnterpriseLabExperimentJournalDirectory.create(Path.of(journalDataDirectory));
-            EnterpriseLabExperimentRecoveryGate gate = EnterpriseLabExperimentRecoveryGate.pending();
+            Path trustedRoot = Path.of(journalDataDirectory).normalize();
+            if (!trustedRoot.isAbsolute()) {
+                throw new IllegalArgumentException(
+                        "experiment journal data directory must be an explicit absolute path");
+            }
+            EnterpriseLabExperimentRecoveryGate recoveryGate =
+                    EnterpriseLabExperimentRecoveryGate.pending();
             Clock clock = Clock.systemUTC();
-            new EnterpriseLabExperimentStartupReconciler(
-                    directory,
-                    new EnterpriseLabProcessLocalAllocationRecovery(targetCatalog),
-                    gate,
-                    clock).initialize();
-            EnterpriseLabExperimentDurableEvidenceRepository durableEvidence =
-                    new EnterpriseLabExperimentDurableEvidenceRepository(directory, gate, clock);
-            return new EnterpriseLabExperimentOperatorService(targetCatalog, gate, durableEvidence);
+            EnterpriseLabEvidenceOwnership.Policy ownershipPolicy =
+                    EnterpriseLabEvidenceOwnership.Policy.safetyFirstDefaults();
+            EnterpriseLabProcessLocalAllocationRecovery allocationRecovery =
+                    new EnterpriseLabProcessLocalAllocationRecovery(targetCatalog);
+
+            EnterpriseLabEvidenceOwnershipLease ownership;
+            var acquisition = EnterpriseLabEvidenceOwnershipManager.acquire(
+                    trustedRoot, ownershipPolicy, clock);
+            if (acquisition.result().status()
+                    == EnterpriseLabEvidenceOwnership.OperationStatus.SUCCEEDED) {
+                ownership = acquisition.ownership().orElseThrow();
+            } else if (acquisition.result().failure()
+                    == EnterpriseLabEvidenceOwnership.FailureClassification.TAKEOVER_NOT_PERMITTED) {
+                EnterpriseLabExperimentJournalDirectory inspectionDirectory =
+                        EnterpriseLabExperimentJournalDirectory.create(trustedRoot);
+                var takeover = EnterpriseLabEvidenceOwnershipManager.takeover(
+                        trustedRoot,
+                        ownershipPolicy,
+                        clock,
+                        new EnterpriseLabExperimentStartupReconciler(
+                                inspectionDirectory,
+                                allocationRecovery,
+                                recoveryGate,
+                                clock));
+                if (takeover.result().status()
+                        != EnterpriseLabEvidenceOwnership.OperationStatus.SUCCEEDED) {
+                    throw new IllegalStateException(
+                            "Enterprise Lab ownership takeover failed closed: "
+                                    + takeover.result().failure().name()
+                                    + "/" + takeover.result().reasonCode());
+                }
+                ownership = takeover.ownership().orElseThrow();
+            } else {
+                throw new IllegalStateException(
+                        "Enterprise Lab ownership acquisition failed closed: "
+                                + acquisition.result().failure().name()
+                                + "/" + acquisition.result().reasonCode());
+            }
+
+            try {
+                EnterpriseLabExperimentJournalDirectory directory =
+                        EnterpriseLabExperimentJournalDirectory.create(
+                                trustedRoot, ownership.ownershipGate());
+                new EnterpriseLabExperimentStartupReconciler(
+                        directory,
+                        allocationRecovery,
+                        recoveryGate,
+                        clock).initialize();
+                EnterpriseLabExperimentDurableEvidenceRepository durableEvidence =
+                        new EnterpriseLabExperimentDurableEvidenceRepository(
+                                directory, recoveryGate, clock);
+                return new EnterpriseLabExperimentOperatorService(
+                        targetCatalog, recoveryGate, durableEvidence, ownership);
+            } catch (RuntimeException exception) {
+                try {
+                    ownership.close();
+                } catch (RuntimeException releaseFailure) {
+                    exception.addSuppressed(releaseFailure);
+                }
+                throw exception;
+            }
         }
     }
 }

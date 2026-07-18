@@ -1,9 +1,10 @@
 package com.richmond423.loadbalancerpro.api;
 
-import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalStorageException;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentRecoveryGate.InitializationState;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentTargetCatalog;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager;
 import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
 
 import java.nio.file.Files;
@@ -64,10 +65,45 @@ class EnterpriseLabExperimentControllerTest {
                     controller.enforceDurableRetention(
                             new EnterpriseLabExperimentController.RetentionRequest(0, true)).getBody())
                     .actions().size());
+
+            IllegalStateException competing = assertThrows(
+                    IllegalStateException.class,
+                    () -> configuration.enterpriseLabExperimentOperatorService(
+                            EnterpriseLabExperimentTargetCatalog.empty(), journalRoot.toString()));
+            assertTrue(competing.getMessage().contains("DUPLICATE_ACQUISITION"));
         }
-        assertThrows(EnterpriseLabExperimentJournalStorageException.class,
+        try (EnterpriseLabExperimentOperatorService restarted =
+                configuration.enterpriseLabExperimentOperatorService(
+                        EnterpriseLabExperimentTargetCatalog.empty(), journalRoot.toString())) {
+            assertEquals(InitializationState.READY, restarted.recoveryStatus().state());
+            assertTrue(restarted.recoveryStatus().admissionAllowed());
+        }
+        assertThrows(IllegalArgumentException.class,
                 () -> configuration.enterpriseLabExperimentOperatorService(
                         EnterpriseLabExperimentTargetCatalog.empty(), "target/relative-journal-root"));
+    }
+
+    @Test
+    void releasedOwnerBeforeJournalInitializationCanRestartThroughTakeover() {
+        var firstAcquisition = EnterpriseLabEvidenceOwnershipManager.acquire(
+                journalRoot,
+                EnterpriseLabEvidenceOwnership.Policy.safetyFirstDefaults(),
+                java.time.Clock.systemUTC());
+        assertTrue(firstAcquisition.ownership().isPresent());
+        assertTrue(firstAcquisition.ownership().orElseThrow().release()
+                .operatingSystemLockReleased());
+        assertTrue(Files.notExists(journalRoot.resolve(
+                "enterprise-lab-experiment-journals-v1/journals")));
+
+        var configuration = new EnterpriseLabExperimentController.EnterpriseLabExperimentConfiguration();
+        try (EnterpriseLabExperimentOperatorService restarted =
+                configuration.enterpriseLabExperimentOperatorService(
+                        EnterpriseLabExperimentTargetCatalog.empty(), journalRoot.toString())) {
+            assertEquals(InitializationState.READY, restarted.recoveryStatus().state());
+            assertTrue(restarted.recoveryStatus().admissionAllowed());
+            assertTrue(Files.isDirectory(
+                    journalRoot.resolve("enterprise-lab-experiment-journals-v1/journals")));
+        }
     }
 
     @Test

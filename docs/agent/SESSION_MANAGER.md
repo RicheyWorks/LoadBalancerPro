@@ -6,7 +6,44 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Single-Host Evidence Ownership PR3 Checkpoint
+## Active Single-Host Evidence Ownership PR4 Checkpoint
+
+Timestamp: 2026-07-17T18:00-07:00
+
+Current slot: OWNERSHIP-PR4 - stale-owner classification and bounded reconciled takeover
+
+Started from clean synchronized main: `f4ca5d3c747aea3ae96d12b189b2a9a2048bc13c`
+
+Current branch: `codex/ownership-stale-takeover`
+
+PR URL: pending
+
+Prior slot closure: PR #469 merged normally from exact head `e36fa7b6622d8e51eb1afd0faae2703d988eaee1`
+as `f4ca5d3c747aea3ae96d12b189b2a9a2048bc13c`. Exact-head PR CI `29622320332`, push CI
+`29622318758`, CodeQL `29622320333`, code scanning, and dependency review passed. Exact merge-main CI
+`29622571203` and CodeQL `29622571229` passed 3,157 zero-skipped tests plus package, coverage, SBOM, packaged runtime,
+Docker runtime, and Trivy.
+
+Executable scope in progress: classify durable prior ownership only after acquiring the controlled exclusive OS lock;
+refuse unexpired active-looking records; recognize released, expired abrupt, and incomplete-takeover evidence; archive
+the exact prior record; establish generation plus one through forced atomic exact-read-back transitions; run the existing
+startup reconciler while the lock remains held; and publish a live ownership gate only after reconciliation succeeds.
+No controller/startup wiring, broad mutation-path fencing, API, background scheduler, separate-process harness,
+dependency, external target, network filesystem, multi-host, distributed, or production behavior is in this slot.
+
+Current verification: production compilation passed. The first 79-test focused selector found one assertion mismatch
+between same-JVM `OverlappingFileLockException` (`DUPLICATE_ACQUISITION`) and cross-process lock contention
+(`LIVE_COMPETING_OWNER`); it is recorded in the failure log and corrected. The expanded 85-test
+ownership/takeover/startup selector now passes, including
+interrupted temporary recovery, exact post-install readback recovery, clean and abrupt takeover, incomplete takeover,
+unsafe reconciliation, corrupt and incompatible records, clock and directory mismatch, overflow, and contention. Full
+`mvn -q test` passes 3,172 tests in 448 suites with zero failures, errors, or skips. Exact-head package/proof verification
+remains pending.
+
+Decision: complete behavioral and failure-injection coverage, require the focused and full local gates, audit scope and
+composition, then open one executable PR and require exact-head and merge-main gates before OWNERSHIP-PR5.
+
+## Completed Single-Host Evidence Ownership PR3 Checkpoint
 
 Timestamp: 2026-07-17T17:03-07:00
 

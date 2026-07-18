@@ -222,7 +222,7 @@ public final class EnterpriseLabEvidenceOwnership {
             record = Objects.requireNonNull(record, "record cannot be null");
             reasonCode = requireCode(reasonCode, "reasonCode");
             requireResultConsistency(status, failure, record.isPresent());
-            requireSuccessfulRecordState(status, record, OwnershipState.OWNED,
+            requireSuccessfulActiveRecordState(status, record,
                     "successful renewal requires an owned record");
         }
     }
@@ -242,7 +242,7 @@ public final class EnterpriseLabEvidenceOwnership {
             if (status == OperationStatus.SUCCEEDED && !operatingSystemLockValid) {
                 throw new IllegalArgumentException("successful ownership verification requires a valid OS lock");
             }
-            requireSuccessfulRecordState(status, record, OwnershipState.OWNED,
+            requireSuccessfulActiveRecordState(status, record,
                     "successful verification requires an owned record");
         }
     }
@@ -282,8 +282,15 @@ public final class EnterpriseLabEvidenceOwnership {
             if (classification == StaleClassification.STALE_CANDIDATE && !exclusiveLockAcquired) {
                 throw new IllegalArgumentException("stale candidacy requires exclusive lock acquisition");
             }
-            if ((classification == StaleClassification.NO_PREVIOUS_OWNER)
-                    == previousRecord.isPresent()) {
+            boolean recordRequired = switch (classification) {
+                case CLEANLY_RELEASED, STALE_CANDIDATE, ACTIVE_LOOKING_WITHOUT_LOCK,
+                        DIRECTORY_IDENTITY_MISMATCH, LOCK_IDENTITY_MISMATCH,
+                        GENERATION_INVALID, TIMESTAMP_INVALID, TAKEOVER_INCOMPLETE -> true;
+                default -> false;
+            };
+            if ((classification == StaleClassification.NO_PREVIOUS_OWNER
+                    && previousRecord.isPresent())
+                    || (recordRequired && previousRecord.isEmpty())) {
                 throw new IllegalArgumentException(
                         "stale-owner classification and previous-record evidence must agree");
             }
@@ -367,6 +374,7 @@ public final class EnterpriseLabEvidenceOwnership {
         UNSUPPORTED_RECORD,
         FINGERPRINT_MISMATCH,
         DIRECTORY_IDENTITY_MISMATCH,
+        LOCK_IDENTITY_MISMATCH,
         GENERATION_INVALID,
         TIMESTAMP_INVALID,
         TAKEOVER_INCOMPLETE
@@ -478,6 +486,18 @@ public final class EnterpriseLabEvidenceOwnership {
         if (status == OperationStatus.SUCCEEDED
                 && record.orElseThrow().state() != expectedState) {
             throw new IllegalArgumentException(message);
+        }
+    }
+
+    private static void requireSuccessfulActiveRecordState(
+            OperationStatus status,
+            Optional<OwnershipRecord> record,
+            String message) {
+        if (status == OperationStatus.SUCCEEDED) {
+            OwnershipState state = record.orElseThrow().state();
+            if (state != OwnershipState.OWNED && state != OwnershipState.TAKEOVER_COMPLETE) {
+                throw new IllegalArgumentException(message);
+            }
         }
     }
 }

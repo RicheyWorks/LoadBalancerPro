@@ -13,6 +13,7 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -36,12 +37,20 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
     }
 
     Optional<OwnershipRecord> readIfPresent() {
+        return readIfPresent(true);
+    }
+
+    Optional<OwnershipRecord> readIfPresentForTakeover() {
+        return readIfPresent(false);
+    }
+
+    private Optional<OwnershipRecord> readIfPresent(boolean requireMatchingDirectory) {
         paths.verifyDirectoryIdentity();
         PathState state = inspectRecordPath();
         if (state == PathState.ABSENT) {
             return Optional.empty();
         }
-        return Optional.of(readRequired());
+        return Optional.of(readRequired(requireMatchingDirectory));
     }
 
     OwnershipRecord writeNewAndVerify(OwnershipRecord record) {
@@ -62,6 +71,91 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
             OwnershipRecord expectedCurrent,
             OwnershipRecord replacement) {
         return replaceAndVerify(expectedCurrent, replacement, WritePurpose.RENEWAL);
+    }
+
+    OwnershipRecord takeoverAndVerify(
+            OwnershipRecord expectedCurrent,
+            OwnershipRecord replacement) {
+        return replaceAndVerify(expectedCurrent, replacement, WritePurpose.TAKEOVER);
+    }
+
+    void recoverInterruptedTakeoverTemporaries(OwnershipRecord expectedCurrent) {
+        OwnershipRecord safe = Objects.requireNonNull(
+                expectedCurrent, "expectedCurrent cannot be null");
+        OwnershipRecord current = readRequired();
+        if (!current.equals(safe)) {
+            throw failure(FailureClassification.RECORD_REPLACED,
+                    "ownership record changed before temporary recovery");
+        }
+        removeInterruptedTemporary(
+                paths.temporaryRecordFile(), false, "ownership record temporary evidence");
+        removeInterruptedTemporary(
+                paths.historyTemporaryRecordFile(safe), true,
+                "ownership history temporary evidence");
+    }
+
+    OwnershipRecord archivePriorAndVerify(OwnershipRecord prior) {
+        OwnershipRecord safe = Objects.requireNonNull(prior, "prior cannot be null");
+        requireDirectoryIdentity(safe);
+        Path target = paths.historyRecordFile(safe);
+        Path temporary = paths.historyTemporaryRecordFile(safe);
+        if (Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
+            OwnershipRecord existing = readHistoryRequired(target);
+            if (!existing.equals(safe)) {
+                throw failure(FailureClassification.RECORD_REPLACED,
+                        "ownership history target contains different evidence");
+            }
+            return existing;
+        }
+        if (Files.exists(temporary, LinkOption.NOFOLLOW_LINKS)) {
+            throw failure(FailureClassification.RECORD_REPLACED,
+                    "ownership history temporary evidence already exists");
+        }
+
+        byte[] encoded = codec.encode(safe);
+        try (FileChannel channel = paths.createHistoryTemporaryRecordChannel(safe)) {
+            failureInjector.check(FailurePoint.DURING_TAKEOVER_HISTORY_WRITE);
+            ByteBuffer buffer = ByteBuffer.wrap(encoded);
+            while (buffer.hasRemaining()) {
+                channel.write(buffer);
+            }
+            channel.force(true);
+            failureInjector.check(FailurePoint.AFTER_TAKEOVER_HISTORY_FORCE);
+        } catch (EnterpriseLabEvidenceOwnershipException exception) {
+            throw exception;
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    "ownership history synchronization permission was denied", exception);
+        } catch (IOException exception) {
+            throw failure(FailureClassification.IO_FAILURE,
+                    "ownership history could not be force-synchronized", exception);
+        }
+
+        try {
+            Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE);
+            paths.restrictHistoryFilePermissions(target);
+            forceInstalledHistory(target);
+            paths.forceHistoryDirectoryMetadataIfSupported();
+            failureInjector.check(FailurePoint.AFTER_TAKEOVER_HISTORY_INSTALL);
+        } catch (EnterpriseLabEvidenceOwnershipException exception) {
+            throw exception;
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    "ownership history installation permission was denied", exception);
+        } catch (UnsupportedOperationException exception) {
+            throw failure(FailureClassification.STORAGE_UNAVAILABLE,
+                    "atomic ownership history installation is unsupported", exception);
+        } catch (IOException exception) {
+            throw failure(FailureClassification.IO_FAILURE,
+                    "ownership history could not be atomically installed", exception);
+        }
+
+        OwnershipRecord archived = readHistoryRequired(target);
+        if (!archived.equals(safe)) {
+            throw failure(FailureClassification.RECORD_REPLACED,
+                    "installed ownership history did not verify exactly");
+        }
+        return archived;
     }
 
     private OwnershipRecord replaceAndVerify(
@@ -163,7 +257,82 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
         }
     }
 
+    private void removeInterruptedTemporary(
+            Path temporary,
+            boolean history,
+            String subject) {
+        if (!Files.exists(temporary, LinkOption.NOFOLLOW_LINKS)) {
+            return;
+        }
+        if (history) {
+            paths.validateControlledHistoryFile(temporary);
+        } else {
+            paths.validateControlledRecordFile(temporary);
+        }
+        try {
+            Files.delete(temporary);
+            if (history) {
+                paths.forceHistoryDirectoryMetadataIfSupported();
+            } else {
+                paths.forceOwnershipDirectoryMetadataIfSupported();
+            }
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    subject + " cannot be removed after interrupted publication", exception);
+        } catch (IOException exception) {
+            throw failure(FailureClassification.IO_FAILURE,
+                    subject + " cleanup failed", exception);
+        }
+    }
+
+    private void forceInstalledHistory(Path file) {
+        try (FileChannel channel = FileChannel.open(
+                file, StandardOpenOption.WRITE, LinkOption.NOFOLLOW_LINKS)) {
+            channel.force(true);
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    "installed ownership history cannot be synchronized", exception);
+        } catch (IOException exception) {
+            throw failure(FailureClassification.IO_FAILURE,
+                    "installed ownership history synchronization failed", exception);
+        }
+    }
+
+    private OwnershipRecord readHistoryRequired(Path file) {
+        paths.verifyDirectoryIdentity();
+        paths.validateControlledHistoryFile(file);
+        try {
+            long size = Files.size(file);
+            if (size < 1 || size > EnterpriseLabEvidenceOwnershipCodec.HARD_MAX_RECORD_BYTES) {
+                throw failure(FailureClassification.RECORD_MALFORMED,
+                        "ownership history is outside bounded size limits");
+            }
+            byte[] bytes = Files.readAllBytes(file);
+            if (bytes.length != size) {
+                throw failure(FailureClassification.RECORD_REPLACED,
+                        "ownership history changed while being read");
+            }
+            OwnershipRecord record = codec.decode(bytes);
+            requireDirectoryIdentity(record);
+            return record;
+        } catch (EnterpriseLabEvidenceOwnershipException exception) {
+            throw exception;
+        } catch (CodecException exception) {
+            throw codecFailure(exception);
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    "ownership history cannot be read", exception);
+        } catch (IOException exception) {
+            throw failure(FailureClassification.IO_FAILURE,
+                    "ownership history verification failed", exception);
+        }
+    }
+
     private OwnershipRecord readRequired() {
+        return readRequired(true);
+    }
+
+    private OwnershipRecord readRequired(boolean requireMatchingDirectory) {
         paths.verifyDirectoryIdentity();
         if (inspectRecordPath() == PathState.ABSENT) {
             throw failure(FailureClassification.RECORD_REPLACED,
@@ -193,7 +362,9 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
             }
             paths.verifyDirectoryIdentity();
             OwnershipRecord record = codec.decode(buffer.array());
-            requireDirectoryIdentity(record);
+            if (requireMatchingDirectory) {
+                requireDirectoryIdentity(record);
+            }
             return record;
         } catch (EnterpriseLabEvidenceOwnershipException exception) {
             throw exception;
@@ -276,6 +447,11 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
                 FailurePoint.AFTER_RENEWAL_RECORD_FORCE,
                 FailurePoint.AFTER_RENEWAL_RECORD_INSTALL,
                 "renewal"),
+        TAKEOVER(
+                FailurePoint.DURING_TAKEOVER_RECORD_WRITE,
+                FailurePoint.AFTER_TAKEOVER_RECORD_FORCE,
+                FailurePoint.AFTER_TAKEOVER_RECORD_INSTALL,
+                "takeover"),
         RELEASE(
                 FailurePoint.DURING_RELEASE_RECORD_WRITE,
                 FailurePoint.AFTER_RELEASE_RECORD_FORCE,

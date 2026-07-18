@@ -20,6 +20,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HexFormat;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.LockSupport;
@@ -221,21 +222,74 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
 
     void forceOwnershipDirectoryMetadataIfSupported() {
         verifyDirectoryIdentity();
+        forceDirectoryMetadataIfSupported(ownershipDirectory, "ownership directory");
+    }
+
+    void forceHistoryDirectoryMetadataIfSupported() {
+        verifyDirectoryIdentity();
+        forceDirectoryMetadataIfSupported(historyDirectory, "ownership history directory");
+    }
+
+    Path historyRecordFile(EnterpriseLabEvidenceOwnership.OwnershipRecord record) {
+        return historyFile(record, ".json");
+    }
+
+    Path historyTemporaryRecordFile(EnterpriseLabEvidenceOwnership.OwnershipRecord record) {
+        return historyFile(record, ".json.tmp");
+    }
+
+    FileChannel createHistoryTemporaryRecordChannel(
+            EnterpriseLabEvidenceOwnership.OwnershipRecord record) {
+        Path file = historyTemporaryRecordFile(record);
+        verifyDirectoryIdentity();
+        try {
+            return openControlledFileForCreation(file);
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    "ownership history permission was denied", exception);
+        } catch (FileAlreadyExistsException exception) {
+            throw failure(FailureClassification.RECORD_REPLACED,
+                    "ownership history temporary evidence already exists", exception);
+        } catch (IOException exception) {
+            throw failure(FailureClassification.STORAGE_UNAVAILABLE,
+                    "ownership history temporary evidence could not be created", exception);
+        }
+    }
+
+    void validateControlledHistoryFile(Path file) {
+        Path safe = requireControlledHistoryFile(file);
+        validateControlledRegularFile(safe, "ownership history file");
+    }
+
+    void restrictHistoryFilePermissions(Path file) {
+        Path safe = requireControlledHistoryFile(file);
+        try {
+            restrictPermissions(safe, FILE_PERMISSIONS);
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    "ownership history permissions were denied", exception);
+        } catch (IOException exception) {
+            throw failure(FailureClassification.STORAGE_UNAVAILABLE,
+                    "ownership history permissions could not be applied", exception);
+        }
+    }
+
+    private void forceDirectoryMetadataIfSupported(Path directory, String subject) {
         if (Files.getFileAttributeView(
-                ownershipDirectory,
+                directory,
                 java.nio.file.attribute.PosixFileAttributeView.class,
                 LinkOption.NOFOLLOW_LINKS) == null) {
             return;
         }
         try (FileChannel channel = FileChannel.open(
-                ownershipDirectory, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
+                directory, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
             channel.force(true);
         } catch (AccessDeniedException exception) {
             throw failure(FailureClassification.PERMISSION_DENIED,
-                    "ownership directory metadata cannot be synchronized", exception);
+                    subject + " metadata cannot be synchronized", exception);
         } catch (IOException | UnsupportedOperationException exception) {
             throw failure(FailureClassification.STORAGE_UNAVAILABLE,
-                    "ownership directory metadata synchronization is unavailable", exception);
+                    subject + " metadata synchronization is unavailable", exception);
         }
     }
 
@@ -253,6 +307,30 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
                 && !safe.equals(temporaryRecordFile))) {
             throw failure(FailureClassification.UNSAFE_PATH,
                     "ownership file is outside the fixed controlled set");
+        }
+        return safe;
+    }
+
+    private Path historyFile(
+            EnterpriseLabEvidenceOwnership.OwnershipRecord record,
+            String suffix) {
+        EnterpriseLabEvidenceOwnership.OwnershipRecord safe = Objects.requireNonNull(
+                record, "record cannot be null");
+        String generation = String.format(Locale.ROOT, "%019d", safe.generation());
+        String name = "owner-record-v1-g" + generation + "-"
+                + safe.recordFingerprint() + suffix;
+        return controlledFilePath(historyDirectory, name);
+    }
+
+    private Path requireControlledHistoryFile(Path file) {
+        Path safe = Objects.requireNonNull(file, "file cannot be null")
+                .toAbsolutePath().normalize();
+        String name = safe.getFileName().toString();
+        if (!safe.getParent().equals(historyDirectory)
+                || !safe.startsWith(historyDirectory)
+                || !name.matches("owner-record-v1-g[0-9]{19}-[0-9a-f]{64}\\.json(?:\\.tmp)?")) {
+            throw failure(FailureClassification.UNSAFE_PATH,
+                    "ownership history file is outside the derived controlled set");
         }
         return safe;
     }

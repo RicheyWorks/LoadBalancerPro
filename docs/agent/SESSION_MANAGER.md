@@ -51,6 +51,28 @@ default, stale/regressing generation, canonical serialization, tamper, and concu
 verification. Preserve and exclude the unrelated untracked
 `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md`.
 
+Locally verified executable commit: `239270cfb4463cac707fb66e78794c332b9e1ef8`. The router now atomically publishes
+one immutable installed-allocation snapshot and uses that same object's routing projection for new routes. The snapshot
+binds logical router generation, the durable codec's canonical allocation fingerprint, backend eligibility, injected-
+clock installation time, bounded reason, and authoritative owner generation. Candidate and baseline installations are
+complete atomic replacements; owner-generation regression and stale ownership fail closed. The bounded strict codec
+provides deterministic canonical read-back without journal dependence or read side effects.
+
+Focused verification passed 29 tests; the corrected eight-class allocation/experiment/ownership selector passed 73.
+`mvn -B package` passed 3,222 tests in 454 suites with zero failures, errors, or skips and produced the executable JAR at
+SHA-256 `987531f5d6f764ba782390a8c17644288d7c90397afd6e9584c18621e5adf2a6`. JaCoCo reported 84.58% instruction,
+67.76% branch, and 84.18% line coverage across 869 classes; Tomcat resolves at 10.1.55; both 144-component BOMs
+validated; and the packaged health smoke returned 200 on literal `127.0.0.1:18080`. Docker Desktop's Linux engine is
+absent and Trivy is not installed, so the logged local container/scan failures are not claimed green and exact-head
+remote Docker/runtime/controlled-evidence/Trivy gates remain mandatory.
+
+Scope/composition audit: the seven-file executable slice has 952 implementation/test and 123 required process added
+lines (88.56% / 11.44%) before this local-verification checkpoint. It changes no POM, dependency, workflow, Docker,
+Compose, controller, configuration, external target, process, database/broker, arbitrary path, journal, or production
+surface. `git diff --cached --check` and the literal security scan passed; the negative password fixture remains an
+intentional redaction test. Commit this checkpoint, run no-test packaging on its exact head, push, and open PR3. Merge
+only after every exact-head gate and then exact merge-main CI and CodeQL are green.
+
 ## Completed Durable Allocation-State Supervision PR2 Checkpoint
 
 Timestamp: 2026-07-18T02:40-07:00

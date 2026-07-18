@@ -18,6 +18,8 @@ Current branch: `codex/allocation-state-model-codec`
 
 PR URL: not opened
 
+Locally verified executable commit: `4fc5b790163a29a341a4128782529d81884e1e39`
+
 Prior campaign closure: ownership PR #472 merged normally from exact head
 `a03290e788226eda4a9071645fb97fb8ab973d77` as `44eb73af50fce4b2e961a0d29a59badc185482f2`.
 Exact-head PR CI `29637122413`, push CI `29637121459`, and CodeQL `29637122411` passed; exact merge-main CI
@@ -65,6 +67,10 @@ multi-host, network-filesystem, distributed, cloud, generated evidence, or produ
 container behavior are unaffected in PR1. Docker CLI is present, Trivy is not installed locally, and the unchanged
 exact-head CI Docker/runtime/SBOM/blocking Trivy lanes remain mandatory. The unrelated untracked
 `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` is preserved and excluded.
+
+Composition through the executable commit: 1,454 implementation/test changed lines and 160 required session/failure
+record lines, or 90.09% executable and 9.91% process. This checkpoint changes only session metadata after the locally
+verified executable tree; all remote gates must match the eventual pushed checkpoint head.
 
 Decision: commit the exact locally green staged slice, record its exact SHA, and open PR1 with this evidence. Merge only
 after fresh exact-head CI, CodeQL, dependency review, code scanning, Docker/runtime, SBOM, and Trivy are green; then

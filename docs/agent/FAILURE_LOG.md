@@ -5164,3 +5164,50 @@ which fixed check diverged. CodeQL passed on the same stale executable SHA. Root
 Correction/result: add bounded failure diagnostics containing only fixed check names, run stressed local repetitions,
 then correct the identified cross-platform behavior without weakening any ownership assertion. The failed/stale run is
 not merge evidence; all required gates must rerun on the eventual corrected head.
+
+# 2026-07-18 - Ownership PR6 source-audit searches used invalid Windows path shapes
+
+Branch/PR: `codex/ownership-operator-proof-harness` / #472
+
+Failing operations: one `rg` command passed a wildcard as a Windows filename, and the next two read-only searches used
+the obsolete `com/richeyworks` package path instead of the repository's actual `com/richmond423` package path.
+
+Observed/root cause: ripgrep reported a Windows filename syntax error for the wildcard and then `path not found` for
+both obsolete package roots. These were read-only audit-command failures; they did not alter source, tests, or remote
+runs.
+
+Correction/result: enumerate matching files with `rg --files`, use the discovered `com/richmond423` roots, and pass
+file patterns through ripgrep's quoted `-g` selector. Continue the lock-lifetime correction only against verified paths.
+
+# 2026-07-18 - Ownership PR6 first corrected focused test command assumed a Maven wrapper
+
+Branch/PR: `codex/ownership-operator-proof-harness` / #472
+
+Failing operation: the first focused ownership regression command invoked `.\\mvnw.cmd`, which is not present in this
+repository, so PowerShell returned command-not-found before Maven or any test started.
+
+Observed/root cause: the campaign's established local build path uses the installed `mvn` executable rather than a
+repository wrapper. No source, target output, test result, or remote check was changed by the failed invocation.
+
+Correction/result: rerun the identical quoted comma-separated `-Dtest` selector with `mvn -B` and require a zero exit
+code with no failures, errors, or skips before broader verification.
+
+# 2026-07-18 - Ownership PR6 Linux proof diagnostics exposed a POSIX lock-lifetime defect
+
+Branch/PR: `codex/ownership-operator-proof-harness` / #472
+
+Failing gates: exact diagnostic-head push CI run `29636616227` and the corresponding PR CI lane. Linux/JDK 17
+reported the fixed false checks `liveOwnerDenied`, `restartedPriorOwnerDenied`,
+`simultaneousAcquisitionSingleWinner`, and `competingTakeoverSingleWinner`; all other tests remained green.
+
+Observed/root cause: after acquiring `owner.lock`, the ownership manager opened a second channel for the same file to
+probe for an overlapping JVM lock and then closed that channel. On POSIX record-lock semantics, closing any descriptor
+for the file in the locking process can release that process's lock even though the original Java `FileLock` object
+still appears valid. Windows does not exhibit that descriptor-close behavior, which explains the green local proof and
+the Linux-only live-owner exclusion failures. The separate-process harness correctly detected the real defect.
+
+Correction/result: prepare and fingerprint the controlled lock file before opening the owning channel, retain only that
+channel while the lock is held, and compare the controlled path identity after acquisition. This preserves fail-closed
+lock-file replacement detection without reopening or closing the locked file. A focused 46-test ownership bundle and
+full `mvn -B package` pass 3,189 tests with zero failures, errors, or skips; three concurrent packaged proofs also pass
+all live-owner and one-winner checks. Fresh Linux exact-head CI remains mandatory before merge.

@@ -150,7 +150,31 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
         return temporaryRecordFile;
     }
 
+    String prepareLockFileIdentity() {
+        prepareLockFile();
+        return identityOfControlledRegularFile(lockFile);
+    }
+
     FileChannel openLockChannel() {
+        prepareLockFile();
+        try {
+            return FileChannel.open(lockFile,
+                    StandardOpenOption.READ,
+                    StandardOpenOption.WRITE,
+                    LinkOption.NOFOLLOW_LINKS);
+        } catch (AccessDeniedException exception) {
+            throw failure(FailureClassification.PERMISSION_DENIED,
+                    "ownership lock file permission was denied", exception);
+        } catch (UnsupportedOperationException exception) {
+            throw failure(FailureClassification.LOCK_UNSUPPORTED,
+                    "ownership lock file options are unsupported", exception);
+        } catch (IOException exception) {
+            throw failure(FailureClassification.STORAGE_UNAVAILABLE,
+                    "ownership lock file could not be opened", exception);
+        }
+    }
+
+    private void prepareLockFile() {
         verifyDirectoryIdentity();
         try {
             if (!Files.exists(lockFile, LinkOption.NOFOLLOW_LINKS)) {
@@ -162,10 +186,6 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
             }
             validateControlledRegularFile(lockFile, "ownership lock file");
             restrictPermissions(lockFile, FILE_PERMISSIONS);
-            return FileChannel.open(lockFile,
-                    StandardOpenOption.READ,
-                    StandardOpenOption.WRITE,
-                    LinkOption.NOFOLLOW_LINKS);
         } catch (EnterpriseLabEvidenceOwnershipException exception) {
             throw exception;
         } catch (AccessDeniedException exception) {
@@ -176,7 +196,7 @@ public final class EnterpriseLabEvidenceOwnershipPaths {
                     "ownership lock file options are unsupported", exception);
         } catch (IOException exception) {
             throw failure(FailureClassification.STORAGE_UNAVAILABLE,
-                    "ownership lock file could not be opened", exception);
+                    "ownership lock file could not be prepared", exception);
         }
     }
 

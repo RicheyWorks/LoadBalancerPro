@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -161,6 +163,21 @@ class EnterpriseLabEvidenceOwnershipPathsTest {
                 () -> paths.identityOfControlledRegularFile(arbitrary));
         assertPathFailure(FailureClassification.UNSAFE_PATH,
                 () -> paths.identityOfControlledRegularFile(temporaryDirectory.resolve("outside.lock")));
+    }
+
+    @Test
+    void preparesStableLockIdentityBeforeTheOwningChannelIsOpened() throws Exception {
+        EnterpriseLabEvidenceOwnershipPaths paths = create();
+
+        String preparedIdentity = paths.prepareLockFileIdentity();
+
+        assertTrue(preparedIdentity.matches("[0-9a-f]{64}"));
+        assertTrue(Files.isRegularFile(paths.lockFile(), LinkOption.NOFOLLOW_LINKS));
+        try (FileChannel channel = paths.openLockChannel(); FileLock lock = channel.tryLock()) {
+            assertTrue(lock.isValid());
+            assertEquals(preparedIdentity,
+                    paths.identityOfControlledRegularFile(paths.lockFile()));
+        }
     }
 
     @Test

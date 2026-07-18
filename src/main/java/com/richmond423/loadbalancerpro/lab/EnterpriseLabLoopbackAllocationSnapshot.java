@@ -45,6 +45,29 @@ public record EnterpriseLabLoopbackAllocationSnapshot(
             Kind kind,
             Collection<String> approvedBackendIds,
             Map<String, Double> requestedAllocations) {
+        return new EnterpriseLabLoopbackAllocationSnapshot(
+                SCHEMA_VERSION,
+                scenarioId,
+                revision,
+                sourceDecisionId,
+                kind,
+                normalizedAllocations(approvedBackendIds, requestedAllocations, false));
+    }
+
+    /**
+     * Reuses the router's allocation normalization for durable records while
+     * requiring every approved backend to be represented explicitly.
+     */
+    static Map<String, Double> exactNormalizedAllocations(
+            Collection<String> approvedBackendIds,
+            Map<String, Double> requestedAllocations) {
+        return normalizedAllocations(approvedBackendIds, requestedAllocations, true);
+    }
+
+    private static Map<String, Double> normalizedAllocations(
+            Collection<String> approvedBackendIds,
+            Map<String, Double> requestedAllocations,
+            boolean requireExactBackendSet) {
         Objects.requireNonNull(approvedBackendIds, "approvedBackendIds cannot be null");
         Objects.requireNonNull(requestedAllocations, "requestedAllocations cannot be null");
         TreeSet<String> approved = new TreeSet<>();
@@ -63,13 +86,15 @@ public record EnterpriseLabLoopbackAllocationSnapshot(
         if (!approved.containsAll(requestedAllocations.keySet())) {
             throw new IllegalArgumentException("allocation contains a backend outside the approved scenario catalog");
         }
+        if (requireExactBackendSet && !approved.equals(new TreeSet<>(requestedAllocations.keySet()))) {
+            throw new IllegalArgumentException("durable allocation must contain every approved backend exactly once");
+        }
 
         Map<String, Double> complete = new TreeMap<>();
         for (String backendId : approved) {
             complete.put(backendId, requestedAllocations.getOrDefault(backendId, 0.0));
         }
-        return new EnterpriseLabLoopbackAllocationSnapshot(
-                SCHEMA_VERSION, scenarioId, revision, sourceDecisionId, kind, complete);
+        return immutableExactAllocation(complete);
     }
 
     public List<String> eligibleBackendIds() {
@@ -133,6 +158,9 @@ public record EnterpriseLabLoopbackAllocationSnapshot(
             Double share = Objects.requireNonNull(entry.getValue(), "allocation shares cannot be null");
             if (!Double.isFinite(share) || share < 0.0 || share > 1.0) {
                 throw new IllegalArgumentException("allocation shares must be finite and between 0.0 and 1.0");
+            }
+            if (share == 0.0d) {
+                share = 0.0d;
             }
             if (sorted.putIfAbsent(backendId, share) != null) {
                 throw new IllegalArgumentException("allocation backendIds must be unique");

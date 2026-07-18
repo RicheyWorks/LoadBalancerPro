@@ -6,7 +6,83 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Single-Host Evidence Ownership PR6 Checkpoint
+## Active Durable Allocation-State Supervision PR1 Checkpoint
+
+Timestamp: 2026-07-18T02:03-07:00
+
+Current slot: ALLOCATION-PR1 - durable allocation-state model and canonical codec
+
+Started from clean synchronized main: `44eb73af50fce4b2e961a0d29a59badc185482f2`
+
+Current branch: `codex/allocation-state-model-codec`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/473
+
+Locally verified executable commit: `4fc5b790163a29a341a4128782529d81884e1e39`
+
+Prior campaign closure: ownership PR #472 merged normally from exact head
+`a03290e788226eda4a9071645fb97fb8ab973d77` as `44eb73af50fce4b2e961a0d29a59badc185482f2`.
+Exact-head PR CI `29637122413`, push CI `29637121459`, and CodeQL `29637122411` passed; exact merge-main CI
+`29637310685` and CodeQL `29637310670` passed all 3,189 zero-skipped tests plus Docker/runtime and blocking Trivy.
+
+Pre-branch gap audit: the actual installed allocation is the loopback router's process-local atomic snapshot. Normal
+commands can read it independently of experiment evidence, but restart recovery creates a new router already initialized
+from the replay-reconstructed baseline, so it cannot observe a pre-crash installed candidate. There is no independent
+durable allocation record or allocation-generation chain. The current start path applies the candidate, advances the
+lifecycle, and only then appends durable experiment evidence; it has no durable prepare, persist-intent, independent
+read-back, and commit boundaries. Router operations are ownership-fenced, but durable allocation transaction state,
+crash-window classification, and restart/takeover drift reconciliation remain absent.
+
+PR1 scope: add a versioned immutable allocation-state record and a strict bounded canonical JSON codec using the
+existing loopback allocation normalization and approved target identity boundaries. Cover canonical byte stability,
+backend-order independence, deterministic exact share representation, fingerprint and predecessor integrity, schema
+rejection, bounded decoding, and invalid/unapproved allocation cases. No durable store, router mutation integration,
+startup behavior, endpoint, dependency, Docker, workflow, external target, distributed coordination, or production
+traffic change belongs in this slot.
+
+Executable scope complete locally: add `EnterpriseLabAllocationState`, a private-construction immutable transaction
+record covering transaction and optional experiment identity, authoritative owner and logical allocation generations,
+purpose, four normalized allocation vectors, intended/router/previous-commit fingerprints, all required transaction
+phases, structured reasons, action and verification state, recovery classification, timestamps, predecessor/current
+record fingerprints, and bounded sanitized metadata. `EnterpriseLabAllocationStateCodec` provides strict duplicate-
+detecting bounded canonical JSON, exact fields and schema rejection, canonical UTC timestamps, exact hexadecimal IEEE-
+754 shares, SHA-256 content/allocation fingerprints, and literal-loopback approved-target validation. The existing
+router snapshot normalization is reused and now canonicalizes negative zero; durable vectors require the exact approved
+backend set. Owner generation is absent from the draft and comes only from the live mutation authority with same-epoch
+verification before return.
+
+Local verification: production compilation passed. The focused model/router selector passed 21 tests, and the expanded
+allocation/journal/ownership/lifecycle/recovery selector passed 101 tests, both with zero failures, errors, or skips.
+Exact staged source then passed `mvn -B package` with 3,201 tests in the full suite and zero failures, errors, or skips,
+producing `target/LoadBalancerPro-2.5.0.jar` at SHA-256
+`68a0e44324bc1a7823f83b7f33c71ac6fcaaa7d1c2f691ef7d09d7c8f1ba173d`. The JAR contains the new state and codec plus
+the updated snapshot. JaCoCo analyzed 858 classes at 84.56% instruction, 67.87% branch, and 84.20% line coverage;
+embedded Tomcat resolves only at 10.1.55. Local artifact resource verification passed, and CycloneDX generated and
+validated 144-component XML and JSON BOMs after the first PowerShell command-shape failure was corrected and logged.
+
+Scope audit: the staged paths are limited to three allocation production files, one behavioral test file, and required
+failure/session checkpoints. There is no POM, dependency, workflow, Docker, Compose, controller, endpoint, environment,
+process execution, arbitrary filesystem, external target, caller generation, force-commit/accept, database, broker,
+multi-host, network-filesystem, distributed, cloud, generated evidence, or production traffic change. Docker and
+container behavior are unaffected in PR1. Docker CLI is present, Trivy is not installed locally, and the unchanged
+exact-head CI Docker/runtime/SBOM/blocking Trivy lanes remain mandatory. The unrelated untracked
+`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` is preserved and excluded.
+
+Composition through the executable commit: 1,454 implementation/test changed lines and 160 required session/failure
+record lines, or 90.09% executable and 9.91% process. This checkpoint changes only session metadata after the locally
+verified executable tree; all remote gates must match the eventual pushed checkpoint head.
+
+Decision: commit the exact locally green staged slice, record its exact SHA, and open PR1 with this evidence. Merge only
+after fresh exact-head CI, CodeQL, dependency review, code scanning, Docker/runtime, SBOM, and Trivy are green; then
+require merge-main CI and CodeQL before PR2.
+
+PR-creation checkpoint: PR #473 opened from pushed head
+`05542870966db6994e56b7c7e17096ec06070f35` with the executable scope, verification, composition, local Trivy
+limitation, safety audit, and not-proven boundaries above. Exact-checkpoint `mvn -B "-DskipTests" package` passed and
+produced JAR SHA-256 `656d87c7373e720e1d0e70a3f3080b4913745cfe0a062ff0e2fea11489a301d0`. This required PR checkpoint moves the
+branch head, so checks on `05542870` are stale; push the checkpoint and require all remote gates on the new exact head.
+
+## Completed Single-Host Evidence Ownership PR6 Checkpoint
 
 Timestamp: 2026-07-18T01:15-07:00
 

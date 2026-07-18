@@ -16,7 +16,9 @@ Started from clean synchronized main: `3a835ae2d5d0d4f9d6febe217c76be63b867d9ac`
 
 Current branch: `codex/ownership-operator-proof-harness`
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/472
+
+Executable and locally verified commit: `dbca6c90490d2841ab3fb663238d61a4a82d42a1`
 
 Prior slot closure: PR #471 merged normally from exact head `c248eb0ab24b8ba79fb1f14f127b34e2a4a23c79`
 as `3a835ae2d5d0d4f9d6febe217c76be63b867d9ac`. Exact-head PR CI `29626157562`, push CI
@@ -70,6 +72,12 @@ durable external allocation supervision, production ownership, production traffi
 Decision: commit and push this locally green checkpoint, open PR6, then merge only after exact-head CI, CodeQL,
 dependency review, code scanning, Docker/runtime, SBOM, and Trivy are current-head green. After merge, synchronize main
 and require exact merge-main CI and CodeQL before campaign closeout.
+
+PR-creation checkpoint: PR #472 opened from exact executable head
+`dbca6c90490d2841ab3fb663238d61a4a82d42a1` with the scope, local evidence, composition, local Docker/Trivy limitation,
+and not-proven boundaries above. This required checkpoint update moves the branch head; commit and push it, then treat
+all checks on the PR-created head as stale. Merge remains prohibited until CI, CodeQL, dependency review, code scanning,
+Docker/runtime evidence, SBOM, and Trivy are green for the final checkpoint SHA.
 
 ## Completed Single-Host Evidence Ownership PR5 Checkpoint
 

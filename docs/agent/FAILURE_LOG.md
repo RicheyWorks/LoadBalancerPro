@@ -5121,3 +5121,17 @@ skips, so that result is not acceptable as a green gate.
 Correction/result: retain the real symlink exercise on environments that support it and fall back on this host to an
 existing non-directory component, which exercises the same no-follow output rejection without skipping. Rerun the
 focused selector and require zero skips; Linux CI will execute the actual symlink branch.
+
+# 2026-07-18 - Ownership PR6 first PR checkpoint recorded an inferred full executable SHA
+
+Branch/PR: `codex/ownership-operator-proof-harness` / #472
+
+Failing audit: the first local PR-metadata checkpoint expanded the visible short commit `dbca6c90` to an inferred full
+SHA instead of copying the authoritative `git rev-parse HEAD` output into both checkpoint references.
+
+Observed/root cause: the actual executable commit is `dbca6c90490d2841ab3fb663238d61a4a82d42a1`; the inferred suffix was
+factually wrong. The checkpoint commit had not been pushed, no remote check or merge decision used the incorrect value,
+and the executable tree was unaffected.
+
+Correction/result: replace both references with the exact Git-reported SHA, include this audit record, amend the local
+checkpoint commit, and push only the corrected metadata head. Exact-head gate matching remains mandatory.

@@ -5482,3 +5482,16 @@ Correction/result: no repository correction applies. Compilation, focused/expand
 coverage, dependency resolution, artifact inspection, CycloneDX, and packaged literal-loopback smoke are green. Local
 Docker/runtime and Trivy remain not run and not green; require the unchanged exact-head remote image build/runtime,
 controlled container evidence, and blocking Trivy scan before PR3 merge and again on merge-main.
+
+# 2026-07-18 - Allocation PR3 GitHub API jq expression split under PowerShell
+
+Branch/PR: `codex/router-installed-allocation-readback` / PR #475
+
+Failing operation: a read-only pull-request head/status query passed a spaced concatenation expression to `gh api
+--jq`; PowerShell split the expression and `gh` rejected the extra arguments.
+
+Observed/root cause: the command shape did not preserve the jq expression as one native-process argument. The query
+made no repository, PR, workflow, allocation, router, ownership, journal, container, or external-target change.
+
+Correction/result: query plain JSON and parse it with PowerShell `ConvertFrom-Json`, avoiding fragile native jq
+quoting. Commit and push this required log checkpoint; checks on the preceding head are stale.

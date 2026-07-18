@@ -6,7 +6,45 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Durable Allocation-State Supervision PR1 Checkpoint
+## Active Durable Allocation-State Supervision PR2 Checkpoint
+
+Timestamp: 2026-07-18T02:40-07:00
+
+Current slot: ALLOCATION-PR2 - ownership-fenced durable allocation transaction store
+
+Started from clean synchronized main: `0dae26414020f9aeb2e6a032b82adba3a8f284b2`
+
+Current branch: `codex/allocation-transaction-store`
+
+PR URL: not opened yet
+
+Prior slot closure: PR #473 merged normally from exact head
+`9c21b818707d754cf2a8e56cecb5bbddc5cfeff8` as `0dae26414020f9aeb2e6a032b82adba3a8f284b2`.
+Exact-head PR CI `29639136135`, push CI `29639135080`, CodeQL `29639136142`, dependency review, code scanning,
+Docker/runtime evidence, SBOM, and blocking Trivy passed. Exact merge-main CI `29639328955` and CodeQL
+`29639328926` passed 3,201 zero-skipped tests, coverage, package, artifact smoke, SBOM, packaged runtime, Docker
+build/runtime, controlled container evidence, and Trivy. The source branch remains preserved on origin.
+
+PR2 scope: implement one fixed append-only allocation transaction chain beneath the existing controlled evidence
+namespace. Mutation must require the live ownership authority and exact owner generation at commit boundaries. The
+store must enforce a canonical first committed safe baseline, predecessor fingerprints, hard record/byte bounds,
+canonical exact read-back, durable data-and-metadata synchronization, deterministic restart replay, partial-tail and
+corruption fail-closed behavior, fixed-path and no-symlink controls, process-safe access under the existing OS owner
+lock, and safe close/failure behavior. Persisting a candidate intent appends immutable evidence and cannot overwrite or
+replace the preceding safe baseline.
+
+Out of scope: router introspection or mutation changes, transaction coordination, startup/takeover reconciliation,
+operator endpoints or commands, subprocess proofs, POM/dependency/workflow/Docker/Compose changes, external targets,
+databases, brokers, arbitrary paths, caller-supplied owner generations, multi-host or network-filesystem claims, and
+production traffic or readiness.
+
+Decision: reuse the canonical allocation codec and live ownership mutation authority in a dedicated fixed storage
+boundary rather than duplicate the experiment journal engine or couple allocation recovery to experiment evidence.
+Implement focused append/replay/restart/corruption/truncation/ownership/generation/bounds/path tests, then run expanded
+allocation/journal/ownership selectors and the full exact-candidate verification before opening PR2. The unrelated
+untracked `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains preserved and excluded.
+
+## Completed Durable Allocation-State Supervision PR1 Checkpoint
 
 Timestamp: 2026-07-18T02:03-07:00
 

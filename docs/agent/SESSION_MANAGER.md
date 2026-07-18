@@ -16,7 +16,7 @@ Started from clean synchronized main: `f4ca5d3c747aea3ae96d12b189b2a9a2048bc13c`
 
 Current branch: `codex/ownership-stale-takeover`
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/470
 
 Executable commit: `9135c38fe6fc1d5b19b7ccd31157af5a734a0813`
 
@@ -58,8 +58,8 @@ Composition: PR4 has 1,339 implementation/test changed lines and 55 documentatio
 3.95%). The exact campaign diff from `a3fc534fd7d5d9ab80a7cd556ca2dbc9e129eb82` through the executable PR4 commit has
 5,399 implementation/test and 608 documentation/process changed lines (89.88% / 10.12%).
 
-Decision: commit this checkpoint, push the branch, open one executable PR, and require exact-head and merge-main gates
-before OWNERSHIP-PR5.
+Decision: push this PR-created checkpoint and require exact-head and merge-main gates before OWNERSHIP-PR5. Checks on
+the pre-checkpoint head are stale and cannot authorize merge.
 
 ## Completed Single-Host Evidence Ownership PR3 Checkpoint
 

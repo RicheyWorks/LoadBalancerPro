@@ -12,6 +12,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalEvent.D
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalEvent.Reason;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier.Outcome;
 
+import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -76,6 +77,10 @@ public final class EnterpriseLabExperimentStartupReconciler {
             gate.fail("RECOVERY_INITIALIZATION_FAILED");
             throw exception;
         }
+    }
+
+    Path trustedRoot() {
+        return directory.trustedRoot();
     }
 
     private ExperimentRecoveryResult reconcile(JournalDiscovery discovery) {

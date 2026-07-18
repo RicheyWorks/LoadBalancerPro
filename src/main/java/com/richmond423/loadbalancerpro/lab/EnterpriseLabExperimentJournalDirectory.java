@@ -62,6 +62,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
     private static final Map<Path, Object> ACTIVE_WRITERS = new ConcurrentHashMap<>();
     private static final FailureInjector NO_FAILURE = (checkpoint, bytesWritten) -> { };
 
+    private final Path trustedRoot;
     private final Path journalsDirectory;
     private final Path quarantineDirectory;
     private final Path compactedDirectory;
@@ -85,6 +86,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
         this.maxJournalBytes = maxJournalBytes;
         this.maxJournalEntries = maxJournalEntries;
         Path root = validateTrustedRoot(trustedRoot);
+        this.trustedRoot = root;
         Path namespace = controlledDirectory(root, NAMESPACE);
         this.journalsDirectory = controlledDirectory(namespace, JOURNALS);
         this.quarantineDirectory = controlledDirectory(namespace, QUARANTINE);
@@ -100,6 +102,10 @@ public final class EnterpriseLabExperimentJournalDirectory {
             long maxJournalBytes,
             int maxJournalEntries) {
         return new EnterpriseLabExperimentJournalDirectory(trustedRoot, maxJournalBytes, maxJournalEntries);
+    }
+
+    Path trustedRoot() {
+        return trustedRoot;
     }
 
     /** Opens a writer using the safety-first data-and-metadata synchronization policy. */

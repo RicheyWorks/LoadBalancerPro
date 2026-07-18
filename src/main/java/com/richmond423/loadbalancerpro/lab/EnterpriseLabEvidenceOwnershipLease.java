@@ -319,7 +319,7 @@ public final class EnterpriseLabEvidenceOwnershipLease implements AutoCloseable 
                 current.lockFileIdentity(),
                 current.owner(),
                 current.generation(),
-                OwnershipState.OWNED,
+                current.state(),
                 current.acquiredAt(),
                 renewedAt,
                 renewedAt.plus(policy.leaseDuration()),

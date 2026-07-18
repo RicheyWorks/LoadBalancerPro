@@ -4756,3 +4756,19 @@ inspection succeeded, but the source scan was rejected. No file or runtime state
 
 Correction/result: rerun the exact audit with `rg -g 'EnterpriseLabEvidenceOwnership*.java'` and retain the failure as a
 campaign tooling-discipline regression; do not weaken any executable or verification gate.
+
+# 2026-07-17 - Ownership PR4 same-JVM live-lock test expected the cross-process result code
+
+Branch/PR: `codex/ownership-stale-takeover` / pending
+
+Failing check: the initial 79-test ownership, takeover, and startup-reconciliation selector.
+
+Observed/root cause: the new live-lock takeover test held the controlled file lock through another channel in the same
+JVM. JDK `FileLock` correctly raised `OverlappingFileLockException`, which the ownership boundary classifies as
+`DUPLICATE_ACQUISITION`; the assertion incorrectly expected `LIVE_COMPETING_OWNER`, the result used when a different
+process owns the lock and bounded `tryLock` returns null. The structured stale-owner finding was correctly
+`LIVE_COMPETING_OWNER`, no record changed, and no ownership capability was published.
+
+Correction/result: require `DUPLICATE_ACQUISITION` for this exact same-JVM fixture while retaining the live-owner stale
+classification. Separate-process exclusion remains reserved for the campaign proof-harness slot. Rerun the complete
+focused selector before treating PR4 locally green.

@@ -16,7 +16,7 @@ Started from clean synchronized main: `f83bb886b695b797101775c7541a4269695351f2`
 
 Current branch: `codex/allocation-transaction-coordinator`
 
-PR URL: not opened yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/476
 
 PR4 scope: connect one live ownership epoch, the fixed allocation store, existing guardrail authorization, atomic
 loopback router mutation, independent installed-state read-back, exact durable commit, and verified baseline restoration.
@@ -67,13 +67,18 @@ generation/phase, force/bypass surface, or production activation. It persists on
 the existing controlled single-host store and keeps startup/takeover reconciliation, readiness/admission integration,
 multi-host/network-filesystem correctness, malicious-process resistance, and production readiness not proven.
 
-Composition: PR4 has 1,922 executable/test additions and 169 required process additions (91.92% / 8.08%). The campaign
-aggregate through this checkpoint is 5,715 executable/test and 688 process additions (89.26% / 10.74%), inside the
+Composition: PR4 has 1,922 executable/test additions and 174 required process additions (91.70% / 8.30%). The campaign
+aggregate through this checkpoint is 5,715 executable/test and 693 process additions (89.19% / 10.81%), inside the
 goal's 88-92% executable and 8-12% documentation/process band.
 
-Decision: commit and push this verified local checkpoint, open PR4, record the required PR-creation checkpoint, and
-require every exact-head CI, CodeQL, dependency-review, Docker/runtime/evidence, and Trivy gate before a normal merge
-without source-branch deletion. Do not start PR5 until exact merge-main CI and CodeQL are green.
+PR-creation checkpoint: PR #476 opened from verified pre-PR head
+`b8c16aefc097b6ba5df3e90602a254d1cd68e11f` with the complete executable scope, failure-boundary evidence, local
+verification, Docker/Trivy limitation, composition, and not-proven boundaries above. This required metadata checkpoint
+moves the branch again, so all checks on the pre-checkpoint head are stale and cannot authorize merge.
+
+Decision: package, commit, and push this PR-created checkpoint; update the PR body to the resulting exact candidate head;
+then require every exact-head CI, CodeQL, dependency-review, Docker/runtime/evidence, and Trivy gate before a normal
+merge without source-branch deletion. Do not start PR5 until exact merge-main CI and CodeQL are green.
 
 ## Completed Durable Allocation-State Supervision PR3 Checkpoint
 

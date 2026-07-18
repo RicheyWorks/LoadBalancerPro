@@ -18,6 +18,8 @@ Current branch: `codex/allocation-transaction-store`
 
 PR URL: not opened yet
 
+Locally verified executable commit: `98ae492ae80c2365b8fe2e721e9916d012612c19`
+
 Prior slot closure: PR #473 merged normally from exact head
 `9c21b818707d754cf2a8e56cecb5bbddc5cfeff8` as `0dae26414020f9aeb2e6a032b82adba3a8f284b2`.
 Exact-head PR CI `29639136135`, push CI `29639135080`, CodeQL `29639136142`, dependency review, code scanning,
@@ -33,16 +35,53 @@ corruption fail-closed behavior, fixed-path and no-symlink controls, process-saf
 lock, and safe close/failure behavior. Persisting a candidate intent appends immutable evidence and cannot overwrite or
 replace the preceding safe baseline.
 
+Executable scope complete locally: `EnterpriseLabAllocationStateStore` owns one fixed
+`allocation-state-v1/allocation-transactions-v1.jsonl` chain beneath the existing controlled evidence namespace. It
+offers read-only inspection without path creation and mutation only through the live evidence ownership authority. An
+append replays the complete canonical chain, verifies the record's exact live owner generation, enforces the verified
+committed genesis baseline, predecessor and non-regressing ownership generations, contiguous logical allocation
+generations, stable same-transaction intent, hard record/byte bounds, and fixed directory contents. It writes bounded
+chunks without truncation, forces data and metadata, reverifies the owner epoch, replays from disk, and returns success
+only after exact record/count/byte read-back. Partial tails, invalid/non-canonical records, unexpected files, type or
+symlink escapes, and concurrent changes fail closed and remain unchanged for restart diagnosis. The process-local mutex
+serializes repository-controlled store instances beneath the already-held OS ownership lock; close releases no hidden
+resource and rejects reuse.
+
+Behavioral verification: the focused store selector passed 13 tests, and the expanded allocation codec, ownership,
+path, gate, journal writer/verifier/replay selector passed 122 tests, all with zero failures, errors, or skips. The exact
+staged candidate passed `mvn -B package` with 3,214 tests in 453 suites and zero failures, errors, or skips, producing
+`target/LoadBalancerPro-2.5.0.jar` at SHA-256
+`a95436ad554d12b51015e1160edff686e31c097485687df36a6f870d1e02bee2`. JaCoCo analyzed 865 classes at 84.55%
+instruction, 67.80% branch, and 84.15% line coverage. Embedded Tomcat resolves only at 10.1.55. Required artifact
+resources and the new store classes are present in the executable JAR. CycloneDX generated and validated 144-component
+XML and JSON BOMs, and the packaged JAR health smoke passed on literal `127.0.0.1:18080` with no external target.
+
+Crash/path coverage includes restart replay, baseline preservation under candidate intent, invalid genesis, predecessor
+and generation gaps, stale live ownership, count and byte limits, truncated tails, complete-record corruption, injected
+partial write, injected post-force response uncertainty, two concurrent process-local writers with one chain-head
+winner, unexpected directory contents, wrong types, symlink namespaces, invalid roots, and safe close. The first
+creation-stability defect and Java 17 test-shape issue were corrected and logged before the green runs.
+
 Out of scope: router introspection or mutation changes, transaction coordination, startup/takeover reconciliation,
 operator endpoints or commands, subprocess proofs, POM/dependency/workflow/Docker/Compose changes, external targets,
 databases, brokers, arbitrary paths, caller-supplied owner generations, multi-host or network-filesystem claims, and
 production traffic or readiness.
 
-Decision: reuse the canonical allocation codec and live ownership mutation authority in a dedicated fixed storage
-boundary rather than duplicate the experiment journal engine or couple allocation recovery to experiment evidence.
-Implement focused append/replay/restart/corruption/truncation/ownership/generation/bounds/path tests, then run expanded
-allocation/journal/ownership selectors and the full exact-candidate verification before opening PR2. The unrelated
-untracked `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains preserved and excluded.
+Scope/composition audit: `git diff --cached --check` passes. The four-file slice is one production store, one behavioral
+test suite, and the required session/failure checkpoints: 1,389 implementation/test added lines and 124 process added
+lines, or 91.80% executable and 8.20% process. There is no POM, dependency, workflow, Docker, Compose, controller,
+endpoint, configuration, environment, process-execution, external target, database, broker, arbitrary record path,
+caller owner/generation, force-accept/reset, multi-host, network-filesystem, distributed, cloud/tenant, generated target
+evidence, or production traffic change. The unrelated untracked
+`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains preserved and excluded.
+
+Local container limitation: Docker CLI cannot reach the absent Desktop Linux engine and Trivy is not installed. Both
+failures are logged; local Docker/runtime and Trivy are not run and not green. The unchanged repository-native exact-head
+CI image build/runtime/evidence and blocking Trivy gate remain mandatory.
+
+Decision: commit this local-verification checkpoint, run a no-test package on the resulting metadata-only head, push,
+and open PR2. Merge only after fresh exact-head CI, CodeQL, dependency review, code scanning, Docker/runtime evidence,
+SBOM, and blocking Trivy are green; then require exact merge-main CI and CodeQL before PR3.
 
 ## Completed Durable Allocation-State Supervision PR1 Checkpoint
 

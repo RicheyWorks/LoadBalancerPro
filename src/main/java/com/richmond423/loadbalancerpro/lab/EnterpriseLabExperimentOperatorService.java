@@ -647,6 +647,31 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         return durableEvidence;
     }
 
+    /** Returns a bounded snapshot without reading caller-selected storage or mutating ownership. */
+    public synchronized Optional<EnterpriseLabEvidenceOwnershipStatus> ownershipStatus() {
+        return ownershipLease.map(lease -> EnterpriseLabEvidenceOwnershipStatus.from(
+                lease,
+                ownershipRenewer.flatMap(EnterpriseLabEvidenceOwnershipRenewer::lastResult),
+                recoveryGate.admissionStatus(),
+                Optional.empty()));
+    }
+
+    /** Explicitly verifies the live OS lock and durable record and closes admission on uncertainty. */
+    public synchronized Optional<EnterpriseLabEvidenceOwnershipStatus> verifyOwnership() {
+        return ownershipLease.map(lease -> {
+            var verification = lease.ownershipGate().verifyCurrentOwnership();
+            if (verification.status()
+                    != EnterpriseLabEvidenceOwnership.OperationStatus.SUCCEEDED) {
+                recoveryGate.fail("OWNERSHIP_VERIFICATION_FAILED");
+            }
+            return EnterpriseLabEvidenceOwnershipStatus.from(
+                    lease,
+                    ownershipRenewer.flatMap(EnterpriseLabEvidenceOwnershipRenewer::lastResult),
+                    recoveryGate.admissionStatus(),
+                    Optional.of(verification));
+        });
+    }
+
     @Override
     public synchronized void close() {
         if (closed) {

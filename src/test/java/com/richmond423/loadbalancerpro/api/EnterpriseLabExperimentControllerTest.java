@@ -5,6 +5,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentRecoveryGate.I
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentTargetCatalog;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipStatus;
 import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
 
 import java.nio.file.Files;
@@ -23,6 +24,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -44,7 +46,7 @@ class EnterpriseLabExperimentControllerTest {
     Path journalRoot;
 
     @Test
-    void configuredAbsoluteJournalRootCompletesRecoveryBeforeServiceAdmission() {
+    void configuredAbsoluteJournalRootCompletesRecoveryBeforeServiceAdmission() throws Exception {
         var configuration = new EnterpriseLabExperimentController.EnterpriseLabExperimentConfiguration();
         try (EnterpriseLabExperimentOperatorService service =
                 configuration.enterpriseLabExperimentOperatorService(
@@ -61,6 +63,26 @@ class EnterpriseLabExperimentControllerTest {
             var journals = (EnterpriseLabExperimentController.DurableJournalListResponse)
                     controller.durableJournals().getBody();
             assertEquals(0, journals.count());
+            var ownershipStatus = (EnterpriseLabEvidenceOwnershipStatus)
+                    controller.durableOwnershipStatus().getBody();
+            assertEquals(EnterpriseLabEvidenceOwnershipStatus.SCHEMA_VERSION,
+                    ownershipStatus.schemaVersion());
+            assertEquals(1L, ownershipStatus.generation());
+            assertTrue(ownershipStatus.operatingSystemLockValid());
+            assertTrue(ownershipStatus.mutationAdmissionAllowed());
+            assertTrue(ownershipStatus.verificationStatus().isEmpty());
+            var verified = (EnterpriseLabEvidenceOwnershipStatus)
+                    controller.verifyDurableOwnership().getBody();
+            assertEquals(EnterpriseLabEvidenceOwnership.OperationStatus.SUCCEEDED,
+                    verified.verificationStatus().orElseThrow());
+            String sanitized = new com.fasterxml.jackson.databind.ObjectMapper()
+                    .findAndRegisterModules().writeValueAsString(verified);
+            assertFalse(sanitized.contains(journalRoot.toString()));
+            assertFalse(sanitized.contains("processId"));
+            assertFalse(sanitized.contains("hostDiagnostic"));
+            assertFalse(sanitized.contains("directoryIdentity"));
+            assertFalse(sanitized.contains("lockFileIdentity"));
+            assertFalse(sanitized.contains("rawLockBytes"));
             assertEquals(0, ((com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalDirectory.RetentionReport)
                     controller.enforceDurableRetention(
                             new EnterpriseLabExperimentController.RetentionRequest(0, true)).getBody())
@@ -123,6 +145,15 @@ class EnterpriseLabExperimentControllerTest {
                 .andExpect(jsonPath("$.configured", is(false)))
                 .andExpect(jsonPath("$.reasonCode", is("DURABLE_EVIDENCE_NOT_CONFIGURED")))
                 .andExpect(content().string(not(containsString(journalRoot.toString()))));
+
+        mockMvc.perform(get("/api/lab/experiments/durable/ownership"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.reasonCode", is("DURABLE_EVIDENCE_NOT_CONFIGURED")))
+                .andExpect(content().string(not(containsString(journalRoot.toString()))));
+
+        mockMvc.perform(post("/api/lab/experiments/durable/ownership/verify"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.reasonCode", is("DURABLE_EVIDENCE_NOT_CONFIGURED")));
 
         String armBody = """
                 {

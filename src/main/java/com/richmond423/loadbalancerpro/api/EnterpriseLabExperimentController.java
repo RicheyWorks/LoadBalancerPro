@@ -197,6 +197,20 @@ public class EnterpriseLabExperimentController {
                 .orElseGet(this::durableUnavailable);
     }
 
+    @GetMapping("/durable/ownership")
+    public ResponseEntity<?> durableOwnershipStatus() {
+        return operatorService.ownershipStatus()
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(this::durableUnavailable);
+    }
+
+    @PostMapping("/durable/ownership/verify")
+    public ResponseEntity<?> verifyDurableOwnership() {
+        return operatorService.verifyOwnership()
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(this::durableUnavailable);
+    }
+
     @GetMapping("/durable/{experimentId}/verification")
     public ResponseEntity<?> durableVerification(
             @PathVariable("experimentId") String experimentId) {

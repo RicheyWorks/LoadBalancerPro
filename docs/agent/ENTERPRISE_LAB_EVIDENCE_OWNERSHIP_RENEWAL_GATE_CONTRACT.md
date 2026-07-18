@@ -1,6 +1,6 @@
 # Enterprise Lab Ownership Renewal and Verification Gate Contract
 
-Status: PR5 executable renewal, takeover-reconciliation, and mutation-fencing contract.
+Status: PR6 executable renewal, takeover-reconciliation, mutation-fencing, operator-status, and proof contract.
 
 ## One authoritative gate
 
@@ -88,6 +88,28 @@ retry success/exhaustion, deadline closure, startup live-owner denial, clean-rel
 append generation fencing, reconciliation preflight, router fencing, and preservation during denied compaction and
 retention apply. Existing journal compatibility tests remain green.
 
-PR5 does not add ownership operator endpoints, separate-process contention or abrupt-kill proof, malicious-process
-resistance, network-filesystem correctness, multi-host or distributed fencing, production ownership, production traffic,
-or production-readiness claims. Those not-proven boundaries remain explicit; subprocess proof belongs to PR6.
+PR6 adds two operations to the existing authenticated Enterprise Lab operator boundary:
+
+- `GET /api/lab/experiments/durable/ownership` returns a bounded immutable snapshot of the held owner reference,
+  generation, state, acquisition/renewal/expiration times, lock validity, takeover/reconciliation/release summary,
+  admission state, last scheduled-renewal result when present, and record fingerprints.
+- `POST /api/lab/experiments/durable/ownership/verify` performs the existing authoritative verification and returns the
+  same snapshot with its structured result. A failure closes mutation admission.
+
+Both routes use the existing API-key and OAuth2 operator-role rules. They expose no path, PID, host fingerprint,
+directory or lock-file identity, file handle, raw record/lock bytes, release action, forced unlock, owner/generation
+override, or takeover action. An unconfigured durable repository returns the existing bounded conflict response.
+
+`scripts/smoke/enterprise-lab-ownership-proof.ps1` runs the packaged
+`--enterprise-lab-ownership-proof` command. The foreground parent derives fresh roots only beneath `target/` and starts
+truly separate child JVMs. The executable proof covers live-owner refusal, owner append/reconciliation, non-owner
+append/compaction/retention/experiment/allocation refusal, bounded renewal, clean release and higher-generation handoff,
+forced process loss, expired stale classification, higher-generation reconciled takeover, journal verification/replay,
+interrupted rollback, process-local baseline verification, repeated restart idempotency, simultaneous acquisition, and
+a competing takeover race with one winner. Child actions and case names are fixed; callers cannot supply an evidence
+root, owner identity, generation, unlock, release, or takeover decision.
+
+The proof is single-host, local-filesystem, literal-loopback, target-only evidence. It does not prove malicious-process
+resistance, network-filesystem correctness, multi-host or distributed fencing, durable external allocation state,
+production ownership, production traffic, or production readiness. Abrupt termination can prove journal recovery and
+that the restarted process-local router is baseline-safe; it does not claim an external allocation supervisor exists.

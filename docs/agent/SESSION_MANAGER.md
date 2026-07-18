@@ -16,7 +16,7 @@ Started from clean synchronized main: `ad6006b1ef11c3c97418cdebab36f562da83019b`
 
 Current branch: `codex/router-installed-allocation-readback`
 
-PR URL: not opened yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/475
 
 Prior slot closure: PR #474 merged normally from exact head
 `fb919c503b0e514ab56d47fde75cab48576d17da` as `ad6006b1ef11c3c97418cdebab36f562da83019b`.
@@ -72,6 +72,12 @@ Compose, controller, configuration, external target, process, database/broker, a
 surface. `git diff --cached --check` and the literal security scan passed; the negative password fixture remains an
 intentional redaction test. Commit this checkpoint, run no-test packaging on its exact head, push, and open PR3. Merge
 only after every exact-head gate and then exact merge-main CI and CodeQL are green.
+
+PR-creation checkpoint: PR #475 opened from pushed head `c002215ee580844fbe719089d2716a6316645463` with the
+executable scope, local evidence, safety audit, composition, and not-proven boundaries above. That head passed
+`mvn -B "-DskipTests" package` and produced executable JAR SHA-256
+`e38a2cda7ce287712ed5298d7e4874d854b3086bfc3c78b46e4917f294449e74`. Commit and push this required checkpoint;
+all checks on the pre-checkpoint head are stale and cannot authorize merge.
 
 ## Completed Durable Allocation-State Supervision PR2 Checkpoint
 

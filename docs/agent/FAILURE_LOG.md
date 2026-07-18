@@ -6,6 +6,25 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-17T18:56-07:00
+
+Branch/PR: codex/ownership-mutation-fencing / PR #471
+
+Failure type: PR body post-update verification jq quoting error
+
+Failing check: first read-back assertion for the final PR head and composition text
+
+Observed/root cause: the GitHub API body update succeeded, but PowerShell removed the nested quotes around two `jq`
+`contains(...)` string arguments. `gh` therefore rejected the local verification expression before evaluating the
+already-updated PR body. No source, lock, journal, runtime, remote branch, check, or PR metadata other than the intended
+body update was changed by the failed read-back.
+
+Correction/result: verify the PR JSON with PowerShell object/string operations instead of nested `jq` string literals.
+
+Follow-up: push this required failure checkpoint, update the PR to its exact new head, and require fresh final-head gates.
+
+## Entry
+
 Date/time: 2026-07-17T18:46-07:00
 
 Branch/PR: codex/ownership-mutation-fencing / no PR yet

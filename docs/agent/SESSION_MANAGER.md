@@ -6,7 +6,80 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Durable Allocation-State Supervision PR2 Checkpoint
+## Active Durable Allocation-State Supervision PR3 Checkpoint
+
+Timestamp: 2026-07-18T03:25-07:00
+
+Current slot: ALLOCATION-PR3 - atomic router installed-state introspection and canonical read-back evidence
+
+Started from clean synchronized main: `ad6006b1ef11c3c97418cdebab36f562da83019b`
+
+Current branch: `codex/router-installed-allocation-readback`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/475
+
+Prior slot closure: PR #474 merged normally from exact head
+`fb919c503b0e514ab56d47fde75cab48576d17da` as `ad6006b1ef11c3c97418cdebab36f562da83019b`.
+Exact-head PR CI `29640390665`, push CI `29640389442`, CodeQL `29640390633`, dependency review, code scanning,
+Docker/runtime evidence, SBOM, and blocking Trivy passed. Exact merge-main CI `29640599039` and CodeQL
+`29640599029` passed 3,214 zero-skipped tests, coverage, package, artifact smoke, SBOM, packaged runtime, Docker
+build/runtime, controlled container evidence, and Trivy. The source branch remains preserved on origin. Final PR2
+composition was 1,389 implementation/test and 186 required process added lines (88.17% / 11.83%).
+
+PR3 scope: expose one immutable installed-allocation read-back object that is the same atomic object consulted for new
+loopback routing decisions. It must carry logical router generation, the durable canonical allocation fingerprint,
+backend eligibility, injectable-clock installation time, bounded installation reason, and responsible ownership
+generation. Candidate and baseline replacement must atomically publish a complete object, stale ownership generations
+and generation regression must fail closed, and evidence serialization must be deterministic and bounded. Preserve the
+existing allocation snapshot/receipt compatibility surface while adding independently verifiable read-back.
+
+Out of scope: durable transaction coordination, store writes, startup/takeover reconciliation, experiment admission
+changes, operator endpoints/commands, subprocess proofs, POM/dependency/workflow/Docker/Compose changes, external
+targets, caller-supplied owner generations, databases/brokers, multi-host/network-filesystem behavior, production
+traffic, and production readiness.
+
+Pre-edit audit: the router already atomically publishes immutable allocation snapshots through an `AtomicReference`,
+and routes read that reference independently of experiment journal state. Mutations are synchronized and ownership-
+fenced, but the atomic object lacks installation timestamp/reason/owner generation, backend eligibility evidence, and a
+fingerprint shared with durable allocation records. Logical revision is tracked separately in a mutable field, so there
+is no single independently serializable read-back object covering allocation plus its installation provenance. PR3 will
+wrap the existing normalized allocation snapshot rather than duplicate routing or normalization.
+
+Decision: add the smallest installed-state model/codec and change the router's atomic reference to that complete object,
+while retaining `currentSnapshot()` as a compatibility projection. Add fixed-clock, fingerprint equivalence, safe
+default, stale/regressing generation, canonical serialization, tamper, and concurrent complete-read tests before full
+verification. Preserve and exclude the unrelated untracked
+`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md`.
+
+Locally verified executable commit: `239270cfb4463cac707fb66e78794c332b9e1ef8`. The router now atomically publishes
+one immutable installed-allocation snapshot and uses that same object's routing projection for new routes. The snapshot
+binds logical router generation, the durable codec's canonical allocation fingerprint, backend eligibility, injected-
+clock installation time, bounded reason, and authoritative owner generation. Candidate and baseline installations are
+complete atomic replacements; owner-generation regression and stale ownership fail closed. The bounded strict codec
+provides deterministic canonical read-back without journal dependence or read side effects.
+
+Focused verification passed 29 tests; the corrected eight-class allocation/experiment/ownership selector passed 73.
+`mvn -B package` passed 3,222 tests in 454 suites with zero failures, errors, or skips and produced the executable JAR at
+SHA-256 `987531f5d6f764ba782390a8c17644288d7c90397afd6e9584c18621e5adf2a6`. JaCoCo reported 84.58% instruction,
+67.76% branch, and 84.18% line coverage across 869 classes; Tomcat resolves at 10.1.55; both 144-component BOMs
+validated; and the packaged health smoke returned 200 on literal `127.0.0.1:18080`. Docker Desktop's Linux engine is
+absent and Trivy is not installed, so the logged local container/scan failures are not claimed green and exact-head
+remote Docker/runtime/controlled-evidence/Trivy gates remain mandatory.
+
+Scope/composition audit: the seven-file executable slice has 952 implementation/test and 123 required process added
+lines (88.56% / 11.44%) before this local-verification checkpoint. It changes no POM, dependency, workflow, Docker,
+Compose, controller, configuration, external target, process, database/broker, arbitrary path, journal, or production
+surface. `git diff --cached --check` and the literal security scan passed; the negative password fixture remains an
+intentional redaction test. Commit this checkpoint, run no-test packaging on its exact head, push, and open PR3. Merge
+only after every exact-head gate and then exact merge-main CI and CodeQL are green.
+
+PR-creation checkpoint: PR #475 opened from pushed head `c002215ee580844fbe719089d2716a6316645463` with the
+executable scope, local evidence, safety audit, composition, and not-proven boundaries above. That head passed
+`mvn -B "-DskipTests" package` and produced executable JAR SHA-256
+`e38a2cda7ce287712ed5298d7e4874d854b3086bfc3c78b46e4917f294449e74`. Commit and push this required checkpoint;
+all checks on the pre-checkpoint head are stale and cannot authorize merge.
+
+## Completed Durable Allocation-State Supervision PR2 Checkpoint
 
 Timestamp: 2026-07-18T02:40-07:00
 

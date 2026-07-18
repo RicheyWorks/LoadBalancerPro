@@ -7,6 +7,7 @@ import com.richmond423.loadbalancerpro.core.TrafficAllocationGuardrailDecision;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackAllocationSnapshot.Kind;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackRequestClient.Execution;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
@@ -30,15 +31,16 @@ public final class EnterpriseLabLoopbackAllocationRouter {
     private final boolean scenarioAllowsInfluence;
     private final EnterpriseLabLoopbackRequestClient requestClient;
     private final EnterpriseLabLoopbackAllocationSnapshot baseline;
-    private final AtomicReference<EnterpriseLabLoopbackAllocationSnapshot> current;
+    private final EnterpriseLabInstalledAllocationSnapshot baselineInstalled;
+    private final AtomicReference<EnterpriseLabInstalledAllocationSnapshot> current;
     private final Optional<EnterpriseLabEvidenceMutationAuthority> mutationAuthority;
-    private long nextRevision;
+    private final Clock clock;
 
     public EnterpriseLabLoopbackAllocationRouter(
             Collection<EnterpriseLabLoopbackTarget> targets,
             EnterpriseLabLoopbackObservationIngress observationIngress,
             Map<String, Double> baselineAllocations) {
-        this(targets, observationIngress, baselineAllocations, Optional.empty());
+        this(targets, observationIngress, baselineAllocations, Optional.empty(), Clock.systemUTC());
     }
 
     EnterpriseLabLoopbackAllocationRouter(
@@ -46,6 +48,15 @@ public final class EnterpriseLabLoopbackAllocationRouter {
             EnterpriseLabLoopbackObservationIngress observationIngress,
             Map<String, Double> baselineAllocations,
             Optional<EnterpriseLabEvidenceMutationAuthority> mutationAuthority) {
+        this(targets, observationIngress, baselineAllocations, mutationAuthority, Clock.systemUTC());
+    }
+
+    EnterpriseLabLoopbackAllocationRouter(
+            Collection<EnterpriseLabLoopbackTarget> targets,
+            EnterpriseLabLoopbackObservationIngress observationIngress,
+            Map<String, Double> baselineAllocations,
+            Optional<EnterpriseLabEvidenceMutationAuthority> mutationAuthority,
+            Clock clock) {
         List<EnterpriseLabLoopbackTarget> safeTargets = List.copyOf(
                 Objects.requireNonNull(targets, "targets cannot be null"));
         if (safeTargets.isEmpty() || safeTargets.size() > EnterpriseLabLoopbackAllocationSnapshot.HARD_MAX_BACKENDS) {
@@ -62,6 +73,9 @@ public final class EnterpriseLabLoopbackAllocationRouter {
                 .orElseThrow()
                 .safeForInfluenceExperiment();
         this.requestClient = new EnterpriseLabLoopbackRequestClient(safeTargets, observationIngress);
+        this.mutationAuthority = Objects.requireNonNull(
+                mutationAuthority, "mutationAuthority cannot be null");
+        this.clock = Objects.requireNonNull(clock, "clock cannot be null");
         this.baseline = EnterpriseLabLoopbackAllocationSnapshot.normalized(
                 scenarioId,
                 0,
@@ -69,10 +83,13 @@ public final class EnterpriseLabLoopbackAllocationRouter {
                 Kind.BASELINE,
                 approvedBackendIds,
                 baselineAllocations);
-        this.current = new AtomicReference<>(baseline);
-        this.mutationAuthority = Objects.requireNonNull(
-                mutationAuthority, "mutationAuthority cannot be null");
-        this.nextRevision = 0;
+        Optional<MutationAuthorization> initialAuthorization = requireMutationAuthorization();
+        this.baselineInstalled = EnterpriseLabInstalledAllocationSnapshot.installed(
+                baseline,
+                this.clock,
+                "SAFE_DEFAULT_INITIALIZED",
+                ownerGeneration(initialAuthorization));
+        this.current = new AtomicReference<>(baselineInstalled);
     }
 
     public EnterpriseLabLoopbackAllocationSnapshot baselineSnapshot() {
@@ -80,6 +97,15 @@ public final class EnterpriseLabLoopbackAllocationRouter {
     }
 
     public EnterpriseLabLoopbackAllocationSnapshot currentSnapshot() {
+        return installedSnapshot().routingSnapshot();
+    }
+
+    public EnterpriseLabInstalledAllocationSnapshot baselineInstalledSnapshot() {
+        return baselineInstalled;
+    }
+
+    /** Atomic side-effect-free read-back of the object used for new route selection. */
+    public EnterpriseLabInstalledAllocationSnapshot installedSnapshot() {
         return current.get();
     }
 
@@ -87,7 +113,9 @@ public final class EnterpriseLabLoopbackAllocationRouter {
             EnterpriseLabAdaptiveDecision adaptiveDecision,
             boolean experimentExplicitlyEnabled) {
         Optional<MutationAuthorization> authorization = requireMutationAuthorization();
-        EnterpriseLabLoopbackAllocationSnapshot previous = current.get();
+        EnterpriseLabInstalledAllocationSnapshot previousInstalled = current.get();
+        requireNonRegressingOwnerGeneration(authorization, previousInstalled);
+        EnterpriseLabLoopbackAllocationSnapshot previous = previousInstalled.routingSnapshot();
         if (!experimentExplicitlyEnabled) {
             return AllocationChangeReceipt.denied(previous, baseline,
                     "Enterprise Lab allocation actuation requires explicit enablement");
@@ -126,7 +154,7 @@ public final class EnterpriseLabLoopbackAllocationRouter {
         try {
             candidate = EnterpriseLabLoopbackAllocationSnapshot.normalized(
                     scenarioId,
-                    nextRevision + 1,
+                    previousInstalled.routerGeneration() + 1L,
                     adaptiveDecision.decision().decisionId(),
                     Kind.CANDIDATE,
                     approvedBackendIds,
@@ -141,8 +169,14 @@ public final class EnterpriseLabLoopbackAllocationRouter {
         }
 
         requireSameMutationAuthorization(authorization);
-        nextRevision++;
-        current.set(candidate);
+        requireNonRegressingOwnerGeneration(authorization, previousInstalled);
+        EnterpriseLabInstalledAllocationSnapshot installed =
+                EnterpriseLabInstalledAllocationSnapshot.installed(
+                        candidate,
+                        clock,
+                        "APPROVED_CANDIDATE_APPLIED",
+                        ownerGeneration(authorization));
+        current.set(installed);
         return AllocationChangeReceipt.applied(previous, candidate, baseline,
                 "approved allocation atomically replaced the Enterprise Lab loopback snapshot");
     }
@@ -150,22 +184,30 @@ public final class EnterpriseLabLoopbackAllocationRouter {
     public synchronized AllocationChangeReceipt restoreBaseline(String reason) {
         Optional<MutationAuthorization> authorization = requireMutationAuthorization();
         String safeReason = requireBoundedReason(reason);
-        EnterpriseLabLoopbackAllocationSnapshot previous = current.get();
+        EnterpriseLabInstalledAllocationSnapshot previousInstalled = current.get();
+        requireNonRegressingOwnerGeneration(authorization, previousInstalled);
+        EnterpriseLabLoopbackAllocationSnapshot previous = previousInstalled.routingSnapshot();
         if (previous.sameAllocations(baseline)) {
             return AllocationChangeReceipt.noChange(previous, baseline,
                     "recorded baseline is already active: " + safeReason);
         }
         requireSameMutationAuthorization(authorization);
-        nextRevision++;
+        requireNonRegressingOwnerGeneration(authorization, previousInstalled);
         EnterpriseLabLoopbackAllocationSnapshot restored =
                 EnterpriseLabLoopbackAllocationSnapshot.normalized(
                         scenarioId,
-                        nextRevision,
+                        previousInstalled.routerGeneration() + 1L,
                         "baseline-restore",
                         Kind.RESTORED_BASELINE,
                         approvedBackendIds,
                         baseline.allocations());
-        current.set(restored);
+        EnterpriseLabInstalledAllocationSnapshot installed =
+                EnterpriseLabInstalledAllocationSnapshot.installed(
+                        restored,
+                        clock,
+                        "BASELINE_RESTORED: " + safeReason,
+                        ownerGeneration(authorization));
+        current.set(installed);
         return AllocationChangeReceipt.restored(previous, restored, baseline,
                 "recorded baseline atomically restored: " + safeReason);
     }
@@ -175,7 +217,10 @@ public final class EnterpriseLabLoopbackAllocationRouter {
             long selectionOrdinal,
             Duration timeout) {
         Optional<MutationAuthorization> authorization = requireMutationAuthorization();
-        EnterpriseLabLoopbackAllocationSnapshot selectedSnapshot = current.get();
+        EnterpriseLabInstalledAllocationSnapshot selectedInstalled = current.get();
+        requireNonRegressingOwnerGeneration(authorization, selectedInstalled);
+        EnterpriseLabLoopbackAllocationSnapshot selectedSnapshot =
+                selectedInstalled.routingSnapshot();
         String backendId = selectedSnapshot.selectBackend(selectionOrdinal);
         requireSameMutationAuthorization(authorization);
         Execution execution = requestClient.get(requestId, backendId, timeout);
@@ -204,6 +249,22 @@ public final class EnterpriseLabLoopbackAllocationRouter {
         MutationAuthorization currentAuthorization = mutationAuthority.orElseThrow()
                 .requireMutationAuthorization();
         expected.orElseThrow().requireSameEpoch(currentAuthorization);
+    }
+
+    private static long ownerGeneration(Optional<MutationAuthorization> authorization) {
+        return authorization.map(MutationAuthorization::generation)
+                .orElse(EnterpriseLabInstalledAllocationSnapshot.UNOWNED_GENERATION);
+    }
+
+    private static void requireNonRegressingOwnerGeneration(
+            Optional<MutationAuthorization> authorization,
+            EnterpriseLabInstalledAllocationSnapshot installed) {
+        long currentGeneration = ownerGeneration(authorization);
+        if (currentGeneration < installed.ownerGeneration()) {
+            throw new EnterpriseLabEvidenceOwnershipException(
+                    EnterpriseLabEvidenceOwnership.FailureClassification.RECORD_REPLACED,
+                    "router ownership generation regressed below installed state");
+        }
     }
 
     private static String singleScenarioId(List<EnterpriseLabLoopbackTarget> targets) {

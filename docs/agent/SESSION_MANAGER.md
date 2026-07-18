@@ -16,7 +16,7 @@ Started from clean synchronized main: `44eb73af50fce4b2e961a0d29a59badc185482f2`
 
 Current branch: `codex/allocation-state-model-codec`
 
-PR URL: not opened
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/473
 
 Locally verified executable commit: `4fc5b790163a29a341a4128782529d81884e1e39`
 
@@ -75,6 +75,12 @@ verified executable tree; all remote gates must match the eventual pushed checkp
 Decision: commit the exact locally green staged slice, record its exact SHA, and open PR1 with this evidence. Merge only
 after fresh exact-head CI, CodeQL, dependency review, code scanning, Docker/runtime, SBOM, and Trivy are green; then
 require merge-main CI and CodeQL before PR2.
+
+PR-creation checkpoint: PR #473 opened from pushed head
+`05542870966db6994e56b7c7e17096ec06070f35` with the executable scope, verification, composition, local Trivy
+limitation, safety audit, and not-proven boundaries above. Exact-checkpoint `mvn -B "-DskipTests" package` passed and
+produced JAR SHA-256 `656d87c7373e720e1d0e70a3f3080b4913745cfe0a062ff0e2fea11489a301d0`. This required PR checkpoint moves the
+branch head, so checks on `05542870` are stale; push the checkpoint and require all remote gates on the new exact head.
 
 ## Completed Single-Host Evidence Ownership PR6 Checkpoint
 

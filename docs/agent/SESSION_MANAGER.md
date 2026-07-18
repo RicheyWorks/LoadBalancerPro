@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Durable Allocation-State Supervision PR4 Checkpoint
 
-Timestamp: 2026-07-18T04:22-07:00
+Timestamp: 2026-07-18T04:46-07:00
 
 Current slot: ALLOCATION-PR4 - crash-safe owned allocation transaction coordinator
 
@@ -31,11 +31,29 @@ epoch continuity across those existing components. The router now owns one side-
 seam reused by both coordinator preflight and apply, avoiding a second normalization implementation. The store now
 rejects skipped phase transitions and new transactions that would supersede an incomplete unsafe head.
 
-Current executable evidence: the coordinator/store/router selector passes 34 tests and the expanded eleven-class
-allocation, router, experiment, operator, and ownership selector passes 108, all with zero failures, errors, or skips.
-Coverage includes normal intent/apply/read-back/commit, illegal phase skips, crash after intent, crash after apply,
-response loss after commit, drifted replay, mismatched and unavailable read-back, verified and unverifiable restoration,
-owner replacement after intent/apply/read-back, wrong installed owner generation, and concurrent identical requests.
+Executable checkpoint: `84ce0bfaa8d201bd99e09bf9583bd266865dff51`. The final coordinator/store/router
+selector passes 36 tests and the expanded eleven-class allocation, router, experiment, operator, and ownership selector
+passes 110, all with zero failures, errors, or skips. The exact full `mvn -B package` passes 3,239 tests with zero
+failures, errors, or skips. The 12-class shared campaign-documentation guard passes 69 tests with zero skips. JaCoCo
+reports 84.58% instruction, 67.76% branch, and 84.19% line coverage.
+
+Failure-boundary evidence covers normal intent/apply/independent-read-back/commit, illegal phase skips, pre-intent
+denial, unsafe receipt rejection, crashes after intent and router apply, response loss after commit with exact replay,
+drifted committed replay, durable commit-record failure, mismatched and unavailable read-back, verified and
+unverifiable restoration, owner replacement after intent/apply/matching read-back, wrong installed owner generation,
+and concurrent identical requests. Durable success is emitted only after the exact candidate fingerprint, installed
+allocation, router generation, and original ownership epoch match; uncertainty and drift fail closed.
+
+The packaged JAR SHA-256 is `a9c4ecf181a3bc301daebea4561f4c005b8f292909ee19ac5724bfedb83b64a5` with
+1,263 entries and the coordinator, allocation store, and loopback router classes present. CycloneDX XML and JSON each
+contain 144 components, and the resolved embedded Tomcat coordinates are core, EL, and WebSocket `10.1.55` only.
+Packaged health returned HTTP 200 on literal `127.0.0.1:18080`; the ten-scenario shadow workflow, thirteen-scenario
+837-request experiment proof, 124-request durable recovery proof, and separate-process generation 1/2/3 ownership
+denial/takeover/rollback proof are green with their deterministic fingerprints recorded in the local verification log.
+
+Local Docker/runtime and Trivy are not run or claimed green because the Desktop Linux engine pipe and `trivy`
+executable are unavailable, as logged. Exact-head remote Docker build/runtime, controlled container evidence, and the
+blocking HIGH/CRITICAL Trivy scan remain mandatory before merge and again on merge-main.
 
 Out of scope: startup/takeover reconciliation, readiness/admission integration, operator endpoints, proof subprocesses,
 schedulers, journal schema changes, POM/dependency/workflow/Docker/Compose changes, external targets, arbitrary paths,
@@ -43,8 +61,19 @@ caller-selected generations or phases, databases/brokers, multi-host/network-fil
 and production readiness. Preserve and exclude the unrelated untracked
 `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md`.
 
-Decision: continue PR4 through focused failure-boundary review, full local verification, exact-head remote gates, normal
-merge without source-branch deletion, and exact merge-main CI/CodeQL before PR5.
+Scope audit: the exact PR diff adds no POM, dependency, workflow, Docker, Compose, application-resource, controller,
+endpoint, scheduler, executor, background thread, external target, arbitrary path, database, broker, caller-selected
+generation/phase, force/bypass surface, or production activation. It persists only bounded sanitized evidence through
+the existing controlled single-host store and keeps startup/takeover reconciliation, readiness/admission integration,
+multi-host/network-filesystem correctness, malicious-process resistance, and production readiness not proven.
+
+Composition: PR4 has 1,922 executable/test additions and 169 required process additions (91.92% / 8.08%). The campaign
+aggregate through this checkpoint is 5,715 executable/test and 688 process additions (89.26% / 10.74%), inside the
+goal's 88-92% executable and 8-12% documentation/process band.
+
+Decision: commit and push this verified local checkpoint, open PR4, record the required PR-creation checkpoint, and
+require every exact-head CI, CodeQL, dependency-review, Docker/runtime/evidence, and Trivy gate before a normal merge
+without source-branch deletion. Do not start PR5 until exact merge-main CI and CodeQL are green.
 
 ## Completed Durable Allocation-State Supervision PR3 Checkpoint
 

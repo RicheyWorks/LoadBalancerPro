@@ -5405,3 +5405,80 @@ record, journal, or external state changed.
 Correction/result: collect each run summary into an array and format the array after the loop, or query the run JSON
 without a trailing statement-block pipe. This required failure checkpoint moves the PR head; treat all checks on
 `f6ff286414197341f6b75640b97e3cd7e359cbb5` as stale and require every gate again on the new exact head.
+
+# 2026-07-18 - Allocation PR3 first focused fingerprint assertion used the pre-guardrail vector
+
+Branch/PR: `codex/router-installed-allocation-readback` / no PR
+
+Failing check: first installed-snapshot/router/codec focused selector; 29 tests ran with one assertion failure, zero
+errors, and zero skips.
+
+Observed/root cause: the new candidate provenance test computed its expected fingerprint from the adaptive decision's
+pre-guardrail `effectiveAllocations()`. The router intentionally installs the separately authorized guardrail decision's
+`effectiveAllocations()`, so the independent read-back fingerprint correctly differed from the test's wrong expected
+vector. The installed snapshot was internally fingerprint-consistent and no filesystem, route request, remote, or
+external target was changed by the assertion.
+
+Correction/result: compute the independent expected fingerprint from
+`decision().guardrailDecision().effectiveAllocations()`, the exact vector authorized and passed into router
+normalization. Rerun the complete focused selector without changing router behavior or weakening fingerprint checks.
+
+# 2026-07-18 - Allocation PR3 corrected expected vector still omitted canonical residual normalization
+
+Branch/PR: `codex/router-installed-allocation-readback` / no PR
+
+Failing check: second installed-snapshot/router/codec focused selector; 29 tests again ran with one assertion failure,
+zero errors, and zero skips.
+
+Observed/root cause: the corrected test selected the guardrail-authorized allocation, but fingerprinted its raw double
+map before the existing router normalization applied the bounded floating-point residual. The router read-back
+fingerprinted the canonical normalized map actually used for routing. Durable allocation records reuse that same exact
+normalization, so the product value remained correct and internally consistent.
+
+Correction/result: pass the authorized vector through
+`EnterpriseLabLoopbackAllocationSnapshot.exactNormalizedAllocations(...)` before computing the independent durable
+fingerprint expectation. Keep exact bit-level fingerprint comparison; do not introduce epsilon-based fingerprinting.
+
+# 2026-07-18 - Allocation PR3 fingerprint trace used a Windows wildcard source path
+
+Branch/PR: `codex/router-installed-allocation-readback` / no PR
+
+Failing operation: a read-only source trace named the explicit router file and
+`EnterpriseLabAdaptiveDecision*.java` as a Windows path.
+
+Observed/root cause: Windows rejected the wildcard path before ripgrep could search it. The explicit router match still
+printed, but the compound command exited nonzero and is not treated as a complete audit. No source, build, Git, router,
+remote, or external state changed.
+
+Correction/result: use `rg --files` plus a filename filter or ripgrep `-g` for wildcard source selection. The relevant
+router line is already explicit and the corrected fingerprint test uses the established normalization API directly.
+
+# 2026-07-18 - Allocation PR3 expanded selector and report sum named a nonexistent recovery test
+
+Branch/PR: `codex/router-installed-allocation-readback` / no PR
+
+Failing evidence step: the expanded Maven selector and subsequent XML summation named
+`EnterpriseLabProcessLocalAllocationRecoveryTest`, but no test class or Surefire report has that name.
+
+Observed/root cause: Surefire ran the other eight explicitly named classes successfully and did not create a report for
+the nonexistent selector. The summation command then failed on the missing XML and printed an incomplete 73-test total.
+No product test failed, but neither the silently absent selector nor the failed summation is accepted as complete
+expanded evidence.
+
+Correction/result: discover the actual selected test files with `rg --files`, rerun only the eight existing classes,
+and sum exactly their eight reports. Do not claim a process-local recovery test that the repository does not contain.
+
+# 2026-07-18 - Allocation PR3 local Docker engine and Trivy executable are unavailable
+
+Branch/PR: `codex/router-installed-allocation-readback` / no PR
+
+Failing checks: local Docker runtime/server-version probe and local HIGH/CRITICAL Trivy image-scan tooling probe.
+
+Observed/root cause: Docker CLI is installed, but the Desktop Linux engine named pipe remains absent, and PowerShell
+still reports no `trivy` command. No image build, runtime container, scan, external target, allocation, router,
+ownership, journal, repository, or remote state changed by either probe.
+
+Correction/result: no repository correction applies. Compilation, focused/expanded tests, the 3,222-test package,
+coverage, dependency resolution, artifact inspection, CycloneDX, and packaged literal-loopback smoke are green. Local
+Docker/runtime and Trivy remain not run and not green; require the unchanged exact-head remote image build/runtime,
+controlled container evidence, and blocking Trivy scan before PR3 merge and again on merge-main.

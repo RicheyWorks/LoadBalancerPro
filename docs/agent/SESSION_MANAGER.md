@@ -6,7 +6,52 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Durable Allocation-State Supervision PR2 Checkpoint
+## Active Durable Allocation-State Supervision PR3 Checkpoint
+
+Timestamp: 2026-07-18T03:25-07:00
+
+Current slot: ALLOCATION-PR3 - atomic router installed-state introspection and canonical read-back evidence
+
+Started from clean synchronized main: `ad6006b1ef11c3c97418cdebab36f562da83019b`
+
+Current branch: `codex/router-installed-allocation-readback`
+
+PR URL: not opened yet
+
+Prior slot closure: PR #474 merged normally from exact head
+`fb919c503b0e514ab56d47fde75cab48576d17da` as `ad6006b1ef11c3c97418cdebab36f562da83019b`.
+Exact-head PR CI `29640390665`, push CI `29640389442`, CodeQL `29640390633`, dependency review, code scanning,
+Docker/runtime evidence, SBOM, and blocking Trivy passed. Exact merge-main CI `29640599039` and CodeQL
+`29640599029` passed 3,214 zero-skipped tests, coverage, package, artifact smoke, SBOM, packaged runtime, Docker
+build/runtime, controlled container evidence, and Trivy. The source branch remains preserved on origin. Final PR2
+composition was 1,389 implementation/test and 186 required process added lines (88.17% / 11.83%).
+
+PR3 scope: expose one immutable installed-allocation read-back object that is the same atomic object consulted for new
+loopback routing decisions. It must carry logical router generation, the durable canonical allocation fingerprint,
+backend eligibility, injectable-clock installation time, bounded installation reason, and responsible ownership
+generation. Candidate and baseline replacement must atomically publish a complete object, stale ownership generations
+and generation regression must fail closed, and evidence serialization must be deterministic and bounded. Preserve the
+existing allocation snapshot/receipt compatibility surface while adding independently verifiable read-back.
+
+Out of scope: durable transaction coordination, store writes, startup/takeover reconciliation, experiment admission
+changes, operator endpoints/commands, subprocess proofs, POM/dependency/workflow/Docker/Compose changes, external
+targets, caller-supplied owner generations, databases/brokers, multi-host/network-filesystem behavior, production
+traffic, and production readiness.
+
+Pre-edit audit: the router already atomically publishes immutable allocation snapshots through an `AtomicReference`,
+and routes read that reference independently of experiment journal state. Mutations are synchronized and ownership-
+fenced, but the atomic object lacks installation timestamp/reason/owner generation, backend eligibility evidence, and a
+fingerprint shared with durable allocation records. Logical revision is tracked separately in a mutable field, so there
+is no single independently serializable read-back object covering allocation plus its installation provenance. PR3 will
+wrap the existing normalized allocation snapshot rather than duplicate routing or normalization.
+
+Decision: add the smallest installed-state model/codec and change the router's atomic reference to that complete object,
+while retaining `currentSnapshot()` as a compatibility projection. Add fixed-clock, fingerprint equivalence, safe
+default, stale/regressing generation, canonical serialization, tamper, and concurrent complete-read tests before full
+verification. Preserve and exclude the unrelated untracked
+`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md`.
+
+## Completed Durable Allocation-State Supervision PR2 Checkpoint
 
 Timestamp: 2026-07-18T02:40-07:00
 

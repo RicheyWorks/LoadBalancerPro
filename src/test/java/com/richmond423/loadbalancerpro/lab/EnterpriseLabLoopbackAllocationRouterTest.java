@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -155,6 +156,7 @@ class EnterpriseLabLoopbackAllocationRouterTest {
             EnterpriseLabLoopbackAllocationRouter router = new EnterpriseLabLoopbackAllocationRouter(
                     targets, ingress, candidate.decision().request().baselineAllocations());
             assertEquals(ChangeStatus.APPLIED, router.applyCandidate(candidate, true).status());
+            EnterpriseLabInstalledAllocationSnapshot candidateReadBack = router.installedSnapshot();
 
             Map<String, Integer> expected = new LinkedHashMap<>();
             BACKEND_IDS.forEach(backendId -> expected.put(backendId, 0));
@@ -162,6 +164,7 @@ class EnterpriseLabLoopbackAllocationRouterTest {
                 String selected = router.currentSnapshot().selectBackend(ordinal);
                 expected.computeIfPresent(selected, (backendId, count) -> count + 1);
                 var execution = router.route("allocated-request-" + ordinal, ordinal, Duration.ofSeconds(1));
+                assertSame(candidateReadBack.routingSnapshot(), execution.allocationSnapshot());
                 assertEquals(selected, execution.selectedBackendId());
                 assertTrue(execution.requestExecution().requestSent());
                 assertEquals(204, execution.requestExecution().responseStatusCode().orElseThrow());
@@ -178,6 +181,7 @@ class EnterpriseLabLoopbackAllocationRouterTest {
 
             router.restoreBaseline("integration proof complete");
             var safeRoute = router.route("baseline-request", 61, Duration.ofSeconds(1));
+            assertSame(router.installedSnapshot().routingSnapshot(), safeRoute.allocationSnapshot());
             assertFalse(safeRoute.candidateAllocationUsed());
             assertFalse(safeRoute.trafficActionPerformed());
             assertEquals(Kind.RESTORED_BASELINE, safeRoute.allocationSnapshot().kind());

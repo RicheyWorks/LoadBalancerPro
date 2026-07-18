@@ -18,6 +18,8 @@ Current branch: `codex/ownership-mutation-fencing`
 
 PR URL: pending
 
+Executable commit: `ed4505a821d8535fca74d7e4e5f374675fca1555`
+
 Prior slot closure: PR #470 merged normally from exact head `cd05ec1b67f93815d3c9ba7713c0a3bcacf7e504`
 as `ddf196181b307bb063a92b2af707c0b572b80fc5`. Exact-head PR CI `29623910410`, push CI
 `29623909016`, CodeQL `29623910369`, dependency review, and code scanning passed. Exact merge-main CI
@@ -46,15 +48,21 @@ baseline restoration green.
 
 Scope and composition audit: `git diff --cached --check` passes with only line-ending conversion warnings. The 27-file
 slice contains no POM, dependency, workflow, Docker, Compose, generated evidence, secret, external target, coordination
-service, process/network API, caller owner/generation override, or force-unlock change. PR5 currently has 1,256
-implementation/test and 191 required documentation/process changed lines (86.80% / 13.20%); the authoritative campaign
-diff from `a3fc534fd7d5d9ab80a7cd556ca2dbc9e129eb82` has 6,647 implementation/test and 793 documentation/process changed
-lines (89.34% / 10.66%), inside the requested campaign band. Docker CLI 28.0.4 cannot reach the absent local Desktop
+service, process/network API, caller owner/generation override, or force-unlock change. Through executable commit
+`ed4505a821d8535fca74d7e4e5f374675fca1555`, PR5 has 1,256 implementation/test and 191 required documentation/process
+changed lines (86.80% / 13.20%); the campaign diff from `a3fc534fd7d5d9ab80a7cd556ca2dbc9e129eb82` through that
+commit has 6,647 implementation/test and 793 documentation/process changed lines (89.34% / 10.66%), inside the requested
+campaign band. Docker CLI 28.0.4 cannot reach the absent local Desktop
 Linux engine and Trivy is not installed; that environment failure is logged, and those gates remain not run locally.
 
-Decision: create the executable checkpoint, run the exact-commit skip-test package and final head audit, then push and
-require unchanged repository-native exact-head Docker/runtime/Trivy, CI, CodeQL, and dependency gates before merge and
-OWNERSHIP-PR6.
+Decision: push this PR-created checkpoint and require unchanged repository-native exact-head Docker/runtime/Trivy, CI,
+CodeQL, and dependency gates before merge and OWNERSHIP-PR6.
+
+Executable-checkpoint result: exact commit `ed4505a821d8535fca74d7e4e5f374675fca1555` passed
+`mvn -B "-DskipTests" package`; its executable JAR SHA-256 was
+`31060893582ec9cf23846bf10f6fa38ce2399b7654f659e0248006910e084fa4`. The worktree and exact 27-file head audit were
+clean before this required checkpoint update. Push the checkpoint commit and require fresh exact-head remote gates;
+pre-checkpoint results cannot authorize merge.
 
 ## Completed Single-Host Evidence Ownership PR4 Checkpoint
 

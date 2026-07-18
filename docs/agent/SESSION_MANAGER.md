@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Single-Host Evidence Ownership PR4 Checkpoint
 
-Timestamp: 2026-07-17T18:00-07:00
+Timestamp: 2026-07-17T17:46-07:00
 
 Current slot: OWNERSHIP-PR4 - stale-owner classification and bounded reconciled takeover
 
@@ -18,13 +18,15 @@ Current branch: `codex/ownership-stale-takeover`
 
 PR URL: pending
 
+Executable commit: `9135c38fe6fc1d5b19b7ccd31157af5a734a0813`
+
 Prior slot closure: PR #469 merged normally from exact head `e36fa7b6622d8e51eb1afd0faae2703d988eaee1`
 as `f4ca5d3c747aea3ae96d12b189b2a9a2048bc13c`. Exact-head PR CI `29622320332`, push CI
 `29622318758`, CodeQL `29622320333`, code scanning, and dependency review passed. Exact merge-main CI
 `29622571203` and CodeQL `29622571229` passed 3,157 zero-skipped tests plus package, coverage, SBOM, packaged runtime,
 Docker runtime, and Trivy.
 
-Executable scope in progress: classify durable prior ownership only after acquiring the controlled exclusive OS lock;
+Executable scope: classify durable prior ownership only after acquiring the controlled exclusive OS lock;
 refuse unexpired active-looking records; recognize released, expired abrupt, and incomplete-takeover evidence; archive
 the exact prior record; establish generation plus one through forced atomic exact-read-back transitions; run the existing
 startup reconciler while the lock remains held; and publish a live ownership gate only after reconciliation succeeds.
@@ -37,11 +39,27 @@ between same-JVM `OverlappingFileLockException` (`DUPLICATE_ACQUISITION`) and cr
 ownership/takeover/startup selector now passes, including
 interrupted temporary recovery, exact post-install readback recovery, clean and abrupt takeover, incomplete takeover,
 unsafe reconciliation, corrupt and incompatible records, clock and directory mismatch, overflow, and contention. Full
-`mvn -q test` passes 3,172 tests in 448 suites with zero failures, errors, or skips. Exact-head package/proof verification
-remains pending.
+`mvn -q test` and exact executable-head `mvn -B package` pass 3,172 tests in 448 suites with zero failures, errors, or
+skips. The packaged 13-scenario/837-request experiment proof passes at fingerprint
+`53cc9589807ae6d2625311611cbac730826790f7b15a96d4c875250f32596db5`; the packaged 124-request durable recovery proof
+passes at `3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2ed839ff7afd6a`. Tomcat resolves at 10.1.55, JaCoCo analyzes
+827 classes, CycloneDX validates 144-component XML/JSON BOMs, and the executable JAR SHA-256 is
+`d9d6cac056a1b9645609d9871a51a90925867630e4950dd4ab011a879e52620e` with manager, takeover-attempt, record-store,
+and existing startup-reconciler classes present.
 
-Decision: complete behavioral and failure-injection coverage, require the focused and full local gates, audit scope and
-composition, then open one executable PR and require exact-head and merge-main gates before OWNERSHIP-PR5.
+Scope audit: the exact diff changes only the ownership model, lease, manager, controlled ownership paths/store, root
+identity exposure for the existing journal directory/reconciler, one behavioral takeover test, and required campaign
+checkpoints. It adds no POM, dependency, workflow, Docker, Compose, controller, endpoint, scheduler, external target,
+caller-selected owner/generation, force unlock, lock-file deletion, or generated evidence. PR4 remains single-host,
+local-filesystem-only, and does not claim startup wiring, broad mutation fencing, separate-process proof,
+network-filesystem correctness, distributed fencing, malicious-process resistance, or production readiness.
+
+Composition: PR4 has 1,339 implementation/test changed lines and 55 documentation/process changed lines (96.05% /
+3.95%). The exact campaign diff from `a3fc534fd7d5d9ab80a7cd556ca2dbc9e129eb82` through the executable PR4 commit has
+5,399 implementation/test and 608 documentation/process changed lines (89.88% / 10.12%).
+
+Decision: commit this checkpoint, push the branch, open one executable PR, and require exact-head and merge-main gates
+before OWNERSHIP-PR5.
 
 ## Completed Single-Host Evidence Ownership PR3 Checkpoint
 

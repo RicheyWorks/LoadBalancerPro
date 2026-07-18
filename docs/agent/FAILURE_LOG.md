@@ -5305,3 +5305,103 @@ build, Git, or remote state changed.
 
 Correction/result: rerun external-target detection with `rg --pcre2` and use separate literal security scans so required
 allocation record fields are not mistaken for caller-controlled API inputs.
+
+# 2026-07-18 - Allocation PR2 merge-main status summary used fragile inline jq quoting
+
+Branch/PR: `main` after PR #473 / PR2 not opened
+
+Failing operation: a read-only `gh run view --jq` query intended to summarize the active merge-main CI step.
+
+Observed/root cause: PowerShell removed the string quoting around `in_progress`, so jq treated it as a function and
+rejected the local expression. The GitHub run was not changed, cancelled, or retried, and no repository state changed.
+
+Correction/result: retrieve the GitHub JSON unchanged and use PowerShell `ConvertFrom-Json` for status filtering. That
+corrected poll showed Docker and then Trivy progressing; exact merge-main CI `29639328955` and CodeQL `29639328926`
+subsequently completed successfully at `0dae26414020f9aeb2e6a032b82adba3a8f284b2`.
+
+# 2026-07-18 - Allocation PR2 first focused test used a newer ExecutorService close contract
+
+Branch/PR: `codex/allocation-transaction-store` / no PR
+
+Failing check: first `EnterpriseLabAllocationStateStoreTest` Maven selector compilation.
+
+Observed/root cause: the new concurrency regression placed Java 17 `ExecutorService` in try-with-resources, but that
+interface is not `AutoCloseable` on the repository runtime. Maven stopped at test compilation; no test, filesystem
+mutation scenario, packaged runtime, remote check, or external target executed.
+
+Correction/result: retain try-with-resources for both allocation stores, manage the bounded executor with an explicit
+`shutdownNow()` in `finally`, and rerun the same focused selector. No product behavior or safety assertion is relaxed.
+
+# 2026-07-18 - Allocation PR2 first behavioral run misclassified fixed empty-file creation as a concurrent change
+
+Branch/PR: `codex/allocation-transaction-store` / no PR
+
+Failing check: corrected focused `EnterpriseLabAllocationStateStoreTest` selector; 13 tests ran with 12 setup-path
+errors, zero assertion failures, and zero skips.
+
+Observed/root cause: the first append safely creates the fixed empty store file before writing. The pre-create replay
+correctly reported `storePresent=false`, and the immediate stable replay correctly reported `storePresent=true` with
+the same zero records and zero bytes. Comparing the entire read-result value treated that intentional file creation as
+an external concurrent change, so every test that first appended a baseline stopped before writing.
+
+Correction/result: the stability gate now compares the security-relevant chain records and byte length across file
+creation. A newly present but still empty fixed file is accepted; any record or byte change still fails closed. Rerun
+the complete focused selector before drawing behavioral conclusions.
+
+# 2026-07-18 - Allocation PR2 CI-command audit passed a wildcard as a Windows path
+
+Branch/PR: `codex/allocation-transaction-store` / no PR
+
+Failing operation: a read-only search for CI verification commands named both `.github/workflows/ci.yml` and the
+Windows path-shaped `.github/workflows/*.yml` argument.
+
+Observed/root cause: Windows rejected the wildcard path even though ripgrep returned the requested matches from the
+explicit CI file. No workflow, source, build, Git, or remote state changed, and the partial command is not treated as a
+green audit.
+
+Correction/result: use `rg --files .github/workflows` before multi-file searches or search the verified `ci.yml`
+directly. The repository CI commands were then read from the explicit file for dependency, coverage, package, artifact,
+SBOM, packaged-runtime, Docker/runtime, and Trivy verification.
+
+# 2026-07-18 - Allocation PR2 inline packaged-JAR smoke command was rejected before execution
+
+Branch/PR: `codex/allocation-transaction-store` / no PR
+
+Failing check: first local packaged-JAR literal-loopback health smoke.
+
+Observed/root cause: the local command policy rejected the nested inline `Start-Process` PowerShell quoting before
+execution. No Java process started, no port was opened, and no repository, allocation store, ownership record, journal,
+remote, container, or external target state changed.
+
+Correction/result: retain hidden process startup, literal `127.0.0.1`, bounded health polling, target-only logs, and
+unconditional process cleanup, but place the command body in an ignored `target/` PowerShell script before execution.
+
+# 2026-07-18 - Allocation PR2 local Docker engine and Trivy executable are unavailable
+
+Branch/PR: `codex/allocation-transaction-store` / no PR
+
+Failing checks: local Docker runtime/server-version probe and local HIGH/CRITICAL Trivy image-scan tooling probe.
+
+Observed/root cause: Docker CLI is installed, but the Desktop Linux engine named pipe does not exist, so no server or
+image build is reachable. PowerShell also reports no `trivy` command. No image build, runtime container, scan, external
+target, allocation state, ownership record, journal, repository, or remote state was changed by either probe.
+
+Correction/result: no repository correction applies. Host compilation, focused/expanded tests, the 3,214-test package,
+coverage, dependency resolution, artifact inspection, CycloneDX, and packaged literal-loopback smoke are green. Local
+Docker/runtime and Trivy remain not run and not green; require the unchanged repository-native exact-head remote image
+build, runtime smoke, controlled container evidence, and blocking Trivy scan before PR2 merge and again on merge-main.
+
+# 2026-07-18 - Allocation PR2 exact-head status summary had an invalid PowerShell pipeline
+
+Branch/PR: `codex/allocation-transaction-store` / PR #474
+
+Failing operation: a read-only summary of the three exact-head CI/CodeQL runs attempted to pipe directly after a
+PowerShell `foreach` statement block.
+
+Observed/root cause: PowerShell rejected the command locally with `An empty pipe element is not allowed` before any
+GitHub query in the loop executed. No workflow run, PR, branch, repository, container, allocation store, ownership
+record, journal, or external state changed.
+
+Correction/result: collect each run summary into an array and format the array after the loop, or query the run JSON
+without a trailing statement-block pipe. This required failure checkpoint moves the PR head; treat all checks on
+`f6ff286414197341f6b75640b97e3cd7e359cbb5` as stale and require every gate again on the new exact head.

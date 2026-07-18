@@ -304,6 +304,25 @@ class OAuth2AuthorizationTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.reasonCode", is("DURABLE_EVIDENCE_NOT_CONFIGURED")));
 
+        mockMvc.perform(get("/api/lab/experiments/durable/ownership")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.path", is("/api/lab/experiments/durable/ownership")));
+
+        mockMvc.perform(get("/api/lab/experiments/durable/ownership")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.reasonCode", is("DURABLE_EVIDENCE_NOT_CONFIGURED")));
+
+        mockMvc.perform(post("/api/lab/experiments/durable/ownership/verify")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(post("/api/lab/experiments/durable/ownership/verify")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.reasonCode", is("DURABLE_EVIDENCE_NOT_CONFIGURED")));
+
         String body = """
                 {
                   "operatorRequestId":"oauth-arm-1",

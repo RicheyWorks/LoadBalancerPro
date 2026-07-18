@@ -132,6 +132,7 @@ public final class EnterpriseLabEvidenceOwnershipManager {
         ReconciliationStatus reconciliationStatus = ReconciliationStatus.NOT_STARTED;
         try {
             safeFailureInjector.check(FailurePoint.BEFORE_LOCK_OPEN);
+            String expectedLockFileIdentity = safePaths.prepareLockFileIdentity();
             channel = safePaths.openLockChannel();
             lock = acquireBoundedLock(
                     channel, safePolicy, safePaths, safeFailureInjector, safeLockOperation);
@@ -149,9 +150,12 @@ public final class EnterpriseLabEvidenceOwnershipManager {
 
             safeFailureInjector.check(FailurePoint.AFTER_LOCK_ACQUIRED);
             safePaths.verifyDirectoryIdentity();
-            verifyLockedPathStillAuthoritative(safePaths);
             String lockFileIdentity = safePaths.identityOfControlledRegularFile(
                     safePaths.lockFile());
+            if (!expectedLockFileIdentity.equals(lockFileIdentity)) {
+                return failedTakeover(FailureClassification.LOCK_IDENTITY_MISMATCH,
+                        Optional.empty(), Optional.empty(), reconciliationStatus);
+            }
             EnterpriseLabEvidenceOwnershipRecordStore recordStore =
                     new EnterpriseLabEvidenceOwnershipRecordStore(
                             safePaths, new EnterpriseLabEvidenceOwnershipCodec(),
@@ -345,6 +349,7 @@ public final class EnterpriseLabEvidenceOwnershipManager {
         boolean transferred = false;
         try {
             safeFailureInjector.check(FailurePoint.BEFORE_LOCK_OPEN);
+            String expectedLockFileIdentity = safePaths.prepareLockFileIdentity();
             channel = safePaths.openLockChannel();
             lock = acquireBoundedLock(
                     channel, safePolicy, safePaths, safeFailureInjector, safeLockOperation);
@@ -358,9 +363,12 @@ public final class EnterpriseLabEvidenceOwnershipManager {
 
             safeFailureInjector.check(FailurePoint.AFTER_LOCK_ACQUIRED);
             safePaths.verifyDirectoryIdentity();
-            verifyLockedPathStillAuthoritative(safePaths);
             String lockFileIdentity = safePaths.identityOfControlledRegularFile(
                     safePaths.lockFile());
+            if (!expectedLockFileIdentity.equals(lockFileIdentity)) {
+                return failedAttempt(FailureClassification.LOCK_IDENTITY_MISMATCH,
+                        Optional.empty());
+            }
             EnterpriseLabEvidenceOwnershipRecordStore recordStore =
                     new EnterpriseLabEvidenceOwnershipRecordStore(
                             safePaths, new EnterpriseLabEvidenceOwnershipCodec(), safeFailureInjector);
@@ -656,33 +664,6 @@ public final class EnterpriseLabEvidenceOwnershipManager {
             }
         }
         return null;
-    }
-
-    private static void verifyLockedPathStillAuthoritative(
-            EnterpriseLabEvidenceOwnershipPaths paths) {
-        try (FileChannel probeChannel = paths.openLockChannel()) {
-            try {
-                FileLock probe = probeChannel.tryLock(0L, Long.MAX_VALUE, false);
-                if (probe != null) {
-                    probe.release();
-                }
-                throw new EnterpriseLabEvidenceOwnershipException(
-                        FailureClassification.LOCK_IDENTITY_MISMATCH,
-                        "locked ownership file no longer matches its controlled path");
-            } catch (OverlappingFileLockException expected) {
-                // The controlled path resolves to the exact file already locked by this JVM.
-            }
-        } catch (EnterpriseLabEvidenceOwnershipException exception) {
-            throw exception;
-        } catch (UnsupportedOperationException exception) {
-            throw new EnterpriseLabEvidenceOwnershipException(
-                    FailureClassification.LOCK_UNSUPPORTED,
-                    "ownership lock identity probe is unsupported", exception);
-        } catch (IOException exception) {
-            throw new EnterpriseLabEvidenceOwnershipException(
-                    FailureClassification.IO_FAILURE,
-                    "ownership lock identity probe failed", exception);
-        }
     }
 
     private static OwnerIdentity newOwnerIdentity(

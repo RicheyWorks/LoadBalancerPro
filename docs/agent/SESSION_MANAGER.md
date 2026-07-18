@@ -6,7 +6,97 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Single-Host Evidence Ownership PR5 Checkpoint
+## Active Single-Host Evidence Ownership PR6 Checkpoint
+
+Timestamp: 2026-07-18T01:15-07:00
+
+Current slot: OWNERSHIP-PR6 - authenticated operator visibility and separate-process proof/failure injection
+
+Started from clean synchronized main: `3a835ae2d5d0d4f9d6febe217c76be63b867d9ac`
+
+Current branch: `codex/ownership-operator-proof-harness`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/472
+
+Executable and locally verified correction commit: `caf7c3046a61911be13cde5c0514f51bb4ce61c4`
+
+Prior slot closure: PR #471 merged normally from exact head `c248eb0ab24b8ba79fb1f14f127b34e2a4a23c79`
+as `3a835ae2d5d0d4f9d6febe217c76be63b867d9ac`. Exact-head PR CI `29626157562`, push CI
+`29626156253`, CodeQL `29626157528`, dependency review, code scanning, Docker/runtime evidence, and Trivy passed. Exact
+merge-main CI `29626361933` and CodeQL `29626361929` passed all 3,184 zero-skipped tests, coverage, package, artifact
+smoke, SBOM, packaged runtime, Docker build/runtime, controlled container evidence, and Trivy. The source branch remains
+preserved on origin.
+
+Executable scope complete locally: add sanitized immutable ownership status and explicit authoritative verification to
+the existing authenticated Enterprise Lab operator service; expose them through `GET
+/api/lab/experiments/durable/ownership` and `POST /api/lab/experiments/durable/ownership/verify`; close mutation
+admission on verification failure; dispatch the packaged ownership proof before Spring startup; and add a bounded
+target-only parent/child harness using truly separate JVMs. The proof covers live-owner denial, owner journal and
+reconciliation access, non-owner append/compaction/retention/experiment/allocation denial, renewal, clean release,
+higher-generation clean and abrupt takeover, stale classification, journal verify/replay, interrupted rollback,
+process-local baseline verification, repeated restart, simultaneous acquisition, and competing takeover. The final
+scope audit also tightened the shared proof-output policy so an existing target symlink or non-directory is rejected
+before any proof state is created.
+
+Linux correction: the separate-process regression correctly exposed that the manager's post-acquisition overlapping-lock
+probe opened and closed a second descriptor for `owner.lock`. POSIX record-lock semantics can release the process lock
+when any descriptor for that file is closed, even while the original Java `FileLock` still appears valid. Exact
+diagnostic-head push CI `29636616227` therefore failed the fixed live-owner and one-winner proof checks. The correction
+prepares and fingerprints the controlled lock file before opening the sole owning channel, then compares path identity
+after lock acquisition without reopening the locked file. Lock-file replacement still fails closed; no ownership,
+takeover, path, or safety assertion was relaxed.
+
+Behavioral verification: focused API/CLI/auth/application dispatch coverage passed 52 tests; the expanded ownership,
+journal, takeover, fencing, and recovery bundle passed 134 tests. After the POSIX correction, the manager, path,
+takeover, and separate-process command selector passed 46 tests with zero failures, errors, or skips. Exact corrected
+source passed `mvn -B package` with 3,189 tests, 0 failures, 0 errors, and 0 skips, producing
+`LoadBalancerPro-2.5.0.jar` at SHA-256
+`2f6e6a04acbb171a35de7244ceb8a96849dfd3b26255fafebddecef37302f6e5`.
+
+Packaged proof verification: the final 13-scenario experiment proof passed 837 literal-loopback requests at fingerprint
+`3bbbcb7201180f7b8772e196fc122632598a4d32e2573d6967c9e21ddba1569d`; durable recovery passed 124 requests,
+interrupted rollback, corruption quarantine, and terminal compaction at
+`3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2ed839ff7afd6a`. Three concurrent corrected packaged ownership
+proofs passed generations 1/2/3, live-owner denial, simultaneous single acquisition, one-winner takeover race,
+interrupted rollback, and every fixed check at fingerprints
+`0e79b4efc5acb3fe08f8fba246f662f9b963c4628fceb93cbbac133a14ae96d0`,
+`d0127d51f13ad031e7ba5d7aa70d3731dd0897cfd0a124f52d2f4454b21e9a53`, and
+`aee361c515e8742ffa531e26de8bfa423e3b414380f451888108210ebc44be81`.
+
+Supply-chain and scope verification: embedded Tomcat remains 10.1.55; JaCoCo analyzed 848 classes at 84.59%
+instruction, 67.93% branch, and 84.18% line coverage; CycloneDX validated 144-component XML and JSON BOMs. The final
+21-file diff passes `git diff --check`, contains no POM, dependency, workflow, Docker, Compose, or generated
+target evidence, and its executable sources contain no secret value, external target, environment/command-line
+exposure, caller owner/generation override, force-unlock endpoint, lock deletion, or unrestricted takeover/release API.
+Including this checkpoint, PR6 contains 2,060 executable and 445 required documentation/process changed lines
+(82.24% / 17.76%); the campaign from `a3fc534fd7d5d9ab80a7cd556ca2dbc9e129eb82` contains 8,707 executable and 1,261
+documentation/process changed lines (87.35% / 12.65%). Required failure/session records account for the diagnostic
+increase; the campaign remains implementation-dominant and close to the requested 90% / 10% allocation.
+
+Local container limitation: Docker CLI 28.0.4 cannot reach the absent Desktop Linux engine and Trivy is not installed.
+Both failures are logged and neither gate is weakened or claimed locally. The unchanged repository-native exact-head CI
+must pass Docker build/runtime, controlled container evidence, and blocking HIGH/CRITICAL Trivy before merge.
+
+Not proven: multi-host or network-filesystem correctness, distributed consensus/fencing, malicious-process resistance,
+durable external allocation supervision, production ownership, production traffic, or production readiness.
+
+Decision: commit and push this corrected locally green checkpoint, then merge PR6 only after fresh exact-head CI,
+CodeQL, dependency review, code scanning, Docker/runtime, SBOM, and Trivy are current-head green. After merge,
+synchronize main and require exact merge-main CI and CodeQL before campaign closeout.
+
+PR-creation checkpoint: PR #472 opened from exact executable head
+`dbca6c90490d2841ab3fb663238d61a4a82d42a1` with the scope, local evidence, composition, local Docker/Trivy limitation,
+and not-proven boundaries above. This required checkpoint update moves the branch head; commit and push it, then treat
+all checks on the PR-created head as stale. Merge remains prohibited until CI, CodeQL, dependency review, code scanning,
+Docker/runtime evidence, SBOM, and Trivy are green for the final checkpoint SHA.
+
+Linux-correction checkpoint: stale CI runs on `dbca6c90`, `ec0c5cda`, `be42361c`, and diagnostic head `2f5d755d` are
+not merge evidence. The bounded diagnostics identified the POSIX descriptor-close defect, executable correction
+`caf7c3046a61911be13cde5c0514f51bb4ce61c4` is locally green with the evidence above, and this session update creates a
+new metadata head. Push it and require every remote gate on that exact final SHA; do not accept the stale green CodeQL
+runs or any earlier failed CI run.
+
+## Completed Single-Host Evidence Ownership PR5 Checkpoint
 
 Timestamp: 2026-07-17T18:50-07:00
 

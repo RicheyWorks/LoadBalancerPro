@@ -6,6 +6,24 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-17T19:11-07:00
+
+Branch/PR: codex/ownership-operator-proof-harness / no PR yet
+
+Failure type: initial PR6 Windows wildcard audit command error
+
+Failing check: ownership status/public-method seam search
+
+Observed/root cause: one read-only `rg` invocation again passed `EnterpriseLabEvidenceOwnership*.java` as a Windows path,
+so the OS rejected the wildcard before `rg` could search. The other controller, CLI, security, and subprocess seam
+searches completed. No source, generated evidence, process, lock, journal, branch, or remote state changed.
+
+Correction/result: use the exact ownership source directory with `rg -g 'EnterpriseLabEvidenceOwnership*.java'`.
+
+Follow-up: retain exact-path or `-g` discipline for every remaining PR6 audit and proof command.
+
+## Entry
+
 Date/time: 2026-07-17T18:56-07:00
 
 Branch/PR: codex/ownership-mutation-fencing / PR #471
@@ -4888,3 +4906,308 @@ still found `Policy.safetyFirstDefaults()`. No source, durable evidence, process
 
 Correction/result: retain the exact-file result and use `rg -g 'EnterpriseLabEvidenceOwnership*.java'` for any later
 filtered lookup. The production compile remains green and no executable gate is weakened.
+
+# 2026-07-17 - Ownership PR6 initial source audit used the wrong Java package path
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing operation: the first read-only PR6 source probe addressed the ownership and durable-recovery classes under
+`src/main/java/com/loadbalancerpro/lab` instead of this repository's actual
+`src/main/java/com/richmond423/loadbalancerpro/lab` package tree.
+
+Observed/root cause: `rg` rejected the three nonexistent paths. The preceding branch, head, worktree, and remote checks
+succeeded; no repository, durable evidence, process, or remote state changed.
+
+Correction/result: locate the classes from `rg --files`, use the exact package paths for the contract audit, and keep
+all executable and remote gates unchanged.
+
+# 2026-07-17 - Ownership PR6 controller audit used the lab package instead of the API package
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing operation: a read-only source inspection addressed `EnterpriseLabExperimentController.java` under the lab
+package after successfully reading the allocation router and ownership renewer.
+
+Observed/root cause: the controller is under `src/main/java/com/richmond423/loadbalancerpro/api`, so PowerShell rejected
+the nonexistent lab-package path. No executable check or repository state changed.
+
+Correction/result: read the controller from its exact API-package path and retain the successful router/renewer audit;
+all focused and full verification gates remain required.
+
+# 2026-07-17 - Ownership PR6 CLI dispatch audit omitted the application's API package
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing operation: a read-only `rg` dispatch lookup addressed `LoadBalancerApiApplication` and its test directly below
+the repository package root instead of their actual `api` package.
+
+Observed/root cause: `rg` rejected the two nonexistent exact paths after the controller and durable-proof command reads
+had succeeded. No source, build output, process ownership, or remote state changed.
+
+Correction/result: locate both files with `rg --files`, inspect their exact API-package paths, and keep the planned CLI,
+focused, full, packaged, and remote gates unchanged.
+
+# 2026-07-17 - Ownership PR6 initial proof-harness compile retained an unreachable checked exception
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing check: initial `mvn -q -DskipTests compile` after adding the sanitized ownership API and separate-process proof
+coordinator.
+
+Observed/root cause: `PreparedOwner.start` caught `IOException` inside a try whose checked-I/O-producing loopback startup
+had already completed immediately before the try. Java correctly rejected the unreachable checked catch. No subprocess
+proof or ownership mutation ran.
+
+Correction/result: remove only `IOException` from that inner catch, retain the runtime cleanup path, and rerun the main
+source compile before adding behavioral tests. No lock, lease, takeover, fencing, or API boundary is weakened.
+
+# 2026-07-17 - Ownership PR6 first packaged subprocess proof could not prepare the active fixture
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing check: `java -jar target/LoadBalancerPro-2.5.0.jar --enterprise-lab-ownership-proof
+--enterprise-lab-ownership-proof-output=target/ownership-proof-manual` after a successful skip-test package.
+
+Observed/root cause: the parent successfully launched the packaged child JVM, but the child exited before publishing
+READY because its bounded arm/baseline/start fixture did not reach RUNNING. The initial safe error did not include the
+structured operator receipt codes, so the exact rejected transition was not yet observable. The child cleanup released
+its lock; the parent failed closed and wrote no passing report.
+
+Correction/result: include only bounded receipt statuses and reason codes in the internal child diagnostic, rebuild the
+packaged JAR, and rerun the real subprocess proof. No target address, path, owner override, or lock-breaking behavior is
+added.
+
+# 2026-07-17 - Ownership PR6 active-fixture proof expected record-only statuses for applied transitions
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing check: the second packaged separate-process proof run using `target/ownership-proof-manual-2`.
+
+Observed/root cause: the bounded diagnostic proved all three operations succeeded: arm returned
+`APPLIED/EXPERIMENT_ARMED`, baseline execution returned `RECORDED/BASELINE_REQUESTS_RECORDED`, and start returned
+`APPLIED/EXPERIMENT_STARTED`. The harness predicate incorrectly required `RECORDED` for the state-changing arm and start
+receipts, so it rejected an actual RUNNING record and the parent failed closed.
+
+Correction/result: require `APPLIED` for arm/start and retain the exact baseline evidence and RUNNING-state assertions,
+then rebuild and rerun the same packaged subprocess path. No production lifecycle behavior changed.
+
+# 2026-07-17 - Ownership PR6 overlapping local package sessions replaced the JAR during subprocess proof
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing check: the third packaged ownership proof run using `target/ownership-proof-manual-3`.
+
+Observed/root cause: child JVMs reported `NoClassDefFoundError` for nested classes that the archive listing confirmed were
+present in the executable artifact. Local inspection then showed the target JAR changing from the repackaged artifact to
+the thin Maven JAR. The cause was command orchestration: polling printed only Maven output and failed to retain its
+still-running session indicator, so two package sessions overlapped and continued writing the same target artifact while
+the proof read it. This was not an ownership, source, or Spring classloader defect.
+
+Correction/result: stop treating empty poll output as process completion, run one package command through its actual
+exit, verify the stable archive, and only then launch the proof. No classpath fallback, lock control, or gate weakening is
+introduced.
+
+# 2026-07-17 - Ownership PR6 archive inspection command was rejected for an unnecessary recursive removal
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing operation: a read-only archive inspection command also extracted the manifest and attempted to remove the
+temporary extracted `META-INF` directory in the same PowerShell command.
+
+Observed/root cause: local command policy rejected the combined command before execution because of the recursive
+removal. No file was extracted or removed and no repository or ownership state changed.
+
+Correction/result: inspect the manifest directly through the .NET ZIP reader with no extraction or deletion. The
+subsequent archive read succeeded and confirmed the unstable artifact was the thin Maven JAR.
+
+# 2026-07-18 - Ownership PR6 API leak-check test omitted its serialization exception declaration
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing check: initial `mvn -B -DskipTests test-compile` after adding proof-command and authenticated ownership-API
+behavioral tests.
+
+Observed/root cause: the configured-root controller test now serializes the ownership status to assert that paths,
+process details, and storage identities are absent, but the existing test method did not declare Jackson's checked
+`JsonProcessingException`. Main sources had already compiled; no test or subprocess ran.
+
+Correction/result: add the normal JUnit `throws Exception` boundary to that test method and rerun test compilation. The
+serialization leak assertions and all API/ownership controls remain intact.
+
+# 2026-07-18 - Ownership PR6 focused bundle found an overbroad leak assertion and Windows classpath parsing
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing check: the initial 52-test ownership command, controller, API-key, OAuth2, and application-dispatch selector.
+
+Observed/root cause: both authentication suites and dispatch tests passed. Two new tests failed. First, the sanitized
+status leak check rejected any occurrence of `raw`, including the explicit safety boundary `no ... raw lock bytes`; it
+did not identify exposed data. Second, the subprocess launcher constructed `Path.of(java.class.path)` before checking
+whether Surefire supplied multiple semicolon-separated Windows entries, so the combined classpath was rejected at its
+second drive colon before `java -cp` could be selected. The packaged single-JAR proof had already passed.
+
+Correction/result: reject the concrete `rawLockBytes` field name while retaining path, PID, host, directory-identity,
+and lock-identity exclusions; construct a `Path` only for a proven single classpath entry and otherwise pass the full
+classpath directly to `java -cp`. Rerun the same focused selector without weakening any ownership assertion.
+
+# 2026-07-18 - Ownership PR6 full-test session handle expired before final output could be polled
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing operation: polling the completed `mvn -B test` process after task-context compaction returned
+`Unknown process id 85376`, so the process wrapper could no longer provide its final console line or exit code.
+
+Observed/root cause: the Maven process had already ended and its live session handle had been retired while the task
+context was compacted. This was a tooling-observation interruption, not a test failure. The complete Surefire XML set
+remained on disk with a common current-run timestamp and reports 3,187 tests, 0 failures, 0 errors, and 0 skipped.
+
+Correction/result: recover the authoritative test result from the generated Surefire XML reports, retain those counts
+in the campaign checkpoint, and continue with separately observed package and proof gates. No test was hidden, skipped,
+or reclassified, and no ownership behavior or safety boundary changed.
+
+# 2026-07-18 - Ownership PR6 local Docker engine and Trivy executable are unavailable
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing checks: `docker version` and `trivy --version` during the final local container-security availability audit.
+
+Observed/root cause: the Docker 28.0.4 client is installed, but the Desktop Linux engine named pipe does not exist, so no
+local image build or runtime smoke can start. The Trivy command is not installed on this host. These are local tool-state
+limitations; PR6 does not modify `pom.xml`, the Dockerfile, the CI workflow, or the runtime base image.
+
+Correction/result: do not bypass, suppress, or weaken either gate. Retain the already-green source, package, coverage,
+and packaged-proof evidence locally, and require the repository's exact-head GitHub CI Docker build/runtime and blocking
+HIGH/CRITICAL Trivy scan to pass before merge. No image claim is made from this local host.
+
+# 2026-07-18 - Ownership PR6 first local CycloneDX invocation did not quote the dotted Maven property
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing check: the first PowerShell invocation of the repository's CycloneDX aggregate-BOM command.
+
+Observed/root cause: CycloneDX successfully wrote and validated `target/bom.xml` and `target/bom.json`, but PowerShell
+split the unquoted `-Dcyclonedx.skipAttach=true` argument and Maven then treated `.skipAttach=true` as an unknown lifecycle
+phase, returning exit 1 after generation.
+
+Correction/result: quote the complete dotted `-Dcyclonedx.skipAttach=true` selector, rerun the same aggregate-BOM goal,
+and require a zero exit code. The generated BOM remains target-only; no dependency or build configuration changed.
+
+# 2026-07-18 - Ownership PR6 scope audit found a target-output symlink traversal gap
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing boundary: the shared Enterprise Lab proof-output policy accepted an existing path beneath lexical `target/`
+without checking whether an intermediate component was a symbolic link.
+
+Observed/root cause: the ownership path layer would later reject the resulting real-path mismatch before acquiring a
+lock, but the proof parent called `Files.createDirectories` first. A caller-prepared `target/link` could therefore cause
+intermediate proof directories to be created outside the target tree before ownership failed closed. No such path was
+used by the passing proof runs; the issue was found by source/diff audit.
+
+Correction/result: validate the target root and every existing output component with no-follow attributes and real-path
+containment before any proof output directory is created, and add an executable regression proving an outside target is
+left empty. This tightens the shared proof-output boundary and does not authorize arbitrary paths or link traversal.
+
+# 2026-07-18 - Ownership PR6 first symlink regression introduced one skipped Windows test
+
+Branch/PR: `codex/ownership-operator-proof-harness` / pending
+
+Failing gate: the first 59-test focused API/CLI/proof rerun after tightening target-output validation reported one skip.
+
+Observed/root cause: this Windows host does not grant symbolic-link creation to the test process, and the regression used
+a JUnit assumption when `Files.createSymbolicLink` failed. All 58 executed tests passed, but campaign policy requires zero
+skips, so that result is not acceptable as a green gate.
+
+Correction/result: retain the real symlink exercise on environments that support it and fall back on this host to an
+existing non-directory component, which exercises the same no-follow output rejection without skipping. Rerun the
+focused selector and require zero skips; Linux CI will execute the actual symlink branch.
+
+# 2026-07-18 - Ownership PR6 first PR checkpoint recorded an inferred full executable SHA
+
+Branch/PR: `codex/ownership-operator-proof-harness` / #472
+
+Failing audit: the first local PR-metadata checkpoint expanded the visible short commit `dbca6c90` to an inferred full
+SHA instead of copying the authoritative `git rev-parse HEAD` output into both checkpoint references.
+
+Observed/root cause: the actual executable commit is `dbca6c90490d2841ab3fb663238d61a4a82d42a1`; the inferred suffix was
+factually wrong. The checkpoint commit had not been pushed, no remote check or merge decision used the incorrect value,
+and the executable tree was unaffected.
+
+Correction/result: replace both references with the exact Git-reported SHA, include this audit record, amend the local
+checkpoint commit, and push only the corrected metadata head. Exact-head gate matching remains mandatory.
+
+# 2026-07-18 - Ownership PR6 compact GitHub status query was malformed by PowerShell quoting
+
+Branch/PR: `codex/ownership-operator-proof-harness` / #472
+
+Failing operation: a read-only `gh run view --jq` poll intended to show only active CI step names.
+
+Observed/root cause: PowerShell stripped quoting inside the jq predicate and GitHub CLI returned
+`function not defined: in_progress/0` for both queried runs. The authoritative runs continued unchanged; no check was
+cancelled, rerun, suppressed, or reclassified.
+
+Correction/result: use raw `gh run view` JSON with local PowerShell JSON selection for later polling, record this
+tooling-only failure, and require a fresh exact-head remote run after this checkpoint is pushed.
+
+# 2026-07-18 - Ownership PR6 first Linux CI run returned a failed aggregate proof check
+
+Branch/PR: `codex/ownership-operator-proof-harness` / #472
+
+Failing gate: stale executable-head PR CI run `29636366099`, `mvn -B test` on Linux/JDK 17.
+
+Observed/root cause status: 3,187 pre-existing and other PR6 tests passed, while
+`EnterpriseLabEvidenceOwnershipProofCommandTest.commandProvesSeparateProcessExclusionTakeoverAndRestartRecovery`
+returned exit 1 after 15.31 seconds because the aggregate report had at least one false check. The command discarded the
+report before export and emitted only `one or more ownership proof checks failed`, so the remote log does not identify
+which fixed check diverged. CodeQL passed on the same stale executable SHA. Root cause is not yet proven.
+
+Correction/result: add bounded failure diagnostics containing only fixed check names, run stressed local repetitions,
+then correct the identified cross-platform behavior without weakening any ownership assertion. The failed/stale run is
+not merge evidence; all required gates must rerun on the eventual corrected head.
+
+# 2026-07-18 - Ownership PR6 source-audit searches used invalid Windows path shapes
+
+Branch/PR: `codex/ownership-operator-proof-harness` / #472
+
+Failing operations: one `rg` command passed a wildcard as a Windows filename, and the next two read-only searches used
+the obsolete `com/richeyworks` package path instead of the repository's actual `com/richmond423` package path.
+
+Observed/root cause: ripgrep reported a Windows filename syntax error for the wildcard and then `path not found` for
+both obsolete package roots. These were read-only audit-command failures; they did not alter source, tests, or remote
+runs.
+
+Correction/result: enumerate matching files with `rg --files`, use the discovered `com/richmond423` roots, and pass
+file patterns through ripgrep's quoted `-g` selector. Continue the lock-lifetime correction only against verified paths.
+
+# 2026-07-18 - Ownership PR6 first corrected focused test command assumed a Maven wrapper
+
+Branch/PR: `codex/ownership-operator-proof-harness` / #472
+
+Failing operation: the first focused ownership regression command invoked `.\\mvnw.cmd`, which is not present in this
+repository, so PowerShell returned command-not-found before Maven or any test started.
+
+Observed/root cause: the campaign's established local build path uses the installed `mvn` executable rather than a
+repository wrapper. No source, target output, test result, or remote check was changed by the failed invocation.
+
+Correction/result: rerun the identical quoted comma-separated `-Dtest` selector with `mvn -B` and require a zero exit
+code with no failures, errors, or skips before broader verification.
+
+# 2026-07-18 - Ownership PR6 Linux proof diagnostics exposed a POSIX lock-lifetime defect
+
+Branch/PR: `codex/ownership-operator-proof-harness` / #472
+
+Failing gates: exact diagnostic-head push CI run `29636616227` and the corresponding PR CI lane. Linux/JDK 17
+reported the fixed false checks `liveOwnerDenied`, `restartedPriorOwnerDenied`,
+`simultaneousAcquisitionSingleWinner`, and `competingTakeoverSingleWinner`; all other tests remained green.
+
+Observed/root cause: after acquiring `owner.lock`, the ownership manager opened a second channel for the same file to
+probe for an overlapping JVM lock and then closed that channel. On POSIX record-lock semantics, closing any descriptor
+for the file in the locking process can release that process's lock even though the original Java `FileLock` object
+still appears valid. Windows does not exhibit that descriptor-close behavior, which explains the green local proof and
+the Linux-only live-owner exclusion failures. The separate-process harness correctly detected the real defect.
+
+Correction/result: prepare and fingerprint the controlled lock file before opening the owning channel, retain only that
+channel while the lock is held, and compare the controlled path identity after acquisition. This preserves fail-closed
+lock-file replacement detection without reopening or closing the locked file. A focused 46-test ownership bundle and
+full `mvn -B package` pass 3,189 tests with zero failures, errors, or skips; three concurrent packaged proofs also pass
+all live-owner and one-winner checks. Fresh Linux exact-head CI remains mandatory before merge.

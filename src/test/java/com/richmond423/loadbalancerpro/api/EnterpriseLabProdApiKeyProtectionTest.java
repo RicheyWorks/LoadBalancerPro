@@ -102,6 +102,25 @@ class EnterpriseLabProdApiKeyProtectionTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.reasonCode", is("DURABLE_EVIDENCE_NOT_CONFIGURED")));
 
+        mockMvc.perform(get("/api/lab/experiments/durable/ownership"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/lab/experiments/durable/ownership")));
+
+        mockMvc.perform(get("/api/lab/experiments/durable/ownership")
+                        .header("X-API-Key", API_KEY))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.reasonCode", is("DURABLE_EVIDENCE_NOT_CONFIGURED")));
+
+        mockMvc.perform(post("/api/lab/experiments/durable/ownership/verify"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path",
+                        is("/api/lab/experiments/durable/ownership/verify")));
+
+        mockMvc.perform(post("/api/lab/experiments/durable/ownership/verify")
+                        .header("X-API-Key", API_KEY))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.reasonCode", is("DURABLE_EVIDENCE_NOT_CONFIGURED")));
+
         String body = """
                 {
                   "operatorRequestId":"prod-arm-1",

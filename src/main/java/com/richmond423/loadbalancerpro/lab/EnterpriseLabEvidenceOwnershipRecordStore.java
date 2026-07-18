@@ -55,14 +55,27 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
     OwnershipRecord replaceAndVerify(
             OwnershipRecord expectedCurrent,
             OwnershipRecord replacement) {
+        return replaceAndVerify(expectedCurrent, replacement, WritePurpose.RELEASE);
+    }
+
+    OwnershipRecord renewAndVerify(
+            OwnershipRecord expectedCurrent,
+            OwnershipRecord replacement) {
+        return replaceAndVerify(expectedCurrent, replacement, WritePurpose.RENEWAL);
+    }
+
+    private OwnershipRecord replaceAndVerify(
+            OwnershipRecord expectedCurrent,
+            OwnershipRecord replacement,
+            WritePurpose purpose) {
         OwnershipRecord safeCurrent = Objects.requireNonNull(
                 expectedCurrent, "expectedCurrent cannot be null");
         OwnershipRecord current = readRequired();
         if (!current.recordFingerprint().equals(safeCurrent.recordFingerprint())) {
             throw failure(FailureClassification.RECORD_REPLACED,
-                    "ownership record changed before release publication");
+                    "ownership record changed before " + purpose.description() + " publication");
         }
-        return writeAndVerify(safeCurrent, replacement, true, WritePurpose.RELEASE);
+        return writeAndVerify(safeCurrent, replacement, true, purpose);
     }
 
     private OwnershipRecord writeAndVerify(
@@ -96,7 +109,7 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
             OwnershipRecord current = readRequired();
             if (!current.recordFingerprint().equals(expectedCurrent.recordFingerprint())) {
                 throw failure(FailureClassification.RECORD_REPLACED,
-                        "ownership record changed during release publication");
+                        "ownership record changed during " + purpose.description() + " publication");
             }
         } else if (inspectRecordPath() != PathState.ABSENT) {
             throw failure(FailureClassification.RECORD_REPLACED,
@@ -256,23 +269,33 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
         ACQUISITION(
                 FailurePoint.DURING_RECORD_WRITE,
                 FailurePoint.AFTER_RECORD_FORCE,
-                FailurePoint.AFTER_RECORD_INSTALL),
+                FailurePoint.AFTER_RECORD_INSTALL,
+                "acquisition"),
+        RENEWAL(
+                FailurePoint.DURING_RENEWAL_RECORD_WRITE,
+                FailurePoint.AFTER_RENEWAL_RECORD_FORCE,
+                FailurePoint.AFTER_RENEWAL_RECORD_INSTALL,
+                "renewal"),
         RELEASE(
                 FailurePoint.DURING_RELEASE_RECORD_WRITE,
                 FailurePoint.AFTER_RELEASE_RECORD_FORCE,
-                FailurePoint.AFTER_RELEASE_RECORD_INSTALL);
+                FailurePoint.AFTER_RELEASE_RECORD_INSTALL,
+                "release");
 
         private final FailurePoint writeFailurePoint;
         private final FailurePoint forceFailurePoint;
         private final FailurePoint installFailurePoint;
+        private final String description;
 
         WritePurpose(
                 FailurePoint writeFailurePoint,
                 FailurePoint forceFailurePoint,
-                FailurePoint installFailurePoint) {
+                FailurePoint installFailurePoint,
+                String description) {
             this.writeFailurePoint = writeFailurePoint;
             this.forceFailurePoint = forceFailurePoint;
             this.installFailurePoint = installFailurePoint;
+            this.description = description;
         }
 
         FailurePoint writeFailurePoint() {
@@ -285,6 +308,10 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
 
         FailurePoint installFailurePoint() {
             return installFailurePoint;
+        }
+
+        String description() {
+            return description;
         }
     }
 }

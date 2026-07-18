@@ -16,7 +16,7 @@ Started from clean synchronized main: `0dae26414020f9aeb2e6a032b82adba3a8f284b2`
 
 Current branch: `codex/allocation-transaction-store`
 
-PR URL: not opened yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/474
 
 Locally verified executable commit: `98ae492ae80c2365b8fe2e721e9916d012612c19`
 
@@ -82,6 +82,14 @@ CI image build/runtime/evidence and blocking Trivy gate remain mandatory.
 Decision: commit this local-verification checkpoint, run a no-test package on the resulting metadata-only head, push,
 and open PR2. Merge only after fresh exact-head CI, CodeQL, dependency review, code scanning, Docker/runtime evidence,
 SBOM, and blocking Trivy are green; then require exact merge-main CI and CodeQL before PR3.
+
+PR-creation checkpoint: PR #474 opened from pushed head
+`898c51bd953179e56b6d846c45908d4c740da9f0` with the executable scope, crash/path evidence, composition, local
+Docker/Trivy limitation, safety audit, and not-proven boundaries above. The checkpoint head passed
+`mvn -B "-DskipTests" package` and produced executable JAR SHA-256
+`6e7ebd6d1b72aff693069ceba5c712837557beba9e1bf5ce532aad5c438b88f9`. This required PR checkpoint moves the
+branch head, so checks on `898c51bd` are stale after it is committed. Push the new exact head and require every remote
+gate there before merge.
 
 ## Completed Durable Allocation-State Supervision PR1 Checkpoint
 

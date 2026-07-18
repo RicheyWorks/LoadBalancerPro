@@ -5390,3 +5390,18 @@ Correction/result: no repository correction applies. Host compilation, focused/e
 coverage, dependency resolution, artifact inspection, CycloneDX, and packaged literal-loopback smoke are green. Local
 Docker/runtime and Trivy remain not run and not green; require the unchanged repository-native exact-head remote image
 build, runtime smoke, controlled container evidence, and blocking Trivy scan before PR2 merge and again on merge-main.
+
+# 2026-07-18 - Allocation PR2 exact-head status summary had an invalid PowerShell pipeline
+
+Branch/PR: `codex/allocation-transaction-store` / PR #474
+
+Failing operation: a read-only summary of the three exact-head CI/CodeQL runs attempted to pipe directly after a
+PowerShell `foreach` statement block.
+
+Observed/root cause: PowerShell rejected the command locally with `An empty pipe element is not allowed` before any
+GitHub query in the loop executed. No workflow run, PR, branch, repository, container, allocation store, ownership
+record, journal, or external state changed.
+
+Correction/result: collect each run summary into an array and format the array after the loop, or query the run JSON
+without a trailing statement-block pipe. This required failure checkpoint moves the PR head; treat all checks on
+`f6ff286414197341f6b75640b97e3cd7e359cbb5` as stale and require every gate again on the new exact head.

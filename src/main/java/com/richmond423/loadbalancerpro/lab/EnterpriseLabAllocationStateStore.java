@@ -335,7 +335,9 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
                         "one allocation transaction changed logical generation");
             }
             requireStableTransactionIntent(previous, next);
+            requireLegalPhaseTransition(previous.transactionPhase(), next.transactionPhase());
         } else {
+            requireTerminalTransactionHead(previous.transactionPhase());
             if (next.allocationGeneration() != previous.allocationGeneration() + 1L) {
                 throw failure(Failure.ALLOCATION_GENERATION_MISMATCH,
                         "new allocation transaction generation is not contiguous");
@@ -346,6 +348,48 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
                             "allocation transaction identity reappeared after a later transaction");
                 }
             }
+        }
+    }
+
+    private static void requireTerminalTransactionHead(TransactionPhase phase) {
+        if (phase != TransactionPhase.COMMITTED
+                && phase != TransactionPhase.RESTORED
+                && phase != TransactionPhase.REJECTED) {
+            throw failure(Failure.INCOMPLETE_TRANSACTION,
+                    "a new allocation transaction cannot supersede an incomplete or unsafe transaction");
+        }
+    }
+
+    private static void requireLegalPhaseTransition(
+            TransactionPhase previous,
+            TransactionPhase next) {
+        boolean legal = switch (previous) {
+            case PREPARED -> next == TransactionPhase.INTENT_PERSISTED
+                    || next == TransactionPhase.REJECTED
+                    || next == TransactionPhase.FAILED;
+            case INTENT_PERSISTED -> next == TransactionPhase.APPLYING
+                    || next == TransactionPhase.REJECTED
+                    || next == TransactionPhase.FAILED;
+            case APPLYING -> next == TransactionPhase.APPLIED
+                    || next == TransactionPhase.RESTORE_REQUIRED
+                    || next == TransactionPhase.FAILED;
+            case APPLIED -> next == TransactionPhase.VERIFYING
+                    || next == TransactionPhase.RESTORE_REQUIRED
+                    || next == TransactionPhase.FAILED;
+            case VERIFYING -> next == TransactionPhase.COMMITTED
+                    || next == TransactionPhase.RESTORE_REQUIRED
+                    || next == TransactionPhase.FAILED;
+            case RESTORE_REQUIRED -> next == TransactionPhase.RESTORING
+                    || next == TransactionPhase.FAILED
+                    || next == TransactionPhase.QUARANTINED;
+            case RESTORING -> next == TransactionPhase.RESTORED
+                    || next == TransactionPhase.FAILED
+                    || next == TransactionPhase.QUARANTINED;
+            case COMMITTED, RESTORED, REJECTED, FAILED, QUARANTINED -> false;
+        };
+        if (!legal) {
+            throw failure(Failure.ILLEGAL_PHASE_TRANSITION,
+                    "allocation transaction phase transition is not legal");
         }
     }
 
@@ -755,6 +799,8 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         ALLOCATION_GENERATION_MISMATCH,
         TRANSACTION_REAPPEARED,
         TRANSACTION_INTENT_CHANGED,
+        INCOMPLETE_TRANSACTION,
+        ILLEGAL_PHASE_TRANSITION,
         INVALID_INITIAL_BASELINE,
         RECORD_LIMIT_EXCEEDED,
         STORE_SIZE_EXCEEDED,

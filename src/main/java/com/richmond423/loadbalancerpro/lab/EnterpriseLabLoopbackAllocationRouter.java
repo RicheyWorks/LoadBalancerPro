@@ -109,6 +109,66 @@ public final class EnterpriseLabLoopbackAllocationRouter {
         return current.get();
     }
 
+    /**
+     * Validates and canonically normalizes candidate intent without mutating
+     * router state. The coordinator uses this same seam before durable intent.
+     */
+    synchronized CandidateIntentValidation validateCandidateIntent(
+            EnterpriseLabAdaptiveDecision adaptiveDecision,
+            boolean experimentExplicitlyEnabled) {
+        if (!experimentExplicitlyEnabled) {
+            return CandidateIntentValidation.denied(
+                    "Enterprise Lab allocation actuation requires explicit enablement");
+        }
+        if (adaptiveDecision == null) {
+            return CandidateIntentValidation.denied(
+                    "an approved adaptive decision is required");
+        }
+        if (!scenarioId.equals(adaptiveDecision.scenarioId())) {
+            return CandidateIntentValidation.denied(
+                    "adaptive decision scenario does not match the fixed loopback target set");
+        }
+        if (!scenarioAllowsInfluence) {
+            return CandidateIntentValidation.denied(
+                    "the repository-approved scenario is not eligible for influence experiments");
+        }
+
+        TrafficAllocationGuardrailDecision guardrail = adaptiveDecision.decision().guardrailDecision();
+        if (adaptiveDecision.decision().mode() != AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT
+                || guardrail.mode() != AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT) {
+            return CandidateIntentValidation.denied(
+                    "only active-experiment decisions can alter loopback allocation");
+        }
+        if (!guardrail.influenceAllowed()
+                || guardrail.action() == TrafficAllocationGuardrailAction.DENY) {
+            return CandidateIntentValidation.denied(
+                    "the adaptive allocation guardrail did not authorize influence");
+        }
+        if (!EnterpriseLabLoopbackAllocationSnapshot.sameAllocations(
+                baseline.allocations(), guardrail.baselineAllocations())) {
+            return CandidateIntentValidation.denied(
+                    "guardrail baseline does not match the recorded restorable baseline");
+        }
+
+        try {
+            Map<String, Double> requested =
+                    EnterpriseLabLoopbackAllocationSnapshot.exactNormalizedAllocations(
+                            approvedBackendIds, guardrail.requestedAllocations());
+            Map<String, Double> approved =
+                    EnterpriseLabLoopbackAllocationSnapshot.exactNormalizedAllocations(
+                            approvedBackendIds, guardrail.effectiveAllocations());
+            return CandidateIntentValidation.authorized(
+                    adaptiveDecision.decision().decisionId(),
+                    scenarioId,
+                    baseline.allocations(),
+                    requested,
+                    approved);
+        } catch (IllegalArgumentException exception) {
+            return CandidateIntentValidation.denied(
+                    "candidate allocation failed closed: " + exception.getMessage());
+        }
+    }
+
     public synchronized AllocationChangeReceipt applyCandidate(
             EnterpriseLabAdaptiveDecision adaptiveDecision,
             boolean experimentExplicitlyEnabled) {
@@ -116,38 +176,10 @@ public final class EnterpriseLabLoopbackAllocationRouter {
         EnterpriseLabInstalledAllocationSnapshot previousInstalled = current.get();
         requireNonRegressingOwnerGeneration(authorization, previousInstalled);
         EnterpriseLabLoopbackAllocationSnapshot previous = previousInstalled.routingSnapshot();
-        if (!experimentExplicitlyEnabled) {
-            return AllocationChangeReceipt.denied(previous, baseline,
-                    "Enterprise Lab allocation actuation requires explicit enablement");
-        }
-        if (adaptiveDecision == null) {
-            return AllocationChangeReceipt.denied(previous, baseline,
-                    "an approved adaptive decision is required");
-        }
-        if (!scenarioId.equals(adaptiveDecision.scenarioId())) {
-            return AllocationChangeReceipt.denied(previous, baseline,
-                    "adaptive decision scenario does not match the fixed loopback target set");
-        }
-        if (!scenarioAllowsInfluence) {
-            return AllocationChangeReceipt.denied(previous, baseline,
-                    "the repository-approved scenario is not eligible for influence experiments");
-        }
-
-        TrafficAllocationGuardrailDecision guardrail = adaptiveDecision.decision().guardrailDecision();
-        if (adaptiveDecision.decision().mode() != AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT
-                || guardrail.mode() != AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT) {
-            return AllocationChangeReceipt.denied(previous, baseline,
-                    "only active-experiment decisions can alter loopback allocation");
-        }
-        if (!guardrail.influenceAllowed()
-                || guardrail.action() == TrafficAllocationGuardrailAction.DENY) {
-            return AllocationChangeReceipt.denied(previous, baseline,
-                    "the adaptive allocation guardrail did not authorize influence");
-        }
-        if (!EnterpriseLabLoopbackAllocationSnapshot.sameAllocations(
-                baseline.allocations(), guardrail.baselineAllocations())) {
-            return AllocationChangeReceipt.denied(previous, baseline,
-                    "guardrail baseline does not match the recorded restorable baseline");
+        CandidateIntentValidation validation = validateCandidateIntent(
+                adaptiveDecision, experimentExplicitlyEnabled);
+        if (!validation.authorized()) {
+            return AllocationChangeReceipt.denied(previous, baseline, validation.reason());
         }
 
         EnterpriseLabLoopbackAllocationSnapshot candidate;
@@ -155,10 +187,10 @@ public final class EnterpriseLabLoopbackAllocationRouter {
             candidate = EnterpriseLabLoopbackAllocationSnapshot.normalized(
                     scenarioId,
                     previousInstalled.routerGeneration() + 1L,
-                    adaptiveDecision.decision().decisionId(),
+                    validation.decisionId(),
                     Kind.CANDIDATE,
                     approvedBackendIds,
-                    guardrail.effectiveAllocations());
+                    validation.approvedAllocation());
         } catch (IllegalArgumentException exception) {
             return AllocationChangeReceipt.denied(previous, baseline,
                     "candidate allocation failed closed: " + exception.getMessage());
@@ -234,6 +266,49 @@ public final class EnterpriseLabLoopbackAllocationRouter {
                 candidateUsed
                         ? "approved candidate allocation selected an Enterprise Lab loopback backend"
                         : "recorded safe allocation selected an Enterprise Lab loopback backend");
+    }
+
+    record CandidateIntentValidation(
+            boolean authorized,
+            String decisionId,
+            String scenarioId,
+            Map<String, Double> baselineAllocation,
+            Map<String, Double> requestedAllocation,
+            Map<String, Double> approvedAllocation,
+            String reason) {
+        CandidateIntentValidation {
+            decisionId = decisionId == null ? "NONE" : decisionId;
+            scenarioId = scenarioId == null ? "NONE" : scenarioId;
+            baselineAllocation = Map.copyOf(Objects.requireNonNull(
+                    baselineAllocation, "baselineAllocation cannot be null"));
+            requestedAllocation = Map.copyOf(Objects.requireNonNull(
+                    requestedAllocation, "requestedAllocation cannot be null"));
+            approvedAllocation = Map.copyOf(Objects.requireNonNull(
+                    approvedAllocation, "approvedAllocation cannot be null"));
+            reason = requireBoundedReason(reason);
+            if (authorized && (baselineAllocation.isEmpty()
+                    || requestedAllocation.isEmpty()
+                    || approvedAllocation.isEmpty())) {
+                throw new IllegalArgumentException(
+                        "authorized candidate intent requires complete allocations");
+            }
+        }
+
+        private static CandidateIntentValidation authorized(
+                String decisionId,
+                String scenarioId,
+                Map<String, Double> baseline,
+                Map<String, Double> requested,
+                Map<String, Double> approved) {
+            return new CandidateIntentValidation(
+                    true, decisionId, scenarioId, baseline, requested, approved,
+                    "adaptive decision and guardrail authorized bounded loopback allocation intent");
+        }
+
+        private static CandidateIntentValidation denied(String reason) {
+            return new CandidateIntentValidation(
+                    false, "NONE", "NONE", Map.of(), Map.of(), Map.of(), reason);
+        }
     }
 
     private Optional<MutationAuthorization> requireMutationAuthorization() {

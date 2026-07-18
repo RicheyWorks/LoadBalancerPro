@@ -6,7 +6,82 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Durable Allocation-State Supervision PR3 Checkpoint
+## Active Durable Allocation-State Supervision PR4 Checkpoint
+
+Timestamp: 2026-07-18T04:46-07:00
+
+Current slot: ALLOCATION-PR4 - crash-safe owned allocation transaction coordinator
+
+Started from clean synchronized main: `f83bb886b695b797101775c7541a4269695351f2`
+
+Current branch: `codex/allocation-transaction-coordinator`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/476
+
+PR4 scope: connect one live ownership epoch, the fixed allocation store, existing guardrail authorization, atomic
+loopback router mutation, independent installed-state read-back, exact durable commit, and verified baseline restoration.
+Persist intent and applying evidence before mutation; never mark a traffic action before router apply; never commit
+before exact allocation fingerprint, router generation, and owner-generation verification. Preserve incomplete evidence
+for startup/takeover reconciliation and return failed-closed structured outcomes for mismatch, unavailable read-back,
+ownership loss, uncertain durable state, and unverifiable restoration.
+
+Pre-edit audit: the PR2 store durably forces and exactly replays canonical allocation records, and the PR3 router exposes
+the same complete atomic installed object used for new routes. The narrow missing seam is transaction ordering and
+epoch continuity across those existing components. The router now owns one side-effect-free candidate-intent validation
+seam reused by both coordinator preflight and apply, avoiding a second normalization implementation. The store now
+rejects skipped phase transitions and new transactions that would supersede an incomplete unsafe head.
+
+Executable checkpoint: `84ce0bfaa8d201bd99e09bf9583bd266865dff51`. The final coordinator/store/router
+selector passes 36 tests and the expanded eleven-class allocation, router, experiment, operator, and ownership selector
+passes 110, all with zero failures, errors, or skips. The exact full `mvn -B package` passes 3,239 tests with zero
+failures, errors, or skips. The 12-class shared campaign-documentation guard passes 69 tests with zero skips. JaCoCo
+reports 84.58% instruction, 67.76% branch, and 84.19% line coverage.
+
+Failure-boundary evidence covers normal intent/apply/independent-read-back/commit, illegal phase skips, pre-intent
+denial, unsafe receipt rejection, crashes after intent and router apply, response loss after commit with exact replay,
+drifted committed replay, durable commit-record failure, mismatched and unavailable read-back, verified and
+unverifiable restoration, owner replacement after intent/apply/matching read-back, wrong installed owner generation,
+and concurrent identical requests. Durable success is emitted only after the exact candidate fingerprint, installed
+allocation, router generation, and original ownership epoch match; uncertainty and drift fail closed.
+
+The packaged JAR SHA-256 is `a9c4ecf181a3bc301daebea4561f4c005b8f292909ee19ac5724bfedb83b64a5` with
+1,263 entries and the coordinator, allocation store, and loopback router classes present. CycloneDX XML and JSON each
+contain 144 components, and the resolved embedded Tomcat coordinates are core, EL, and WebSocket `10.1.55` only.
+Packaged health returned HTTP 200 on literal `127.0.0.1:18080`; the ten-scenario shadow workflow, thirteen-scenario
+837-request experiment proof, 124-request durable recovery proof, and separate-process generation 1/2/3 ownership
+denial/takeover/rollback proof are green with their deterministic fingerprints recorded in the local verification log.
+
+Local Docker/runtime and Trivy are not run or claimed green because the Desktop Linux engine pipe and `trivy`
+executable are unavailable, as logged. Exact-head remote Docker build/runtime, controlled container evidence, and the
+blocking HIGH/CRITICAL Trivy scan remain mandatory before merge and again on merge-main.
+
+Out of scope: startup/takeover reconciliation, readiness/admission integration, operator endpoints, proof subprocesses,
+schedulers, journal schema changes, POM/dependency/workflow/Docker/Compose changes, external targets, arbitrary paths,
+caller-selected generations or phases, databases/brokers, multi-host/network-filesystem behavior, production traffic,
+and production readiness. Preserve and exclude the unrelated untracked
+`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md`.
+
+Scope audit: the exact PR diff adds no POM, dependency, workflow, Docker, Compose, application-resource, controller,
+endpoint, scheduler, executor, background thread, external target, arbitrary path, database, broker, caller-selected
+generation/phase, force/bypass surface, or production activation. It persists only bounded sanitized evidence through
+the existing controlled single-host store and keeps startup/takeover reconciliation, readiness/admission integration,
+multi-host/network-filesystem correctness, malicious-process resistance, and production readiness not proven.
+
+Composition: PR4 has 1,922 executable/test additions and 206 required process additions (90.32% / 9.68%). The campaign
+aggregate through this checkpoint is 5,715 executable/test and 725 process additions (88.74% / 11.26%), inside the
+goal's 88-92% executable and 8-12% documentation/process band.
+
+PR-creation checkpoint: PR #476 opened from verified pre-PR head
+`b8c16aefc097b6ba5df3e90602a254d1cd68e11f` with the complete executable scope, failure-boundary evidence, local
+verification, Docker/Trivy limitation, composition, and not-proven boundaries above. The subsequent status-query and
+watcher-interrupt tooling failures are logged; this required recovery checkpoint moves the branch again, so every check
+on the preceding heads is stale and cannot authorize merge.
+
+Decision: package, commit, and push this PR-created checkpoint; update the PR body to the resulting exact candidate head;
+then require every exact-head CI, CodeQL, dependency-review, Docker/runtime/evidence, and Trivy gate before a normal
+merge without source-branch deletion. Do not start PR5 until exact merge-main CI and CodeQL are green.
+
+## Completed Durable Allocation-State Supervision PR3 Checkpoint
 
 Timestamp: 2026-07-18T03:25-07:00
 
@@ -78,6 +153,14 @@ executable scope, local evidence, safety audit, composition, and not-proven boun
 `mvn -B "-DskipTests" package` and produced executable JAR SHA-256
 `e38a2cda7ce287712ed5298d7e4874d854b3086bfc3c78b46e4917f294449e74`. Commit and push this required checkpoint;
 all checks on the pre-checkpoint head are stale and cannot authorize merge.
+
+Closure: PR #475 merged normally from exact head `837c36429d129df907133b10ee39f725d863a145` as
+`f83bb886b695b797101775c7541a4269695351f2`; its source branch remains preserved. Exact-head push CI
+`29641389340`, PR CI `29641391098`, CodeQL `29641391124`, dependency review, code scanning, 3,222 zero-skipped
+tests, package, SBOM, packaged runtime, Docker/runtime, controlled evidence, and blocking Trivy passed. Exact
+merge-main CI `29641597337` and CodeQL `29641597346` passed the same complete gate path. Final PR3 additions were
+952 implementation/test and 164 required process lines (85.30% / 14.70%); campaign PR1-PR3 aggregate additions were
+3,793 executable and 519 process lines (87.96% / 12.04%), to be corrected by later executable proof slices.
 
 ## Completed Durable Allocation-State Supervision PR2 Checkpoint
 

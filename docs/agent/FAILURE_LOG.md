@@ -5495,3 +5495,125 @@ made no repository, PR, workflow, allocation, router, ownership, journal, contai
 
 Correction/result: query plain JSON and parse it with PowerShell `ConvertFrom-Json`, avoiding fragile native jq
 quoting. Commit and push this required log checkpoint; checks on the preceding head are stale.
+
+# 2026-07-18 - Allocation PR4 ownership seam audit used a Windows wildcard path
+
+Branch/PR: `codex/allocation-transaction-coordinator` / no PR
+
+Failing operation: a read-only ripgrep ownership-authority trace named
+`EnterpriseLabEvidenceOwnership*.java` as a Windows path after the requested explicit files had printed.
+
+Observed/root cause: Windows rejected the wildcard path before ripgrep searched that final input. No source, durable
+state, router, ownership, journal, Git remote, container, or external target changed.
+
+Correction/result: use the lab directory with an `rg -g 'EnterpriseLabEvidenceOwnership*.java'` filter for the
+remaining trace. The already printed gate confirms that it implements the non-detachable mutation authority.
+
+# 2026-07-18 - Allocation PR4 combined router refactor patch missed its final anchor
+
+Branch/PR: `codex/allocation-transaction-coordinator` / no PR
+
+Failing operation: the first combined `apply_patch` for candidate-intent validation expected the mutation-authority
+helper immediately after the candidate method, but baseline restoration occupies that location.
+
+Observed/root cause: patch verification rejected the complete patch before changing the router. No source, durable
+state, router runtime, ownership, journal, remote, container, or external target changed.
+
+Correction/result: split the refactor into local insert, replacement, and nested-record patches anchored to exact
+method declarations, then compile and rerun existing router tests before adding coordinator behavior.
+
+# 2026-07-18 - Allocation PR4 adversarial ownership/read-back selector exposed two epoch semantics defects
+
+Branch/PR: `codex/allocation-transaction-coordinator` / no PR
+
+Failing check: the 34-test coordinator/store/router selector ran with one failure and one error, zero skips. The wrong-
+owner read-back test hit model rejection because equal allocation fingerprints were labeled `MISMATCHED`; the owner-
+replacement-after-apply test found the coordinator appended `APPLIED` and `VERIFYING` under generation 2 instead of
+stopping at the generation-1 `APPLYING` record.
+
+Observed/root cause: allocation verification and ownership verification were combined into one boolean even though the
+durable model correctly requires fingerprint equality to be labeled `MATCHED`. Post-apply state construction also
+re-read current authority without first comparing it to the transaction's captured epoch, allowing a new valid owner
+generation to continue a stale coordinator object.
+
+Correction/result: derive the model verification result from fingerprints alone while classifying owner mismatch as
+drift, and require the originally captured authorization immediately before every post-apply evidence append. Rerun
+the full focused selector and retain exact stale-owner fencing; do not relax the model invariant.
+
+# 2026-07-18 - Allocation PR4 local Docker engine and Trivy executable remain unavailable
+
+Branch/PR: `codex/allocation-transaction-coordinator` / no PR
+
+Failing checks: local Docker server-version probe and local HIGH/CRITICAL Trivy image-scan tooling probe.
+
+Observed/root cause: Docker CLI still cannot find the Desktop Linux engine named pipe, and no `trivy` executable is
+installed. No image, runtime container, scan, allocation state, router, ownership record, journal, repository, remote,
+or external target changed.
+
+Correction/result: host tests, the 3,237-test package, packaged health, workflow, experiment, durable recovery, and
+separate-process ownership proofs are green. Local Docker/runtime and Trivy are not run and not claimed green; require
+the unchanged exact-head remote Docker build/runtime, controlled evidence, and blocking scan before PR4 merge and again
+on merge-main.
+
+# 2026-07-18 - Allocation PR4 final package terminal session expired during context compaction
+
+Branch/PR: `codex/allocation-transaction-coordinator` / no PR
+
+Failing evidence step: the final `mvn -B package` process had yielded a terminal session before context compaction, but
+the resumed session lookup returned `Unknown process id 61616`, so its final exit status and complete test summary were
+not recoverable.
+
+Observed/root cause: the transient terminal session expired across context compaction. The partial Maven output is not
+accepted as evidence, even though no product failure was observed. No source, durable state, router, ownership record,
+journal, Git remote, container, or external target changed as a result of the lookup.
+
+Correction/result: record the tooling failure and rerun the exact full `mvn -B package` verification from the unchanged
+staged implementation. Use only the rerun's complete exit status, test count, artifact hash, and generated reports as
+the final local package evidence.
+
+# 2026-07-18 - Allocation PR4 artifact audit used the wrong Java package prefix
+
+Branch/PR: `codex/allocation-transaction-coordinator` / no PR
+
+Failing evidence step: the first post-package JAR audit checked the three allocation classes under a nonexistent
+`com/richmond423/loadbalancerpro/enterprise` archive prefix and therefore reported all three as absent. Its broad
+Tomcat-version expression also included the Spring Boot starter version alongside the embedded Tomcat version.
+
+Observed/root cause: the classes are in the repository's `com.richmond423.loadbalancerpro.lab` package; the evidence
+script encoded an incorrect package assumption and an over-broad dependency match. The archive listing itself showed
+the coordinator, state store, and router classes under `BOOT-INF/classes/.../lab/`. No product, artifact, durable state,
+router, ownership record, journal, Git remote, container, or external target changed.
+
+Correction/result: discard the false-negative flags, rerun exact archive membership checks with the `lab` prefix, and
+restrict dependency evidence to `org.apache.tomcat.embed` coordinates. Use only the corrected results in the checkpoint.
+
+# 2026-07-18 - Allocation PR4 GitHub run-detail query piped directly from foreach
+
+Branch/PR: `codex/allocation-transaction-coordinator` / PR #476
+
+Failing operation: a read-only exact-head CI progress query attempted to pipe directly from a PowerShell `foreach`
+statement into `ConvertTo-Json`; PowerShell rejected the script with `An empty pipe element is not allowed` before any
+GitHub request in the loop ran.
+
+Observed/root cause: the command shape omitted an enclosing expression or result variable around the `foreach` output.
+No repository, PR metadata, workflow, allocation state, router, ownership record, journal, container, or external target
+changed. CodeQL and the two CI runs already in progress belong to the preceding head and become stale after this required
+failure-log checkpoint.
+
+Correction/result: assign the loop output to a PowerShell variable before JSON conversion. Commit and push this log,
+update the PR body to the resulting candidate SHA, and require fresh exact-head CI, CodeQL, dependency review,
+Docker/runtime evidence, and Trivy rather than relying on any check from the preceding head.
+
+# 2026-07-18 - Allocation PR4 check watcher backend rejected an injected interrupt
+
+Branch/PR: `codex/allocation-transaction-coordinator` / PR #476
+
+Failing operation: after the preceding head became stale, an attempt to send Ctrl+C to the read-only `gh pr checks
+--watch` terminal returned `process interrupt is not supported by this process backend`.
+
+Observed/root cause: this unified execution backend does not accept process-interrupt input for that watcher. The failed
+interrupt made no repository, PR, workflow, allocation, router, ownership, journal, container, or external-target change;
+the old-head watcher remains read-only and its results are not merge evidence for the next candidate SHA.
+
+Correction/result: do not inject another interrupt. Allow the watcher to exit naturally and audit the replacement runs
+with direct `gh pr view` and `gh run view` queries filtered to the newly pushed exact head.

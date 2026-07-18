@@ -5135,3 +5135,16 @@ and the executable tree was unaffected.
 
 Correction/result: replace both references with the exact Git-reported SHA, include this audit record, amend the local
 checkpoint commit, and push only the corrected metadata head. Exact-head gate matching remains mandatory.
+
+# 2026-07-18 - Ownership PR6 compact GitHub status query was malformed by PowerShell quoting
+
+Branch/PR: `codex/ownership-operator-proof-harness` / #472
+
+Failing operation: a read-only `gh run view --jq` poll intended to show only active CI step names.
+
+Observed/root cause: PowerShell stripped quoting inside the jq predicate and GitHub CLI returned
+`function not defined: in_progress/0` for both queried runs. The authoritative runs continued unchanged; no check was
+cancelled, rerun, suppressed, or reclassified.
+
+Correction/result: use raw `gh run view` JSON with local PowerShell JSON selection for later polling, record this
+tooling-only failure, and require a fresh exact-head remote run after this checkpoint is pushed.

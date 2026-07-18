@@ -16,7 +16,9 @@ Started from clean synchronized main: `a1b1d4c83095b56c9e9681c5ece34d7c345b6fa8`
 
 Current branch: `codex/ownership-renewal-verification-gate`
 
-PR URL: pending
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/469
+
+Executable commit: `47899969deb646e3698576acb563f66e43f01e71`
 
 Prior slot closure: PR #468 merged normally from exact head `ecf2f69c10976ad3ae74304d09982bd160a4f0fb`
 as `a1b1d4c83095b56c9e9681c5ece34d7c345b6fa8`. Exact-head PR CI `29620907452`, push CI
@@ -38,7 +40,10 @@ Scope audit: no POM, dependency, workflow, Docker, Compose, controller, journal,
 startup, or broad mutation-path change is present. PR3 remains a local-filesystem single-host capability and does not
 claim separate-process, production, network-filesystem, distributed, or malicious-process proof.
 
-Decision: checkpoint the executable candidate, create one PR, then require exact-head and merge-main gates before PR4.
+Composition: 859 implementation/test changed lines and 120 contract/process changed lines before this PR checkpoint;
+the campaign aggregate through PR3 remains approximately 88% implementation/tests and 12% documentation/process.
+
+Decision: push this PR checkpoint, then require exact-head and merge-main gates before PR4.
 
 ## Active Single-Host Evidence Ownership PR2 Checkpoint
 

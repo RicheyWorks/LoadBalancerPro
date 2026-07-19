@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Independent Allocation Supervisor PR4 Checkpoint
 
-Timestamp: 2026-07-19T05:33:18-07:00
+Timestamp: 2026-07-19T05:35:02-07:00
 
 Current slot: SUPERVISOR-PR4 - application allocation integration and generation fencing
 
@@ -19,6 +19,11 @@ Started from clean synchronized main: `c2f26d26e159f56454c94b73327f57a58ce61e7b`
 Current branch: `codex/supervisor-application-allocation-integration`
 
 PR URL: pending.
+
+Executable/local-verification checkpoint: `f88a585158a43d26f6d740c4776649d840169cec`.
+
+Checkpoint state: the scoped executable candidate is committed; this required post-commit session update will advance
+the branch before push, so the pushed exact head must receive a fresh focused guard and diff check.
 
 Prior slot closure: PR #482 merged normally from exact final head
 `157cf811a7b004e81a2bff145303b637b9fd0bbb` as `c2f26d26e159f56454c94b73327f57a58ce61e7b`.
@@ -99,8 +104,8 @@ SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
 
 Blocker: none.
 
-Next action: run the focused campaign/session documentation guards and final diff checks after this checkpoint update,
-then stage only the 20 scoped PR4 paths and create the executable checkpoint commit.
+Next action: run the focused campaign/session documentation guards and final diff checks for this post-commit checkpoint,
+commit the metadata-only update, then push and open PR4 from the resulting exact branch head.
 
 Decision: continue.
 

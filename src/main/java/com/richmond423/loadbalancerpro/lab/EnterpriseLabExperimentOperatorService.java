@@ -56,6 +56,8 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
     private final LongSupplier monotonicNanos;
     private final int maxRetainedExperiments;
     private final EnterpriseLabExperimentRecoveryGate recoveryGate;
+    private final Optional<EnterpriseLabAllocationReconciliationGate>
+            allocationReconciliationGate;
     private final Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence;
     private final Optional<EnterpriseLabEvidenceOwnershipLease> ownershipLease;
     private final Optional<EnterpriseLabEvidenceOwnershipRenewer> ownershipRenewer;
@@ -114,6 +116,29 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 Optional.of(Objects.requireNonNull(ownershipLease, "ownershipLease cannot be null")));
     }
 
+    public EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            EnterpriseLabExperimentDurableEvidenceRepository durableEvidence,
+            EnterpriseLabEvidenceOwnershipLease ownershipLease,
+            EnterpriseLabAllocationReconciliationGate allocationReconciliationGate) {
+        this(
+                targetCatalog,
+                new EnterpriseLabScenarioCatalogService(),
+                new EnterpriseLabAdaptiveDecisionService(),
+                Clock.systemUTC(),
+                System::nanoTime,
+                DEFAULT_MAX_RETAINED_EXPERIMENTS,
+                recoveryGate,
+                Optional.of(Objects.requireNonNull(
+                        durableEvidence, "durableEvidence cannot be null")),
+                Optional.of(Objects.requireNonNull(
+                        ownershipLease, "ownershipLease cannot be null")),
+                Optional.of(Objects.requireNonNull(
+                        allocationReconciliationGate,
+                        "allocationReconciliationGate cannot be null")));
+    }
+
     EnterpriseLabExperimentOperatorService(
             EnterpriseLabExperimentTargetCatalog targetCatalog,
             EnterpriseLabScenarioCatalogService scenarioCatalog,
@@ -161,12 +186,39 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             EnterpriseLabExperimentRecoveryGate recoveryGate,
             Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence,
             Optional<EnterpriseLabEvidenceOwnershipLease> ownershipLease) {
+        this(
+                targetCatalog,
+                scenarioCatalog,
+                decisionService,
+                clock,
+                monotonicNanos,
+                maxRetainedExperiments,
+                recoveryGate,
+                durableEvidence,
+                ownershipLease,
+                Optional.empty());
+    }
+
+    EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabScenarioCatalogService scenarioCatalog,
+            EnterpriseLabAdaptiveDecisionService decisionService,
+            Clock clock,
+            LongSupplier monotonicNanos,
+            int maxRetainedExperiments,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence,
+            Optional<EnterpriseLabEvidenceOwnershipLease> ownershipLease,
+            Optional<EnterpriseLabAllocationReconciliationGate> allocationReconciliationGate) {
         this.targetCatalog = Objects.requireNonNull(targetCatalog, "targetCatalog cannot be null");
         this.scenarioCatalog = Objects.requireNonNull(scenarioCatalog, "scenarioCatalog cannot be null");
         this.decisionService = Objects.requireNonNull(decisionService, "decisionService cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
         this.monotonicNanos = Objects.requireNonNull(monotonicNanos, "monotonicNanos cannot be null");
         this.recoveryGate = Objects.requireNonNull(recoveryGate, "recoveryGate cannot be null");
+        this.allocationReconciliationGate = Objects.requireNonNull(
+                allocationReconciliationGate,
+                "allocationReconciliationGate cannot be null");
         this.durableEvidence = Objects.requireNonNull(
                 durableEvidence, "durableEvidence cannot be null");
         this.ownershipLease = Objects.requireNonNull(
@@ -179,13 +231,21 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             throw new IllegalStateException(
                     "owned service renewal requires completed startup reconciliation");
         }
+        if (ownershipLease.isPresent()
+                && allocationReconciliationGate
+                        .map(gate -> !gate.admissionAllowed())
+                        .orElse(false)) {
+            throw new IllegalStateException(
+                    "owned service renewal requires completed allocation reconciliation");
+        }
         if (maxRetainedExperiments < 1 || maxRetainedExperiments > DEFAULT_MAX_RETAINED_EXPERIMENTS) {
             throw new IllegalArgumentException("maxRetainedExperiments must be between 1 and 128");
         }
         this.maxRetainedExperiments = maxRetainedExperiments;
         this.ownershipRenewer = ownershipLease.map(lease ->
                 new EnterpriseLabEvidenceOwnershipRenewer(
-                        lease.ownershipGate(), recoveryGate, lease.renewalInterval()));
+                        lease.ownershipGate(), recoveryGate,
+                        allocationReconciliationGate, lease.renewalInterval()));
     }
 
     public synchronized OperatorReceipt arm(ArmRequest request, boolean activeExperimentExplicitlyEnabled) {
@@ -194,10 +254,9 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             return denied("arm", safeRequest.operatorRequestId(), safeRequest.experimentId(),
                     "SERVICE_CLOSED", "experiment operator service is closed");
         }
-        if (!recoveryGate.admissionAllowed()) {
+        if (!admissionAllowed()) {
             return denied("arm", safeRequest.operatorRequestId(), safeRequest.experimentId(),
-                    "RECOVERY_NOT_READY",
-                    "startup journal reconciliation has not reached a safe admission state");
+                    admissionFailureCode(), admissionFailureReason());
         }
         Optional<MutationAuthorization> authorization = requireMutationOwnership();
         Session existing = sessions.get(safeRequest.experimentId());
@@ -305,10 +364,9 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             boolean activeExperimentExplicitlyEnabled) {
         String safeExperimentId = requireCanonicalId(experimentId, "experimentId");
         String safeRequestId = requireCanonicalId(operatorRequestId, "operatorRequestId");
-        if (!recoveryGate.admissionAllowed()) {
+        if (!admissionAllowed()) {
             return denied("start", safeRequestId, safeExperimentId,
-                    "RECOVERY_NOT_READY",
-                    "startup journal reconciliation has not reached a safe admission state");
+                    admissionFailureCode(), admissionFailureReason());
         }
         Optional<MutationAuthorization> authorization = requireMutationOwnership();
         Session session = sessions.get(safeExperimentId);
@@ -406,7 +464,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         Optional<MutationAuthorization> authorization;
         String signature = safeRequest.signature(safeExperimentId);
         synchronized (this) {
-            if (!recoveryGate.admissionAllowed()) {
+            if (!admissionAllowed()) {
                 return recoveryBatchDenied(safeRequest, safeExperimentId);
             }
             authorization = requireMutationOwnership();
@@ -643,6 +701,12 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         return recoveryGate.admissionStatus();
     }
 
+    public Optional<EnterpriseLabAllocationReconciliationGate.AdmissionStatus>
+            allocationReconciliationStatus() {
+        return allocationReconciliationGate.map(
+                EnterpriseLabAllocationReconciliationGate::admissionStatus);
+    }
+
     public Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence() {
         return durableEvidence;
     }
@@ -662,7 +726,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             var verification = lease.ownershipGate().verifyCurrentOwnership();
             if (verification.status()
                     != EnterpriseLabEvidenceOwnership.OperationStatus.SUCCEEDED) {
-                recoveryGate.fail("OWNERSHIP_VERIFICATION_FAILED");
+                failAdmission("OWNERSHIP_VERIFICATION_FAILED");
             }
             return EnterpriseLabEvidenceOwnershipStatus.from(
                     lease,
@@ -813,7 +877,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             Session session,
             String requestId,
             RuntimeException appendFailure) {
-        recoveryGate.fail("DURABLE_APPEND_FAILED");
+        failAdmission("DURABLE_APPEND_FAILED");
         LifecycleSnapshot snapshot = session.lifecycle.snapshot();
         if (snapshot.candidateAllocationActive()) {
             try {
@@ -849,7 +913,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         try {
             return Optional.of(durableEvidence.orElseThrow().requireMutationAuthorization());
         } catch (EnterpriseLabEvidenceOwnershipException exception) {
-            recoveryGate.fail("OWNERSHIP_UNCERTAIN");
+            failAdmission("OWNERSHIP_UNCERTAIN");
             throw exception;
         }
     }
@@ -865,9 +929,32 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             durableEvidence.orElseThrow().requireSameMutationAuthorization(
                     safeExpected.orElseThrow());
         } catch (EnterpriseLabEvidenceOwnershipException exception) {
-            recoveryGate.fail("OWNERSHIP_UNCERTAIN");
+            failAdmission("OWNERSHIP_UNCERTAIN");
             throw exception;
         }
+    }
+
+    private boolean admissionAllowed() {
+        return recoveryGate.admissionAllowed()
+                && allocationReconciliationGate
+                        .map(EnterpriseLabAllocationReconciliationGate::admissionAllowed)
+                        .orElse(true);
+    }
+
+    private String admissionFailureCode() {
+        return recoveryGate.admissionAllowed()
+                ? "ALLOCATION_RECONCILIATION_NOT_READY" : "RECOVERY_NOT_READY";
+    }
+
+    private String admissionFailureReason() {
+        return recoveryGate.admissionAllowed()
+                ? "allocation reconciliation has not reached an exact safe admission state"
+                : "startup journal reconciliation has not reached a safe admission state";
+    }
+
+    private void failAdmission(String reasonCode) {
+        recoveryGate.fail(reasonCode);
+        allocationReconciliationGate.ifPresent(gate -> gate.fail(reasonCode));
     }
 
     private EnterpriseLabExperimentOperatorRecord record(Session session) {
@@ -1128,14 +1215,14 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 OperatorStatus.DENIED,
                 request.operatorRequestId(),
                 experimentId,
-                "RECOVERY_NOT_READY",
+                admissionFailureCode(),
                 request.count(),
                 0,
                 0,
                 0,
                 false,
                 List.of(),
-                "startup journal reconciliation has not reached a safe admission state",
+                admissionFailureReason(),
                 Optional.empty());
     }
 

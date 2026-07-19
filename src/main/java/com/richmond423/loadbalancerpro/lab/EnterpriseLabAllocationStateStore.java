@@ -255,6 +255,10 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         closed = true;
     }
 
+    Path controlledStoreFile() {
+        return storeFile;
+    }
+
     private ReadResult replayLocked() {
         if (!Files.exists(namespace, LinkOption.NOFOLLOW_LINKS)) {
             return ReadResult.empty();

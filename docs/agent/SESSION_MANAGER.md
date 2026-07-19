@@ -6,7 +6,88 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Durable Allocation-State Supervision PR4 Checkpoint
+## Active Durable Allocation-State Supervision PR5 Checkpoint
+
+Timestamp: 2026-07-18T17:16-07:00
+
+Current slot: ALLOCATION-PR5 - startup, takeover, and runtime allocation-drift reconciliation
+
+Started from clean synchronized main: `4066ae2ef488a946bbfc9a7be173ea1f28503e8d`
+
+Current branch: `codex/allocation-startup-drift-reconciliation`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/478
+
+Executable checkpoint: `b368d195bd411cab1adc814246ff7248aaec3f4e`
+
+PR-creation checkpoint: PR #478 opened from verified pre-PR head
+`e44dd3f03bb6dcaacf8952f851865eca2b21369a`; this required checkpoint advances the branch, so exact-head remote gates
+must use the new pushed SHA.
+
+Exact-head failure/recovery checkpoint: push CI `29666380324` and PR CI `29666381383` on
+`c83e4ba6ff730d61a2be741c68186901879d4ac8` each failed the same renewal-ordering assertion after 3,261 tests; CodeQL
+`29666381381` passed. The allocation gate was still closed, but the renewal worker published the journal failure before
+updating the allocation reason, exposing a Linux/JDK 17 observation race. The repair closes allocation admission first,
+then publishes the journal failure as the observation barrier. The exact renewer class passes five consecutive runs, the
+five-class reconciliation/ownership/operator bundle passes 54 tests, and the full local suite passes 3,261 tests with
+zero failures, errors, or skips. The failed runs remain stale; a new exact-head full CI/CodeQL set is mandatory.
+
+Prior slot closure: PR #476 merged normally from exact final head
+`2e51054e62f2fce2e9c4828905d10b7191fabbb3` as `4066ae2ef488a946bbfc9a7be173ea1f28503e8d`.
+Exact-head PR CI `29643536004`, push CI `29643534071`, CodeQL `29643536009`, dependency review, code scanning,
+Docker build/runtime, controlled container evidence, and the blocking image scan passed. Exact merge-main CI
+`29643758554` and CodeQL `29643758539` passed on the merge SHA, including tests with zero skips, package/artifact
+verification, SBOM, packaged-JAR smoke, Docker build/runtime, controlled evidence, and Trivy. The PR4 source branch is
+preserved on origin; local main and origin/main matched the merge commit before this branch was created.
+
+PR5 scope: add one bounded synchronous reconciliation engine that compares verified allocation transaction history,
+durable baseline/last commit/incomplete intent, replayed experiment state, actual installed router state, and the current
+ownership epoch. It must classify startup, takeover, journal-recovery, ownership-uncertainty, explicit verification,
+and pre-admission drift; never auto-resume an interrupted candidate; restore and independently verify the durable safe
+baseline when state is ambiguous or unsafe; publish immutable readiness only after exact reconciliation; and fail closed
+on corrupt/unsupported evidence, missing baseline, unknown backend, invalid/non-normalized router state, or unverifiable
+restoration.
+
+Out of scope: operator HTTP endpoints and authentication changes, the separate-process proof router, packaged crash and
+takeover proof commands, periodic schedulers unless proven necessary, POM/dependency/workflow/Docker/Compose changes,
+external targets, arbitrary paths, databases/brokers, multi-host/network-filesystem behavior, production traffic, and
+production readiness. Preserve and exclude the unrelated untracked
+`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md`.
+
+Implementation checkpoint: the bounded synchronous reconciler classifies durable/router/backend-set/owner/replay drift,
+continues incomplete allocation phases, restores the fixed verified baseline when safe, and publishes an enforced
+readiness gate only after the durable head, installed allocation, router generation, and live owner agree. Operator
+admission and ownership-renewal failure now close both journal and allocation gates. Invalid router backend sets are
+retained only as bounded fingerprint metadata; unapproved maps never enter the strongly typed durable allocation field.
+
+Local verification: focused and expanded allocation/ownership/operator selectors pass, and `mvn -B clean package` passes
+3,261 tests with zero failures, errors, or skips (22 tests above the PR4 baseline). JaCoCo reports 84.48% instruction and
+67.63% branch coverage. CycloneDX XML and JSON each validate with 144 components; resolved embedded Tomcat core,
+WebSocket, and EL are `10.1.55` only.
+
+Artifact evidence: the final 95,045,072-byte executable JAR has 1,276 entries, contains all 13 reconciler/gate class
+entries, and has SHA-256 `0fe58e22c57ccc69bf32f574d46e4f4a0d0a9546596df8b3f624c0c6eb2dea25`. Literal
+`127.0.0.1:18080` health/static/proxy status checks pass. The target-only workflow, 837-request experiment, 124-request
+durable recovery, and separate-process generation 1/2/3 ownership proofs pass; final report fingerprints are
+`99551a2ff03ce60320365957170354ff1cdc38e0f3548ab683e13a45d8b80fa5`,
+`3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2ed839ff7afd6a`, and
+`817c23eac27878ecc968bc66836845af4548218c01e88f20543daa90083e23f3`.
+
+Scope/safety audit: no POM, dependency, workflow, Docker, Compose, application-resource, controller, endpoint, background
+thread, executor, scheduler, network client, arbitrary path, database, broker, force/bypass, secret value, external
+target, or production-activation surface is added. Startup reconciliation is explicitly invoked and fail-closed; periodic
+supervision, packaged subprocess evidence, and operator diagnostics remain PR6 scope. Multi-host/network-filesystem,
+malicious-process resistance, production traffic, and production readiness remain not proven.
+
+Local Docker/runtime and Trivy are not claimed green: Docker CLI 28.0.4 cannot reach the absent Desktop Linux engine pipe
+and standalone `trivy` is unavailable. Exact-head remote Docker build/runtime, controlled evidence, and the blocking
+HIGH/CRITICAL Trivy scan remain mandatory before merge and again on merge-main.
+
+Composition: PR5 has 2,268 executable/test and 360 required process additions (86.30% / 13.70%); the heavier process share
+records 21 mandatory failure/recovery checkpoints. The campaign aggregate is 7,983 executable/test and 1,085 process
+additions (88.03% / 11.97%), inside the goal's 88-92% executable and 8-12% process band.
+
+## Completed Durable Allocation-State Supervision PR4 Checkpoint
 
 Timestamp: 2026-07-18T04:46-07:00
 
@@ -77,9 +158,11 @@ verification, Docker/Trivy limitation, composition, and not-proven boundaries ab
 watcher-interrupt tooling failures are logged; this required recovery checkpoint moves the branch again, so every check
 on the preceding heads is stale and cannot authorize merge.
 
-Decision: package, commit, and push this PR-created checkpoint; update the PR body to the resulting exact candidate head;
-then require every exact-head CI, CodeQL, dependency-review, Docker/runtime/evidence, and Trivy gate before a normal
-merge without source-branch deletion. Do not start PR5 until exact merge-main CI and CodeQL are green.
+Remote closure: final candidate head `2e51054e62f2fce2e9c4828905d10b7191fabbb3` passed exact-head PR CI
+`29643536004`, push CI `29643534071`, CodeQL `29643536009`, dependency review, code scanning, Docker runtime,
+controlled container evidence, and the blocking image scan. PR #476 merged normally as
+`4066ae2ef488a946bbfc9a7be173ea1f28503e8d` without deleting the source branch. Exact merge-main CI `29643758554`
+and CodeQL `29643758539` passed on that merge commit; PR4 is complete and PR5 started only after those gates were green.
 
 ## Completed Durable Allocation-State Supervision PR3 Checkpoint
 

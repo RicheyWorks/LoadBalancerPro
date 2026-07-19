@@ -287,6 +287,47 @@ class EnterpriseLabAllocationTransactionCoordinatorTest {
     }
 
     @Test
+    void invalidBackendSetReadBackIsFingerprintedWithoutTrustAndRestoresBaseline() {
+        AtomicInteger reads = new AtomicInteger();
+        EnterpriseLabLoopbackAllocationSnapshot invalidReadBack =
+                new EnterpriseLabLoopbackAllocationSnapshot(
+                        EnterpriseLabLoopbackAllocationSnapshot.SCHEMA_VERSION,
+                        SCENARIO,
+                        9L,
+                        "fault-invalid-backend-set",
+                        Kind.CANDIDATE,
+                        Map.of("unknown-loopback-backend", 1.0));
+        EnterpriseLabInstalledAllocationSnapshot invalidInstalled =
+                EnterpriseLabInstalledAllocationSnapshot.installed(
+                        invalidReadBack,
+                        clock,
+                        "invalid backend-set fault",
+                        authority.requireMutationAuthorization().generation());
+        EnterpriseLabAllocationTransactionCoordinator coordinator = coordinator(
+                checkpoint -> { },
+                () -> reads.incrementAndGet() == 3
+                        ? invalidInstalled : router.installedSnapshot());
+        coordinator.establishSafeBaseline("allocation-baseline-1");
+
+        TransactionReceipt receipt = coordinator.applyCandidate(
+                "allocation-candidate-2", "experiment-1", decision, true);
+
+        assertEquals(TransactionStatus.FAILED_RESTORED, receipt.status());
+        assertTrue(receipt.baselineRestored());
+        assertEquals(Kind.RESTORED_BASELINE,
+                router.installedSnapshot().routingSnapshot().kind());
+        List<EnterpriseLabAllocationState> records = store.replay().records();
+        assertTrue(records.stream().anyMatch(record ->
+                record.metadata().getOrDefault("observed-router-fingerprint", "")
+                        .equals(invalidInstalled.allocationFingerprint())));
+        assertTrue(records.stream().allMatch(record ->
+                !record.installedAllocation().containsKey("unknown-loopback-backend")));
+        assertTrue(records.stream().noneMatch(record ->
+                record.transactionPhase() == TransactionPhase.COMMITTED
+                        && record.allocationGeneration() == 2L));
+    }
+
+    @Test
     void unavailableCandidateReadBackTriggersVerifiedBaselineRestoration() {
         AtomicInteger reads = new AtomicInteger();
         EnterpriseLabAllocationTransactionCoordinator coordinator = coordinator(

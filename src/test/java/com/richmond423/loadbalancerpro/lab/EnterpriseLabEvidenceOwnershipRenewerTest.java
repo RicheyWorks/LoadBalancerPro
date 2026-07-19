@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.concurrent.locks.LockSupport;
 
@@ -92,9 +93,12 @@ class EnterpriseLabEvidenceOwnershipRenewerTest {
         EnterpriseLabEvidenceOwnershipLease lease = acquisition.ownership().orElseThrow();
         EnterpriseLabExperimentRecoveryGate recoveryGate =
                 EnterpriseLabExperimentRecoveryGate.inMemoryOnly();
+        EnterpriseLabAllocationReconciliationGate allocationGate =
+                EnterpriseLabAllocationReconciliationGate.pending();
         try (EnterpriseLabEvidenceOwnershipRenewer renewer =
                 new EnterpriseLabEvidenceOwnershipRenewer(
-                        lease.ownershipGate(), recoveryGate, POLICY.renewalInterval())) {
+                        lease.ownershipGate(), recoveryGate,
+                        Optional.of(allocationGate), POLICY.renewalInterval())) {
             clock.advance(Duration.ofSeconds(1));
 
             assertTrue(await(() -> !recoveryGate.admissionAllowed()));
@@ -104,6 +108,9 @@ class EnterpriseLabEvidenceOwnershipRenewerTest {
                     failed.failure());
             assertEquals("OWNERSHIP_RENEWAL_FAILED", recoveryGate.reasonCode());
             assertFalse(recoveryGate.admissionAllowed());
+            assertEquals("OWNERSHIP_RENEWAL_FAILED",
+                    allocationGate.admissionStatus().reasonCode());
+            assertFalse(allocationGate.admissionAllowed());
         } finally {
             assertTrue(lease.release().operatingSystemLockReleased());
         }

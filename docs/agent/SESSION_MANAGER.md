@@ -18,7 +18,13 @@ Started from clean synchronized main: `edd2db28946828fc1d969c797bb0a70e9cd4431c`
 
 Current branch: `codex/supervisor-dual-restart-reconciliation`
 
-PR URL: pending.
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/484
+
+Executable/local-verification checkpoint: `ad915b7aed0b973812d7a1acf15d7e68679688e4`.
+
+PR-created checkpoint: PR #484 opened from the verified implementation head
+`ad915b7aed0b973812d7a1acf15d7e68679688e4`. This required session update advances the branch, so exact-head remote
+gates must use the subsequent metadata checkpoint rather than the PR-opening head.
 
 Prior slot closure: PR #483 merged normally from exact final head
 `7b827a56283e308afe7032fdfef2b35237ee2291` as `edd2db28946828fc1d969c797bb0a70e9cd4431c`.
@@ -114,8 +120,8 @@ SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
 
 Blocker: none.
 
-Next action: rerun focused and campaign documentation guards after this checkpoint-only edit, commit the verified PR5
-candidate without staging the CSRBT proposal, push the source branch, create PR5, and require fresh exact-head remote gates.
+Next action: verify and commit this PR-created checkpoint, push it without staging the CSRBT proposal, then require fresh
+exact-head CI, CodeQL, dependency review, Docker/runtime, SBOM, and blocking Trivy gates before merge.
 
 Decision: continue.
 

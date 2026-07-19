@@ -18,7 +18,13 @@ Started from clean synchronized main: `8692b0a1e2662f3c8c23f453d2b3330f9fc862d7`
 
 Current branch: `codex/supervisor-authenticated-loopback-client`
 
-PR URL: not opened yet.
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/482
+
+Executable/local-verification checkpoint: `cefd4fa0ccc0f086a42dd701713828c0d22996ff`.
+
+PR-created checkpoint: PR #482 opened from the verified executable head above. This required session-manager update
+advances the branch, so exact-head remote gates must use the subsequent checkpoint commit rather than the PR-opening
+executable head.
 
 Prior slot closure: PR #481 merged normally from exact final head
 `0490e3ae87bda2d908c1a50cb8a99e84fadec632` as `8692b0a1e2662f3c8c23f453d2b3330f9fc862d7`.
@@ -92,9 +98,8 @@ SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
 
 Blocker: none.
 
-Next action: commit and push the verified staged executable checkpoint, open the PR, record its URL in this checkpoint,
-and require fresh exact-head remote CI, CodeQL, dependency review, Docker/runtime/evidence, and blocking Trivy before
-merge.
+Next action: commit and push this PR-created checkpoint, then require fresh exact-head remote CI, CodeQL, dependency
+review, Docker/runtime/evidence, and blocking Trivy before merge.
 
 Decision: continue.
 

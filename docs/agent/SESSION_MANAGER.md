@@ -6,6 +6,91 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Independent Allocation Supervisor PR1 Checkpoint
+
+Timestamp: 2026-07-19T00:41:03-07:00
+
+Current slot: SUPERVISOR-PR1 - bounded shared command/response protocol and canonical codec
+
+Goal manager: active for the six-PR independent Enterprise Lab supervisor campaign; no token budget was requested.
+
+Started from clean synchronized main: `a3a17f847e95884ea37f225155d29dbb1ac285c9`
+
+Current branch: `codex/supervisor-protocol-command-model`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/480
+
+Executable/local-verification checkpoint: `8136f7d4fc5239fedd4f28c661dd8ddeb07790ea`
+
+PR-created checkpoint: PR #480 opened from the verified pushed executable head above. This required checkpoint advances
+the branch, so exact-head remote gates must use the subsequent checkpoint commit rather than the executable checkpoint.
+
+Executable capability: add a strict versioned business protocol for health, readiness, installed-state read-back,
+baseline establishment, allocation apply, baseline restoration, verification, bounded status, generation inspection, and
+controlled shutdown. Requests and responses must reuse the repository allocation snapshots and canonical fingerprints,
+reject unknown schema/commands/fields, remain byte/backend/metadata bounded, correlate request IDs exactly, and contain
+no transport credential, arbitrary address/path, caller-selected supervisor generation, or caller-selected state phase.
+
+Integration audit: the current application creates an application-ownership-fenced in-memory router, then connects the
+allocation transaction coordinator and reconciler through `router::installedSnapshot`. The router already isolates its
+installed state behind an atomic read/CAS seam used on every loopback selection. The packaged proof holder demonstrates
+a separate JVM, literal `127.0.0.1` JDK HTTP transport, high-entropy run token, bounded requests and lifetime, atomic
+readiness publication, and independent snapshot CAS. It remains proof-only and in-memory, has no supervisor lock or
+generation, no durable reconstruction or command/idempotency history, and directly exposes raw state replacement.
+
+Reuse decision: keep the proof holder proof-only in PR1. Reuse `EnterpriseLabLoopbackAllocationSnapshot`,
+`EnterpriseLabInstalledAllocationSnapshot`, `EnterpriseLabInstalledAllocationSnapshotCodec`, canonical allocation
+fingerprints, target-catalog binding, evidence sanitization patterns, ownership generation bounds, CLI dispatch, and
+target-only evidence conventions. Do not create a parallel allocation representation or activate a listener in PR1.
+
+Prior campaign closure: PR #479 merged from final head
+`81bc784b1a3abb6f77ecbb16e440c6065a695204` as `a3a17f847e95884ea37f225155d29dbb1ac285c9`.
+Exact merge-main CI `29669917347` and CodeQL `29669917412` are successful on that SHA, including zero-skip tests,
+package/artifact checks, SBOM, packaged-JAR smoke, Docker build/runtime, controlled evidence, and blocking Trivy.
+
+Scope boundaries: single host, one application JVM, one future supervisor JVM, one controlled local directory,
+literal-loopback-only IPC, approved Enterprise Lab backends, bounded protocol messages, and no production routing.
+No listener, credential file, supervisor process, application integration, POM/dependency/workflow/Docker/Compose,
+runtime-resource, public endpoint, external target, database, broker, cloud/tenant, distributed coordination, force
+control, or production-readiness change belongs in PR1.
+
+Preserved unrelated file: `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains untracked and excluded; startup
+SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
+
+Remote status: remote `main` remains at the exact starting SHA. CI run `29669917347` and CodeQL run `29669917412` are
+successful on that SHA. PR #480 exact-head PR CI `29678294151`, push CI `29678293147`, and CodeQL `29678294177` are
+successful on `dc6bd68212636c8bd22b088f1f9cdae73d7b3e86`; dependency review, zero-skip tests, coverage, package and
+artifact checks, SBOM, packaged-JAR smoke, Docker build/runtime, controlled evidence, and the blocking image scan all
+passed. This required remote-check checkpoint advances the branch, so a fresh exact-head remote set remains mandatory.
+
+Blocker: none.
+
+Implementation checkpoint: `EnterpriseLabSupervisorProtocol` now defines command classification, strict command-specific
+ownership/generation/transaction/payload rules, evidence-safe metadata, truthful action/read-back invariants, and exact
+request-response correlation. The completed audit additionally rejects sentinel required identities, half-present
+identity/generation fences, missing apply/restore compare-and-set fingerprints, verify requests carrying a prior
+fingerprint, embedded absolute-path/address evidence, and accepted responses that do not validate against the exact
+request supervisor/application/allocation fences. Installed-state reads remain truthful without asserting a comparison
+that the command did not perform. `EnterpriseLabSupervisorProtocolCodec` issues and decodes responses only against the
+originating request, verifies canonical request/response fingerprints, enforces exact strict JSON and byte bounds,
+validates repository target bindings, and reuses the installed snapshot codec's routing-node representation. The
+architecture contract records the process responsibility boundary, lock order, hard protocol limits, campaign sequence,
+request-bound response contract, and not-proven boundaries.
+
+Verification checkpoint: the 4-class focused protocol/snapshot/router/state-codec bundle passes 48 tests with zero
+failures, errors, or skips. `mvn -q test`, `mvn -q "-DskipTests" package`, and `mvn -B package` pass; the batch package
+runs 3,294 tests with zero failures, errors, or skips and produces the executable JAR. The packaged
+`enterprise-lab-workflow.ps1 -Package` shadow workflow passes all 10 scenarios and writes evidence only under `target/`.
+`git diff --check`, base/cached diff checks, and the scoped trailing-whitespace audit pass. The audit's initial embedded
+Unix-path test failure and a malformed read-only scope-scan regex are recorded in `FAILURE_LOG.md`; both were repaired or
+rerun successfully before the full gates. The only untracked path outside PR1 is the preserved CSRBT proposal, whose
+SHA-256 remains unchanged.
+
+Next action: commit and push this remote-check checkpoint, require the fresh exact-head CI/CodeQL set to complete
+successfully, then apply the merge gate without changing the reviewed scope.
+
+Decision: continue.
+
 ## Active Durable Allocation-State Supervision PR6 Checkpoint
 
 Timestamp: 2026-07-18T19:05-07:00

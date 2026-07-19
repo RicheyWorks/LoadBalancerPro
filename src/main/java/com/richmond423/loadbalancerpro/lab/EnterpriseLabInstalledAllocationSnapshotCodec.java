@@ -92,27 +92,10 @@ public final class EnterpriseLabInstalledAllocationSnapshotCodec {
             throw failure(Failure.UNSUPPORTED_VERSION,
                     "installed allocation snapshot schemaVersion is unsupported");
         }
-        ObjectNode routingNode = object(root.get("routingSnapshot"), "routingSnapshot");
-        requireExactFields(routingNode, ROUTING_FIELDS, "routingSnapshot");
-        String routingVersion = text(routingNode, "schemaVersion");
-        if (!EnterpriseLabLoopbackAllocationSnapshot.SCHEMA_VERSION.equals(routingVersion)) {
-            throw failure(Failure.UNSUPPORTED_VERSION,
-                    "routing snapshot schemaVersion is unsupported");
-        }
-
         EnterpriseLabInstalledAllocationSnapshot snapshot;
         try {
             EnterpriseLabLoopbackAllocationSnapshot routingSnapshot =
-                    new EnterpriseLabLoopbackAllocationSnapshot(
-                            routingVersion,
-                            text(routingNode, "scenarioId"),
-                            number(routingNode, "revision"),
-                            text(routingNode, "sourceDecisionId"),
-                            enumValue(
-                                    routingNode,
-                                    "kind",
-                                    EnterpriseLabLoopbackAllocationSnapshot.Kind.class),
-                            allocation(routingNode, "allocations"));
+                    decodeRoutingNode(root.get("routingSnapshot"));
             snapshot = new EnterpriseLabInstalledAllocationSnapshot(
                     schemaVersion,
                     routingSnapshot,
@@ -153,7 +136,7 @@ public final class EnterpriseLabInstalledAllocationSnapshotCodec {
     private static ObjectNode canonicalNode(EnterpriseLabInstalledAllocationSnapshot snapshot) {
         ObjectNode node = MAPPER.createObjectNode();
         node.put("schemaVersion", snapshot.schemaVersion());
-        node.set("routingSnapshot", routingNode(snapshot.routingSnapshot()));
+        node.set("routingSnapshot", canonicalRoutingNode(snapshot.routingSnapshot()));
         node.put("routerGeneration", snapshot.routerGeneration());
         node.put("allocationFingerprint", snapshot.allocationFingerprint());
         node.set("eligibleBackendIds", identifiersNode(snapshot.eligibleBackendIds()));
@@ -164,7 +147,7 @@ public final class EnterpriseLabInstalledAllocationSnapshotCodec {
         return node;
     }
 
-    private static ObjectNode routingNode(EnterpriseLabLoopbackAllocationSnapshot snapshot) {
+    static ObjectNode canonicalRoutingNode(EnterpriseLabLoopbackAllocationSnapshot snapshot) {
         ObjectNode node = MAPPER.createObjectNode();
         node.put("schemaVersion", snapshot.schemaVersion());
         node.put("scenarioId", snapshot.scenarioId());
@@ -176,6 +159,30 @@ public final class EnterpriseLabInstalledAllocationSnapshotCodec {
                 allocations.put(backendId, canonicalShare(share)));
         node.set("allocations", allocations);
         return node;
+    }
+
+    static EnterpriseLabLoopbackAllocationSnapshot decodeRoutingNode(JsonNode value) {
+        ObjectNode node = object(value, "routingSnapshot");
+        requireExactFields(node, ROUTING_FIELDS, "routingSnapshot");
+        String schemaVersion = text(node, "schemaVersion");
+        if (!EnterpriseLabLoopbackAllocationSnapshot.SCHEMA_VERSION.equals(schemaVersion)) {
+            throw failure(Failure.UNSUPPORTED_VERSION,
+                    "routing snapshot schemaVersion is unsupported");
+        }
+        try {
+            return new EnterpriseLabLoopbackAllocationSnapshot(
+                    schemaVersion,
+                    text(node, "scenarioId"),
+                    number(node, "revision"),
+                    text(node, "sourceDecisionId"),
+                    enumValue(node, "kind", EnterpriseLabLoopbackAllocationSnapshot.Kind.class),
+                    allocation(node, "allocations"));
+        } catch (CodecException exception) {
+            throw exception;
+        } catch (RuntimeException exception) {
+            throw failure(Failure.INVALID_SNAPSHOT,
+                    "routing snapshot violates allocation invariants", exception);
+        }
     }
 
     private static ArrayNode identifiersNode(List<String> identifiers) {

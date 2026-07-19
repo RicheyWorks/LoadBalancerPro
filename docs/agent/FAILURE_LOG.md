@@ -6177,3 +6177,154 @@ unrelated file changed.
 
 Correction/result: rerun the claim scan with explicit fixed-string patterns and keep code-shaped path/URI assertions in
 the focused Java regression tests instead of mixing a trailing Windows separator into the documentation audit regex.
+
+# 2026-07-19 - Supervisor PR2 first compile found service integration mistakes
+
+Branch/PR: `codex/supervisor-process-durable-holder` / no PR
+
+Failing check: `mvn -q "-DskipTests" test`
+
+Observed/root cause: the first compile of the new supervisor service omitted the `java.nio.file.Path` import, named a
+static `OwnershipVerification.accepted()` factory the same as the generated boolean record accessor, and supplied the
+existing ownership-store failure injector with two parameters although its checkpoint contract accepts one. These are
+compile-time integration mistakes in new, uncommitted PR2 code. No supervisor process or listener started, no durable
+state or external target changed, and the unrelated untracked CSRBT proposal remained excluded.
+
+Correction/result: add the missing import, rename the factory to avoid the accessor collision, match the existing
+single-parameter injector contract, and rerun the identical compile check before adding behavioral tests.
+
+Follow-up failing check: the identical compile rerun advanced to one Java canonical-record-constructor error because
+the reassigned `baselineAllocation` parameter was captured by an `Optional.ifPresent` lambda and therefore was not
+effectively final. Replace that lambda with a direct present-value branch and rerun the same compile gate. No runtime,
+listener, durable state, external target, or unrelated file changed.
+
+# 2026-07-19 - Supervisor PR2 focused test compile omitted the allocation-kind import
+
+Branch/PR: `codex/supervisor-process-durable-holder` / no PR
+
+Failing check: `mvn -q
+"-Dtest=EnterpriseLabSupervisorServiceTest,EnterpriseLabSupervisorServerTest,EnterpriseLabSupervisorCommandTest,EnterpriseLabSupervisorProtocolCodecTest"
+test`
+
+Observed/root cause: the new service test referred to the nested `Kind` enum by its short name without importing
+`EnterpriseLabLoopbackAllocationSnapshot.Kind`. Main sources compiled successfully before this test-compile failure.
+No test executed, listener started, durable state changed outside JUnit's temporary directory, or unrelated file changed.
+
+Correction/result: import the nested enum and rerun the identical focused bundle.
+
+# 2026-07-19 - Supervisor PR2 process-proof test shadowed the Java package name
+
+Branch/PR: `codex/supervisor-process-durable-holder` / no PR
+
+Failing check: the five-class focused supervisor bundle including
+`EnterpriseLabSupervisorProcessIntegrationTest` failed during test compilation.
+
+Observed/root cause: the new process test named its Java executable path variable `java`, which shadowed the `java`
+package in the following `java.util.Locale.ROOT` expression. No test or child process executed, and no listener, durable
+state, external target, or unrelated file changed.
+
+Correction/result: rename the local variable to `javaExecutable` and rerun the identical five-class bundle.
+
+# 2026-07-19 - Supervisor PR2 Windows lock release lagged child process termination
+
+Branch/PR: `codex/supervisor-process-durable-holder` / no PR
+
+Failing check: the five-class focused bundle ran 35 tests with one error in
+`EnterpriseLabSupervisorProcessIntegrationTest` when the parent immediately reacquired the supervisor lock after
+`destroyForcibly()` and successful `Process.waitFor()`.
+
+Observed/root cause: the proof had already established that the live child excluded the parent correctly. Windows had
+not yet made the terminated child's file-lock release observable at the first immediate acquisition attempt. The
+production lock remained fail-closed, the child was confirmed exited, its bounded local state remained intact, and no
+external target or unrelated file changed.
+
+Correction/result: use bounded polling on the lock readiness signal, with the existing startup timeout and short retry
+interval, before inspecting post-crash state. Do not weaken or bypass the production OS lock.
+
+# 2026-07-19 - Supervisor PR2 abrupt-restart metadata rotation failed on Windows
+
+Branch/PR: `codex/supervisor-process-durable-holder` / no PR
+
+Failing check: the five-class focused bundle ran 35 tests with one error when the second real supervisor child exited
+before readiness with the sanitized classification `PUBLICATION_FAILURE`.
+
+Observed/root cause: the first child successfully published readiness and a credential, authenticated health, held the
+exclusive OS lock, and was terminated abruptly. On restart, Windows rejected the same-directory atomic move using
+`REPLACE_EXISTING` against the fixed stale readiness or credential destination. The new durable supervisor state was
+already reconstructed correctly; only generation-fenced connection metadata rotation failed. No external target or
+unrelated file changed.
+
+Correction/result: retain same-directory atomic publication of complete new metadata, and on a replace failure validate
+and remove only the exact fixed stale metadata file before one bounded atomic retry. A missing metadata file during this
+rotation fails clients closed; durable state and interrupted-state evidence are not removed or weakened.
+
+# 2026-07-19 - Supervisor PR2 scope scan used unsupported default ripgrep lookahead
+
+Branch/PR: `codex/supervisor-process-durable-holder` / no PR
+
+Failing check: the first read-only supervisor source scan combined fixed forbidden strings with the negative lookahead
+`https?://(?!127\\.0\\.0\\.1)` under ripgrep's default regex engine, which rejected look-around syntax.
+
+Observed/root cause: the audit command omitted `--pcre2`. The adjacent positive resource-bound scan completed, but the
+rejected forbidden-value scan is not evidence. No source behavior, process, listener, durable state, external target,
+or unrelated file changed.
+
+Correction/result: rerun fixed forbidden values with fixed-string searches and run the URL exclusion separately with
+`--pcre2`; retain Java behavioral tests as the authoritative literal-loopback and authentication gate.
+
+# 2026-07-19 - Supervisor PR2 packaged-JAR inspection used the data root instead of the fixed store directory
+
+Branch/PR: `codex/supervisor-process-durable-holder` / no PR
+
+Failing check: the first read-only inspection after starting the packaged supervisor JAR requested
+`supervisor.ready.json` and `supervisor-state.json` directly beneath the configured data root and returned path-not-found.
+
+Observed/root cause: the supervisor correctly places its lock, state, readiness, and credential artifacts beneath the
+fixed versioned `enterprise-lab-supervisor-v1` directory. The executable JAR had started successfully and printed its
+bounded startup marker; the inspection command assumed the wrong artifact level. No production or external target was
+contacted, no source or durable state was changed by the failed read, and the unrelated CSRBT proposal remained excluded.
+
+Correction/result: inspect only the fixed versioned supervisor directory, verify the readiness and durable state there,
+then terminate the local packaged-JAR process through its existing terminal session and confirm bounded cleanup.
+
+Follow-up failing check: the corrected-directory inspection listed the expected files but then requested dotted legacy
+names instead of the listed fixed versioned names `supervisor-ready-v1.json` and `supervisor-state-v1.json`. The process
+remained healthy, and the listing itself confirmed bounded credential, readiness, state, and lock artifacts. Rerun using
+the exact listed filenames; no behavioral or safety boundary changes are required.
+
+Second follow-up failing check: after the exact artifact read succeeded and the foreground packaged-JAR session was
+intentionally terminated, a `Win32_Process` no-leak filter searched every command line for the full JAR argument and
+matched the PowerShell audit process containing that same filter text. It returned nonzero without identifying a leaked
+JVM. Restrict the check to `java.exe` processes and confirm lock reacquisition with the existing production ownership
+primitive; the intentionally interrupted terminal exit is not a supervisor protocol or clean-shutdown claim.
+
+# 2026-07-19 - Supervisor PR2 pre-commit audit found no absolute connection-lifetime deadline
+
+Branch/PR: `codex/supervisor-process-durable-holder` / no PR
+
+Failing check: manual contract-to-code audit after green full test, package, packaged-JAR startup, and verify gates.
+
+Observed/root cause: the one-request server enforced a three-second socket idle timeout, five-second post-dispatch
+duration check, request/body limits, and one request per connection, but a peer sending one byte before each idle timeout
+could extend frame delivery beyond an absolute connection lifetime. That fails the PR2 contract's distinct bounded idle
+and bounded connection-lifetime requirements. No external target was contacted; the finding applies only to new,
+uncommitted PR2 code and does not weaken the already-green baseline.
+
+Correction/result: add a monotonic absolute connection deadline layered with the idle timeout, regression-test deadline
+arithmetic and an authenticated server exchange, document the exact bound, then rerun focused and full gates before
+commit. A companion read-only `rg` invocation using Windows-incompatible path globs also returned nonzero before the
+same scan was rerun with `-g`; that tooling failure produced no evidence and changed no source or state.
+
+Follow-up audit finding: the new supervisor lock opened with `CREATE` before validating that an existing path was not a
+symbolic link. Although later validation rejected a link and malicious local-administrator resistance is explicitly not
+claimed, opening first could follow an unsafe existing path and leak the just-opened channel on that validation failure.
+Prepare or validate the fixed lock file first, open it read/write with `NOFOLLOW_LINKS`, and retain fail-closed behavior
+when that platform option is unsupported. A repeated read-only source search also initially used Windows-incompatible
+path globs; its corrected `-g` scan found the repository's established no-follow pattern and no source changed from the
+failed search itself.
+
+Second follow-up audit finding: an already queued mutation could enter synchronized dispatch after clean shutdown had
+been accepted, because the accept loop stopped but the service did not independently fence post-shutdown mutations.
+Reject every later allocation, ownership, or non-shutdown lifecycle mutation once shutdown begins while allowing only
+bounded observations and idempotent shutdown handling; add a regression proving installed state and durable generation
+remain unchanged.

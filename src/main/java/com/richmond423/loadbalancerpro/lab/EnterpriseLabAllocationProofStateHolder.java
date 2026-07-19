@@ -15,13 +15,16 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,6 +41,7 @@ public final class EnterpriseLabAllocationProofStateHolder {
     private static final String AUTH_HEADER = "X-Allocation-Proof-Key";
     private static final String INITIAL_FILE = "holder-initial.json";
     private static final String READY_FILE = "holder-ready.txt";
+    private static final String READY_TEMP_FILE = "holder-ready.tmp";
     private static final Pattern RUN_TOKEN = Pattern.compile("[0-9a-f]{64}");
     private static final int MAX_EXCHANGE_BYTES =
             EnterpriseLabInstalledAllocationSnapshotCodec.HARD_MAX_SNAPSHOT_BYTES * 2 + 4;
@@ -54,6 +58,7 @@ public final class EnterpriseLabAllocationProofStateHolder {
             Path runRoot = runRoot(output, runToken);
             Path initialFile = controlled(runRoot, INITIAL_FILE);
             Path readyFile = controlled(runRoot, READY_FILE);
+            Path readyTempFile = controlled(runRoot, READY_TEMP_FILE);
             EnterpriseLabInstalledAllocationSnapshotCodec codec =
                     new EnterpriseLabInstalledAllocationSnapshotCodec(fixedTargets());
             EnterpriseLabInstalledAllocationSnapshot initial = codec.decode(
@@ -76,10 +81,7 @@ public final class EnterpriseLabAllocationProofStateHolder {
                     exchange, runToken, requests, stop));
             server.start();
             try {
-                Files.writeString(
-                        readyFile,
-                        Integer.toString(server.getAddress().getPort()) + System.lineSeparator(),
-                        StandardCharsets.UTF_8);
+                publishReady(readyTempFile, readyFile, server.getAddress().getPort());
                 out.println("allocation-proof-holder-ready");
                 if (!stop.await(Duration.ofSeconds(30).toMillis(), TimeUnit.MILLISECONDS)) {
                     err.println("allocation proof holder reached its bounded lifetime");
@@ -111,6 +113,7 @@ public final class EnterpriseLabAllocationProofStateHolder {
                 new EnterpriseLabInstalledAllocationSnapshotCodec(targetCatalog);
         Files.write(controlled(runRoot, INITIAL_FILE), codec.encode(initial));
         Files.deleteIfExists(controlled(runRoot, READY_FILE));
+        Files.deleteIfExists(controlled(runRoot, READY_TEMP_FILE));
 
         List<String> command = javaCommand();
         command.add("--enterprise-lab-allocation-proof-holder");
@@ -126,12 +129,14 @@ public final class EnterpriseLabAllocationProofStateHolder {
         try {
             while (Instant.now().isBefore(deadline)) {
                 if (Files.isRegularFile(ready)) {
-                    int port = Integer.parseInt(Files.readString(
-                            ready, StandardCharsets.UTF_8).trim());
-                    if (port < 1 || port > 65_535) {
-                        throw new IllegalStateException(
-                                "proof holder published an invalid loopback port");
+                    String published = Files.readString(
+                            ready, StandardCharsets.UTF_8).trim();
+                    OptionalInt parsedPort = parseReadyPort(published);
+                    if (parsedPort.isEmpty()) {
+                        Thread.sleep(20L);
+                        continue;
                     }
+                    int port = parsedPort.getAsInt();
                     return new HolderProcess(
                             process,
                             new ExternalStore(port, runToken, codec));
@@ -152,6 +157,36 @@ public final class EnterpriseLabAllocationProofStateHolder {
             process.destroyForcibly();
             throw exception;
         }
+    }
+
+    private static void publishReady(Path temporary, Path ready, int port)
+            throws IOException {
+        Files.writeString(
+                temporary,
+                Integer.toString(port) + System.lineSeparator(),
+                StandardCharsets.UTF_8);
+        try {
+            Files.move(
+                    temporary,
+                    ready,
+                    StandardCopyOption.ATOMIC_MOVE,
+                    StandardCopyOption.REPLACE_EXISTING);
+        } catch (AtomicMoveNotSupportedException exception) {
+            Files.move(temporary, ready, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    static OptionalInt parseReadyPort(String published) {
+        String value = Objects.requireNonNull(published, "published").trim();
+        if (!value.matches("[0-9]{1,5}")) {
+            return OptionalInt.empty();
+        }
+        int port = Integer.parseInt(value);
+        if (port < 1 || port > 65_535) {
+            throw new IllegalStateException(
+                    "proof holder published an invalid loopback port");
+        }
+        return OptionalInt.of(port);
     }
 
     static EnterpriseLabExperimentTargetCatalog fixedTargets() {

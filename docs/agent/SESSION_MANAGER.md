@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Durable Allocation-State Supervision PR6 Checkpoint
 
-Timestamp: 2026-07-18T18:47-07:00
+Timestamp: 2026-07-18T19:05-07:00
 
 Current slot: ALLOCATION-PR6 - authenticated operator evidence and packaged separate-process recovery proof
 
@@ -21,6 +21,13 @@ PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/479
 Executable/local-verification checkpoint: `34a7d96c71c5b105a2ce9b1d26e8ee708a0c8cd6`
 
 PR-created checkpoint: PR #479 opened from verified pushed head `13dac3cf9ca3b8809082c814e3d3a31aa964ddc2`.
+
+Exact-head failure/recovery checkpoint: PR CI `29669130703` on
+`96a4acdf8feaccc3790b5b85c181d040dbbd37b1` ran 3,271 tests with one error because Linux observed the proof holder's
+readiness file before its port bytes. Push CI `29669129851` and CodeQL `29669130705` passed on that now-stale head. The
+repair publishes a completed sibling temp file by same-directory atomic move and waits on incomplete readiness content;
+the proof class passes five consecutive runs, the 12-class bundle passes 91 tests, and clean package plus verify each
+pass 3,272 tests with zero failures, errors, or skips. Fresh exact-head CI and CodeQL are mandatory.
 
 Prior slot closure: PR #478 merged normally from exact final head
 `d1d234bcf32e03c18935d230928fa44c5a4057dd` as `793dd9ab53b31ead825b6321006b57c9dca909cc`.
@@ -55,17 +62,17 @@ proof uses a separate JVM literal-loopback installed-state holder with a 64-hex 
 limits, canonical read-back, and clean or forced shutdown; production construction retains the atomic in-memory store.
 
 Final local verification: the refreshed 12-class allocation/operator/controller/Spring/API-key/OAuth2/proof bundle
-passed; `mvn -B test`, `mvn -B clean package`, and `mvn -B verify` each passed 3,271 tests with zero failures, errors, or
-skips, 10 tests above PR5. JaCoCo is 84.34% instruction and 67.33% branch. Tomcat core, WebSocket, and EL resolve only
+passed; repaired `mvn -B clean package` and `mvn -B verify` each passed 3,272 tests with zero failures, errors, or skips,
+11 tests above PR5. JaCoCo is 84.33% instruction and 67.32% branch. Tomcat core, WebSocket, and EL resolve only
 to 10.1.55; validated CycloneDX JSON and XML each contain 144 dependency components plus the one XML metadata project.
 The target-only workflow and packaged allocation, durable recovery, ownership, and experiment proofs pass. Their final
-fingerprints are `d1143a63ecdd3f1fdf49c03f03520581afee632a9654d46b4c4651fa426c8891`,
+fingerprints are `17ebfc0d97400178951c5ec65b0637dfc56e1bb599eda40d806f00e4263209e1`,
 `3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2ed839ff7afd6a`,
 `0db266f951e5cbc690c4474ca2fc03d384e87b5ecaafe9f3a79bc84fadd595ea`, and
 `85dbaf40a6649e0ac665b0356cad0df362bca7a2a722130b96db78e1a6f84b24`.
 
-Artifact evidence: the 95,130,664-byte executable JAR has 1,306 entries, 26 allocation-supervision/proof entries, and
-SHA-256 `a471a75955b0e8f67ed96d43cace8d35c044450e1a26ba612cf3fe3077f364ab`. Literal `127.0.0.1:18080`
+Artifact evidence: the 95,131,280-byte executable JAR has 1,306 entries, 26 allocation-supervision/proof entries, and
+SHA-256 `8b9bc8c673dad7e0b6c71cc1fa6735fdf3e1e06250eae2b6892d632df0c7aac5`. Literal `127.0.0.1:18080`
 health, landing-page, and proxy-status checks returned 200; the JVM and listener were then confirmed absent.
 
 Scope/safety checkpoint: no POM, dependency, workflow, Docker, Compose, application-resource, production target,
@@ -73,9 +80,9 @@ external target, cloud/tenant, database, broker, periodic scheduler, arbitrary o
 generation/phase, force-commit, guardrail/read-back/restoration bypass, secret value, or tracked generated-evidence
 change is present. The proof subprocess is fixed Java-only, literal-loopback, authenticated per run, byte/request/time
 bounded, and not used by the production supervisor. The unrelated untracked
-`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains preserved and excluded. PR6 has 3,344 executable/test/proof
-and 412 required process additions (89.03% / 10.97%); the campaign aggregate is 11,327 executable/test/proof and 1,497
-process additions (88.33% / 11.67%). Exact-head remote gates, merge, and merge-main verification remain.
+`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains preserved and excluded. PR6 has 3,399 executable/test/proof
+and 443 required process additions (88.47% / 11.53%); the campaign aggregate is 11,382 executable/test/proof and 1,528
+process additions (88.16% / 11.84%). Exact-head remote gates, merge, and merge-main verification remain.
 
 ## Completed Durable Allocation-State Supervision PR5 Checkpoint
 

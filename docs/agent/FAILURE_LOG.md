@@ -6132,3 +6132,18 @@ state, external target, generated log, or unrelated work changed.
 
 Correction/result: run the JAR as a managed foreground PTY session, probe only literal-loopback health, landing-page,
 and proxy-status endpoints from a separate command, then terminate and confirm the managed process exits.
+
+# 2026-07-18 - Allocation PR6 exact-head Linux CI observed an empty holder readiness file
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / PR #479
+
+Failing check: exact-head PR CI run `29669130703` on `96a4acdf8feaccc3790b5b85c181d040dbbd37b1`
+ran 3,271 tests with one error in `EnterpriseLabAllocationProofRunnerTest`: `NumberFormatException` for an empty string.
+
+Observed/root cause: the child created the readiness file before `Files.writeString` finished publishing its port; the
+Linux parent observed `isRegularFile` during that empty-file window and parsed it immediately. Local Windows runs did
+not expose the publication race. No durable allocation was accepted, no external target was contacted, and downstream
+package, Docker, runtime-evidence, and Trivy steps did not run.
+
+Correction/result: publish the bounded loopback port through a sibling temporary file and same-directory atomic rename,
+retain a safe rename fallback, and make parent parsing tolerate a not-yet-complete readiness signal before retrying.

@@ -18,6 +18,8 @@ Current branch: `codex/allocation-operator-evidence-proof`
 
 PR URL: not opened yet
 
+Executable/local-verification checkpoint: `34a7d96c71c5b105a2ce9b1d26e8ee708a0c8cd6`
+
 Prior slot closure: PR #478 merged normally from exact final head
 `d1d234bcf32e03c18935d230928fa44c5a4057dd` as `793dd9ab53b31ead825b6321006b57c9dca909cc`.
 Exact-head PR CI `29666707811`, push CI `29666706893`, CodeQL `29666707842`, dependency review, code scanning,
@@ -70,8 +72,8 @@ generation/phase, force-commit, guardrail/read-back/restoration bypass, secret v
 change is present. The proof subprocess is fixed Java-only, literal-loopback, authenticated per run, byte/request/time
 bounded, and not used by the production supervisor. The unrelated untracked
 `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains preserved and excluded. PR6 has 3,344 executable/test/proof
-and 408 required process additions (89.13% / 10.87%); the campaign aggregate is 11,327 executable/test/proof and 1,493
-process additions (88.35% / 11.65%). PR creation, exact-head remote gates, merge, and merge-main verification remain.
+and 410 required process additions (89.08% / 10.92%); the campaign aggregate is 11,327 executable/test/proof and 1,495
+process additions (88.34% / 11.66%). PR creation, exact-head remote gates, merge, and merge-main verification remain.
 
 ## Completed Durable Allocation-State Supervision PR5 Checkpoint
 

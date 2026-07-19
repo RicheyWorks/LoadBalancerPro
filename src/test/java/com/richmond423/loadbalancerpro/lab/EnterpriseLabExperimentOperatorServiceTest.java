@@ -19,6 +19,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +37,33 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class EnterpriseLabExperimentOperatorServiceTest {
     private static final String SCENARIO = "tail-latency-pressure";
     private static final Instant NOW = Instant.parse("2026-07-16T23:00:00Z");
+
+    @Test
+    void allocationReadinessGateClosesNewExperimentAdmission() {
+        EnterpriseLabAllocationReconciliationGate allocationGate =
+                EnterpriseLabAllocationReconciliationGate.pending();
+        EnterpriseLabExperimentOperatorService service =
+                new EnterpriseLabExperimentOperatorService(
+                        EnterpriseLabExperimentTargetCatalog.empty(),
+                        new EnterpriseLabScenarioCatalogService(),
+                        new EnterpriseLabAdaptiveDecisionService(),
+                        Clock.fixed(NOW, ZoneOffset.UTC),
+                        System::nanoTime,
+                        EnterpriseLabExperimentOperatorService.DEFAULT_MAX_RETAINED_EXPERIMENTS,
+                        EnterpriseLabExperimentRecoveryGate.inMemoryOnly(),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.of(allocationGate));
+
+        var denied = service.arm(
+                arm("allocation-pending", "experiment-allocation-pending", 10, 2, 1),
+                true);
+
+        assertEquals(OperatorStatus.DENIED, denied.status());
+        assertEquals("ALLOCATION_RECONCILIATION_NOT_READY", denied.reasonCode());
+        assertTrue(service.allocationReconciliationStatus().isPresent());
+        assertFalse(service.allocationReconciliationStatus().orElseThrow().admissionAllowed());
+    }
 
     @Test
     void authenticatedWorkflowUsesRealLoopbackRequestsAndReturnsImmutableFinalEvidence() throws Exception {

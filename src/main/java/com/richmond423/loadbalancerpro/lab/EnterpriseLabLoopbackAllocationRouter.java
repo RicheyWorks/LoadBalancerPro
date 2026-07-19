@@ -219,7 +219,8 @@ public final class EnterpriseLabLoopbackAllocationRouter {
         EnterpriseLabInstalledAllocationSnapshot previousInstalled = current.get();
         requireNonRegressingOwnerGeneration(authorization, previousInstalled);
         EnterpriseLabLoopbackAllocationSnapshot previous = previousInstalled.routingSnapshot();
-        if (previous.sameAllocations(baseline)) {
+        if (previous.sameAllocations(baseline)
+                && previousInstalled.ownerGeneration() == ownerGeneration(authorization)) {
             return AllocationChangeReceipt.noChange(previous, baseline,
                     "recorded baseline is already active: " + safeReason);
         }

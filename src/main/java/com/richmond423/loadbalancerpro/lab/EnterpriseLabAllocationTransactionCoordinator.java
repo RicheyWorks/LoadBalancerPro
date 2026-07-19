@@ -169,6 +169,198 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
     }
 
     /**
+     * Continues or creates only the durable work needed to return the owned
+     * router to the fixed verified baseline. This is intentionally package
+     * scoped so reconciliation policy remains centralized in the supervisor.
+     */
+    synchronized TransactionReceipt reconcileToSafeBaseline(
+            String transactionId,
+            AllocationPurpose purpose,
+            String reason) {
+        String safeTransactionId = requireId(transactionId, "transactionId");
+        AllocationPurpose safePurpose = requireReconciliationPurpose(purpose);
+        String safeReason = requireReason(reason);
+        MutationAuthorization authorization = requireAuthorization();
+        EnterpriseLabAllocationStateStore.ReadResult durable = store.replay();
+        if (durable.records().isEmpty()) {
+            return establishSafeBaseline(safeTransactionId);
+        }
+
+        EnterpriseLabAllocationState baseline = durable.baseline().orElseThrow();
+        EnterpriseLabAllocationState head = durable.chainHead().orElseThrow();
+        EnterpriseLabInstalledAllocationSnapshot installed = readInstalled();
+        String baselineFingerprint = allocationFingerprint(
+                baseline.scenarioId(), baseline.baselineAllocation());
+        EnterpriseLabLoopbackAllocationSnapshot routerBaseline = router.baselineSnapshot();
+        if (!routerBaseline.scenarioId().equals(baseline.scenarioId())
+                || !routerBaseline.allocations().equals(baseline.baselineAllocation())
+                || !baselineFingerprint.equals(allocationFingerprint(
+                        routerBaseline.scenarioId(), routerBaseline.allocations()))) {
+            return receipt(
+                    safeTransactionId,
+                    TransactionStatus.DURABLE_STATE_UNCERTAIN,
+                    authorization.generation(),
+                    head.allocationGeneration(),
+                    Optional.of(head.transactionPhase()),
+                    baselineFingerprint,
+                    installed.allocationFingerprint(),
+                    installed.routerGeneration(),
+                    durable.records().size(),
+                    false,
+                    false,
+                    false,
+                    "DURABLE_ROUTER_BASELINE_MISMATCH",
+                    "durable and configured router baselines differ; reconciliation failed closed");
+        }
+
+        Optional<EnterpriseLabAllocationState> existing = durable.records().stream()
+                .filter(record -> record.allocationTransactionId().equals(safeTransactionId))
+                .reduce((first, second) -> second);
+        if (existing.isPresent()
+                && !head.allocationTransactionId().equals(safeTransactionId)) {
+            return rejected(
+                    safeTransactionId,
+                    authorization,
+                    durable,
+                    "RECONCILIATION_TRANSACTION_CONFLICT",
+                    "reconciliation transactionId already belongs to an earlier durable generation");
+        }
+
+        boolean baselineExact = matchesBaseline(baseline, installed, authorization);
+        if (existing.isPresent() && isSafeTerminal(head.transactionPhase())) {
+            return receipt(
+                    safeTransactionId,
+                    baselineExact ? TransactionStatus.IDEMPOTENT
+                            : TransactionStatus.DURABLE_STATE_UNCERTAIN,
+                    authorization.generation(),
+                    head.allocationGeneration(),
+                    Optional.of(head.transactionPhase()),
+                    baselineFingerprint,
+                    installed.allocationFingerprint(),
+                    installed.routerGeneration(),
+                    durable.records().size(),
+                    false,
+                    head.transactionPhase() == TransactionPhase.RESTORED,
+                    baselineExact && head.transactionPhase() == TransactionPhase.RESTORED,
+                    baselineExact ? "RECONCILIATION_ALREADY_SAFE" : "RECONCILIATION_DRIFTED",
+                    baselineExact
+                            ? "identical durable reconciliation already has an exact owned baseline read-back"
+                            : "prior reconciliation evidence exists but router read-back is no longer safe");
+        }
+
+        if (isIncomplete(head.transactionPhase())) {
+            TransactionContext context = TransactionContext.recovery(
+                    head, durable.records().size());
+            if (baselineExact && (context.phase == TransactionPhase.PREPARED
+                    || context.phase == TransactionPhase.INTENT_PERSISTED)) {
+                requireSameAuthorization(authorization);
+                append(
+                        context,
+                        TransactionPhase.REJECTED,
+                        installed.routingSnapshot().allocations(),
+                        installed.allocationFingerprint(),
+                        context.actionPerformed,
+                        Optional.of(clock.instant()),
+                        verificationAgainstIntent(context, installed),
+                        RecoveryClassification.REJECTED,
+                        "UNAPPLIED_INTENT_REJECTED",
+                        "incomplete durable intent was rejected after exact baseline read-back");
+                return receipt(
+                        context,
+                        TransactionStatus.RECONCILED_BASELINE,
+                        installed,
+                        context.actionPerformed,
+                        false,
+                        false,
+                        "UNAPPLIED_INTENT_REJECTED",
+                        "unapplied intent was terminalized without candidate installation");
+            }
+            advanceIncompleteToRestoreRequired(context, authorization, installed);
+            return performRestoration(
+                    context, authorization, context.actionPerformed, safeReason);
+        }
+
+        if (!isSafeTerminal(head.transactionPhase())) {
+            return receipt(
+                    safeTransactionId,
+                    TransactionStatus.DURABLE_STATE_UNCERTAIN,
+                    authorization.generation(),
+                    head.allocationGeneration(),
+                    Optional.of(head.transactionPhase()),
+                    baselineFingerprint,
+                    installed.allocationFingerprint(),
+                    installed.routerGeneration(),
+                    durable.records().size(),
+                    head.actionPerformed(),
+                    false,
+                    false,
+                    "UNSAFE_TERMINAL_ALLOCATION_STATE",
+                    "failed or quarantined allocation evidence requires operator review");
+        }
+
+        if (baselineExact
+                && head.ownerGeneration() == authorization.generation()
+                && head.installedAllocation().equals(baseline.baselineAllocation())
+                && (head.transactionPhase() != TransactionPhase.COMMITTED
+                || head.normalizedAllocationFingerprint().equals(baselineFingerprint))) {
+            return receipt(
+                    safeTransactionId,
+                    TransactionStatus.IDEMPOTENT,
+                    authorization.generation(),
+                    head.allocationGeneration(),
+                    Optional.of(head.transactionPhase()),
+                    baselineFingerprint,
+                    installed.allocationFingerprint(),
+                    installed.routerGeneration(),
+                    durable.records().size(),
+                    false,
+                    false,
+                    false,
+                    "BASELINE_ALREADY_SAFE",
+                    "durable baseline and installed owned router state already match exactly");
+        }
+
+        if (head.allocationGeneration()
+                >= EnterpriseLabAllocationState.HARD_MAX_ALLOCATION_GENERATION) {
+            return receipt(
+                    safeTransactionId,
+                    TransactionStatus.DURABLE_STATE_UNCERTAIN,
+                    authorization.generation(),
+                    head.allocationGeneration(),
+                    Optional.of(head.transactionPhase()),
+                    baselineFingerprint,
+                    installed.allocationFingerprint(),
+                    installed.routerGeneration(),
+                    durable.records().size(),
+                    head.actionPerformed(),
+                    false,
+                    false,
+                    "ALLOCATION_GENERATION_EXHAUSTED",
+                    "allocation generation is exhausted; reconciliation failed closed");
+        }
+
+        TransactionContext context = TransactionContext.restoration(
+                safeTransactionId,
+                safePurpose,
+                baseline,
+                durable.lastCommitted().orElse(baseline),
+                head,
+                durable.records().size());
+        requireSameAuthorization(authorization);
+        appendObservation(
+                context,
+                TransactionPhase.RESTORE_REQUIRED,
+                installed,
+                false,
+                Optional.of(clock.instant()),
+                verificationAgainstIntent(context, installed),
+                RecoveryClassification.BASELINE_RESTORATION_REQUIRED,
+                "RECONCILIATION_RESTORE_REQUIRED",
+                "installed allocation or owner epoch differed from the durable safe baseline");
+        return performRestoration(context, authorization, false, safeReason);
+    }
+
+    /**
      * Executes one authorized candidate transaction. Success is returned only
      * after durable intent, router apply, exact read-back, and durable commit.
      */
@@ -411,11 +603,10 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
         Instant verifiedAt = clock.instant();
         try {
             requireSameAuthorization(authorization);
-            append(
+            appendObservation(
                     context,
                     TransactionPhase.VERIFYING,
-                    installed.routingSnapshot().allocations(),
-                    installed.allocationFingerprint(),
+                    installed,
                     actionPerformed,
                     Optional.of(verifiedAt),
                     allocationVerification,
@@ -575,11 +766,10 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
             String reason) {
         try {
             requireSameAuthorization(authorization);
-            append(
+            appendObservation(
                     context,
                     TransactionPhase.RESTORE_REQUIRED,
-                    observed.routingSnapshot().allocations(),
-                    observed.allocationFingerprint(),
+                    observed,
                     actionPerformed,
                     Optional.of(clock.instant()),
                     verification,
@@ -593,6 +783,58 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
         return performRestoration(context, authorization, actionPerformed, reason);
     }
 
+    private void advanceIncompleteToRestoreRequired(
+            TransactionContext context,
+            MutationAuthorization authorization,
+            EnterpriseLabInstalledAllocationSnapshot installed) {
+        if (context.phase == TransactionPhase.PREPARED) {
+            requireSameAuthorization(authorization);
+            appendObservation(
+                    context,
+                    TransactionPhase.INTENT_PERSISTED,
+                    installed,
+                    context.actionPerformed,
+                    Optional.empty(),
+                    VerificationResult.NOT_ATTEMPTED,
+                    RecoveryClassification.INCOMPLETE_TRANSACTION,
+                    "RECOVERY_INTENT_CONFIRMED",
+                    "startup reconciliation preserved the incomplete transaction intent");
+        }
+        if (context.phase == TransactionPhase.INTENT_PERSISTED) {
+            requireSameAuthorization(authorization);
+            appendObservation(
+                    context,
+                    TransactionPhase.APPLYING,
+                    installed,
+                    context.actionPerformed,
+                    Optional.empty(),
+                    VerificationResult.NOT_ATTEMPTED,
+                    RecoveryClassification.INCOMPLETE_TRANSACTION,
+                    "RECOVERY_APPLY_BOUNDARY_CONFIRMED",
+                    "startup reconciliation advanced the incomplete intent only toward safe restoration");
+        }
+        if (context.phase == TransactionPhase.APPLYING
+                || context.phase == TransactionPhase.APPLIED
+                || context.phase == TransactionPhase.VERIFYING) {
+            requireSameAuthorization(authorization);
+            appendObservation(
+                    context,
+                    TransactionPhase.RESTORE_REQUIRED,
+                    installed,
+                    context.actionPerformed,
+                    Optional.of(clock.instant()),
+                    verificationAgainstIntent(context, installed),
+                    RecoveryClassification.BASELINE_RESTORATION_REQUIRED,
+                    "INCOMPLETE_TRANSACTION_RESTORE_REQUIRED",
+                    "incomplete candidate evidence cannot be resumed and requires baseline restoration");
+        }
+        if (context.phase != TransactionPhase.RESTORE_REQUIRED
+                && context.phase != TransactionPhase.RESTORING) {
+            throw new IllegalStateException(
+                    "incomplete allocation phase has no bounded restoration path");
+        }
+    }
+
     private TransactionReceipt performRestoration(
             TransactionContext context,
             MutationAuthorization authorization,
@@ -600,22 +842,26 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
             String reason) {
         requireSameAuthorization(authorization);
         EnterpriseLabInstalledAllocationSnapshot beforeRestore = router.installedSnapshot();
-        append(
-                context,
-                TransactionPhase.RESTORING,
-                beforeRestore.routingSnapshot().allocations(),
-                EnterpriseLabAllocationState.NO_FINGERPRINT,
-                priorAction,
-                Optional.empty(),
-                VerificationResult.NOT_ATTEMPTED,
-                RecoveryClassification.BASELINE_RESTORATION_REQUIRED,
-                "RESTORATION_STARTED",
-                "live ownership was reverified before safe baseline restoration");
+        if (context.phase != TransactionPhase.RESTORING) {
+            append(
+                    context,
+                    TransactionPhase.RESTORING,
+                    beforeRestore.routingSnapshot().allocations(),
+                    EnterpriseLabAllocationState.NO_FINGERPRINT,
+                    priorAction,
+                    Optional.empty(),
+                    VerificationResult.NOT_ATTEMPTED,
+                    RecoveryClassification.BASELINE_RESTORATION_REQUIRED,
+                    "RESTORATION_STARTED",
+                    "live ownership was reverified before safe baseline restoration");
+        }
         failureInjector.checkpoint(Checkpoint.BEFORE_BASELINE_RESTORE);
         AllocationChangeReceipt restored;
         try {
             requireSameAuthorization(authorization);
-            restored = router.restoreBaseline("allocation transaction verification failure");
+            restored = router.restoreBaseline(context.reconciliationPurpose()
+                    ? "allocation reconciliation required verified safe baseline"
+                    : "allocation transaction verification failure");
         } catch (EnterpriseLabEvidenceOwnershipException ownershipFailure) {
             return ownershipLost(context, beforeRestore, priorAction,
                     "ownership changed before baseline restoration completed");
@@ -642,11 +888,10 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
             VerificationResult result = verificationAgainstIntent(context, installed);
             try {
                 requireSameAuthorization(authorization);
-                append(
+                appendObservation(
                         context,
                         TransactionPhase.FAILED,
-                        installed.routingSnapshot().allocations(),
-                        installed.allocationFingerprint(),
+                        installed,
                         actionPerformed,
                         Optional.of(clock.instant()),
                         result,
@@ -719,14 +964,17 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                     "RESTORATION_EVIDENCE_UNCERTAIN",
                     "baseline was read back but restoration evidence requires durable replay");
         }
+        boolean reconciliation = context.reconciliationPurpose();
         return receipt(
                 context,
-                TransactionStatus.FAILED_RESTORED,
+                reconciliation ? TransactionStatus.RECONCILED_BASELINE
+                        : TransactionStatus.FAILED_RESTORED,
                 installed,
                 actionPerformed,
                 true,
                 true,
-                "CANDIDATE_FAILED_BASELINE_RESTORED",
+                reconciliation ? "BASELINE_RECONCILED"
+                        : "CANDIDATE_FAILED_BASELINE_RESTORED",
                 reason + "; verified safe baseline was restored");
     }
 
@@ -739,11 +987,10 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
         boolean failureEvidenceDurable = true;
         try {
             requireSameAuthorization(authorization);
-            append(
+            appendObservation(
                     context,
                     TransactionPhase.FAILED,
-                    installed.routingSnapshot().allocations(),
-                    EnterpriseLabAllocationState.NO_FINGERPRINT,
+                    installed,
                     actionPerformed,
                     Optional.empty(),
                     VerificationResult.READ_BACK_FAILED,
@@ -811,6 +1058,35 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                 reason + "; no success commit or stale-owner restoration was attempted");
     }
 
+    private static boolean matchesBaseline(
+            EnterpriseLabAllocationState baseline,
+            EnterpriseLabInstalledAllocationSnapshot installed,
+            MutationAuthorization authorization) {
+        String fingerprint = allocationFingerprint(
+                baseline.scenarioId(), baseline.baselineAllocation());
+        return installed.routingSnapshot().scenarioId().equals(baseline.scenarioId())
+                && installed.routingSnapshot().allocations().equals(
+                        baseline.baselineAllocation())
+                && installed.allocationFingerprint().equals(fingerprint)
+                && installed.ownerGeneration() == authorization.generation();
+    }
+
+    private static boolean isIncomplete(TransactionPhase phase) {
+        return phase == TransactionPhase.PREPARED
+                || phase == TransactionPhase.INTENT_PERSISTED
+                || phase == TransactionPhase.APPLYING
+                || phase == TransactionPhase.APPLIED
+                || phase == TransactionPhase.VERIFYING
+                || phase == TransactionPhase.RESTORE_REQUIRED
+                || phase == TransactionPhase.RESTORING;
+    }
+
+    private static boolean isSafeTerminal(TransactionPhase phase) {
+        return phase == TransactionPhase.COMMITTED
+                || phase == TransactionPhase.RESTORED
+                || phase == TransactionPhase.REJECTED;
+    }
+
     private boolean matchesCandidate(
             TransactionContext context,
             MutationAuthorization authorization,
@@ -843,6 +1119,83 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
             RecoveryClassification recovery,
             String reasonCode,
             String reason) {
+        return append(
+                context,
+                phase,
+                installedAllocation,
+                routerFingerprint,
+                actionPerformed,
+                lastVerifiedAt,
+                verification,
+                recovery,
+                reasonCode,
+                reason,
+                EVIDENCE_METADATA);
+    }
+
+    private EnterpriseLabAllocationState appendObservation(
+            TransactionContext context,
+            TransactionPhase phase,
+            EnterpriseLabInstalledAllocationSnapshot installed,
+            boolean actionPerformed,
+            Optional<Instant> lastVerifiedAt,
+            VerificationResult verification,
+            RecoveryClassification recovery,
+            String reasonCode,
+            String reason) {
+        EnterpriseLabInstalledAllocationSnapshot safeInstalled = Objects.requireNonNull(
+                installed, "installed cannot be null");
+        boolean encodable = safeInstalled.routingSnapshot().scenarioId().equals(
+                context.scenarioId)
+                && safeInstalled.routingSnapshot().allocations().keySet().equals(
+                        context.baselineAllocation.keySet());
+        if (encodable) {
+            String routerFingerprint = verification == VerificationResult.NOT_ATTEMPTED
+                    || verification == VerificationResult.READ_BACK_FAILED
+                    ? EnterpriseLabAllocationState.NO_FINGERPRINT
+                    : safeInstalled.allocationFingerprint();
+            return append(
+                    context,
+                    phase,
+                    safeInstalled.routingSnapshot().allocations(),
+                    routerFingerprint,
+                    actionPerformed,
+                    lastVerifiedAt,
+                    verification,
+                    recovery,
+                    reasonCode,
+                    reason);
+        }
+        return append(
+                context,
+                phase,
+                context.baselineAllocation,
+                EnterpriseLabAllocationState.NO_FINGERPRINT,
+                actionPerformed,
+                Optional.empty(),
+                VerificationResult.READ_BACK_FAILED,
+                recovery,
+                reasonCode,
+                reason,
+                Map.of(
+                        "boundary", "enterprise-lab-literal-loopback-only",
+                        "coordinator", "crash-safe-local-v1",
+                        "observed-router-fingerprint", safeInstalled.allocationFingerprint(),
+                        "observed-router-state", "invalid-scenario-or-backend-set"));
+    }
+
+    private EnterpriseLabAllocationState append(
+            TransactionContext context,
+            TransactionPhase phase,
+            Map<String, Double> installedAllocation,
+            String routerFingerprint,
+            boolean actionPerformed,
+            Optional<Instant> lastVerifiedAt,
+            VerificationResult verification,
+            RecoveryClassification recovery,
+            String reasonCode,
+            String reason,
+            Map<String, String> metadata) {
         Draft draft = new Draft(
                 context.transactionId,
                 context.experimentId,
@@ -862,7 +1215,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                 verification,
                 recovery,
                 context.predecessorFingerprint,
-                EVIDENCE_METADATA);
+                metadata);
         EnterpriseLabAllocationState state = EnterpriseLabAllocationState.create(
                 clock, mutationAuthority, targetCatalog, draft);
         EnterpriseLabAllocationStateStore.AppendReceipt append = store.append(state);
@@ -1005,10 +1358,24 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
         return safe;
     }
 
+    private static AllocationPurpose requireReconciliationPurpose(AllocationPurpose value) {
+        AllocationPurpose safe = Objects.requireNonNull(
+                value, "allocation reconciliation purpose cannot be null");
+        if (safe != AllocationPurpose.STARTUP_RESTORATION
+                && safe != AllocationPurpose.TAKEOVER_RESTORATION
+                && safe != AllocationPurpose.OPERATOR_REQUESTED_SAFE_RESET
+                && safe != AllocationPurpose.RECONCILIATION_NO_OP) {
+            throw new IllegalArgumentException(
+                    "allocation reconciliation purpose is not a safe restoration purpose");
+        }
+        return safe;
+    }
+
     public enum TransactionStatus {
         BASELINE_COMMITTED,
         COMMITTED,
         IDEMPOTENT,
+        RECONCILED_BASELINE,
         REJECTED,
         OWNERSHIP_LOST,
         FAILED_RESTORED,
@@ -1107,6 +1474,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
         private final Map<String, Double> approvedAllocation;
         private final String intendedFingerprint;
         private final String previousCommittedFingerprint;
+        private final boolean actionPerformed;
         private String predecessorFingerprint;
         private int recordCount;
         private TransactionPhase phase;
@@ -1122,6 +1490,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                 Map<String, Double> approvedAllocation,
                 String intendedFingerprint,
                 String previousCommittedFingerprint,
+                boolean actionPerformed,
                 String predecessorFingerprint,
                 int recordCount) {
             this.transactionId = transactionId;
@@ -1134,6 +1503,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
             this.approvedAllocation = Map.copyOf(approvedAllocation);
             this.intendedFingerprint = intendedFingerprint;
             this.previousCommittedFingerprint = previousCommittedFingerprint;
+            this.actionPerformed = actionPerformed;
             this.predecessorFingerprint = predecessorFingerprint;
             this.recordCount = recordCount;
         }
@@ -1153,6 +1523,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                     baseline.allocations(),
                     fingerprint,
                     EnterpriseLabAllocationState.NO_FINGERPRINT,
+                    false,
                     EnterpriseLabAllocationState.GENESIS_FINGERPRINT,
                     0);
         }
@@ -1177,8 +1548,62 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                     allocationFingerprint(
                             validation.scenarioId(), validation.approvedAllocation()),
                     previousCommittedFingerprint,
+                    false,
                     predecessorFingerprint,
                     recordCount);
+        }
+
+        private static TransactionContext recovery(
+                EnterpriseLabAllocationState head,
+                int recordCount) {
+            TransactionContext context = new TransactionContext(
+                    head.allocationTransactionId(),
+                    head.experimentId(),
+                    head.scenarioId(),
+                    head.allocationGeneration(),
+                    head.allocationPurpose(),
+                    head.baselineAllocation(),
+                    head.requestedAllocation(),
+                    head.guardrailApprovedAllocation(),
+                    head.normalizedAllocationFingerprint(),
+                    head.previousCommittedAllocationFingerprint(),
+                    head.actionPerformed(),
+                    head.currentRecordFingerprint(),
+                    recordCount);
+            context.phase = head.transactionPhase();
+            return context;
+        }
+
+        private static TransactionContext restoration(
+                String transactionId,
+                AllocationPurpose purpose,
+                EnterpriseLabAllocationState baseline,
+                EnterpriseLabAllocationState lastCommitted,
+                EnterpriseLabAllocationState head,
+                int recordCount) {
+            String fingerprint = allocationFingerprint(
+                    baseline.scenarioId(), baseline.baselineAllocation());
+            return new TransactionContext(
+                    transactionId,
+                    Optional.empty(),
+                    baseline.scenarioId(),
+                    head.allocationGeneration() + 1L,
+                    purpose,
+                    baseline.baselineAllocation(),
+                    baseline.baselineAllocation(),
+                    baseline.baselineAllocation(),
+                    fingerprint,
+                    lastCommitted.normalizedAllocationFingerprint(),
+                    false,
+                    head.currentRecordFingerprint(),
+                    recordCount);
+        }
+
+        private boolean reconciliationPurpose() {
+            return purpose == AllocationPurpose.STARTUP_RESTORATION
+                    || purpose == AllocationPurpose.TAKEOVER_RESTORATION
+                    || purpose == AllocationPurpose.OPERATOR_REQUESTED_SAFE_RESET
+                    || purpose == AllocationPurpose.RECONCILIATION_NO_OP;
         }
     }
 }

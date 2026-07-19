@@ -15,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 final class EnterpriseLabEvidenceOwnershipRenewer implements AutoCloseable {
     private final EnterpriseLabEvidenceOwnershipGate ownershipGate;
     private final EnterpriseLabExperimentRecoveryGate recoveryGate;
+    private final Optional<EnterpriseLabAllocationReconciliationGate>
+            allocationReconciliationGate;
     private final ScheduledThreadPoolExecutor executor;
     private final ScheduledFuture<?> renewalTask;
 
@@ -25,10 +27,21 @@ final class EnterpriseLabEvidenceOwnershipRenewer implements AutoCloseable {
             EnterpriseLabEvidenceOwnershipGate ownershipGate,
             EnterpriseLabExperimentRecoveryGate recoveryGate,
             Duration renewalInterval) {
+        this(ownershipGate, recoveryGate, Optional.empty(), renewalInterval);
+    }
+
+    EnterpriseLabEvidenceOwnershipRenewer(
+            EnterpriseLabEvidenceOwnershipGate ownershipGate,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            Optional<EnterpriseLabAllocationReconciliationGate> allocationReconciliationGate,
+            Duration renewalInterval) {
         this.ownershipGate = Objects.requireNonNull(
                 ownershipGate, "ownershipGate cannot be null");
         this.recoveryGate = Objects.requireNonNull(
                 recoveryGate, "recoveryGate cannot be null");
+        this.allocationReconciliationGate = Objects.requireNonNull(
+                allocationReconciliationGate,
+                "allocationReconciliationGate cannot be null");
         Duration safeInterval = Objects.requireNonNull(
                 renewalInterval, "renewalInterval cannot be null");
         if (safeInterval.isZero() || safeInterval.isNegative()
@@ -67,7 +80,7 @@ final class EnterpriseLabEvidenceOwnershipRenewer implements AutoCloseable {
         try {
             result = ownershipGate.renew();
         } catch (RuntimeException exception) {
-            recoveryGate.fail("OWNERSHIP_RENEWAL_FAILED");
+            failAdmission();
             closeAfterFailure();
             return;
         }
@@ -75,9 +88,15 @@ final class EnterpriseLabEvidenceOwnershipRenewer implements AutoCloseable {
             lastResult = result;
         }
         if (result.status() != OperationStatus.SUCCEEDED) {
-            recoveryGate.fail("OWNERSHIP_RENEWAL_FAILED");
+            failAdmission();
             closeAfterFailure();
         }
+    }
+
+    private void failAdmission() {
+        recoveryGate.fail("OWNERSHIP_RENEWAL_FAILED");
+        allocationReconciliationGate.ifPresent(
+                gate -> gate.fail("OWNERSHIP_RENEWAL_FAILED"));
     }
 
     private synchronized void closeAfterFailure() {

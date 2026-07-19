@@ -5617,3 +5617,280 @@ the old-head watcher remains read-only and its results are not merge evidence fo
 
 Correction/result: do not inject another interrupt. Allow the watcher to exit naturally and audit the replacement runs
 with direct `gh pr view` and `gh run view` queries filtered to the newly pushed exact head.
+
+# 2026-07-18 - Allocation PR5 first reconciliation selector exposed path and restart-generation assumptions
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: the 43-test reconciliation/coordinator/router/operator selector ran with one failure and one error, zero
+skips. The corruption test attempted to append to `allocation-state-v1` directly beneath the JUnit ownership root and
+hit `NoSuchFileException`. The process-restart scenario restored against a newly constructed router but did not publish
+readiness because the reset router revision was below the durable candidate generation.
+
+Observed/root cause: the test bypassed the store's existing derived controlled root instead of obtaining its actual
+store file through the repository-owned path seam. Separately, restart resets process-local router revision to zero;
+requiring the restored router revision to continue the previous process's in-memory generation would make a safe
+baseline restart permanently unreconcilable even though durable allocation generation and owner fencing remain intact.
+No external target, remote, container, production path, or unrelated file changed.
+
+Correction/result: expose only a package-private controlled store-file test seam and use it for the corruption case.
+Keep logical allocation generation durable in the store, classify router reset explicitly, and allow the new owned
+router to restore/verify its baseline from its own non-regressing process-local revision without treating the old
+process's volatile router revision as durable continuity. Rerun the exact selector and retain owner-epoch fencing.
+
+# 2026-07-18 - Allocation PR5 reset classification did not trigger durable baseline reconciliation
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: the corrected 14-test reconciliation class rerun retained one failure, zero errors or skips. The restart
+case correctly classified `ROUTER_RESET_AFTER_RESTART`, but returned `VERIFIED_NO_OP` and not-ready while the durable
+head remained the committed candidate and the newly constructed router exposed its safe baseline.
+
+Observed/root cause: the restoration predicate did not reliably bind its terminal-head check to the durable committed
+allocation fingerprint. Router baseline equality alone cannot authorize readiness when the current committed durable
+fingerprint is still the interrupted candidate. No router mutation, remote, external target, or unrelated file changed.
+
+Correction/result: require the terminal durable head's installed allocation and normalized fingerprint to equal the
+fixed baseline before permitting a no-op. Otherwise create the bounded reconciliation transaction, record
+RESTORE_REQUIRED/RESTORING/RESTORED, and then require exact final durable/router/owner agreement.
+
+# 2026-07-18 - Allocation PR5 coordinator retained an earlier baseline-only idempotence shortcut
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: the next 14-test reconciliation rerun still had the single reset failure. The reconciler now requested
+recovery, but the coordinator returned `RECONCILIATION_ALREADY_SAFE` solely because the reset router already exposed
+baseline shares under the current owner, leaving the committed candidate as the durable head.
+
+Observed/root cause: the coordinator's earlier idempotence shortcut predated the new durable-head predicate and did not
+require the terminal head's installed allocation and intended fingerprint to equal the fixed baseline. No traffic,
+external target, remote, or unrelated file changed.
+
+Correction/result: apply the same durable-head baseline equivalence requirement inside the coordinator before its no-op
+return. A baseline router paired with a committed candidate head must now append a reconciliation restoration sequence
+and can publish readiness only after the resulting RESTORED head and independent read-back agree.
+
+# 2026-07-18 - Allocation PR5 takeover and runtime-drift tests expected lower-priority labels
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: the expanded 17-test reconciliation class ran with two assertion failures, zero errors or skips. Both
+scenarios restored the baseline and reached safe readiness, but the takeover test expected `PARTIAL_TRANSACTION` instead
+of the more specific `STALE_OWNER_GENERATION`, and the direct candidate drift test expected generic router drift instead
+of `COMMITTED_ROUTER_DRIFT` against the durable committed baseline.
+
+Observed/root cause: the new assertions did not follow the classifier's deliberate priority ordering. Ownership-epoch
+drift outranks incomplete-phase detail, and a router mismatch against any current COMMITTED durable head is specifically
+committed/router drift. No implementation guard, router outcome, durable record, remote, or external target failed.
+
+Correction/result: retain the more specific classifications and correct only the two expectations. Continue verifying
+that each report restores and independently reads back the baseline, publishes the new owner epoch where applicable,
+and leaves a safe terminal durable head.
+
+# 2026-07-18 - Allocation PR5 ownership-renewer test inspection used a stale package path
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: the intended source inspection targeted
+`src/test/java/com/loadbalancerpro/enterprise/EnterpriseLabEvidenceOwnershipRenewerTest.java`, which does not exist,
+so PowerShell failed before reading the test.
+
+Observed/root cause: the repository package path is
+`src/test/java/com/richmond423/loadbalancerpro/lab/EnterpriseLabEvidenceOwnershipRenewerTest.java`. No source, durable
+state, router, remote, external target, or unrelated file changed as a result of the failed read-only command.
+
+Correction/result: locate the test with `rg --files`, inspect the repository path, and continue the focused admission
+and reconciliation verification from the unchanged working tree.
+
+# 2026-07-18 - Allocation PR5 legacy owned-service precondition message changed
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: the five-class focused suite ran 50 tests with one failure, zero errors, and zero skips.
+`EnterpriseLabEvidenceOwnershipRenewerTest.ownedServiceCannotStartTheRenewerBeforeReconciliationIsReady` still rejected
+construction as expected, but its assertion that the exception message contained `completed startup reconciliation`
+was false.
+
+Observed/root cause: the PR5 allocation-admission integration changed which constructor precondition is reported first on
+this legacy owned-service path. The safety rejection itself remained fail-closed; the mismatch is in the expected failure
+contract and must be audited before choosing a source or test correction. No remote, external target, router mutation, or
+unrelated file changed.
+
+Correction/result: inspect the operator-service constructor delegation and captured exception message, preserve the
+legacy journal-reconciliation contract where the old constructor is used, and rerun the focused suite.
+
+# 2026-07-18 - Allocation PR5 audit used a Windows wildcard as an explicit ripgrep path
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: a read-only seam audit passed `src/main/java/.../EnterpriseLabAllocation*` as an explicit `rg` path.
+Windows rejected the wildcard path even though the preceding explicit-file searches completed.
+
+Observed/root cause: PowerShell did not expand that path shape for `rg`; the command therefore reported an invalid file
+or directory name. No source, durable state, router state, remote, external target, or unrelated file changed.
+
+Correction/result: use repository-root searches with `-g` filters or enumerate exact files, then continue auditing
+takeover mutation-authority and allocation-reconciliation integration.
+
+# 2026-07-18 - Allocation PR5 backend-set drift tests used inconsistent read-back seams
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: the three-class focused suite ran 30 tests with two failures, zero errors, and zero skips. The new missing-
+and unexpected-backend tests classified `ROUTER_BACKEND_SET_DRIFT` and reached safe readiness, but expected
+`BASELINE_RESTORED` while the transaction coordinator returned `VERIFIED_NO_OP`.
+
+Observed/root cause: the test injected the drift only into the reconciler reader. The coordinator independently read the
+real router, which still exposed the baseline, so its idempotence result was correct for the state it observed. This did
+not model one consistent installed-router observation across the supervisor transaction.
+
+Correction/result: share one bounded controlled read-back sequence between the reconciler and coordinator so both first
+observe the same backend-set drift and subsequent verification observes the restored real router. Keep production logic
+unchanged and rerun the focused suite.
+
+# 2026-07-18 - Allocation PR5 invalid backend-set evidence blocked restoration intent
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: the corrected three-class suite again ran 30 tests with two failures, zero errors, and zero skips. Both
+backend-set cases were correctly classified, but reconciliation returned `FAILED_CLOSED`, appended no restoration
+records, and left readiness closed instead of reaching the verified baseline.
+
+Observed/root cause: `reconcileToSafeBaseline` attempted to place the observed missing/unknown backend map into the
+strongly validated durable `installedAllocation` field of the RESTORE_REQUIRED record. Canonical allocation validation
+correctly rejects a set outside the approved scenario catalog, so the recovery record could not be appended and the
+coordinator never reached its baseline-restoration step. The observed read-back fingerprint remained available in the
+bounded report; no external target or arbitrary allocation was accepted.
+
+Correction/result: represent the unsafe observation through its bounded read-back fingerprint and recovery metadata,
+while keeping the durable allocation payload fixed to a catalog-valid safe allocation. Then restore and independently
+verify the configured durable baseline; never normalize, trust, or install the invalid observed backend set.
+
+# 2026-07-18 - Allocation PR5 non-clean package left the executable JAR stale
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing gate: `mvn -B package` exited successfully after 3,261 zero-skipped tests, and the generic artifact verifier also
+passed its historical entry list, but the executable JAR retained its 05:00 filesystem timestamp and prior PR4 hash
+`5cf292bb4147ff47b3e1591128e9021dbb2283d5f2287b18abbec71628dc3b0c`. Direct `jar tf` inspection found no
+`EnterpriseLabAllocationReconciler` or `EnterpriseLabAllocationReconciliationGate` classes even though the corresponding
+`target/classes` output was current at 13:56.
+
+Observed/root cause: the non-clean incremental lifecycle reused the earlier packaged artifact after focused compilation;
+its zero exit code did not prove artifact freshness. The stale JAR was not accepted as candidate evidence and no remote,
+container, external target, or unrelated file changed.
+
+Correction/result: run the repository-native clean package lifecycle, require all 3,261 tests with zero skips again,
+verify the new reconciliation classes and exact hash directly inside the rebuilt JAR, and rerun packaged proofs only
+against that fresh candidate.
+
+# 2026-07-18 - Allocation PR5 clean package could not delete the Windows target directory
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing gate: `mvn -B clean package` stopped in `maven-clean-plugin:3.2.0` before compilation because Windows could not
+delete `C:\Users\730ri\projects\LoadBalancerPro_RicheyWorks\target`. No clean-package tests or artifact claims were made.
+
+Observed/root cause: a generated target path remained locked after the prior full lifecycle or artifact inspection. The
+clean goal partially removed generated output but did not touch source, durable allocation evidence, router state,
+remote state, external targets, or the unrelated untracked proposal.
+
+Correction/result: inspect the surviving target paths and Java/Maven processes, stop only a confirmed stale workspace
+process if necessary, then rerun the clean package and require direct fresh-JAR class/hash verification.
+
+# 2026-07-18 - Allocation PR5 package-phase SBOM and coverage paths were absent
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: the first post-package evidence probe attempted to read `target/bom.xml`, `target/bom.json`, and
+`target/site/jacoco/jacoco.csv`; none of those verify-phase outputs existed, so the read-only aggregation command failed.
+
+Observed/root cause: the fresh candidate had completed `mvn -B clean package`, while this repository documents JaCoCo
+report generation under the later `verify` phase. The missing generated reports were not treated as evidence. The fresh
+JAR itself was present and independently verified; no source, router state, remote, external target, or unrelated file
+changed.
+
+Correction/result: run the repository-native Maven `verify` lifecycle for JaCoCo and the exact CI CycloneDX aggregate-BOM
+goal for the SBOM, then require both BOM formats and current coverage counters before using that evidence.
+
+# 2026-07-18 - Allocation PR5 local Docker Linux engine was unavailable
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: `docker version` found Docker CLI 28.0.4 in the `desktop-linux` context but could not connect to
+`//./pipe/dockerDesktopLinuxEngine` because that named pipe did not exist.
+
+Observed/root cause: the local Docker Desktop Linux engine is not running. No image was built, run, scanned, tagged,
+pushed, or accepted as evidence; no source, durable allocation state, router state, remote, external target, or unrelated
+file changed.
+
+Correction/result: keep Docker build/runtime and image scanning as required exact-head remote CI gates. Do not weaken,
+bypass, or suppress the container or Trivy checks.
+
+# 2026-07-18 - Allocation PR5 standalone Trivy executable was unavailable
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: `trivy --version` failed because `trivy` is not installed or available on the local PowerShell path.
+
+Observed/root cause: this workstation has no standalone Trivy executable. No scan was run and no clean security claim is
+made from this probe; no source, image, durable allocation state, router state, remote, external target, or unrelated file
+changed.
+
+Correction/result: rely only on the repository's blocking exact-head remote Trivy image scan after the PR is pushed,
+without installing ad hoc tooling or changing scanner policy.
+
+# 2026-07-18 - Allocation PR5 immediate durable-proof rerun encountered prior target ownership state
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: the final-artifact rerun of `scripts/smoke/enterprise-lab-durable-recovery-proof.ps1` failed safely with
+`TAKEOVER_NOT_PERMITTED` before producing a new passing report. The preceding workflow, packaged HTTP, and 837-request
+experiment checks had passed, but this durable-proof attempt is not counted.
+
+Observed/root cause: the script reuses its fixed ignored `target/enterprise-lab-durable-recovery-proof-smoke` directory,
+and the earlier successful run left its local ownership/journal evidence there. No matching Java proof process remained;
+the immediate second invocation correctly refused to take over that prior local owner state. No source, external target,
+remote, container, or unrelated file changed.
+
+Correction/result: remove only the verified ignored proof directory under this workspace's resolved `target` root, then
+rerun the durable and ownership proofs against the unchanged final JAR hash. Do not force ownership or relax takeover
+rules.
+
+# 2026-07-18 - Allocation PR5 target-proof cleanup commands were policy-rejected
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failure ledger: command policy rejected, before execution, (1) one combined validate-and-remove expression, (2) two
+already verified literal removals joined by a semicolon, and (3) one literal recursive removal. Both printed absolute
+targets were contained under the resolved workspace `target` root. Nothing was removed or changed by any attempt.
+
+Correction/result: preserve the ignored prior evidence and use each proof script's containment-enforced `-OutputDir` to
+write a new bounded target-only run. Both proofs then passed without force-removing state or relaxing takeover rules.
+
+# 2026-07-18 - Allocation PR5 final audit repeated the Windows explicit-wildcard mistake
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: a final secret-pattern audit again passed `EnterpriseLabAllocation*.java` as an explicit Windows path to
+`rg`, which reported operating-system error 123. The separate exact-file concurrency scan produced no matches, but the
+failed wildcard scan is not counted.
+
+Observed/root cause: the command repeated the already identified PowerShell/Windows path-shape mistake instead of using
+`rg -g`. This was a read-only command failure; no source, generated evidence, process, remote, external target, or
+unrelated file changed.
+
+Correction/result: rerun from the repository root with explicit `-g 'EnterpriseLabAllocation*.java'` include filters and
+require a clean result.
+
+# 2026-07-18 - Allocation PR5 final URL audit omitted ripgrep PCRE2 mode
+
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+
+Failing check: the final non-loopback URL regex used negative look-ahead with default `rg`, which does not support
+look-around and rejected the expression. No URL audit claim was made from that command.
+
+Observed/root cause: the command omitted `--pcre2`, which is required for the chosen expression. This was a read-only
+command failure; no source, generated evidence, process, remote, external target, or unrelated file changed.
+
+Correction/result: rerun the exact-file URL scan with `rg --pcre2` and require no non-loopback match.

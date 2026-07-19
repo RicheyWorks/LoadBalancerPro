@@ -74,6 +74,44 @@ non-released state, and the expected current supervisor identity/generation. Ini
 repository record; subsequent handoff advances one generation. Current and previous accepted application epochs remain
 in durable state. PR2 does not wire the application to this verifier or change its router dependency graph.
 
+## PR3 authenticated client boundary
+
+`EnterpriseLabSupervisorClient` is the synchronous application-side transport for one pinned supervisor process epoch.
+It accepts only an explicit trusted local data root and the repository target catalog. Discovery reads the fixed
+`supervisor-ready-v1.json` file, then the separate fixed `supervisor-credential-v1`, then readiness again. All paths
+remain beneath `enterprise-lab-supervisor-v1`; symbolic links, non-regular files, changed file identities, incomplete
+reads, excessive bytes, unsafe POSIX credential permissions, and a changed readiness document fail closed.
+
+Readiness schema `enterprise-lab-supervisor-readiness/v1` is canonical UTF-8 JSON with one LF terminator and a 4,096-byte
+maximum. It permits only literal address `127.0.0.1`, a process-published port from 1,024 through 65,535, canonical
+supervisor identity, bounded supervisor and durable-state generations, lowercase state SHA-256, and a canonical
+publication time. Unknown, duplicate, missing, malformed, or non-canonical content is rejected. The 65-byte credential
+file is exactly 64 lowercase hexadecimal bytes plus one LF. The client never accepts a hostname, URL, proxy, redirect,
+caller-selected address or port, environment fallback, or external target.
+
+Every connection uses a byte-constructed IPv4 loopback `InetAddress` and a raw JDK `Socket` created with
+`Proxy.NO_PROXY`; therefore DNS, HTTP content negotiation, redirect behavior, and HTTP proxy selection are absent. The
+binary transport instead requires the exact PR2 magic, frame version, transport status, credential length, and bounded
+canonical business response. Connect time is at most two seconds, response idle time is at most three seconds,
+monotonic absolute response lifetime is at most ten seconds, response content is at most 65,536 bytes, and transport
+attempts are limited to two. One client serializes its requests and creates no thread or queue.
+
+Construction authenticates a request-correlated health exchange before returning a usable client. Every later command
+must carry the pinned supervisor identity and generation, rereads both fixed control files, verifies freshness, and
+rejects metadata change, credential change, supervisor restart, generation regression, unexpected response identity,
+and request/response mismatch. A readiness/credential epoch older than eight hours fails closed; reconnecting does not
+extend it, and starting a new supervisor rotates the 256-bit credential and advances the supervisor generation.
+
+Credential bytes are transport-only. Runtime generation, publication, validation, comparison, and cleanup avoid
+immutable credential strings; transient entropy and copies are zeroed, comparison is constant-time where secrets are
+compared, and retained server/client arrays are zeroed on close. POSIX group/other access is rejected; Windows remains
+bounded by the repository-controlled local directory and inherited ACL behavior. This does not claim resistance to a
+malicious local administrator or a same-authority process that can replace controlled files.
+
+PR3 does not select this client from application configuration, mutate the normal router, perform application ownership
+handoff, change startup admission, or silently fall back to in-process state. Those integration and reconciliation
+responsibilities begin in PR4 and PR5.
+
 ## Request evidence
 
 Every request carries:
@@ -182,7 +220,7 @@ The campaign sequence is:
 
 1. PR2 adds the separately executable literal-`127.0.0.1` supervisor, OS lock, bounded transport server, and durable
    installed-state reconstruction described above;
-2. add high-entropy authenticated client transport with no DNS, proxy, redirect, or external fallback;
+2. PR3 adds high-entropy authenticated client transport with no DNS, proxy, redirect, or external fallback;
 3. integrate supervisor-required mode without silent in-process fallback;
 4. reconcile application restart, supervisor restart, dual restart, stale application, and crash windows; and
 5. expose sanitized operator status and packaged multi-process proofs.

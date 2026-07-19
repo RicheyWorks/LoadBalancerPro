@@ -6,7 +6,104 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Independent Allocation Supervisor PR2 Checkpoint
+## Active Independent Allocation Supervisor PR3 Checkpoint
+
+Timestamp: 2026-07-19T03:28:00-07:00
+
+Current slot: SUPERVISOR-PR3 - authenticated literal-loopback application client and transport security
+
+Goal manager: active for the six-PR independent Enterprise Lab supervisor campaign; no token budget was requested.
+
+Started from clean synchronized main: `8692b0a1e2662f3c8c23f453d2b3330f9fc862d7`
+
+Current branch: `codex/supervisor-authenticated-loopback-client`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/482
+
+Executable/local-verification checkpoint: `cefd4fa0ccc0f086a42dd701713828c0d22996ff`.
+
+PR-created checkpoint: PR #482 opened from the verified executable head above. This required session-manager update
+advances the branch, so exact-head remote gates must use the subsequent checkpoint commit rather than the PR-opening
+executable head.
+
+Prior slot closure: PR #481 merged normally from exact final head
+`0490e3ae87bda2d908c1a50cb8a99e84fadec632` as `8692b0a1e2662f3c8c23f453d2b3330f9fc862d7`.
+Exact-head PR CI `29681445505`, push CI `29681444125`, CodeQL `29681445494`, dependency review, 3,309 zero-skip
+tests, package/artifact verification, SBOM, packaged-JAR smoke, Docker build/runtime, controlled container evidence, and
+blocking Trivy passed. Post-merge local 122-test compatibility, `mvn -q test`, package-without-tests, `mvn -B package`
+with 3,309 tests and zero failures/errors/skips, and the packaged ten-scenario workflow passed. Exact merge-main CI
+`29681673067` and CodeQL `29681673081` passed on the merge SHA. Local main and origin/main matched that merge before this
+branch was created, and the PR2 source branch remains preserved.
+
+PR3 executable scope: add a production application-side client for the PR1/PR2 transport without wiring it into the
+router or allocation coordinator yet. Load only fixed readiness and credential files beneath the explicit controlled
+root; strictly decode canonical metadata; authenticate a literal-`127.0.0.1` raw socket with `Proxy.NO_PROXY`; enforce
+connect, idle, absolute-response, message, retry, freshness, and credential-age bounds; correlate the exact business
+response; pin supervisor identity/generation; reject identity changes and generation regression; detect credential
+rotation; and zero client credential bytes on close. Reuse the PR1 protocol codec and PR2 frame/deadline constants.
+
+Integration audit: PR2 publishes credential before readiness, then atomically replaces completed readiness. Its current
+test/process clients duplicate frame handling and use unrestricted default `Socket` construction; they are proof clients,
+not reusable runtime components. The shared protocol codec already provides strict request/response correlation,
+canonical fingerprint verification, target binding, unknown-field rejection, and 65,536-byte bounds. The new runtime
+client will replace no proof client in this slot, will use fixed PR2 paths and server frame constants, and will perform an
+authenticated, supervisor-fenced health exchange before becoming usable. The application router/coordinator dependency
+graph remains unchanged until PR4.
+
+Implementation checkpoint: the client now strictly decodes the fixed canonical readiness file, validates the separate
+exact 64-hex-plus-LF credential, authenticates before becoming usable, creates only a byte-addressed `127.0.0.1`
+`Proxy.NO_PROXY` socket, pins supervisor identity/generation, correlates the PR1 response, rereads fixed control files on
+every command, and rejects stale/future metadata, credential changes, restart, regression, wrong response identity,
+unsafe paths/permissions, excessive response bytes, and transport deadline/retry exhaustion. Connect is two seconds,
+response idle is three seconds, absolute response lifetime is ten seconds, attempts are two, readiness is 4,096 bytes,
+business responses remain 65,536 bytes, and credential age is eight hours. Client and server credential generation,
+publication, validation, and close paths use mutable arrays with explicit zeroing and no runtime credential `String`.
+
+Proof checkpoint: the separate-JVM process integration test now uses the production client rather than duplicating the
+frame protocol. It authenticates against supervisor generation 1, proves live lock exclusion, terminates that child
+abruptly, reconnects the client to a reconstructed generation-2 child with a rotated credential, and verifies durable
+installed baseline preservation. The final production-client process/client bundle passed five consecutive runs. The
+seven-class supervisor bundle passed 45 tests and the 18-class storage/ownership/router/client compatibility bundle
+passed 170 tests, all with zero failures/errors/skips.
+
+Local verification checkpoint: exact final executable/test source passed `mvn -q test`, `mvn -B clean package`, and
+`mvn -B verify`; clean package and verify each reported 3,318 tests with zero failures, errors, or skips. Skip-test
+package, the packaged ten-scenario shadow workflow, local artifact-resource verification, the Tomcat dependency tree,
+and CycloneDX 2.9.1 JSON/XML SBOM generation with 144 dependency components passed. JaCoCo is 84.22% instruction and
+67.00% branch. The executable JAR is 95,276,113 bytes with 1,357 entries and SHA-256
+`48cf2b92c679618e4122fdb1349abbd3446c9126348761b9d1bab62fb1393c3e`.
+
+Staged-diff checkpoint: the scoped PR3 candidate contains 1,754 production/test churn lines and 252
+architecture/process churn lines (87.44% / 12.56%). Authoritative campaign composition from starting main
+`a3a17f847e95884ea37f225155d29dbb1ac285c9` through this staged candidate is 7,920 production/test churn lines and
+796 documentation/process churn lines (90.87% / 9.13%), inside the campaign's 88-92% executable target. The staged
+file list contains only the 12 scoped PR3 files; the CSRBT proposal is the sole unstaged/untracked path.
+
+Audit checkpoint: manual review found and corrected incomplete in-memory credential cleanup and an unnormalized initial
+metadata failure. Final scans found no application/router wiring, hostname lookup, wildcard bind, environment proxy,
+redirect/HTTP client, external fallback, process launch, native deserialization, force control, or hard-coded runtime
+credential in the PR3 production surface. The only URL hit is the unchanged repository-approved literal-loopback target.
+The CSRBT proposal remains untracked with its exact startup hash. Docker Desktop was initially stopped; after a bounded
+user-level start, the local build reached the pinned Maven builder but its Java trust store rejected Maven Central's
+certificate chain. No TLS control was weakened and no image was produced. Exact-head remote Docker build/runtime,
+controlled container evidence, and blocking HIGH/CRITICAL Trivy therefore remain mandatory before merge.
+
+Out of scope: allocation router integration, application startup admission, ownership handoff orchestration, fallback
+mode selection, lifecycle reconciliation, operator endpoints, public/API behavior, POM/dependency/workflow/Docker/
+Compose changes, arbitrary hosts/ports/URLs, environment proxies, external targets, production routing, databases,
+brokers, cloud/tenant targets, and production-readiness claims.
+
+Preserved unrelated file: `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains untracked and excluded; startup
+SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
+
+Blocker: none.
+
+Next action: commit and push this PR-created checkpoint, then require fresh exact-head remote CI, CodeQL, dependency
+review, Docker/runtime/evidence, and blocking Trivy before merge.
+
+Decision: continue.
+
+## Completed Independent Allocation Supervisor PR2 Checkpoint
 
 Timestamp: 2026-07-19T02:10:00-07:00
 
@@ -94,14 +191,13 @@ the slot is intentionally implementation-heavy while the campaign-wide 88–92% 
 
 Blocker: none.
 
-Remote-check checkpoint: exact-head PR CI `29681186857`, push CI `29681185260`, and CodeQL `29681186869` passed on
-`a4c47cf1ad645c3063d5b23f944a146ff58447b6`. Dependency review, 3,309 zero-skip tests, coverage, package and artifact
-verification, CycloneDX SBOM, packaged command/JAR smoke, Docker build/runtime, controlled container evidence, and the
-blocking image scan all passed. This required checkpoint advances the branch again, so those successful runs become
-historical evidence and a final fresh exact-head remote set remains mandatory before merge.
+Final closure: PR #481 final head `0490e3ae87bda2d908c1a50cb8a99e84fadec632` passed exact-head PR CI
+`29681445505`, push CI `29681444125`, CodeQL `29681445494`, dependency review, and every repository-native artifact,
+container, and security gate. It merged normally as `8692b0a1e2662f3c8c23f453d2b3330f9fc862d7`; exact merge-main CI
+`29681673067` and CodeQL `29681673081` passed. Post-merge local focused/full/package/workflow verification passed, the
+source branch remains preserved, and no PR2 pending state remains.
 
-Next action: commit and push this remote-check checkpoint, require the fresh final-head CI/CodeQL set to complete
-successfully, then apply the normal-merge gate without changing reviewed executable scope.
+Decision: completed; advance to SUPERVISOR-PR3 only from the verified merge SHA.
 
 Decision: continue.
 

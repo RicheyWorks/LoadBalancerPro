@@ -108,6 +108,7 @@ class EnterpriseLabSupervisorServerTest {
                 assertEquals(
                         EnterpriseLabSupervisorServer.ExitReason.CLEAN_SHUTDOWN,
                         result.exitReason());
+                assertTrue(server.credentialClearedForTesting());
                 assertTrue(result.requestCount() >= 5);
                 assertFalse(Files.exists(supervisorPath(
                         EnterpriseLabSupervisorServer.READINESS_FILE_NAME)));

@@ -26,7 +26,7 @@ import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HexFormat;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class EnterpriseLabSupervisorServer implements AutoCloseable {
     public static final String READINESS_SCHEMA_VERSION =
-            "enterprise-lab-supervisor-readiness/v1";
+            EnterpriseLabSupervisorConnectionMetadata.SCHEMA_VERSION;
     public static final int FRAME_MAGIC = 0x4c425053;
     public static final byte FRAME_VERSION = 1;
     public static final int CREDENTIAL_BYTES = 64;
@@ -53,14 +53,15 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
     static final String READINESS_FILE_NAME = "supervisor-ready-v1.json";
     static final String READINESS_TEMP_FILE_NAME = "supervisor-ready-v1.tmp";
 
-    private static final byte TRANSPORT_OK = 0;
-    private static final byte TRANSPORT_UNAUTHORIZED = 1;
-    private static final byte TRANSPORT_MALFORMED = 2;
+    static final byte TRANSPORT_OK = 0;
+    static final byte TRANSPORT_UNAUTHORIZED = 1;
+    static final byte TRANSPORT_MALFORMED = 2;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final EnterpriseLabSupervisorOwnership ownership;
     private final EnterpriseLabSupervisorService service;
     private final EnterpriseLabSupervisorProtocolCodec codec;
+    private final EnterpriseLabSupervisorConnectionMetadataCodec metadataCodec;
     private final Clock clock;
     private final int configuredPort;
     private final Duration connectionIdleTimeout;
@@ -104,6 +105,7 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
         this.service = Objects.requireNonNull(service, "service cannot be null");
         this.codec = new EnterpriseLabSupervisorProtocolCodec(
                 Objects.requireNonNull(targetCatalog, "targetCatalog cannot be null"));
+        this.metadataCodec = new EnterpriseLabSupervisorConnectionMetadataCodec();
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
         this.configuredPort = EnterpriseLabSupervisorConfiguration.requireConfiguredPort(
                 configuredPort);
@@ -138,8 +140,8 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
     /** Runs until authenticated clean shutdown or the bounded request count is exhausted. */
     public RunResult run() {
         ownership.requireHeld();
-        prepareCredential();
         try (ServerSocket listener = new ServerSocket()) {
+            prepareCredential();
             this.serverSocket = listener;
             listener.setReuseAddress(false);
             listener.bind(
@@ -257,33 +259,47 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
     private void prepareCredential() {
         ownership.requireHeld();
         byte[] random = new byte[32];
-        SECURE_RANDOM.nextBytes(random);
-        byte[] encoded = HexFormat.of().formatHex(random).getBytes(StandardCharsets.US_ASCII);
-        if (encoded.length != CREDENTIAL_BYTES) {
-            throw new IllegalStateException("supervisor credential entropy encoding failed");
+        byte[] encoded = new byte[CREDENTIAL_BYTES];
+        try {
+            SECURE_RANDOM.nextBytes(random);
+            for (int index = 0; index < random.length; index++) {
+                int value = random[index] & 0xff;
+                encoded[index * 2] = lowercaseHex(value >>> 4);
+                encoded[(index * 2) + 1] = lowercaseHex(value & 0x0f);
+            }
+        } finally {
+            Arrays.fill(random, (byte) 0);
         }
         this.credential = encoded;
-        publishControlled(credentialTemporary, credentialFile,
-                (new String(encoded, StandardCharsets.US_ASCII) + System.lineSeparator())
-                        .getBytes(StandardCharsets.US_ASCII));
+        byte[] published = Arrays.copyOf(encoded, encoded.length + 1);
+        published[published.length - 1] = (byte) '\n';
+        try {
+            publishControlled(credentialTemporary, credentialFile, published);
+        } finally {
+            Arrays.fill(published, (byte) 0);
+        }
+    }
+
+    private static byte lowercaseHex(int nibble) {
+        return (byte) (nibble < 10 ? '0' + nibble : 'a' + nibble - 10);
     }
 
     private void publishReadiness(int port) {
         EnterpriseLabSupervisorState state = service.state();
-        String json = "{"
-                + "\"schemaVersion\":\"" + READINESS_SCHEMA_VERSION + "\","
-                + "\"address\":\"127.0.0.1\","
-                + "\"port\":" + port + ","
-                + "\"supervisorInstanceId\":\"" + state.supervisorInstanceId() + "\","
-                + "\"supervisorGeneration\":" + state.supervisorGeneration() + ","
-                + "\"durableStateGeneration\":" + state.durableStateGeneration() + ","
-                + "\"stateFingerprint\":\"" + state.currentRecordFingerprint() + "\","
-                + "\"publishedAt\":\"" + clock.instant() + "\"}"
-                + System.lineSeparator();
+        EnterpriseLabSupervisorConnectionMetadata metadata =
+                new EnterpriseLabSupervisorConnectionMetadata(
+                        READINESS_SCHEMA_VERSION,
+                        EnterpriseLabSupervisorConnectionMetadata.LITERAL_ADDRESS,
+                        port,
+                        state.supervisorInstanceId(),
+                        state.supervisorGeneration(),
+                        state.durableStateGeneration(),
+                        state.currentRecordFingerprint(),
+                        clock.instant());
         publishControlled(
                 readinessTemporary,
                 readinessFile,
-                json.getBytes(StandardCharsets.UTF_8));
+                metadataCodec.encode(metadata));
     }
 
     private void publishControlled(Path temporary, Path destination, byte[] bytes) {
@@ -432,7 +448,10 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
             deleteCleanMetadata(readinessFile);
             deleteCleanMetadata(credentialFile);
         }
-        credential = null;
+        if (credential != null) {
+            Arrays.fill(credential, (byte) 0);
+            credential = null;
+        }
     }
 
     private void deleteCleanMetadata(Path path) {
@@ -452,11 +471,23 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
                 .resolve(EnterpriseLabSupervisorOwnership.DIRECTORY_NAME);
         Path file = EnterpriseLabSupervisorOwnership.controlledPath(
                 directory, CREDENTIAL_FILE_NAME);
-        String value = Files.readString(file, StandardCharsets.US_ASCII).trim();
-        if (!value.matches("[0-9a-f]{64}")) {
-            throw new IOException("supervisor credential file is malformed");
+        byte[] published = Files.readAllBytes(file);
+        try {
+            if (published.length != CREDENTIAL_BYTES + 1
+                    || published[published.length - 1] != (byte) '\n') {
+                throw new IOException("supervisor credential file is malformed");
+            }
+            for (int index = 0; index < CREDENTIAL_BYTES; index++) {
+                byte value = published[index];
+                if (!((value >= (byte) '0' && value <= (byte) '9')
+                        || (value >= (byte) 'a' && value <= (byte) 'f'))) {
+                    throw new IOException("supervisor credential file is malformed");
+                }
+            }
+            return Arrays.copyOf(published, CREDENTIAL_BYTES);
+        } finally {
+            Arrays.fill(published, (byte) 0);
         }
-        return value.getBytes(StandardCharsets.US_ASCII);
     }
 
     static Optional<Integer> readReadyPortForTesting(Path trustedRoot) throws IOException {
@@ -476,6 +507,10 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
         }
         int port = Integer.parseInt(matcher.group(1));
         return port >= 1 && port <= 65_535 ? Optional.of(port) : Optional.empty();
+    }
+
+    boolean credentialClearedForTesting() {
+        return credential == null;
     }
 
     public enum ExitReason {

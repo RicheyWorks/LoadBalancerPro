@@ -6328,3 +6328,179 @@ been accepted, because the accept loop stopped but the service did not independe
 Reject every later allocation, ownership, or non-shutdown lifecycle mutation once shutdown begins while allowing only
 bounded observations and idempotent shutdown handling; add a regression proving installed state and durable generation
 remain unchanged.
+
+# 2026-07-19 - Supervisor PR3 inspection scan used a newline escape as a ripgrep pattern
+
+Branch/PR: `codex/supervisor-authenticated-loopback-client` / no PR
+
+Failing check: the first read-only interrupted-patch audit asked ripgrep to match `\n` in its default single-line mode;
+ripgrep rejected that pattern while the preceding status, branch, head, and file-existence checks completed.
+
+Observed/root cause: the audit combined ordinary symbol searches with a newline-sensitive assertion search instead of
+using a fixed-string source query. No implementation, test, control file, external target, or unrelated file changed,
+and the rejected sub-search is not verification evidence.
+
+Correction/result: inspect the two complete test files directly and use fixed-string or line-oriented searches for
+their assertions. Retain compilation and behavioral tests as the authoritative evidence.
+
+# 2026-07-19 - Supervisor PR3 client restart test did not compile after cleanup hardening
+
+Branch/PR: `codex/supervisor-authenticated-loopback-client` / no PR
+
+Failing check: `mvn -q -DskipTests test` failed test compilation at four lambda references in
+`EnterpriseLabSupervisorClientTest`.
+
+Observed/root cause: the restart test initialized its outer cleanup handle to `null` so failed setup could be cleaned
+safely, which made that variable non-effectively-final and therefore illegal to capture from `assertThrows` lambdas.
+Production sources compiled before this interrupted test patch; no test executed, no supervisor process started, no
+external target was contacted, and no unrelated file changed.
+
+Correction/result: keep the nullable handle only for final cleanup, and give each running phase an effectively-final
+local client reference for lambda assertions. Rerun test compilation before behavioral verification.
+
+Follow-up tooling note: the first piped `rg --files | rg` class-selection scan returned no matches on PowerShell's
+backslash paths even though the files existed. It produced no test-selection evidence and changed nothing. The
+line-oriented `Select-String` rerun listed all seven supervisor test classes before the focused bundle was selected.
+
+# 2026-07-19 - Supervisor PR3 pre-commit audit found incomplete in-memory credential cleanup
+
+Branch/PR: `codex/supervisor-authenticated-loopback-client` / no PR
+
+Failing check: manual credential-lifecycle audit after the seven-class supervisor bundle passed 43 tests with zero
+failures, errors, or skips.
+
+Observed/root cause: the PR2 server converted its newly generated hexadecimal credential through an immutable Java
+`String`, retained the 32-byte entropy input without clearing it, and nulled rather than zeroed its live credential on
+close. The new client likewise used a regex over an immutable credential `String`, and its discovery sequence did not
+guarantee clearing after a successful credential read if the second readiness read or later construction failed. No
+credential was logged, returned in business evidence, committed, or sent anywhere except authenticated literal
+loopback; no external target or unrelated file changed.
+
+Correction/result: encode and validate lowercase hexadecimal directly in mutable byte arrays, clear entropy and
+publication copies in `finally`, zero the server credential before releasing it, validate client collaborators before
+reading the credential, and transfer ownership of the client credential only after the second metadata read succeeds.
+Add regression assertions for close cleanup and rerun focused and full verification.
+
+Follow-up tooling note: the first documentation search passed the PowerShell-incompatible native glob `docs/*.md` to
+ripgrep, which reported an invalid filename while the explicit `docs/agent` root returned matches. The rejected glob is
+not documentation evidence and changed nothing. A corrected `rg --files docs` search identified the single bounded
+architecture contract at `docs/architecture/ENTERPRISE_LAB_INDEPENDENT_ALLOCATION_SUPERVISOR.md`.
+
+# 2026-07-19 - Supervisor PR3 pre-commit audit found an unnormalized discovery failure
+
+Branch/PR: `codex/supervisor-authenticated-loopback-client` / no PR
+
+Failing check: manual client error-boundary audit after five consecutive IPC repetitions and the 170-test
+ownership/storage/router compatibility bundle passed.
+
+Observed/root cause: strict malformed readiness during initial discovery could escape as the metadata codec's public
+`CodecException` rather than the client's bounded `METADATA_UNAVAILABLE` classification. Per-command readiness checks
+already sanitized codec failures, no malformed content was accepted, no connection was attempted, and no credential,
+external target, durable supervisor state, or unrelated file changed.
+
+Correction/result: route both initial and continuing readiness decode through one client-owned sanitizer while
+preserving already-classified bounded file-change failures. Add a malformed-readiness assertion proving the connector
+is never invoked, then rerun focused and full gates.
+
+# 2026-07-19 - Supervisor PR3 separate-JVM client-proof patch context was stale
+
+Branch/PR: `codex/supervisor-authenticated-loopback-client` / no PR
+
+Failing check: the first `apply_patch` attempt to replace the process integration test's hand-built frame helper with
+the production client was rejected before writing any hunk.
+
+Observed/root cause: one patch context placed the `Published` record construction after the helper replacement while
+the existing file defines it earlier. The patch verifier reported the unmatched exact lines and applied none of the
+requested changes. The already-green 3,318-test package/verify results remain valid for the unchanged source at that
+point; no process, credential, durable state, external target, or unrelated file changed from the rejected patch.
+
+Correction/result: inspect the exact import, call, publication, helper, and record blocks, then apply smaller
+exact-context hunks. Compile and run the separate-JVM proof before repeating the final gates.
+
+# 2026-07-19 - Supervisor PR3 local Docker engine was unavailable
+
+Branch/PR: `codex/supervisor-authenticated-loopback-client` / no PR
+
+Failing check: `docker build -t loadbalancerpro:ci .` exited before build with a missing Docker Desktop Linux-engine
+named pipe (`//./pipe/dockerDesktopLinuxEngine`).
+
+Observed/root cause: the local Docker engine was not running, so no Dockerfile step, container, image mutation, runtime
+smoke, or Trivy scan occurred. Exact final-source Maven clean package and verify had already passed 3,318 tests with
+zero failures/errors/skips; this local tool availability failure is not container evidence and changed no source,
+credential, external target, durable supervisor state, or unrelated file.
+
+Correction/result: inspect the installed Docker Desktop/service state and make one bounded non-elevated engine-start
+attempt if available. If the local engine remains unavailable, retain Docker build/runtime, controlled container
+evidence, and blocking HIGH/CRITICAL Trivy as mandatory exact-head remote CI gates before merge.
+
+Follow-up result: Docker Desktop 28.0.4 started through its installed user executable within the 45-second bound, so the
+exact build was retried. BuildKit resolved both pinned base images and loaded the 2.91 MB controlled context, then the
+pinned Maven builder failed `dependency:go-offline` because its Java trust store rejected Maven Central with
+`certificate_unknown` / PKIX path-building failure. Do not disable TLS verification, inject an unscoped certificate,
+change a pinned base, or alter Docker/POM behavior for this local trust-store condition. No final image or container was
+created. Exact-head remote CI must pass Docker build/runtime, controlled evidence, and blocking Trivy before merge.
+
+# 2026-07-19 - Supervisor PR3 remote-evidence download command was rejected locally
+
+Branch/PR: `codex/supervisor-authenticated-loopback-client` / `#482`
+
+Failing check: the first local command prepared to download the completed exact-head CI artifacts into a unique
+temporary directory and remove that directory after inspection, but the command policy rejected the combined shell
+before execution.
+
+Observed/root cause: combining artifact download, recursive temporary cleanup, and quoted search patterns in one
+PowerShell invocation exceeded the local command-policy boundary. No artifact was downloaded, no temporary directory
+was created, no repository file or git state changed, and no process, credential, external target, or durable
+supervisor state was affected. The exact-head PR CI, push CI, dependency review, and CodeQL results themselves were
+already successful and remain valid for the pre-log head.
+
+Correction/result: record the tooling failure, avoid the combined cleanup command, and use the successful workflow
+step results plus narrowly scoped, read-only log queries as evidence. Because this log entry changes the PR head,
+repeat the applicable focused verification and require fresh exact-head remote gates before merge.
+
+Follow-up tooling note: a read-only selector lookup repeated the already-documented PowerShell native-glob failure by
+passing `docs/agent/CAMPAIGN_*` directly to ripgrep. The invalid-path error produced no selector evidence and changed
+nothing. Use repository file discovery or explicit paths for the corrected lookup.
+
+Follow-up evidence note: after the full Maven package exited successfully, the first PowerShell Surefire aggregation
+cast `$xml.testsuite.errors` directly. PowerShell XML member resolution selected nested `<error>` elements where they
+exist rather than consistently reading the `errors` attribute, producing a false aggregate of 93 errors. The query
+changed nothing and is not test evidence. Read each suite attribute explicitly with `GetAttribute(...)`; retain only
+the successful Maven exit until a reliable summary is captured.
+
+Follow-up result: the explicit-attribute rerun then encountered one access-denied report and one report that vanished
+during enumeration, so its 3,306-test aggregate was incomplete and is also not evidence. No repository state changed.
+Avoid post-run report enumeration for this checkpoint; rerun the final package and capture Maven/Surefire's own reactor
+summary and process exit directly.
+
+# 2026-07-19 - Supervisor PR3 final verification left concurrent Maven children
+
+Branch/PR: `codex/supervisor-authenticated-loopback-client` / `#482`
+
+Failing check: process-state inspection after the Maven log ended mid-suite found three concurrent workspace-bound
+Maven/Surefire process trees from final `test`/`package` attempts that the command boundary had returned from while
+their child Java processes continued running.
+
+Observed/root cause: long Maven invocations without a persistent terminal outlived their local command wrapper, so
+later attempts overlapped against the same `target` tree. This caused the earlier transient Surefire report access and
+enumeration errors and means those overlapping attempts are not verification evidence. The inspected command lines
+were limited to this repository and the attempted PR3 verification; no unrelated process, external target, credential,
+or durable supervisor state was implicated.
+
+Correction/result: terminate only the verified stale workspace-bound Maven/Surefire process trees, confirm a clean
+process state, then run one serialized final verification ladder through a persistent terminal session and wait for
+its real process exit before using its evidence. Require fresh exact-head remote gates after the recovery commit.
+
+Follow-up tooling note: the first cleanup attempt safely refused before stopping anything because previously observed
+root PID 46268 had already exited by the time its command line was revalidated. Rediscover the live workspace-bound
+processes and derive the remaining roots from the current snapshot rather than reusing stale PIDs.
+
+Follow-up result: the current snapshot identified two remaining PR3 verification roots and their Maven, Surefire, and
+console descendants. Their command lines were revalidated against this workspace and the PR3 package-log invocation;
+only those trees were stopped. A subsequent snapshot found no workspace-bound Maven, Surefire, or proof child. Proceed
+with one serialized persistent-terminal verification ladder.
+
+Recovery verification: the persistent-terminal 13-class campaign documentation selector, `mvn -q test`, and
+`mvn -q "-DskipTests" package` each finished with real process exit 0. The serialized `mvn -B package` then reported
+3,318 tests with zero failures, errors, or skips and `BUILD SUCCESS`; the packaged ten-scenario Enterprise Lab shadow
+workflow also finished with exit 0. No overlapping Maven/Surefire process was used as evidence.

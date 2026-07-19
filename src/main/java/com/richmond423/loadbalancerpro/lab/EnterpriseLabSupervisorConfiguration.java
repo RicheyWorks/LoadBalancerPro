@@ -16,11 +16,16 @@ public final class EnterpriseLabSupervisorConfiguration {
     public static final int MAX_TRANSACTION_HISTORY = 1;
     public static final Duration CONNECTION_IDLE_TIMEOUT = Duration.ofSeconds(3);
     public static final Duration MAX_CONNECTION_LIFETIME = Duration.ofSeconds(10);
+    public static final Duration CLIENT_CONNECT_TIMEOUT = Duration.ofSeconds(2);
+    public static final Duration CLIENT_RESPONSE_IDLE_TIMEOUT = Duration.ofSeconds(3);
+    public static final Duration MAX_CLIENT_RESPONSE_LIFETIME = Duration.ofSeconds(10);
+    public static final Duration MAX_CREDENTIAL_AGE = Duration.ofHours(8);
     public static final Duration COMMAND_TIMEOUT = Duration.ofSeconds(5);
     public static final Duration STARTUP_TIMEOUT = Duration.ofSeconds(10);
     public static final Duration SHUTDOWN_TIMEOUT = Duration.ofSeconds(5);
     public static final Duration MAX_REQUEST_AGE = Duration.ofSeconds(30);
     public static final Duration MAX_REQUEST_CLOCK_SKEW = Duration.ofSeconds(5);
+    public static final int MAX_CLIENT_TRANSPORT_ATTEMPTS = 2;
     public static final int MIN_CONFIGURED_PORT = 1_024;
     public static final int MAX_CONFIGURED_PORT = 65_535;
 

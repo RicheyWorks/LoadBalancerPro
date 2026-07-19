@@ -8,14 +8,11 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorProtocol.Respo
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +43,7 @@ class EnterpriseLabSupervisorProcessIntegrationTest {
         try {
             firstPublished = awaitPublished(first, "");
             ResponseStatus firstHealth = health(
-                    codec, firstPublished.port(), firstPublished.credential(), "health-first");
+                    targets, codec, firstPublished, "health-first");
             assertEquals(ResponseStatus.ACCEPTED, firstHealth);
             var competing = assertThrows(
                     EnterpriseLabSupervisorOwnership.OwnershipException.class,
@@ -78,7 +75,7 @@ class EnterpriseLabSupervisorProcessIntegrationTest {
                     .contains("\"supervisorGeneration\":2"));
             assertEquals(
                     ResponseStatus.ACCEPTED,
-                    health(codec, secondPublished.port(), secondPublished.credential(),
+                    health(targets, codec, secondPublished,
                             "health-second"));
         } finally {
             stopAbruptly(second);
@@ -160,7 +157,7 @@ class EnterpriseLabSupervisorProcessIntegrationTest {
                         && credentialText.matches("[0-9a-f]{64}")
                         && port.isPresent()) {
                     return new Published(
-                            port.orElseThrow(), credentialText, readinessText);
+                            root, port.orElseThrow(), credentialText, readinessText);
                 }
             }
             Thread.sleep(20L);
@@ -169,53 +166,33 @@ class EnterpriseLabSupervisorProcessIntegrationTest {
     }
 
     private static ResponseStatus health(
+            EnterpriseLabExperimentTargetCatalog targets,
             EnterpriseLabSupervisorProtocolCodec codec,
-            int port,
-            String credential,
+            Published published,
             String requestId) throws Exception {
-        Request request = codec.issue(new RequestDraft(
-                requestId,
-                CommandType.HEALTH,
-                "process-proof-observer",
-                EnterpriseLabSupervisorProtocol.NONE,
-                0L,
-                EnterpriseLabSupervisorProtocol.NONE,
-                0L,
-                EnterpriseLabSupervisorProtocol.NONE,
-                Optional.empty(),
-                AllocationPurpose.RECONCILIATION_NO_OP,
-                Optional.empty(),
-                EnterpriseLabSupervisorProtocol.NONE,
-                EnterpriseLabSupervisorProtocol.NONE,
-                Instant.now(),
-                Map.of("scope", "separate-process-proof")));
-        try (Socket socket = new Socket()) {
-            socket.connect(
-                    new InetSocketAddress(
-                            EnterpriseLabSupervisorConfiguration.literalLoopbackAddress(), port),
-                    Math.toIntExact(
-                            EnterpriseLabSupervisorConfiguration.CONNECTION_IDLE_TIMEOUT.toMillis()));
-            socket.setSoTimeout(Math.toIntExact(
-                    EnterpriseLabSupervisorConfiguration.CONNECTION_IDLE_TIMEOUT.toMillis()));
-            byte[] requestBytes = codec.encodeRequest(request);
-            byte[] credentialBytes = credential.getBytes(StandardCharsets.US_ASCII);
-            DataOutputStream output = new DataOutputStream(socket.getOutputStream());
-            output.writeInt(EnterpriseLabSupervisorServer.FRAME_MAGIC);
-            output.writeByte(EnterpriseLabSupervisorServer.FRAME_VERSION);
-            output.writeShort(credentialBytes.length);
-            output.writeInt(requestBytes.length);
-            output.write(credentialBytes);
-            output.write(requestBytes);
-            output.flush();
-
-            DataInputStream input = new DataInputStream(socket.getInputStream());
-            assertEquals(EnterpriseLabSupervisorServer.FRAME_MAGIC, input.readInt());
-            assertEquals(EnterpriseLabSupervisorServer.FRAME_VERSION, input.readByte());
-            assertEquals(0, input.readUnsignedByte());
-            int length = input.readInt();
-            byte[] response = input.readNBytes(length);
-            assertEquals(length, response.length);
-            return codec.decodeResponse(response, request).status();
+        try (EnterpriseLabSupervisorClient client =
+                     EnterpriseLabSupervisorClient.connect(
+                             published.root(), targets, Clock.systemUTC())) {
+            EnterpriseLabSupervisorConnectionMetadata connection =
+                    client.connectionMetadata();
+            assertEquals(published.port(), connection.port());
+            Request request = codec.issue(new RequestDraft(
+                    requestId,
+                    CommandType.HEALTH,
+                    "process-proof-observer",
+                    EnterpriseLabSupervisorProtocol.NONE,
+                    0L,
+                    connection.supervisorInstanceId(),
+                    connection.supervisorGeneration(),
+                    EnterpriseLabSupervisorProtocol.NONE,
+                    Optional.empty(),
+                    AllocationPurpose.RECONCILIATION_NO_OP,
+                    Optional.empty(),
+                    EnterpriseLabSupervisorProtocol.NONE,
+                    EnterpriseLabSupervisorProtocol.NONE,
+                    Instant.now(),
+                    Map.of("scope", "separate-process-proof")));
+            return client.execute(request).status();
         }
     }
 
@@ -247,6 +224,7 @@ class EnterpriseLabSupervisorProcessIntegrationTest {
                 .resolve(fileName);
     }
 
-    private record Published(int port, String credential, String readinessText) {
+    private record Published(
+            Path root, int port, String credential, String readinessText) {
     }
 }

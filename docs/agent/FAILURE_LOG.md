@@ -6883,3 +6883,11 @@ failure remains a test failure. Production behavior, transport bounds, readiness
 Verification tooling follow-up: while reconstructing the prior focused selector from existing Surefire XML counts, a
 read-only PowerShell command piped directly from a `foreach` statement and failed parsing with `EmptyPipeElement`. It did
 not start Maven or change any state. Correction: collect the report rows in an array and sort the completed collection.
+
+Remote-watch tooling follow-up: the wrapper around the read-only `gh run watch 29691096283` poll did not return at the
+requested 30-second boundary and remained attached for approximately 21,279 seconds. The terminal snapshot itself was
+stale at the six-minute run mark; no repository, PR, workflow, or external state was mutated during the wait. Correction:
+stop relying on that attached watch result and query the three exact run IDs directly. Direct `gh run view` inspection
+confirmed push CI `29691094629`, PR CI `29691096283`, and CodeQL `29691096250` all completed successfully on correction
+head `1066db6c80088ab83d28c2bd31c5a9e98356e2d7`, including PR dependency review and every CI package/SBOM/runtime/Docker/
+Trivy lane.

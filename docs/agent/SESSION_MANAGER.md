@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Independent Allocation Supervisor PR5 Checkpoint
 
-Timestamp: 2026-07-19T07:31:28-07:00
+Timestamp: 2026-07-19T13:35:56-07:00
 
 Current slot: SUPERVISOR-PR5 - dual-restart reconciliation and bounded supervision
 
@@ -26,8 +26,9 @@ PR-created checkpoint: PR #484 opened from the verified implementation head
 `ad915b7aed0b973812d7a1acf15d7e68679688e4`. This required session update advances the branch, so exact-head remote
 gates must use the subsequent metadata checkpoint rather than the PR-opening head.
 
-First pushed metadata checkpoint: `5119e93d1468b5e6f513d2b07cde1040773ad931`. A bounded test-only recovery
-correction and the mandatory failure record are verified in the working tree and pending the next commit.
+First pushed metadata checkpoint: `5119e93d1468b5e6f513d2b07cde1040773ad931`. The bounded test-only recovery
+correction and mandatory failure record were committed and pushed as
+`1066db6c80088ab83d28c2bd31c5a9e98356e2d7`.
 
 Prior slot closure: PR #483 merged normally from exact final head
 `7b827a56283e308afe7032fdfef2b35237ee2291` as `edd2db28946828fc1d969c797bb0a70e9cd4431c`.
@@ -93,7 +94,12 @@ four valid durable records, and matching fingerprints before the immediately fol
 one additional explicit verification only when that intermediate result retains a ready reconciliation report, the
 application lifecycle is already terminal, and admission remains closed. Every other failure and a repeated projection
 failure still fail. No production source, transport bound, readiness rule, or guardrail changed, and fresh gates are
-required on the correction head; the old mixed remote result is not accepted as green PR evidence.
+required on any subsequent metadata head; the old mixed remote result is not accepted as green PR evidence. Fresh
+correction-head push CI `29691094629`, PR CI `29691096283`, PR dependency review, CodeQL `29691096250`, aggregate
+CodeQL, zero-skip tests, coverage, package/artifact, CycloneDX SBOM, packaged-JAR smoke, Docker build/runtime, controlled
+container evidence, and blocking Trivy all passed on exact head
+`1066db6c80088ab83d28c2bd31c5a9e98356e2d7`. The remote-watch wrapper's extended wait is recorded in the failure log;
+the green conclusions come from direct exact-ID run inspection.
 
 Focused verification checkpoint: the 11-class restart/crash compatibility selector passed 94 tests with zero failures,
 errors, or skips. It covers application-only restart and ordered application-plus-supervisor restart as parameterized
@@ -122,10 +128,10 @@ resolves core, WebSocket, and EL only at 10.1.55. Exact same-head push CI genera
 JSON/XML v1.6 evidence and passed all supply-chain/runtime lanes before the test-only correction; fresh correction-head
 remote evidence remains mandatory.
 
-Composition/scope checkpoint: the 11-file PR5 candidate has 968 production/test churn lines and 241
-documentation/process churn lines (80.07 / 19.93 percent); mandatory failure/session records account for most process
+Composition/scope checkpoint: the 11-file PR5 candidate has 982 production/test churn lines and 329
+documentation/process churn lines (74.90 / 25.10 percent); mandatory failure/session records account for most process
 churn. Across the authoritative campaign diff from starting main `a3a17f847e95884ea37f225155d29dbb1ac285c9`, the
-candidate has 10,404 production/test churn lines and 1,483 documentation/process churn lines (87.52 / 12.48 percent).
+candidate has 10,418 production/test churn lines and 1,571 documentation/process churn lines (86.90 / 13.10 percent).
 PR6 remains executable proof/status work and must bring the
 final campaign into the 88-92 percent target. Scope scans found no POM, dependency, CI/workflow, Docker/Compose,
 runtime-resource, public endpoint, arbitrary host/port/path, external-target, cloud/tenant, database, broker,
@@ -142,8 +148,9 @@ SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
 
 Blocker: none.
 
-Next action: commit the verified bounded recovery checkpoint without staging the CSRBT proposal, push it, then require
-fresh exact-head CI, CodeQL, dependency review, Docker/runtime, SBOM, and blocking Trivy gates before merge.
+Next action: verify and commit this remote-green checkpoint without staging the CSRBT proposal, push it, then require
+fresh exact-final-metadata-head CI, CodeQL, dependency review, Docker/runtime, SBOM, and blocking Trivy gates before
+merge.
 
 Decision: continue.
 

@@ -18,6 +18,8 @@ Current branch: `codex/allocation-startup-drift-reconciliation`
 
 PR URL: not opened yet
 
+Executable checkpoint: `b368d195bd411cab1adc814246ff7248aaec3f4e`
+
 Prior slot closure: PR #476 merged normally from exact final head
 `2e51054e62f2fce2e9c4828905d10b7191fabbb3` as `4066ae2ef488a946bbfc9a7be173ea1f28503e8d`.
 Exact-head PR CI `29643536004`, push CI `29643534071`, CodeQL `29643536009`, dependency review, code scanning,
@@ -69,9 +71,9 @@ Local Docker/runtime and Trivy are not claimed green: Docker CLI 28.0.4 cannot r
 and standalone `trivy` is unavailable. Exact-head remote Docker build/runtime, controlled evidence, and the blocking
 HIGH/CRITICAL Trivy scan remain mandatory before merge and again on merge-main.
 
-Composition: PR5 has 2,268 executable/test and 350 required process additions (86.63% / 13.37%); the heavier process share
-records 20 mandatory failure/recovery checkpoints. The campaign aggregate is 7,983 executable/test and 1,075 process
-additions (88.13% / 11.87%), inside the goal's 88-92% executable and 8-12% process band.
+Composition: PR5 has 2,268 executable/test and 352 required process additions (86.56% / 13.44%); the heavier process share
+records 20 mandatory failure/recovery checkpoints. The campaign aggregate is 7,983 executable/test and 1,077 process
+additions (88.11% / 11.89%), inside the goal's 88-92% executable and 8-12% process band.
 
 ## Completed Durable Allocation-State Supervision PR4 Checkpoint
 

@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Independent Allocation Supervisor PR1 Checkpoint
 
-Timestamp: 2026-07-19T00:28:06-07:00
+Timestamp: 2026-07-19T00:32:31-07:00
 
 Current slot: SUPERVISOR-PR1 - bounded shared command/response protocol and canonical codec
 
@@ -18,7 +18,12 @@ Started from clean synchronized main: `a3a17f847e95884ea37f225155d29dbb1ac285c9`
 
 Current branch: `codex/supervisor-protocol-command-model`
 
-PR URL: not opened
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/480
+
+Executable/local-verification checkpoint: `8136f7d4fc5239fedd4f28c661dd8ddeb07790ea`
+
+PR-created checkpoint: PR #480 opened from the verified pushed executable head above. This required checkpoint advances
+the branch, so exact-head remote gates must use the subsequent checkpoint commit rather than the executable checkpoint.
 
 Executable capability: add a strict versioned business protocol for health, readiness, installed-state read-back,
 baseline establishment, allocation apply, baseline restoration, verification, bounded status, generation inspection, and
@@ -52,9 +57,9 @@ control, or production-readiness change belongs in PR1.
 Preserved unrelated file: `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains untracked and excluded; startup
 SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
 
-Remote status: the final read-only audit confirms remote `main` remains at the exact starting SHA. CI run
-`29669917347` and CodeQL run `29669917412` are successful on that SHA. This local branch has no PR or remote exact-head
-checks yet.
+Remote status: remote `main` remains at the exact starting SHA. CI run `29669917347` and CodeQL run `29669917412` are
+successful on that SHA. PR #480 is open; exact-head PR checks remain pending until this checkpoint is committed and
+pushed.
 
 Blocker: none.
 
@@ -79,8 +84,8 @@ Unix-path test failure and a malformed read-only scope-scan regex are recorded i
 rerun successfully before the full gates. The only untracked path outside PR1 is the preserved CSRBT proposal, whose
 SHA-256 remains unchanged.
 
-Next action: review the verified composition, then commit and push the scoped PR1 files and open the PR; exact-head remote
-CI and CodeQL remain mandatory before merge.
+Next action: commit and push this PR-created checkpoint, refresh final-head local verification, then require exact-head
+CI, CodeQL, dependency review, and scan gates before merge.
 
 Decision: continue.
 

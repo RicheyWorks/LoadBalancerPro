@@ -653,10 +653,12 @@ public final class EnterpriseLabAllocationReconciler {
                     safe.scenarioId(),
                     safe.lifecycle().state(),
                     safe.lifecycle().terminal(),
-                    EnterpriseLabExperimentJournalReplayPayload.allocationFingerprint(
-                            safe.baselineAllocation()),
-                    EnterpriseLabExperimentJournalReplayPayload.allocationFingerprint(
-                            safe.lastAppliedAllocation()),
+                    EnterpriseLabAllocationStateCodec.canonicalAllocationFingerprint(
+                            safe.scenarioId(),
+                            safe.baselineAllocation().allocations()),
+                    EnterpriseLabAllocationStateCodec.canonicalAllocationFingerprint(
+                            safe.scenarioId(),
+                            safe.lastAppliedAllocation().allocations()),
                     safe.contentFingerprint());
         }
     }

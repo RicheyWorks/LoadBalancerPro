@@ -6,6 +6,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationReconciler.Rec
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationState.TransactionPhase;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationTransactionCoordinator.TransactionReceipt;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationTransactionCoordinator.TransactionStatus;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalReplayEngine.ReconstructedExperimentState;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackAllocationRouter.AllocationChangeReceipt;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackAllocationRouter.ChangeStatus;
 
@@ -59,6 +60,23 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
             EnterpriseLabLoopbackAllocationRouter startupRouter,
             EnterpriseLabEvidenceOwnershipGate ownershipGate,
             EnterpriseLabAllocationReconciliationGate reconciliationGate) {
+        return create(
+                trustedRoot,
+                targetCatalog,
+                startupRouter,
+                ownershipGate,
+                reconciliationGate,
+                List.of());
+    }
+
+    /** Creates the fixed store and cross-checks bounded startup journal replay. */
+    public static EnterpriseLabAllocationSupervisor create(
+            Path trustedRoot,
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabLoopbackAllocationRouter startupRouter,
+            EnterpriseLabEvidenceOwnershipGate ownershipGate,
+            EnterpriseLabAllocationReconciliationGate reconciliationGate,
+            List<ReconstructedExperimentState> replayedExperiments) {
         EnterpriseLabAllocationSupervisor supervisor = new EnterpriseLabAllocationSupervisor(
                 EnterpriseLabAllocationStateStore.create(
                         trustedRoot, targetCatalog, ownershipGate),
@@ -67,7 +85,9 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
                 reconciliationGate);
         try {
             ReconciliationReport report = supervisor.attachRouter(
-                    startupRouter, ReconciliationTrigger.STARTUP);
+                    startupRouter,
+                    ReconciliationTrigger.STARTUP,
+                    replayedExperiments);
             if (!report.ready()) {
                 throw new IllegalStateException(
                         "allocation startup reconciliation failed closed: "
@@ -118,6 +138,14 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
     public synchronized ReconciliationReport attachRouter(
             EnterpriseLabLoopbackAllocationRouter attachedRouter,
             ReconciliationTrigger trigger) {
+        return attachRouter(attachedRouter, trigger, List.of());
+    }
+
+    /** Binds one router and cross-checks only caller-supplied verified replay. */
+    public synchronized ReconciliationReport attachRouter(
+            EnterpriseLabLoopbackAllocationRouter attachedRouter,
+            ReconciliationTrigger trigger,
+            List<ReconstructedExperimentState> replayedExperiments) {
         requireOpen();
         router = Objects.requireNonNull(attachedRouter, "attachedRouter cannot be null");
         coordinator = new EnterpriseLabAllocationTransactionCoordinator(
@@ -138,7 +166,10 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
                 router::authoritativeInstalledSnapshot,
                 checkpoint -> { });
         return remember(reconciler.reconcile(
-                Objects.requireNonNull(trigger, "trigger cannot be null"), List.of()));
+                Objects.requireNonNull(trigger, "trigger cannot be null"),
+                List.copyOf(Objects.requireNonNull(
+                        replayedExperiments,
+                        "replayedExperiments cannot be null"))));
     }
 
     /** Candidate intent is accepted only from the already-approved experiment decision. */
@@ -149,13 +180,22 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
             boolean explicitlyEnabled) {
         requireReady();
         EnterpriseLabLoopbackAllocationSnapshot previous = router.currentSnapshot();
-        TransactionReceipt receipt = coordinator.applyCandidate(
-                transactionId, experimentId, decision, explicitlyEnabled);
+        TransactionReceipt receipt;
+        try {
+            receipt = coordinator.applyCandidate(
+                    transactionId, experimentId, decision, explicitlyEnabled);
+        } catch (RuntimeException exception) {
+            reconciliationGate.fail("ALLOCATION_MUTATION_UNVERIFIED");
+            throw exception;
+        }
         EnterpriseLabLoopbackAllocationSnapshot current = router.currentSnapshot();
         ChangeStatus status = changeStatus(receipt, previous, current);
         boolean trafficAction = receipt.trafficActionPerformed();
         if (status == ChangeStatus.APPLIED || status == ChangeStatus.RESTORED) {
             trafficAction = true;
+        }
+        if (status == ChangeStatus.FAILED) {
+            reconciliationGate.fail("ALLOCATION_MUTATION_UNVERIFIED");
         }
         return new AllocationChangeReceipt(
                 status,

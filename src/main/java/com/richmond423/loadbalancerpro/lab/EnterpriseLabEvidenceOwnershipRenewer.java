@@ -11,12 +11,17 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-/** One bounded daemon task that renews only an already-published live owner. */
+/**
+ * One bounded daemon task that renews an already-published live owner and may
+ * then check only its pinned supervisor session. It never selects a candidate
+ * or performs allocation reconciliation.
+ */
 final class EnterpriseLabEvidenceOwnershipRenewer implements AutoCloseable {
     private final EnterpriseLabEvidenceOwnershipGate ownershipGate;
     private final EnterpriseLabExperimentRecoveryGate recoveryGate;
     private final Optional<EnterpriseLabAllocationReconciliationGate>
             allocationReconciliationGate;
+    private final Optional<Runnable> postRenewalVerifier;
     private final ScheduledThreadPoolExecutor executor;
     private final ScheduledFuture<?> renewalTask;
 
@@ -35,6 +40,20 @@ final class EnterpriseLabEvidenceOwnershipRenewer implements AutoCloseable {
             EnterpriseLabExperimentRecoveryGate recoveryGate,
             Optional<EnterpriseLabAllocationReconciliationGate> allocationReconciliationGate,
             Duration renewalInterval) {
+        this(
+                ownershipGate,
+                recoveryGate,
+                allocationReconciliationGate,
+                Optional.empty(),
+                renewalInterval);
+    }
+
+    EnterpriseLabEvidenceOwnershipRenewer(
+            EnterpriseLabEvidenceOwnershipGate ownershipGate,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            Optional<EnterpriseLabAllocationReconciliationGate> allocationReconciliationGate,
+            Optional<Runnable> postRenewalVerifier,
+            Duration renewalInterval) {
         this.ownershipGate = Objects.requireNonNull(
                 ownershipGate, "ownershipGate cannot be null");
         this.recoveryGate = Objects.requireNonNull(
@@ -42,6 +61,9 @@ final class EnterpriseLabEvidenceOwnershipRenewer implements AutoCloseable {
         this.allocationReconciliationGate = Objects.requireNonNull(
                 allocationReconciliationGate,
                 "allocationReconciliationGate cannot be null");
+        this.postRenewalVerifier = Objects.requireNonNull(
+                postRenewalVerifier,
+                "postRenewalVerifier cannot be null");
         Duration safeInterval = Objects.requireNonNull(
                 renewalInterval, "renewalInterval cannot be null");
         if (safeInterval.isZero() || safeInterval.isNegative()
@@ -90,6 +112,13 @@ final class EnterpriseLabEvidenceOwnershipRenewer implements AutoCloseable {
         if (result.status() != OperationStatus.SUCCEEDED) {
             failAdmission();
             closeAfterFailure();
+            return;
+        }
+        try {
+            postRenewalVerifier.ifPresent(Runnable::run);
+        } catch (RuntimeException exception) {
+            allocationReconciliationGate.ifPresent(
+                    gate -> gate.fail("SUPERVISOR_SESSION_UNAVAILABLE"));
         }
     }
 

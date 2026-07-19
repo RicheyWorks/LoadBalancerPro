@@ -62,6 +62,45 @@ Malformed, unsupported, truncated, identity-mismatched, or corrupted evidence is
 atomically moved to the controlled quarantine namespace when possible, exposed only as bounded opaque metadata, and kept as
 unresolved evidence. Admission remains failed when recovery cannot prove a safe result.
 
+### Independent supervisor and application restart ordering
+
+In `external-supervisor-required` mode the application and supervisor retain independent process epochs. Application
+startup first acquires or takes over a higher durable application-owner generation, verifies and terminalizes interrupted
+experiment journals without resuming a candidate, completes the durable application reconciliation marker, authenticates
+the supervisor, advances the supervisor's accepted application fence, reads its installed allocation, and then reconciles
+the allocation transaction chain against the verified terminal experiment replays. Experiment replay allocations are
+translated into the allocation transaction fingerprint domain before comparison; the separate replay-content fingerprint
+remains journal identity evidence. Readiness opens only when the owner generation, terminal allocation transaction,
+supervisor read-back, safe baseline, and replayed experiment evidence agree exactly.
+
+A live application keeps one authenticated supervisor epoch pinned. A bounded health exchange is required at experiment
+admission and lifecycle command boundaries, while allocation mutations retain their independent authenticated read before
+mutation, action receipt, and read after mutation. The existing ownership-renewal daemon performs the same health and
+identity/generation check only after a successful owner renewal. It does not read observations, select candidates, resume
+experiments, reconcile allocations, or mutate traffic. A failed health check closes only allocation admission so the
+already-completed journal recovery evidence remains intact and an explicit verification can recover the allocation gate.
+
+If the supervisor epoch changes, ordinary arm, start, evaluation, request, rollback, cancellation, and shutdown admission
+remains closed. The existing authenticated no-input allocation-supervision verification action is the only
+live-application reconnect path. It accepts only a different, higher authenticated supervisor generation, re-verifies the
+same live application owner, reads installed state, reconciles the durable allocation chain to the safe baseline, and
+terminalizes any in-memory active experiment instead of resuming its candidate. A failed reconnect, ambiguous transaction,
+unavailable read-back, ownership change, or non-terminal final allocation state keeps readiness closed.
+The last fully reconciled supervisor epoch advances only after both allocation reconciliation and active-session
+terminalization succeed, so an incomplete attempt remains pending and is retried by the next explicit verification.
+
+The supervisor independently increments its durable generation on restart. It reconstructs a previously committed
+installed allocation, but restores the immutable baseline from an incomplete apply before publishing readiness. The
+application allocation coordinator does not persist success without the accepted action receipt and separate exact
+read-back. Therefore an application crash, supervisor crash, or ordered restart of both processes is classified from the
+two durable evidence chains; neither process infers success from a missing response or automatically resumes an
+interrupted candidate.
+
+These are bounded single-host literal-loopback behaviors. They do not prove power-loss durability, arbitrary kill timing,
+filesystem or firmware guarantees, production supervision, external or tenant traffic, multi-host failover, distributed
+consensus, throughput, p95/p99 latency, load/stress capacity, or production readiness. Final packaged campaign proofs and
+operator-status refinements remain a later scoped change.
+
 ## Terminal compaction and retention
 
 Only an exactly valid journal whose deterministic replay contains a terminal record may be compacted. Active, running,

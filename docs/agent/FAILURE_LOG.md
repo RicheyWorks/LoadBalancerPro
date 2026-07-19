@@ -6772,3 +6772,122 @@ Recovery verification: the persistent-terminal 13-class campaign documentation s
 `mvn -q "-DskipTests" package` each finished with real process exit 0. The serialized `mvn -B package` then reported
 3,318 tests with zero failures, errors, or skips and `BUILD SUCCESS`; the packaged ten-scenario Enterprise Lab shadow
 workflow also finished with exit 0. No overlapping Maven/Surefire process was used as evidence.
+
+# 2026-07-19 - Supervisor PR5 application-restart proof bypassed required takeover
+
+Branch/PR: `codex/supervisor-dual-restart-reconciliation` / no PR
+
+Failing check: the focused
+`EnterpriseLabSupervisorAllocationBridgeTest,EnterpriseLabEvidenceOwnershipRenewerTest` selector ran seven tests and
+reported one error. `applicationRestartAdoptsHigherOwnerReplaysJournalAndRestoresRetainedCandidate` called
+`acquire(...).ownership().orElseThrow()` after abandoning the first application epoch, and no ownership value was
+present.
+
+Observed/root cause: the test attempted a direct second acquisition even though the durable prior owner requires the
+repository's bounded takeover path. The application-restart implementation path already distinguishes acquisition
+from `TAKEOVER_NOT_PERMITTED` and performs startup reconciliation during takeover; the new proof skipped that required
+ordering. No production source, durable test data outside the JUnit temporary directory, supervisor credential,
+external target, unrelated file, or repository process was affected.
+
+Correction/result: update the proof to use the same acquire-or-takeover ordering as application startup, retaining the
+fail-closed experiment recovery gate and process-local inspection before the higher owner generation is accepted. Then
+rerun the focused restart and renewal selector before using any result as evidence.
+
+Follow-up result: the corrected acquire-or-takeover path reached the higher application owner, but the same focused
+selector again reported one error. Cross-evidence allocation startup restored the supervisor baseline and then failed
+closed with `EXPERIMENT_ALLOCATION_EVIDENCE_MISMATCH`; the replayed terminal experiment fingerprint did not agree with
+the durable allocation baseline. This is useful contract evidence rather than a test-infrastructure failure: the new
+cross-check is detecting an actual disagreement between the application journal recovery representation and allocation
+transaction evidence. No readiness was published and no candidate was resumed. Inspect the two canonical allocation
+fingerprints and correct the recovery seam; do not weaken or omit the cross-evidence check.
+
+Fingerprint inspection result: a one-method diagnostic assertion confirmed that the durable allocation baseline is
+`ffc3f1e32d10961763bfd3671f4240ef63b9d2f67ae93760b92f01331986d591`, while the replayed experiment baseline is
+`5146f8670dc592239a9344995c64bdc895e04633450e9c36481dd6ed571f04b7`. The selector failed at that deliberate assertion
+before attempting readiness. Inspect the actual canonical allocation maps and align the application startup baseline
+authority with the already-durable allocation baseline; retain the fingerprint assertion as regression coverage.
+
+Root-cause result: the next diagnostic proved the two baseline allocation maps are exactly equal. The mismatch comes
+from comparing different fingerprint domains: `ExperimentAllocationEvidence.from(...)` used the full experiment
+snapshot replay fingerprint, while durable allocation reconciliation expects the canonical scenario-plus-allocation
+fingerprint from `EnterpriseLabAllocationStateCodec`. Correct the evidence adapter to canonicalize baseline and
+last-applied allocations in the allocation transaction domain, while retaining the separate replay-content fingerprint
+for journal identity. Then rerun the exact focused proof.
+
+Follow-up tooling note: a read-only ownership-renewal audit lookup included the nonexistent path
+`EnterpriseLabEvidenceOwnershipStore.java`, so ripgrep exited 1 after returning partial results from the valid files.
+The ownership record store is named `EnterpriseLabEvidenceOwnershipRecordStore.java`, and renewal orchestration lives
+in `EnterpriseLabEvidenceOwnershipLease.java`. The failed lookup changed nothing and is not audit evidence; use the
+discovered exact paths for the corrected inspection.
+
+Follow-up implementation audit: explicit supervisor reconnection initially tracked the epoch change only in the current
+method invocation. If allocation reconciliation or active-session termination failed after the replacement client was
+accepted, a retry saw the new client as healthy, treated the epoch as unchanged, and could republish allocation readiness
+without retrying nonterminal application-session termination. The supervisor baseline remained safe, but the application
+lifecycle could remain active, so this was not an acceptable complete-reconciliation result.
+
+Correction/result: retain the last fully reconciled supervisor connection metadata in the operator service, compare it
+with the currently pinned metadata on every explicit verification, and advance it only after allocation reconciliation
+and any active-session terminalization both succeed. Also verify the lifecycle is actually terminal rather than treating
+a non-throwing rejected cancellation receipt as success. The restart regression now forces the first terminalization to
+remain nonterminal, proves the allocation gate stays closed, restores the evaluator, retries the same new supervisor
+epoch, and proves rollback finishes before readiness reopens. The focused bridge/renewal selector passed after the fix.
+
+# 2026-07-19 - Supervisor PR5 exact-head PR CI test failure
+
+Branch/PR: `codex/supervisor-dual-restart-reconciliation` / `#484`
+
+Failing gate: exact-head PR CI run `29690047506`, job `88201047406`, on
+`5119e93d1468b5e6f513d2b07cde1040773ad931` failed in `Run tests` after 2m36s. Exact-head dependency review passed, but
+zero-skip, coverage, package, artifact, SBOM, packaged runtime, Docker/runtime, controlled container evidence, and blocking
+Trivy steps were correctly skipped and are not green evidence for this head.
+
+Observed state: the local corrected 3,327-test, clean-package, verify, packaged-workflow, artifact, dependency, SBOM, and
+coverage ladder was green before push. The remote failure is therefore pending exact failed-log diagnosis; do not merge,
+do not treat the local result as a replacement remote gate, and do not weaken or suppress the failing test.
+
+Diagnostic result: the failed-log inspection isolated one assertion in
+`EnterpriseLabSupervisorAllocationBridgeTest.supervisorRestartClosesAdmissionUntilExplicitReconnectRestoresAndTerminatesCandidate`.
+The second explicit verification had already produced a ready `SAFE_BASELINE_INSTALLED` reconciliation report with the
+durable baseline restored, four valid durable records, and matching baseline/committed/installed fingerprints. The
+immediately following sanitized status projection returned `ALLOCATION_STATUS_UNAVAILABLE`, closed allocation admission,
+and caused `assertTrue(verified.ready())` to fail. The exact same head's push CI test step passed all 3,327 tests, which
+rules out a deterministic allocation-chain mismatch but does not make the PR gate green. Inspect the bounded status read
+and the proof's handling of a transient post-reconciliation inspection failure before choosing a correction.
+
+Diagnostic tooling follow-up: a read-only `Select-String` command included the guessed path
+`EnterpriseLabSupervisorLoopbackClient.java`, which does not exist. PowerShell returned `PathNotFound`; no repository or
+external state changed. The first attempt to record this note also used an unmatched patch anchor and was safely rejected
+without changing the file. Correction: enumerate actual supervisor client/server filenames with `rg --files`, then use
+the exact paths for timeout and response inspection.
+
+Follow-up tooling result: enumeration identified `EnterpriseLabSupervisorClient.java`, but the same compound read-only
+command also passed the Unix-style wildcard `EnterpriseLabSupervisor*.java` as a literal Windows path. Ripgrep rejected
+that path with OS error 123 after returning the bridge matches. No state changed and the partial output is not complete
+audit evidence. Correction: inspect the enumerated exact client, server, and bridge paths without a shell wildcard.
+
+Follow-up tooling result: a read-only PowerShell range-print helper passed an array value to `Math.Min` and returned
+`ArgumentException` before printing the requested source slices. No state changed and no source conclusion relies on
+that output. Correction: use direct `Get-Content` slices for each exact file instead of the malformed generic helper.
+
+Root-cause audit and correction: the exact regression passed in the same head's push CI and in 20 consecutive local
+fresh-JVM invocations. The failed PR run's own sanitized result proves allocation reconciliation had already restored the
+baseline with a valid four-record chain and exact matching fingerprints; only the immediately following status projection
+failed closed. `EnterpriseLabAllocationSupervisor.status()` intentionally performs another bounded authoritative read and
+closes admission on any runtime uncertainty, so a proof that assumes that second read cannot transiently fail contradicts
+the intended fail-closed contract. The regression now permits exactly one additional explicit verification only when the
+intermediate result is `ALLOCATION_STATUS_UNAVAILABLE`, the retained reconciliation report is ready, the application
+lifecycle is already terminal, and admission is still closed. Any other intermediate failure or a repeated projection
+failure remains a test failure. Production behavior, transport bounds, readiness rules, and guardrails are unchanged.
+
+Verification tooling follow-up: while reconstructing the prior focused selector from existing Surefire XML counts, a
+read-only PowerShell command piped directly from a `foreach` statement and failed parsing with `EmptyPipeElement`. It did
+not start Maven or change any state. Correction: collect the report rows in an array and sort the completed collection.
+
+Remote-watch tooling follow-up: the wrapper around the read-only `gh run watch 29691096283` poll did not return at the
+requested 30-second boundary and remained attached for approximately 21,279 seconds. The terminal snapshot itself was
+stale at the six-minute run mark; no repository, PR, workflow, or external state was mutated during the wait. Correction:
+stop relying on that attached watch result and query the three exact run IDs directly. Direct `gh run view` inspection
+confirmed push CI `29691094629`, PR CI `29691096283`, and CodeQL `29691096250` all completed successfully on correction
+head `1066db6c80088ab83d28c2bd31c5a9e98356e2d7`, including PR dependency review and every CI package/SBOM/runtime/Docker/
+Trivy lane.

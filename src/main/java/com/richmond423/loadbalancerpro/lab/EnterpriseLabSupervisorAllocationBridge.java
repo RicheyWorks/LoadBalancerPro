@@ -38,22 +38,30 @@ import java.util.concurrent.atomic.AtomicReference;
 public final class EnterpriseLabSupervisorAllocationBridge
         implements EnterpriseLabLoopbackAllocationRouter.InstalledStateStore,
         AutoCloseable {
-    private final EnterpriseLabSupervisorClient client;
+    private final Path trustedRoot;
+    private final EnterpriseLabExperimentTargetCatalog targetCatalog;
     private final EnterpriseLabSupervisorProtocolCodec codec;
     private final EnterpriseLabEvidenceOwnershipGate ownershipGate;
     private final Clock clock;
-    private final EnterpriseLabSupervisorConnectionMetadata supervisor;
     private final AtomicReference<EnterpriseLabInstalledAllocationSnapshot> cached =
             new AtomicReference<>();
 
+    private EnterpriseLabSupervisorClient client;
+    private EnterpriseLabSupervisorConnectionMetadata supervisor;
     private String acceptedOwnershipFingerprint = EnterpriseLabSupervisorProtocol.NONE;
     private volatile boolean closed;
 
     private EnterpriseLabSupervisorAllocationBridge(
+            Path trustedRoot,
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
             EnterpriseLabSupervisorClient client,
             EnterpriseLabSupervisorProtocolCodec codec,
             EnterpriseLabEvidenceOwnershipGate ownershipGate,
             Clock clock) {
+        this.trustedRoot = Objects.requireNonNull(
+                trustedRoot, "trustedRoot cannot be null");
+        this.targetCatalog = Objects.requireNonNull(
+                targetCatalog, "targetCatalog cannot be null");
         this.client = Objects.requireNonNull(client, "client cannot be null");
         this.codec = Objects.requireNonNull(codec, "codec cannot be null");
         this.ownershipGate = Objects.requireNonNull(
@@ -79,6 +87,8 @@ public final class EnterpriseLabSupervisorAllocationBridge
         try {
             EnterpriseLabSupervisorAllocationBridge bridge =
                     new EnterpriseLabSupervisorAllocationBridge(
+                            trustedRoot,
+                            safeCatalog,
                             client,
                             new EnterpriseLabSupervisorProtocolCodec(safeCatalog),
                             safeGate,
@@ -125,6 +135,72 @@ public final class EnterpriseLabSupervisorAllocationBridge
                 () -> failure("supervisor accepted an installed-state read without state"));
         cached.set(installed);
         return installed;
+    }
+
+    /**
+     * Performs one bounded health exchange against the already-pinned process
+     * epoch. It never reads or changes candidate-selection state.
+     */
+    public synchronized EnterpriseLabSupervisorConnectionMetadata verifySession() {
+        requireOpen();
+        OwnershipRecord ownership = currentOwnership();
+        Request request = issue(
+                CommandType.HEALTH,
+                ownership,
+                EnterpriseLabSupervisorProtocol.NONE,
+                Optional.empty(),
+                AllocationPurpose.RECONCILIATION_NO_OP,
+                Optional.empty(),
+                EnterpriseLabSupervisorProtocol.NONE,
+                EnterpriseLabSupervisorProtocol.NONE,
+                0L,
+                "health");
+        requireAccepted(client.execute(request), request);
+        requireSameOwnership(ownership);
+        return supervisor;
+    }
+
+    /**
+     * Explicitly replaces a failed client only after a different, higher
+     * supervisor epoch authenticates, accepts the still-current application
+     * owner, and returns readable installed state. Allocation reconciliation
+     * remains the caller's responsibility and no candidate is resumed here.
+     */
+    public synchronized EnterpriseLabSupervisorConnectionMetadata reconnect() {
+        requireOpen();
+        OwnershipRecord ownership = currentOwnership();
+        EnterpriseLabSupervisorConnectionMetadata previous = supervisor;
+        EnterpriseLabSupervisorClient replacement =
+                EnterpriseLabSupervisorClient.connect(
+                        trustedRoot, targetCatalog, clock);
+        EnterpriseLabSupervisorConnectionMetadata next =
+                replacement.connectionMetadata();
+        if (next.supervisorGeneration() <= previous.supervisorGeneration()
+                || next.supervisorInstanceId().equals(
+                        previous.supervisorInstanceId())) {
+            replacement.close();
+            throw failure(
+                    "explicit supervisor reconnection requires a different higher process epoch");
+        }
+
+        EnterpriseLabSupervisorClient staleClient = client;
+        String staleAcceptedOwnership = acceptedOwnershipFingerprint;
+        client = replacement;
+        supervisor = next;
+        acceptedOwnershipFingerprint = EnterpriseLabSupervisorProtocol.NONE;
+        try {
+            ensureOwnershipAccepted(ownership);
+            readAuthoritative();
+            requireSameOwnership(ownership);
+            staleClient.close();
+            return next;
+        } catch (RuntimeException exception) {
+            replacement.close();
+            client = staleClient;
+            supervisor = previous;
+            acceptedOwnershipFingerprint = staleAcceptedOwnership;
+            throw exception;
+        }
     }
 
     /** Direct router mutation is forbidden because it lacks application intent evidence. */
@@ -206,7 +282,8 @@ public final class EnterpriseLabSupervisorAllocationBridge
         return true;
     }
 
-    public EnterpriseLabSupervisorConnectionMetadata connectionMetadata() {
+    public synchronized EnterpriseLabSupervisorConnectionMetadata connectionMetadata() {
+        requireOpen();
         return supervisor;
     }
 

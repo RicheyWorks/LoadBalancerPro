@@ -65,6 +65,8 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
     private final Optional<EnterpriseLabEvidenceOwnershipLease> ownershipLease;
     private final Optional<EnterpriseLabEvidenceOwnershipRenewer> ownershipRenewer;
     private final Map<String, Session> sessions = new LinkedHashMap<>();
+    private Optional<EnterpriseLabSupervisorConnectionMetadata>
+            reconciledSupervisorSession;
     private boolean closed;
 
     public EnterpriseLabExperimentOperatorService(EnterpriseLabExperimentTargetCatalog targetCatalog) {
@@ -387,6 +389,8 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         this.supervisorAllocationBridge = Objects.requireNonNull(
                 supervisorAllocationBridge,
                 "supervisorAllocationBridge cannot be null");
+        this.reconciledSupervisorSession = this.supervisorAllocationBridge.map(
+                EnterpriseLabSupervisorAllocationBridge::connectionMetadata);
         if (this.allocationSupervisor.isPresent()
                 && this.allocationReconciliationGate.isEmpty()) {
             throw new IllegalArgumentException(
@@ -436,10 +440,15 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             throw new IllegalArgumentException("maxRetainedExperiments must be between 1 and 128");
         }
         this.maxRetainedExperiments = maxRetainedExperiments;
+        Optional<Runnable> supervisorSessionVerifier =
+                this.supervisorAllocationBridge.map(
+                        ignored -> (Runnable) this::requireExternalSupervisorSession);
         this.ownershipRenewer = ownershipLease.map(lease ->
                 new EnterpriseLabEvidenceOwnershipRenewer(
                         lease.ownershipGate(), recoveryGate,
-                        allocationReconciliationGate, lease.renewalInterval()));
+                        allocationReconciliationGate,
+                        supervisorSessionVerifier,
+                        lease.renewalInterval()));
     }
 
     public synchronized OperatorReceipt arm(ArmRequest request, boolean activeExperimentExplicitlyEnabled) {
@@ -452,6 +461,11 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             return denied("arm", safeRequest.operatorRequestId(), safeRequest.experimentId(),
                     "ALLOCATION_MODE_DISABLED",
                     "Enterprise Lab installed-allocation mutation is explicitly disabled");
+        }
+        if (!externalSupervisorSessionAvailable()) {
+            return denied("arm", safeRequest.operatorRequestId(), safeRequest.experimentId(),
+                    "SUPERVISOR_SESSION_UNAVAILABLE",
+                    "the authenticated external supervisor epoch is unavailable or changed");
         }
         if (!admissionAllowed()) {
             return denied("arm", safeRequest.operatorRequestId(), safeRequest.experimentId(),
@@ -589,6 +603,11 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             boolean activeExperimentExplicitlyEnabled) {
         String safeExperimentId = requireCanonicalId(experimentId, "experimentId");
         String safeRequestId = requireCanonicalId(operatorRequestId, "operatorRequestId");
+        if (!externalSupervisorSessionAvailable()) {
+            return denied("start", safeRequestId, safeExperimentId,
+                    "SUPERVISOR_SESSION_UNAVAILABLE",
+                    "the authenticated external supervisor epoch is unavailable or changed");
+        }
         if (!admissionAllowed()) {
             return denied("start", safeRequestId, safeExperimentId,
                     admissionFailureCode(), admissionFailureReason());
@@ -697,6 +716,13 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         Optional<MutationAuthorization> authorization;
         String signature = safeRequest.signature(safeExperimentId);
         synchronized (this) {
+            if (!externalSupervisorSessionAvailable()) {
+                return batchDeniedWithoutSession(
+                        safeRequest,
+                        safeExperimentId,
+                        "SUPERVISOR_SESSION_UNAVAILABLE",
+                        "the authenticated external supervisor epoch is unavailable or changed");
+            }
             if (!admissionAllowed()) {
                 return recoveryBatchDenied(safeRequest, safeExperimentId);
             }
@@ -801,6 +827,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
 
         synchronized (this) {
             requireSameMutationOwnership(authorization);
+            externalSupervisorSessionAvailable();
             Instant now = clock.instant();
             LifecycleSnapshot after = session.lifecycle.snapshot();
             recordAction(session, safeRequest.operatorRequestId(), "execute-requests", now,
@@ -832,6 +859,22 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         Session session = sessions.get(safeExperimentId);
         if (session == null) {
             return notFound("evaluate", safeRequestId, safeExperimentId);
+        }
+        if (!externalSupervisorSessionAvailable()) {
+            return deniedWithRecord(
+                    session,
+                    "evaluate",
+                    safeRequestId,
+                    "SUPERVISOR_SESSION_UNAVAILABLE",
+                    "the authenticated external supervisor epoch is unavailable or changed");
+        }
+        if (!admissionAllowed()) {
+            return deniedWithRecord(
+                    session,
+                    "evaluate",
+                    safeRequestId,
+                    admissionFailureCode(),
+                    admissionFailureReason());
         }
         String signature = "evaluate|" + safeExperimentId;
         OperatorReceipt cached = cachedOperator(session, safeRequestId, signature, "evaluate");
@@ -888,6 +931,14 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         Session session = sessions.get(safeExperimentId);
         if (session == null) {
             return notFound("cancel", safeRequestId, safeExperimentId);
+        }
+        if (!externalSupervisorSessionAvailable()) {
+            return deniedWithRecord(
+                    session,
+                    "cancel",
+                    safeRequestId,
+                    "SUPERVISOR_SESSION_UNAVAILABLE",
+                    "the authenticated external supervisor epoch is unavailable or changed");
         }
         String signature = "cancel|" + safeExperimentId + "|" + safeReason;
         OperatorReceipt cached = cachedOperator(session, safeRequestId, signature, "cancel");
@@ -952,7 +1003,15 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
     public Optional<EnterpriseLabAllocationSupervisor.SupervisionStatus>
             verifyAllocationSupervision() {
         return allocationSupervisor.map(supervisor -> {
-            supervisor.verify();
+            if (allocationRuntimeMode
+                    == EnterpriseLabAllocationRuntimeMode.EXTERNAL_SUPERVISOR_REQUIRED
+                    && !reconcileExternalSupervisorSession(supervisor)) {
+                return supervisor.status();
+            }
+            if (allocationRuntimeMode
+                    != EnterpriseLabAllocationRuntimeMode.EXTERNAL_SUPERVISOR_REQUIRED) {
+                supervisor.verify();
+            }
             return supervisor.status();
         });
     }
@@ -960,6 +1019,15 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
     public Optional<AllocationSupervisionRestoration>
             restoreSupervisedSafeBaseline() {
         return allocationSupervisor.map(supervisor -> {
+            if (allocationRuntimeMode
+                    == EnterpriseLabAllocationRuntimeMode.EXTERNAL_SUPERVISOR_REQUIRED
+                    && !reconcileExternalSupervisorSession(supervisor)) {
+                return new AllocationSupervisionRestoration(
+                        ChangeStatus.FAILED,
+                        false,
+                        "external supervisor session could not be explicitly reconnected and reconciled",
+                        supervisor.status());
+            }
             AllocationChangeReceipt receipt = supervisor.restoreSafeBaseline(
                     "authenticated operator requested verified durable baseline restoration");
             return new AllocationSupervisionRestoration(
@@ -1005,8 +1073,10 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             return;
         }
         closed = true;
+        boolean supervisorSessionAvailable = externalSupervisorSessionAvailable();
         try {
-            activeSession().ifPresent(session -> {
+            if (supervisorSessionAvailable) {
+                activeSession().ifPresent(session -> {
                 String requestId = "service-shutdown-" + (session.actions.size() + 1L);
                 try {
                     cancelInternal(session, requestId,
@@ -1026,7 +1096,8 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                     }
                     throw exception;
                 }
-            });
+                });
+            }
         } finally {
             try {
                 allocationSupervisor.ifPresent(EnterpriseLabAllocationSupervisor::close);
@@ -1230,6 +1301,96 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
     private void failAdmission(String reasonCode) {
         recoveryGate.fail(reasonCode);
         allocationReconciliationGate.ifPresent(gate -> gate.fail(reasonCode));
+    }
+
+    private void failAllocationAdmission(String reasonCode) {
+        allocationReconciliationGate.ifPresent(gate -> gate.fail(reasonCode));
+    }
+
+    private boolean externalSupervisorSessionAvailable() {
+        if (supervisorAllocationBridge.isEmpty()) {
+            return true;
+        }
+        try {
+            requireExternalSupervisorSession();
+            return true;
+        } catch (RuntimeException exception) {
+            return false;
+        }
+    }
+
+    private void requireExternalSupervisorSession() {
+        try {
+            supervisorAllocationBridge.ifPresent(
+                    EnterpriseLabSupervisorAllocationBridge::verifySession);
+        } catch (RuntimeException exception) {
+            failAllocationAdmission("SUPERVISOR_SESSION_UNAVAILABLE");
+            throw exception;
+        }
+    }
+
+    /**
+     * Explicit verification is the only live-application path that may replace
+     * a failed supervisor epoch. It restores the baseline through allocation
+     * reconciliation and terminates, rather than resumes, an active candidate.
+     */
+    private synchronized boolean reconcileExternalSupervisorSession(
+            EnterpriseLabAllocationSupervisor supervisor) {
+        EnterpriseLabSupervisorAllocationBridge bridge =
+                supervisorAllocationBridge.orElseThrow();
+        try {
+            requireExternalSupervisorSession();
+        } catch (RuntimeException unavailable) {
+            try {
+                bridge.reconnect();
+            } catch (RuntimeException reconnectFailure) {
+                failAllocationAdmission("SUPERVISOR_RECONNECT_FAILED");
+                return false;
+            }
+        }
+        EnterpriseLabSupervisorConnectionMetadata currentSession =
+                bridge.connectionMetadata();
+        boolean epochChanged = reconciledSupervisorSession
+                .map(previous -> previous.supervisorGeneration()
+                        != currentSession.supervisorGeneration()
+                        || !previous.supervisorInstanceId().equals(
+                                currentSession.supervisorInstanceId()))
+                .orElse(true);
+
+        EnterpriseLabAllocationReconciler.ReconciliationReport report;
+        try {
+            report = supervisor.verify();
+        } catch (RuntimeException exception) {
+            failAllocationAdmission("SUPERVISOR_RECONCILIATION_FAILED");
+            return false;
+        }
+        if (!report.ready()) {
+            return false;
+        }
+        if (epochChanged) {
+            Optional<Session> active = activeSession();
+            if (active.isPresent()) {
+                Session session = active.orElseThrow();
+                try {
+                    cancelInternal(
+                            session,
+                            internalRequestId(
+                                    "supervisor-reconnect",
+                                    Long.toString(session.actions.size() + 1L)),
+                            "supervisor epoch changed; verified baseline restored without candidate resume",
+                            "supervisor-reconnect");
+                } catch (RuntimeException exception) {
+                    failAllocationAdmission("SUPERVISOR_RECONNECT_TERMINATION_FAILED");
+                    return false;
+                }
+                if (!session.lifecycle.snapshot().terminal()) {
+                    failAllocationAdmission("SUPERVISOR_RECONNECT_TERMINATION_FAILED");
+                    return false;
+                }
+            }
+        }
+        reconciledSupervisorSession = Optional.of(currentSession);
+        return true;
     }
 
     private AllocationChangeReceipt restoreAllocation(Session session, String reason) {
@@ -1524,6 +1685,26 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 false,
                 List.of(),
                 admissionFailureReason(),
+                Optional.empty());
+    }
+
+    private RequestBatchReceipt batchDeniedWithoutSession(
+            RequestBatchRequest request,
+            String experimentId,
+            String code,
+            String reason) {
+        return new RequestBatchReceipt(
+                OperatorStatus.DENIED,
+                request.operatorRequestId(),
+                experimentId,
+                code,
+                request.count(),
+                0,
+                0,
+                0,
+                false,
+                List.of(),
+                reason,
                 Optional.empty());
     }
 

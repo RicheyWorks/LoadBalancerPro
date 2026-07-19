@@ -6,9 +6,157 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Independent Allocation Supervisor PR4 Checkpoint
+## Active Independent Allocation Supervisor PR5 Checkpoint
 
-Timestamp: 2026-07-19T05:36:17-07:00
+Timestamp: 2026-07-19T13:35:56-07:00
+
+Current slot: SUPERVISOR-PR5 - dual-restart reconciliation and bounded supervision
+
+Goal manager: active for the six-PR independent Enterprise Lab supervisor campaign; no token budget was requested.
+
+Started from clean synchronized main: `edd2db28946828fc1d969c797bb0a70e9cd4431c`
+
+Current branch: `codex/supervisor-dual-restart-reconciliation`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/484
+
+Executable/local-verification checkpoint: `ad915b7aed0b973812d7a1acf15d7e68679688e4`.
+
+PR-created checkpoint: PR #484 opened from the verified implementation head
+`ad915b7aed0b973812d7a1acf15d7e68679688e4`. This required session update advances the branch, so exact-head remote
+gates must use the subsequent metadata checkpoint rather than the PR-opening head.
+
+First pushed metadata checkpoint: `5119e93d1468b5e6f513d2b07cde1040773ad931`. The bounded test-only recovery
+correction and mandatory failure record were committed and pushed as
+`1066db6c80088ab83d28c2bd31c5a9e98356e2d7`.
+
+Prior slot closure: PR #483 merged normally from exact final head
+`7b827a56283e308afe7032fdfef2b35237ee2291` as `edd2db28946828fc1d969c797bb0a70e9cd4431c`.
+Exact-head push CI `29687323610`, PR CI `29687325835`, CodeQL `29687325829`, aggregate CodeQL, and dependency
+review passed. Post-merge local 14-class integration verification passed 120 tests; `mvn -q test`, package without
+tests, `mvn -B package` with 3,323 tests and zero failures/errors/skips, and the packaged ten-scenario workflow passed.
+Exact merge-main CI `29687576748` and CodeQL `29687576710` passed on the merge SHA. Local main and origin/main matched
+that merge before this branch was created, and the PR4 source branch remains preserved on origin.
+
+PR5 executable scope: make application-restart, supervisor-restart, dual-restart, application-crash-during-apply, and
+supervisor-crash-during-apply behavior explicit and testable. A restarted application must acquire a higher durable owner
+generation, read retained supervisor allocation state, verify durable allocation transactions and experiment state,
+invalidate the prior application epoch, never auto-resume an interrupted candidate, restore the verified baseline where
+policy requires, and remain not ready until exact reconciliation. A restarted supervisor must be detected by the live
+application, immediately close experiment mutation, never convert an unverified in-flight transaction into success,
+reconstruct only durable installed state under a higher supervisor generation, invalidate the old identity, require an
+explicitly verified reconnect, restore baseline on ambiguity, and reopen readiness only after reconciliation. Dual
+restart follows durable ownership, reconstruction, read-back, experiment replay, and admission ordering.
+
+Bounded supervision scope: enforce supervisor identity, generation, ownership, state, and reconciliation checks at
+startup, admission, before and after allocation mutation, lifecycle evaluation, rollback, cancellation, shutdown, and
+ownership renewal. Add a periodic verifier only if those explicit boundaries cannot safely detect loss; any such verifier
+must be single-purpose, bounded, cleanly stopped, disabled without valid ownership, and unable to select or resume a
+candidate independently.
+
+Integration audit: complete. The PR4 bridge pins a client and supervisor metadata permanently, while the PR3 client
+already detects readiness, credential, identity, and generation changes and requires explicit reconnection. The allocation
+gate can move from failed through reconciling to ready without rewriting the completed experiment recovery gate. The
+existing ownership renewer is the one bounded daemon seam and can perform a post-renewal health/epoch check without adding
+another scheduler. Operator lifecycle commands are the admission boundary, router/coordinator mutations already provide
+authoritative reads before and after supervisor IPC, and supervisor startup already increments its durable generation,
+retains committed state, and restores baseline from every incomplete transaction phase. Application startup replay was
+not yet passed into allocation reconciliation, and its adapter compared full experiment-snapshot fingerprints against
+scenario-plus-allocation transaction fingerprints; both gaps are corrected rather than bypassed.
+
+Implementation checkpoint: the bridge now retains its fixed trusted root/catalog, performs bounded health checks against
+the pinned epoch, and permits an explicit client replacement only for a different higher authenticated supervisor
+generation. Replacement must reaccept the still-current application owner and return authoritative installed state before
+the stale client's credential is cleared; failure restores the old closed-safe session reference and does not reconcile or
+resume a candidate. External operator admission checks the session at arm, start, request-batch, evaluation, cancellation,
+and shutdown boundaries. A failed check closes only allocation readiness. The post-renewal verifier checks only health,
+identity, and generation and never selects candidates or reconciles traffic. The existing no-input authenticated operator
+verification is the sole reconnect path: it reconnects, reconciles durable allocation state to baseline, and terminalizes
+an in-memory active experiment instead of resuming it. Unverified candidate mutation exceptions and failed-not-restored
+receipts close the allocation gate. The operator records the last fully reconciled supervisor epoch separately from the
+currently connected epoch; it advances that checkpoint only after allocation reconciliation and active-session
+terminalization both succeed. A failed first attempt therefore remains pending across explicit verification retries and
+cannot reopen readiness around a nonterminal interrupted session.
+
+Startup/cross-evidence checkpoint: controller startup retains the bounded verified reconstructed experiment states after
+journal recovery and supplies them to allocation startup reconciliation. The evidence adapter now canonicalizes baseline
+and last-applied allocations in the allocation transaction fingerprint domain while retaining the independent journal
+replay-content fingerprint. A higher application owner therefore reads retained supervisor state, cross-checks the old
+application allocation chain with the terminalized experiment replay, restores the safe baseline where required, and
+publishes readiness only after exact owner, durable transaction, installed-state, and replay agreement.
+
+Exact-head failure/recovery checkpoint: PR CI `29690047506` failed one test on pushed head `5119e93d1468b5e6f513d2b07cde1040773ad931`,
+while exact same-head push CI `29690046212` passed the full zero-skip test, coverage, package, artifact, SBOM, packaged-JAR,
+Docker/runtime, controlled evidence, and blocking Trivy lanes; CodeQL `29690047524`, aggregate CodeQL, and PR dependency
+review also passed. The failed run's sanitized assertion evidence showed a ready `SAFE_BASELINE_INSTALLED` reconciliation,
+four valid durable records, and matching fingerprints before the immediately following status projection failed closed as
+`ALLOCATION_STATUS_UNAVAILABLE`. The regression passed in 20 consecutive fresh local JVMs. The proof now permits exactly
+one additional explicit verification only when that intermediate result retains a ready reconciliation report, the
+application lifecycle is already terminal, and admission remains closed. Every other failure and a repeated projection
+failure still fail. No production source, transport bound, readiness rule, or guardrail changed, and fresh gates are
+required on any subsequent metadata head; the old mixed remote result is not accepted as green PR evidence. Fresh
+correction-head push CI `29691094629`, PR CI `29691096283`, PR dependency review, CodeQL `29691096250`, aggregate
+CodeQL, zero-skip tests, coverage, package/artifact, CycloneDX SBOM, packaged-JAR smoke, Docker build/runtime, controlled
+container evidence, and blocking Trivy all passed on exact head
+`1066db6c80088ab83d28c2bd31c5a9e98356e2d7`. The remote-watch wrapper's extended wait is recorded in the failure log;
+the green conclusions come from direct exact-ID run inspection.
+
+Focused verification checkpoint: the 11-class restart/crash compatibility selector passed 94 tests with zero failures,
+errors, or skips. It covers application-only restart and ordered application-plus-supervisor restart as parameterized
+real authenticated server/bridge scenarios, live-application supervisor loss and explicit higher-generation reconnect,
+stale application rejection, candidate non-resumption, baseline restoration, allocation gate closure/reopening, bounded
+post-renewal verification, supervisor incomplete-apply reconstruction, application coordinator crash/read-back windows,
+startup journal replay, allocation reconciliation, operator behavior, client fencing, separate-process supervisor restart,
+and Spring configuration. The reconnect proof deliberately leaves the first application terminalization nonterminal,
+proves the allocation gate remains closed, then retries the same new epoch and completes rollback before readiness opens.
+If the post-reconciliation sanitized status read itself fails closed, the proof accepts one further explicit retry only
+after confirming terminal lifecycle, retained ready reconciliation, and closed admission. The corrected standalone
+restart/renewal selector passed all eight tests, and the exact regression passed 20 consecutive fresh-JVM stress runs.
+No workspace-bound Java, Maven, Surefire, or Node process remained.
+
+Full local verification checkpoint: after the bounded proof correction, the focused restart/renewal selector, 20-run
+fresh-JVM exact-regression stress loop, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B clean package`, and
+`mvn -B verify` passed. Full test, clean package, and verify each report 3,327 tests with zero failures, errors, or skips.
+The packaged ten-scenario shadow workflow passed and wrote only ignored `target/` evidence; the repository local artifact
+verifier also passed. After this session checkpoint was updated, all 41 documentation guards that directly reference the
+session manager passed 248 tests with zero failures, errors, or skips. The current executable JAR is 95,298,744 bytes with
+1,361 entries, contains all six changed runtime
+classes plus required application resources, and has SHA-256
+`289991D4A4826D5AFE2611451F0616166E967A5ED526B736A015F5CA156AD390`. JaCoCo analyzed 964 classes at 84.35 percent
+instruction, 67.17 percent branch, and 83.84 percent line coverage. The prior unchanged-source Tomcat dependency tree
+resolves core, WebSocket, and EL only at 10.1.55. Exact same-head push CI generated the unchanged CycloneDX 2.9.1
+JSON/XML v1.6 evidence and passed all supply-chain/runtime lanes before the test-only correction; fresh correction-head
+remote evidence remains mandatory.
+
+Composition/scope checkpoint: the 11-file PR5 candidate has 982 production/test churn lines and 329
+documentation/process churn lines (74.90 / 25.10 percent); mandatory failure/session records account for most process
+churn. Across the authoritative campaign diff from starting main `a3a17f847e95884ea37f225155d29dbb1ac285c9`, the
+candidate has 10,418 production/test churn lines and 1,571 documentation/process churn lines (86.90 / 13.10 percent).
+PR6 remains executable proof/status work and must bring the
+final campaign into the 88-92 percent target. Scope scans found no POM, dependency, CI/workflow, Docker/Compose,
+runtime-resource, public endpoint, arbitrary host/port/path, external-target, cloud/tenant, database, broker,
+production-routing, force-control, credential, proxy, redirect, or generated tracked-evidence change. `git diff --check`
+passed, final artifacts are ignored, remote `main` still equals the branch base, and the CSRBT proposal remains untracked
+and excluded at its exact preserved hash.
+
+Out of scope: PR6 operator status and final packaged campaign proofs, production routing, public endpoints or listeners,
+external targets, arbitrary supervisor addresses, force controls, POM/dependency/workflow/Docker/Compose changes,
+databases, brokers, cloud/tenant targets, multi-host behavior, distributed consensus, and production-readiness claims.
+
+Preserved unrelated file: `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains untracked and excluded; startup
+SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
+
+Blocker: none.
+
+Next action: verify and commit this remote-green checkpoint without staging the CSRBT proposal, push it, then require
+fresh exact-final-metadata-head CI, CodeQL, dependency review, Docker/runtime, SBOM, and blocking Trivy gates before
+merge.
+
+Decision: continue.
+
+## Completed Independent Allocation Supervisor PR4 Checkpoint
+
+Timestamp: 2026-07-19T05:55:14-07:00
 
 Current slot: SUPERVISOR-PR4 - application allocation integration and generation fencing
 
@@ -19,6 +167,10 @@ Started from clean synchronized main: `c2f26d26e159f56454c94b73327f57a58ce61e7b`
 Current branch: `codex/supervisor-application-allocation-integration`
 
 PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/483
+
+Final branch head: `7b827a56283e308afe7032fdfef2b35237ee2291`.
+
+Merge commit: `edd2db28946828fc1d969c797bb0a70e9cd4431c`.
 
 Executable/local-verification checkpoint: `f88a585158a43d26f6d740c4776649d840169cec`.
 
@@ -105,13 +257,18 @@ SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
 
 Blocker: none.
 
-Remote status: PR and push CI, CodeQL, and dependency review started on the PR-opening head; none is treated as green
-while pending, and they will become stale after the required metadata checkpoint push.
+Remote status: exact-final-head push CI `29687323610`, PR CI `29687325835`, CodeQL `29687325829`, aggregate CodeQL,
+and dependency review passed for `7b827a56283e308afe7032fdfef2b35237ee2291`. PR #483 merged normally as
+`edd2db28946828fc1d969c797bb0a70e9cd4431c`; exact merge-main CI `29687576748` and CodeQL `29687576710` passed.
+The source branch remains preserved on origin.
 
-Next action: run the focused campaign/session documentation guards and diff checks, commit and push this PR-created
-checkpoint, then require exact-final-head CI, CodeQL, and dependency review success before merge.
+Post-merge verification: exact local main and origin/main matched the merge SHA. The 14-class integration selector
+passed 120 tests; `mvn -q test`, package without tests, and `mvn -B package` passed with 3,323 tests and zero
+failures/errors/skips; the packaged ten-scenario workflow passed. `git diff --check` passed, no workspace-bound build
+process remained, and the unrelated CSRBT proposal retained its exact hash.
 
-Decision: continue.
+Decision: PR4 complete; PR5 may proceed only from exact verified merge main
+`edd2db28946828fc1d969c797bb0a70e9cd4431c`.
 
 ## Completed Independent Allocation Supervisor PR3 Checkpoint
 

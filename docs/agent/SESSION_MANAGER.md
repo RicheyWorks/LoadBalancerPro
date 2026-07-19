@@ -94,11 +94,14 @@ the slot is intentionally implementation-heavy while the campaign-wide 88–92% 
 
 Blocker: none.
 
-Remote status: PR #481 remote checks were triggered on the PR-opening executable head; they become stale when this
-PR-created checkpoint is pushed and therefore are not merge evidence.
+Remote-check checkpoint: exact-head PR CI `29681186857`, push CI `29681185260`, and CodeQL `29681186869` passed on
+`a4c47cf1ad645c3063d5b23f944a146ff58447b6`. Dependency review, 3,309 zero-skip tests, coverage, package and artifact
+verification, CycloneDX SBOM, packaged command/JAR smoke, Docker build/runtime, controlled container evidence, and the
+blocking image scan all passed. This required checkpoint advances the branch again, so those successful runs become
+historical evidence and a final fresh exact-head remote set remains mandatory before merge.
 
-Next action: commit and push this PR-created checkpoint, then wait for fresh exact-head CI, CodeQL, dependency review,
-and repository-native artifact/security gates before applying the normal-merge gate.
+Next action: commit and push this remote-check checkpoint, require the fresh final-head CI/CodeQL set to complete
+successfully, then apply the normal-merge gate without changing reviewed executable scope.
 
 Decision: continue.
 

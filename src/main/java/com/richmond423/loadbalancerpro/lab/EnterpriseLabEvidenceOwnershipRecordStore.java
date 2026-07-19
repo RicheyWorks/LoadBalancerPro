@@ -79,6 +79,12 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
         return replaceAndVerify(expectedCurrent, replacement, WritePurpose.TAKEOVER);
     }
 
+    OwnershipRecord reconcileAndVerify(
+            OwnershipRecord expectedCurrent,
+            OwnershipRecord replacement) {
+        return replaceAndVerify(expectedCurrent, replacement, WritePurpose.RECONCILIATION);
+    }
+
     void recoverInterruptedTakeoverTemporaries(OwnershipRecord expectedCurrent) {
         OwnershipRecord safe = Objects.requireNonNull(
                 expectedCurrent, "expectedCurrent cannot be null");
@@ -452,6 +458,11 @@ final class EnterpriseLabEvidenceOwnershipRecordStore {
                 FailurePoint.AFTER_TAKEOVER_RECORD_FORCE,
                 FailurePoint.AFTER_TAKEOVER_RECORD_INSTALL,
                 "takeover"),
+        RECONCILIATION(
+                FailurePoint.DURING_RECONCILIATION_RECORD_WRITE,
+                FailurePoint.AFTER_RECONCILIATION_RECORD_FORCE,
+                FailurePoint.AFTER_RECONCILIATION_RECORD_INSTALL,
+                "reconciliation completion"),
         RELEASE(
                 FailurePoint.DURING_RELEASE_RECORD_WRITE,
                 FailurePoint.AFTER_RELEASE_RECORD_FORCE,

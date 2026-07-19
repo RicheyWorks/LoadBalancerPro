@@ -71,7 +71,11 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
             if (!report.ready()) {
                 throw new IllegalStateException(
                         "allocation startup reconciliation failed closed: "
-                                + report.reasonCode());
+                                + report.reasonCode()
+                                + "/" + report.classification().name()
+                                + "/" + report.action().name()
+                                + "/" + report.durablePhase()
+                                        .map(Enum::name).orElse("NONE"));
             }
             return supervisor;
         } catch (RuntimeException exception) {
@@ -123,7 +127,7 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
                 mutationAuthority,
                 java.time.Clock.systemUTC(),
                 checkpoint -> { },
-                router::installedSnapshot);
+                router::authoritativeInstalledSnapshot);
         reconciler = new EnterpriseLabAllocationReconciler(
                 store,
                 coordinator,
@@ -131,7 +135,7 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
                 mutationAuthority,
                 reconciliationGate,
                 java.time.Clock.systemUTC(),
-                router::installedSnapshot,
+                router::authoritativeInstalledSnapshot,
                 checkpoint -> { });
         return remember(reconciler.reconcile(
                 Objects.requireNonNull(trigger, "trigger cannot be null"), List.of()));
@@ -210,7 +214,7 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
         try {
             EnterpriseLabAllocationStateStore.ReadResult replay = store.replay();
             EnterpriseLabInstalledAllocationSnapshot installed = router == null
-                    ? null : router.installedSnapshot();
+                    ? null : router.authoritativeInstalledSnapshot();
             var gateStatus = reconciliationGate.admissionStatus();
             Optional<EnterpriseLabAllocationState> baseline = replay.baseline();
             Optional<EnterpriseLabAllocationState> committed = replay.lastCommitted();

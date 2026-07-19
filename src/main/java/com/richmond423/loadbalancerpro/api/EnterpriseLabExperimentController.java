@@ -4,6 +4,7 @@ import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyPropertie
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyMode;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAdaptiveDecisionService;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationReconciliationGate;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationRuntimeMode;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationSupervisor;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalDirectory;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentDurableEvidenceRepository;
@@ -26,6 +27,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabProcessLocalAllocationRe
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipLease;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorAllocationBridge;
 
 import java.nio.file.Path;
 import java.time.Clock;
@@ -458,9 +460,18 @@ public class EnterpriseLabExperimentController {
         EnterpriseLabExperimentOperatorService enterpriseLabExperimentOperatorService(
                 EnterpriseLabExperimentTargetCatalog targetCatalog,
                 @Value("${loadbalancer.enterprise-lab.experiment-journal-data-directory:}")
-                String journalDataDirectory) {
+                String journalDataDirectory,
+                @Value("${loadbalancer.enterprise-lab.allocation-supervisor-mode:in-process}")
+                String allocationSupervisorMode) {
+            EnterpriseLabAllocationRuntimeMode runtimeMode =
+                    EnterpriseLabAllocationRuntimeMode.parse(allocationSupervisorMode);
             if (journalDataDirectory == null || journalDataDirectory.isBlank()) {
-                return new EnterpriseLabExperimentOperatorService(targetCatalog);
+                if (runtimeMode
+                        == EnterpriseLabAllocationRuntimeMode.EXTERNAL_SUPERVISOR_REQUIRED) {
+                    throw new IllegalStateException(
+                            "external-supervisor-required mode requires an explicit durable journal root");
+                }
+                return new EnterpriseLabExperimentOperatorService(targetCatalog, runtimeMode);
             }
             if (!journalDataDirectory.equals(journalDataDirectory.trim())) {
                 throw new IllegalArgumentException(
@@ -513,6 +524,9 @@ public class EnterpriseLabExperimentController {
                                 + "/" + acquisition.result().reasonCode());
             }
 
+            EnterpriseLabExperimentDurableEvidenceRepository durableEvidence = null;
+            EnterpriseLabSupervisorAllocationBridge supervisorBridge = null;
+            EnterpriseLabAllocationSupervisor allocationSupervisor = null;
             try {
                 EnterpriseLabExperimentJournalDirectory directory =
                         EnterpriseLabExperimentJournalDirectory.create(
@@ -522,10 +536,23 @@ public class EnterpriseLabExperimentController {
                         allocationRecovery,
                         recoveryGate,
                         clock).initialize();
-                EnterpriseLabExperimentDurableEvidenceRepository durableEvidence =
-                        new EnterpriseLabExperimentDurableEvidenceRepository(
-                                directory, recoveryGate, clock);
+                ownership.completeApplicationReconciliation(recoveryGate);
+                durableEvidence = new EnterpriseLabExperimentDurableEvidenceRepository(
+                        directory, recoveryGate, clock);
+                if (runtimeMode == EnterpriseLabAllocationRuntimeMode.DISABLED) {
+                    return new EnterpriseLabExperimentOperatorService(
+                            targetCatalog,
+                            recoveryGate,
+                            durableEvidence,
+                            ownership,
+                            runtimeMode);
+                }
                 if (targetCatalog.size() == 0) {
+                    if (runtimeMode
+                            == EnterpriseLabAllocationRuntimeMode.EXTERNAL_SUPERVISOR_REQUIRED) {
+                        throw new IllegalStateException(
+                                "external-supervisor-required mode requires exactly one fixed loopback scenario");
+                    }
                     return new EnterpriseLabExperimentOperatorService(
                             targetCatalog, recoveryGate, durableEvidence, ownership);
                 }
@@ -541,23 +568,37 @@ public class EnterpriseLabExperimentController {
                         true,
                         false,
                         false);
-                EnterpriseLabLoopbackAllocationRouter startupRouter =
-                        EnterpriseLabLoopbackAllocationRouter.owned(
+                if (runtimeMode
+                        == EnterpriseLabAllocationRuntimeMode.EXTERNAL_SUPERVISOR_REQUIRED) {
+                    supervisorBridge = EnterpriseLabSupervisorAllocationBridge.connect(
+                            trustedRoot,
+                            targetCatalog,
+                            ownership.ownershipGate(),
+                            clock);
+                }
+                EnterpriseLabLoopbackAllocationRouter startupRouter = supervisorBridge == null
+                        ? EnterpriseLabLoopbackAllocationRouter.owned(
                                 targets,
                                 new EnterpriseLabLoopbackObservationIngress(
                                         targets.stream().map(value -> value.backendId()).toList()),
                                 decision.decision().guardrailDecision().baselineAllocations(),
-                                ownership.ownershipGate());
+                                ownership.ownershipGate())
+                        : EnterpriseLabLoopbackAllocationRouter.supervised(
+                                targets,
+                                new EnterpriseLabLoopbackObservationIngress(
+                                        targets.stream().map(value -> value.backendId()).toList()),
+                                decision.decision().guardrailDecision().baselineAllocations(),
+                                ownership.ownershipGate(),
+                                supervisorBridge);
                 EnterpriseLabAllocationReconciliationGate allocationGate =
                         EnterpriseLabAllocationReconciliationGate.pending();
-                EnterpriseLabAllocationSupervisor allocationSupervisor =
-                        EnterpriseLabAllocationSupervisor.create(
-                                trustedRoot,
-                                targetCatalog,
-                                startupRouter,
-                                ownership.ownershipGate(),
-                                allocationGate);
-                try {
+                allocationSupervisor = EnterpriseLabAllocationSupervisor.create(
+                        trustedRoot,
+                        targetCatalog,
+                        startupRouter,
+                        ownership.ownershipGate(),
+                        allocationGate);
+                if (supervisorBridge == null) {
                     return new EnterpriseLabExperimentOperatorService(
                             targetCatalog,
                             recoveryGate,
@@ -565,17 +606,41 @@ public class EnterpriseLabExperimentController {
                             ownership,
                             allocationGate,
                             allocationSupervisor);
-                } catch (RuntimeException exception) {
-                    allocationSupervisor.close();
-                    throw exception;
                 }
+                return new EnterpriseLabExperimentOperatorService(
+                        targetCatalog,
+                        recoveryGate,
+                        durableEvidence,
+                        ownership,
+                        allocationGate,
+                        allocationSupervisor,
+                        supervisorBridge);
             } catch (RuntimeException exception) {
-                try {
-                    ownership.close();
-                } catch (RuntimeException releaseFailure) {
-                    exception.addSuppressed(releaseFailure);
-                }
+                closeAfterFailure(exception, allocationSupervisor);
+                closeAfterFailure(exception, supervisorBridge);
+                closeAfterFailure(exception, durableEvidence);
+                closeAfterFailure(exception, ownership);
                 throw exception;
+            }
+        }
+
+        EnterpriseLabExperimentOperatorService enterpriseLabExperimentOperatorService(
+                EnterpriseLabExperimentTargetCatalog targetCatalog,
+                String journalDataDirectory) {
+            return enterpriseLabExperimentOperatorService(
+                    targetCatalog, journalDataDirectory, "in-process");
+        }
+
+        private static void closeAfterFailure(
+                RuntimeException failure,
+                AutoCloseable resource) {
+            if (resource == null) {
+                return;
+            }
+            try {
+                resource.close();
+            } catch (Exception closeFailure) {
+                failure.addSuppressed(closeFailure);
             }
         }
     }

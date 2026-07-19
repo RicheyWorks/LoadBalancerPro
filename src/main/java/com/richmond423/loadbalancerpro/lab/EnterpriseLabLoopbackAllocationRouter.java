@@ -6,6 +6,7 @@ import com.richmond423.loadbalancerpro.core.TrafficAllocationGuardrailAction;
 import com.richmond423.loadbalancerpro.core.TrafficAllocationGuardrailDecision;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackAllocationSnapshot.Kind;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackRequestClient.Execution;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationState.AllocationPurpose;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -56,6 +57,27 @@ public final class EnterpriseLabLoopbackAllocationRouter {
                         ownershipGate, "ownershipGate cannot be null")),
                 Clock.systemUTC(),
                 Optional.empty());
+    }
+
+    /**
+     * Production external-supervisor composition. The same client-backed
+     * holder may be shared by startup and per-experiment router instances.
+     */
+    public static EnterpriseLabLoopbackAllocationRouter supervised(
+            Collection<EnterpriseLabLoopbackTarget> targets,
+            EnterpriseLabLoopbackObservationIngress observationIngress,
+            Map<String, Double> baselineAllocations,
+            EnterpriseLabEvidenceOwnershipGate ownershipGate,
+            EnterpriseLabSupervisorAllocationBridge supervisorBridge) {
+        return new EnterpriseLabLoopbackAllocationRouter(
+                targets,
+                observationIngress,
+                baselineAllocations,
+                Optional.of(Objects.requireNonNull(
+                        ownershipGate, "ownershipGate cannot be null")),
+                Clock.systemUTC(),
+                Optional.of(Objects.requireNonNull(
+                        supervisorBridge, "supervisorBridge cannot be null")));
     }
 
     EnterpriseLabLoopbackAllocationRouter(
@@ -152,6 +174,11 @@ public final class EnterpriseLabLoopbackAllocationRouter {
         return validateInstalledState(installedStateStore.read());
     }
 
+    /** Explicit authoritative read-back; never used by normal route selection. */
+    EnterpriseLabInstalledAllocationSnapshot authoritativeInstalledSnapshot() {
+        return validateInstalledState(installedStateStore.readAuthoritative());
+    }
+
     /**
      * Validates and canonically normalizes candidate intent without mutating
      * router state. The coordinator uses this same seam before durable intent.
@@ -215,6 +242,18 @@ public final class EnterpriseLabLoopbackAllocationRouter {
     public synchronized AllocationChangeReceipt applyCandidate(
             EnterpriseLabAdaptiveDecision adaptiveDecision,
             boolean experimentExplicitlyEnabled) {
+        return applyCandidate(
+                InstalledStateMutation.direct(),
+                adaptiveDecision,
+                experimentExplicitlyEnabled);
+    }
+
+    synchronized AllocationChangeReceipt applyCandidate(
+            InstalledStateMutation mutation,
+            EnterpriseLabAdaptiveDecision adaptiveDecision,
+            boolean experimentExplicitlyEnabled) {
+        InstalledStateMutation safeMutation = Objects.requireNonNull(
+                mutation, "mutation cannot be null");
         Optional<MutationAuthorization> authorization = requireMutationAuthorization();
         EnterpriseLabInstalledAllocationSnapshot previousInstalled = installedSnapshot();
         requireNonRegressingOwnerGeneration(authorization, previousInstalled);
@@ -251,12 +290,20 @@ public final class EnterpriseLabLoopbackAllocationRouter {
                         clock,
                         "APPROVED_CANDIDATE_APPLIED",
                         ownerGeneration(authorization));
-        replaceInstalled(previousInstalled, installed);
+        replaceInstalled(previousInstalled, installed, safeMutation);
         return AllocationChangeReceipt.applied(previous, candidate, baseline,
                 "approved allocation atomically replaced the Enterprise Lab loopback snapshot");
     }
 
     public synchronized AllocationChangeReceipt restoreBaseline(String reason) {
+        return restoreBaseline(InstalledStateMutation.direct(), reason);
+    }
+
+    synchronized AllocationChangeReceipt restoreBaseline(
+            InstalledStateMutation mutation,
+            String reason) {
+        InstalledStateMutation safeMutation = Objects.requireNonNull(
+                mutation, "mutation cannot be null");
         Optional<MutationAuthorization> authorization = requireMutationAuthorization();
         String safeReason = requireBoundedReason(reason);
         EnterpriseLabInstalledAllocationSnapshot previousInstalled = installedSnapshot();
@@ -283,7 +330,7 @@ public final class EnterpriseLabLoopbackAllocationRouter {
                         clock,
                         "BASELINE_RESTORED: " + safeReason,
                         ownerGeneration(authorization));
-        replaceInstalled(previousInstalled, installed);
+        replaceInstalled(previousInstalled, installed, safeMutation);
         return AllocationChangeReceipt.restored(previous, restored, baseline,
                 "recorded baseline atomically restored: " + safeReason);
     }
@@ -439,21 +486,72 @@ public final class EnterpriseLabLoopbackAllocationRouter {
 
     private void replaceInstalled(
             EnterpriseLabInstalledAllocationSnapshot expected,
-            EnterpriseLabInstalledAllocationSnapshot update) {
+            EnterpriseLabInstalledAllocationSnapshot update,
+            InstalledStateMutation mutation) {
         validateInstalledState(expected);
         validateInstalledState(update);
-        if (!installedStateStore.compareAndSet(expected, update)) {
+        if (!installedStateStore.compareAndSet(
+                expected,
+                update,
+                Objects.requireNonNull(mutation, "mutation cannot be null"))) {
             throw new IllegalStateException(
                     "installed allocation changed before atomic replacement");
+        }
+    }
+
+    record InstalledStateMutation(
+            String transactionId,
+            Optional<String> experimentId,
+            long allocationGeneration,
+            AllocationPurpose purpose,
+            String previousCommittedFingerprint,
+            boolean durableIntentPersisted) {
+        InstalledStateMutation {
+            transactionId = Objects.requireNonNull(
+                    transactionId, "transactionId cannot be null");
+            experimentId = Objects.requireNonNull(
+                    experimentId, "experimentId cannot be null");
+            purpose = Objects.requireNonNull(purpose, "purpose cannot be null");
+            previousCommittedFingerprint = Objects.requireNonNull(
+                    previousCommittedFingerprint,
+                    "previousCommittedFingerprint cannot be null");
+            if (durableIntentPersisted
+                    && (EnterpriseLabSupervisorProtocol.NONE.equals(transactionId)
+                    || allocationGeneration < 1L)) {
+                throw new IllegalArgumentException(
+                        "durable installed-state mutation requires transaction and generation fences");
+            }
+        }
+
+        private static InstalledStateMutation direct() {
+            return new InstalledStateMutation(
+                    EnterpriseLabSupervisorProtocol.NONE,
+                    Optional.empty(),
+                    0L,
+                    AllocationPurpose.RECONCILIATION_NO_OP,
+                    EnterpriseLabSupervisorProtocol.NONE,
+                    false);
         }
     }
 
     interface InstalledStateStore {
         EnterpriseLabInstalledAllocationSnapshot read();
 
+        default EnterpriseLabInstalledAllocationSnapshot readAuthoritative() {
+            return read();
+        }
+
         boolean compareAndSet(
                 EnterpriseLabInstalledAllocationSnapshot expected,
                 EnterpriseLabInstalledAllocationSnapshot update);
+
+        default boolean compareAndSet(
+                EnterpriseLabInstalledAllocationSnapshot expected,
+                EnterpriseLabInstalledAllocationSnapshot update,
+                InstalledStateMutation mutation) {
+            Objects.requireNonNull(mutation, "mutation cannot be null");
+            return compareAndSet(expected, update);
+        }
     }
 
     private static final class InMemoryInstalledStateStore implements InstalledStateStore {

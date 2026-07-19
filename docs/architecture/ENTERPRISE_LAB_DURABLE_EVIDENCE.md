@@ -14,6 +14,15 @@ symbolic-link traversal, and surrounding whitespace. API callers never provide a
 configuration retains the legacy process-local service and makes durable endpoints report
 `DURABLE_EVIDENCE_NOT_CONFIGURED`.
 
+Installed-allocation authority is selected once at startup through
+`loadbalancer.enterprise-lab.allocation-supervisor-mode`. The exact supported values are `in-process` (the default
+local/test-compatible holder), `external-supervisor-required`, and `disabled`. External-required mode also requires this
+durable evidence root, one repository-controlled loopback scenario, and an already ready supervisor beneath the same
+trusted root. Startup fails closed if any of those requirements or the authenticated ownership handoff cannot be
+verified; it never falls back to the in-process holder. Disabled mode keeps allocation mutation and experiment admission
+closed. These modes affect only the bounded Enterprise Lab loopback allocation holder; they do not enable production
+routing, external targets, public supervisor listeners, multi-host coordination, or production-readiness claims.
+
 The configured directory contains one versioned namespace with controlled `journals`, `quarantine`, and `compacted`
 children. Experiment IDs are bounded canonical identifiers and are SHA-256-hashed before filename construction. One
 process-local writer owns an active journal; a second writer, reader, verifier, or compactor cannot claim it concurrently.

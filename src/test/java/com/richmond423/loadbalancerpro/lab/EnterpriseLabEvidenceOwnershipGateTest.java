@@ -6,6 +6,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.OwnerI
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.OwnershipRecord;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.OwnershipState;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.Policy;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.ReconciliationStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager.AcquisitionAttempt;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager.FailureInjector;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager.FailurePoint;
@@ -86,6 +87,46 @@ class EnterpriseLabEvidenceOwnershipGateTest {
         assertEquals(durable, renewed.record().orElseThrow());
         assertEquals(OperationStatus.SUCCEEDED,
                 fixture.lease().ownershipGate().verifyCurrentOwnership().status());
+        assertEquals(OperationStatus.SUCCEEDED, fixture.lease().release().status());
+    }
+
+    @Test
+    void applicationReconciliationCompletionIsDurableOwnerFencedAndIdempotent() {
+        MutableClock clock = new MutableClock(NOW);
+        OwnershipFixture fixture = acquire(
+                "application-reconciliation", POLICY, clock, point -> { });
+        EnterpriseLabExperimentRecoveryGate recoveryGate =
+                EnterpriseLabExperimentRecoveryGate.pending();
+        EnterpriseLabExperimentJournalDirectory journalDirectory =
+                EnterpriseLabExperimentJournalDirectory.create(
+                        fixture.paths().trustedRoot(),
+                        fixture.lease().ownershipGate());
+        assertThrows(
+                IllegalStateException.class,
+                () -> fixture.lease()
+                        .completeApplicationReconciliation(recoveryGate));
+        new EnterpriseLabExperimentStartupReconciler(
+                journalDirectory,
+                new EnterpriseLabProcessLocalAllocationRecovery(
+                        EnterpriseLabExperimentTargetCatalog.empty()),
+                recoveryGate,
+                clock).initialize();
+        OwnershipRecord initial = fixture.lease().record();
+        clock.set(NOW.plusSeconds(1));
+
+        OwnershipRecord completed =
+                fixture.lease().completeApplicationReconciliation(recoveryGate);
+        OwnershipRecord repeated =
+                fixture.lease().completeApplicationReconciliation(recoveryGate);
+
+        assertEquals(ReconciliationStatus.NOT_STARTED,
+                initial.reconciliationStatus());
+        assertEquals(ReconciliationStatus.SUCCEEDED,
+                completed.reconciliationStatus());
+        assertEquals(initial.owner(), completed.owner());
+        assertEquals(initial.generation(), completed.generation());
+        assertEquals(completed, repeated);
+        assertEquals(completed, decode(fixture.paths().recordFile()));
         assertEquals(OperationStatus.SUCCEEDED, fixture.lease().release().status());
     }
 

@@ -18,7 +18,13 @@ Started from clean synchronized main: `76d4fe8055b6c2c2fb99c597335a078360f18739`
 
 Current branch: `codex/supervisor-process-durable-holder`
 
-PR URL: not opened yet.
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/481
+
+Executable/local-verification checkpoint: `1b6dacd4d5607695f7cbb02d987dd8639f4a6584`.
+
+PR-created checkpoint: PR #481 opened from the verified executable head above. This required session-manager update
+advances the branch, so exact-head remote gates must use the subsequent checkpoint commit rather than the PR-opening
+executable head.
 
 Prior slot closure: PR #480 merged normally from exact final head
 `68bf068b517bff7ebe14b24fb2f6d18ebaf32986` as `76d4fe8055b6c2c2fb99c597335a078360f18739`.
@@ -88,8 +94,11 @@ the slot is intentionally implementation-heavy while the campaign-wide 88–92% 
 
 Blocker: none.
 
-Next action: stage only the PR2 implementation/test/architecture/audit files, run cached/base diff and composition checks,
-commit and push the locally verified executable checkpoint, then open the PR and require exact-head remote gates.
+Remote status: PR #481 remote checks were triggered on the PR-opening executable head; they become stale when this
+PR-created checkpoint is pushed and therefore are not merge evidence.
+
+Next action: commit and push this PR-created checkpoint, then wait for fresh exact-head CI, CodeQL, dependency review,
+and repository-native artifact/security gates before applying the normal-merge gate.
 
 Decision: continue.
 

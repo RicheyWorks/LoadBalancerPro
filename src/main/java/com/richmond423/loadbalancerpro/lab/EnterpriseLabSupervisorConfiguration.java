@@ -40,10 +40,16 @@ public final class EnterpriseLabSupervisorConfiguration {
     }
 
     public static Map<String, Double> safeBaselineAllocation() {
-        return Map.of(
-                "blue", 0.34d,
-                "green", 0.33d,
-                "orange", 0.33d);
+        return new EnterpriseLabAdaptiveDecisionService().decide(
+                        SCENARIO_ID,
+                        com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyMode
+                                .ACTIVE_EXPERIMENT.wireValue(),
+                        true,
+                        false,
+                        false)
+                .decision()
+                .guardrailDecision()
+                .baselineAllocations();
     }
 
     /** Creates 127.0.0.1 without hostname lookup. */

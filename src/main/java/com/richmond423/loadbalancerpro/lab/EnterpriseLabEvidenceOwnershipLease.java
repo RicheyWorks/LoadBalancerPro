@@ -7,6 +7,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.Owners
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.Policy;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.ReleaseResult;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.ReleaseStatus;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.ReconciliationStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.RenewalResult;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.VerificationResult;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager.FailureInjector;
@@ -78,6 +79,112 @@ public final class EnterpriseLabEvidenceOwnershipLease implements AutoCloseable 
 
     public EnterpriseLabEvidenceOwnershipGate ownershipGate() {
         return ownershipGate;
+    }
+
+    /**
+     * Publishes that the current application completed its journal
+     * reconciliation while retaining the same live OS-lock-backed owner epoch.
+     * A takeover already publishes this state and is therefore idempotent here.
+     */
+    public synchronized OwnershipRecord completeApplicationReconciliation(
+            EnterpriseLabExperimentRecoveryGate recoveryGate) {
+        EnterpriseLabExperimentRecoveryGate.AdmissionStatus recovery =
+                Objects.requireNonNull(
+                        recoveryGate, "recoveryGate cannot be null")
+                        .admissionStatus();
+        if (!recovery.admissionAllowed()
+                || recovery.recoveryReport().isEmpty()) {
+            throw new IllegalStateException(
+                    "application ownership cannot publish reconciliation before durable startup recovery completes");
+        }
+        if (finalReleaseResult != null || terminalFailure != null) {
+            throw failure(
+                    terminalFailure == null
+                            ? FailureClassification.LOCK_LOST : terminalFailure,
+                    "application reconciliation cannot complete without live ownership");
+        }
+        VerificationSnapshot verified;
+        try {
+            verified = verifyAuthoritativeSnapshot();
+        } catch (EnterpriseLabEvidenceOwnershipException exception) {
+            latchFailure(exception.classification());
+            throw exception;
+        } catch (RuntimeException exception) {
+            latchFailure(FailureClassification.IO_FAILURE);
+            throw failure(
+                    terminalFailure,
+                    "application reconciliation ownership preflight failed",
+                    exception);
+        }
+        OwnershipRecord current = verified.record();
+        if (current.reconciliationStatus() == ReconciliationStatus.SUCCEEDED) {
+            record = current;
+            return current;
+        }
+        if (current.state() != OwnershipState.OWNED
+                || current.reconciliationStatus() != ReconciliationStatus.NOT_STARTED) {
+            throw failure(
+                    FailureClassification.RECORD_REPLACED,
+                    "application reconciliation completion requires the initial owned pending state");
+        }
+        Instant completedAt = verified.verifiedAt();
+        if (completedAt.isBefore(current.lastRenewedAt())) {
+            throw failure(
+                    FailureClassification.CLOCK_REGRESSION,
+                    "application reconciliation completion clock regressed");
+        }
+        OwnershipRecord intended = OwnershipRecord.create(
+                current.directoryIdentity(),
+                current.lockFileIdentity(),
+                current.owner(),
+                current.generation(),
+                current.state(),
+                current.acquiredAt(),
+                completedAt,
+                completedAt.plus(policy.leaseDuration()),
+                current.previousOwnerFingerprint(),
+                current.takeoverReasonCode(),
+                current.takeoverSequence(),
+                ReconciliationStatus.SUCCEEDED,
+                current.releaseStatus());
+        try {
+            record = recordStore.reconcileAndVerify(current, intended);
+        } catch (EnterpriseLabEvidenceOwnershipException exception) {
+            boolean recovered = false;
+            try {
+                Optional<OwnershipRecord> installed = recordStore.readIfPresent();
+                if (installed.isPresent() && installed.orElseThrow().equals(intended)) {
+                    record = installed.orElseThrow();
+                    recovered = true;
+                }
+            } catch (RuntimeException ignored) {
+                // Preserve the original publication failure when read-back is unavailable.
+            }
+            if (!recovered) {
+                latchFailure(exception.classification());
+                throw exception;
+            }
+        } catch (RuntimeException exception) {
+            latchFailure(FailureClassification.IO_FAILURE);
+            throw failure(
+                    terminalFailure,
+                    "application reconciliation record could not be published",
+                    exception);
+        }
+        try {
+            VerificationSnapshot postWrite = verifyAuthoritativeSnapshot();
+            record = postWrite.record();
+            return record;
+        } catch (EnterpriseLabEvidenceOwnershipException exception) {
+            latchFailure(exception.classification());
+            throw exception;
+        } catch (RuntimeException exception) {
+            latchFailure(FailureClassification.IO_FAILURE);
+            throw failure(
+                    terminalFailure,
+                    "application reconciliation completion could not be reverified",
+                    exception);
+        }
     }
 
     Path trustedRoot() {

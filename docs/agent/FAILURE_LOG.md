@@ -6,6 +6,274 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-19T05:19:37-07:00
+
+Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
+
+Failure type: PR4 focused-selector report aggregation used an incomplete Surefire filename match
+
+Failing check: post-run PowerShell aggregation of the 14 selected Surefire XML reports
+
+Observed/root cause: the filter removed only the `TEST-` prefix and compared the remaining fully qualified class name
+against simple class names, producing an incorrect `Reports=0` diagnostic even though Maven had exited zero. This was a
+read-only reporting error after the successful test run and changed no repository, process, evidence, ownership,
+supervisor, or remote state.
+
+Correction/result: match each report filename by the exact `.<SimpleClassName>.xml` suffix and require all 14 expected
+reports before using the aggregated counts.
+
+Follow-up: confirm 14 current reports with zero failures/errors/skips, then begin full-suite verification.
+
+## Entry
+
+Date/time: 2026-07-19T05:16:39-07:00
+
+Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
+
+Failure type: PR4 read-only audit repeated a Windows positional-wildcard path error; first log insertion context was
+stale
+
+Failing check: source inventory for installed-state read and mutation calls using `EnterpriseLab*.java` as a positional
+Windows path
+
+Observed/root cause: `rg` rejected the native Windows path with OS error 123 because the shell/tool does not expand a
+wildcard embedded in the positional filename. The first mandatory log patch then expected the historical title
+`# Failure Log` instead of the current `# Failure Log Template` and applied no change. The other parallel read-only diff
+commands completed; neither failure changed repository content, process, supervisor, credential, socket, ownership, or
+remote state.
+
+Correction/result: use the verified current insertion context, keep the source directory as the sole positional path,
+and apply `-g 'EnterpriseLab*.java'` for filename filtering, consistent with the established Windows search discipline.
+
+Follow-up: complete that corrected inventory before modifying or verifying the PR4 candidate.
+
+## Entry
+
+Date/time: 2026-07-19T05:09:40-07:00
+
+Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
+
+Failure type: PR4 external operator cancellation proof expected wrong receipt status
+
+Failing check: focused external operator integration rerun after generation-aligned experiment baseline
+
+Observed/root cause: arm, start, durable candidate journal append, supervisor/app fingerprint agreement, and cancel
+restoration all completed. The test expected `APPLIED` for cancel, but the established operator contract reports a
+successfully persisted cancellation as `RECORDED`; existing operator tests confirm that status. One assertion failed,
+with zero errors or skips. No product failure, stale mutation, or remote state change occurred.
+
+Correction/result: assert the existing `RECORDED` cancellation status and keep the independent restored-baseline
+read-back assertion unchanged.
+
+Follow-up: rerun the focused proof through post-close stale-owner refusal, then broaden the selector.
+
+## Entry
+
+Date/time: 2026-07-19T05:08:25-07:00
+
+Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
+
+Failure type: PR4 full operator integration exposed experiment/router generation mismatch
+
+Failing check: focused external application operator arm/start/cancel proof
+
+Observed/root cause: external startup and arm succeeded, and supervisor candidate apply completed, but the application
+experiment journal rejected its start checkpoint with `applied candidate must match candidateAllocation`. The durable
+experiment model derived its expected candidate revision from the router's immutable generation-zero baseline, while
+the independently persistent supervisor had already advanced the installed router generation during current-owner
+baseline adoption. The durable append closed admission fail safe; one focused test errored, no success was reported,
+and its temporary evidence remained test-scoped. No remote state changed.
+
+Correction/result: after pre-admission reconciliation, bind each experiment's recorded baseline evidence to the exact
+currently installed baseline router generation while preserving `BASELINE` kind and canonical allocation. Candidate
+evidence then expects the next installed generation without changing the router's immutable restoration authority.
+
+Follow-up: rerun the full operator path and verify arm, start, durable candidate checkpoint/commit, cancel restoration,
+and stale-owner refusal all pass against the supervisor-backed session router.
+
+## Entry
+
+Date/time: 2026-07-19T04:57:51-07:00
+
+Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
+
+Failure type: PR4 stale-owner proof asserted the wrong exception superclass
+
+Failing check: focused mode and external-bridge selector after canonical baseline alignment
+
+Observed/root cause: the complete external transaction path succeeded through startup restoration, renewal-evidence
+refresh, candidate apply, independent supervisor read-back, application durable commit, and safe-baseline restoration.
+After explicit application ownership release, the intended stale bridge read failed at the live ownership gate with
+`EnterpriseLabEvidenceOwnershipException/OWNERSHIP_NOT_ACTIVE`; the test had expected generic `IllegalStateException`,
+so JUnit reported one assertion failure. Three tests ran, with the other two green and no errors or skips. No stale IPC
+mutation reached the supervisor and no remote state changed.
+
+Correction/result: assert the repository's exact ownership exception and `LOCK_LOST` classification rather than a
+generic superclass.
+
+Follow-up: rerun the focused selector, then the existing router/coordinator/reconciler/supervisor/ownership/controller
+regression bundle.
+
+## Entry
+
+Date/time: 2026-07-19T04:56:25-07:00
+
+Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
+
+Failure type: PR4 canonical supervisor/application baseline mismatch isolated
+
+Failing check: direct `establishSafeBaseline` diagnostic inside the focused external integration test
+
+Observed/root cause: bypassing only the reconciler's sanitized catch proved the coordinator returned
+`BASELINE_READ_BACK_MISMATCH`. The supervisor initializes a hard-coded `0.34/0.33/0.33` allocation, while the existing
+repository adaptive-decision authority derives the fixed three-healthy-backend guardrail baseline from equal capacity
+and weight. The external router correctly refuses to call two different allocations the same restorable baseline. One
+focused test failed before writing application baseline evidence or sending a supervisor allocation mutation; no
+remote state changed.
+
+Correction/result: make the supervisor safe baseline reuse the repository's canonical deterministic guardrail baseline
+for its fixed approved scenario rather than maintaining a divergent duplicate constant. Remove the direct diagnostic
+store setup so the full production factory path remains the proof subject.
+
+Follow-up: rerun the factory-based selector and retain exact fingerprint equality as a hard admission requirement.
+
+## Entry
+
+Date/time: 2026-07-19T04:55:00-07:00
+
+Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
+
+Failure type: local JShell diagnostic input did not submit under the Windows PTY
+
+Failing check: read-only interactive evaluation of the deterministic guardrail baseline
+
+Observed/root cause: JShell started with the compiled workspace classpath, but the PTY echoed pasted input without
+submitting it. After bounded exit/control sequences also failed to close the prompt, process inspection found exactly
+one `jshell.exe` whose command line contained this workspace's `target/classes`; PID 36116 was stopped and reinspection
+confirmed it was gone. No Maven/Surefire process, source, generated evidence, lock, journal, supervisor, or remote state
+was affected.
+
+Correction/result: inspect the deterministic baseline implementation directly in source and use the focused Java test
+for executable comparison; do not reuse interactive JShell in this campaign.
+
+Follow-up: keep all remaining Java verification in serialized Maven TTY sessions and continue checking for no orphaned
+workspace-bound Maven/Surefire processes after long runs.
+
+## Entry
+
+Date/time: 2026-07-19T04:52:24-07:00
+
+Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
+
+Failure type: PR4 external baseline genesis correction remained pre-append blocked
+
+Failing check: focused mode and external-bridge selector after the genesis-chain correction
+
+Observed/root cause: the two mode tests remained green, but external startup still returned the same bounded
+`NO_PRIOR_ALLOCATION_EVIDENCE/FAILED_CLOSED/NONE` diagnostic, proving the failure still occurs before the genesis
+baseline append completes. The intentional listener cleanup is now handled without a suppressed false failure. Three
+tests ran with zero assertion failures, one setup error, and zero skips; no supervisor allocation mutation or remote
+operation occurred.
+
+Correction/result: isolate `establishSafeBaseline` below the reconciler's intentionally sanitized catch boundary so the
+exact canonical-model or store precondition can be observed, then remove that diagnostic seam and correct the bounded
+genesis record rather than bypassing it.
+
+Follow-up: keep readiness closed and continue serialized focused verification until the full factory path, not merely a
+manually pre-populated store, proves the initial external composition.
+
+## Entry
+
+Date/time: 2026-07-19T04:50:42-07:00
+
+Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
+
+Failure type: PR4 external baseline diagnostic rerun confirmed invalid first-chain phase
+
+Failing check: focused `EnterpriseLabSupervisorAllocationBridgeTest` diagnostic rerun
+
+Observed/root cause: the expanded bounded startup diagnostic reported
+`NO_PRIOR_ALLOCATION_EVIDENCE/FAILED_CLOSED/NONE`. Inspection then proved the attempted correction tried to make
+`INTENT_PERSISTED` the first application allocation record, while the existing allocation-store contract correctly
+requires its genesis record to be a verified `COMMITTED` repository baseline. The new intent never persisted, so no
+supervisor mutation occurred. The later test cleanup again produced only the expected suppressed listener-close result.
+
+Correction/result: retain the genesis invariant: first durably commit the independently read baseline allocation while
+readiness remains closed, then create a contiguous generation-two startup-restoration transaction before asking the
+supervisor to stamp the current application owner generation. No guardrail or readiness check is relaxed.
+
+Follow-up: rerun the focused selector and verify the resulting chain ends `RESTORED`, owner generations match, and only
+then does the allocation reconciliation gate publish READY.
+
+## Entry
+
+Date/time: 2026-07-19T04:47:49-07:00
+
+Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
+
+Failure type: PR4 first external baseline-reconciliation integration failure
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabAllocationRuntimeModeTest,EnterpriseLabSupervisorAllocationBridgeTest" test`
+
+Observed/root cause: mode tests passed, but the first real authenticated supervisor/application composition reached the
+application allocation supervisor and its startup reconciliation returned `ALLOCATION_RECONCILIATION_NOT_SAFE` while
+trying to adopt the supervisor's generation-zero baseline into the current application-owner epoch. The test then
+closed its socket server; that deliberate listener close surfaced as a suppressed `Socket closed` server result rather
+than a second product failure. Three tests ran with zero assertion failures, one setup error, and zero skips. The
+temporary JUnit root contained only test-scoped supervisor, ownership, journal, and allocation evidence and was outside
+repository state; no remote state changed.
+
+Correction/result: inspect the persisted application allocation phases and exact reconciliation assessment instead of
+weakening readiness or bypassing owner-generation checks; correct the initial external baseline transaction/assessment
+and make test-server cleanup accept its intentional bounded close.
+
+Follow-up: rerun the same focused selector and require the initial external baseline to become owner-fenced and ready
+through durable application intent plus authenticated supervisor restoration and independent read-back.
+
+## Entry
+
+Date/time: 2026-07-19T04:46:51-07:00
+
+Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
+
+Failure type: PR4 focused test-fixture receipt accessor mismatch
+
+Failing check: second `mvn -q -DskipTests test-compile`
+
+Observed/root cause: after correcting the disabled-mode command arguments, the new assertion used `code()` while the
+canonical bounded `OperatorReceipt` accessor is `reasonCode()`. The compiler again rejected only the new test source;
+main sources remained compiled and no test, supervisor, socket, ownership, journal, allocation, process, branch, or
+remote operation ran.
+
+Correction/result: use the existing `reasonCode()` accessor and rerun the same serialized test compilation.
+
+Follow-up: do not broaden the product API for a fixture typo; continue to the focused external application integration
+selector only after test compilation is clean.
+
+## Entry
+
+Date/time: 2026-07-19T04:46:01-07:00
+
+Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
+
+Failure type: PR4 focused test-fixture compile mismatch
+
+Failing check: `mvn -q -DskipTests test-compile`
+
+Observed/root cause: the new disabled-mode proof supplied its final `ArmRequest` argument as an `Instant`, while the
+existing bounded command model requires a `Duration` in that position. Main-source compilation had already passed;
+the compiler rejected only the new test fixture before any test or packaged runtime executed. No external supervisor,
+socket, ownership record, journal, allocation store, process, branch, or remote state was created or changed.
+
+Correction/result: inspect the canonical `ArmRequest` signature, correct only the test fixture argument ordering, then
+rerun test compilation and the focused PR4 selector from a serialized TTY session.
+
+Follow-up: require the focused external integration proof to demonstrate no-fallback mode handling, verified ownership
+handoff, generation refresh after renewal, supervisor apply/read-back, application durable commit, restoration, and
+stale-owner refusal before broad verification.
+
+## Entry
+
 Date/time: 2026-07-17T19:11-07:00
 
 Branch/PR: codex/ownership-operator-proof-harness / no PR yet

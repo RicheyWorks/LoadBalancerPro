@@ -53,7 +53,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
             EnterpriseLabExperimentTargetCatalog targetCatalog,
             EnterpriseLabEvidenceOwnershipGate ownershipGate) {
         this(store, router, targetCatalog, ownershipGate, Clock.systemUTC(),
-                NO_FAILURE, router::installedSnapshot);
+                NO_FAILURE, router::authoritativeInstalledSnapshot);
     }
 
     EnterpriseLabAllocationTransactionCoordinator(
@@ -121,9 +121,10 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
         EnterpriseLabLoopbackAllocationSnapshot baseline = router.baselineSnapshot();
         String baselineFingerprint = allocationFingerprint(
                 baseline.scenarioId(), baseline.allocations());
-        if (!installed.routingSnapshot().sameAllocations(baseline)
-                || !installed.allocationFingerprint().equals(baselineFingerprint)
-                || installed.ownerGeneration() != authorization.generation()) {
+        boolean baselineAllocationExact = installed.routingSnapshot().sameAllocations(baseline)
+                && installed.allocationFingerprint().equals(baselineFingerprint);
+        if (!baselineAllocationExact
+                || installed.ownerGeneration() > authorization.generation()) {
             return receipt(
                     safeTransactionId,
                     TransactionStatus.REJECTED,
@@ -145,6 +146,8 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
         requireSameAuthorization(authorization);
         TransactionContext context = TransactionContext.baseline(
                 safeTransactionId, baseline, baselineFingerprint);
+        boolean ownerAdoptionRequired =
+                installed.ownerGeneration() != authorization.generation();
         append(
                 context,
                 TransactionPhase.COMMITTED,
@@ -153,9 +156,15 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                 false,
                 Optional.of(clock.instant()),
                 VerificationResult.MATCHED,
-                RecoveryClassification.NOT_REQUIRED,
-                "BASELINE_VERIFIED",
-                "safe baseline matched independent router read-back");
+                ownerAdoptionRequired
+                        ? RecoveryClassification.BASELINE_RESTORATION_REQUIRED
+                        : RecoveryClassification.NOT_REQUIRED,
+                ownerAdoptionRequired
+                        ? "BASELINE_ALLOCATION_VERIFIED_OWNER_ADOPTION_PENDING"
+                        : "BASELINE_VERIFIED",
+                ownerAdoptionRequired
+                        ? "safe baseline allocation matched independent read-back; current-owner installation remains required"
+                        : "safe baseline matched independent router read-back");
         failureInjector.checkpoint(Checkpoint.AFTER_BASELINE_COMMIT);
         return receipt(
                 context,
@@ -165,7 +174,9 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                 false,
                 false,
                 "BASELINE_COMMITTED",
-                "verified safe baseline was durably committed");
+                ownerAdoptionRequired
+                        ? "verified safe baseline allocation was committed while readiness remained closed for owner adoption"
+                        : "verified safe baseline was durably committed");
     }
 
     /**
@@ -375,6 +386,8 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
         CandidateIntentValidation validation = router.validateCandidateIntent(
                 decision, experimentExplicitlyEnabled);
         if (!validation.authorized()) {
+            EnterpriseLabInstalledAllocationSnapshot installed =
+                    router.authoritativeInstalledSnapshot();
             return receipt(
                     safeTransactionId,
                     TransactionStatus.REJECTED,
@@ -382,8 +395,8 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                     0L,
                     Optional.empty(),
                     EnterpriseLabAllocationState.NO_FINGERPRINT,
-                    router.installedSnapshot().allocationFingerprint(),
-                    router.installedSnapshot().routerGeneration(),
+                    installed.allocationFingerprint(),
+                    installed.routerGeneration(),
                     store.replay().records().size(),
                     false,
                     false,
@@ -531,7 +544,10 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
         AllocationChangeReceipt applied;
         try {
             requireSameAuthorization(authorization);
-            applied = router.applyCandidate(decision, experimentExplicitlyEnabled);
+            applied = router.applyCandidate(
+                    context.installedStateMutation(),
+                    decision,
+                    experimentExplicitlyEnabled);
         } catch (EnterpriseLabEvidenceOwnershipException ownershipFailure) {
             return ownershipLost(context, before, false,
                     "ownership changed before candidate router apply completed");
@@ -554,7 +570,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                         "ROUTER_APPLY_REJECTED",
                         "router rejected candidate after durable intent without altering allocation");
             } catch (EnterpriseLabEvidenceOwnershipException ownershipFailure) {
-                return ownershipLost(context, router.installedSnapshot(), false,
+                return ownershipLost(context, router.authoritativeInstalledSnapshot(), false,
                         "ownership changed before router rejection evidence was durable");
             }
             return receipt(
@@ -583,7 +599,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                     "ROUTER_APPLIED",
                     "router reported a complete atomic candidate allocation result");
         } catch (EnterpriseLabEvidenceOwnershipException ownershipFailure) {
-            return ownershipLost(context, router.installedSnapshot(), actionPerformed,
+            return ownershipLost(context, router.authoritativeInstalledSnapshot(), actionPerformed,
                     "ownership changed after router apply and before durable applied evidence");
         } catch (EnterpriseLabAllocationStateStore.StoreException durableFailure) {
             return restoreWithoutDurableProgress(context, authorization, actionPerformed,
@@ -750,7 +766,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                     "READ_BACK_UNAVAILABLE",
                     "candidate read-back failed and required verified baseline restoration");
         } catch (EnterpriseLabEvidenceOwnershipException ownershipFailure) {
-            return ownershipLost(context, router.installedSnapshot(), actionPerformed,
+            return ownershipLost(context, router.authoritativeInstalledSnapshot(), actionPerformed,
                     "ownership changed while candidate read-back was unavailable");
         }
         return performRestoration(context, authorization, actionPerformed,
@@ -841,7 +857,8 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
             boolean priorAction,
             String reason) {
         requireSameAuthorization(authorization);
-        EnterpriseLabInstalledAllocationSnapshot beforeRestore = router.installedSnapshot();
+        EnterpriseLabInstalledAllocationSnapshot beforeRestore =
+                router.authoritativeInstalledSnapshot();
         if (context.phase != TransactionPhase.RESTORING) {
             append(
                     context,
@@ -859,9 +876,11 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
         AllocationChangeReceipt restored;
         try {
             requireSameAuthorization(authorization);
-            restored = router.restoreBaseline(context.reconciliationPurpose()
-                    ? "allocation reconciliation required verified safe baseline"
-                    : "allocation transaction verification failure");
+            restored = router.restoreBaseline(
+                    context.installedStateMutation(),
+                    context.reconciliationPurpose()
+                            ? "allocation reconciliation required verified safe baseline"
+                            : "allocation transaction verification failure");
         } catch (EnterpriseLabEvidenceOwnershipException ownershipFailure) {
             return ownershipLost(context, beforeRestore, priorAction,
                     "ownership changed before baseline restoration completed");
@@ -874,7 +893,8 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
         try {
             installed = readInstalled();
         } catch (RuntimeException readFailure) {
-            return appendRestorationFailure(context, authorization, router.installedSnapshot(),
+            return appendRestorationFailure(
+                    context, authorization, router.authoritativeInstalledSnapshot(),
                     priorAction || restored.trafficActionPerformed(),
                     "baseline restoration read-back was unavailable");
         }
@@ -1021,10 +1041,13 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
             boolean actionPerformed,
             String reason) {
         boolean restored = false;
-        EnterpriseLabInstalledAllocationSnapshot installed = router.installedSnapshot();
+        EnterpriseLabInstalledAllocationSnapshot installed =
+                router.authoritativeInstalledSnapshot();
         try {
             requireSameAuthorization(authorization);
-            router.restoreBaseline("durable transaction evidence failure");
+            router.restoreBaseline(
+                    context.installedStateMutation(),
+                    "durable transaction evidence failure");
             installed = readInstalled();
             restored = installed.routingSnapshot().allocations().equals(context.baselineAllocation)
                     && installed.ownerGeneration() == authorization.generation();
@@ -1251,7 +1274,8 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
             EnterpriseLabAllocationStateStore.ReadResult durable,
             String reasonCode,
             String reason) {
-        EnterpriseLabInstalledAllocationSnapshot installed = router.installedSnapshot();
+        EnterpriseLabInstalledAllocationSnapshot installed =
+                router.authoritativeInstalledSnapshot();
         EnterpriseLabAllocationState head = durable.chainHead().orElse(null);
         return receipt(
                 transactionId,
@@ -1600,10 +1624,22 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
         }
 
         private boolean reconciliationPurpose() {
-            return purpose == AllocationPurpose.STARTUP_RESTORATION
+            return purpose == AllocationPurpose.INITIAL_SAFE_BASELINE
+                    || purpose == AllocationPurpose.STARTUP_RESTORATION
                     || purpose == AllocationPurpose.TAKEOVER_RESTORATION
                     || purpose == AllocationPurpose.OPERATOR_REQUESTED_SAFE_RESET
                     || purpose == AllocationPurpose.RECONCILIATION_NO_OP;
+        }
+
+        private EnterpriseLabLoopbackAllocationRouter.InstalledStateMutation
+                installedStateMutation() {
+            return new EnterpriseLabLoopbackAllocationRouter.InstalledStateMutation(
+                    transactionId,
+                    experimentId,
+                    allocationGeneration,
+                    purpose,
+                    previousCommittedFingerprint,
+                    true);
         }
     }
 }

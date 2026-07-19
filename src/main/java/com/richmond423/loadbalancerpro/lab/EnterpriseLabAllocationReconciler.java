@@ -44,7 +44,7 @@ public final class EnterpriseLabAllocationReconciler {
             EnterpriseLabEvidenceOwnershipGate ownershipGate,
             EnterpriseLabAllocationReconciliationGate gate) {
         this(store, coordinator, router, ownershipGate, gate, Clock.systemUTC(),
-                router::installedSnapshot, NO_FAILURE);
+                router::authoritativeInstalledSnapshot, NO_FAILURE);
     }
 
     EnterpriseLabAllocationReconciler(
@@ -179,10 +179,23 @@ public final class EnterpriseLabAllocationReconciler {
                 failureInjector.checkpoint(Checkpoint.BEFORE_RECONCILIATION_MUTATION);
                 receipt = coordinator.establishSafeBaseline(transactionId(
                         authorization.orElseThrow(), 1L));
+                EnterpriseLabAllocationStateStore.ReadResult established = store.replay();
+                EnterpriseLabInstalledAllocationSnapshot afterEstablish = readInstalled();
+                if (receipt.status() == TransactionStatus.BASELINE_COMMITTED
+                        && requiresSafeBaseline(
+                                established,
+                                afterEstablish,
+                                authorization.orElseThrow(),
+                                assessment)) {
+                    receipt = coordinator.reconcileToSafeBaseline(
+                            transactionId(
+                                    authorization.orElseThrow(),
+                                    nextAllocationGeneration(established)),
+                            restorationPurpose(safeTrigger),
+                            reconciliationReason(safeTrigger));
+                }
                 failureInjector.checkpoint(Checkpoint.AFTER_RECONCILIATION_MUTATION);
-                action = receipt.status() == TransactionStatus.BASELINE_COMMITTED
-                        ? ReconciliationAction.BASELINE_ESTABLISHED
-                        : ReconciliationAction.NONE;
+                action = action(receipt);
             } else if (requiresSafeBaseline(
                     initialDurable,
                     installed.orElseThrow(),

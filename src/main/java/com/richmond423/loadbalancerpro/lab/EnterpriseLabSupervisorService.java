@@ -282,6 +282,39 @@ public final class EnterpriseLabSupervisorService {
                     "OWNERSHIP_ALREADY_ACCEPTED",
                     "Application ownership generation was already accepted exactly");
         }
+        if (state.acceptedApplicationGeneration() == request.applicationOwnerGeneration()
+                && state.acceptedApplicationInstanceId().equals(
+                request.applicationInstanceId())) {
+            EnterpriseLabSupervisorState refreshed = EnterpriseLabSupervisorState.create(
+                    state.supervisorInstanceId(),
+                    state.supervisorGeneration(),
+                    request.applicationInstanceId(),
+                    request.applicationOwnershipRecordFingerprint(),
+                    request.applicationOwnerGeneration(),
+                    state.previousApplicationInstanceId(),
+                    state.previousApplicationOwnershipFingerprint(),
+                    state.previousApplicationGeneration(),
+                    state.baselineAllocation(),
+                    state.installedAllocation(),
+                    Optional.empty(),
+                    request.transactionId(),
+                    request.requestId(),
+                    request.requestFingerprint(),
+                    state.previousCommittedFingerprint(),
+                    state.transactionPhase(),
+                    state.lastCommitAt(),
+                    state.lastRecoveryClassification(),
+                    reason("APPLICATION_OWNERSHIP_EVIDENCE_REFRESHED",
+                            "Verified renewal evidence refreshed the accepted application owner"),
+                    nextDurableGeneration(state),
+                    state.currentRecordFingerprint());
+            failureInjector.checkpoint(FailurePoint.BEFORE_OWNERSHIP_HANDOFF_INSTALL);
+            persist(refreshed);
+            failureInjector.checkpoint(FailurePoint.AFTER_OWNERSHIP_HANDOFF_INSTALL);
+            return accepted(request, true, VerificationResult.NOT_ATTEMPTED,
+                    "APPLICATION_OWNERSHIP_EVIDENCE_REFRESHED",
+                    "Verified renewal evidence refreshed the accepted application owner");
+        }
         if (request.applicationOwnerGeneration() <= state.acceptedApplicationGeneration()) {
             return rejected(request, "STALE_APPLICATION_GENERATION",
                     "Application ownership generation is stale");

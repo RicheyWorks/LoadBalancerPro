@@ -59,6 +59,8 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
     private final Optional<EnterpriseLabAllocationReconciliationGate>
             allocationReconciliationGate;
     private final Optional<EnterpriseLabAllocationSupervisor> allocationSupervisor;
+    private final EnterpriseLabAllocationRuntimeMode allocationRuntimeMode;
+    private final Optional<EnterpriseLabSupervisorAllocationBridge> supervisorAllocationBridge;
     private final Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence;
     private final Optional<EnterpriseLabEvidenceOwnershipLease> ownershipLease;
     private final Optional<EnterpriseLabEvidenceOwnershipRenewer> ownershipRenewer;
@@ -67,6 +69,26 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
 
     public EnterpriseLabExperimentOperatorService(EnterpriseLabExperimentTargetCatalog targetCatalog) {
         this(targetCatalog, EnterpriseLabExperimentRecoveryGate.inMemoryOnly());
+    }
+
+    public EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabAllocationRuntimeMode allocationRuntimeMode) {
+        this(
+                targetCatalog,
+                new EnterpriseLabScenarioCatalogService(),
+                new EnterpriseLabAdaptiveDecisionService(),
+                Clock.systemUTC(),
+                System::nanoTime,
+                DEFAULT_MAX_RETAINED_EXPERIMENTS,
+                EnterpriseLabExperimentRecoveryGate.inMemoryOnly(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Objects.requireNonNull(
+                        allocationRuntimeMode, "allocationRuntimeMode cannot be null"),
+                Optional.empty());
     }
 
     public EnterpriseLabExperimentOperatorService(
@@ -166,6 +188,62 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                         allocationSupervisor, "allocationSupervisor cannot be null")));
     }
 
+    public EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            EnterpriseLabExperimentDurableEvidenceRepository durableEvidence,
+            EnterpriseLabEvidenceOwnershipLease ownershipLease,
+            EnterpriseLabAllocationRuntimeMode allocationRuntimeMode) {
+        this(
+                targetCatalog,
+                new EnterpriseLabScenarioCatalogService(),
+                new EnterpriseLabAdaptiveDecisionService(),
+                Clock.systemUTC(),
+                System::nanoTime,
+                DEFAULT_MAX_RETAINED_EXPERIMENTS,
+                recoveryGate,
+                Optional.of(Objects.requireNonNull(
+                        durableEvidence, "durableEvidence cannot be null")),
+                Optional.of(Objects.requireNonNull(
+                        ownershipLease, "ownershipLease cannot be null")),
+                Optional.empty(),
+                Optional.empty(),
+                Objects.requireNonNull(
+                        allocationRuntimeMode, "allocationRuntimeMode cannot be null"),
+                Optional.empty());
+    }
+
+    public EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            EnterpriseLabExperimentDurableEvidenceRepository durableEvidence,
+            EnterpriseLabEvidenceOwnershipLease ownershipLease,
+            EnterpriseLabAllocationReconciliationGate allocationReconciliationGate,
+            EnterpriseLabAllocationSupervisor allocationSupervisor,
+            EnterpriseLabSupervisorAllocationBridge supervisorAllocationBridge) {
+        this(
+                targetCatalog,
+                new EnterpriseLabScenarioCatalogService(),
+                new EnterpriseLabAdaptiveDecisionService(),
+                Clock.systemUTC(),
+                System::nanoTime,
+                DEFAULT_MAX_RETAINED_EXPERIMENTS,
+                recoveryGate,
+                Optional.of(Objects.requireNonNull(
+                        durableEvidence, "durableEvidence cannot be null")),
+                Optional.of(Objects.requireNonNull(
+                        ownershipLease, "ownershipLease cannot be null")),
+                Optional.of(Objects.requireNonNull(
+                        allocationReconciliationGate,
+                        "allocationReconciliationGate cannot be null")),
+                Optional.of(Objects.requireNonNull(
+                        allocationSupervisor, "allocationSupervisor cannot be null")),
+                EnterpriseLabAllocationRuntimeMode.EXTERNAL_SUPERVISOR_REQUIRED,
+                Optional.of(Objects.requireNonNull(
+                        supervisorAllocationBridge,
+                        "supervisorAllocationBridge cannot be null")));
+    }
+
     EnterpriseLabExperimentOperatorService(
             EnterpriseLabExperimentTargetCatalog targetCatalog,
             EnterpriseLabScenarioCatalogService scenarioCatalog,
@@ -263,6 +341,36 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             Optional<EnterpriseLabEvidenceOwnershipLease> ownershipLease,
             Optional<EnterpriseLabAllocationReconciliationGate> allocationReconciliationGate,
             Optional<EnterpriseLabAllocationSupervisor> allocationSupervisor) {
+        this(
+                targetCatalog,
+                scenarioCatalog,
+                decisionService,
+                clock,
+                monotonicNanos,
+                maxRetainedExperiments,
+                recoveryGate,
+                durableEvidence,
+                ownershipLease,
+                allocationReconciliationGate,
+                allocationSupervisor,
+                EnterpriseLabAllocationRuntimeMode.IN_PROCESS,
+                Optional.empty());
+    }
+
+    EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabScenarioCatalogService scenarioCatalog,
+            EnterpriseLabAdaptiveDecisionService decisionService,
+            Clock clock,
+            LongSupplier monotonicNanos,
+            int maxRetainedExperiments,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence,
+            Optional<EnterpriseLabEvidenceOwnershipLease> ownershipLease,
+            Optional<EnterpriseLabAllocationReconciliationGate> allocationReconciliationGate,
+            Optional<EnterpriseLabAllocationSupervisor> allocationSupervisor,
+            EnterpriseLabAllocationRuntimeMode allocationRuntimeMode,
+            Optional<EnterpriseLabSupervisorAllocationBridge> supervisorAllocationBridge) {
         this.targetCatalog = Objects.requireNonNull(targetCatalog, "targetCatalog cannot be null");
         this.scenarioCatalog = Objects.requireNonNull(scenarioCatalog, "scenarioCatalog cannot be null");
         this.decisionService = Objects.requireNonNull(decisionService, "decisionService cannot be null");
@@ -274,10 +382,36 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 "allocationReconciliationGate cannot be null");
         this.allocationSupervisor = Objects.requireNonNull(
                 allocationSupervisor, "allocationSupervisor cannot be null");
+        this.allocationRuntimeMode = Objects.requireNonNull(
+                allocationRuntimeMode, "allocationRuntimeMode cannot be null");
+        this.supervisorAllocationBridge = Objects.requireNonNull(
+                supervisorAllocationBridge,
+                "supervisorAllocationBridge cannot be null");
         if (this.allocationSupervisor.isPresent()
                 && this.allocationReconciliationGate.isEmpty()) {
             throw new IllegalArgumentException(
                     "allocation supervisor requires a reconciliation gate");
+        }
+        if (this.allocationRuntimeMode
+                == EnterpriseLabAllocationRuntimeMode.EXTERNAL_SUPERVISOR_REQUIRED
+                && (this.supervisorAllocationBridge.isEmpty()
+                || this.allocationSupervisor.isEmpty()
+                || this.allocationReconciliationGate.isEmpty()
+                || ownershipLease.isEmpty()
+                || durableEvidence.isEmpty())) {
+            throw new IllegalArgumentException(
+                    "external-supervisor-required mode requires owned durable supervision and a connected bridge");
+        }
+        if (this.allocationRuntimeMode
+                != EnterpriseLabAllocationRuntimeMode.EXTERNAL_SUPERVISOR_REQUIRED
+                && this.supervisorAllocationBridge.isPresent()) {
+            throw new IllegalArgumentException(
+                    "supervisor allocation bridge is valid only in external-supervisor-required mode");
+        }
+        if (this.allocationRuntimeMode == EnterpriseLabAllocationRuntimeMode.DISABLED
+                && this.allocationSupervisor.isPresent()) {
+            throw new IllegalArgumentException(
+                    "disabled allocation mode cannot configure an allocation supervisor");
         }
         this.durableEvidence = Objects.requireNonNull(
                 durableEvidence, "durableEvidence cannot be null");
@@ -313,6 +447,11 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         if (closed) {
             return denied("arm", safeRequest.operatorRequestId(), safeRequest.experimentId(),
                     "SERVICE_CLOSED", "experiment operator service is closed");
+        }
+        if (allocationRuntimeMode == EnterpriseLabAllocationRuntimeMode.DISABLED) {
+            return denied("arm", safeRequest.operatorRequestId(), safeRequest.experimentId(),
+                    "ALLOCATION_MODE_DISABLED",
+                    "Enterprise Lab installed-allocation mutation is explicitly disabled");
         }
         if (!admissionAllowed()) {
             return denied("arm", safeRequest.operatorRequestId(), safeRequest.experimentId(),
@@ -367,13 +506,22 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 EnterpriseLabLoopbackObservationIngress.DEFAULT_MAX_MEASURED_LATENCY,
                 clock,
                 monotonicNanos);
-        EnterpriseLabLoopbackAllocationRouter router = new EnterpriseLabLoopbackAllocationRouter(
-                targets,
-                ingress,
-                decision.decision().guardrailDecision().baselineAllocations(),
+        Optional<EnterpriseLabEvidenceMutationAuthority> routerMutationAuthority =
                 durableEvidence.map(repository ->
                         (EnterpriseLabEvidenceMutationAuthority)
-                                repository::requireMutationAuthorization));
+                                repository::requireMutationAuthorization);
+        EnterpriseLabLoopbackAllocationRouter router = supervisorAllocationBridge
+                .map(bridge -> EnterpriseLabLoopbackAllocationRouter.supervised(
+                        targets,
+                        ingress,
+                        decision.decision().guardrailDecision().baselineAllocations(),
+                        ownershipLease.orElseThrow().ownershipGate(),
+                        bridge))
+                .orElseGet(() -> new EnterpriseLabLoopbackAllocationRouter(
+                        targets,
+                        ingress,
+                        decision.decision().guardrailDecision().baselineAllocations(),
+                        routerMutationAuthority));
         if (allocationSupervisor.isPresent()) {
             try {
                 var report = allocationSupervisor.orElseThrow().attachRouter(
@@ -396,7 +544,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 EnterpriseLabExperimentConfiguration.SCHEMA_VERSION,
                 safeRequest.experimentId(),
                 decision,
-                router.baselineSnapshot(),
+                experimentBaseline(router),
                 safeRequest.maximumRequestCount(),
                 safeRequest.maximumDuration(),
                 safeRequest.minimumEvidenceCount(),
@@ -797,6 +945,10 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         return allocationSupervisor.map(EnterpriseLabAllocationSupervisor::status);
     }
 
+    public EnterpriseLabAllocationRuntimeMode allocationRuntimeMode() {
+        return allocationRuntimeMode;
+    }
+
     public Optional<EnterpriseLabAllocationSupervisor.SupervisionStatus>
             verifyAllocationSupervision() {
         return allocationSupervisor.map(supervisor -> {
@@ -880,12 +1032,20 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 allocationSupervisor.ifPresent(EnterpriseLabAllocationSupervisor::close);
             } finally {
                 try {
-                    durableEvidence.ifPresent(EnterpriseLabExperimentDurableEvidenceRepository::close);
+                    supervisorAllocationBridge.ifPresent(
+                            EnterpriseLabSupervisorAllocationBridge::close);
                 } finally {
                     try {
-                        ownershipRenewer.ifPresent(EnterpriseLabEvidenceOwnershipRenewer::close);
+                        durableEvidence.ifPresent(
+                                EnterpriseLabExperimentDurableEvidenceRepository::close);
                     } finally {
-                        ownershipLease.ifPresent(EnterpriseLabEvidenceOwnershipLease::close);
+                        try {
+                            ownershipRenewer.ifPresent(
+                                    EnterpriseLabEvidenceOwnershipRenewer::close);
+                        } finally {
+                            ownershipLease.ifPresent(
+                                    EnterpriseLabEvidenceOwnershipLease::close);
+                        }
                     }
                 }
             }
@@ -1076,6 +1236,26 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         return allocationSupervisor
                 .map(supervisor -> supervisor.restoreSafeBaseline(reason))
                 .orElseGet(() -> session.router.restoreBaseline(reason));
+    }
+
+    private static EnterpriseLabLoopbackAllocationSnapshot experimentBaseline(
+            EnterpriseLabLoopbackAllocationRouter router) {
+        EnterpriseLabLoopbackAllocationSnapshot configured = router.baselineSnapshot();
+        EnterpriseLabLoopbackAllocationSnapshot installed = router.currentSnapshot();
+        if (!configured.sameAllocations(installed)) {
+            throw new IllegalStateException(
+                    "experiment baseline requires an exactly reconciled installed allocation");
+        }
+        if (configured.revision() == installed.revision()) {
+            return configured;
+        }
+        return new EnterpriseLabLoopbackAllocationSnapshot(
+                EnterpriseLabLoopbackAllocationSnapshot.SCHEMA_VERSION,
+                configured.scenarioId(),
+                installed.revision(),
+                configured.sourceDecisionId(),
+                Kind.BASELINE,
+                configured.allocations());
     }
 
     private EnterpriseLabExperimentOperatorRecord record(Session session) {

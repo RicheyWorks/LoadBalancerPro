@@ -6,6 +6,9 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentTargetCatalog;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipStatus;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationRuntimeMode;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorClient;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorConfiguration;
 import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
 
 import java.nio.file.Files;
@@ -125,6 +128,30 @@ class EnterpriseLabExperimentControllerTest {
             assertTrue(restarted.recoveryStatus().admissionAllowed());
             assertTrue(Files.isDirectory(
                     journalRoot.resolve("enterprise-lab-experiment-journals-v1/journals")));
+        }
+    }
+
+    @Test
+    void externalRequiredModeFailsStartupWithoutSupervisorAndNeverFallsBackInProcess() {
+        var configuration =
+                new EnterpriseLabExperimentController.EnterpriseLabExperimentConfiguration();
+        var failure = assertThrows(
+                EnterpriseLabSupervisorClient.ClientException.class,
+                () -> configuration.enterpriseLabExperimentOperatorService(
+                        EnterpriseLabSupervisorConfiguration.approvedTargets(),
+                        journalRoot.toString(),
+                        "external-supervisor-required"));
+        assertEquals(EnterpriseLabSupervisorClient.Failure.UNSAFE_PATH, failure.failure());
+
+        try (EnterpriseLabExperimentOperatorService inProcess =
+                     configuration.enterpriseLabExperimentOperatorService(
+                             EnterpriseLabSupervisorConfiguration.approvedTargets(),
+                             journalRoot.toString(),
+                             "in-process")) {
+            assertEquals(
+                    EnterpriseLabAllocationRuntimeMode.IN_PROCESS,
+                    inProcess.allocationRuntimeMode());
+            assertTrue(inProcess.recoveryStatus().admissionAllowed());
         }
     }
 

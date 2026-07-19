@@ -6,7 +6,114 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Independent Allocation Supervisor PR3 Checkpoint
+## Active Independent Allocation Supervisor PR4 Checkpoint
+
+Timestamp: 2026-07-19T05:36:17-07:00
+
+Current slot: SUPERVISOR-PR4 - application allocation integration and generation fencing
+
+Goal manager: active for the six-PR independent Enterprise Lab supervisor campaign; no token budget was requested.
+
+Started from clean synchronized main: `c2f26d26e159f56454c94b73327f57a58ce61e7b`
+
+Current branch: `codex/supervisor-application-allocation-integration`
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/483
+
+Executable/local-verification checkpoint: `f88a585158a43d26f6d740c4776649d840169cec`.
+
+PR-created checkpoint: PR #483 opened from verified branch head
+`02a71ae4ed2332f559d6b43becf447be8f5d8afb`. This required session update advances the branch, so exact-head remote
+gates must use the subsequent metadata checkpoint rather than the PR-opening head.
+
+Prior slot closure: PR #482 merged normally from exact final head
+`157cf811a7b004e81a2bff145303b637b9fd0bbb` as `c2f26d26e159f56454c94b73327f57a58ce61e7b`.
+Exact-head PR CI `29684560876`, push CI `29684559683`, CodeQL `29684560891`, dependency review, 3,318
+zero-skip tests, package/artifact verification, SBOM, packaged-JAR smoke, Docker build/runtime, controlled container
+evidence, and blocking Trivy passed. Post-merge local seven-class supervisor/client/process verification passed 45
+tests; `mvn -q test`, package-without-tests, `mvn -B package` with 3,318 tests and zero failures/errors/skips, and the
+packaged ten-scenario workflow passed. Exact merge-main CI `29684795822` and CodeQL `29684795818` passed on the merge
+SHA. Local main and origin/main matched that merge before this branch was created, and the PR3 source branch remains
+preserved.
+
+PR4 executable scope: explicitly integrate the existing authenticated supervisor client into the Enterprise Lab
+installed-allocation transaction path. Preserve unambiguous disabled/in-process-test/external-required modes, never
+silently fall back when external supervision is required, fence application ownership, supervisor identity/generation,
+allocation/router generation, transaction identity, and previous committed fingerprint, require independent
+supervisor read-back before durable application commit, and keep normal production/API routing behavior unchanged.
+
+Integration audit: complete for this slot. The normal route path reads the router's installed-state store, allocation
+mutation is centralized through the durable coordinator/supervisor, startup owns journal reconciliation before allocation
+reconciliation, and the authenticated PR3 client already pins the supervisor identity/generation. The proof-only state
+holder remains unchanged. The selected seam is a client-backed implementation of the existing installed-state store,
+shared by startup and experiment routers, with an atomic cache for normal selection and authoritative authenticated IPC
+only during reconciliation and transaction verification. Existing canonical allocations, fingerprints, transaction
+records, ownership records/generations, target catalog, validators, and baseline policy are reused; no parallel allocation
+representation was added.
+
+Implementation checkpoint: explicit `in-process`, `external-supervisor-required`, and `disabled` startup modes are now
+strictly parsed. External-required mode needs a durable root, one fixed repository-controlled loopback scenario, completed
+application reconciliation, and a reachable authenticated supervisor; any failure closes acquired resources and aborts
+startup without fallback. Disabled mode creates no allocation supervisor and denies experiment arm. The external bridge
+publishes/refreshes only the current durably verified application-owner record, pins one supervisor epoch, carries the
+application allocation generation and durable transaction boundary, derives bounded phase-specific supervisor transaction
+IDs, applies/restores only after durable intent, and requires a separate authoritative read-back before the application
+can commit. Normal route selection is lock-free against the bridge cache and performs no IPC/filesystem operation; the
+bridge Javadoc records the coordinator/ownership/router/bridge/supervisor lock order.
+
+Durable/startup checkpoint: initial external startup accepts only the exact canonical safe-baseline allocation from an
+older supervisor owner epoch, records that genesis while readiness remains closed, then performs a contiguous restoration
+transaction to adopt the current owner generation. The application publishes journal reconciliation success durably under
+the live OS lock before supervisor handoff. Supervisor ownership handoff now accepts a same-instance/same-generation
+fingerprint change only after re-verifying the current durable ownership record, allowing legitimate reconciliation or
+renewal evidence refresh while stale fingerprints remain rejected.
+
+Focused verification checkpoint: main compilation, focused mode/bridge tests, and the 14-class PR4 compatibility selector
+passed. The selector covered 120 tests with zero failures, errors, or skips across mode parsing, real authenticated
+supervisor bridge integration, router/coordinator/reconciler/supervision, protocol/service/client compatibility, ownership
+publication/renewal, operator behavior, controller startup, and Spring integration. The external operator proof exercised
+ownership publication and renewal, supervisor initial-owner adoption, candidate apply, independent read-back, application
+durable fingerprint agreement, cancellation restoration, and stale local-owner refusal. No workspace-bound Java, Maven,
+Surefire, or Node process remained after the run. `git diff --check` passed, and the new startup property is documented in
+the bounded durable-evidence contract. All calibration/tooling failures and corrections are recorded in `FAILURE_LOG.md`.
+
+Full local verification checkpoint: `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B clean package`, and
+`mvn -B verify` passed on the final audited source. Full test, clean package, and verify each report 3,323 tests with zero
+failures, errors, or skips. The packaged ten-scenario shadow workflow passed and wrote only ignored `target/` evidence.
+The executable JAR is 95,294,805 bytes with 1,361 entries, contains both new runtime classes and required application
+resources, and has SHA-256 `ce0e12061d9603a579d3c3d4e6282f397df532c881baca0e843192cca9390b73`. JaCoCo analyzed
+964 classes at 84.33 percent instruction, 67.13 percent branch, and 83.82 percent line coverage. The Tomcat dependency
+tree resolves core, WebSocket, and EL only at 10.1.55. CycloneDX 2.9.1 generated and validated JSON/XML v1.6 evidence
+with 144 dependency components. No workspace-bound Java, Maven, Surefire, or Node process remains.
+
+Composition/scope checkpoint: the 20-file PR4 candidate has 1,532 production/test churn lines and 359
+documentation/process churn lines (81.02 / 18.98 percent); the mandatory failure and session records account for most of
+the process churn. Across the authoritative campaign diff from starting main `a3a17f847e95884ea37f225155d29dbb1ac285c9`,
+the current candidate has 9,444 production/test churn lines and 1,229 documentation/process churn lines (88.48 / 11.52
+percent), inside the campaign's 88-92 percent executable target. Scope scans found no POM, dependency, CI/workflow,
+Docker/Compose, runtime-resource, public endpoint, arbitrary host/port/path, external-target, cloud/tenant, database,
+broker, production-routing, or force-control change. The CSRBT proposal remains untracked and excluded at exact SHA-256
+`7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
+
+Out of scope: dual-restart reconciliation and periodic supervision (PR5), operator status and packaged campaign proofs
+(PR6), production routing, public endpoints or listeners, external targets, arbitrary supervisor addresses, force
+controls, POM/dependency/workflow/Docker/Compose changes, databases, brokers, cloud/tenant targets, multi-host behavior,
+distributed consensus, and production-readiness claims.
+
+Preserved unrelated file: `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains untracked and excluded; startup
+SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
+
+Blocker: none.
+
+Remote status: PR and push CI, CodeQL, and dependency review started on the PR-opening head; none is treated as green
+while pending, and they will become stale after the required metadata checkpoint push.
+
+Next action: run the focused campaign/session documentation guards and diff checks, commit and push this PR-created
+checkpoint, then require exact-final-head CI, CodeQL, and dependency review success before merge.
+
+Decision: continue.
+
+## Completed Independent Allocation Supervisor PR3 Checkpoint
 
 Timestamp: 2026-07-19T03:28:00-07:00
 

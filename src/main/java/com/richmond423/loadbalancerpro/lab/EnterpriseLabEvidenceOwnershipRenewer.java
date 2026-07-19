@@ -94,9 +94,9 @@ final class EnterpriseLabEvidenceOwnershipRenewer implements AutoCloseable {
     }
 
     private void failAdmission() {
-        recoveryGate.fail("OWNERSHIP_RENEWAL_FAILED");
         allocationReconciliationGate.ifPresent(
                 gate -> gate.fail("OWNERSHIP_RENEWAL_FAILED"));
+        recoveryGate.fail("OWNERSHIP_RENEWAL_FAILED");
     }
 
     private synchronized void closeAfterFailure() {

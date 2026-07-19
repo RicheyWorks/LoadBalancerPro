@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Durable Allocation-State Supervision PR5 Checkpoint
 
-Timestamp: 2026-07-18T14:14-07:00
+Timestamp: 2026-07-18T17:16-07:00
 
 Current slot: ALLOCATION-PR5 - startup, takeover, and runtime allocation-drift reconciliation
 
@@ -23,6 +23,14 @@ Executable checkpoint: `b368d195bd411cab1adc814246ff7248aaec3f4e`
 PR-creation checkpoint: PR #478 opened from verified pre-PR head
 `e44dd3f03bb6dcaacf8952f851865eca2b21369a`; this required checkpoint advances the branch, so exact-head remote gates
 must use the new pushed SHA.
+
+Exact-head failure/recovery checkpoint: push CI `29666380324` and PR CI `29666381383` on
+`c83e4ba6ff730d61a2be741c68186901879d4ac8` each failed the same renewal-ordering assertion after 3,261 tests; CodeQL
+`29666381381` passed. The allocation gate was still closed, but the renewal worker published the journal failure before
+updating the allocation reason, exposing a Linux/JDK 17 observation race. The repair closes allocation admission first,
+then publishes the journal failure as the observation barrier. The exact renewer class passes five consecutive runs, the
+five-class reconciliation/ownership/operator bundle passes 54 tests, and the full local suite passes 3,261 tests with
+zero failures, errors, or skips. The failed runs remain stale; a new exact-head full CI/CodeQL set is mandatory.
 
 Prior slot closure: PR #476 merged normally from exact final head
 `2e51054e62f2fce2e9c4828905d10b7191fabbb3` as `4066ae2ef488a946bbfc9a7be173ea1f28503e8d`.
@@ -75,9 +83,9 @@ Local Docker/runtime and Trivy are not claimed green: Docker CLI 28.0.4 cannot r
 and standalone `trivy` is unavailable. Exact-head remote Docker build/runtime, controlled evidence, and the blocking
 HIGH/CRITICAL Trivy scan remain mandatory before merge and again on merge-main.
 
-Composition: PR5 has 2,268 executable/test and 356 required process additions (86.43% / 13.57%); the heavier process share
-records 20 mandatory failure/recovery checkpoints. The campaign aggregate is 7,983 executable/test and 1,081 process
-additions (88.07% / 11.93%), inside the goal's 88-92% executable and 8-12% process band.
+Composition: PR5 has 2,268 executable/test and 360 required process additions (86.30% / 13.70%); the heavier process share
+records 21 mandatory failure/recovery checkpoints. The campaign aggregate is 7,983 executable/test and 1,085 process
+additions (88.03% / 11.97%), inside the goal's 88-92% executable and 8-12% process band.
 
 ## Completed Durable Allocation-State Supervision PR4 Checkpoint
 

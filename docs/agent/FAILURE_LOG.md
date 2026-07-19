@@ -5868,29 +5868,25 @@ targets were contained under the resolved workspace `target` root. Nothing was r
 Correction/result: preserve the ignored prior evidence and use each proof script's containment-enforced `-OutputDir` to
 write a new bounded target-only run. Both proofs then passed without force-removing state or relaxing takeover rules.
 
-# 2026-07-18 - Allocation PR5 final audit repeated the Windows explicit-wildcard mistake
+# 2026-07-18 - Allocation PR5 final ripgrep audit commands were malformed
 
 Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
 
-Failing check: a final secret-pattern audit again passed `EnterpriseLabAllocation*.java` as an explicit Windows path to
-`rg`, which reported operating-system error 123. The separate exact-file concurrency scan produced no matches, but the
-failed wildcard scan is not counted.
+Failure ledger: (1) the secret scan repeated the explicit Windows `EnterpriseLabAllocation*.java` path mistake and hit OS
+error 123; (2) the non-loopback URL scan used look-ahead without `--pcre2` and its expression was rejected. Both were
+read-only failures and neither result was counted.
 
-Observed/root cause: the command repeated the already identified PowerShell/Windows path-shape mistake instead of using
-`rg -g`. This was a read-only command failure; no source, generated evidence, process, remote, external target, or
-unrelated file changed.
+Correction/result: the repository-root `-g 'EnterpriseLabAllocation*.java'` secret scan and exact-file `rg --pcre2` URL
+scan were rerun successfully with no prohibited PR5 value or non-loopback target.
 
-Correction/result: rerun from the repository root with explicit `-g 'EnterpriseLabAllocation*.java'` include filters and
-require a clean result.
+# 2026-07-18 - Allocation PR5 exact-head CI exposed renewal failure publication race
 
-# 2026-07-18 - Allocation PR5 final URL audit omitted ripgrep PCRE2 mode
+Branch/PR: `codex/allocation-startup-drift-reconciliation` / PR #478
 
-Branch/PR: `codex/allocation-startup-drift-reconciliation` / no PR
+Failing gates: exact-head push CI `29666380324` and PR CI `29666381383` each ran 3,261 tests with one identical failure:
+journal reason `OWNERSHIP_RENEWAL_FAILED` was visible while allocation reason was still pending. `failAdmission` published
+journal failure first, so Linux/JDK 17 exposed the narrow inter-gate window; both gates still denied admission and later
+package/container/Trivy steps correctly did not run.
 
-Failing check: the final non-loopback URL regex used negative look-ahead with default `rg`, which does not support
-look-around and rejected the expression. No URL audit claim was made from that command.
-
-Observed/root cause: the command omitted `--pcre2`, which is required for the chosen expression. This was a read-only
-command failure; no source, generated evidence, process, remote, external target, or unrelated file changed.
-
-Correction/result: rerun the exact-file URL scan with `rg --pcre2` and require no non-loopback match.
+Correction/result: publish allocation failure first and journal failure second as the observation barrier. Five focused
+repeats, the 54-test shared bundle, and the full 3,261-test local suite pass; failed runs remain stale.

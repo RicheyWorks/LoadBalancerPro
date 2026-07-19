@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Durable Allocation-State Supervision PR6 Checkpoint
 
-Timestamp: 2026-07-18T18:42-07:00
+Timestamp: 2026-07-18T18:47-07:00
 
 Current slot: ALLOCATION-PR6 - authenticated operator evidence and packaged separate-process recovery proof
 
@@ -16,9 +16,11 @@ Started from clean synchronized main: `793dd9ab53b31ead825b6321006b57c9dca909cc`
 
 Current branch: `codex/allocation-operator-evidence-proof`
 
-PR URL: not opened yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/479
 
 Executable/local-verification checkpoint: `34a7d96c71c5b105a2ce9b1d26e8ee708a0c8cd6`
+
+PR-created checkpoint: PR #479 opened from verified pushed head `13dac3cf9ca3b8809082c814e3d3a31aa964ddc2`.
 
 Prior slot closure: PR #478 merged normally from exact final head
 `d1d234bcf32e03c18935d230928fa44c5a4057dd` as `793dd9ab53b31ead825b6321006b57c9dca909cc`.
@@ -72,8 +74,8 @@ generation/phase, force-commit, guardrail/read-back/restoration bypass, secret v
 change is present. The proof subprocess is fixed Java-only, literal-loopback, authenticated per run, byte/request/time
 bounded, and not used by the production supervisor. The unrelated untracked
 `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains preserved and excluded. PR6 has 3,344 executable/test/proof
-and 410 required process additions (89.08% / 10.92%); the campaign aggregate is 11,327 executable/test/proof and 1,495
-process additions (88.34% / 11.66%). PR creation, exact-head remote gates, merge, and merge-main verification remain.
+and 412 required process additions (89.03% / 10.97%); the campaign aggregate is 11,327 executable/test/proof and 1,497
+process additions (88.33% / 11.67%). Exact-head remote gates, merge, and merge-main verification remain.
 
 ## Completed Durable Allocation-State Supervision PR5 Checkpoint
 

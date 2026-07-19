@@ -84,6 +84,34 @@ class EnterpriseLabProdApiKeyProtectionTest {
 
     @Test
     void prodApiKeyModeProtectsExperimentOperatorWorkflow() throws Exception {
+        mockMvc.perform(get("/api/lab/allocation-supervision"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.path", is("/api/lab/allocation-supervision")));
+
+        mockMvc.perform(get("/api/lab/allocation-supervision")
+                        .header("X-API-Key", API_KEY))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.reasonCode",
+                        is("ALLOCATION_SUPERVISION_NOT_CONFIGURED")));
+
+        mockMvc.perform(post("/api/lab/allocation-supervision/verify"))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/lab/allocation-supervision/verify")
+                        .header("X-API-Key", API_KEY))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.reasonCode",
+                        is("ALLOCATION_SUPERVISION_NOT_CONFIGURED")));
+
+        mockMvc.perform(post("/api/lab/allocation-supervision/restore-safe-baseline"))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/lab/allocation-supervision/restore-safe-baseline")
+                        .header("X-API-Key", API_KEY))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.reasonCode",
+                        is("ALLOCATION_SUPERVISION_NOT_CONFIGURED")));
+
         mockMvc.perform(get("/api/lab/experiments"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.path", is("/api/lab/experiments")));

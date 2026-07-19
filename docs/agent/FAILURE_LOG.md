@@ -5890,3 +5890,260 @@ package/container/Trivy steps correctly did not run.
 
 Correction/result: publish allocation failure first and journal failure second as the observation barrier. Five focused
 repeats, the 54-test shared bundle, and the full 3,261-test local suite pass; failed runs remain stale.
+
+# 2026-07-18 - Allocation PR6 initial source audit used an explicit Windows wildcard path
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: the read-only source audit passed `src/main/java/.../EnterpriseLabAllocation*.java` as an explicit
+Windows path to ripgrep and received OS error 123. The preceding file discovery succeeded, but this failed expression
+is not counted as audit evidence.
+
+Observed/root cause: Windows did not expand the wildcard and ripgrep treated the invalid wildcard-bearing string as a
+literal path. No source, durable allocation state, router state, external target, remote state, or unrelated file changed.
+
+Correction/result: use a repository directory plus ripgrep's `-g 'EnterpriseLabAllocation*.java'` filter for all
+subsequent PR6 allocation-source searches.
+
+# 2026-07-18 - Allocation PR6 combined operator-service patch missed an exact source context
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing edit: the first combined `apply_patch` for operator-service integration was rejected before changing the file
+because the evaluator-construction context did not exactly match current source formatting.
+
+Observed/root cause: the patch grouped several independent constructor and lifecycle edits around one stale context.
+No partial operator-service edit, durable allocation state, router state, remote state, external target, or unrelated
+file changed.
+
+Correction/result: split the integration into narrow patches after rereading each exact constructor and lifecycle
+range, then compile before proceeding.
+
+# 2026-07-18 - Allocation PR6 test-property search included a nonexistent root
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: a read-only ripgrep query searched both `src/test`, `src`, and a repository-root `resources` directory;
+the last path does not exist, so ripgrep returned an error for that operand. The matches from existing roots are not
+counted as a complete search.
+
+Observed/root cause: resources in this repository are nested under `src`, not a top-level `resources` directory. No
+source, durable allocation state, router state, external target, remote state, or unrelated file changed.
+
+Correction/result: rerun searches only from verified repository roots, using file globs for resource types.
+
+# 2026-07-18 - Allocation PR6 first proof-runner compile used the private optional router constructor
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: `mvn -q -DskipTests compile` failed at the proof runner's router helper because it passed an
+`Optional<InstalledStateStore>` to the router's private delegating constructor instead of selecting the package-visible
+normal or proof-store overload.
+
+Observed/root cause: the helper attempted to unify the two constructor paths at the call site with an optional value.
+No compiled candidate, durable allocation state, runtime router state, external holder, remote state, or unrelated file
+changed.
+
+Correction/result: branch explicitly between the normal owned in-memory constructor and the proof-only installed-state
+store constructor, then rerun compilation.
+
+# 2026-07-18 - Allocation PR6 smoke-script audit guessed the ownership script name incorrectly
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: a read-only `Get-Content` requested
+`scripts/smoke/enterprise-lab-evidence-ownership-proof.ps1`, which is not the repository's actual filename.
+
+Observed/root cause: the existing script uses a shorter ownership-proof name. No source, generated proof evidence,
+durable allocation state, router state, external target, remote state, or unrelated file changed.
+
+Correction/result: discover the exact repository filename with `rg --files` before using it as the PR6 smoke template.
+
+# 2026-07-18 - Allocation PR6 first packaged proof did not precreate fixed case roots
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: `scripts/smoke/enterprise-lab-allocation-proof.ps1` against the first development package failed safely
+at the fixed `allocation-proof-evidence/normal` root before running a transaction.
+
+Observed/root cause: the durable store correctly requires an existing trusted root, while the proof runner resolved but
+did not create each fixed case root. No transaction, holder, external target, remote state, or unrelated file was
+mutated; only ignored generated output under the requested `target/` proof directory was created.
+
+Correction/result: create each containment-checked fixed case root before opening its durable store, rebuild the package,
+and rerun the unchanged proof scenarios in a fresh target-only output directory.
+
+# 2026-07-18 - Allocation PR6 first proof-runner test used JUnit's system temp root
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: focused `EnterpriseLabAllocationProofRunnerTest` failed when its holder child rejected the JUnit
+system-temporary output because packaged proof output is intentionally restricted to this repository's `target/` root.
+
+Observed/root cause: the test used `@TempDir`, while the command and child both correctly enforce the generated-evidence
+containment contract. The child exited before opening its holder; no transaction, external target, remote state, or
+unrelated file changed.
+
+Correction/result: use a unique ignored directory under `target/` in the test, preserving the same production output
+validation, then rerun the focused proof.
+
+# 2026-07-18 - Allocation PR6 external holder CAS used object identity and exposed an invalid failure receipt
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing checks: the second focused proof-runner test and the preceding development packaged proof failed in the
+crash-after-apply scenario with `baselineRestored requires a restoration attempt`.
+
+Observed/root cause: the holder decoded the expected snapshot into an equal but distinct object and used
+`AtomicReference.compareAndSet`, which compares object identity, so the proof router's first replacement failed. That
+legitimate apply-failure path then exposed an existing coordinator receipt bug: when read-back proved the baseline was
+retained without a restoration attempt, the receipt incorrectly set `baselineRestored=true`.
+
+Correction/result: perform the holder's single-threaded CAS using exact snapshot value equality, and report baseline
+retention as neither a restoration attempt nor a completed restoration. Add regression coverage and rerun the focused
+proof; do not relax the receipt invariant.
+
+# 2026-07-18 - Allocation PR6 drift subcase roots were resolved below the created parent only
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: the third focused proof-runner test completed the transaction and external-holder crash cases, then
+failed before the first drift case because `allocation-proof-evidence/drift/share` had not been created as a trusted
+store root.
+
+Observed/root cause: the top-level containment helper created the `drift` parent, while individual drift contexts added
+one more fixed child segment without creating it. No drift transaction, external target, remote state, or unrelated file
+changed; prior holder children shut down through their bounded close path.
+
+Correction/result: make every proof context create its already containment-checked fixed root before opening the store,
+then rerun the complete focused proof.
+
+# 2026-07-18 - Allocation PR6 report copied the sorted drift map into an unspecified iteration order
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: the fourth focused proof-runner test completed every scenario, then the report constructor rejected its
+own content fingerprint.
+
+Observed/root cause: report creation fingerprinted a `TreeMap`, but the compact constructor replaced that map with
+`Map.copyOf`, whose iteration order is unspecified, before recomputing the fingerprint. No scenario result was accepted
+or exported; holder children shut down cleanly and no external target, remote state, or unrelated file changed.
+
+Correction/result: retain an unmodifiable sorted map with deterministic iteration order in both creation and validation,
+then rerun the proof without weakening fingerprint verification.
+
+# 2026-07-18 - Allocation PR6 packaged smoke expected a derived method as a JSON field
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: the rebuilt packaged allocation proof completed successfully and wrote its report, but the PowerShell
+postcondition failed because it expected an `allPassed` JSON property. `allPassed()` is a derived Java method, not a
+record component serialized by Jackson.
+
+Observed/root cause: the CLI had already required `report.allPassed()` before export, and the JSON contained every
+individual proof result, but the script duplicated that check using a nonexistent property. Generated evidence stayed
+under the requested ignored `target/` directory; no external target, remote state, or unrelated file changed.
+
+Correction/result: validate every serialized scenario component plus the exact ten drift classifications in the smoke
+script, while retaining the CLI's aggregate `allPassed()` gate, then rerun the same packaged candidate in a fresh output.
+
+# 2026-07-18 - Allocation PR6 smoke did not materialize JSON drift properties before counting
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: the next packaged proof emitted all ten named non-safe drift classifications, but the script's direct
+`PSObject.Properties.Count` expression did not produce the intended scalar count and rejected the report.
+
+Observed/root cause: PowerShell's adapted property collection must be materialized with `@(...)` before reliable count
+and value iteration. A read-only inspection confirmed exactly ten entries and no `SAFE_BASELINE_INSTALLED` value.
+Generated evidence remained under the requested ignored `target/` directory; no external target, remote state, or
+unrelated file changed.
+
+Correction/result: materialize the drift property collection once, require its count to equal ten, and iterate those
+same entries for classification checks before rerunning the packaged proof.
+
+# 2026-07-18 - Allocation PR6 constructor invariant rejected the existing gate-only denial composition
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: the 12-class focused integration/security bundle ran 108 tests with one error in
+`EnterpriseLabExperimentOperatorServiceTest.allocationReadinessGateClosesNewExperimentAdmission`.
+
+Observed/root cause: the new constructor required reconciliation gate and supervisor presence to be identical, but the
+existing deliberate gate-only composition is used to prove admission remains closed before a supervisor is available.
+All new operator, proof, controller, API-key, and OAuth2 tests passed in the same run; no runtime mutation, external
+target, remote state, or unrelated file changed.
+
+Correction/result: require a gate whenever a supervisor is present, while continuing to allow a gate-only fail-closed
+composition. Rerun the exact focused bundle.
+
+# 2026-07-18 - Allocation PR6 resume audit included an invalid placeholder search root
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: the resume `rg` audit included the nonexistent path `loadbalancer-does-not-exist` while confirming that
+the final supervisor drift-classification assertion was present.
+
+Observed/root cause: a placeholder path was mistakenly left in the read-only search command. The command still found
+the intended assertion, but the nonexistent root made the search invocation invalid. No file, process, runtime state,
+external target, or unrelated work changed.
+
+Correction/result: record the tooling error, use only repository roots in subsequent searches, and rerun the focused
+supervisor and integration verification before accepting the classification change.
+
+# 2026-07-18 - Allocation PR6 CI audit included a nonexistent workflow root
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: the read-only CI command inspection searched both `.github/workflows` and a nonexistent repository root
+named `workflows`, producing `rg: workflows: The system cannot find the file specified`.
+
+Observed/root cause: the command mixed the real workflow directory with an assumed shorthand root. A second search in
+the same audit used the real `.github/workflows` path and returned the intended matches, but the first invocation was
+not a valid clean check. No file, process, runtime state, external target, or unrelated work changed.
+
+Correction/result: log the malformed invocation, rerun the inspection using only `.github/workflows`, and retain the
+repository's exact CI commands as the remote acceptance gate.
+
+# 2026-07-18 - Allocation PR6 SBOM audit counted the XML metadata component
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: the independent post-generation SBOM assertion counted 144 JSON dependency components but 145 XML
+`component` elements and rejected the already schema-validated BOM output.
+
+Observed/root cause: the XPath used a descendant search and included the root project component under `metadata` in
+addition to the 144 top-level dependency components reported by the CycloneDX plugin. No dependency, POM, generated
+artifact outside ignored `target/`, external target, or unrelated work changed.
+
+Correction/result: count only `/bom/components/component` in XML, retain the separate root metadata component as valid,
+and rerun the JSON/XML parse and exact dependency-component assertion.
+
+# 2026-07-18 - Allocation PR6 HTTP smoke launcher was rejected before execution
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / no PR
+
+Failing check: the first packaged-JAR HTTP smoke command used one large inline PowerShell `Start-Process`/cleanup block
+and was rejected by the command safety layer before a process was created.
+
+Observed/root cause: the composite command shape could not pass the execution policy even though it specified the
+required hidden window and literal loopback binding. The rejection occurred before Java startup, so no port, runtime
+state, external target, generated log, or unrelated work changed.
+
+Correction/result: run the JAR as a managed foreground PTY session, probe only literal-loopback health, landing-page,
+and proxy-status endpoints from a separate command, then terminate and confirm the managed process exits.
+
+# 2026-07-18 - Allocation PR6 exact-head Linux CI observed an empty holder readiness file
+
+Branch/PR: `codex/allocation-operator-evidence-proof` / PR #479
+
+Failing check: exact-head PR CI run `29669130703` on `96a4acdf8feaccc3790b5b85c181d040dbbd37b1`
+ran 3,271 tests with one error in `EnterpriseLabAllocationProofRunnerTest`: `NumberFormatException` for an empty string.
+
+Observed/root cause: the child created the readiness file before `Files.writeString` finished publishing its port; the
+Linux parent observed `isRegularFile` during that empty-file window and parsed it immediately. Local Windows runs did
+not expose the publication race. No durable allocation was accepted, no external target was contacted, and downstream
+package, Docker, runtime-evidence, and Trivy steps did not run.
+
+Correction/result: publish the bounded loopback port through a sibling temporary file and same-directory atomic rename,
+retain a safe rename fallback, and make parent parsing tolerate a not-yet-complete readiness signal before retrying.

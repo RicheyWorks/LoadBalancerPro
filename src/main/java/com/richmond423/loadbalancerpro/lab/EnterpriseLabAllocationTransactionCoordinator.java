@@ -722,7 +722,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                     observed,
                     false,
                     false,
-                    true,
+                    false,
                     "APPLY_FAILED_BASELINE_RETAINED",
                     "candidate apply failed without changing the verified baseline");
         }

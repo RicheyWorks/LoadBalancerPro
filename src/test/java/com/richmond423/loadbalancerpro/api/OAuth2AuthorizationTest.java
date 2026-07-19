@@ -279,6 +279,36 @@ class OAuth2AuthorizationTest {
 
     @Test
     void oauth2ModeRequiresOperatorRoleForExperimentOperatorWorkflow() throws Exception {
+        mockMvc.perform(get("/api/lab/allocation-supervision"))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(get("/api/lab/allocation-supervision")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.path", is("/api/lab/allocation-supervision")));
+
+        mockMvc.perform(get("/api/lab/allocation-supervision")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.reasonCode",
+                        is("ALLOCATION_SUPERVISION_NOT_CONFIGURED")));
+
+        mockMvc.perform(post("/api/lab/allocation-supervision/verify")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(post("/api/lab/allocation-supervision/verify")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isConflict());
+
+        mockMvc.perform(post("/api/lab/allocation-supervision/restore-safe-baseline")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(post("/api/lab/allocation-supervision/restore-safe-baseline")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(status().isConflict());
+
         mockMvc.perform(get("/api/lab/experiments"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.path", is("/api/lab/experiments")));

@@ -48,6 +48,7 @@ public final class EnterpriseLabExperimentEvaluator {
 
     private final EnterpriseLabExperimentLifecycle lifecycle;
     private final EnterpriseLabLoopbackAllocationRouter router;
+    private final AllocationRestoration allocationRestoration;
     private final EnterpriseLabLoopbackObservationIngress ingress;
     private final EnterpriseLabExperimentObservationBaseline observationBaseline;
     private final EnterpriseLabExperimentConfiguration configuration;
@@ -59,8 +60,19 @@ public final class EnterpriseLabExperimentEvaluator {
             EnterpriseLabLoopbackAllocationRouter router,
             EnterpriseLabLoopbackObservationIngress ingress,
             EnterpriseLabExperimentObservationBaseline observationBaseline) {
+        this(lifecycle, router, ingress, observationBaseline, router::restoreBaseline);
+    }
+
+    EnterpriseLabExperimentEvaluator(
+            EnterpriseLabExperimentLifecycle lifecycle,
+            EnterpriseLabLoopbackAllocationRouter router,
+            EnterpriseLabLoopbackObservationIngress ingress,
+            EnterpriseLabExperimentObservationBaseline observationBaseline,
+            AllocationRestoration allocationRestoration) {
         this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle cannot be null");
         this.router = Objects.requireNonNull(router, "router cannot be null");
+        this.allocationRestoration = Objects.requireNonNull(
+                allocationRestoration, "allocationRestoration cannot be null");
         this.ingress = Objects.requireNonNull(ingress, "ingress cannot be null");
         this.observationBaseline = Objects.requireNonNull(
                 observationBaseline, "observationBaseline cannot be null");
@@ -355,7 +367,8 @@ public final class EnterpriseLabExperimentEvaluator {
 
         AllocationChangeReceipt restore;
         try {
-            restore = router.restoreBaseline("normal bounded experiment completion");
+            restore = allocationRestoration.restore(
+                    "normal bounded experiment completion");
         } catch (RuntimeException exception) {
             return new ActionOutcome(
                     Disposition.FAILED_CLOSED,
@@ -399,7 +412,7 @@ public final class EnterpriseLabExperimentEvaluator {
         AllocationChangeReceipt restore = null;
         boolean restored = false;
         try {
-            restore = router.restoreBaseline(boundedActionReason(reason));
+            restore = allocationRestoration.restore(boundedActionReason(reason));
             restored = baselineReceiptVerified(restore);
         } catch (RuntimeException exception) {
             triggers.add(Trigger.BASELINE_RESTORATION_FAILED);
@@ -815,6 +828,11 @@ public final class EnterpriseLabExperimentEvaluator {
         }
         String reason = value.replace('\r', ' ').replace('\n', ' ').trim();
         return reason.length() <= 220 ? reason : reason.substring(0, 220);
+    }
+
+    @FunctionalInterface
+    interface AllocationRestoration {
+        AllocationChangeReceipt restore(String reason);
     }
 
     public enum EvaluationStatus {

@@ -58,6 +58,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
     private final EnterpriseLabExperimentRecoveryGate recoveryGate;
     private final Optional<EnterpriseLabAllocationReconciliationGate>
             allocationReconciliationGate;
+    private final Optional<EnterpriseLabAllocationSupervisor> allocationSupervisor;
     private final Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence;
     private final Optional<EnterpriseLabEvidenceOwnershipLease> ownershipLease;
     private final Optional<EnterpriseLabEvidenceOwnershipRenewer> ownershipRenewer;
@@ -139,6 +140,32 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                         "allocationReconciliationGate cannot be null")));
     }
 
+    public EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            EnterpriseLabExperimentDurableEvidenceRepository durableEvidence,
+            EnterpriseLabEvidenceOwnershipLease ownershipLease,
+            EnterpriseLabAllocationReconciliationGate allocationReconciliationGate,
+            EnterpriseLabAllocationSupervisor allocationSupervisor) {
+        this(
+                targetCatalog,
+                new EnterpriseLabScenarioCatalogService(),
+                new EnterpriseLabAdaptiveDecisionService(),
+                Clock.systemUTC(),
+                System::nanoTime,
+                DEFAULT_MAX_RETAINED_EXPERIMENTS,
+                recoveryGate,
+                Optional.of(Objects.requireNonNull(
+                        durableEvidence, "durableEvidence cannot be null")),
+                Optional.of(Objects.requireNonNull(
+                        ownershipLease, "ownershipLease cannot be null")),
+                Optional.of(Objects.requireNonNull(
+                        allocationReconciliationGate,
+                        "allocationReconciliationGate cannot be null")),
+                Optional.of(Objects.requireNonNull(
+                        allocationSupervisor, "allocationSupervisor cannot be null")));
+    }
+
     EnterpriseLabExperimentOperatorService(
             EnterpriseLabExperimentTargetCatalog targetCatalog,
             EnterpriseLabScenarioCatalogService scenarioCatalog,
@@ -210,6 +237,32 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence,
             Optional<EnterpriseLabEvidenceOwnershipLease> ownershipLease,
             Optional<EnterpriseLabAllocationReconciliationGate> allocationReconciliationGate) {
+        this(
+                targetCatalog,
+                scenarioCatalog,
+                decisionService,
+                clock,
+                monotonicNanos,
+                maxRetainedExperiments,
+                recoveryGate,
+                durableEvidence,
+                ownershipLease,
+                allocationReconciliationGate,
+                Optional.empty());
+    }
+
+    EnterpriseLabExperimentOperatorService(
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabScenarioCatalogService scenarioCatalog,
+            EnterpriseLabAdaptiveDecisionService decisionService,
+            Clock clock,
+            LongSupplier monotonicNanos,
+            int maxRetainedExperiments,
+            EnterpriseLabExperimentRecoveryGate recoveryGate,
+            Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence,
+            Optional<EnterpriseLabEvidenceOwnershipLease> ownershipLease,
+            Optional<EnterpriseLabAllocationReconciliationGate> allocationReconciliationGate,
+            Optional<EnterpriseLabAllocationSupervisor> allocationSupervisor) {
         this.targetCatalog = Objects.requireNonNull(targetCatalog, "targetCatalog cannot be null");
         this.scenarioCatalog = Objects.requireNonNull(scenarioCatalog, "scenarioCatalog cannot be null");
         this.decisionService = Objects.requireNonNull(decisionService, "decisionService cannot be null");
@@ -219,6 +272,13 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         this.allocationReconciliationGate = Objects.requireNonNull(
                 allocationReconciliationGate,
                 "allocationReconciliationGate cannot be null");
+        this.allocationSupervisor = Objects.requireNonNull(
+                allocationSupervisor, "allocationSupervisor cannot be null");
+        if (this.allocationSupervisor.isPresent()
+                && this.allocationReconciliationGate.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "allocation supervisor requires a reconciliation gate");
+        }
         this.durableEvidence = Objects.requireNonNull(
                 durableEvidence, "durableEvidence cannot be null");
         this.ownershipLease = Objects.requireNonNull(
@@ -314,6 +374,23 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 durableEvidence.map(repository ->
                         (EnterpriseLabEvidenceMutationAuthority)
                                 repository::requireMutationAuthorization));
+        if (allocationSupervisor.isPresent()) {
+            try {
+                var report = allocationSupervisor.orElseThrow().attachRouter(
+                        router,
+                        EnterpriseLabAllocationReconciler.ReconciliationTrigger.PRE_ADMISSION);
+                if (!report.ready()) {
+                    return denied("arm", safeRequest.operatorRequestId(), safeRequest.experimentId(),
+                            "ALLOCATION_RECONCILIATION_NOT_READY",
+                            "pre-admission allocation reconciliation failed closed");
+                }
+            } catch (RuntimeException exception) {
+                failAdmission("ALLOCATION_RECONCILIATION_FAILED");
+                return denied("arm", safeRequest.operatorRequestId(), safeRequest.experimentId(),
+                        "ALLOCATION_RECONCILIATION_FAILED",
+                        "pre-admission allocation reconciliation could not prove a safe baseline");
+            }
+        }
         Instant now = clock.instant();
         EnterpriseLabExperimentConfiguration configuration = new EnterpriseLabExperimentConfiguration(
                 EnterpriseLabExperimentConfiguration.SCHEMA_VERSION,
@@ -415,8 +492,14 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                     "expired experiment cannot install a candidate allocation");
         } else {
             requireSameMutationOwnership(authorization);
-            allocation = session.router.applyCandidate(
-                    session.configuration.candidateDecision(), true);
+            allocation = allocationSupervisor
+                    .map(supervisor -> supervisor.applyCandidate(
+                            internalRequestId("allocation-start", safeRequestId),
+                            safeExperimentId,
+                            session.configuration.candidateDecision(),
+                            true))
+                    .orElseGet(() -> session.router.applyCandidate(
+                            session.configuration.candidateDecision(), true));
         }
         requireSameMutationOwnership(authorization);
         CommandReceipt started = session.lifecycle.start(safeRequestId, allocation, now);
@@ -427,10 +510,12 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                     session.lifecycle,
                     session.router,
                     session.ingress,
-                    session.observationBaseline);
+                    session.observationBaseline,
+                    reason -> restoreAllocation(session, reason));
         } else if (session.router.currentSnapshot().kind() == Kind.CANDIDATE) {
             requireSameMutationOwnership(authorization);
-            AllocationChangeReceipt restored = session.router.restoreBaseline("failed start rollback");
+            AllocationChangeReceipt restored = restoreAllocation(
+                    session, "failed start rollback");
             trafficAction = trafficAction || restored.trafficActionPerformed();
         }
         LifecycleSnapshot after = session.lifecycle.snapshot();
@@ -707,6 +792,32 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 EnterpriseLabAllocationReconciliationGate::admissionStatus);
     }
 
+    public Optional<EnterpriseLabAllocationSupervisor.SupervisionStatus>
+            allocationSupervisionStatus() {
+        return allocationSupervisor.map(EnterpriseLabAllocationSupervisor::status);
+    }
+
+    public Optional<EnterpriseLabAllocationSupervisor.SupervisionStatus>
+            verifyAllocationSupervision() {
+        return allocationSupervisor.map(supervisor -> {
+            supervisor.verify();
+            return supervisor.status();
+        });
+    }
+
+    public Optional<AllocationSupervisionRestoration>
+            restoreSupervisedSafeBaseline() {
+        return allocationSupervisor.map(supervisor -> {
+            AllocationChangeReceipt receipt = supervisor.restoreSafeBaseline(
+                    "authenticated operator requested verified durable baseline restoration");
+            return new AllocationSupervisionRestoration(
+                    receipt.status(),
+                    receipt.trafficActionPerformed(),
+                    receipt.reason(),
+                    supervisor.status());
+        });
+    }
+
     public Optional<EnterpriseLabExperimentDurableEvidenceRepository> durableEvidence() {
         return durableEvidence;
     }
@@ -750,8 +861,8 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                             "application shutdown requested safe experiment termination", "shutdown");
                 } catch (RuntimeException exception) {
                     requireMutationOwnership();
-                    AllocationChangeReceipt restored = session.router.restoreBaseline(
-                            "shutdown fail-closed restoration");
+                    AllocationChangeReceipt restored = restoreAllocation(
+                            session, "shutdown fail-closed restoration");
                     LifecycleSnapshot before = session.lifecycle.snapshot();
                     if (before.candidateAllocationActive()) {
                         session.lifecycle.beginRollback(
@@ -766,12 +877,16 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             });
         } finally {
             try {
-                durableEvidence.ifPresent(EnterpriseLabExperimentDurableEvidenceRepository::close);
+                allocationSupervisor.ifPresent(EnterpriseLabAllocationSupervisor::close);
             } finally {
                 try {
-                    ownershipRenewer.ifPresent(EnterpriseLabEvidenceOwnershipRenewer::close);
+                    durableEvidence.ifPresent(EnterpriseLabExperimentDurableEvidenceRepository::close);
                 } finally {
-                    ownershipLease.ifPresent(EnterpriseLabEvidenceOwnershipLease::close);
+                    try {
+                        ownershipRenewer.ifPresent(EnterpriseLabEvidenceOwnershipRenewer::close);
+                    } finally {
+                        ownershipLease.ifPresent(EnterpriseLabEvidenceOwnershipLease::close);
+                    }
                 }
             }
         }
@@ -883,8 +998,8 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             try {
                 Optional<MutationAuthorization> authorization = requireMutationOwnership();
                 requireSameMutationOwnership(authorization);
-                AllocationChangeReceipt restored = session.router.restoreBaseline(
-                        "durable journal append failed closed");
+                AllocationChangeReceipt restored = restoreAllocation(
+                        session, "durable journal append failed closed");
                 String internalId = internalRequestId("durable-append-failure", requestId);
                 if (snapshot.state() == EnterpriseLabExperimentState.RUNNING
                         || snapshot.state() == EnterpriseLabExperimentState.HOLDING) {
@@ -955,6 +1070,12 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
     private void failAdmission(String reasonCode) {
         recoveryGate.fail(reasonCode);
         allocationReconciliationGate.ifPresent(gate -> gate.fail(reasonCode));
+    }
+
+    private AllocationChangeReceipt restoreAllocation(Session session, String reason) {
+        return allocationSupervisor
+                .map(supervisor -> supervisor.restoreSafeBaseline(reason))
+                .orElseGet(() -> session.router.restoreBaseline(reason));
     }
 
     private EnterpriseLabExperimentOperatorRecord record(Session session) {
@@ -1421,6 +1542,19 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                     lifecycleProgress,
                     route.requestExecution().targetScope(),
                     route.requestExecution().reason());
+        }
+    }
+
+    public record AllocationSupervisionRestoration(
+            ChangeStatus restorationStatus,
+            boolean trafficActionPerformed,
+            String reason,
+            EnterpriseLabAllocationSupervisor.SupervisionStatus status) {
+        public AllocationSupervisionRestoration {
+            restorationStatus = Objects.requireNonNull(
+                    restorationStatus, "restorationStatus cannot be null");
+            reason = requireReason(reason);
+            status = Objects.requireNonNull(status, "status cannot be null");
         }
     }
 

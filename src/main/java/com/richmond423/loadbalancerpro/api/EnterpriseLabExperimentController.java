@@ -2,6 +2,9 @@ package com.richmond423.loadbalancerpro.api;
 
 import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
 import com.richmond423.loadbalancerpro.core.AdaptiveRoutingPolicyMode;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabAdaptiveDecisionService;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationReconciliationGate;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationSupervisor;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalDirectory;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentDurableEvidenceRepository;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalReplayEngine;
@@ -17,6 +20,8 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorServic
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentRecoveryGate;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentStartupReconciler;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentTargetCatalog;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackAllocationRouter;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackObservationIngress;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabProcessLocalAllocationRecovery;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipLease;
@@ -520,8 +525,50 @@ public class EnterpriseLabExperimentController {
                 EnterpriseLabExperimentDurableEvidenceRepository durableEvidence =
                         new EnterpriseLabExperimentDurableEvidenceRepository(
                                 directory, recoveryGate, clock);
-                return new EnterpriseLabExperimentOperatorService(
-                        targetCatalog, recoveryGate, durableEvidence, ownership);
+                if (targetCatalog.size() == 0) {
+                    return new EnterpriseLabExperimentOperatorService(
+                            targetCatalog, recoveryGate, durableEvidence, ownership);
+                }
+                if (targetCatalog.size() != 1) {
+                    throw new IllegalStateException(
+                            "durable allocation supervision requires exactly one fixed loopback scenario");
+                }
+                String scenarioId = targetCatalog.boundScenarioIds().get(0);
+                var targets = targetCatalog.findTargets(scenarioId).orElseThrow();
+                var decision = new EnterpriseLabAdaptiveDecisionService().decide(
+                        scenarioId,
+                        AdaptiveRoutingPolicyMode.ACTIVE_EXPERIMENT.wireValue(),
+                        true,
+                        false,
+                        false);
+                EnterpriseLabLoopbackAllocationRouter startupRouter =
+                        EnterpriseLabLoopbackAllocationRouter.owned(
+                                targets,
+                                new EnterpriseLabLoopbackObservationIngress(
+                                        targets.stream().map(value -> value.backendId()).toList()),
+                                decision.decision().guardrailDecision().baselineAllocations(),
+                                ownership.ownershipGate());
+                EnterpriseLabAllocationReconciliationGate allocationGate =
+                        EnterpriseLabAllocationReconciliationGate.pending();
+                EnterpriseLabAllocationSupervisor allocationSupervisor =
+                        EnterpriseLabAllocationSupervisor.create(
+                                trustedRoot,
+                                targetCatalog,
+                                startupRouter,
+                                ownership.ownershipGate(),
+                                allocationGate);
+                try {
+                    return new EnterpriseLabExperimentOperatorService(
+                            targetCatalog,
+                            recoveryGate,
+                            durableEvidence,
+                            ownership,
+                            allocationGate,
+                            allocationSupervisor);
+                } catch (RuntimeException exception) {
+                    allocationSupervisor.close();
+                    throw exception;
+                }
             } catch (RuntimeException exception) {
                 try {
                     ownership.close();

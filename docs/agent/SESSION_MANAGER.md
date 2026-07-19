@@ -6,7 +6,74 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Durable Allocation-State Supervision PR5 Checkpoint
+## Active Durable Allocation-State Supervision PR6 Checkpoint
+
+Timestamp: 2026-07-18T18:42-07:00
+
+Current slot: ALLOCATION-PR6 - authenticated operator evidence and packaged separate-process recovery proof
+
+Started from clean synchronized main: `793dd9ab53b31ead825b6321006b57c9dca909cc`
+
+Current branch: `codex/allocation-operator-evidence-proof`
+
+PR URL: not opened yet
+
+Prior slot closure: PR #478 merged normally from exact final head
+`d1d234bcf32e03c18935d230928fa44c5a4057dd` as `793dd9ab53b31ead825b6321006b57c9dca909cc`.
+Exact-head PR CI `29666707811`, push CI `29666706893`, CodeQL `29666707842`, dependency review, code scanning,
+Docker build/runtime, controlled container evidence, and blocking Trivy passed. Exact merge-main CI `29666940348` and
+CodeQL `29666940343` passed the same full gate set. The source branch is preserved on origin; local main and origin/main
+matched the merge commit before this branch was created.
+
+PR6 scope: expose authenticated, operator-role-protected, bounded and sanitized allocation-supervision status plus
+explicit synchronous verification and safe-baseline restoration requests; add a proof-only externalized loopback router
+state holder and packaged separate-JVM crash/takeover/drift/restoration proof. Reuse the existing canonical codec,
+transaction coordinator, reconciler, ownership fencing, API-key/OAuth2 security, CLI dispatch, and target-only evidence
+patterns. Prove normal commit, crash before apply, crash after apply before commit, crash after commit, stale-owner
+takeover/mutation denial, backend/share/generation drift, failed restoration, and repeated reconciliation.
+
+Out of scope: arbitrary allocation/backend/path/command inputs, caller-selected generations or phases, force commit,
+guardrail/read-back/restoration bypass, production routing, external targets, periodic supervision, native executables,
+new dependencies, POM/workflow/Docker/Compose changes, multi-host/network-filesystem correctness, malicious-process
+resistance, and production readiness. Preserve and exclude the unrelated untracked
+`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md`.
+
+Decision: audit existing operator controllers/security DTOs and packaged proof runners first, then implement the smallest
+shared supervision service and proof-only subprocess seam that covers the required end-to-end scenarios without changing
+the production router dependency graph.
+
+Implementation checkpoint: the live durable operator now routes candidate application and every lifecycle restoration
+through one ownership-fenced allocation supervisor. Spring startup establishes and reconciles the fixed repository-owned
+loopback baseline before constructing the renewing operator service. Authenticated status, verification, and safe-reset
+operations expose bounded backend identities, phases, generations, fingerprints, readiness, drift, reconciliation, and
+history summaries without addresses, paths, raw allocations, caller-selected state, force, or bypass input. The packaged
+proof uses a separate JVM literal-loopback installed-state holder with a 64-hex per-run key, bounded request/body/lifetime
+limits, canonical read-back, and clean or forced shutdown; production construction retains the atomic in-memory store.
+
+Final local verification: the refreshed 12-class allocation/operator/controller/Spring/API-key/OAuth2/proof bundle
+passed; `mvn -B test`, `mvn -B clean package`, and `mvn -B verify` each passed 3,271 tests with zero failures, errors, or
+skips, 10 tests above PR5. JaCoCo is 84.34% instruction and 67.33% branch. Tomcat core, WebSocket, and EL resolve only
+to 10.1.55; validated CycloneDX JSON and XML each contain 144 dependency components plus the one XML metadata project.
+The target-only workflow and packaged allocation, durable recovery, ownership, and experiment proofs pass. Their final
+fingerprints are `d1143a63ecdd3f1fdf49c03f03520581afee632a9654d46b4c4651fa426c8891`,
+`3a493a7aa83fbbf41bd0c7a757b87894feb5bf5b71643aa49d2ed839ff7afd6a`,
+`0db266f951e5cbc690c4474ca2fc03d384e87b5ecaafe9f3a79bc84fadd595ea`, and
+`85dbaf40a6649e0ac665b0356cad0df362bca7a2a722130b96db78e1a6f84b24`.
+
+Artifact evidence: the 95,130,664-byte executable JAR has 1,306 entries, 26 allocation-supervision/proof entries, and
+SHA-256 `a471a75955b0e8f67ed96d43cace8d35c044450e1a26ba612cf3fe3077f364ab`. Literal `127.0.0.1:18080`
+health, landing-page, and proxy-status checks returned 200; the JVM and listener were then confirmed absent.
+
+Scope/safety checkpoint: no POM, dependency, workflow, Docker, Compose, application-resource, production target,
+external target, cloud/tenant, database, broker, periodic scheduler, arbitrary operator command/path/allocation/
+generation/phase, force-commit, guardrail/read-back/restoration bypass, secret value, or tracked generated-evidence
+change is present. The proof subprocess is fixed Java-only, literal-loopback, authenticated per run, byte/request/time
+bounded, and not used by the production supervisor. The unrelated untracked
+`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains preserved and excluded. PR6 has 3,344 executable/test/proof
+and 408 required process additions (89.13% / 10.87%); the campaign aggregate is 11,327 executable/test/proof and 1,493
+process additions (88.35% / 11.65%). PR creation, exact-head remote gates, merge, and merge-main verification remain.
+
+## Completed Durable Allocation-State Supervision PR5 Checkpoint
 
 Timestamp: 2026-07-18T17:16-07:00
 

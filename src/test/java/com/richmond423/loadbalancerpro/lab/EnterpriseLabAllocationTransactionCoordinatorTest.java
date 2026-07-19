@@ -117,6 +117,58 @@ class EnterpriseLabAllocationTransactionCoordinatorTest {
     }
 
     @Test
+    void failedAtomicApplyThatRetainsBaselineDoesNotClaimRestoration() {
+        EnterpriseLabInstalledAllocationSnapshot initial = router.installedSnapshot();
+        EnterpriseLabLoopbackAllocationRouter.InstalledStateStore rejectingStore =
+                new EnterpriseLabLoopbackAllocationRouter.InstalledStateStore() {
+                    @Override
+                    public EnterpriseLabInstalledAllocationSnapshot read() {
+                        return initial;
+                    }
+
+                    @Override
+                    public boolean compareAndSet(
+                            EnterpriseLabInstalledAllocationSnapshot expected,
+                            EnterpriseLabInstalledAllocationSnapshot update) {
+                        return false;
+                    }
+                };
+        EnterpriseLabLoopbackAllocationRouter rejectingRouter =
+                new EnterpriseLabLoopbackAllocationRouter(
+                        targets,
+                        new EnterpriseLabLoopbackObservationIngress(
+                                targets.stream().map(
+                                        EnterpriseLabLoopbackTarget::backendId).toList()),
+                        decision.decision().guardrailDecision().baselineAllocations(),
+                        java.util.Optional.of(authority),
+                        clock,
+                        rejectingStore);
+        EnterpriseLabAllocationTransactionCoordinator coordinator =
+                new EnterpriseLabAllocationTransactionCoordinator(
+                        store,
+                        rejectingRouter,
+                        targetCatalog,
+                        authority,
+                        clock,
+                        checkpoint -> { },
+                        rejectingRouter::installedSnapshot);
+        coordinator.establishSafeBaseline("allocation-baseline-1");
+
+        TransactionReceipt failed = coordinator.applyCandidate(
+                "allocation-candidate-2", "experiment-1", decision, true);
+
+        assertEquals(TransactionStatus.FAILED_NOT_RESTORED, failed.status());
+        assertEquals("APPLY_FAILED_BASELINE_RETAINED", failed.reasonCode());
+        assertFalse(failed.trafficActionPerformed());
+        assertFalse(failed.baselineRestorationAttempted());
+        assertFalse(failed.baselineRestored());
+        assertEquals(Kind.BASELINE,
+                rejectingRouter.installedSnapshot().routingSnapshot().kind());
+        assertEquals(TransactionPhase.FAILED,
+                store.replay().chainHead().orElseThrow().transactionPhase());
+    }
+
+    @Test
     void transactionReceiptRejectsUnsafeEvidenceText() {
         TransactionReceipt baseline = coordinator().establishSafeBaseline("allocation-baseline-1");
 

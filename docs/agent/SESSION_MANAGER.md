@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Independent Allocation Supervisor PR5 Checkpoint
 
-Timestamp: 2026-07-19T06:58:00-07:00
+Timestamp: 2026-07-19T07:31:28-07:00
 
 Current slot: SUPERVISOR-PR5 - dual-restart reconciliation and bounded supervision
 
@@ -25,6 +25,9 @@ Executable/local-verification checkpoint: `ad915b7aed0b973812d7a1acf15d7e6867968
 PR-created checkpoint: PR #484 opened from the verified implementation head
 `ad915b7aed0b973812d7a1acf15d7e68679688e4`. This required session update advances the branch, so exact-head remote
 gates must use the subsequent metadata checkpoint rather than the PR-opening head.
+
+First pushed metadata checkpoint: `5119e93d1468b5e6f513d2b07cde1040773ad931`. A bounded test-only recovery
+correction and the mandatory failure record are verified in the working tree and pending the next commit.
 
 Prior slot closure: PR #483 merged normally from exact final head
 `7b827a56283e308afe7032fdfef2b35237ee2291` as `edd2db28946828fc1d969c797bb0a70e9cd4431c`.
@@ -81,6 +84,17 @@ replay-content fingerprint. A higher application owner therefore reads retained 
 application allocation chain with the terminalized experiment replay, restores the safe baseline where required, and
 publishes readiness only after exact owner, durable transaction, installed-state, and replay agreement.
 
+Exact-head failure/recovery checkpoint: PR CI `29690047506` failed one test on pushed head `5119e93d1468b5e6f513d2b07cde1040773ad931`,
+while exact same-head push CI `29690046212` passed the full zero-skip test, coverage, package, artifact, SBOM, packaged-JAR,
+Docker/runtime, controlled evidence, and blocking Trivy lanes; CodeQL `29690047524`, aggregate CodeQL, and PR dependency
+review also passed. The failed run's sanitized assertion evidence showed a ready `SAFE_BASELINE_INSTALLED` reconciliation,
+four valid durable records, and matching fingerprints before the immediately following status projection failed closed as
+`ALLOCATION_STATUS_UNAVAILABLE`. The regression passed in 20 consecutive fresh local JVMs. The proof now permits exactly
+one additional explicit verification only when that intermediate result retains a ready reconciliation report, the
+application lifecycle is already terminal, and admission remains closed. Every other failure and a repeated projection
+failure still fail. No production source, transport bound, readiness rule, or guardrail changed, and fresh gates are
+required on the correction head; the old mixed remote result is not accepted as green PR evidence.
+
 Focused verification checkpoint: the 11-class restart/crash compatibility selector passed 94 tests with zero failures,
 errors, or skips. It covers application-only restart and ordered application-plus-supervisor restart as parameterized
 real authenticated server/bridge scenarios, live-application supervisor loss and explicit higher-generation reconnect,
@@ -88,23 +102,31 @@ stale application rejection, candidate non-resumption, baseline restoration, all
 post-renewal verification, supervisor incomplete-apply reconstruction, application coordinator crash/read-back windows,
 startup journal replay, allocation reconciliation, operator behavior, client fencing, separate-process supervisor restart,
 and Spring configuration. The reconnect proof deliberately leaves the first application terminalization nonterminal,
-proves the allocation gate remains closed, and then proves a second verification retries the same new epoch and completes
-rollback before readiness opens. The standalone restart/renewal selector passed all eight tests, and the 13-class campaign
-documentation selector passed 75 tests. No workspace-bound Java, Maven, Surefire, or Node process remained.
+proves the allocation gate remains closed, then retries the same new epoch and completes rollback before readiness opens.
+If the post-reconciliation sanitized status read itself fails closed, the proof accepts one further explicit retry only
+after confirming terminal lifecycle, retained ready reconciliation, and closed admission. The corrected standalone
+restart/renewal selector passed all eight tests, and the exact regression passed 20 consecutive fresh-JVM stress runs.
+No workspace-bound Java, Maven, Surefire, or Node process remained.
 
-Full local verification checkpoint: `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B clean package`, and
-`mvn -B verify` passed on the final audited source. Full test, clean package, and verify each report 3,327 tests with zero
-failures, errors, or skips. The packaged ten-scenario shadow workflow passed and wrote only ignored `target/` evidence;
-the repository local artifact verifier also passed. The executable JAR is 95,298,744 bytes with 1,361 entries, contains
-all six changed runtime classes plus required application resources, and has SHA-256
-`037728E89D66D01281A9FE33158B49FE77C20C2FF078DDD70C5FD9E102303D0E`. JaCoCo analyzed 964 classes at 84.35 percent
-instruction, 67.18 percent branch, and 83.84 percent line coverage. The Tomcat dependency tree resolves core, WebSocket,
-and EL only at 10.1.55. CycloneDX 2.9.1 generated and validated JSON/XML v1.6 evidence with 144 dependency components.
+Full local verification checkpoint: after the bounded proof correction, the focused restart/renewal selector, 20-run
+fresh-JVM exact-regression stress loop, `mvn -q test`, `mvn -q "-DskipTests" package`, `mvn -B clean package`, and
+`mvn -B verify` passed. Full test, clean package, and verify each report 3,327 tests with zero failures, errors, or skips.
+The packaged ten-scenario shadow workflow passed and wrote only ignored `target/` evidence; the repository local artifact
+verifier also passed. After this session checkpoint was updated, all 41 documentation guards that directly reference the
+session manager passed 248 tests with zero failures, errors, or skips. The current executable JAR is 95,298,744 bytes with
+1,361 entries, contains all six changed runtime
+classes plus required application resources, and has SHA-256
+`289991D4A4826D5AFE2611451F0616166E967A5ED526B736A015F5CA156AD390`. JaCoCo analyzed 964 classes at 84.35 percent
+instruction, 67.17 percent branch, and 83.84 percent line coverage. The prior unchanged-source Tomcat dependency tree
+resolves core, WebSocket, and EL only at 10.1.55. Exact same-head push CI generated the unchanged CycloneDX 2.9.1
+JSON/XML v1.6 evidence and passed all supply-chain/runtime lanes before the test-only correction; fresh correction-head
+remote evidence remains mandatory.
 
-Composition/scope checkpoint: before this local-checkpoint update, the 11-file PR5 candidate had 968 production/test
-churn lines and 212 documentation/process churn lines (82.03 / 17.97 percent). Across the authoritative campaign diff from
-starting main `a3a17f847e95884ea37f225155d29dbb1ac285c9`, the candidate had 10,404 production/test churn lines and 1,454
-documentation/process churn lines (87.74 / 12.26 percent). PR6 remains executable proof/status work and must bring the
+Composition/scope checkpoint: the 11-file PR5 candidate has 968 production/test churn lines and 241
+documentation/process churn lines (80.07 / 19.93 percent); mandatory failure/session records account for most process
+churn. Across the authoritative campaign diff from starting main `a3a17f847e95884ea37f225155d29dbb1ac285c9`, the
+candidate has 10,404 production/test churn lines and 1,483 documentation/process churn lines (87.52 / 12.48 percent).
+PR6 remains executable proof/status work and must bring the
 final campaign into the 88-92 percent target. Scope scans found no POM, dependency, CI/workflow, Docker/Compose,
 runtime-resource, public endpoint, arbitrary host/port/path, external-target, cloud/tenant, database, broker,
 production-routing, force-control, credential, proxy, redirect, or generated tracked-evidence change. `git diff --check`
@@ -120,8 +142,8 @@ SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
 
 Blocker: none.
 
-Next action: verify and commit this PR-created checkpoint, push it without staging the CSRBT proposal, then require fresh
-exact-head CI, CodeQL, dependency review, Docker/runtime, SBOM, and blocking Trivy gates before merge.
+Next action: commit the verified bounded recovery checkpoint without staging the CSRBT proposal, push it, then require
+fresh exact-head CI, CodeQL, dependency review, Docker/runtime, SBOM, and blocking Trivy gates before merge.
 
 Decision: continue.
 

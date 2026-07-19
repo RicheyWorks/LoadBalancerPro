@@ -377,6 +377,20 @@ class EnterpriseLabSupervisorAllocationBridgeTest {
 
                     var verified = operatorService.verifyAllocationSupervision()
                             .orElseThrow();
+                    if (!verified.ready()) {
+                        assertEquals(
+                                "ALLOCATION_STATUS_UNAVAILABLE",
+                                verified.reasonCode(),
+                                verified.toString());
+                        assertTrue(
+                                verified.lastReconciliation().orElseThrow().ready(),
+                                verified.toString());
+                        assertTrue(operatorService.findRecord("restart-experiment-1")
+                                .orElseThrow().lifecycle().terminal());
+                        assertFalse(allocationGate.admissionAllowed());
+                        verified = operatorService.verifyAllocationSupervision()
+                                .orElseThrow();
+                    }
                     EnterpriseLabSupervisorConnectionMetadata secondEpoch =
                             bridge.connectionMetadata();
                     assertTrue(verified.ready(), verified.toString());

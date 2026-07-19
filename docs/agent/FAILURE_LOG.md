@@ -6832,3 +6832,54 @@ and any active-session terminalization both succeed. Also verify the lifecycle i
 a non-throwing rejected cancellation receipt as success. The restart regression now forces the first terminalization to
 remain nonterminal, proves the allocation gate stays closed, restores the evaluator, retries the same new supervisor
 epoch, and proves rollback finishes before readiness reopens. The focused bridge/renewal selector passed after the fix.
+
+# 2026-07-19 - Supervisor PR5 exact-head PR CI test failure
+
+Branch/PR: `codex/supervisor-dual-restart-reconciliation` / `#484`
+
+Failing gate: exact-head PR CI run `29690047506`, job `88201047406`, on
+`5119e93d1468b5e6f513d2b07cde1040773ad931` failed in `Run tests` after 2m36s. Exact-head dependency review passed, but
+zero-skip, coverage, package, artifact, SBOM, packaged runtime, Docker/runtime, controlled container evidence, and blocking
+Trivy steps were correctly skipped and are not green evidence for this head.
+
+Observed state: the local corrected 3,327-test, clean-package, verify, packaged-workflow, artifact, dependency, SBOM, and
+coverage ladder was green before push. The remote failure is therefore pending exact failed-log diagnosis; do not merge,
+do not treat the local result as a replacement remote gate, and do not weaken or suppress the failing test.
+
+Diagnostic result: the failed-log inspection isolated one assertion in
+`EnterpriseLabSupervisorAllocationBridgeTest.supervisorRestartClosesAdmissionUntilExplicitReconnectRestoresAndTerminatesCandidate`.
+The second explicit verification had already produced a ready `SAFE_BASELINE_INSTALLED` reconciliation report with the
+durable baseline restored, four valid durable records, and matching baseline/committed/installed fingerprints. The
+immediately following sanitized status projection returned `ALLOCATION_STATUS_UNAVAILABLE`, closed allocation admission,
+and caused `assertTrue(verified.ready())` to fail. The exact same head's push CI test step passed all 3,327 tests, which
+rules out a deterministic allocation-chain mismatch but does not make the PR gate green. Inspect the bounded status read
+and the proof's handling of a transient post-reconciliation inspection failure before choosing a correction.
+
+Diagnostic tooling follow-up: a read-only `Select-String` command included the guessed path
+`EnterpriseLabSupervisorLoopbackClient.java`, which does not exist. PowerShell returned `PathNotFound`; no repository or
+external state changed. The first attempt to record this note also used an unmatched patch anchor and was safely rejected
+without changing the file. Correction: enumerate actual supervisor client/server filenames with `rg --files`, then use
+the exact paths for timeout and response inspection.
+
+Follow-up tooling result: enumeration identified `EnterpriseLabSupervisorClient.java`, but the same compound read-only
+command also passed the Unix-style wildcard `EnterpriseLabSupervisor*.java` as a literal Windows path. Ripgrep rejected
+that path with OS error 123 after returning the bridge matches. No state changed and the partial output is not complete
+audit evidence. Correction: inspect the enumerated exact client, server, and bridge paths without a shell wildcard.
+
+Follow-up tooling result: a read-only PowerShell range-print helper passed an array value to `Math.Min` and returned
+`ArgumentException` before printing the requested source slices. No state changed and no source conclusion relies on
+that output. Correction: use direct `Get-Content` slices for each exact file instead of the malformed generic helper.
+
+Root-cause audit and correction: the exact regression passed in the same head's push CI and in 20 consecutive local
+fresh-JVM invocations. The failed PR run's own sanitized result proves allocation reconciliation had already restored the
+baseline with a valid four-record chain and exact matching fingerprints; only the immediately following status projection
+failed closed. `EnterpriseLabAllocationSupervisor.status()` intentionally performs another bounded authoritative read and
+closes admission on any runtime uncertainty, so a proof that assumes that second read cannot transiently fail contradicts
+the intended fail-closed contract. The regression now permits exactly one additional explicit verification only when the
+intermediate result is `ALLOCATION_STATUS_UNAVAILABLE`, the retained reconciliation report is ready, the application
+lifecycle is already terminal, and admission is still closed. Any other intermediate failure or a repeated projection
+failure remains a test failure. Production behavior, transport bounds, readiness rules, and guardrails are unchanged.
+
+Verification tooling follow-up: while reconstructing the prior focused selector from existing Surefire XML counts, a
+read-only PowerShell command piped directly from a `foreach` statement and failed parsing with `EmptyPipeElement`. It did
+not start Maven or change any state. Correction: collect the report rows in an array and sort the completed collection.

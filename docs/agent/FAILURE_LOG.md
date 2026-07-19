@@ -6772,3 +6772,63 @@ Recovery verification: the persistent-terminal 13-class campaign documentation s
 `mvn -q "-DskipTests" package` each finished with real process exit 0. The serialized `mvn -B package` then reported
 3,318 tests with zero failures, errors, or skips and `BUILD SUCCESS`; the packaged ten-scenario Enterprise Lab shadow
 workflow also finished with exit 0. No overlapping Maven/Surefire process was used as evidence.
+
+# 2026-07-19 - Supervisor PR5 application-restart proof bypassed required takeover
+
+Branch/PR: `codex/supervisor-dual-restart-reconciliation` / no PR
+
+Failing check: the focused
+`EnterpriseLabSupervisorAllocationBridgeTest,EnterpriseLabEvidenceOwnershipRenewerTest` selector ran seven tests and
+reported one error. `applicationRestartAdoptsHigherOwnerReplaysJournalAndRestoresRetainedCandidate` called
+`acquire(...).ownership().orElseThrow()` after abandoning the first application epoch, and no ownership value was
+present.
+
+Observed/root cause: the test attempted a direct second acquisition even though the durable prior owner requires the
+repository's bounded takeover path. The application-restart implementation path already distinguishes acquisition
+from `TAKEOVER_NOT_PERMITTED` and performs startup reconciliation during takeover; the new proof skipped that required
+ordering. No production source, durable test data outside the JUnit temporary directory, supervisor credential,
+external target, unrelated file, or repository process was affected.
+
+Correction/result: update the proof to use the same acquire-or-takeover ordering as application startup, retaining the
+fail-closed experiment recovery gate and process-local inspection before the higher owner generation is accepted. Then
+rerun the focused restart and renewal selector before using any result as evidence.
+
+Follow-up result: the corrected acquire-or-takeover path reached the higher application owner, but the same focused
+selector again reported one error. Cross-evidence allocation startup restored the supervisor baseline and then failed
+closed with `EXPERIMENT_ALLOCATION_EVIDENCE_MISMATCH`; the replayed terminal experiment fingerprint did not agree with
+the durable allocation baseline. This is useful contract evidence rather than a test-infrastructure failure: the new
+cross-check is detecting an actual disagreement between the application journal recovery representation and allocation
+transaction evidence. No readiness was published and no candidate was resumed. Inspect the two canonical allocation
+fingerprints and correct the recovery seam; do not weaken or omit the cross-evidence check.
+
+Fingerprint inspection result: a one-method diagnostic assertion confirmed that the durable allocation baseline is
+`ffc3f1e32d10961763bfd3671f4240ef63b9d2f67ae93760b92f01331986d591`, while the replayed experiment baseline is
+`5146f8670dc592239a9344995c64bdc895e04633450e9c36481dd6ed571f04b7`. The selector failed at that deliberate assertion
+before attempting readiness. Inspect the actual canonical allocation maps and align the application startup baseline
+authority with the already-durable allocation baseline; retain the fingerprint assertion as regression coverage.
+
+Root-cause result: the next diagnostic proved the two baseline allocation maps are exactly equal. The mismatch comes
+from comparing different fingerprint domains: `ExperimentAllocationEvidence.from(...)` used the full experiment
+snapshot replay fingerprint, while durable allocation reconciliation expects the canonical scenario-plus-allocation
+fingerprint from `EnterpriseLabAllocationStateCodec`. Correct the evidence adapter to canonicalize baseline and
+last-applied allocations in the allocation transaction domain, while retaining the separate replay-content fingerprint
+for journal identity. Then rerun the exact focused proof.
+
+Follow-up tooling note: a read-only ownership-renewal audit lookup included the nonexistent path
+`EnterpriseLabEvidenceOwnershipStore.java`, so ripgrep exited 1 after returning partial results from the valid files.
+The ownership record store is named `EnterpriseLabEvidenceOwnershipRecordStore.java`, and renewal orchestration lives
+in `EnterpriseLabEvidenceOwnershipLease.java`. The failed lookup changed nothing and is not audit evidence; use the
+discovered exact paths for the corrected inspection.
+
+Follow-up implementation audit: explicit supervisor reconnection initially tracked the epoch change only in the current
+method invocation. If allocation reconciliation or active-session termination failed after the replacement client was
+accepted, a retry saw the new client as healthy, treated the epoch as unchanged, and could republish allocation readiness
+without retrying nonterminal application-session termination. The supervisor baseline remained safe, but the application
+lifecycle could remain active, so this was not an acceptable complete-reconciliation result.
+
+Correction/result: retain the last fully reconciled supervisor connection metadata in the operator service, compare it
+with the currently pinned metadata on every explicit verification, and advance it only after allocation reconciliation
+and any active-session terminalization both succeed. Also verify the lifecycle is actually terminal rather than treating
+a non-throwing rejected cancellation receipt as success. The restart regression now forces the first terminalization to
+remain nonterminal, proves the allocation gate stays closed, restores the evaluator, retries the same new supervisor
+epoch, and proves rollback finishes before readiness reopens. The focused bridge/renewal selector passed after the fix.

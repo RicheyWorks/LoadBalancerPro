@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 import java.util.concurrent.locks.LockSupport;
 
@@ -113,6 +114,44 @@ class EnterpriseLabEvidenceOwnershipRenewerTest {
             assertFalse(allocationGate.admissionAllowed());
         } finally {
             assertTrue(lease.release().operatingSystemLockReleased());
+        }
+    }
+
+    @Test
+    void boundedSupervisorVerifierClosesOnlyAllocationAdmissionAndKeepsOwnershipRenewalAlive() {
+        MutableClock clock = new MutableClock(Instant.parse("2026-07-17T18:20:00Z"));
+        var acquisition = EnterpriseLabEvidenceOwnershipManager.acquire(
+                temporaryDirectory, POLICY, clock);
+        EnterpriseLabEvidenceOwnershipLease lease = acquisition.ownership().orElseThrow();
+        EnterpriseLabExperimentRecoveryGate recoveryGate =
+                EnterpriseLabExperimentRecoveryGate.inMemoryOnly();
+        EnterpriseLabAllocationReconciliationGate allocationGate =
+                EnterpriseLabAllocationReconciliationGate.pending();
+        AtomicInteger checks = new AtomicInteger();
+        try (EnterpriseLabEvidenceOwnershipRenewer renewer =
+                new EnterpriseLabEvidenceOwnershipRenewer(
+                        lease.ownershipGate(),
+                        recoveryGate,
+                        Optional.of(allocationGate),
+                        Optional.of(() -> {
+                            checks.incrementAndGet();
+                            throw new IllegalStateException("supervisor epoch changed");
+                        }),
+                        POLICY.renewalInterval())) {
+            clock.advance(Duration.ofMillis(80));
+
+            assertTrue(await(() -> checks.get() >= 1));
+            int firstCount = checks.get();
+            assertTrue(await(() -> checks.get() > firstCount));
+            assertEquals(OperationStatus.SUCCEEDED,
+                    renewer.lastResult().orElseThrow().status());
+            assertTrue(recoveryGate.admissionAllowed());
+            assertEquals(
+                    "SUPERVISOR_SESSION_UNAVAILABLE",
+                    allocationGate.admissionStatus().reasonCode());
+            assertFalse(allocationGate.admissionAllowed());
+        } finally {
+            assertEquals(OperationStatus.SUCCEEDED, lease.release().status());
         }
     }
 

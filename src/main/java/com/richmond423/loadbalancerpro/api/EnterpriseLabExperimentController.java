@@ -531,12 +531,16 @@ public class EnterpriseLabExperimentController {
                 EnterpriseLabExperimentJournalDirectory directory =
                         EnterpriseLabExperimentJournalDirectory.create(
                                 trustedRoot, ownership.ownershipGate());
-                new EnterpriseLabExperimentStartupReconciler(
+                EnterpriseLabExperimentStartupReconciler.RecoveryReport recoveryReport =
+                        new EnterpriseLabExperimentStartupReconciler(
                         directory,
                         allocationRecovery,
                         recoveryGate,
                         clock).initialize();
                 ownership.completeApplicationReconciliation(recoveryGate);
+                List<EnterpriseLabExperimentJournalReplayEngine.ReconstructedExperimentState>
+                        replayedExperiments = replayedExperimentStates(
+                                directory, recoveryReport);
                 durableEvidence = new EnterpriseLabExperimentDurableEvidenceRepository(
                         directory, recoveryGate, clock);
                 if (runtimeMode == EnterpriseLabAllocationRuntimeMode.DISABLED) {
@@ -597,7 +601,8 @@ public class EnterpriseLabExperimentController {
                         targetCatalog,
                         startupRouter,
                         ownership.ownershipGate(),
-                        allocationGate);
+                        allocationGate,
+                        replayedExperiments);
                 if (supervisorBridge == null) {
                     return new EnterpriseLabExperimentOperatorService(
                             targetCatalog,
@@ -642,6 +647,36 @@ public class EnterpriseLabExperimentController {
             } catch (Exception closeFailure) {
                 failure.addSuppressed(closeFailure);
             }
+        }
+
+        private static List<EnterpriseLabExperimentJournalReplayEngine.ReconstructedExperimentState>
+                replayedExperimentStates(
+                EnterpriseLabExperimentJournalDirectory directory,
+                EnterpriseLabExperimentStartupReconciler.RecoveryReport recoveryReport) {
+            EnterpriseLabExperimentStartupReconciler.RecoveryReport safeReport =
+                    java.util.Objects.requireNonNull(
+                            recoveryReport, "recoveryReport cannot be null");
+            if (!safeReport.admissionAllowed()) {
+                throw new IllegalStateException(
+                        "allocation reconciliation requires successful experiment recovery");
+            }
+            return directory.discover().stream()
+                    .map(discovery -> {
+                        if (discovery.outcome()
+                                != EnterpriseLabExperimentJournalDirectory.DiscoveryOutcome.VERIFIED) {
+                            throw new IllegalStateException(
+                                    "allocation reconciliation requires only verified experiment journals");
+                        }
+                        var replay = directory.replay(
+                                discovery.experimentId().orElseThrow());
+                        if (replay.outcome()
+                                != EnterpriseLabExperimentJournalReplayEngine.Outcome.RECONSTRUCTED) {
+                            throw new IllegalStateException(
+                                    "allocation reconciliation requires reconstructed experiment evidence");
+                        }
+                        return replay.reconstructedState().orElseThrow();
+                    })
+                    .toList();
         }
     }
 }

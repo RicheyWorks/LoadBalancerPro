@@ -6439,3 +6439,68 @@ pinned Maven builder failed `dependency:go-offline` because its Java trust store
 `certificate_unknown` / PKIX path-building failure. Do not disable TLS verification, inject an unscoped certificate,
 change a pinned base, or alter Docker/POM behavior for this local trust-store condition. No final image or container was
 created. Exact-head remote CI must pass Docker build/runtime, controlled evidence, and blocking Trivy before merge.
+
+# 2026-07-19 - Supervisor PR3 remote-evidence download command was rejected locally
+
+Branch/PR: `codex/supervisor-authenticated-loopback-client` / `#482`
+
+Failing check: the first local command prepared to download the completed exact-head CI artifacts into a unique
+temporary directory and remove that directory after inspection, but the command policy rejected the combined shell
+before execution.
+
+Observed/root cause: combining artifact download, recursive temporary cleanup, and quoted search patterns in one
+PowerShell invocation exceeded the local command-policy boundary. No artifact was downloaded, no temporary directory
+was created, no repository file or git state changed, and no process, credential, external target, or durable
+supervisor state was affected. The exact-head PR CI, push CI, dependency review, and CodeQL results themselves were
+already successful and remain valid for the pre-log head.
+
+Correction/result: record the tooling failure, avoid the combined cleanup command, and use the successful workflow
+step results plus narrowly scoped, read-only log queries as evidence. Because this log entry changes the PR head,
+repeat the applicable focused verification and require fresh exact-head remote gates before merge.
+
+Follow-up tooling note: a read-only selector lookup repeated the already-documented PowerShell native-glob failure by
+passing `docs/agent/CAMPAIGN_*` directly to ripgrep. The invalid-path error produced no selector evidence and changed
+nothing. Use repository file discovery or explicit paths for the corrected lookup.
+
+Follow-up evidence note: after the full Maven package exited successfully, the first PowerShell Surefire aggregation
+cast `$xml.testsuite.errors` directly. PowerShell XML member resolution selected nested `<error>` elements where they
+exist rather than consistently reading the `errors` attribute, producing a false aggregate of 93 errors. The query
+changed nothing and is not test evidence. Read each suite attribute explicitly with `GetAttribute(...)`; retain only
+the successful Maven exit until a reliable summary is captured.
+
+Follow-up result: the explicit-attribute rerun then encountered one access-denied report and one report that vanished
+during enumeration, so its 3,306-test aggregate was incomplete and is also not evidence. No repository state changed.
+Avoid post-run report enumeration for this checkpoint; rerun the final package and capture Maven/Surefire's own reactor
+summary and process exit directly.
+
+# 2026-07-19 - Supervisor PR3 final verification left concurrent Maven children
+
+Branch/PR: `codex/supervisor-authenticated-loopback-client` / `#482`
+
+Failing check: process-state inspection after the Maven log ended mid-suite found three concurrent workspace-bound
+Maven/Surefire process trees from final `test`/`package` attempts that the command boundary had returned from while
+their child Java processes continued running.
+
+Observed/root cause: long Maven invocations without a persistent terminal outlived their local command wrapper, so
+later attempts overlapped against the same `target` tree. This caused the earlier transient Surefire report access and
+enumeration errors and means those overlapping attempts are not verification evidence. The inspected command lines
+were limited to this repository and the attempted PR3 verification; no unrelated process, external target, credential,
+or durable supervisor state was implicated.
+
+Correction/result: terminate only the verified stale workspace-bound Maven/Surefire process trees, confirm a clean
+process state, then run one serialized final verification ladder through a persistent terminal session and wait for
+its real process exit before using its evidence. Require fresh exact-head remote gates after the recovery commit.
+
+Follow-up tooling note: the first cleanup attempt safely refused before stopping anything because previously observed
+root PID 46268 had already exited by the time its command line was revalidated. Rediscover the live workspace-bound
+processes and derive the remaining roots from the current snapshot rather than reusing stale PIDs.
+
+Follow-up result: the current snapshot identified two remaining PR3 verification roots and their Maven, Surefire, and
+console descendants. Their command lines were revalidated against this workspace and the PR3 package-log invocation;
+only those trees were stopped. A subsequent snapshot found no workspace-bound Maven, Surefire, or proof child. Proceed
+with one serialized persistent-terminal verification ladder.
+
+Recovery verification: the persistent-terminal 13-class campaign documentation selector, `mvn -q test`, and
+`mvn -q "-DskipTests" package` each finished with real process exit 0. The serialized `mvn -B package` then reported
+3,318 tests with zero failures, errors, or skips and `BUILD SUCCESS`; the packaged ten-scenario Enterprise Lab shadow
+workflow also finished with exit 0. No overlapping Maven/Surefire process was used as evidence.

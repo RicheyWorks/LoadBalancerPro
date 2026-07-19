@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Independent Allocation Supervisor PR1 Checkpoint
 
-Timestamp: 2026-07-19T00:32:31-07:00
+Timestamp: 2026-07-19T00:41:03-07:00
 
 Current slot: SUPERVISOR-PR1 - bounded shared command/response protocol and canonical codec
 
@@ -58,8 +58,10 @@ Preserved unrelated file: `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` r
 SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
 
 Remote status: remote `main` remains at the exact starting SHA. CI run `29669917347` and CodeQL run `29669917412` are
-successful on that SHA. PR #480 is open; exact-head PR checks remain pending until this checkpoint is committed and
-pushed.
+successful on that SHA. PR #480 exact-head PR CI `29678294151`, push CI `29678293147`, and CodeQL `29678294177` are
+successful on `dc6bd68212636c8bd22b088f1f9cdae73d7b3e86`; dependency review, zero-skip tests, coverage, package and
+artifact checks, SBOM, packaged-JAR smoke, Docker build/runtime, controlled evidence, and the blocking image scan all
+passed. This required remote-check checkpoint advances the branch, so a fresh exact-head remote set remains mandatory.
 
 Blocker: none.
 
@@ -84,8 +86,8 @@ Unix-path test failure and a malformed read-only scope-scan regex are recorded i
 rerun successfully before the full gates. The only untracked path outside PR1 is the preserved CSRBT proposal, whose
 SHA-256 remains unchanged.
 
-Next action: commit and push this PR-created checkpoint, refresh final-head local verification, then require exact-head
-CI, CodeQL, dependency review, and scan gates before merge.
+Next action: commit and push this remote-check checkpoint, require the fresh exact-head CI/CodeQL set to complete
+successfully, then apply the merge gate without changing the reviewed scope.
 
 Decision: continue.
 

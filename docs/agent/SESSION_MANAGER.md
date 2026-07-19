@@ -16,9 +16,13 @@ Started from clean synchronized main: `4066ae2ef488a946bbfc9a7be173ea1f28503e8d`
 
 Current branch: `codex/allocation-startup-drift-reconciliation`
 
-PR URL: not opened yet
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/478
 
 Executable checkpoint: `b368d195bd411cab1adc814246ff7248aaec3f4e`
+
+PR-creation checkpoint: PR #478 opened from verified pre-PR head
+`e44dd3f03bb6dcaacf8952f851865eca2b21369a`; this required checkpoint advances the branch, so exact-head remote gates
+must use the new pushed SHA.
 
 Prior slot closure: PR #476 merged normally from exact final head
 `2e51054e62f2fce2e9c4828905d10b7191fabbb3` as `4066ae2ef488a946bbfc9a7be173ea1f28503e8d`.
@@ -71,9 +75,9 @@ Local Docker/runtime and Trivy are not claimed green: Docker CLI 28.0.4 cannot r
 and standalone `trivy` is unavailable. Exact-head remote Docker build/runtime, controlled evidence, and the blocking
 HIGH/CRITICAL Trivy scan remain mandatory before merge and again on merge-main.
 
-Composition: PR5 has 2,268 executable/test and 352 required process additions (86.56% / 13.44%); the heavier process share
-records 20 mandatory failure/recovery checkpoints. The campaign aggregate is 7,983 executable/test and 1,077 process
-additions (88.11% / 11.89%), inside the goal's 88-92% executable and 8-12% process band.
+Composition: PR5 has 2,268 executable/test and 356 required process additions (86.43% / 13.57%); the heavier process share
+records 20 mandatory failure/recovery checkpoints. The campaign aggregate is 7,983 executable/test and 1,081 process
+additions (88.07% / 11.93%), inside the goal's 88-92% executable and 8-12% process band.
 
 ## Completed Durable Allocation-State Supervision PR4 Checkpoint
 

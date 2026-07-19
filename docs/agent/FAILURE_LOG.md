@@ -6147,3 +6147,33 @@ package, Docker, runtime-evidence, and Trivy steps did not run.
 
 Correction/result: publish the bounded loopback port through a sibling temporary file and same-directory atomic rename,
 retain a safe rename fallback, and make parent parsing tolerate a not-yet-complete readiness signal before retrying.
+
+# 2026-07-19 - Supervisor PR1 path sanitization missed an embedded absolute path
+
+Branch/PR: `codex/supervisor-protocol-command-model` / no PR
+
+Failing check: the 48-test focused supervisor protocol and allocation bundle had one failure in
+`EnterpriseLabSupervisorProtocolCodecTest.responseReasonRejectsAddressAndPathShapedEvidence` because the response
+reason `failed to read /var/run/supervisor.sock` was accepted.
+
+Observed/root cause: the new location-sanitization expression recognized a Unix absolute path only at the start of the
+complete value, not after whitespace in bounded explanatory text. The failure occurred before full verification; no
+listener, process, endpoint, external target, runtime state, generated evidence, or unrelated file changed.
+
+Correction/result: recognize Unix absolute paths at the start of the value or after whitespace, retain the existing
+URI, Windows path, traversal, hostname, literal-address, and port rejection, then rerun the exact focused bundle.
+
+# 2026-07-19 - Supervisor PR1 scope scan ended with a malformed Windows-path regex
+
+Branch/PR: `codex/supervisor-protocol-command-model` / no PR
+
+Failing check: the read-only PR1 claim and forbidden-value scan was rejected by ripgrep with `unclosed group`; its final
+alternative attempted to match a Windows drive prefix but the shell-delivered trailing backslash escaped the regex
+group terminator. The focused 48-test bundle had already passed, but this malformed scan is not audit evidence.
+
+Observed/root cause: a path-shaped regex alternative was embedded in a larger PowerShell-quoted expression without a
+safe terminal escape. No source, process, listener, endpoint, external target, runtime state, generated evidence, or
+unrelated file changed.
+
+Correction/result: rerun the claim scan with explicit fixed-string patterns and keep code-shaped path/URI assertions in
+the focused Java regression tests instead of mixing a trailing Windows separator into the documentation audit regex.

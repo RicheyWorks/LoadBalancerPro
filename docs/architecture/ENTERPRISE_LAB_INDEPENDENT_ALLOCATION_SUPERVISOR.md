@@ -1,15 +1,16 @@
 # Enterprise Lab Independent Allocation Supervisor
 
-This contract defines the bounded single-host process boundary between the Enterprise Lab application and the future
-independent allocation supervisor. It is not a production traffic-controller design, a distributed fencing claim, or a
-public service contract.
+This contract defines the bounded single-host process boundary between the Enterprise Lab application and the local
+independent allocation supervisor. PR2 implements the supervisor side; later slots integrate the application client and
+reconciliation. It is not a production traffic-controller design, a distributed fencing claim, or a public service
+contract.
 
 ## Responsibility boundary
 
 The application remains authoritative for experiment lifecycle, observations, scoring, guardrails, durable allocation
 intent, experiment evidence, operator authorization, and reconciliation policy.
 
-The supervisor will be authoritative for its own OS-backed ownership, its installed loopback allocation, durable
+The supervisor is authoritative for its own OS-backed ownership, its installed loopback allocation, durable
 installed-state recovery, application-generation acceptance, atomic application, and independent read-back.
 
 Both processes reuse the existing loopback allocation snapshots, installed-state snapshots, target catalog, allocation
@@ -35,6 +36,43 @@ UTF-8, excessive bytes, invalid target bindings, fingerprint mismatches, and com
 
 PR1 adds no listener, process mode, credential file, storage path, operator endpoint, routing activation, or application
 fallback behavior.
+
+## PR2 process and durable-holder boundary
+
+`--enterprise-lab-supervisor` runs the holder in a separate JVM without starting Spring or the API server. It acquires
+the fixed `enterprise-lab-supervisor-v1/supervisor.lock` beneath the explicit local data root, reconstructs or creates
+canonical supervisor state, binds a `ServerSocket` only through the byte-constructed literal address `127.0.0.1`, and
+publishes completed readiness metadata by same-directory atomic move. No hostname, wildcard address, external fallback,
+HTTP server framework, environment proxy, production backend, or application in-memory allocation is involved.
+
+The runtime transport is a one-request-per-connection binary envelope around the PR1 canonical JSON business message.
+It has fixed magic and version fields, one 256-bit per-process credential encoded as 64 lowercase hexadecimal bytes,
+and explicit credential/request lengths. The credential is stored separately from readiness and business evidence,
+compared in constant time, never placed in URLs, request fingerprints, state records, reasons, or command output, and
+rotated whenever a new supervisor process starts. Clean shutdown removes readiness and credential metadata; abrupt-exit
+metadata remains generation-fenced and is replaced before the next readiness publication. This server-side credential
+boundary does not yet claim an application client; that is PR3.
+
+The holder's current file is `supervisor-state-v1.json`. It contains the supervisor instance and generation, current and
+previous accepted application ownership evidence, immutable generation-zero safe baseline, installed allocation,
+optional in-flight intended allocation, transaction/request fingerprints, prior committed allocation fingerprint,
+transaction phase, last commit time, recovery classification and reason, durable generation, and predecessor/current
+record fingerprints. Canonical encoding reuses the installed-allocation representation and target binding. The complete
+state is fsynced to a sibling temporary file, atomically replaces the current file, and is decoded and compared exactly
+before success is returned. Fingerprints detect content changes; they do not authenticate an author.
+
+Allocation mutation is a three-publication sequence: durable intent with the prior installed state, atomic installed
+replacement retained as an incomplete applied phase, then independently read-back committed state. A crash before the
+commit leaves an intended allocation and therefore cannot be mistaken for success. On restart, the new supervisor
+generation preserves a completed installed allocation exactly; any incomplete phase restores and verifies the immutable
+safe baseline before readiness. One interrupted state temporary is atomically preserved under a fixed name as bounded
+forensic evidence. A second unresolved interrupted temporary fails startup closed rather than growing storage.
+
+The production ownership verifier reads only the repository-controlled application ownership record. Handoff and every
+mutation require exact application instance, record fingerprint, generation, active lease, completed reconciliation,
+non-released state, and the expected current supervisor identity/generation. Initial handoff may adopt the exact current
+repository record; subsequent handoff advances one generation. Current and previous accepted application epochs remain
+in durable state. PR2 does not wire the application to this verifier or change its router dependency graph.
 
 ## Request evidence
 
@@ -113,11 +151,37 @@ keys at 64 characters, metadata values at 256 characters, canonical identifiers 
 the existing maximum of 64 approved backends. Later process PRs must add stricter transport, concurrency, queue,
 duration, storage, history, retry, startup, idle, shutdown, log, and proof-runtime limits without weakening these bounds.
 
+PR2 fixes the process limits as follows:
+
+- four worker connections and eight queued connections, with rejection beyond the queue;
+- 4,096 one-shot connections per process and one request per connection;
+- three-second connection idle I/O timeout, ten-second monotonic absolute connection lifetime, and five-second
+  command/shutdown bounds;
+- 30-second maximum request age and five-second future clock-skew allowance;
+- 65,536-byte canonical request and response limits inherited from PR1;
+- 192 KiB per durable state record, one retained current transaction, one interrupted temporary, and 768 KiB across
+  those durable state paths;
+- the existing 64-backend maximum and repository-owned exact backend set;
+- ephemeral port zero by default or one explicitly configured numeric port from 1,024 through 65,535, avoiding a
+  privileged-port requirement; and
+- no unbounded thread creation, retry loop, process output, request metadata, or evidence filename.
+
+Start locally with an explicit controlled directory when the default ignored target directory is not desired:
+
+```text
+java -jar target/LoadBalancerPro-2.5.0.jar --enterprise-lab-supervisor --enterprise-lab-supervisor-data-directory=target/enterprise-lab-supervisor --enterprise-lab-supervisor-port=0
+```
+
+Readiness is distinct from process health. The listener can answer health while mutation readiness remains closed until
+verified application ownership is accepted and no transaction is incomplete. An authorized clean-shutdown command is
+required for clean metadata removal; ordinary operating-system termination intentionally exercises abrupt recovery.
+
 ## Process sequence
 
-Later campaign slices will:
+The campaign sequence is:
 
-1. add a separately executable literal-`127.0.0.1` supervisor with its own OS lock and durable installed state;
+1. PR2 adds the separately executable literal-`127.0.0.1` supervisor, OS lock, bounded transport server, and durable
+   installed-state reconstruction described above;
 2. add high-entropy authenticated client transport with no DNS, proxy, redirect, or external fallback;
 3. integrate supervisor-required mode without silent in-process fallback;
 4. reconcile application restart, supervisor restart, dual restart, stale application, and crash windows; and

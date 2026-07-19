@@ -6,7 +6,94 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Independent Allocation Supervisor PR1 Checkpoint
+## Active Independent Allocation Supervisor PR2 Checkpoint
+
+Timestamp: 2026-07-19T02:10:00-07:00
+
+Current slot: SUPERVISOR-PR2 - independent supervisor process and durable installed-state holder
+
+Goal manager: active for the six-PR independent Enterprise Lab supervisor campaign; no token budget was requested.
+
+Started from clean synchronized main: `76d4fe8055b6c2c2fb99c597335a078360f18739`
+
+Current branch: `codex/supervisor-process-durable-holder`
+
+PR URL: not opened yet.
+
+Prior slot closure: PR #480 merged normally from exact final head
+`68bf068b517bff7ebe14b24fb2f6d18ebaf32986` as `76d4fe8055b6c2c2fb99c597335a078360f18739`.
+Exact-head PR CI `29678524290`, push CI `29678522955`, CodeQL `29678524294`, dependency review, code
+scanning, zero-skip tests, package/artifact verification, SBOM, packaged-JAR smoke, Docker build/runtime, controlled
+container evidence, and blocking Trivy passed. Post-merge local focused tests, `mvn -q test`, package-without-tests,
+`mvn -B package` with 3,294 tests and zero failures/errors/skips, and the packaged 10-scenario shadow workflow passed.
+Exact merge-main CI `29678747872` and CodeQL `29678747874` passed on the merge SHA. Local main and origin/main matched
+that merge commit before this branch was created; the PR1 source branch remains preserved.
+
+PR2 scope: replace none of the application integration yet. Add a separately executable bounded supervisor mode that
+owns a literal-`127.0.0.1` listener, an OS-backed single-owner lock, an immutable installed allocation, fingerprinted
+durable supervisor state, atomic readiness publication, strict backend/allocation validation, atomic mutation/read-back,
+bounded server resources and lifetime, clean shutdown, and recoverable abrupt-termination evidence. Reuse the shared
+PR1 business protocol and installed snapshot codec plus the repository's controlled storage and permission patterns.
+
+Integration audit: `EnterpriseLabAllocationProofStateHolder` proves separate-JVM launch, literal-loopback JDK HTTP,
+ephemeral-port readiness publication by same-directory atomic move, a bounded lifetime and request count, and atomic
+installed-snapshot compare-and-set. It remains proof-only, in-memory, raw-state oriented, and lacks a supervisor lock,
+supervisor generation, durable reconstruction, transaction history, or business-command dispatch. The durable allocation
+and ownership stores provide bounded canonical encoding, path containment, permission restriction, fsync, lock, and
+failure-classification patterns. PR2 will reuse those patterns without promoting the proof holder or duplicating the
+application experiment journal.
+
+Out of scope: application-side IPC client integration, application owner handoff/reconciliation, public/API endpoints,
+production routing, external targets, arbitrary hosts/paths, POM/dependency/workflow/Docker/Compose changes, databases,
+brokers, multi-host or network-filesystem correctness, distributed consensus, and production-readiness claims. Transport
+credential consumption and rotation by the application belong to PR3; PR2 must still leave no unauthenticated mutation
+path.
+
+Preserved unrelated file: `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains untracked and excluded; startup
+SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
+
+Implementation checkpoint: the executable `--enterprise-lab-supervisor` mode starts without Spring/API startup, obtains
+the fixed versioned OS file lock, reconstructs or initializes fingerprint-chained durable installed state, and binds a
+one-request binary server only to byte-constructed `127.0.0.1`. Per-process 256-bit credentials, readiness, and state use
+separate fixed files; publication is atomic, credentials rotate on restart, and authorized clean shutdown removes only
+connection metadata. The service verifies repository application-ownership evidence, advances owner generations one at
+a time, fences supervisor and application identities, publishes intent/applied/committed successors, reads back exact
+installed state, preserves committed allocation across supervisor restart, and restores baseline from incomplete state.
+
+Pre-commit audit checkpoint: manual contract-to-code review found and corrected an absolute connection-lifetime gap, an
+open-before-no-follow lock-path gap, and post-clean-shutdown queued mutation exposure. The corrected server layers a
+ten-second monotonic connection deadline over its three-second idle timeout, opens the lock with `NOFOLLOW_LINKS`, and
+rejects every later mutation once shutdown begins. All compilation, test, process, command-inspection, and audit-command
+failures are recorded in `FAILURE_LOG.md`; no control was weakened to make a gate pass.
+
+Local verification checkpoint: the corrected seven-class supervisor/protocol/API/goal bundle passes 41 tests and the
+15-class supervisor/storage/ownership/router compatibility bundle passes 122 tests, all with zero failures, errors, or
+skips. The real separate-JVM crash/restart/lock-reacquisition proof passes five consecutive runs. `mvn -q test`,
+`mvn -B clean package`, and `mvn -B verify` pass on the exact corrected source; clean package and verify each report
+3,309 tests with zero failures, errors, or skips. `mvn -q "-DskipTests" package`, the Tomcat dependency tree, CycloneDX
+2.9.1 aggregate JSON/XML SBOM generation with 144 dependency components, and the packaged ten-scenario shadow workflow
+pass. JaCoCo is 84.20% instruction and 67.04% branch. The executable JAR is 95,249,451 bytes with 1,347 entries and
+SHA-256 `636b1cbabe4050ddb8d0c7c3a8aa4a695bb506aa65d66312dfa7d13cc6e7175f`.
+
+Packaged supervisor checkpoint: the executable JAR starts the supervisor in a real JVM, publishes literal address
+`127.0.0.1`, a bounded ephemeral port, supervisor/durable generation 1, an exact matching state fingerprint, a canonical
+committed baseline record, and a fresh 64-hex credential under ignored `target/`. Intentional foreground termination
+left the recoverable durable record, and a process audit confirmed no matching `java.exe` remained. Source scans found
+no wildcard/non-loopback binding, hostname lookup, proxy/environment fallback, redirect, native serialization,
+unbounded executor, force control, hard-coded secret, or arbitrary supervisor-host option. No POM, dependency, workflow,
+Docker, Compose, runtime-resource, public/API endpoint, external target, cloud/tenant, database, broker, production
+routing, or tracked generated-evidence change is present. The preserved CSRBT file hash remains exactly unchanged.
+The staged PR2 diff contains 4,180 production/test additions and 307 architecture/process additions (93.16% / 6.84%);
+the slot is intentionally implementation-heavy while the campaign-wide 88–92% executable target remains authoritative.
+
+Blocker: none.
+
+Next action: stage only the PR2 implementation/test/architecture/audit files, run cached/base diff and composition checks,
+commit and push the locally verified executable checkpoint, then open the PR and require exact-head remote gates.
+
+Decision: continue.
+
+## Completed Independent Allocation Supervisor PR1 Checkpoint
 
 Timestamp: 2026-07-19T00:41:03-07:00
 

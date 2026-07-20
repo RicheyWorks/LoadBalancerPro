@@ -682,6 +682,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                     "durable commit evidence could not be forced and exactly verified");
         }
         failureInjector.checkpoint(Checkpoint.AFTER_COMMIT_PERSIST);
+        router.commitVerifiedMutation(context.installedStateMutation(), installed);
         TransactionReceipt committed = receipt(
                 context,
                 TransactionStatus.COMMITTED,
@@ -1002,6 +1003,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                     "RESTORATION_EVIDENCE_UNCERTAIN",
                     "baseline was read back but restoration evidence requires durable replay");
         }
+        router.commitVerifiedMutation(context.installedStateMutation(), installed);
         boolean reconciliation = context.reconciliationPurpose();
         return receipt(
                 context,

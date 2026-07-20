@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 /** Coordinates bounded packaged JVM proofs for the independent local supervisor. */
 public final class EnterpriseLabIndependentSupervisorProofRunner {
     private static final String EVENT_PREFIX = "LBP_INDEPENDENT_SUPERVISOR_PROOF|";
-    private static final Duration START_TIMEOUT = Duration.ofSeconds(20);
+    private static final Duration START_TIMEOUT = Duration.ofSeconds(30);
     private static final Duration EXIT_TIMEOUT = Duration.ofSeconds(15);
     private static final Duration HOLD_TIMEOUT = Duration.ofSeconds(60);
     private static final Duration STALE_WAIT = Duration.ofMillis(10_300);
@@ -453,28 +453,8 @@ public final class EnterpriseLabIndependentSupervisorProofRunner {
 
             try (EnterpriseLabSupervisorClient client =
                          EnterpriseLabSupervisorClient.connect(root, targets, Clock.systemUTC())) {
-                Response installedResponse = client.execute(observation(
-                        codec, metadata, "duplicate-read", Instant.now()));
-                EnterpriseLabInstalledAllocationSnapshot installed = installedResponse
-                        .installedAllocation()
-                        .orElseThrow(() -> new IllegalStateException(
-                                "IPC proof installed allocation was absent"));
-                Request duplicateOne = codec.issue(new RequestDraft(
-                        "duplicate-request",
-                        CommandType.RESTORE_BASELINE,
-                        currentApplication.applicationInstanceId(),
-                        currentApplication.applicationOwnershipFingerprint(),
-                        currentApplication.applicationGeneration(),
-                        metadata.supervisorInstanceId(),
-                        metadata.supervisorGeneration(),
-                        "duplicate-restore-transaction",
-                        Optional.empty(),
-                        AllocationPurpose.OPERATOR_REQUESTED_SAFE_RESET,
-                        Optional.empty(),
-                        installed.allocationFingerprint(),
-                        installed.allocationFingerprint(),
-                        Instant.now(),
-                        Map.of("proof", "original")));
+                Request duplicateOne = observation(
+                        codec, metadata, "duplicate-request", Instant.now());
                 Response first = client.execute(duplicateOne);
                 Request duplicateChanged = new EnterpriseLabSupervisorProtocolCodec(targets)
                         .issue(new RequestDraft(
@@ -634,6 +614,7 @@ public final class EnterpriseLabIndependentSupervisorProofRunner {
                     EnterpriseLabSupervisorConfiguration.approvedTargets();
             bridge = EnterpriseLabSupervisorAllocationBridge.connect(
                     root, targets, lease.ownershipGate(), Clock.systemUTC());
+            renewProofLease(lease, "allocation-supervisor startup");
             EnterpriseLabSupervisorAllocationBridge establishedBridge = bridge;
             EnterpriseLabAdaptiveDecision decision = new EnterpriseLabAdaptiveDecisionService()
                     .decide(
@@ -679,6 +660,7 @@ public final class EnterpriseLabIndependentSupervisorProofRunner {
                     allocationGate,
                     claim.replayedExperiments(),
                     injector);
+            renewProofLease(lease, "operator-service startup");
 
             durableEvidence = new EnterpriseLabExperimentDurableEvidenceRepository(
                     claim.directory(), claim.recoveryGate(), Clock.systemUTC());
@@ -906,6 +888,18 @@ public final class EnterpriseLabIndependentSupervisorProofRunner {
                 record.generation());
     }
 
+    private static void renewProofLease(
+            EnterpriseLabEvidenceOwnershipLease lease,
+            String phase) {
+        var renewal = Objects.requireNonNull(
+                        lease, "lease cannot be null")
+                .ownershipGate()
+                .renew();
+        require(renewal.status() == OperationStatus.SUCCEEDED,
+                "proof application ownership renewal failed before "
+                        + phase + ": " + renewal.reasonCode());
+    }
+
     private static ChildEvidence event(
             ApplicationClaim claim,
             EnterpriseLabSupervisorAllocationBridge bridge,
@@ -1014,7 +1008,13 @@ public final class EnterpriseLabIndependentSupervisorProofRunner {
             require(length >= 0
                             && length <= EnterpriseLabSupervisorProtocol.HARD_MAX_RESPONSE_BYTES,
                     "raw proof response exceeded its bound");
-            return new RawReply(status, input.readNBytes(length));
+            byte[] body = input.readNBytes(length);
+            if (status == EnterpriseLabSupervisorServer.TRANSPORT_OK) {
+                require(input.readUnsignedByte()
+                                == EnterpriseLabSupervisorServer.TRANSPORT_DELIVERY_RECORDED,
+                        "raw proof response lacked durable delivery evidence");
+            }
+            return new RawReply(status, body);
         }
     }
 

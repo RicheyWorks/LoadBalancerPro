@@ -630,17 +630,20 @@ class EnterpriseLabSupervisorCommandLedgerTest {
             assertEquals(ResponseStatus.REJECTED, response.status());
             assertEquals("STALE_SUPERVISOR_GENERATION", response.reasonCode());
             assertEquals(before, service.state());
-            EnterpriseLabCommandLedgerEvent receipt =
-                    EnterpriseLabSupervisorCommandLedger.inspect(root)
-                            .replay().head().orElseThrow();
+            var lifecycle = EnterpriseLabSupervisorCommandLedger.inspect(root)
+                    .replay().eventsFor(stale.requestId());
+            assertEquals(2, lifecycle.size());
+            EnterpriseLabCommandLedgerEvent receipt = lifecycle.get(0);
             assertEquals(EventType.SUPERVISOR_RECEIPT_PERSISTED, receipt.eventType());
             assertEquals(AuthenticationResult.ACCEPTED, receipt.authenticationResult());
             assertEquals(ValidationResult.NOT_ATTEMPTED, receipt.validationResult());
             assertEquals(stale.requestFingerprint(), receipt.requestFingerprint());
+            EnterpriseLabCommandLedgerEvent rejected = lifecycle.get(1);
+            assertEquals(EventType.VALIDATION_REJECTED, rejected.eventType());
+            assertEquals(ValidationResult.REJECTED, rejected.validationResult());
 
             EnterpriseLabSupervisorCommandLedger ledger =
                     EnterpriseLabSupervisorCommandLedger.create(ownership);
-            ledger.append(stale, validationRejected(before));
             ledger.append(stale, response, responseSent(before, response));
             EnterpriseLabCommandLedgerEvent sent = ledger.replay().head().orElseThrow();
             assertEquals(EventType.RESPONSE_SENT, sent.eventType());

@@ -306,6 +306,8 @@ class EnterpriseLabSupervisorClientTest {
                     output.writeByte(EnterpriseLabSupervisorServer.TRANSPORT_OK);
                     output.writeInt(body.length);
                     output.write(body);
+                    output.writeByte(
+                            EnterpriseLabSupervisorServer.TRANSPORT_DELIVERY_RECORDED);
                     output.flush();
                 } catch (IOException exception) {
                     throw new IllegalStateException("bounded fake server failed", exception);

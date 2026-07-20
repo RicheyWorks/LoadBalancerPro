@@ -3,6 +3,9 @@ package com.richmond423.loadbalancerpro.lab;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationState.AllocationPurpose;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationState.RecoveryClassification;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationState.TransactionPhase;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabApplicationCommandLedger.ApplicationEventDraft;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.OperationStatus;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.Policy;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackAllocationSnapshot.Kind;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorOwnership.Failure;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorOwnership.OwnershipException;
@@ -19,10 +22,17 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -123,7 +133,13 @@ class EnterpriseLabSupervisorServiceTest {
             EnterpriseLabSupervisorState owned = service.state();
             Request apply = apply(owned, APP_A, OWNER_A, 1L, "apply-1", "transaction-1");
             Response committed = service.dispatch(apply);
-            assertEquals(ResponseStatus.ACCEPTED, committed.status());
+            assertEquals(
+                    ResponseStatus.ACCEPTED,
+                    committed.status(),
+                    () -> EnterpriseLabSupervisorCommandLedger.inspect(root)
+                            .replay().eventsFor(apply.requestId()).stream()
+                            .map(event -> event.eventType().name())
+                            .toList().toString());
             assertTrue(committed.actionPerformed());
             assertEquals(apply.allocationFingerprint(), committed.installedFingerprint());
             assertEquals(1L, committed.routerGeneration());
@@ -135,6 +151,31 @@ class EnterpriseLabSupervisorServiceTest {
             assertEquals(ResponseStatus.ACCEPTED, duplicate.status());
             assertFalse(duplicate.actionPerformed());
             assertEquals("DUPLICATE_REQUEST_REPLAYED", duplicate.reasonCode());
+
+            long generationAfterDuplicate = service.state()
+                    .installedAllocation().routerGeneration();
+            Request conflictingTransaction = apply(
+                    service.state(), APP_A, OWNER_A, 1L,
+                    "apply-transaction-conflict", "transaction-1");
+            Response transactionRejection = service.dispatch(conflictingTransaction);
+            assertEquals(ResponseStatus.REJECTED, transactionRejection.status());
+            assertEquals(
+                    "DUPLICATE_TRANSACTION_CHANGED",
+                    transactionRejection.reasonCode());
+            assertFalse(transactionRejection.actionPerformed());
+            assertEquals(
+                    generationAfterDuplicate,
+                    service.state().installedAllocation().routerGeneration());
+            var conflictingEvidence = EnterpriseLabSupervisorCommandLedger.inspect(root)
+                    .replay().eventsFor(conflictingTransaction.requestId());
+            assertEquals(2, conflictingEvidence.size());
+            assertEquals(
+                    EnterpriseLabCommandLedgerEvent.EventType.DUPLICATE_REJECTED,
+                    conflictingEvidence.get(1).eventType());
+            assertEquals(
+                    EnterpriseLabCommandLedgerEvent.DuplicateClassification
+                            .CONFLICTING_TRANSACTION,
+                    conflictingEvidence.get(1).duplicateClassification());
 
             EnterpriseLabSupervisorState afterCommit = service.state();
             Response nextOwner = service.dispatch(advance(
@@ -315,6 +356,253 @@ class EnterpriseLabSupervisorServiceTest {
     }
 
     @Test
+    void changedReadWithTheSameCorrelationIsRejectedFromLedgerHistory() {
+        try (EnterpriseLabSupervisorOwnership ownership =
+                     EnterpriseLabSupervisorOwnership.acquire(root)) {
+            EnterpriseLabSupervisorService service = service(ownership);
+            Request original = read(service.state(), "changed-read", Map.of("proof", "one"));
+            assertEquals(ResponseStatus.ACCEPTED, service.dispatch(original).status());
+            long durableGeneration = service.state().durableStateGeneration();
+
+            Request changed = read(service.state(), "changed-read", Map.of("proof", "two"));
+            Response rejection = service.dispatch(changed);
+            assertEquals(ResponseStatus.REJECTED, rejection.status());
+            assertEquals("DUPLICATE_REQUEST_CHANGED", rejection.reasonCode());
+            assertFalse(rejection.actionPerformed());
+            assertEquals(durableGeneration, service.state().durableStateGeneration());
+            assertEquals(
+                    List.of(
+                            EnterpriseLabCommandLedgerEvent.EventType
+                                    .SUPERVISOR_RECEIPT_PERSISTED,
+                            EnterpriseLabCommandLedgerEvent.EventType
+                                    .SUPERVISOR_RECEIPT_PERSISTED,
+                            EnterpriseLabCommandLedgerEvent.EventType.DUPLICATE_REJECTED),
+                    EnterpriseLabSupervisorCommandLedger.inspect(root).replay()
+                            .eventsFor(original.requestId()).stream()
+                            .map(EnterpriseLabCommandLedgerEvent::eventType)
+                            .toList());
+        }
+    }
+
+    @Test
+    void expiredIdenticalCommittedRetryReturnsPriorResultWithoutMutation() {
+        MutableClock liveClock = new MutableClock(NOW);
+        try (EnterpriseLabSupervisorOwnership ownership =
+                     EnterpriseLabSupervisorOwnership.acquire(root)) {
+            EnterpriseLabSupervisorService service =
+                    EnterpriseLabSupervisorService.startForTesting(
+                            ownership,
+                            targets,
+                            liveClock,
+                            request -> EnterpriseLabSupervisorService
+                                    .OwnershipVerification.allow(),
+                            point -> { });
+            assertEquals(ResponseStatus.ACCEPTED,
+                    service.dispatch(advance(
+                            service.state(), APP_A, OWNER_A, 1L)).status());
+            Request original = apply(
+                    service.state(),
+                    APP_A,
+                    OWNER_A,
+                    1L,
+                    "expired-identical-retry",
+                    "expired-identical-transaction");
+            Response first = service.dispatch(original);
+            assertEquals(ResponseStatus.ACCEPTED, first.status());
+            assertTrue(first.actionPerformed());
+            long durableGeneration = service.state().durableStateGeneration();
+            long routerGeneration = service.state().installedAllocation()
+                    .routerGeneration();
+
+            liveClock.advance(
+                    EnterpriseLabSupervisorConfiguration.MAX_REQUEST_AGE
+                            .plusSeconds(1L));
+            Response retry = service.dispatch(original);
+            assertEquals(ResponseStatus.ACCEPTED, retry.status());
+            assertEquals("DUPLICATE_REQUEST_REPLAYED", retry.reasonCode());
+            assertFalse(retry.actionPerformed());
+            assertEquals(durableGeneration,
+                    service.state().durableStateGeneration());
+            assertEquals(routerGeneration,
+                    service.state().installedAllocation().routerGeneration());
+            assertEquals(1L,
+                    EnterpriseLabSupervisorCommandLedger.inspect(root).replay()
+                            .eventsFor(original.requestId()).stream()
+                            .filter(event -> event.eventType()
+                                    == EnterpriseLabCommandLedgerEvent.EventType
+                                    .MUTATION_STARTED)
+                            .count());
+
+            Request freshExpiredRequest = read(
+                    service.state(), "fresh-expired-read", Map.of());
+            Response freshExpired = service.dispatch(freshExpiredRequest);
+            assertEquals(ResponseStatus.REJECTED, freshExpired.status());
+            assertEquals("REQUEST_EXPIRED", freshExpired.reasonCode());
+            service.recordResponseSent(freshExpiredRequest, freshExpired);
+            Response repeatedExpired = service.dispatch(freshExpiredRequest);
+            assertEquals(ResponseStatus.REJECTED, repeatedExpired.status());
+            assertEquals("REQUEST_EXPIRED", repeatedExpired.reasonCode());
+        }
+    }
+
+    @Test
+    void renewedLiveOwnerCanFinishOnlyItsDurablyIntendedInFlightCommand() {
+        MutableClock liveClock = new MutableClock(NOW);
+        Policy policy = new Policy(
+                Duration.ofMinutes(2),
+                Duration.ofSeconds(30),
+                2,
+                2,
+                Duration.ZERO);
+        EnterpriseLabExperimentRecoveryGate recoveryGate =
+                EnterpriseLabExperimentRecoveryGate.pending();
+        try (EnterpriseLabEvidenceOwnershipLease applicationOwnership =
+                     EnterpriseLabEvidenceOwnershipManager.acquire(
+                                     root, policy, liveClock)
+                             .ownership().orElseThrow()) {
+            EnterpriseLabExperimentJournalDirectory directory =
+                    EnterpriseLabExperimentJournalDirectory.create(
+                            root, applicationOwnership.ownershipGate());
+            new EnterpriseLabExperimentStartupReconciler(
+                    directory,
+                    new EnterpriseLabProcessLocalAllocationRecovery(targets),
+                    recoveryGate,
+                    liveClock).initialize();
+            applicationOwnership.completeApplicationReconciliation(recoveryGate);
+
+            try (EnterpriseLabApplicationCommandLedger applicationLedger =
+                         EnterpriseLabApplicationCommandLedger.create(
+                                 root, applicationOwnership.ownershipGate());
+                 EnterpriseLabSupervisorOwnership supervisorOwnership =
+                         EnterpriseLabSupervisorOwnership.acquire(root)) {
+                EnterpriseLabSupervisorService service =
+                        EnterpriseLabSupervisorService.start(
+                                supervisorOwnership, targets, liveClock);
+                var original = applicationOwnership.record();
+                Response handoff = service.dispatch(advance(
+                        service.state(),
+                        original.owner().applicationInstanceId(),
+                        original.recordFingerprint(),
+                        original.generation()));
+                assertEquals(ResponseStatus.ACCEPTED, handoff.status());
+
+                Request inFlight = apply(
+                        service.state(),
+                        original.owner().applicationInstanceId(),
+                        original.recordFingerprint(),
+                        original.generation(),
+                        "apply-renewed-in-flight",
+                        "transaction-renewed-in-flight");
+                applicationLedger.append(
+                        inFlight,
+                        ApplicationEventDraft.intent(
+                                service.state().installedAllocation()
+                                        .allocationFingerprint(),
+                                service.state().installedAllocation()
+                                        .routerGeneration(),
+                                NOW,
+                                Map.of("boundary", "renewal-race")));
+                applicationLedger.append(
+                        inFlight,
+                        ApplicationEventDraft.dispatch(
+                                service.state().installedAllocation()
+                                        .allocationFingerprint(),
+                                service.state().installedAllocation()
+                                        .routerGeneration(),
+                                NOW,
+                                Map.of("boundary", "renewal-race")));
+
+                liveClock.advance(Duration.ofSeconds(1));
+                var renewed = applicationOwnership.ownershipGate().renew();
+                assertEquals(OperationStatus.SUCCEEDED, renewed.status());
+                assertNotEquals(original.recordFingerprint(),
+                        renewed.record().orElseThrow().recordFingerprint());
+
+                Response accepted = service.dispatch(inFlight);
+                assertEquals(ResponseStatus.ACCEPTED, accepted.status());
+                assertTrue(accepted.actionPerformed());
+
+                Request missingIntent = apply(
+                        service.state(),
+                        original.owner().applicationInstanceId(),
+                        original.recordFingerprint(),
+                        original.generation(),
+                        "apply-old-record-without-intent",
+                        "transaction-old-record-without-intent");
+                Response rejected = service.dispatch(missingIntent);
+                assertEquals(ResponseStatus.REJECTED, rejected.status());
+                assertEquals("APPLICATION_OWNERSHIP_INVALID", rejected.reasonCode());
+                assertFalse(rejected.actionPerformed());
+            }
+        }
+    }
+
+    @Test
+    void simultaneousIdenticalAndConflictingRetriesMutateOnlyOnce() throws Exception {
+        try (EnterpriseLabSupervisorOwnership ownership =
+                     EnterpriseLabSupervisorOwnership.acquire(root)) {
+            EnterpriseLabSupervisorService service = service(ownership);
+            assertEquals(
+                    ResponseStatus.ACCEPTED,
+                    service.dispatch(advance(service.state(), APP_A, OWNER_A, 1L)).status());
+            Request identical = apply(
+                    service.state(), APP_A, OWNER_A, 1L,
+                    "simultaneous-identical", "simultaneous-transaction");
+            ExecutorService executor = Executors.newFixedThreadPool(2);
+            try {
+                var identicalResults = executor.invokeAll(List.<Callable<Response>>of(
+                        () -> service.dispatch(identical),
+                        () -> service.dispatch(identical))).stream()
+                        .map(future -> {
+                            try {
+                                return future.get();
+                            } catch (Exception exception) {
+                                throw new IllegalStateException(exception);
+                            }
+                        }).toList();
+                assertEquals(2, identicalResults.stream()
+                        .filter(response -> response.status() == ResponseStatus.ACCEPTED)
+                        .count());
+                assertEquals(1, identicalResults.stream()
+                        .filter(Response::actionPerformed).count());
+                assertEquals(1L, service.state().installedAllocation().routerGeneration());
+
+                Request firstConflict = apply(
+                        service.state(), APP_A, OWNER_A, 1L,
+                        "simultaneous-conflict", "simultaneous-conflict-a");
+                Request secondConflict = apply(
+                        service.state(), APP_A, OWNER_A, 1L,
+                        "simultaneous-conflict", "simultaneous-conflict-b");
+                var conflictResults = executor.invokeAll(List.<Callable<Response>>of(
+                        () -> service.dispatch(firstConflict),
+                        () -> service.dispatch(secondConflict))).stream()
+                        .map(future -> {
+                            try {
+                                return future.get();
+                            } catch (Exception exception) {
+                                throw new IllegalStateException(exception);
+                            }
+                        }).toList();
+                assertEquals(1, conflictResults.stream()
+                        .filter(response -> response.status() == ResponseStatus.ACCEPTED)
+                        .count());
+                assertEquals(1, conflictResults.stream()
+                        .filter(response -> response.status() == ResponseStatus.REJECTED)
+                        .count());
+                assertEquals(1, conflictResults.stream()
+                        .filter(Response::actionPerformed).count());
+                assertTrue(conflictResults.stream()
+                        .filter(response -> response.status() == ResponseStatus.REJECTED)
+                        .allMatch(response -> "DUPLICATE_REQUEST_CHANGED"
+                                .equals(response.reasonCode())));
+                assertEquals(2L, service.state().installedAllocation().routerGeneration());
+            } finally {
+                executor.shutdownNow();
+            }
+        }
+    }
+
+    @Test
     void interruptedTemporaryIsPreservedOnceAndBounded() throws Exception {
         byte[] canonical;
         Path temporary;
@@ -409,9 +697,60 @@ class EnterpriseLabSupervisorServiceTest {
                         allocation.scenarioId(), allocation.allocations()),
                 state.installedAllocation().allocationFingerprint(),
                 NOW,
-                Map.of("scope", "literal-loopback-only")));
+                Map.of(
+                        "scope", "literal-loopback-only",
+                        "applicationAllocationGeneration", "1")));
+    }
+
+    private Request read(
+            EnterpriseLabSupervisorState state,
+            String requestId,
+            Map<String, String> metadata) {
+        return codec.issue(new RequestDraft(
+                requestId,
+                CommandType.READ_INSTALLED_ALLOCATION,
+                "observer-app",
+                EnterpriseLabSupervisorProtocol.NONE,
+                0L,
+                state.supervisorInstanceId(),
+                state.supervisorGeneration(),
+                EnterpriseLabSupervisorProtocol.NONE,
+                Optional.empty(),
+                AllocationPurpose.RECONCILIATION_NO_OP,
+                Optional.empty(),
+                EnterpriseLabSupervisorProtocol.NONE,
+                EnterpriseLabSupervisorProtocol.NONE,
+                NOW,
+                metadata));
     }
 
     private static final class SimulatedCrash extends RuntimeException {
+    }
+
+    private static final class MutableClock extends Clock {
+        private final AtomicReference<Instant> now;
+
+        private MutableClock(Instant initial) {
+            now = new AtomicReference<>(initial);
+        }
+
+        private void advance(Duration duration) {
+            now.updateAndGet(value -> value.plus(duration));
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneOffset.UTC;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return now.get();
+        }
     }
 }

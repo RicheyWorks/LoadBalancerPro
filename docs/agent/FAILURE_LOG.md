@@ -6,6 +6,147 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-20T05:31:40-07:00
+
+Branch/PR: codex/command-ledger-cross-process-coordinator / no PR yet
+
+Failure type: PR4 final added-line bind scan used an overbroad IPv6 token
+
+Failing check: combined final worktree and added-line safety audit
+
+Observed/root cause: the non-loopback-bind expression treated every Java method-reference token `::` as an IPv6 bind
+indicator and reported six false positives. All six matches were ordinary method references such as `client::execute` and
+`clock::instant`; no socket bind, host, listener, source, artifact, evidence, ownership, process, or remote state changed.
+
+Correction/result: rerun the read-only bind scan with address-specific patterns and independently inspect any match.
+
+Follow-up: accept the final scope audit only when the corrected scan reports no non-loopback address or bind addition.
+
+## Entry
+
+Date/time: 2026-07-20T05:24:00-07:00
+
+Branch/PR: codex/command-ledger-cross-process-coordinator / no PR yet
+
+Failure type: PR4 local Docker build hit the bounded container trust-path limitation
+
+Failing check: `docker build -t loadbalancerpro:pr4-local .`
+
+Observed/root cause: Docker Desktop and the pinned builder/runtime base images were available, but the build-stage
+`mvn -q -DskipTests dependency:go-offline` could not validate Maven Central's certificate chain inside the container.
+The error was `certificate_unknown` / `PKIX path building failed` for the imported BOMs, followed by expected unresolved
+dependency-version diagnostics. The build stopped before producing `loadbalancerpro:pr4-local`; no container ran and no
+source, repository evidence, external target, or remote state changed.
+
+Correction/result: preserve TLS verification and make no Dockerfile, Maven, CA, proxy, or workflow change. Treat this as
+the established bounded local-environment warning only; local JVM package/proof gates remain green.
+
+Follow-up: require the unchanged repository-native exact-head remote Docker build/runtime, controlled container evidence,
+CycloneDX, and blocking HIGH/CRITICAL Trivy gates before merge.
+
+## Entry
+
+Date/time: 2026-07-20T05:23:00-07:00
+
+Branch/PR: codex/command-ledger-cross-process-coordinator / no PR yet
+
+Failure type: PR4 combined artifact/security audit repeated a direct `foreach` pipeline syntax error
+
+Failing check: required JAR-entry, manifest, diff, and added-line safety audit
+
+Observed/root cause: the command again attempted to pipe directly from a PowerShell `foreach` statement, this time for
+required JAR entry rows, and parsing stopped before any audit operation executed. This was a read-only reporting command;
+no artifact, source, evidence, process, listener, ownership, or remote state changed.
+
+Correction/result: assign required-entry rows to a variable before formatting and keep the added-line safety result in a
+separate object.
+
+Follow-up: require all JAR entries and all scoped safety-scan counts to pass on the corrected run.
+
+## Entry
+
+Date/time: 2026-07-20T05:20:50-07:00
+
+Branch/PR: codex/command-ledger-cross-process-coordinator / no PR yet
+
+Failure type: PR4 CycloneDX command left a dotted Maven property unquoted in PowerShell
+
+Failing check: `mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom ...`
+
+Observed/root cause: CycloneDX resolved 144 components and wrote and validated both `target/bom.xml` and
+`target/bom.json`, but PowerShell passed the unquoted `-Dcyclonedx.skipAttach=true` as the invalid Maven lifecycle token
+`.skipAttach=true`, so Maven exited 1 after generation. No source, repository evidence, ownership, listener, external
+target, or remote state changed; generated BOMs remain ignored under `target/`.
+
+Correction/result: rerun the repository-native goal with every `-D...` argument quoted for Windows PowerShell parsing,
+then independently parse the JSON/XML files and compare component totals.
+
+Follow-up: accept SBOM evidence only from the zero-exit rerun.
+
+## Entry
+
+Date/time: 2026-07-20T05:12:00-07:00
+
+Branch/PR: codex/command-ledger-cross-process-coordinator / no PR yet
+
+Failure type: PR4 JaCoCo CSV summary requested nonexistent class-counter columns
+
+Failing check: corrected post-verify coverage aggregation
+
+Observed/root cause: JaCoCo's CSV contains instruction, branch, line, complexity, and method counters but no
+`CLASS_MISSED` or `CLASS_COVERED` columns. The first five coverage rows, Surefire aggregate, JAR size/entry/hash, and
+embedded Tomcat inventory were still produced; the optional class calculation emitted property and divide-by-zero
+errors. Maven's verified report independently states that 1,012 classes were analyzed. No project or generated state
+was mutated by this read-only reporting error.
+
+Correction/result: aggregate only the five counter families present in the CSV and report the analyzed-class total
+from the successful JaCoCo Maven goal.
+
+Follow-up: retain the valid artifact and coverage evidence, then proceed to packaged workflows and SBOM validation.
+
+## Entry
+
+Date/time: 2026-07-20T05:11:00-07:00
+
+Branch/PR: codex/command-ledger-cross-process-coordinator / no PR yet
+
+Failure type: PR4 post-verify coverage aggregation used an invalid direct `foreach` pipeline
+
+Failing check: combined Surefire, JaCoCo, and packaged-JAR PowerShell summary
+
+Observed/root cause: PowerShell rejected `foreach (...) { ... } | Format-Table` with `An empty pipe element is not
+allowed`; loop output must be assigned before it can be piped. The exact final `mvn -B verify` had already exited zero
+with 3,396 tests and 1,012 analyzed classes. The reporting syntax error changed no source, artifact, evidence, process,
+listener, ownership, or remote state.
+
+Correction/result: assign the six computed coverage rows to a variable, then format that variable separately while
+preserving the independent Surefire and JAR checks.
+
+Follow-up: capture the exact coverage totals, final JAR size/entry count/hash, and embedded Tomcat versions.
+
+## Entry
+
+Date/time: 2026-07-20T04:47:00-07:00
+
+Branch/PR: codex/command-ledger-cross-process-coordinator / no PR yet
+
+Failure type: PR4 read-only age/retry audit included a guessed nonexistent test path
+
+Failing check: `rg` inventory for request-age and duplicate-replay coverage
+
+Observed/root cause: the search named `EnterpriseLabSupervisorProtocolTest.java`, which is not present at that path.
+The same command still returned the authoritative configuration and supervisor-service matches, including the fixed
+30-second request-age bound. No Maven process was active, and no runtime, evidence, ownership, listener, remote, or
+generated state changed.
+
+Correction/result: search only discovered repository paths and inspect the existing supervisor-service fixtures before
+adding any narrowly scoped terminal-retry coverage.
+
+Follow-up: prove that a canonical retry with durable terminal supervisor evidence may bypass age rejection while stale
+application and supervisor generations remain fenced.
+
+## Entry
+
 Date/time: 2026-07-19T05:19:37-07:00
 
 Branch/PR: codex/supervisor-application-allocation-integration / no PR yet
@@ -7049,3 +7190,75 @@ Composition tooling follow-up: a compressed rerun omitted whitespace between Pow
 Guard-report audit follow-up: the 41-class guard run exited zero, but its first compressed XML rollup repeated the missing PowerShell `in` whitespace error and produced no aggregate. Correction: rerun the read-only report audit with ordinary spacing; do not infer totals from the failed display.
 
 Checkpoint-record correction: the first post-commit session edit expanded the abbreviated executable SHA without querying Git and produced an incorrect long value. It was caught before the metadata commit. Correction: replace it with exact `git rev-parse HEAD` output `9e7ddc6e9743e950279a15f4b4ab5b39e3b9232b`; source and executable history were unchanged.
+
+# 2026-07-20 - Supervisor command-ledger PR3 merge-main report audit parser failure
+
+Branch when recorded: `codex/command-ledger-cross-process-coordinator`; affected checkpoint: PR3 merge-main at `e276999ee16a7e055545477ab3d6d4ed98e83b2c`.
+
+Tooling failure: after the exact merge-main `mvn -q test` exited zero, the first read-only Surefire XML aggregate again compressed PowerShell's `foreach` syntax without whitespace between the loop variable and `in`, so parsing failed and produced no aggregate. No repository, report, or test state changed, and the failed display was not treated as evidence. Correction: rerun the readable aggregate with ordinary token spacing; it found 474 reports and 3,387 tests with zero failures, errors, or skips.
+
+# 2026-07-20 - Supervisor command-ledger PR4 first integration compile failure
+
+Branch: `codex/command-ledger-cross-process-coordinator`
+
+Failing gate: the first `mvn -q -DskipTests package` exited 1 during main compilation, before tests or packaging. The new dispatcher integration called the event model's response-only `observes` method with a request at three sites, and the bridge used try-with-resources for the read-only supervisor ledger inspector even though that inspector owns no writer claim and is not `AutoCloseable`. Correction: use the existing exact-request `correlates` method and a normal read-only inspector reference, then require a zero-exit skip-test package before behavioral testing. No released behavior, durable evidence, listener, or external state changed.
+
+# 2026-07-20 - Supervisor command-ledger PR4 first focused integration failures
+
+Branch: `codex/command-ledger-cross-process-coordinator`
+
+Failing gate: the first six-class focused selector ran 75 tests and exited 1 with three assertion failures and four bridge-startup errors. Two assertions still expected the PR3 receipt-only event count/head, while PR4 now correctly appends validation and response-delivery outcomes. The live bridge errors exposed unsafe use of `command` in application metadata keys and comparison of complete process-specific installed snapshots rather than canonical routing/fingerprint/generation identity at the application commit handoff. The direct-service identical retry also exposed that a lost response must permit a new receipt after a durable supervisor outcome, and an existing same-process stale-client test exposed the need for all bridge views to share the one application-ledger writer. Corrections: use bounded safe metadata, verify canonical installed identity plus the exact response snapshot, permit a fresh receipt after bounded outcome heads, and reference-count one ownership-epoch ledger writer across bridge views. Update only the receipt-only assertions to require the new ordered evidence. No generation, ownership, mutation, transport, or path guard was weakened.
+
+Follow-up focused result: the next 75-test selector exited 1 only in the two simulated application-restart cases and the two intentionally stale receipt-only assertions. The static shared-ledger handle still retained the abandoned application's ownership verifier after a new owner generation became authoritative. Correction: retire and close the prior epoch's shared writer when a different owner ID or generation acquires the same fixed root, let stale handles remain closed, and create exactly one writer under the new live ownership epoch. Focused external mutation, same-process stale view, application restart, dual restart, service idempotency, and server delivery tests are required green after the correction.
+
+Follow-up verified-dispatcher fixture failure: after the shared-writer correction, the application-ledger selector reached the new verified-dispatcher tests but two fixtures supplied router generation seven with an absent installed allocation. The existing supervisor protocol correctly requires the `NONE` allocation fingerprint and router generation zero in that response shape. This was a test-data regression rather than a production failure. Correction: use the exact zero-generation no-allocation supervisor evidence in those fixtures and rerun the selector.
+
+Follow-up concurrency test compile failure: the first selector containing simultaneous supervisor retry tests did not reach execution because Java inferred `Object` for `invokeAll(List.of(...))` over the request lambdas. Correction: provide the explicit `Callable<Response>` element type and require the same selector to compile and execute before accepting any concurrency result.
+
+Read-only audit tooling note: a later test-source lookup repeated the Windows wildcard mistake by passing `EnterpriseLabSupervisor*Test.java` as a literal path. Ripgrep returned OS error 123 and the partial lookup was not treated as evidence. Correction: use the exact test directory with ripgrep's `-g` filename filter.
+
+Pre-commit command-identity audit finding: the first stable application command identity was derived only from the application allocation transaction. That would have made the coordinator's legitimate apply and baseline-restoration commands collide inside one transaction. Correction: derive the stable identity from the immutable application transaction ID, exact command, requested allocation generation, and canonical allocation fingerprint. Identical retries retain one identity while apply and restore remain distinct; no released or remote code contained the finding.
+
+Pre-commit cross-process delivery audit finding: the application could inspect the independently opened supervisor ledger immediately after reading a flushed response frame while the supervisor process was still force-appending `RESPONSE_SENT`. That left a narrow partial-tail race and could convert a delivered response into an unverifiable application-side failure. Correction: advance the private loopback frame version, force the exact delivery event after the response flush, and require a one-byte delivery-recorded marker before the client accepts or acknowledges the response. A missing ledger append or marker remains a bounded lost response, so the application ledger cannot acknowledge evidence that is not yet durable. No public listener, external target, ownership fence, or released protocol was changed.
+
+# 2026-07-20 - Supervisor command-ledger PR4 first packaged independent-supervisor proof failed
+
+Branch: `codex/command-ledger-cross-process-coordinator`
+
+Failing gate: after skip-test package, clean package, full verify, and the ten-scenario packaged Enterprise Lab workflow passed, `java -jar target/LoadBalancerPro-2.5.0.jar --enterprise-lab-independent-supervisor-proof --enterprise-lab-independent-supervisor-proof-output=target/pr4-independent-supervisor-proof` exited 1. The first child failed within the bounded proof protocol because experiment arming was denied as `ALLOCATION_RECONCILIATION_NOT_READY`; no packaged independent-supervisor aggregate is green from this run. The command wrote only ignored proof state beneath `target`. Correction: inspect the exact child event, allocation records, supervisor state, and command ledgers to determine whether the new application/supervisor evidence handoff exposed a proof startup-order assumption or a live-path regression. Preserve the reconciliation, ownership, generation, and quarantine fences; do not widen the bound or accept the failed proof as evidence.
+
+Diagnostic result: the exact records reached application allocation `RESTORED` and supervisor `SUPERVISOR_COMMITTED` plus `RESPONSE_SENT`. The force-synced application command evidence added enough cold packaged-JVM startup work that the proof-only ten-second owner lease expired immediately afterward, while the next independently verified read was being appended. The final application ledger therefore stopped at `DISPATCH_ATTEMPTED`, and pre-admission reconciliation correctly remained closed. Correction: renew the existing proof-only lease after bridge establishment and again after allocation-supervisor startup, before the normal operator-service renewer takes over. Keep the ten-second lease, matching stale-owner wait, production ownership policies, and fail-closed admission unchanged.
+
+Follow-up packaged result: after the bounded proof-lease renewals and a fresh package, the same command with a fresh `target/pr4-independent-supervisor-proof-rerun` output root exited 1 because the first application child did not report within the proof's 20-second startup bound. It emitted no child failure text before the parent terminated it, so no packaged aggregate is green. Correction: inspect the new owner record and exact application/supervisor ledger heads to distinguish healthy force-synced forward progress from a deadlock or failed boundary. Adjust a proof-only timeout only if the durable evidence proves that the child remained live and safely progressing; do not change production timeouts or ownership fences.
+
+Diagnostic result: the child was live and the renewed ownership record remained valid, but the candidate supervisor mutation reached `SUPERVISOR_COMMITTED` and `RESPONSE_SENT` while the application correlation stopped at `DISPATCH_ATTEMPTED`. A scheduled legitimate renewal changed the ownership record fingerprint between the durable intent and later application response append. The application ledger correctly requires an exact current record fingerprint for a new intent, but it incorrectly reapplied that equality to later events even though owner ID, application instance, and generation remained the same live epoch. The coordinator therefore treated the already committed supervisor mutation as unknown and began safe restoration until the parent startup bound expired. Correction: require the exact current ownership-record fingerprint only for the first correlation event; for later events require the same live owner epoch and application instance while retaining the immutable request identity from the first event. Add a deterministic renewal-between-intent-and-dispatch regression that also proves a new command cannot begin with the old record fingerprint.
+
+Focused-test compile failure: the first three-class selector after that correction did not reach test execution. The request-ownership verifier gained an explicit exact-record flag, but three repeated pre-write/post-write verification calls still used its old two-argument signature. Correction: those repeated checks are intentionally same-live-epoch checks after the one exact new-correlation verification, so pass the relaxed flag explicitly and rerun the unchanged selector. No package or behavioral result is green from the failed compile.
+
+Follow-up packaged result: after the deterministic renewal regression and adjacent 39-test selector passed, a fresh package and fresh `target/pr4-independent-supervisor-proof-rerun2` proof run exited 1 at a later boundary. Experiment arming succeeded and the child no longer stopped at the candidate command's application dispatch, but experiment start was denied as `EXPERIMENT_START_REJECTED`. No complete packaged aggregate is green. Correction: inspect the exact candidate allocation record, application/supervisor correlation sequence, and experiment journal transition to identify the underlying operator rejection without bypassing lifecycle, read-back, or allocation evidence checks.
+
+Diagnostic result: the candidate application correlation now reached `APPLICATION_RESPONSE_RECEIVED`, proving the earlier application-ledger renewal correction. The supervisor rejected before mutation as `APPLICATION_OWNERSHIP_INVALID`: the scheduled renewal occurred after the exact application intent/dispatch but before the supervisor's live-owner check, so the request and the supervisor's accepted fence both retained the pre-renewal fingerprint while the durable owner record had the same instance/generation with a new renewal fingerprint. Correction: for a non-handoff command only, allow that fingerprint difference when the current owner is active, reconciled, unexpired, and the same instance/generation, and the independently read application ledger contains the exact durable intent. A new handoff still requires the exact current record, and a command with the old fingerprint but no exact durable intent remains rejected. Serialize command exchanges through the shared application-ledger handle so the supervisor does not inspect through another same-process append.
+
+Focused regression fixture failure: the first 40-test selector after the supervisor-side correction compiled and ran with one error in the new renewal test. Its direct-service allocation request omitted the application-side allocation-generation metadata, so the application ledger correctly refused to manufacture mutation evidence with an incomplete transaction identity. Correction: give the fixture a positive canonical application allocation generation and rerun the same selector; production validation is unchanged.
+
+Follow-up packaged result: the corrected 40-test selector and fresh package passed, but the fresh `target/pr4-independent-supervisor-proof-rerun3` proof again exited 1 because the first child did not report within 20 seconds and emitted no failure text. The earlier explicit ownership rejection is no longer present, but no aggregate is green. Correction: inspect whether the candidate application correlation, allocation transaction, and experiment journal all reached their intended committed/started states before the parent cutoff. Widen only the proof-child startup observation bound if durable records show safe forward progress rather than a blocked lifecycle.
+
+Diagnostic result: the candidate supervisor correlation reached `SUPERVISOR_COMMITTED` and `RESPONSE_SENT`, and the application correlation reached `APPLICATION_RESPONSE_RECEIVED`, but the application allocation transaction moved from `APPLYING` to `RESTORE_REQUIRED` instead of committing. The same scheduled renewal landed after dispatch; the bridge's post-IPC check compared the entire renewable record fingerprint and treated that safe same-epoch renewal as an ownership replacement. Correction: retain exact record-fingerprint checks for ownership handoff and supervisor reconnection, but use immutable owner ID, application instance, and generation checks after already-intended read/health/mutation exchanges. Refresh and, if necessary, hand off the current record again immediately before issuing a mutation. A changed owner or generation remains fail closed.
+
+Read-only audit tooling note: the first post-compaction bridge inspection used an outdated `src/main/java/...` path and ripgrep returned OS error 3. No repository or runtime state changed, and the failed lookup was not treated as evidence. Correction: resolve the tracked source path with `rg --files` before inspecting the ownership-check call sites.
+
+Follow-up packaged result: after the bridge began treating post-IPC same-owner renewals as the same immutable ownership epoch, the corrected 40-test selector and fresh skip-test package passed, but `target/pr4-independent-supervisor-proof-rerun4` still exited 1 after a later proof child did not report within its bound. The run progressed for roughly four and a half minutes, well beyond the earlier first-child failures, but it emitted no child reason text and produced no accepted aggregate. Correction: locate the last child/scenario and inspect its durable application command, supervisor command, allocation, and experiment evidence. Do not widen a proof bound unless those records prove safe forward progress and no coordination deadlock or lifecycle regression.
+
+Read-only diagnostic tooling note: an ownership-source lookup passed `EnterpriseLabEvidenceOwnership*.java` as a literal Windows path, so ripgrep returned OS error 123 after printing only the two explicitly named files. The partial result was not treated as a complete ownership-lock audit. Correction: query the source directory with ripgrep's `-g 'EnterpriseLabEvidenceOwnership*.java'` filter.
+
+Follow-up packaged result: the package-private live-lease critical section and its deterministic renewal-blocking regression passed in the 41-test selector, but a fresh `target/pr4-independent-supervisor-proof-rerun5` packaged proof still exited 1 after a proof child did not report. This run stopped after roughly three and three-quarter minutes, earlier than rerun4, and emitted no child reason text; no aggregate is green. Correction: identify the last prepared crash window and compare its application/supervisor command heads with rerun4. Preserve the bounded client timeout and do not infer that moving the failure point is success.
+
+Follow-up packaged result: after extending the live-record critical section to ordinary authoritative read and health exchanges, the 41-test selector and fresh package passed, but `target/pr4-independent-supervisor-proof-rerun6` exited 1 in the first application scenario after a child did not report. The broader fence therefore introduced or exposed a startup interaction and is not accepted. Correction: inspect the first scenario's exact durable heads and process state for lock ordering or lease-expiry evidence before retaining, narrowing, or replacing the read/health fence.
+
+Diagnostic result: rerun6 did not deadlock or regress the lifecycle. Its first application durably reached supervisor `SUPERVISOR_COMMITTED` and `RESPONSE_SENT`, application `APPLICATION_RESPONSE_RECEIVED` and `APPLICATION_COMMITTED`, allocation `COMMITTED` with exact candidate read-back, and experiment `EXPERIMENT_STARTED`. The final application commit landed only slightly beyond the proof's historical 20-second child-observation bound after the new forced evidence work. Correction: increase only the packaged proof runner's bounded `START_TIMEOUT` to 30 seconds. Production connection/response timeouts, the ten-second proof lease, ownership renewal policy, mutation fences, and runtime behavior remain unchanged.
+
+Follow-up packaged result: with the justified 30-second proof-only observation bound, `target/pr4-independent-supervisor-proof-rerun7` completed the separate-process campaign but exited 1 because `ipc-boundary-conflicting-duplicate` was false; the aggregate `ipc-boundaries` flag was consequently false. All earlier silent child-bound failures were passed, but no complete aggregate is green. Correction: inspect the conflicting duplicate's exact encoded request, response reason, and supervisor ledger classification, then fix only the duplicate/conflict path without relaxing stable-correlation or no-repeat-mutation rules.
+
+Follow-up packaged result: after replacing the stale raw RESTORE fixture with an accepted read followed by the same request ID and changed metadata, `target/pr4-independent-supervisor-proof-rerun8` again completed all process orchestration but exited 1 on the same `ipc-boundary-conflicting-duplicate` key. The fixture now enters a different protocol path, but its exact second response still does not satisfy the expected `DUPLICATE_REQUEST_CHANGED` assertion. Correction: inspect both `duplicate-request` receipt episodes and their response classifications before changing either the service ordering or the proof expectation.
+
+Diagnostic result: the changed read was accepted because `rejectChangedDuplicate` consulted only the mutable supervisor state's last mutation request, not the append-only ledger history. Correction: compare every incoming request ID with the first durable supervisor-ledger fingerprint. The new read-only regression passed in the 42-test focused bundle, and fresh packaged proof `target/pr4-independent-supervisor-proof-rerun9` exited 0 with 22 application JVMs, 24 supervisor JVMs, eight of eight crash windows true, 18 of 18 IPC checks true, all aggregate booleans true, and report fingerprint `ba716c8c4264ede126fdf1c9c7c6acf0e4fa82b347b6133026d7277cdb23d6b4`. This green result supersedes the failed proof attempts but does not replace the remaining clean-package, verify, workflow, scope, or remote gates.

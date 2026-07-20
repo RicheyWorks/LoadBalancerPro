@@ -6,7 +6,103 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Supervisor Command Ledger PR3 Checkpoint
+## Active Supervisor Command Ledger PR4 Checkpoint
+
+Timestamp: 2026-07-20T05:28:21-07:00
+
+Current slot: COMMAND-LEDGER-PR4 - cross-process coordinator and idempotent retry.
+
+Goal manager: active for the approximately six-PR append-only supervisor command-ledger campaign; no token budget was
+requested.
+
+Started from clean synchronized main: `e276999ee16a7e055545477ab3d6d4ed98e83b2c`.
+
+Current branch: `codex/command-ledger-cross-process-coordinator`.
+
+PR URL: not created.
+
+Executable/local-verification checkpoint: locally verified working-tree candidate; commit not yet created.
+
+Prior slot closure: PR #488 merged normally from exact final head
+`93454ae301afa6badcd98a0ba04600f082fb8306` as `e276999ee16a7e055545477ab3d6d4ed98e83b2c`.
+Exact-head push CI `29729280791`, PR CI `29729283669`, CodeQL `29729283670`, aggregate CodeQL, dependency review,
+Docker build/runtime, controlled container evidence, CycloneDX SBOM, and blocking Trivy passed. Exact merge-main
+`mvn -q test` passed 3,387 tests across 474 Surefire reports with zero failures, errors, or skips; skip-test packaging and
+the packaged ten-scenario Enterprise Lab workflow passed. Main CI `29729752614` and CodeQL `29729752508` passed on the
+merge SHA. The PR3 source branch remains preserved.
+
+Baseline audit: local and remote main both equal the PR3 merge SHA. The unrelated CSRBT proposal is the sole untracked
+path and retains SHA-256 `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
+
+PR4 scope: integrate the application dispatcher and ledger with the existing supervisor bridge, client, service, and
+allocation transaction coordinator. Reuse the protocol request ID as stable correlation and preserve the established
+transaction, experiment, ownership-generation, supervisor-generation, allocation-generation, and fingerprint identities.
+The intended path is durable application intent, live ownership verification, authenticated dispatch, durable supervisor
+receipt, generation/transaction and duplicate/conflict validation, authorized mutation, readback, durable supervisor
+completion, bounded response, durable application acknowledgement, and application allocation commit only after exact
+verification. Identical retries must return the prior terminal result without repeated mutation; changed correlation or
+transaction reuse, delayed duplicates, stale application generations, and old-supervisor responses must remain rejected.
+No second transaction coordinator is in scope.
+
+Implementation checkpoint: the existing allocation transaction coordinator remains the sole application allocation
+coordinator. A shared bounded application-ledger registry and command mutex bind the stable request correlation to the
+transaction, command, generation, and canonical fingerprint. The dispatcher now records application intent, dispatch,
+transport result, independently durable supervisor evidence, bounded response, and application commit evidence; the
+bridge defers allocation commit until the coordinator verifies exact installed state and durable outcome. The supervisor
+records receipt, validation or duplicate decision, mutation, readback, completion or failure, and response delivery. The
+versioned response frame adds a forced response-sent event and marker, so a missing marker cannot be treated as delivered.
+
+Idempotency and ownership checkpoint: an identical retry after durable supervisor completion returns the prior terminal
+result without repeating backend mutation, including a bounded age exception proven by exact durable completion evidence.
+A fresh expired request and a previously rejected expired response remain rejected. Changed content under the same
+correlation is compared with the first append-only receipt and fails closed; conflicting transaction reuse, delayed
+duplicates, stale application generations, and old-supervisor responses remain fenced. Application intent requires the
+exact live ownership record, subsequent events require the same live epoch, and supervisor verification accepts a renewed
+same-epoch ownership fingerprint only when the exact durable application intent proves it. Bridge mutation, readback, and
+health exchanges run inside the existing ownership critical section so lease renewal cannot overtake new intent.
+
+Local verification checkpoint: `mvn -B clean package` and `mvn -B verify` pass 3,396 tests across 474 Surefire reports
+with zero failures, errors, or skips; JaCoCo analyzes 1,012 classes at 83.02 percent instruction, 66.27 percent branch,
+and 82.27 percent line coverage. The exact six-class PR4 selector passes 72 tests, and the simultaneous identical/conflict
+retry test passes five consecutive race-sensitive runs. The focused controller/security selector passes 22 tests and the
+exact 41-class documentation guard passes 248 tests. The packaged ten-scenario Enterprise Lab workflow passes.
+
+Artifact/proof checkpoint: the executable JAR is 95,490,345 bytes with 1,419 entries and SHA-256
+`711430367EE149A00356DAF7CD902D34798578B36FA67AD4972407D14540E5DD`; required entries and embedded Tomcat 10.1.55
+components are present. The independent supervisor proof passes with 22 application JVMs, 24 supervisor JVMs, eight
+crash-window checks, 18 IPC checks, zero false outcomes, all seven top-level booleans true, and fingerprint
+`ea7d2c6adf64332a7715acbe99efaa45b4919f8cbb60dd8699f385a399012c33`. Its JSON has SHA-256
+`8C91EF4A4E64B261174762DE71FF82B587F02CB24356C4F511B9233CDA63B871`.
+
+SBOM/Docker checkpoint: the pinned CycloneDX goal passes and independently validates 144 JSON/XML components; the BOM
+hashes are `4D962E2A5C1C2DD5FE8649ADF9327450218033DEB5C97D1EFFE2F81875975F68` and
+`AC781A933CA4EEFFBC487405D8D82E351332DFCB6A35B936ABDDA5205F738F41`. Docker Desktop and Engine 28.0.4 are
+available, but the unchanged local Docker build stopped at Maven Central certificate validation with the established
+`certificate_unknown` / PKIX trust-path limitation. TLS was not weakened and no image or container was produced. Exact-head
+remote Docker build/runtime, controlled container evidence, SBOM, and blocking HIGH/CRITICAL Trivy remain mandatory.
+
+Scope/audit checkpoint: `git diff --check`, required artifact checks, and the added-line safety scan pass. The 12 changed
+production files add no external URL, non-loopback bind, proxy/redirect, unbounded executor, force-control, secret,
+dependency, workflow, Docker/Compose, resource, script, or public-API surface. The candidate contains 2,062 executable,
+proof, and test churn lines and 251 documentation/process churn lines (89.15 / 10.85 percent before this checkpoint
+update), within the requested campaign composition range. No relevant Maven, Java, proof child, or listener remains.
+
+Deferred scope: restart reconciliation remains PR5. Status, retention, packaged separate-process ledger proofs, and final
+campaign closeout remain PR6.
+
+Safety boundary: preserve literal `127.0.0.1`, fixed bounded local-filesystem evidence, ownership/generation/quarantine
+controls, authenticated transport, and existing production/not-proven boundaries. Do not add a dependency, workflow,
+Docker/Compose behavior, listener, external/cloud/tenant target, secret, production-looking default, or production traffic
+change.
+
+Blocker: none.
+
+Next action: rerun the documentation guard after this checkpoint update, complete the exact-head worktree and CSRBT audit,
+then commit, push, open PR4, and require all exact-head remote gates before normal merge.
+
+Decision: continue.
+
+## Closed Supervisor Command Ledger PR3 Checkpoint
 
 Timestamp: 2026-07-20T01:50:00-07:00
 

@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Supervisor Command Ledger PR2 Checkpoint
 
-Timestamp: 2026-07-19T23:43:22-07:00
+Timestamp: 2026-07-19T23:46:50-07:00
 
 Current slot: COMMAND-LEDGER-PR2 - application append-only ledger and durable intent-before-dispatch
 
@@ -20,6 +20,8 @@ Started from clean synchronized main: `c4daf1d4b5fc04bede22a233d2e5f4bf70661142`
 Current branch: `codex/command-ledger-application-store`.
 
 PR URL: not opened.
+
+Executable/local-verification checkpoint: `44aa62b78068af779535b2439738ef830286c97c`.
 
 Prior slot closure: PR #486 merged normally from exact final head
 `9a2dd6951f9dd147c1be7671216006c44e740e42` as `c4daf1d4b5fc04bede22a233d2e5f4bf70661142`.

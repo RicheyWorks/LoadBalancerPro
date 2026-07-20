@@ -6,6 +6,25 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-20T05:35:50-07:00
+
+Branch/PR: codex/command-ledger-cross-process-coordinator / PR #489
+
+Failure type: PR4 remote-run status formatter repeated a direct `foreach` pipeline syntax error
+
+Failing check: read-only compact status query for exact-head push CI, PR CI, and CodeQL
+
+Observed/root cause: PowerShell rejected a direct pipeline after the outer `foreach` statement with `An empty pipe
+element is not allowed`. The command exited before its planned wait or any GitHub query; no workflow, repository, source,
+artifact, evidence, ownership, process, listener, or remote state changed.
+
+Correction/result: assign the computed status rows to a variable before formatting, consistent with the earlier local
+reporting correction.
+
+Follow-up: publish this required failure-log advance and accept remote gates only from the resulting exact head.
+
+## Entry
+
 Date/time: 2026-07-20T05:31:40-07:00
 
 Branch/PR: codex/command-ledger-cross-process-coordinator / no PR yet

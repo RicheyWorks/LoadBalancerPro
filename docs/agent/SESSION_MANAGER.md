@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Supervisor Command Ledger PR4 Checkpoint
 
-Timestamp: 2026-07-20T05:34:13-07:00
+Timestamp: 2026-07-20T05:46:48-07:00
 
 Current slot: COMMAND-LEDGER-PR4 - cross-process coordinator and idempotent retry.
 
@@ -26,6 +26,13 @@ Executable/local-verification checkpoint: `2c7889a2f96f68d8c323966055d4fbb918ec5
 PR-created checkpoint: PR #489 opened from the locally verified pushed executable head
 `2c7889a2f96f68d8c323966055d4fbb918ec5908`. This required session-manager update advances the branch, so exact-head
 remote gates must use the subsequent metadata checkpoint rather than the PR-opening head.
+
+First exact-head remote checkpoint: after the required remote-status tooling correction was logged, head
+`35cdf3aa66b51f9d29b3fd179affb1b117de31e7` passed push CI `29742881740`, PR CI `29742884941`, and CodeQL
+`29742885066`. Aggregate CodeQL and PR dependency review passed. Both CI jobs passed the full test/zero-skip audit,
+JaCoCo, executable JAR and resource verification, CycloneDX SBOM, packaged smoke, official Docker build/runtime,
+controlled container evidence, and blocking image scan. This required remote-audit checkpoint advances the branch, so
+final exact-head gates must rerun before merge.
 
 Prior slot closure: PR #488 merged normally from exact final head
 `93454ae301afa6badcd98a0ba04600f082fb8306` as `e276999ee16a7e055545477ab3d6d4ed98e83b2c`.
@@ -101,9 +108,9 @@ change.
 
 Blocker: none.
 
-Next action: rerun the documentation guard after this PR checkpoint, commit and push the metadata-only advance, then
-require push CI, PR CI, CodeQL, dependency review, Docker/runtime, controlled container evidence, SBOM, and blocking Trivy
-on the exact resulting head before normal merge.
+Next action: rerun the documentation guard after this remote checkpoint, commit and push the metadata-only advance, then
+require fresh final push CI, PR CI, CodeQL, dependency review, Docker/runtime, controlled container evidence, SBOM, and
+blocking Trivy on the exact resulting head before normal merge.
 
 Decision: continue.
 

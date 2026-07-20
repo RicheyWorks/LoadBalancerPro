@@ -6,73 +6,74 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Supervisor Command Ledger PR1 Checkpoint
+## Active Supervisor Command Ledger PR2 Checkpoint
 
-Timestamp: 2026-07-19T22:32:21-07:00
+Timestamp: 2026-07-19T23:43:22-07:00
 
-Current slot: COMMAND-LEDGER-PR1 - canonical command evidence model and codec
+Current slot: COMMAND-LEDGER-PR2 - application append-only ledger and durable intent-before-dispatch
 
 Goal manager: active for the approximately six-PR append-only supervisor command-ledger campaign; no token budget was
 requested.
 
-Started from clean synchronized main: `0a2805c5c713dbbb83fa25e339949f40fb8cccd9`.
+Started from clean synchronized main: `c4daf1d4b5fc04bede22a233d2e5f4bf70661142`.
 
-Current branch: `codex/command-ledger-canonical-model-codec`.
+Current branch: `codex/command-ledger-application-store`.
 
-PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/486
+PR URL: not opened.
 
-Executable/local-verification checkpoint: `8d2ca15840e02652fa2e0282283505d4ddee418e`.
+Prior slot closure: PR #486 merged normally from exact final head
+`9a2dd6951f9dd147c1be7671216006c44e740e42` as `c4daf1d4b5fc04bede22a233d2e5f4bf70661142`.
+Exact-head push CI `29719401109`, PR CI `29719402434`, CodeQL `29719402424`, aggregate CodeQL, and dependency
+review passed. Exact merge-main local tests passed 3,345 tests with zero failures, errors, or skips; exact-main packaging
+and the packaged Enterprise Lab workflow passed. Main CI `29720061299`, including Docker runtime and blocking image
+scan, and CodeQL `29720061301` passed on the merge SHA. The PR1 source branch remains preserved.
 
-PR-created checkpoint: PR #486 opened from verified pushed head
-`b0c42933868683b3cfad4fbed08eef8527b18808`. This required session update advances the branch, so exact-head remote
-gates must use the subsequent audit-only checkpoint rather than the PR-opening head.
-
-Prior campaign closure: the six-PR independent allocation-supervisor campaign is PASS. PRs #480 through #485 are
-merged, exact merge-main CI `29709679075` and CodeQL `29709679076` passed, all six source branches remain preserved,
-and the 3,330-test baseline is green.
-
-Baseline audit: origin is `RicheyWorks/LoadBalancerPro`; local and remote main both equal the supplied start SHA; no
-relevant Maven, Surefire, application, supervisor, proof, or proof-port listener remains. The unrelated CSRBT proposal
-is still the sole untracked path and retains SHA-256
+Baseline audit: local and remote main both equal the PR1 merge SHA; no relevant Maven, application, supervisor, proof,
+or proof-port listener remains. The unrelated CSRBT proposal is the sole untracked path and retains SHA-256
 `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
 
 Identifier-reuse decision: the existing supervisor protocol `requestId` becomes the stable command correlation ID. The
 existing canonical request fingerprint binds exact command content. Existing allocation transaction ID, experiment ID,
 application instance ID and owner generation, supervisor instance ID and generation, allocation generation, previous
 committed fingerprint, and installed-state fingerprint remain authoritative; PR1 will not create parallel allocation,
-transaction, experiment, or ownership identities.
+transaction, experiment, or ownership identities. PR2 persists those exact PR1 events without adding another command
+identity.
 
-PR1 scope: add a versioned immutable command-ledger event vocabulary and strict canonical JSON codec shared by later
-application and supervisor ledgers. Include bounded application/supervisor event types, deterministic ordering and
-fingerprints, predecessor continuity fields, command/request correlation, bounded outcome classifications, strict
-unknown-version/unknown-field rejection, and direct behavioral tests. No durable store, protocol dispatch integration,
-status endpoint change, retention mutation, proof child, or runtime wiring is part of PR1.
+PR2 scope: add the application-side append-only local-filesystem ledger, strict load/continuity verification, one-writer
+coordination, forced append durability, bounded startup reconstruction, and an application dispatch boundary that
+requires a durable canonical intent event before any supplied transport action can run. Add direct corruption,
+truncation, duplicate/concurrent-writer, restart, and fail-before-dispatch tests. Supervisor-side persistence, service
+mutation integration, cross-process duplicate coordination, status, retention, and packaged proof children remain later
+slots.
 
 Safety boundary: evidence contains no credential or authentication material, raw allocation payload, arbitrary path,
 backend address, URL, host, port, command text, stack trace, or unrestricted metadata. No POM/dependency, CI/workflow,
 Dockerfile, Compose, script, public API, listener, cloud/tenant, external target, or production traffic change is in
 scope.
 
-Implementation checkpoint: the immutable shared event now covers all required application and supervisor lifecycle
-events with hard side, size, metadata, retry, sequence, identity, generation, transaction, allocation, predecessor, and
-outcome invariants. The strict JSON codec rejects malformed, unknown, unsupported, noncanonical, oversized, or
-fingerprint-mismatched evidence. Request-bound issuance verifies the exact protocol request identity; response-bound
-issuance additionally verifies the canonical response fingerprint and the observed supervisor-event link. The
-architecture contract records identity reuse, canonical behavior, staged integration, safety, and not-proven boundaries.
+Implementation checkpoint: the fixed application ledger now reuses the live application ownership gate, verifies the
+exact request ownership identity in its production factory, excludes a second process-local writer, reconstructs the
+bounded canonical chain on startup and every append, derives sequence/predecessor internally, forces data and metadata,
+and requires exact read-back. It rejects corruption, truncation, correlation reuse, generation regression, missing or
+duplicate intent, illegal application lifecycle transitions, unexpected storage entries, symlink/type escapes,
+concurrent changes, and hard-limit overflow without repair. The dispatcher persists intent and dispatch-attempt evidence
+before invoking caller-supplied transport; a local transport exception leaves durable unresolved evidence rather than
+inferring a supervisor result. The existing bridge is intentionally not wired in this slot.
 
-Verification checkpoint: the new model/codec selector passes 15 tests. The combined command-ledger,
-supervisor-protocol, and supervisor-service selector passes 45 tests with zero failures, errors, or skips. The 41-class
-documentation-contract selector passes 248 tests. `mvn -q test` passes 3,345 tests across 472 Surefire reports with zero
-failures, errors, or skips; `mvn -q -DskipTests package`, `mvn -q clean package`, and `mvn -q verify` all exit zero. The
-packaged `scripts/smoke/enterprise-lab-workflow.ps1 -Package` gate passes and writes only ignored local-lab evidence
-under `target/enterprise-lab-runs`. `git diff --check` passes, `git ls-files target` is empty, and the CSRBT hash remains
-exact. PR1 adds 1,724 executable/test lines and approximately 170 architecture/process lines, about 91% executable proof.
+Verification checkpoint: the final application-ledger/model selector passes 37 tests with zero failures, errors, or
+skips. The adjacent application-ledger, canonical codec, ownership gate, allocation store, and supervisor protocol bundle
+passes 90 tests. The 41-class documentation selector passes 248 tests. Final `mvn -q test` passes 3,367 tests across 473
+Surefire reports with zero failures, errors, or skips; skip-test package and clean package pass. The first full verify hit
+the recorded transient ownership-proof renewal deadline; the exact proof class then passed in isolation and the unchanged
+full `mvn -q verify` rerun passed. The packaged Enterprise Lab workflow passes with evidence only under ignored `target`.
+`git diff --check` passes, `git ls-files target` is empty, and the CSRBT hash remains exact. PR2 adds 2,018 executable/test
+lines and approximately 170 architecture/process lines, keeping the slot approximately 92% executable proof.
 
 Blocker: none.
 
-Next action: stage only the six PR1 source, test, architecture, session, and failure-log files while excluding the
-unrelated CSRBT proposal; commit and push the exact verified head, open PR1, and require exact-head CI, CodeQL, and
-dependency-review gates before a normal merge.
+Next action: rerun the documentation guard after this final checkpoint, stage only the six intended PR2 files while
+excluding CSRBT, commit the verified implementation head, then push and open PR2 for exact-head CI, CodeQL, and
+dependency-review gates.
 
 Decision: continue.
 

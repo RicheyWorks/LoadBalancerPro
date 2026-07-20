@@ -1,9 +1,9 @@
 # Enterprise Lab Supervisor Command Ledger
 
 This document defines the bounded local-lab command-evidence contract introduced by the supervisor command-ledger
-campaign. It describes implemented PR1 model/codec and PR2 application-ledger behavior plus the constrained integration
-path for later campaign PRs. It does not claim production readiness, non-repudiation, hostile-administrator resistance,
-multi-host coordination, or external traffic validation.
+campaign. It describes implemented PR1 model/codec, PR2 application-ledger behavior, and PR3 supervisor receipt
+persistence plus the constrained integration path for later campaign PRs. It does not claim production readiness,
+non-repudiation, hostile-administrator resistance, multi-host coordination, or external traffic validation.
 
 ## Boundary
 
@@ -19,8 +19,9 @@ The two eventual ledgers remain independently readable and verifiable:
   read-back, durable commit, response construction/delivery, and reconciliation evidence.
 
 PR1 adds the shared immutable event and strict canonical codec. PR2 adds the fixed application ledger and an explicit
-intent-before-transport dispatcher, but does not wire that dispatcher into the supervisor allocation bridge. Supervisor
-persistence and coordinated end-to-end dispatch remain later slots.
+intent-before-transport dispatcher, but does not wire that dispatcher into the supervisor allocation bridge. PR3 adds
+the fixed supervisor ledger and makes a forced authenticated receipt the first supervisor service action. Coordinated
+end-to-end dispatch, duplicate outcomes, mutation-stage events, and response delivery evidence remain later slots.
 
 ## Identity Reuse
 
@@ -31,8 +32,12 @@ The ledger reuses existing canonical identities:
 - `transactionId` is the exact transaction identity carried by the supervisor request;
 - `experimentId` is the existing optional experiment identity;
 - application instance and owner generation come from durable application ownership;
-- supervisor instance and generation come from the pinned supervisor epoch;
-- allocation generation comes from the existing application transaction boundary;
+- the event's supervisor instance and generation retain the canonical request's pinned expected epoch; an accepted
+  response must match that fence, while a rejected response's current observed epoch is bound by its exact canonical
+  `responseFingerprint` without rewriting the request identity;
+- allocation generation comes from the existing application transaction boundary when the canonical request carries
+  that existing value; a supervisor receipt records zero rather than inventing a generation when an older direct
+  supervisor request does not carry it;
 - requested, previous committed, and installed fingerprints reuse existing canonical allocation fingerprints;
 - `responseFingerprint` is the existing canonical supervisor response fingerprint.
 
@@ -199,14 +204,79 @@ calling a supplied supervisor transport. If either append fails, the transport i
 leaves the dispatch attempt unresolved and does not infer whether the supervisor acted. Response observation, retry,
 restart reconciliation, and application commit integration remain explicit later campaign work.
 
+## Supervisor Ledger
+
+`EnterpriseLabSupervisorCommandLedger` owns one fixed JSONL file beneath the existing
+`enterprise-lab-supervisor-v1` directory. Callers cannot select the directory or filename. The existing
+`EnterpriseLabSupervisorOwnership` operating-system lock is the sole cross-process writer capability; the ledger adds no
+second ownership record, generation, transaction ID, or file lock. A process-local mutex serializes complete replay and
+append operations for the fixed path.
+
+The supervisor ledger has the same 8 MiB and 4,096-event hard limits and the same strict newline-framed canonical replay
+posture as the application ledger. Writable creation requires the live supervisor lock and validates the complete prior
+chain. Append rechecks that lock before path preparation, write, force, and exact read-back. A lost lock, unexpected
+entry, symlink/type escape, malformed or noncanonical frame, truncated tail, concurrent change, hard-limit overflow, or
+uncertain post-write result fails closed without repair. Read-only inspection creates no path and cannot acquire the
+supervisor lock.
+
+### Authenticated Receipt Boundary
+
+Transport processing remains ordered as follows:
+
+1. `EnterpriseLabSupervisorServer` validates frame bounds;
+2. it compares the fixed-size transport credential in constant time;
+3. it decodes the strict canonical protocol request;
+4. only then does it call `EnterpriseLabSupervisorService.dispatch`;
+5. `dispatch` forces and exactly reads back `SUPERVISOR_RECEIPT_PERSISTED` before shutdown, time, supervisor-fence,
+   duplicate, ownership, command, or mutation validation can run.
+
+A malformed frame, wrong credential, or undecodable request never reaches the supervisor ledger. The ledger therefore
+does not copy credentials, raw frames, or unauthenticated caller material and PR3 does not manufacture an
+`AUTHENTICATION_REJECTED` event from bytes that failed the transport boundary. Tests count the durable receipts across a
+real literal-`127.0.0.1` server exchange and prove that wrong credentials and malformed frames leave that count
+unchanged.
+
+If receipt append, synchronization, or read-back fails, `dispatch` returns the existing bounded failed response and
+reloads the durable supervisor state. None of the existing validation or mutation branches is reached. The ledger failure
+does not weaken supervisor ownership, application ownership verification, generation fencing, duplicate classification,
+transaction recovery, read-back, or quarantine behavior.
+
+### Supervisor Lifecycle Contract
+
+The first supervisor event for a correlation must be `SUPERVISOR_RECEIPT_PERSISTED`. Every authenticated retry starts a
+new receipt episode. This includes a retry that reuses the correlation with changed canonical content: the receipt is
+preserved before duplicate validation, and later episode events must bind to that latest exact receipt. The application
+ledger remains stricter because it owns the stable intent and rejects changed correlation reuse before transport.
+
+The supervisor store validates this order for later event integration:
+
+| New event | Required durable episode head |
+| --- | --- |
+| `SUPERVISOR_RECEIPT_PERSISTED` | no prior correlation, another receipt-only observation, or a terminal prior episode |
+| `VALIDATION_REJECTED` / duplicate classification / `MUTATION_STARTED` | latest exact receipt |
+| `ALLOCATION_APPLIED` | mutation started |
+| `READ_BACK_VERIFIED` | allocation applied |
+| `SUPERVISOR_COMMITTED` | read-back verified |
+| `RESPONSE_SENT` | receipt-only observation or a bounded rejection, duplicate, commit, failure, or reconciliation outcome |
+
+For application-side events, an allocation mutation still requires the existing positive application allocation
+generation. A supervisor receipt cannot invent a missing identifier, so an authenticated direct request that omits the
+optional `applicationAllocationGeneration` metadata records zero while retaining its exact request fingerprint,
+transaction, requested allocation fingerprint, and process fences. Noncanonical or out-of-range supplied values remain
+rejected.
+
+PR3 wires only authenticated receipt persistence into the live supervisor service. The store and direct tests establish
+the bounded validation/mutation/response lifecycle, but they do not claim that every current service branch already emits
+those later events. Duplicate outcome persistence, mutation-stage integration, response-delivery evidence, application
+coordination, and restart reconciliation remain PR4 and PR5 work.
+
 ## Campaign Integration Order
 
-Later PRs add executable behavior in this order:
+Remaining PRs add executable behavior in this order:
 
-1. supervisor append-only persistence and receipt-before-mutation;
-2. cross-process coordination and identical-retry idempotency;
-3. restart reconstruction and partial-history reconciliation;
-4. authenticated sanitized status, safe terminal retention/compaction, and separate-process packaged proofs.
+1. cross-process coordination and identical-retry idempotency;
+2. restart reconstruction and partial-history reconciliation;
+3. authenticated sanitized status, safe terminal retention/compaction, and separate-process packaged proofs.
 
 No later step may open readiness from process memory alone, delete the only unresolved evidence, accept conflicting
 correlation reuse, weaken ownership/generation fencing, or repeat a mutation whose terminal supervisor evidence verifies

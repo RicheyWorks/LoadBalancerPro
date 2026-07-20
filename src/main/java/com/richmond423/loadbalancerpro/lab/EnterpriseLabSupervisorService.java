@@ -14,6 +14,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorProtocol.Reque
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorProtocol.Response;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorProtocol.ResponseDraft;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorProtocol.ResponseStatus;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorCommandLedger.SupervisorEventDraft;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -38,6 +39,7 @@ public final class EnterpriseLabSupervisorService {
 
     private final EnterpriseLabSupervisorOwnership ownership;
     private final EnterpriseLabSupervisorStateStore store;
+    private final EnterpriseLabSupervisorCommandLedger commandLedger;
     private final EnterpriseLabSupervisorProtocolCodec protocolCodec;
     private final ApplicationOwnershipVerifier applicationOwnershipVerifier;
     private final Clock clock;
@@ -86,9 +88,26 @@ public final class EnterpriseLabSupervisorService {
             Clock clock,
             ApplicationOwnershipVerifier applicationOwnershipVerifier,
             FailureInjector failureInjector) {
+        return startForTesting(
+                ownership,
+                targetCatalog,
+                clock,
+                applicationOwnershipVerifier,
+                failureInjector,
+                EnterpriseLabSupervisorCommandLedger.create(ownership));
+    }
+
+    static EnterpriseLabSupervisorService startForTesting(
+            EnterpriseLabSupervisorOwnership ownership,
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            Clock clock,
+            ApplicationOwnershipVerifier applicationOwnershipVerifier,
+            FailureInjector failureInjector,
+            EnterpriseLabSupervisorCommandLedger commandLedger) {
         EnterpriseLabSupervisorService service = new EnterpriseLabSupervisorService(
                 ownership,
                 new EnterpriseLabSupervisorStateStore(ownership, targetCatalog),
+                commandLedger,
                 new EnterpriseLabSupervisorProtocolCodec(targetCatalog),
                 clock,
                 applicationOwnershipVerifier,
@@ -100,12 +119,15 @@ public final class EnterpriseLabSupervisorService {
     private EnterpriseLabSupervisorService(
             EnterpriseLabSupervisorOwnership ownership,
             EnterpriseLabSupervisorStateStore store,
+            EnterpriseLabSupervisorCommandLedger commandLedger,
             EnterpriseLabSupervisorProtocolCodec protocolCodec,
             Clock clock,
             ApplicationOwnershipVerifier applicationOwnershipVerifier,
             FailureInjector failureInjector) {
         this.ownership = Objects.requireNonNull(ownership, "ownership cannot be null");
         this.store = Objects.requireNonNull(store, "store cannot be null");
+        this.commandLedger = Objects.requireNonNull(
+                commandLedger, "commandLedger cannot be null");
         this.protocolCodec = Objects.requireNonNull(
                 protocolCodec, "protocolCodec cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
@@ -130,6 +152,9 @@ public final class EnterpriseLabSupervisorService {
         Request safe = Objects.requireNonNull(request, "request cannot be null");
         EnterpriseLabSupervisorState before = state;
         try {
+            commandLedger.append(
+                    safe,
+                    SupervisorEventDraft.receipt(before, clock.instant()));
             if (shutdownRequested.get()
                     && safe.commandType().mutation()
                     && safe.commandType() != CommandType.CLEAN_SHUTDOWN) {

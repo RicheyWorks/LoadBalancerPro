@@ -79,7 +79,7 @@ class EnterpriseLabSupervisorServerTest {
                 assertEquals(ResponseStatus.ACCEPTED, healthResponse.status());
                 assertEquals("HEALTHY", healthResponse.reasonCode());
                 assertEquals("127.0.0.1", connectedAddress(port));
-                assertEquals(1, supervisorLedgerEvents());
+                assertEquals(2, supervisorLedgerEvents());
 
                 byte[] wrongCredential = "f".repeat(64)
                         .getBytes(StandardCharsets.US_ASCII);
@@ -87,26 +87,26 @@ class EnterpriseLabSupervisorServerTest {
                         port, wrongCredential, codec.encodeRequest(health));
                 assertEquals(1, unauthorized.status());
                 assertEquals(0, unauthorized.body().length);
-                assertEquals(1, supervisorLedgerEvents());
+                assertEquals(2, supervisorLedgerEvents());
 
                 TransportResponse malformed = malformedOversized(port, credential);
                 assertEquals(2, malformed.status());
                 assertEquals(0, malformed.body().length);
-                assertEquals(1, supervisorLedgerEvents());
+                assertEquals(2, supervisorLedgerEvents());
 
                 Request advance = advance(service.state());
                 TransportResponse advanceTransport = exchange(
                         port, credential, codec.encodeRequest(advance));
                 assertEquals(ResponseStatus.ACCEPTED,
                         codec.decodeResponse(advanceTransport.body(), advance).status());
-                assertEquals(2, supervisorLedgerEvents());
+                assertEquals(4, supervisorLedgerEvents());
 
                 Request shutdown = shutdown(service.state());
                 TransportResponse shutdownTransport = exchange(
                         port, credential, codec.encodeRequest(shutdown));
                 assertEquals(ResponseStatus.ACCEPTED,
                         codec.decodeResponse(shutdownTransport.body(), shutdown).status());
-                assertEquals(3, supervisorLedgerEvents());
+                assertEquals(6, supervisorLedgerEvents());
 
                 EnterpriseLabSupervisorServer.RunResult result =
                         future.get(8, TimeUnit.SECONDS);
@@ -347,6 +347,11 @@ class EnterpriseLabSupervisorServerTest {
                     && length <= EnterpriseLabSupervisorProtocol.HARD_MAX_RESPONSE_BYTES);
             byte[] body = input.readNBytes(length);
             assertEquals(length, body.length);
+            if (status == EnterpriseLabSupervisorServer.TRANSPORT_OK) {
+                assertEquals(
+                        EnterpriseLabSupervisorServer.TRANSPORT_DELIVERY_RECORDED,
+                        input.readUnsignedByte());
+            }
             return new TransportResponse(status, body);
         }
     }

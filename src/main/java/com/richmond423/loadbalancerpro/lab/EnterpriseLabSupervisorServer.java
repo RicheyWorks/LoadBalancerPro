@@ -45,7 +45,7 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
     public static final String READINESS_SCHEMA_VERSION =
             EnterpriseLabSupervisorConnectionMetadata.SCHEMA_VERSION;
     public static final int FRAME_MAGIC = 0x4c425053;
-    public static final byte FRAME_VERSION = 1;
+    public static final byte FRAME_VERSION = 2;
     public static final int CREDENTIAL_BYTES = 64;
 
     static final String CREDENTIAL_FILE_NAME = "supervisor-credential-v1.txt";
@@ -56,6 +56,7 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
     static final byte TRANSPORT_OK = 0;
     static final byte TRANSPORT_UNAUTHORIZED = 1;
     static final byte TRANSPORT_MALFORMED = 2;
+    static final byte TRANSPORT_DELIVERY_RECORDED = 90;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final EnterpriseLabSupervisorOwnership ownership;
@@ -235,22 +236,28 @@ public final class EnterpriseLabSupervisorServer implements AutoCloseable {
                 return;
             }
             long commandStartedNanos = System.nanoTime();
-            Response response = service.dispatch(request);
-            if (elapsedNanos(commandStartedNanos, System.nanoTime())
-                    > EnterpriseLabSupervisorConfiguration.COMMAND_TIMEOUT.toNanos()) {
-                writeTransport(output, TRANSPORT_MALFORMED, new byte[0]);
-                return;
+            synchronized (service) {
+                Response response = service.dispatch(request);
+                if (elapsedNanos(commandStartedNanos, System.nanoTime())
+                        > EnterpriseLabSupervisorConfiguration.COMMAND_TIMEOUT.toNanos()) {
+                    writeTransport(output, TRANSPORT_MALFORMED, new byte[0]);
+                    return;
+                }
+                requireConnectionWithinLifetime(
+                        connectionStartedNanos,
+                        System.nanoTime(),
+                        maximumConnectionLifetime);
+                byte[] responseBytes = codec.encodeResponse(response);
+                if (responseBytes.length
+                        > EnterpriseLabSupervisorProtocol.HARD_MAX_RESPONSE_BYTES) {
+                    writeTransport(output, TRANSPORT_MALFORMED, new byte[0]);
+                    return;
+                }
+                writeTransport(output, TRANSPORT_OK, responseBytes);
+                service.recordResponseSent(request, response);
+                output.writeByte(TRANSPORT_DELIVERY_RECORDED);
+                output.flush();
             }
-            requireConnectionWithinLifetime(
-                    connectionStartedNanos,
-                    System.nanoTime(),
-                    maximumConnectionLifetime);
-            byte[] responseBytes = codec.encodeResponse(response);
-            if (responseBytes.length > EnterpriseLabSupervisorProtocol.HARD_MAX_RESPONSE_BYTES) {
-                writeTransport(output, TRANSPORT_MALFORMED, new byte[0]);
-                return;
-            }
-            writeTransport(output, TRANSPORT_OK, responseBytes);
         } catch (IOException | RuntimeException ignored) {
             // The connection is one-shot and fails closed without logging secrets or raw input.
         }

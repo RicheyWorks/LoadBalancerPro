@@ -66,7 +66,8 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                 EnterpriseLabEvidenceOwnership.FailureClassification.LOCK_LOST,
                 "application command ledger has no live ownership capability");
     };
-    private static final RequestOwnershipVerifier TEST_OWNERSHIP = (request, authorization) -> { };
+    private static final RequestOwnershipVerifier TEST_OWNERSHIP =
+            (request, authorization, requireRecordFingerprint) -> { };
     private static final Set<EventType> TERMINAL_EVENTS = Set.of(
             EventType.APPLICATION_COMMITTED,
             EventType.COMMAND_FAILED,
@@ -177,8 +178,12 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                 HARD_MAX_LEDGER_BYTES,
                 HARD_MAX_EVENTS,
                 safeGate,
-                (request, authorization) -> verifyRequestOwnership(
-                        safeGate, request, authorization),
+                (request, authorization, requireRecordFingerprint) ->
+                        verifyRequestOwnership(
+                                safeGate,
+                                request,
+                                authorization,
+                                requireRecordFingerprint),
                 NO_FAILURE,
                 true);
     }
@@ -262,12 +267,15 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
             throw failure(Failure.OWNER_GENERATION_MISMATCH,
                     "request generation is not the live application owner generation");
         }
-        requestOwnershipVerifier.verify(safeRequest, authorization);
+        requestOwnershipVerifier.verify(safeRequest, authorization, false);
 
         synchronized (processMutex) {
             requireSameMutationAuthorization(authorization);
-            requestOwnershipVerifier.verify(safeRequest, authorization);
             ReadResult before = replayLocked();
+            requestOwnershipVerifier.verify(
+                    safeRequest,
+                    authorization,
+                    before.eventsFor(safeRequest.requestId()).isEmpty());
             Draft codecDraft = codecDraft(
                     safeRequest,
                     safeDraft,
@@ -293,7 +301,7 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
             boolean writeStarted = false;
             try {
                 requireSameMutationAuthorization(authorization);
-                requestOwnershipVerifier.verify(safeRequest, authorization);
+                requestOwnershipVerifier.verify(safeRequest, authorization, false);
                 prepareLedgerFile();
                 ReadResult stable = replayLocked();
                 if (!stable.events().equals(before.events())
@@ -303,7 +311,7 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                 }
                 failureInjector.checkpoint(WriteCheckpoint.BEFORE_APPEND, 0);
                 requireSameMutationAuthorization(authorization);
-                requestOwnershipVerifier.verify(safeRequest, authorization);
+                requestOwnershipVerifier.verify(safeRequest, authorization, false);
                 writeStarted = true;
                 appendFrame(encoded);
                 failureInjector.checkpoint(
@@ -313,7 +321,7 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                 failureInjector.checkpoint(
                         WriteCheckpoint.AFTER_SYNC, Math.toIntExact(frameBytes));
                 requireSameMutationAuthorization(authorization);
-                requestOwnershipVerifier.verify(safeRequest, authorization);
+                requestOwnershipVerifier.verify(safeRequest, authorization, false);
 
                 ReadResult after = replayLocked();
                 if (after.events().size() != before.events().size() + 1
@@ -576,15 +584,17 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
     private static void verifyRequestOwnership(
             EnterpriseLabEvidenceOwnershipGate ownershipGate,
             Request request,
-            MutationAuthorization authorization) {
+            MutationAuthorization authorization,
+            boolean requireRecordFingerprint) {
         OwnershipRecord ownership = ownershipGate.requireCurrentOwnership();
         MutationAuthorization observed = MutationAuthorization.from(
                 authorization.trustedRoot(), ownership);
         authorization.requireSameEpoch(observed);
         if (!ownership.owner().applicationInstanceId().equals(request.applicationInstanceId())
                 || ownership.generation() != request.applicationOwnerGeneration()
-                || !ownership.recordFingerprint()
-                .equals(request.applicationOwnershipRecordFingerprint())) {
+                || (requireRecordFingerprint
+                && !ownership.recordFingerprint()
+                .equals(request.applicationOwnershipRecordFingerprint()))) {
             throw failure(Failure.OWNER_IDENTITY_MISMATCH,
                     "request identity does not match current durable application ownership");
         }
@@ -1009,6 +1019,147 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                     metadata);
         }
 
+        static ApplicationEventDraft responseReceived(
+                String installedFingerprintBefore,
+                long routerGenerationBefore,
+                Response response,
+                String observedSupervisorEventFingerprint,
+                Instant occurredAt,
+                Map<String, String> metadata) {
+            Response safe = Objects.requireNonNull(response, "response cannot be null");
+            return new ApplicationEventDraft(
+                    EventType.APPLICATION_RESPONSE_RECEIVED,
+                    installedFingerprintBefore,
+                    safe.installedFingerprint(),
+                    routerGenerationBefore,
+                    safe.routerGeneration(),
+                    AuthenticationResult.ACCEPTED,
+                    safe.status() == EnterpriseLabSupervisorProtocol.ResponseStatus.ACCEPTED
+                            ? ValidationResult.ACCEPTED : ValidationResult.REJECTED,
+                    DuplicateClassification.NOT_EVALUATED,
+                    safe.actionPerformed()
+                            ? MutationStatus.COMMITTED : MutationStatus.NOT_ATTEMPTED,
+                    ResponseClassification.RECEIVED,
+                    safe.responseFingerprint(),
+                    observedSupervisorEventFingerprint,
+                    ApplicationCommitStatus.PENDING,
+                    0,
+                    "SUPERVISOR_RESPONSE_RECEIVED",
+                    occurredAt,
+                    metadata);
+        }
+
+        static ApplicationEventDraft committed(
+                String installedFingerprintBefore,
+                long routerGenerationBefore,
+                Response response,
+                String observedSupervisorEventFingerprint,
+                Instant occurredAt,
+                Map<String, String> metadata) {
+            Response safe = Objects.requireNonNull(response, "response cannot be null");
+            return new ApplicationEventDraft(
+                    EventType.APPLICATION_COMMITTED,
+                    installedFingerprintBefore,
+                    safe.installedFingerprint(),
+                    routerGenerationBefore,
+                    safe.routerGeneration(),
+                    AuthenticationResult.ACCEPTED,
+                    ValidationResult.ACCEPTED,
+                    DuplicateClassification.NOT_EVALUATED,
+                    safe.actionPerformed()
+                            ? MutationStatus.COMMITTED : MutationStatus.NOT_ATTEMPTED,
+                    ResponseClassification.RECEIVED,
+                    safe.responseFingerprint(),
+                    observedSupervisorEventFingerprint,
+                    ApplicationCommitStatus.COMMITTED,
+                    0,
+                    "APPLICATION_COMMAND_COMMITTED",
+                    occurredAt,
+                    metadata);
+        }
+
+        static ApplicationEventDraft responseRejected(
+                String installedFingerprintBefore,
+                long routerGenerationBefore,
+                Response response,
+                String observedSupervisorEventFingerprint,
+                Instant occurredAt,
+                Map<String, String> metadata) {
+            Response safe = Objects.requireNonNull(response, "response cannot be null");
+            return new ApplicationEventDraft(
+                    EventType.COMMAND_FAILED,
+                    installedFingerprintBefore,
+                    safe.installedFingerprint(),
+                    routerGenerationBefore,
+                    safe.routerGeneration(),
+                    AuthenticationResult.ACCEPTED,
+                    ValidationResult.REJECTED,
+                    DuplicateClassification.NOT_EVALUATED,
+                    MutationStatus.NOT_ATTEMPTED,
+                    ResponseClassification.REJECTED,
+                    safe.responseFingerprint(),
+                    observedSupervisorEventFingerprint,
+                    ApplicationCommitStatus.FAILED,
+                    0,
+                    "SUPERVISOR_COMMAND_REJECTED",
+                    occurredAt,
+                    metadata);
+        }
+
+        static ApplicationEventDraft transportFailure(
+                String installedFingerprintBefore,
+                long routerGeneration,
+                boolean timedOut,
+                Instant occurredAt,
+                Map<String, String> metadata) {
+            return new ApplicationEventDraft(
+                    timedOut ? EventType.TIMEOUT_OBSERVED : EventType.RESPONSE_LOST,
+                    installedFingerprintBefore,
+                    EnterpriseLabCommandLedgerEvent.NONE,
+                    routerGeneration,
+                    routerGeneration,
+                    AuthenticationResult.NOT_ATTEMPTED,
+                    ValidationResult.NOT_ATTEMPTED,
+                    DuplicateClassification.NOT_EVALUATED,
+                    MutationStatus.NOT_ATTEMPTED,
+                    timedOut ? ResponseClassification.TIMED_OUT
+                            : ResponseClassification.LOST,
+                    EnterpriseLabCommandLedgerEvent.NONE,
+                    EnterpriseLabCommandLedgerEvent.NONE,
+                    ApplicationCommitStatus.PENDING,
+                    0,
+                    timedOut ? "SUPERVISOR_RESPONSE_TIMED_OUT"
+                            : "SUPERVISOR_RESPONSE_LOST",
+                    occurredAt,
+                    metadata);
+        }
+
+        static ApplicationEventDraft retry(
+                String installedFingerprintBefore,
+                long routerGeneration,
+                int retryAttempt,
+                Instant occurredAt,
+                Map<String, String> metadata) {
+            return new ApplicationEventDraft(
+                    EventType.RETRY_ISSUED,
+                    installedFingerprintBefore,
+                    EnterpriseLabCommandLedgerEvent.NONE,
+                    routerGeneration,
+                    routerGeneration,
+                    AuthenticationResult.NOT_ATTEMPTED,
+                    ValidationResult.NOT_ATTEMPTED,
+                    DuplicateClassification.IDENTICAL_RETRY,
+                    MutationStatus.NOT_ATTEMPTED,
+                    ResponseClassification.NOT_ATTEMPTED,
+                    EnterpriseLabCommandLedgerEvent.NONE,
+                    EnterpriseLabCommandLedgerEvent.NONE,
+                    ApplicationCommitStatus.PENDING,
+                    retryAttempt,
+                    "IDENTICAL_RETRY_ISSUED",
+                    occurredAt,
+                    metadata);
+        }
+
         private static ApplicationEventDraft basic(
                 EventType eventType,
                 String installedFingerprintBefore,
@@ -1166,6 +1317,9 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
 
     @FunctionalInterface
     private interface RequestOwnershipVerifier {
-        void verify(Request request, MutationAuthorization authorization);
+        void verify(
+                Request request,
+                MutationAuthorization authorization,
+                boolean requireRecordFingerprint);
     }
 }

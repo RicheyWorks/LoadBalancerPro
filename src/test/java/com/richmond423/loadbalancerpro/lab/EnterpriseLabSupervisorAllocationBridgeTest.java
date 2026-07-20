@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -185,6 +186,58 @@ class EnterpriseLabSupervisorAllocationBridgeTest {
                                 installed.ownerGeneration());
                         assertTrue(applicationSupervisor.status()
                                 .fingerprints().committedMatchesInstalled());
+
+                        var applicationMutation = EnterpriseLabApplicationCommandLedger
+                                .inspect(root).replay().events().stream()
+                                .filter(event -> event.commandType()
+                                        == EnterpriseLabSupervisorProtocol.CommandType
+                                        .APPLY_ALLOCATION)
+                                .toList();
+                        assertEquals(
+                                List.of(
+                                        EnterpriseLabCommandLedgerEvent.EventType
+                                                .APPLICATION_INTENT_PERSISTED,
+                                        EnterpriseLabCommandLedgerEvent.EventType
+                                                .DISPATCH_ATTEMPTED,
+                                        EnterpriseLabCommandLedgerEvent.EventType
+                                                .APPLICATION_RESPONSE_RECEIVED,
+                                        EnterpriseLabCommandLedgerEvent.EventType
+                                                .APPLICATION_COMMITTED),
+                                applicationMutation.stream()
+                                        .map(EnterpriseLabCommandLedgerEvent::eventType)
+                                        .toList());
+                        String correlationId = applicationMutation.get(0).correlationId();
+                        var supervisorMutation = EnterpriseLabSupervisorCommandLedger
+                                .inspect(root).replay().eventsFor(correlationId);
+                        assertEquals(
+                                List.of(
+                                        EnterpriseLabCommandLedgerEvent.EventType
+                                                .SUPERVISOR_RECEIPT_PERSISTED,
+                                        EnterpriseLabCommandLedgerEvent.EventType.MUTATION_STARTED,
+                                        EnterpriseLabCommandLedgerEvent.EventType.ALLOCATION_APPLIED,
+                                        EnterpriseLabCommandLedgerEvent.EventType.READ_BACK_VERIFIED,
+                                        EnterpriseLabCommandLedgerEvent.EventType
+                                                .SUPERVISOR_COMMITTED,
+                                        EnterpriseLabCommandLedgerEvent.EventType.RESPONSE_SENT),
+                                supervisorMutation.stream()
+                                        .map(EnterpriseLabCommandLedgerEvent::eventType)
+                                        .toList());
+                        assertEquals(
+                                applicationMutation.get(0).requestFingerprint(),
+                                supervisorMutation.get(0).requestFingerprint());
+                        assertEquals(
+                                applicationMutation.get(0).transactionId(),
+                                supervisorMutation.get(0).transactionId());
+                        String observedSupervisorFingerprint = applicationMutation.get(2)
+                                .observedSupervisorEventFingerprint();
+                        assertEquals(
+                                supervisorMutation.get(supervisorMutation.size() - 1)
+                                        .currentFingerprint(),
+                                observedSupervisorFingerprint);
+                        assertEquals(
+                                observedSupervisorFingerprint,
+                                applicationMutation.get(3)
+                                        .observedSupervisorEventFingerprint());
 
                         var restored = operatorService.cancel(
                                 "external-experiment-1",

@@ -61,6 +61,15 @@ public final class EnterpriseLabSupervisorCommandLedger {
     private static final Set<EventType> TERMINAL_EVENTS = Set.of(
             EventType.RESPONSE_SENT,
             EventType.COMMAND_QUARANTINED);
+    private static final Set<EventType> RECEIPT_RESTART_HEADS = Set.of(
+            EventType.VALIDATION_REJECTED,
+            EventType.DUPLICATE_ACCEPTED,
+            EventType.DUPLICATE_REJECTED,
+            EventType.SUPERVISOR_COMMITTED,
+            EventType.RESPONSE_SENT,
+            EventType.RECONCILIATION_COMPLETED,
+            EventType.COMMAND_FAILED,
+            EventType.COMMAND_QUARANTINED);
 
     private final Path trustedRoot;
     private final Path supervisorDirectory;
@@ -373,7 +382,7 @@ public final class EnterpriseLabSupervisorCommandLedger {
         }
         if (event.eventType() == EventType.SUPERVISOR_RECEIPT_PERSISTED) {
             if (head.eventType() != EventType.SUPERVISOR_RECEIPT_PERSISTED
-                    && !TERMINAL_EVENTS.contains(head.eventType())) {
+                    && !RECEIPT_RESTART_HEADS.contains(head.eventType())) {
                 throw failure(Failure.ILLEGAL_EVENT_TRANSITION,
                         "a retry receipt cannot interrupt an unresolved supervisor lifecycle");
             }
@@ -896,6 +905,140 @@ public final class EnterpriseLabSupervisorCommandLedger {
                     EnterpriseLabCommandLedgerEvent.NONE,
                     0,
                     "AUTHENTICATED_RECEIPT_DURABLE",
+                    Objects.requireNonNull(occurredAt, "occurredAt cannot be null"),
+                    Map.of());
+        }
+
+        static SupervisorEventDraft validationRejected(
+                EnterpriseLabSupervisorState state,
+                String reasonCode,
+                Instant occurredAt) {
+            EnterpriseLabInstalledAllocationSnapshot installed = Objects.requireNonNull(
+                    state, "state cannot be null").installedAllocation();
+            return outcome(
+                    EventType.VALIDATION_REJECTED,
+                    installed,
+                    installed,
+                    ValidationResult.REJECTED,
+                    DuplicateClassification.NOT_EVALUATED,
+                    MutationStatus.NOT_ATTEMPTED,
+                    reasonCode,
+                    occurredAt);
+        }
+
+        static SupervisorEventDraft duplicate(
+                EnterpriseLabSupervisorState state,
+                boolean accepted,
+                DuplicateClassification classification,
+                String reasonCode,
+                Instant occurredAt) {
+            EnterpriseLabInstalledAllocationSnapshot installed = Objects.requireNonNull(
+                    state, "state cannot be null").installedAllocation();
+            return outcome(
+                    accepted ? EventType.DUPLICATE_ACCEPTED : EventType.DUPLICATE_REJECTED,
+                    installed,
+                    installed,
+                    ValidationResult.ACCEPTED,
+                    classification,
+                    MutationStatus.NOT_ATTEMPTED,
+                    reasonCode,
+                    occurredAt);
+        }
+
+        static SupervisorEventDraft mutation(
+                EventType eventType,
+                EnterpriseLabInstalledAllocationSnapshot before,
+                EnterpriseLabInstalledAllocationSnapshot after,
+                MutationStatus mutationStatus,
+                String reasonCode,
+                Instant occurredAt) {
+            if (eventType != EventType.MUTATION_STARTED
+                    && eventType != EventType.ALLOCATION_APPLIED
+                    && eventType != EventType.READ_BACK_VERIFIED
+                    && eventType != EventType.SUPERVISOR_COMMITTED) {
+                throw new IllegalArgumentException("unsupported supervisor mutation event");
+            }
+            return outcome(
+                    eventType,
+                    before,
+                    after,
+                    ValidationResult.ACCEPTED,
+                    DuplicateClassification.FIRST_OBSERVATION,
+                    mutationStatus,
+                    reasonCode,
+                    occurredAt);
+        }
+
+        static SupervisorEventDraft commandFailed(
+                EnterpriseLabSupervisorState state,
+                Instant occurredAt) {
+            EnterpriseLabInstalledAllocationSnapshot installed = Objects.requireNonNull(
+                    state, "state cannot be null").installedAllocation();
+            return outcome(
+                    EventType.COMMAND_FAILED,
+                    installed,
+                    installed,
+                    ValidationResult.REJECTED,
+                    DuplicateClassification.NOT_EVALUATED,
+                    MutationStatus.FAILED,
+                    "SUPERVISOR_COMMAND_FAILED",
+                    occurredAt);
+        }
+
+        static SupervisorEventDraft responseSent(
+                EnterpriseLabSupervisorState state,
+                Response response,
+                Instant occurredAt) {
+            EnterpriseLabInstalledAllocationSnapshot installed = Objects.requireNonNull(
+                    state, "state cannot be null").installedAllocation();
+            Response safe = Objects.requireNonNull(response, "response cannot be null");
+            return new SupervisorEventDraft(
+                    EventType.RESPONSE_SENT,
+                    installed.allocationFingerprint(),
+                    safe.installedFingerprint(),
+                    installed.routerGeneration(),
+                    safe.routerGeneration(),
+                    AuthenticationResult.ACCEPTED,
+                    safe.status() == EnterpriseLabSupervisorProtocol.ResponseStatus.ACCEPTED
+                            ? ValidationResult.ACCEPTED : ValidationResult.REJECTED,
+                    DuplicateClassification.NOT_EVALUATED,
+                    safe.actionPerformed()
+                            ? MutationStatus.COMMITTED : MutationStatus.NOT_ATTEMPTED,
+                    ResponseClassification.SENT,
+                    safe.responseFingerprint(),
+                    0,
+                    "SUPERVISOR_RESPONSE_SENT",
+                    Objects.requireNonNull(occurredAt, "occurredAt cannot be null"),
+                    Map.of());
+        }
+
+        private static SupervisorEventDraft outcome(
+                EventType eventType,
+                EnterpriseLabInstalledAllocationSnapshot before,
+                EnterpriseLabInstalledAllocationSnapshot after,
+                ValidationResult validation,
+                DuplicateClassification duplicate,
+                MutationStatus mutation,
+                String reasonCode,
+                Instant occurredAt) {
+            EnterpriseLabInstalledAllocationSnapshot safeBefore = Objects.requireNonNull(
+                    before, "before cannot be null");
+            EnterpriseLabInstalledAllocationSnapshot safeAfter = Objects.requireNonNull(
+                    after, "after cannot be null");
+            return new SupervisorEventDraft(
+                    eventType,
+                    safeBefore.allocationFingerprint(),
+                    safeAfter.allocationFingerprint(),
+                    safeBefore.routerGeneration(),
+                    safeAfter.routerGeneration(),
+                    AuthenticationResult.ACCEPTED,
+                    validation,
+                    duplicate,
+                    mutation,
+                    ResponseClassification.NOT_ATTEMPTED,
+                    EnterpriseLabCommandLedgerEvent.NONE,
+                    0,
+                    reasonCode,
                     Objects.requireNonNull(occurredAt, "occurredAt cannot be null"),
                     Map.of());
         }

@@ -499,6 +499,18 @@ public final class EnterpriseLabLoopbackAllocationRouter {
         }
     }
 
+    void commitVerifiedMutation(
+            InstalledStateMutation mutation,
+            EnterpriseLabInstalledAllocationSnapshot installed) {
+        InstalledStateMutation safeMutation = Objects.requireNonNull(
+                mutation, "mutation cannot be null");
+        EnterpriseLabInstalledAllocationSnapshot safeInstalled =
+                validateInstalledState(installed);
+        if (installedStateStore instanceof EnterpriseLabSupervisorAllocationBridge bridge) {
+            bridge.commitVerifiedMutation(safeMutation, safeInstalled);
+        }
+    }
+
     record InstalledStateMutation(
             String transactionId,
             Optional<String> experimentId,
@@ -552,6 +564,7 @@ public final class EnterpriseLabLoopbackAllocationRouter {
             Objects.requireNonNull(mutation, "mutation cannot be null");
             return compareAndSet(expected, update);
         }
+
     }
 
     private static final class InMemoryInstalledStateStore implements InstalledStateStore {

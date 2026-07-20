@@ -293,6 +293,11 @@ public final class EnterpriseLabSupervisorClient implements AutoCloseable {
                         "accepted supervisor transport response requires a body");
             }
             byte[] responseBytes = readExactly(input, responseLength);
+            if (input.readUnsignedByte()
+                    != EnterpriseLabSupervisorServer.TRANSPORT_DELIVERY_RECORDED) {
+                throw failure(Failure.RESPONSE_INVALID,
+                        "supervisor response lacked durable delivery evidence");
+            }
             Response response;
             try {
                 response = protocolCodec.decodeResponse(responseBytes, request);

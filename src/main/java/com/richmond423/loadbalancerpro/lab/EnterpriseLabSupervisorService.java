@@ -15,6 +15,9 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorProtocol.Respo
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorProtocol.ResponseDraft;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorProtocol.ResponseStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorCommandLedger.SupervisorEventDraft;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.DuplicateClassification;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.EventType;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.MutationStatus;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -209,6 +212,21 @@ public final class EnterpriseLabSupervisorService {
                     "SUPERVISOR_COMMAND_FAILED",
                     "Supervisor command failed closed with durable evidence preserved");
         }
+    }
+
+    /** Records delivery only after the bounded response frame has been flushed. */
+    synchronized void recordResponseSent(Request request, Response response) {
+        ownership.requireHeld();
+        Request safeRequest = Objects.requireNonNull(request, "request cannot be null");
+        Response safeResponse = Objects.requireNonNull(response, "response cannot be null");
+        if (!safeResponse.correlates(safeRequest)) {
+            throw new IllegalArgumentException(
+                    "response-delivery evidence must match the exact request");
+        }
+        commandLedger.append(
+                safeRequest,
+                safeResponse,
+                SupervisorEventDraft.responseSent(state, safeResponse, clock.instant()));
     }
 
     private void initializeOrRecover(EnterpriseLabExperimentTargetCatalog targetCatalog) {
@@ -430,6 +448,7 @@ public final class EnterpriseLabSupervisorService {
                     "Installed allocation changed before the requested mutation");
         }
 
+        EnterpriseLabInstalledAllocationSnapshot commandBefore = state.installedAllocation();
         EnterpriseLabInstalledAllocationSnapshot target;
         if (restoration) {
             if (!state.baselineAllocation().allocationFingerprint()
@@ -448,6 +467,15 @@ public final class EnterpriseLabSupervisorService {
                     "verified application allocation request");
         }
 
+        commandLedger.append(
+                request,
+                SupervisorEventDraft.mutation(
+                        EventType.MUTATION_STARTED,
+                        commandBefore,
+                        commandBefore,
+                        MutationStatus.STARTED,
+                        "SUPERVISOR_MUTATION_STARTED",
+                        clock.instant()));
         EnterpriseLabSupervisorState intent = transactionSuccessor(
                 state,
                 state.installedAllocation(),
@@ -477,6 +505,15 @@ public final class EnterpriseLabSupervisorService {
         failureInjector.checkpoint(FailurePoint.BEFORE_APPLY_INSTALL);
         persist(applied);
         failureInjector.checkpoint(FailurePoint.AFTER_APPLY_INSTALL);
+        commandLedger.append(
+                request,
+                SupervisorEventDraft.mutation(
+                        EventType.ALLOCATION_APPLIED,
+                        commandBefore,
+                        target,
+                        MutationStatus.APPLIED,
+                        "SUPERVISOR_ALLOCATION_APPLIED",
+                        clock.instant()));
 
         failureInjector.checkpoint(FailurePoint.BEFORE_READ_BACK);
         EnterpriseLabSupervisorState readBack = store.readIfPresent().orElseThrow();
@@ -487,6 +524,15 @@ public final class EnterpriseLabSupervisorService {
                     "supervisor installed allocation did not read back exactly");
         }
         failureInjector.checkpoint(FailurePoint.AFTER_READ_BACK);
+        commandLedger.append(
+                request,
+                SupervisorEventDraft.mutation(
+                        EventType.READ_BACK_VERIFIED,
+                        commandBefore,
+                        readBack.installedAllocation(),
+                        MutationStatus.READ_BACK_VERIFIED,
+                        "SUPERVISOR_READ_BACK_VERIFIED",
+                        clock.instant()));
 
         EnterpriseLabSupervisorState committed = transactionSuccessor(
                 state,
@@ -509,6 +555,16 @@ public final class EnterpriseLabSupervisorService {
         failureInjector.checkpoint(FailurePoint.BEFORE_COMMIT_INSTALL);
         persist(committed);
         failureInjector.checkpoint(FailurePoint.AFTER_COMMIT_INSTALL);
+        commandLedger.append(
+                request,
+                SupervisorEventDraft.mutation(
+                        EventType.SUPERVISOR_COMMITTED,
+                        commandBefore,
+                        committed.installedAllocation(),
+                        MutationStatus.COMMITTED,
+                        restoration ? "SUPERVISOR_BASELINE_COMMITTED"
+                                : "SUPERVISOR_ALLOCATION_COMMITTED",
+                        clock.instant()));
         return accepted(
                 request,
                 true,
@@ -595,9 +651,12 @@ public final class EnterpriseLabSupervisorService {
     }
 
     private Optional<Response> rejectChangedDuplicate(Request request) {
-        if (state.lastRequestId().equals(request.requestId())
+        Optional<EnterpriseLabCommandLedgerEvent> first = commandLedger.replay()
+                .eventsFor(request.requestId()).stream()
+                .findFirst();
+        if (first.isPresent()
                 && !constantTimeEquals(
-                state.lastRequestFingerprint(), request.requestFingerprint())) {
+                first.orElseThrow().requestFingerprint(), request.requestFingerprint())) {
             return Optional.of(rejected(request, "DUPLICATE_REQUEST_CHANGED",
                     "Duplicate request identity carried changed canonical content"));
         }
@@ -607,7 +666,8 @@ public final class EnterpriseLabSupervisorService {
     private Optional<Response> rejectExpired(Request request) {
         Instant now = clock.instant();
         Duration age = Duration.between(request.requestedAt(), now);
-        if (age.compareTo(EnterpriseLabSupervisorConfiguration.MAX_REQUEST_AGE) > 0) {
+        if (age.compareTo(EnterpriseLabSupervisorConfiguration.MAX_REQUEST_AGE) > 0
+                && !isDurablyTerminalIdenticalRetry(request)) {
             return Optional.of(rejected(request, "REQUEST_EXPIRED",
                     "Supervisor request exceeded its bounded age"));
         }
@@ -616,6 +676,21 @@ public final class EnterpriseLabSupervisorService {
                     "Supervisor request exceeded bounded clock skew"));
         }
         return Optional.empty();
+    }
+
+    private boolean isDurablyTerminalIdenticalRetry(Request request) {
+        var events = commandLedger.replay().eventsFor(request.requestId());
+        if (events.isEmpty()
+                || !constantTimeEquals(
+                events.get(0).requestFingerprint(), request.requestFingerprint())) {
+            return false;
+        }
+        return events.stream().anyMatch(event -> switch (event.eventType()) {
+            case SUPERVISOR_COMMITTED, DUPLICATE_ACCEPTED -> true;
+            case RESPONSE_SENT -> event.validationResult()
+                    == EnterpriseLabCommandLedgerEvent.ValidationResult.ACCEPTED;
+            default -> false;
+        });
     }
 
     private Optional<Response> rejectSupervisorFence(Request request) {
@@ -731,6 +806,16 @@ public final class EnterpriseLabSupervisorService {
             VerificationResult verification,
             String reasonCode,
             String reason) {
+        if ("DUPLICATE_REQUEST_REPLAYED".equals(reasonCode)) {
+            commandLedger.append(
+                    request,
+                    SupervisorEventDraft.duplicate(
+                            state,
+                            true,
+                            DuplicateClassification.IDENTICAL_RETRY,
+                            reasonCode,
+                            clock.instant()));
+        }
         return response(
                 request,
                 ResponseStatus.ACCEPTED,
@@ -750,6 +835,26 @@ public final class EnterpriseLabSupervisorService {
             VerificationResult verification,
             String reasonCode,
             String reason) {
+        DuplicateClassification duplicate = switch (reasonCode) {
+            case "DUPLICATE_REQUEST_CHANGED", "DUPLICATE_REQUEST_NO_LONGER_CURRENT" ->
+                    DuplicateClassification.CONFLICTING_CORRELATION;
+            case "DUPLICATE_TRANSACTION_CHANGED" ->
+                    DuplicateClassification.CONFLICTING_TRANSACTION;
+            case "STALE_APPLICATION_OWNER", "STALE_APPLICATION_GENERATION" ->
+                    DuplicateClassification.STALE_APPLICATION_GENERATION;
+            default -> DuplicateClassification.NOT_EVALUATED;
+        };
+        if (duplicate == DuplicateClassification.NOT_EVALUATED) {
+            commandLedger.append(
+                    request,
+                    SupervisorEventDraft.validationRejected(
+                            state, reasonCode, clock.instant()));
+        } else {
+            commandLedger.append(
+                    request,
+                    SupervisorEventDraft.duplicate(
+                            state, false, duplicate, reasonCode, clock.instant()));
+        }
         return response(
                 request,
                 ResponseStatus.REJECTED,
@@ -760,6 +865,14 @@ public final class EnterpriseLabSupervisorService {
     }
 
     private Response failed(Request request, String reasonCode, String reason) {
+        try {
+            commandLedger.append(
+                    request,
+                    SupervisorEventDraft.commandFailed(state, clock.instant()));
+        } catch (RuntimeException ignored) {
+            // A failed ledger writer cannot safely record more evidence. The
+            // bounded failed response still reports no successful mutation.
+        }
         return response(
                 request,
                 ResponseStatus.FAILED,
@@ -858,6 +971,7 @@ public final class EnterpriseLabSupervisorService {
     private static final class DurableApplicationOwnershipVerifier
             implements ApplicationOwnershipVerifier {
         private final EnterpriseLabEvidenceOwnershipRecordStore recordStore;
+        private final EnterpriseLabApplicationCommandLedger applicationCommandLedger;
         private final Clock clock;
 
         private DurableApplicationOwnershipVerifier(Path trustedRoot, Clock clock) {
@@ -867,6 +981,8 @@ public final class EnterpriseLabSupervisorService {
                     paths,
                     new EnterpriseLabEvidenceOwnershipCodec(),
                     point -> { });
+            this.applicationCommandLedger =
+                    EnterpriseLabApplicationCommandLedger.inspect(trustedRoot);
             this.clock = clock;
         }
 
@@ -882,16 +998,28 @@ public final class EnterpriseLabSupervisorService {
                 OwnershipRecord record = found.orElseThrow();
                 boolean activeState = record.state() == OwnershipState.OWNED
                         || record.state() == OwnershipState.TAKEOVER_COMPLETE;
-                boolean exact = record.generation() == request.applicationOwnerGeneration()
+                boolean sameEpoch = record.generation()
+                        == request.applicationOwnerGeneration()
                         && record.owner().applicationInstanceId()
-                        .equals(request.applicationInstanceId())
-                        && constantTimeEquals(
+                        .equals(request.applicationInstanceId());
+                boolean exactRecord = constantTimeEquals(
                         record.recordFingerprint(),
                         request.applicationOwnershipRecordFingerprint());
+                boolean durableInFlightIntent = !exactRecord
+                        && request.commandType()
+                        != CommandType.ADVANCE_APPLICATION_OWNERSHIP
+                        && applicationCommandLedger.replay()
+                        .eventsFor(request.requestId()).stream()
+                        .findFirst()
+                        .filter(event -> event.eventType()
+                                == EventType.APPLICATION_INTENT_PERSISTED)
+                        .filter(event -> event.correlates(request))
+                        .isPresent();
                 boolean ready = record.reconciliationStatus() == ReconciliationStatus.SUCCEEDED
                         && record.releaseStatus() != ReleaseStatus.RELEASED
                         && record.leaseExpiresAt().isAfter(clock.instant());
-                return activeState && exact && ready
+                return activeState && sameEpoch && ready
+                        && (exactRecord || durableInFlightIntent)
                         ? OwnershipVerification.allow()
                         : OwnershipVerification.rejected(
                         "APPLICATION_OWNERSHIP_INVALID",

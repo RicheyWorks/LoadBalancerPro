@@ -4,6 +4,8 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.Owners
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.RenewalResult;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.VerificationResult;
 
+import java.util.function.Function;
+
 /**
  * The single authoritative admission gate for ownership-bound local mutation.
  * It remains tied to the live lease and cannot manufacture ownership evidence.
@@ -31,6 +33,11 @@ public final class EnterpriseLabEvidenceOwnershipGate
                     result.failure(), result.reasonCode());
         }
         return result.record().orElseThrow();
+    }
+
+    /** Keeps a bounded internal operation on one verified renewable record. */
+    <T> T withCurrentOwnership(Function<OwnershipRecord, T> operation) {
+        return lease.withCurrentOwnership(operation);
     }
 
     @Override

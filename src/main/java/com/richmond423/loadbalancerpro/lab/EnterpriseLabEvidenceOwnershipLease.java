@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.Function;
 
 /** Live, non-detachable ownership resource that retains the OS lock and channel. */
 public final class EnterpriseLabEvidenceOwnershipLease implements AutoCloseable {
@@ -229,6 +230,23 @@ public final class EnterpriseLabEvidenceOwnershipLease implements AutoCloseable 
                     terminalReasonCode,
                     operatingSystemLockValid());
         }
+    }
+
+    /**
+     * Runs one bounded in-process operation while renewal is unable to replace
+     * the current record fingerprint. The operation still receives only an
+     * independently verified live record and cannot detach the lease.
+     */
+    synchronized <T> T withCurrentOwnership(
+            Function<OwnershipRecord, T> operation) {
+        Function<OwnershipRecord, T> safeOperation = Objects.requireNonNull(
+                operation, "operation cannot be null");
+        VerificationResult verified = verifyCurrentOwnership();
+        if (verified.status() != OperationStatus.SUCCEEDED) {
+            throw new EnterpriseLabEvidenceOwnershipException(
+                    verified.failure(), verified.reasonCode());
+        }
+        return safeOperation.apply(verified.record().orElseThrow());
     }
 
     synchronized RenewalResult renewCurrentOwnership() {

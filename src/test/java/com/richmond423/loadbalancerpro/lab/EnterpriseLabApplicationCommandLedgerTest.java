@@ -35,17 +35,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -435,6 +441,191 @@ class EnterpriseLabApplicationCommandLedgerTest {
     }
 
     @Test
+    void verifiedDispatcherBindsResponseSentAndCommitsObservation() {
+        try (EnterpriseLabSupervisorOwnership supervisorOwnership =
+                     EnterpriseLabSupervisorOwnership.acquire(temporaryDirectory);
+             EnterpriseLabApplicationCommandLedger ledger = ownedLedger()) {
+            EnterpriseLabSupervisorService service = EnterpriseLabSupervisorService
+                    .startForTesting(
+                            supervisorOwnership,
+                            targetCatalog(),
+                            Clock.fixed(NOW, ZoneOffset.UTC),
+                            request -> EnterpriseLabSupervisorService
+                                    .OwnershipVerification.allow(),
+                            point -> { });
+            Request request = requestForSupervisor(
+                    "verified-command-1", service.state());
+            EnterpriseLabApplicationCommandDispatcher dispatcher =
+                    new EnterpriseLabApplicationCommandDispatcher(
+                            ledger, Clock.fixed(NOW, ZoneOffset.UTC));
+
+            var result = dispatcher.dispatchVerified(
+                    request,
+                    supervisorEvidence(),
+                    observed -> {
+                        Response response = service.dispatch(observed);
+                        service.recordResponseSent(observed, response);
+                        return response;
+                    },
+                    (observed, response) -> EnterpriseLabSupervisorCommandLedger
+                            .inspect(temporaryDirectory)
+                            .replay().eventsFor(observed.requestId()).stream()
+                            .reduce((first, second) -> second).orElseThrow(),
+                    false);
+
+            assertEquals(ResponseStatus.ACCEPTED, result.response().status());
+            assertTrue(result.terminalReceipt().isPresent());
+            assertEquals(List.of(
+                            EventType.APPLICATION_INTENT_PERSISTED,
+                            EventType.DISPATCH_ATTEMPTED,
+                            EventType.APPLICATION_RESPONSE_RECEIVED,
+                            EventType.APPLICATION_COMMITTED),
+                    ledger.replay().eventsFor(request.requestId()).stream()
+                            .map(EnterpriseLabCommandLedgerEvent::eventType)
+                            .toList());
+            EnterpriseLabCommandLedgerEvent responseSent =
+                    EnterpriseLabSupervisorCommandLedger.inspect(temporaryDirectory)
+                            .replay().eventsFor(request.requestId()).get(1);
+            assertEquals(EventType.RESPONSE_SENT, responseSent.eventType());
+            assertTrue(responseSent.observes(result.response()));
+            assertEquals(
+                    responseSent.currentFingerprint(),
+                    result.supervisorOutcomeFingerprint());
+        }
+    }
+
+    @Test
+    void verifiedDispatcherRetriesOnlyAfterDurableLossWithSameIdentity() {
+        try (EnterpriseLabSupervisorOwnership supervisorOwnership =
+                     EnterpriseLabSupervisorOwnership.acquire(temporaryDirectory);
+             EnterpriseLabApplicationCommandLedger ledger = ownedLedger()) {
+            EnterpriseLabSupervisorService service = EnterpriseLabSupervisorService
+                    .startForTesting(
+                            supervisorOwnership,
+                            targetCatalog(),
+                            Clock.fixed(NOW, ZoneOffset.UTC),
+                            request -> EnterpriseLabSupervisorService
+                                    .OwnershipVerification.allow(),
+                            point -> { });
+            Request request = requestForSupervisor(
+                    "verified-retry-1", service.state());
+            EnterpriseLabApplicationCommandDispatcher dispatcher =
+                    new EnterpriseLabApplicationCommandDispatcher(
+                            ledger, Clock.fixed(NOW, ZoneOffset.UTC));
+            assertThrows(IllegalStateException.class, () -> dispatcher.dispatchVerified(
+                    request,
+                    supervisorEvidence(),
+                    observed -> {
+                        throw new IllegalStateException("injected response loss");
+                    },
+                    (observed, response) -> {
+                        throw new AssertionError("outcome read must follow a response");
+                    },
+                    false));
+
+            Request conflicting = protocolCodec.issue(new RequestDraft(
+                    request.requestId(),
+                    request.commandType(),
+                    request.applicationInstanceId(),
+                    request.applicationOwnershipRecordFingerprint(),
+                    request.applicationOwnerGeneration(),
+                    request.expectedSupervisorInstanceId(),
+                    request.expectedSupervisorGeneration(),
+                    request.transactionId(),
+                    request.experimentId(),
+                    request.allocationPurpose(),
+                    request.allocation(),
+                    request.allocationFingerprint(),
+                    request.previousCommittedFingerprint(),
+                    request.requestedAt(),
+                    Map.of("changed", "true")));
+            AtomicBoolean conflictingTransport = new AtomicBoolean();
+            assertThrows(IllegalStateException.class, () -> dispatcher.dispatchVerified(
+                    conflicting,
+                    supervisorEvidence(),
+                    observed -> {
+                        conflictingTransport.set(true);
+                        return service.dispatch(observed);
+                    },
+                    (observed, response) -> {
+                        throw new AssertionError("conflict must not read supervisor evidence");
+                    },
+                    false));
+            assertFalse(conflictingTransport.get());
+
+            var retried = dispatcher.dispatchVerified(
+                    request,
+                    supervisorEvidence(),
+                    observed -> {
+                        Response response = service.dispatch(observed);
+                        service.recordResponseSent(observed, response);
+                        return response;
+                    },
+                    (observed, response) -> EnterpriseLabSupervisorCommandLedger
+                            .inspect(temporaryDirectory)
+                            .replay().eventsFor(observed.requestId()).stream()
+                            .reduce((first, second) -> second).orElseThrow(),
+                    false);
+            assertEquals(1, retried.retryAttempt());
+            assertEquals(List.of(
+                            EventType.APPLICATION_INTENT_PERSISTED,
+                            EventType.DISPATCH_ATTEMPTED,
+                            EventType.RESPONSE_LOST,
+                            EventType.RETRY_ISSUED,
+                            EventType.DISPATCH_ATTEMPTED,
+                            EventType.APPLICATION_RESPONSE_RECEIVED,
+                            EventType.APPLICATION_COMMITTED),
+                    ledger.replay().eventsFor(request.requestId()).stream()
+                            .map(EnterpriseLabCommandLedgerEvent::eventType)
+                            .toList());
+        }
+    }
+
+    @Test
+    void verifiedDispatcherRejectsResponseFromOldSupervisorEpochBeforeAcknowledgement() {
+        Request oldRequest = request("epoch-command-1", 1L, NOW);
+        Response oldResponse = response(oldRequest);
+        Request currentRequest = protocolCodec.issue(new RequestDraft(
+                oldRequest.requestId(),
+                oldRequest.commandType(),
+                oldRequest.applicationInstanceId(),
+                oldRequest.applicationOwnershipRecordFingerprint(),
+                oldRequest.applicationOwnerGeneration(),
+                "supervisor-instance-2",
+                2L,
+                oldRequest.transactionId(),
+                oldRequest.experimentId(),
+                oldRequest.allocationPurpose(),
+                oldRequest.allocation(),
+                oldRequest.allocationFingerprint(),
+                oldRequest.previousCommittedFingerprint(),
+                oldRequest.requestedAt(),
+                oldRequest.metadata()));
+        AtomicBoolean outcomeRead = new AtomicBoolean();
+        try (EnterpriseLabApplicationCommandLedger ledger = ownedLedger()) {
+            EnterpriseLabApplicationCommandDispatcher dispatcher =
+                    new EnterpriseLabApplicationCommandDispatcher(
+                            ledger, Clock.fixed(NOW, ZoneOffset.UTC));
+            assertThrows(IllegalStateException.class, () -> dispatcher.dispatchVerified(
+                    currentRequest,
+                    supervisorEvidence(),
+                    observed -> oldResponse,
+                    (observed, response) -> {
+                        outcomeRead.set(true);
+                        throw new AssertionError("old response must fail before evidence read");
+                    },
+                    false));
+            assertFalse(outcomeRead.get());
+            assertEquals(List.of(
+                            EventType.APPLICATION_INTENT_PERSISTED,
+                            EventType.DISPATCH_ATTEMPTED),
+                    ledger.replay().eventsFor(currentRequest.requestId()).stream()
+                            .map(EnterpriseLabCommandLedgerEvent::eventType)
+                            .toList());
+        }
+    }
+
+    @Test
     void dispatcherNeverInvokesTransportWhenIntentCannotPersist() {
         AtomicBoolean invoked = new AtomicBoolean();
         try (EnterpriseLabApplicationCommandLedger ledger =
@@ -568,6 +759,112 @@ class EnterpriseLabApplicationCommandLedgerTest {
     }
 
     @Test
+    void ownershipRenewalAfterIntentKeepsTheSameInFlightCommandValid() {
+        MutableClock clock = new MutableClock(NOW);
+        var acquisition = EnterpriseLabEvidenceOwnershipManager.acquire(
+                temporaryDirectory,
+                Policy.safetyFirstDefaults(),
+                clock);
+        assertEquals(OperationStatus.SUCCEEDED, acquisition.result().status());
+        try (EnterpriseLabEvidenceOwnershipLease lease =
+                     acquisition.ownership().orElseThrow();
+             EnterpriseLabApplicationCommandLedger ledger =
+                     EnterpriseLabApplicationCommandLedger.create(
+                             temporaryDirectory, lease.ownershipGate())) {
+            var original = lease.record();
+            Request inFlight = request(
+                    "command-renewed-in-flight",
+                    original.owner().applicationInstanceId(),
+                    original.recordFingerprint(),
+                    original.generation(),
+                    NOW,
+                    Map.of());
+            ledger.append(inFlight, intent());
+
+            clock.advance(Duration.ofSeconds(1));
+            var renewal = lease.ownershipGate().renew();
+            assertEquals(OperationStatus.SUCCEEDED, renewal.status());
+            assertNotEquals(original.recordFingerprint(),
+                    renewal.record().orElseThrow().recordFingerprint());
+
+            ledger.append(inFlight, dispatch());
+            assertEquals(List.of(
+                            EventType.APPLICATION_INTENT_PERSISTED,
+                            EventType.DISPATCH_ATTEMPTED),
+                    ledger.replay().events().stream()
+                            .map(EnterpriseLabCommandLedgerEvent::eventType)
+                            .toList());
+
+            Request newCommandWithOldRecord = request(
+                    "command-stale-record",
+                    original.owner().applicationInstanceId(),
+                    original.recordFingerprint(),
+                    original.generation(),
+                    NOW.plusSeconds(1),
+                    Map.of());
+            StoreException staleRecord = assertThrows(StoreException.class,
+                    () -> ledger.append(newCommandWithOldRecord, intent()));
+            assertEquals(Failure.OWNER_IDENTITY_MISMATCH, staleRecord.failure());
+            assertEquals(2, ledger.replay().events().size());
+        }
+    }
+
+    @Test
+    void boundedCurrentOwnershipOperationPreventsRenewalFromOvertakingNewIntent()
+            throws Exception {
+        MutableClock clock = new MutableClock(NOW);
+        var acquisition = EnterpriseLabEvidenceOwnershipManager.acquire(
+                temporaryDirectory,
+                Policy.safetyFirstDefaults(),
+                clock);
+        assertEquals(OperationStatus.SUCCEEDED, acquisition.result().status());
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try (EnterpriseLabEvidenceOwnershipLease lease =
+                     acquisition.ownership().orElseThrow();
+             EnterpriseLabApplicationCommandLedger ledger =
+                     EnterpriseLabApplicationCommandLedger.create(
+                             temporaryDirectory, lease.ownershipGate())) {
+            clock.advance(Duration.ofSeconds(1));
+            CountDownLatch renewalStarted = new CountDownLatch(1);
+            AtomicReference<Future<EnterpriseLabEvidenceOwnership.RenewalResult>>
+                    renewal = new AtomicReference<>();
+
+            Request request = lease.ownershipGate().withCurrentOwnership(ownership -> {
+                Request current = request(
+                        "command-atomic-intent",
+                        ownership.owner().applicationInstanceId(),
+                        ownership.recordFingerprint(),
+                        ownership.generation(),
+                        NOW,
+                        Map.of());
+                renewal.set(executor.submit(() -> {
+                    renewalStarted.countDown();
+                    return lease.ownershipGate().renew();
+                }));
+                try {
+                    assertTrue(renewalStarted.await(5, TimeUnit.SECONDS));
+                } catch (InterruptedException exception) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException(exception);
+                }
+                assertFalse(renewal.get().isDone());
+                ledger.append(current, intent());
+                assertFalse(renewal.get().isDone());
+                return current;
+            });
+
+            assertEquals(
+                    OperationStatus.SUCCEEDED,
+                    renewal.get().get(5, TimeUnit.SECONDS).status());
+            assertEquals(
+                    request.requestFingerprint(),
+                    ledger.replay().events().get(0).requestFingerprint());
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
     void supervisorEventAndNoncanonicalAllocationGenerationNeverCreateAFile() {
         Request request = request(
                 "command-1",
@@ -666,6 +963,27 @@ class EnterpriseLabApplicationCommandLedgerTest {
                 NOW.plusSeconds(1)));
     }
 
+    private Request requestForSupervisor(
+            String requestId,
+            EnterpriseLabSupervisorState state) {
+        return protocolCodec.issue(new RequestDraft(
+                requestId,
+                CommandType.HEALTH,
+                "application-instance-1",
+                "a".repeat(64),
+                1L,
+                state.supervisorInstanceId(),
+                state.supervisorGeneration(),
+                EnterpriseLabSupervisorProtocol.NONE,
+                Optional.empty(),
+                AllocationPurpose.RECONCILIATION_NO_OP,
+                Optional.empty(),
+                EnterpriseLabSupervisorProtocol.NONE,
+                EnterpriseLabSupervisorProtocol.NONE,
+                NOW,
+                Map.of()));
+    }
+
     private static EnterpriseLabExperimentTargetCatalog targetCatalog() {
         List<EnterpriseLabLoopbackTarget> targets = new ArrayList<>();
         targets.add(new EnterpriseLabLoopbackTarget(
@@ -733,5 +1051,39 @@ class EnterpriseLabApplicationCommandLedgerTest {
     private DispatchEvidence evidence() {
         return new DispatchEvidence(
                 INSTALLED, 7L, Map.of("boundary", "application-ledger"));
+    }
+
+    private static final class MutableClock extends Clock {
+        private final AtomicReference<Instant> now;
+
+        private MutableClock(Instant initial) {
+            now = new AtomicReference<>(initial);
+        }
+
+        private void advance(Duration duration) {
+            now.updateAndGet(value -> value.plus(duration));
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneOffset.UTC;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return now.get();
+        }
+    }
+
+    private DispatchEvidence supervisorEvidence() {
+        return new DispatchEvidence(
+                EnterpriseLabCommandLedgerEvent.NONE,
+                0L,
+                Map.of("boundary", "supervisor-ipc"));
     }
 }

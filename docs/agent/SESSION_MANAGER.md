@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Supervisor Command Ledger PR3 Checkpoint
 
-Timestamp: 2026-07-20T01:34:00-07:00
+Timestamp: 2026-07-20T01:37:00-07:00
 
 Current slot: COMMAND-LEDGER-PR3 - supervisor append-only ledger and durable authenticated receipt-before-mutation
 
@@ -21,7 +21,7 @@ Current branch: `codex/command-ledger-supervisor-store`.
 
 PR URL: not created.
 
-Executable/local-verification checkpoint: not created.
+Executable/local-verification checkpoint: `9e7ddc6e9743e950279a15f4b4ab5b39e3b9232b`.
 
 Prior slot closure: PR #487 merged normally from exact final head
 `cbe6f89ec6a89fe4abbc280340be775203acedb0` as `08e9ac662ca15990a0e17566280f88a76571e9cf`.
@@ -86,8 +86,8 @@ workflow passes in shadow mode and writes only ignored `target/` evidence. The e
 Scope/audit checkpoint: no workspace Java/Maven process or proof listener remains, `git ls-files target` is empty, and
 the CSRBT proposal remains the sole unrelated untracked path with its exact required hash. No POM, dependency, workflow,
 Dockerfile, Compose, script, public API, new listener, cloud/tenant, external target, credential, or production-traffic
-surface changed. The PR3 candidate contains 1,971 executable/proof/test churn lines and 256 documentation/process churn
-lines (88.50 / 11.50 percent). The campaign through the uncommitted PR3 candidate is 92.82 / 7.18 percent; later
+surface changed. The PR3 candidate contains 1,971 executable/proof/test churn lines and 258 documentation/process churn
+lines (88.43 / 11.57 percent). The campaign through the PR3 verification checkpoint is 92.79 / 7.21 percent; later
 implementation-heavy slots remain responsible for the final requested 88-92 / 8-12 campaign range.
 
 Blocker: none.

@@ -7047,3 +7047,5 @@ Final-evidence tooling note: the first combined PowerShell report object omitted
 Composition tooling follow-up: a compressed rerun omitted whitespace between PowerShell's `in` keyword and loop variable, so parsing failed before producing a total. No state changed. Correction: restore ordinary token spacing and rerun the read-only calculation.
 
 Guard-report audit follow-up: the 41-class guard run exited zero, but its first compressed XML rollup repeated the missing PowerShell `in` whitespace error and produced no aggregate. Correction: rerun the read-only report audit with ordinary spacing; do not infer totals from the failed display.
+
+Checkpoint-record correction: the first post-commit session edit expanded the abbreviated executable SHA without querying Git and produced an incorrect long value. It was caught before the metadata commit. Correction: replace it with exact `git rev-parse HEAD` output `9e7ddc6e9743e950279a15f4b4ab5b39e3b9232b`; source and executable history were unchanged.

@@ -27,6 +27,20 @@ The first slot does not change runtime behavior. It records what the current cod
 - `RoutingStrategyRegistry`: request-level strategy lookup and default registration order.
 - Request-level routing strategies: `TailLatencyPowerOfTwoStrategy`, `WeightedLeastLoadStrategy`, `WeightedLeastConnectionsRoutingStrategy`, `WeightedRoundRobinRoutingStrategy`, and `RoundRobinRoutingStrategy`.
 
+## Cloud Shim Boundary
+
+The core `LoadBalancer.initializeCloud(...)` method is a guarded API surface for optional cloud integration setup. The core feature contract treats this as a compatibility boundary, not as live-cloud validation, real-tenant validation, production cloud readiness, or credential-handling proof.
+
+Cloud manager access remains optional/nullable compatibility through the legacy nullable accessor plus `getCloudManagerOptional()` and `hasCloudManager()`. Core LoadBalancer contract evidence may verify that the shim remains bounded, documented, and guarded; it does not exercise real cloud accounts, introduce real credentials, mutate live infrastructure, or prove provider behavior.
+
+Reviewer-facing cloud boundary evidence must keep these claims explicit:
+
+- `initializeCloud(...)` input validation is part of the local guarded surface.
+- `CloudManager` access is optional and may be absent.
+- No Core-LB slot proves live-cloud validation.
+- No Core-LB slot proves real-tenant validation.
+- No Core-LB slot adds production cloud readiness, secrets, or credential material.
+
 ## Strategy Invariants
 
 | Strategy or path | Current invariant to preserve | Current evidence | Follow-up hardening need |
@@ -207,6 +221,7 @@ Use this map after Core-LB-G08 is merged/main-green to navigate the completed lo
 | Core-LB-G11 | Does weighted distribution preserve proportional, zero-weight, all-zero fallback, invalid-weight, and non-negative allocation invariants? | `CoreLoadBalancerWeightedDistributionInvariantTest` | Local deterministic weighted facade evidence only. |
 | Core-LB-G12 | Does consistent hashing remain deterministic and safe across fixed inputs, invalid key counts, no-candidate inputs, removal, replacement, and zero-load inputs? | `CoreLoadBalancerConsistentHashingInvariantTest` | Local deterministic hash-ring facade evidence only. |
 | Core-LB-G13 | Does accumulated allocation state rebalance safely across empty, round-robin, least-loaded, removal, replacement, capacity-aware, and predictive paths? | `CoreLoadBalancerRebalanceInvariantTest` | Local deterministic rebalance evidence only. |
+| Core-LB-G14 | Are cloud-facing shim boundaries documented without implying live-cloud, real-tenant, credential, or production-readiness proof? | `AgentCoreLoadBalancerCloudBoundaryDocumentationTest` | Documentation guard only. |
 
 The reviewer trust map links back to this contract so reviewers can start from a single navigation surface and then drill into the focused tests above.
 
@@ -283,6 +298,12 @@ Core-LB-G10 is tracked in [`CORE_LOADBALANCER_EVIDENCE_CONSOLIDATION.md`](CORE_L
 - Scope: empty accumulated-load rebalance, current-strategy rebalance, removal and duplicate replacement reconciliation, and capacity-aware/predictive result allocation accumulation.
 - Decision: current rebalance behavior redistributes accumulated allocated load through the selected facade strategy, keeps unallocated load out of accumulated state, and remains deterministic after removal or replacement cleanup.
 - Exit criteria: `CoreLoadBalancerRebalanceInvariantTest` protects accumulated-load rebalance behavior without changing production behavior.
+
+### Core-LB-G14 - Cloud shim boundary audit
+
+- Scope: document and guard the `initializeCloud(...)`, optional cloud manager, and cloud shim compatibility boundaries.
+- Decision: Core LoadBalancer cloud boundary evidence remains documentation/test-only and does not prove live-cloud validation, real-tenant validation, cloud production readiness, or credential handling beyond local guarded API-surface documentation.
+- Exit criteria: `AgentCoreLoadBalancerCloudBoundaryDocumentationTest` protects cloud boundary wording and overclaim exclusions without changing production behavior.
 
 ## Not-Proven Boundaries
 

@@ -70,6 +70,8 @@ public class RoutingComparisonService {
             decisionReplayEvidenceReviewerClosureRollupService;
     private final RoutingDecisionReplayEvidenceReviewerClosureChecklistService
             decisionReplayEvidenceReviewerClosureChecklistService;
+    private final RoutingDecisionReplayEvidenceReviewerClosurePacketService
+            decisionReplayEvidenceReviewerClosurePacketService;
     private final Clock clock;
 
     public RoutingComparisonService() {
@@ -118,6 +120,8 @@ public class RoutingComparisonService {
                 new RoutingDecisionReplayEvidenceReviewerClosureRollupService();
         this.decisionReplayEvidenceReviewerClosureChecklistService =
                 new RoutingDecisionReplayEvidenceReviewerClosureChecklistService();
+        this.decisionReplayEvidenceReviewerClosurePacketService =
+                new RoutingDecisionReplayEvidenceReviewerClosurePacketService();
     }
 
     public RoutingComparisonResponse compare(RoutingComparisonRequest request) {
@@ -221,12 +225,15 @@ public class RoutingComparisonService {
                 report.results().stream().map(result -> toResultResponse(result, candidates)).toList();
         RoutingDecisionReplayEvidenceReviewerClosureRollupResponse closureRollup =
                 decisionReplayEvidenceReviewerClosureRollupService.rollup(results);
+        RoutingDecisionReplayEvidenceReviewerClosureChecklistResponse closureChecklist =
+                decisionReplayEvidenceReviewerClosureChecklistService.checklist(results, closureRollup);
         return new RoutingComparisonResponse(
                 report.requestedStrategies().stream().map(RoutingStrategyId::externalName).toList(),
                 report.candidateCount(),
                 report.timestamp(),
                 closureRollup,
-                decisionReplayEvidenceReviewerClosureChecklistService.checklist(results, closureRollup),
+                closureChecklist,
+                decisionReplayEvidenceReviewerClosurePacketService.packet(results, closureRollup, closureChecklist),
                 results);
     }
 

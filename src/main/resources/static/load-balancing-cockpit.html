@@ -1343,6 +1343,10 @@
             <div id="decision-replay-evidence-reviewer-closure-checklist-explanation">Run routing comparison to populate response-level Reviewer Closure Checklist Status, Reviewer Closure Checklist Items, Reviewer Ready state, and not-proven boundaries: closureSummaryPresent, closureRollupPresent, countsMatchResultMetadata, scenarioReplayStripped, and notProvenBoundariesPresent. Read-only response-level reviewer closure checklist metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.</div>
           </div>
           <div class="drilldown-card">
+            <strong>Decision Replay Evidence Closure Packet</strong>
+            <div id="decision-replay-evidence-reviewer-closure-packet-explanation">Run routing comparison to populate response-level Reviewer Closure Packet Status, Sections, Reviewer Guidance, Reviewer Ready state, and not-proven boundaries: closureSummary, closureRollup, closureChecklist, scenarioReplayBoundary, and notProvenBoundaries. Read-only in-response reviewer closure packet metadata only; not an export/share/download packet, not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.</div>
+          </div>
+          <div class="drilldown-card">
             <strong>Allocation Math / Capacity Explanation</strong>
             <div id="allocation-explanation">Run allocation preview to populate capacity math.</div>
           </div>
@@ -3531,6 +3535,7 @@
         renderDecisionReplayEvidenceReviewerClosureExplanation(response);
         renderDecisionReplayEvidenceReviewerClosureRollupExplanation(response);
         renderDecisionReplayEvidenceReviewerClosureChecklistExplanation(response);
+        renderDecisionReplayEvidenceReviewerClosurePacketExplanation(response);
         return;
       }
       const results = response.results || [];
@@ -3558,6 +3563,7 @@
         renderDecisionReplayEvidenceReviewerClosureExplanation(response);
         renderDecisionReplayEvidenceReviewerClosureRollupExplanation(response);
         renderDecisionReplayEvidenceReviewerClosureChecklistExplanation(response);
+        renderDecisionReplayEvidenceReviewerClosurePacketExplanation(response);
         return;
       }
       rows.innerHTML = results.map((result) => "<tr>"
@@ -3587,6 +3593,7 @@
       renderDecisionReplayEvidenceReviewerClosureExplanation(response);
       renderDecisionReplayEvidenceReviewerClosureRollupExplanation(response);
       renderDecisionReplayEvidenceReviewerClosureChecklistExplanation(response);
+      renderDecisionReplayEvidenceReviewerClosurePacketExplanation(response);
     }
 
     function renderLoadShedding(response) {
@@ -3648,6 +3655,7 @@
       renderDecisionReplayEvidenceReviewerClosureExplanation(state.routing);
       renderDecisionReplayEvidenceReviewerClosureRollupExplanation(state.routing);
       renderDecisionReplayEvidenceReviewerClosureChecklistExplanation(state.routing);
+      renderDecisionReplayEvidenceReviewerClosurePacketExplanation(state.routing);
       renderAllocationExplanation(scenario);
       renderOverloadExplanation(scenario);
       renderRemediationExplanation();
@@ -4639,6 +4647,39 @@
         + "<span class=\"muted\">Boundary: read-only response-level reviewer closure checklist metadata only; not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, not production validation, no upload/share/download, no telemetry, no external calls, and no server-side export/PDF/ZIP generation.</span></p>";
     }
 
+    function renderDecisionReplayEvidenceReviewerClosurePacketExplanation(response) {
+      const container = document.getElementById(
+        "decision-replay-evidence-reviewer-closure-packet-explanation");
+      if (!response || response.status === "Not available in current API") {
+        container.textContent = "Run routing comparison to populate response-level Reviewer Closure Packet Status, Sections, Reviewer Guidance, Reviewer Ready state, and not-proven boundaries: closureSummary, closureRollup, closureChecklist, scenarioReplayBoundary, and notProvenBoundaries. Read-only in-response reviewer closure packet metadata only; not an export/share/download packet, not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
+        return;
+      }
+      const packet = response.decisionReplayEvidenceReviewerClosurePacket || {};
+      if (!packet.summary) {
+        container.textContent = "Decision Replay Evidence Closure Packet is unavailable; no response-level reviewer closure packet claim is invented. Read-only in-response reviewer closure packet metadata only; not an export/share/download packet, not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, and not production validation.";
+        return;
+      }
+      const sections = Array.isArray(packet.sections)
+        ? packet.sections.map((section) =>
+          (section.name || "unknown") + "=" + (section.status || "UNKNOWN")).join("; ")
+        : "none";
+      const guidance = Array.isArray(packet.reviewerGuidance)
+        ? packet.reviewerGuidance.join("; ")
+        : "none";
+      const boundaries = Array.isArray(packet.notProvenBoundaries)
+        ? packet.notProvenBoundaries.join("; ")
+        : "not replay proof; not scoring proof; not correctness validation; not production readiness; not production certification; not guaranteed replay; not production validation";
+      const text = "Reviewer Closure Packet Status: " + (packet.status || "UNKNOWN")
+        + "; packetVersion=" + (packet.packetVersion || "unknown")
+        + "; " + packet.summary
+        + "; Sections: " + sections
+        + "; reviewerReady=" + String(Boolean(packet.reviewerReady))
+        + "; Reviewer Guidance: " + guidance
+        + "; Not-Proven Boundaries: " + boundaries;
+      container.innerHTML = "<p>" + escapeHtml(text) + "<br>"
+        + "<span class=\"muted\">Boundary: read-only in-response reviewer closure packet metadata only; not an export/share/download packet, not replay proof, not scoring proof, not correctness validation, not production readiness, not production certification, not guaranteed replay, not production validation, no upload/share/download, no telemetry, no external calls, and no server-side export/PDF/ZIP generation.</span></p>";
+    }
+
     function formatFinite(value) {
       const numeric = Number(value);
       return Number.isFinite(numeric) ? numeric.toFixed(6) : "not returned";
@@ -5264,6 +5305,28 @@
             : "not replay proof;not scoring proof;not correctness validation;not production readiness;not production certification;not guaranteed replay;not production validation")
         ].join("\n")
         : "- Not run";
+      const closurePacket = state.routing && state.routing.decisionReplayEvidenceReviewerClosurePacket
+        ? state.routing.decisionReplayEvidenceReviewerClosurePacket
+        : null;
+      const evidenceReviewerClosurePacketLines = closurePacket
+        ? [
+          "- status: " + (closurePacket.status || "unknown"),
+          "- reviewerReady: " + String(Boolean(closurePacket.reviewerReady)),
+          "- packetVersion: " + (closurePacket.packetVersion || "unknown"),
+          "- sections: " + (Array.isArray(closurePacket.sections)
+            ? closurePacket.sections.map((section) =>
+              (section.name || "unknown") + "=" + (section.status || "UNKNOWN")).join(";")
+            : "none"),
+          "- reviewerGuidance: " + (Array.isArray(closurePacket.reviewerGuidance)
+            ? closurePacket.reviewerGuidance.join(";")
+            : "none"),
+          "- summary: " + (closurePacket.summary || "summary unavailable"),
+          "- notProvenBoundaries: " + (Array.isArray(closurePacket.notProvenBoundaries)
+            ? closurePacket.notProvenBoundaries.join(";")
+            : "not replay proof;not scoring proof;not correctness validation;not production readiness;not production certification;not guaranteed replay;not production validation"),
+          "- exportShareDownloadPacket: false"
+        ].join("\n")
+        : "- Not run";
       const allocationLines = state.allocation
         ? [
           "- requestedLoad: " + Number(scenario.allocationRequest.requestedLoad || 0).toFixed(3),
@@ -5353,6 +5416,9 @@
         "",
         "## Decision Replay Evidence Closure Checklist",
         evidenceReviewerClosureChecklistLines,
+        "",
+        "## Decision Replay Evidence Closure Packet",
+        evidenceReviewerClosurePacketLines,
         "",
         "## Allocation Math / Capacity Explanation",
         allocationLines,

@@ -438,6 +438,18 @@ class LoadBalancingCockpitDemoTest {
         assertTrue(page.contains("scenarioReplayStripped"));
         assertTrue(page.contains("notProvenBoundariesPresent"));
         assertTrue(page.contains("read-only response-level reviewer closure checklist metadata only"));
+        assertTrue(page.contains("Decision Replay Evidence Closure Packet"));
+        assertTrue(page.contains("id=\"decision-replay-evidence-reviewer-closure-packet-explanation\""));
+        assertTrue(page.contains("decisionReplayEvidenceReviewerClosurePacket"));
+        assertTrue(page.contains("Reviewer Closure Packet Status"));
+        assertTrue(page.contains("Reviewer Closure Packet Status, Sections, Reviewer Guidance"));
+        assertTrue(page.contains("closureSummary"));
+        assertTrue(page.contains("closureRollup"));
+        assertTrue(page.contains("closureChecklist"));
+        assertTrue(page.contains("scenarioReplayBoundary"));
+        assertTrue(page.contains("exportShareDownloadPacket: false"));
+        assertTrue(page.contains("read-only in-response reviewer closure packet metadata only"));
+        assertTrue(page.contains("not an export/share/download packet"));
         assertTrue(page.contains("not replay proof"));
         assertTrue(page.contains("not production certification"));
         assertTrue(page.contains("not guaranteed replay"));

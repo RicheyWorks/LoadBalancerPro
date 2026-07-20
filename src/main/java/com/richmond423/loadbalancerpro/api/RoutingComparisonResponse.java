@@ -9,5 +9,6 @@ public record RoutingComparisonResponse(
         Instant timestamp,
         RoutingDecisionReplayEvidenceReviewerClosureRollupResponse decisionReplayEvidenceReviewerClosureRollup,
         RoutingDecisionReplayEvidenceReviewerClosureChecklistResponse decisionReplayEvidenceReviewerClosureChecklist,
+        RoutingDecisionReplayEvidenceReviewerClosurePacketResponse decisionReplayEvidenceReviewerClosurePacket,
         List<RoutingComparisonResultResponse> results) {
 }

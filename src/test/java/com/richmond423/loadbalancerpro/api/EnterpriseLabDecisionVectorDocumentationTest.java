@@ -214,6 +214,9 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("Decision Replay Evidence Closure Checklist metadata"));
         assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_CHECKLIST.md"));
         assertTrue(doc.contains("`decisionReplayEvidenceReviewerClosureChecklist`"));
+        assertTrue(doc.contains("Decision Replay Evidence Closure Packet metadata"));
+        assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_PACKET.md"));
+        assertTrue(doc.contains("`decisionReplayEvidenceReviewerClosurePacket`"));
         assertTrue(doc.contains("\"EXACT_FROM_CALCULATOR\""));
         assertTrue(doc.contains("\"NOT_EXPOSED\""));
         assertTrue(doc.contains("not production scoring proof"));
@@ -282,6 +285,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains("`results[].decisionReplayEvidenceReviewerClosureSummary`"));
         assertTrue(doc.contains("`decisionReplayEvidenceReviewerClosureRollup`"));
         assertTrue(doc.contains("`decisionReplayEvidenceReviewerClosureChecklist`"));
+        assertTrue(doc.contains("`decisionReplayEvidenceReviewerClosurePacket`"));
         assertTrue(doc.contains("preserves existing"));
         assertTrue(doc.contains("`requestedStrategies`, `candidateCount`, `timestamp`, result status"));
         assertTrue(doc.contains("\"localLabResponsePath\": \"/api/routing/compare\""));
@@ -1212,10 +1216,12 @@ class EnterpriseLabDecisionVectorDocumentationTest {
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_GUIDANCE.md"));
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md"));
             assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_ROLLUP.md"));
+            assertTrue(doc.contains("ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_PACKET.md"));
             assertTrue(doc.contains("Decision Vector"));
         }
 
         assertTrue(readme.contains("read-only Decision Replay Evidence Reviewer Closure Summary lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_CLOSURE_SUMMARY.md); read-only Decision Replay Evidence Closure Rollup lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_ROLLUP.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_ROLLUP.md); read-only Decision Replay Evidence Closure Checklist lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_CHECKLIST.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_CHECKLIST.md)."));
+        assertTrue(readme.contains("Read-only Decision Replay Evidence Closure Packet lane: [`docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_PACKET.md`](docs/ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_CLOSURE_PACKET.md)."));
         assertTrue(trustMap.contains("### Decision Vector Contract"));
         assertTrue(framing.contains("## Decision Vector Contract"));
     }

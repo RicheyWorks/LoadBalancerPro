@@ -78,6 +78,8 @@ class RoutingOpenApiContractTest {
                 "#/components/schemas/RoutingDecisionReplayEvidenceReviewerClosureRollupResponse");
         assertRef(required(responseProperties, "/decisionReplayEvidenceReviewerClosureChecklist"),
                 "#/components/schemas/RoutingDecisionReplayEvidenceReviewerClosureChecklistResponse");
+        assertRef(required(responseProperties, "/decisionReplayEvidenceReviewerClosurePacket"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceReviewerClosurePacketResponse");
         assertEquals("array", required(responseProperties, "/results/type").asText());
         assertRef(required(responseProperties, "/results/items"),
                 "#/components/schemas/RoutingComparisonResultResponse");
@@ -1321,6 +1323,27 @@ class RoutingOpenApiContractTest {
         assertEquals("string", required(reviewerClosureChecklistItemProperties, "/name/type").asText());
         assertEquals("string", required(reviewerClosureChecklistItemProperties, "/status/type").asText());
         assertEquals("string", required(reviewerClosureChecklistItemProperties, "/description/type").asText());
+
+        JsonNode reviewerClosurePacketProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceReviewerClosurePacketResponse/properties");
+        assertEquals("string", required(reviewerClosurePacketProperties, "/status/type").asText());
+        assertEquals("boolean", required(reviewerClosurePacketProperties, "/reviewerReady/type").asText());
+        assertEquals("string", required(reviewerClosurePacketProperties, "/packetVersion/type").asText());
+        assertEquals("array", required(reviewerClosurePacketProperties, "/sections/type").asText());
+        assertRef(required(reviewerClosurePacketProperties, "/sections/items"),
+                "#/components/schemas/RoutingDecisionReplayEvidenceReviewerClosurePacketSectionResponse");
+        assertEquals("string", required(reviewerClosurePacketProperties, "/summary/type").asText());
+        assertEquals("array", required(reviewerClosurePacketProperties, "/reviewerGuidance/type").asText());
+        assertEquals("string", required(reviewerClosurePacketProperties, "/reviewerGuidance/items/type").asText());
+        assertEquals("array", required(reviewerClosurePacketProperties, "/notProvenBoundaries/type").asText());
+        assertEquals("string",
+                required(reviewerClosurePacketProperties, "/notProvenBoundaries/items/type").asText());
+
+        JsonNode reviewerClosurePacketSectionProperties = required(docs,
+                "/components/schemas/RoutingDecisionReplayEvidenceReviewerClosurePacketSectionResponse/properties");
+        assertEquals("string", required(reviewerClosurePacketSectionProperties, "/name/type").asText());
+        assertEquals("string", required(reviewerClosurePacketSectionProperties, "/status/type").asText());
+        assertEquals("string", required(reviewerClosurePacketSectionProperties, "/description/type").asText());
     }
 
     private JsonNode openApiDocs() throws Exception {

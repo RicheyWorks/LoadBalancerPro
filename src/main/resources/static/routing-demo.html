@@ -917,8 +917,12 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p>Decision Replay Evidence Closure Checklist turns closure summary and rollup metadata into response-level reviewer checks without replay execution, scoring proof, correctness validation, production readiness, production certification, or guaranteed replay claims.</p>
           </div>
           <div class="proof-card">
+            <strong>Reviewer closure packet</strong>
+            <p>Decision Replay Evidence Closure Packet groups closure summary, rollup, and checklist metadata into one in-response reviewer packet without export, download, share, replay proof, scoring proof, correctness validation, production readiness, production certification, or guaranteed replay claims.</p>
+          </div>
+          <div class="proof-card">
             <strong>Read-only API exposure</strong>
-            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, <code>decisionReplayEvidenceBoundarySummary</code>, <code>decisionReplayEvidenceFieldInventory</code>, <code>decisionReplayEvidenceNullSafetySummary</code>, <code>decisionReplayEvidenceStatusRollup</code>, <code>decisionReplayEvidenceLaneNavigationSummary</code>, <code>decisionReplayEvidenceLaneDependencyMap</code>, <code>decisionReplayEvidenceLaneReferenceIndex</code>, <code>decisionReplayEvidenceLaneDependencySummary</code>, <code>decisionReplayEvidenceLaneConsistencySummary</code>, <code>decisionReplayEvidenceReviewerSnapshot</code>, <code>decisionReplayEvidenceReviewerGuidance</code>, <code>decisionReplayEvidenceReviewerHandoffSummary</code>, <code>decisionReplayEvidenceReviewerClosureSummary</code>, top-level <code>decisionReplayEvidenceReviewerClosureRollup</code>, and top-level <code>decisionReplayEvidenceReviewerClosureChecklist</code> data; if absent, static lab guidance remains available.</p>
+            <p>The same-origin <code>/api/routing/compare</code> response can return additive <code>decisionVector</code>, <code>dominantFactorAnalysis</code>, <code>decisionDeltaAnalysis</code>, <code>decisionReplaySnapshot</code>, <code>decisionReplayReconstructionTrace</code>, <code>decisionReplayCapsule</code>, <code>decisionReplayReadinessChecklist</code>, <code>decisionReplayEvidenceSourceMap</code>, <code>decisionReplayEvidenceBoundarySummary</code>, <code>decisionReplayEvidenceFieldInventory</code>, <code>decisionReplayEvidenceNullSafetySummary</code>, <code>decisionReplayEvidenceStatusRollup</code>, <code>decisionReplayEvidenceLaneNavigationSummary</code>, <code>decisionReplayEvidenceLaneDependencyMap</code>, <code>decisionReplayEvidenceLaneReferenceIndex</code>, <code>decisionReplayEvidenceLaneDependencySummary</code>, <code>decisionReplayEvidenceLaneConsistencySummary</code>, <code>decisionReplayEvidenceReviewerSnapshot</code>, <code>decisionReplayEvidenceReviewerGuidance</code>, <code>decisionReplayEvidenceReviewerHandoffSummary</code>, <code>decisionReplayEvidenceReviewerClosureSummary</code>, top-level <code>decisionReplayEvidenceReviewerClosureRollup</code>, top-level <code>decisionReplayEvidenceReviewerClosureChecklist</code>, and top-level <code>decisionReplayEvidenceReviewerClosurePacket</code> data; if absent, static lab guidance remains available.</p>
           </div>
           <div class="proof-card">
             <strong>Replay and what-if boundary</strong>
@@ -1558,6 +1562,29 @@ copyBoundary: browser-local copy action only; no upload/share endpoint; no serve
             <p id="decision-vector-reviewer-closure-checklist-limitations">Read-only response-level reviewer closure checklist metadata only; no replay execution, no scoring proof, no correctness validation, no production readiness, no production certification, no guaranteed replay, and no production validation.</p>
           </div>
         </div>
+        <h3 style="margin-top: 14px;">Decision Replay Evidence Closure Packet</h3>
+        <div class="proof-grid" aria-label="Decision Replay Evidence Closure Packet">
+          <div class="proof-card">
+            <strong>Reviewer Closure Packet Status</strong>
+            <p id="decision-vector-reviewer-closure-packet-status">Run Compare strategies to populate response-level reviewer closure packet metadata.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Reviewer Closure Packet Sections</strong>
+            <p id="decision-vector-reviewer-closure-packet-sections">No response-level reviewer closure packet sections have been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Reviewer Closure Packet Guidance</strong>
+            <p id="decision-vector-reviewer-closure-packet-guidance">No response-level reviewer closure packet guidance has been returned yet.</p>
+          </div>
+          <div class="proof-card">
+            <strong>Reviewer Closure Packet Boundaries</strong>
+            <p id="decision-vector-reviewer-closure-packet-boundaries">not replay proof; not scoring proof; not correctness validation; not production readiness; not production certification; not guaranteed replay; not production validation</p>
+          </div>
+          <div class="proof-card">
+            <strong>Reviewer Closure Packet Limitations</strong>
+            <p id="decision-vector-reviewer-closure-packet-limitations">Read-only in-response reviewer closure packet metadata only; not an export/share/download packet; no replay execution, no scoring proof, no correctness validation, no production readiness, no production certification, no guaranteed replay, and no production validation.</p>
+          </div>
+        </div>
         <p class="postman-note">
           Copy boundary: the Decision Vector summary is assembled in the browser from visible local lab state only;
           no upload/share/download route, no server-side export/PDF/ZIP generation, no external calls, and no telemetry.
@@ -1598,6 +1625,8 @@ decisionReplayEvidenceReviewerClosureSummary: unavailable until /api/routing/com
 decisionReplayEvidenceReviewerClosureRollup: unavailable until /api/routing/compare returns decisionReplayEvidenceReviewerClosureRollup; no response-level reviewer closure claim is invented
 decisionReplayEvidenceReviewerClosureChecklist: unavailable until /api/routing/compare returns decisionReplayEvidenceReviewerClosureChecklist; no response-level reviewer closure checklist claim is invented
 decisionReplayEvidenceReviewerClosureChecklistItems: closureSummaryPresent; closureRollupPresent; countsMatchResultMetadata; scenarioReplayStripped; notProvenBoundariesPresent
+decisionReplayEvidenceReviewerClosurePacket: unavailable until /api/routing/compare returns decisionReplayEvidenceReviewerClosurePacket; no response-level reviewer closure packet claim is invented
+decisionReplayEvidenceReviewerClosurePacketSections: closureSummary; closureRollup; closureChecklist; scenarioReplayBoundary; notProvenBoundaries
 readOnlyExposure: Decision Vector data is unavailable in this response; static lab guidance remains available.
 replayReadiness: planned future contract; replay execution is not implemented
 whatIfReadiness: planned future contract; what-if execution is not implemented
@@ -2688,7 +2717,17 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
       evidenceReviewerClosureChecklistBoundaries: document.getElementById(
         "decision-vector-reviewer-closure-checklist-boundaries"),
       evidenceReviewerClosureChecklistLimitations: document.getElementById(
-        "decision-vector-reviewer-closure-checklist-limitations")
+        "decision-vector-reviewer-closure-checklist-limitations"),
+      evidenceReviewerClosurePacketStatus: document.getElementById(
+        "decision-vector-reviewer-closure-packet-status"),
+      evidenceReviewerClosurePacketSections: document.getElementById(
+        "decision-vector-reviewer-closure-packet-sections"),
+      evidenceReviewerClosurePacketGuidance: document.getElementById(
+        "decision-vector-reviewer-closure-packet-guidance"),
+      evidenceReviewerClosurePacketBoundaries: document.getElementById(
+        "decision-vector-reviewer-closure-packet-boundaries"),
+      evidenceReviewerClosurePacketLimitations: document.getElementById(
+        "decision-vector-reviewer-closure-packet-limitations")
     };
     const requestJson = document.getElementById("request-json");
     const baseUrlInput = document.getElementById("base-url");
@@ -3808,6 +3847,11 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           && typeof lastRoutingBody.decisionReplayEvidenceReviewerClosureChecklist === "object"
         ? lastRoutingBody.decisionReplayEvidenceReviewerClosureChecklist
         : null;
+      const evidenceReviewerClosurePacket = lastRoutingBody
+          && lastRoutingBody.decisionReplayEvidenceReviewerClosurePacket
+          && typeof lastRoutingBody.decisionReplayEvidenceReviewerClosurePacket === "object"
+        ? lastRoutingBody.decisionReplayEvidenceReviewerClosurePacket
+        : null;
       const selectedStrategy = decisionVector && decisionVector.selectedStrategy
         ? decisionVector.selectedStrategy
         : (primary && primary.strategyId ? primary.strategyId : "not run");
@@ -4500,6 +4544,28 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         ? evidenceReviewerClosureChecklist.notProvenBoundaries.join("; ")
         : "not replay proof; not scoring proof; not correctness validation; not production readiness; not production certification; not guaranteed replay; not production validation";
       const reviewerClosureChecklistLimitations = "Read-only response-level reviewer closure checklist metadata only; no replay execution, no scoring proof, no correctness validation, no production readiness, no production certification, no guaranteed replay, and no production validation.";
+      const reviewerClosurePacketText = evidenceReviewerClosurePacket
+        ? (evidenceReviewerClosurePacket.summary
+          || ("Decision replay evidence closure packet is "
+            + (evidenceReviewerClosurePacket.status || "UNKNOWN") + "."))
+        : "Decision Replay Evidence Closure Packet is unavailable; no response-level reviewer closure packet claim is invented.";
+      const reviewerClosurePacketSections = evidenceReviewerClosurePacket
+          && Array.isArray(evidenceReviewerClosurePacket.sections)
+          && evidenceReviewerClosurePacket.sections.length > 0
+        ? evidenceReviewerClosurePacket.sections.map((section) =>
+          (section.name || "unknown") + "=" + (section.status || "UNKNOWN")).join("; ")
+        : "No response-level reviewer closure packet sections have been returned yet.";
+      const reviewerClosurePacketGuidance = evidenceReviewerClosurePacket
+          && Array.isArray(evidenceReviewerClosurePacket.reviewerGuidance)
+          && evidenceReviewerClosurePacket.reviewerGuidance.length > 0
+        ? evidenceReviewerClosurePacket.reviewerGuidance.join("; ")
+        : "No response-level reviewer closure packet guidance has been returned yet.";
+      const reviewerClosurePacketBoundaries = evidenceReviewerClosurePacket
+          && Array.isArray(evidenceReviewerClosurePacket.notProvenBoundaries)
+          && evidenceReviewerClosurePacket.notProvenBoundaries.length > 0
+        ? evidenceReviewerClosurePacket.notProvenBoundaries.join("; ")
+        : "not replay proof; not scoring proof; not correctness validation; not production readiness; not production certification; not guaranteed replay; not production validation";
+      const reviewerClosurePacketLimitations = "Read-only in-response reviewer closure packet metadata only; not an export/share/download packet; no replay execution, no scoring proof, no correctness validation, no production readiness, no production certification, no guaranteed replay, and no production validation.";
       const replayReadiness = decisionVector && decisionVector.replayReadiness
         ? decisionVector.replayReadiness
         : "planned future contract; replay execution, what-if execution, and structured decision logging are not implemented here.";
@@ -4705,6 +4771,11 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
         reviewerClosureChecklistBoundaries;
       decisionVectorFields.evidenceReviewerClosureChecklistLimitations.textContent =
         reviewerClosureChecklistLimitations;
+      decisionVectorFields.evidenceReviewerClosurePacketStatus.textContent = reviewerClosurePacketText;
+      decisionVectorFields.evidenceReviewerClosurePacketSections.textContent = reviewerClosurePacketSections;
+      decisionVectorFields.evidenceReviewerClosurePacketGuidance.textContent = reviewerClosurePacketGuidance;
+      decisionVectorFields.evidenceReviewerClosurePacketBoundaries.textContent = reviewerClosurePacketBoundaries;
+      decisionVectorFields.evidenceReviewerClosurePacketLimitations.textContent = reviewerClosurePacketLimitations;
 
       outputs.decisionVector.textContent = [
         "# Decision Vector Foundation",
@@ -4832,6 +4903,11 @@ curl -fsS -X POST http://localhost:8080/api/routing/compare -H "Content-Type: ap
           ? reviewerClosureChecklistText + "; items=" + reviewerClosureChecklistItems
             + "; notProvenBoundaries=" + reviewerClosureChecklistBoundaries
           : "unavailable until /api/routing/compare returns decisionReplayEvidenceReviewerClosureChecklist; no response-level reviewer closure checklist claim is invented"),
+        "decisionReplayEvidenceReviewerClosurePacket: " + (evidenceReviewerClosurePacket
+          ? reviewerClosurePacketText + "; sections=" + reviewerClosurePacketSections
+            + "; reviewerGuidance=" + reviewerClosurePacketGuidance
+            + "; notProvenBoundaries=" + reviewerClosurePacketBoundaries
+          : "unavailable until /api/routing/compare returns decisionReplayEvidenceReviewerClosurePacket; no response-level reviewer closure packet claim is invented"),
         "selectedVsAlternativeExplanationNotes: " + alternativeCandidateSummary(selectedServer, currentPayload, scenarioMetrics(currentPayload), results),
         "readOnlyExposure: " + readOnlyExposure,
         "replayReadiness: " + replayReadiness,

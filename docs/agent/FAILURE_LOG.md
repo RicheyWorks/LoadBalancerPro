@@ -7013,3 +7013,37 @@ Tooling failure: while the exact-head PR gate was still pending, a read-only com
 Guard-discovery tooling failure: a read-only `rg` query returned the intended session-manager and campaign-discipline matches but also named nonexistent `docs/agent/GOAL_CAMPAIGN_VERIFICATION_PROTOCOL.md`, so ripgrep exited 1 after the useful output. No repository state changed, and the partial result is not accepted as complete guard discovery. Correction: search the exact test-source tree for guards that reference `SESSION_MANAGER.md` or `FAILURE_LOG.md`, derive class names from those existing paths, and run that exact selector.
 
 Verification-report audit tooling failure: the 41-class Maven documentation selector exited 0, but a subsequent read-only count audit assumed Surefire XML filenames were `TEST-<simple-class-name>.xml`. This repository writes package-qualified report filenames, so `Get-Content` emitted missing-path errors and the displayed zero-test aggregate is invalid. The test process result and repository state were unchanged. Correction: select existing Surefire XML reports by each suite's simple class name, require exactly 41 unique matches, and aggregate their suite counters before accepting the documented test count.
+
+# 2026-07-20 - Supervisor command-ledger PR3 Windows glob audit failure
+
+Branch: `codex/command-ledger-supervisor-store`
+
+Tooling failure: a read-only ripgrep audit supplied Unix-style `EnterpriseLabSupervisor*Test.java` and `EnterpriseLabIndependentSupervisor*Test.java` path globs as Windows path arguments. Ripgrep returned OS error 123 without producing usable test-surface evidence, and no state changed. Correction: search the exact test directory and apply ripgrep `-g` filename filters instead of passing wildcard paths.
+
+# 2026-07-20 - Supervisor command-ledger PR3 first focused behavior failure
+
+Branch: `codex/command-ledger-supervisor-store`
+
+Failing gate: `mvn -q "-Dtest=EnterpriseLabSupervisorCommandLedgerTest,EnterpriseLabSupervisorServerTest,EnterpriseLabSupervisorServiceTest,EnterpriseLabCommandLedgerEventCodecTest" test` ran 41 tests and exited 1 with one failure. `EnterpriseLabSupervisorServiceTest.staleSupervisorFenceAndChangedDuplicateFailClosed` expected the existing changed-duplicate path to return `REJECTED`, but the supervisor ledger rejected the second authenticated receipt's changed request identity first, so dispatch returned `FAILED`. No mutation occurred, but the established duplicate classification contract was not preserved. Correction: model each authenticated supervisor receipt as a new bounded observation episode for the stable correlation, permit a conflicting receipt to be durably recorded before duplicate validation, and bind later episode events to the latest exact receipt. Keep application-ledger correlation reuse strict and rerun the same focused selector.
+
+Adjacent-selector audit failure: the first broader Maven selector exited 0, but a report audit found only eight reports and 76 tests because the command assumed nonexistent standalone `EnterpriseLabSupervisorOwnershipTest`, `EnterpriseLabSupervisorStateTest`, `EnterpriseLabSupervisorStateCodecTest`, and `EnterpriseLabSupervisorStateStoreTest` classes. The eight existing selected classes passed, but this is not a 12-class result. Correction: derive the exact adjacent class names from existing test-source paths, rerun that source-backed selector, and require one fresh report per selected class before accepting the aggregate.
+
+# 2026-07-20 - Supervisor command-ledger PR3 failed-writer concurrency audit finding
+
+Branch: `codex/command-ledger-supervisor-store`
+
+Pre-commit audit finding: the failed-writer check ran before the fixed-path mutex, so a second thread could pass it while an append was in flight and continue after an uncertain post-write failure. Ownership and chain validation remained enforced, but the writer-failed invariant did not. Correction: check inside the mutex and prove the waiting append receives `WRITER_FAILED`; no released or remote code contains the finding.
+
+Response-binding audit finding: the event matcher required request-bound expected generations to equal every response's observed generations, preventing exact evidence for valid stale-generation rejections. Correction: retain strict fence equality for accepted responses, bind rejected responses through their exact canonical fingerprint, and test validation-rejection plus response-sent replay with deliberately different supervisor generations.
+
+Tooling follow-up: a read-only response-test lookup passed `*CommandLedger*Test.java` as a literal Windows path. Ripgrep returned OS error 123 after one valid exact-file result; no state changed. Correction: use exact paths or `-g` filters.
+
+Lifecycle audit finding: the store accepted `AUTHENTICATION_REJECTED` after an authenticated receipt even though the live server rejects wrong credentials before decode/dispatch. Correction: reject that contradictory transition directly; the shared event type remains versioned, while wrong-credential and malformed attempts leave the ledger unchanged.
+
+Session-checkpoint tooling note: the first final checkpoint patch used a wrapped anchor that did not exactly match `SESSION_MANAGER.md`, so `apply_patch` rejected it without changing a file. Correction: read the active section and use smaller exact hunks before the documentation guards.
+
+Final-evidence tooling note: the first combined PowerShell report object omitted a closing parenthesis in the branch-coverage expression, so that subcommand produced no summary; the parallel composition and cleanup audits completed. Correction: rerun a smaller exact extraction before recording evidence. No gate or repository state changed.
+
+Composition tooling follow-up: a compressed rerun omitted whitespace between PowerShell's `in` keyword and loop variable, so parsing failed before producing a total. No state changed. Correction: restore ordinary token spacing and rerun the read-only calculation.
+
+Guard-report audit follow-up: the 41-class guard run exited zero, but its first compressed XML rollup repeated the missing PowerShell `in` whitespace error and produced no aggregate. Correction: rerun the read-only report audit with ordinary spacing; do not infer totals from the failed display.

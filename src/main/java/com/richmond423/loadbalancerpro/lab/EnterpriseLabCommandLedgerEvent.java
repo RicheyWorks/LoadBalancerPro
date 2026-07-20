@@ -183,6 +183,7 @@ public record EnterpriseLabCommandLedgerEvent(
         currentFingerprint = requireFingerprint(
                 currentFingerprint, "currentFingerprint", false);
         requireCommandEvidence(
+                ledgerSide,
                 commandType,
                 transactionId,
                 allocationGeneration,
@@ -225,12 +226,17 @@ public record EnterpriseLabCommandLedgerEvent(
         return correlationId.equals(safe.requestId())
                 && requestFingerprint.equals(safe.requestFingerprint())
                 && commandType == safe.commandType()
-                && supervisorInstanceId.equals(safe.supervisorInstanceId())
-                && supervisorGeneration == safe.supervisorGeneration()
-                && applicationOwnerGeneration == safe.observedApplicationGeneration()
                 && responseFingerprint.equals(safe.responseFingerprint())
                 && (NONE.equals(installedFingerprintAfter)
-                || installedFingerprintAfter.equals(safe.installedFingerprint()));
+                || installedFingerprintAfter.equals(safe.installedFingerprint()))
+                && (safe.status() != EnterpriseLabSupervisorProtocol.ResponseStatus.ACCEPTED
+                || NONE.equals(supervisorInstanceId)
+                || (supervisorInstanceId.equals(safe.supervisorInstanceId())
+                && supervisorGeneration == safe.supervisorGeneration()))
+                && (safe.status() != EnterpriseLabSupervisorProtocol.ResponseStatus.ACCEPTED
+                || (!commandType.mutation()
+                && commandType != CommandType.VERIFY_ALLOCATION)
+                || applicationOwnerGeneration == safe.observedApplicationGeneration());
     }
 
     /** Draft excludes the schema and codec-controlled current fingerprint. */
@@ -380,6 +386,7 @@ public record EnterpriseLabCommandLedgerEvent(
     }
 
     private static void requireCommandEvidence(
+            LedgerSide ledgerSide,
             CommandType commandType,
             String transactionId,
             long allocationGeneration,
@@ -387,10 +394,11 @@ public record EnterpriseLabCommandLedgerEvent(
         if (commandType.classification()
                 == EnterpriseLabSupervisorProtocol.CommandClassification.ALLOCATION_MUTATION
                 && (NONE.equals(transactionId)
-                || allocationGeneration < 1L
+                || (ledgerSide == LedgerSide.APPLICATION && allocationGeneration < 1L)
                 || NONE.equals(requestedFingerprint))) {
             throw new IllegalArgumentException(
-                    "allocation mutation evidence requires transaction, generation, and requested fingerprint");
+                    "allocation mutation evidence requires transaction, requested fingerprint,"
+                            + " and application-side allocation generation");
         }
     }
 

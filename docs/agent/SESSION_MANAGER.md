@@ -6,6 +6,70 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Active Supervisor Command Ledger PR1 Checkpoint
+
+Timestamp: 2026-07-19T22:29:25-07:00
+
+Current slot: COMMAND-LEDGER-PR1 - canonical command evidence model and codec
+
+Goal manager: active for the approximately six-PR append-only supervisor command-ledger campaign; no token budget was
+requested.
+
+Started from clean synchronized main: `0a2805c5c713dbbb83fa25e339949f40fb8cccd9`.
+
+Current branch: `codex/command-ledger-canonical-model-codec`.
+
+PR URL: not opened.
+
+Prior campaign closure: the six-PR independent allocation-supervisor campaign is PASS. PRs #480 through #485 are
+merged, exact merge-main CI `29709679075` and CodeQL `29709679076` passed, all six source branches remain preserved,
+and the 3,330-test baseline is green.
+
+Baseline audit: origin is `RicheyWorks/LoadBalancerPro`; local and remote main both equal the supplied start SHA; no
+relevant Maven, Surefire, application, supervisor, proof, or proof-port listener remains. The unrelated CSRBT proposal
+is still the sole untracked path and retains SHA-256
+`7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
+
+Identifier-reuse decision: the existing supervisor protocol `requestId` becomes the stable command correlation ID. The
+existing canonical request fingerprint binds exact command content. Existing allocation transaction ID, experiment ID,
+application instance ID and owner generation, supervisor instance ID and generation, allocation generation, previous
+committed fingerprint, and installed-state fingerprint remain authoritative; PR1 will not create parallel allocation,
+transaction, experiment, or ownership identities.
+
+PR1 scope: add a versioned immutable command-ledger event vocabulary and strict canonical JSON codec shared by later
+application and supervisor ledgers. Include bounded application/supervisor event types, deterministic ordering and
+fingerprints, predecessor continuity fields, command/request correlation, bounded outcome classifications, strict
+unknown-version/unknown-field rejection, and direct behavioral tests. No durable store, protocol dispatch integration,
+status endpoint change, retention mutation, proof child, or runtime wiring is part of PR1.
+
+Safety boundary: evidence contains no credential or authentication material, raw allocation payload, arbitrary path,
+backend address, URL, host, port, command text, stack trace, or unrestricted metadata. No POM/dependency, CI/workflow,
+Dockerfile, Compose, script, public API, listener, cloud/tenant, external target, or production traffic change is in
+scope.
+
+Implementation checkpoint: the immutable shared event now covers all required application and supervisor lifecycle
+events with hard side, size, metadata, retry, sequence, identity, generation, transaction, allocation, predecessor, and
+outcome invariants. The strict JSON codec rejects malformed, unknown, unsupported, noncanonical, oversized, or
+fingerprint-mismatched evidence. Request-bound issuance verifies the exact protocol request identity; response-bound
+issuance additionally verifies the canonical response fingerprint and the observed supervisor-event link. The
+architecture contract records identity reuse, canonical behavior, staged integration, safety, and not-proven boundaries.
+
+Verification checkpoint: the new model/codec selector passes 15 tests. The combined command-ledger,
+supervisor-protocol, and supervisor-service selector passes 45 tests with zero failures, errors, or skips. The 41-class
+documentation-contract selector passes 248 tests. `mvn -q test` passes 3,345 tests across 472 Surefire reports with zero
+failures, errors, or skips; `mvn -q -DskipTests package`, `mvn -q clean package`, and `mvn -q verify` all exit zero. The
+packaged `scripts/smoke/enterprise-lab-workflow.ps1 -Package` gate passes and writes only ignored local-lab evidence
+under `target/enterprise-lab-runs`. `git diff --check` passes, `git ls-files target` is empty, and the CSRBT hash remains
+exact. PR1 adds 1,724 executable/test lines and approximately 170 architecture/process lines, about 91% executable proof.
+
+Blocker: none.
+
+Next action: stage only the six PR1 source, test, architecture, session, and failure-log files while excluding the
+unrelated CSRBT proposal; commit and push the exact verified head, open PR1, and require exact-head CI, CodeQL, and
+dependency-review gates before a normal merge.
+
+Decision: continue.
+
 ## Active Independent Allocation Supervisor PR6 Checkpoint
 
 Timestamp: 2026-07-19T17:14:33-07:00

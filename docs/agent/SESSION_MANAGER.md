@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Supervisor Command Ledger PR2 Checkpoint
 
-Timestamp: 2026-07-19T23:48:32-07:00
+Timestamp: 2026-07-19T23:56:55-07:00
 
 Current slot: COMMAND-LEDGER-PR2 - application append-only ledger and durable intent-before-dispatch
 
@@ -26,6 +26,13 @@ Executable/local-verification checkpoint: `44aa62b78068af779535b2439738ef830286c
 PR-created checkpoint: PR #487 opened from verified pushed head
 `9f43c4b3b57b2dfb0ab20155cb46a21ee09d7f70`. This required session update advances the branch, so exact-head remote
 gates must use the subsequent audit-only checkpoint rather than the PR-opening head.
+
+Remote-gate audit checkpoint: the subsequent pushed head is
+`67bcaa4ce117b3b77aa4a83155398ac4f3d752cc`. Exact-head CodeQL, aggregate CodeQL, and pull-request dependency review
+passed there; push and pull-request CI remained in progress with no reported failure or cancellation. Three read-only
+status/guard-discovery commands and one read-only Surefire count audit then hit recorded PowerShell/path errors. The
+campaign requires those failures in the failure log, so the next audit-only checkpoint contains only the three failure-log entries plus this factual session update;
+all exact-head remote gates must restart on that next pushed head rather than treating the earlier partial result as green.
 
 Prior slot closure: PR #486 merged normally from exact final head
 `9a2dd6951f9dd147c1be7671216006c44e740e42` as `c4daf1d4b5fc04bede22a233d2e5f4bf70661142`.
@@ -77,9 +84,9 @@ lines and approximately 170 architecture/process lines, keeping the slot approxi
 
 Blocker: none.
 
-Next action: rerun the documentation guard after this final checkpoint, stage only the six intended PR2 files while
-excluding CSRBT, commit the verified implementation head, then push and open PR2 for exact-head CI, CodeQL, and
-dependency-review gates.
+Next action: rerun the 41-class documentation guard after this audit checkpoint, stage only `FAILURE_LOG.md` and
+`SESSION_MANAGER.md` while excluding CSRBT, commit and push the audit-only head, then require exact-head push CI, PR CI,
+CodeQL, aggregate CodeQL, and dependency review before a normal merge.
 
 Decision: continue.
 

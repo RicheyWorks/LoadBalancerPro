@@ -4,6 +4,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationReconciler.Dri
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationReconciliationGate.InitializationState;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationState;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationSupervisor.FingerprintComparison;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationSupervisor.IndependentSupervisorSummary;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationSupervisor.SupervisionStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentOperatorService.AllocationSupervisionRestoration;
@@ -16,6 +17,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.Instant;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -60,7 +62,19 @@ class EnterpriseLabAllocationSupervisionControllerTest {
                 .andExpect(jsonPath("$.configured", is(true)))
                 .andExpect(jsonPath("$.ready", is(true)))
                 .andExpect(jsonPath("$.history.length()", is(0)))
+                .andExpect(jsonPath("$.independentSupervisor.configuredMode",
+                        is("external-supervisor-required")))
+                .andExpect(jsonPath("$.independentSupervisor.reachable", is(true)))
+                .andExpect(jsonPath("$.independentSupervisor.supervisorReady", is(true)))
+                .andExpect(jsonPath("$.independentSupervisor.supervisorInstanceId",
+                        is("supervisor-status-fixture")))
+                .andExpect(jsonPath("$.independentSupervisor.supervisorGeneration", is(3)))
+                .andExpect(jsonPath("$.independentSupervisor.applicationOwnershipGeneration",
+                        is(7)))
+                .andExpect(jsonPath("$.independentSupervisor.mutationReady", is(true)))
                 .andExpect(content().string(not(containsString("127.0.0.1"))))
+                .andExpect(content().string(not(containsString("credential"))))
+                .andExpect(content().string(not(containsString("port"))))
                 .andExpect(content().string(not(containsString("baselineAllocation"))))
                 .andExpect(content().string(not(containsString("dataDirectory"))));
 
@@ -124,6 +138,28 @@ class EnterpriseLabAllocationSupervisionControllerTest {
                 List.of(),
                 0,
                 0,
-                "sanitized fixed-target summaries only");
+                "sanitized fixed-target summaries only",
+                Optional.of(new IndependentSupervisorSummary(
+                        "external-supervisor-required",
+                        true,
+                        true,
+                        true,
+                        Optional.of("supervisor-status-fixture"),
+                        3L,
+                        9L,
+                        7L,
+                        none,
+                        none,
+                        none,
+                        4L,
+                        Optional.of(Instant.parse("2026-07-19T20:00:00Z")),
+                        "SAFE_BASELINE_INSTALLED",
+                        Optional.empty(),
+                        "SAFE_BASELINE_INSTALLED",
+                        true,
+                        "HIGHER_SUPERVISOR_EPOCH_RECONCILED",
+                        "STARTUP:SAFE_BASELINE_INSTALLED",
+                        "NONE",
+                        "no bounded supervisor failure is recorded")));
     }
 }

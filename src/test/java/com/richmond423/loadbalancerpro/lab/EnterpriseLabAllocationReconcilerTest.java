@@ -23,7 +23,10 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -550,6 +553,208 @@ class EnterpriseLabAllocationReconcilerTest {
     }
 
     @Test
+    void failedUnknownApplyRecoversSameTransactionButAdmissionWaitsForTerminalExperiment() {
+        EnterpriseLabAllocationState failed = failCandidateWithUnknownApplyState();
+        String transactionId = failed.allocationTransactionId();
+        authority.replaceOwner("replacement-owner", 2L);
+        EnterpriseLabAllocationReconciliationGate gate =
+                EnterpriseLabAllocationReconciliationGate.pending();
+        AtomicInteger readinessChecks = new AtomicInteger();
+        EnterpriseLabAllocationReconciler recovering = new EnterpriseLabAllocationReconciler(
+                store,
+                coordinator(),
+                router,
+                authority,
+                gate,
+                clock,
+                router::installedSnapshot,
+                checkpoint -> {
+                    if (checkpoint == Checkpoint.BEFORE_READINESS_PUBLICATION) {
+                        readinessChecks.incrementAndGet();
+                        assertFalse(gate.admissionAllowed());
+                        assertEquals(TransactionPhase.RESTORED,
+                                store.replay().chainHead().orElseThrow().transactionPhase());
+                    }
+                });
+
+        var interrupted = recovering.reconcileEvidence(
+                ReconciliationTrigger.STARTUP,
+                List.of(experimentEvidence(
+                        EnterpriseLabExperimentState.RUNNING,
+                        failed.normalizedAllocationFingerprint())));
+
+        assertFalse(interrupted.ready());
+        assertEquals(DriftClassification.INTERRUPTED_ACTIVE_EXPERIMENT,
+                interrupted.classification());
+        assertEquals(ReconciliationAction.BASELINE_RESTORED, interrupted.action());
+        assertFalse(gate.admissionAllowed());
+        assertEquals(1, readinessChecks.get());
+        List<EnterpriseLabAllocationState> records = store.replay().records();
+        assertEquals(List.of(
+                TransactionPhase.COMMITTED,
+                TransactionPhase.INTENT_PERSISTED,
+                TransactionPhase.APPLYING,
+                TransactionPhase.FAILED,
+                TransactionPhase.RESTORE_REQUIRED,
+                TransactionPhase.RESTORING,
+                TransactionPhase.RESTORED), phases());
+        assertStableTransactionEvidence(failed, records.subList(1, records.size()));
+        assertPredecessorChain(records);
+        assertTrue(records.subList(4, records.size()).stream()
+                .allMatch(record -> record.ownerGeneration() == 2L));
+        EnterpriseLabAllocationState restored = records.get(records.size() - 1);
+        assertEquals(transactionId, restored.allocationTransactionId());
+        assertEquals(2L, restored.ownerGeneration());
+        assertEquals(router.installedSnapshot().allocationFingerprint(),
+                restored.routerReadBackFingerprint());
+        assertTrue(restored.lastVerifiedAt().isPresent());
+        assertEquals(2L, router.installedSnapshot().ownerGeneration());
+        assertEquals(restored.baselineAllocation(),
+                router.installedSnapshot().routingSnapshot().allocations());
+
+        int terminalRecordCount = records.size();
+        var terminal = recovering.reconcileEvidence(
+                ReconciliationTrigger.JOURNAL_RECOVERY,
+                List.of(experimentEvidence(
+                        EnterpriseLabExperimentState.ROLLED_BACK,
+                        interrupted.baselineFingerprint())));
+
+        assertTrue(terminal.ready(), terminal.toString());
+        assertEquals(ReconciliationAction.VERIFIED_NO_OP, terminal.action());
+        assertTrue(gate.admissionAllowed());
+        assertEquals(terminalRecordCount, store.replay().records().size());
+
+        var repeated = recovering.reconcileEvidence(
+                ReconciliationTrigger.RUNTIME_CHECKPOINT,
+                List.of(experimentEvidence(
+                        EnterpriseLabExperimentState.ROLLED_BACK,
+                        terminal.baselineFingerprint())));
+
+        assertTrue(repeated.ready(), repeated.toString());
+        assertEquals(ReconciliationAction.VERIFIED_NO_OP, repeated.action());
+        assertEquals(terminalRecordCount, store.replay().records().size());
+        assertEquals(transactionId,
+                store.replay().chainHead().orElseThrow().allocationTransactionId());
+    }
+
+    @Test
+    void failedRecoveryRequiresCurrentOwnerReadBackAndRetriesSameTransaction() {
+        EnterpriseLabAllocationState failed = failCandidateWithUnknownApplyState();
+        String transactionId = failed.allocationTransactionId();
+        EnterpriseLabInstalledAllocationSnapshot staleReadBack = router.installedSnapshot();
+        authority.replaceOwner("replacement-owner", 2L);
+        EnterpriseLabAllocationTransactionCoordinator staleReadBackCoordinator =
+                new EnterpriseLabAllocationTransactionCoordinator(
+                        store,
+                        router,
+                        targetCatalog,
+                        authority,
+                        clock,
+                        checkpoint -> { },
+                        () -> staleReadBack);
+        EnterpriseLabAllocationReconciliationGate failedGate =
+                EnterpriseLabAllocationReconciliationGate.pending();
+        EnterpriseLabAllocationReconciler staleReadBackReconciler =
+                new EnterpriseLabAllocationReconciler(
+                        store,
+                        staleReadBackCoordinator,
+                        router,
+                        authority,
+                        failedGate,
+                        clock,
+                        () -> staleReadBack,
+                        checkpoint -> { });
+
+        var unverified = staleReadBackReconciler.reconcileEvidence(
+                ReconciliationTrigger.STARTUP,
+                List.of(experimentEvidence(
+                        EnterpriseLabExperimentState.ROLLED_BACK,
+                        baselineFingerprint())));
+
+        assertFalse(unverified.ready());
+        assertEquals(ReconciliationAction.BASELINE_RESTORATION_ATTEMPTED,
+                unverified.action());
+        assertFalse(failedGate.admissionAllowed());
+        EnterpriseLabAllocationState retryable = store.replay().chainHead().orElseThrow();
+        assertEquals(TransactionPhase.FAILED, retryable.transactionPhase());
+        assertEquals("RESTORATION_NOT_VERIFIED", retryable.transitionReason().code());
+        assertEquals(transactionId, retryable.allocationTransactionId());
+        assertEquals(2L, retryable.ownerGeneration());
+        assertEquals(2L, router.installedSnapshot().ownerGeneration());
+
+        EnterpriseLabAllocationReconciliationGate recoveredGate =
+                EnterpriseLabAllocationReconciliationGate.pending();
+        var recovered = reconciler(coordinator(), recoveredGate).reconcileEvidence(
+                ReconciliationTrigger.JOURNAL_RECOVERY,
+                List.of(experimentEvidence(
+                        EnterpriseLabExperimentState.ROLLED_BACK,
+                        baselineFingerprint())));
+
+        assertTrue(recovered.ready(), recovered.toString());
+        assertEquals(ReconciliationAction.BASELINE_RESTORED, recovered.action());
+        assertTrue(recoveredGate.admissionAllowed());
+        List<EnterpriseLabAllocationState> records = store.replay().records();
+        assertEquals(List.of(
+                TransactionPhase.COMMITTED,
+                TransactionPhase.INTENT_PERSISTED,
+                TransactionPhase.APPLYING,
+                TransactionPhase.FAILED,
+                TransactionPhase.RESTORE_REQUIRED,
+                TransactionPhase.RESTORING,
+                TransactionPhase.FAILED,
+                TransactionPhase.RESTORE_REQUIRED,
+                TransactionPhase.RESTORING,
+                TransactionPhase.RESTORED), phases());
+        assertStableTransactionEvidence(failed, records.subList(1, records.size()));
+        assertPredecessorChain(records);
+        assertTrue(records.subList(4, records.size()).stream()
+                .allMatch(record -> record.ownerGeneration() == 2L));
+        assertTrue(records.subList(1, records.size()).stream()
+                .allMatch(record -> record.allocationTransactionId().equals(transactionId)));
+    }
+
+    @Test
+    void quarantinedAllocationEvidenceCannotResumeOrPublishAdmission() {
+        EnterpriseLabAllocationState failed = failCandidateWithUnknownApplyState();
+        EnterpriseLabAllocationState restoreRequired = appendRecoveryPhase(
+                failed,
+                TransactionPhase.RESTORE_REQUIRED,
+                EnterpriseLabAllocationState.RecoveryClassification
+                        .BASELINE_RESTORATION_REQUIRED,
+                "TEST_RESTORE_REQUIRED");
+        EnterpriseLabAllocationState restoring = appendRecoveryPhase(
+                restoreRequired,
+                TransactionPhase.RESTORING,
+                EnterpriseLabAllocationState.RecoveryClassification
+                        .BASELINE_RESTORATION_REQUIRED,
+                "TEST_RESTORING");
+        EnterpriseLabAllocationState quarantined = appendRecoveryPhase(
+                restoring,
+                TransactionPhase.QUARANTINED,
+                EnterpriseLabAllocationState.RecoveryClassification.QUARANTINED,
+                "TEST_QUARANTINED");
+        int recordCount = store.replay().records().size();
+        EnterpriseLabInstalledAllocationSnapshot installed = router.installedSnapshot();
+        EnterpriseLabAllocationReconciliationGate gate =
+                EnterpriseLabAllocationReconciliationGate.pending();
+
+        var report = reconciler(coordinator(), gate).reconcileEvidence(
+                ReconciliationTrigger.STARTUP,
+                List.of(experimentEvidence(
+                        EnterpriseLabExperimentState.ROLLED_BACK,
+                        baselineFingerprint())));
+
+        assertFalse(report.ready());
+        assertEquals(DriftClassification.UNSAFE_DURABLE_STATE,
+                report.classification());
+        assertEquals(ReconciliationAction.FAILED_CLOSED, report.action());
+        assertFalse(gate.admissionAllowed());
+        assertEquals(recordCount, store.replay().records().size());
+        assertEquals(quarantined, store.replay().chainHead().orElseThrow());
+        assertEquals(installed, router.installedSnapshot());
+    }
+
+    @Test
     void ownershipChangeBeforeReadinessPublicationFailsClosed() {
         EnterpriseLabAllocationTransactionCoordinator coordinator = coordinator();
         coordinator.establishSafeBaseline("allocation-baseline-1");
@@ -669,6 +874,155 @@ class EnterpriseLabAllocationReconcilerTest {
         return new EnterpriseLabAllocationTransactionCoordinator(
                 store, router, targetCatalog, authority, clock,
                 failureInjector, router::installedSnapshot);
+    }
+
+    private EnterpriseLabAllocationState failCandidateWithUnknownApplyState() {
+        EnterpriseLabInstalledAllocationSnapshot initial = router.installedSnapshot();
+        AtomicReference<EnterpriseLabInstalledAllocationSnapshot> current =
+                new AtomicReference<>(initial);
+        AtomicBoolean rejectCandidate = new AtomicBoolean(true);
+        AtomicBoolean failNextRead = new AtomicBoolean();
+        EnterpriseLabLoopbackAllocationRouter.InstalledStateStore installedStateStore =
+                new EnterpriseLabLoopbackAllocationRouter.InstalledStateStore() {
+                    @Override
+                    public EnterpriseLabInstalledAllocationSnapshot read() {
+                        if (failNextRead.getAndSet(false)) {
+                            throw new IllegalStateException("injected unknown apply read-back");
+                        }
+                        return current.get();
+                    }
+
+                    @Override
+                    public boolean compareAndSet(
+                            EnterpriseLabInstalledAllocationSnapshot expected,
+                            EnterpriseLabInstalledAllocationSnapshot update) {
+                        if (update.routingSnapshot().kind() == Kind.CANDIDATE
+                                && rejectCandidate.getAndSet(false)) {
+                            failNextRead.set(true);
+                            return false;
+                        }
+                        return current.compareAndSet(expected, update);
+                    }
+                };
+        router = router(installedStateStore);
+        EnterpriseLabAllocationTransactionCoordinator coordinator = coordinator();
+        coordinator.establishSafeBaseline("allocation-baseline-1");
+
+        var failed = coordinator.applyCandidate(
+                "allocation-candidate-2", "experiment-1", decision, true);
+
+        assertEquals(TransactionStatus.FAILED_NOT_RESTORED, failed.status());
+        assertEquals("APPLY_STATE_UNKNOWN", failed.reasonCode());
+        EnterpriseLabAllocationState head = store.replay().chainHead().orElseThrow();
+        assertEquals(TransactionPhase.FAILED, head.transactionPhase());
+        assertEquals("APPLY_STATE_UNKNOWN", head.transitionReason().code());
+        assertEquals(Kind.BASELINE, router.installedSnapshot().routingSnapshot().kind());
+        return head;
+    }
+
+    private EnterpriseLabLoopbackAllocationRouter router(
+            EnterpriseLabLoopbackAllocationRouter.InstalledStateStore installedStateStore) {
+        List<String> backendIds = targets.stream()
+                .map(EnterpriseLabLoopbackTarget::backendId)
+                .toList();
+        return new EnterpriseLabLoopbackAllocationRouter(
+                targets,
+                new EnterpriseLabLoopbackObservationIngress(
+                        backendIds,
+                        com.richmond423.loadbalancerpro.core.ServerObservationWindowPolicy
+                                .localLabDefaults(),
+                        16,
+                        EnterpriseLabLoopbackObservationIngress.DEFAULT_MAX_MEASURED_LATENCY,
+                        clock,
+                        System::nanoTime),
+                decision.decision().guardrailDecision().baselineAllocations(),
+                Optional.of(authority),
+                clock,
+                installedStateStore);
+    }
+
+    private ExperimentAllocationEvidence experimentEvidence(
+            EnterpriseLabExperimentState state,
+            String lastAppliedFingerprint) {
+        return new ExperimentAllocationEvidence(
+                "experiment-1",
+                SCENARIO,
+                state,
+                state.terminal(),
+                baselineFingerprint(),
+                lastAppliedFingerprint,
+                "a".repeat(64));
+    }
+
+    private String baselineFingerprint() {
+        EnterpriseLabAllocationState baseline = store.replay().baseline().orElseThrow();
+        return EnterpriseLabAllocationStateCodec.canonicalAllocationFingerprint(
+                baseline.scenarioId(), baseline.baselineAllocation());
+    }
+
+    private EnterpriseLabAllocationState appendRecoveryPhase(
+            EnterpriseLabAllocationState previous,
+            TransactionPhase phase,
+            EnterpriseLabAllocationState.RecoveryClassification recovery,
+            String reasonCode) {
+        EnterpriseLabAllocationState next = EnterpriseLabAllocationState.create(
+                clock,
+                authority,
+                targetCatalog,
+                new EnterpriseLabAllocationState.Draft(
+                        previous.allocationTransactionId(),
+                        previous.experimentId(),
+                        previous.scenarioId(),
+                        previous.allocationGeneration(),
+                        previous.allocationPurpose(),
+                        previous.baselineAllocation(),
+                        previous.requestedAllocation(),
+                        previous.guardrailApprovedAllocation(),
+                        previous.installedAllocation(),
+                        EnterpriseLabAllocationState.NO_FINGERPRINT,
+                        previous.previousCommittedAllocationFingerprint(),
+                        phase,
+                        new EnterpriseLabAllocationState.TransitionReason(
+                                reasonCode, "focused quarantined recovery test"),
+                        previous.actionPerformed(),
+                        Optional.empty(),
+                        EnterpriseLabAllocationState.VerificationResult.NOT_ATTEMPTED,
+                        recovery,
+                        previous.currentRecordFingerprint(),
+                        previous.metadata()));
+        store.append(next);
+        return next;
+    }
+
+    private static void assertStableTransactionEvidence(
+            EnterpriseLabAllocationState expected,
+            List<EnterpriseLabAllocationState> records) {
+        assertTrue(records.stream().allMatch(record ->
+                record.schemaVersion().equals(expected.schemaVersion())
+                        && record.allocationTransactionId().equals(
+                                expected.allocationTransactionId())
+                        && record.experimentId().equals(expected.experimentId())
+                        && record.scenarioId().equals(expected.scenarioId())
+                        && record.allocationGeneration() == expected.allocationGeneration()
+                        && record.allocationPurpose() == expected.allocationPurpose()
+                        && record.baselineAllocation().equals(expected.baselineAllocation())
+                        && record.requestedAllocation().equals(expected.requestedAllocation())
+                        && record.guardrailApprovedAllocation().equals(
+                                expected.guardrailApprovedAllocation())
+                        && record.normalizedAllocationFingerprint().equals(
+                                expected.normalizedAllocationFingerprint())
+                        && record.previousCommittedAllocationFingerprint().equals(
+                                expected.previousCommittedAllocationFingerprint())
+                        && record.metadata().equals(expected.metadata())));
+    }
+
+    private static void assertPredecessorChain(
+            List<EnterpriseLabAllocationState> records) {
+        for (int index = 1; index < records.size(); index++) {
+            assertEquals(
+                    records.get(index - 1).currentRecordFingerprint(),
+                    records.get(index).predecessorRecordFingerprint());
+        }
     }
 
     private EnterpriseLabLoopbackAllocationRouter router() {

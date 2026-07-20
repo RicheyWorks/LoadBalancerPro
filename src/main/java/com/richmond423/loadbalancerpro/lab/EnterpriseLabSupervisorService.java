@@ -62,6 +62,24 @@ public final class EnterpriseLabSupervisorService {
                 NO_FAILURE);
     }
 
+    /** Package-local deterministic crash seam used only by subprocess proofs. */
+    static EnterpriseLabSupervisorService startForProof(
+            EnterpriseLabSupervisorOwnership ownership,
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            Clock clock,
+            FailureInjector failureInjector) {
+        EnterpriseLabSupervisorOwnership safeOwnership = Objects.requireNonNull(
+                ownership, "ownership cannot be null");
+        Clock safeClock = Objects.requireNonNull(clock, "clock cannot be null");
+        return startForTesting(
+                safeOwnership,
+                targetCatalog,
+                safeClock,
+                new DurableApplicationOwnershipVerifier(
+                        safeOwnership.trustedRoot(), safeClock),
+                failureInjector);
+    }
+
     static EnterpriseLabSupervisorService startForTesting(
             EnterpriseLabSupervisorOwnership ownership,
             EnterpriseLabExperimentTargetCatalog targetCatalog,
@@ -435,6 +453,7 @@ public final class EnterpriseLabSupervisorService {
         persist(applied);
         failureInjector.checkpoint(FailurePoint.AFTER_APPLY_INSTALL);
 
+        failureInjector.checkpoint(FailurePoint.BEFORE_READ_BACK);
         EnterpriseLabSupervisorState readBack = store.readIfPresent().orElseThrow();
         if (!readBack.installedAllocation().equals(target)
                 || !readBack.installedAllocation().allocationFingerprint()
@@ -442,6 +461,7 @@ public final class EnterpriseLabSupervisorService {
             throw new IllegalStateException(
                     "supervisor installed allocation did not read back exactly");
         }
+        failureInjector.checkpoint(FailurePoint.AFTER_READ_BACK);
 
         EnterpriseLabSupervisorState committed = transactionSuccessor(
                 state,
@@ -778,6 +798,8 @@ public final class EnterpriseLabSupervisorService {
         AFTER_INTENT_INSTALL,
         BEFORE_APPLY_INSTALL,
         AFTER_APPLY_INSTALL,
+        BEFORE_READ_BACK,
+        AFTER_READ_BACK,
         BEFORE_COMMIT_INSTALL,
         AFTER_COMMIT_INSTALL
     }

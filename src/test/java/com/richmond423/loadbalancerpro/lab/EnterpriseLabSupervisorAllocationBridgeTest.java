@@ -131,6 +131,24 @@ class EnterpriseLabSupervisorAllocationBridgeTest {
                         assertEquals(
                                 applicationOwnership.record().generation(),
                                 bridge.readAuthoritative().ownerGeneration());
+                        var operatorStatus = operatorService.allocationSupervisionStatus()
+                                .orElseThrow().independentSupervisor().orElseThrow();
+                        assertEquals(
+                                "external-supervisor-required",
+                                operatorStatus.configuredMode());
+                        assertTrue(operatorStatus.reachable());
+                        assertTrue(operatorStatus.supervisorReady());
+                        assertTrue(operatorStatus.mutationReady());
+                        assertEquals(
+                                bridge.connectionMetadata().supervisorInstanceId(),
+                                operatorStatus.supervisorInstanceId().orElseThrow());
+                        assertEquals(
+                                bridge.connectionMetadata().supervisorGeneration(),
+                                operatorStatus.supervisorGeneration());
+                        assertEquals(
+                                applicationOwnership.record().generation(),
+                                operatorStatus.applicationOwnershipGeneration());
+                        assertTrue(operatorStatus.lastSuccessfulIpcVerification().isPresent());
 
                         clock.advance(Duration.ofSeconds(1));
                         assertEquals(
@@ -394,6 +412,13 @@ class EnterpriseLabSupervisorAllocationBridgeTest {
                     EnterpriseLabSupervisorConnectionMetadata secondEpoch =
                             bridge.connectionMetadata();
                     assertTrue(verified.ready(), verified.toString());
+                    var restartedStatus = verified.independentSupervisor().orElseThrow();
+                    assertTrue(restartedStatus.reachable());
+                    assertTrue(restartedStatus.supervisorReady());
+                    assertTrue(restartedStatus.mutationReady());
+                    assertEquals(
+                            "HIGHER_SUPERVISOR_EPOCH_RECONCILED",
+                            restartedStatus.lastSupervisorRestartClassification());
                     assertEquals(
                             firstEpoch.supervisorGeneration() + 1L,
                             secondEpoch.supervisorGeneration());

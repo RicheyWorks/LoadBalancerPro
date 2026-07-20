@@ -58,6 +58,10 @@ class EnterpriseLabAllocationSupervisionSpringIntegrationTest {
                 .andExpect(jsonPath("$.readinessState", is("READY")))
                 .andExpect(jsonPath("$.installed.kind", is("BASELINE")))
                 .andExpect(jsonPath("$.fingerprints.baselineMatchesInstalled", is(true)))
+                .andExpect(jsonPath("$.independentSupervisor.configuredMode", is("in-process")))
+                .andExpect(jsonPath("$.independentSupervisor.externalSupervisorRequired",
+                        is(false)))
+                .andExpect(jsonPath("$.independentSupervisor.supervisorInstanceId").doesNotExist())
                 .andExpect(content().string(not(containsString(DATA_ROOT.toString()))))
                 .andExpect(content().string(not(containsString("127.0.0.1"))));
 

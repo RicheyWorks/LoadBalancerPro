@@ -67,6 +67,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
     private final Map<String, Session> sessions = new LinkedHashMap<>();
     private Optional<EnterpriseLabSupervisorConnectionMetadata>
             reconciledSupervisorSession;
+    private String lastSupervisorRestartClassification;
     private boolean closed;
 
     public EnterpriseLabExperimentOperatorService(EnterpriseLabExperimentTargetCatalog targetCatalog) {
@@ -391,6 +392,8 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 "supervisorAllocationBridge cannot be null");
         this.reconciledSupervisorSession = this.supervisorAllocationBridge.map(
                 EnterpriseLabSupervisorAllocationBridge::connectionMetadata);
+        this.lastSupervisorRestartClassification = this.supervisorAllocationBridge.isPresent()
+                ? "INITIAL_SUPERVISOR_EPOCH_VERIFIED" : "NOT_APPLICABLE";
         if (this.allocationSupervisor.isPresent()
                 && this.allocationReconciliationGate.isEmpty()) {
             throw new IllegalArgumentException(
@@ -991,9 +994,9 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                 EnterpriseLabAllocationReconciliationGate::admissionStatus);
     }
 
-    public Optional<EnterpriseLabAllocationSupervisor.SupervisionStatus>
+    public synchronized Optional<EnterpriseLabAllocationSupervisor.SupervisionStatus>
             allocationSupervisionStatus() {
-        return allocationSupervisor.map(EnterpriseLabAllocationSupervisor::status);
+        return allocationSupervisor.map(this::operatorSupervisionStatus);
     }
 
     public EnterpriseLabAllocationRuntimeMode allocationRuntimeMode() {
@@ -1006,13 +1009,13 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             if (allocationRuntimeMode
                     == EnterpriseLabAllocationRuntimeMode.EXTERNAL_SUPERVISOR_REQUIRED
                     && !reconcileExternalSupervisorSession(supervisor)) {
-                return supervisor.status();
+                return operatorSupervisionStatus(supervisor);
             }
             if (allocationRuntimeMode
                     != EnterpriseLabAllocationRuntimeMode.EXTERNAL_SUPERVISOR_REQUIRED) {
                 supervisor.verify();
             }
-            return supervisor.status();
+            return operatorSupervisionStatus(supervisor);
         });
     }
 
@@ -1026,7 +1029,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                         ChangeStatus.FAILED,
                         false,
                         "external supervisor session could not be explicitly reconnected and reconciled",
-                        supervisor.status());
+                        operatorSupervisionStatus(supervisor));
             }
             AllocationChangeReceipt receipt = supervisor.restoreSafeBaseline(
                     "authenticated operator requested verified durable baseline restoration");
@@ -1034,7 +1037,7 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                     receipt.status(),
                     receipt.trafficActionPerformed(),
                     receipt.reason(),
-                    supervisor.status());
+                    operatorSupervisionStatus(supervisor));
         });
     }
 
@@ -1338,12 +1341,15 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
             EnterpriseLabAllocationSupervisor supervisor) {
         EnterpriseLabSupervisorAllocationBridge bridge =
                 supervisorAllocationBridge.orElseThrow();
+        boolean reconnected = false;
         try {
             requireExternalSupervisorSession();
         } catch (RuntimeException unavailable) {
             try {
                 bridge.reconnect();
+                reconnected = true;
             } catch (RuntimeException reconnectFailure) {
+                lastSupervisorRestartClassification = "SUPERVISOR_RECONNECT_FAILED";
                 failAllocationAdmission("SUPERVISOR_RECONNECT_FAILED");
                 return false;
             }
@@ -1361,10 +1367,16 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
         try {
             report = supervisor.verify();
         } catch (RuntimeException exception) {
+            lastSupervisorRestartClassification = reconnected
+                    ? "HIGHER_SUPERVISOR_EPOCH_RECONCILIATION_FAILED"
+                    : "SUPERVISOR_EPOCH_VERIFICATION_FAILED";
             failAllocationAdmission("SUPERVISOR_RECONCILIATION_FAILED");
             return false;
         }
         if (!report.ready()) {
+            lastSupervisorRestartClassification = reconnected
+                    ? "HIGHER_SUPERVISOR_EPOCH_NOT_READY"
+                    : "SUPERVISOR_EPOCH_NOT_READY";
             return false;
         }
         if (epochChanged) {
@@ -1380,17 +1392,83 @@ public final class EnterpriseLabExperimentOperatorService implements AutoCloseab
                             "supervisor epoch changed; verified baseline restored without candidate resume",
                             "supervisor-reconnect");
                 } catch (RuntimeException exception) {
+                    lastSupervisorRestartClassification =
+                            "HIGHER_SUPERVISOR_EPOCH_TERMINATION_FAILED";
                     failAllocationAdmission("SUPERVISOR_RECONNECT_TERMINATION_FAILED");
                     return false;
                 }
                 if (!session.lifecycle.snapshot().terminal()) {
+                    lastSupervisorRestartClassification =
+                            "HIGHER_SUPERVISOR_EPOCH_TERMINATION_FAILED";
                     failAllocationAdmission("SUPERVISOR_RECONNECT_TERMINATION_FAILED");
                     return false;
                 }
             }
         }
         reconciledSupervisorSession = Optional.of(currentSession);
+        lastSupervisorRestartClassification = epochChanged
+                ? "HIGHER_SUPERVISOR_EPOCH_RECONCILED"
+                : "SUPERVISOR_EPOCH_VERIFIED";
         return true;
+    }
+
+    private EnterpriseLabAllocationSupervisor.SupervisionStatus operatorSupervisionStatus(
+            EnterpriseLabAllocationSupervisor supervisor) {
+        EnterpriseLabAllocationSupervisor.SupervisionStatus base = supervisor.status();
+        EnterpriseLabSupervisorAllocationBridge.SessionSnapshot session =
+                supervisorAllocationBridge.map(
+                        EnterpriseLabSupervisorAllocationBridge::sessionSnapshot)
+                        .orElse(null);
+        boolean external = session != null;
+        Optional<String> activeTransactionId = base.history().stream()
+                .filter(value -> activeTransactionPhase(value.phase()))
+                .reduce((first, second) -> second)
+                .map(EnterpriseLabAllocationSupervisor.TransactionSummary::transactionId);
+        String lastApplicationReconciliation = base.lastReconciliation()
+                .map(value -> value.trigger().name() + ":" + value.classification().name())
+                .orElse("NOT_RECORDED");
+        String failureCode = external && !session.failureReasonCode().equals("NONE")
+                ? session.failureReasonCode()
+                : base.ready() ? "NONE" : base.reasonCode();
+        String failureReason = "NONE".equals(failureCode)
+                ? "no bounded supervisor failure is recorded"
+                : "independent supervisor or allocation verification failed closed: "
+                        + failureCode;
+        var summary = new EnterpriseLabAllocationSupervisor.IndependentSupervisorSummary(
+                allocationRuntimeMode.wireValue(),
+                external,
+                external && session.reachable(),
+                external && session.ready(),
+                external ? Optional.of(session.supervisorInstanceId()) : Optional.empty(),
+                external ? session.supervisorGeneration() : 0L,
+                external ? session.durableStateGeneration() : 0L,
+                external ? session.acceptedApplicationGeneration() : base.ownerGeneration(),
+                external ? session.installedAllocationFingerprint()
+                        : base.fingerprints().installedFingerprint(),
+                base.fingerprints().committedFingerprint(),
+                base.fingerprints().baselineFingerprint(),
+                external ? session.routerGeneration() : base.routerGeneration(),
+                external ? session.lastSuccessfulIpcVerification() : Optional.empty(),
+                base.lastReconciliation()
+                        .map(value -> value.classification().name())
+                        .orElse("NOT_RECORDED"),
+                activeTransactionId,
+                base.driftClassification().name(),
+                external && session.ready() && base.ready(),
+                lastSupervisorRestartClassification,
+                lastApplicationReconciliation,
+                failureCode,
+                failureReason);
+        return base.withIndependentSupervisor(summary);
+    }
+
+    private static boolean activeTransactionPhase(
+            EnterpriseLabAllocationState.TransactionPhase phase) {
+        return switch (phase) {
+            case PREPARED, INTENT_PERSISTED, APPLYING, APPLIED, VERIFYING,
+                    RESTORE_REQUIRED, RESTORING, FAILED, QUARANTINED -> true;
+            default -> false;
+        };
     }
 
     private AllocationChangeReceipt restoreAllocation(Session session, String reason) {

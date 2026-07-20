@@ -32,6 +32,8 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
     private final EnterpriseLabExperimentTargetCatalog targetCatalog;
     private final EnterpriseLabEvidenceMutationAuthority mutationAuthority;
     private final EnterpriseLabAllocationReconciliationGate reconciliationGate;
+    private final EnterpriseLabAllocationTransactionCoordinator.FailureInjector
+            coordinatorFailureInjector;
     private final List<ReconciliationReport> reconciliationHistory = new ArrayList<>();
 
     private EnterpriseLabLoopbackAllocationRouter router;
@@ -43,7 +45,9 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
             EnterpriseLabAllocationStateStore store,
             EnterpriseLabExperimentTargetCatalog targetCatalog,
             EnterpriseLabEvidenceMutationAuthority mutationAuthority,
-            EnterpriseLabAllocationReconciliationGate reconciliationGate) {
+            EnterpriseLabAllocationReconciliationGate reconciliationGate,
+            EnterpriseLabAllocationTransactionCoordinator.FailureInjector
+                    coordinatorFailureInjector) {
         this.store = Objects.requireNonNull(store, "store cannot be null");
         this.targetCatalog = Objects.requireNonNull(
                 targetCatalog, "targetCatalog cannot be null");
@@ -51,6 +55,9 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
                 mutationAuthority, "mutationAuthority cannot be null");
         this.reconciliationGate = Objects.requireNonNull(
                 reconciliationGate, "reconciliationGate cannot be null");
+        this.coordinatorFailureInjector = Objects.requireNonNull(
+                coordinatorFailureInjector,
+                "coordinatorFailureInjector cannot be null");
     }
 
     /** Creates the fixed store and completes startup reconciliation synchronously. */
@@ -77,17 +84,38 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
             EnterpriseLabEvidenceOwnershipGate ownershipGate,
             EnterpriseLabAllocationReconciliationGate reconciliationGate,
             List<ReconstructedExperimentState> replayedExperiments) {
+        return createForProof(
+                trustedRoot,
+                targetCatalog,
+                startupRouter,
+                ownershipGate,
+                reconciliationGate,
+                replayedExperiments,
+                checkpoint -> { });
+    }
+
+    /** Package-local deterministic failure seam used only by subprocess proofs. */
+    static EnterpriseLabAllocationSupervisor createForProof(
+            Path trustedRoot,
+            EnterpriseLabExperimentTargetCatalog targetCatalog,
+            EnterpriseLabLoopbackAllocationRouter startupRouter,
+            EnterpriseLabEvidenceOwnershipGate ownershipGate,
+            EnterpriseLabAllocationReconciliationGate reconciliationGate,
+            List<ReconstructedExperimentState> replayedExperiments,
+            EnterpriseLabAllocationTransactionCoordinator.FailureInjector failureInjector) {
         EnterpriseLabAllocationSupervisor supervisor = new EnterpriseLabAllocationSupervisor(
                 EnterpriseLabAllocationStateStore.create(
                         trustedRoot, targetCatalog, ownershipGate),
                 targetCatalog,
                 ownershipGate,
-                reconciliationGate);
+                reconciliationGate,
+                failureInjector);
         try {
             ReconciliationReport report = supervisor.attachRouter(
                     startupRouter,
                     ReconciliationTrigger.STARTUP,
-                    replayedExperiments);
+                    replayedExperiments,
+                    failureInjector);
             if (!report.ready()) {
                 throw new IllegalStateException(
                         "allocation startup reconciliation failed closed: "
@@ -115,7 +143,8 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
                         trustedRoot, targetCatalog, mutationAuthority),
                 targetCatalog,
                 mutationAuthority,
-                reconciliationGate);
+                reconciliationGate,
+                checkpoint -> { });
         try {
             ReconciliationReport report = supervisor.attachRouter(
                     startupRouter, ReconciliationTrigger.STARTUP);
@@ -146,6 +175,18 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
             EnterpriseLabLoopbackAllocationRouter attachedRouter,
             ReconciliationTrigger trigger,
             List<ReconstructedExperimentState> replayedExperiments) {
+        return attachRouter(
+                attachedRouter,
+                trigger,
+                replayedExperiments,
+                coordinatorFailureInjector);
+    }
+
+    private synchronized ReconciliationReport attachRouter(
+            EnterpriseLabLoopbackAllocationRouter attachedRouter,
+            ReconciliationTrigger trigger,
+            List<ReconstructedExperimentState> replayedExperiments,
+            EnterpriseLabAllocationTransactionCoordinator.FailureInjector failureInjector) {
         requireOpen();
         router = Objects.requireNonNull(attachedRouter, "attachedRouter cannot be null");
         coordinator = new EnterpriseLabAllocationTransactionCoordinator(
@@ -154,7 +195,8 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
                 targetCatalog,
                 mutationAuthority,
                 java.time.Clock.systemUTC(),
-                checkpoint -> { },
+                Objects.requireNonNull(
+                        failureInjector, "failureInjector cannot be null"),
                 router::authoritativeInstalledSnapshot);
         reconciler = new EnterpriseLabAllocationReconciler(
                 store,
@@ -316,7 +358,8 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
                     history,
                     Math.min(unresolved, EnterpriseLabAllocationStateStore.HARD_MAX_RECORDS),
                     Math.min(quarantined, EnterpriseLabAllocationStateStore.HARD_MAX_RECORDS),
-                    "sanitized fixed-target summaries only; no addresses, paths, raw allocations, or mutation inputs");
+                    "sanitized fixed-target summaries only; no addresses, paths, raw allocations, or mutation inputs",
+                    Optional.empty());
         } catch (RuntimeException exception) {
             reconciliationGate.fail("ALLOCATION_STATUS_UNAVAILABLE");
             return SupervisionStatus.failed(
@@ -524,7 +567,8 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
             List<TransactionSummary> history,
             int unresolvedCount,
             int quarantinedCount,
-            String evidenceBoundary) {
+            String evidenceBoundary,
+            Optional<IndependentSupervisorSummary> independentSupervisor) {
         public SupervisionStatus {
             if (!STATUS_SCHEMA_VERSION.equals(schemaVersion)) {
                 throw new IllegalArgumentException(
@@ -546,6 +590,8 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
                     lastReconciliation, "lastReconciliation cannot be null");
             history = List.copyOf(Objects.requireNonNull(history, "history cannot be null"));
             evidenceBoundary = boundedText(evidenceBoundary, "evidenceBoundary", 256);
+            independentSupervisor = Objects.requireNonNull(
+                    independentSupervisor, "independentSupervisor cannot be null");
             if (history.size() > MAX_HISTORY_SUMMARIES
                     || unresolvedCount < 0
                     || quarantinedCount < 0
@@ -557,6 +603,32 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
                 throw new IllegalArgumentException(
                         "allocation supervision status counters or readiness are inconsistent");
             }
+        }
+
+        public SupervisionStatus withIndependentSupervisor(
+                IndependentSupervisorSummary summary) {
+            return new SupervisionStatus(
+                    schemaVersion,
+                    configured,
+                    ready,
+                    readinessState,
+                    reasonCode,
+                    installed,
+                    baseline,
+                    committed,
+                    currentPhase,
+                    routerGeneration,
+                    ownerGeneration,
+                    allocationGeneration,
+                    fingerprints,
+                    driftClassification,
+                    lastReconciliation,
+                    history,
+                    unresolvedCount,
+                    quarantinedCount,
+                    evidenceBoundary,
+                    Optional.of(Objects.requireNonNull(
+                            summary, "independent supervisor summary cannot be null")));
         }
 
         private static SupervisionStatus failed(
@@ -582,7 +654,113 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
                     List.of(),
                     0,
                     0,
-                    boundedText(boundary, "boundary", 256));
+                    boundedText(boundary, "boundary", 256),
+                    Optional.empty());
+        }
+    }
+
+    /** Sanitized operator projection of the independently running supervisor. */
+    public record IndependentSupervisorSummary(
+            String configuredMode,
+            boolean externalSupervisorRequired,
+            boolean reachable,
+            boolean supervisorReady,
+            Optional<String> supervisorInstanceId,
+            long supervisorGeneration,
+            long durableStateGeneration,
+            long applicationOwnershipGeneration,
+            String installedAllocationFingerprint,
+            String durableIntendedFingerprint,
+            String baselineFingerprint,
+            long routerGeneration,
+            Optional<Instant> lastSuccessfulIpcVerification,
+            String lastReconciliationClassification,
+            Optional<String> activeTransactionId,
+            String driftStatus,
+            boolean mutationReady,
+            String lastSupervisorRestartClassification,
+            String lastApplicationRestartReconciliation,
+            String failureReasonCode,
+            String boundedFailureReason) {
+        public IndependentSupervisorSummary {
+            if (configuredMode == null
+                    || !("in-process".equals(configuredMode)
+                    || "external-supervisor-required".equals(configuredMode)
+                    || "disabled".equals(configuredMode))) {
+                throw new IllegalArgumentException(
+                        "independent supervisor configured mode is invalid");
+            }
+            supervisorInstanceId = Objects.requireNonNull(
+                    supervisorInstanceId, "supervisorInstanceId cannot be null");
+            if (supervisorInstanceId.isPresent()
+                    && !supervisorInstanceId.orElseThrow()
+                            .matches("[A-Za-z0-9][A-Za-z0-9._:-]{0,127}")) {
+                throw new IllegalArgumentException(
+                        "supervisorInstanceId must be a bounded canonical identifier");
+            }
+            if (externalSupervisorRequired
+                    != "external-supervisor-required".equals(configuredMode)
+                    || externalSupervisorRequired != supervisorInstanceId.isPresent()
+                    || supervisorGeneration < 0L
+                    || supervisorGeneration > EnterpriseLabEvidenceOwnership.MAX_GENERATION
+                    || durableStateGeneration < 0L
+                    || durableStateGeneration
+                            > EnterpriseLabSupervisorState.HARD_MAX_DURABLE_STATE_GENERATION
+                    || applicationOwnershipGeneration < 0L
+                    || applicationOwnershipGeneration
+                            > EnterpriseLabEvidenceOwnership.MAX_GENERATION
+                    || routerGeneration < 0L
+                    || routerGeneration
+                            > EnterpriseLabAllocationState.HARD_MAX_ALLOCATION_GENERATION
+                    || supervisorReady && (!externalSupervisorRequired || !reachable)
+                    || mutationReady && (!supervisorReady || !reachable)) {
+                throw new IllegalArgumentException(
+                        "independent supervisor counters or readiness are inconsistent");
+            }
+            installedAllocationFingerprint = requireStatusFingerprint(
+                    installedAllocationFingerprint, "installedAllocationFingerprint");
+            durableIntendedFingerprint = requireStatusFingerprint(
+                    durableIntendedFingerprint, "durableIntendedFingerprint");
+            baselineFingerprint = requireStatusFingerprint(
+                    baselineFingerprint, "baselineFingerprint");
+            lastSuccessfulIpcVerification = Objects.requireNonNull(
+                    lastSuccessfulIpcVerification,
+                    "lastSuccessfulIpcVerification cannot be null");
+            lastReconciliationClassification = boundedText(
+                    lastReconciliationClassification,
+                    "lastReconciliationClassification",
+                    96);
+            activeTransactionId = Objects.requireNonNull(
+                    activeTransactionId, "activeTransactionId cannot be null");
+            activeTransactionId.ifPresent(value -> {
+                if (!value.matches("[A-Za-z0-9._:-]{1,128}")) {
+                    throw new IllegalArgumentException(
+                            "activeTransactionId must be bounded canonical text");
+                }
+            });
+            driftStatus = boundedText(driftStatus, "driftStatus", 96);
+            lastSupervisorRestartClassification = boundedText(
+                    lastSupervisorRestartClassification,
+                    "lastSupervisorRestartClassification",
+                    96);
+            lastApplicationRestartReconciliation = boundedText(
+                    lastApplicationRestartReconciliation,
+                    "lastApplicationRestartReconciliation",
+                    128);
+            failureReasonCode = boundedText(
+                    failureReasonCode, "failureReasonCode", 64);
+            boundedFailureReason = boundedText(
+                    boundedFailureReason, "boundedFailureReason", 256);
+        }
+
+        private static String requireStatusFingerprint(String value, String field) {
+            if (value == null
+                    || !(EnterpriseLabAllocationState.NO_FINGERPRINT.equals(value)
+                    || value.matches("[0-9a-f]{64}"))) {
+                throw new IllegalArgumentException(
+                        field + " must be NONE or canonical SHA-256");
+            }
+            return value;
         }
     }
 }

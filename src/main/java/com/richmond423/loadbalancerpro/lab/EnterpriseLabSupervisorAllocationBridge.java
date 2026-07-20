@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Objects;
@@ -49,6 +50,10 @@ public final class EnterpriseLabSupervisorAllocationBridge
     private EnterpriseLabSupervisorClient client;
     private EnterpriseLabSupervisorConnectionMetadata supervisor;
     private String acceptedOwnershipFingerprint = EnterpriseLabSupervisorProtocol.NONE;
+    private long acceptedApplicationGeneration;
+    private Optional<Instant> lastSuccessfulIpcVerification = Optional.empty();
+    private String lastFailureReasonCode = "NONE";
+    private boolean reachable;
     private volatile boolean closed;
 
     private EnterpriseLabSupervisorAllocationBridge(
@@ -128,7 +133,7 @@ public final class EnterpriseLabSupervisorAllocationBridge
                 EnterpriseLabSupervisorProtocol.NONE,
                 0L,
                 "read");
-        Response response = requireAccepted(client.execute(request), request);
+        Response response = execute(request);
         requireSameOwnership(ownership);
         EnterpriseLabInstalledAllocationSnapshot installed =
                 response.installedAllocation().orElseThrow(
@@ -155,7 +160,7 @@ public final class EnterpriseLabSupervisorAllocationBridge
                 EnterpriseLabSupervisorProtocol.NONE,
                 0L,
                 "health");
-        requireAccepted(client.execute(request), request);
+        execute(request);
         requireSameOwnership(ownership);
         return supervisor;
     }
@@ -193,12 +198,14 @@ public final class EnterpriseLabSupervisorAllocationBridge
             readAuthoritative();
             requireSameOwnership(ownership);
             staleClient.close();
+            lastFailureReasonCode = "NONE";
             return next;
         } catch (RuntimeException exception) {
             replacement.close();
             client = staleClient;
             supervisor = previous;
             acceptedOwnershipFingerprint = staleAcceptedOwnership;
+            recordFailure("SUPERVISOR_RECONNECT_FAILED");
             throw exception;
         }
     }
@@ -265,7 +272,7 @@ public final class EnterpriseLabSupervisorAllocationBridge
                 safeExpected.allocationFingerprint(),
                 safeMutation.allocationGeneration(),
                 candidate ? "apply" : "restore");
-        Response action = requireAccepted(client.execute(request), request);
+        Response action = execute(request);
         EnterpriseLabInstalledAllocationSnapshot acted = action.installedAllocation()
                 .orElseThrow(() -> failure(
                         "supervisor accepted an allocation mutation without exact read-back"));
@@ -285,6 +292,33 @@ public final class EnterpriseLabSupervisorAllocationBridge
     public synchronized EnterpriseLabSupervisorConnectionMetadata connectionMetadata() {
         requireOpen();
         return supervisor;
+    }
+
+    /**
+     * Returns only cached, sanitized session evidence. It performs no IPC and
+     * exposes no address, port, credential, or controlled filesystem path.
+     */
+    public synchronized SessionSnapshot sessionSnapshot() {
+        requireOpen();
+        EnterpriseLabInstalledAllocationSnapshot installed = cached.get();
+        boolean ready = reachable
+                && installed != null
+                && acceptedApplicationGeneration > 0L
+                && !EnterpriseLabSupervisorProtocol.NONE.equals(
+                        acceptedOwnershipFingerprint);
+        return new SessionSnapshot(
+                reachable,
+                ready,
+                supervisor.supervisorInstanceId(),
+                supervisor.supervisorGeneration(),
+                supervisor.durableStateGeneration(),
+                acceptedApplicationGeneration,
+                installed == null
+                        ? EnterpriseLabAllocationState.NO_FINGERPRINT
+                        : installed.allocationFingerprint(),
+                installed == null ? 0L : installed.routerGeneration(),
+                lastSuccessfulIpcVerification,
+                lastFailureReasonCode);
     }
 
     @Override
@@ -323,13 +357,23 @@ public final class EnterpriseLabSupervisorAllocationBridge
                 EnterpriseLabSupervisorProtocol.NONE,
                 ownership.generation(),
                 "handoff");
-        Response response = requireAccepted(client.execute(request), request);
+        Response response = execute(request);
         if (response.observedApplicationGeneration() != ownership.generation()) {
             throw failure(
                     "supervisor handoff response did not accept the current application generation");
         }
         requireSameOwnership(ownership);
         acceptedOwnershipFingerprint = ownership.recordFingerprint();
+        acceptedApplicationGeneration = ownership.generation();
+    }
+
+    private Response execute(Request request) {
+        try {
+            return requireAccepted(client.execute(request), request);
+        } catch (RuntimeException exception) {
+            recordFailure("SUPERVISOR_IPC_VERIFICATION_FAILED");
+            throw exception;
+        }
     }
 
     private Request issue(
@@ -377,7 +421,15 @@ public final class EnterpriseLabSupervisorAllocationBridge
         if (safe.status() != ResponseStatus.ACCEPTED) {
             throw failure("supervisor rejected the fenced request: " + safe.reasonCode());
         }
+        reachable = true;
+        lastSuccessfulIpcVerification = Optional.of(clock.instant());
+        lastFailureReasonCode = "NONE";
         return safe;
+    }
+
+    private void recordFailure(String reasonCode) {
+        reachable = false;
+        lastFailureReasonCode = reasonCode;
     }
 
     private void requireSameOwnership(OwnershipRecord expected) {
@@ -470,5 +522,49 @@ public final class EnterpriseLabSupervisorAllocationBridge
 
     private static IllegalStateException failure(String message) {
         return new IllegalStateException(message);
+    }
+
+    public record SessionSnapshot(
+            boolean reachable,
+            boolean ready,
+            String supervisorInstanceId,
+            long supervisorGeneration,
+            long durableStateGeneration,
+            long acceptedApplicationGeneration,
+            String installedAllocationFingerprint,
+            long routerGeneration,
+            Optional<Instant> lastSuccessfulIpcVerification,
+            String failureReasonCode) {
+        public SessionSnapshot {
+            if (supervisorInstanceId == null
+                    || !supervisorInstanceId.matches("[A-Za-z0-9][A-Za-z0-9._:-]{0,127}")
+                    || supervisorGeneration < EnterpriseLabEvidenceOwnership.INITIAL_GENERATION
+                    || supervisorGeneration > EnterpriseLabEvidenceOwnership.MAX_GENERATION
+                    || durableStateGeneration < 1L
+                    || durableStateGeneration
+                            > EnterpriseLabSupervisorState.HARD_MAX_DURABLE_STATE_GENERATION
+                    || acceptedApplicationGeneration < 0L
+                    || acceptedApplicationGeneration
+                            > EnterpriseLabEvidenceOwnership.MAX_GENERATION
+                    || installedAllocationFingerprint == null
+                    || !(EnterpriseLabAllocationState.NO_FINGERPRINT.equals(
+                            installedAllocationFingerprint)
+                    || installedAllocationFingerprint.matches("[0-9a-f]{64}"))
+                    || routerGeneration < 0L
+                    || routerGeneration
+                            > EnterpriseLabAllocationState.HARD_MAX_ALLOCATION_GENERATION
+                    || ready && (!reachable || acceptedApplicationGeneration < 1L)) {
+                throw new IllegalArgumentException(
+                        "external supervisor session snapshot is inconsistent");
+            }
+            lastSuccessfulIpcVerification = Objects.requireNonNull(
+                    lastSuccessfulIpcVerification,
+                    "lastSuccessfulIpcVerification cannot be null");
+            if (failureReasonCode == null
+                    || !failureReasonCode.matches("[A-Z0-9][A-Z0-9_.:-]{0,63}")) {
+                throw new IllegalArgumentException(
+                        "external supervisor failure reason must be bounded canonical text");
+            }
+        }
     }
 }

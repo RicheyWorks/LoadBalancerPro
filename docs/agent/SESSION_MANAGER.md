@@ -6,7 +6,126 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Independent Allocation Supervisor PR5 Checkpoint
+## Active Independent Allocation Supervisor PR6 Checkpoint
+
+Timestamp: 2026-07-19T17:14:33-07:00
+
+Current slot: SUPERVISOR-PR6 - authenticated operator evidence and packaged separate-process proofs
+
+Goal manager: active for the six-PR independent Enterprise Lab supervisor campaign; no token budget was requested.
+
+Started from clean synchronized main: `a4c7943af65f2e44575154809743469bd65ddeff`
+
+Current branch: `codex/supervisor-operator-evidence-packaged-proofs`
+
+PR URL: not opened.
+
+Prior slot closure: PR #484 merged normally from exact final head
+`eefe7885ece3fba2706e7d0acd4887787441a0f4` as `a4c7943af65f2e44575154809743469bd65ddeff`.
+Exact-head push CI `29702892109`, PR CI `29702893038`, CodeQL `29702893044`, aggregate CodeQL, and dependency
+review passed. Post-merge local restart/reconciliation verification passed 74 tests; `mvn -q test`, package without
+tests, and `mvn -B package` passed with 3,327 tests and zero failures, errors, or skips. The packaged ten-scenario
+workflow and local artifact verifier passed, and exact merge-main CI `29703147836` and CodeQL `29703147794` passed on
+the merge SHA. Local main and origin/main matched that merge before this branch was created, and the PR5 source branch
+remains preserved on origin.
+
+PR6 executable scope: expose only bounded sanitized independent-supervisor status through the existing API-key and
+OAuth2 operator-role boundary, without accepting arbitrary allocation, generation, address, port, shutdown, force, or
+bypass input. Add a packaged command and target-only proof runner that uses genuinely separate supervisor and application
+Java processes to prove independent installed-state survival, stale-application rejection, supervisor restart,
+application crash after supervisor apply before application commit, supervisor crash-window convergence, competing
+supervisor exclusion/takeover, and IPC boundary enforcement. Reuse the shared protocol, authenticated client, durable
+application and supervisor records, ownership generations, reconciliation bridge, canonical fingerprints, fixed
+repository loopback scenario, CLI dispatch, and packaged-proof conventions rather than creating another allocation
+representation.
+
+Composition constraint: through PR5, the authoritative campaign diff from starting main
+`a3a17f847e95884ea37f225155d29dbb1ac285c9` contains 10,418 production/test churn lines and 1,571
+documentation/process churn lines (86.90 / 13.10 percent). PR6 must remain implementation/proof heavy enough to finish
+inside the requested 88-92 percent executable range while still recording required safety, failure, and session evidence.
+
+Out of scope: production routing, public endpoints or listeners, arbitrary supervisor targets or ports, operator-driven
+allocation mutation, caller-selected generations, unrestricted shutdown, force controls, external targets, cloud/tenant
+targets, databases, brokers, POM/dependency/workflow/Docker/Compose changes, multi-host coordination, distributed
+consensus, network-filesystem correctness, malicious-local-administrator resistance, performance certification, and
+production-readiness claims.
+
+Implementation checkpoint: the existing allocation-supervision status now composes a bounded sanitized independent
+supervisor summary under the existing API-key plus OAuth2 operator-role boundary. It exposes only schema, availability,
+readiness, supervisor identity/generation, durable generation/fingerprint, installed allocation fingerprint and kind,
+transaction phase, IPC failure classification, application ownership generation, and last reconciliation result. It does
+not expose credential, path, address, port, arbitrary command, shutdown, force, or caller-selected mutation input. The
+bridge retains safe last-known status across IPC loss, the allocation supervisor retains its proof-selected transaction
+failure injector across operator router attachment, and the supervisor service exposes proof-only construction and
+read-back crash seams without changing normal construction.
+
+Recovery invariant checkpoint: recoverable `FAILED/APPLY_STATE_UNKNOWN` allocation evidence now resumes the same logical
+transaction through the sole new legal transition `FAILED -> RESTORE_REQUIRED`, then the existing
+`RESTORE_REQUIRED -> RESTORING -> RESTORED` ownership-fenced restoration/read-back path. Transaction ID, experiment and
+scenario identity, allocation generation and purpose, baseline/requested/approved candidate intent, normalized candidate
+fingerprint, previous committed fingerprint, metadata, and predecessor continuity remain stable. Current recovery
+records use the live replacement owner generation. `QUARANTINED`, corrupt, noncanonical, and unsupported evidence remain
+failed closed, and no new transaction may supersede an incomplete or unsafe head.
+
+Focused verification checkpoint: `EnterpriseLabAllocationReconcilerTest` passes 23 tests. The added cases prove exact
+`FAILED/APPLY_STATE_UNKNOWN` recovery under a higher current owner, immutable same-transaction evidence, complete
+predecessor linkage, exact current-owner baseline read-back before `RESTORED`, closed admission while experiment replay
+is nonterminal, terminal replay reopening only after allocation is safe, repeated-restart idempotence, failed stale-owner
+read-back returning to `FAILED` and retrying the same transaction, and `QUARANTINED` evidence causing no append, router
+mutation, or admission. The earlier 15-test status/controller/bridge/operator selector also passed before this recovery
+addition; a current combined selector remains part of the full local gate.
+
+Packaged proof checkpoint: the final executable JAR passed five consecutive complete bounded foreground matrices. Each
+run used 22 separate application JVMs and 24 separate supervisor JVMs, converged all eight supervisor crash windows, and
+passed all eighteen authentication/framing/schema/fingerprint/fence/duplicate/age/concurrency IPC checks. Across the
+series, 110 application and 120 supervisor JVMs ran; all serialized aggregates and leaves independently validated true,
+and no child remained. The fifth report fingerprint is
+`2786c09e741f7d516ec98137eefe09fab4535faf0a679a66a15c49e330f171b0`; report SHA-256 is
+`15E744B2B7D9C5B75DB09872459AA6E36274A47E06D3C80306E09815620CA23F`.
+
+Final local verification checkpoint: the nine-suite supervisor/status/recovery selector passed 71 tests with zero
+failures, errors, or skips. Final `mvn -B clean package` and `mvn -B verify` each passed all 3,330 tests; verify generated
+JaCoCo over 976 classes at 82.71% instruction and 66.22% branch coverage. The required skip-test package, dependency tree
+(including embedded Tomcat 10.1.55), ten-scenario Enterprise Lab package workflow, artifact-resource verifier, packaged
+loopback HTTP smoke, 13-scenario experiment proof with 837 requests, durable recovery proof with 124 requests, ownership
+proof through generations 1/2/3, and allocation crash/drift/restoration proof all passed. The final JAR SHA-256 is
+`91E5FDCF5F3C23A31AF33AE1128AAFC5B7714C1B762439DDA75AA71F791E5590`. After the final process-record updates, all 41
+guards that read `SESSION_MANAGER.md` or `FAILURE_LOG.md` passed 248 tests with zero failures, errors, or skips.
+
+Supply-chain/container checkpoint: pinned CycloneDX 2.9.1 generated and validated JSON/XML BOMs with 144 components;
+SHA-256 values are `62EE090CF8A54F73F4B410EF7649E263E7FE1C5F7B539553FE2F3C9E3764CBB4` and
+`54C013ADEE828FF18B7EC8A14AEA01D8A63CB0A37851AA99825D1DCD80EB9077`. Docker server 28.0.4 is available, but the
+official local Dockerfile build is WARN because Docker Desktop's pinned Maven builder JVM rejects the host interception
+certificate with `PKIX certificate_unknown` before source copy. TLS and repository configuration were not weakened. The
+exact JAR returned HTTP 200 in the Dockerfile's digest-pinned Temurin 17 runtime image and the container was removed.
+Exact-head remote Docker build/runtime, controlled evidence, and blocking HIGH/CRITICAL Trivy remain mandatory before
+merge because the local Trivy CLI is unavailable.
+
+Safety/audit checkpoint: no non-loopback URL, wildcard/hostname runtime bind, hostname resolution, environment proxy,
+redirect-following, arbitrary supervisor address/port/generation, authentication bypass, or force-control path was added.
+Only generated proof credentials/tokens and explicit rejection literals were found. All representative generated JAR,
+SBOM, workflow, and proof evidence is ignored; `target` has no tracked path. No workspace proof/smoke JVM or ports 18080/
+18081 remained. No POM, dependency, workflow, Dockerfile, Compose, script, external target, cloud/tenant target, secret,
+or vulnerability allowlist changed.
+
+Authoritative composition checkpoint: PR6 contains 2,783 executable/proof/test churn lines and 227 documentation/process
+churn lines (92.46 / 7.54 percent). From campaign starting main
+`a3a17f847e95884ea37f225155d29dbb1ac285c9` through this staged PR6 candidate, the six-PR campaign contains 13,187
+executable/proof/test churn lines and 1,788 documentation/process churn lines (88.06 / 11.94 percent), inside the requested
+88-92 / 8-12 composition target. Generated target evidence is excluded.
+
+Preserved unrelated file: `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains untracked and excluded; startup
+SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
+
+Blocker: none locally; exact-head remote Docker/Trivy, CI, CodeQL, and dependency review are pending until PR creation.
+
+Next action: finish staged diff/composition checks, create and push the PR6 commit, open the PR with bounded evidence, and
+require fresh exact-head CI, CodeQL, dependency, SBOM, official Docker runtime, controlled container evidence, and
+blocking Trivy gates before normal merge.
+
+Decision: continue.
+
+## Completed Independent Allocation Supervisor PR5 Checkpoint
 
 Timestamp: 2026-07-19T13:35:56-07:00
 
@@ -148,11 +267,15 @@ SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
 
 Blocker: none.
 
-Next action: verify and commit this remote-green checkpoint without staging the CSRBT proposal, push it, then require
-fresh exact-final-metadata-head CI, CodeQL, dependency review, Docker/runtime, SBOM, and blocking Trivy gates before
-merge.
+Final closure: PR #484 final head `eefe7885ece3fba2706e7d0acd4887787441a0f4` passed exact-head push CI
+`29702892109`, PR CI `29702893038`, CodeQL `29702893044`, aggregate CodeQL, dependency review, and every repository-native
+artifact, container, and security gate. It merged normally as `a4c7943af65f2e44575154809743469bd65ddeff`.
+Post-merge local focused/full/package/workflow/artifact verification passed with 3,327 zero-skipped tests. Exact
+merge-main CI `29703147836` and CodeQL `29703147794` passed. The source branch remains preserved, local main and
+origin/main matched the merge SHA before PR6 branch creation, no workspace Maven or Java process remained, and the
+unrelated CSRBT proposal stayed untracked at its exact preserved hash.
 
-Decision: continue.
+Decision: completed; advance to SUPERVISOR-PR6 only from the verified merge SHA.
 
 ## Completed Independent Allocation Supervisor PR4 Checkpoint
 

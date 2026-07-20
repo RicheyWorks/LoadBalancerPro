@@ -18,9 +18,13 @@ Started from clean synchronized main: `a4c7943af65f2e44575154809743469bd65ddeff`
 
 Current branch: `codex/supervisor-operator-evidence-packaged-proofs`
 
-PR URL: not opened.
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/485
 
 Executable/local-verification checkpoint: `72dfbaf29b56452ae1ac13993395d62a8b9fe10c`.
+
+PR-created checkpoint: PR #485 opened from verified pushed head
+`a1f2cda2f7f7fb2d1a595d4f439b695f419480e4`. This required session update advances the branch, so exact-head remote
+gates must use the subsequent metadata checkpoint rather than the PR-opening head.
 
 Prior slot closure: PR #484 merged normally from exact final head
 `eefe7885ece3fba2706e7d0acd4887787441a0f4` as `a4c7943af65f2e44575154809743469bd65ddeff`.

@@ -20,6 +20,8 @@ Current branch: `codex/supervisor-operator-evidence-packaged-proofs`
 
 PR URL: not opened.
 
+Executable/local-verification checkpoint: `72dfbaf29b56452ae1ac13993395d62a8b9fe10c`.
+
 Prior slot closure: PR #484 merged normally from exact final head
 `eefe7885ece3fba2706e7d0acd4887787441a0f4` as `a4c7943af65f2e44575154809743469bd65ddeff`.
 Exact-head push CI `29702892109`, PR CI `29702893038`, CodeQL `29702893044`, aggregate CodeQL, and dependency

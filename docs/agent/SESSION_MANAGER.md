@@ -6,9 +6,9 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Active Independent Allocation Supervisor PR6 Checkpoint
+## Completed Independent Allocation Supervisor PR6 Checkpoint
 
-Timestamp: 2026-07-19T17:14:33-07:00
+Timestamp: 2026-07-19T17:45:37-07:00
 
 Current slot: SUPERVISOR-PR6 - authenticated operator evidence and packaged separate-process proofs
 
@@ -19,6 +19,10 @@ Started from clean synchronized main: `a4c7943af65f2e44575154809743469bd65ddeff`
 Current branch: `codex/supervisor-operator-evidence-packaged-proofs`
 
 PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/485
+
+Final exact PR head: `02380cec11947535b4a9c182cb6b8f71f5ea7815`.
+
+Normal merge commit: `0a2805c5c713dbbb83fa25e339949f40fb8cccd9`; merged at `2026-07-20T00:34:10Z`.
 
 Executable/local-verification checkpoint: `72dfbaf29b56452ae1ac13993395d62a8b9fe10c`.
 
@@ -114,22 +118,43 @@ SBOM, workflow, and proof evidence is ignored; `target` has no tracked path. No 
 18081 remained. No POM, dependency, workflow, Dockerfile, Compose, script, external target, cloud/tenant target, secret,
 or vulnerability allowlist changed.
 
-Authoritative composition checkpoint: PR6 contains 2,783 executable/proof/test churn lines and 227 documentation/process
-churn lines (92.46 / 7.54 percent). From campaign starting main
-`a3a17f847e95884ea37f225155d29dbb1ac285c9` through this staged PR6 candidate, the six-PR campaign contains 13,187
-executable/proof/test churn lines and 1,788 documentation/process churn lines (88.06 / 11.94 percent), inside the requested
-88-92 / 8-12 composition target. Generated target evidence is excluded.
+Authoritative composition checkpoint: from campaign starting main
+`a3a17f847e95884ea37f225155d29dbb1ac285c9` through final merge
+`0a2805c5c713dbbb83fa25e339949f40fb8cccd9`, the six-PR campaign contains 13,187 executable/proof/test churn lines and
+1,796 documentation/process churn lines (88.02 / 11.98 percent), inside the requested 88-92 / 8-12 composition target.
+Generated target evidence is excluded.
 
 Preserved unrelated file: `docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md` remains untracked and excluded; startup
 SHA-256 is `7B49D6DBAA4946E21AA8E1C3DF398891DD326D61FAD73D8C658E681F72CC3D18`.
 
-Blocker: none locally; exact-head remote Docker/Trivy, CI, CodeQL, and dependency review are pending until PR creation.
+Exact-head remote checkpoint: PR #485 was non-draft and mergeable at exact head
+`02380cec11947535b4a9c182cb6b8f71f5ea7815`. Push CI run `29709451653`, PR CI run `29709452519`, CodeQL run
+`29709452520`, aggregate CodeQL, and applicable Dependency Review all completed successfully; the push-event dependency
+duplicate was skipped. The successful CI gate includes the official Dockerfile build/runtime, controlled container
+evidence, CycloneDX SBOM, and blocking HIGH/CRITICAL Trivy scan that remained unavailable through the local Docker trust
+path.
 
-Next action: finish staged diff/composition checks, create and push the PR6 commit, open the PR with bounded evidence, and
-require fresh exact-head CI, CodeQL, dependency, SBOM, official Docker runtime, controlled container evidence, and
-blocking Trivy gates before normal merge.
+Post-merge local checkpoint: local main and origin/main both equal merge
+`0a2805c5c713dbbb83fa25e339949f40fb8cccd9` and contain the exact PR head. A broad nine-class
+supervisor/allocation selector passed 80 tests; `mvn -B clean package` passed all 3,330 tests; the local artifact verifier
+passed; and the packaged ten-scenario Enterprise Lab workflow passed. A fresh exact-merge independent-supervisor proof
+passed with 22 application JVMs, 24 supervisor JVMs, eight crash windows, and eighteen IPC boundary checks. Its content
+fingerprint is `9e631b85d510d0685e1c3d1e7f232a984828b0e79faa17962c0d2294194cf961`, and the proof report SHA-256 is
+`AF64AC6301EB48DF6172B2FC18402765B000388A307CD3E66D23E0C04DE7E349`. No workspace Java/Maven child or listener on
+ports 18080/18081 remained; generated `target` evidence is ignored and untracked.
 
-Decision: continue.
+Post-merge remote checkpoint: exact merge-main push CI run `29709679075` and CodeQL run `29709679076` completed
+successfully for `0a2805c5c713dbbb83fa25e339949f40fb8cccd9`; the non-PR Dependency Review job was skipped as expected. All six
+campaign PRs are merged with normal merge commits, all six source branches remain preserved on origin, and the unrelated
+CSRBT file retains the required SHA-256.
+
+Blocker: none. Required exact-head and exact-merge-main gates are green.
+
+Next action: if a new bounded local-lab campaign is desired, scope an append-only supervisor command ledger with
+cross-process evidence correlation; do not infer multi-host, cloud, tenant, performance, or production readiness from
+this campaign.
+
+Decision: close the six-PR independent Enterprise Lab supervisor campaign as PASS.
 
 ## Completed Independent Allocation Supervisor PR5 Checkpoint
 

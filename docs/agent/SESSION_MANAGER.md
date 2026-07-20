@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Supervisor Command Ledger PR4 Checkpoint
 
-Timestamp: 2026-07-20T05:28:21-07:00
+Timestamp: 2026-07-20T05:34:13-07:00
 
 Current slot: COMMAND-LEDGER-PR4 - cross-process coordinator and idempotent retry.
 
@@ -19,9 +19,13 @@ Started from clean synchronized main: `e276999ee16a7e055545477ab3d6d4ed98e83b2c`
 
 Current branch: `codex/command-ledger-cross-process-coordinator`.
 
-PR URL: not created.
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/489
 
-Executable/local-verification checkpoint: locally verified working-tree candidate; commit not yet created.
+Executable/local-verification checkpoint: `2c7889a2f96f68d8c323966055d4fbb918ec5908`.
+
+PR-created checkpoint: PR #489 opened from the locally verified pushed executable head
+`2c7889a2f96f68d8c323966055d4fbb918ec5908`. This required session-manager update advances the branch, so exact-head
+remote gates must use the subsequent metadata checkpoint rather than the PR-opening head.
 
 Prior slot closure: PR #488 merged normally from exact final head
 `93454ae301afa6badcd98a0ba04600f082fb8306` as `e276999ee16a7e055545477ab3d6d4ed98e83b2c`.
@@ -97,8 +101,9 @@ change.
 
 Blocker: none.
 
-Next action: rerun the documentation guard after this checkpoint update, complete the exact-head worktree and CSRBT audit,
-then commit, push, open PR4, and require all exact-head remote gates before normal merge.
+Next action: rerun the documentation guard after this PR checkpoint, commit and push the metadata-only advance, then
+require push CI, PR CI, CodeQL, dependency review, Docker/runtime, controlled container evidence, SBOM, and blocking Trivy
+on the exact resulting head before normal merge.
 
 Decision: continue.
 

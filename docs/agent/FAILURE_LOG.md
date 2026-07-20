@@ -6987,3 +6987,9 @@ Generated-evidence inspection tooling note: `git status --short --ignored target
 Final documentation-guard discovery tooling note: a read-only pipeline used `Split-Path -LeafBase`, which is unavailable in this Windows PowerShell version, so every matched test path emitted a parameter-binding error and no selector list was produced. No state changed. Correction: derive class names with `[System.IO.Path]::GetFileNameWithoutExtension()` and run the exact returned guards before commit.
 
 PR #485 remote-inspection tooling failure: after exact-head push/PR CI and CodeQL were visibly active in the PR rollup, `gh run view` returned GitHub API HTTP 503 for all three run-detail requests. After the audit-only update moved the head, `gh pr view` succeeded for the fresh rollup but the adjacent `gh run list` workflows endpoint also returned HTTP 503. No run was classified from either failed query and no repository/GitHub setting changed. Correction: retain both failures, push one final audit update, and use the successful exact-head PR status-check rollup rather than the unstable run-list/detail endpoints before any merge decision.
+
+# 2026-07-19 - Supervisor PR6 post-merge audit command parse failure
+
+Branch: `codex/supervisor-operator-evidence-packaged-proofs`
+
+Tooling failure: immediately after PR #485 merged, the first local synchronization command attempted to derive an ancestor-check boolean by placing a semicolon-separated native command and `$LASTEXITCODE` inside a parenthesized PowerShell expression. Windows PowerShell rejected the script at parse time with a missing-parenthesis error, so `git switch`, `git pull`, the ancestry check, the CSRBT checksum, and the status check did not execute. No repository, branch, generated artifact, process, or external state changed. Correction: record this failure before continuing, then run the synchronization and each ancestry/status assertion as simple sequential statements.

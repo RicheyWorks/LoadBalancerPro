@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Supervisor Command Ledger PR1 Checkpoint
 
-Timestamp: 2026-07-19T22:30:54-07:00
+Timestamp: 2026-07-19T22:32:21-07:00
 
 Current slot: COMMAND-LEDGER-PR1 - canonical command evidence model and codec
 
@@ -19,9 +19,13 @@ Started from clean synchronized main: `0a2805c5c713dbbb83fa25e339949f40fb8cccd9`
 
 Current branch: `codex/command-ledger-canonical-model-codec`.
 
-PR URL: not opened.
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/486
 
 Executable/local-verification checkpoint: `8d2ca15840e02652fa2e0282283505d4ddee418e`.
+
+PR-created checkpoint: PR #486 opened from verified pushed head
+`b0c42933868683b3cfad4fbed08eef8527b18808`. This required session update advances the branch, so exact-head remote
+gates must use the subsequent audit-only checkpoint rather than the PR-opening head.
 
 Prior campaign closure: the six-PR independent allocation-supervisor campaign is PASS. PRs #480 through #485 are
 merged, exact merge-main CI `29709679075` and CodeQL `29709679076` passed, all six source branches remain preserved,

@@ -389,7 +389,8 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
             case RESTORING -> next == TransactionPhase.RESTORED
                     || next == TransactionPhase.FAILED
                     || next == TransactionPhase.QUARANTINED;
-            case COMMITTED, RESTORED, REJECTED, FAILED, QUARANTINED -> false;
+            case FAILED -> next == TransactionPhase.RESTORE_REQUIRED;
+            case COMMITTED, RESTORED, REJECTED, QUARANTINED -> false;
         };
         if (!legal) {
             throw failure(Failure.ILLEGAL_PHASE_TRANSITION,

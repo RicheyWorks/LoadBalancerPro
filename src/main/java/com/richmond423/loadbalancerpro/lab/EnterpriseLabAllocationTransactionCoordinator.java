@@ -291,6 +291,24 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                     context, authorization, context.actionPerformed, safeReason);
         }
 
+        if (head.transactionPhase() == TransactionPhase.FAILED) {
+            TransactionContext context = TransactionContext.recovery(
+                    head, durable.records().size());
+            requireSameAuthorization(authorization);
+            appendObservation(
+                    context,
+                    TransactionPhase.RESTORE_REQUIRED,
+                    installed,
+                    head.actionPerformed(),
+                    Optional.of(clock.instant()),
+                    verificationAgainstIntent(context, installed),
+                    RecoveryClassification.BASELINE_RESTORATION_REQUIRED,
+                    "FAILED_TRANSACTION_RESTORE_REQUIRED",
+                    "failed transaction required verified safe baseline restoration");
+            return performRestoration(
+                    context, authorization, head.actionPerformed(), safeReason);
+        }
+
         if (!isSafeTerminal(head.transactionPhase())) {
             return receipt(
                     safeTransactionId,
@@ -306,7 +324,7 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                     false,
                     false,
                     "UNSAFE_TERMINAL_ALLOCATION_STATE",
-                    "failed or quarantined allocation evidence requires operator review");
+                    "quarantined allocation evidence requires operator review");
         }
 
         if (baselineExact

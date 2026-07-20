@@ -5,6 +5,7 @@ import com.richmond423.loadbalancerpro.cli.EnterpriseLabAllocationProofCommand;
 import com.richmond423.loadbalancerpro.cli.EnterpriseLabDurableRecoveryProofCommand;
 import com.richmond423.loadbalancerpro.cli.EnterpriseLabEvidenceOwnershipProofCommand;
 import com.richmond423.loadbalancerpro.cli.EnterpriseLabExperimentProofCommand;
+import com.richmond423.loadbalancerpro.cli.EnterpriseLabIndependentSupervisorProofCommand;
 import com.richmond423.loadbalancerpro.cli.EnterpriseLabSupervisorCommand;
 import com.richmond423.loadbalancerpro.cli.EnterpriseLabWorkflowCommand;
 import com.richmond423.loadbalancerpro.cli.LaseDemoCommand;
@@ -37,6 +38,15 @@ public class LoadBalancerApiApplication {
             if (allocationProofResult.requested()) {
                 if (allocationProofResult.exitCode() != 0) {
                     System.exit(allocationProofResult.exitCode());
+                }
+                return;
+            }
+            EnterpriseLabIndependentSupervisorProofCommand.Result independentSupervisorProof =
+                    EnterpriseLabIndependentSupervisorProofCommand.runIfRequested(
+                            args, System.out, System.err);
+            if (independentSupervisorProof.requested()) {
+                if (independentSupervisorProof.exitCode() != 0) {
+                    System.exit(independentSupervisorProof.exitCode());
                 }
                 return;
             }
@@ -101,6 +111,7 @@ public class LoadBalancerApiApplication {
         return !isVersionRequested(args)
                 && !EnterpriseLabSupervisorCommand.isRequested(args)
                 && !EnterpriseLabAllocationProofCommand.isRequested(args)
+                && !EnterpriseLabIndependentSupervisorProofCommand.isRequested(args)
                 && !EnterpriseLabEvidenceOwnershipProofCommand.isRequested(args)
                 && !EnterpriseLabDurableRecoveryProofCommand.isRequested(args)
                 && !EnterpriseLabExperimentProofCommand.isRequested(args)

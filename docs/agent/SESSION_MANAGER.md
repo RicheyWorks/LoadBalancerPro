@@ -8,7 +8,7 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Active Supervisor Command Ledger PR3 Checkpoint
 
-Timestamp: 2026-07-20T01:37:00-07:00
+Timestamp: 2026-07-20T01:40:00-07:00
 
 Current slot: COMMAND-LEDGER-PR3 - supervisor append-only ledger and durable authenticated receipt-before-mutation
 
@@ -19,9 +19,13 @@ Started from clean synchronized main: `08e9ac662ca15990a0e17566280f88a76571e9cf`
 
 Current branch: `codex/command-ledger-supervisor-store`.
 
-PR URL: not created.
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/488
 
 Executable/local-verification checkpoint: `9e7ddc6e9743e950279a15f4b4ab5b39e3b9232b`.
+
+PR-created checkpoint: PR #488 opened from verified pushed head
+`6fdb315cc713285b766ff74c2debf55e7ac8ba12`. This required session update advances the branch, so exact-head remote
+gates must use the subsequent metadata checkpoint rather than the PR-opening head.
 
 Prior slot closure: PR #487 merged normally from exact final head
 `cbe6f89ec6a89fe4abbc280340be775203acedb0` as `08e9ac662ca15990a0e17566280f88a76571e9cf`.
@@ -86,15 +90,14 @@ workflow passes in shadow mode and writes only ignored `target/` evidence. The e
 Scope/audit checkpoint: no workspace Java/Maven process or proof listener remains, `git ls-files target` is empty, and
 the CSRBT proposal remains the sole unrelated untracked path with its exact required hash. No POM, dependency, workflow,
 Dockerfile, Compose, script, public API, new listener, cloud/tenant, external target, credential, or production-traffic
-surface changed. The PR3 candidate contains 1,971 executable/proof/test churn lines and 258 documentation/process churn
-lines (88.43 / 11.57 percent). The campaign through the PR3 verification checkpoint is 92.79 / 7.21 percent; later
+surface changed. The PR3 candidate contains 1,971 executable/proof/test churn lines and 259 documentation/process churn
+lines (88.39 / 11.61 percent). The campaign through the PR3 creation checkpoint is 92.74 / 7.26 percent; later
 implementation-heavy slots remain responsible for the final requested 88-92 / 8-12 campaign range.
 
 Blocker: none.
 
-Next action: run the exact documentation guards against this checkpoint, stage only the intended PR3 files, verify the
-staged diff and composition, commit the executable checkpoint, push, open PR #488, and require fresh exact-head push CI,
-PR CI, CodeQL, dependency review, Docker/runtime, SBOM, and blocking Trivy before normal merge.
+Next action: commit and push this PR-created checkpoint, then require fresh exact-head push CI, PR CI, CodeQL, dependency
+review, Docker/runtime, SBOM, and blocking Trivy before normal merge.
 
 Decision: continue.
 

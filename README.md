@@ -1,5 +1,15 @@
 # LoadBalancerPro
 
+[![CI](https://github.com/RicheyWorks/LoadBalancerPro/actions/workflows/ci.yml/badge.svg)](https://github.com/RicheyWorks/LoadBalancerPro/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/RicheyWorks/LoadBalancerPro/actions/workflows/codeql.yml/badge.svg)](https://github.com/RicheyWorks/LoadBalancerPro/actions/workflows/codeql.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Java 17](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.org/projects/jdk/17/)
+[![Spring Boot 3.5](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F.svg)](https://spring.io/projects/spring-boot)
+![version 2.5.0](https://img.shields.io/badge/version-2.5.0-informational.svg)
+![scope: local-lab](https://img.shields.io/badge/scope-local--lab-e8a33d.svg)
+
+> A Java 17 / Spring Boot adaptive-routing lab: a config-driven reverse-proxy data plane, a calculation-only allocation core with pluggable routing strategies, and a controlled, evidence-first lab apparatus — bounded by an explicit trust contract (see below).
+
 ## Enterprise Lab Cockpit
 
 LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
@@ -25,6 +35,29 @@ The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibili
 - It is not load/stress/benchmark proof and does not claim throughput/p95/p99 evidence from local-lab or README-level examples.
 - It is not replay execution, evidence/report generation, storage/export proof unless a specific implemented lane and verification result says so.
 - It is not permission to add CI/Maven wiring, Docker/Compose behavior, runtime behavior, endpoints, secrets, external/cloud/tenant targets, or production-looking defaults outside an explicitly scoped change.
+
+## Independent Architecture Audit, Build Plans & Strategy Playground
+
+An independent, code-level architecture review of the repository lives under `docs/`. It is a candid engineering assessment for reviewers and agents — a map of what is real data-plane/control-plane code versus simulation, lab, and evidence apparatus, with prioritized findings and file-level references. It is an audit and planning surface only: it does not itself change behavior, and it does not add production-readiness, certification, live-cloud, real-tenant, benchmark, throughput/p95/p99, or replay/export/storage claims.
+
+- Live proxy + core simulation audit: [`docs/AUDIT_2026-07-21.md`](docs/AUDIT_2026-07-21.md).
+- Lab, LASE shadow, Decision Explorer & operator-surface audit: [`docs/AUDIT_LAB_SHADOW_2026-07-21.md`](docs/AUDIT_LAB_SHADOW_2026-07-21.md).
+- Deployability build plan (proxy → real load balancer): [`docs/BUILD_PLAN_DEPLOYABLE.md`](docs/BUILD_PLAN_DEPLOYABLE.md).
+- Lab / shadow / analysis build plan (secure, consolidate, wire to live traffic): [`docs/BUILD_PLAN_LAB_SHADOW.md`](docs/BUILD_PLAN_LAB_SHADOW.md).
+
+The build plans are PR-sized, sequenced roadmaps bounded by the same trust contract as this README: they describe proposed, separately-scoped changes and do not themselves authorize production, CI/Maven, Dockerfile, endpoint, secret, or cloud/tenant changes outside an explicitly scoped PR.
+
+An interactive [`docs/strategy-playground.html`](docs/strategy-playground.html) accompanies the audit — a single self-contained page (no build, no network) that faithfully reimplements all five routing strategies (`RoundRobin`, `WeightedRoundRobin`, `WeightedLeastConnections`, `TailLatencyPowerOfTwo`, `ConsistentHashRing`) in JavaScript and runs them against a live queueing model with configurable backend weights, latency, error rate, and health. It is a reviewer/educational simulation only: it is browser-side, uses no production code path, carries no real traffic, and is not throughput/p95/p99 evidence, production proof, or live-cloud/real-tenant validation.
+
+## Proposed CSRBT Ecosystem Integration (planning only — not wired)
+
+A WARN-classified proposal to integrate the RicheyWorks CSRBT ecosystem — an adaptive ordered index with exact O(log n) order statistics ([CSRBT](https://github.com/RicheyWorks/CSRBT)) and the SmokeHouse log-structured record store — into LoadBalancerPro in lab mode lives at [`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md`](docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md). It is a planning ledger only. **Current wiring state: none** — there is no Maven dependency, no source wiring, and no endpoint; nothing has been merged.
+
+The proposal scopes five separately-approved, off-by-default lab-mode lanes: an allocation-evidence store (SmokeHouse, embedded), an exact tail-latency percentile scoring substrate (CSRBT order statistics, giving exact `p95`/`p99` instead of estimates), reviewer-facing decision-history views, evidence retention/archival, and anti-thrash strategy-promotion gates. It is bounded by precondition P0: no dependency lane may merge until the ecosystem artifacts are published (they currently install via `publishToMavenLocal` only) or a reviewer-approved local-lab resolution posture is documented with the same explicitness as the Compose readiness gate. The dependency direction is one-way — LoadBalancerPro would consume the libraries; it does not join the ecosystem's build.
+
+Lane E2 (exact tail-latency percentile scoring) is elaborated as an implementable, PR-by-PR design record in [`docs/agent/ADR_E2_EXACT_TAIL_LATENCY_ROUTING.md`](docs/agent/ADR_E2_EXACT_TAIL_LATENCY_ROUTING.md) — including a self-contained SPI seam that lets the feature merge and pass CI with no external dependency, keeping precondition P0 satisfied until the ecosystem publishes.
+
+This proposal adds no production capability, no supported dependency, and no runtime behavior, and it does not relax this README's trust contract. No lane is complete until its own scoped PR is merged and main checks are green.
 
 ## Current Local-Lab Status
 

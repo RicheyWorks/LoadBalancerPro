@@ -39,6 +39,14 @@ The build plans are PR-sized, sequenced roadmaps bounded by the same trust contr
 
 An interactive [`docs/strategy-playground.html`](docs/strategy-playground.html) accompanies the audit — a single self-contained page (no build, no network) that faithfully reimplements all five routing strategies (`RoundRobin`, `WeightedRoundRobin`, `WeightedLeastConnections`, `TailLatencyPowerOfTwo`, `ConsistentHashRing`) in JavaScript and runs them against a live queueing model with configurable backend weights, latency, error rate, and health. It is a reviewer/educational simulation only: it is browser-side, uses no production code path, carries no real traffic, and is not throughput/p95/p99 evidence, production proof, or live-cloud/real-tenant validation.
 
+## Proposed CSRBT Ecosystem Integration (planning only — not wired)
+
+A WARN-classified proposal to integrate the RicheyWorks CSRBT ecosystem — an adaptive ordered index with exact O(log n) order statistics ([CSRBT](https://github.com/RicheyWorks/CSRBT)) and the SmokeHouse log-structured record store — into LoadBalancerPro in lab mode lives at [`docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md`](docs/agent/CSRBT_ECOSYSTEM_INTEGRATION_PROPOSAL.md). It is a planning ledger only. **Current wiring state: none** — there is no Maven dependency, no source wiring, and no endpoint; nothing has been merged.
+
+The proposal scopes five separately-approved, off-by-default lab-mode lanes: an allocation-evidence store (SmokeHouse, embedded), an exact tail-latency percentile scoring substrate (CSRBT order statistics, giving exact `p95`/`p99` instead of estimates), reviewer-facing decision-history views, evidence retention/archival, and anti-thrash strategy-promotion gates. It is bounded by precondition P0: no dependency lane may merge until the ecosystem artifacts are published (they currently install via `publishToMavenLocal` only) or a reviewer-approved local-lab resolution posture is documented with the same explicitness as the Compose readiness gate. The dependency direction is one-way — LoadBalancerPro would consume the libraries; it does not join the ecosystem's build.
+
+This proposal adds no production capability, no supported dependency, and no runtime behavior, and it does not relax this README's trust contract. No lane is complete until its own scoped PR is merged and main checks are green.
+
 ## Current Local-Lab Status
 
 - The local-lab Compose path is optional/manual/local-lab-only and remains bounded by the Compose readiness gate and app-service/runbook guardrails.

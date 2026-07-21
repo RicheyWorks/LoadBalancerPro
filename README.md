@@ -1,5 +1,15 @@
 # LoadBalancerPro
 
+[![CI](https://github.com/RicheyWorks/LoadBalancerPro/actions/workflows/ci.yml/badge.svg)](https://github.com/RicheyWorks/LoadBalancerPro/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/RicheyWorks/LoadBalancerPro/actions/workflows/codeql.yml/badge.svg)](https://github.com/RicheyWorks/LoadBalancerPro/actions/workflows/codeql.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Java 17](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.org/projects/jdk/17/)
+[![Spring Boot 3.5](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F.svg)](https://spring.io/projects/spring-boot)
+![version 2.5.0](https://img.shields.io/badge/version-2.5.0-informational.svg)
+![scope: local-lab](https://img.shields.io/badge/scope-local--lab-e8a33d.svg)
+
+> A Java 17 / Spring Boot adaptive-routing lab: a config-driven reverse-proxy data plane, a calculation-only allocation core with pluggable routing strategies, and a controlled, evidence-first lab apparatus — bounded by an explicit trust contract (see below).
+
 ## Enterprise Lab Cockpit
 
 LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.

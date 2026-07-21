@@ -55,6 +55,8 @@ A WARN-classified proposal to integrate the RicheyWorks CSRBT ecosystem — an a
 
 The proposal scopes five separately-approved, off-by-default lab-mode lanes: an allocation-evidence store (SmokeHouse, embedded), an exact tail-latency percentile scoring substrate (CSRBT order statistics, giving exact `p95`/`p99` instead of estimates), reviewer-facing decision-history views, evidence retention/archival, and anti-thrash strategy-promotion gates. It is bounded by precondition P0: no dependency lane may merge until the ecosystem artifacts are published (they currently install via `publishToMavenLocal` only) or a reviewer-approved local-lab resolution posture is documented with the same explicitness as the Compose readiness gate. The dependency direction is one-way — LoadBalancerPro would consume the libraries; it does not join the ecosystem's build.
 
+Lane E2 (exact tail-latency percentile scoring) is elaborated as an implementable, PR-by-PR design record in [`docs/agent/ADR_E2_EXACT_TAIL_LATENCY_ROUTING.md`](docs/agent/ADR_E2_EXACT_TAIL_LATENCY_ROUTING.md) — including a self-contained SPI seam that lets the feature merge and pass CI with no external dependency, keeping precondition P0 satisfied until the ecosystem publishes.
+
 This proposal adds no production capability, no supported dependency, and no runtime behavior, and it does not relax this README's trust contract. No lane is complete until its own scoped PR is merged and main checks are green.
 
 ## Current Local-Lab Status

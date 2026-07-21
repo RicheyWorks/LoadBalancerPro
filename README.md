@@ -26,6 +26,19 @@ The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibili
 - It is not replay execution, evidence/report generation, storage/export proof unless a specific implemented lane and verification result says so.
 - It is not permission to add CI/Maven wiring, Docker/Compose behavior, runtime behavior, endpoints, secrets, external/cloud/tenant targets, or production-looking defaults outside an explicitly scoped change.
 
+## Independent Architecture Audit, Build Plans & Strategy Playground
+
+An independent, code-level architecture review of the repository lives under `docs/`. It is a candid engineering assessment for reviewers and agents — a map of what is real data-plane/control-plane code versus simulation, lab, and evidence apparatus, with prioritized findings and file-level references. It is an audit and planning surface only: it does not itself change behavior, and it does not add production-readiness, certification, live-cloud, real-tenant, benchmark, throughput/p95/p99, or replay/export/storage claims.
+
+- Live proxy + core simulation audit: [`docs/AUDIT_2026-07-21.md`](docs/AUDIT_2026-07-21.md).
+- Lab, LASE shadow, Decision Explorer & operator-surface audit: [`docs/AUDIT_LAB_SHADOW_2026-07-21.md`](docs/AUDIT_LAB_SHADOW_2026-07-21.md).
+- Deployability build plan (proxy → real load balancer): [`docs/BUILD_PLAN_DEPLOYABLE.md`](docs/BUILD_PLAN_DEPLOYABLE.md).
+- Lab / shadow / analysis build plan (secure, consolidate, wire to live traffic): [`docs/BUILD_PLAN_LAB_SHADOW.md`](docs/BUILD_PLAN_LAB_SHADOW.md).
+
+The build plans are PR-sized, sequenced roadmaps bounded by the same trust contract as this README: they describe proposed, separately-scoped changes and do not themselves authorize production, CI/Maven, Dockerfile, endpoint, secret, or cloud/tenant changes outside an explicitly scoped PR.
+
+An interactive [`docs/strategy-playground.html`](docs/strategy-playground.html) accompanies the audit — a single self-contained page (no build, no network) that faithfully reimplements all five routing strategies (`RoundRobin`, `WeightedRoundRobin`, `WeightedLeastConnections`, `TailLatencyPowerOfTwo`, `ConsistentHashRing`) in JavaScript and runs them against a live queueing model with configurable backend weights, latency, error rate, and health. It is a reviewer/educational simulation only: it is browser-side, uses no production code path, carries no real traffic, and is not throughput/p95/p99 evidence, production proof, or live-cloud/real-tenant validation.
+
 ## Current Local-Lab Status
 
 - The local-lab Compose path is optional/manual/local-lab-only and remains bounded by the Compose readiness gate and app-service/runbook guardrails.

@@ -12,7 +12,7 @@
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spring-boot.version>3.5.14</spring-boot.version>
+        <spring-boot.version>4.1.0</spring-boot.version>
         <tomcat.version>10.1.55</tomcat.version>
         <netty.version>4.2.15.Final</netty.version>
         <jackson.version>2.21.4</jackson.version>

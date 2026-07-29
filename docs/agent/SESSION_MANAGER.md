@@ -6,6 +6,36 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Supervisor Command Ledger PR5 Pull Request Checkpoint
+
+Timestamp: 2026-07-29T07:13:44-07:00
+
+Current slot: COMMAND-LEDGER-PR5 - restart reconciliation and command-history repair.
+
+Current branch: `codex/command-ledger-restart-reconciliation`.
+
+Executable checkpoint: `2f385e0ebc1d28919ab1fdde1f804acef22bb910`.
+
+Published pre-checkpoint head: `85e5068b4e8e45dcd23a4abbd6003238c5cfb991`.
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/493
+
+PR state: open, ready for review, base `main`; not merged.
+
+Remote status at PR creation: push CI run `30459771888` was in progress; PR CI run `30459814619` and CodeQL run
+`30459812201` were queued. These runs target the pre-checkpoint head and will be superseded by the commit that records
+this PR-creation checkpoint.
+
+Local verification and scope audit: current and green as recorded in the local-verification checkpoint.
+
+Blocker: required remote checks on the final exact PR head are pending.
+
+Next action: commit and push this PR checkpoint, then audit push CI, PR CI, CodeQL, dependency review, Docker/runtime,
+controlled-container evidence, SBOM, and blocking vulnerability results on the final exact head. Do not merge before
+human review.
+
+Decision: continue remote verification.
+
 ## Supervisor Command Ledger PR5 Executable Checkpoint
 
 Timestamp: 2026-07-29T07:12:27-07:00

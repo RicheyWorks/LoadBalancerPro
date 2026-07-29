@@ -6,6 +6,32 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Netty Baseline Recovery Executable Checkpoint
+
+Timestamp: 2026-07-29T08:21:45-07:00
+
+Current recovery slot: `RECOVERY-NETTY-01`.
+
+Current branch: `codex/netty-4-2-16-baseline-remediation`.
+
+Executable checkpoint: `2e407d40913696cd43b4137def0199c95807d9a4`
+(`Update Netty baseline to 4.2.16`).
+
+Local verification and scope audit: current and green as recorded in the immediately preceding local-verification
+checkpoint. The executable commit contains exactly the six audited paths and the worktree was clean immediately after
+commit.
+
+PR URL: not created.
+
+Remote checks: not started.
+
+Blocker: none.
+
+Next action: record this checkpoint, push the branch, open the narrow recovery PR, and audit exact-head remote gates.
+Do not merge without human review.
+
+Decision: continue the prerequisite only.
+
 ## Netty Baseline Recovery Local Verification Checkpoint
 
 Timestamp: 2026-07-29T08:21:01-07:00

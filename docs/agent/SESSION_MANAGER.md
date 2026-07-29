@@ -6,6 +6,42 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 3 Branch Checkpoint
+
+Timestamp: 2026-07-29T15:27:18-07:00
+
+Current slot: `P-0.2`, replace health deletion with drain, eviction thresholds, and re-admission.
+
+Current branch: `codex/p-0-2-health-drain`.
+
+Verified base: `6369fcb7918d74b62b17dd73af564321f356073f`, the exact PR #498 merge commit. Main CI
+`30495634807` and CodeQL `30495634768` passed on that exact commit, including tests, zero-skip enforcement, coverage,
+packaging/resources, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan.
+
+Prior-slot closeout: PR #498 final head `274f03f9bf608f8c0e543d69ba45bf788a39b81b` was clean and mergeable with
+PR/push CI, CodeQL, dependency review, Docker/runtime, SBOM, container evidence, and blocking Trivy green. Full-diff
+self-review had no remaining finding. `P-0.1` is `MAIN_GREEN`, completing 2 of 49 implementation slots.
+
+Planned acceptance: health detection must not delete servers from the registry. A single threshold breach transitions
+`HEALTHY` to `DEGRADED` without removal; only the configured consecutive-bad-cycle threshold transitions to
+`EVICTED`; the configured consecutive-good-cycle threshold re-admits recovered servers. Manual
+`setHealthy(false)` means `DRAINING`, remains present in the registry, and is skipped by allocation. Registry removal
+must remain an explicit administrative operation.
+
+Scope and safety: production health lifecycle behavior may change only enough to implement the verified degradation,
+drain, eviction-threshold, and re-admission contract. No routing-strategy redesign, proxy/API/Maven/CI/Docker behavior,
+external/public target, live cloud/tenant action, secret, or readiness claim is authorized. Tests must remain local
+and deterministic.
+
+Verification: pending source/test inventory and the smallest deterministic failing lifecycle contracts.
+
+Blocker: none.
+
+Next action: inspect `ServerHealthCoordinator`, `LoadBalancer`, `Server`, `ServerDegradationState`, configuration, and
+existing health/allocation tests; reconcile Claude's defect statement with current exact main before implementation.
+
+Decision: continue only `P-0.2`; no later slot is active.
+
 ## Combined Build Plan Slot 2 Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T15:06:30-07:00

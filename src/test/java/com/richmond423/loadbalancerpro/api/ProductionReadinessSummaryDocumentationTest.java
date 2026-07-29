@@ -102,7 +102,8 @@ class ProductionReadinessSummaryDocumentationTest {
     void securityPostureNoLongerDocumentsOldMutationOnlyApiKeyBoundary() throws Exception {
         String securityPosture = read(SECURITY_POSTURE);
 
-        assertTrue(securityPosture.contains("require `X-API-Key` for non-`OPTIONS` `/api/**` requests by default"));
+        assertTrue(securityPosture.contains("requires `X-API-Key` for non-`OPTIONS` `/api/**` requests"));
+        assertTrue(securityPosture.contains("refuses startup when `loadbalancerpro.api.key` is missing or blank"));
         assertFalse(securityPosture.contains("protect `POST`/`PUT`/`PATCH` requests under `/api/**`"));
     }
 

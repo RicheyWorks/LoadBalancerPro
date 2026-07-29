@@ -1139,7 +1139,7 @@ class AllocatorControllerTest {
     }
 
     @Test
-    void actuatorHealthInfoAndMetricsAreAvailable() throws Exception {
+    void actuatorExposesHealthAndInfoButNotMetricsByDefault() throws Exception {
         mockMvc.perform(get("/actuator/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").exists());
@@ -1149,12 +1149,10 @@ class AllocatorControllerTest {
                 .andExpect(jsonPath("$.app.name", is("LoadBalancerPro")));
 
         mockMvc.perform(get("/actuator/metrics"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.names").isArray());
+                .andExpect(status().isNotFound());
 
         mockMvc.perform(get("/actuator/prometheus"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("jvm_info")));
+                .andExpect(status().isNotFound());
     }
 
     @Test

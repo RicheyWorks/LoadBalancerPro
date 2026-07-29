@@ -316,6 +316,7 @@ jobs:
           docker run --rm -d \
             --name "$CONTAINER_NAME" \
             -p 127.0.0.1:18081:8080 \
+            -e LOADBALANCERPRO_API_KEY=CI_RUNTIME_TEST_KEY \
             loadbalancerpro:ci
 
           for attempt in {1..60}; do

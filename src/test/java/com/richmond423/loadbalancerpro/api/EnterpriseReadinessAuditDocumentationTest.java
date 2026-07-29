@@ -421,10 +421,13 @@ class EnterpriseReadinessAuditDocumentationTest {
     }
 
     @Test
-    void securityPostureUsesCurrentAuditAnchorAndPolicyLanguage() throws Exception {
+    void securityPostureDistinguishesHistoricalAnchorFromCurrentPolicyLanguage() throws Exception {
         String posture = read(SECURITY_POSTURE);
 
-        assertTrue(posture.contains("Current audit anchor: `main`"));
+        assertTrue(posture.contains("Historical Enterprise Lab transition anchor: `main`"));
+        assertTrue(posture.contains("11c60ce621357a76ca946ddfb8729a38b2f149a1"));
+        assertTrue(posture.contains("combined-build `SEC-DEFAULT-DENY` slot"));
+        assertTrue(posture.contains("docs/agent/SESSION_MANAGER.md"));
         assertTrue(posture.contains("docs/ENTERPRISE_READINESS_AUDIT.md"));
         assertTrue(posture.contains("## LASE Policy Posture"));
         assertTrue(posture.contains("LASE policy defaults to `off`"));

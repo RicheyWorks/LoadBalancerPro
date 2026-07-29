@@ -13,7 +13,7 @@ It lets a reviewer load safe packaged scenarios, run the same real endpoints for
 Start the local API:
 
 ```bash
-mvn spring-boot:run
+mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=local"
 ```
 
 Or run the packaged JAR on the Postman default port:

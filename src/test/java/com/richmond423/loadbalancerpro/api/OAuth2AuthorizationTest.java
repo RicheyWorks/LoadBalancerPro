@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.api;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -421,6 +422,49 @@ class OAuth2AuthorizationTest {
     }
 
     @Test
+    void oauth2ModeRoleMatrixClassifiesEveryRemainingApiPrefix() throws Exception {
+        assertViewerForbidden(get("/api/enterprise-lab/reviewer-summary"),
+                "/api/enterprise-lab/reviewer-summary");
+        assertViewerForbidden(get("/api/evidence-training/onboarding"),
+                "/api/evidence-training/onboarding");
+        assertViewerForbidden(post("/api/remediation/report")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"),
+                "/api/remediation/report");
+        assertViewerForbidden(post("/api/scenarios/replay")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"),
+                "/api/scenarios/replay");
+
+        assertAllowedPastSecurity(get("/api/enterprise-lab/reviewer-summary"));
+        assertAllowedPastSecurity(get("/api/evidence-training/onboarding"));
+        assertAllowedPastSecurity(post("/api/remediation/report")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"));
+        assertAllowedPastSecurity(post("/api/scenarios/replay")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"));
+    }
+
+    @Test
+    void oauth2ModeRequiresAdminRoleForDestructiveDurableEvidenceOperations() throws Exception {
+        for (String path : List.of(
+                "/api/lab/experiments/durable/retention",
+                "/api/lab/experiments/durable/experiment-1/compact")) {
+            mockMvc.perform(post(path))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.path", is(path)));
+
+            mockMvc.perform(post(path).header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.path", is(path)));
+
+            mockMvc.perform(post(path).header(HttpHeaders.AUTHORIZATION, "Bearer roles-admin-token"))
+                    .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotIn(401, 403));
+        }
+    }
+
+    @Test
     void oauth2ModeProtectsProxyForwardingSurface() throws Exception {
         mockMvc.perform(get("/proxy/demo"))
                 .andExpect(status().isUnauthorized())
@@ -706,6 +750,20 @@ class OAuth2AuthorizationTest {
         return post("/api/proxy/private-network-live-validation")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(LIVE_VALIDATION_COMMAND_BODY);
+    }
+
+    private void assertViewerForbidden(
+            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request,
+            String path) throws Exception {
+        mockMvc.perform(request.header(HttpHeaders.AUTHORIZATION, "Bearer viewer-token"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.path", is(path)));
+    }
+
+    private void assertAllowedPastSecurity(
+            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request) throws Exception {
+        mockMvc.perform(request.header(HttpHeaders.AUTHORIZATION, "Bearer roles-operator-token"))
+                .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotIn(401, 403));
     }
 
     @TestConfiguration

@@ -4,13 +4,18 @@ This document summarizes the current security and safety posture for the portfol
 
 For the concise reviewer-facing production-candidate snapshot, see `docs/PRODUCTION_READINESS_SUMMARY.md`.
 
-Current audit anchor: `main` at `11c60ce621357a76ca946ddfb8729a38b2f149a1`, refreshed on 2026-05-14 for the Enterprise Lab transition audit in `docs/ENTERPRISE_READINESS_AUDIT.md`. Older historical audit notes can still mention `loadbalancerpro-clean`; this document records the current evidence posture and deployment caveats.
+Historical Enterprise Lab transition anchor: `main` at `11c60ce621357a76ca946ddfb8729a38b2f149a1`,
+refreshed on 2026-05-14 in `docs/ENTERPRISE_READINESS_AUDIT.md`. The auth and Actuator sections below were
+reconciled on 2026-07-29 by the combined-build `SEC-DEFAULT-DENY` slot; its exact branch/PR/main checkpoints belong in
+`docs/agent/SESSION_MANAGER.md` and the campaign board. Older historical audit notes can still mention
+`loadbalancerpro-clean`; this document records the current bounded evidence posture and deployment caveats.
 
 ## Auth/RBAC Posture
 
-- Local/default mode remains demo-open for API usage and does not require an API key.
-- Prod and cloud-sandbox API-key mode require `X-API-Key` for non-`OPTIONS` `/api/**` requests by default, while keeping `GET /api/health` public as the explicit API exception.
-- OAuth2 mode is explicit opt-in, validates JWTs through Spring Security resource-server support, fails startup without issuer or JWK configuration, gates Swagger/OpenAPI by default, requires the allocation role for routing/allocation routes, and requires observer/operator-style roles for LASE shadow access.
+- The unqualified default uses API-key mode and refuses startup when `loadbalancerpro.api.key` is missing or blank.
+- API-key mode is profile-independent and requires `X-API-Key` for non-`OPTIONS` `/api/**` requests, while keeping `GET /api/health` public as the explicit API exception after successful startup.
+- Explicit local/proxy-demo mode uses `loadbalancerpro.auth.mode=none`, emits a prominent authentication-disabled warning, and is restricted to bounded loopback development/test use.
+- OAuth2 mode is explicit opt-in, validates JWTs through Spring Security resource-server support, fails startup without issuer or JWK configuration, gates Swagger/OpenAPI by default, classifies every current API prefix, denies unclassified `/api/**` routes, requires the allocation role for operator prefixes, requires observer/operator-style roles for LASE shadow access, and requires the admin role for durable retention/compaction.
 - CORS preflight supports the documented browser flow, including `Authorization`, without bypassing protected routes.
 
 ## CSRF Posture
@@ -22,7 +27,7 @@ The current Spring Security configuration avoids the earlier global CSRF-disable
 - The app does not use browser session or form-login authentication.
 - Spring Security is configured with `SessionCreationPolicy.STATELESS`, and HTTP Basic, form login, and logout are disabled.
 - CORS uses `allowCredentials(false)`.
-- Protected mutating routes require `X-API-Key` in prod/cloud-sandbox API-key mode or OAuth2 bearer JWT roles in OAuth2 mode.
+- Protected mutating routes require `X-API-Key` in API-key mode or OAuth2 bearer JWT roles in OAuth2 mode.
 - Requiring CSRF tokens on the stateless API/proxy paths would require token plumbing and could break legitimate header-auth API clients without a meaningful benefit under the current no-cookie auth model.
 
 Revisit this disposition if cookie/session authentication, credentialed CORS, or browser ambient-credential flows are introduced.
@@ -30,14 +35,13 @@ Revisit this disposition if cookie/session authentication, credentialed CORS, or
 ## API And Actuator Exposure Posture
 
 - `POST /api/routing/compare` is read-only and shadow-style: it compares caller-provided request-level routing candidates, does not call `CloudManager` or AWS, and does not mutate legacy `LoadBalancer` allocation state.
-- Local/demo Actuator exposure includes health, info, metrics, and Prometheus for portfolio validation.
-- Prod and cloud-sandbox profiles expose Actuator health/info only by default, with Prometheus disabled by default.
+- Default, local, prod, and cloud-sandbox configuration exposes Actuator health/info only, with Prometheus export disabled by default.
 - Deployment guidance still requires private networking, firewalling, or deployment-specific auth for actuator endpoints outside local demos.
 
 ## Telemetry Posture
 
 - OTLP metrics export is disabled by default.
-- Prod and cloud-sandbox keep Prometheus endpoint exposure disabled by default.
+- All checked-in default/profile configuration keeps Prometheus endpoint exposure disabled by default.
 - OTLP opt-in requires an explicit endpoint and startup guardrails reject blank, malformed, credential-bearing, query-bearing, fragment-bearing, and public endpoints unless the private-endpoint requirement is deliberately overridden.
 - Startup telemetry summaries are sanitized to host-level OTLP endpoint detail only.
 
@@ -47,7 +51,7 @@ Revisit this disposition if cookie/session authentication, credentialed CORS, or
 - Live mutation requires explicit live mode, operator intent, account/region guardrails, capacity caps, and mutation-specific guardrails.
 - Cloud-sandbox defaults are constrained and use the documented `lbp-sandbox-` resource-name prefix.
 - Destructive deletion remains fail-closed unless live mode, deletion approval, ownership confirmation, live AWS clients, and ownership-tag validation all pass.
-- Placeholder AWS credentials are rejected, and missing prod/cloud-sandbox API keys fail closed for protected routes.
+- Placeholder AWS credentials are rejected, and missing API-key-mode credentials prevent application startup.
 - Default tests use mocked AWS clients and are not expected to create, modify, or delete AWS resources.
 
 ## Replay/Evaluation Posture

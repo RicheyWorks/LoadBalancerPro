@@ -17,6 +17,7 @@ class CsrfDispositionSecurityTest {
     private static final Path API_SECURITY_CONFIG = Path.of(
             "src/main/java/com/richmond423/loadbalancerpro/api/config/ApiSecurityConfiguration.java");
     private static final Path DEFAULT_PROPERTIES = Path.of("src/main/resources/application.properties");
+    private static final Path LOCAL_PROPERTIES = Path.of("src/main/resources/application-local.properties");
     private static final Path API_SECURITY = Path.of("docs/API_SECURITY.md");
     private static final Path DEPLOYMENT_HARDENING = Path.of("docs/DEPLOYMENT_HARDENING_GUIDE.md");
     private static final Path REVIEWER_TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
@@ -69,18 +70,22 @@ class CsrfDispositionSecurityTest {
     }
 
     @Test
-    void csrfDispositionPreservesDemoDefaultsAndBoundaryTests() throws Exception {
+    void csrfDispositionPreservesFailClosedDefaultAndExplicitLocalMode() throws Exception {
         String defaults = read(DEFAULT_PROPERTIES);
+        String local = read(LOCAL_PROPERTIES);
         String security = read(API_SECURITY_CONFIG);
 
         assertTrue(defaults.contains("loadbalancerpro.proxy.enabled=false"));
         assertFalse(defaults.contains("loadbalancerpro.proxy.enabled=true"));
+        assertTrue(defaults.contains("loadbalancerpro.auth.mode=api-key"));
+        assertFalse(defaults.contains("loadbalancerpro.auth.mode=none"));
+        assertTrue(local.contains("loadbalancerpro.auth.mode=none"));
         assertTrue(security.contains("authorize.anyRequest().permitAll()"),
-                "local/default non-OAuth2 demo mode should remain usable");
-        assertTrue(security.contains("HttpMethod.GET, \"/api/proxy/status\""));
-        assertTrue(security.contains("HttpMethod.POST, \"/api/proxy/reload\""));
-        assertTrue(security.contains("HttpMethod.POST, \"/api/proxy/private-network-live-validation\""));
-        assertTrue(security.contains("hasRole(allocationRole)"));
+                "explicit none mode and filter-enforced API-key mode use the non-OAuth2 chain");
+        assertTrue(security.contains("authorize.requestMatchers(\"/api/**\").denyAll()"),
+                "OAuth2 must deny unclassified API prefixes");
+        assertTrue(security.contains(
+                "authorize.requestMatchers(\"/api/proxy/**\").hasRole(allocationRole)"));
 
         for (String path : List.of(
                 "src/test/java/com/richmond423/loadbalancerpro/api/ProdApiKeyProtectionTest.java",

@@ -38,7 +38,7 @@ class CombinedBuildPlanCampaignDocumentationTest {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Test
-    void manifestDefinesFiftySourceItemsAsFortyNineOpenSlots() throws IOException {
+    void manifestDefinesFiftySourceItemsAsFortyNineTrackedSlots() throws IOException {
         JsonNode root = MAPPER.readTree(MANIFEST.toFile());
         JsonNode slots = root.path("slots");
 
@@ -57,17 +57,25 @@ class CombinedBuildPlanCampaignDocumentationTest {
                 MAPPER.convertValue(overlap.path("sourceIds"), List.class));
 
         Set<String> ids = new HashSet<>();
+        Set<String> allowedStatuses = new HashSet<>(
+                MAPPER.convertValue(root.path("statusValues"), List.class));
         int sourceItemMappings = 0;
+        int activeSlots = 0;
         for (int index = 0; index < slots.size(); index++) {
             JsonNode slot = slots.get(index);
             assertEquals(index + 1, slot.path("ordinal").asInt());
-            assertEquals("OPEN", slot.path("status").asText());
+            String status = slot.path("status").asText();
+            assertTrue(allowedStatuses.contains(status), "unknown slot status");
+            if (!Set.of("OPEN", "MAIN_GREEN").contains(status)) {
+                activeSlots++;
+            }
             assertTrue(ids.add(slot.path("id").asText()), "duplicate slot id");
             assertFalse(slot.path("title").asText().isBlank());
             assertFalse(slot.path("currentState").asText().isBlank());
             sourceItemMappings += slot.path("sourceIds").size();
         }
         assertEquals(50, sourceItemMappings);
+        assertTrue(activeSlots <= 1, "only one slot may be active between OPEN and MAIN_GREEN");
     }
 
     @Test

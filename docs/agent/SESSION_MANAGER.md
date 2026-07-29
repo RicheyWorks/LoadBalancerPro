@@ -6,6 +6,77 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 1 Branch Checkpoint
+
+Timestamp: 2026-07-29T13:48:01-07:00
+
+Current slot: `SEC-DEFAULT-DENY`, representing source items P-0.5 and L-0.1 once.
+
+Current branch: `codex/sec-default-deny`.
+
+Slot status: `REMOTE_GREEN`.
+
+PR: [#497](https://github.com/RicheyWorks/LoadBalancerPro/pull/497), open and mergeable.
+
+Published implementation/local-green head: `52e4c6f459e9c661e55ba1739b829040bbb17bc8`. This factual PR-created
+checkpoint will advance the exact PR head once; remote results from the earlier head do not satisfy the final gate.
+
+Audited remote-green head: `5ae208ad2a089d85542e42bd9b1da24613d6e54c`. PR-event CI run `30489238105`
+passed tests, zero-skip enforcement, coverage, executable package/resource checks, CycloneDX SBOM, packaged CLI/JAR
+smokes, Docker build/runtime, container evidence, blocking image scan, and dependency review. Push CI run
+`30489235831` also passed; its duplicate dependency-review job skipped while the PR-event dependency review passed.
+CodeQL run `30489238437` and the separate CodeQL result check passed on the same SHA. This factual remote checkpoint
+advances the head once and must itself repeat the exact-head gates before merge.
+
+Verified base: `7479482835e76938d11aaae00d9c99a35d0c0d6a`, the exact PR #496 merge commit. Main CI
+`30483581539` and CodeQL `30483581562` passed on that exact commit, including tests, zero-skip enforcement, coverage,
+packaging/resources, SBOM, packaged smokes, Docker build/runtime, dry-run evidence, and blocking Trivy.
+
+Contract closeout: PR #496 final head `248203dc3046769f5b5e689c0c528a4b229fa322` was mergeable with PR/push CI,
+CodeQL, dependency review, Docker/runtime, SBOM, and Trivy green. The authorized full-diff self-review found and
+corrected the README scope referent and manifest bookkeeping issues before merge; no final finding remained.
+
+Implemented acceptance: API-key enforcement is profile-independent; API-key mode refuses startup without a usable
+key; explicit local/proxy-demo/test use selects loudly warned `none`; OAuth2 assigns operator authority across
+allocation, proxy, enterprise-lab, evidence-training, remediation, and scenario-replay prefixes, preserves the
+read-role routes, requires admin for durable retention/compaction, and denies unclassified `/api/**`; checked-in
+default/profile Actuator exposure is health/info only with Prometheus off. Existing configured API-key request
+behavior remains 401 for missing/wrong request headers and succeeds for the configured key.
+
+Verification:
+
+- focused security selector: 49 tests passed, zero failures/errors/skips;
+- adjacent security/profile/controller selector: 158 tests passed, zero failures/errors/skips;
+- documentation/trust selector: 95 tests passed, zero failures/errors/skips;
+- final current-workspace `mvn -q test`: 3,421 tests across 478 reports, zero failures/errors/skips;
+- `mvn -q clean verify`: passed with the same 3,421-test, 478-report, zero-skip total;
+- packaged default startup without a key exited 1 with the explicit `loadbalancerpro.api.key` refusal;
+- packaged `--version` and `--lase-demo=healthy` exited 0;
+- checked-in distribution smoke passed local JAR health/static/proxy-status checks with exact cleanup;
+- checked-in enterprise-auth proof passed missing/wrong key 401, configured synthetic key 200, and mocked OAuth2
+  role-claim tests; it does not prove a real IdP tenant;
+- CycloneDX 2.9.1 generated validated JSON/XML 1.6 BOMs with 144 components;
+- local-lab `docker compose config --quiet` passed;
+- `git diff --check`, executable-none inventory, public-URL scan, secret/default scan, and required-check audit passed;
+- executable JAR: 95,534,725 bytes, SHA-256
+  `76388AF915256E5302518B3B01FF987A41D2BC65D8BC8B115ACB649340631292`.
+
+Local limitation: Docker CLI is installed but the Docker Desktop Linux engine is stopped, and local Trivy/Syft/Grype
+are unavailable. No local image/runtime or Trivy result is claimed. Exact-head remote Docker build/runtime and
+blocking Trivy remain mandatory before merge.
+
+Safety: no real credential, secret default, external/public target, live cloud/tenant action, production traffic, or
+required-check weakening. Runtime probes were loopback-only with synthetic keys and exact cleanup. OAuth2 remains
+mock/fixture-backed rather than real-tenant evidence. The change does not establish production readiness, live-cloud
+validation, TLS/ingress validation, performance evidence, identity proof, or broader automation.
+
+Blocker: none.
+
+Next action: publish this factual remote checkpoint, repeat exact-head CI/CodeQL/dependency/Docker/SBOM/Trivy,
+complete final self-review, and merge only if the checkpoint head is fully green and mergeable.
+
+Decision: continue only `SEC-DEFAULT-DENY`; no later slot is open.
+
 ## Combined Build-Plan Campaign Contract Checkpoint
 
 Timestamp: 2026-07-29T11:30:55-07:00

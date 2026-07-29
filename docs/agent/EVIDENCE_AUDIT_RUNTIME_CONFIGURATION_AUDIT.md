@@ -2,6 +2,8 @@
 
 This note is slot 9 of the **LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign**. It is documentation/test-only. It audits runtime configuration source files without changing runtime resources, application behavior, endpoints, Maven, CI, Dockerfile, Compose behavior, scripts, k6, Bruno, Toxiproxy, runner services, automation, secrets, external targets, or production behavior.
 
+Current-state reconciliation, 2026-07-29: the later combined-build campaign's `SEC-DEFAULT-DENY` slot intentionally changed the runtime defaults that this note originally audited. The original slot remains an inspection-only historical event; this note and its read-only guard now describe the current fail-closed defaults without turning the later runtime change into production-readiness evidence.
+
 ## Audit Timestamp
 
 - Audit timestamp: 2026-05-25T03:44-07:00.
@@ -19,14 +21,15 @@ This audit is an inspection-only reviewer record for `src/main/resources/applica
 
 The default `application.properties` is local/developer-oriented:
 
-- Actuator exposure includes `health,info,metrics,prometheus`.
-- Prometheus metrics export is enabled with `management.prometheus.metrics.export.enabled=true`.
+- Actuator exposure is limited to `health,info`.
+- Prometheus metrics export is disabled with `management.prometheus.metrics.export.enabled=false`.
 - OTLP metrics export is disabled with `management.otlp.metrics.export.enabled=false`.
 - OTLP metrics URL is read from `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` and defaults to blank.
 - Health probes are enabled and health details are `when_authorized`.
 - Management metrics are tagged with `environment=local`.
 - The app version is `2.5.0`.
-- The default auth mode is `loadbalancerpro.auth.mode=api-key`, while local/default security remains developer-friendly unless a production-like profile activates the prod/cloud-sandbox API-key filter or OAuth2 mode is explicitly configured.
+- The default auth mode is `loadbalancerpro.auth.mode=api-key`, and startup refuses a missing or blank `loadbalancerpro.api.key`.
+- The explicit `local` and proxy-demo profiles select `loadbalancerpro.auth.mode=none`, emit a prominent authentication-disabled warning, and are bounded to loopback development/test use.
 - Local CORS allows `http://localhost:3000` and `http://localhost:8080` with credentials disabled by `WebConfig`.
 - The process-local API rate limiter is disabled by default with `loadbalancerpro.api.rate-limit.enabled=false`.
 - LASE shadow mode is disabled by default with `loadbalancerpro.lase.shadow.enabled=false`.
@@ -34,7 +37,7 @@ The default `application.properties` is local/developer-oriented:
 - Proxy private-network validation and private-network live validation are disabled by default, and live validation also requires explicit operator approval when separately enabled.
 - Proxy active health checks, retries, and cooldown are disabled by default.
 
-Reviewer interpretation: the default profile is useful for local development, CI smoke paths, and lab review. It should not be exposed as a public or shared-network deployment default.
+Reviewer interpretation: an unqualified start is deliberately fail-closed. Local development, CI smoke paths, and lab review must select the explicit open profile and keep it off public or shared-network interfaces.
 
 ## Prod Profile Narrowing
 
@@ -55,15 +58,15 @@ Reviewer interpretation: the prod profile is a production-like starting point, n
 
 ## API Auth Mode And API Key Default Behavior Question
 
-The runtime source declares `loadbalancerpro.auth.mode=api-key` by default. In `prod` and `cloud-sandbox` profiles, `ProdApiKeyFilter` protects `/api/**` except `GET /api/health` and unauthenticated `OPTIONS`, protects `/proxy/**`, and protects OpenAPI/Swagger routes when API-key mode is active.
+The runtime source declares `loadbalancerpro.auth.mode=api-key` by default. `ProdApiKeyFilter` is profile-independent and protects `/api/**` except `GET /api/health` and unauthenticated `OPTIONS`, protects `/proxy/**`, and protects OpenAPI/Swagger whenever API-key mode is active.
 
-The prod profile maps `loadbalancerpro.api.key=${LOADBALANCERPRO_API_KEY:}`. If the environment variable is missing or blank, protected requests fail closed with HTTP 401. That is an intentional safer failure mode, but it remains an operator configuration question before any shared-network or production-like use: reviewers should confirm how the key is supplied, rotated, logged, and protected by deployment secret management. This audit does not supply or validate a real secret.
+The prod profile maps `loadbalancerpro.api.key=${LOADBALANCERPRO_API_KEY:}`. If the environment variable is missing or blank, API-key-mode startup is refused before an HTTP listener becomes usable. Once a configured key permits startup, protected requests with missing or wrong headers fail closed with HTTP 401. This remains an operator configuration question before shared-network or production-like use: reviewers should confirm how the key is supplied, rotated, logged, and protected by deployment secret management. This audit does not supply or validate a real secret.
 
-OAuth2 mode is separately configurable through `loadbalancerpro.auth.mode=oauth2` plus issuer or JWK settings. This audit does not configure OAuth2, call an IdP, validate a real tenant, or prove enterprise identity integration.
+OAuth2 mode is separately configurable through `loadbalancerpro.auth.mode=oauth2` plus issuer or JWK settings. Current route policy explicitly assigns read, allocation, and admin roles and denies unclassified API prefixes. This audit does not configure OAuth2, call an IdP, validate a real tenant, or prove enterprise identity integration.
 
 ## Telemetry And Actuator Boundary
 
-The default/local profile exposes Actuator metrics and Prometheus for local review. The prod profile exposes only health/info and disables Prometheus by default. OTLP export is disabled unless explicitly enabled, and the startup guard validates the configured OTLP metrics endpoint shape before accepting enabled export.
+Default, local, prod, and cloud-sandbox configuration exposes Actuator health/info only and disables Prometheus by default. OTLP export is disabled unless explicitly enabled, and the startup guard validates the configured OTLP metrics endpoint shape before accepting enabled export.
 
 The startup guard is a configuration safety check. It does not contact a collector, validate TLS, prove collector security, provide production telemetry, or replace deployment-specific network, IAM, firewall, or egress policy.
 
@@ -91,11 +94,12 @@ Reviewer interpretation: these defaults keep optional runtime features off by de
 
 ## Reviewer Questions
 
-- Does the default profile remain clearly local/developer-oriented?
-- Does the prod profile still narrow Actuator exposure to `health,info`?
-- Is Prometheus disabled in prod unless separately enabled elsewhere?
+- Does the unqualified default refuse startup without an API key?
+- Does the explicit local profile remain visibly warned and loopback-only?
+- Do all checked-in profiles keep Actuator exposure to `health,info`?
+- Is Prometheus disabled unless separately enabled and gated elsewhere?
 - Does OTLP remain opt-in and source-visible through runtime environment variables?
-- Does prod API-key mode fail protected requests closed when `LOADBALANCERPRO_API_KEY` is missing or blank?
+- Does API-key mode refuse startup when `LOADBALANCERPRO_API_KEY` or `loadbalancerpro.api.key` is missing or blank?
 - Are real secrets absent from source-controlled properties?
 - Are prod CORS origins empty unless explicitly configured?
 - Are rate limiting, LASE shadow mode, proxy mode, private-network validation, private-network live validation, health checks, retries, and cooldown disabled by default?

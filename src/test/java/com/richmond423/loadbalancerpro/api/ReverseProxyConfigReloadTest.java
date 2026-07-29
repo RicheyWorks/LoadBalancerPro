@@ -31,7 +31,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
-@SpringBootTest(properties = "loadbalancerpro.api.key=TEST_RELOAD_API_KEY")
+@SpringBootTest(properties = {
+        "loadbalancerpro.auth.mode=none",
+        "loadbalancerpro.api.key=TEST_RELOAD_API_KEY"
+})
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ReverseProxyConfigReloadTest {

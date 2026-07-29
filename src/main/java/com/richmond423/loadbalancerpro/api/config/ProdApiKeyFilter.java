@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
@@ -29,7 +28,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-@Profile({"prod", "cloud-sandbox"})
 @Conditional(ProdApiKeyFilter.ApiKeyAuthModeCondition.class)
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class ProdApiKeyFilter extends OncePerRequestFilter {
@@ -118,7 +116,7 @@ public class ProdApiKeyFilter extends OncePerRequestFilter {
 
     private void logMissingKeyWarningOnce() {
         if (missingKeyWarningLogged.compareAndSet(false, true)) {
-            logger.warn("Profile API key is not configured; protected API requests will be rejected.");
+            logger.warn("API-key auth mode has no configured key; protected API requests will be rejected.");
         }
     }
 

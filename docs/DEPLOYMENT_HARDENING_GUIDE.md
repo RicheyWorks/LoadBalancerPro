@@ -22,11 +22,11 @@ Before proposing registry publication, release image tags, container signing, or
 
 ## Deployment Posture Summary
 
-The local/default profile is for development, CI smoke tests, and demos. It intentionally favors convenient local behavior such as localhost browser access, public health checks, local Actuator visibility, and no live AWS mutation by default.
+The unqualified default profile is fail-closed API-key mode and refuses startup without a configured key. The explicit `local` profile is for loopback development, CI smoke tests, and demos; it selects `auth.mode=none`, logs a prominent authentication-disabled warning, permits local browser/API review, exposes only Actuator health/info, and keeps live AWS mutation disabled. It is not a shared-network security posture.
 
 The `prod` profile is production-like, but it is not complete production readiness. It narrows Actuator exposure by default, uses explicit CORS configuration, keeps live AWS disabled, and in API-key mode protects `/api/**`, `/proxy/**`, OpenAPI, and Swagger by default. The explicit public API exceptions are `GET /api/health` and unauthenticated `OPTIONS` preflight requests; Actuator health/info exposure is configured separately by profile.
 
-The checked-in Dockerfile defaults containers to `SPRING_PROFILES_ACTIVE=prod`, so container/default deployment mode uses the prod API-key boundary unless an operator explicitly overrides the profile. Keep `LOADBALANCERPRO_API_KEY` in runtime secret/config management, and use `-e SPRING_PROFILES_ACTIVE=local` only for loopback-bound local/demo containers. Do not expose local/demo mode on public interfaces.
+The checked-in Dockerfile defaults containers to `SPRING_PROFILES_ACTIVE=prod`, so container/default deployment mode uses the profile-independent API-key boundary unless an operator explicitly selects OAuth2 or none mode. A missing/blank key prevents startup. Keep `LOADBALANCERPRO_API_KEY` in runtime secret/config management, and use `-e SPRING_PROFILES_ACTIVE=local` only for loopback-bound local/demo containers. Do not expose local/demo mode on public interfaces.
 
 The `cloud-sandbox` profile is controlled validation only. It is dry-run by default, constrained around sandbox expectations, and intended for mocked or disposable cloud-sandbox validation.
 

@@ -5,7 +5,7 @@ Use this outline for a 60 to 90 second local demo or short screen recording. It 
 ## Setup
 
 ```bash
-mvn spring-boot:run
+mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=local"
 ```
 
 Open:

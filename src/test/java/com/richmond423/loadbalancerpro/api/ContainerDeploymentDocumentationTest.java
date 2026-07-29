@@ -132,10 +132,8 @@ class ContainerDeploymentDocumentationTest {
 
         assertTrue(defaults.contains("loadbalancerpro.proxy.enabled=false"));
         assertFalse(defaults.contains("loadbalancerpro.proxy.enabled=true"));
-        assertTrue(security.contains("HttpMethod.GET, \"/api/proxy/status\""));
-        assertTrue(security.contains("HttpMethod.POST, \"/api/proxy/reload\""));
-        assertTrue(security.contains("HttpMethod.POST, \"/api/proxy/private-network-live-validation\""));
-        assertTrue(security.contains("hasRole(allocationRole)"));
+        assertTrue(security.contains(
+                "authorize.requestMatchers(\"/api/proxy/**\").hasRole(allocationRole)"));
     }
 
     @Test

@@ -67,6 +67,7 @@ public class ApiSecurityConfiguration {
         authProperties.validateOAuth2Mode();
         String laseShadowRole = authProperties.normalizedLaseShadowRole();
         String allocationRole = authProperties.normalizedAllocationRole();
+        String adminRole = authProperties.normalizedAdminRole();
         String[] readRoles = distinctRoles(VIEWER_ROLE, laseShadowRole, allocationRole);
         AuthenticationEntryPoint authenticationEntryPoint = (request, response, exception) ->
                 writeError(objectMapper, response,
@@ -85,20 +86,24 @@ public class ApiSecurityConfiguration {
                     configureDocsAuthorization(authorize, authProperties, readRoles);
                     authorize.requestMatchers(HttpMethod.GET, "/api/lase/shadow")
                             .hasAnyRole(laseShadowRole, allocationRole);
-                    authorize.requestMatchers(HttpMethod.GET, "/api/proxy/status").hasRole(allocationRole);
-                    authorize.requestMatchers(HttpMethod.POST, "/api/proxy/reload").hasRole(allocationRole);
-                    authorize.requestMatchers(HttpMethod.POST, "/api/proxy/private-network-live-validation")
-                            .hasRole(allocationRole);
+                    authorize.requestMatchers("/api/proxy/**").hasRole(allocationRole);
                     authorize.requestMatchers("/proxy", "/proxy/**").hasRole(allocationRole);
                     authorize.requestMatchers(HttpMethod.GET, "/api/lab/scenarios", "/api/lab/scenarios/**")
                             .hasAnyRole(readRoles);
+                    authorize.requestMatchers(HttpMethod.POST,
+                                    "/api/lab/experiments/durable/retention",
+                                    "/api/lab/experiments/durable/*/compact")
+                            .hasRole(adminRole);
                     authorize.requestMatchers("/api/lab/**").hasRole(allocationRole);
+                    authorize.requestMatchers("/api/enterprise-lab/**").hasRole(allocationRole);
+                    authorize.requestMatchers("/api/evidence-training/**").hasRole(allocationRole);
+                    authorize.requestMatchers("/api/remediation/**").hasRole(allocationRole);
+                    authorize.requestMatchers("/api/scenarios/**").hasRole(allocationRole);
                     authorize.requestMatchers(HttpMethod.POST, "/api/routing/**").hasRole(allocationRole);
-                    authorize.requestMatchers(HttpMethod.POST, "/api/allocate/**").hasRole(allocationRole);
-                    authorize.requestMatchers(HttpMethod.PUT, "/api/allocate/**").hasRole(allocationRole);
-                    authorize.requestMatchers(HttpMethod.PATCH, "/api/allocate/**").hasRole(allocationRole);
+                    authorize.requestMatchers(HttpMethod.GET, "/api/routing/**").hasAnyRole(readRoles);
+                    authorize.requestMatchers("/api/allocate/**").hasRole(allocationRole);
                     authorize.requestMatchers("/actuator/health/**", "/actuator/info").hasAnyRole(readRoles);
-                    authorize.requestMatchers("/api/**").authenticated();
+                    authorize.requestMatchers("/api/**").denyAll();
                     authorize.anyRequest().denyAll();
                 })
                 .oauth2ResourceServer(oauth2 -> oauth2

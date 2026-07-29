@@ -79,6 +79,7 @@ class OpenTelemetryMetricsDisabledCollectorConfigurationTest {
 
 @SpringBootTest(properties = {
         "spring.profiles.active=prod",
+        "loadbalancerpro.auth.mode=none",
         "LOADBALANCERPRO_OTLP_METRICS_ENABLED=true",
         "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://localhost:4318/v1/metrics",
         "management.otlp.metrics.export.step=1h"

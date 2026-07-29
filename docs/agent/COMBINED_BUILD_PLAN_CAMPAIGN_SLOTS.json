@@ -69,11 +69,11 @@
       "sourceIds": ["P-0.2"],
       "track": "proxy",
       "title": "Replace health deletion with drain, eviction thresholds, and re-admission",
-      "status": "IN_PROGRESS",
+      "status": "LOCAL_GREEN",
       "dependencies": [],
       "riskClass": "RELIABILITY",
       "verificationProfile": "java-full",
-      "currentState": "Exact main 6369fcb7918d74b62b17dd73af564321f356073f is green. Current health deletion, manual drain, degradation-state, threshold, eviction, and re-admission behavior is under source/test audit on codex/p-0-2-health-drain."
+      "currentState": "Local acceptance is green on codex/p-0-2-health-drain: health checks retain registry identity, one bad cycle degrades without exclusion, three consecutive bad cycles evict from rotation, two consecutive good cycles re-admit, manual setHealthy(false) drains without deletion, and only explicit removal deletes. Publication and exact-head remote gates remain pending."
     },
     {
       "ordinal": 4,

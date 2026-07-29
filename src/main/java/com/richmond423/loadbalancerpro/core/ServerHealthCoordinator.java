@@ -8,6 +8,9 @@ import java.util.function.Supplier;
 import org.apache.logging.log4j.Logger;
 
 final class ServerHealthCoordinator {
+    static final int DEFAULT_BAD_CYCLES_BEFORE_EVICTION = 3;
+    static final int DEFAULT_GOOD_CYCLES_BEFORE_READMISSION = 2;
+
     private final ServerRegistry serverRegistry;
     private final LoadDistributionEngine loadDistributionEngine;
     private final ConsistentHashRing consistentHashRing;
@@ -17,6 +20,8 @@ final class ServerHealthCoordinator {
     private final Function<Double, Map<String, Double>> leastLoadedDistributor;
     private final Function<ServerType, List<Server>> serversByType;
     private final Supplier<CloudManager> cloudManagerSupplier;
+    private final int badCyclesBeforeEviction;
+    private final int goodCyclesBeforeReadmission;
 
     ServerHealthCoordinator(ServerRegistry serverRegistry,
                             LoadDistributionEngine loadDistributionEngine,
@@ -27,6 +32,33 @@ final class ServerHealthCoordinator {
                             Function<Double, Map<String, Double>> leastLoadedDistributor,
                             Function<ServerType, List<Server>> serversByType,
                             Supplier<CloudManager> cloudManagerSupplier) {
+        this(serverRegistry,
+                loadDistributionEngine,
+                consistentHashRing,
+                maxUsageThreshold,
+                logger,
+                healthyServers,
+                leastLoadedDistributor,
+                serversByType,
+                cloudManagerSupplier,
+                DEFAULT_BAD_CYCLES_BEFORE_EVICTION,
+                DEFAULT_GOOD_CYCLES_BEFORE_READMISSION);
+    }
+
+    ServerHealthCoordinator(ServerRegistry serverRegistry,
+                            LoadDistributionEngine loadDistributionEngine,
+                            ConsistentHashRing consistentHashRing,
+                            double maxUsageThreshold,
+                            Logger logger,
+                            Supplier<List<Server>> healthyServers,
+                            Function<Double, Map<String, Double>> leastLoadedDistributor,
+                            Function<ServerType, List<Server>> serversByType,
+                            Supplier<CloudManager> cloudManagerSupplier,
+                            int badCyclesBeforeEviction,
+                            int goodCyclesBeforeReadmission) {
+        if (badCyclesBeforeEviction <= 0 || goodCyclesBeforeReadmission <= 0) {
+            throw new IllegalArgumentException("Health-cycle thresholds must be positive.");
+        }
         this.serverRegistry = serverRegistry;
         this.loadDistributionEngine = loadDistributionEngine;
         this.consistentHashRing = consistentHashRing;
@@ -36,39 +68,72 @@ final class ServerHealthCoordinator {
         this.leastLoadedDistributor = leastLoadedDistributor;
         this.serversByType = serversByType;
         this.cloudManagerSupplier = cloudManagerSupplier;
+        this.badCyclesBeforeEviction = badCyclesBeforeEviction;
+        this.goodCyclesBeforeReadmission = goodCyclesBeforeReadmission;
     }
 
     List<Server> detectFailedServers() {
-        List<Server> failedServers = new ArrayList<>();
+        List<Server> newlyEvictedServers = new ArrayList<>();
         for (Server server : serverRegistry.snapshot()) {
-            if (server.getCpuUsage() >= maxUsageThreshold || server.getMemoryUsage() >= maxUsageThreshold
-                    || server.getDiskUsage() >= maxUsageThreshold || !server.isHealthy()) {
-                server.setHealthy(false);
-                failedServers.add(server);
-                logger.warn("Server {} ({}) marked unhealthy.", server.getServerId(), server.getServerType());
+            boolean thresholdBreached = server.getCpuUsage() >= maxUsageThreshold
+                    || server.getMemoryUsage() >= maxUsageThreshold
+                    || server.getDiskUsage() >= maxUsageThreshold;
+            Server.HealthTransition transition = server.recordHealthObservation(
+                    thresholdBreached,
+                    badCyclesBeforeEviction,
+                    goodCyclesBeforeReadmission);
+            switch (transition) {
+                case DEGRADED -> logger.warn(
+                        "Server {} ({}) entered DEGRADED after a threshold breach.",
+                        server.getServerId(),
+                        server.getServerType());
+                case EVICTED -> {
+                    newlyEvictedServers.add(server);
+                    logger.warn(
+                            "Server {} ({}) entered EVICTED after {} consecutive bad health cycles.",
+                            server.getServerId(),
+                            server.getServerType(),
+                            badCyclesBeforeEviction);
+                }
+                case RECOVERING -> logger.info(
+                        "Server {} ({}) entered RECOVERING; awaiting {} consecutive good health cycles.",
+                        server.getServerId(),
+                        server.getServerType(),
+                        goodCyclesBeforeReadmission);
+                case READMITTED -> logger.info(
+                        "Server {} ({}) returned to HEALTHY rotation.",
+                        server.getServerId(),
+                        server.getServerType());
+                case NONE -> {
+                    // No lifecycle transition to report.
+                }
             }
         }
-        return failedServers;
+        return newlyEvictedServers;
     }
 
-    void removeFailedServersAndRecover(List<Server> failedServers) {
+    void evictServersAndRecover(List<Server> newlyEvictedServers) {
         double redistributedData = 0;
-        List<Server> failedCloudServers = new ArrayList<>();
-        for (Server failed : failedServers) {
-            redistributedData += removeFailedServer(failed);
-            if (failed.getServerType() == ServerType.CLOUD) {
-                failedCloudServers.add(failed);
+        List<Server> evictedCloudServers = new ArrayList<>();
+        for (Server evicted : newlyEvictedServers) {
+            redistributedData += evictServerAllocation(evicted);
+            if (evicted.getServerType() == ServerType.CLOUD) {
+                evictedCloudServers.add(evicted);
             }
         }
         redistributeLoad(redistributedData);
-        replaceFailedCloudCapacity(failedCloudServers);
+        replaceFailedCloudCapacity(evictedCloudServers);
     }
 
-    double removeFailedServer(Server failed) {
-        double removedData = loadDistributionEngine.removeServerAllocation(failed.getServerId());
-        serverRegistry.remove(failed);
-        consistentHashRing.removeServer(failed);
+    double removeRegisteredServer(Server server) {
+        double removedData = loadDistributionEngine.removeServerAllocation(server.getServerId());
+        serverRegistry.remove(server);
+        consistentHashRing.removeServer(server);
         return removedData;
+    }
+
+    private double evictServerAllocation(Server evicted) {
+        return loadDistributionEngine.removeServerAllocation(evicted.getServerId());
     }
 
     private void redistributeLoad(double redistributedData) {
@@ -88,8 +153,10 @@ final class ServerHealthCoordinator {
         CloudManager cloudManager = cloudManagerSupplier.get();
         if (cloudManager != null && !failedCloudServers.isEmpty()) {
             int minServers = cloudManager.getMinServers();
-            int currentCloudServers = serversByType.apply(ServerType.CLOUD).size();
-            int desiredCapacity = Math.max(minServers, currentCloudServers + failedCloudServers.size());
+            int activeCloudServers = (int) serversByType.apply(ServerType.CLOUD).stream()
+                    .filter(Server::isHealthy)
+                    .count();
+            int desiredCapacity = Math.max(minServers, activeCloudServers + failedCloudServers.size());
             cloudManager.scaleServers(desiredCapacity);
             logger.info("Scaled cloud to {} servers after failover of {} cloud servers.",
                     desiredCapacity, failedCloudServers.size());

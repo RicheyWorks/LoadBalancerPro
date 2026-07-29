@@ -6,6 +6,84 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 3 Local-Green Checkpoint
+
+Timestamp: 2026-07-29T16:09:28-07:00
+
+Current slot: `P-0.2`, replace health deletion with drain, eviction thresholds, and re-admission.
+
+Current branch: `codex/p-0-2-health-drain`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `6369fcb7918d74b62b17dd73af564321f356073f`, the exact PR #498 merge commit.
+
+Implemented acceptance: `ServerHealthCoordinator` no longer deletes a server after a threshold breach. One bad
+cycle transitions the server to routable `DEGRADED`; the default third consecutive bad cycle transitions it to
+retained, non-routable `EVICTED`; and the default second consecutive good cycle returns it through `RECOVERING` to
+`HEALTHY`. Manual `setHealthy(false)` is retained `DRAINING`, and explicit `removeServer` remains the only
+administrative registry/hash deletion path. Operational state survives JSON/report round trips, and strict imports
+reject signal-analysis states where an operational lifecycle state is required.
+
+Changed files:
+
+- `src/main/java/com/richmond423/loadbalancerpro/core/LoadBalancer.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/Server.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/ServerDegradationState.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/ServerHealthCoordinator.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/ServerScoreCalculator.java`
+- `src/main/java/com/richmond423/loadbalancerpro/util/JsonServerLogParser.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/ServerHealthLifecycleTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/CoreLoadBalancerOverloadRecoveryScenarioTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/CoreLoadBalancerServerLifecycleInvariantTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/LoadBalancerTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/ServerMonitorTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/ServerTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/util/UtilsTest.java`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Verification:
+
+- exact behavioral red gate: all three focused lifecycle contracts failed on main because the first bad sample and
+  manual drain deleted registry identity;
+- implementation-focused acceptance and adjacent lifecycle/load-balancer/monitor/server/signal selectors passed;
+- strict JSON/report integration was repaired after the first clean full suite exposed its stale field allowlist;
+- authoritative clean `mvn -q test`: exit 0, 3,430 tests across 480 fresh reports, zero failures/errors/skips, and no
+  Surefire dump files;
+- `mvn -q "-DskipTests" package`, `mvn -B package`, and `mvn -q "-DskipTests" verify` passed; the full package rerun
+  also recorded 3,430 tests with zero failures/errors/skips;
+- JaCoCo XML generation, required executable-JAR resource checks, packaged `--version`, healthy/overloaded/invalid
+  synthetic LASE CLI cases, literal-loopback packaged JAR health and static status-page smoke, and explicit process
+  cleanup passed;
+- executable JAR: 95,542,419 bytes, SHA-256
+  `1C9E8784B49050371DC846BE4A0AD086647C05959207656BDC012CB82A289DEC`;
+- CycloneDX 2.9.1 generated parseable JSON/XML 1.6 BOMs with 144 components in each;
+- Enterprise Lab package smoke passed with ignored target-only evidence and its explicit no-live-cloud/no-external-
+  network boundary;
+- complete-diff whitespace and public-target/secret-like scans passed.
+
+Local limitations: the Docker CLI could not reach an engine, Trivy is not installed, and the repository root has no
+Compose file. No local Docker/runtime, Trivy, or Compose result is claimed. Exact-head remote Docker build/runtime,
+container evidence, dependency review, SBOM, blocking Trivy, CI, and CodeQL remain mandatory before merge.
+
+Scope and safety: production changes are limited to the planned core health lifecycle plus its JSON schema contract.
+No routing-strategy redesign, proxy/API/Maven/CI/Docker/Compose behavior, secret, external/public target, live
+cloud/tenant action, or readiness claim changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: none.
+
+Next action: commit and publish the local-green implementation, open one PR, then require every exact-head remote
+gate before merge.
+
+Decision: continue only `P-0.2`; no later slot is active.
+
 ## Combined Build Plan Slot 3 Branch Checkpoint
 
 Timestamp: 2026-07-29T15:27:18-07:00

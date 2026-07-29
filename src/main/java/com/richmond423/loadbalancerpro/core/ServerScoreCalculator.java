@@ -440,9 +440,9 @@ public final class ServerScoreCalculator {
 
     private double degradationPenalty(ServerDegradationState state) {
         return switch (state) {
-            case UNKNOWN, FAILED -> 1.0;
+            case UNKNOWN, FAILED, DRAINING, EVICTED -> 1.0;
             case RECOVERING -> 0.75;
-            case PARTIALLY_DEGRADED -> 0.50;
+            case PARTIALLY_DEGRADED, DEGRADED -> 0.50;
             case HEALTHY -> 0.0;
         };
     }

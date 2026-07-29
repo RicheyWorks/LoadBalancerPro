@@ -3,7 +3,6 @@ package com.richmond423.loadbalancerpro.core;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -111,6 +110,8 @@ class CoreLoadBalancerOverloadRecoveryScenarioTest {
 
         failing.updateMetrics(100.0, 100.0, 100.0);
         balancer.checkServerHealth();
+        balancer.checkServerHealth();
+        balancer.checkServerHealth();
 
         LoadDistributionResult degraded = balancer.capacityAwareWithResult(60.0);
 
@@ -122,7 +123,8 @@ class CoreLoadBalancerOverloadRecoveryScenarioTest {
 
         assertAll("health-check degradation and restored candidate contract",
                 () -> assertFalse(failing.isHealthy()),
-                () -> assertNull(balancer.getServer("FAILING")),
+                () -> assertEquals(ServerDegradationState.EVICTED, failing.getDegradationState()),
+                () -> assertSame(failing, balancer.getServer("FAILING")),
                 () -> assertTrue(degraded.allocations().isEmpty()),
                 () -> assertEquals(60.0, degraded.unallocatedLoad(), DELTA),
                 () -> assertSame(restored, balancer.getServer("RESTORED")),

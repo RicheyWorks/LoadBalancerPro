@@ -138,15 +138,18 @@ class CoreLoadBalancerServerLifecycleInvariantTest {
 
         failing.updateMetrics(100.0, 100.0, 100.0);
         balancer.checkServerHealth();
+        balancer.checkServerHealth();
+        balancer.checkServerHealth();
 
         Map<String, Double> rebalanced = balancer.rebalanceExistingLoad();
         Map<String, Double> hashed = balancer.consistentHashing(60.0, 6);
 
-        assertAll("health-check removal lifecycle contract",
+        assertAll("health-check eviction lifecycle contract",
                 () -> assertFalse(failing.isHealthy()),
-                () -> assertNull(balancer.getServer("FAILING")),
+                () -> assertEquals(ServerDegradationState.EVICTED, failing.getDegradationState()),
+                () -> assertSame(failing, balancer.getServer("FAILING")),
                 () -> assertSame(survivor, balancer.getServer("SURVIVOR")),
-                () -> assertEquals(List.of(survivor), balancer.getServers()),
+                () -> assertEquals(List.of(failing, survivor), balancer.getServers()),
                 () -> assertEquals(Map.of("SURVIVOR", 120.0), rebalanced),
                 () -> assertEquals(Set.of("SURVIVOR"), hashed.keySet()));
     }

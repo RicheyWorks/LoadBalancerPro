@@ -133,8 +133,9 @@ public class LoadBalancer {
         try {
             if (serverRegistry.contains(server.getServerId())) {
                 logger.warn("Duplicate server ID {} detected; replacing existing server.", server.getServerId());
-                serverHealthCoordinator.removeFailedServer(serverRegistry.get(server.getServerId()));
+                serverHealthCoordinator.removeRegisteredServer(serverRegistry.get(server.getServerId()));
             }
+            server.disableHealthCheck();
             serverRegistry.add(server);
             consistentHashRing.addServer(server);
             logger.debug("Added server {} ({})", server.getServerId(), server.getServerType());
@@ -146,17 +147,19 @@ public class LoadBalancer {
     public void checkServerHealth() {
         serverLock.writeLock().lock();
         try {
-            List<Server> failedServers = serverHealthCoordinator.detectFailedServers();
-            if (!failedServers.isEmpty()) removeFailedServersAndRecover(failedServers);
+            List<Server> newlyEvictedServers = serverHealthCoordinator.detectFailedServers();
+            if (!newlyEvictedServers.isEmpty()) {
+                evictServersAndRecover(newlyEvictedServers);
+            }
         } finally {
             serverLock.writeLock().unlock();
         }
     }
 
-    private void removeFailedServersAndRecover(List<Server> failedServers) {
+    private void evictServersAndRecover(List<Server> newlyEvictedServers) {
         serverLock.writeLock().lock();
         try {
-            serverHealthCoordinator.removeFailedServersAndRecover(failedServers);
+            serverHealthCoordinator.evictServersAndRecover(newlyEvictedServers);
         } finally {
             serverLock.writeLock().unlock();
         }
@@ -348,7 +351,7 @@ public class LoadBalancer {
         try {
             Server server = serverRegistry.get(serverId);
             if (server != null) {
-                serverHealthCoordinator.removeFailedServer(server);
+                serverHealthCoordinator.removeRegisteredServer(server);
             }
         } finally {
             serverLock.writeLock().unlock();

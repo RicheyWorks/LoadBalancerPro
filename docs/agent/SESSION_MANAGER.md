@@ -72,7 +72,10 @@ Verification:
 - complete-diff self-review covered all five source artifacts, all 49 manifest rows, board/contract/navigation, the
   read-only guard, and checkpoint history. It found one ambiguous README referent between the historical docs/test-only
   evidence-audit campaign and the active implementation campaign; the failure log records it, both sentences now name
-  the evidence audit explicitly, and the resulting 16-test campaign/README/framing selector is green;
+  the evidence audit explicitly, and the resulting 16-test campaign/README/framing selector is green. Row-by-row
+  manifest review then added the omitted shared P-0.5 dependency to both complete-proxy-M0 consumers, corrected one
+  P-0.5 identifier typo, narrowed P-1.2 from `durable` to `reload-preserved`, and extended the green guard to pin those
+  corrections;
 - zero workspace Java/Maven processes remained after verification.
 
 Blocker: none.

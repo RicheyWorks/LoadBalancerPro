@@ -334,7 +334,7 @@
       "track": "proxy",
       "title": "Make connect and per-route request timeouts correct",
       "status": "OPEN",
-      "dependencies": ["P-0.1", "P-0.2", "P-0.3", "P-0.4", "P-0.6"],
+      "dependencies": ["SEC-DEFAULT-DENY", "P-0.1", "P-0.2", "P-0.3", "P-0.4", "P-0.6"],
       "riskClass": "PROXY_RUNTIME",
       "verificationProfile": "proxy-integration",
       "currentState": "Blackhole and per-route timeout acceptance are unproven."
@@ -344,7 +344,7 @@
       "id": "P-1.2",
       "sourceIds": ["P-1.2"],
       "track": "proxy",
-      "title": "Add durable per-upstream runtime statistics",
+      "title": "Add reload-preserved per-upstream runtime statistics",
       "status": "OPEN",
       "dependencies": ["P-1.1"],
       "riskClass": "TELEMETRY",
@@ -370,7 +370,7 @@
       "track": "proxy",
       "title": "Move health checking off request threads",
       "status": "OPEN",
-      "dependencies": ["P-0.1", "P-0.2", "P-0.3", "P-0.4", "P-0.6"],
+      "dependencies": ["SEC-DEFAULT-DENY", "P-0.1", "P-0.2", "P-0.3", "P-0.4", "P-0.6"],
       "riskClass": "PROXY_RUNTIME",
       "verificationProfile": "proxy-integration",
       "currentState": "Background probing, rise/fall stability, and side-effect-free status acceptance are unproven."

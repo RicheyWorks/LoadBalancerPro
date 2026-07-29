@@ -76,9 +76,11 @@ class CombinedBuildPlanCampaignDocumentationTest {
         JsonNode slots = root.path("slots");
         JsonNode profiles = root.path("verificationProfiles");
         Map<String, Integer> ordinalById = new HashMap<>();
+        Map<String, JsonNode> slotById = new HashMap<>();
 
         for (JsonNode slot : slots) {
             ordinalById.put(slot.path("id").asText(), slot.path("ordinal").asInt());
+            slotById.put(slot.path("id").asText(), slot);
         }
 
         for (JsonNode slot : slots) {
@@ -92,6 +94,17 @@ class CombinedBuildPlanCampaignDocumentationTest {
                 assertTrue(dependencyOrdinal < ordinal, id + " dependency must appear earlier");
             }
         }
+
+        for (String completeM0Dependent : List.of("P-1.1", "P-1.4")) {
+            assertTrue(
+                    MAPPER.convertValue(
+                                    slotById.get(completeM0Dependent).path("dependencies"), List.class)
+                            .contains("SEC-DEFAULT-DENY"),
+                    completeM0Dependent + " must depend on the shared proxy P-0.5 security slot");
+        }
+        assertEquals(
+                "Add reload-preserved per-upstream runtime statistics",
+                slotById.get("P-1.2").path("title").asText());
     }
 
     @Test

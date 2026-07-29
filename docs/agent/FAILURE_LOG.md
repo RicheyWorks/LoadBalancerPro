@@ -6,6 +6,28 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-29T12:00:35-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / PR #496
+
+Failure type: full manifest/checkpoint review found two dependency/identifier bookkeeping defects and one broad title
+
+Failing check: manual row-by-row review of the machine manifest against both source plans, board, and failure records
+
+Observed/root cause: P-1.1 and P-1.4 were described on the board as depending on complete proxy M0, but their manifest
+arrays omitted `SEC-DEFAULT-DENY` even though that canonical slot represents proxy P-0.5. A prior failure follow-up
+mistyped the same source ID as `D0.5`. The P-1.2 title called in-memory reload-preserved stats `durable`, which could
+imply storage or restart persistence not required by the source acceptance criteria. Dependency ordering and all
+machine-count guards still passed, but the human/machine contract was not precise enough to publish unchanged.
+
+Correction/result: add `SEC-DEFAULT-DENY` to the two complete-M0 dependency arrays, correct P-0.5's identifier, and
+rename P-1.2 to reload-preserved runtime statistics.
+
+Follow-up: rerun the manifest guard, inspect its normalized projection, and require fresh checks for the corrected
+exact head.
+
+## Entry
+
 Date/time: 2026-07-29T11:58:29-07:00
 
 Branch/PR: codex/combined-build-plan-campaign-contract / PR #496
@@ -147,7 +169,7 @@ path and no repository, process, branch, PR, workflow, or external state changed
 
 Correction/result: enumerate tracked resource files first or search the resource directory with a `-g` filter.
 
-Follow-up: retain the combined D0.5/L0.1 slot as open until its full startup, default-deny, role-matrix, and actuator
+Follow-up: retain the combined P-0.5/L0.1 slot as open until its full startup, default-deny, role-matrix, and actuator
 acceptance contract is implemented and verified.
 
 ## Entry

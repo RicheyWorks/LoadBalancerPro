@@ -94,7 +94,7 @@ class AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest {
         assertEquals("17", property(pom, "java.version"));
         assertEquals("3.5.14", property(pom, "spring-boot.version"));
         assertEquals("10.1.55", property(pom, "tomcat.version"));
-        assertEquals("4.2.15.Final", property(pom, "netty.version"));
+        assertEquals("4.2.16.Final", property(pom, "netty.version"));
         assertEquals("2.21.4", property(pom, "jackson.version"));
         assertEquals("2.44.4", property(pom, "aws-sdk-v2.version"));
         assertEquals("17.0.19", property(pom, "javafx.version"));

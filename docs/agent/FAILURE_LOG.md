@@ -6,6 +6,47 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-29T10:28:34-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / closed PR #493
+
+Failure type: verified-main resume merge produced the two predicted checkpoint-file conflicts
+
+Failing check: `git merge --no-edit origin/main`
+
+Observed/root cause: PR5 and the Netty recovery branch both prepend current campaign records to
+`docs/agent/SESSION_MANAGER.md` and `docs/agent/FAILURE_LOG.md`. Git auto-merged every product, test, architecture,
+dependency, and evidence path but stopped on those two content conflicts. No source, test, artifact, workflow, branch,
+PR, remote check, secret, target, or external state was lost or weakened.
+
+Correction/result: preserve both checkpoint histories, keep the verified Netty merge/main-green evidence before the
+older PR5 history, replace the stale active-PR4 pointer with the PR5 resume sequence, and add the current resume
+checkpoint before completing the merge commit.
+
+Follow-up: prove that no conflict marker remains, inspect the merge diff against verified main, and rerun PR5 local
+verification before publishing.
+
+## Entry
+
+Date/time: 2026-07-29T10:28:34-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / closed PR #493
+
+Failure type: bounded Git-object inspection pipeline returned a nonzero exit after printing the requested prefixes
+
+Failing check: paired `git show ... | Select-Object -First 25` inspection of main and preserved PR5 session-manager heads
+
+Observed/root cause: PowerShell printed both requested prefixes but the combined command returned exit code 1,
+consistent with an upstream `git show` receiving the early pipe closure from `Select-Object`. No conclusion depended on
+the truncated prefixes; targeted `git show ... | rg` queries then established the exact checkpoint headings. No
+repository, index, worktree, process, branch, PR, workflow, artifact, or external state changed.
+
+Correction/result: use exact heading searches rather than early-closing prefix pipelines when inspecting Git blobs.
+
+Follow-up: retain this entry in the reconciliation commit and continue from the targeted heading evidence.
+
+## Entry
+
 Date/time: 2026-07-29T07:32:03-07:00
 
 Branch/PR: codex/command-ledger-restart-reconciliation / PR #493
@@ -667,6 +708,69 @@ Correction/result: locate the exact repository paths with `rg --files` and conti
 `src/main/java/com/richmond423/loadbalancerpro/lab` source tree.
 
 Follow-up: retain this entry in the PR5 checkpoint and verification commit.
+
+## Entry
+
+Date/time: 2026-07-29T08:27:33-07:00
+
+Branch/PR: codex/netty-4-2-16-baseline-remediation / PR #494
+
+Failure type: exact-head monitoring projection lost jq string quoting in PowerShell
+
+Failing check: read-only `gh run view --jq` status projection for CI run `30465679776` and CodeQL run `30465680562`
+
+Observed/root cause: PowerShell removed the jq quotes around `in_progress`, so jq interpreted the value as an undefined
+function and both read-only projections exited with `function not defined: in_progress/0`. The preceding 50-second wait
+completed, but the command returned no new run status. No repository, artifact, process, workflow, PR, branch, or remote
+state changed.
+
+Correction/result: record the tooling failure and resume exact-head monitoring with plain `--json` output or a
+PowerShell-native JSON projection that does not pass quoted jq predicates through the shell.
+
+Follow-up: publish this required failure-log checkpoint, then accept remote results only from the new exact PR head.
+
+## Entry
+
+Date/time: 2026-07-29T08:07:41-07:00
+
+Branch/PR: codex/netty-4-2-16-baseline-remediation / no PR yet
+
+Failure type: prerequisite reference search passed an invalid Windows wildcard path
+
+Failing check: ripgrep search for Netty evidence across `docs/SUPPLY*` and `docs`
+
+Observed/root cause: the valid test-source inspection and `docs` search completed, but PowerShell passed the literal
+`docs/SUPPLY*` path to ripgrep and Windows returned OS error 123. No conclusion used that invalid path. Direct inspection
+then identified the actual supply-chain evidence path as `evidence/SUPPLY_CHAIN_EVIDENCE.md`. No repository, artifact,
+process, branch, remote, or external state changed.
+
+Correction/result: search tracked paths or the exact `evidence/SUPPLY_CHAIN_EVIDENCE.md` path; keep historical
+session/failure references to `4.2.15.Final` unchanged because they describe prior checkpoints.
+
+Follow-up: run the exact two affected guard classes after the scoped version edit.
+
+## Entry
+
+Date/time: 2026-07-29T08:07:41-07:00
+
+Branch/PR: codex/netty-4-2-16-baseline-remediation / no PR yet
+
+Failure type: pre-existing seven-update Dependabot PR is not a green minimal Netty recovery
+
+Failing check: Dependabot PR #492 push CI `30170838748` and PR CI `30170840557`
+
+Observed/root cause: both runs targeted exact head `7ca232ce4a13080aa5c6e8ce0d7f8edd3d35a142` and failed at
+`Run tests`. The exact failure is
+`AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest.pomStillDeclaresAuditedPropertiesDependenciesAndPlugins`:
+expected Netty `4.2.15.Final` but resolved POM property was `4.2.16.Final`. PR #492 also changes Jackson, AWS SDK,
+JaCoCo, Surefire, Exec Maven Plugin, and Maven JAR Plugin, so adopting it would widen the blocking-scan recovery beyond
+the single affected family.
+
+Correction/result: leave PR #492 unchanged and select a clean-main Netty-only recovery branch with exact audit/guard
+updates. Do not merge a known-red PR or import its six unrelated updates.
+
+Follow-up: prove the minimal `4.2.16.Final` family through focused guards, full local verification, and blocking remote
+Trivy before any campaign slot proceeds.
 
 ## Entry
 

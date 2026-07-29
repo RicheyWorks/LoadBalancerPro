@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Load Balancer Strategy Playground — RicheyWorks/LoadBalancerPro</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c232d; --line:#2a3441;
+    --ink:#e6edf3; --dim:#8b98a5; --faint:#5b6673;
+    --teal:#3fb9b0; --amber:#e3b341; --rose:#f2777a; --violet:#a674f0; --blue:#589bf5;
+    --good:#3fb950; --warn:#e3b341; --bad:#f2777a;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;-webkit-font-smoothing:antialiased}
+  a{color:var(--blue);text-decoration:none}
+  .wrap{max-width:1240px;margin:0 auto;padding:20px 20px 60px}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 16px;margin-bottom:6px}
+  h1{font-size:19px;margin:0;font-weight:650;letter-spacing:.2px}
+  .sub{color:var(--dim);font-size:12.5px}
+  .repo{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+  .seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .seg button{background:transparent;border:0;color:var(--dim);padding:7px 11px;font-size:12.5px;font-family:var(--sans);cursor:pointer;border-right:1px solid var(--line);transition:.12s}
+  .seg button:last-child{border-right:0}
+  .seg button.on{background:var(--teal);color:#04211f;font-weight:600}
+  .seg button.cmp.on{background:var(--violet);color:#150a26}
+  .seg button:hover:not(.on){color:var(--ink);background:#232c37}
+  .ctl{display:flex;align-items:center;gap:7px;color:var(--dim);font-size:12px}
+  .ctl input[type=range]{width:120px;accent-color:var(--teal)}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:6px 11px;border-radius:7px;cursor:pointer;font-size:12.5px;font-family:var(--sans);transition:.12s}
+  .btn:hover{border-color:var(--teal);color:#fff}
+  .btn.mini{padding:3px 8px;font-size:11.5px}
+  .grid{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+  body.compare .grid{grid-template-columns:1fr}
+  body.compare #rightCard{display:none}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);margin:0 0 12px;font-weight:600}
+  .be{border:1px solid var(--line);border-radius:9px;padding:10px 11px;margin-bottom:10px;background:var(--panel2);position:relative;overflow:hidden}
+  .be.down{opacity:.55}
+  .be .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,rgba(63,185,176,.16),rgba(63,185,176,.03));transition:width .35s ease;z-index:0}
+  .be>*{position:relative;z-index:1}
+  .be-top{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+  .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 3px rgba(0,0,0,.25)}
+  .be-name{font-family:var(--mono);font-size:13px;font-weight:600}
+  .be-share{margin-left:auto;font-family:var(--mono);font-size:15px;font-weight:650}
+  .be-sub{font-family:var(--mono);font-size:11px;color:var(--dim);margin-left:6px}
+  .knobs{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+  .knob{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--faint)}
+  .knob input[type=range]{width:74px;accent-color:var(--violet)}
+  .knob b{color:var(--ink);font-family:var(--mono);font-weight:600;min-width:34px;text-align:right}
+  .knob.err input{accent-color:var(--rose)} .knob.lat input{accent-color:var(--amber)}
+  .tag{font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:5px;border:1px solid var(--line);color:var(--dim);cursor:pointer;user-select:none}
+  .tag.on{border-color:var(--rose);color:var(--rose)}
+  .tag.drain.on{border-color:var(--amber);color:var(--amber)}
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+  .m{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+  .m .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--faint)}
+  .m .v{font-family:var(--mono);font-size:20px;font-weight:650;margin-top:2px}
+  .m .v small{font-size:12px;color:var(--dim);font-weight:400}
+  canvas{width:100%;display:block;background:var(--panel2);border:1px solid var(--line);border-radius:8px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:7px;font-size:11px;color:var(--dim)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .desc{font-size:12.5px;color:var(--dim);line-height:1.55;margin:2px 0 0}
+  .desc b{color:var(--ink);font-weight:600}
+  .hashbox{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+  .hashrow{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim);margin-bottom:8px}
+  /* compare */
+  #compareWrap{display:none;margin-top:14px}
+  #compareWrap.on{display:block}
+  .cmpLegend{display:flex;gap:14px;flex-wrap:wrap;margin:0 2px 12px;font-size:11.5px;color:var(--dim)}
+  .cmpLegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .cmpGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .cmpCard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px}
+  .cmpCard.win{border-color:var(--teal);box-shadow:0 0 0 1px rgba(63,185,176,.35)}
+  .cmpCard h3{margin:0 0 4px;font-size:13.5px;font-weight:650;display:flex;align-items:center;gap:7px}
+  .cmpCard h3 .rank{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:auto}
+  .cmpBar{display:flex;height:22px;border-radius:6px;overflow:hidden;border:1px solid var(--line);margin:10px 0 9px;background:var(--panel2)}
+  .cmpBar span{transition:width .3s ease;min-width:0}
+  .cmpStats{display:flex;flex-wrap:wrap;gap:5px 12px;font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+  .cmpStats b{color:var(--ink);font-weight:600}
+  .cmpStats .hl{color:var(--amber)}
+  .cmpNote{font-size:11px;color:var(--faint);margin-top:8px;line-height:1.5}
+  .foot{margin-top:22px;color:var(--faint);font-size:11.5px;line-height:1.6}
+  .kbd{font-family:var(--mono);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:11px;color:var(--dim)}
+  .pill{font-family:var(--mono);font-size:11px;color:var(--teal)}
+  .scn{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .scn .lbl{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Load Balancer Strategy Playground</h1>
+    <span class="sub">a faithful, live model of all five routing strategies</span>
+    <span class="repo" style="margin-left:auto">RicheyWorks/LoadBalancerPro · core/*RoutingStrategy</span>
+  </header>
+  <p class="desc" id="stratDesc"></p>
+
+  <div class="bar">
+    <div class="seg" id="stratSeg"></div>
+    <div class="ctl">req/s <input type="range" id="rate" min="20" max="1200" value="320" step="20"><b class="pill" id="rateV">320</b></div>
+    <div class="ctl">speed <input type="range" id="speed" min="1" max="8" value="3" step="1"><b class="pill" id="speedV">3×</b></div>
+    <button class="btn" id="pause">⏸ Pause</button>
+    <button class="btn" id="reset">↺ Reset stats</button>
+  </div>
+
+  <div class="bar scn">
+    <span class="lbl">Scenario</span>
+    <button class="btn mini" data-scn="balanced">Balanced</button>
+    <button class="btn mini" data-scn="slow">One slow backend</button>
+    <button class="btn mini" data-scn="fail">One failing backend</button>
+    <button class="btn mini" data-scn="drain">Drain a backend</button>
+    <button class="btn mini" data-scn="spike">Latency spike</button>
+    <button class="btn mini" data-scn="hot">Hot key (hash)</button>
+    <span style="margin-left:auto"></span>
+    <button class="btn mini" id="addBe">+ Add backend</button>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Backends — <span id="beCardHint">live routing share &amp; observed telemetry</span></h2>
+      <div id="backends"></div>
+    </div>
+    <div class="card" id="rightCard">
+      <h2>Fleet metrics</h2>
+      <div class="metrics">
+        <div class="m"><div class="k">Throughput</div><div class="v" id="mThru">0<small> req/s</small></div></div>
+        <div class="m"><div class="k">In-flight</div><div class="v" id="mInflight">0</div></div>
+        <div class="m"><div class="k">p50 / p95 latency</div><div class="v" id="mLat">0<small> ms</small></div></div>
+        <div class="m"><div class="k">p99 latency</div><div class="v" id="mP99">0<small> ms</small></div></div>
+        <div class="m"><div class="k">Error rate</div><div class="v" id="mErr">0<small>%</small></div></div>
+        <div class="m"><div class="k">Fairness (Gini)</div><div class="v" id="mGini">0</div></div>
+      </div>
+      <canvas id="chart" width="560" height="150"></canvas>
+      <div class="legend">
+        <span><i style="background:var(--teal)"></i>throughput</span>
+        <span><i style="background:var(--amber)"></i>p95 latency</span>
+        <span><i style="background:var(--rose)"></i>error %</span>
+      </div>
+      <div class="hashbox" id="hashbox" style="display:none">
+        <div class="hashrow">
+          <span>Client key distribution:</span>
+          <div class="seg" id="keySeg" style="margin-left:auto">
+            <button data-key="uniform" class="on">uniform</button>
+            <button data-key="hot">hot key</button>
+          </div>
+        </div>
+        <p class="desc">Consistent hashing pins each client key to a backend via a virtual-node ring (40 vnodes/backend). Removing or draining a backend remaps only that backend's keys — the rest stay put. That's what makes it good for sticky sessions and cache affinity.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARE ALL 5 -->
+  <div id="compareWrap">
+    <div class="cmpLegend" id="cmpLegend"></div>
+    <div class="cmpGrid" id="cmpGrid"></div>
+    <p class="cmpNote">All five strategies run <b>independent live simulations against the same backend config and request rate</b>. The <span style="color:var(--teal)">highlighted</span> card is the current best by fleet p99 (lower is better). Edit the backends above and watch which strategy copes — this is the head-to-head the repo's <span class="kbd">RoutingComparisonEngine</span> does on synthetic inputs, but here on live queueing telemetry.</p>
+  </div>
+
+  <div class="foot">
+    <b style="color:var(--dim)">How this maps to the code.</b> Each strategy is reimplemented from the actual Java in
+    <span class="kbd">core/</span>: <span class="kbd">RoundRobinRoutingStrategy</span> (floorMod cursor),
+    <span class="kbd">WeightedRoundRobinRoutingStrategy</span> (smooth WRR, nginx-style),
+    <span class="kbd">WeightedLeastConnectionsRoutingStrategy</span> (in-flight ÷ weight),
+    <span class="kbd">TailLatencyPowerOfTwoStrategy</span> (sample 2, pick lower p95/p99 score),
+    <span class="kbd">ConsistentHashRing</span> (ceiling entry on a vnode ring).
+    The key difference from the shipped proxy: here the strategies see <i>live</i> in-flight counts and observed p95/p99 that rise with load —
+    exactly the real telemetry the audit found the production path never feeds them (defect D1). This is what the adaptive strategies do once that loop is closed.
+    <span style="color:var(--faint)">Keys: <span class="kbd">space</span> pause · <span class="kbd">1–5</span> switch strategy · <span class="kbd">6</span> compare all.</span>
+  </div>
+</div>
+
+<script>
+"use strict";
+// ---------- model ----------
+const STRATS = [
+  {id:"ROUND_ROBIN", name:"Round Robin", short:"RR", desc:"Cycles through healthy backends in order (<b>floorMod(cursor++, n)</b>). Ignores load and weight entirely — perfectly even <b>routing</b>, but a slow or overloaded backend still gets its full turn."},
+  {id:"WEIGHTED_ROUND_ROBIN", name:"Weighted RR", short:"WRR", desc:"Smooth weighted round-robin (nginx algorithm): each backend accrues <b>currentWeight += weight</b>, the max is chosen and has the total subtracted. Distributes in proportion to weight without bursting. <b>Weight 0 = drain.</b>"},
+  {id:"WEIGHTED_LEAST_CONNECTIONS", name:"Least Connections", short:"WLC", desc:"Routes to the backend with the fewest in-flight requests per unit weight (<b>inFlight ÷ weight</b>, lexicographic tie-break). Naturally steers around a backend that's backing up — but only if it can <i>see</i> real in-flight counts."},
+  {id:"TAIL_LATENCY_POWER_OF_TWO", name:"Tail-Latency P2C", short:"P2C", desc:"Power-of-two-choices: sample 2 backends at random, pick the one with the better tail score (<b>0.45·p95 + 0.35·p99 + 0.20·load</b>). Cheap, and provably close to optimal at avoiding tail latency — the flagship strategy."},
+  {id:"CONSISTENT_HASH", name:"Consistent Hash", short:"HASH", desc:"Hashes each client key onto a virtual-node ring and takes the next backend clockwise. Same key → same backend (sticky sessions / cache affinity). Adding or removing a backend remaps only ~1/N of keys."},
+];
+
+let backends = [];
+let nextId = 0;
+const NAMES = ["a","b","c","d","e","f","g","h"];
+const BE_COLORS = ["#3fb9b0","#e3b341","#a674f0","#589bf5","#f2777a","#3fb950","#e8905b","#8b98a5"];
+function mkBackend(over={}){
+  const i = nextId++;
+  return Object.assign({
+    id:"backend-"+NAMES[i%NAMES.length], color: BE_COLORS[i%BE_COLORS.length],
+    weight:1, baseLat:45, capacity:60, errRate:0, healthy:true, draining:false,
+    inflight:0, routed:0, done:0, errs:0, lat:[], win:[], share:0, obsP95:0, obsP99:0, obsP50:0, obsErr:0,
+  }, over);
+}
+
+function resetScenario(name){
+  nextId=0;
+  if(name==="hot"){
+    backends=[mkBackend({weight:1}),mkBackend({weight:1}),mkBackend({weight:1}),mkBackend({weight:1})];
+    setKeyMode("hot");
+  } else if(name==="slow"){
+    backends=[mkBackend({baseLat:35}),mkBackend({baseLat:230,capacity:40}),mkBackend({baseLat:40})];
+  } else if(name==="fail"){
+    backends=[mkBackend({}),mkBackend({errRate:.35}),mkBackend({})];
+  } else if(name==="drain"){
+    backends=[mkBackend({weight:3}),mkBackend({weight:1}),mkBackend({draining:true})];
+  } else if(name==="spike"){
+    backends=[mkBackend({}),mkBackend({}),mkBackend({})];
+  } else {
+    backends=[mkBackend({weight:3,baseLat:40}),mkBackend({weight:1,baseLat:55}),mkBackend({weight:1,baseLat:50})];
+  }
+  if(name!=="hot") setKeyMode("uniform");
+  resetStats();
+}
+
+function resetStats(){
+  for(const b of backends){ b.inflight=0;b.routed=0;b.done=0;b.errs=0;b.win=[];b.share=0;b.obsP95=0;b.obsP99=0;b.obsP50=0;b.obsErr=0; }
+  inflightReqs.length=0; fleetWin.length=0; chartData.length=0; carry=0;
+  stratState = freshStratState();
+  initWorlds();
+}
+
+// ---------- strategies (pure over candidate views) ----------
+let currentStrat = STRATS[0].id;
+let stratState = {};
+function freshStratState(){ return {cursor:0, cw:{}, ringKey:null, ring:null}; }
+function healthyCandidates(){ return backends.filter(b=>b.healthy && !b.draining); }
+function effWeight(b){ return b.draining?0 : (b.weight<=0?0:Math.max(0.1,b.weight)); }
+function fnv(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function buildRing(cands){
+  const pts=[]; const V=40;
+  for(const b of cands){ const w=Math.max(1,Math.round(effWeight(b))); for(let i=0;i<V*w;i++){ pts.push([fnv(b.id+"#"+i), b]); } }
+  pts.sort((a,c)=>a[0]-c[0]);
+  return pts;
+}
+function tailScore(b){
+  const p95=b.obsP95||b.baseLat, p99=b.obsP99||b.baseLat*1.4;
+  const load=b.inflight/Math.max(1,b.capacity);
+  return 0.45*(p95/300) + 0.35*(p99/450) + 0.20*load + (b.obsErr||0)*0.5;
+}
+function choose(strat, S, cands, req){
+  if(cands.length===0) return null;
+  switch(strat){
+    case "ROUND_ROBIN":{
+      const idx = ((S.cursor++ % cands.length)+cands.length)%cands.length;
+      return cands[idx];
+    }
+    case "WEIGHTED_ROUND_ROBIN":{
+      let total=0, best=null, bestW=-Infinity;
+      const active=new Set(cands.map(b=>b.id));
+      for(const k of Object.keys(S.cw)) if(!active.has(k)) delete S.cw[k];
+      for(const b of cands){ const w=effWeight(b); total+=w; S.cw[b.id]=(S.cw[b.id]||0)+w; if(S.cw[b.id]>bestW){bestW=S.cw[b.id];best=b;} }
+      if(best) S.cw[best.id]-=total;
+      return best||cands[0];
+    }
+    case "WEIGHTED_LEAST_CONNECTIONS":{
+      let best=null, bestScore=Infinity;
+      for(const b of cands){ const w=effWeight(b)||0.1; const sc=(b.inflight+1)/w; if(sc<bestScore||(sc===bestScore&&best&&b.id<best.id)){bestScore=sc;best=b;} }
+      return best;
+    }
+    case "TAIL_LATENCY_POWER_OF_TWO":{
+      if(cands.length===1) return cands[0];
+      let i=Math.floor(Math.random()*cands.length), j=Math.floor(Math.random()*(cands.length-1)); if(j>=i)j++;
+      const a=cands[i], b=cands[j];
+      return tailScore(a)<=tailScore(b)?a:b;
+    }
+    case "CONSISTENT_HASH":{
+      const rk = cands.map(b=>b.id+":"+Math.round(effWeight(b))).join(",");
+      if(S.ringKey!==rk){ S.ring=buildRing(cands); S.ringKey=rk; }
+      const ring=S.ring; if(!ring.length) return cands[0];
+      const h=fnv("k"+req.key);
+      let lo=0,hi=ring.length-1,ans=0;
+      if(h>ring[hi][0]) ans=0; else { while(lo<=hi){const m=(lo+hi)>>1; if(ring[m][0]>=h){ans=m;hi=m-1;}else lo=m+1;} }
+      return ring[ans][1];
+    }
+  }
+  return cands[0];
+}
+
+// ---------- shared sim helpers ----------
+const inflightReqs=[]; const fleetWin=[];
+let simTime=0, carry=0, paused=false;
+let reqRate=320, speed=3;
+let keyMode="uniform";
+let compareMode=false;
+function pctl(arr,p){ if(!arr.length)return 0; const s=[...arr].sort((a,b)=>a-b); return s[Math.min(s.length-1,Math.floor(p*s.length))]; }
+function pickKey(){ if(keyMode==="hot"){ return Math.random()<0.6 ? 1 : (2+Math.floor(Math.random()*60)); } return 1+Math.floor(Math.random()*80); }
+function gini(x){ const a=x.filter(v=>v>0); if(a.length<2)return 0; a.sort((p,q)=>p-q); let cum=0,sum=0; for(let i=0;i<a.length;i++){cum+=(i+1)*a[i];sum+=a[i];} return sum? (2*cum)/(a.length*sum) - (a.length+1)/a.length : 0; }
+
+// ---------- single-strategy sim ----------
+function step(dtMs){
+  simTime+=dtMs;
+  for(let i=inflightReqs.length-1;i>=0;i--){
+    if(inflightReqs[i].completeAt<=simTime){
+      const r=inflightReqs[i]; const b=r.b;
+      b.inflight=Math.max(0,b.inflight-1); b.done++; if(r.err) b.errs++;
+      b.win.push(r.lat); if(b.win.length>60)b.win.shift();
+      fleetWin.push(r.lat); if(fleetWin.length>400)fleetWin.shift();
+      inflightReqs.splice(i,1);
+    }
+  }
+  carry += reqRate*dtMs/1000; let n=Math.floor(carry); carry-=n;
+  while(n-->0){
+    const req={key:pickKey()};
+    const b=choose(currentStrat, stratState, healthyCandidates(), req);
+    if(!b) continue;
+    b.routed++; b.inflight++;
+    const congestion=1+ b.inflight/Math.max(6,b.capacity);
+    let lat=b.baseLat*congestion*(0.75+Math.random()*0.5); if(Math.random()<0.05) lat*=2.4;
+    inflightReqs.push({b, completeAt:simTime+lat, lat, err:Math.random()<b.errRate});
+  }
+  for(const b of backends){ b.obsP50=pctl(b.win,0.5); b.obsP95=pctl(b.win,0.95); b.obsP99=pctl(b.win,0.99); b.obsErr=b.done?b.errs/b.done:0; }
+}
+
+// ---------- compare: 5 parallel worlds ----------
+let worlds=[];
+function initWorlds(){ worlds = STRATS.map(s=>({strat:s.id, name:s.name, inflight:[], fleetWin:[], S:freshStratState(), live:new Map(), simTime:0, carry:0, _el:null})); cmpBuilt=false; }
+function worldLive(w,id){ let l=w.live.get(id); if(!l){l={inflight:0,routed:0,done:0,errs:0,win:[]}; w.live.set(id,l);} return l; }
+function stepWorld(w,dt){
+  w.simTime+=dt;
+  for(let i=w.inflight.length-1;i>=0;i--){
+    if(w.inflight[i].completeAt<=w.simTime){
+      const r=w.inflight[i]; const l=worldLive(w,r.id);
+      l.inflight=Math.max(0,l.inflight-1); l.done++; if(r.err)l.errs++;
+      l.win.push(r.lat); if(l.win.length>60)l.win.shift();
+      w.fleetWin.push(r.lat); if(w.fleetWin.length>400)w.fleetWin.shift();
+      w.inflight.splice(i,1);
+    }
+  }
+  w.carry+=reqRate*dt/1000; let n=Math.floor(w.carry); w.carry-=n;
+  while(n-->0){
+    const cands=[];
+    for(const b of backends){ if(!b.healthy||b.draining) continue; const l=worldLive(w,b.id);
+      cands.push({id:b.id,weight:b.weight,draining:false,capacity:b.capacity,baseLat:b.baseLat,inflight:l.inflight,obsP95:pctl(l.win,0.95),obsP99:pctl(l.win,0.99),obsErr:l.done?l.errs/l.done:0}); }
+    if(!cands.length) continue;
+    const chosen=choose(w.strat,w.S,cands,{key:pickKey()});
+    if(!chosen) continue;
+    const b=backends.find(x=>x.id===chosen.id); const l=worldLive(w,b.id);
+    l.routed++; l.inflight++;
+    const congestion=1+l.inflight/Math.max(6,b.capacity);
+    let lat=b.baseLat*congestion*(0.75+Math.random()*0.5); if(Math.random()<0.05)lat*=2.4;
+    w.inflight.push({id:b.id,completeAt:w.simTime+lat,lat,err:Math.random()<b.errRate});
+  }
+}
+
+// ---------- rendering: single ----------
+const beRoot=document.getElementById("backends");
+const chartData=[]; let liveThru=0;
+function render(){
+  const totalRouted=backends.reduce((s,b)=>s+b.routed,0)||1;
+  for(const b of backends) b.share=b.routed/totalRouted;
+  if(beRoot.childElementCount!==backends.length) rebuildRows();
+  for(const b of backends){
+    const el=b._el; if(!el)continue;
+    el.classList.toggle("down", !b.healthy);
+    el.querySelector(".fill").style.width=(b.share*100).toFixed(1)+"%";
+    el.querySelector(".dot").style.background = !b.healthy?"var(--faint)": b.draining?"var(--amber)": b.obsErr>0.08?"var(--bad)": b.obsP95>b.baseLat*2.5?"var(--warn)":"var(--good)";
+    const sh=el.querySelector(".be-share"); sh.textContent=(b.share*100).toFixed(0)+"%"; sh.style.color=b.color;
+    el.querySelector(".be-sub").textContent=`${b.inflight} in-flight · p95 ${Math.round(b.obsP95)}ms · err ${(b.obsErr*100).toFixed(0)}%`;
+  }
+  const inflightTotal=inflightReqs.length;
+  document.getElementById("mThru").innerHTML=Math.round(liveThru)+'<small> req/s</small>';
+  document.getElementById("mInflight").textContent=inflightTotal;
+  document.getElementById("mLat").innerHTML=`${Math.round(pctl(fleetWin,0.5))} / ${Math.round(pctl(fleetWin,0.95))}<small> ms</small>`;
+  document.getElementById("mP99").innerHTML=Math.round(pctl(fleetWin,0.99))+'<small> ms</small>';
+  const totDone=backends.reduce((s,b)=>s+b.done,0), totErr=backends.reduce((s,b)=>s+b.errs,0);
+  document.getElementById("mErr").innerHTML=(totDone?100*totErr/totDone:0).toFixed(1)+'<small>%</small>';
+  document.getElementById("mGini").textContent=gini(backends.map(b=>b.share)).toFixed(2);
+  drawChart();
+}
+function rebuildRows(){
+  beRoot.innerHTML="";
+  for(const b of backends){
+    const el=document.createElement("div"); el.className="be"; b._el=el;
+    el.innerHTML=`
+      <div class="fill"></div>
+      <div class="be-top"><span class="dot"></span><span class="be-name" style="color:${b.color}">${b.id}</span><span class="be-sub"></span><span class="be-share">0%</span></div>
+      <div class="knobs">
+        <label class="knob">w<input type="range" min="0" max="5" step="1" value="${b.weight}" data-k="weight"><b>${b.weight}</b></label>
+        <label class="knob lat">lat<input type="range" min="20" max="300" step="5" value="${b.baseLat}" data-k="baseLat"><b>${b.baseLat}</b></label>
+        <label class="knob err">err<input type="range" min="0" max="60" step="2" value="${Math.round(b.errRate*100)}" data-k="errRate"><b>${Math.round(b.errRate*100)}%</b></label>
+        <span class="tag drain ${b.draining?'on':''}" data-t="drain">drain</span>
+        <span class="tag ${!b.healthy?'on':''}" data-t="health">${b.healthy?'kill':'down'}</span>
+        <span class="tag" data-t="remove" style="border-color:var(--line)">✕</span>
+      </div>`;
+    el.querySelectorAll("input[type=range]").forEach(inp=>{
+      inp.addEventListener("input",()=>{ const k=inp.dataset.k; let v=parseFloat(inp.value); if(k==="errRate")v=v/100; b[k]=v;
+        inp.parentElement.querySelector("b").textContent=k==="errRate"?Math.round(v*100)+"%":inp.value; });
+    });
+    el.querySelectorAll(".tag").forEach(t=>t.addEventListener("click",()=>{
+      const ty=t.dataset.t;
+      if(ty==="drain"){ b.draining=!b.draining; t.classList.toggle("on",b.draining); }
+      else if(ty==="health"){ b.healthy=!b.healthy; t.classList.toggle("on",!b.healthy); t.textContent=b.healthy?'kill':'down'; }
+      else if(ty==="remove"){ if(backends.length>2){ backends=backends.filter(x=>x!==b); rebuildRows(); } }
+    }));
+    beRoot.appendChild(el);
+  }
+}
+const cv=document.getElementById("chart"), cx=cv.getContext("2d");
+function drawChart(){
+  const W=cv.width,H=cv.height; cx.clearRect(0,0,W,H);
+  cx.strokeStyle="#222b36"; cx.lineWidth=1;
+  for(let i=1;i<4;i++){const y=H*i/4;cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke();}
+  if(chartData.length<2)return;
+  const n=chartData.length, off=Math.max(0,n-120), dx=W/119;
+  for(const s of [{key:"thru",col:"#3fb9b0",max:1300},{key:"p95",col:"#e3b341",max:400},{key:"err",col:"#f2777a",max:40}]){
+    cx.strokeStyle=s.col; cx.lineWidth=1.6; cx.beginPath();
+    for(let i=off;i<n;i++){ const v=chartData[i][s.key]; const x=(i-off)*dx; const y=H-Math.min(1,v/s.max)*H*0.92-3; if(i===off)cx.moveTo(x,y);else cx.lineTo(x,y); }
+    cx.stroke();
+  }
+}
+
+// ---------- rendering: compare ----------
+let cmpBuilt=false, lastCmp=0;
+function buildCmp(){
+  const leg=document.getElementById("cmpLegend"); leg.innerHTML="";
+  for(const b of backends){ const s=document.createElement("span"); s.innerHTML=`<i style="background:${b.color}"></i>${b.id}`; leg.appendChild(s); }
+  const g=document.getElementById("cmpGrid"); g.innerHTML="";
+  for(const w of worlds){
+    const c=document.createElement("div"); c.className="cmpCard"; w._el=c;
+    c.innerHTML=`<h3>${w.name}<span class="rank"></span></h3><div class="cmpBar"></div><div class="cmpStats"></div>`;
+    g.appendChild(c);
+  }
+  cmpBuilt=true;
+}
+function renderCompare(){
+  if(!cmpBuilt || document.getElementById("cmpGrid").childElementCount!==worlds.length || document.getElementById("cmpLegend").childElementCount!==backends.length) buildCmp();
+  // compute p99 ranking
+  const scored=worlds.map(w=>({w, p99:pctl(w.fleetWin,0.99)||9999}));
+  const ranked=[...scored].sort((a,b)=>a.p99-b.p99);
+  const bestW = ranked[0] && ranked[0].p99<9999 ? ranked[0].w : null;
+  for(const w of worlds){
+    const rows=backends.map(b=>{const l=worldLive(w,b.id); return {b, routed:l.routed};});
+    const tot=rows.reduce((s,r)=>s+r.routed,0)||1;
+    const bar=w._el.querySelector(".cmpBar");
+    // reuse segments if count matches
+    if(bar.childElementCount!==backends.length){ bar.innerHTML=backends.map(b=>`<span style="background:${b.color}"></span>`).join(""); }
+    rows.forEach((r,i)=>{ const seg=bar.children[i]; if(seg){ seg.style.width=(r.routed/tot*100).toFixed(2)+"%"; seg.title=`${r.b.id}: ${(r.routed/tot*100).toFixed(0)}%`; } });
+    const p50=pctl(w.fleetWin,0.5),p95=pctl(w.fleetWin,0.95),p99=pctl(w.fleetWin,0.99);
+    const done=rows.reduce((s,r)=>{const l=worldLive(w,r.b.id);return s+l.done;},0);
+    const errs=backends.reduce((s,b)=>{const l=worldLive(w,b.id);return s+l.errs;},0);
+    const gi=gini(rows.map(r=>r.routed));
+    w._el.querySelector(".cmpStats").innerHTML=
+      `<span>p95 <b class="hl">${Math.round(p95)}</b>ms</span><span>p99 <b class="hl">${Math.round(p99)}</b>ms</span>`+
+      `<span>err <b>${(done?100*errs/done:0).toFixed(1)}</b>%</span><span>gini <b>${gi.toFixed(2)}</b></span>`;
+    w._el.querySelector(".rank").textContent = (p99>0? "p99 "+Math.round(p99)+"ms":"");
+    w._el.classList.toggle("win", bestW===w);
+  }
+}
+
+// ---------- loop ----------
+let last=performance.now(), liveThruClock=0, thruCount=0;
+function frame(now){
+  const real=Math.min(64, now-last); last=now;
+  if(!paused){
+    const dt=real*speed;
+    if(compareMode){
+      let rem=dt; while(rem>0){ const s=Math.min(20,rem); for(const w of worlds) stepWorld(w,s); rem-=s; }
+    } else {
+      const before=backends.reduce((s,b)=>s+b.done,0);
+      let rem=dt; while(rem>0){ const s=Math.min(20,rem); step(s); rem-=s; }
+      const after=backends.reduce((s,b)=>s+b.done,0);
+      thruCount+=after-before; liveThruClock+=dt;
+      if(liveThruClock>=250){ liveThru=thruCount/(liveThruClock/1000); liveThruClock=0; thruCount=0;
+        const d=backends.reduce((s,b)=>s+b.done,0),e=backends.reduce((s,b)=>s+b.errs,0);
+        chartData.push({thru:liveThru,p95:pctl(fleetWin,0.95),err:d?100*e/d:0}); if(chartData.length>240)chartData.shift();
+      }
+    }
+  }
+  if(compareMode){ if(now-lastCmp>90){ renderCompare(); lastCmp=now; } }
+  else render();
+  requestAnimationFrame(frame);
+}
+
+// ---------- UI ----------
+const seg=document.getElementById("stratSeg");
+STRATS.forEach((s,i)=>{ const btn=document.createElement("button"); btn.textContent=(i+1)+"  "+s.name; btn.dataset.id=s.id; if(i===0)btn.classList.add("on");
+  btn.addEventListener("click",()=>setStrat(s.id)); seg.appendChild(btn); });
+const cmpBtn=document.createElement("button"); cmpBtn.textContent="⊞ Compare all"; cmpBtn.className="cmp"; cmpBtn.id="cmpBtn";
+cmpBtn.addEventListener("click",()=>setCompare(!compareMode)); seg.appendChild(cmpBtn);
+
+function setStrat(id){
+  if(compareMode) setCompare(false);
+  currentStrat=id; stratState=freshStratState();
+  [...seg.children].forEach(b=>b.classList.toggle("on",b.dataset.id===id));
+  cmpBtn.classList.remove("on");
+  document.getElementById("stratDesc").innerHTML=STRATS.find(s=>s.id===id).desc;
+  document.getElementById("hashbox").style.display = id==="CONSISTENT_HASH"?"block":"none";
+}
+function setCompare(on){
+  compareMode=on;
+  document.body.classList.toggle("compare",on);
+  document.getElementById("compareWrap").classList.toggle("on",on);
+  cmpBtn.classList.toggle("on",on);
+  document.getElementById("beCardHint").textContent = on? "edit config — all 5 strategies race below" : "live routing share & observed telemetry";
+  if(on){ [...seg.children].forEach(b=>b.classList.toggle("on",b===cmpBtn)); document.getElementById("stratDesc").innerHTML="<b>Compare mode:</b> five independent live simulations, same backends, same load. Lower fleet p99 wins — edit the backends and watch which strategy holds up."; document.getElementById("hashbox").style.display="none"; initWorlds(); }
+  else setStrat(currentStrat);
+}
+document.getElementById("rate").addEventListener("input",e=>{reqRate=+e.target.value;document.getElementById("rateV").textContent=reqRate;});
+document.getElementById("speed").addEventListener("input",e=>{speed=+e.target.value;document.getElementById("speedV").textContent=speed+"×";});
+document.getElementById("pause").addEventListener("click",e=>{paused=!paused;e.target.textContent=paused?"▶ Resume":"⏸ Pause";});
+document.getElementById("reset").addEventListener("click",resetStats);
+document.getElementById("addBe").addEventListener("click",()=>{ if(backends.length<8){backends.push(mkBackend());rebuildRows();cmpBuilt=false;} });
+document.querySelectorAll("[data-scn]").forEach(b=>b.addEventListener("click",()=>{resetScenario(b.dataset.scn);rebuildRows();cmpBuilt=false;}));
+document.querySelectorAll("#keySeg button").forEach(b=>b.addEventListener("click",()=>setKeyMode(b.dataset.key)));
+function setKeyMode(m){ keyMode=m; document.querySelectorAll("#keySeg button").forEach(b=>b.classList.toggle("on",b.dataset.key===m)); }
+window.addEventListener("keydown",e=>{
+  if(e.key===" "){e.preventDefault();document.getElementById("pause").click();return;}
+  if(e.key==="6"){ setCompare(!compareMode); return; }
+  const n=parseInt(e.key); if(n>=1&&n<=STRATS.length) setStrat(STRATS[n-1].id);
+});
+
+// boot
+resetScenario("balanced"); rebuildRows(); initWorlds(); setStrat(STRATS[0].id);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

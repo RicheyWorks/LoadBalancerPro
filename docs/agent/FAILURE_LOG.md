@@ -6,6 +6,196 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-29T12:00:35-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / PR #496
+
+Failure type: full manifest/checkpoint review found two dependency/identifier bookkeeping defects and one broad title
+
+Failing check: manual row-by-row review of the machine manifest against both source plans, board, and failure records
+
+Observed/root cause: P-1.1 and P-1.4 were described on the board as depending on complete proxy M0, but their manifest
+arrays omitted `SEC-DEFAULT-DENY` even though that canonical slot represents proxy P-0.5. A prior failure follow-up
+mistyped the same source ID as `D0.5`. The P-1.2 title called in-memory reload-preserved stats `durable`, which could
+imply storage or restart persistence not required by the source acceptance criteria. Dependency ordering and all
+machine-count guards still passed, but the human/machine contract was not precise enough to publish unchanged.
+
+Correction/result: add `SEC-DEFAULT-DENY` to the two complete-M0 dependency arrays, correct P-0.5's identifier, and
+rename P-1.2 to reload-preserved runtime statistics.
+
+Follow-up: rerun the manifest guard, inspect its normalized projection, and require fresh checks for the corrected
+exact head.
+
+## Entry
+
+Date/time: 2026-07-29T11:58:29-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / PR #496
+
+Failure type: full-diff self-review found ambiguous README campaign-scope referent
+
+Failing check: manual complete-diff claim and scope review of final published head
+`1f0b73b2695a9c5d7aec3be7fd6d1a81594eed48`
+
+Observed/root cause: the new active implementation-campaign paragraph was inserted immediately before two existing
+paragraphs beginning `The campaign does not...`. Those older paragraphs describe the preceding Evidence Audit
+docs/test-only campaign, but their now-nearest referent was the newly inserted implementation campaign. Read literally,
+README denied production-code/build/runtime changes that the user's active contract authorizes when a specific slot
+requires them. No implementation, runtime, dependency, workflow, process, external target, or remote policy changed.
+
+Correction/result: qualify both existing paragraphs as `The evidence audit campaign` so its historical docs/test-only
+boundary remains intact and the active implementation campaign remains governed by its separate bounded contract.
+
+Follow-up: rerun the README framing/campaign guards, commit and push the correction, and accept only fresh required
+checks matched to the new exact head.
+
+## Entry
+
+Date/time: 2026-07-29T11:43:55-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: full clean package found active README product-framing guard regression
+
+Failing check: current-head `mvn -B clean package`
+
+Observed/root cause: 3,413 tests ran across 476 Surefire reports with one failure, zero errors, and zero skips.
+`EnterpriseLabCockpitFramingDocumentationTest.activeFramingFilesAvoidCasualDemoIdentityAndProductionProofOverclaims`
+rejected README line 54 because the new active-campaign navigation called the imported simulator a `strategy playground`
+without negating that term. The campaign meant the exact imported filename/artifact, not a change to the Enterprise Lab
+Cockpit product identity. The package phase correctly stopped after the failed test, and zero workspace Java/Maven
+processes remained.
+
+Correction/result: describe the imported HTML as an interactive strategy-simulator source artifact in the active
+README framing while retaining the exact file and commit provenance in the campaign contract.
+
+Follow-up: rerun the focused framing and combined-campaign guards, then rerun the full clean package from a clean
+target before accepting the local gate.
+
+## Entry
+
+Date/time: 2026-07-29T11:37:56-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: full-package invocation used an accidentally tiny shell-tool timeout and left the Maven child running
+
+Failing check: first current-head `mvn -B clean package` invocation after commit `bce1e621`
+
+Observed/root cause: the shell wrapper timed out after approximately five seconds because the call supplied
+`timeout_ms=1000`; this is far below the repository build duration and provides no build verdict. The wrapper left one
+Java Maven launcher, PID 42740, running the exact workspace `-B clean package` command.
+
+Correction/result: verified PID 42740's complete command line and workspace, stopped that exact orphan process, and
+confirmed zero workspace Java/Maven processes remain. No source, index, branch, PR, workflow, external target, or
+remote state changed; partial `target/` output is disposable build output.
+
+Follow-up: rerun `mvn -B clean package` with the intended bounded build timeout and accept only its complete result.
+
+## Entry
+
+Date/time: 2026-07-29T11:34:27-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: focused combined-campaign documentation guard found two exact-wording mismatches
+
+Failing check: `mvn -B -Dtest=CombinedBuildPlanCampaignDocumentationTest test`
+
+Observed/root cause: six tests ran; four passed and two failed. The contract used `complete-diff self-review` where the
+guard requires the goal's canonical `full-diff self-review` phrase. The live-production-target prohibition was
+semantically grouped into a bullet beginning with `no secrets`, but did not contain the standalone guarded phrase
+`no live production target`. The 49-slot count, 50 source-item mapping, shared-slot overlap, dependency order,
+verification profiles, imported artifacts, and navigation checks passed.
+
+Correction/result: use the two canonical standalone boundary phrases in the contract without changing their meaning.
+
+Follow-up: rerun the same six-test focused guard before any broader selector.
+
+## Entry
+
+Date/time: 2026-07-29T11:26:44-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: campaign-document heading probe included two template paths that do not exist
+
+Failing check: `rg` heading query over the campaign architecture/discipline/protocol plus
+`CAMPAIGN_BOARD_TEMPLATE.md` and `CAMPAIGN_CONTRACT_TEMPLATE.md`
+
+Observed/root cause: the campaign index was read completely and headings from the three existing files were returned,
+but ripgrep exited 1 because the two guessed template filenames are not repository files. No campaign conclusion
+depends on those absent templates, and no source, index, artifact, process, branch, PR, workflow, or external state
+changed.
+
+Correction/result: use the campaign index's authoritative filenames and model this campaign-specific contract and
+board directly on the existing architecture, discipline, verification, merge-gate, and closeout documents.
+
+Follow-up: validate every referenced campaign-control path in the new documentation test.
+
+## Entry
+
+Date/time: 2026-07-29T11:24:37-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: README navigation probe exceeded the available tool-output context
+
+Failing check: broad README heading/link search piped through an output prefix selector
+
+Observed/root cause: the query matched substantially more README text than needed and its returned output was
+truncated before it could be reviewed as a complete result. No README conclusion is based on that incomplete output,
+and no repository, index, artifact, process, branch, PR, workflow, or external state changed.
+
+Correction/result: query exact Markdown headings first, then read only the bounded navigation region selected from
+those headings.
+
+Follow-up: add campaign navigation only after the bounded README trust-contract region has been reviewed.
+
+## Entry
+
+Date/time: 2026-07-29T11:21:05-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: security current-state probe passed a literal Windows wildcard resource path to ripgrep
+
+Failing check: exact security-source/test probe ending with `src/main/resources/application*.properties`
+
+Observed/root cause: both security source files and the relevant test matches were printed completely, proving that
+`ProdApiKeyFilter` still carries the prod/cloud-sandbox profile gate and non-OAuth security still permits all, but
+ripgrep returned Windows OS error 123 for the literal wildcard path. No configuration conclusion depends on the invalid
+path and no repository, process, branch, PR, workflow, or external state changed.
+
+Correction/result: enumerate tracked resource files first or search the resource directory with a `-g` filter.
+
+Follow-up: retain the combined P-0.5/L0.1 slot as open until its full startup, default-deny, role-matrix, and actuator
+acceptance contract is implemented and verified.
+
+## Entry
+
+Date/time: 2026-07-29T11:20:17-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: first combined roadmap/current-state search used an early-closing output limiter
+
+Failing check: broad `rg` search across both imported audits, security sources, resources, and API tests piped through
+`Select-Object -First 240`
+
+Observed/root cause: the command printed the requested 240-line prefix, including evidence that current
+`ProdApiKeyFilter` uses an auth-mode condition rather than the imported audit's profile-gated description, but returned
+exit 1 after `Select-Object` closed the still-producing ripgrep pipe. The prefix is not treated as a complete repository
+audit. No source, index, artifact, process, branch, PR, workflow, or external state changed.
+
+Correction/result: use bounded exact-path or exact-symbol probes and capture complete result sets before formatting.
+Treat every imported defect statement as a hypothesis requiring current-main evidence rather than as current truth.
+
+Follow-up: classify each combined campaign slot conservatively from exact current-main evidence and its full acceptance
+criteria.
+
+## Entry
+
 Date/time: 2026-07-29T10:54:41-07:00
 
 Branch/PR: codex/command-ledger-restart-reconciliation / closed PR #493

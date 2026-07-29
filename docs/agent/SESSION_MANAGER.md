@@ -6,6 +6,89 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build-Plan Campaign Contract Checkpoint
+
+Timestamp: 2026-07-29T11:30:55-07:00
+
+Current prerequisite: `CONTRACT-00` - import Claude's July 21 audit/build layout and establish the combined campaign.
+
+Current branch: `codex/combined-build-plan-campaign-contract`.
+
+PR: [#496](https://github.com/RicheyWorks/LoadBalancerPro/pull/496), open and mergeable. The initial verified published
+head was `37cffd7f91c75e972f771f78a0425aa77b529d6d`; this factual PR-created checkpoint will advance it once.
+
+Verified starting main: `0f1e97b9ce4acceaad02877bf1fc2185997aba9d`. Its exact-merge main CI run
+`30478610493` and CodeQL run `30478610714` passed after PR #493.
+
+Source import checkpoint: `2f39d344d425fcc3d56546f64769d8422c8856c9`, a cherry-pick of only source commit
+`74b1f6758304bc5a3a85ff4888039e7309324ddf` onto verified main. The source commit's parent is
+`e800ba06875d0897f8459ad14a5d5cf60dc34568`. Later unrelated README, CSRBT, badge, and ADR commits from the source
+branch were not imported.
+
+Imported source paths: `docs/AUDIT_2026-07-21.md`, `docs/AUDIT_LAB_SHADOW_2026-07-21.md`,
+`docs/BUILD_PLAN_DEPLOYABLE.md`, `docs/BUILD_PLAN_LAB_SHADOW.md`, and `docs/strategy-playground.html`.
+
+Campaign classification: 27 deployable-plan items plus 23 lab-plan items produce 50 source items. P-0.5 and L-0.1
+are one explicit shared security fix, producing 49 unique implementation slots. The four unnamed deployable Milestone
+4 bullets receive campaign bookkeeping labels P-4.1 through P-4.4. All 49 slots start `OPEN`; neither the imported
+audit assertions nor partial adjacent changes count as acceptance evidence.
+
+Current edit scope: add the combined campaign contract, board, machine-checked slot manifest, documentation guard,
+bounded README/index navigation, and campaign checkpoint/failure records. This prerequisite is docs/test-only and is
+not an implementation slot.
+
+Current-state evidence: `ProdApiKeyFilter` remains profile-gated while the non-OAuth security chain permits requests
+generally, so combined slot `SEC-DEFAULT-DENY` is open. Both command ledgers retain 256-byte write chunks and
+truncated-tail classification, so PR #493's restart reconciliation does not close L-0.6.
+
+Safety: implementation slots are user-authorized to change their required product/test/build/deployment surfaces, but
+no slot authorizes secrets, public/external production targets, live tenant traffic, billable cloud resources,
+production-looking defaults, irreversible destructive operations, required-check weakening, or unsupported claims.
+Cloud acceptance remains mocked with `liveMode=false`; traffic, deployment, TLS, DNS, benchmark, and soak evidence
+remains bounded to deterministic local fixtures unless authority is separately expanded.
+
+Verification:
+
+- focused `CombinedBuildPlanCampaignDocumentationTest`: six tests passed after two exact boundary-wording failures were
+  logged and corrected;
+- adjacent campaign/index/README/goal-protocol/quickstart selector: 32 tests passed, zero failures/errors/skips;
+- focused combined-campaign plus protected cockpit-framing selector: 12 tests passed after the full package found and
+  the failure log recorded one casual README identity phrase;
+- `mvn -B clean package`: 3,413 tests across 476 Surefire reports, zero failures/errors/skips; executable packaging
+  passed;
+- `mvn -q "-DskipTests" package`: passed independently;
+- `mvn -B verify`: 3,413 tests across 476 reports, zero failures/errors/skips; JaCoCo 83.09% instruction, 66.28%
+  branch, and 82.37% line coverage;
+- packaged `scripts/smoke/enterprise-lab-workflow.ps1 -Package`: passed in shadow mode with ten fixed scenarios and
+  target-only evidence;
+- final verified executable JAR before this factual checkpoint update: 95,533,427 bytes, SHA-256
+  `0E3729A1CE36DF9083B127345A5BCAD389F01A6691097FF8DCA275D732E4B905`;
+- all five imported artifacts match their blobs in source commit
+  `74b1f6758304bc5a3a85ff4888039e7309324ddf`;
+- the imported playground has no URL, fetch, XMLHttpRequest, WebSocket, browser-storage, cookie, or eval reference; its
+  `innerHTML` uses only fixed strategy/backend definitions and numeric local-simulation output;
+- full PR scope is 13 paths and 2,368 added lines before final factual checkpoint records; no production source,
+  runtime resources, POM/dependency, workflow, Docker/Compose, or script path changed;
+- complete-diff self-review covered all five source artifacts, all 49 manifest rows, board/contract/navigation, the
+  read-only guard, and checkpoint history. It found one ambiguous README referent between the historical docs/test-only
+  evidence-audit campaign and the active implementation campaign; the failure log records it, both sentences now name
+  the evidence audit explicitly, and the resulting 16-test campaign/README/framing selector is green. Row-by-row
+  manifest review then added the omitted shared P-0.5 dependency to both complete-proxy-M0 consumers, corrected one
+  P-0.5 identifier typo, narrowed P-1.2 from `durable` to `reload-preserved`, and extended the green guard to pin those
+  corrections;
+- zero workspace Java/Maven processes remained after verification.
+
+Blocker: none.
+
+Remote checks: initial PR/push CI, PR dependency review, and CodeQL started against the pre-checkpoint head. No result
+will be accepted until this checkpoint is committed and pushed and every required check is matched to that final head.
+
+Next action: commit and push this PR-created checkpoint, rerun exact-head focused/diff hygiene, require all applicable
+remote checks, perform the unchanged-head full-diff self-review, merge, verify exact-main CI/CodeQL, then start only
+`SEC-DEFAULT-DENY`.
+
+Decision: continue `CONTRACT-00`; no implementation slot is active.
+
 ## Supervisor Command Ledger PR5 Reopen Checkpoint
 
 Timestamp: 2026-07-29T10:57:28-07:00

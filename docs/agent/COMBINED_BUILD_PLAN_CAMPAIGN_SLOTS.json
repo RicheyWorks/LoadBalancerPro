@@ -69,11 +69,11 @@
       "sourceIds": ["P-0.2"],
       "track": "proxy",
       "title": "Replace health deletion with drain, eviction thresholds, and re-admission",
-      "status": "LOCAL_GREEN",
+      "status": "PR_OPEN",
       "dependencies": [],
       "riskClass": "RELIABILITY",
       "verificationProfile": "java-full",
-      "currentState": "Local acceptance is green on codex/p-0-2-health-drain: health checks retain registry identity, one bad cycle degrades without exclusion, three consecutive bad cycles evict from rotation, two consecutive good cycles re-admit, manual setHealthy(false) drains without deletion, and only explicit removal deletes. Publication and exact-head remote gates remain pending."
+      "currentState": "PR #499 is open from codex/p-0-2-health-drain. Local acceptance is green: health checks retain registry identity, one bad cycle degrades without exclusion, three consecutive bad cycles evict from rotation, two consecutive good cycles re-admit, manual setHealthy(false) drains without deletion, and only explicit removal deletes. Exact-head remote gates remain pending."
     },
     {
       "ordinal": 4,

@@ -6,6 +6,45 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 3 PR-Open Checkpoint
+
+Timestamp: 2026-07-29T16:14:52-07:00
+
+Current slot: `P-0.2`, replace health deletion with drain, eviction thresholds, and re-admission.
+
+Current branch: `codex/p-0-2-health-drain`.
+
+Slot status: `PR_OPEN`.
+
+PR: [#499](https://github.com/RicheyWorks/LoadBalancerPro/pull/499), open, non-draft, based on `main`, and mergeable.
+
+Published local-green head: `c5d60b17935b0e8023c59778e69bb297d9eb758e`. This factual PR-open checkpoint
+advances the PR head once, so results for the published head do not satisfy the final exact-head merge gate.
+
+Local acceptance remains the 3,430-test, zero-failure/error/skip clean repository gate; both required package modes;
+skip-tests verify; lifecycle/parser/document selectors; JaCoCo, CycloneDX, executable-resource, version/LASE,
+Enterprise Lab package, and literal-loopback packaged runtime smokes; and complete diff/scope scans recorded below.
+
+Remote state at PR creation:
+
+- push CI run `30498879899` is in progress;
+- PR CI run `30498896150` is in progress;
+- CodeQL run `30498896170` is in progress;
+- the PR-event dependency review is queued/in progress, while the push-event duplicate skipped as designed.
+
+No pending result is green. Exact-head remote CI, CodeQL, dependency review, SBOM, Docker build/runtime, container
+evidence, and blocking Trivy remain mandatory before merge.
+
+Scope and safety remain unchanged: planned core health lifecycle plus strict JSON compatibility, bounded tests, and
+campaign records only; no routing-strategy redesign, proxy/API/Maven/CI/Docker/Compose behavior, secret,
+external/public target, live cloud/tenant action, or readiness claim.
+
+Blocker: none.
+
+Next action: publish this checkpoint, then require every gate to complete successfully for the new exact PR head.
+
+Decision: continue only `P-0.2`; no later slot is active.
+
 ## Combined Build Plan Slot 3 Local-Green Checkpoint
 
 Timestamp: 2026-07-29T16:09:28-07:00

@@ -17,8 +17,9 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Latest completed slot: `P-0.1` in merged [PR #498](https://github.com/RicheyWorks/LoadBalancerPro/pull/498);
   head `274f03f9bf608f8c0e543d69ba45bf788a39b81b`, merge
   `6369fcb7918d74b62b17dd73af564321f356073f`, exact-main CI and CodeQL green.
-- Active implementation slot: `P-0.2` on `codex/p-0-2-health-drain`; local acceptance and the full `java-full`
-  verification profile are green, and publication remains pending.
+- Active implementation slot: `P-0.2` in open [PR #499](https://github.com/RicheyWorks/LoadBalancerPro/pull/499);
+  local acceptance and the full `java-full` verification profile are green, while exact-head remote gates are
+  pending.
 - Next implementation slot after the active gate: `P-0.3`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -30,7 +31,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | ---: | --- | --- | --- | --- | --- |
 | 1 | SEC-DEFAULT-DENY | P-0.5, L-0.1 | Fail-closed auth, role matrix, actuator lockdown | — | MAIN_GREEN |
 | 2 | P-0.1 | P-0.1 | Shutdown-hook lifecycle | — | MAIN_GREEN |
-| 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | LOCAL_GREEN |
+| 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | PR_OPEN |
 | 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | OPEN |
 | 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | OPEN |
 | 6 | P-0.6 | P-0.6 | Simulation-core correctness batch | — | OPEN |

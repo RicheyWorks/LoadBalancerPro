@@ -8438,3 +8438,100 @@ evidence and changed no repository or remote state. Correction: rerun the same e
 all job/step names and conclusions; run `30489238105` then showed successful tests, zero-skip verification, package,
 CycloneDX SBOM, packaged smoke, Docker image build/runtime, container evidence, blocking image scan, and dependency
 review.
+
+# 2026-07-29 - P-0.1 source-inventory path miss
+
+Branch: `codex/p-0-1-shutdown-hook`
+
+Read-only source inventory failure: the first lifecycle lookup guessed
+`src/main/java/com/richmond423/loadbalancerpro/service/AllocatorService.java`, which does not exist, so ripgrep
+reported OS error 3 after returning the valid `ServerMonitor`, `LoadBalancer`, and test matches from the other paths.
+The partial output was not treated as a complete allocation-path inventory. Correction: resolve `AllocatorService`
+with `rg --files src/main/java` before inspecting its request-scoped balancer construction and tests.
+
+Read-only source-inventory follow-up: the first filename filter over-escaped the dot in
+`AllocatorService\\.java$`, returned no match, and left the resolved allocator variable blank. The command still
+displayed `LoadBalancer`, so its zero exit was not treated as proof that the allocator was absent. Correction: search
+for the source declaration `class AllocatorService`; this resolved
+`src/main/java/com/richmond423/loadbalancerpro/api/AllocatorService.java` and its `createLoadBalancer()` call sites.
+
+First P-0.1 bounded-heap red probe: the one-test selector failed before executing any allocation because the child
+Surefire classpath binds the Log4j API through SLF4J; calling Log4j-core `Configurator.setRootLevel` attempted an
+invalid `SLF4JLoggerContext` to `LoggerContext` cast. The failure is a harness defect, not shutdown-hook evidence.
+Correction: remove the incompatible Log4j-core configuration call, use the child process's bounded captured output,
+and rerun the unchanged 10,000-allocation, `-Xmx64m` contract to obtain a behavioral red result.
+
+First completed P-0.1 bounded-heap probe: after correcting child logging, 10,000 real request-scoped
+`AllocatorService.capacityAware` calls exited 0 under `-Xmx64m` even though source inspection still proves one
+constructor hook per allocation. Heap completion alone is therefore not discriminating on this JVM and is not
+accepted as evidence that the leak is absent. Correction: retain the bounded-heap/10,000-allocation probe but open
+`java.lang` only in that child JVM, compare the actual `ApplicationShutdownHooks` registry before and after the loop,
+remove leaked hooks before child exit, and require a stable hook count.
+
+First behavioral P-0.1 red gate: the child-registry probe completed the allocation loop and failed with 10,001 new
+shutdown hooks. Source inspection attributes 10,000 to one `ServerMonitor` constructor hook per request-scoped
+allocation; the extra hook is the separate one-time `Utils` executor shutdown hook initialized by the first
+allocation path. The probe removed every added hook before child exit, and no hook/thread leaked into Maven.
+Correction: perform one warm-up allocation before taking the baseline, then measure a subsequent exact 10,000
+allocations and require zero hook-count growth.
+
+Exact P-0.1 behavioral red gate: after one warm-up allocation initialized the separate process-wide utility hook,
+the bounded child completed a subsequent 10,000 real `AllocatorService.capacityAware` calls under `-Xmx64m` and
+failed with exactly 10,000 new shutdown hooks. The probe removed all 10,000 before child exit; Maven recorded one
+failure, zero errors, and zero skips. Correction: remove constructor registration, register at most one retained hook
+from `ServerMonitor.start()`, deregister it from `stop()`, and preserve safe stop behavior during actual JVM shutdown.
+
+Read-only P-0.1 campaign-file lookup failure: after the adjacent selector bundle passed 143 tests, a combined
+evidence command correctly aggregated those reports but guessed nonexistent generic paths
+`docs/agent/CAMPAIGN_SLOT_MANIFEST.md` and `docs/agent/CAMPAIGN_BOARD.md`. Ripgrep returned exit 2, so the successful
+test aggregation is retained but the failed document lookup is not treated as campaign-state evidence. Correction:
+resolve campaign paths with `rg --files docs/agent`; the active files are
+`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json` and `COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`.
+
+First P-0.1 full-suite invocation observation: the shell wrapper was given a one-second timeout in an attempt to
+yield a long-running Maven command, but the wrapper reported timeout/exit 124 after five seconds while the Maven JVM
+continued normally as process 6352. This is a command-observation failure, not a test result; no duplicate suite was
+started. Correction: monitor that exact surviving Maven process and accept the gate only after it exits and the
+complete fresh Surefire report set proves zero failures, errors, and skips.
+
+P-0.1 full-suite thread-dump observation: `jcmd 24564 Thread.print` successfully showed the Surefire main thread
+actively executing `EnterpriseLabSupervisorAllocationBridgeTest` in an unrelated Windows filesystem identity check,
+but piping the dump through `Select-Object -First 220` closed the output stream early and the wrapper returned exit 1.
+The truncated diagnostic is not a test failure and changed no state. Correction: continue monitoring the still-active
+exact Maven/Surefire process and use its final exit plus complete report aggregation as the authoritative gate.
+
+First P-0.1 authoritative clean-verify runner: a persistent background child launched
+`mvn -q "-Dsurefire.redirectTestOutputToFile=true" clean verify` and preserved its final exit status, but it exited
+255 within 30 seconds. That runner discarded output, so it provides no actionable Maven diagnostic and is not
+classified as a product/test failure. Correction: rerun the same clean-verify command with visible output long enough
+to capture the early failure, log the exact cause, and then run a clean authoritative gate with preserved exit status.
+
+Second P-0.1 clean-verify observation: the visible shell wrapper reached its 60-second timeout and returned exit 124
+without Maven output, while its Maven JVM (process 8256) and Surefire fork (process 21884) continued normally. This
+again represents an observation-wrapper timeout, not a Maven exit or test result; no duplicate run is active.
+Correction: monitor those exact surviving processes through completion, aggregate only reports created by this clean
+run, and use a subsequent preserved-exit invocation for the final command-status gate.
+
+P-0.1 parallel local-evidence collection: the diff/status portion completed, but the secret/public-target ripgrep
+scan intentionally found no matches and returned exit 1. The orchestration wrapper therefore marked the combined
+call failed and suppressed the successful coverage, Compose, and SBOM sibling outputs, so none of those suppressed
+results is accepted. Correction: rerun each gate with explicit result handling; treat ripgrep exit 1 as the expected
+no-match result while still failing on any actual match or scanner error.
+
+P-0.1 Compose check: `docker compose config --quiet` returned exit 1 with `no configuration file provided: not
+found`. This branch did not add or change Compose, and the current repository root has no default Compose file, so
+the command is inapplicable rather than a product/config failure. The parallel wrapper again suppressed sibling
+outputs, which remain unaccepted. Correction: record Compose as not applicable for this java-full lifecycle slot,
+inventory Docker/Compose paths explicitly, and rerun the applicable coverage, SBOM, diff, and scope gates separately.
+
+P-0.1 XML SBOM version assertion: both BOM files parsed and independently reported 144 components, while the JSON
+declared CycloneDX 1.6. A follow-up incorrectly expected the XML root to carry a `specVersion` attribute and failed
+because CycloneDX XML encodes its schema version in the namespace instead. Correction: inspect the document element's
+namespace URI and require the official CycloneDX 1.6 namespace; retain the already-green XML parse/component/hash
+evidence.
+
+P-0.1 exact-head CI progress projection: a read-only `gh run view --jq` command embedded a multi-field jq object in
+PowerShell/JavaScript quoting that split the filter into multiple CLI arguments. GitHub CLI rejected it with
+`accepts at most 1 arg(s), received 3`; no remote or repository state changed and no CI conclusion was inferred.
+Correction: use the unfiltered `--json status,conclusion,jobs` response or a PowerShell JSON projection, then continue
+waiting for both exact-head CI runs to finish.

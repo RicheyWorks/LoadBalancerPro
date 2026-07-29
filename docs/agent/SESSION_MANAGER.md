@@ -14,6 +14,9 @@ Current prerequisite: `CONTRACT-00` - import Claude's July 21 audit/build layout
 
 Current branch: `codex/combined-build-plan-campaign-contract`.
 
+PR: [#496](https://github.com/RicheyWorks/LoadBalancerPro/pull/496), open and mergeable. The initial verified published
+head was `37cffd7f91c75e972f771f78a0425aa77b529d6d`; this factual PR-created checkpoint will advance it once.
+
 Verified starting main: `0f1e97b9ce4acceaad02877bf1fc2185997aba9d`. Its exact-merge main CI run
 `30478610493` and CodeQL run `30478610714` passed after PR #493.
 
@@ -70,9 +73,12 @@ Verification:
 
 Blocker: none.
 
-Next action: commit this local-verification/failure-recovery checkpoint, rerun the exact-head focused guard and diff
-hygiene, publish the branch, open the PR, require all applicable remote checks, merge, verify exact-main CI/CodeQL,
-then start only `SEC-DEFAULT-DENY`.
+Remote checks: initial PR/push CI, PR dependency review, and CodeQL started against the pre-checkpoint head. No result
+will be accepted until this checkpoint is committed and pushed and every required check is matched to that final head.
+
+Next action: commit and push this PR-created checkpoint, rerun exact-head focused/diff hygiene, require all applicable
+remote checks, perform the unchanged-head full-diff self-review, merge, verify exact-main CI/CodeQL, then start only
+`SEC-DEFAULT-DENY`.
 
 Decision: continue `CONTRACT-00`; no implementation slot is active.
 

@@ -69,11 +69,11 @@
       "sourceIds": ["P-0.2"],
       "track": "proxy",
       "title": "Replace health deletion with drain, eviction thresholds, and re-admission",
-      "status": "LOCAL_GREEN",
+      "status": "PR_OPEN",
       "dependencies": [],
       "riskClass": "RELIABILITY",
       "verificationProfile": "java-full",
-      "currentState": "PR #499 final head 60e0fae65732ef0f07a80f41a6c1330cac27f538 passed exact-head gates and merged as 44d303318b7828c64c8fb2f21fe03ae64bd499bb. Exact-main CodeQL passed, but CI run 30500110273 failed when the package-stage test rerun exposed a 200 ms timing race in EnterpriseLabSupervisorServerTest. The test-only correction passed four focused repetitions, the adjacent supervisor/campaign selector, a 3,430-test zero-failure/error/skip package gate, and skip-tests verify. A corrective PR and resulting exact-main gates remain required; the slot is uncounted."
+      "currentState": "PR #499 final head 60e0fae65732ef0f07a80f41a6c1330cac27f538 passed exact-head gates and merged as 44d303318b7828c64c8fb2f21fe03ae64bd499bb. Exact-main CodeQL passed, but CI run 30500110273 failed when the package-stage test rerun exposed a 200 ms timing race in EnterpriseLabSupervisorServerTest. Test-only corrective PR #500 opened from locally green head 9d18dd177fb05eb566fb8885de0353807f7217a9; its factual PR-open checkpoint advances the head once. Final exact-head and resulting exact-main gates remain required; the slot is uncounted."
     },
     {
       "ordinal": 4,

@@ -6,6 +6,37 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 3 Corrective PR-Open Checkpoint
+
+Timestamp: 2026-07-29T16:57:00-07:00
+
+Current slot: `P-0.2`; exact-main recovery after merged PR #499.
+
+Current branch: `codex/p-0-2-main-gate-flake`, based on exact main
+`44d303318b7828c64c8fb2f21fe03ae64bd499bb`.
+
+Slot status: `PR_OPEN`; it remains uncounted and `P-0.3` has not started.
+
+Corrective PR: [#500](https://github.com/RicheyWorks/LoadBalancerPro/pull/500), open and non-draft.
+
+Published local-green head: `9d18dd177fb05eb566fb8885de0353807f7217a9`. Its focused repetition,
+adjacent-selector, 3,430-test package, verify, JSON, and diff evidence is recorded below.
+
+This factual PR-open checkpoint advances the PR head once. No remote result for the published local-green head can
+satisfy the final merge gate for the new checkpoint head.
+
+Scope/safety remain test timing plus factual campaign records only. Production/runtime code and defaults are
+unchanged; no Maven, CI, Docker, Compose, external/public target, credential, cloud/tenant, benchmark, or readiness
+claim is added or weakened.
+
+Blocker: none locally. Exact-head CI, CodeQL, dependency review, SBOM, Docker/runtime, container evidence, Trivy,
+and resulting exact-main CI/CodeQL are pending and are not green.
+
+Next action: publish this checkpoint, require every gate on the new exact PR head, self-review the unchanged complete
+diff, merge only when green and clean, then require exact-main green before marking `P-0.2` complete.
+
+Decision: recover only `P-0.2`; do not start `P-0.3`.
+
 ## Combined Build Plan Slot 3 Corrective Local-Green Checkpoint
 
 Timestamp: 2026-07-29T16:54:00-07:00

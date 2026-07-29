@@ -49,15 +49,30 @@ Verification:
 - focused `CombinedBuildPlanCampaignDocumentationTest`: six tests passed after two exact boundary-wording failures were
   logged and corrected;
 - adjacent campaign/index/README/goal-protocol/quickstart selector: 32 tests passed, zero failures/errors/skips;
+- focused combined-campaign plus protected cockpit-framing selector: 12 tests passed after the full package found and
+  the failure log recorded one casual README identity phrase;
+- `mvn -B clean package`: 3,413 tests across 476 Surefire reports, zero failures/errors/skips; executable packaging
+  passed;
+- `mvn -q "-DskipTests" package`: passed independently;
+- `mvn -B verify`: 3,413 tests across 476 reports, zero failures/errors/skips; JaCoCo 83.09% instruction, 66.28%
+  branch, and 82.37% line coverage;
+- packaged `scripts/smoke/enterprise-lab-workflow.ps1 -Package`: passed in shadow mode with ten fixed scenarios and
+  target-only evidence;
+- final verified executable JAR before this factual checkpoint update: 95,533,427 bytes, SHA-256
+  `0E3729A1CE36DF9083B127345A5BCAD389F01A6691097FF8DCA275D732E4B905`;
 - all five imported artifacts match their blobs in source commit
   `74b1f6758304bc5a3a85ff4888039e7309324ddf`;
 - the imported playground has no URL, fetch, XMLHttpRequest, WebSocket, browser-storage, cookie, or eval reference; its
-  `innerHTML` uses only fixed strategy/backend definitions and numeric local-simulation output.
+  `innerHTML` uses only fixed strategy/backend definitions and numeric local-simulation output;
+- full PR scope is 13 paths and 2,368 added lines before final factual checkpoint records; no production source,
+  runtime resources, POM/dependency, workflow, Docker/Compose, or script path changed;
+- zero workspace Java/Maven processes remained after verification.
 
 Blocker: none.
 
-Next action: audit the staged complete diff, complete the local verification ladder, open the exact-head PR, require
-all applicable remote checks, merge, verify exact-main CI/CodeQL, then start only `SEC-DEFAULT-DENY`.
+Next action: commit this local-verification/failure-recovery checkpoint, rerun the exact-head focused guard and diff
+hygiene, publish the branch, open the PR, require all applicable remote checks, merge, verify exact-main CI/CodeQL,
+then start only `SEC-DEFAULT-DENY`.
 
 Decision: continue `CONTRACT-00`; no implementation slot is active.
 

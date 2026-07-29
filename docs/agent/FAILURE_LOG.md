@@ -6,6 +6,49 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-29T11:43:55-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: full clean package found active README product-framing guard regression
+
+Failing check: current-head `mvn -B clean package`
+
+Observed/root cause: 3,413 tests ran across 476 Surefire reports with one failure, zero errors, and zero skips.
+`EnterpriseLabCockpitFramingDocumentationTest.activeFramingFilesAvoidCasualDemoIdentityAndProductionProofOverclaims`
+rejected README line 54 because the new active-campaign navigation called the imported simulator a `strategy playground`
+without negating that term. The campaign meant the exact imported filename/artifact, not a change to the Enterprise Lab
+Cockpit product identity. The package phase correctly stopped after the failed test, and zero workspace Java/Maven
+processes remained.
+
+Correction/result: describe the imported HTML as an interactive strategy-simulator source artifact in the active
+README framing while retaining the exact file and commit provenance in the campaign contract.
+
+Follow-up: rerun the focused framing and combined-campaign guards, then rerun the full clean package from a clean
+target before accepting the local gate.
+
+## Entry
+
+Date/time: 2026-07-29T11:37:56-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: full-package invocation used an accidentally tiny shell-tool timeout and left the Maven child running
+
+Failing check: first current-head `mvn -B clean package` invocation after commit `bce1e621`
+
+Observed/root cause: the shell wrapper timed out after approximately five seconds because the call supplied
+`timeout_ms=1000`; this is far below the repository build duration and provides no build verdict. The wrapper left one
+Java Maven launcher, PID 42740, running the exact workspace `-B clean package` command.
+
+Correction/result: verified PID 42740's complete command line and workspace, stopped that exact orphan process, and
+confirmed zero workspace Java/Maven processes remain. No source, index, branch, PR, workflow, external target, or
+remote state changed; partial `target/` output is disposable build output.
+
+Follow-up: rerun `mvn -B clean package` with the intended bounded build timeout and accept only its complete result.
+
+## Entry
+
 Date/time: 2026-07-29T11:34:27-07:00
 
 Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet

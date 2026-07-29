@@ -33,7 +33,7 @@ The compiler plugin uses `<release>${java.version}</release>` with `proc` set to
 The `dependencyManagement` section currently includes:
 
 - Jackson BOM `com.fasterxml.jackson:jackson-bom` version `${jackson.version}`, currently `2.21.4`;
-- Netty BOM `io.netty:netty-bom` version `${netty.version}`, currently `4.2.15.Final`;
+- Netty BOM `io.netty:netty-bom` version `${netty.version}`, currently `4.2.16.Final`;
 - Spring Boot dependency BOM `org.springframework.boot:spring-boot-dependencies` version `${spring-boot.version}`, currently `3.5.14`;
 - explicit Tomcat embedded overrides for `tomcat-embed-core`, `tomcat-embed-el`, and `tomcat-embed-websocket` at `${tomcat.version}`, currently `10.1.55`;
 - AWS SDK v2 BOM `software.amazon.awssdk:bom` version `${aws-sdk-v2.version}`, currently `2.44.4`.
@@ -44,6 +44,12 @@ The later 2026-07-16 security-maintenance refresh moved the centrally managed Ne
 `4.2.15.Final` and added Jackson BOM `2.21.4` ahead of Spring Boot's imported BOM so the packaged Jackson family no
 longer resolves to vulnerable `jackson-databind` `2.21.2`; the historical slot 6 audit itself remained
 documentation/test-only.
+
+The 2026-07-29 blocking-image-scan recovery moves only the centrally managed Netty family from `4.2.15.Final` to
+`4.2.16.Final`. Exact-head push and pull-request Trivy reports independently identified fixed HIGH findings
+`CVE-2026-59901`, `CVE-2026-55831`, `CVE-2026-55833`, and `CVE-2026-56745` in the packaged `4.2.15.Final` family.
+The recovery does not add an allowlist, weaken the scan, change other dependencies or plugins, or claim that the later
+baseline is free from present or future vulnerabilities.
 
 ## Runtime Dependency Families
 

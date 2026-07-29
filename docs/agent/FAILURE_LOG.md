@@ -6,6 +6,44 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-29T10:54:41-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / closed PR #493
+
+Failure type: post-proof empty-process audit again allowed `Get-Process` to determine the command exit
+
+Failing check: combined timestamp, Git status, and `Get-Process java,mvn -ErrorAction SilentlyContinue` query
+
+Observed/root cause: the timestamp printed, Git status was clean, and no process row existed, but the final empty
+`Get-Process` result caused the combined read-only command to exit 1. This repeats an already documented shell-query
+pitfall and does not indicate a remaining Java or Maven process. No repository, artifact, process, branch, PR, remote,
+or external state changed.
+
+Correction/result: capture process results in an array and emit an explicit count so an expected empty set remains an
+exit-zero verification.
+
+Follow-up: use the explicit-count audit after the proof-property query.
+
+## Entry
+
+Date/time: 2026-07-29T10:54:41-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / closed PR #493
+
+Failure type: read-only proof-property formatter omitted a PowerShell statement-block brace
+
+Failing check: first typed projection of the final independent-supervisor proof JSON properties
+
+Observed/root cause: PowerShell rejected the command at parse time with `MissingEndCurlyBrace`; it did not read the
+proof or change source, index, worktree, target evidence, process, branch, PR, workflow, or external state.
+
+Correction/result: replace the nested one-line formatter with a simple explicit projection of the proof's required
+boolean, count, boundary, and fingerprint properties.
+
+Follow-up: accept the proof only after the simpler projection confirms every required aggregate.
+
+## Entry
+
 Date/time: 2026-07-29T10:36:10-07:00
 
 Branch/PR: codex/command-ledger-restart-reconciliation / closed PR #493

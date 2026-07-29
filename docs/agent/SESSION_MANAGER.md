@@ -6,6 +6,70 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Supervisor Command Ledger PR5 Resumed Local Verification Checkpoint
+
+Timestamp: 2026-07-29T10:55:58-07:00
+
+Current slot: `COMMAND-LEDGER-PR5` - restart reconciliation and command-history repair.
+
+Current branch: `codex/command-ledger-restart-reconciliation`.
+
+Verified base: PR #494 merge commit `07d54b5cc294fd9434d13b638df3facb7f3ef7f7`; exact-merge main CI
+`30474732613` and CodeQL `30474732941` passed.
+
+Resumed source checkpoint: `91327c56044346bc9eabffaa8b8d8edb56db9bb0`
+(`Log PR5 resumed build wrapper failures`). The worktree contains only the two later factual failure-log entries that
+this checkpoint will record; no product source changed after the source checkpoint.
+
+Checkpoint reconciliation: verified main was merged as `b1dade09bed1beb3cc1a4dc6da901d6e84676bb2`. Every product,
+test, architecture, dependency, and evidence path auto-merged. The two predicted checkpoint-file conflicts preserved
+both histories, removed all conflict markers, replaced the stale active-PR4 pointer with the PR5 sequence, and passed
+`git diff --check`.
+
+Verification from the resumed source:
+
+- coordinator/history selector: 27 tests, zero failures/errors/skips;
+- adjacent six-class selector: 85 tests, zero failures/errors/skips;
+- ownership-renewer/coordinator/history selector: 31 tests, zero failures/errors/skips;
+- `mvn -B clean package`: 3,407 tests across 475 Surefire reports, zero failures/errors/skips;
+- `mvn -B verify`: 3,407 tests across 475 Surefire reports, zero failures/errors/skips; JaCoCo 83.10% instruction,
+  66.29% branch, and 82.38% line coverage;
+- `mvn -q "-DskipTests" package`: passed;
+- packaged `scripts/smoke/enterprise-lab-workflow.ps1 -Package`: passed in shadow mode with ten fixed scenarios and
+  target-only evidence;
+- packaged independent-supervisor proof: all required aggregates true across 22 application JVMs, 24 supervisor JVMs,
+  eight crash windows, and 18 IPC checks; content fingerprint
+  `e5f2624552e9c05fafdec2a00f437960e69a0b8e462118b3a8660b9c7ee88c94`;
+- proof JSON SHA-256: `AEFD5D136B646E49E888BDE12BF4F2C16393AE9B7FCBD5200708FEC01195B2E1`;
+- final executable JAR: 95,533,428 bytes, SHA-256
+  `84DC9932C42793A35B99FC40B3D8A324232F97D9393F474F4562293208D29CFD`;
+- no Java or Maven process remained and the temporary Windows execution-state assertions reset in `finally`.
+
+Scope/safety audit: against verified main, the PR remains exactly 15 paths limited to command/allocation restart
+reconciliation, direct tests, the existing proof runner, its architecture contract, and campaign records. Across 2,178
+added product/test/architecture lines, the only URLs or IPv4 addresses are three fixed
+`http://127.0.0.1:18081..18083/health` fixtures. Added-line scans found zero public bind, process/listener/executor
+creation, destructive filesystem call, secret-like default, or cloud/tenant target. No POM/dependency, workflow,
+Docker/Compose, script, runtime resource, README, public endpoint, external target, secret, or production traffic
+surface changed.
+
+Independent-review limitation and substitute: no independent collaborator exists. The active goal authorizes a
+documented unchanged-head full-diff self-review after all required gates; it does not authorize weakening or bypassing
+any required check or security policy.
+
+Not proven: production readiness/certification, live-cloud or real-tenant operation, public/external traffic control,
+multi-host/network-filesystem correctness, database/broker durability, distributed consensus, hostile local-administrator
+resistance, production throughput/latency, signer identity, or non-repudiation. PR6 status, retention/compaction, and
+the packaged command-ledger matrix remain deferred.
+
+Blocker: none locally.
+
+Next action: commit this local-verification checkpoint, publish the merged branch, reopen PR #493, and require fresh
+exact-head push CI, PR CI, CodeQL, dependency review, Docker/runtime, SBOM, and blocking Trivy before full-diff
+self-review and merge.
+
+Decision: continue PR5 only.
+
 ## Supervisor Command Ledger PR5 Recovery-Merge Resume Checkpoint
 
 Timestamp: 2026-07-29T10:28:34-07:00

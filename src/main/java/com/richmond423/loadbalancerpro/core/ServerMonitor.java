@@ -19,8 +19,20 @@ import org.json.JSONObject;
 
 public class ServerMonitor implements Runnable {
     private static final Logger logger = LogManager.getLogger(ServerMonitor.class);
+    private static final ShutdownHookRegistry JVM_SHUTDOWN_HOOKS = new ShutdownHookRegistry() {
+        @Override
+        public void addShutdownHook(Thread hook) {
+            Runtime.getRuntime().addShutdownHook(hook);
+        }
+
+        @Override
+        public boolean removeShutdownHook(Thread hook) {
+            return Runtime.getRuntime().removeShutdownHook(hook);
+        }
+    };
 
     private final LoadBalancer balancer;
+    private final ShutdownHookRegistry shutdownHookRegistry;
     private volatile boolean running = false;
     private volatile boolean paused = false;
     private volatile double alertThreshold;
@@ -42,6 +54,13 @@ public class ServerMonitor implements Runnable {
     private final Config config;
     private final long startTimeMillis = System.currentTimeMillis();
     private final Map<String, List<MetricPoint>> metricHistory = new ConcurrentHashMap<>();
+    private volatile Thread shutdownHook;
+
+    interface ShutdownHookRegistry {
+        void addShutdownHook(Thread hook);
+
+        boolean removeShutdownHook(Thread hook);
+    }
 
     public static class Config {
         double alertThreshold = 80.0;
@@ -82,14 +101,28 @@ public class ServerMonitor implements Runnable {
     }
 
     public ServerMonitor(Config config, LoadBalancer balancer, Consumer<String> alertCallback) {
+        this(config, balancer, alertCallback, JVM_SHUTDOWN_HOOKS);
+    }
+
+    ServerMonitor(
+            Config config,
+            LoadBalancer balancer,
+            Consumer<String> alertCallback,
+            ShutdownHookRegistry shutdownHookRegistry) {
         if (balancer == null) throw new IllegalArgumentException("Balancer cannot be null");
         this.config = config != null ? config : new Config();
         this.balancer = balancer;
-        this.alertThreshold = clamp(config.alertThreshold, config.minMetricValue, config.maxMetricValue);
-        this.monitorIntervalMs = Math.max(config.minMonitorIntervalMs, config.monitorIntervalMs);
-        this.maxFluctuation = clamp(config.maxFluctuation, config.minMetricValue, config.maxFluctuationLimit);
+        this.shutdownHookRegistry = Objects.requireNonNull(shutdownHookRegistry, "shutdownHookRegistry cannot be null");
+        this.alertThreshold = clamp(
+                this.config.alertThreshold,
+                this.config.minMetricValue,
+                this.config.maxMetricValue);
+        this.monitorIntervalMs = Math.max(this.config.minMonitorIntervalMs, this.config.monitorIntervalMs);
+        this.maxFluctuation = clamp(
+                this.config.maxFluctuation,
+                this.config.minMetricValue,
+                this.config.maxFluctuationLimit);
         this.alertCallback = alertCallback != null ? alertCallback : msg -> {};
-        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     }
 
     public ServerMonitor(LoadBalancer balancer) {
@@ -118,32 +151,40 @@ public class ServerMonitor implements Runnable {
         return isRunning();
     }
 
-    public void start() {
+    public synchronized void start() {
         if (running) {
             logger.warn("Monitor already running.");
             return;
         }
+        Thread newShutdownHook = new Thread(this::stop, "ServerMonitorShutdownHook");
+        shutdownHookRegistry.addShutdownHook(newShutdownHook);
+        shutdownHook = newShutdownHook;
         running = true;
         monitorThread = new Thread(this, "ServerMonitor");
         monitorThread.setDaemon(true);
-        monitorThread.start();
+        try {
+            monitorThread.start();
+        } catch (RuntimeException | Error startupFailure) {
+            running = false;
+            monitorThread = null;
+            deregisterShutdownHook();
+            throw startupFailure;
+        }
         logger.info("Server monitor starting with interval {}ms...", monitorIntervalMs);
     }
 
-    public void stop() {
-        if (!running) return;
+    public synchronized void stop() {
+        if (!running && shutdownHook == null) return;
         running = false;
-        lock.lock();
         try {
-            condition.signalAll();
-        } finally {
-            lock.unlock();
-        }
-        if (monitorThread != null) {
-            monitorThread.interrupt();
-        }
-        try {
+            lock.lock();
+            try {
+                condition.signalAll();
+            } finally {
+                lock.unlock();
+            }
             if (monitorThread != null) {
+                monitorThread.interrupt();
                 monitorThread.join(TimeUnit.SECONDS.toMillis(config.shutdownTimeoutSeconds));
             }
             if (monitorThread != null && monitorThread.isAlive()) {
@@ -155,8 +196,23 @@ public class ServerMonitor implements Runnable {
             }
         } catch (InterruptedException e) {
             handleInterruptedException(e);
+        } finally {
+            deregisterShutdownHook();
         }
         logger.info("Server monitor stopped.");
+    }
+
+    private void deregisterShutdownHook() {
+        Thread registeredHook = shutdownHook;
+        shutdownHook = null;
+        if (registeredHook == null) {
+            return;
+        }
+        try {
+            shutdownHookRegistry.removeShutdownHook(registeredHook);
+        } catch (IllegalStateException shutdownInProgress) {
+            logger.debug("JVM shutdown is already in progress; monitor shutdown hook cannot be deregistered.");
+        }
     }
 
     public void pause() {

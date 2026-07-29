@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -239,6 +240,75 @@ class ServerMonitorTest {
         } finally {
             startedMonitor.stop();
         }
+    }
+
+    @Test
+    void constructorDoesNotRegisterShutdownHook() throws InterruptedException {
+        stopCurrentMonitor();
+        RecordingShutdownHookRegistry shutdownHooks = new RecordingShutdownHookRegistry();
+
+        ServerMonitor neverStartedMonitor = new ServerMonitor(
+                new ServerMonitor.Config().withInterval(MONITOR_CYCLE_MS),
+                balancer,
+                null,
+                shutdownHooks);
+
+        assertTrue(shutdownHooks.addedHooks.isEmpty(),
+                "Constructing a request-scoped monitor must not register a JVM shutdown hook.");
+        assertDoesNotThrow(neverStartedMonitor::stop);
+        assertTrue(shutdownHooks.removedHooks.isEmpty(),
+                "Stopping a never-started monitor must not attempt hook removal.");
+    }
+
+    @Test
+    void startRegistersOneHookAndStopDeregistersIt() throws InterruptedException {
+        stopCurrentMonitor();
+        RecordingShutdownHookRegistry shutdownHooks = new RecordingShutdownHookRegistry();
+        ServerMonitor lifecycleMonitor = new ServerMonitor(
+                new ServerMonitor.Config().withInterval(MONITOR_CYCLE_MS),
+                balancer,
+                null,
+                shutdownHooks);
+
+        try {
+            lifecycleMonitor.start();
+            waitUntil(lifecycleMonitor::isRunning, 1000, "Monitor should start.");
+            lifecycleMonitor.start();
+
+            assertEquals(1, shutdownHooks.addedHooks.size(),
+                    "Repeated start while running must not register another hook.");
+            Thread registeredHook = shutdownHooks.addedHooks.get(0);
+
+            lifecycleMonitor.stop();
+
+            assertEquals(List.of(registeredHook), shutdownHooks.removedHooks,
+                    "stop() must remove the exact hook registered by start().");
+            assertDoesNotThrow(lifecycleMonitor::stop);
+            assertEquals(1, shutdownHooks.removedHooks.size(),
+                    "Repeated stop must not remove the hook twice.");
+        } finally {
+            lifecycleMonitor.stop();
+        }
+    }
+
+    @Test
+    void stopToleratesHookRemovalDuringJvmShutdown() throws InterruptedException {
+        stopCurrentMonitor();
+        RecordingShutdownHookRegistry shutdownHooks = new RecordingShutdownHookRegistry();
+        shutdownHooks.failRemovalAsShutdownInProgress = true;
+        ServerMonitor lifecycleMonitor = new ServerMonitor(
+                new ServerMonitor.Config().withInterval(MONITOR_CYCLE_MS),
+                balancer,
+                null,
+                shutdownHooks);
+
+        lifecycleMonitor.start();
+        waitUntil(lifecycleMonitor::isRunning, 1000, "Monitor should start.");
+
+        assertDoesNotThrow(lifecycleMonitor::stop,
+                "JVM shutdown-in-progress hook removal must remain a safe stop path.");
+        assertEquals(1, shutdownHooks.removedHooks.size());
+        assertFalse(lifecycleMonitor.isRunning());
     }
 
     @Test
@@ -834,6 +904,26 @@ class ServerMonitorTest {
             "Should reject null LoadBalancer in constructor!");
         logger.info("Null balancer test passed: Exception thrown correctly.");
         verify(logger).info("Null balancer test passed: Exception thrown correctly.");
+    }
+
+    private static final class RecordingShutdownHookRegistry implements ServerMonitor.ShutdownHookRegistry {
+        private final List<Thread> addedHooks = new ArrayList<>();
+        private final List<Thread> removedHooks = new ArrayList<>();
+        private boolean failRemovalAsShutdownInProgress;
+
+        @Override
+        public void addShutdownHook(Thread hook) {
+            addedHooks.add(hook);
+        }
+
+        @Override
+        public boolean removeShutdownHook(Thread hook) {
+            removedHooks.add(hook);
+            if (failRemovalAsShutdownInProgress) {
+                throw new IllegalStateException("JVM shutdown in progress");
+            }
+            return true;
+        }
     }
 
     /**

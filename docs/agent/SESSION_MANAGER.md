@@ -6,6 +6,76 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 2 Local-Green Checkpoint
+
+Timestamp: 2026-07-29T14:49:20-07:00
+
+Current slot: `P-0.1`, remove the per-request shutdown-hook leak.
+
+Current branch: `codex/p-0-1-shutdown-hook`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `df1f97825b3ee7757a7ed43698862c738c23e52b`, the exact PR #497 merge commit.
+
+Implemented acceptance: `ServerMonitor` construction no longer registers a JVM shutdown hook. Public `start()`
+registers and retains one named hook, repeated start while running does not add another, and `stop()` deregisters the
+exact retained thread while tolerating `IllegalStateException` once JVM shutdown is already in progress.
+Request-scoped `AllocatorService` balancers never start their monitor and therefore register no monitor hook.
+
+Changed files:
+
+- `src/main/java/com/richmond423/loadbalancerpro/core/ServerMonitor.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/ServerMonitorTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/ServerMonitorShutdownHookStressProbe.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/ServerMonitorShutdownHookStressTest.java`
+- `src/test/resources/logback-stress.xml`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Verification:
+
+- exact behavioral red before implementation: after one unrelated utility-hook warm-up, 10,000 real request-scoped
+  allocations added exactly 10,000 monitor shutdown hooks; the child removed them before exit;
+- final acceptance probe: one warm-up plus exactly 10,000 MockMvc
+  `POST /api/allocate/capacity-aware` requests completed under `-Xmx64m`; the reflected JVM
+  `ApplicationShutdownHooks` registry remained stable;
+- focused monitor/stress selector: 31 tests passed, zero failures/errors/skips;
+- adjacent allocator/load-balancer selector: 143 tests passed, zero failures/errors/skips;
+- exact-workspace preserved-exit `mvn -q test`: exit 0, 3,425 tests across 479 reports, zero
+  failures/errors/skips, and no Surefire dump files;
+- preserved-exit `mvn -q -DskipTests verify`: exit 0;
+- JaCoCo XML report generation passed;
+- local artifact verification, packaged `--version`, synthetic healthy LASE demo, and loopback-only packaged JAR
+  health/static/proxy-status smoke passed with exact process cleanup;
+- executable JAR: 95,536,774 bytes, SHA-256
+  `0BA80574B43C011E17202365164BA39293141E93EEDA1B79C84763203F824ACB`;
+- CycloneDX 2.9.1 generated parseable JSON/XML 1.6 BOMs with 144 components in each;
+- `git diff --check` passed with line-ending warnings only, and the changed-surface public-target/secret-like scan
+  found no match.
+
+Local limitation: this repository has no Compose file, so Compose validation is inapplicable. No local Docker runtime
+or Trivy result is claimed. Exact-head remote Docker build/runtime, container evidence, dependency review, SBOM,
+blocking Trivy, CI, and CodeQL remain mandatory before merge.
+
+Scope and safety: the production change is limited to monitor shutdown-hook lifecycle. No health semantics, routing
+strategy, proxy behavior, API contract, Maven/CI/Docker behavior, external/public target, live cloud/tenant action,
+secret, or readiness claim changed. The bounded child opens `java.lang` only for its own test process and cleans up
+any measured hook delta before exit.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: none.
+
+Next action: commit and publish the local-green implementation, open one PR, record its factual PR checkpoint, and
+require all exact-head remote gates before merge.
+
+Decision: continue only `P-0.1`; no later slot is active.
+
 ## Combined Build Plan Slot 2 Branch Checkpoint
 
 Timestamp: 2026-07-29T14:07:16-07:00

@@ -8,18 +8,25 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 ## Combined Build Plan Slot 1 Branch Checkpoint
 
-Timestamp: 2026-07-29T13:37:37-07:00
+Timestamp: 2026-07-29T13:48:01-07:00
 
 Current slot: `SEC-DEFAULT-DENY`, representing source items P-0.5 and L-0.1 once.
 
 Current branch: `codex/sec-default-deny`.
 
-Slot status: `PR_OPEN`.
+Slot status: `REMOTE_GREEN`.
 
 PR: [#497](https://github.com/RicheyWorks/LoadBalancerPro/pull/497), open and mergeable.
 
 Published implementation/local-green head: `52e4c6f459e9c661e55ba1739b829040bbb17bc8`. This factual PR-created
 checkpoint will advance the exact PR head once; remote results from the earlier head do not satisfy the final gate.
+
+Audited remote-green head: `5ae208ad2a089d85542e42bd9b1da24613d6e54c`. PR-event CI run `30489238105`
+passed tests, zero-skip enforcement, coverage, executable package/resource checks, CycloneDX SBOM, packaged CLI/JAR
+smokes, Docker build/runtime, container evidence, blocking image scan, and dependency review. Push CI run
+`30489235831` also passed; its duplicate dependency-review job skipped while the PR-event dependency review passed.
+CodeQL run `30489238437` and the separate CodeQL result check passed on the same SHA. This factual remote checkpoint
+advances the head once and must itself repeat the exact-head gates before merge.
 
 Verified base: `7479482835e76938d11aaae00d9c99a35d0c0d6a`, the exact PR #496 merge commit. Main CI
 `30483581539` and CodeQL `30483581562` passed on that exact commit, including tests, zero-skip enforcement, coverage,
@@ -65,8 +72,8 @@ validation, TLS/ingress validation, performance evidence, identity proof, or bro
 
 Blocker: none.
 
-Next action: publish this factual PR checkpoint, then require exact-head CI, CodeQL, dependency review,
-Docker/runtime, SBOM, and blocking Trivy before self-review and merge.
+Next action: publish this factual remote checkpoint, repeat exact-head CI/CodeQL/dependency/Docker/SBOM/Trivy,
+complete final self-review, and merge only if the checkpoint head is fully green and mergeable.
 
 Decision: continue only `SEC-DEFAULT-DENY`; no later slot is open.
 

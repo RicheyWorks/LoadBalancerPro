@@ -8430,3 +8430,11 @@ skips. `EnterpriseReadinessAuditDocumentationTest.securityPostureUsesCurrentAudi
 required the stale phrase `Current audit anchor` after self-review correctly relabeled the May SHA as the historical
 Enterprise Lab transition anchor. Correction: preserve the exact historical SHA assertion while requiring the new
 historical-anchor wording and current combined-campaign checkpoint routing, then rerun that guard and the full suite.
+
+Remote step-audit query tooling failure: after exact PR head `5ae208ad2a089d85542e42bd9b1da24613d6e54c`
+reported green aggregate checks, the first `gh run view --jq` step projection used jq's optional regex-flags form.
+GitHub CLI's embedded jq rejected the flag with `function not defined: i/0`, so that query did not establish CI step
+evidence and changed no repository or remote state. Correction: rerun the same exact run with a simple projection of
+all job/step names and conclusions; run `30489238105` then showed successful tests, zero-skip verification, package,
+CycloneDX SBOM, packaged smoke, Docker image build/runtime, container evidence, blocking image scan, and dependency
+review.

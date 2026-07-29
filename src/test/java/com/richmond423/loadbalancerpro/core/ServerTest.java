@@ -124,8 +124,23 @@ class ServerTest {
         assertEquals(2.0, fromJson.getWeight(), 0.01, "Weight didn’t stick!");
         assertEquals(200.0, fromJson.getCapacity(), 0.01, "Capacity didn’t match!");
         assertFalse(fromJson.isHealthy(), "Health status lost in JSON!");
+        assertEquals(ServerDegradationState.DRAINING, fromJson.getDegradationState(),
+                "Manual drain state should survive JSON round trip.");
         assertFalse(fromJson.isCloudInstance(), "Cloud instance status should default to false!");
         logger.info("JSON round trip test passed: All attributes preserved.");
+    }
+
+    @Test
+    void invalidSerializedDegradationStateFallsBackToLegacyHealthyFlag() {
+        Server server = createServer("STATE-FALLBACK", 30.0, 40.0, 50.0);
+        JSONObject json = server.toJson();
+        json.put("healthy", false);
+        json.put("degradationState", "NOT_A_STATE");
+
+        Server fromJson = Server.fromJson(json);
+
+        assertEquals(ServerDegradationState.DRAINING, fromJson.getDegradationState());
+        assertFalse(fromJson.isHealthy());
     }
 
     /**

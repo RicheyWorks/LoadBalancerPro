@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.util;
 
 import com.richmond423.loadbalancerpro.core.Server;
+import com.richmond423.loadbalancerpro.core.ServerDegradationState;
 import com.richmond423.loadbalancerpro.core.ServerType;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -23,6 +24,7 @@ final class JsonServerLogParser {
             "weight",
             "capacity",
             "healthy",
+            "degradationState",
             "serverType",
             "healthThreshold",
             "cpuHistory",
@@ -38,6 +40,7 @@ final class JsonServerLogParser {
             "weight",
             "capacity",
             "healthy",
+            "degradationState",
             "serverType",
             "cpuHistory",
             "memHistory",
@@ -125,6 +128,7 @@ final class JsonServerLogParser {
         requireOptionalNumber(json, "capacity", path);
         requireOptionalNumber(json, "healthThreshold", path);
         requireOptionalBoolean(json, "healthy", path);
+        requireOptionalOperationalDegradationState(json, path);
         requireOptionalBoolean(json, "cloudInstance", path);
         requireOptionalMetricArray(json, "cpuHistory", path);
         requireOptionalMetricArray(json, "memHistory", path);
@@ -154,6 +158,7 @@ final class JsonServerLogParser {
         requireOptionalNumber(snapshot, "weight", path);
         requireOptionalNumber(snapshot, "capacity", path);
         requireOptionalBoolean(snapshot, "healthy", path);
+        requireOptionalOperationalDegradationState(snapshot, path);
         requireOptionalMetricArray(snapshot, "cpuHistory", path);
         requireOptionalMetricArray(snapshot, "memHistory", path);
         requireOptionalMetricArray(snapshot, "diskHistory", path);
@@ -203,6 +208,26 @@ final class JsonServerLogParser {
     private static void requireOptionalBoolean(JSONObject object, String field, String path) {
         if (object.has(field) && !(object.get(field) instanceof Boolean)) {
             throw schemaError(path + "." + field, "must be boolean");
+        }
+    }
+
+    private static void requireOptionalOperationalDegradationState(JSONObject object, String path) {
+        if (!object.has("degradationState")) {
+            return;
+        }
+        requireString(object, "degradationState", path);
+        ServerDegradationState state;
+        try {
+            state = ServerDegradationState.valueOf(object.getString("degradationState"));
+        } catch (IllegalArgumentException invalidState) {
+            throw schemaError(path + ".degradationState", "must be a known operational state");
+        }
+        if (state != ServerDegradationState.HEALTHY
+                && state != ServerDegradationState.DEGRADED
+                && state != ServerDegradationState.RECOVERING
+                && state != ServerDegradationState.DRAINING
+                && state != ServerDegradationState.EVICTED) {
+            throw schemaError(path + ".degradationState", "must be an operational state");
         }
     }
 

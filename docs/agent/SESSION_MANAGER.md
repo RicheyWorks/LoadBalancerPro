@@ -6,6 +6,201 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 3 Remote-Green Checkpoint
+
+Timestamp: 2026-07-29T16:27:06-07:00
+
+Current slot: `P-0.2`, replace health deletion with drain, eviction thresholds, and re-admission.
+
+Current branch: `codex/p-0-2-health-drain`.
+
+Slot status: `REMOTE_GREEN`.
+
+PR: [#499](https://github.com/RicheyWorks/LoadBalancerPro/pull/499), open, non-draft, based on exact main
+`6369fcb7918d74b62b17dd73af564321f356073f`, clean, and mergeable.
+
+Audited remote-green head: `472dc9cc7bc277f3b52b69cb16b85fc62675e9f1`.
+
+Remote verification:
+
+- push CI run `30498958323` passed on the exact audited head;
+- PR CI run `30498960485` passed on the exact audited head;
+- CodeQL run `30498960533` and the separate CodeQL result check passed on the exact audited head;
+- PR-event dependency review passed; the push-event duplicate skipped as designed;
+- both CI build jobs passed dependency resolution, all tests, zero-skip enforcement, JaCoCo coverage, executable
+  package/resource checks, CycloneDX SBOM generation/upload, synthetic LASE CLI, packaged JAR runtime, Docker image
+  build/runtime, container dry-run evidence, blocking image scan, and evidence upload.
+
+Full-diff self-review on the unchanged audited head found no remaining correctness, concurrency, serialization,
+scope, security, claim, or not-proven-boundary issue. The branch is based directly on current `origin/main`; no stale
+merge base or unrelated changed file is present. The complete-diff public-target/secret-like scan found no match.
+
+The implementation acceptance, local verification, local container-tool limitation, scope/safety audit, and
+not-proven boundaries recorded below remain unchanged. This factual remote checkpoint advances the PR head once;
+remote results for `472dc9cc7bc277f3b52b69cb16b85fc62675e9f1` do not satisfy the final merge gate for the new checkpoint
+head.
+
+Blocker: none.
+
+Next action: publish this checkpoint, repeat exact-head push/PR CI, CodeQL, dependency review, SBOM, packaged smokes,
+Docker/runtime, container evidence, and blocking image scan, then merge only if every gate is green and the PR remains
+clean and mergeable.
+
+Decision: continue only `P-0.2`; no later slot is active.
+
+## Combined Build Plan Slot 3 PR-Open Checkpoint
+
+Timestamp: 2026-07-29T16:14:52-07:00
+
+Current slot: `P-0.2`, replace health deletion with drain, eviction thresholds, and re-admission.
+
+Current branch: `codex/p-0-2-health-drain`.
+
+Slot status: `PR_OPEN`.
+
+PR: [#499](https://github.com/RicheyWorks/LoadBalancerPro/pull/499), open, non-draft, based on `main`, and mergeable.
+
+Published local-green head: `c5d60b17935b0e8023c59778e69bb297d9eb758e`. This factual PR-open checkpoint
+advances the PR head once, so results for the published head do not satisfy the final exact-head merge gate.
+
+Local acceptance remains the 3,430-test, zero-failure/error/skip clean repository gate; both required package modes;
+skip-tests verify; lifecycle/parser/document selectors; JaCoCo, CycloneDX, executable-resource, version/LASE,
+Enterprise Lab package, and literal-loopback packaged runtime smokes; and complete diff/scope scans recorded below.
+
+Remote state at PR creation:
+
+- push CI run `30498879899` is in progress;
+- PR CI run `30498896150` is in progress;
+- CodeQL run `30498896170` is in progress;
+- the PR-event dependency review is queued/in progress, while the push-event duplicate skipped as designed.
+
+No pending result is green. Exact-head remote CI, CodeQL, dependency review, SBOM, Docker build/runtime, container
+evidence, and blocking Trivy remain mandatory before merge.
+
+Scope and safety remain unchanged: planned core health lifecycle plus strict JSON compatibility, bounded tests, and
+campaign records only; no routing-strategy redesign, proxy/API/Maven/CI/Docker/Compose behavior, secret,
+external/public target, live cloud/tenant action, or readiness claim.
+
+Blocker: none.
+
+Next action: publish this checkpoint, then require every gate to complete successfully for the new exact PR head.
+
+Decision: continue only `P-0.2`; no later slot is active.
+
+## Combined Build Plan Slot 3 Local-Green Checkpoint
+
+Timestamp: 2026-07-29T16:09:28-07:00
+
+Current slot: `P-0.2`, replace health deletion with drain, eviction thresholds, and re-admission.
+
+Current branch: `codex/p-0-2-health-drain`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `6369fcb7918d74b62b17dd73af564321f356073f`, the exact PR #498 merge commit.
+
+Implemented acceptance: `ServerHealthCoordinator` no longer deletes a server after a threshold breach. One bad
+cycle transitions the server to routable `DEGRADED`; the default third consecutive bad cycle transitions it to
+retained, non-routable `EVICTED`; and the default second consecutive good cycle returns it through `RECOVERING` to
+`HEALTHY`. Manual `setHealthy(false)` is retained `DRAINING`, and explicit `removeServer` remains the only
+administrative registry/hash deletion path. Operational state survives JSON/report round trips, and strict imports
+reject signal-analysis states where an operational lifecycle state is required.
+
+Changed files:
+
+- `src/main/java/com/richmond423/loadbalancerpro/core/LoadBalancer.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/Server.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/ServerDegradationState.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/ServerHealthCoordinator.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/ServerScoreCalculator.java`
+- `src/main/java/com/richmond423/loadbalancerpro/util/JsonServerLogParser.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/ServerHealthLifecycleTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/CoreLoadBalancerOverloadRecoveryScenarioTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/CoreLoadBalancerServerLifecycleInvariantTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/LoadBalancerTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/ServerMonitorTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/ServerTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/util/UtilsTest.java`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Verification:
+
+- exact behavioral red gate: all three focused lifecycle contracts failed on main because the first bad sample and
+  manual drain deleted registry identity;
+- implementation-focused acceptance and adjacent lifecycle/load-balancer/monitor/server/signal selectors passed;
+- strict JSON/report integration was repaired after the first clean full suite exposed its stale field allowlist;
+- authoritative clean `mvn -q test`: exit 0, 3,430 tests across 480 fresh reports, zero failures/errors/skips, and no
+  Surefire dump files;
+- `mvn -q "-DskipTests" package`, `mvn -B package`, and `mvn -q "-DskipTests" verify` passed; the full package rerun
+  also recorded 3,430 tests with zero failures/errors/skips;
+- JaCoCo XML generation, required executable-JAR resource checks, packaged `--version`, healthy/overloaded/invalid
+  synthetic LASE CLI cases, literal-loopback packaged JAR health and static status-page smoke, and explicit process
+  cleanup passed;
+- executable JAR: 95,542,419 bytes, SHA-256
+  `1C9E8784B49050371DC846BE4A0AD086647C05959207656BDC012CB82A289DEC`;
+- CycloneDX 2.9.1 generated parseable JSON/XML 1.6 BOMs with 144 components in each;
+- Enterprise Lab package smoke passed with ignored target-only evidence and its explicit no-live-cloud/no-external-
+  network boundary;
+- complete-diff whitespace and public-target/secret-like scans passed.
+
+Local limitations: the Docker CLI could not reach an engine, Trivy is not installed, and the repository root has no
+Compose file. No local Docker/runtime, Trivy, or Compose result is claimed. Exact-head remote Docker build/runtime,
+container evidence, dependency review, SBOM, blocking Trivy, CI, and CodeQL remain mandatory before merge.
+
+Scope and safety: production changes are limited to the planned core health lifecycle plus its JSON schema contract.
+No routing-strategy redesign, proxy/API/Maven/CI/Docker/Compose behavior, secret, external/public target, live
+cloud/tenant action, or readiness claim changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: none.
+
+Next action: commit and publish the local-green implementation, open one PR, then require every exact-head remote
+gate before merge.
+
+Decision: continue only `P-0.2`; no later slot is active.
+
+## Combined Build Plan Slot 3 Branch Checkpoint
+
+Timestamp: 2026-07-29T15:27:18-07:00
+
+Current slot: `P-0.2`, replace health deletion with drain, eviction thresholds, and re-admission.
+
+Current branch: `codex/p-0-2-health-drain`.
+
+Verified base: `6369fcb7918d74b62b17dd73af564321f356073f`, the exact PR #498 merge commit. Main CI
+`30495634807` and CodeQL `30495634768` passed on that exact commit, including tests, zero-skip enforcement, coverage,
+packaging/resources, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan.
+
+Prior-slot closeout: PR #498 final head `274f03f9bf608f8c0e543d69ba45bf788a39b81b` was clean and mergeable with
+PR/push CI, CodeQL, dependency review, Docker/runtime, SBOM, container evidence, and blocking Trivy green. Full-diff
+self-review had no remaining finding. `P-0.1` is `MAIN_GREEN`, completing 2 of 49 implementation slots.
+
+Planned acceptance: health detection must not delete servers from the registry. A single threshold breach transitions
+`HEALTHY` to `DEGRADED` without removal; only the configured consecutive-bad-cycle threshold transitions to
+`EVICTED`; the configured consecutive-good-cycle threshold re-admits recovered servers. Manual
+`setHealthy(false)` means `DRAINING`, remains present in the registry, and is skipped by allocation. Registry removal
+must remain an explicit administrative operation.
+
+Scope and safety: production health lifecycle behavior may change only enough to implement the verified degradation,
+drain, eviction-threshold, and re-admission contract. No routing-strategy redesign, proxy/API/Maven/CI/Docker behavior,
+external/public target, live cloud/tenant action, secret, or readiness claim is authorized. Tests must remain local
+and deterministic.
+
+Verification: pending source/test inventory and the smallest deterministic failing lifecycle contracts.
+
+Blocker: none.
+
+Next action: inspect `ServerHealthCoordinator`, `LoadBalancer`, `Server`, `ServerDegradationState`, configuration, and
+existing health/allocation tests; reconcile Claude's defect statement with current exact main before implementation.
+
+Decision: continue only `P-0.2`; no later slot is active.
+
 ## Combined Build Plan Slot 2 Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T15:06:30-07:00

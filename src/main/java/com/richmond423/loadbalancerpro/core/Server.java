@@ -44,11 +44,14 @@ public class Server {
     private volatile double weight;
     private volatile double capacity;
     private volatile boolean isHealthy;
+    private volatile ServerDegradationState degradationState;
     private volatile ServerType serverType;
     private final double healthThreshold;
     private final ToDoubleFunction<Server> loadScoreFormula;
     private final AtomicBoolean healthCheckEnabled = new AtomicBoolean(true);
     private final AtomicBoolean trendAlertTriggered = new AtomicBoolean(false);
+    private final AtomicInteger consecutiveBadHealthChecks = new AtomicInteger();
+    private final AtomicInteger consecutiveGoodHealthChecks = new AtomicInteger();
     private volatile ServerSnapshot lastSnapshot;
     private final Consumer<String> healthAlertCallback;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -121,6 +124,7 @@ public class Server {
         this.weight = DEFAULT_WEIGHT;
         this.capacity = DEFAULT_CAPACITY;
         this.isHealthy = true;
+        this.degradationState = ServerDegradationState.HEALTHY;
         this.serverType = Boolean.getBoolean("isCloudServer")
             ? ServerType.CLOUD
             : (serverType != null ? serverType : ServerType.ONSITE);
@@ -128,8 +132,9 @@ public class Server {
         this.loadScoreFormula = loadScoreFormula != null ? loadScoreFormula : 
                                 s -> (s.getCpuUsage() + s.getMemoryUsage() + s.getDiskUsage()) / 3.0;
         this.healthAlertCallback = healthAlertCallback != null ? healthAlertCallback : msg -> {};
-        this.lastSnapshot = new ServerSnapshot(cpuUsage, memoryUsage, diskUsage, loadScore, weight, capacity, 
-                                               isHealthy, serverType, cpuHistory, memHistory, diskHistory, 0);
+        this.lastSnapshot = new ServerSnapshot(cpuUsage, memoryUsage, diskUsage, loadScore, weight, capacity,
+                                               isHealthy, degradationState, serverType,
+                                               cpuHistory, memHistory, diskHistory, 0);
         updateHistory(cpuUsage, memoryUsage, diskUsage);
     }
 
@@ -144,6 +149,7 @@ public class Server {
         json.put("weight", weight);
         json.put("capacity", capacity);
         json.put("healthy", isHealthy);
+        json.put("degradationState", degradationState.name());
         json.put("serverType", serverType.name());
         json.put("healthThreshold", healthThreshold);
         json.put("cpuHistory", compressHistory(cpuHistory));
@@ -190,7 +196,9 @@ public class Server {
         server.loadScore = json.optDouble("loadScore", server.calculateLoadScore(null));
         server.weight = json.optDouble("weight", DEFAULT_WEIGHT);
         server.capacity = json.optDouble("capacity", DEFAULT_CAPACITY);
-        server.isHealthy = json.optBoolean("healthy", true);
+        boolean serializedHealthy = json.optBoolean("healthy", true);
+        server.degradationState = parseOperationalHealthState(json, serializedHealthy);
+        server.isHealthy = isRoutableState(server.degradationState);
         if (version >= 1) {
             loadHistoryFromJson(json.optJSONArray("cpuHistory"), server.cpuHistory);
             loadHistoryFromJson(json.optJSONArray("memHistory"), server.memHistory);
@@ -256,12 +264,44 @@ public class Server {
         return json.optBoolean("cloudInstance", false) ? ServerType.CLOUD : ServerType.ONSITE;
     }
 
+    private static ServerDegradationState parseOperationalHealthState(JSONObject json, boolean serializedHealthy) {
+        if (json.has("degradationState")) {
+            try {
+                ServerDegradationState state =
+                        ServerDegradationState.valueOf(json.optString("degradationState", ""));
+                if (isOperationalHealthState(state)) {
+                    return state;
+                }
+                logger.warn("Ignoring non-operational degradationState {} for server health.",
+                        state);
+            } catch (IllegalArgumentException invalidState) {
+                logger.warn("Invalid degradationState {}; deriving from healthy flag.",
+                        json.optString("degradationState"));
+            }
+        }
+        return serializedHealthy ? ServerDegradationState.HEALTHY : ServerDegradationState.DRAINING;
+    }
+
+    private static boolean isOperationalHealthState(ServerDegradationState state) {
+        return state == ServerDegradationState.HEALTHY
+                || state == ServerDegradationState.DEGRADED
+                || state == ServerDegradationState.RECOVERING
+                || state == ServerDegradationState.DRAINING
+                || state == ServerDegradationState.EVICTED;
+    }
+
+    private static boolean isRoutableState(ServerDegradationState state) {
+        return state == ServerDegradationState.HEALTHY
+                || state == ServerDegradationState.DEGRADED;
+    }
+
     public synchronized void updateMetrics(double cpu, double mem, double disk) {
         double oldCpu = cpuUsage;
         double oldMem = memoryUsage;
         double oldDisk = diskUsage;
-        LAST_SNAPSHOT_HANDLE.setVolatile(this, new ServerSnapshot(cpuUsage, memoryUsage, diskUsage, loadScore, 
-                                                                 weight, capacity, isHealthy, serverType, 
+        LAST_SNAPSHOT_HANDLE.setVolatile(this, new ServerSnapshot(cpuUsage, memoryUsage, diskUsage, loadScore,
+                                                                 weight, capacity, isHealthy, degradationState,
+                                                                 serverType,
                                                                  cpuHistory, memHistory, diskHistory, 
                                                                  historyIndex.get()));
         double sanitizedCpu = validateMetric(cpu, "CPU usage");
@@ -274,10 +314,7 @@ public class Server {
         updateHistory(sanitizedCpu, sanitizedMem, sanitizedDisk);
         checkMetricTrends(sanitizedCpu, sanitizedMem, sanitizedDisk);
         if (healthCheckEnabled.get()) {
-            IS_HEALTHY_HANDLE.setVolatile(this, 
-                sanitizedCpu < healthThreshold && 
-                sanitizedMem < healthThreshold && 
-                sanitizedDisk < healthThreshold);
+            applyStandaloneHealthCheck();
         }
         propertyChangeSupport.firePropertyChange("cpuUsage", oldCpu, sanitizedCpu);
         propertyChangeSupport.firePropertyChange("memoryUsage", oldMem, sanitizedMem);
@@ -322,7 +359,8 @@ public class Server {
             diskHistory.set(i, 0L);
         }
         historyIndex.set(0);
-        IS_HEALTHY_HANDLE.setVolatile(this, true);
+        transitionHealthState(ServerDegradationState.HEALTHY);
+        resetHealthObservationCounts();
         trendAlertTriggered.set(false);
     }
 
@@ -339,6 +377,7 @@ public class Server {
             WEIGHT_HANDLE.setVolatile(this, lastSnapshot.weight);
             CAPACITY_HANDLE.setVolatile(this, lastSnapshot.capacity);
             IS_HEALTHY_HANDLE.setVolatile(this, lastSnapshot.isHealthy);
+            degradationState = lastSnapshot.degradationState;
             SERVER_TYPE_HANDLE.setVolatile(this, lastSnapshot.serverType);
             for (int i = 0; i < METRIC_HISTORY_SIZE; i++) {
                 cpuHistory.set(i, lastSnapshot.cpuHistory.get(i));
@@ -346,6 +385,7 @@ public class Server {
                 diskHistory.set(i, lastSnapshot.diskHistory.get(i));
             }
             historyIndex.set(lastSnapshot.historyIndex);
+            resetHealthObservationCounts();
             trendAlertTriggered.set(false);
             logger.info("Rolled back server {} to last snapshot.", serverId);
         } else {
@@ -385,6 +425,10 @@ public class Server {
         return isHealthy;
     }
 
+    public ServerDegradationState getDegradationState() {
+        return degradationState;
+    }
+
     public ServerType getServerType() {
         return serverType;
     }
@@ -417,10 +461,110 @@ public class Server {
         WEIGHT_HANDLE.setVolatile(this, validateNonNegative(weight, "Weight"));
     }
 
-    public void setHealthy(boolean healthy) {
+    public synchronized void setHealthy(boolean healthy) {
+        transitionHealthState(healthy
+                ? ServerDegradationState.HEALTHY
+                : ServerDegradationState.DRAINING);
+        resetHealthObservationCounts();
+    }
+
+    synchronized HealthTransition recordHealthObservation(
+            boolean thresholdBreached,
+            int badCyclesBeforeEviction,
+            int goodCyclesBeforeReadmission) {
+        if (badCyclesBeforeEviction <= 0 || goodCyclesBeforeReadmission <= 0) {
+            throw new IllegalArgumentException("Health-cycle thresholds must be positive.");
+        }
+        ServerDegradationState currentState = degradationState;
+        if (currentState == ServerDegradationState.DRAINING) {
+            resetHealthObservationCounts();
+            return HealthTransition.NONE;
+        }
+        if (thresholdBreached) {
+            consecutiveGoodHealthChecks.set(0);
+            if (currentState == ServerDegradationState.EVICTED) {
+                consecutiveBadHealthChecks.set(badCyclesBeforeEviction);
+                return HealthTransition.NONE;
+            }
+            if (currentState == ServerDegradationState.RECOVERING) {
+                consecutiveBadHealthChecks.set(badCyclesBeforeEviction);
+                transitionHealthState(ServerDegradationState.EVICTED);
+                return HealthTransition.NONE;
+            }
+            int badCycles = consecutiveBadHealthChecks.incrementAndGet();
+            if (badCycles >= badCyclesBeforeEviction) {
+                transitionHealthState(ServerDegradationState.EVICTED);
+                return HealthTransition.EVICTED;
+            }
+            if (currentState != ServerDegradationState.DEGRADED) {
+                transitionHealthState(ServerDegradationState.DEGRADED);
+                return HealthTransition.DEGRADED;
+            }
+            return HealthTransition.NONE;
+        }
+
+        consecutiveBadHealthChecks.set(0);
+        if (currentState == ServerDegradationState.EVICTED
+                || currentState == ServerDegradationState.RECOVERING) {
+            int goodCycles = consecutiveGoodHealthChecks.incrementAndGet();
+            if (goodCycles >= goodCyclesBeforeReadmission) {
+                transitionHealthState(ServerDegradationState.HEALTHY);
+                resetHealthObservationCounts();
+                return HealthTransition.READMITTED;
+            }
+            if (currentState != ServerDegradationState.RECOVERING) {
+                transitionHealthState(ServerDegradationState.RECOVERING);
+                return HealthTransition.RECOVERING;
+            }
+            return HealthTransition.NONE;
+        }
+        if (currentState == ServerDegradationState.DEGRADED) {
+            int goodCycles = consecutiveGoodHealthChecks.incrementAndGet();
+            if (goodCycles >= goodCyclesBeforeReadmission) {
+                transitionHealthState(ServerDegradationState.HEALTHY);
+                resetHealthObservationCounts();
+                return HealthTransition.READMITTED;
+            }
+            return HealthTransition.NONE;
+        }
+        consecutiveGoodHealthChecks.set(0);
+        return HealthTransition.NONE;
+    }
+
+    private void transitionHealthState(ServerDegradationState newState) {
+        if (!isOperationalHealthState(newState)) {
+            throw new IllegalArgumentException("Not an operational server health state: " + newState);
+        }
         boolean oldHealthy = isHealthy;
-        IS_HEALTHY_HANDLE.setVolatile(this, healthy);
-        propertyChangeSupport.firePropertyChange("healthy", oldHealthy, healthy);
+        degradationState = newState;
+        IS_HEALTHY_HANDLE.setVolatile(this, isRoutableState(newState));
+        propertyChangeSupport.firePropertyChange("healthy", oldHealthy, isHealthy);
+    }
+
+    private void resetHealthObservationCounts() {
+        consecutiveBadHealthChecks.set(0);
+        consecutiveGoodHealthChecks.set(0);
+    }
+
+    private void applyStandaloneHealthCheck() {
+        if (degradationState == ServerDegradationState.DRAINING) {
+            return;
+        }
+        boolean metricsHealthy = cpuUsage < healthThreshold
+                && memoryUsage < healthThreshold
+                && diskUsage < healthThreshold;
+        transitionHealthState(metricsHealthy
+                ? ServerDegradationState.HEALTHY
+                : ServerDegradationState.EVICTED);
+        resetHealthObservationCounts();
+    }
+
+    enum HealthTransition {
+        NONE,
+        DEGRADED,
+        EVICTED,
+        RECOVERING,
+        READMITTED
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -435,10 +579,7 @@ public class Server {
         double sanitizedCapacity = validateNonNegative(capacity, "Capacity");
         CAPACITY_HANDLE.setVolatile(this, sanitizedCapacity);
         if (healthCheckEnabled.get()) {
-            IS_HEALTHY_HANDLE.setVolatile(this, 
-                cpuUsage < healthThreshold && 
-                memoryUsage < healthThreshold && 
-                diskUsage < healthThreshold);
+            applyStandaloneHealthCheck();
         }
     }
 
@@ -464,10 +605,7 @@ public class Server {
 
     public void enableHealthCheck() {
         healthCheckEnabled.set(true);
-        IS_HEALTHY_HANDLE.setVolatile(this, 
-            cpuUsage < healthThreshold && 
-            memoryUsage < healthThreshold && 
-            diskUsage < healthThreshold);
+        applyStandaloneHealthCheck();
     }
 
     public void disableHealthCheck() {
@@ -520,6 +658,7 @@ public class Server {
         private final double weight;
         private final double capacity;
         private final boolean isHealthy;
+        private final ServerDegradationState degradationState;
         private final ServerType serverType;
         private final AtomicLongArray cpuHistory;
         private final AtomicLongArray memHistory;
@@ -527,7 +666,8 @@ public class Server {
         private final int historyIndex;
 
         public ServerSnapshot(double cpuUsage, double memoryUsage, double diskUsage, double loadScore, 
-                              double weight, double capacity, boolean isHealthy, ServerType serverType, 
+                              double weight, double capacity, boolean isHealthy,
+                              ServerDegradationState degradationState, ServerType serverType,
                               AtomicLongArray cpuHistory, AtomicLongArray memHistory, AtomicLongArray diskHistory, 
                               int historyIndex) {
             this.cpuUsage = cpuUsage;
@@ -537,6 +677,7 @@ public class Server {
             this.weight = weight;
             this.capacity = capacity;
             this.isHealthy = isHealthy;
+            this.degradationState = degradationState;
             this.serverType = serverType;
             this.cpuHistory = new AtomicLongArray(METRIC_HISTORY_SIZE);
             this.memHistory = new AtomicLongArray(METRIC_HISTORY_SIZE);
@@ -558,6 +699,7 @@ public class Server {
             json.put("weight", weight);
             json.put("capacity", capacity);
             json.put("healthy", isHealthy);
+            json.put("degradationState", degradationState.name());
             json.put("serverType", serverType.name());
             json.put("cpuHistory", historyToJson(cpuHistory));
             json.put("memHistory", historyToJson(memHistory));
@@ -582,7 +724,9 @@ public class Server {
             double loadScore = json.optDouble("loadScore", MIN_VALUE);
             double weight = json.optDouble("weight", DEFAULT_WEIGHT);
             double capacity = json.optDouble("capacity", DEFAULT_CAPACITY);
-            boolean isHealthy = json.optBoolean("healthy", true);
+            boolean serializedHealthy = json.optBoolean("healthy", true);
+            ServerDegradationState degradationState = parseOperationalHealthState(json, serializedHealthy);
+            boolean isHealthy = isRoutableState(degradationState);
             ServerType serverType = parseServerType(json);
             AtomicLongArray cpuHistory = new AtomicLongArray(METRIC_HISTORY_SIZE);
             AtomicLongArray memHistory = new AtomicLongArray(METRIC_HISTORY_SIZE);
@@ -592,7 +736,8 @@ public class Server {
             loadHistoryFromJson(json.optJSONArray("diskHistory"), diskHistory);
             int historyIndex = json.optInt("historyIndex", 0);
             return new ServerSnapshot(cpuUsage, memoryUsage, diskUsage, loadScore, weight, capacity, 
-                                      isHealthy, serverType, cpuHistory, memHistory, diskHistory, historyIndex);
+                                      isHealthy, degradationState, serverType,
+                                      cpuHistory, memHistory, diskHistory, historyIndex);
         }
 
         public boolean isValid() {
@@ -601,6 +746,7 @@ public class Server {
                    diskUsage >= MIN_VALUE && diskUsage <= MAX_VALUE &&
                    loadScore >= MIN_VALUE && loadScore <= MAX_VALUE &&
                    weight >= MIN_VALUE && capacity >= MIN_VALUE &&
+                   degradationState != null &&
                    serverType != null;
         }
     }

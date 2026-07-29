@@ -890,12 +890,16 @@ class LoadBalancerTest {
 
         failed.updateMetrics(100.0, 100.0, 100.0);
         balancer.checkServerHealth();
+        balancer.checkServerHealth();
+        balancer.checkServerHealth();
 
-        assertFalse(failed.isHealthy(), "Failed server should be marked unhealthy!");
-        assertNull(balancer.getServer("FAIL"), "Health-check failover should remove failed server from lookup!");
+        assertFalse(failed.isHealthy(), "Evicted server should be excluded from rotation!");
+        assertEquals(ServerDegradationState.EVICTED, failed.getDegradationState());
+        assertSame(failed, balancer.getServer("FAIL"), "Health eviction must retain registry identity!");
         assertSame(survivor, balancer.getServer("KEEP"), "Surviving server should remain registered!");
-        assertEquals(List.of(survivor), balancer.getServers(), "Public server snapshot should only expose survivor!");
-        assertFalse(balancer.getServerMap().containsKey("FAIL"), "Server map snapshot should omit failed server!");
+        assertEquals(List.of(failed, survivor), balancer.getServers(),
+            "Public server snapshot should retain the evicted server!");
+        assertTrue(balancer.getServerMap().containsKey("FAIL"), "Server map snapshot should retain evicted server!");
 
         Map<String, Double> rebalanced = balancer.rebalanceExistingLoad();
         assertEquals(Set.of("KEEP"), rebalanced.keySet(), "Redistributed load should only target survivor!");
@@ -917,13 +921,18 @@ class LoadBalancerTest {
         first.updateMetrics(100.0, 100.0, 100.0);
         second.updateMetrics(100.0, 100.0, 100.0);
         balancer.checkServerHealth();
+        balancer.checkServerHealth();
+        balancer.checkServerHealth();
 
-        assertTrue(balancer.getServers().isEmpty(), "All failed servers should be removed!");
-        assertTrue(balancer.getServerMap().isEmpty(), "Server map snapshot should be empty after all fail!");
+        assertEquals(List.of(first, second), balancer.getServers(),
+            "All evicted servers must remain in the registry!");
+        assertEquals(Set.of("FAIL-1", "FAIL-2"), balancer.getServerMap().keySet());
+        assertEquals(ServerDegradationState.EVICTED, first.getDegradationState());
+        assertEquals(ServerDegradationState.EVICTED, second.getDegradationState());
         assertTrue(balancer.rebalanceExistingLoad().isEmpty(),
-            "Removed failed servers should not leave stale accumulated load behind!");
+            "Evicted servers should not leave stale accumulated load behind!");
         assertTrue(balancer.consistentHashing(20.0, 2).isEmpty(),
-            "Hash ring should be empty after all failed servers are removed!");
+            "Hash routing should exclude all evicted servers!");
     }
 
     @Test
@@ -1047,9 +1056,11 @@ class LoadBalancerTest {
         server.updateMetrics(100.0, 95.0, 95.0);
         balancer.checkServerHealth();
         balancer.checkServerHealth();
+        balancer.checkServerHealth();
         assertFalse(server.isHealthy(), "Server should be marked unhealthy after 100% CPU!");
-        assertEquals(0, balancer.getServers().size(), "Failed server should be removed after failover!");
-        logger.info("Health check with failover test passed: Server removed correctly.");
+        assertEquals(ServerDegradationState.EVICTED, server.getDegradationState());
+        assertEquals(List.of(server), balancer.getServers(), "Evicted server should remain registered!");
+        logger.info("Health check with failover test passed: Server evicted from rotation.");
     }
 
     @Test
@@ -1065,10 +1076,14 @@ class LoadBalancerTest {
 
         failedCloud.updateMetrics(100.0, 100.0, 100.0);
         balancer.checkServerHealth();
+        balancer.checkServerHealth();
+        balancer.checkServerHealth();
 
-        assertNull(balancer.getServer("CLOUD-FAIL"), "Failed cloud server should be removed!");
-        assertEquals(List.of(survivingCloudOne, survivingCloudTwo), balancer.getServersByType(ServerType.CLOUD),
-            "Only surviving cloud servers should remain in typed snapshot!");
+        assertSame(failedCloud, balancer.getServer("CLOUD-FAIL"), "Evicted cloud server should remain registered!");
+        assertEquals(ServerDegradationState.EVICTED, failedCloud.getDegradationState());
+        assertEquals(List.of(failedCloud, survivingCloudOne, survivingCloudTwo),
+            balancer.getServersByType(ServerType.CLOUD),
+            "Typed snapshot should retain evicted cloud servers!");
         verify(cloudManager).getMinServers();
         verify(cloudManager).scaleServers(3);
     }
@@ -1087,10 +1102,15 @@ class LoadBalancerTest {
         failedCloud.updateMetrics(100.0, 100.0, 100.0);
         failedOnsite.updateMetrics(100.0, 100.0, 100.0);
         balancer.checkServerHealth();
+        balancer.checkServerHealth();
+        balancer.checkServerHealth();
 
-        assertNull(balancer.getServer("CLOUD-FAIL"), "Failed cloud server should be removed!");
-        assertNull(balancer.getServer("ONSITE-FAIL"), "Failed onsite server should be removed!");
-        assertEquals(List.of(survivingCloud), balancer.getServers(), "Only surviving cloud server should remain!");
+        assertSame(failedCloud, balancer.getServer("CLOUD-FAIL"), "Evicted cloud server should remain registered!");
+        assertSame(failedOnsite, balancer.getServer("ONSITE-FAIL"), "Evicted onsite server should remain registered!");
+        assertEquals(ServerDegradationState.EVICTED, failedCloud.getDegradationState());
+        assertEquals(ServerDegradationState.EVICTED, failedOnsite.getDegradationState());
+        assertEquals(List.of(failedCloud, failedOnsite, survivingCloud), balancer.getServers(),
+            "Registry should retain both evicted servers and the survivor!");
         verify(cloudManager).scaleServers(2);
         verify(cloudManager, never()).scaleServers(3);
     }
@@ -1107,8 +1127,12 @@ class LoadBalancerTest {
 
         failed.updateMetrics(100.0, 100.0, 100.0);
         balancer.handleFailover();
+        balancer.handleFailover();
+        balancer.handleFailover();
 
-        assertNull(balancer.getServer("LEGACY-FAIL"), "Deprecated shim should remove failed server!");
+        assertSame(failed, balancer.getServer("LEGACY-FAIL"),
+            "Deprecated shim should retain an evicted server!");
+        assertEquals(ServerDegradationState.EVICTED, failed.getDegradationState());
         assertSame(survivor, balancer.getServer("LEGACY-KEEP"), "Deprecated shim should retain survivor!");
         Map<String, Double> rebalanced = balancer.rebalanceExistingLoad();
         assertEquals(Set.of("LEGACY-KEEP"), rebalanced.keySet(),
@@ -1134,8 +1158,10 @@ class LoadBalancerTest {
         addServers(unhealthy);
 
         assertDoesNotThrow(balancer::handleFailover, "Legacy failover shim should remain callable!");
-        assertTrue(balancer.getServers().isEmpty(), "Failover shim should preserve current health-check behavior!");
-        assertNull(balancer.getServer("FAILOVER"), "Failover shim should remove failed server from ID lookup!");
+        assertEquals(List.of(unhealthy), balancer.getServers(),
+            "One legacy failover cycle should retain the degraded server!");
+        assertSame(unhealthy, balancer.getServer("FAILOVER"));
+        assertEquals(ServerDegradationState.DEGRADED, unhealthy.getDegradationState());
     }
 
     /**

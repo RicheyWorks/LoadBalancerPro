@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.util;
 
 import com.richmond423.loadbalancerpro.core.LoadBalancer;
 import com.richmond423.loadbalancerpro.core.Server;
+import com.richmond423.loadbalancerpro.core.ServerDegradationState;
 import com.richmond423.loadbalancerpro.core.ServerType;
 import com.richmond423.loadbalancerpro.util.Utils;
 import org.junit.jupiter.api.*;
@@ -190,6 +191,7 @@ class UtilsTest {
         Server server = createTestServer("ROUNDTRIP", 30.0, 40.0, 50.0, 200.0, ServerType.CLOUD);
         server.setWeight(2.0);
         balancer.addServer(server);
+        server.setHealthy(false);
         balancer.logAlert("Roundtrip alert");
         Path jsonFile = TEST_DIR.resolve("roundtrip-report.json");
 
@@ -204,6 +206,9 @@ class UtilsTest {
             assertNotNull(importedServer, "Round-tripped server should be registered!");
             assertServerAttributes(importedServer, "ROUNDTRIP", 30.0, 40.0, 50.0, 200.0);
             assertTrue(importedServer.isCloudInstance(), "Server type should survive JSON round trip!");
+            assertEquals(ServerDegradationState.DRAINING, importedServer.getDegradationState(),
+                    "Manual drain state should survive report round trip.");
+            assertFalse(importedServer.isHealthy(), "Round-tripped drained server should remain out of rotation.");
             assertEquals(java.util.List.of("Roundtrip alert"), imported.getAlertLog(),
                     "Exported alerts should import from the report contract!");
         } finally {
@@ -528,6 +533,22 @@ class UtilsTest {
         assertTrue(thrown.getMessage().contains("unexpected"),
                 "Schema error should identify the unexpected field!");
         assertEquals(0, balancer.getServers().size(), "Rejected JSON should not partially import servers!");
+    }
+
+    @Test
+    void testImportServerLogsRejectsNonOperationalDegradationState() throws IOException {
+        logger.info("Testing JSON schema rejects non-operational degradation states");
+        String json = "[{\"serverId\":\"INVALID-STATE\",\"cpuUsage\":10.0,\"memoryUsage\":20.0,"
+            + "\"diskUsage\":30.0,\"degradationState\":\"FAILED\"}]";
+        Path jsonFile = createTestFile("invalid-degradation-state.json", json);
+
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+            () -> Utils.importServerLogs(jsonFile.toString(), JSON_FORMAT, balancer),
+            "Signal-analysis states must not be accepted as operational server lifecycle states.");
+
+        assertTrue(thrown.getMessage().contains("operational state"),
+                "Schema error should identify the lifecycle-state contract.");
+        assertEquals(0, balancer.getServers().size(), "Rejected state should not register a server.");
     }
 
     @Test

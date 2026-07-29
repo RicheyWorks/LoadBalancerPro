@@ -57,11 +57,11 @@
       "sourceIds": ["P-0.1"],
       "track": "proxy",
       "title": "Remove per-request shutdown-hook leak",
-      "status": "REMOTE_GREEN",
+      "status": "MAIN_GREEN",
       "dependencies": [],
       "riskClass": "RELIABILITY",
       "verificationProfile": "java-full",
-      "currentState": "PR #498 head 373297d15bc83d4135930d5aa63b42a6d5ff8c91 passed PR CI 30494353715, push CI 30494352609, CodeQL 30494353772, PR dependency review, SBOM, Docker/runtime, container evidence, and blocking Trivy. This remote-green checkpoint advances the head once, so the same gates must repeat before merge."
+      "currentState": "PR #498 final head 274f03f9bf608f8c0e543d69ba45bf788a39b81b passed exact-head CI, CodeQL, dependency review, SBOM, Docker/runtime, container evidence, and blocking Trivy, then merged as 6369fcb7918d74b62b17dd73af564321f356073f. Exact-main CI 30495634807 and CodeQL 30495634768 passed."
     },
     {
       "ordinal": 3,
@@ -69,11 +69,11 @@
       "sourceIds": ["P-0.2"],
       "track": "proxy",
       "title": "Replace health deletion with drain, eviction thresholds, and re-admission",
-      "status": "OPEN",
+      "status": "REMOTE_GREEN",
       "dependencies": [],
       "riskClass": "RELIABILITY",
       "verificationProfile": "java-full",
-      "currentState": "Acceptance is unproven at campaign start; re-audit current main before implementation."
+      "currentState": "PR #499 head 472dc9cc7bc277f3b52b69cb16b85fc62675e9f1 passed exact-head push CI, PR CI, CodeQL, dependency review, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan. The factual REMOTE_GREEN checkpoint advances the head, so final exact-head gates must repeat before merge."
     },
     {
       "ordinal": 4,

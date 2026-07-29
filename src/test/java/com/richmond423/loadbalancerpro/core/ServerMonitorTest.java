@@ -769,10 +769,14 @@ class ServerMonitorTest {
         addServers(failingServer);
 
         failingServer.updateMetrics(100.0, 100.0, 100.0);
-        waitForMonitorCycles(2, 5);
+        waitUntil(
+                () -> failingServer.getDegradationState() == ServerDegradationState.EVICTED,
+                5000,
+                "Failing cloud server should become evicted after consecutive bad monitor cycles.");
 
         assertFalse(failingServer.isHealthy(), "Failing server should be marked unhealthy after timeout.");
-        assertNull(balancer.getServer("CloudFailing"), "Unhealthy cloud server should be removed from active servers.");
+        assertSame(failingServer, balancer.getServer("CloudFailing"),
+                "Evicted cloud server should remain registered for recovery.");
         logger.info("Cloud failover with timeout test passed: Server marked unhealthy.");
         verify(logger).info("Cloud failover with timeout test passed: Server marked unhealthy.");
     }
@@ -836,10 +840,14 @@ class ServerMonitorTest {
         addServers(unhealthyServer);
         unhealthyServer.updateMetrics(100.0, 100.0, 100.0);
 
-        waitForMonitorCycles(2, 5);
+        waitUntil(
+                () -> unhealthyServer.getDegradationState() == ServerDegradationState.EVICTED,
+                5000,
+                "Unhealthy cloud server should become evicted after consecutive bad monitor cycles.");
 
         assertFalse(unhealthyServer.isHealthy(), "Unhealthy cloud server should be marked unhealthy.");
-        assertNull(balancer.getServer("CloudHealth"), "Unhealthy cloud server should be removed from active servers.");
+        assertSame(unhealthyServer, balancer.getServer("CloudHealth"),
+                "Evicted cloud server should remain registered for recovery.");
         logger.info("Cloud health check test passed: Server marked unhealthy.");
         verify(logger).info("Cloud health check test passed: Server marked unhealthy.");
     }

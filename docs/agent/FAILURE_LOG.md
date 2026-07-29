@@ -8535,3 +8535,75 @@ PowerShell/JavaScript quoting that split the filter into multiple CLI arguments.
 `accepts at most 1 arg(s), received 3`; no remote or repository state changed and no CI conclusion was inferred.
 Correction: use the unfiltered `--json status,conclusion,jobs` response or a PowerShell JSON projection, then continue
 waiting for both exact-head CI runs to finish.
+
+# 2026-07-29 - P-0.2 exact health-lifecycle red gate
+
+Branch: `codex/p-0-2-health-drain`
+
+The first focused `ServerHealthLifecycleTest` run executed three deterministic contracts and failed all three with
+zero errors/skips. Current main deleted the target server during the first `checkServerHealth()` call for a transient
+threshold breach, for a repeated breach, and for manual `setHealthy(false)`. The failures prove that current behavior
+has no debounce, no retained registry identity for recovery, and no distinction between manual drain and automatic
+failure. Correction: retain health-checked servers in the registry, introduce explicit operational degradation
+states and consecutive bad/good thresholds, keep manual drain excluded but registered, and reserve registry/hash
+removal for explicit `removeServer`.
+
+First P-0.2 adjacent selector after implementation: 118 tests ran with nine failures, zero errors, and zero skips.
+The new lifecycle tests and unchanged server/rolling-signal tests passed. Every failure was an older health/failover
+test that still invoked only one or two cycles and asserted automatic registry deletion; observed servers instead
+remained registered and routable in `DEGRADED`, as required by P-0.2. Correction: update those exact stale contracts
+to drive the three-cycle eviction threshold, assert retained `EVICTED` registry identity and routing exclusion,
+preserve accumulated-load redistribution/cloud replacement behavior, and keep explicit `removeServer` deletion tests
+unchanged.
+
+First P-0.2 updated-selector invocation: PowerShell parsed the unquoted comma-separated Surefire `-Dtest` value as
+multiple arguments and stopped before Maven started. This is a shell invocation failure, not a compile or test
+result. Correction: quote the complete `-Dtest=...` argument and rerun the unchanged adjacent selector.
+
+P-0.2 campaign-source lookup: the slot JSON and board lookup succeeded, but a follow-up guessed the nonexistent
+path `docs/agent/COMBINED_BUILD_PLAN_SOURCE_MANIFEST.md`; ripgrep returned exit 2 after printing the valid campaign
+matches. This is a read-only path-resolution failure and does not affect the green selector result. Correction:
+resolve the imported source-plan file from the campaign contract/manifest before citing its detailed acceptance
+text, and use only confirmed repository paths.
+
+First P-0.2 background full-suite launch: the shell policy rejected a compound launcher that validated a temporary
+evidence directory and removed two possible stale evidence files before starting Maven. No command ran and no
+repository or temporary file was removed. Correction: use a fresh uniquely named evidence directory so no deletion
+is needed, then launch the same clean full-suite runner in a hidden process and monitor its preserved exit status.
+
+First P-0.2 clean full-suite gate after lifecycle implementation: the preserved-exit runner completed with exit 1
+after 3,428 tests across 480 fresh reports, with zero failures, one error, zero skips, and no Surefire dumps.
+`UtilsTest.testJsonExportImportsAsRoundTripReport` failed because `Server.toJson()` now emits the operational
+`degradationState`, while the strict `JsonServerLogParser` schema still classified that field as unexpected. This is
+an in-scope serialization/schema integration defect exposed by the full gate. Correction: add the optional
+degradation-state field to the server JSON schema allowlist, verify valid lifecycle round trips and invalid-state
+fallback behavior, then rerun focused parser/serialization coverage and the complete clean suite.
+
+P-0.2 post-package evidence inventory: a combined read-only workflow-search and report-aggregation orchestration
+returned exit 1 after producing a large, truncated workflow search result, so the sibling aggregate/artifact output
+was not accepted as evidence. The completed `mvn -B package` runner itself preserved exit 0 and is unaffected.
+Correction: rerun report aggregation and artifact inventory as a separate bounded command, then inspect only the
+confirmed CI command ranges needed for local packaged smoke and SBOM parity.
+
+First P-0.2 packaged CLI smoke: the locally composed smoke bundle invoked `java -jar ... --version` before the
+CI-defined LASE cases and stopped because the version command returned nonzero. The CI workflow for this branch does
+not include that version assertion, and no LASE case ran in this invocation. Correction: inspect the bounded version
+output to classify whether current fail-closed startup configuration makes that optional release-workflow command
+inapplicable, then run the exact current CI LASE smoke contract unchanged; do not weaken application authentication.
+
+P-0.2 packaged-runtime route lookup: a broad read-only ripgrep over main and test sources printed the expected
+health, static status-page, and proxy-status references but returned exit 1 through the PowerShell pipeline. The
+lookup changed no state and is not accepted as a gate. Correction: use the already confirmed CI packaged-JAR smoke
+contract (`GET /api/health` on literal loopback) as the required runtime assertion; any additional static/status
+requests are supplemental and must not replace or weaken that gate.
+
+P-0.2 local container-tool inventory: the Docker CLI is installed but no Docker Engine version was reachable, the
+Trivy CLI is not installed, and the repository root has no Compose file. Therefore no local Docker runtime, image
+scan, or Compose result is claimed. Correction: retain the green local Java/package/SBOM/loopback evidence and require
+the exact-head remote CI Docker build/runtime, container evidence, and blocking Trivy result before merge; Compose is
+inapplicable to this slot and repository root.
+
+P-0.2 focused-report summary lookup: a read-only PowerShell one-liner placed a pipeline directly after a `foreach`
+block and failed to parse before reading any report. This is a reporting-command failure, not a test result.
+Correction: collect report rows into a variable, then format that variable in a separate statement; retain the
+already authoritative 3,430-test full-suite and full-package results.

@@ -6,6 +6,32 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Supervisor Command Ledger PR5 Executable Checkpoint
+
+Timestamp: 2026-07-29T07:12:27-07:00
+
+Current slot: COMMAND-LEDGER-PR5 - restart reconciliation and command-history repair.
+
+Current branch: `codex/command-ledger-restart-reconciliation`.
+
+Executable checkpoint: `2f385e0ebc1d28919ab1fdde1f804acef22bb910`
+(`Reconcile supervisor command history on restart`).
+
+Local verification and scope audit: current and green as recorded in the immediately preceding local-verification
+checkpoint; the executable commit contains exactly the 15 audited paths and 2,991 insertions/84 deletions. The worktree
+was clean immediately after commit.
+
+PR URL: not created.
+
+Remote candidate checks: not started.
+
+Blocker: none.
+
+Next action: record this executable checkpoint, push the branch, open PR5, and audit required remote checks on the exact
+candidate head. Do not merge before human review and exact-head remote gates.
+
+Decision: continue.
+
 ## Supervisor Command Ledger PR5 Local Verification Checkpoint
 
 Timestamp: 2026-07-29T07:11:09-07:00

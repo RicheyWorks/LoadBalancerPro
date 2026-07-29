@@ -511,6 +511,27 @@ public final class EnterpriseLabLoopbackAllocationRouter {
         }
     }
 
+    EnterpriseLabCommandHistoryReconciler.Checkpoint
+            reconcileCommandHistoryBeforeAllocation(
+                    EnterpriseLabAllocationTransactionCoordinator coordinator) {
+        if (installedStateStore instanceof EnterpriseLabSupervisorAllocationBridge bridge) {
+            return bridge.reconcileCommandHistoryBeforeAllocation(coordinator);
+        }
+        return EnterpriseLabCommandHistoryReconciler.Checkpoint.empty();
+    }
+
+    EnterpriseLabCommandHistoryReconciler.Report
+            reconcileCommandHistoryAfterAllocation(
+                    EnterpriseLabAllocationTransactionCoordinator coordinator,
+                    EnterpriseLabCommandHistoryReconciler.Checkpoint checkpoint,
+                    EnterpriseLabAllocationReconciler.ReconciliationReport allocationReport) {
+        if (installedStateStore instanceof EnterpriseLabSupervisorAllocationBridge bridge) {
+            return bridge.reconcileCommandHistoryAfterAllocation(
+                    coordinator, checkpoint, allocationReport);
+        }
+        return EnterpriseLabCommandHistoryReconciler.Report.empty();
+    }
+
     record InstalledStateMutation(
             String transactionId,
             Optional<String> experimentId,

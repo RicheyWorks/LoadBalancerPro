@@ -652,14 +652,21 @@ public final class EnterpriseLabIndependentSupervisorProofRunner {
                     }
                 };
             }
-            supervisor = EnterpriseLabAllocationSupervisor.createForProof(
-                    root,
-                    targets,
-                    router,
-                    lease.ownershipGate(),
-                    allocationGate,
-                    claim.replayedExperiments(),
-                    injector);
+            try (EnterpriseLabEvidenceOwnershipRenewer startupRenewer =
+                         new EnterpriseLabEvidenceOwnershipRenewer(
+                                 lease.ownershipGate(),
+                                 claim.recoveryGate(),
+                                 Optional.of(allocationGate),
+                                 lease.renewalInterval())) {
+                supervisor = EnterpriseLabAllocationSupervisor.createForProof(
+                        root,
+                        targets,
+                        router,
+                        lease.ownershipGate(),
+                        allocationGate,
+                        claim.replayedExperiments(),
+                        injector);
+            }
             renewProofLease(lease, "operator-service startup");
 
             durableEvidence = new EnterpriseLabExperimentDurableEvidenceRepository(

@@ -38,6 +38,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * Ownership-fenced application-side command evidence. The fixed local file is
@@ -233,6 +234,76 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                 draft);
     }
 
+    /**
+     * Continues an already-durable correlation under the current ownership
+     * epoch without reconstructing or reissuing the original request. The
+     * command identity remains byte-for-byte bound to its first application
+     * event; only bounded reconciliation outcome fields are new.
+     */
+    synchronized AppendReceipt appendReconciliation(
+            String correlationId,
+            ApplicationEventDraft eventDraft) {
+        ensureWritable();
+        String safeCorrelationId = Objects.requireNonNull(
+                correlationId, "correlationId cannot be null");
+        ApplicationEventDraft safeDraft = Objects.requireNonNull(
+                eventDraft, "eventDraft cannot be null");
+        if (safeDraft.eventType() != EventType.RECONCILIATION_COMPLETED
+                && safeDraft.eventType() != EventType.APPLICATION_COMMITTED
+                && safeDraft.eventType() != EventType.COMMAND_FAILED
+                && safeDraft.eventType() != EventType.COMMAND_QUARANTINED) {
+            throw new IllegalArgumentException(
+                    "restart repair can append only bounded reconciliation outcomes");
+        }
+        MutationAuthorization authorization = requireMutationAuthorization();
+        return appendAuthorized(
+                authorization,
+                before -> {
+                    EnterpriseLabCommandLedgerEvent first = before.eventsFor(
+                                    safeCorrelationId).stream()
+                            .findFirst()
+                            .orElseThrow(() -> failure(
+                                    Failure.INTENT_MISSING,
+                                    "restart repair requires an existing durable intent"));
+                    Map<String, String> metadata = new LinkedHashMap<>(
+                            safeDraft.metadata());
+                    String generation = Long.toString(authorization.generation());
+                    String supplied = metadata.putIfAbsent(
+                            "reconcilerOwnerGeneration", generation);
+                    if (supplied != null && !supplied.equals(generation)) {
+                        throw failure(
+                                Failure.OWNER_GENERATION_MISMATCH,
+                                "restart repair metadata does not match the live owner generation");
+                    }
+                    ApplicationEventDraft authorizedDraft = new ApplicationEventDraft(
+                            safeDraft.eventType(),
+                            safeDraft.installedFingerprintBefore(),
+                            safeDraft.installedFingerprintAfter(),
+                            safeDraft.routerGenerationBefore(),
+                            safeDraft.routerGenerationAfter(),
+                            safeDraft.authenticationResult(),
+                            safeDraft.validationResult(),
+                            safeDraft.duplicateClassification(),
+                            safeDraft.mutationStatus(),
+                            safeDraft.responseClassification(),
+                            safeDraft.responseFingerprint(),
+                            safeDraft.observedSupervisorEventFingerprint(),
+                            safeDraft.applicationCommitStatus(),
+                            safeDraft.retryAttempt(),
+                            safeDraft.reasonCode(),
+                            safeDraft.occurredAt(),
+                            metadata);
+                    return codec.issue(codecDraft(
+                            first,
+                            authorizedDraft,
+                            before.events().size() + 1L,
+                            before.head()
+                                    .map(EnterpriseLabCommandLedgerEvent::currentFingerprint)
+                                    .orElse(EnterpriseLabCommandLedgerEvent.GENESIS_FINGERPRINT)));
+                },
+                () -> { });
+    }
+
     /** Deterministically reconstructs the complete application ledger. */
     public synchronized ReadResult replay() {
         ensureReadable();
@@ -268,24 +339,37 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                     "request generation is not the live application owner generation");
         }
         requestOwnershipVerifier.verify(safeRequest, authorization, false);
+        return appendAuthorized(
+                authorization,
+                before -> {
+                    requestOwnershipVerifier.verify(
+                            safeRequest,
+                            authorization,
+                            before.eventsFor(safeRequest.requestId()).isEmpty());
+                    Draft codecDraft = codecDraft(
+                            safeRequest,
+                            safeDraft,
+                            before.events().size() + 1L,
+                            before.head()
+                                    .map(EnterpriseLabCommandLedgerEvent::currentFingerprint)
+                                    .orElse(EnterpriseLabCommandLedgerEvent.GENESIS_FINGERPRINT));
+                    return response == null
+                            ? codec.issue(safeRequest, codecDraft)
+                            : codec.issue(safeRequest, response, codecDraft);
+                },
+                () -> requestOwnershipVerifier.verify(
+                        safeRequest, authorization, false));
+    }
 
+    private AppendReceipt appendAuthorized(
+            MutationAuthorization authorization,
+            Function<ReadResult, EnterpriseLabCommandLedgerEvent> eventFactory,
+            Runnable liveIdentityVerifier) {
         synchronized (processMutex) {
             requireSameMutationAuthorization(authorization);
             ReadResult before = replayLocked();
-            requestOwnershipVerifier.verify(
-                    safeRequest,
-                    authorization,
-                    before.eventsFor(safeRequest.requestId()).isEmpty());
-            Draft codecDraft = codecDraft(
-                    safeRequest,
-                    safeDraft,
-                    before.events().size() + 1L,
-                    before.head()
-                            .map(EnterpriseLabCommandLedgerEvent::currentFingerprint)
-                            .orElse(EnterpriseLabCommandLedgerEvent.GENESIS_FINGERPRINT));
-            EnterpriseLabCommandLedgerEvent event = response == null
-                    ? codec.issue(safeRequest, codecDraft)
-                    : codec.issue(safeRequest, response, codecDraft);
+            EnterpriseLabCommandLedgerEvent event = Objects.requireNonNull(
+                    eventFactory.apply(before), "eventFactory returned null");
             validateNext(before.events(), event);
             byte[] encoded = codec.encode(event);
             long frameBytes = encoded.length + 1L;
@@ -301,7 +385,7 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
             boolean writeStarted = false;
             try {
                 requireSameMutationAuthorization(authorization);
-                requestOwnershipVerifier.verify(safeRequest, authorization, false);
+                liveIdentityVerifier.run();
                 prepareLedgerFile();
                 ReadResult stable = replayLocked();
                 if (!stable.events().equals(before.events())
@@ -311,7 +395,7 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                 }
                 failureInjector.checkpoint(WriteCheckpoint.BEFORE_APPEND, 0);
                 requireSameMutationAuthorization(authorization);
-                requestOwnershipVerifier.verify(safeRequest, authorization, false);
+                liveIdentityVerifier.run();
                 writeStarted = true;
                 appendFrame(encoded);
                 failureInjector.checkpoint(
@@ -321,7 +405,7 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                 failureInjector.checkpoint(
                         WriteCheckpoint.AFTER_SYNC, Math.toIntExact(frameBytes));
                 requireSameMutationAuthorization(authorization);
-                requestOwnershipVerifier.verify(safeRequest, authorization, false);
+                liveIdentityVerifier.run();
 
                 ReadResult after = replayLocked();
                 if (after.events().size() != before.events().size() + 1
@@ -428,13 +512,6 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
             throw failure(Failure.PREDECESSOR_MISMATCH,
                     "application ledger predecessor fingerprint does not match");
         }
-        if (!prior.isEmpty()
-                && event.applicationOwnerGeneration()
-                < prior.get(prior.size() - 1).applicationOwnerGeneration()) {
-            throw failure(Failure.OWNER_GENERATION_REGRESSION,
-                    "application owner generation regressed in the ledger chain");
-        }
-
         EnterpriseLabCommandLedgerEvent first = null;
         EnterpriseLabCommandLedgerEvent head = null;
         boolean dispatched = false;
@@ -449,6 +526,12 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
             dispatched |= candidate.eventType() == EventType.DISPATCH_ATTEMPTED;
         }
         if (first == null) {
+            if (!prior.isEmpty()
+                    && event.applicationOwnerGeneration()
+                    < prior.get(prior.size() - 1).applicationOwnerGeneration()) {
+                throw failure(Failure.OWNER_GENERATION_REGRESSION,
+                        "a new application command cannot regress owner generation");
+            }
             if (event.eventType() != EventType.APPLICATION_INTENT_PERSISTED) {
                 throw failure(Failure.INTENT_MISSING,
                         "the first correlation event must be a durable application intent");
@@ -544,6 +627,46 @@ public final class EnterpriseLabApplicationCommandLedger implements AutoCloseabl
                 requestAllocationGeneration(request),
                 request.allocationFingerprint(),
                 request.previousCommittedFingerprint(),
+                draft.installedFingerprintBefore(),
+                draft.installedFingerprintAfter(),
+                draft.routerGenerationBefore(),
+                draft.routerGenerationAfter(),
+                draft.authenticationResult(),
+                draft.validationResult(),
+                draft.duplicateClassification(),
+                draft.mutationStatus(),
+                draft.responseClassification(),
+                draft.responseFingerprint(),
+                draft.observedSupervisorEventFingerprint(),
+                draft.applicationCommitStatus(),
+                draft.retryAttempt(),
+                draft.reasonCode(),
+                draft.occurredAt(),
+                draft.metadata(),
+                predecessor);
+    }
+
+    private static Draft codecDraft(
+            EnterpriseLabCommandLedgerEvent identity,
+            ApplicationEventDraft draft,
+            long sequence,
+            String predecessor) {
+        return new Draft(
+                LedgerSide.APPLICATION,
+                sequence,
+                draft.eventType(),
+                identity.correlationId(),
+                identity.requestFingerprint(),
+                identity.transactionId(),
+                identity.experimentId(),
+                identity.commandType(),
+                identity.applicationInstanceId(),
+                identity.applicationOwnerGeneration(),
+                identity.supervisorInstanceId(),
+                identity.supervisorGeneration(),
+                identity.allocationGeneration(),
+                identity.requestedAllocationFingerprint(),
+                identity.previousCommittedFingerprint(),
                 draft.installedFingerprintBefore(),
                 draft.installedFingerprintAfter(),
                 draft.routerGenerationBefore(),

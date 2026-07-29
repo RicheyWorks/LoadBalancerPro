@@ -168,6 +168,86 @@ class EnterpriseLabApplicationCommandLedgerTest {
     }
 
     @Test
+    void currentOwnerCanTerminalizeOlderIntentWithoutReissuingItsRequest() {
+        Request generationOne = request("command-old", 1L, NOW);
+        try (EnterpriseLabApplicationCommandLedger first = ownedLedger()) {
+            first.append(generationOne, intent());
+        }
+
+        authority.replaceOwner("replacement-owner", 2L);
+        try (EnterpriseLabApplicationCommandLedger replacement = ownedLedger()) {
+            replacement.append(
+                    request("command-current", 2L, NOW.plusSeconds(1)), intent());
+            ApplicationEventDraft reconciled = new ApplicationEventDraft(
+                    EventType.RECONCILIATION_COMPLETED,
+                    INSTALLED,
+                    INSTALLED,
+                    7L,
+                    7L,
+                    AuthenticationResult.NOT_ATTEMPTED,
+                    ValidationResult.NOT_ATTEMPTED,
+                    DuplicateClassification.NOT_EVALUATED,
+                    MutationStatus.NOT_ATTEMPTED,
+                    ResponseClassification.NOT_ATTEMPTED,
+                    EnterpriseLabCommandLedgerEvent.NONE,
+                    EnterpriseLabCommandLedgerEvent.NONE,
+                    ApplicationCommitStatus.PENDING,
+                    0,
+                    "INTENT_WITHOUT_SUPERVISOR_RECEIPT",
+                    NOW.plusSeconds(2),
+                    Map.of("boundary", "restart-reconciliation"));
+            replacement.appendReconciliation("command-old", reconciled);
+            replacement.appendReconciliation(
+                    "command-old",
+                    new ApplicationEventDraft(
+                            EventType.COMMAND_FAILED,
+                            INSTALLED,
+                            INSTALLED,
+                            7L,
+                            7L,
+                            AuthenticationResult.NOT_ATTEMPTED,
+                            ValidationResult.NOT_ATTEMPTED,
+                            DuplicateClassification.NOT_EVALUATED,
+                            MutationStatus.NOT_ATTEMPTED,
+                            ResponseClassification.NOT_ATTEMPTED,
+                            EnterpriseLabCommandLedgerEvent.NONE,
+                            EnterpriseLabCommandLedgerEvent.NONE,
+                            ApplicationCommitStatus.FAILED,
+                            0,
+                            "INTENT_WITHOUT_SUPERVISOR_RECEIPT",
+                            NOW.plusSeconds(3),
+                            Map.of("boundary", "restart-reconciliation")));
+
+            List<EnterpriseLabCommandLedgerEvent> old =
+                    replacement.replay().eventsFor("command-old");
+            assertEquals(List.of(
+                            EventType.APPLICATION_INTENT_PERSISTED,
+                            EventType.RECONCILIATION_COMPLETED,
+                            EventType.COMMAND_FAILED),
+                    old.stream().map(EnterpriseLabCommandLedgerEvent::eventType).toList());
+            assertTrue(old.stream().allMatch(
+                    event -> event.applicationOwnerGeneration() == 1L));
+            assertEquals("2", old.get(1).metadata().get(
+                    "reconcilerOwnerGeneration"));
+            assertEquals(List.of(1L, 2L, 1L, 1L),
+                    replacement.replay().events().stream()
+                            .map(EnterpriseLabCommandLedgerEvent::applicationOwnerGeneration)
+                            .toList());
+            assertTrue(replacement.replay().unresolvedHeads().stream()
+                    .noneMatch(event -> event.correlationId().equals("command-old")));
+
+            StoreException staleIntent = assertThrows(
+                    StoreException.class,
+                    () -> replacement.append(
+                            request("command-stale", 1L, NOW.plusSeconds(4)), intent()));
+            assertEquals(Failure.OWNER_GENERATION_MISMATCH, staleIntent.failure());
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> replacement.appendReconciliation("command-current", dispatch()));
+        }
+    }
+
+    @Test
     void processLocalSecondWriterIsRejectedUntilFirstCloses() {
         EnterpriseLabApplicationCommandLedger first = ownedLedger();
         try {

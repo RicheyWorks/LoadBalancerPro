@@ -6,6 +6,97 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-29T07:32:03-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / PR #493
+
+Failure type: combined blocker-record patch used stale session-manager context
+
+Failing check: first `apply_patch` attempt for the remote blocker checkpoint and failure entries
+
+Observed/root cause: the expected long session-manager introduction line omitted the existing conjunction before the
+final historical link, so patch verification failed. The patch was atomic and changed neither requested file.
+
+Correction/result: inspect the exact file heads and apply each insertion against the short, stable first-checkpoint
+heading.
+
+Follow-up: verify both diffs before committing the blocker record.
+
+## Entry
+
+Date/time: 2026-07-29T07:30:20-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / PR #493
+
+Failure type: exact-head PR CI failed the blocking container vulnerability scan
+
+Failing check: PR CI run `30459867753`, job `Build, Test, Package, Smoke`, step `Scan Docker image`
+
+Observed/root cause: the run targeted exact then-current head
+`4e2f33e8ae7cf85fd8ba78acab59d17c38a5cee3`. Dependency resolution, 3,407 tests, zero-skipped guard, JaCoCo,
+packaging/resource inspection, packaged smoke, CycloneDX SBOM, LASE demo, Docker build/runtime smoke, and controlled
+container evidence all passed; dependency review, CodeQL run `30459879238`, and aggregate CodeQL also passed. Blocking
+Trivy 0.70 then found four fixed HIGH library vulnerabilities and zero critical/OS findings:
+`CVE-2026-59901` in `io.netty:netty-codec-compression` and `CVE-2026-55831`, `CVE-2026-55833`, and `CVE-2026-56745`
+in `io.netty:netty-codec-http`. The image contains unchanged baseline Netty `4.2.15.Final`; Trivy reports
+`4.2.16.Final` as the fixed line. PR5 has zero `pom.xml`, workflow, Docker/Compose, or `.trivyignore` diff, so the
+finding is a newly disclosed baseline dependency issue rather than a command-reconciliation regression.
+
+Correction/result: preserve the blocking failure and downloaded ignored run evidence beneath
+`target/pr5-remote-ci-30459867753`; do not allowlist, weaken Trivy, merge, or add an out-of-scope dependency change to
+PR5. The duplicate exact-head push CI run `30459860459` later failed at the same blocking scan. Its downloaded
+`trivy-summary.txt` is byte-identical to the PR run report with SHA-256
+`5135C3A3D35D5B521F8B34D12A5EE6A6F41ADEB86D294A6C92CCB3417588A29A`, so the baseline finding reproduced across
+both exact-head CI events.
+
+Follow-up: obtain explicit scope for a prerequisite Netty remediation (or rebase after an independently reviewed base
+remediation), verify the fixed dependency through the full local and remote contract, then rerun PR5 exact-head gates.
+
+## Entry
+
+Date/time: recorded 2026-07-29T07:30:20-07:00 during exact-head remote monitoring
+
+Branch/PR: codex/command-ledger-restart-reconciliation / PR #493
+
+Failure type: two read-only remote-monitoring command compositions obscured otherwise available status
+
+Failing check: first combined exact-head `gh run list`/`gh pr checks` query, then a `gh run list --jq` query passed through
+PowerShell
+
+Observed/root cause: the first PowerShell pipeline did not flatten/filter the JSON result as intended and
+`gh pr checks` returned its documented nonzero pending status. The later dynamically quoted jq expression was split by
+PowerShell, so `gh` reported `unknown command "|"`. The successful `gh pr view --json statusCheckRollup` portions still
+showed the exact head and non-terminal checks; no gate conclusion was accepted from the malformed output. No repository,
+workflow, remote, or external state changed.
+
+Correction/result: use `gh pr view --json headRefOid,mergeStateStatus,statusCheckRollup` and PowerShell object iteration,
+then use `gh run view <id> --json ...` for exact run/job/step inspection. Those corrected queries proved exact-head
+CodeQL/dependency success and the later CI vulnerability failure.
+
+Follow-up: keep command exit semantics separate from expected pending state and avoid dynamic jq quoting in PowerShell.
+
+## Entry
+
+Date/time: recorded 2026-07-29T07:30:20-07:00 during baseline dependency audit
+
+Branch/PR: codex/command-ledger-restart-reconciliation / PR #493
+
+Failure type: baseline dependency search included two nonexistent paths
+
+Failing check: ripgrep search across `pom.xml`, `.mvn`, `README.md`, and `docs/agent/BUILD_CONTRACT.md`
+
+Observed/root cause: the useful `pom.xml` and README matches proved baseline `netty.version` is `4.2.15.Final`, but
+ripgrep also returned OS error 2 for nonexistent `.mvn` and `docs/agent/BUILD_CONTRACT.md`. No conclusion depended on
+those paths; the exact `origin/main:pom.xml` content independently confirmed the same Netty property. No file, artifact,
+process, branch, remote, or external state changed.
+
+Correction/result: accept only the existing-path POM comparison and the zero-line PR POM diff; use tracked-file
+discovery before any later build-contract lookup.
+
+Follow-up: keep the vulnerability attributed to unchanged baseline evidence, not to an incomplete path search.
+
+## Entry
+
 Date/time: 2026-07-29T06:38:17-07:00
 
 Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet

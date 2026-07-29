@@ -6,6 +6,50 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Supervisor Command Ledger PR5 Remote Vulnerability Blocker Checkpoint
+
+Timestamp: 2026-07-29T07:30:20-07:00
+
+Current slot: COMMAND-LEDGER-PR5 - restart reconciliation and command-history repair.
+
+Current branch: `codex/command-ledger-restart-reconciliation`.
+
+Executable checkpoint: `2f385e0ebc1d28919ab1fdde1f804acef22bb910`.
+
+Published pre-blocker-record head: `4e2f33e8ae7cf85fd8ba78acab59d17c38a5cee3`.
+
+PR URL: https://github.com/RicheyWorks/LoadBalancerPro/pull/493
+
+Remote verification on the exact pre-blocker-record head:
+
+- PR CI run `30459867753`: failed only at the blocking Trivy image scan after dependency resolution, tests,
+  zero-skipped guard, coverage, packaging/resources, packaged smoke, CycloneDX SBOM, LASE demo, Docker build/runtime
+  smoke, and controlled-container evidence passed;
+- PR dependency review: passed;
+- CodeQL run `30459879238` and aggregate CodeQL: passed;
+- push CI run `30459860459`: failed at the same blocking Trivy scan after the prior steps passed.
+
+Blocking evidence: Trivy found four HIGH, zero CRITICAL, and zero OS vulnerabilities in unchanged baseline Netty
+`4.2.15.Final`: `CVE-2026-59901`, `CVE-2026-55831`, `CVE-2026-55833`, and `CVE-2026-56745`. Trivy identifies
+`4.2.16.Final` as a fixed line. PR5 changes neither `pom.xml` nor workflow, Docker/Compose, or `.trivyignore` policy.
+Downloaded run evidence remains ignored beneath `target/pr5-remote-ci-30459867753` and
+`target/pr5-remote-ci-30459860459`; the two `trivy-summary.txt` files are byte-identical with SHA-256
+`5135C3A3D35D5B521F8B34D12A5EE6A6F41ADEB86D294A6C92CCB3417588A29A`.
+
+Scope decision: do not allowlist, weaken the blocking scan, merge, or widen PR5 into a dependency/security update. The
+active slot contract explicitly excludes dependency changes, and a fresh baseline vulnerability is a prerequisite
+security-remediation concern rather than permission to change PR5 scope.
+
+Local verification and the prior scope/safety audit remain green, but they do not override the failed remote gate.
+
+Blocker: exact-head blocking Trivy is red.
+
+Required next action: obtain explicit authority for a separately scoped prerequisite Netty `4.2.16.Final` remediation
+or rebase after an independently reviewed remediation lands on `main`; then rerun the complete local and exact-head
+remote contract. PR #493 must remain unmerged.
+
+Decision: stop at the failed remote gate; do not open PR6.
+
 ## Supervisor Command Ledger PR5 Pull Request Checkpoint
 
 Timestamp: 2026-07-29T07:13:44-07:00

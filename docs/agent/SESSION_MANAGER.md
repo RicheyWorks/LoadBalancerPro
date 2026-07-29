@@ -69,6 +69,10 @@ Verification:
   `innerHTML` uses only fixed strategy/backend definitions and numeric local-simulation output;
 - full PR scope is 13 paths and 2,368 added lines before final factual checkpoint records; no production source,
   runtime resources, POM/dependency, workflow, Docker/Compose, or script path changed;
+- complete-diff self-review covered all five source artifacts, all 49 manifest rows, board/contract/navigation, the
+  read-only guard, and checkpoint history. It found one ambiguous README referent between the historical docs/test-only
+  evidence-audit campaign and the active implementation campaign; the failure log records it, both sentences now name
+  the evidence audit explicitly, and the resulting 16-test campaign/README/framing selector is green;
 - zero workspace Java/Maven processes remained after verification.
 
 Blocker: none.

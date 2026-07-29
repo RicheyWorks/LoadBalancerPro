@@ -6,6 +6,29 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-29T11:58:29-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / PR #496
+
+Failure type: full-diff self-review found ambiguous README campaign-scope referent
+
+Failing check: manual complete-diff claim and scope review of final published head
+`1f0b73b2695a9c5d7aec3be7fd6d1a81594eed48`
+
+Observed/root cause: the new active implementation-campaign paragraph was inserted immediately before two existing
+paragraphs beginning `The campaign does not...`. Those older paragraphs describe the preceding Evidence Audit
+docs/test-only campaign, but their now-nearest referent was the newly inserted implementation campaign. Read literally,
+README denied production-code/build/runtime changes that the user's active contract authorizes when a specific slot
+requires them. No implementation, runtime, dependency, workflow, process, external target, or remote policy changed.
+
+Correction/result: qualify both existing paragraphs as `The evidence audit campaign` so its historical docs/test-only
+boundary remains intact and the active implementation campaign remains governed by its separate bounded contract.
+
+Follow-up: rerun the README framing/campaign guards, commit and push the correction, and accept only fresh required
+checks matched to the new exact head.
+
+## Entry
+
 Date/time: 2026-07-29T11:43:55-07:00
 
 Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet

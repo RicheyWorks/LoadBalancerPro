@@ -6,6 +6,26 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-29T08:27:33-07:00
+
+Branch/PR: codex/netty-4-2-16-baseline-remediation / PR #494
+
+Failure type: exact-head monitoring projection lost jq string quoting in PowerShell
+
+Failing check: read-only `gh run view --jq` status projection for CI run `30465679776` and CodeQL run `30465680562`
+
+Observed/root cause: PowerShell removed the jq quotes around `in_progress`, so jq interpreted the value as an undefined
+function and both read-only projections exited with `function not defined: in_progress/0`. The preceding 50-second wait
+completed, but the command returned no new run status. No repository, artifact, process, workflow, PR, branch, or remote
+state changed.
+
+Correction/result: record the tooling failure and resume exact-head monitoring with plain `--json` output or a
+PowerShell-native JSON projection that does not pass quoted jq predicates through the shell.
+
+Follow-up: publish this required failure-log checkpoint, then accept remote results only from the new exact PR head.
+
+## Entry
+
 Date/time: 2026-07-29T08:07:41-07:00
 
 Branch/PR: codex/netty-4-2-16-baseline-remediation / no PR yet

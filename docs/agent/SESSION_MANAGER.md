@@ -6,6 +6,36 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Netty Baseline Recovery PR Creation Checkpoint
+
+Timestamp: 2026-07-29T08:23:51-07:00
+
+Current recovery slot: `RECOVERY-NETTY-01`.
+
+Current branch: `codex/netty-4-2-16-baseline-remediation`.
+
+Executable checkpoint: `2e407d40913696cd43b4137def0199c95807d9a4`
+(`Update Netty baseline to 4.2.16`).
+
+Current branch head: `e2d2ce51f11b211a391bdd4d1e2c60e881c82f38`
+(`Record Netty recovery executable checkpoint`).
+
+PR: [#494](https://github.com/RicheyWorks/LoadBalancerPro/pull/494), `Update Netty baseline to 4.2.16`.
+
+Remote checks: PR-triggered CI, CodeQL, and dependency review are queued. A push-triggered CI run is also in progress
+and its dependency-review job was skipped as expected outside a pull-request event. No remote result is yet green.
+
+Local verification and scope audit: current and green as recorded below. The PR description names the four blocking
+Netty CVEs fixed by `4.2.16.Final`, the broader overlap in Dependabot PR #492, every local check, the scope/safety audit,
+and the remaining not-proven boundaries.
+
+Blocker: remote checks and human review remain pending.
+
+Next action: record and push this checkpoint, then audit all required remote gates on the resulting exact final head.
+Do not merge without human review.
+
+Decision: continue the prerequisite only; no deployable-proxy or lab roadmap slot may start yet.
+
 ## Netty Baseline Recovery Executable Checkpoint
 
 Timestamp: 2026-07-29T08:21:45-07:00

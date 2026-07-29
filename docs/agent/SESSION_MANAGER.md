@@ -6,6 +6,32 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Supervisor Command Ledger PR5 Reopen Checkpoint
+
+Timestamp: 2026-07-29T10:57:28-07:00
+
+Current slot: `COMMAND-LEDGER-PR5` - restart reconciliation and command-history repair.
+
+Current branch: `codex/command-ledger-restart-reconciliation`.
+
+Published head: `b8a98b9946983caf2c1ae58df1981a3dddee110d`
+(`Record PR5 resumed local verification`).
+
+PR: [#493](https://github.com/RicheyWorks/LoadBalancerPro/pull/493), reopened. Its description now records the verified
+Netty-base reconciliation, complete resumed local verification, scope/safety audit, independent-review limitation and
+authorized full-diff self-review substitute, and unchanged not-proven boundaries.
+
+Remote checks: reopening initially reported no check rollup. The push and pull-request workflows are expected to start,
+but no result is accepted until this checkpoint is committed and pushed and the resulting exact head is independently
+matched to every required CI, CodeQL, dependency-review, Docker/runtime, SBOM, and Trivy result.
+
+Blocker: required final-head remote checks are pending.
+
+Next action: commit and push this reopen checkpoint, audit the exact final head, perform the complete diff self-review,
+and merge automatically only if the unchanged head remains mergeable and every required gate passes.
+
+Decision: continue PR5 only.
+
 ## Supervisor Command Ledger PR5 Resumed Local Verification Checkpoint
 
 Timestamp: 2026-07-29T10:55:58-07:00

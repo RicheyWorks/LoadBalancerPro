@@ -6,6 +6,44 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Netty Baseline Recovery Remote Verification Checkpoint
+
+Timestamp: 2026-07-29T08:36:45-07:00
+
+Current recovery slot: `RECOVERY-NETTY-01`.
+
+Current branch: `codex/netty-4-2-16-baseline-remediation`.
+
+Verified remote head: `50e9353ad4a72c6cff1754260717532a45531c86`
+(`Log Netty PR monitoring projection failure`).
+
+Executable checkpoint: `2e407d40913696cd43b4137def0199c95807d9a4`
+(`Update Netty baseline to 4.2.16`).
+
+PR: [#494](https://github.com/RicheyWorks/LoadBalancerPro/pull/494), open.
+
+Exact-head remote verification:
+
+- PR CI run `30465978264`: passed;
+- push CI run `30465973870`: passed;
+- CodeQL run `30465986908`: passed;
+- PR dependency review: passed; the push-event dependency-review job was skipped as expected;
+- the PR CI dependency tree, full test suite, zero-skipped-test guard, coverage report and summary, coverage artifact
+  upload, executable packaging, packaged-resource verification, packaged evidence upload, CycloneDX SBOM generation and
+  upload, LASE demo smoke, packaged-JAR smoke, Docker build, Docker runtime smoke, container dry-run evidence, blocking
+  Docker image scan, and evidence upload all passed.
+
+Scope/safety audit: unchanged from the current local checkpoint. The added failure-log record describes a read-only
+monitoring projection error and adds no product, dependency, workflow, scan-policy, runtime, target, or secret change.
+
+Blocker: human review remains pending. This checkpoint itself advances the branch, so final exact-head remote checks
+must run again before review and merge.
+
+Next action: commit and push this checkpoint, audit the resulting final-head CI, CodeQL, and dependency review, then
+stop for human review. Do not merge automatically and do not start a roadmap slot.
+
+Decision: continue the prerequisite only.
+
 ## Netty Baseline Recovery PR Creation Checkpoint
 
 Timestamp: 2026-07-29T08:23:51-07:00

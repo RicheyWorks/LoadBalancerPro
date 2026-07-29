@@ -4,7 +4,17 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationState.Transact
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationTransactionCoordinator.Checkpoint;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationTransactionCoordinator.TransactionReceipt;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationTransactionCoordinator.TransactionStatus;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.ApplicationCommitStatus;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.AuthenticationResult;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.Draft;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.DuplicateClassification;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.EventType;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.LedgerSide;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.MutationStatus;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.ResponseClassification;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.ValidationResult;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackAllocationSnapshot.Kind;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorProtocol.CommandType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -231,6 +241,96 @@ class EnterpriseLabAllocationTransactionCoordinatorTest {
         assertTrue(store.replay().records().stream()
                 .noneMatch(record -> record.transactionPhase() == TransactionPhase.COMMITTED
                         && record.allocationGeneration() == 2L));
+    }
+
+    @Test
+    void supervisorCommitCompletesAllocationEvidenceWithoutRepeatingRouterMutation() {
+        EnterpriseLabAllocationTransactionCoordinator crashing = coordinator(
+                checkpoint -> {
+                    if (checkpoint == Checkpoint.AFTER_ROUTER_APPLY) {
+                        throw new SimulatedCrash(checkpoint);
+                    }
+                }, router::installedSnapshot);
+        crashing.establishSafeBaseline("allocation-baseline-1");
+        assertThrows(SimulatedCrash.class, () -> crashing.applyCandidate(
+                "allocation-candidate-2", "experiment-1", decision, true));
+
+        EnterpriseLabInstalledAllocationSnapshot installedBefore =
+                router.installedSnapshot();
+        EnterpriseLabAllocationState applying = store.replay().chainHead().orElseThrow();
+        EnterpriseLabCommandLedgerEvent supervisorCommit = supervisorCommit(
+                applying, installedBefore);
+
+        TransactionReceipt recovered = coordinator().recoverSupervisorCommitted(
+                supervisorCommit);
+        assertEquals(TransactionStatus.COMMITTED, recovered.status());
+        assertEquals(TransactionPhase.COMMITTED, recovered.durablePhase().orElseThrow());
+        assertFalse(recovered.trafficActionPerformed());
+        assertEquals(installedBefore, router.installedSnapshot());
+        assertEquals(List.of(
+                        TransactionPhase.COMMITTED,
+                        TransactionPhase.INTENT_PERSISTED,
+                        TransactionPhase.APPLYING,
+                        TransactionPhase.APPLIED,
+                        TransactionPhase.VERIFYING,
+                        TransactionPhase.COMMITTED),
+                phases(store.replay().records()));
+
+        int records = store.replay().records().size();
+        TransactionReceipt repeated = coordinator().recoverSupervisorCommitted(
+                supervisorCommit);
+        assertEquals(TransactionStatus.IDEMPOTENT, repeated.status());
+        assertFalse(repeated.trafficActionPerformed());
+        assertEquals(records, store.replay().records().size());
+        assertEquals(installedBefore, router.installedSnapshot());
+
+        EnterpriseLabCommandLedgerEvent transactionMismatch = supervisorCommit(
+                applying, installedBefore, "different-transaction");
+        assertThrows(
+                IllegalStateException.class,
+                () -> coordinator().recoverSupervisorCommitted(transactionMismatch));
+        assertEquals(records, store.replay().records().size());
+        assertEquals(installedBefore, router.installedSnapshot());
+
+        EnterpriseLabCommandLedgerEvent mismatch = new EnterpriseLabCommandLedgerEventCodec()
+                .issue(new Draft(
+                        LedgerSide.SUPERVISOR,
+                        1L,
+                        EventType.SUPERVISOR_COMMITTED,
+                        "different-correlation",
+                        "1".repeat(64),
+                        "different-transaction",
+                        java.util.Optional.of("experiment-1"),
+                        CommandType.APPLY_ALLOCATION,
+                        "application-instance-1",
+                        1L,
+                        "supervisor-instance-1",
+                        1L,
+                        3L,
+                        installedBefore.allocationFingerprint(),
+                        applying.previousCommittedAllocationFingerprint(),
+                        applying.previousCommittedAllocationFingerprint(),
+                        installedBefore.allocationFingerprint(),
+                        0L,
+                        installedBefore.routerGeneration(),
+                        AuthenticationResult.ACCEPTED,
+                        ValidationResult.ACCEPTED,
+                        DuplicateClassification.FIRST_OBSERVATION,
+                        MutationStatus.COMMITTED,
+                        ResponseClassification.NOT_ATTEMPTED,
+                        EnterpriseLabCommandLedgerEvent.NONE,
+                        EnterpriseLabCommandLedgerEvent.NONE,
+                        ApplicationCommitStatus.NOT_ATTEMPTED,
+                        0,
+                        "SUPERVISOR_COMMITTED",
+                        NOW.plusSeconds(2),
+                        Map.of(),
+                        EnterpriseLabCommandLedgerEvent.GENESIS_FINGERPRINT));
+        assertThrows(
+                IllegalStateException.class,
+                () -> coordinator().recoverSupervisorCommitted(mismatch));
+        assertEquals(records, store.replay().records().size());
+        assertEquals(installedBefore, router.installedSnapshot());
     }
 
     @Test
@@ -571,6 +671,64 @@ class EnterpriseLabAllocationTransactionCoordinatorTest {
 
     private EnterpriseLabAllocationTransactionCoordinator coordinator() {
         return coordinator(checkpoint -> { }, router::installedSnapshot);
+    }
+
+    private EnterpriseLabCommandLedgerEvent supervisorCommit(
+            EnterpriseLabAllocationState applying,
+            EnterpriseLabInstalledAllocationSnapshot installed) {
+        return supervisorCommit(
+                applying, installed, applying.allocationTransactionId());
+    }
+
+    private EnterpriseLabCommandLedgerEvent supervisorCommit(
+            EnterpriseLabAllocationState applying,
+            EnterpriseLabInstalledAllocationSnapshot installed,
+            String applicationTransactionId) {
+        String correlationId =
+                EnterpriseLabSupervisorAllocationBridge.commandCorrelationId(
+                        applicationTransactionId,
+                        CommandType.APPLY_ALLOCATION,
+                        applying.allocationGeneration(),
+                        applying.normalizedAllocationFingerprint());
+        String transactionId =
+                EnterpriseLabSupervisorAllocationBridge.supervisorTransactionId(
+                        applicationTransactionId,
+                        CommandType.APPLY_ALLOCATION,
+                        applying.allocationGeneration(),
+                        applying.normalizedAllocationFingerprint());
+        return new EnterpriseLabCommandLedgerEventCodec().issue(new Draft(
+                LedgerSide.SUPERVISOR,
+                1L,
+                EventType.SUPERVISOR_COMMITTED,
+                correlationId,
+                "a".repeat(64),
+                transactionId,
+                applying.experimentId(),
+                CommandType.APPLY_ALLOCATION,
+                "application-instance-1",
+                1L,
+                "supervisor-instance-1",
+                1L,
+                applying.allocationGeneration(),
+                applying.normalizedAllocationFingerprint(),
+                applying.previousCommittedAllocationFingerprint(),
+                applying.previousCommittedAllocationFingerprint(),
+                installed.allocationFingerprint(),
+                0L,
+                installed.routerGeneration(),
+                AuthenticationResult.ACCEPTED,
+                ValidationResult.ACCEPTED,
+                DuplicateClassification.FIRST_OBSERVATION,
+                MutationStatus.COMMITTED,
+                ResponseClassification.NOT_ATTEMPTED,
+                EnterpriseLabCommandLedgerEvent.NONE,
+                EnterpriseLabCommandLedgerEvent.NONE,
+                ApplicationCommitStatus.NOT_ATTEMPTED,
+                0,
+                "SUPERVISOR_COMMITTED",
+                NOW.plusSeconds(1),
+                Map.of(),
+                EnterpriseLabCommandLedgerEvent.GENESIS_FINGERPRINT));
     }
 
     private EnterpriseLabAllocationTransactionCoordinator coordinator(

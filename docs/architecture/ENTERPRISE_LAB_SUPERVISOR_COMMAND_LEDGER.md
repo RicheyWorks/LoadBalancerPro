@@ -1,8 +1,8 @@
 # Enterprise Lab Supervisor Command Ledger
 
 This document defines the bounded local-lab command-evidence contract introduced by the supervisor command-ledger
-campaign. It describes implemented PR1 model/codec, PR2 application-ledger behavior, and PR3 supervisor receipt
-persistence plus the constrained integration path for later campaign PRs. It does not claim production readiness,
+campaign. It describes the implemented canonical model, both append-only ledgers, the cross-process command coordinator,
+and bounded restart reconstruction through campaign PR5. It does not claim production readiness,
 non-repudiation, hostile-administrator resistance, multi-host coordination, or external traffic validation.
 
 ## Boundary
@@ -11,17 +11,19 @@ The command ledger is restricted to one local application JVM, one local supervi
 and authenticated literal `127.0.0.1` IPC. It correlates the existing allocation and ownership evidence; it does not
 replace the allocation transaction store, experiment journal, installed-state model, or ownership records.
 
-The two eventual ledgers remain independently readable and verifiable:
+The two ledgers remain independently readable and verifiable:
 
 - the application ledger records durable intent, dispatch, response observation, retry, application commit, and
   reconciliation evidence;
 - the supervisor ledger records authenticated receipt, validation, duplicate classification, mutation, installed-state
   read-back, durable commit, response construction/delivery, and reconciliation evidence.
 
-PR1 adds the shared immutable event and strict canonical codec. PR2 adds the fixed application ledger and an explicit
-intent-before-transport dispatcher, but does not wire that dispatcher into the supervisor allocation bridge. PR3 adds
-the fixed supervisor ledger and makes a forced authenticated receipt the first supervisor service action. Coordinated
-end-to-end dispatch, duplicate outcomes, mutation-stage events, and response delivery evidence remain later slots.
+PR1 added the shared immutable event and strict canonical codec. PR2 added the fixed application ledger and explicit
+intent-before-transport dispatcher. PR3 added the fixed supervisor ledger and made a forced authenticated receipt the
+first supervisor service action. PR4 installed those ledgers on the existing application-to-supervisor path, including
+duplicate outcomes, mutation stages, exact read-back, supervisor commit, response delivery, and deferred application
+commit through the sole allocation coordinator. PR5 adds the startup reconstruction contract below. Authenticated
+status, terminal retention/compaction, and packaged command-ledger proofs remain PR6 scope.
 
 ## Identity Reuse
 
@@ -41,8 +43,13 @@ The ledger reuses existing canonical identities:
 - requested, previous committed, and installed fingerprints reuse existing canonical allocation fingerprints;
 - `responseFingerprint` is the existing canonical supervisor response fingerprint.
 
-No second correlation, allocation, experiment, ownership, or installed-state identity is introduced. Later integration
-must stabilize the existing request ID before dispatch rather than wrap each retry in a new identity.
+For allocation mutations, the bridge deterministically derives the stable protocol correlation and transaction IDs from
+the existing application allocation transaction ID, command, allocation generation, and requested allocation
+fingerprint. The protocol transaction ID and allocation-store transaction ID are intentionally distinct encoded forms;
+PR5 verifies the exact derivation against the allocation chain head rather than equating or replacing them.
+
+No second correlation, allocation, experiment, ownership, or installed-state identity is introduced. The integrated
+dispatcher stabilizes the existing request ID before dispatch rather than wrapping each retry in a new identity.
 
 ## Canonical Event
 
@@ -133,7 +140,8 @@ Replay validates these layers in order:
    complete chain.
 
 No replay result is returned from a partially valid chain. A corrupt later frame therefore cannot leave an apparently
-usable earlier prefix. This is deliberate: PR2 preserves the complete bytes for later operator evidence and does not
+usable earlier prefix. This is deliberate: the ledger preserves the complete bytes for later operator evidence and does
+not
 provide repair, truncation, salvage, or caller-selected alternate storage.
 
 The writable path repeats replay before deriving an event and again after preparing the file. It compares both the event
@@ -159,16 +167,17 @@ The ledger applies a small application-side state machine per correlation while 
 The first event for any correlation must be intent, even if its sequence is not the first global sequence. A repeated
 intent is rejected. All later events must retain the first event's request fingerprint, transaction and experiment,
 command type, application and supervisor epochs, allocation generation, requested allocation fingerprint, and previous
-committed fingerprint. Application commit, command failure, and quarantine are terminal in PR2; later events cannot be
+committed fingerprint. Application commit, command failure, and quarantine are terminal; later events cannot be
 silently attached to those heads.
 
 `unresolvedHeads()` is a reconstruction aid, not a readiness decision. It returns the latest durable event for each
 correlation whose head is not terminal. It does not infer that a dispatch was received, a mutation happened, or a retry
-is safe. Those determinations require the supervisor ledger and reconciliation rules in later PRs.
+is safe. PR5 makes those determinations only from the independently replayed supervisor ledger, authoritative installed
+state, and the existing allocation transaction chain.
 
 ### Dispatch Failure Matrix
 
-The PR2 dispatcher has intentionally narrow results:
+The dispatcher has intentionally narrow transport-boundary results:
 
 | Boundary outcome | Durable application evidence | Transport called | Remote result inferred |
 | --- | --- | --- | --- |
@@ -178,11 +187,10 @@ The PR2 dispatcher has intentionally narrow results:
 | transport returns mismatched response | intent plus dispatch attempt | yes | no; response rejected |
 | transport returns exact response | intent plus dispatch attempt | yes | exact response returned to caller |
 
-PR2 does not automatically write timeout, loss, response-received, or application-commit events from a transport result.
-That work needs stable retry identity and the independently durable supervisor event fingerprint, so it remains in the
-coordinator and reconciliation slots. The dispatcher is also not yet installed into
-`EnterpriseLabSupervisorAllocationBridge`; its tests prove the boundary directly without changing current runtime
-dispatch behavior.
+The PR4 coordinator records bounded response loss/timeout, response receipt, and application commit only after matching
+the independently readable supervisor event. Allocation mutation application commit remains deferred until the existing
+allocation transaction coordinator has forced and exactly read back its `COMMITTED` state. The dispatcher is installed
+in `EnterpriseLabSupervisorAllocationBridge`; there is no local mutation fallback and no second allocation coordinator.
 
 ### Ownership Separation
 
@@ -190,7 +198,11 @@ The live application ownership record authorizes mutation of the ledger; it is n
 production factory compares each request's application instance, ownership-record fingerprint, and generation with the
 gate's current durable record, then rechecks the same ownership epoch around the write and force boundaries. Historical
 events remain readable after that ownership generation ends, but a stale request cannot append through a new generation.
-Test-only mutation seams remain package-private and do not manufacture a production ownership gate.
+PR5 permits the current owner to append only reconciliation, application-commit, failure, or quarantine outcomes to an
+existing older correlation. Those events retain the original command identity and generation; bounded metadata records
+the live reconciling owner generation. This continuation path cannot create an older-generation intent or dispatch and
+repeats the live mutation authorization around append, force, and exact read-back. Test-only mutation seams remain
+package-private and do not manufacture a production ownership gate.
 
 The application ledger intentionally does not persist the ownership credential, operating-system lock handle, process
 ID, host diagnostic, or raw ownership record. Its canonical event carries only the existing application instance and
@@ -201,8 +213,8 @@ mutation capability. Read-only inspection likewise cannot acquire, renew, releas
 
 `EnterpriseLabApplicationCommandDispatcher` forces both `APPLICATION_INTENT_PERSISTED` and `DISPATCH_ATTEMPTED` before
 calling a supplied supervisor transport. If either append fails, the transport is unreachable. A transport exception
-leaves the dispatch attempt unresolved and does not infer whether the supervisor acted. Response observation, retry,
-restart reconciliation, and application commit integration remain explicit later campaign work.
+leaves the dispatch attempt unresolved and does not infer whether the supervisor acted. PR4 and PR5 resolve later state
+only through exact supervisor evidence and authoritative installed-state verification.
 
 ## Supervisor Ledger
 
@@ -265,18 +277,47 @@ optional `applicationAllocationGeneration` metadata records zero while retaining
 transaction, requested allocation fingerprint, and process fences. Noncanonical or out-of-range supplied values remain
 rejected.
 
-PR3 wires only authenticated receipt persistence into the live supervisor service. The store and direct tests establish
-the bounded validation/mutation/response lifecycle, but they do not claim that every current service branch already emits
-those later events. Duplicate outcome persistence, mutation-stage integration, response-delivery evidence, application
-coordination, and restart reconciliation remain PR4 and PR5 work.
+PR4 wires bounded validation, duplicate, mutation, read-back, commit, and response outcomes into the live service.
+Supervisor-only observation histories may exist for authenticated direct health/status clients; application allocation
+reconstruction ignores those non-mutating histories. Any supervisor allocation-mutation history without its durable
+application intent remains a failed-closed startup condition.
+
+## Restart Reconstruction And Repair
+
+`EnterpriseLabCommandHistoryReconciler` runs synchronously after the external supervisor session has accepted the current
+application owner and after the sole allocation coordinator is constructed. The allocation reconciler defers publishing
+`READY` until command-history postflight completes; a replay, identity, installed-state, or repair failure closes the
+existing gate as `COMMAND_LEDGER_RECONCILIATION_FAILED`.
+
+The preflight replays both complete bounded ledgers, groups at most 128 unresolved application correlations, and requires
+every supervisor event in a shared correlation to retain the application's exact request fingerprint, transaction,
+experiment, command, process epochs, allocation generation, requested fingerprint, and previous committed fingerprint.
+It applies these policies:
+
+- intent or dispatch without supervisor receipt is recorded as reconciled and not executed;
+- receipt, validation rejection, stale generation, or conflicting duplicate without mutation becomes a terminal failed
+  application command and is not retried under a new identity;
+- a terminal accepted observation can complete missing application evidence without allocation mutation;
+- an exact `SUPERVISOR_COMMITTED` allocation event must match the allocation chain head and authoritative installed
+  allocation, owner, router generation, and fingerprints; the sole coordinator then appends only missing `APPLIED`,
+  `VERIFYING`, and `COMMITTED` allocation evidence and never calls the router mutation path;
+- mutation-started history without supervisor commit remains pending while the existing allocation reconciler restores
+  or retains the verified baseline; postflight terminalizes the application command only after the allocation report is
+  ready;
+- a matching terminal pair is an idempotent no-op; an intervening reconciliation event is reused after restart rather
+  than duplicated;
+- conflicting identity or installed-state evidence is quarantined when a safe append remains possible and always keeps
+  readiness failed closed; malformed, noncanonical, unsupported, or truncated ledger bytes are preserved unchanged by
+  the strict replay failure.
+
+Each repair appends to the global predecessor chain and forces exact read-back. It does not truncate, rewrite, delete,
+move, or synthesize the original request. It does not resume an experiment candidate. Baseline restoration remains the
+existing allocation recovery policy, so command-history repair adds no parallel traffic authority.
 
 ## Campaign Integration Order
 
-Remaining PRs add executable behavior in this order:
-
-1. cross-process coordination and identical-retry idempotency;
-2. restart reconstruction and partial-history reconciliation;
-3. authenticated sanitized status, safe terminal retention/compaction, and separate-process packaged proofs.
+The remaining PR6 adds authenticated sanitized status, safe terminal retention/compaction, and separate-process packaged
+proofs.
 
 No later step may open readiness from process memory alone, delete the only unresolved evidence, accept conflicting
 correlation reuse, weaken ownership/generation fencing, or repeat a mutation whose terminal supervisor evidence verifies

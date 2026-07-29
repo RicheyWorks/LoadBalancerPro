@@ -207,11 +207,32 @@ public final class EnterpriseLabAllocationSupervisor implements AutoCloseable {
                 java.time.Clock.systemUTC(),
                 router::authoritativeInstalledSnapshot,
                 checkpoint -> { });
-        return remember(reconciler.reconcile(
-                Objects.requireNonNull(trigger, "trigger cannot be null"),
-                List.copyOf(Objects.requireNonNull(
-                        replayedExperiments,
-                        "replayedExperiments cannot be null"))));
+        EnterpriseLabCommandHistoryReconciler.Checkpoint commandCheckpoint;
+        try {
+            commandCheckpoint = router.reconcileCommandHistoryBeforeAllocation(
+                    coordinator);
+        } catch (RuntimeException exception) {
+            reconciliationGate.fail("COMMAND_LEDGER_RECONCILIATION_FAILED");
+            throw exception;
+        }
+        ReconciliationReport report = reconciler
+                .reconcileBeforeCommandHistoryReadiness(
+                        Objects.requireNonNull(trigger, "trigger cannot be null"),
+                        List.copyOf(Objects.requireNonNull(
+                                replayedExperiments,
+                                "replayedExperiments cannot be null")));
+        if (!report.ready()) {
+            return remember(report);
+        }
+        try {
+            router.reconcileCommandHistoryAfterAllocation(
+                    coordinator, commandCheckpoint, report);
+            reconciliationGate.complete(report);
+            return remember(report);
+        } catch (RuntimeException exception) {
+            reconciliationGate.fail("COMMAND_LEDGER_RECONCILIATION_FAILED");
+            throw exception;
+        }
     }
 
     /** Candidate intent is accepted only from the already-approved experiment decision. */

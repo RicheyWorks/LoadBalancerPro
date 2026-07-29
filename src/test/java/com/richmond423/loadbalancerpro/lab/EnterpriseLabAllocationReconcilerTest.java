@@ -80,6 +80,24 @@ class EnterpriseLabAllocationReconcilerTest {
     }
 
     @Test
+    void commandHistoryStartupDefersReadyPublicationUntilExplicitCompletion() {
+        EnterpriseLabAllocationReconciliationGate gate =
+                EnterpriseLabAllocationReconciliationGate.pending();
+
+        var report = reconciler(coordinator(), gate)
+                .reconcileBeforeCommandHistoryReadiness(
+                        ReconciliationTrigger.STARTUP, List.of());
+
+        assertTrue(report.ready());
+        assertFalse(gate.admissionAllowed());
+        assertEquals(
+                EnterpriseLabAllocationReconciliationGate.InitializationState.RECONCILING,
+                gate.admissionStatus().state());
+        gate.complete(report);
+        assertTrue(gate.admissionAllowed());
+    }
+
+    @Test
     void repeatedSafeReconciliationIsStableAndDoesNotAppendOrMutate() {
         EnterpriseLabAllocationReconciliationGate gate =
                 EnterpriseLabAllocationReconciliationGate.pending();

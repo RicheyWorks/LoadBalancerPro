@@ -6,6 +6,579 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-29T06:38:17-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: proof-test inspection assumed a nonexistent independent-supervisor runner test path
+
+Failing check: direct `Get-Content` of
+`src/test/java/com/richmond423/loadbalancerpro/lab/EnterpriseLabIndependentSupervisorProofRunnerTest.java`
+
+Observed/root cause: the inferred file is not tracked, and strict PowerShell path handling returned `PathNotFound`. No
+source, documentation, artifact, evidence, process, listener, branch, remote, or external state changed.
+
+Correction/result: discover any independent-supervisor test through tracked paths before selecting a regression home.
+
+Follow-up: keep the proof-only renewal correction covered by the narrowest existing ownership-renewer or packaged command
+test plus the actual packaged aggregate.
+
+## Entry
+
+Date/time: 2026-07-29T06:36:00-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: ownership diagnostic included a nonexistent mutation-authority test-source path
+
+Failing check: combined restoration-source and mutation-authorization lookup
+
+Observed/root cause: the coordinator and production mutation-authority inspection succeeded, but ripgrep was also given
+nonexistent `src/main/java/.../EnterpriseLabMutationTestAuthority.java` and returned OS error 2. The partial result was
+not treated as a complete test-authority audit. No source, documentation, artifact, evidence, process, listener, branch,
+remote, or external state changed.
+
+Correction/result: the relevant production `MutationAuthorization.requireSameEpoch` comparison was inspected directly;
+discover any test authority by tracked path before later use.
+
+Follow-up: attribute `OWNERSHIP_UNCERTAIN` only from exact durable proof evidence and inspected live ownership calls.
+
+## Entry
+
+Date/time: 2026-07-29T06:50:34-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: combined status and process-inspection command inherited the no-process exit code
+
+Failing check: combined `git` status/identity inspection plus optional `Get-Process -Name java,mvn`
+
+Observed/root cause: the branch, head, and dirty-path inspection completed and showed the expected PR5 worktree, but
+PowerShell returned exit 1 because neither optional process name existed. This was a command-composition issue, not an
+active-process or repository failure. No file, process, branch, remote, or external state changed.
+
+Correction/result: treat the empty process result as the expected proof-completion state and keep optional process
+inspection separate from checks whose exit code is used as a verification gate.
+
+Follow-up: use an explicit empty-result branch for the final process audit.
+
+## Entry
+
+Date/time: 2026-07-29T06:34:37-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: derivation-corrected packaged proof failed closed on restart ownership reconciliation
+
+Failing check: keep-awake packaged independent-supervisor proof with output
+`target/pr5-command-history-independent-supervisor-proof-rerun2`
+
+Observed/root cause: the temporary execution-state assertion succeeded and reset after a normal 109-second proof exit,
+but the proof exited 1 with bounded child reason `allocation startup reconciliation failed closed:
+ALLOCATION_RECONCILIATION_FAILED/OWNERSHIP_UNCERTAIN/FAILED_CLOSED/COMMITTED`. Exact target evidence showed that the
+proof-only ten-second application-owner lease expired while the newly synchronous PR5 startup reconciliation and
+baseline restoration ran, before the normal operator-service renewer existed. The earlier raw transaction-ID mismatch
+was absent, and all recovered allocation, supervisor-commit, and installed-state records otherwise agreed.
+
+Correction/result: wrap only the proof runner's `EnterpriseLabAllocationSupervisor.createForProof(...)` startup interval
+with the existing evidence ownership renewer and the existing lease, claim-recovery, and allocation readiness gates.
+The renewer closes before the normal operator service starts; no lease policy, timeout, production path, ownership
+classification, or readiness fence changed. The renewer/coordinator/history selector then passed 31 tests with zero
+failures, errors, or skips. A fresh `rerun3` packaged proof completed with all checks true across 22 application JVMs,
+24 supervisor JVMs, eight crash windows, and 18 IPC checks; its content fingerprint is
+`801c1012605d39681750eea16d457ea58b1673821a55a58f6f715d8b3b6829f0`.
+
+Follow-up: rerun clean package, full verification, and the packaged proof from the final exact source before creating
+the executable checkpoint.
+
+## Entry
+
+Date/time: 2026-07-29T06:32:22-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: temporary execution-state wrapper used a signed PowerShell hexadecimal literal
+
+Failing check: first corrected packaged-proof wrapper before Java launch
+
+Observed/root cause: PowerShell parsed `0x80000000` as a negative signed value and refused its direct conversion to
+`System.UInt32`. The script stopped before calling the Windows API or launching Java, so no execution-state assertion,
+proof output, process, repository, remote, or external state changed.
+
+Correction/result: parse the flag explicitly with `Convert.ToUInt32("80000000", 16)` and rerun the otherwise unchanged
+wrapper in the same fresh `rerun2` output root, which remains absent.
+
+Follow-up: confirm the assertion returns nonzero before launching the proof and reset it in `finally`.
+
+## Entry
+
+Date/time: 2026-07-29T06:31:48-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: corrected packaged proof rerun was invalidated by workstation suspension and wrapper timeout
+
+Failing check: corrected-source packaged independent-supervisor proof with output
+`target/pr5-command-history-independent-supervisor-proof-rerun1`
+
+Observed/root cause: after the exact 27-test and adjacent 85-test selectors and a fresh skip-test package passed, the
+proof began and wrote 22 partial ignored evidence files. The workstation then suspended for about two hours; the shell's
+900-second wall-clock bound expired, no proof completion report was written, and no proof/application/supervisor Java
+process remains. This is neither a proof pass nor a protocol-reported proof failure.
+
+Correction/result: preserve the partial output as failed-run evidence and rerun in a new output root under a temporary
+thread-scoped Windows execution-state assertion. The assertion prevents system sleep only while that wrapper is alive and
+resets automatically in `finally`; it does not persistently change a power plan or repository/runtime behavior. The
+later complete `rerun3` aggregate supersedes this invalid run and passed all bounded checks.
+
+Follow-up: retain `rerun1` only as failed-run evidence; never cite it as verification.
+
+## Entry
+
+Date/time: 2026-07-29T04:20:31-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: packaged independent-supervisor proof rejected the resumed audit's transaction-ID fence
+
+Failing check: `java -jar target/LoadBalancerPro-2.5.0.jar --enterprise-lab-independent-supervisor-proof
+--enterprise-lab-independent-supervisor-proof-output=target/pr5-command-history-independent-supervisor-proof`
+
+Observed/root cause: the fresh separate-process proof exited 1 after 106 seconds with bounded child reason
+`supervisor commit does not match the application allocation chain head`. Source and target evidence proved that the
+command-protocol transaction/correlation IDs and allocation-store transaction ID are intentionally distinct existing
+encodings: the bridge deterministically derives both protocol IDs from the raw allocation transaction, command,
+allocation generation, and requested fingerprint. The prior focused fixtures incorrectly normalized those values.
+
+Correction/result: replace raw equality with exact verification of both existing bridge derivations from the durable
+allocation chain head, while preserving generation, fingerprint, owner, router-generation, installed-state, and
+no-repeat-mutation checks. Expose the two pure bridge derivation helpers at package scope, use live derivation in the
+happy-path fixtures, and prove a transaction-linkage-only mismatch using a different raw allocation transaction.
+The exact 27-test and adjacent 85-test selectors passed after the correction, and the later complete `rerun3` packaged
+proof accepted the derived identities.
+
+Follow-up: keep both encoded values exact and regression-covered; do not collapse them into raw equality.
+
+## Entry
+
+Date/time: 2026-07-29T04:10:53-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: resumed full verify completed with one test failure and one test error
+
+Failing check: `mvn -B verify`
+
+Observed/root cause: after two workstation suspension intervals, the original Maven and Surefire processes resumed,
+continued writing fresh reports, and exited. The final 475-report aggregate contains 3,407 tests, one failure, one error,
+and zero skips. `target/site/jacoco/jacoco.csv` was not produced, so the verify lifecycle stopped before the coverage
+report and is red. The earlier green clean package is not a substitute.
+
+Correction/result: both failures were proof-clock boundaries affected by workstation suspension:
+`EnterpriseLabEvidenceOwnershipProofCommandTest` reported `OWNER_RENEWAL_DEADLINE_EXCEEDED`, and
+`EnterpriseLabAllocationProofRunnerTest` reported `proof holder readiness timed out`. Neither stack entered a PR5-changed
+class. With the workstation awake, their exact two-class selector passed five tests with zero failures, errors, or skips.
+No source, test bound, ownership policy, proof timeout, or production behavior changed.
+
+Follow-up: rerun the full unchanged verify with active bounded polling and accept it only from a normal Maven exit,
+3,407-test zero-skip aggregate, and fresh JaCoCo report.
+
+## Entry
+
+Date/time: 2026-07-29T04:10:53-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: final verify-result audit assumed JaCoCo CSV existed after a red lifecycle
+
+Failing check: combined Surefire aggregate, JaCoCo percentage, JAR, and process audit
+
+Observed/root cause: the Surefire aggregate correctly exposed one failure and one error, then `Import-Csv` raised
+`DirectoryNotFoundException` because red verify had not produced `target/site/jacoco/jacoco.csv`. The audit stopped before
+its JAR and process rows. No source, documentation, artifact, evidence, process, listener, branch, remote, or external
+state changed.
+
+Correction/result: inspect failed XML first and guard later artifact reads with exact path-existence checks.
+
+Follow-up: accept no JaCoCo or verify result from this failed run.
+
+## Entry
+
+Date/time: 2026-07-29T03:08:02-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: resumed full `mvn -B verify` remained live far beyond its bounded timeout
+
+Failing check: `mvn -B verify`
+
+Observed/root cause: Maven process 39620 and Surefire JVM 14372 remained alive from 23:48 / 23:49 through 03:08 after
+the yielded shell exceeded its 1,200-second bound. All 475 current Surefire XML reports already aggregate to 3,407 tests
+with zero failures, errors, or skips, but a live Maven/Surefire process and missing accepted Maven exit mean verify is not
+green. No duplicate Maven or proof command was started.
+
+Correction/result: preserve the processes long enough to capture their exact command lines, most recent report
+timestamps, CPU state, and a read-only JVM thread dump. Terminate only the exact verified workspace processes if the dump
+proves a leaked/non-progressing test boundary, then rerun the narrow cause and the unchanged verify gate.
+
+Follow-up: do not accept the earlier clean-package result as a substitute for verify and do not begin packaged proofs
+until a fresh verify exits successfully.
+
+## Entry
+
+Date/time: 2026-07-28T23:40:18-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: documentation-guard filename discovery repeated a path-separator-sensitive ripgrep filter
+
+Failing check: read-only test-file discovery for documentation and guard class names
+
+Observed/root cause: the piped expression again expected a path form not emitted by ripgrep on Windows and returned
+no-match exit 1. No source, documentation, artifact, evidence, process, listener, branch, remote, or external state
+changed.
+
+Correction/result: enumerate tracked test paths with ripgrep and apply a PowerShell filename predicate independent of
+slash direction.
+
+Follow-up: run only source-visible guard class names and do not infer a dedicated command-ledger doc guard when none is
+tracked.
+
+## Entry
+
+Date/time: 2026-07-28T23:38:57-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: combined startup-test inspection treated a no-match ripgrep result as a command failure
+
+Failing check: full allocation-supervisor test read followed by bridge-test command-history symbol lookup
+
+Observed/root cause: the requested supervisor test file was read successfully, but the bridge-test lookup found no direct
+command-history symbol and ripgrep correctly returned no-match exit 1, making the combined shell call fail. No source,
+documentation, artifact, evidence, process, listener, branch, remote, or external state changed.
+
+Correction/result: treat the no-match as audit evidence that no direct bridge startup integration assertion exists and
+inspect the bridge fixtures by their actual setup and startup call sites.
+
+Follow-up: add an end-to-end gate-order regression if the existing tests do not prove ready publication waits for
+command-history postflight.
+
+## Entry
+
+Date/time: 2026-07-28T23:35:48-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: focused-class filename filter assumed forward-slash-compatible output on Windows
+
+Failing check: combined logged-selector and six-class source-file lookup
+
+Observed/root cause: the corrected literal selector search succeeded, but the piped filename expression returned no
+Windows backslash paths and made the combined read-only command exit 1. No source, documentation, artifact, evidence,
+process, listener, branch, remote, or external state changed.
+
+Correction/result: query the test directory with a filename-only expression that is independent of path separators and
+then select the six explicit adjacent class names.
+
+Follow-up: do not treat the successful first half of a combined command as a complete selector audit.
+
+## Entry
+
+Date/time: 2026-07-28T23:35:28-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: selector-history search passed a leading-hyphen pattern to ripgrep without `--`
+
+Failing check: read-only search for the prior exact `-Dtest=...` focused selector
+
+Observed/root cause: ripgrep parsed the pattern's `-D` prefix as an unsupported option and exited 1 after the preceding
+context search had completed. No source, documentation, artifact, evidence, process, listener, branch, remote, or
+external state changed.
+
+Correction/result: terminate ripgrep option parsing with `--` before searching for the literal Maven selector.
+
+Follow-up: reconstruct the prior six-class selector only from exact logged or source-visible test class names.
+
+## Entry
+
+Date/time: 2026-07-28T23:35:00-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: resumed audit entries used manually estimated times ahead of the workspace clock
+
+Failing check: factual failure-log timestamp audit after the fresh focused Surefire reports were written
+
+Observed/root cause: four newly inserted entries used estimated minute values from 23:38 through 23:43 even though the
+workspace clock and fresh report timestamps remained between 23:32 and 23:35. The failure descriptions and ordering were
+correct, but those displayed times were not acceptable as factual checkpoint evidence.
+
+Correction/result: replace the four estimates with bounded chronological times anchored by the current workspace clock
+and the exact 23:34:31 / 23:34:32 Surefire report writes. No source, test result, artifact, process, listener, branch,
+remote, or external state changed.
+
+Follow-up: obtain `Get-Date -Format o` immediately before every later campaign-log timestamp.
+
+## Entry
+
+Date/time: 2026-07-28T23:34:45-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: focused-result audit repeated the documented direct `foreach` pipeline syntax error
+
+Failing check: bounded Maven-process wait and two-report Surefire aggregation
+
+Observed/root cause: PowerShell rejected a pipeline directly after the `foreach` statement with `An empty pipe element is
+not allowed`. The parser stopped before waiting or reading any report, so no test result was observed and no source,
+artifact, evidence, process, listener, branch, remote, or external state changed.
+
+Correction/result: assign the `foreach` result rows to a variable before formatting, consistent with the existing PR4
+failure-log guidance.
+
+Follow-up: treat the Maven selector as unresolved until the corrected process and report audit completes.
+
+## Entry
+
+Date/time: 2026-07-28T23:34:00-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: resumed focused Maven selector outlived the shell tool's launch timeout
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabAllocationTransactionCoordinatorTest,EnterpriseLabCommandHistoryReconcilerTest" test`
+
+Observed/root cause: the shell call was incorrectly bounded to one second and returned timeout exit 124 before Maven
+produced a result. The Maven JVM remained active as process 7556 with the exact requested selector, so the timeout is not
+a test pass or failure and no duplicate Maven run may begin while it remains live.
+
+Correction/result: inspect the surviving process command line, wait only for that exact process to exit, and accept a
+result only from fresh matching Surefire reports. Do not terminate it while it is making bounded forward progress.
+
+Follow-up: use a sufficient command timeout for every later selector and full Maven gate.
+
+## Entry
+
+Date/time: 2026-07-28T23:33:00-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: transaction-fence failure-log patch used an inexact introductory sentence
+
+Failing check: first `apply_patch` insertion for the resumed PR5 transaction-identity audit finding
+
+Observed/root cause: the patch context omitted the existing long-running goal-protocol clause from the introductory
+paragraph, so patch verification rejected the hunk before mutation. No documentation, source, artifact, evidence,
+process, listener, branch, remote, or external state changed.
+
+Correction/result: inspect the exact file prefix and insert both this tooling entry and the substantive audit entry at
+the first exact `## Entry` marker.
+
+Follow-up: keep later failure-log patches small and anchored to exact inspected lines.
+
+## Entry
+
+Date/time: 2026-07-28T23:32:00-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: resumed PR5 code audit found an incomplete exact transaction-identity fence
+
+Failing check: read-only audit of `recoverSupervisorCommitted` and its two happy-path fixtures
+
+Observed/root cause: supervisor-commit recovery compared allocation generation, experiment, requested allocation, prior
+committed allocation, authoritative installed allocation, owner generation, and router generation, but it did not compare
+the supervisor event's transaction ID with the durable allocation chain head's transaction ID. Both new happy-path test
+fixtures accidentally supplied a different transaction ID and therefore normalized the unsafe omission instead of
+detecting it. No test command, router, process, listener, artifact, remote, or external target was run by this finding.
+
+Correction/result: require exact allocation transaction-ID equality, bind both happy-path fixtures to the durable
+allocation transaction, and add a regression whose supervisor commit differs only by transaction ID. The unchanged
+installed snapshot and durable record count must prove the rejection is mutation-free.
+
+Follow-up: run the exact coordinator and command-history reconciler tests before the resumed focused selector.
+
+## Entry
+
+Date/time: 2026-07-28T23:30:06-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: resumed PR5 audit found its dirty worktree carried onto an unrelated documentation branch
+
+Failing check: active-branch and session-checkpoint integrity audit
+
+Observed/root cause: the session manager recorded PR5 on `codex/command-ledger-restart-reconciliation` from
+`e800ba06875d0897f8459ad14a5d5cf60dc34568`, but the worktree was on synchronized branch
+`docs/audit-and-playground` at `43ac9ea654a7320b983a00e59f96a1774ffd4af0`. Reflog history showed that PR5 began
+on the correct branch before a later checkout carried its uncommitted patch into five unrelated documentation commits.
+The committed documentation paths and dirty PR5 paths did not overlap.
+
+Correction/result: hash the complete tracked binary patch and both new reconciliation files, switch to the recorded PR5
+branch, and recompute all hashes. Tracked patch object `5f1448f435fd1a4c87858efbb439af35faa67082` and both new-file
+SHA-256 values matched exactly before and after the switch. No dirty change was discarded, rewritten, staged, committed,
+pushed, or merged.
+
+Follow-up: accept no carried-forward local result as current verification; audit the complete restored diff and rerun
+the PR5 verification ladder on the recorded branch.
+
+## Entry
+
+Date/time: 2026-07-28T23:30:06-07:00
+
+Branch/PR: docs/audit-and-playground / no PR queried
+
+Failure type: resumed read-only upstream-divergence query was not quoted for PowerShell
+
+Failing check: combined startup audit command containing `git rev-list --left-right --count HEAD...@{upstream}`
+
+Observed/root cause: PowerShell transformed the unquoted reflog expression and Git received an invalid encoded revision,
+so the combined command exited 1 after its earlier read-only file and diff queries. No source, artifact, evidence,
+process, listener, branch, remote, or external state changed.
+
+Correction/result: rerun the divergence query with the complete revision expression single-quoted; it returned `0 0`.
+
+Follow-up: quote reflog and upstream expressions in every later PowerShell Git query.
+
+## Entry
+
+Date/time: 2026-07-20T07:00:00-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: PR5 second architecture-contract patch retained one incorrect line break
+
+Failing check: second `apply_patch` update for `ENTERPRISE_LAB_SUPERVISOR_COMMAND_LEDGER.md`
+
+Observed/root cause: the ownership paragraph starts `Historical` at the end of the preceding line, not on its own line
+as the patch context assumed. Patch verification rejected all hunks before mutation.
+
+Correction/result: inspect numbered source lines and apply independent exact hunks.
+
+Follow-up: run `git diff --check` and the docs guard after the contract update.
+
+## Entry
+
+Date/time: 2026-07-20T06:58:00-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: PR5 architecture-contract patch used an overlarge stale context block
+
+Failing check: first `apply_patch` update for `ENTERPRISE_LAB_SUPERVISOR_COMMAND_LEDGER.md`
+
+Observed/root cause: patch verification found that one expected sentence was split differently in the current document,
+so the entire patch was rejected before any hunk was applied. No documentation, source, evidence, process, listener, or
+remote state changed.
+
+Correction/result: apply smaller exact-context hunks against the inspected current document and then run the repository
+documentation guard.
+
+Follow-up: include only the implemented PR4/PR5 contract and preserve every local-only and not-proven boundary.
+
+## Entry
+
+Date/time: 2026-07-20T06:55:00-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: PR5 focused-result summary parsed XML as separate lines
+
+Failing check: read-only Surefire aggregate after focused tests and `git diff --check`
+
+Observed/root cause: PowerShell attempted to convert the line-array output of `Get-Content` directly to `XmlDocument`,
+so it parsed only an incomplete opening element and reported an unexpected end of file. The tests themselves had
+already passed, `git diff --check` passed, and the CSRBT hash matched; no source, report, evidence, process, listener, or
+remote state changed.
+
+Correction/result: parse each report with `Get-Content -Raw` before aggregating its root attributes.
+
+Follow-up: use the corrected read-only query for every reported test total.
+
+## Entry
+
+Date/time: 2026-07-20T06:50:00-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: PR5 combined selector treated supervisor-only observation history as an orphaned mutation
+
+Failing check: focused six-class selector including `EnterpriseLabSupervisorAllocationBridgeTest`
+
+Observed/root cause: 81 of 85 tests passed and four bridge tests failed at startup. The first reconciler draft rejected
+every supervisor correlation without an application-ledger counterpart, but the existing supervisor test and health
+surfaces legitimately create independently auditable observation records outside the allocation bridge. Those records
+cannot affect routing and do not imply a missing application allocation intent.
+
+Correction/result: retain the fail-closed orphan check for allocation-mutation evidence only and ignore unmatched
+supervisor observation, ownership-status, and lifecycle histories during application allocation reconstruction. This
+matches the audited design and does not relax receipt-before-mutation or correlated allocation requirements.
+
+Follow-up: rerun the same six-class selector and inspect the actual cross-process bridge histories before broader gates.
+
+## Entry
+
+Date/time: 2026-07-20T06:43:00-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: PR5 ambiguous-mutation test expected the pre-restoration router generation
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabCommandHistoryReconcilerTest" test`
+
+Observed/root cause: five of six new reconciliation tests passed. The ambiguous-mutation case correctly used the
+existing allocation recovery policy to replace candidate generation 1 with the verified baseline at generation 2, but
+the assertion incorrectly expected generation 1. No unexpected mutation occurred: the single additional generation was
+the required bounded baseline restoration.
+
+Correction/result: assert router generation 2 together with `RESTORED_BASELINE`, preserving the test's proof that
+command-history postflight itself performs no second mutation.
+
+Follow-up: rerun the focused class and then the combined application-ledger, coordinator, reconciliation, and allocation
+supervisor selector.
+
+## Entry
+
+Date/time: 2026-07-20T06:41:00-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: PR5 focused reconciliation test compile used a nonexistent snapshot convenience factory
+
+Failing check: `mvn -q "-Dtest=EnterpriseLabCommandHistoryReconcilerTest" test`
+
+Observed/root cause: the new test helper called `EnterpriseLabLoopbackAllocationSnapshot.baseline(...)`, but the model
+does not expose that convenience factory. Test compilation stopped before execution; no application or supervisor
+process, listener, durable lab evidence, repository remote, or external target changed.
+
+Correction/result: preserve the router's exact initial installed snapshot in the fixture and reuse that immutable
+snapshot as baseline evidence instead of reconstructing it through an invented API.
+
+Follow-up: rerun the focused restart-reconciliation test class and retain this failure entry in the PR5 checkpoint.
+
+## Entry
+
+Date/time: 2026-07-20T06:14:30-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / no PR yet
+
+Failure type: PR5 source inspection used the wrong Java package path
+
+Failing check: read-only application command-ledger inspection at the start of restart-reconciliation implementation
+
+Observed/root cause: the command used the stale package segment `com/richeyworks` instead of the repository's
+`com/richmond423` path and returned `PathNotFound`. The same command's read-only Git status completed; no source,
+artifact, evidence, ownership, process, listener, or remote state changed.
+
+Correction/result: locate the exact repository paths with `rg --files` and continue from the confirmed
+`src/main/java/com/richmond423/loadbalancerpro/lab` source tree.
+
+Follow-up: retain this entry in the PR5 checkpoint and verification commit.
+
+## Entry
+
 Date/time: 2026-07-20T05:35:50-07:00
 
 Branch/PR: codex/command-ledger-cross-process-coordinator / PR #489

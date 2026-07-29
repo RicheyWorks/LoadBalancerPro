@@ -67,6 +67,8 @@ public final class EnterpriseLabSupervisorAllocationBridge
     private long acceptedApplicationGeneration;
     private Optional<Instant> lastSuccessfulIpcVerification = Optional.empty();
     private String lastFailureReasonCode = "NONE";
+    private EnterpriseLabCommandHistoryReconciler.Report lastCommandHistoryReport =
+            EnterpriseLabCommandHistoryReconciler.Report.empty();
     private boolean reachable;
     private volatile boolean closed;
 
@@ -403,6 +405,37 @@ public final class EnterpriseLabSupervisorAllocationBridge
         pendingApplicationCommits.remove(correlationId);
     }
 
+    synchronized EnterpriseLabCommandHistoryReconciler.Checkpoint
+            reconcileCommandHistoryBeforeAllocation(
+                    EnterpriseLabAllocationTransactionCoordinator coordinator) {
+        requireOpen();
+        EnterpriseLabCommandHistoryReconciler reconciler = commandHistoryReconciler(
+                coordinator);
+        synchronized (sharedApplicationLedger.commandMutex) {
+            return reconciler.reconcileBeforeAllocation();
+        }
+    }
+
+    synchronized EnterpriseLabCommandHistoryReconciler.Report
+            reconcileCommandHistoryAfterAllocation(
+                    EnterpriseLabAllocationTransactionCoordinator coordinator,
+                    EnterpriseLabCommandHistoryReconciler.Checkpoint checkpoint,
+                    EnterpriseLabAllocationReconciler.ReconciliationReport allocationReport) {
+        requireOpen();
+        EnterpriseLabCommandHistoryReconciler reconciler = commandHistoryReconciler(
+                coordinator);
+        synchronized (sharedApplicationLedger.commandMutex) {
+            lastCommandHistoryReport = reconciler.reconcileAfterAllocation(
+                    checkpoint, allocationReport);
+            return lastCommandHistoryReport;
+        }
+    }
+
+    synchronized EnterpriseLabCommandHistoryReconciler.Report commandHistoryReport() {
+        requireOpen();
+        return lastCommandHistoryReport;
+    }
+
     public synchronized EnterpriseLabSupervisorConnectionMetadata connectionMetadata() {
         requireOpen();
         return supervisor;
@@ -566,6 +599,16 @@ public final class EnterpriseLabSupervisorAllocationBridge
                         "supervisor response lacks independently readable command evidence"));
     }
 
+    private EnterpriseLabCommandHistoryReconciler commandHistoryReconciler(
+            EnterpriseLabAllocationTransactionCoordinator coordinator) {
+        return new EnterpriseLabCommandHistoryReconciler(
+                applicationCommandLedger,
+                () -> EnterpriseLabSupervisorCommandLedger.inspect(trustedRoot).replay(),
+                Objects.requireNonNull(coordinator, "coordinator cannot be null"),
+                this::readAuthoritative,
+                clock);
+    }
+
     private Response requireAccepted(Response response, Request request) {
         Response safe = Objects.requireNonNull(response, "response cannot be null");
         if (!safe.validatesAgainst(request)
@@ -668,7 +711,7 @@ public final class EnterpriseLabSupervisorAllocationBridge
         return "application-supervisor-" + operation + "-" + UUID.randomUUID();
     }
 
-    private static String commandCorrelationId(
+    static String commandCorrelationId(
             String applicationTransactionId,
             CommandType command,
             long generation,
@@ -680,7 +723,7 @@ public final class EnterpriseLabSupervisorAllocationBridge
                 allocationFingerprint);
     }
 
-    private static String supervisorTransactionId(
+    static String supervisorTransactionId(
             String applicationTransactionId,
             CommandType command,
             long generation,

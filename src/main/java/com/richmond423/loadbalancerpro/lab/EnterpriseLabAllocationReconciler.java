@@ -73,6 +73,19 @@ public final class EnterpriseLabAllocationReconciler {
     public ReconciliationReport reconcile(
             ReconciliationTrigger trigger,
             List<ReconstructedExperimentState> replayedExperiments) {
+        return reconcile(trigger, replayedExperiments, false);
+    }
+
+    ReconciliationReport reconcileBeforeCommandHistoryReadiness(
+            ReconciliationTrigger trigger,
+            List<ReconstructedExperimentState> replayedExperiments) {
+        return reconcile(trigger, replayedExperiments, true);
+    }
+
+    private ReconciliationReport reconcile(
+            ReconciliationTrigger trigger,
+            List<ReconstructedExperimentState> replayedExperiments,
+            boolean deferReadyPublication) {
         List<ReconstructedExperimentState> suppliedStates = Objects.requireNonNull(
                 replayedExperiments, "replayedExperiments cannot be null");
         if (suppliedStates.size() > HARD_MAX_EXPERIMENT_EVIDENCE) {
@@ -83,12 +96,19 @@ public final class EnterpriseLabAllocationReconciler {
         List<ExperimentAllocationEvidence> evidence = safeStates.stream()
                 .map(ExperimentAllocationEvidence::from)
                 .toList();
-        return reconcileEvidence(trigger, evidence);
+        return reconcileEvidence(trigger, evidence, deferReadyPublication);
     }
 
     synchronized ReconciliationReport reconcileEvidence(
             ReconciliationTrigger trigger,
             List<ExperimentAllocationEvidence> experimentEvidence) {
+        return reconcileEvidence(trigger, experimentEvidence, false);
+    }
+
+    private synchronized ReconciliationReport reconcileEvidence(
+            ReconciliationTrigger trigger,
+            List<ExperimentAllocationEvidence> experimentEvidence,
+            boolean deferReadyPublication) {
         ReconciliationTrigger safeTrigger = Objects.requireNonNull(
                 trigger, "trigger cannot be null");
         List<ExperimentAllocationEvidence> suppliedEvidence = Objects.requireNonNull(
@@ -125,7 +145,7 @@ public final class EnterpriseLabAllocationReconciler {
                 classification = DriftClassification.ROUTER_STATE_UNAVAILABLE;
                 action = attemptRestorationWithoutReadBack(
                         safeTrigger, authorization.orElseThrow(), initialDurable);
-                return publish(failedReport(
+                return finish(failedReport(
                         safeTrigger,
                         classification,
                         action,
@@ -135,7 +155,8 @@ public final class EnterpriseLabAllocationReconciler {
                         Optional.empty(),
                         false,
                         "ROUTER_READ_BACK_UNAVAILABLE",
-                        "installed router state was unavailable and readiness remained closed"));
+                        "installed router state was unavailable and readiness remained closed"),
+                        deferReadyPublication);
             }
             failureInjector.checkpoint(Checkpoint.AFTER_ROUTER_READ_BACK);
 
@@ -161,7 +182,7 @@ public final class EnterpriseLabAllocationReconciler {
                     durable = Optional.of(store.replay());
                     installed = Optional.of(readInstalled());
                 }
-                return publish(failedReport(
+                return finish(failedReport(
                         safeTrigger,
                         classification,
                         action,
@@ -171,7 +192,8 @@ public final class EnterpriseLabAllocationReconciler {
                         installed,
                         trafficActionPerformed,
                         "EXPERIMENT_ALLOCATION_EVIDENCE_MISMATCH",
-                        "replayed experiment evidence disagreed with the durable allocation baseline"));
+                        "replayed experiment evidence disagreed with the durable allocation baseline"),
+                        deferReadyPublication);
             }
 
             TransactionReceipt receipt = null;
@@ -251,7 +273,7 @@ public final class EnterpriseLabAllocationReconciler {
             failureInjector.checkpoint(Checkpoint.BEFORE_READINESS_PUBLICATION);
             authorization.orElseThrow().requireSameEpoch(
                     mutationAuthority.requireMutationAuthorization());
-            return publish(report);
+            return finish(report, deferReadyPublication);
         } catch (RuntimeException failure) {
             DriftClassification failedClassification = failure instanceof
                     EnterpriseLabEvidenceOwnershipException
@@ -259,7 +281,7 @@ public final class EnterpriseLabAllocationReconciler {
                     : failure instanceof EnterpriseLabAllocationStateStore.StoreException
                             ? DriftClassification.TRANSACTION_CHAIN_INVALID
                             : classification;
-            return publish(failedReport(
+            return finish(failedReport(
                     safeTrigger,
                     failedClassification,
                     action == ReconciliationAction.NONE
@@ -270,7 +292,8 @@ public final class EnterpriseLabAllocationReconciler {
                     installed,
                     trafficActionPerformed,
                     "ALLOCATION_RECONCILIATION_FAILED",
-                    "allocation reconciliation failed closed with preserved bounded evidence"));
+                    "allocation reconciliation failed closed with preserved bounded evidence"),
+                    deferReadyPublication);
         }
     }
 
@@ -292,8 +315,12 @@ public final class EnterpriseLabAllocationReconciler {
         }
     }
 
-    private ReconciliationReport publish(ReconciliationReport report) {
-        gate.complete(report);
+    private ReconciliationReport finish(
+            ReconciliationReport report,
+            boolean deferReadyPublication) {
+        if (!deferReadyPublication || !report.ready()) {
+            gate.complete(report);
+        }
         return report;
     }
 

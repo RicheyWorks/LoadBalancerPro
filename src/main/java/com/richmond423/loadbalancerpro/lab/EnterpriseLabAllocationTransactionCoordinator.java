@@ -10,6 +10,9 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceMutationAuthorit
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackAllocationRouter.AllocationChangeReceipt;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackAllocationRouter.CandidateIntentValidation;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabLoopbackAllocationRouter.ChangeStatus;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.EventType;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.LedgerSide;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.MutationStatus;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -387,6 +390,147 @@ public final class EnterpriseLabAllocationTransactionCoordinator {
                 "RECONCILIATION_RESTORE_REQUIRED",
                 "installed allocation or owner epoch differed from the durable safe baseline");
         return performRestoration(context, authorization, false, safeReason);
+    }
+
+    /**
+     * Completes only the application allocation evidence for an independently
+     * durable supervisor commit. This path never calls a router mutation; it
+     * requires exact installed-state and durable-intent agreement first.
+     */
+    synchronized TransactionReceipt recoverSupervisorCommitted(
+            EnterpriseLabCommandLedgerEvent supervisorCommit) {
+        EnterpriseLabCommandLedgerEvent committed = Objects.requireNonNull(
+                supervisorCommit, "supervisorCommit cannot be null");
+        if (committed.ledgerSide() != LedgerSide.SUPERVISOR
+                || committed.eventType() != EventType.SUPERVISOR_COMMITTED
+                || !committed.commandType().mutation()
+                || committed.mutationStatus() != MutationStatus.COMMITTED) {
+            throw new IllegalArgumentException(
+                    "allocation recovery requires supervisor committed mutation evidence");
+        }
+
+        MutationAuthorization authorization = requireAuthorization();
+        EnterpriseLabAllocationStateStore.ReadResult durable = store.replay();
+        EnterpriseLabAllocationState head = durable.chainHead().orElseThrow(
+                () -> new IllegalStateException(
+                        "supervisor commit has no application allocation intent"));
+        boolean commandMatches = committed.correlationId().equals(
+                        EnterpriseLabSupervisorAllocationBridge.commandCorrelationId(
+                                head.allocationTransactionId(),
+                                committed.commandType(),
+                                committed.allocationGeneration(),
+                                committed.requestedAllocationFingerprint()))
+                && committed.transactionId().equals(
+                        EnterpriseLabSupervisorAllocationBridge.supervisorTransactionId(
+                                head.allocationTransactionId(),
+                                committed.commandType(),
+                                committed.allocationGeneration(),
+                                committed.requestedAllocationFingerprint()))
+                && head.allocationGeneration()
+                        == committed.allocationGeneration()
+                && head.experimentId().equals(committed.experimentId())
+                && head.normalizedAllocationFingerprint().equals(
+                        committed.requestedAllocationFingerprint())
+                && head.previousCommittedAllocationFingerprint().equals(
+                        committed.previousCommittedFingerprint());
+        if (!commandMatches) {
+            throw new IllegalStateException(
+                    "supervisor commit does not match the application allocation chain head");
+        }
+
+        EnterpriseLabInstalledAllocationSnapshot installed = readInstalled();
+        boolean installedMatches = installed.allocationFingerprint().equals(
+                        committed.installedFingerprintAfter())
+                && installed.allocationFingerprint().equals(
+                        committed.requestedAllocationFingerprint())
+                && installed.routingSnapshot().scenarioId().equals(head.scenarioId())
+                && installed.routingSnapshot().allocations().equals(
+                        head.guardrailApprovedAllocation())
+                && installed.ownerGeneration() == committed.applicationOwnerGeneration()
+                && installed.routerGeneration() == committed.routerGenerationAfter();
+        if (!installedMatches) {
+            throw new IllegalStateException(
+                    "supervisor commit and authoritative installed state do not match exactly");
+        }
+
+        if (head.transactionPhase() == TransactionPhase.COMMITTED) {
+            return receipt(
+                    head.allocationTransactionId(),
+                    TransactionStatus.IDEMPOTENT,
+                    installed.ownerGeneration(),
+                    head.allocationGeneration(),
+                    Optional.of(TransactionPhase.COMMITTED),
+                    head.normalizedAllocationFingerprint(),
+                    installed.allocationFingerprint(),
+                    installed.routerGeneration(),
+                    durable.records().size(),
+                    false,
+                    false,
+                    false,
+                    "SUPERVISOR_COMMIT_ALREADY_RECONCILED",
+                    "matching terminal allocation evidence required no router mutation");
+        }
+        if (head.transactionPhase() != TransactionPhase.APPLYING
+                && head.transactionPhase() != TransactionPhase.APPLIED
+                && head.transactionPhase() != TransactionPhase.VERIFYING) {
+            throw new IllegalStateException(
+                    "supervisor commit cannot advance this application allocation phase");
+        }
+
+        TransactionContext context = TransactionContext.recovery(
+                head, durable.records().size());
+        requireSameAuthorization(authorization);
+        if (context.phase == TransactionPhase.APPLYING) {
+            append(
+                    context,
+                    TransactionPhase.APPLIED,
+                    installed.routingSnapshot().allocations(),
+                    EnterpriseLabAllocationState.NO_FINGERPRINT,
+                    true,
+                    Optional.empty(),
+                    VerificationResult.NOT_ATTEMPTED,
+                    RecoveryClassification.INCOMPLETE_TRANSACTION,
+                    "SUPERVISOR_COMMIT_RECOVERED_APPLY",
+                    "durable supervisor commit proved the prior allocation apply completed");
+        }
+        Instant verifiedAt = clock.instant();
+        requireSameAuthorization(authorization);
+        if (context.phase == TransactionPhase.APPLIED) {
+            append(
+                    context,
+                    TransactionPhase.VERIFYING,
+                    installed.routingSnapshot().allocations(),
+                    installed.allocationFingerprint(),
+                    true,
+                    Optional.of(verifiedAt),
+                    VerificationResult.MATCHED,
+                    RecoveryClassification.INCOMPLETE_TRANSACTION,
+                    "SUPERVISOR_COMMIT_READ_BACK_MATCHED",
+                    "authoritative read-back exactly matched the durable supervisor commit");
+        }
+        requireSameAuthorization(authorization);
+        if (context.phase == TransactionPhase.VERIFYING) {
+            append(
+                    context,
+                    TransactionPhase.COMMITTED,
+                    installed.routingSnapshot().allocations(),
+                    installed.allocationFingerprint(),
+                    true,
+                    Optional.of(verifiedAt),
+                    VerificationResult.MATCHED,
+                    RecoveryClassification.NOT_REQUIRED,
+                    "SUPERVISOR_COMMIT_RECONCILED",
+                    "application allocation evidence was completed without repeating mutation");
+        }
+        return receipt(
+                context,
+                TransactionStatus.COMMITTED,
+                installed,
+                false,
+                false,
+                false,
+                "SUPERVISOR_COMMIT_RECONCILED",
+                "matching supervisor commit completed application evidence without router mutation");
     }
 
     /**

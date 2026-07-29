@@ -69,11 +69,11 @@
       "sourceIds": ["P-0.2"],
       "track": "proxy",
       "title": "Replace health deletion with drain, eviction thresholds, and re-admission",
-      "status": "PR_OPEN",
+      "status": "REMOTE_GREEN",
       "dependencies": [],
       "riskClass": "RELIABILITY",
       "verificationProfile": "java-full",
-      "currentState": "PR #499 is open from codex/p-0-2-health-drain. Local acceptance is green: health checks retain registry identity, one bad cycle degrades without exclusion, three consecutive bad cycles evict from rotation, two consecutive good cycles re-admit, manual setHealthy(false) drains without deletion, and only explicit removal deletes. Exact-head remote gates remain pending."
+      "currentState": "PR #499 head 472dc9cc7bc277f3b52b69cb16b85fc62675e9f1 passed exact-head push CI, PR CI, CodeQL, dependency review, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan. The factual REMOTE_GREEN checkpoint advances the head, so final exact-head gates must repeat before merge."
     },
     {
       "ordinal": 4,

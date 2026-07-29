@@ -21,7 +21,7 @@ java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.p
 During development, the existing Maven startup path is also available:
 
 ```bash
-mvn spring-boot:run
+mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=local"
 ```
 
 If local Maven dependency resolution is blocked by workstation certificate trust, use GitHub CI as the verification source of truth and start from a previously built JAR.

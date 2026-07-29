@@ -587,7 +587,7 @@ Read [`PRIVATE_NETWORK_LIVE_VALIDATION_GATE.md`](PRIVATE_NETWORK_LIVE_VALIDATION
 - Workflow artifacts are not GitHub Release assets.
 - Proxy/demo/status/docs paths do not construct or mutate `CloudManager`.
 - Real-backend examples use loopback/private placeholders and must not include secrets or public upstream URLs.
-- Local/default proxy demos are not a security boundary; local developer mode is intentionally permissive and must not be exposed on public interfaces. Prod API-key and OAuth2 modes document app-level proxy access checks, while TLS termination and public ingress controls remain deployment responsibilities.
+- Explicit `auth.mode=none` proxy demos are not a security boundary; they emit an authentication-disabled warning and must not be exposed on public interfaces. API-key enforcement is profile-independent, OAuth2 supplies explicit app roles, and TLS termination plus public ingress controls remain deployment responsibilities.
 - No production gateway claim, performance benchmark claim, certification claim, legal compliance claim, identity claim, or security guarantee is made by the proxy/operator docs.
 
 ## Current Limitations

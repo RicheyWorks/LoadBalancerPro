@@ -45,7 +45,7 @@ mvn -B -DskipTests package
 Run the API with the packaged jar:
 
 ```bash
-java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080
+java -jar target/LoadBalancerPro-2.5.0.jar --server.address=127.0.0.1 --server.port=8080 --spring.profiles.active=local
 ```
 
 Run the proxy demo profile with the packaged jar after the fixture launcher is running:

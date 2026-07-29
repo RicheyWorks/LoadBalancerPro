@@ -143,9 +143,11 @@ class DeploymentSmokeKitDocumentationTest {
     void proxyDefaultsAndProfileExamplesRemainSafe() throws Exception {
         assertTrue(read(DEFAULT_PROPERTIES).contains("loadbalancerpro.proxy.enabled=false"));
         assertTrue(read(LOCAL_EXAMPLE).contains("loadbalancerpro.proxy.enabled=false"));
+        assertTrue(read(LOCAL_EXAMPLE).contains("loadbalancerpro.auth.mode=none"));
         assertTrue(read(PROD_API_KEY_EXAMPLE).contains("loadbalancerpro.proxy.enabled=false"));
         assertTrue(read(CLOUD_SANDBOX_EXAMPLE).contains("loadbalancerpro.proxy.enabled=false"));
         assertTrue(read(PROXY_LOOPBACK_EXAMPLE).contains("loadbalancerpro.proxy.enabled=true"));
+        assertTrue(read(PROXY_LOOPBACK_EXAMPLE).contains("loadbalancerpro.auth.mode=none"));
         assertTrue(read(PROXY_LOOPBACK_EXAMPLE).contains("http://127.0.0.1:18081"));
         assertTrue(read(PROXY_LOOPBACK_EXAMPLE).contains("http://127.0.0.1:18082"));
     }

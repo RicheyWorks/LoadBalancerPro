@@ -1,46 +1,35 @@
 package com.richmond423.loadbalancerpro.api;
 
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.richmond423.loadbalancerpro.api.config.AuthModeConfiguration;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-@SpringBootTest(properties = "spring.profiles.active=cloud-sandbox")
-@AutoConfigureMockMvc
 class CloudSandboxApiKeyMissingConfigurationTest {
-    @Autowired
-    private MockMvc mockMvc;
+    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+            .withUserConfiguration(AuthModeConfiguration.class);
 
     @Test
-    void cloudSandboxProfileFailsClosedWhenApiKeyIsMissing() throws Exception {
-        mockMvc.perform(post("/api/allocate/capacity-aware")
-                        .header("X-API-Key", "ANY_PRESENTED_TEST_KEY")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "requestedLoad": 10.0,
-                                  "servers": [
-                                    {
-                                      "id": "api-1",
-                                      "cpuUsage": 10.0,
-                                      "memoryUsage": 20.0,
-                                      "diskUsage": 30.0,
-                                      "capacity": 100.0,
-                                      "weight": 1.0,
-                                      "healthy": true
-                                    }
-                                  ]
-                                }
-                                """))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.status", is(401)))
-                .andExpect(jsonPath("$.error", is("unauthorized")));
+    void cloudSandboxProfileRefusesStartupWhenApiKeyIsMissing() {
+        contextRunner.withPropertyValues(
+                        "spring.profiles.active=cloud-sandbox",
+                        "loadbalancerpro.auth.mode=api-key")
+                .run(context -> {
+                    assertThat(context).hasFailed();
+                    assertThat(rootCause(context.getStartupFailure()))
+                            .isInstanceOf(IllegalStateException.class)
+                            .hasMessageContaining("loadbalancerpro.auth.mode=api-key")
+                            .hasMessageContaining("loadbalancerpro.api.key")
+                            .hasMessageContaining("refuses to start");
+                });
+    }
+
+    private static Throwable rootCause(Throwable throwable) {
+        Throwable cause = throwable;
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+        return cause;
     }
 }

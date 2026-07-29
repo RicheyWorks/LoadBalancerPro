@@ -48,7 +48,8 @@ class ReverseProxyConfigReloadDocumentationTest {
         assertTrue(reloadResponse.contains("ReverseProxyReloadResponse"));
         assertTrue(controller.contains("@PostMapping(\"/reload\")"));
         assertTrue(controller.contains("X-API-Key is required for proxy config reload"));
-        assertTrue(security.contains("HttpMethod.POST, \"/api/proxy/reload\""));
+        assertTrue(security.contains(
+                "authorize.requestMatchers(\"/api/proxy/**\").hasRole(allocationRole)"));
     }
 
     @Test

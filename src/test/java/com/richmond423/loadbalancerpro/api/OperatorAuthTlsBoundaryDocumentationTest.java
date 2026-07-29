@@ -47,22 +47,21 @@ class OperatorAuthTlsBoundaryDocumentationTest {
         assertTrue(readme.contains(
                 "protects `/api/**`, `/proxy/**`, OpenAPI, and Swagger with the `X-API-Key` header"));
         assertTrue(readme.contains(
-                "requires the `operator` role for allocation endpoints, `/proxy/**`, and "
-                        + "`GET /api/proxy/status`"));
+                "requires the `operator` role for allocation, routing mutation, proxy, Enterprise Lab, "
+                        + "evidence-training, remediation, and scenario-replay API prefixes"));
 
         assertTrue(apiSecurity.contains(
-                "API-key mode protects `/api/**` with the `X-API-Key` header by default in prod and "
-                        + "cloud-sandbox profiles"));
+                "API-key mode protects `/api/**` with `X-API-Key` regardless of active profile"));
         assertTrue(apiSecurity.contains(
-                "The explicit public prod/cloud-sandbox API exceptions are `GET /api/health` and "
-                        + "unauthenticated `OPTIONS` preflight requests"));
+                "The explicit public API exceptions are `GET /api/health` and unauthenticated `OPTIONS`"));
         assertTrue(apiSecurity.contains(
                 "The checked-in Dockerfile defaults `SPRING_PROFILES_ACTIVE=prod`"));
         assertTrue(reverseProxyMode.contains("## Auth And TLS Boundary"));
-        assertTrue(reverseProxyMode.contains("Local/default API-key mode stays demo-friendly"));
+        assertTrue(reverseProxyMode.contains("Checked-in loopback proxy demos explicitly select warned "
+                + "`auth.mode=none`"));
         assertTrue(reverseProxyMode.contains(
-                "In prod or cloud-sandbox API-key mode, `/proxy/**` and `GET /api/proxy/status` "
-                        + "require the configured `X-API-Key`"));
+                "In API-key mode, `/proxy/**` and `GET /api/proxy/status` require the configured "
+                        + "`X-API-Key`"));
         assertTrue(reverseProxyMode.contains(
                 "In OAuth2 mode, the same proxy surfaces require the configured allocation role"));
     }
@@ -97,7 +96,7 @@ class OperatorAuthTlsBoundaryDocumentationTest {
         assertTrue(reverseProxyMode.contains("Disabled by default: `loadbalancerpro.proxy.enabled=false`"));
         assertTrue(realBackendExamples.contains("Proxy mode remains disabled by default."));
         assertTrue(reviewerTrustMap.contains("- Proxy is disabled by default."));
-        assertTrue(reviewerTrustMap.contains("Local/default proxy demos are not a security boundary"));
+        assertTrue(reviewerTrustMap.contains("Explicit `auth.mode=none` proxy demos are not a security boundary"));
     }
 
     @Test

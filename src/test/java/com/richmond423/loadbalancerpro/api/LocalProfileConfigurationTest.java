@@ -1,6 +1,6 @@
 package com.richmond423.loadbalancerpro.api;
 
-import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
@@ -31,18 +31,26 @@ class LocalProfileConfigurationTest {
     private Environment environment;
 
     @Test
-    void localProfileKeepsHealthAndDemoObservabilityAvailable() throws Exception {
+    void localProfileKeepsHealthAndInfoAvailableButDoesNotExposeMetrics() throws Exception {
+        assertEquals("none", environment.getProperty("loadbalancerpro.auth.mode"));
+        assertEquals("health,info", environment.getProperty("management.endpoints.web.exposure.include"));
+        assertEquals("false", environment.getProperty("management.prometheus.metrics.export.enabled"));
+
         mockMvc.perform(get("/api/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("ok"));
 
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/actuator/info"))
+                .andExpect(status().isOk());
+
         mockMvc.perform(get("/actuator/metrics"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.names").isArray());
+                .andExpect(status().isNotFound());
 
         mockMvc.perform(get("/actuator/prometheus"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("jvm_info")));
+                .andExpect(status().isNotFound());
 
         assertFalse(Boolean.parseBoolean(environment.getProperty("management.otlp.metrics.export.enabled")));
     }

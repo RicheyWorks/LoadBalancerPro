@@ -74,7 +74,7 @@ When proxy mode is enabled, startup validation requires either at least one name
 
 When proxy mode is already enabled, operators can submit a full replacement proxy route/backend config to `POST /api/proxy/reload`. The endpoint validates the candidate config before activation, then atomically swaps the in-memory route snapshot only on success. Invalid reloads fail safe: the last known-good active config stays in use, the active config generation does not advance, and `/api/proxy/status.reload.lastReloadValidationErrors` reports the validation failure without API-key values or backend credentials.
 
-In API-key mode, reload requires `X-API-Key` even for local/default profile use. In prod or cloud-sandbox API-key mode the existing API-key boundary also protects this mutation. In OAuth2 mode, reload requires the configured allocation/operator role. Do not expose reload outside localhost or trusted networks without the same deployment-level access control and TLS termination used for `/proxy/**`.
+In API-key mode, reload and the rest of the proxy/API surface require `X-API-Key` regardless of profile. In explicit `auth.mode=none`, the established reload-specific key check remains an additional local mutation boundary. In OAuth2 mode, reload requires the configured allocation/operator role. Do not expose reload outside localhost or trusted networks without the same deployment-level access control and TLS termination used for `/proxy/**`.
 
 Reload is local and process-scoped. It does not read remote URLs, does not contact cloud config backends, does not persist config, does not coordinate across replicas, and does not replace restart-based deployment controls. Restart remains the clearest path after changing TLS, auth, deployment secrets, JVM settings, or any config outside `loadbalancerpro.proxy.*`.
 
@@ -250,9 +250,9 @@ The examples target loopback placeholders `http://localhost:9001` and `http://lo
 
 ## Auth And TLS Boundary
 
-Local/default API-key mode stays demo-friendly for loopback demos and is not a security boundary. Keep proxy mode bound to localhost or a trusted private network unless deployment-level access control is in place.
+Checked-in loopback proxy demos explicitly select warned `auth.mode=none` and are not a security boundary. The unqualified default API-key mode instead refuses startup without a key. Keep proxy demos bound to localhost or a trusted private network unless deployment-level access control is in place.
 
-In prod or cloud-sandbox API-key mode, `/proxy/**` and `GET /api/proxy/status` require the configured `X-API-Key`. In OAuth2 mode, the same proxy surfaces require the configured allocation role, which defaults to `operator`. `/proxy-status.html` is a static same-origin page, so expose it only where callers are allowed to read the status JSON it uses.
+In API-key mode, `/proxy/**` and `GET /api/proxy/status` require the configured `X-API-Key` regardless of profile. In OAuth2 mode, the same proxy surfaces require the configured allocation role, which defaults to `operator`. `/proxy-status.html` is a static same-origin page, so expose it only where callers are allowed to read the status JSON it uses.
 
 LoadBalancerPro does not terminate TLS for proxy traffic and does not provide end-to-end encryption between clients, this app, and upstreams. Terminate TLS at a trusted reverse proxy, ingress, managed load balancer, platform edge, or service mesh before exposing proxy mode beyond a private review environment. Configure forwarded headers only when the deployment owns that trust boundary.
 

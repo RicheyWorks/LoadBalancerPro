@@ -43,6 +43,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest(properties = {
         "spring.profiles.active=prod",
+        "loadbalancerpro.auth.mode=api-key",
         "loadbalancerpro.api.key=TEST_PROXY_EVIDENCE_KEY"
 })
 @AutoConfigureMockMvc

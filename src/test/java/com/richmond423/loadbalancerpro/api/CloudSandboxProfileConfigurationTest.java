@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(properties = {
         "spring.profiles.active=cloud-sandbox",
+        "loadbalancerpro.auth.mode=api-key",
         "loadbalancerpro.api.key=TEST_SANDBOX_API_KEY"
 })
 @AutoConfigureMockMvc

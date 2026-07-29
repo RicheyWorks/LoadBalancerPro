@@ -33,7 +33,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+        "management.endpoints.web.exposure.include=health,info,metrics,prometheus",
+        "management.prometheus.metrics.export.enabled=true"
+})
 @AutoConfigureMockMvc
 class ApiObservabilityCardinalityTest {
     private static final Set<String> ALLOCATION_METRICS = Set.of(
@@ -140,7 +143,7 @@ class ApiObservabilityCardinalityTest {
     }
 
     @Test
-    void actuatorPrometheusExposesOperatorMetricNamesWithoutExternalPrometheus() throws Exception {
+    void explicitlyEnabledPrometheusExposesOperatorMetricNamesWithoutExternalPrometheus() throws Exception {
         postAllocation("/api/allocate/capacity-aware", "edge-host-0001", 125.0)
                 .andExpect(status().isOk());
         postMalformedJson("/api/allocate/capacity-aware")

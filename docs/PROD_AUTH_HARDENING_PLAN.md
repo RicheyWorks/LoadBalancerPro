@@ -7,6 +7,12 @@
 - Baseline HEAD: 1a63999
 - Purpose: document current auth behavior, guardrails, and future hardening before changing route security semantics
 
+> Historical baseline notice (2026-07-29): the v2.4.2 observations and matrix below are retained as the input to
+> the hardening work, not as current behavior. The combined-build `SEC-DEFAULT-DENY` slot made API-key enforcement
+> profile-independent, refuses startup when API-key mode has no key, added explicit warned `auth.mode=none` for
+> bounded local use, narrowed all default Actuator exposure to health/info, added operator/admin OAuth2
+> classifications, and denies unclassified API prefixes. Use `API_SECURITY.md` for the current contract.
+
 ## 1. Current Auth Model
 
 - The local/default profile is demo-friendly.

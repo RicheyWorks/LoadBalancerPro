@@ -8315,3 +8315,118 @@ Follow-up packaged result: with the justified 30-second proof-only observation b
 Follow-up packaged result: after replacing the stale raw RESTORE fixture with an accepted read followed by the same request ID and changed metadata, `target/pr4-independent-supervisor-proof-rerun8` again completed all process orchestration but exited 1 on the same `ipc-boundary-conflicting-duplicate` key. The fixture now enters a different protocol path, but its exact second response still does not satisfy the expected `DUPLICATE_REQUEST_CHANGED` assertion. Correction: inspect both `duplicate-request` receipt episodes and their response classifications before changing either the service ordering or the proof expectation.
 
 Diagnostic result: the changed read was accepted because `rejectChangedDuplicate` consulted only the mutable supervisor state's last mutation request, not the append-only ledger history. Correction: compare every incoming request ID with the first durable supervisor-ledger fingerprint. The new read-only regression passed in the 42-test focused bundle, and fresh packaged proof `target/pr4-independent-supervisor-proof-rerun9` exited 0 with 22 application JVMs, 24 supervisor JVMs, eight of eight crash windows true, 18 of 18 IPC checks true, all aggregate booleans true, and report fingerprint `ba716c8c4264ede126fdf1c9c7c6acf0e4fa82b347b6133026d7277cdb23d6b4`. This green result supersedes the failed proof attempts but does not replace the remaining clean-package, verify, workflow, scope, or remote gates.
+
+# 2026-07-29 - SEC-DEFAULT-DENY test-inventory path miss
+
+Branch: `codex/sec-default-deny`
+
+Read-only tooling failure: the first security-test inventory included the nonexistent directory `src/test/java/com/richmond423/loadbalancerpro/security`, so ripgrep emitted OS error 2 even though the surrounding PowerShell command exited zero and returned the valid API-package matches. The partial result was not treated as a complete inventory. Correction: query the existing `src/test/java` root and filter exact security test filenames; that source-backed inventory found the seven relevant test files under the API packages. No repository behavior, test result, or external state changed.
+
+Read-only tooling follow-up: a controller-mapping lookup passed
+`src/main/java/com/richmond423/loadbalancerpro/api/*Controller.java` as a literal Windows path, so ripgrep emitted OS
+error 123 and returned only the independently queried controller filenames. The partial output was not treated as a
+complete route inventory. Correction: query the existing API directory and use ripgrep's `-g '*Controller.java'`
+filter before selecting the security-sensitive mappings. No repository behavior, test result, or external state
+changed.
+
+Launch-surface inventory follow-up: the first repository launch lookup passed `docker-compose*.yml` as a literal
+Windows path, so ripgrep emitted OS error 123 after returning matches from the other explicit roots; the display was
+also capped and therefore was not treated as a complete launch inventory. Correction: derive Compose and workflow
+paths with `rg --files`, then inspect the current executable CI/smoke surfaces separately from historical
+documentation. No command was launched, no secret was read or written, and no repository or external state changed.
+
+Focused red-selector tooling failure: the first six-class Maven selector was invoked with a one-second command
+timeout and the command runner terminated it after roughly five seconds, before Maven returned a test result. The
+partial invocation was not treated as a red or green gate. Correction: confirm no Maven/Java test process was left
+running, then rerun the unchanged selector with a test-appropriate bounded timeout and record its actual Surefire
+result.
+
+Focused red gate: the surviving Maven process completed the unchanged six-class selector and fresh Surefire reports
+recorded 49 tests with nine failures, one error, and zero skips. The ten red outcomes matched the new security
+contract: default and explicit API-key mode did not refuse missing/blank keys; `none` could not bind to the existing
+two-value mode enum; prod/cloud missing-key contexts did not fail; the default-profile API-key filter remained
+profile-gated; default Actuator exposure still included metrics/Prometheus; the four newly classified API prefixes
+still fell through to generic authentication; and operator credentials still reached the two destructive durable
+evidence endpoints. Correction: implement the explicit `none` mode and warning, unconditional auth-mode startup
+validation, profile-independent API-key filter, health/info-only default Actuator exposure, explicit OAuth2
+operator/admin matchers, and deny unclassified API prefixes. Then rerun the exact selector and require one fresh
+green report per selected class.
+
+First adjacent context gate: the 20-class security/profile/controller selector ran 158 tests with one failure, zero
+errors, and zero skips. `AllocatorControllerTest.actuatorHealthInfoAndMetricsAreAvailable` still expected HTTP 200
+from default `/actuator/metrics` and `/actuator/prometheus`; the newly required health/info-only default correctly
+returned HTTP 404. All other selected startup, API-key, OAuth2 role, profile precedence, explicit-none, CORS,
+telemetry, proxy reload, and lab-security tests passed. Correction: rename and update that established integration
+assertion to require health/info 200 and metrics/Prometheus 404, then rerun the unchanged 20-class selector.
+
+First documentation/trust guard gate: the 14-class selector ran 95 tests with four failures, zero errors, and zero
+skips. The failures were stale or overly literal guard expectations: the container and reload documentation tests
+still required profile-specific API-key wording; the CSRF source guard expected the OAuth2 `/api/**` deny matcher on
+one source line even though the formatter split the method chain; and the reconciled runtime-audit guard required the
+old exact phrase `protected requests fail closed with HTTP 401` even though the document now distinguishes
+missing-key startup refusal from wrong/missing request-header 401. Correction: update those four guards to assert the
+profile-independent API-key contract, whitespace-tolerant source evidence, startup-refusal/request-401 distinction,
+and explicit-none warning boundary, then rerun the unchanged selector.
+
+First full-suite gate: `mvn -q test` completed 3,421 tests with six failures, zero errors, and zero skips. The six
+failures were stale expectations exposed outside the focused bundles: `ApiObservabilityCardinalityTest` still
+expected default Prometheus exposure; `ReverseProxyDisabledTest` inherited the explicit test-only `none` mode but
+still expected `api-key`; `DependencyCiHygieneWorkflowTest`, `ReadmeVisibilityDocumentationTest`, and
+`ProductionReadinessSummaryDocumentationTest` still required pre-hardening README/security phrases; and
+`CombinedBuildPlanCampaignDocumentationTest` required every slot to remain `OPEN` after the active slot correctly
+transitioned to `IN_PROGRESS`. Correction: update only those assertions to the health/info-only default, explicit
+test-mode status, current fail-closed wording, and the campaign's one-active-slot lifecycle. Then rerun the exact
+six-class selector before repeating the full suite.
+
+Read-only campaign-status lookup failure: a status-count command used the guessed filename
+`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN.json`, which does not exist, so PowerShell reported a path-not-found error.
+No file or external state changed, and no status conclusion was drawn from the failed lookup. Correction: use the
+test's source-backed manifest constant, `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`, for status inspection.
+
+Packaged-runtime harness tooling failure: the first explicit-none packaged-JAR probe combined hidden
+`Start-Process`, loopback HTTP requests, and exact-PID `Stop-Process` cleanup in one PowerShell tool call. The desktop
+command policy rejected the command before execution; no Java process or listener was created and no runtime result
+was inferred. Correction: use a checked-in bounded smoke runner when available, or split launch, observation, and
+exact-PID cleanup into policy-compatible commands while preserving loopback-only binding and deterministic cleanup.
+
+Checked-in live-smoke timeout: `scripts/smoke/operator-run-profiles-smoke.ps1 -SkipPackage` passed far enough to
+start and stop the local and prod packaged applications and start the proxy application, but the outer command did
+not return within 184 seconds. No aggregate PASS was emitted, so the run is not green. Read-only cleanup inspection
+found no remaining LoadBalancerPro JVM or application listener, but one PowerShell `HttpListener` job remained
+attached to loopback port 18382. `netsh http show servicestate` resolved exact owner PID 22396; that one smoke-owned
+process was force-stopped and the port was confirmed released. Correction: use the simpler checked-in distribution
+and enterprise-auth runners for the scoped packaged assertions, and treat the combined proxy runner as failed until
+its backend-job hang is independently corrected or a later scoped slot replaces it.
+
+Local container/scanner availability failure: Docker CLI 28.0.4 is installed, but `docker version` could not connect
+to the Docker Desktop Linux engine because its named pipe was absent; Trivy, Syft, and Grype are also not installed.
+No daemon, image, container, registry, or external target was changed. Correction: run local Maven SBOM generation
+and source/config checks now, then require the repository's exact-head remote Docker build/runtime and Trivy jobs
+before merge. Local Docker/Trivy evidence remains unavailable and must not be claimed.
+
+Read-only workflow lookup failure: an SBOM/container search included `.github/workflows/*.yml` as a literal Windows
+path, so ripgrep returned OS error 123 after successfully finding the relevant lines in the explicitly named CI
+workflow. The partial output was sufficient to locate the CI commands but was not treated as a complete workflow
+inventory. Correction: derive workflow paths with `rg --files .github/workflows` before any broader workflow scan.
+
+First local SBOM invocation: the CycloneDX plugin resolved 144 components and wrote validated `target/bom.xml` and
+`target/bom.json`, but PowerShell passed the unquoted dotted `-Dcyclonedx.skipAttach=true` argument incorrectly.
+Maven received `.skipAttach=true` as an extra lifecycle token and exited 1, so the generated files are not accepted as
+a green command result. Correction: rerun the unchanged plugin goal with every dotted `-D` property quoted as one
+literal argument, then validate both resulting BOMs and record their hashes.
+
+Read-only route-inventory quoting failure: a combined PowerShell/ripgrep command placed an annotation-alternation
+regex containing `@(...)` inside a double-quoted PowerShell string. PowerShell parsed part of the regex as syntax and
+rejected the command before either lookup ran. No repository or runtime state changed and no route conclusion was
+drawn. Correction: pass Java-annotation regexes as single-quoted literal arguments in a separate read-only command.
+
+Read-only route-inventory regex follow-up: the corrected single-quoted command over-escaped literal parentheses for
+ripgrep and therefore returned exit 1/no route matches after the independent admin-token lookup succeeded. No
+absence conclusion was drawn. Correction: inventory `@RequestMapping` and method-mapping annotations separately
+with simple literal prefixes; that follow-up returned the controller prefixes and route methods under the API tree.
+
+Final reviewed-workspace full-suite gate: `mvn -q test` completed 3,421 tests with one failure, zero errors, and zero
+skips. `EnterpriseReadinessAuditDocumentationTest.securityPostureUsesCurrentAuditAnchorAndPolicyLanguage` still
+required the stale phrase `Current audit anchor` after self-review correctly relabeled the May SHA as the historical
+Enterprise Lab transition anchor. Correction: preserve the exact historical SHA assertion while requiring the new
+historical-anchor wording and current combined-campaign checkpoint routing, then rerun that guard and the full suite.

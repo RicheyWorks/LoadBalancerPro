@@ -7,6 +7,8 @@ services:
     image: eclipse-temurin:21-jre
     working_dir: /opt/loadbalancerpro
     command: ["java", "-jar", "/opt/loadbalancerpro/LoadBalancerPro-2.5.0.jar"]
+    environment:
+      LOADBALANCERPRO_AUTH_MODE: none
     ports:
       - "127.0.0.1:8080:8080"
     volumes:

@@ -6,14 +6,17 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 
 ## Campaign State
 
-- Contract prerequisite: `CONTRACT-00` is in progress on `codex/combined-build-plan-campaign-contract`.
+- Contract prerequisite: `CONTRACT-00` merged in [PR #496](https://github.com/RicheyWorks/LoadBalancerPro/pull/496);
+  head `248203dc3046769f5b5e689c0c528a4b229fa322`, merge
+  `7479482835e76938d11aaae00d9c99a35d0c0d6a`, exact-main CI and CodeQL green.
 - Campaign-start main: `0f1e97b9ce4acceaad02877bf1fc2185997aba9d`.
 - Source layout: `74b1f6758304bc5a3a85ff4888039e7309324ddf`, based on `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Source item count: 50.
 - Unique implementation slots: 49.
 - `MAIN_GREEN` implementation slots: 0 / 49.
-- Active implementation slot: none until `CONTRACT-00` is merged and exact-main checks pass.
-- Next implementation slot: `SEC-DEFAULT-DENY`.
+- Active implementation slot: `SEC-DEFAULT-DENY` on `codex/sec-default-deny`, locally green; exact-head remote
+  checks remain pending.
+- Next implementation slot after the active gate: `P-0.1`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
 behavior exists. The active slot must reconcile its row with current main and the full source-plan acceptance contract.
@@ -22,7 +25,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 
 | # | Canonical ID | Source ID(s) | Scope | Technical dependencies | Status |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | SEC-DEFAULT-DENY | P-0.5, L-0.1 | Fail-closed auth, role matrix, actuator lockdown | — | OPEN |
+| 1 | SEC-DEFAULT-DENY | P-0.5, L-0.1 | Fail-closed auth, role matrix, actuator lockdown | — | LOCAL_GREEN |
 | 2 | P-0.1 | P-0.1 | Shutdown-hook lifecycle | — | OPEN |
 | 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | OPEN |
 | 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | OPEN |

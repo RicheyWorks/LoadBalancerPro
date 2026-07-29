@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(properties = {
         "spring.profiles.active=prod",
+        "loadbalancerpro.auth.mode=api-key",
         "loadbalancerpro.api.key=TEST_PROD_API_KEY",
         "loadbalancerpro.api.cors.allowed-origins=https://app.example.com"
 })

@@ -44,7 +44,7 @@ class ReverseProxyDisabledTest {
                 .andExpect(jsonPath("$.observability.effectiveHealthyBackendCount").value(0))
                 .andExpect(jsonPath("$.observability.cooldownActiveBackendCount").value(0))
                 .andExpect(jsonPath("$.observability.readiness").value("proxy_disabled"))
-                .andExpect(jsonPath("$.securityBoundary.authMode").value("api-key"))
+                .andExpect(jsonPath("$.securityBoundary.authMode").value("none"))
                 .andExpect(jsonPath("$.securityBoundary.proxyStatusProtected").value(false))
                 .andExpect(jsonPath("$.securityBoundary.proxyForwardingProtected").value(false))
                 .andExpect(jsonPath("$.privateNetworkLiveValidation.liveValidationEnabled").value(false))

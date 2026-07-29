@@ -46,6 +46,22 @@ public class AuthProperties {
         return mode == Mode.OAUTH2;
     }
 
+    public boolean isApiKeyMode() {
+        return mode == Mode.API_KEY;
+    }
+
+    public boolean isNoneMode() {
+        return mode == Mode.NONE;
+    }
+
+    public void validateApiKeyMode(String apiKey) {
+        if (isApiKeyMode() && !StringUtils.hasText(apiKey)) {
+            throw new IllegalStateException("Application refuses to start with loadbalancerpro.auth.mode=api-key "
+                    + "because loadbalancerpro.api.key is missing or blank; configure a key, select OAuth2, "
+                    + "or explicitly set loadbalancerpro.auth.mode=none for bounded local development");
+        }
+    }
+
     public void validateOAuth2Mode() {
         if (!isOAuth2Mode()) {
             return;
@@ -56,6 +72,7 @@ public class AuthProperties {
         }
         normalizedLaseShadowRole();
         normalizedAllocationRole();
+        normalizedAdminRole();
     }
 
     public String normalizedLaseShadowRole() {
@@ -64,6 +81,10 @@ public class AuthProperties {
 
     public String normalizedAllocationRole() {
         return normalizeRequiredRole(requiredRole.allocation, "loadbalancerpro.auth.required-role.allocation");
+    }
+
+    public String normalizedAdminRole() {
+        return normalizeRequiredRole(requiredRole.admin, "loadbalancerpro.auth.required-role.admin");
     }
 
     private static String normalizeRequiredRole(String role, String propertyName) {
@@ -76,7 +97,8 @@ public class AuthProperties {
 
     public enum Mode {
         API_KEY,
-        OAUTH2
+        OAUTH2,
+        NONE
     }
 
     public static final class OAuth2 {
@@ -103,6 +125,7 @@ public class AuthProperties {
     public static final class RequiredRole {
         private String laseShadow = "observer";
         private String allocation = "operator";
+        private String admin = "admin";
 
         public String getLaseShadow() {
             return laseShadow;
@@ -118,6 +141,14 @@ public class AuthProperties {
 
         public void setAllocation(String allocation) {
             this.allocation = allocation;
+        }
+
+        public String getAdmin() {
+            return admin;
+        }
+
+        public void setAdmin(String admin) {
+            this.admin = admin;
         }
     }
 }

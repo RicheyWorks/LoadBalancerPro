@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(properties = {
         "spring.profiles.active=prod",
+        "loadbalancerpro.auth.mode=api-key",
         "loadbalancerpro.api.key=ALLOCATION_SUPERVISION_TEST_KEY"
 })
 @AutoConfigureMockMvc

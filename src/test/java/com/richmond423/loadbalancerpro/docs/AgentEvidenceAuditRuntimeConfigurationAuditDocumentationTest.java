@@ -50,14 +50,19 @@ class AgentEvidenceAuditRuntimeConfigurationAuditDocumentationTest {
         String audit = read(AUDIT).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
-                "actuator exposure includes `health,info,metrics,prometheus`",
+                "current-state reconciliation",
+                "startup refuses a missing or blank",
+                "loadbalancerpro.auth.mode=none",
+                "authentication-disabled warning",
                 "actuator exposure is limited to `health,info`",
-                "prometheus metrics export is enabled",
                 "prometheus metrics export is disabled",
                 "otlp metrics export is disabled",
                 "otlp metrics export remains opt-in",
                 "api auth mode and api key default behavior question",
-                "protected requests fail closed with http 401",
+                "profile-independent",
+                "startup is refused",
+                "missing or wrong headers fail closed with http 401",
+                "denies unclassified api prefixes",
                 "cors boundary",
                 "http://localhost:3000",
                 "http://localhost:8080",
@@ -82,14 +87,15 @@ class AgentEvidenceAuditRuntimeConfigurationAuditDocumentationTest {
         String prod = read(PROD_PROPERTIES).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
-                "management.endpoints.web.exposure.include=health,info,metrics,prometheus",
-                "management.prometheus.metrics.export.enabled=true",
+                "management.endpoints.web.exposure.include=health,info",
+                "management.prometheus.metrics.export.enabled=false",
                 "management.otlp.metrics.export.enabled=false",
                 "management.otlp.metrics.export.url=${otel_exporter_otlp_metrics_endpoint:}",
                 "management.endpoint.health.probes.enabled=true",
                 "management.endpoint.health.show-details=when_authorized",
                 "management.metrics.tags.environment=local",
                 "loadbalancerpro.auth.mode=api-key",
+                "loadbalancerpro.auth.required-role.admin=admin",
                 "loadbalancerpro.api.cors.allowed-origins=http://localhost:3000,http://localhost:8080",
                 "loadbalancerpro.api.rate-limit.enabled=false",
                 "loadbalancerpro.lase.shadow.enabled=false",

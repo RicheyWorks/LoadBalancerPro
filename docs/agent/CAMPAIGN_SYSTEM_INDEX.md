@@ -26,6 +26,11 @@ Use this index when starting, resuming, handing off, auditing, or closing a boun
 - CAMPAIGN_FAILURE_RECOVERY_PLAYBOOK.md defines failure logging, safe recovery, pause, and resume rules.
 - CAMPAIGN_HANDOFF_REPORT_TEMPLATE.md defines factual handoff reporting for pauses, resumes, checkpoints, and human review.
 - CAMPAIGN_CLOSEOUT_PROTOCOL.md defines final campaign count, verification, merged PR summary, and closeout report rules.
+- COMBINED_BUILD_PLAN_CAMPAIGN_CONTRACT.md defines the active 49-slot deployable-proxy and lab/shadow/analysis
+  implementation campaign, including source provenance, user-authorized implementation scope, one-PR sequencing,
+  self-review substitution, stop conditions, and preserved not-proven boundaries.
+- COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md and COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json provide the human-readable and
+  machine-checked inventory for that active campaign.
 - DECISION_EXPLORER_CAMPAIGN_BOARD.md defines the Decision Explorer Architecture Bootstrap Campaign, DX-G01 through DX-G10, read-only/simulation-only boundaries, PR tracking columns, checkpoint rules, verification expectations, and closeout criteria.
 
 ## Campaign Loop

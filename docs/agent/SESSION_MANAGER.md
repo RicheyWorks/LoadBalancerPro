@@ -6,6 +6,61 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build-Plan Campaign Contract Checkpoint
+
+Timestamp: 2026-07-29T11:30:55-07:00
+
+Current prerequisite: `CONTRACT-00` - import Claude's July 21 audit/build layout and establish the combined campaign.
+
+Current branch: `codex/combined-build-plan-campaign-contract`.
+
+Verified starting main: `0f1e97b9ce4acceaad02877bf1fc2185997aba9d`. Its exact-merge main CI run
+`30478610493` and CodeQL run `30478610714` passed after PR #493.
+
+Source import checkpoint: `2f39d344d425fcc3d56546f64769d8422c8856c9`, a cherry-pick of only source commit
+`74b1f6758304bc5a3a85ff4888039e7309324ddf` onto verified main. The source commit's parent is
+`e800ba06875d0897f8459ad14a5d5cf60dc34568`. Later unrelated README, CSRBT, badge, and ADR commits from the source
+branch were not imported.
+
+Imported source paths: `docs/AUDIT_2026-07-21.md`, `docs/AUDIT_LAB_SHADOW_2026-07-21.md`,
+`docs/BUILD_PLAN_DEPLOYABLE.md`, `docs/BUILD_PLAN_LAB_SHADOW.md`, and `docs/strategy-playground.html`.
+
+Campaign classification: 27 deployable-plan items plus 23 lab-plan items produce 50 source items. P-0.5 and L-0.1
+are one explicit shared security fix, producing 49 unique implementation slots. The four unnamed deployable Milestone
+4 bullets receive campaign bookkeeping labels P-4.1 through P-4.4. All 49 slots start `OPEN`; neither the imported
+audit assertions nor partial adjacent changes count as acceptance evidence.
+
+Current edit scope: add the combined campaign contract, board, machine-checked slot manifest, documentation guard,
+bounded README/index navigation, and campaign checkpoint/failure records. This prerequisite is docs/test-only and is
+not an implementation slot.
+
+Current-state evidence: `ProdApiKeyFilter` remains profile-gated while the non-OAuth security chain permits requests
+generally, so combined slot `SEC-DEFAULT-DENY` is open. Both command ledgers retain 256-byte write chunks and
+truncated-tail classification, so PR #493's restart reconciliation does not close L-0.6.
+
+Safety: implementation slots are user-authorized to change their required product/test/build/deployment surfaces, but
+no slot authorizes secrets, public/external production targets, live tenant traffic, billable cloud resources,
+production-looking defaults, irreversible destructive operations, required-check weakening, or unsupported claims.
+Cloud acceptance remains mocked with `liveMode=false`; traffic, deployment, TLS, DNS, benchmark, and soak evidence
+remains bounded to deterministic local fixtures unless authority is separately expanded.
+
+Verification:
+
+- focused `CombinedBuildPlanCampaignDocumentationTest`: six tests passed after two exact boundary-wording failures were
+  logged and corrected;
+- adjacent campaign/index/README/goal-protocol/quickstart selector: 32 tests passed, zero failures/errors/skips;
+- all five imported artifacts match their blobs in source commit
+  `74b1f6758304bc5a3a85ff4888039e7309324ddf`;
+- the imported playground has no URL, fetch, XMLHttpRequest, WebSocket, browser-storage, cookie, or eval reference; its
+  `innerHTML` uses only fixed strategy/backend definitions and numeric local-simulation output.
+
+Blocker: none.
+
+Next action: audit the staged complete diff, complete the local verification ladder, open the exact-head PR, require
+all applicable remote checks, merge, verify exact-main CI/CodeQL, then start only `SEC-DEFAULT-DENY`.
+
+Decision: continue `CONTRACT-00`; no implementation slot is active.
+
 ## Supervisor Command Ledger PR5 Reopen Checkpoint
 
 Timestamp: 2026-07-29T10:57:28-07:00

@@ -6,6 +6,108 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-29T11:34:27-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: focused combined-campaign documentation guard found two exact-wording mismatches
+
+Failing check: `mvn -B -Dtest=CombinedBuildPlanCampaignDocumentationTest test`
+
+Observed/root cause: six tests ran; four passed and two failed. The contract used `complete-diff self-review` where the
+guard requires the goal's canonical `full-diff self-review` phrase. The live-production-target prohibition was
+semantically grouped into a bullet beginning with `no secrets`, but did not contain the standalone guarded phrase
+`no live production target`. The 49-slot count, 50 source-item mapping, shared-slot overlap, dependency order,
+verification profiles, imported artifacts, and navigation checks passed.
+
+Correction/result: use the two canonical standalone boundary phrases in the contract without changing their meaning.
+
+Follow-up: rerun the same six-test focused guard before any broader selector.
+
+## Entry
+
+Date/time: 2026-07-29T11:26:44-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: campaign-document heading probe included two template paths that do not exist
+
+Failing check: `rg` heading query over the campaign architecture/discipline/protocol plus
+`CAMPAIGN_BOARD_TEMPLATE.md` and `CAMPAIGN_CONTRACT_TEMPLATE.md`
+
+Observed/root cause: the campaign index was read completely and headings from the three existing files were returned,
+but ripgrep exited 1 because the two guessed template filenames are not repository files. No campaign conclusion
+depends on those absent templates, and no source, index, artifact, process, branch, PR, workflow, or external state
+changed.
+
+Correction/result: use the campaign index's authoritative filenames and model this campaign-specific contract and
+board directly on the existing architecture, discipline, verification, merge-gate, and closeout documents.
+
+Follow-up: validate every referenced campaign-control path in the new documentation test.
+
+## Entry
+
+Date/time: 2026-07-29T11:24:37-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: README navigation probe exceeded the available tool-output context
+
+Failing check: broad README heading/link search piped through an output prefix selector
+
+Observed/root cause: the query matched substantially more README text than needed and its returned output was
+truncated before it could be reviewed as a complete result. No README conclusion is based on that incomplete output,
+and no repository, index, artifact, process, branch, PR, workflow, or external state changed.
+
+Correction/result: query exact Markdown headings first, then read only the bounded navigation region selected from
+those headings.
+
+Follow-up: add campaign navigation only after the bounded README trust-contract region has been reviewed.
+
+## Entry
+
+Date/time: 2026-07-29T11:21:05-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: security current-state probe passed a literal Windows wildcard resource path to ripgrep
+
+Failing check: exact security-source/test probe ending with `src/main/resources/application*.properties`
+
+Observed/root cause: both security source files and the relevant test matches were printed completely, proving that
+`ProdApiKeyFilter` still carries the prod/cloud-sandbox profile gate and non-OAuth security still permits all, but
+ripgrep returned Windows OS error 123 for the literal wildcard path. No configuration conclusion depends on the invalid
+path and no repository, process, branch, PR, workflow, or external state changed.
+
+Correction/result: enumerate tracked resource files first or search the resource directory with a `-g` filter.
+
+Follow-up: retain the combined D0.5/L0.1 slot as open until its full startup, default-deny, role-matrix, and actuator
+acceptance contract is implemented and verified.
+
+## Entry
+
+Date/time: 2026-07-29T11:20:17-07:00
+
+Branch/PR: codex/combined-build-plan-campaign-contract / no PR yet
+
+Failure type: first combined roadmap/current-state search used an early-closing output limiter
+
+Failing check: broad `rg` search across both imported audits, security sources, resources, and API tests piped through
+`Select-Object -First 240`
+
+Observed/root cause: the command printed the requested 240-line prefix, including evidence that current
+`ProdApiKeyFilter` uses an auth-mode condition rather than the imported audit's profile-gated description, but returned
+exit 1 after `Select-Object` closed the still-producing ripgrep pipe. The prefix is not treated as a complete repository
+audit. No source, index, artifact, process, branch, PR, workflow, or external state changed.
+
+Correction/result: use bounded exact-path or exact-symbol probes and capture complete result sets before formatting.
+Treat every imported defect statement as a hypothesis requiring current-main evidence rather than as current truth.
+
+Follow-up: classify each combined campaign slot conservatively from exact current-main evidence and its full acceptance
+criteria.
+
+## Entry
+
 Date/time: 2026-07-29T10:54:41-07:00
 
 Branch/PR: codex/command-ledger-restart-reconciliation / closed PR #493

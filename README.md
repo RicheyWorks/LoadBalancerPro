@@ -50,6 +50,14 @@ Use [`docs/agent/GOAL_CAMPAIGN_BOARD.md`](docs/agent/GOAL_CAMPAIGN_BOARD.md) for
 
 The current audit campaign is the LoadBalancerPro 20-PR Evidence Audit and Closeout Repair Campaign. It starts from the completed 10-PR trial and uses [`docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md), [`docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md`](docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md), [`docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md`](docs/agent/EVIDENCE_AUDIT_REPOSITORY_EVIDENCE_MAP.md), [`docs/agent/EVIDENCE_AUDIT_CI_WORKFLOW_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_CI_WORKFLOW_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_CODEQL_DEPENDENCY_REVIEW_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_CODEQL_DEPENDENCY_REVIEW_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_MAVEN_DEPENDENCY_POSTURE_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_MAVEN_DEPENDENCY_POSTURE_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_DOCKERFILE_RUNTIME_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_DOCKERFILE_RUNTIME_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_COMPOSE_LOCAL_LAB_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_COMPOSE_LOCAL_LAB_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_RUNTIME_CONFIGURATION_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_RUNTIME_CONFIGURATION_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_PROXY_DEMO_FIXTURE_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_CLI_APP_STARTUP_AUDIT.md`](docs/agent/EVIDENCE_AUDIT_CLI_APP_STARTUP_AUDIT.md), [`docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CHECKPOINT_TEMPLATE.md), and [`docs/agent/EVIDENCE_AUDIT_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](docs/agent/EVIDENCE_AUDIT_CAMPAIGN_FINAL_REPORT_TEMPLATE.md). It is an audit and documentation/test campaign, not a production-hardening implementation campaign.
 
+The active implementation campaign imports the July 21 deployable-proxy and lab/shadow/analysis audits, plans, and
+strategy playground into one ordered 49-slot goal campaign. Use
+[`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_CONTRACT.md`](docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_CONTRACT.md),
+[`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`](docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md), and
+[`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json). Every slot
+starts open and requires a current-main audit plus its full acceptance and verification gates; imported audit wording
+is planning input, not completion evidence or a production-readiness claim.
+
 The campaign does not relax scope. It does not authorize production code changes, Maven config changes, CI/workflow changes, Dockerfile changes, Compose behavior changes, runtime behavior changes, endpoint changes, k6/Bruno/Toxiproxy behavior changes, runner services, automation, secrets, external/cloud/tenant targets, or unsupported claims.
 
 The campaign also does not prove production readiness, production certification, live-cloud validation, real-tenant validation, runtime enforcement, load/stress/benchmarking, throughput/p95/p99 evidence, replay/evidence/report/storage/export proof, or broader automation.
@@ -77,6 +85,9 @@ Decision Explorer Phase 2 final handoff lives in [`docs/agent/DECISION_EXPLORER_
 - Goal-mode long-run protocol: [`docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md`](docs/agent/GOAL_MODE_LONG_RUN_PROTOCOL.md).
 - Campaign system index: [`docs/agent/CAMPAIGN_SYSTEM_INDEX.md`](docs/agent/CAMPAIGN_SYSTEM_INDEX.md).
 - Campaign system architecture: [`docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md`](docs/agent/CAMPAIGN_SYSTEM_ARCHITECTURE.md).
+- Active combined build-plan campaign contract: [`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_CONTRACT.md`](docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_CONTRACT.md).
+- Active combined build-plan campaign board: [`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`](docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md).
+- Active combined build-plan slot manifest: [`docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json).
 - Goal campaign board: [`docs/agent/GOAL_CAMPAIGN_BOARD.md`](docs/agent/GOAL_CAMPAIGN_BOARD.md).
 - Evidence audit campaign board: [`docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md`](docs/agent/EVIDENCE_AUDIT_CAMPAIGN_BOARD.md).
 - Evidence audit campaign contract: [`docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md`](docs/agent/EVIDENCE_AUDIT_CAMPAIGN_CONTRACT.md).

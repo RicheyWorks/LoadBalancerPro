@@ -6,6 +6,43 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 2 Branch Checkpoint
+
+Timestamp: 2026-07-29T14:07:16-07:00
+
+Current slot: `P-0.1`, remove the per-request shutdown-hook leak.
+
+Current branch: `codex/p-0-1-shutdown-hook`.
+
+Verified base: `df1f97825b3ee7757a7ed43698862c738c23e52b`, the exact PR #497 merge commit. Main CI
+`30490500967` and CodeQL `30490502335` passed on that exact commit, including tests, zero-skip enforcement, coverage,
+packaging/resources, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan.
+
+Prior-slot closeout: PR #497 final head `df6bda661992ed7141f41bd1f1c9c795d51ae05a` was clean and mergeable with
+PR/push CI, CodeQL, dependency review, Docker/runtime, SBOM, and blocking image scan green. Full-diff self-review had
+no remaining finding. `SEC-DEFAULT-DENY` is `MAIN_GREEN`, completing 1 of 49 implementation slots.
+
+Planned acceptance: `ServerMonitor` construction registers no JVM shutdown hook. `start()` registers at most one hook
+and retains its thread reference; `stop()` removes that hook when the JVM is not already shutting down and safely
+handles `IllegalStateException` during actual shutdown. Request-scoped `AllocatorService` balancers never start their
+monitor and therefore add no hook. Verification must cover repeated construction/allocation, idempotent start/stop,
+bounded lifecycle cleanup, the 10,000-allocation acceptance stress under a bounded heap where practical, and all
+existing monitor/allocation behavior.
+
+Scope and safety: production lifecycle behavior may change only enough to eliminate the verified hook leak. No health
+semantics, routing strategy, proxy behavior, API contract, Maven/CI/Docker/Compose behavior, external target, live
+cloud/tenant action, secret, or readiness claim is authorized. Any hook-count proof must be deterministic and avoid
+leaving hooks, threads, listeners, or test-only production behavior behind.
+
+Verification: pending source/test inventory and a focused red acceptance test.
+
+Blocker: none.
+
+Next action: inspect `ServerMonitor`, `LoadBalancer`, `AllocatorService`, and existing lifecycle tests, then add the
+smallest deterministic failing contract before implementation.
+
+Decision: continue only `P-0.1`; no later slot is active.
+
 ## Combined Build Plan Slot 1 Branch Checkpoint
 
 Timestamp: 2026-07-29T13:48:01-07:00

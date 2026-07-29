@@ -13,12 +13,12 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Source layout: `74b1f6758304bc5a3a85ff4888039e7309324ddf`, based on `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Source item count: 50.
 - Unique implementation slots: 49.
-- `MAIN_GREEN` implementation slots: 0 / 49.
-- Active implementation slot: `SEC-DEFAULT-DENY` in [PR #497](https://github.com/RicheyWorks/LoadBalancerPro/pull/497)
-  on `codex/sec-default-deny`. Published head `5ae208ad2a089d85542e42bd9b1da24613d6e54c` passed CI, CodeQL,
-  dependency review, Docker/runtime, SBOM, and blocking image scan; the factual checkpoint commit must repeat the
-  exact-head gate before merge.
-- Next implementation slot after the active gate: `P-0.1`.
+- `MAIN_GREEN` implementation slots: 1 / 49.
+- Latest completed slot: `SEC-DEFAULT-DENY` in merged [PR #497](https://github.com/RicheyWorks/LoadBalancerPro/pull/497);
+  head `df6bda661992ed7141f41bd1f1c9c795d51ae05a`, merge
+  `df1f97825b3ee7757a7ed43698862c738c23e52b`, exact-main CI and CodeQL green.
+- Active implementation slot: `P-0.1` on `codex/p-0-1-shutdown-hook`.
+- Next implementation slot after the active gate: `P-0.2`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
 behavior exists. The active slot must reconcile its row with current main and the full source-plan acceptance contract.
@@ -27,8 +27,8 @@ behavior exists. The active slot must reconcile its row with current main and th
 
 | # | Canonical ID | Source ID(s) | Scope | Technical dependencies | Status |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | SEC-DEFAULT-DENY | P-0.5, L-0.1 | Fail-closed auth, role matrix, actuator lockdown | — | REMOTE_GREEN |
-| 2 | P-0.1 | P-0.1 | Shutdown-hook lifecycle | — | OPEN |
+| 1 | SEC-DEFAULT-DENY | P-0.5, L-0.1 | Fail-closed auth, role matrix, actuator lockdown | — | MAIN_GREEN |
+| 2 | P-0.1 | P-0.1 | Shutdown-hook lifecycle | — | IN_PROGRESS |
 | 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | OPEN |
 | 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | OPEN |
 | 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | OPEN |

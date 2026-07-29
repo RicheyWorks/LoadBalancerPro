@@ -6,6 +6,39 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 2 PR-Open Checkpoint
+
+Timestamp: 2026-07-29T14:57:00-07:00
+
+Current slot: `P-0.1`, remove the per-request shutdown-hook leak.
+
+Current branch: `codex/p-0-1-shutdown-hook`.
+
+Slot status: `PR_OPEN`.
+
+PR: [#498](https://github.com/RicheyWorks/LoadBalancerPro/pull/498), open, non-draft, and mergeable.
+
+Published local-green head: `49c72821680c082b89399510371378904f19d1e6`. This factual PR-open checkpoint
+advances the PR head once, so results for the published head do not satisfy the final exact-head merge gate.
+
+Local acceptance remains the 3,425-test, zero-failure/error/skip full repository gate, the 10,000 controller-level
+allocation POST bounded-heap hook-registry proof, preserved-exit package/verify, coverage, CycloneDX, packaged
+artifact/CLI/demo, loopback-only JAR runtime, diff, and scope evidence recorded below.
+
+Remote state at PR creation: push CI run `30494254299` is in progress; PR CI run `30494273161` and CodeQL run
+`30494273165` are queued or starting. The PR-event dependency review is in progress. No pending result is green.
+
+Scope and safety remain unchanged: one monitor-lifecycle production file, bounded tests, and campaign records only;
+no health/routing/proxy/API/Maven/CI/Docker behavior, secret, external/public target, live cloud/tenant action, or
+readiness claim.
+
+Blocker: none.
+
+Next action: publish this checkpoint, then require exact checkpoint-head CI, CodeQL, dependency review, SBOM,
+Docker/runtime, container evidence, and blocking Trivy before merge.
+
+Decision: continue only `P-0.1`; no later slot is active.
+
 ## Combined Build Plan Slot 2 Local-Green Checkpoint
 
 Timestamp: 2026-07-29T14:49:20-07:00

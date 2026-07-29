@@ -57,11 +57,11 @@
       "sourceIds": ["P-0.1"],
       "track": "proxy",
       "title": "Remove per-request shutdown-hook leak",
-      "status": "PR_OPEN",
+      "status": "REMOTE_GREEN",
       "dependencies": [],
       "riskClass": "RELIABILITY",
       "verificationProfile": "java-full",
-      "currentState": "PR #498 is open, non-draft, and mergeable from published local-green head 49c72821680c082b89399510371378904f19d1e6. This PR-open checkpoint advances the head once; exact-head CI, CodeQL, dependency review, SBOM, Docker/runtime, container evidence, and blocking Trivy remain pending."
+      "currentState": "PR #498 head 373297d15bc83d4135930d5aa63b42a6d5ff8c91 passed PR CI 30494353715, push CI 30494352609, CodeQL 30494353772, PR dependency review, SBOM, Docker/runtime, container evidence, and blocking Trivy. This remote-green checkpoint advances the head once, so the same gates must repeat before merge."
     },
     {
       "ordinal": 3,

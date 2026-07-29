@@ -8529,3 +8529,9 @@ declared CycloneDX 1.6. A follow-up incorrectly expected the XML root to carry a
 because CycloneDX XML encodes its schema version in the namespace instead. Correction: inspect the document element's
 namespace URI and require the official CycloneDX 1.6 namespace; retain the already-green XML parse/component/hash
 evidence.
+
+P-0.1 exact-head CI progress projection: a read-only `gh run view --jq` command embedded a multi-field jq object in
+PowerShell/JavaScript quoting that split the filter into multiple CLI arguments. GitHub CLI rejected it with
+`accepts at most 1 arg(s), received 3`; no remote or repository state changed and no CI conclusion was inferred.
+Correction: use the unfiltered `--json status,conclusion,jobs` response or a PowerShell JSON projection, then continue
+waiting for both exact-head CI runs to finish.

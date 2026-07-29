@@ -18,7 +18,7 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   head `df6bda661992ed7141f41bd1f1c9c795d51ae05a`, merge
   `df1f97825b3ee7757a7ed43698862c738c23e52b`, exact-main CI and CodeQL green.
 - Active implementation slot: `P-0.1` in open [PR #498](https://github.com/RicheyWorks/LoadBalancerPro/pull/498);
-  exact-head remote gates are pending.
+  the first exact-head remote gate is green and the factual remote checkpoint is being published.
 - Next implementation slot after the active gate: `P-0.2`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -29,7 +29,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | # | Canonical ID | Source ID(s) | Scope | Technical dependencies | Status |
 | ---: | --- | --- | --- | --- | --- |
 | 1 | SEC-DEFAULT-DENY | P-0.5, L-0.1 | Fail-closed auth, role matrix, actuator lockdown | — | MAIN_GREEN |
-| 2 | P-0.1 | P-0.1 | Shutdown-hook lifecycle | — | PR_OPEN |
+| 2 | P-0.1 | P-0.1 | Shutdown-hook lifecycle | — | REMOTE_GREEN |
 | 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | OPEN |
 | 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | OPEN |
 | 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | OPEN |

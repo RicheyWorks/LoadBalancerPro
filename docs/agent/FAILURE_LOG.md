@@ -6,6 +6,44 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-29T10:36:10-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / closed PR #493
+
+Failure type: keep-awake failure-log patch used an inexact long introduction line
+
+Failing check: first `apply_patch` attempt to record the resumed full-build wrapper failure
+
+Observed/root cause: the patch context omitted part of the exact long failure-log introduction, so verification failed
+atomically before changing the file. No source, index, artifact, process, branch, PR, remote, or external state changed.
+
+Correction/result: inspect the exact file prefix and insert both required entries against the short stable first-entry
+heading.
+
+Follow-up: verify the resulting diff before retrying the build.
+
+## Entry
+
+Date/time: 2026-07-29T10:35:43-07:00
+
+Branch/PR: codex/command-ledger-restart-reconciliation / closed PR #493
+
+Failure type: full-build keep-awake wrapper inferred unsigned Win32 flags as signed PowerShell integers
+
+Failing check: first resumed `mvn -B clean package` launch under `SetThreadExecutionState`
+
+Observed/root cause: PowerShell interpreted hexadecimal `0x80000000` and its bitwise combination as negative signed
+integers, so the C# `uint` P/Invoke rejected both the assertion and `finally` reset arguments before Maven launched.
+No execution-state assertion was established, no Java or Maven process remained, and no source, index, worktree,
+artifact, dependency, workflow, branch, PR, remote, or external state changed.
+
+Correction/result: declare the continuous and system-required flags explicitly as `[uint32]` values and retain the
+unconditional reset in `finally`.
+
+Follow-up: rerun `mvn -B clean package`, audit the exact Surefire reports, then continue only if the build is green.
+
+## Entry
+
 Date/time: 2026-07-29T10:28:34-07:00
 
 Branch/PR: codex/command-ledger-restart-reconciliation / closed PR #493

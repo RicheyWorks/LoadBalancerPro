@@ -198,8 +198,8 @@ class EnterpriseLabSupervisorServerTest {
                     targets,
                     clock,
                     0,
-                    Duration.ofSeconds(2),
-                    Duration.ofMillis(200));
+                    Duration.ofSeconds(3),
+                    Duration.ofSeconds(1));
             ExecutorService runner = Executors.newSingleThreadExecutor();
             try {
                 Future<EnterpriseLabSupervisorServer.RunResult> future =
@@ -207,7 +207,7 @@ class EnterpriseLabSupervisorServerTest {
                 int port = awaitPort();
                 try (Socket stalled = new Socket(
                         EnterpriseLabSupervisorConfiguration.literalLoopbackAddress(), port)) {
-                    stalled.setSoTimeout(1_500);
+                    stalled.setSoTimeout(2_500);
                     assertEquals(-1, stalled.getInputStream().read());
                 }
 

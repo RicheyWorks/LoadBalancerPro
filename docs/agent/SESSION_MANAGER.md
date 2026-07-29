@@ -6,6 +6,85 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 3 Corrective Local-Green Checkpoint
+
+Timestamp: 2026-07-29T16:54:00-07:00
+
+Current slot: `P-0.2`; exact-main recovery after merged PR #499.
+
+Current branch: `codex/p-0-2-main-gate-flake`, based on exact main
+`44d303318b7828c64c8fb2f21fe03ae64bd499bb`.
+
+Slot status: `LOCAL_GREEN`; it remains uncounted and `P-0.3` has not started.
+
+Correction: only
+`src/test/java/com/richmond423/loadbalancerpro/lab/EnterpriseLabSupervisorServerTest.java` changes executable test
+code. The deliberate stalled connection now has a one-second absolute lifetime below a three-second idle timeout
+and a 2.5-second client read timeout. Production/runtime code and defaults are unchanged. The remaining changes are
+factual campaign records.
+
+Verification:
+
+- the exact failing test class passed once, then passed three additional consecutive Maven invocations;
+- the supervisor server/client/process/protocol/service plus combined-campaign documentation selector passed;
+- `mvn -B package` exited 0 with 3,430 tests across 480 reports, zero failures, zero errors, zero skips, and no
+  Surefire dumps;
+- the executable JAR was generated with SHA-256
+  `D45479D7D9163E76C7AD408106006BA9AF987390E1F45A7006A5191D0405DBA8`;
+- `mvn -q "-DskipTests" verify`, campaign JSON parsing, and `git diff --check` passed.
+
+Scope/safety: test timing plus campaign records only. No Maven, CI, Docker, Compose, production behavior, runtime
+endpoint, security, external/public target, credential, cloud/tenant, benchmark, or readiness-claim change.
+
+Blocker: none locally. Corrective PR exact-head CI, CodeQL, dependency review, Docker/runtime, SBOM, Trivy, and
+resulting exact-main CI/CodeQL remain pending and are not green.
+
+Next action: publish the local-green correction, open one corrective PR, require every exact-head gate, merge only
+when green, then require exact-main green before marking `P-0.2` complete.
+
+Decision: recover only `P-0.2`; do not start `P-0.3`.
+
+## Combined Build Plan Slot 3 Exact-Main Recovery Checkpoint
+
+Timestamp: 2026-07-29T16:45:00-07:00
+
+Current slot: `P-0.2`, replace health deletion with drain, eviction thresholds, and re-admission.
+
+Current branch: `codex/p-0-2-main-gate-flake`, based on exact main
+`44d303318b7828c64c8fb2f21fe03ae64bd499bb`.
+
+Slot status: `PAUSED` for test-only corrective recovery; `P-0.3` has not started.
+
+Merged implementation: [PR #499](https://github.com/RicheyWorks/LoadBalancerPro/pull/499), final head
+`60e0fae65732ef0f07a80f41a6c1330cac27f538`, merge
+`44d303318b7828c64c8fb2f21fe03ae64bd499bb`.
+
+Post-merge evidence:
+
+- the focused health/lifecycle regression bundle passed on the exact merge commit;
+- a separate local full suite passed 3,430 tests across 480 reports with zero failures, errors, or skips;
+- exact-main CodeQL run `30500110279` passed;
+- exact-main CI run `30500110273` passed its first full test, zero-skip, coverage, and upload stages, then failed
+  when `mvn -B package` reran all tests and
+  `EnterpriseLabSupervisorServerTest.absoluteConnectionLifetimeClosesPeerBeforeLongerIdleTimeout` ended with EOF;
+- the failed package-stage rerun recorded 3,430 tests, zero failures, one error, and zero skips.
+
+Root cause: the test's 200 ms absolute connection lifetime correctly closed a deliberately stalled connection, but
+the same narrow wall-clock lifetime also raced its authenticated follow-up exchange under runner load. Production
+defaults and runtime code are unchanged.
+
+Safe correction: retain a bounded absolute lifetime below the test's idle timeout, widen it to one second, and
+extend the stalled socket's read timeout. This remains test-only plus campaign records; it does not change Maven,
+CI, Docker, Compose, runtime behavior, external targets, credentials, or trust claims.
+
+Blocker: exact-main is red until a corrective PR and the resulting exact-main CI/CodeQL pass.
+
+Next action: run the failing test repeatedly, run the relevant lab selector and full local verification, open a
+test-only corrective PR, require its exact-head gates, merge only when green, then require exact-main green before
+marking `P-0.2` complete.
+
+Decision: recover only `P-0.2`; do not start `P-0.3`.
+
 ## Combined Build Plan Slot 3 Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T16:27:06-07:00

@@ -14,8 +14,8 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Source item count: 50.
 - Unique implementation slots: 49.
 - `MAIN_GREEN` implementation slots: 0 / 49.
-- Active implementation slot: `SEC-DEFAULT-DENY` on `codex/sec-default-deny`, locally green; exact-head remote
-  checks remain pending.
+- Active implementation slot: `SEC-DEFAULT-DENY` in [PR #497](https://github.com/RicheyWorks/LoadBalancerPro/pull/497)
+  on `codex/sec-default-deny`; exact-head remote checks remain pending.
 - Next implementation slot after the active gate: `P-0.1`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -25,7 +25,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 
 | # | Canonical ID | Source ID(s) | Scope | Technical dependencies | Status |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | SEC-DEFAULT-DENY | P-0.5, L-0.1 | Fail-closed auth, role matrix, actuator lockdown | — | LOCAL_GREEN |
+| 1 | SEC-DEFAULT-DENY | P-0.5, L-0.1 | Fail-closed auth, role matrix, actuator lockdown | — | PR_OPEN |
 | 2 | P-0.1 | P-0.1 | Shutdown-hook lifecycle | — | OPEN |
 | 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | OPEN |
 | 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | OPEN |

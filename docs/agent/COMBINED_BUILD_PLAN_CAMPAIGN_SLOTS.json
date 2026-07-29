@@ -45,11 +45,11 @@
       "sourceIds": ["P-0.5", "L-0.1"],
       "track": "shared",
       "title": "Fail-closed API-key mode, default-deny API roles, and actuator lockdown",
-      "status": "LOCAL_GREEN",
+      "status": "PR_OPEN",
       "dependencies": [],
       "riskClass": "SECURITY",
       "verificationProfile": "security-full",
-      "currentState": "Profile-independent API-key enforcement, missing-key startup refusal, explicit warned none mode, OAuth2 route/admin classification, API fallback denial, and health/info-only default Actuator exposure are implemented and locally green; exact-head remote checks remain pending."
+      "currentState": "PR #497 contains the locally green profile-independent API-key, startup-refusal, explicit-none, OAuth2 route/admin, API fallback-denial, and Actuator-lockdown contract; exact-head remote checks remain pending."
     },
     {
       "ordinal": 2,

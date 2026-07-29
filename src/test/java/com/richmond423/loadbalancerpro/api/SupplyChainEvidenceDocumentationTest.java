@@ -96,7 +96,7 @@ class SupplyChainEvidenceDocumentationTest {
             assertTrue(pom.contains(expected), "pom should contain " + expected);
         }
         assertTrue(evidence.contains("Netty BOM"));
-        assertTrue(pom.contains("<netty.version>4.2.15.Final</netty.version>"));
+        assertTrue(pom.contains("<netty.version>4.2.16.Final</netty.version>"));
         assertTrue(pom.contains("<jackson.version>2.21.4</jackson.version>"));
         assertTrue(ci.contains("cyclonedx-maven-plugin:2.9.1:makeAggregateBom"));
         assertTrue(ci.contains("aquasecurity/trivy-action@0.36.0"));

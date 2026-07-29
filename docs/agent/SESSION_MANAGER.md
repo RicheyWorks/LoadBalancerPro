@@ -6,6 +6,198 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Netty Baseline Recovery Remote Verification Checkpoint
+
+Timestamp: 2026-07-29T08:36:45-07:00
+
+Current recovery slot: `RECOVERY-NETTY-01`.
+
+Current branch: `codex/netty-4-2-16-baseline-remediation`.
+
+Verified remote head: `50e9353ad4a72c6cff1754260717532a45531c86`
+(`Log Netty PR monitoring projection failure`).
+
+Executable checkpoint: `2e407d40913696cd43b4137def0199c95807d9a4`
+(`Update Netty baseline to 4.2.16`).
+
+PR: [#494](https://github.com/RicheyWorks/LoadBalancerPro/pull/494), open.
+
+Exact-head remote verification:
+
+- PR CI run `30465978264`: passed;
+- push CI run `30465973870`: passed;
+- CodeQL run `30465986908`: passed;
+- PR dependency review: passed; the push-event dependency-review job was skipped as expected;
+- the PR CI dependency tree, full test suite, zero-skipped-test guard, coverage report and summary, coverage artifact
+  upload, executable packaging, packaged-resource verification, packaged evidence upload, CycloneDX SBOM generation and
+  upload, LASE demo smoke, packaged-JAR smoke, Docker build, Docker runtime smoke, container dry-run evidence, blocking
+  Docker image scan, and evidence upload all passed.
+
+Scope/safety audit: unchanged from the current local checkpoint. The added failure-log record describes a read-only
+monitoring projection error and adds no product, dependency, workflow, scan-policy, runtime, target, or secret change.
+
+Blocker: human review remains pending. This checkpoint itself advances the branch, so final exact-head remote checks
+must run again before review and merge.
+
+Next action: commit and push this checkpoint, audit the resulting final-head CI, CodeQL, and dependency review, then
+stop for human review. Do not merge automatically and do not start a roadmap slot.
+
+Decision: continue the prerequisite only.
+
+## Netty Baseline Recovery PR Creation Checkpoint
+
+Timestamp: 2026-07-29T08:23:51-07:00
+
+Current recovery slot: `RECOVERY-NETTY-01`.
+
+Current branch: `codex/netty-4-2-16-baseline-remediation`.
+
+Executable checkpoint: `2e407d40913696cd43b4137def0199c95807d9a4`
+(`Update Netty baseline to 4.2.16`).
+
+Current branch head: `e2d2ce51f11b211a391bdd4d1e2c60e881c82f38`
+(`Record Netty recovery executable checkpoint`).
+
+PR: [#494](https://github.com/RicheyWorks/LoadBalancerPro/pull/494), `Update Netty baseline to 4.2.16`.
+
+Remote checks: PR-triggered CI, CodeQL, and dependency review are queued. A push-triggered CI run is also in progress
+and its dependency-review job was skipped as expected outside a pull-request event. No remote result is yet green.
+
+Local verification and scope audit: current and green as recorded below. The PR description names the four blocking
+Netty CVEs fixed by `4.2.16.Final`, the broader overlap in Dependabot PR #492, every local check, the scope/safety audit,
+and the remaining not-proven boundaries.
+
+Blocker: remote checks and human review remain pending.
+
+Next action: record and push this checkpoint, then audit all required remote gates on the resulting exact final head.
+Do not merge without human review.
+
+Decision: continue the prerequisite only; no deployable-proxy or lab roadmap slot may start yet.
+
+## Netty Baseline Recovery Executable Checkpoint
+
+Timestamp: 2026-07-29T08:21:45-07:00
+
+Current recovery slot: `RECOVERY-NETTY-01`.
+
+Current branch: `codex/netty-4-2-16-baseline-remediation`.
+
+Executable checkpoint: `2e407d40913696cd43b4137def0199c95807d9a4`
+(`Update Netty baseline to 4.2.16`).
+
+Local verification and scope audit: current and green as recorded in the immediately preceding local-verification
+checkpoint. The executable commit contains exactly the six audited paths and the worktree was clean immediately after
+commit.
+
+PR URL: not created.
+
+Remote checks: not started.
+
+Blocker: none.
+
+Next action: record this checkpoint, push the branch, open the narrow recovery PR, and audit exact-head remote gates.
+Do not merge without human review.
+
+Decision: continue the prerequisite only.
+
+## Netty Baseline Recovery Local Verification Checkpoint
+
+Timestamp: 2026-07-29T08:21:01-07:00
+
+Goal manager: active for the combined 49-slice deployable-proxy and lab/shadow/analysis campaign; no token budget was
+requested.
+
+Current recovery slot: `RECOVERY-NETTY-01`.
+
+Current branch: `codex/netty-4-2-16-baseline-remediation`.
+
+Current base/head: `e800ba06875d0897f8459ad14a5d5cf60dc34568`; the candidate remains an unstaged six-path worktree and no
+executable checkpoint or PR exists yet.
+
+Resolved dependency evidence: `mvn -B -DskipTests dependency:tree "-Dincludes=io.netty:*"` passed and every resolved
+Netty runtime artifact is `4.2.16.Final`, including `netty-codec-http` and `netty-codec-compression`. The executable JAR
+contains both `BOOT-INF/lib/netty-codec-http-4.2.16.Final.jar` and
+`BOOT-INF/lib/netty-codec-compression-4.2.16.Final.jar`.
+
+Verification from the exact candidate:
+
+- exact Maven-posture and supply-chain selector: 10 tests, zero failures/errors/skips;
+- adjacent 15-class dependency, supply-chain, signing, readiness, release, CI, and dependency-review guard selector:
+  100 tests, zero failures/errors/skips;
+- `mvn -B clean package`: 3,396 tests across 474 Surefire reports, zero failures/errors/skips;
+- `mvn -B verify`: 3,396 tests across 474 Surefire reports, zero failures/errors/skips; JaCoCo 83.02% instruction,
+  66.29% branch, and 82.29% line coverage;
+- `mvn -q "-DskipTests" package`: passed;
+- packaged `scripts/smoke/enterprise-lab-workflow.ps1 -Package`: passed in shadow mode with ten fixed scenarios and
+  ignored `target/` evidence only;
+- final packaged JAR: 95,507,939 bytes, SHA-256
+  `F80C1D1491A9BDD689F994C4DE695D1F660ABE45B9F7C1732C0755AF19FD6C3D`;
+- `git diff --check`: passed, and no Java or Maven process remained.
+
+Scope/safety audit: the six paths are limited to the single Netty BOM property, its two exact guards, the dependency
+posture audit, and campaign records. Added-line scans found zero external URLs, secret-like defaults, cloud targets, or
+public binds. No production Java, other dependency/plugin, workflow, Docker/Compose, runtime resource, script, endpoint,
+Trivy policy, allowlist entry, secret, or external/cloud/tenant target changed. The two added `allowlist` mentions state
+that no allowlist is added.
+
+Remote limitation: local dependency resolution and packaging prove the candidate content, but do not prove that the
+blocking image scan is green. Exact-head push and PR CI, CodeQL, dependency review, Docker/runtime, SBOM, and Trivy
+remain required.
+
+Blocker: none locally.
+
+Next action: create the executable checkpoint, push the recovery branch, open the narrow PR, and audit all remote gates
+on the exact final head. Do not merge without human review.
+
+Decision: continue the prerequisite only.
+
+## Combined Build-Plan Goal Campaign Prerequisite Checkpoint
+
+Timestamp: 2026-07-29T08:07:41-07:00
+
+Goal manager: active for the complete deployable-proxy and lab/shadow/analysis roadmaps from
+`docs/audit-and-playground`; no token budget was requested.
+
+Roadmap inventory: 50 named slices, reduced to 49 unique slices by the plans' documented overlap between proxy PR-0.5
+and lab PR-L0.1. Growth, optional, benchmark, runtime, Maven, workflow, Docker/Compose, endpoint, and cloud-adjacent
+slices remain separately gated; the goal does not authorize live external/cloud/tenant execution or unsupported
+production-readiness, certification, throughput, p95/p99, or real-tenant claims.
+
+Current recovery slot: `RECOVERY-NETTY-01` - restore the shared baseline's blocking container scan before any roadmap
+slice starts.
+
+Current branch: `codex/netty-4-2-16-baseline-remediation`.
+
+Started from clean synchronized main: `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
+
+Prior blocked slot: command-ledger PR #493 was temporarily closed without merge or branch deletion. Its preserved final
+head `02d57b476a24f63290ceb4d46cc0af24b872601e` failed both exact-head CI events only at blocking Trivy after local
+verification, CodeQL, dependency review, build, tests, package, smoke, Docker runtime, controlled-container evidence,
+and SBOM gates otherwise passed. After green-main recovery, PR #493 must be rebased, fully reverified, human-reviewed,
+and reopened before the new roadmap campaign can start.
+
+Existing dependency PR audit: Dependabot PR #492 contains Netty `4.2.16.Final` together with six unrelated dependency
+and plugin updates. Both of its exact-head CI events failed the Maven posture guard because the guard still expected
+`4.2.15.Final`; it is not selected for this narrow recovery.
+
+Recovery scope: change only `netty.version` from `4.2.15.Final` to `4.2.16.Final`, update the two exact POM guards and
+the Maven dependency-posture audit, and maintain campaign checkpoint/failure records. No production Java, other
+dependency/plugin, workflow, Docker/Compose, runtime resource, script, endpoint, Trivy policy, allowlist, secret, or
+external/cloud/tenant target is in scope.
+
+Verification plan: exact two-class guard selector, resolved Netty dependency tree, full test/package/verify ladder,
+packaged Enterprise Lab workflow, diff/scope audit, and exact-head remote CI/CodeQL/dependency/container/SBOM/Trivy
+checks.
+
+PR URL: not created.
+
+Blocker: none inside the minimal recovery scope.
+
+Next action: run the focused documentation/supply-chain guards and inspect the resolved Netty family before escalating
+through full verification.
+
+Decision: continue the prerequisite only; do not start a roadmap slice or reopen PR #493 yet.
+
 ## Active Supervisor Command Ledger PR4 Checkpoint
 
 Timestamp: 2026-07-20T05:46:48-07:00

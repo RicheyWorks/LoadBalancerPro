@@ -17,8 +17,9 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Latest completed slot: `P-0.3` in merged [PR #501](https://github.com/RicheyWorks/LoadBalancerPro/pull/501);
   final head `f6b592937d05ae1853d7e00b834714a6f33721f6`, merge
   `8c491133041422b998d8e19eee5a18c827472ac8`, exact-main local package, CI, and CodeQL green.
-- Active implementation slot: `P-0.4`; weight-zero drain and interrupted-retry classification are in
-  [PR #502](https://github.com/RicheyWorks/LoadBalancerPro/pull/502), with exact-head remote gates pending.
+- Active implementation slot: `P-0.4`; [PR #502](https://github.com/RicheyWorks/LoadBalancerPro/pull/502)
+  checkpoint head `aad10912286fe0596d5145e547eaf87fed3fc8f1` is remote-green, and the factual checkpoint
+  commit must repeat every exact-head remote gate before merge.
 - Next implementation slot after the active gate: `P-0.6`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -32,7 +33,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 2 | P-0.1 | P-0.1 | Shutdown-hook lifecycle | — | MAIN_GREEN |
 | 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | MAIN_GREEN |
 | 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | MAIN_GREEN |
-| 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | PR_OPEN |
+| 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | REMOTE_GREEN |
 | 6 | P-0.6 | P-0.6 | Simulation-core correctness batch | — | OPEN |
 | 7 | L-0.2 | L-0.2 | Explorer size caps | SEC-DEFAULT-DENY | OPEN |
 | 8 | L-0.3 | L-0.3 | Non-mutating CLI abort | SEC-DEFAULT-DENY | OPEN |

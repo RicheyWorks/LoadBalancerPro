@@ -8735,3 +8735,8 @@ pre-existing public/invalid-URL validation fixtures in `EnterpriseProxyConfigura
 those lines changed in this slot. The wrapper stopped before producing a green scope result. Correction: scan only
 added diff lines plus the complete new test, require every newly added Java URL to be literal loopback, and keep the
 full-file findings classified as unchanged test fixtures rather than slot changes.
+
+P-0.4 exact-head progress formatter: a PowerShell loop attempted to pipe directly from a statement-form `foreach`
+and failed at parse time with an empty-pipe-element error, before its planned bounded wait or any GitHub query ran.
+No remote state changed and the required runs continued independently. Correction: collect loop results in an
+array and format that array in a separate statement; do not use this failed wrapper as check evidence.

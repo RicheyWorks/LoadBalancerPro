@@ -6,16 +6,18 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Combined Build Plan Slot 16 Local-Green Checkpoint
+## Combined Build Plan Slot 16 PR-Open Checkpoint
 
-Timestamp: 2026-07-30T13:22:30-07:00
+Timestamp: 2026-07-30T13:27:30-07:00
 
 Current slot: `L-2.1`, unify JSONL stores behind one chained engine.
 
-Branch: `codex/l-2-1-chained-jsonl-store`; status: local green while the campaign machine state remains
+Branch: `codex/l-2-1-chained-jsonl-store`; status: `PR_OPEN` while the campaign machine state remains
 `IN_PROGRESS`; exact green base: `36622b8b2ca27003a0a9a5e165ac361969173dd0`. The published branch-start
-checkpoint is `3114e541abea26d7001fad3f713cefe9f3478e2b`; the exact implementation head remains pending until this
-checkpoint and the complete candidate are committed.
+checkpoint is `3114e541abea26d7001fad3f713cefe9f3478e2b`; implementation/local-green head
+`4c75b9348611bb8888f9b1cc6df4b4e2dc247301` is published in
+[#513](https://github.com/RicheyWorks/LoadBalancerPro/pull/513). This required PR-open checkpoint becomes the final
+candidate head when committed and published.
 
 Delivered bounded scope:
 
@@ -48,11 +50,11 @@ mutex eviction, broader logging, production readiness/certification, live-cloud/
 throughput/p95/p99, load/stress behavior, remote-filesystem semantics, and operating-system crash guarantees remain
 unproven and belong to later slots.
 
-PR/head: not opened; exact implementation commit pending. Blocker: none locally.
+PR: #513. Blocker: exact-head remote checks are pending.
 
-Next action: commit and publish the complete candidate, open the L-2.1 PR, require exact-head CI, CodeQL, dependency
-review, package/SBOM/packaged-smoke/Docker/runtime/evidence/image-scan gates, perform a complete-diff self-review,
-merge only the unchanged green head, verify exact merge-main, then start only `L-2.2`.
+Next action: publish this checkpoint, require exact-head CI, CodeQL, dependency review,
+package/SBOM/packaged-smoke/Docker/runtime/evidence/image-scan gates, merge only the unchanged green head, verify
+exact merge-main, then start only `L-2.2`.
 
 Decision: continue only `L-2.1`; no later slot is active.
 

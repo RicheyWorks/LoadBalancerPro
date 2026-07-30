@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 class AdaptiveRoutingExperimentServiceTest {
@@ -96,6 +98,34 @@ class AdaptiveRoutingExperimentServiceTest {
         assertFalse(lower.contains("bearer "));
         assertFalse(lower.contains("access key"));
         assertFalse(lower.contains("api key"));
+    }
+
+    @Test
+    void experimentAndScenarioFixturesUseEquivalentSharedEngineRouting() {
+        AdaptiveRoutingExperimentFixtureCatalog catalog = new AdaptiveRoutingExperimentFixtureCatalog();
+        AdaptiveRoutingExperimentService experimentService = new AdaptiveRoutingExperimentService();
+        AdaptiveRoutingScenarioRunner scenarioRunner = new AdaptiveRoutingScenarioRunner(catalog);
+        RoutingComparisonEngine comparisonEngine = new RoutingComparisonEngine();
+
+        for (AdaptiveRoutingScenario scenario : scenarioRunner.scenarios()) {
+            AdaptiveRoutingExperimentScenario fixture = catalog.createAll().stream()
+                    .filter(candidate -> scenario.scenarioName().equals(candidate.name()))
+                    .findFirst()
+                    .orElseThrow();
+            AdaptiveRoutingExperimentResult experiment =
+                    experimentService.evaluate(fixture, AdaptiveRoutingPolicyMode.SHADOW);
+            RoutingDecision scenarioDecision = comparisonEngine
+                    .compare(scenario.candidates(), List.of(RoutingStrategyId.TAIL_LATENCY_POWER_OF_TWO))
+                    .results()
+                    .get(0)
+                    .decision()
+                    .orElseThrow();
+
+            assertEquals(
+                    experiment.shadowRecommendedBackend(),
+                    scenarioDecision.chosenServer().map(ServerStateVector::serverId).orElse(null),
+                    scenario.scenarioName());
+        }
     }
 
     private AdaptiveRoutingExperimentResult result(AdaptiveRoutingExperimentReport report, String scenarioName) {

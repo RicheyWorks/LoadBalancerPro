@@ -18,22 +18,25 @@ public final class FailureScenarioRunner {
                             + " is below minimum " + config.minSampleSize() + ".");
         }
 
+        PressureClassifier.Assessment pressure = PressureClassifier.assess(
+                PressureClassifier.from(signal), PressureClassifier.forFailureScenario(config));
         return switch (signal.scenarioType()) {
-            case TRAFFIC_SPIKE -> evaluateTrafficSpike(signal, config);
-            case SLOW_SERVER -> evaluateSlowServer(signal, config);
-            case QUEUE_BACKLOG -> evaluateQueueBacklog(signal, config);
-            case ERROR_STORM -> evaluateErrorStorm(signal, config);
-            case FLAPPING_SERVER -> evaluateFlappingServer(signal, config);
-            case PARTIAL_OUTAGE -> evaluatePartialOutage(signal, config);
-            case CAPACITY_SATURATION -> evaluateCapacitySaturation(signal, config);
+            case TRAFFIC_SPIKE -> evaluateTrafficSpike(signal, config, pressure);
+            case SLOW_SERVER -> evaluateSlowServer(signal, config, pressure);
+            case QUEUE_BACKLOG -> evaluateQueueBacklog(signal, config, pressure);
+            case ERROR_STORM -> evaluateErrorStorm(signal, config, pressure);
+            case FLAPPING_SERVER -> evaluateFlappingServer(signal, config, pressure);
+            case PARTIAL_OUTAGE -> evaluatePartialOutage(signal, config, pressure);
+            case CAPACITY_SATURATION -> evaluateCapacitySaturation(signal, config, pressure);
         };
     }
 
     private FailureScenarioResult evaluateTrafficSpike(FailureScenarioSignal signal,
-                                                       FailureScenarioConfig config) {
-        List<String> pressures = pressureSignals(signal, config);
-        boolean utilizationPressure = isSaturated(signal, config);
-        boolean queuePressure = hasQueuePressure(signal, config);
+                                                       FailureScenarioConfig config,
+                                                       PressureClassifier.Assessment pressure) {
+        List<String> pressures = pressureSignals(signal, config, pressure);
+        boolean utilizationPressure = pressure.has(PressureClassifier.Dimension.UTILIZATION);
+        boolean queuePressure = pressure.has(PressureClassifier.Dimension.QUEUE);
         if (utilizationPressure || queuePressure) {
             List<MitigationAction> actions = new ArrayList<>();
             actions.add(MitigationAction.SCALE_UP_SHADOW);
@@ -47,9 +50,11 @@ public final class FailureScenarioRunner {
     }
 
     private FailureScenarioResult evaluateSlowServer(FailureScenarioSignal signal,
-                                                     FailureScenarioConfig config) {
-        List<String> pressures = pressureSignals(signal, config);
-        if (hasLatencyPressure(signal, config)) {
+                                                     FailureScenarioConfig config,
+                                                     PressureClassifier.Assessment pressure) {
+        List<String> pressures = pressureSignals(signal, config, pressure);
+        if (pressure.has(PressureClassifier.Dimension.P95_LATENCY)
+                || pressure.has(PressureClassifier.Dimension.P99_LATENCY)) {
             FailureSeverity severity = signal.observedP99LatencyMillis() > config.highP99LatencyMillis()
                     ? FailureSeverity.HIGH : FailureSeverity.MEDIUM;
             return result(signal, severity,
@@ -60,9 +65,10 @@ public final class FailureScenarioRunner {
     }
 
     private FailureScenarioResult evaluateQueueBacklog(FailureScenarioSignal signal,
-                                                       FailureScenarioConfig config) {
-        List<String> pressures = pressureSignals(signal, config);
-        if (hasQueuePressure(signal, config)) {
+                                                       FailureScenarioConfig config,
+                                                       PressureClassifier.Assessment pressure) {
+        List<String> pressures = pressureSignals(signal, config, pressure);
+        if (pressure.has(PressureClassifier.Dimension.QUEUE)) {
             return result(signal, FailureSeverity.HIGH,
                     List.of(MitigationAction.SHED_LOW_PRIORITY, MitigationAction.SCALE_UP_SHADOW),
                     "Queue backlog pressure detected: " + String.join("; ", pressures) + ".");
@@ -71,46 +77,56 @@ public final class FailureScenarioRunner {
     }
 
     private FailureScenarioResult evaluateErrorStorm(FailureScenarioSignal signal,
-                                                     FailureScenarioConfig config) {
-        if (hasErrorPressure(signal, config)) {
+                                                     FailureScenarioConfig config,
+                                                     PressureClassifier.Assessment pressure) {
+        if (pressure.has(PressureClassifier.Dimension.ERROR_RATE)) {
             if (signal.observedErrorRate() >= SEVERE_ERROR_RATE) {
                 return result(signal, FailureSeverity.CRITICAL,
                         List.of(MitigationAction.INVESTIGATE, MitigationAction.FAIL_CLOSED),
-                        "severe error rate detected: " + String.join("; ", pressureSignals(signal, config)) + ".");
+                        "severe error rate detected: "
+                                + String.join("; ", pressureSignals(signal, config, pressure)) + ".");
             }
             return result(signal, FailureSeverity.HIGH, List.of(MitigationAction.INVESTIGATE),
-                    "Error storm pressure detected: " + String.join("; ", pressureSignals(signal, config)) + ".");
+                    "Error storm pressure detected: "
+                            + String.join("; ", pressureSignals(signal, config, pressure)) + ".");
         }
         return lowPressure(signal);
     }
 
     private FailureScenarioResult evaluateFlappingServer(FailureScenarioSignal signal,
-                                                         FailureScenarioConfig config) {
-        if (hasHealthPressure(signal, config) || hasErrorPressure(signal, config)) {
+                                                         FailureScenarioConfig config,
+                                                         PressureClassifier.Assessment pressure) {
+        if (pressure.has(PressureClassifier.Dimension.HEALTH)
+                || pressure.has(PressureClassifier.Dimension.ERROR_RATE)) {
             return result(signal, FailureSeverity.HIGH,
                     List.of(MitigationAction.ROUTE_AROUND, MitigationAction.INVESTIGATE),
-                    "Flapping server pressure detected: " + String.join("; ", pressureSignals(signal, config)) + ".");
+                    "Flapping server pressure detected: "
+                            + String.join("; ", pressureSignals(signal, config, pressure)) + ".");
         }
         return lowPressure(signal);
     }
 
     private FailureScenarioResult evaluatePartialOutage(FailureScenarioSignal signal,
-                                                        FailureScenarioConfig config) {
-        if (hasHealthPressure(signal, config)) {
+                                                        FailureScenarioConfig config,
+                                                        PressureClassifier.Assessment pressure) {
+        if (pressure.has(PressureClassifier.Dimension.HEALTH)) {
             return result(signal, FailureSeverity.CRITICAL,
                     List.of(MitigationAction.ROUTE_AROUND, MitigationAction.SHED_LOW_PRIORITY,
                             MitigationAction.INVESTIGATE),
-                    "Partial outage pressure detected: " + String.join("; ", pressureSignals(signal, config)) + ".");
+                    "Partial outage pressure detected: "
+                            + String.join("; ", pressureSignals(signal, config, pressure)) + ".");
         }
         return lowPressure(signal);
     }
 
     private FailureScenarioResult evaluateCapacitySaturation(FailureScenarioSignal signal,
-                                                             FailureScenarioConfig config) {
-        if (isSaturated(signal, config)) {
+                                                             FailureScenarioConfig config,
+                                                             PressureClassifier.Assessment pressure) {
+        if (pressure.has(PressureClassifier.Dimension.UTILIZATION)) {
             return result(signal, FailureSeverity.HIGH,
                     List.of(MitigationAction.SCALE_UP_SHADOW, MitigationAction.REDUCE_CONCURRENCY),
-                    "Capacity saturation detected: " + String.join("; ", pressureSignals(signal, config)) + ".");
+                    "Capacity saturation detected: "
+                            + String.join("; ", pressureSignals(signal, config, pressure)) + ".");
         }
         return lowPressure(signal);
     }
@@ -120,29 +136,31 @@ public final class FailureScenarioRunner {
                 "Holding because scenario signals show low pressure.");
     }
 
-    private List<String> pressureSignals(FailureScenarioSignal signal, FailureScenarioConfig config) {
+    private List<String> pressureSignals(FailureScenarioSignal signal,
+                                         FailureScenarioConfig config,
+                                         PressureClassifier.Assessment pressure) {
         List<String> pressures = new ArrayList<>();
-        if (hasHealthPressure(signal, config)) {
+        if (pressure.has(PressureClassifier.Dimension.HEALTH)) {
             pressures.add("healthy ratio " + format(signal.healthyRatio())
                     + " is below threshold " + format(config.partialOutageHealthyRatioThreshold()));
         }
-        if (isSaturated(signal, config)) {
+        if (pressure.has(PressureClassifier.Dimension.UTILIZATION)) {
             pressures.add("utilization " + format(signal.utilization())
                     + " reached threshold " + format(config.saturationUtilizationThreshold()));
         }
-        if (hasQueuePressure(signal, config)) {
+        if (pressure.has(PressureClassifier.Dimension.QUEUE)) {
             pressures.add("queue depth " + signal.queueDepth()
                     + " exceeded threshold " + config.highQueueDepthThreshold());
         }
-        if (signal.observedP95LatencyMillis() > config.highP95LatencyMillis()) {
+        if (pressure.has(PressureClassifier.Dimension.P95_LATENCY)) {
             pressures.add("p95 latency " + format(signal.observedP95LatencyMillis())
                     + "ms exceeded threshold " + format(config.highP95LatencyMillis()) + "ms");
         }
-        if (signal.observedP99LatencyMillis() > config.highP99LatencyMillis()) {
+        if (pressure.has(PressureClassifier.Dimension.P99_LATENCY)) {
             pressures.add("p99 latency " + format(signal.observedP99LatencyMillis())
                     + "ms exceeded threshold " + format(config.highP99LatencyMillis()) + "ms");
         }
-        if (hasErrorPressure(signal, config)) {
+        if (pressure.has(PressureClassifier.Dimension.ERROR_RATE)) {
             pressures.add("error rate " + format(signal.observedErrorRate())
                     + " exceeded threshold " + format(config.highErrorRate()));
         }
@@ -150,27 +168,6 @@ public final class FailureScenarioRunner {
             pressures.add("no configured pressure thresholds exceeded");
         }
         return pressures;
-    }
-
-    private boolean hasHealthPressure(FailureScenarioSignal signal, FailureScenarioConfig config) {
-        return signal.healthyRatio() < config.partialOutageHealthyRatioThreshold();
-    }
-
-    private boolean isSaturated(FailureScenarioSignal signal, FailureScenarioConfig config) {
-        return signal.utilization() >= config.saturationUtilizationThreshold();
-    }
-
-    private boolean hasQueuePressure(FailureScenarioSignal signal, FailureScenarioConfig config) {
-        return signal.queueDepth() > config.highQueueDepthThreshold();
-    }
-
-    private boolean hasLatencyPressure(FailureScenarioSignal signal, FailureScenarioConfig config) {
-        return signal.observedP95LatencyMillis() > config.highP95LatencyMillis()
-                || signal.observedP99LatencyMillis() > config.highP99LatencyMillis();
-    }
-
-    private boolean hasErrorPressure(FailureScenarioSignal signal, FailureScenarioConfig config) {
-        return signal.observedErrorRate() > config.highErrorRate();
     }
 
     private FailureScenarioResult result(FailureScenarioSignal signal,

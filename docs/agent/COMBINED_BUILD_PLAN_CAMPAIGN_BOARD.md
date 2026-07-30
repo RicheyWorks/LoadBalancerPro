@@ -19,7 +19,7 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   `b73d20fa81f4713376f91c00dccd63f2eb5d31af`, exact-main 61-test focused checks, CI `30567426583`,
   and CodeQL `30567426446` green.
 - Active implementation slot: `L-1.4`; collapse duplicate comparison and experiment paths on
-  `codex/l-1-4-collapse-comparison-paths`.
+  `codex/l-1-4-collapse-comparison-paths`; local verification is green and PR publication is next.
 - Next implementation slot after the active gate: `L-2.1`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -43,7 +43,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 12 | L-1.1 | L-1.1 | Delete metadata-about-metadata services | L0 complete | MAIN_GREEN |
 | 13 | L-1.2 | L-1.2 | One explainability module | L-1.1 | MAIN_GREEN |
 | 14 | L-1.3 | L-1.3 | Explainability correctness/determinism | L-1.2, P-0.3 | MAIN_GREEN |
-| 15 | L-1.4 | L-1.4 | One comparison/experiment path | L-1.3 | IN_PROGRESS |
+| 15 | L-1.4 | L-1.4 | One comparison/experiment path | L-1.3 | LOCAL_GREEN |
 | 16 | L-2.1 | L-2.1 | One chained JSONL engine | L-0.6 | OPEN |
 | 17 | L-2.2 | L-2.2 | Rotation and recovery | L-2.1 | OPEN |
 | 18 | L-2.3 | L-2.3 | OS-lock-aware takeover | L-2.2 | OPEN |

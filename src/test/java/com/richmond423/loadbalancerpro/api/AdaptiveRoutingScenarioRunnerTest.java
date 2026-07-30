@@ -78,9 +78,9 @@ class AdaptiveRoutingScenarioRunnerTest {
                 .map(AdaptiveRoutingScenarioResult::scenarioName)
                 .toList()
                 .containsAll(List.of(
-                        "balanced-weighted-local-synthetic",
-                        "tail-latency-degradation-local-synthetic",
-                        "capacity-pressure-local-synthetic")));
+                        "normal-balanced-load",
+                        "tail-latency-pressure",
+                        "overload-pressure")));
     }
 
     @Test
@@ -130,7 +130,7 @@ class AdaptiveRoutingScenarioRunnerTest {
                 .andExpect(jsonPath("$.scenarios[0].deterministic", is(true)))
                 .andExpect(jsonPath("$.scenarios[0].totalDecisions", is(40)))
                 .andExpect(jsonPath("$.scenarios[0].measurementSummary.attemptedDecisions", is(40)))
-                .andExpect(jsonPath("$.scenarios[0].selectedServerCounts.ROUND_ROBIN.edge-a", is(3)))
+                .andExpect(jsonPath("$.scenarios[0].selectedServerCounts.ROUND_ROBIN.blue", is(3)))
                 .andExpect(jsonPath("$.localEvidencePaths[0]",
                         is("target/adaptive-routing-scenarios/adaptive-routing-scenario-summary.json")))
                 .andExpect(jsonPath("$.notProvenBoundaries[0]", is("No production certification")))
@@ -141,6 +141,14 @@ class AdaptiveRoutingScenarioRunnerTest {
                 .andReturn().getResponse().getContentAsString();
 
         assertEquals(first, second, "endpoint response should be deterministic");
+    }
+
+    @Test
+    void duplicateGateAndMatrixEndpointsAreRetired() throws Exception {
+        mockMvc.perform(get("/api/enterprise-lab/adaptive-routing-scenario-gate-evaluation"))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/enterprise-lab/adaptive-routing-strategy-comparison-matrix"))
+                .andExpect(status().isNotFound());
     }
 
     @Test

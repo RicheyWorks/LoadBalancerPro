@@ -167,6 +167,50 @@ class LaseEvaluationEngineTest {
     }
 
     @Test
+    void routingDecisionUsesTheSharedComparisonEngineEntryPoint() {
+        RoutingStrategy comparisonOnlyStrategy = new RoutingStrategy() {
+            @Override
+            public RoutingStrategyId id() {
+                return RoutingStrategyId.TAIL_LATENCY_POWER_OF_TWO;
+            }
+
+            @Override
+            public RoutingDecision choose(List<ServerStateVector> servers) {
+                throw new AssertionError("direct strategy path must not be used");
+            }
+
+            @Override
+            public RoutingDecision chooseForComparison(List<ServerStateVector> servers, long deterministicSeed) {
+                ServerStateVector chosen = servers.get(1);
+                return new RoutingDecision(
+                        Optional.of(chosen),
+                        new RoutingDecisionExplanation(
+                                id().externalName(),
+                                servers.stream().map(ServerStateVector::serverId).toList(),
+                                Optional.of(chosen.serverId()),
+                                java.util.Map.of(chosen.serverId(), 0.0),
+                                "selected through shared comparison engine",
+                                NOW));
+            }
+        };
+        RoutingComparisonEngine comparisonEngine = new RoutingComparisonEngine(
+                new RoutingStrategyRegistry(List.of(comparisonOnlyStrategy)), CLOCK);
+        LaseEvaluationEngine engine = new LaseEvaluationEngine(
+                comparisonEngine,
+                new LoadSheddingPolicy(),
+                new ShadowAutoscaler(),
+                new FailureScenarioRunner(),
+                CLOCK);
+
+        LaseEvaluationReport report = engine.evaluate(normalInput(), CONFIG);
+
+        assertEquals("server-b", report.routingDecision().chosenServer().orElseThrow().serverId());
+        assertEquals(
+                "selected through shared comparison engine",
+                report.routingDecision().explanation().reason());
+    }
+
+    @Test
     void summaryIncludesOutcomesAndExplanationReasons() {
         LaseEvaluationReport report = engine(7).evaluate(overloadedInput(), CONFIG);
 

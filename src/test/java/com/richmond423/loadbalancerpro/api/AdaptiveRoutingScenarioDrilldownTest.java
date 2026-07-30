@@ -135,19 +135,19 @@ class AdaptiveRoutingScenarioDrilldownTest {
                 .andExpect(jsonPath("$.scenarios[0].mode", is("local-synthetic")))
                 .andExpect(jsonPath("$.scenarios[0].deterministic", is(true)))
                 .andExpect(jsonPath("$.scenarios[0].strategyExplanations[0].scenarioName",
-                        is("balanced-weighted-local-synthetic")))
+                        is("normal-balanced-load")))
                 .andExpect(jsonPath("$.scenarios[0].strategyExplanations[0].strategyName",
                         is("TAIL_LATENCY_POWER_OF_TWO")))
                 .andExpect(jsonPath("$.scenarios[0].strategyExplanations[0].totalSelections", is(8)))
                 .andExpect(jsonPath("$.scenarios[0].strategyExplanations[0].dominantSelectedServer",
-                        containsString("edge-")))
+                        is("blue")))
                 .andExpect(jsonPath("$.scenarios[0].strategyExplanations[0].observedInputSignals[0]",
                         containsString("Healthy candidates")))
                 .andExpect(jsonPath("$.scenarios[0].strategyExplanations[0].explanationNotes[0]",
                         containsString("Observed distribution")))
                 .andExpect(jsonPath("$.scenarios[0].strategyExplanations[0].cautionNotes[0]",
                         containsString("Local synthetic explanation only")))
-                .andExpect(jsonPath("$.scenarios[2].selectedServerCounts.ROUND_ROBIN.capacity-a", is(3)))
+                .andExpect(jsonPath("$.scenarios[2].selectedServerCounts.ROUND_ROBIN.blue", is(3)))
                 .andExpect(jsonPath("$.notProvenBoundaries[0]", is("No production certification")))
                 .andReturn().getResponse().getContentAsString();
 

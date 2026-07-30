@@ -213,11 +213,11 @@
       "sourceIds": ["L-1.4"],
       "track": "lab",
       "title": "Collapse duplicate comparison and experiment surfaces",
-      "status": "IN_PROGRESS",
+      "status": "LOCAL_GREEN",
       "dependencies": ["L-1.3"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "Started from exact green main b73d20fa81f4713376f91c00dccd63f2eb5d31af on codex/l-1-4-collapse-comparison-paths. RoutingComparisonService, AdaptiveRoutingExperimentService, AdaptiveRoutingScenarioRunner, comparison-matrix/gate helpers, and the three pressure classifiers must be reconciled against current main before choosing the deletion seam. One-path equivalence and consolidated pressure classification remain unproven."
+      "currentState": "Local verification is green on codex/l-1-4-collapse-comparison-paths from exact green main b73d20fa81f4713376f91c00dccd63f2eb5d31af. Experiment, scenario, and LASE decisions reach RoutingComparisonEngine; the experiment fixture catalog and advisor candidate synthesis are shared; duplicate matrix/gate surfaces are retired; and one PressureClassifier serves failure, shedding, and autoscaling policies. Focused equivalence and boundary tests, a 3,050-test clean package, artifact inspection, and packaged loopback API/browser smoke passed. The final tracked documentation checkpoint still requires an exact-candidate rerun before commit and PR publication."
     },
     {
       "ordinal": 16,

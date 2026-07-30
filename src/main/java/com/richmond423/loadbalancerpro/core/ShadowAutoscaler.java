@@ -16,8 +16,10 @@ public final class ShadowAutoscaler {
                             + " is below minimum " + config.minSampleSize() + ".");
         }
 
-        List<String> scaleUpReasons = scaleUpReasons(signal, config);
-        if (!scaleUpReasons.isEmpty() && signal.observedErrorRate() > config.maxErrorRate()) {
+        PressureClassifier.Assessment pressure = PressureClassifier.assess(
+                PressureClassifier.from(signal), PressureClassifier.forScaleUp(config));
+        List<String> scaleUpReasons = scaleUpReasons(signal, config, pressure);
+        if (!scaleUpReasons.isEmpty() && pressure.has(PressureClassifier.Dimension.ERROR_RATE)) {
             scaleUpReasons.add("error rate " + format(signal.observedErrorRate())
                     + " exceeded threshold " + format(config.maxErrorRate()));
         }
@@ -36,7 +38,7 @@ public final class ShadowAutoscaler {
                             + String.join("; ", scaleUpReasons) + ".");
         }
 
-        if (signal.observedErrorRate() > config.maxErrorRate()) {
+        if (pressure.has(PressureClassifier.Dimension.ERROR_RATE)) {
             return recommendation(signal, AutoscalingAction.INVESTIGATE, signal.currentCapacity(), 0.50,
                     "Investigating error rate " + format(signal.observedErrorRate())
                             + " above threshold " + format(config.maxErrorRate())
@@ -73,21 +75,23 @@ public final class ShadowAutoscaler {
                 "Holding capacity because latency, error, utilization, and queue signals are healthy.");
     }
 
-    private List<String> scaleUpReasons(AutoscalingSignal signal, ShadowAutoscalerConfig config) {
+    private List<String> scaleUpReasons(AutoscalingSignal signal,
+                                        ShadowAutoscalerConfig config,
+                                        PressureClassifier.Assessment pressure) {
         List<String> reasons = new ArrayList<>();
-        if (signal.queueDepth() > config.queueScaleUpThreshold()) {
+        if (pressure.has(PressureClassifier.Dimension.QUEUE)) {
             reasons.add("queue depth " + signal.queueDepth()
                     + " exceeded threshold " + config.queueScaleUpThreshold());
         }
-        if (signal.observedP95LatencyMillis() > config.targetP95LatencyMillis()) {
+        if (pressure.has(PressureClassifier.Dimension.P95_LATENCY)) {
             reasons.add("p95 latency " + format(signal.observedP95LatencyMillis())
                     + "ms exceeded target " + format(config.targetP95LatencyMillis()) + "ms");
         }
-        if (signal.observedP99LatencyMillis() > config.targetP99LatencyMillis()) {
+        if (pressure.has(PressureClassifier.Dimension.P99_LATENCY)) {
             reasons.add("p99 latency " + format(signal.observedP99LatencyMillis())
                     + "ms exceeded target " + format(config.targetP99LatencyMillis()) + "ms");
         }
-        if (signal.utilization() >= config.utilizationScaleUpThreshold()) {
+        if (pressure.has(PressureClassifier.Dimension.UTILIZATION)) {
             reasons.add("utilization " + format(signal.utilization())
                     + " reached threshold " + format(config.utilizationScaleUpThreshold()));
         }

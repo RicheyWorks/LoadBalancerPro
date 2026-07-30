@@ -1,8 +1,19 @@
 package com.richmond423.loadbalancerpro.core;
 
 import java.util.List;
+import java.util.Objects;
 
 public final class AdaptiveRoutingExperimentFixtureCatalog {
+    private final LoadDistributionEvaluator loadDistributionEvaluator;
+
+    public AdaptiveRoutingExperimentFixtureCatalog() {
+        this(new LoadDistributionEvaluator());
+    }
+
+    AdaptiveRoutingExperimentFixtureCatalog(LoadDistributionEvaluator loadDistributionEvaluator) {
+        this.loadDistributionEvaluator = Objects.requireNonNull(
+                loadDistributionEvaluator, "loadDistributionEvaluator cannot be null");
+    }
 
     public List<AdaptiveRoutingExperimentScenario> createAll() {
         return List.of(
@@ -16,6 +27,21 @@ public final class AdaptiveRoutingExperimentFixtureCatalog {
                 capacitySkew(),
                 repeatedReplayEventOrder(),
                 zeroEdgeMetricValues());
+    }
+
+    List<PreparedFixture> prepareAll() {
+        return createAll().stream().map(this::prepare).toList();
+    }
+
+    PreparedFixture prepare(AdaptiveRoutingExperimentScenario scenario) {
+        Objects.requireNonNull(scenario, "scenario cannot be null");
+        List<Server> servers = scenario.servers().stream()
+                .map(AdaptiveRoutingExperimentFixtureCatalog::toServer)
+                .toList();
+        LoadDistributionResult baseline = "PREDICTIVE".equals(scenario.strategy())
+                ? loadDistributionEvaluator.predictive(servers, scenario.requestedLoad())
+                : loadDistributionEvaluator.capacityAware(servers, scenario.requestedLoad());
+        return new PreparedFixture(scenario, servers, baseline);
     }
 
     private AdaptiveRoutingExperimentScenario normalBalancedLoad() {
@@ -175,5 +201,27 @@ public final class AdaptiveRoutingExperimentFixtureCatalog {
             double capacity,
             boolean healthy) {
         return new AdaptiveRoutingExperimentServer(id, cpuUsage, memoryUsage, diskUsage, capacity, 1.0, healthy);
+    }
+
+    private static Server toServer(AdaptiveRoutingExperimentServer input) {
+        Server server = new Server(input.id(), input.cpuUsage(), input.memoryUsage(), input.diskUsage(),
+                ServerType.ONSITE);
+        server.setCapacity(input.capacity());
+        server.setWeight(input.weight());
+        server.setHealthy(input.healthy());
+        return server;
+    }
+
+    record PreparedFixture(
+            AdaptiveRoutingExperimentScenario scenario,
+            List<Server> servers,
+            LoadDistributionResult baseline) {
+
+        public PreparedFixture {
+            Objects.requireNonNull(scenario, "scenario cannot be null");
+            Objects.requireNonNull(servers, "servers cannot be null");
+            Objects.requireNonNull(baseline, "baseline cannot be null");
+            servers = List.copyOf(servers);
+        }
     }
 }

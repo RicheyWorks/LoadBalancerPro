@@ -6,6 +6,30 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 17 Main-Green / Slot 18 Start
+
+Timestamp: 2026-07-30T16:48:25-07:00
+
+Completed: `L-2.2`; `codex/l-2-2-rotation-recovery`;
+[#515](https://github.com/RicheyWorks/LoadBalancerPro/pull/515); final head
+`c83cd12a76cf3ef67ae24c620a8fbfb1000cb5a0`; merge
+`1c1d6107e65b99075f39472b08f4c274b3272d68`.
+
+Verified: all final-head local gates, push/PR CI, dependency review, CodeQL, package/SBOM/JAR/Docker/runtime/evidence/
+Trivy, 10,000-command fresh replay, and complete-diff self-review passed. Exact-main CI `30591199330` and CodeQL
+`30591199322` passed; the main container scan reports zero OS and zero JAR findings, and its 144-component SBOM
+contains Spring Boot `3.5.16`, Framework `6.2.19`, and Security `6.5.11`.
+
+Active: `L-2.3`; `codex/l-2-3-os-lock-aware-takeover`; base
+`1c1d6107e65b99075f39472b08f4c274b3272d68`; status `IN_PROGRESS`. Dependency `L-2.2` is `MAIN_GREEN`.
+Contract: when a single-host taker already holds the exclusive OS file lock, treat the prior unexpired lease as stale
+instead of refusing startup; retain lease behavior for a genuinely multi-host mode only behind an explicit flag and
+preserve multi-writer exclusion. Do not broaden into L-2.4 artifact packaging, L-2.5 durability/logging/mutex work,
+cloud/tenant coordination, external targets, or production-readiness claims.
+
+Blocker: none. Next: inventory the ownership acquisition/takeover state machine, lock ordering, lease configuration,
+restart/process proofs, and API/CLI consumers before selecting the smallest exact behavioral seam.
+
 ## Combined Build Plan Slot 17 Local-Green Candidate
 
 Timestamp: 2026-07-30T16:15:44-07:00

@@ -237,11 +237,11 @@
       "sourceIds": ["L-2.2"],
       "track": "lab",
       "title": "Add ledger/state-store rotation and recovery",
-      "status": "IN_PROGRESS",
+      "status": "MAIN_GREEN",
       "dependencies": ["L-2.1"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "PR #515 on codex/l-2-2-rotation-recovery from exact green main 178322bc3f9572b74ee35caea7b654fb19ff111e adds bounded 65-segment archive-and-truncate history for both command ledgers and allocation state, global chain replay, recognized orphan-install startup recovery, and an explicit dry-run-first offline torn-tail repair with exact-byte quarantine. Product commit 24138eb6ba5d7a63021f7fb8670e0d0f7384a574 passed adversarial focused tests, 10,000-command fresh replay, the complete 3,068-test suite, package/verify, 144-component SBOM, packaged workflow/allocation/recovery proofs, loopback runtime smoke, and complete-diff self-review. The current campaign-checkpoint-only head still requires exact-head remote gates."
+      "currentState": "PR #515 final head c83cd12a76cf3ef67ae24c620a8fbfb1000cb5a0 passed exact-head push/PR CI, dependency review, CodeQL, Docker/runtime, SBOM/artifact/evidence, blocking Trivy, the complete 3,068-test suite, 10,000-command fresh replay, packaged proofs, and complete-diff self-review, then merged as 1c1d6107e65b99075f39472b08f4c274b3272d68. Exact-main CI 30591199330 and CodeQL 30591199322 passed; the image scan reports zero OS and zero JAR findings and the 144-component SBOM retains the expected Spring versions."
     },
     {
       "ordinal": 18,
@@ -249,11 +249,11 @@
       "sourceIds": ["L-2.3"],
       "track": "lab",
       "title": "Make takeover honor the OS lock",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": ["L-2.2"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "Immediate single-host takeover and retained multi-writer exclusion are unproven."
+      "currentState": "Started on codex/l-2-3-os-lock-aware-takeover from exact green main 1c1d6107e65b99075f39472b08f4c274b3272d68. The active contract is immediate single-host takeover when the taker holds the exclusive OS lock, while retaining lease semantics only for an explicitly configured genuinely multi-host mode and preserving multi-writer exclusion. Inventory and reconciliation with the current ownership implementation are in progress."
     },
     {
       "ordinal": 19,

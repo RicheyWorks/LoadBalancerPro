@@ -6,6 +6,25 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## L2.1 Spring Boot Security Prerequisite PR-Open Checkpoint
+
+Timestamp: 2026-07-30T14:16:10-07:00
+
+Branch/PR: `codex/security-spring-boot-3-5-16`;
+[#514](https://github.com/RicheyWorks/LoadBalancerPro/pull/514).
+
+Published implementation/local-green head: `78e806702d3a4629cce72e6aec45d38745d92c08`; this PR-open checkpoint
+is documentation-only and will become the final candidate after publication.
+
+PR #514 is ready, mergeable, and limited to the six authorized dependency/evidence/campaign files. Push and PR CI,
+PR dependency review, and CodeQL started on the implementation head, but they become stale after this checkpoint
+and must not count toward the final merge gate.
+
+Next action: rerun the complete current-tree local ladder, commit and publish this checkpoint, then require
+unchanged-head push/PR CI, CodeQL, dependency review, package/SBOM/artifact/Docker/runtime evidence, and the blocking
+Trivy scan with the three Spring Framework HIGH findings absent before complete-diff self-review and automatic
+merge. PR #513 remains preserved and must not be updated until verified green `main` includes this prerequisite.
+
 ## L2.1 Spring Boot Security Prerequisite Local-Green Candidate
 
 Timestamp: 2026-07-30T13:35:00-07:00

@@ -10,6 +10,7 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.Set;
 
+import com.richmond423.loadbalancerpro.api.config.RoutingApiLimitsProperties;
 import com.richmond423.loadbalancerpro.core.CandidateFactorContributionSummary;
 import com.richmond423.loadbalancerpro.core.NetworkAwarenessSignal;
 import com.richmond423.loadbalancerpro.core.RoutingComparisonEngine;
@@ -21,6 +22,7 @@ import com.richmond423.loadbalancerpro.core.RoutingStrategyId;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
 import com.richmond423.loadbalancerpro.core.ServerScoreCalculator;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -70,15 +72,24 @@ public class RoutingComparisonService {
             decisionReplayEvidenceReviewerClosureRollupService;
     private final RoutingDecisionReplayEvidenceReviewerClosureChecklistService
             decisionReplayEvidenceReviewerClosureChecklistService;
+    private final RoutingApiLimitsProperties limits;
     private final Clock clock;
 
     public RoutingComparisonService() {
-        this(RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC());
+        this(RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC(), new RoutingApiLimitsProperties());
     }
 
-    private RoutingComparisonService(RoutingStrategyRegistry registry, Clock clock) {
+    @Autowired
+    RoutingComparisonService(RoutingApiLimitsProperties limits) {
+        this(RoutingStrategyRegistry.defaultRegistry(), Clock.systemUTC(), limits);
+    }
+
+    private RoutingComparisonService(RoutingStrategyRegistry registry,
+                                     Clock clock,
+                                     RoutingApiLimitsProperties limits) {
         this.registry = registry;
         this.clock = clock;
+        this.limits = limits;
         this.engine = new RoutingComparisonEngine(registry, clock);
         this.scoreCalculator = new ServerScoreCalculator();
         this.dominantFactorAnalysisService = new RoutingDominantFactorAnalysisService();
@@ -124,11 +135,26 @@ public class RoutingComparisonService {
         if (request == null) {
             throw new IllegalArgumentException("Request body is required");
         }
+        requireWithinConfiguredLimits(request);
         Instant timestamp = Instant.now(clock);
         List<RoutingStrategyId> strategyIds = resolveStrategies(request.strategies());
         List<ServerStateVector> candidates = toCandidates(request.servers(), timestamp);
         RoutingComparisonReport report = engine.compare(candidates, strategyIds);
         return toResponse(report, candidates);
+    }
+
+    private void requireWithinConfiguredLimits(RoutingComparisonRequest request) {
+        if (request.servers() != null && request.servers().size() > limits.getMaxCandidates()) {
+            throw new IllegalArgumentException(
+                    "servers exceeds configured maximum of " + limits.getMaxCandidates() + " candidates");
+        }
+        int requestedStrategyCount = request.strategies() == null || request.strategies().isEmpty()
+                ? registry.registeredIds().size()
+                : request.strategies().size();
+        if (requestedStrategyCount > limits.getMaxStrategies()) {
+            throw new IllegalArgumentException(
+                    "strategies exceeds configured maximum of " + limits.getMaxStrategies() + " strategies");
+        }
     }
 
     private List<RoutingStrategyId> resolveStrategies(List<String> requestedStrategies) {

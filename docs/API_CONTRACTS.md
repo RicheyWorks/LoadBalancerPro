@@ -64,8 +64,20 @@ The prior CLI experiment harness remains available as an offline comparison path
 
 Routing comparison responses expose `requestedStrategies`, `candidateCount`, `timestamp`, optional response-level `decisionReplayEvidenceReviewerClosureRollup`, optional response-level `decisionReplayEvidenceReviewerClosureChecklist`, and a `results` array. Each result exposes the strategy id, status, selected server id when one is available, the strategy reason, considered candidates, and score map when the strategy reports scores. A no-healthy-server comparison still returns a controlled result with `chosenServerId` set to `null`, empty candidate/scores collections, and an explanatory reason.
 
+Routing comparison requests have an absolute DTO ceiling of 32 candidates and five explicit strategies. Operators
+can lower those ceilings with `loadbalancerpro.api.max-candidates` and
+`loadbalancerpro.api.max-strategies`; values outside the absolute bounds fail configuration validation. Requests
+over either effective ceiling return structured HTTP 400 before comparison or Explorer payload construction. These
+limits supplement the separate API request-body byte ceiling and do not authorize larger request bodies.
+
 `POST /api/routing/decision-explorer` accepts the same `RoutingComparisonRequest` as the comparison route and returns
 an array of `DecisionExplorerPayloadV1` readouts derived from the already-built routing comparison response. The route
+uses a bounded counting serialization pass before returning output and rejects output beyond
+`loadbalancerpro.api.max-decision-explorer-response-bytes` (16 MiB by default) with structured HTTP 400; it does not
+buffer a second response byte array while measuring. The configured response ceiling must remain between one byte
+and the 64 MiB hard maximum or application configuration fails validation. The candidate and strategy ceilings run
+before comparison and Explorer payload construction.
+The route
 is additive, read-only, and simulation-only: it does not mutate routing state, change strategy scoring, allocate
 traffic, forward proxy traffic, call cloud or tenant systems, persist storage, execute replay, generate evidence
 packets, export files, or prove production readiness, certification, live-cloud validation, real-tenant validation,

@@ -8796,3 +8796,80 @@ four positional arguments and returned `accepts at most 1 arg(s)`. No workflow w
 and no check result from the malformed invocation is accepted. Correction: query one confirmed run ID per command
 with only the bounded `status`, `conclusion`, and `jobs` JSON fields; the failure-log-only correction establishes a
 new head whose complete remote gate set must pass.
+
+# 2026-07-29 - L-0.2 explorer size-cap audit
+
+Branch: `codex/l-0-2-explorer-size-caps`
+
+First L-0.2 source lookup: branch creation succeeded from exact green main, but the subsequent read-only ripgrep
+passed `docs/BUILD_PLAN*` as a literal Windows path and also guessed the nonexistent directory
+`docs/audit-and-playground`. Ripgrep returned exit 1 after finding only the campaign-manifest references. No source
+or test was changed by the lookup. Correction: inventory confirmed files with `rg --files docs`, then search only
+the resolved source-plan paths using directory arguments plus `-g` filters where needed.
+
+L-0.2 API-error fixture lookup: a read-only compound command used a double-quoted ripgrep expression containing
+unescaped PowerShell parentheses and failed at shell parse time before reading `ApiErrorResponse` or the test
+matches. No repository or runtime state changed. Correction: read the confirmed error-response file directly and
+use single-quoted fixed expressions for any follow-up test search.
+
+L-0.2 existing routing error-assertion lookup: the direct `ApiErrorResponse` read succeeded, while a focused
+ripgrep found no `$.message`, `$.details`, or `$.error` assertions in `RoutingControllerTest` and returned its
+normal no-match exit 1. This is a read-only absence result, not a test failure. Correction: assert the confirmed
+`ApiErrorResponse` schema directly in the new size-cap acceptance instead of copying a nonexistent fixture.
+
+First L-0.2 red-gate attempt: test compilation failed because the new constraint assertions passed
+`jakarta.validation.Path` directly to `String.contentEquals`, while `Path` does not implement `CharSequence`.
+No acceptance test or production code ran, so this invocation is not a behavioral red result. Correction: compare
+the stable `violation.getPropertyPath().toString()` value, then rerun the unchanged six-test red selector before
+editing production code.
+
+Corrected L-0.2 red gate: six tests ran with five expected failures, zero errors, and zero skips. Current main had
+no DTO maximum for 100 candidates or six explicit strategies, ignored configured candidate/strategy maxima of two,
+and returned an oversized Decision Explorer payload despite a configured 1,024-byte response ceiling. The
+two-candidate/two-strategy inclusive boundary already passed. Correction: add hard DTO ceilings, configurable
+bounded lower ceilings enforced before comparison construction, and a bounded counting-serialization guard before
+returning Decision Explorer output; preserve the already-correct inclusive boundary.
+
+First L-0.2 configuration-ceiling selector: five tests ran with three assertion failures, zero errors, and zero
+skips. Each invalid value correctly stopped application-context startup, but the tests searched only Spring's
+outer `ConfigurationPropertiesBindException` message for the rejected field and ceiling. Those details are
+reported by the deepest `BindValidationException` cause, so the failures were test-inspection defects rather than
+missing production validation. Correction: walk to the stable deepest cause, assert that validation message names
+the rejected field and configured hard ceiling, and rerun the complete five-test selector.
+
+L-0.2 JaCoCo summary wrapper: `mvn -q jacoco:report` exited 0 and generated the report, and the wrapper correctly
+summarized instruction, branch, line, and method counters. Its final optional class calculation queried nonexistent
+`CLASS_MISSED` and `CLASS_COVERED` CSV columns, producing PowerShell property errors and `NaN` after the successful
+Maven gate. Correction: retain the generated report, derive all aggregate counters from the report-level elements
+in `jacoco.xml`, and do not accept the malformed class summary as evidence.
+
+First L-0.2 packaged LASE wrapper: the healthy and overloaded cases passed, and the invalid case returned the
+expected exit 2 with the controlled valid-values message. However, PowerShell converted native stderr into an
+`ErrorRecord` whose rendered shell metadata contained `RemoteException` and `NativeCommandError`, so the wrapper's
+string-level no-exception assertion failed even though those tokens did not come from the Java process. Correction:
+capture native stdout and stderr directly into isolated temporary files with `Start-Process`, inspect only those
+raw files, preserve the process exit code, and rerun all three cases; do not accept the PowerShell-decorated output
+as packaged CLI evidence.
+
+L-0.2 packaged LASE raw-file rerun: the execution policy rejected the compound `Start-Process` plus temporary-file
+cleanup command before it started, so no Java process ran and no CLI result was produced. Correction: use
+`System.Diagnostics.Process` with `UseShellExecute=false`, hidden execution, and in-memory redirected stdout/stderr;
+this avoids shell `ErrorRecord` decoration and temporary-file lifecycle operations while preserving the native exit
+code and raw process output.
+
+First L-0.2 in-memory native-process wrapper: Windows PowerShell exposed `ProcessStartInfo.ArgumentList` as null,
+so three attempted `.Add` calls failed and Java then exited 1 without receiving the JAR or scenario arguments. No
+packaged case from this invocation is accepted. Correction: use the compatible quoted `Arguments` property while
+retaining `UseShellExecute=false`, `CreateNoWindow=true`, raw stdout/stderr redirection, and native exit-code checks.
+
+First L-0.2 packaged-runtime wrapper: the command policy rejected the compound in-memory server launch, HTTP probe,
+exact-process termination, and port-release check before Java started. Port 18080 was confirmed free immediately
+before the rejected command, and no runtime result is claimed. Correction: inventory and use the repository's
+checked-in packaged-runtime smoke helper when available; if no helper exists, separate the allowed launch/probe/
+cleanup operations while retaining exact PID ownership and literal loopback-only targets.
+
+L-0.2 local container/security-tool diagnostic: Docker CLI 28.0.4 remained unable to reach its configured Docker
+Desktop Linux engine because the named pipe was absent, Trivy remained unavailable, and the repository root
+contained no Compose file. No local Docker image build/runtime, controlled container evidence, Trivy scan, or
+Compose result is claimed. Correction: keep exact-head remote CI Docker build/runtime, controlled container
+evidence, and blocking image scan mandatory before merge; Compose remains not applicable to this unchanged root.

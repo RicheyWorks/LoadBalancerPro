@@ -6,6 +6,268 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 7 Remote-Green Checkpoint
+
+Timestamp: 2026-07-29T21:21:03-07:00
+
+Current slot: `L-0.2`, cap explorer candidate, strategy, and response sizes.
+
+Current branch: `codex/l-0-2-explorer-size-caps`.
+
+Slot status: `REMOTE_GREEN`.
+
+Pull request: [#504](https://github.com/RicheyWorks/LoadBalancerPro/pull/504).
+
+Verified remote-green head: `c7e48e1a224c563d56d29547a7f0870c459c6caf`.
+
+Verified base: `7f360c83a49b2629de3bbb56b6094118a8878f1b`, the exact PR #503 merge commit and current
+`origin/main`.
+
+Exact-head remote verification:
+
+- push CI `30513191730`: success;
+- PR CI `30513194086`: success;
+- CodeQL `30513194083`: success;
+- PR dependency review: success; the push-only duplicate was correctly skipped;
+- both 25-step CI build jobs passed dependency resolution, tests, zero-skip enforcement, JaCoCo, the second full
+  executable-JAR package pass, resource verification, CycloneDX SBOM, packaged LASE and JAR smokes, Docker image
+  build/runtime health, controlled container evidence, blocking image scan, and artifact uploads;
+- every completed step in both CI build jobs, the PR dependency job, and the 11-step CodeQL job had an accepted
+  success conclusion; only the inapplicable push dependency job was skipped;
+- GitHub reports exact head `c7e48e1a224c563d56d29547a7f0870c459c6caf` mergeable and `CLEAN`.
+
+Review: no independent reviewer, review, or PR comment was available. The pre-authorized substitute complete-diff
+self-review covered all 16 changed files, three commits, and 784 insertions/22 deletions from exact base through
+head. It rechecked candidate/strategy validation order, configured lower-limit enforcement, default-strategy
+fan-out, bounded response counting without duplicate byte buffering, startup hard ceilings, structured errors,
+tests, property defaults, operator documentation, and campaign records. It found no actionable correctness,
+security, scope, or documentation-trust defect. Local, remote-tracking, and PR head SHAs matched; the working tree
+was clean; whitespace and protected-surface scans passed.
+
+Scope and safety: production changes remain limited to the planned routing-comparison and Decision Explorer abuse
+bounds. No authentication/authorization policy was weakened, and no public/external target, secret, live
+cloud/tenant action, deployment, CI/Maven/Docker/Compose change, proxy behavior, persistent state, unrelated
+lab/evidence behavior, or readiness/performance claim is present.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader
+automation is established by this slot.
+
+Blocker: none on verified head `c7e48e1a224c563d56d29547a7f0870c459c6caf`.
+
+Next action: commit and publish this remote-green checkpoint, treat the resulting SHA as the final candidate, and
+repeat every exact-head required gate before authorized merge.
+
+Decision: continue only `L-0.2`; no later slot is active.
+
+## Combined Build Plan Slot 7 PR-Open Checkpoint
+
+Timestamp: 2026-07-29T21:10:11-07:00
+
+Current slot: `L-0.2`, cap explorer candidate, strategy, and response sizes.
+
+Current branch: `codex/l-0-2-explorer-size-caps`.
+
+Slot status: `PR_OPEN`.
+
+Pull request: [#504](https://github.com/RicheyWorks/LoadBalancerPro/pull/504).
+
+Published implementation head: `d54b65801b6e5eb9274ec7a6876752216ee2220d`.
+
+Verified base: `7f360c83a49b2629de3bbb56b6094118a8878f1b`, the exact PR #503 merge commit and current
+`origin/main`.
+
+Local gate: the corrected red acceptance mapped every missing cap; the focused/security/documentation selectors
+passed; clean `mvn -B clean package` passed 3,461 tests across 487 reports with zero failures, errors, skips, or
+dumps. Verify, JaCoCo, CycloneDX JSON/XML, executable-JAR resources, packaged LASE, literal-loopback packaged runtime,
+Enterprise Lab packaged workflow, campaign guards, and the complete 16-file scope/safety audit passed.
+
+Remote state at open:
+
+- push CI `30513094681`: in progress on the published implementation head;
+- PR CI `30513118585`: in progress on the published implementation head;
+- CodeQL `30513118558`: in progress on the published implementation head;
+- PR dependency review: success; the duplicate push-only dependency job was correctly skipped;
+- GitHub reports the published head mergeable, with required checks pending.
+
+These runs are not accepted as final evidence because this PR-open checkpoint will create a new head. Every required
+gate must pass again on the resulting exact SHA.
+
+Review state: no independent reviewer is available. The campaign's pre-authorized substitute is a documented
+complete-diff self-review after the exact final checkpoint head is published. Required checks cannot be bypassed,
+disabled, or weakened.
+
+Scope and safety: production changes remain limited to the planned routing-comparison and Decision Explorer abuse
+bounds. No authentication/authorization policy was weakened, and no public/external target, secret, live
+cloud/tenant action, deployment, CI/Maven/Docker/Compose change, proxy behavior, persistent state, unrelated
+lab/evidence behavior, or readiness/performance claim is present.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader
+automation is established by this slot.
+
+Blocker: required exact-head remote checks are pending.
+
+Next action: commit and publish this PR-open checkpoint, then require every resulting exact-head remote gate before
+authorized complete-diff self-review and merge.
+
+Decision: continue only `L-0.2`; no later slot is active.
+
+## Combined Build Plan Slot 7 Local-Green Checkpoint
+
+Timestamp: 2026-07-29T21:05:38-07:00
+
+Current slot: `L-0.2`, cap explorer candidate, strategy, and response sizes.
+
+Current branch: `codex/l-0-2-explorer-size-caps`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `7f360c83a49b2629de3bbb56b6094118a8878f1b`, the exact PR #503 merge commit and green
+`origin/main`.
+
+Implementation:
+
+- `RoutingComparisonRequest` now rejects more than 32 candidates or five explicit strategies at DTO validation;
+- validated `loadbalancerpro.api.max-candidates` and `loadbalancerpro.api.max-strategies` settings can lower, but not
+  raise, those hard ceilings;
+- `RoutingComparisonService` enforces the effective configured limits before timestamp, strategy resolution,
+  candidate conversion, comparison construction, or Explorer payload construction, including the default-strategy
+  fan-out when the request omits strategies;
+- Decision Explorer output receives a configurable 16 MiB default counting-serialization ceiling before response
+  return, with a 64 MiB configuration hard ceiling; counting stops as soon as the limit would be crossed and does
+  not allocate a duplicate response byte array;
+- over-cap input and output return the existing structured HTTP 400 shapes without exception or diagnostic
+  internals;
+- README and API contract/security pages state the exact bounds and preserve the local abuse-resistance,
+  recommendation-only, no-performance-proof boundary.
+
+Acceptance:
+
+- the corrected pre-implementation red gate ran six tests with five expected failures and one already-correct
+  inclusive-boundary pass;
+- the imported 100-candidate/five-strategy proof now returns validation HTTP 400 before any comparison, payload, or
+  scenario-catalog interaction;
+- configured candidate and strategy ceilings of two reject three-item requests before construction while the exact
+  two/two boundary succeeds;
+- a 1,024-byte Explorer output ceiling rejects the generated response with controlled HTTP 400;
+- configuration tests prove defaults, lower-value binding, and fail-fast rejection above all three hard ceilings;
+- the consolidated size, routing-controller, Explorer API/payload/modularity, request-size, authentication, CSRF,
+  performance-baseline, and documentation selector passed 89 tests across 15 reports with zero failures, errors, or
+  skips.
+
+Changed files:
+
+- `src/main/java/com/richmond423/loadbalancerpro/api/RoutingComparisonRequest.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/RoutingComparisonService.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/RoutingController.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerResponseSizeGuard.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/config/RoutingApiLimitsConfiguration.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/config/RoutingApiLimitsProperties.java`
+- `src/main/resources/application.properties`
+- `src/test/java/com/richmond423/loadbalancerpro/api/RoutingExplorerSizeLimitTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/api/config/RoutingApiLimitsConfigurationTest.java`
+- `README.md`
+- `docs/API_CONTRACTS.md`
+- `docs/API_SECURITY.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Verification:
+
+- clean `mvn -B clean package`: exit 0 in 276.4 seconds, 3,461 tests across 487 fresh reports, zero
+  failures/errors/skips, and no Surefire dump files;
+- `mvn -q "-DskipTests" verify`, the focused/adjacent selector, and `git diff --check` passed;
+- JaCoCo XML generation passed: 83.20% instructions, 66.41% branches, 82.51% lines, 87.69% methods, and 94.34%
+  classes;
+- CycloneDX 2.9.1 generated parseable JSON/XML 1.6 BOMs with 144 components in each;
+- the checked-in artifact verifier passed all seven required executable-JAR entries;
+- the packaged healthy/overloaded/invalid LASE CLI cases passed with exits 0, 0, and 2, no Spring startup, and no
+  raw invalid-case exception;
+- the checked-in literal-loopback packaged runtime smoke returned HTTP 200 for health, the proxy status page, and
+  proxy status API, then stopped its captured process;
+- the packaged Enterprise Lab shadow workflow passed ten fixed scenarios and wrote ignored target-only evidence
+  under its explicit no-live-cloud/no-external-network boundary;
+- final executable JAR after the packaged workflow rerun: 95,551,571 bytes, 1,438 entries, SHA-256
+  `AC468379AC95239B19F4A4619D4D9B50969DD08F7F0513C847ABA56493032D87`.
+
+Local limitations: Docker CLI 28.0.4 could not reach its configured Docker Desktop Linux engine, Trivy is not
+installed, and the repository root has no Compose file. No local Docker/runtime, controlled container, Trivy, or
+Compose result is claimed. Exact-head remote CI, CodeQL, dependency review, SBOM, Docker build/runtime, controlled
+container evidence, and blocking image scan remain mandatory before merge.
+
+Scope and safety: production changes are limited to the planned routing-comparison and Decision Explorer abuse
+bounds. No authentication/authorization policy was weakened, and no public/external target, secret, live
+cloud/tenant action, deployment, CI/Maven/Docker/Compose change, proxy behavior, persistent state, unrelated
+lab/evidence behavior, or readiness/performance claim was added.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader
+automation is established by this slot.
+
+Blocker: none locally.
+
+Next action: rerun the campaign guards after this checkpoint, commit and publish the exact 16-file local-green
+slice, open one PR, and require every exact-head remote gate before authorized self-review and merge.
+
+Decision: continue only `L-0.2`; no later slot is active.
+
+## Combined Build Plan Slot 7 Start Checkpoint
+
+Timestamp: 2026-07-29T20:35:18-07:00
+
+Current slot: `L-0.2`, cap explorer candidate, strategy, and response sizes.
+
+Current branch: `codex/l-0-2-explorer-size-caps`.
+
+Slot status: `IN_PROGRESS`.
+
+Verified base: `7f360c83a49b2629de3bbb56b6094118a8878f1b`, the exact PR #503 merge commit and current
+`origin/main`.
+
+Previous slot closeout:
+
+- P-0.6 final head `c53ffb52ef661d87cc1636fcb8b766eaff357c6f` passed push CI `30510683750`, PR CI
+  `30510686941`, CodeQL `30510686932`, dependency review, both package reruns, SBOM, packaged smokes,
+  Docker/runtime, container evidence, and blocking image scan;
+- PR #503 merged as `7f360c83a49b2629de3bbb56b6094118a8878f1b`;
+- the exact merge passed focused simulation-core, health-lifecycle, hashing, load-distribution, load-shedding, server,
+  and campaign guards;
+- post-merge `mvn -B package` passed 3,449 tests across 485 fresh reports with zero failures, errors, or skips and
+  no Surefire dumps;
+- exact-main CI `30511133011` and CodeQL `30511133001` passed, including package rerun, SBOM, packaged smokes,
+  Docker/runtime, container evidence, and blocking image scan.
+
+P-0.6 is `MAIN_GREEN`, completing 6 of 49 implementation slots.
+
+L-0.2 build contract: re-audit and, where still applicable, place a bounded configurable maximum on submitted
+server/candidate lists, enforce a hard strategies-per-request cap, reject over-cap input with HTTP 400 before
+building comparison/explorer payloads, and apply a decision-explorer response-size guard. The imported large-N
+acceptance requires 100 candidates with five strategies to fail boundedly rather than amplify into a large response.
+Preserve current security defaults and already-correct bounds; do not manufacture changes for defects current main
+has already closed.
+
+Source: `docs/BUILD_PLAN_LAB_SHADOW.md` PR-L0.2 and `docs/AUDIT_LAB_SHADOW_2026-07-21.md` E1.
+
+Prohibited surfaces: no auth/security-policy weakening, public/external target, secret, live cloud/tenant action,
+production deployment, CI/Maven/Docker/Compose change, unrelated proxy/routing behavior, unbounded evidence
+generation, or readiness/performance claim.
+
+Verification profile: `security-full` with exact large-N red acceptance, focused routing comparison/controller/
+decision-explorer validation selectors, adjacent authentication/exception-shape guards, full local Java/package/
+verify/artifact/SBOM/packaged-smoke ladder, complete diff/scope audit, and exact-head remote CI, CodeQL, dependency
+review, SBOM, Docker/runtime, container evidence, and blocking image scan.
+
+Blocker: none.
+
+Next action: inventory the exact current DTO, comparison, controller, explorer, configuration, validation, exception,
+and test surfaces; classify existing versus missing caps; then write deterministic failing acceptance only for live
+defects.
+
+Decision: continue only `L-0.2`; no later slot is active.
+
 ## Combined Build Plan Slot 6 Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T20:14:06-07:00

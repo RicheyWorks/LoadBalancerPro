@@ -13,18 +13,14 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Source layout: `74b1f6758304bc5a3a85ff4888039e7309324ddf`, based on `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Source item count: 50.
 - Unique implementation slots: 49.
-- `MAIN_GREEN` implementation slots: 13 / 49.
-- Latest completed slot: `L-1.2` in merged [PR #510](https://github.com/RicheyWorks/LoadBalancerPro/pull/510);
-  final head `c9c6768fc786effc31a7ccc5b494b1da21d7c7ce`, merge
-  `eb521467ba17f09fcb5f2ee3b2683a20958af6fd`, exact-main 105-test focused checks, CI `30560861123`,
-  and CodeQL `30560861146` green.
-- Active implementation slot: `L-1.3`; correct and determinize explainability on
-  `codex/l-1-3-explainability-correctness`; [PR #511](https://github.com/RicheyWorks/LoadBalancerPro/pull/511).
-  Published implementation head `3b8a1ef8def7c8ed3da5073a06fdc8f265eb8350` is locally green: each strategy now
-  returns its own bounded comparison factors, identical compare requests retain the same selection and fingerprint,
-  delimiter-shaped identifiers are framed safely, and the 3,054-test clean package plus artifact, SBOM,
-  packaged-smoke, browser, safety, and campaign-preflight gates passed before publication.
-- Next implementation slot after the active gate: `L-1.4`.
+- `MAIN_GREEN` implementation slots: 14 / 49.
+- Latest completed slot: `L-1.3` in merged [PR #511](https://github.com/RicheyWorks/LoadBalancerPro/pull/511);
+  final head `b46445e3d238b83cc3dbd5c4ef4c3747abdba98d`, merge
+  `b73d20fa81f4713376f91c00dccd63f2eb5d31af`, exact-main 61-test focused checks, CI `30567426583`,
+  and CodeQL `30567426446` green.
+- Active implementation slot: `L-1.4`; collapse duplicate comparison and experiment paths on
+  `codex/l-1-4-collapse-comparison-paths`.
+- Next implementation slot after the active gate: `L-2.1`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
 behavior exists. The active slot must reconcile its row with current main and the full source-plan acceptance contract.
@@ -46,8 +42,8 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 11 | L-0.6 | L-0.6 | Ledger torn-read correctness | SEC-DEFAULT-DENY | MAIN_GREEN |
 | 12 | L-1.1 | L-1.1 | Delete metadata-about-metadata services | L0 complete | MAIN_GREEN |
 | 13 | L-1.2 | L-1.2 | One explainability module | L-1.1 | MAIN_GREEN |
-| 14 | L-1.3 | L-1.3 | Explainability correctness/determinism | L-1.2, P-0.3 | IN_PROGRESS |
-| 15 | L-1.4 | L-1.4 | One comparison/experiment path | L-1.3 | OPEN |
+| 14 | L-1.3 | L-1.3 | Explainability correctness/determinism | L-1.2, P-0.3 | MAIN_GREEN |
+| 15 | L-1.4 | L-1.4 | One comparison/experiment path | L-1.3 | IN_PROGRESS |
 | 16 | L-2.1 | L-2.1 | One chained JSONL engine | L-0.6 | OPEN |
 | 17 | L-2.2 | L-2.2 | Rotation and recovery | L-2.1 | OPEN |
 | 18 | L-2.3 | L-2.3 | OS-lock-aware takeover | L-2.2 | OPEN |

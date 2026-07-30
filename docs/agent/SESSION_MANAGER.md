@@ -6,6 +6,49 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 14 Main-Green / Slot 15 Start
+
+Timestamp: 2026-07-30T10:54:50-07:00
+
+Completed: `L-1.3`; `codex/l-1-3-explainability-correctness`;
+[#511](https://github.com/RicheyWorks/LoadBalancerPro/pull/511); final head
+`b46445e3d238b83cc3dbd5c4ef4c3747abdba98d`; merge
+`b73d20fa81f4713376f91c00dccd63f2eb5d31af`.
+
+Verified: push CI `30566489048` (25/25), PR CI `30566618871` (25/25 plus 5/5 dependency review),
+CodeQL `30566618757` (11/11), every package/SBOM/JAR/Docker/runtime/evidence/image-scan step, and the 34-file
+complete-diff self-review passed on the exact final head. Local `main`, `origin/main`, and GitHub main then matched
+the merge commit with a clean worktree; the exact-main explainability/core/API/OpenAPI/UI/campaign selector passed
+61 tests across nine reports with zero failures, errors, or skips; exact-main CI `30567426583` (25/25) and CodeQL
+`30567426446` (11/11) passed.
+
+Delivered scope: comparison explanations now use each strategy's own bounded factor model; tail sampling is seeded
+from canonical request fields; successful decisions carry a timestamp-independent, length-prefixed `sha256:v1:`
+fingerprint; repeated identical five-strategy requests retain selection and fingerprint; delimiter-shaped candidate
+identifiers no longer collide. Stateful live/scenario strategy progression is unchanged.
+
+Safety/not proven: the completed slot changed no credential/default, authorization, external/public/private target,
+cloud/tenant call, live proxy-route mutation, persistence, dependency, Maven/workflow, Docker/Compose, deployment,
+release, or secret. Production readiness/certification, live-cloud/tenant validation, persistent audit/signature
+authenticity, production scoring proof, throughput/p95/p99, load/stress/soak behavior, distributed determinism, and
+broader automation remain unproven.
+
+Active: `L-1.4`, collapse duplicate comparison and experiment paths; branch
+`codex/l-1-4-collapse-comparison-paths`; status `IN_PROGRESS`; base
+`b73d20fa81f4713376f91c00dccd63f2eb5d31af`. Dependency `L-1.3` is `MAIN_GREEN`.
+
+Candidate contract: route `RoutingComparisonService`, `AdaptiveRoutingExperimentService`, and
+`AdaptiveRoutingScenarioRunner` through one current-tree comparison engine where their contracts permit it; delete
+or reduce the duplicate comparison-matrix and self-referential gate paths; consolidate the three overlapping
+pressure classifiers into one truthful model. Required proof covers equivalent experiment/scenario output via the
+shared path and one pressure-classification test surface. No deletion or behavior claim is made before inventory,
+call-graph, and fixture reconciliation.
+
+Blocker: none. Next: validate and publish this combined checkpoint, then inventory the current comparison,
+experiment, scenario, matrix/gate, and pressure-classifier paths before selecting the smallest safe consolidation.
+
+Decision: continue only `L-1.4`; no later slot is active.
+
 ## Combined Build Plan Slot 14 PR-Open Checkpoint
 
 Timestamp: 2026-07-30T10:32:22-07:00

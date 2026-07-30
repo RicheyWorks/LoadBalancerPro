@@ -6,6 +6,48 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 13 Main-Green / Slot 14 Start
+
+Timestamp: 2026-07-30T09:28:37-07:00
+
+Completed: `L-1.2`; `codex/l-1-2-collapse-explainability`;
+[#510](https://github.com/RicheyWorks/LoadBalancerPro/pull/510); final head
+`c9c6768fc786effc31a7ccc5b494b1da21d7c7ce`; merge
+`eb521467ba17f09fcb5f2ee3b2683a20958af6fd`.
+
+Verified: push CI `30560045601` (25/25), PR CI `30560045839` (25/25 plus 5/5 dependency review),
+CodeQL `30560045994` (11/11), every package/SBOM/JAR/Docker/runtime/evidence/image-scan step, and the 183-file
+complete-diff self-review passed on the exact final head. Local `main`, `origin/main`, and GitHub main then matched
+the merge commit with a clean worktree; the exact-main compact/API/UI/campaign selector passed 105 tests with zero
+failures, errors, or skips; exact-main CI `30560861123` (25/25) and CodeQL `30560861146` (11/11) passed.
+
+Delivered scope: one compact `RoutingExplanation` v2 now carries returned candidate factor, dominant-factor,
+decision-delta, and bounded weight-projection evidence. Eighty production Java files and 64 obsolete tests from the
+derivational replay/restatement chain were deleted; the representative five-strategy response is 65,626 bytes, about
+99.2 percent smaller than the 7,784,535-byte legacy fixture. Input/output caps and separate scenario replay remain.
+
+Safety/not proven: the completed slot changed no credential/default, authorization, external/public target,
+cloud/tenant call, traffic mutation, replay execution, persistence, telemetry, dependency, build/workflow,
+Docker/Compose, deployment, or unrelated production behavior. Production readiness/certification, live-cloud or
+real-tenant validation, throughput/p95/p99, load/stress/soak behavior, broader automation, per-strategy
+factor-model reconciliation, repeated-request determinism, and collision resistance remain unproven.
+
+Active: `L-1.3`, correct and determinize explainability; branch
+`codex/l-1-3-explainability-correctness`; status `IN_PROGRESS`; base
+`eb521467ba17f09fcb5f2ee3b2683a20958af6fd`. Its dependencies `L-1.2` and `P-0.3` are `MAIN_GREEN`.
+
+Candidate contract: reconcile current main after the L-1.2 deletion, compute returned factor evidence from each
+strategy's own selection model instead of the tail-latency calculator, make byte-identical compare requests return
+the same selected candidate and any retained fingerprint, seed any tie-break input deterministically from the
+request, and replace delimiter-joined fingerprint inputs with an unambiguous encoding. Required proofs cover WRR
+factor reconciliation, repeated identical requests, and the `a,b` versus `a` plus `b` collision case. No
+implementation claim is made before inventory and current-tree defect confirmation.
+
+Blocker: none. Next: validate and publish this combined checkpoint, then inventory the post-L-1.2 strategy score,
+state/tie-break, and retained fingerprint paths before choosing the smallest correctness fix.
+
+Decision: continue only `L-1.3`; no later slot is active.
+
 ## Combined Build Plan Slot 13 PR-Open Checkpoint
 
 Timestamp: 2026-07-30T09:06:51-07:00

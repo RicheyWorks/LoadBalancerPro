@@ -189,11 +189,11 @@
       "sourceIds": ["L-1.2"],
       "track": "lab",
       "title": "Collapse Replay and Decision Explorer into one explainability module",
-      "status": "IN_PROGRESS",
+      "status": "MAIN_GREEN",
       "dependencies": ["L-1.1"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "PR #510 is open from codex/l-1-2-collapse-explainability at published implementation head fdec562aeb3fa51bf0110fe86285eb3aa2fc6da3; the required PR-open checkpoint is documentation-only and will change the final exact head. The locally green candidate maps retained compare evidence into one compact RoutingExplanation result, deletes 80 production Java files and 64 obsolete tests from the replay/restatement chain, preserves response/input caps and separate scenario replay, and reduces the representative five-strategy response to 65,626 bytes. Focused and adjacent checks plus the 3,051-test clean package, artifact, SBOM, packaged-smoke, UI, safety, and campaign audits passed. Final exact-head remote gates and merge/main closure remain pending; L-1.3 correctness and determinism remain unproven."
+      "currentState": "PR #510 final head c9c6768fc786effc31a7ccc5b494b1da21d7c7ce passed push CI 30560045601, PR CI 30560045839, CodeQL 30560045994, dependency review, package/SBOM/packaged-smoke/Docker/runtime/evidence/image-scan gates, and complete-diff self-review, then merged as eb521467ba17f09fcb5f2ee3b2683a20958af6fd. Exact-main 105-test focused verification, CI 30560861123, and CodeQL 30560861146 passed. One compact RoutingExplanation result remains, 80 production Java files and 64 obsolete tests are deleted, and the representative response is 99.2 percent smaller. L-1.3 correctness and determinism remain unproven."
     },
     {
       "ordinal": 14,
@@ -201,11 +201,11 @@
       "sourceIds": ["L-1.3"],
       "track": "lab",
       "title": "Correct and determinize explainability",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": ["L-1.2", "P-0.3"],
       "riskClass": "CORRECTNESS",
       "verificationProfile": "java-full",
-      "currentState": "Per-strategy reconciliation, repeated-request determinism, and collision resistance are unproven."
+      "currentState": "Started from exact green main eb521467ba17f09fcb5f2ee3b2683a20958af6fd on codex/l-1-3-explainability-correctness. Post-L-1.2 strategy scoring, state and tie-break paths, and any retained fingerprint builders must be reconciled before changing behavior. WRR factor reconciliation, identical-request selected-candidate and fingerprint determinism, and delimiter collision resistance remain unproven."
     },
     {
       "ordinal": 15,

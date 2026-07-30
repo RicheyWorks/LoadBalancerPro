@@ -199,16 +199,16 @@ class ScenarioReplayControllerTest {
                     .andExpect(jsonPath("$.steps[0].serverStates[0].healthy", is(false)))
                     .andExpect(jsonPath("$.steps[1].selectedServerId", is("blue")))
                     .andExpect(jsonPath("$.steps[1].routingResults[0].chosenServerId", is("blue")))
-                    .andExpect(jsonPath("$.steps[1].routingResults[0].decisionReplayEvidenceLaneConsistencySummary",
-                            nullValue()))
-                    .andExpect(jsonPath("$.steps[1].routingResults[0].decisionReplayEvidenceReviewerSnapshot",
-                            nullValue()))
-                    .andExpect(jsonPath("$.steps[1].routingResults[0].decisionReplayEvidenceReviewerGuidance",
-                            nullValue()))
-                    .andExpect(jsonPath("$.steps[1].routingResults[0].decisionReplayEvidenceReviewerHandoffSummary",
-                            nullValue()))
-                    .andExpect(jsonPath("$.steps[1].routingResults[0].decisionReplayEvidenceReviewerClosureSummary",
-                            nullValue()))
+                    .andExpect(jsonPath("$.steps[1].routingResults[0]"
+                            + ".decisionReplayEvidenceLaneConsistencySummary").doesNotExist())
+                    .andExpect(jsonPath("$.steps[1].routingResults[0]"
+                            + ".decisionReplayEvidenceReviewerSnapshot").doesNotExist())
+                    .andExpect(jsonPath("$.steps[1].routingResults[0]"
+                            + ".decisionReplayEvidenceReviewerGuidance").doesNotExist())
+                    .andExpect(jsonPath("$.steps[1].routingResults[0]"
+                            + ".decisionReplayEvidenceReviewerHandoffSummary").doesNotExist())
+                    .andExpect(jsonPath("$.steps[1].routingResults[0]"
+                            + ".decisionReplayEvidenceReviewerClosureSummary").doesNotExist())
                     .andExpect(jsonPath("$.steps[1].decisionReplayEvidenceReviewerClosureRollup").doesNotExist())
                     .andExpect(jsonPath("$.steps[1].decisionReplayEvidenceReviewerClosureChecklist").doesNotExist())
                     .andExpect(jsonPath("$.steps[1].routingResults[0]"

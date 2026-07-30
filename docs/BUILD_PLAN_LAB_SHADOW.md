@@ -52,7 +52,7 @@ Do this *before* live-wiring so we wire one clean explainability module, not fiv
 
 ### PR-L1.1 Delete the metadata-about-metadata services (N1)
 - **Change:** remove `RoutingDecisionReplayEvidenceNullSafetySummaryService`, `FieldInventoryService`, `BoundarySummaryService`, `StatusRollupService`, the five `Lane*SummaryService`s, and the four `Reviewer*Service`s, plus their DTOs and the ~30 `*DocumentationTest`s that assert prose. Strip their fields from the response objects.
-- **Accept:** build green; the DecisionExplorer payload shrinks by an order of magnitude; no remaining service references the deleted ones. (~6k lines out.)
+- **Accept:** build green; the representative raw `/api/routing/compare` payload is at least 50% smaller than the 1,364,797-byte pre-change fixture; the named fields and services are absent; retained decision evidence remains covered. The separate `/api/routing/decision-explorer` derivational chain is intentionally unchanged here, so its order-of-magnitude collapse belongs to L-1.2. (~6k lines out.)
 
 ### PR-L1.2 Collapse Replay + DecisionExplorer into one explainability module
 - **Change:** define one `RoutingExplanation` result carrying the *non-derivational* content only: per-candidate factor contributions (dominant + delta analysis) and counterfactual ±weight scenarios. Delete the ~20-object derivational chain (snapshot→trace→capsule→…→closure) and the parallel confidence/diagnostics/tradeoff/shadow restatements — keep a single confidence score and a single tradeoff summary if they carry real signal. `/api/routing/decision-explorer` returns the new compact shape.

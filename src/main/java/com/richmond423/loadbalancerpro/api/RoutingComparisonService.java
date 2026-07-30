@@ -50,28 +50,6 @@ public class RoutingComparisonService {
     private final RoutingDecisionReplayCapsuleService decisionReplayCapsuleService;
     private final RoutingDecisionReplayReadinessChecklistService decisionReplayReadinessChecklistService;
     private final RoutingDecisionReplayEvidenceSourceMapService decisionReplayEvidenceSourceMapService;
-    private final RoutingDecisionReplayEvidenceBoundarySummaryService decisionReplayEvidenceBoundarySummaryService;
-    private final RoutingDecisionReplayEvidenceFieldInventoryService decisionReplayEvidenceFieldInventoryService;
-    private final RoutingDecisionReplayEvidenceNullSafetySummaryService decisionReplayEvidenceNullSafetySummaryService;
-    private final RoutingDecisionReplayEvidenceStatusRollupService decisionReplayEvidenceStatusRollupService;
-    private final RoutingDecisionReplayEvidenceLaneNavigationSummaryService
-            decisionReplayEvidenceLaneNavigationSummaryService;
-    private final RoutingDecisionReplayEvidenceLaneDependencyMapService decisionReplayEvidenceLaneDependencyMapService;
-    private final RoutingDecisionReplayEvidenceLaneReferenceIndexService decisionReplayEvidenceLaneReferenceIndexService;
-    private final RoutingDecisionReplayEvidenceLaneDependencySummaryService
-            decisionReplayEvidenceLaneDependencySummaryService;
-    private final RoutingDecisionReplayEvidenceLaneConsistencySummaryService
-            decisionReplayEvidenceLaneConsistencySummaryService;
-    private final RoutingDecisionReplayEvidenceReviewerSnapshotService decisionReplayEvidenceReviewerSnapshotService;
-    private final RoutingDecisionReplayEvidenceReviewerGuidanceService decisionReplayEvidenceReviewerGuidanceService;
-    private final RoutingDecisionReplayEvidenceReviewerHandoffSummaryService
-            decisionReplayEvidenceReviewerHandoffSummaryService;
-    private final RoutingDecisionReplayEvidenceReviewerClosureSummaryService
-            decisionReplayEvidenceReviewerClosureSummaryService;
-    private final RoutingDecisionReplayEvidenceReviewerClosureRollupService
-            decisionReplayEvidenceReviewerClosureRollupService;
-    private final RoutingDecisionReplayEvidenceReviewerClosureChecklistService
-            decisionReplayEvidenceReviewerClosureChecklistService;
     private final RoutingApiLimitsProperties limits;
     private final Clock clock;
 
@@ -99,36 +77,6 @@ public class RoutingComparisonService {
         this.decisionReplayCapsuleService = new RoutingDecisionReplayCapsuleService();
         this.decisionReplayReadinessChecklistService = new RoutingDecisionReplayReadinessChecklistService();
         this.decisionReplayEvidenceSourceMapService = new RoutingDecisionReplayEvidenceSourceMapService();
-        this.decisionReplayEvidenceBoundarySummaryService =
-                new RoutingDecisionReplayEvidenceBoundarySummaryService();
-        this.decisionReplayEvidenceFieldInventoryService =
-                new RoutingDecisionReplayEvidenceFieldInventoryService();
-        this.decisionReplayEvidenceNullSafetySummaryService =
-                new RoutingDecisionReplayEvidenceNullSafetySummaryService();
-        this.decisionReplayEvidenceStatusRollupService =
-                new RoutingDecisionReplayEvidenceStatusRollupService();
-        this.decisionReplayEvidenceLaneNavigationSummaryService =
-                new RoutingDecisionReplayEvidenceLaneNavigationSummaryService();
-        this.decisionReplayEvidenceLaneDependencyMapService =
-                new RoutingDecisionReplayEvidenceLaneDependencyMapService();
-        this.decisionReplayEvidenceLaneReferenceIndexService =
-                new RoutingDecisionReplayEvidenceLaneReferenceIndexService();
-        this.decisionReplayEvidenceLaneDependencySummaryService =
-                new RoutingDecisionReplayEvidenceLaneDependencySummaryService();
-        this.decisionReplayEvidenceLaneConsistencySummaryService =
-                new RoutingDecisionReplayEvidenceLaneConsistencySummaryService();
-        this.decisionReplayEvidenceReviewerSnapshotService =
-                new RoutingDecisionReplayEvidenceReviewerSnapshotService();
-        this.decisionReplayEvidenceReviewerGuidanceService =
-                new RoutingDecisionReplayEvidenceReviewerGuidanceService();
-        this.decisionReplayEvidenceReviewerHandoffSummaryService =
-                new RoutingDecisionReplayEvidenceReviewerHandoffSummaryService();
-        this.decisionReplayEvidenceReviewerClosureSummaryService =
-                new RoutingDecisionReplayEvidenceReviewerClosureSummaryService();
-        this.decisionReplayEvidenceReviewerClosureRollupService =
-                new RoutingDecisionReplayEvidenceReviewerClosureRollupService();
-        this.decisionReplayEvidenceReviewerClosureChecklistService =
-                new RoutingDecisionReplayEvidenceReviewerClosureChecklistService();
     }
 
     public RoutingComparisonResponse compare(RoutingComparisonRequest request) {
@@ -245,14 +193,10 @@ public class RoutingComparisonService {
     private RoutingComparisonResponse toResponse(RoutingComparisonReport report, List<ServerStateVector> candidates) {
         List<RoutingComparisonResultResponse> results =
                 report.results().stream().map(result -> toResultResponse(result, candidates)).toList();
-        RoutingDecisionReplayEvidenceReviewerClosureRollupResponse closureRollup =
-                decisionReplayEvidenceReviewerClosureRollupService.rollup(results);
         return new RoutingComparisonResponse(
                 report.requestedStrategies().stream().map(RoutingStrategyId::externalName).toList(),
                 report.candidateCount(),
                 report.timestamp(),
-                closureRollup,
-                decisionReplayEvidenceReviewerClosureChecklistService.checklist(results, closureRollup),
                 results);
     }
 
@@ -315,147 +259,6 @@ public class RoutingComparisonService {
                         decisionReplayReconstructionTrace,
                         decisionReplayCapsule,
                         decisionReplayReadinessChecklist);
-        RoutingDecisionReplayEvidenceBoundarySummaryResponse decisionReplayEvidenceBoundarySummary =
-                decisionReplayEvidenceBoundarySummaryService.boundarySummary(
-                        result.strategyId().externalName(),
-                        null,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap);
-        RoutingDecisionReplayEvidenceFieldInventoryResponse decisionReplayEvidenceFieldInventory =
-                decisionReplayEvidenceFieldInventoryService.fieldInventory(
-                        result.strategyId().externalName(),
-                        null,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap,
-                        decisionReplayEvidenceBoundarySummary);
-        RoutingDecisionReplayEvidenceNullSafetySummaryResponse decisionReplayEvidenceNullSafetySummary =
-                decisionReplayEvidenceNullSafetySummaryService.nullSafetySummary(
-                        result.strategyId().externalName(),
-                        null,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap,
-                        decisionReplayEvidenceBoundarySummary,
-                        decisionReplayEvidenceFieldInventory);
-        RoutingDecisionReplayEvidenceStatusRollupResponse decisionReplayEvidenceStatusRollup =
-                decisionReplayEvidenceStatusRollupService.statusRollup(
-                        result.strategyId().externalName(),
-                        null,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap,
-                        decisionReplayEvidenceBoundarySummary,
-                        decisionReplayEvidenceFieldInventory,
-                        decisionReplayEvidenceNullSafetySummary);
-        RoutingDecisionReplayEvidenceLaneNavigationSummaryResponse decisionReplayEvidenceLaneNavigationSummary =
-                decisionReplayEvidenceLaneNavigationSummaryService.laneNavigationSummary(
-                        result.strategyId().externalName(),
-                        null,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap,
-                        decisionReplayEvidenceBoundarySummary,
-                        decisionReplayEvidenceFieldInventory,
-                        decisionReplayEvidenceNullSafetySummary,
-                        decisionReplayEvidenceStatusRollup);
-        RoutingDecisionReplayEvidenceLaneDependencyMapResponse decisionReplayEvidenceLaneDependencyMap =
-                decisionReplayEvidenceLaneDependencyMapService.laneDependencyMap(
-                        result.strategyId().externalName(),
-                        null,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap,
-                        decisionReplayEvidenceBoundarySummary,
-                        decisionReplayEvidenceFieldInventory,
-                        decisionReplayEvidenceNullSafetySummary,
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneNavigationSummary);
-        RoutingDecisionReplayEvidenceLaneReferenceIndexResponse decisionReplayEvidenceLaneReferenceIndex =
-                decisionReplayEvidenceLaneReferenceIndexService.laneReferenceIndex(
-                        result.strategyId().externalName(),
-                        null,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap,
-                        decisionReplayEvidenceBoundarySummary,
-                        decisionReplayEvidenceFieldInventory,
-                        decisionReplayEvidenceNullSafetySummary,
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneNavigationSummary,
-                        decisionReplayEvidenceLaneDependencyMap);
-        RoutingDecisionReplayEvidenceLaneDependencySummaryResponse decisionReplayEvidenceLaneDependencySummary =
-                decisionReplayEvidenceLaneDependencySummaryService.dependencySummary(
-                        decisionReplayEvidenceLaneReferenceIndex);
-        RoutingDecisionReplayEvidenceLaneConsistencySummaryResponse decisionReplayEvidenceLaneConsistencySummary =
-                decisionReplayEvidenceLaneConsistencySummaryService.consistencySummary(
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneDependencyMap,
-                        decisionReplayEvidenceLaneReferenceIndex,
-                        decisionReplayEvidenceLaneDependencySummary);
-        RoutingDecisionReplayEvidenceReviewerSnapshotResponse decisionReplayEvidenceReviewerSnapshot =
-                decisionReplayEvidenceReviewerSnapshotService.reviewerSnapshot(
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneDependencyMap,
-                        decisionReplayEvidenceLaneReferenceIndex,
-                        decisionReplayEvidenceLaneDependencySummary,
-                        decisionReplayEvidenceLaneConsistencySummary);
-        RoutingDecisionReplayEvidenceReviewerGuidanceResponse decisionReplayEvidenceReviewerGuidance =
-                decisionReplayEvidenceReviewerGuidanceService.reviewerGuidance(
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneDependencyMap,
-                        decisionReplayEvidenceLaneReferenceIndex,
-                        decisionReplayEvidenceLaneDependencySummary,
-                        decisionReplayEvidenceLaneConsistencySummary,
-                        decisionReplayEvidenceReviewerSnapshot);
-        RoutingDecisionReplayEvidenceReviewerHandoffSummaryResponse decisionReplayEvidenceReviewerHandoffSummary =
-                decisionReplayEvidenceReviewerHandoffSummaryService.reviewerHandoffSummary(
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneDependencyMap,
-                        decisionReplayEvidenceLaneReferenceIndex,
-                        decisionReplayEvidenceLaneDependencySummary,
-                        decisionReplayEvidenceLaneConsistencySummary,
-                        decisionReplayEvidenceReviewerSnapshot,
-                        decisionReplayEvidenceReviewerGuidance);
-        RoutingDecisionReplayEvidenceReviewerClosureSummaryResponse decisionReplayEvidenceReviewerClosureSummary =
-                decisionReplayEvidenceReviewerClosureSummaryService.reviewerClosureSummary(
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneDependencyMap,
-                        decisionReplayEvidenceLaneReferenceIndex,
-                        decisionReplayEvidenceLaneDependencySummary,
-                        decisionReplayEvidenceLaneConsistencySummary,
-                        decisionReplayEvidenceReviewerSnapshot,
-                        decisionReplayEvidenceReviewerGuidance,
-                        decisionReplayEvidenceReviewerHandoffSummary);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -470,20 +273,7 @@ public class RoutingComparisonService {
                 decisionReplayReconstructionTrace,
                 decisionReplayCapsule,
                 decisionReplayReadinessChecklist,
-                decisionReplayEvidenceSourceMap,
-                decisionReplayEvidenceBoundarySummary,
-                decisionReplayEvidenceFieldInventory,
-                decisionReplayEvidenceNullSafetySummary,
-                decisionReplayEvidenceStatusRollup,
-                decisionReplayEvidenceLaneNavigationSummary,
-                decisionReplayEvidenceLaneDependencyMap,
-                decisionReplayEvidenceLaneReferenceIndex,
-                decisionReplayEvidenceLaneDependencySummary,
-                decisionReplayEvidenceLaneConsistencySummary,
-                decisionReplayEvidenceReviewerSnapshot,
-                decisionReplayEvidenceReviewerGuidance,
-                decisionReplayEvidenceReviewerHandoffSummary,
-                decisionReplayEvidenceReviewerClosureSummary);
+                decisionReplayEvidenceSourceMap);
     }
 
     private RoutingComparisonResultResponse successfulResultResponse(
@@ -539,147 +329,6 @@ public class RoutingComparisonService {
                         decisionReplayReconstructionTrace,
                         decisionReplayCapsule,
                         decisionReplayReadinessChecklist);
-        RoutingDecisionReplayEvidenceBoundarySummaryResponse decisionReplayEvidenceBoundarySummary =
-                decisionReplayEvidenceBoundarySummaryService.boundarySummary(
-                        result.strategyId().externalName(),
-                        decisionVector,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap);
-        RoutingDecisionReplayEvidenceFieldInventoryResponse decisionReplayEvidenceFieldInventory =
-                decisionReplayEvidenceFieldInventoryService.fieldInventory(
-                        result.strategyId().externalName(),
-                        decisionVector,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap,
-                        decisionReplayEvidenceBoundarySummary);
-        RoutingDecisionReplayEvidenceNullSafetySummaryResponse decisionReplayEvidenceNullSafetySummary =
-                decisionReplayEvidenceNullSafetySummaryService.nullSafetySummary(
-                        result.strategyId().externalName(),
-                        decisionVector,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap,
-                        decisionReplayEvidenceBoundarySummary,
-                        decisionReplayEvidenceFieldInventory);
-        RoutingDecisionReplayEvidenceStatusRollupResponse decisionReplayEvidenceStatusRollup =
-                decisionReplayEvidenceStatusRollupService.statusRollup(
-                        result.strategyId().externalName(),
-                        decisionVector,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap,
-                        decisionReplayEvidenceBoundarySummary,
-                        decisionReplayEvidenceFieldInventory,
-                        decisionReplayEvidenceNullSafetySummary);
-        RoutingDecisionReplayEvidenceLaneNavigationSummaryResponse decisionReplayEvidenceLaneNavigationSummary =
-                decisionReplayEvidenceLaneNavigationSummaryService.laneNavigationSummary(
-                        result.strategyId().externalName(),
-                        decisionVector,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap,
-                        decisionReplayEvidenceBoundarySummary,
-                        decisionReplayEvidenceFieldInventory,
-                        decisionReplayEvidenceNullSafetySummary,
-                        decisionReplayEvidenceStatusRollup);
-        RoutingDecisionReplayEvidenceLaneDependencyMapResponse decisionReplayEvidenceLaneDependencyMap =
-                decisionReplayEvidenceLaneDependencyMapService.laneDependencyMap(
-                        result.strategyId().externalName(),
-                        decisionVector,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap,
-                        decisionReplayEvidenceBoundarySummary,
-                        decisionReplayEvidenceFieldInventory,
-                        decisionReplayEvidenceNullSafetySummary,
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneNavigationSummary);
-        RoutingDecisionReplayEvidenceLaneReferenceIndexResponse decisionReplayEvidenceLaneReferenceIndex =
-                decisionReplayEvidenceLaneReferenceIndexService.laneReferenceIndex(
-                        result.strategyId().externalName(),
-                        decisionVector,
-                        dominantFactorAnalysis,
-                        decisionDeltaAnalysis,
-                        decisionReplaySnapshot,
-                        decisionReplayReconstructionTrace,
-                        decisionReplayCapsule,
-                        decisionReplayReadinessChecklist,
-                        decisionReplayEvidenceSourceMap,
-                        decisionReplayEvidenceBoundarySummary,
-                        decisionReplayEvidenceFieldInventory,
-                        decisionReplayEvidenceNullSafetySummary,
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneNavigationSummary,
-                        decisionReplayEvidenceLaneDependencyMap);
-        RoutingDecisionReplayEvidenceLaneDependencySummaryResponse decisionReplayEvidenceLaneDependencySummary =
-                decisionReplayEvidenceLaneDependencySummaryService.dependencySummary(
-                        decisionReplayEvidenceLaneReferenceIndex);
-        RoutingDecisionReplayEvidenceLaneConsistencySummaryResponse decisionReplayEvidenceLaneConsistencySummary =
-                decisionReplayEvidenceLaneConsistencySummaryService.consistencySummary(
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneDependencyMap,
-                        decisionReplayEvidenceLaneReferenceIndex,
-                        decisionReplayEvidenceLaneDependencySummary);
-        RoutingDecisionReplayEvidenceReviewerSnapshotResponse decisionReplayEvidenceReviewerSnapshot =
-                decisionReplayEvidenceReviewerSnapshotService.reviewerSnapshot(
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneDependencyMap,
-                        decisionReplayEvidenceLaneReferenceIndex,
-                        decisionReplayEvidenceLaneDependencySummary,
-                        decisionReplayEvidenceLaneConsistencySummary);
-        RoutingDecisionReplayEvidenceReviewerGuidanceResponse decisionReplayEvidenceReviewerGuidance =
-                decisionReplayEvidenceReviewerGuidanceService.reviewerGuidance(
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneDependencyMap,
-                        decisionReplayEvidenceLaneReferenceIndex,
-                        decisionReplayEvidenceLaneDependencySummary,
-                        decisionReplayEvidenceLaneConsistencySummary,
-                        decisionReplayEvidenceReviewerSnapshot);
-        RoutingDecisionReplayEvidenceReviewerHandoffSummaryResponse decisionReplayEvidenceReviewerHandoffSummary =
-                decisionReplayEvidenceReviewerHandoffSummaryService.reviewerHandoffSummary(
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneDependencyMap,
-                        decisionReplayEvidenceLaneReferenceIndex,
-                        decisionReplayEvidenceLaneDependencySummary,
-                        decisionReplayEvidenceLaneConsistencySummary,
-                        decisionReplayEvidenceReviewerSnapshot,
-                        decisionReplayEvidenceReviewerGuidance);
-        RoutingDecisionReplayEvidenceReviewerClosureSummaryResponse decisionReplayEvidenceReviewerClosureSummary =
-                decisionReplayEvidenceReviewerClosureSummaryService.reviewerClosureSummary(
-                        decisionReplayEvidenceStatusRollup,
-                        decisionReplayEvidenceLaneDependencyMap,
-                        decisionReplayEvidenceLaneReferenceIndex,
-                        decisionReplayEvidenceLaneDependencySummary,
-                        decisionReplayEvidenceLaneConsistencySummary,
-                        decisionReplayEvidenceReviewerSnapshot,
-                        decisionReplayEvidenceReviewerGuidance,
-                        decisionReplayEvidenceReviewerHandoffSummary);
         return new RoutingComparisonResultResponse(
                 result.strategyId().externalName(),
                 result.status().name(),
@@ -694,20 +343,7 @@ public class RoutingComparisonService {
                 decisionReplayReconstructionTrace,
                 decisionReplayCapsule,
                 decisionReplayReadinessChecklist,
-                decisionReplayEvidenceSourceMap,
-                decisionReplayEvidenceBoundarySummary,
-                decisionReplayEvidenceFieldInventory,
-                decisionReplayEvidenceNullSafetySummary,
-                decisionReplayEvidenceStatusRollup,
-                decisionReplayEvidenceLaneNavigationSummary,
-                decisionReplayEvidenceLaneDependencyMap,
-                decisionReplayEvidenceLaneReferenceIndex,
-                decisionReplayEvidenceLaneDependencySummary,
-                decisionReplayEvidenceLaneConsistencySummary,
-                decisionReplayEvidenceReviewerSnapshot,
-                decisionReplayEvidenceReviewerGuidance,
-                decisionReplayEvidenceReviewerHandoffSummary,
-                decisionReplayEvidenceReviewerClosureSummary);
+                decisionReplayEvidenceSourceMap);
     }
 
     private RoutingDecisionVectorResponse decisionVector(RoutingStrategyId strategyId,

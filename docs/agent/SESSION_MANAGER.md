@@ -6,6 +6,47 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 11 Main-Green / Slot 12 Start
+
+Timestamp: 2026-07-30T05:53:21-07:00
+
+Completed: `L-0.6`; `codex/l-0-6-ledger-torn-read`;
+[#508](https://github.com/RicheyWorks/LoadBalancerPro/pull/508); final head
+`7ca0c5212f354f72350ce0e40eb4963fd2a17d65`; merge
+`b726cab39ddf60cd32fd515b32b3397ea605da3f`.
+
+Verified: push CI `30543007076`, PR CI `30543014006`, CodeQL `30543014064`, dependency review, complete-diff
+self-review, identical PR/merge trees, exact-main 57-test focused selector, CI `30543859923` (25/25), and CodeQL
+`30543863028` (11/11). Local `HEAD`, `main`, and `origin/main` matched and the worktree was clean.
+
+Safety/not proven: scope remained same-host command-ledger coordination and tests; no authority, security, external
+target, or build/deployment change. Multi-host/network-filesystem locking, distributed durability, production
+readiness/certification, live-cloud/tenant behavior, external traffic, and performance remain unproven.
+
+Active: `L-1.1`, delete metadata-about-metadata services; branch
+`codex/l-1-1-remove-metadata-services`; [PR #509](https://github.com/RicheyWorks/LoadBalancerPro/pull/509);
+status `PR_OPEN`; base `b726cab39ddf60cd32fd515b32b3397ea605da3f`; published implementation head
+`67fd5617674bc29c8e9803a58488ee4d03323981`.
+
+Candidate scope: 15 derivational services, 20 DTOs, 15 dedicated docs, 20 obsolete tests, the coupled compare/replay
+response construction, two static cockpit surfaces, and their retained contract tests. The representative compare
+fixture shrank from 1,364,797 bytes to 620,027 bytes (54.6%); the separate 7,784,535-byte Decision Explorer chain is
+unchanged and remains L-1.2 scope.
+
+Verified: restored non-retired UI/docs regression coverage; focused deletion/API/OpenAPI/replay/UI/docs selectors;
+3,376-test `mvn -B clean package`; skip-test verify; artifact verifier; 144-component JSON/XML CycloneDX SBOMs;
+packaged LASE exits 0/0/2; ten-scenario packaged Enterprise Lab workflow; literal-loopback operator-profile smoke;
+inline JavaScript parse, retired-reference scan, overclaim scan, and `git diff --check`.
+
+Safety/not proven: this slot removes response-only metadata derivations and does not add external targets, secrets,
+cloud/tenant calls, traffic mutation, replay execution, persistence, telemetry, deployment behavior, or production
+claims. Production readiness/certification, live-cloud/tenant validation, throughput/p95/p99, and the L-1.2 compact
+Decision Explorer contract remain unproven.
+
+Blocker: none locally. This required PR-open checkpoint is documentation-only and will change the exact branch head.
+Next: publish it, then require that final exact head's CI, CodeQL, dependency review, package/SBOM,
+Docker/runtime/evidence, and blocking image-scan gates before complete-diff self-review and merge.
+
 ## Combined Build Plan Slot 11 PR-Open Checkpoint
 
 Timestamp: 2026-07-30T05:32:24-07:00

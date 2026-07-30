@@ -163,9 +163,7 @@ class Adr0003EvidenceAsFirstClassArtifactDocumentationTest {
                 "../ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md",
                 "../REVIEWER_TRUST_MAP.md",
                 "../ENTERPRISE_READINESS_AUDIT.md",
-                "../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_BOUNDARY_SUMMARY.md",
-                "../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_GUIDANCE.md",
-                "../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_HANDOFF_SUMMARY.md",
+                "../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_SOURCE_MAP.md",
                 "../SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md")) {
             assertTrue(adr.contains(expected), "ADR-0003 should link " + expected);
         }

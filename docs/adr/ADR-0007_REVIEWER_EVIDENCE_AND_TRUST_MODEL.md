@@ -348,8 +348,6 @@ Related docs:
 - [`../WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md`](../WORKLOAD_PROFILE_SIGNAL_METADATA_DESIGN_CONTRACT.md) defines future WorkloadProfile signal metadata.
 - [`../EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md`](../EXTERNAL_SIGNAL_PORT_DESIGN_CONTRACT.md) defines the future read-only ExternalSignalPort contract.
 - [`../ENTERPRISE_LAB_DECISION_VECTOR.md`](../ENTERPRISE_LAB_DECISION_VECTOR.md) documents current controlled-lab decision explanation.
-- [`../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_BOUNDARY_SUMMARY.md`](../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_BOUNDARY_SUMMARY.md) documents current decision replay evidence boundaries.
-- [`../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_FIELD_INVENTORY.md`](../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_FIELD_INVENTORY.md) documents current decision replay evidence fields.
 
 This ADR does not supersede those docs. It provides a proposed decision frame for future reviewer evidence and trust model work.
 

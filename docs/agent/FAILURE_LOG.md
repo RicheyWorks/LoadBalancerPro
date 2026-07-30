@@ -9106,3 +9106,14 @@ L-0.6 documentation inventory: a Windows `rg` command used unsupported literal w
 `docs/ENTERPRISE_LAB*` and `docs/*.md`, so it returned exit one after only README matches. Correction: enumerate exact
 documentation paths with `rg --files docs`, then run a bounded Markdown glob search and read the exact command-ledger
 architecture sections before updating their now-stale no-file-lock wording.
+
+# 2026-07-30 - L-1.1 acceptance evidence correction
+
+Branch: `codex/l-1-1-remove-metadata-services`
+
+The inherited L-1.1 acceptance attributed an order-of-magnitude Decision Explorer payload reduction to deletion of
+the `/api/routing/compare` metadata-about-metadata chain, but the two routes retain separate derivational chains.
+The representative compare fixture measured 1,364,797 bytes before deletion and 620,027 bytes after deletion
+(54.6% smaller), while the separately scoped `/api/routing/decision-explorer` response remained 7,784,535 bytes.
+Correction: L-1.1 requires at least 50% compare-payload reduction plus absence of the named services, DTOs, fields,
+docs, and UI references; L-1.2 owns the Decision Explorer/replay-chain collapse and its compact golden payload.

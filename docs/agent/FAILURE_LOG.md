@@ -8607,3 +8607,24 @@ P-0.2 focused-report summary lookup: a read-only PowerShell one-liner placed a p
 block and failed to parse before reading any report. This is a reporting-command failure, not a test result.
 Correction: collect report rows into a variable, then format that variable in a separate statement; retain the
 already authoritative 3,430-test full-suite and full-package results.
+
+P-0.2 exact-main CI gate after PR #499 merge: main SHA
+`44d303318b7828c64c8fb2f21fe03ae64bd499bb` passed CodeQL and the CI test/zero-skip/coverage stages, but CI run
+`30500110273` failed when the later `mvn -B package` stage reran all tests.
+`EnterpriseLabSupervisorServerTest.absoluteConnectionLifetimeClosesPeerBeforeLongerIdleTimeout` ended with EOF
+while reading the response to the first authenticated follow-up request: 3,430 tests, zero failures, one error, and
+zero skips in that package-stage rerun. The same exact-main SHA completed the post-merge focused health bundle and
+a separate local full suite with 3,430 tests across 480 reports, zero failures, zero errors, and zero skips. The
+failing test configured a 200 ms absolute connection lifetime; that limit also applied to its authenticated
+follow-up exchanges and was too narrow under runner load, even though the production default is unchanged.
+Correction: keep the test's idle timeout longer than its absolute lifetime, but use a bounded one-second lifetime
+and a longer stalled-read timeout so the contract still proves absolute-lifetime closure without making unrelated
+authenticated exchanges race a 200 ms wall-clock deadline. This is a test-only flake correction; do not count
+P-0.2 complete or start P-0.3 until a corrective PR and the resulting exact-main CI/CodeQL are green.
+
+Recovery result: the corrected test passed four consecutive Maven invocations. The adjacent Enterprise Lab
+supervisor server/client/process/protocol/service and combined-campaign documentation selector passed. A subsequent
+`mvn -B package` completed with exit 0 and 3,430 tests across 480 reports, zero failures, zero errors, zero skips,
+and no Surefire dumps; `mvn -q "-DskipTests" verify`, campaign JSON parsing, and diff whitespace checks also passed.
+The correction remains limited to test timing plus factual campaign records. Remote corrective-PR and resulting
+exact-main gates remain pending and are not claimed green.

@@ -17,9 +17,12 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Latest completed slot: `P-0.1` in merged [PR #498](https://github.com/RicheyWorks/LoadBalancerPro/pull/498);
   head `274f03f9bf608f8c0e543d69ba45bf788a39b81b`, merge
   `6369fcb7918d74b62b17dd73af564321f356073f`, exact-main CI and CodeQL green.
-- Active implementation slot: `P-0.2` in open [PR #499](https://github.com/RicheyWorks/LoadBalancerPro/pull/499);
-  local acceptance and the full `java-full` verification profile are green, and the first exact-head remote gate
-  passed. The factual remote checkpoint must repeat those gates before merge.
+- Active implementation slot: `P-0.2`; [PR #499](https://github.com/RicheyWorks/LoadBalancerPro/pull/499)
+  merged as `44d303318b7828c64c8fb2f21fe03ae64bd499bb`, but exact-main CI run `30500110273` exposed
+  a 200 ms wall-clock race in an Enterprise Lab test during the package-stage test rerun. A test-only corrective
+  [PR #500](https://github.com/RicheyWorks/LoadBalancerPro/pull/500) has passed local and first exact-head remote
+  gates; its factual remote checkpoint must repeat the gates before merge, and `P-0.2` remains uncounted until
+  resulting exact-main gates pass.
 - Next implementation slot after the active gate: `P-0.3`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

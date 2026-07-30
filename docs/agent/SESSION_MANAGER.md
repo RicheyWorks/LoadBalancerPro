@@ -6,6 +6,46 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 3 Corrective Remote-Green Checkpoint
+
+Timestamp: 2026-07-29T17:05:26-07:00
+
+Current slot: `P-0.2`; exact-main recovery after merged PR #499.
+
+Current branch: `codex/p-0-2-main-gate-flake`, based on exact main
+`44d303318b7828c64c8fb2f21fe03ae64bd499bb`.
+
+Slot status: `REMOTE_GREEN`; it remains uncounted and `P-0.3` has not started.
+
+Corrective PR: [#500](https://github.com/RicheyWorks/LoadBalancerPro/pull/500), open, non-draft, clean, and mergeable.
+
+Audited remote-green head: `469276ded2bbddb62786daf4e7dedd4dda8bb893`.
+
+Remote verification:
+
+- push CI run `30501081462` and PR CI run `30501083935` passed on the exact audited head;
+- CodeQL run `30501083940` passed on the exact audited head;
+- PR-event dependency review passed; the push-event duplicate skipped as designed;
+- both CI jobs passed dependency resolution, the first full test pass, zero-skip enforcement, JaCoCo coverage,
+  the package-stage full test rerun that previously failed, executable resource checks, CycloneDX SBOM
+  generation/upload, synthetic LASE CLI, packaged JAR runtime, Docker image build/runtime, container dry-run
+  evidence, blocking image scan, and evidence upload.
+
+Full-diff self-review on the unchanged audited head found no remaining correctness, timing-contract, scope,
+security, claim, or not-proven-boundary issue. The branch is based directly on exact main and changes only one test
+timing contract plus factual campaign records.
+
+This factual remote checkpoint advances the PR head once. Results for
+`469276ded2bbddb62786daf4e7dedd4dda8bb893` do not satisfy the final merge gate for the new checkpoint head.
+
+Blocker: none.
+
+Next action: publish this checkpoint, repeat exact-head push/PR CI, CodeQL, dependency review, SBOM, packaged smokes,
+Docker/runtime, container evidence, and blocking image scan, then merge only if every gate is green and the PR
+remains clean and mergeable.
+
+Decision: recover only `P-0.2`; do not start `P-0.3`.
+
 ## Combined Build Plan Slot 3 Corrective PR-Open Checkpoint
 
 Timestamp: 2026-07-29T16:57:00-07:00

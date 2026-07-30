@@ -69,11 +69,11 @@
       "sourceIds": ["P-0.2"],
       "track": "proxy",
       "title": "Replace health deletion with drain, eviction thresholds, and re-admission",
-      "status": "PR_OPEN",
+      "status": "REMOTE_GREEN",
       "dependencies": [],
       "riskClass": "RELIABILITY",
       "verificationProfile": "java-full",
-      "currentState": "PR #499 final head 60e0fae65732ef0f07a80f41a6c1330cac27f538 passed exact-head gates and merged as 44d303318b7828c64c8fb2f21fe03ae64bd499bb. Exact-main CodeQL passed, but CI run 30500110273 failed when the package-stage test rerun exposed a 200 ms timing race in EnterpriseLabSupervisorServerTest. Test-only corrective PR #500 opened from locally green head 9d18dd177fb05eb566fb8885de0353807f7217a9; its factual PR-open checkpoint advances the head once. Final exact-head and resulting exact-main gates remain required; the slot is uncounted."
+      "currentState": "PR #499 final head 60e0fae65732ef0f07a80f41a6c1330cac27f538 passed exact-head gates and merged as 44d303318b7828c64c8fb2f21fe03ae64bd499bb. Exact-main CI run 30500110273 exposed a 200 ms timing race in EnterpriseLabSupervisorServerTest. Corrective PR #500 head 469276ded2bbddb62786daf4e7dedd4dda8bb893 passed push CI 30501081462, PR CI 30501083935, CodeQL 30501083940, dependency review, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan. Its factual REMOTE_GREEN checkpoint advances the head once; final exact-head and resulting exact-main gates remain required, and the slot is uncounted."
     },
     {
       "ordinal": 4,

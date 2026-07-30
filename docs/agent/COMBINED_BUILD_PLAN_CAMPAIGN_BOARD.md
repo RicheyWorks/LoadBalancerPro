@@ -20,8 +20,9 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Active implementation slot: `P-0.2`; [PR #499](https://github.com/RicheyWorks/LoadBalancerPro/pull/499)
   merged as `44d303318b7828c64c8fb2f21fe03ae64bd499bb`, but exact-main CI run `30500110273` exposed
   a 200 ms wall-clock race in an Enterprise Lab test during the package-stage test rerun. A test-only corrective
-  [PR #500](https://github.com/RicheyWorks/LoadBalancerPro/pull/500) has passed focused, adjacent, full-package,
-  and verify gates locally; `P-0.2` remains uncounted until its exact-head and resulting exact-main gates pass.
+  [PR #500](https://github.com/RicheyWorks/LoadBalancerPro/pull/500) has passed local and first exact-head remote
+  gates; its factual remote checkpoint must repeat the gates before merge, and `P-0.2` remains uncounted until
+  resulting exact-main gates pass.
 - Next implementation slot after the active gate: `P-0.3`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -33,7 +34,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | ---: | --- | --- | --- | --- | --- |
 | 1 | SEC-DEFAULT-DENY | P-0.5, L-0.1 | Fail-closed auth, role matrix, actuator lockdown | — | MAIN_GREEN |
 | 2 | P-0.1 | P-0.1 | Shutdown-hook lifecycle | — | MAIN_GREEN |
-| 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | PR_OPEN |
+| 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | REMOTE_GREEN |
 | 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | OPEN |
 | 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | OPEN |
 | 6 | P-0.6 | P-0.6 | Simulation-core correctness batch | — | OPEN |

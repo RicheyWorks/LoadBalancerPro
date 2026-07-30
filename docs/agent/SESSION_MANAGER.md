@@ -6,6 +6,25 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 11 PR-Open Checkpoint
+
+Timestamp: 2026-07-30T05:32:24-07:00
+
+Slot/branch/PR: `L-0.6`; `codex/l-0-6-ledger-torn-read`;
+[#508](https://github.com/RicheyWorks/LoadBalancerPro/pull/508).
+
+Status: `PR_OPEN`.
+
+Published implementation/local-green candidate: `bfbf28ddfc90ab691c312ab4435e7a9c79cd5262`; the PR-open campaign update
+is documentation-only.
+
+Verified local gates: deterministic two-JVM red/green proof, 84 focused/adjacent tests, 3,484-test clean package,
+skip-test verify, artifact/SBOM/LASE/Enterprise Lab workflow and literal-loopback operator-profile smokes, campaign
+guard, JSON validation, and diff checks.
+
+Blocker: none locally. Next: publish this required checkpoint, verify the resulting exact PR head, and wait for CI,
+CodeQL, dependency review, Docker/runtime/evidence, and blocking image scan before complete-diff self-review and merge.
+
 ## Combined Build Plan Slot 11 Local-Green Checkpoint
 
 Timestamp: 2026-07-30T05:30:07-07:00

@@ -17,8 +17,8 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Latest completed slot: `L-0.5` in merged [PR #507](https://github.com/RicheyWorks/LoadBalancerPro/pull/507);
   final head `4c9f5da3141ffb6dbb4b3a221bda2451871e25be`, merge
   `e5f569d0444bf37e405064699b5eb3778815405e`, exact-main local package, CI, and CodeQL green.
-- Active implementation slot: `L-0.6`; ledger torn-read correctness is in progress on
-  `codex/l-0-6-ledger-torn-read`.
+- Active implementation slot: `L-0.6`; ledger torn-read correctness is in
+  [PR #508](https://github.com/RicheyWorks/LoadBalancerPro/pull/508).
 - Next implementation slot after the active gate: `L-1.1`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -38,7 +38,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 8 | L-0.3 | L-0.3 | Non-mutating CLI abort | SEC-DEFAULT-DENY | MAIN_GREEN |
 | 9 | L-0.4 | L-0.4 | Cockpit HTML-injection removal | SEC-DEFAULT-DENY | MAIN_GREEN |
 | 10 | L-0.5 | L-0.5 | Stable mocked-cloud ASG ownership | SEC-DEFAULT-DENY | MAIN_GREEN |
-| 11 | L-0.6 | L-0.6 | Ledger torn-read correctness | SEC-DEFAULT-DENY | LOCAL_GREEN |
+| 11 | L-0.6 | L-0.6 | Ledger torn-read correctness | SEC-DEFAULT-DENY | PR_OPEN |
 | 12 | L-1.1 | L-1.1 | Delete metadata-about-metadata services | L0 complete | OPEN |
 | 13 | L-1.2 | L-1.2 | One explainability module | L-1.1 | OPEN |
 | 14 | L-1.3 | L-1.3 | Explainability correctness/determinism | L-1.2, P-0.3 | OPEN |

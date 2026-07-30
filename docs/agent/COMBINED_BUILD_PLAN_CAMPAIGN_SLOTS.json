@@ -117,11 +117,11 @@
       "sourceIds": ["L-0.2"],
       "track": "lab",
       "title": "Cap explorer candidate, strategy, and response sizes",
-      "status": "REMOTE_GREEN",
+      "status": "MAIN_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "SECURITY",
       "verificationProfile": "security-full",
-      "currentState": "PR #504 head c7e48e1a224c563d56d29547a7f0870c459c6caf passed push CI 30513191730, PR CI 30513194086, CodeQL 30513194083, PR dependency review, both 25-step package jobs, SBOM, packaged smokes, Docker build/runtime, controlled container evidence, and blocking image scan. Complete 16-file self-review found no actionable issue. The remote-green checkpoint creates a final head that must repeat every exact-head gate before merge."
+      "currentState": "PR #504 final head b55e677cc141f1b7f450f9469b9fe26d0fac9978 passed push CI 30513691370, PR CI 30513693391, CodeQL 30513693381, dependency review, both 25-step package jobs, SBOM, packaged smokes, Docker build/runtime, controlled container evidence, and blocking image scan, then merged as 408acded496caed88e849c947a46ba43fead6f5d. Exact-main focused and 3,461-test local package gates passed; CI 30514117344 and CodeQL 30514117332 passed with every required step audited."
     },
     {
       "ordinal": 8,
@@ -129,11 +129,11 @@
       "sourceIds": ["L-0.3"],
       "track": "lab",
       "title": "Make CLI prompt abort non-mutating",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "SAFETY",
       "verificationProfile": "java-full",
-      "currentState": "Acceptance is unproven at campaign start; re-audit every promptForInt caller before implementation."
+      "currentState": "Started from exact green main 408acded496caed88e849c947a46ba43fead6f5d on branch codex/l-0-3-non-mutating-cli-abort. The dedicated prompt-abort sentinel and every promptForInt caller are under current-tree audit; no acceptance claim yet."
     },
     {
       "ordinal": 9,

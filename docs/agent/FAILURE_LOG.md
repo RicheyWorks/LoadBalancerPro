@@ -8873,3 +8873,12 @@ Desktop Linux engine because the named pipe was absent, Trivy remained unavailab
 contained no Compose file. No local Docker image build/runtime, controlled container evidence, Trivy scan, or
 Compose result is claimed. Correction: keep exact-head remote CI Docker build/runtime, controlled container
 evidence, and blocking image scan mandatory before merge; Compose remains not applicable to this unchanged root.
+
+# 2026-07-29 - L-0.3 non-mutating CLI prompt-abort audit
+
+Branch: `codex/l-0-3-non-mutating-cli-abort`
+
+First L-0.3 start-checkpoint patch: the multi-file patch was rejected atomically because it expected the manifest
+sentence `audit every promptForInt caller`, while the exact checked-in text was `re-audit every promptForInt caller`.
+No file changed. Correction: read the exact L-0.2/L-0.3 manifest objects and apply the checkpoint against their
+literal current values before any implementation audit.

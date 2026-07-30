@@ -6,6 +6,58 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 8 Start Checkpoint
+
+Timestamp: 2026-07-29T21:40:53-07:00
+
+Current slot: `L-0.3`, make CLI integer-prompt abort non-mutating.
+
+Current branch: `codex/l-0-3-non-mutating-cli-abort`.
+
+Slot status: `IN_PROGRESS`.
+
+Verified base: `408acded496caed88e849c947a46ba43fead6f5d`, the exact PR #504 merge commit and current
+`origin/main`.
+
+Previous slot closeout:
+
+- L-0.2 final head `b55e677cc141f1b7f450f9469b9fe26d0fac9978` passed push CI `30513691370`, PR CI
+  `30513693391`, CodeQL `30513693381`, dependency review, both package reruns, SBOM, packaged smokes,
+  Docker/runtime, controlled container evidence, and blocking image scan;
+- PR #504 merged as `408acded496caed88e849c947a46ba43fead6f5d`;
+- the exact merge passed 123 focused routing/Explorer/security/campaign tests across 21 reports;
+- post-merge `mvn -B clean package` passed 3,461 tests across 487 fresh reports with zero failures, errors, or skips
+  and no Surefire dumps;
+- exact-main CI `30514117344` and CodeQL `30514117332` passed, including the second full package run, SBOM, packaged
+  smokes, Docker build/runtime, controlled container evidence, and blocking image scan; every required step was
+  audited successful.
+
+L-0.2 is `MAIN_GREEN`, completing 7 of 49 implementation slots.
+
+L-0.3 build contract: re-audit `promptForInt` and every caller; replace any abort/max-attempt return that overlaps a
+valid integer with a dedicated sentinel or `OptionalInt.empty()`; and ensure aborting the Scale Cloud prompt invokes
+no `scaleServersAsync` or other mutation. Preserve current CLI and cloud safety boundaries and do not manufacture a
+change for behavior current main has already closed.
+
+Source: `docs/BUILD_PLAN_LAB_SHADOW.md` PR-L0.3 and `docs/AUDIT_LAB_SHADOW_2026-07-21.md` O1.
+
+Prohibited surfaces: no auth/security-policy weakening, public/external target, secret, live cloud/tenant action,
+production deployment, CI/Maven/Docker/Compose change, unrelated CLI/GUI redesign, cloud enablement, or
+readiness/performance claim.
+
+Verification profile: `java-full` with an exact abort-to-zero-mutation red acceptance, caller-wide prompt sentinel
+audit, focused CLI/cloud-mock tests, adjacent command/undo/lifecycle guards, full local Java/package/verify/artifact/
+SBOM/packaged-smoke ladder, complete diff/scope audit, and exact-head remote CI, CodeQL, dependency review, SBOM,
+Docker/runtime, controlled container evidence, and blocking image scan.
+
+Blocker: none.
+
+Next action: inventory the exact current `promptForInt` definition, every caller, Scale Cloud mutation seam, and CLI
+tests; classify safe versus overlapping sentinel behavior; then write deterministic failing acceptance only for the
+live defect.
+
+Decision: continue only `L-0.3`; no later slot is active.
+
 ## Combined Build Plan Slot 7 Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T21:21:03-07:00

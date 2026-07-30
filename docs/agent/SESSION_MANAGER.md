@@ -6,6 +6,56 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 6 Remote-Green Checkpoint
+
+Timestamp: 2026-07-29T20:14:06-07:00
+
+Current slot: `P-0.6`, apply the simulation-core correctness batch.
+
+Current branch: `codex/p-0-6-simulation-core-correctness`.
+
+Slot status: `REMOTE_GREEN`.
+
+Pull request: [#503](https://github.com/RicheyWorks/LoadBalancerPro/pull/503).
+
+Verified remote-green head: `c5f9571995906e99a901eef48fb249dee659b501`.
+
+Verified base: `46f03670ee3e0829fd0db8577c1a332612ab29bd`, the exact PR #502 merge commit and green
+`origin/main`.
+
+Exact-head remote verification:
+
+- push CI `30510194763`: success;
+- PR CI `30510197217`: success;
+- CodeQL `30510197214`: success;
+- PR dependency review: success; the push-only duplicate was correctly skipped;
+- both 25-step CI build jobs passed tests, zero-skip enforcement, JaCoCo, executable-JAR package rerun and resource
+  audit, CycloneDX SBOM, LASE and packaged-JAR smokes, Docker image build, Docker runtime smoke, controlled container
+  evidence, blocking image scan, and evidence upload;
+- every completed step in both CI build jobs and the CodeQL job had an accepted success/skip conclusion;
+- GitHub reports the exact head `CLEAN` and mergeable.
+
+Review: no independent reviewer, review, or PR comment was available. The pre-authorized substitute complete-diff
+self-review covered all 14 changed files and 617 insertions/82 deletions from exact base through head. It found no
+actionable correctness, safety, scope, or documentation-trust defect. Local, remote-tracking, and PR head SHAs
+matched; the working tree was clean; whitespace and protected-surface scans passed.
+
+Scope and safety: production changes remain limited to the eight planned simulation-core correctness repairs. No
+auth/security-policy weakening, external/public target, secret, live cloud/tenant action, deployment, CI/Maven/
+Docker/Compose change, proxy/API redesign, unrelated lab/evidence behavior, or readiness/performance claim is
+present.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: none on verified head `c5f9571995906e99a901eef48fb249dee659b501`.
+
+Next action: commit and publish this remote-green checkpoint, treat the resulting SHA as the final candidate, and
+repeat every exact-head required gate before authorized merge.
+
+Decision: continue only `P-0.6`; no later slot is active.
+
 ## Combined Build Plan Slot 6 PR-Open Checkpoint
 
 Timestamp: 2026-07-29T20:00:53-07:00

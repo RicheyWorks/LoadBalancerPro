@@ -19,7 +19,8 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   `46f03670ee3e0829fd0db8577c1a332612ab29bd`, exact-main local package, CI, and CodeQL green.
 - Active implementation slot: `P-0.6`; the simulation-core correctness batch is open in
   [PR #503](https://github.com/RicheyWorks/LoadBalancerPro/pull/503) from branch
-  `codex/p-0-6-simulation-core-correctness`; exact-head remote gates are pending.
+  `codex/p-0-6-simulation-core-correctness`; head `c5f9571995906e99a901eef48fb249dee659b501` is remote green,
+  and the resulting checkpoint head must repeat all exact-head gates before merge.
 - Next implementation slot after the active gate: `L-0.2`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -34,7 +35,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | MAIN_GREEN |
 | 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | MAIN_GREEN |
 | 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | MAIN_GREEN |
-| 6 | P-0.6 | P-0.6 | Simulation-core correctness batch | — | PR_OPEN |
+| 6 | P-0.6 | P-0.6 | Simulation-core correctness batch | — | REMOTE_GREEN |
 | 7 | L-0.2 | L-0.2 | Explorer size caps | SEC-DEFAULT-DENY | OPEN |
 | 8 | L-0.3 | L-0.3 | Non-mutating CLI abort | SEC-DEFAULT-DENY | OPEN |
 | 9 | L-0.4 | L-0.4 | Cockpit HTML-injection removal | SEC-DEFAULT-DENY | OPEN |

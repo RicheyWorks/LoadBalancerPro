@@ -105,11 +105,11 @@
       "sourceIds": ["P-0.6"],
       "track": "proxy",
       "title": "Apply the simulation-core correctness batch",
-      "status": "PR_OPEN",
+      "status": "REMOTE_GREEN",
       "dependencies": [],
       "riskClass": "CORRECTNESS",
       "verificationProfile": "java-full",
-      "currentState": "PR #503 opened from exact green base 46f03670ee3e0829fd0db8577c1a332612ab29bd after the corrected red gate mapped eight live defects and the focused, clean 3,449-test package, verify, JaCoCo, executable-JAR/SBOM, packaged smoke, and scope/safety gates passed. Published implementation head c44fe33b1dd06a524f8dd94e101b96f1cdc15172 was mergeable; the PR-open checkpoint will establish a new exact head whose remote gates must all pass before merge."
+      "currentState": "PR #503 head c5f9571995906e99a901eef48fb249dee659b501 passed push CI 30510194763, PR CI 30510197217, CodeQL 30510197214, dependency review, both package reruns, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan. GitHub reports CLEAN and mergeable; the remote-green checkpoint will establish the final candidate whose exact-head gates must repeat before merge."
     },
     {
       "ordinal": 7,

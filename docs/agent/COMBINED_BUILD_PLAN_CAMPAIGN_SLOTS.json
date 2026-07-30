@@ -81,11 +81,11 @@
       "sourceIds": ["P-0.3"],
       "track": "proxy",
       "title": "Create route-scoped routing-strategy instances",
-      "status": "REMOTE_GREEN",
+      "status": "MAIN_GREEN",
       "dependencies": [],
       "riskClass": "ROUTING",
       "verificationProfile": "proxy-integration",
-      "currentState": "PR #501 head 219e1331f0910c97ec7f89ebcb1aacc4c202c67f passed duplicate exact-head CI runs 30504917830 and 30504915283, CodeQL 30504917829, and PR dependency review, including tests, package rerun, SBOM, packaged smokes, Docker/runtime, container evidence, and blocking image scan. A remote-green checkpoint commit must repeat every required gate on the resulting final head before merge."
+      "currentState": "PR #501 final head f6b592937d05ae1853d7e00b834714a6f33721f6 passed duplicate exact-head CI runs 30505371698 and 30505369840, CodeQL 30505371709, and PR dependency review, then merged as 8c491133041422b998d8e19eee5a18c827472ac8. Exact-main focused and 3,437-test local package gates passed; CI 30505825738 and CodeQL 30505825732 passed, including package rerun, SBOM, packaged smokes, Docker/runtime, container evidence, and blocking image scan."
     },
     {
       "ordinal": 5,
@@ -93,11 +93,11 @@
       "sourceIds": ["P-0.4"],
       "track": "proxy",
       "title": "Make weight zero drain and correct interrupted retry classification",
-      "status": "OPEN",
+      "status": "REMOTE_GREEN",
       "dependencies": [],
       "riskClass": "ROUTING",
       "verificationProfile": "proxy-integration",
-      "currentState": "Acceptance is unproven at campaign start; re-audit current main before implementation."
+      "currentState": "PR #502 checkpoint head aad10912286fe0596d5145e547eaf87fed3fc8f1 passed push CI 30507514530, PR CI 30507515518, CodeQL 30507515517, dependency review, both package reruns, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan. The complete-diff self-review found no actionable defect. The factual remote-green checkpoint must be published and every resulting exact-head gate repeated before merge."
     },
     {
       "ordinal": 6,

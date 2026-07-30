@@ -166,15 +166,31 @@ class EnterpriseProxyConfigurationTest {
     }
 
     @Test
-    void invalidWeightFailsClearly() {
+    void zeroWeightIsAcceptedAsAConfiguredDrain() {
         contextRunner.withPropertyValues(
                         "loadbalancerpro.proxy.enabled=true",
                         "loadbalancerpro.proxy.routes.api.path-prefix=/api",
                         "loadbalancerpro.proxy.routes.api.targets[0].id=local-a",
                         "loadbalancerpro.proxy.routes.api.targets[0].url=http://127.0.0.1:18081",
                         "loadbalancerpro.proxy.routes.api.targets[0].weight=0")
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).hasSingleBean(ReverseProxyService.class);
+                    assertThat(context.getBean(ReverseProxyProperties.class)
+                            .getRoutes().get("api").getTargets().get(0).getWeight()).isZero();
+                });
+    }
+
+    @Test
+    void negativeWeightFailsClearly() {
+        contextRunner.withPropertyValues(
+                        "loadbalancerpro.proxy.enabled=true",
+                        "loadbalancerpro.proxy.routes.api.path-prefix=/api",
+                        "loadbalancerpro.proxy.routes.api.targets[0].id=local-a",
+                        "loadbalancerpro.proxy.routes.api.targets[0].url=http://127.0.0.1:18081",
+                        "loadbalancerpro.proxy.routes.api.targets[0].weight=-0.01")
                 .run(context -> assertStartupFailureContains(context.getStartupFailure(),
-                        "loadbalancerpro.proxy.routes.api.targets[0].weight must be finite and greater than 0"));
+                        "loadbalancerpro.proxy.routes.api.targets[0].weight must be finite and non-negative"));
     }
 
     @Test

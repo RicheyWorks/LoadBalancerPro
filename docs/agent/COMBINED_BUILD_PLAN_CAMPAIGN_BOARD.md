@@ -13,16 +13,14 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Source layout: `74b1f6758304bc5a3a85ff4888039e7309324ddf`, based on `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Source item count: 50.
 - Unique implementation slots: 49.
-- `MAIN_GREEN` implementation slots: 3 / 49.
-- Latest completed slot: `P-0.2` in merged [PR #499](https://github.com/RicheyWorks/LoadBalancerPro/pull/499),
-  followed by test-only corrective [PR #500](https://github.com/RicheyWorks/LoadBalancerPro/pull/500); final
-  corrective head `94f11c61c3ea7fa4121014a370ad2b150845b923`, merge
-  `c04014892244dfc646406f2d8698592f254ddef3`, exact-main local package, CI, and CodeQL green.
-- Active implementation slot: `P-0.3`; route-scoped routing-strategy instances are in
-  [PR #501](https://github.com/RicheyWorks/LoadBalancerPro/pull/501) at head
-  `219e1331f0910c97ec7f89ebcb1aacc4c202c67f`; duplicate exact-head CI runs `30504917830` and
-  `30504915283`, CodeQL `30504917829`, and PR dependency review passed.
-- Next implementation slot after the active gate: `P-0.4`.
+- `MAIN_GREEN` implementation slots: 4 / 49.
+- Latest completed slot: `P-0.3` in merged [PR #501](https://github.com/RicheyWorks/LoadBalancerPro/pull/501);
+  final head `f6b592937d05ae1853d7e00b834714a6f33721f6`, merge
+  `8c491133041422b998d8e19eee5a18c827472ac8`, exact-main local package, CI, and CodeQL green.
+- Active implementation slot: `P-0.4`; [PR #502](https://github.com/RicheyWorks/LoadBalancerPro/pull/502)
+  checkpoint head `aad10912286fe0596d5145e547eaf87fed3fc8f1` is remote-green, and the factual checkpoint
+  commit must repeat every exact-head remote gate before merge.
+- Next implementation slot after the active gate: `P-0.6`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
 behavior exists. The active slot must reconcile its row with current main and the full source-plan acceptance contract.
@@ -34,8 +32,8 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 1 | SEC-DEFAULT-DENY | P-0.5, L-0.1 | Fail-closed auth, role matrix, actuator lockdown | — | MAIN_GREEN |
 | 2 | P-0.1 | P-0.1 | Shutdown-hook lifecycle | — | MAIN_GREEN |
 | 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | MAIN_GREEN |
-| 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | REMOTE_GREEN |
-| 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | OPEN |
+| 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | MAIN_GREEN |
+| 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | REMOTE_GREEN |
 | 6 | P-0.6 | P-0.6 | Simulation-core correctness batch | — | OPEN |
 | 7 | L-0.2 | L-0.2 | Explorer size caps | SEC-DEFAULT-DENY | OPEN |
 | 8 | L-0.3 | L-0.3 | Non-mutating CLI abort | SEC-DEFAULT-DENY | OPEN |

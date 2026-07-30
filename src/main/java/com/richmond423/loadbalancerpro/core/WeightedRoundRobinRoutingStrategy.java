@@ -14,9 +14,6 @@ import java.util.stream.Collectors;
 public final class WeightedRoundRobinRoutingStrategy implements RoutingStrategy {
     public static final String STRATEGY_NAME = "WEIGHTED_ROUND_ROBIN";
 
-    private static final double DEFAULT_WEIGHT = 1.0;
-    private static final double MIN_POSITIVE_WEIGHT = 0.1;
-
     private final Map<String, Double> currentWeights = new LinkedHashMap<>();
     private final Clock clock;
 
@@ -39,10 +36,12 @@ public final class WeightedRoundRobinRoutingStrategy implements RoutingStrategy 
         List<ServerStateVector> eligible = servers.stream()
                 .filter(Objects::nonNull)
                 .filter(ServerStateVector::healthy)
+                .filter(state -> state.weight() > 0.0)
                 .toList();
         if (eligible.isEmpty()) {
             currentWeights.clear();
-            return noCandidateDecision("No healthy eligible servers were available.");
+            return noCandidateDecision(
+                    "No healthy eligible servers with positive routing weight were available.");
         }
 
         retainOnly(eligible);
@@ -98,10 +97,7 @@ public final class WeightedRoundRobinRoutingStrategy implements RoutingStrategy 
     }
 
     private double effectiveWeight(double weight) {
-        if (weight == 0.0) {
-            return DEFAULT_WEIGHT;
-        }
-        return Math.max(MIN_POSITIVE_WEIGHT, weight);
+        return weight;
     }
 
     private String reasonForChoice(ServerStateVector chosen,

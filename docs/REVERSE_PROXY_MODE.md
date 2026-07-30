@@ -68,7 +68,7 @@ loadbalancerpro.proxy.routes.api.targets[1].weight=1
 
 When `routes` are configured, the proxy selects the longest matching `path-prefix` after removing `/proxy`. A request to `/proxy/api/widgets` matches the `api` route above and forwards `/api/widgets` to one configured target. If `routes` are absent, the legacy global upstream list acts as a single `/` route so existing demos keep working.
 
-When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be greater than zero.
+When proxy mode is enabled, startup validation requires either at least one named route with at least one target or one legacy upstream target. Route names must be simple ids, path prefixes must be absolute paths, target ids must be non-blank, target URLs must be valid `http` or `https` URIs with a host, and weights must be finite and non-negative. In `WEIGHTED_ROUND_ROBIN` and `WEIGHTED_LEAST_CONNECTIONS`, weight `0` is an operator drain signal: the target stays configured and observable but receives no new selections. Every positive finite weight remains eligible without a minimum clamp.
 
 ## Operator Config Reload
 

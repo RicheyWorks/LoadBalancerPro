@@ -8971,3 +8971,14 @@ L-0.4 final browser console-inspection call: the first call used a nonexistent
 without changing page state, and no console claim is taken from it. Correction: inspect the browser client's
 documented `dev.logs` surface for both pages; both corrected-tree log lists were empty. The real control-path DOM
 proof remained green, and the exact loopback fixture process was stopped with its port released.
+
+L-0.4 first exact-head compact remote poll: PowerShell rejected a `foreach` statement piped directly to
+`Format-Table` with `An empty pipe element is not allowed`. The command failed during parsing before its planned
+sleep or any GitHub query, so it changed no remote state and provides no check evidence. Correction: accumulate
+each run snapshot in an explicit array, format only after the loop completes, and continue requiring exact SHA
+`7bfd72fc3b0ae6c27aa1d9b398ec4a6eaec9de8e`.
+
+L-0.4 compact active-step poll repeated the same PowerShell parse class by piping a second `foreach` statement
+directly to `Out-String`. It again failed before contacting GitHub and changed no state. Correction: stop using
+statement-to-pipeline shorthand in campaign polling; assign all formatted objects to an explicit array first, as
+the already successful corrected status snapshot did.

@@ -19,7 +19,7 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   `1968c4799eaefe0f8356bbeb67334944f3997a9c`, exact-main local package, CI, and CodeQL green.
 - Active implementation slot: `L-0.4`; both Enterprise Lab cockpit HTML-injection surfaces are in
   [PR #506](https://github.com/RicheyWorks/LoadBalancerPro/pull/506) on branch `codex/l-0-4-cockpit-xss`;
-  exact-head gates remain pending.
+  the first exact-head gate is green and the final remote-green checkpoint is pending publication.
 - Next implementation slot after the active gate: `L-0.5`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -37,7 +37,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 6 | P-0.6 | P-0.6 | Simulation-core correctness batch | — | MAIN_GREEN |
 | 7 | L-0.2 | L-0.2 | Explorer size caps | SEC-DEFAULT-DENY | MAIN_GREEN |
 | 8 | L-0.3 | L-0.3 | Non-mutating CLI abort | SEC-DEFAULT-DENY | MAIN_GREEN |
-| 9 | L-0.4 | L-0.4 | Cockpit HTML-injection removal | SEC-DEFAULT-DENY | PR_OPEN |
+| 9 | L-0.4 | L-0.4 | Cockpit HTML-injection removal | SEC-DEFAULT-DENY | REMOTE_GREEN |
 | 10 | L-0.5 | L-0.5 | Stable mocked-cloud ASG ownership | SEC-DEFAULT-DENY | OPEN |
 | 11 | L-0.6 | L-0.6 | Ledger torn-read correctness | SEC-DEFAULT-DENY | OPEN |
 | 12 | L-1.1 | L-1.1 | Delete metadata-about-metadata services | L0 complete | OPEN |

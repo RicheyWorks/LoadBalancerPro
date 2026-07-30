@@ -6,6 +6,53 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 5 Start Checkpoint
+
+Timestamp: 2026-07-29T18:39:21-07:00
+
+Current slot: `P-0.4`, make weight zero drain and correct interrupted retry classification.
+
+Current branch: `codex/p-0-4-weight-zero-retry`.
+
+Slot status: `IN_PROGRESS`.
+
+Verified base: `8c491133041422b998d8e19eee5a18c827472ac8`, the exact PR #501 merge commit and current
+`origin/main`.
+
+Previous slot closeout:
+
+- P-0.3 final head `f6b592937d05ae1853d7e00b834714a6f33721f6` passed duplicate exact-head CI runs
+  `30505371698` and `30505369840`, CodeQL `30505371709`, PR dependency review, SBOM, Docker/runtime, container
+  evidence, and blocking image scan;
+- PR #501 merged as `8c491133041422b998d8e19eee5a18c827472ac8`;
+- the exact merge passed focused route/registry/proxy/reload and campaign guards;
+- post-merge `mvn -B package` passed 3,437 tests across 483 reports with zero failures, errors, or skips and no
+  Surefire dumps;
+- exact-main CI `30505825738` and CodeQL `30505825732` passed, including package rerun, SBOM, packaged smokes,
+  Docker/runtime, container evidence, and blocking image scan.
+
+P-0.3 is `MAIN_GREEN`, completing 4 of 49 implementation slots.
+
+P-0.4 build contract: audit and implement weight-zero drain semantics in weighted round robin and weighted least
+connections so zero-weight upstreams are excluded while non-negative fractional weights remain selectable.
+Validation must reject negative weights and allow zero. Correct proxy forwarding so `InterruptedException` is
+non-retriable. Prove a zero-weight upstream receives no requests and a 0.01-weight upstream receives approximately
+one percent against a 1.0 peer under a deterministic bounded acceptance.
+
+Prohibited surfaces: no security-policy weakening, external/public target, secret, live cloud/tenant, production
+deployment, CI/Maven/Docker/Compose change, unrelated proxy behavior, or readiness/performance claim.
+
+Verification profile: `proxy-integration` with deterministic literal-loopback or in-process fixtures, focused and
+adjacent selectors, the full local Java/package/verify ladder, complete diff/scope audit, and exact-head remote CI,
+CodeQL, dependency review, SBOM, Docker/runtime, container evidence, and blocking image scan.
+
+Blocker: none.
+
+Next action: audit current weighted-strategy validation/selection and proxy interruption classification, then write
+exact failing acceptance tests before implementation.
+
+Decision: continue only `P-0.4`; no later slot is active.
+
 ## Combined Build Plan Slot 4 Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T18:19:33-07:00

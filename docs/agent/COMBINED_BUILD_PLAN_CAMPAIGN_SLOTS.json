@@ -93,11 +93,11 @@
       "sourceIds": ["P-0.4"],
       "track": "proxy",
       "title": "Make weight zero drain and correct interrupted retry classification",
-      "status": "REMOTE_GREEN",
+      "status": "MAIN_GREEN",
       "dependencies": [],
       "riskClass": "ROUTING",
       "verificationProfile": "proxy-integration",
-      "currentState": "PR #502 checkpoint head aad10912286fe0596d5145e547eaf87fed3fc8f1 passed push CI 30507514530, PR CI 30507515518, CodeQL 30507515517, dependency review, both package reruns, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan. The complete-diff self-review found no actionable defect. The factual remote-green checkpoint must be published and every resulting exact-head gate repeated before merge."
+      "currentState": "PR #502 final head 7ee748ff938eb68b0dea32d5bf54ae71ea817552 passed push CI 30508018133, PR CI 30508019833, CodeQL 30508019835, dependency review, both package reruns, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan, then merged as 46f03670ee3e0829fd0db8577c1a332612ab29bd. Exact-main focused and 3,440-test local package gates passed; CI 30508489170 and CodeQL 30508489168 passed, including package rerun, SBOM, packaged smokes, Docker/runtime, container evidence, and blocking image scan."
     },
     {
       "ordinal": 6,
@@ -105,11 +105,11 @@
       "sourceIds": ["P-0.6"],
       "track": "proxy",
       "title": "Apply the simulation-core correctness batch",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": [],
       "riskClass": "CORRECTNESS",
       "verificationProfile": "java-full",
-      "currentState": "Acceptance is unproven at campaign start; re-audit each source-plan defect before implementation."
+      "currentState": "Started from exact green main 46f03670ee3e0829fd0db8577c1a332612ab29bd on branch codex/p-0-6-simulation-core-correctness. Each source-plan simulation-core defect is under current-tree audit; no acceptance claim yet."
     },
     {
       "ordinal": 7,

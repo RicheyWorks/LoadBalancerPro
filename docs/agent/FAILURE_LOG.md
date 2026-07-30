@@ -8740,3 +8740,21 @@ P-0.4 exact-head progress formatter: a PowerShell loop attempted to pipe directl
 and failed at parse time with an empty-pipe-element error, before its planned bounded wait or any GitHub query ran.
 No remote state changed and the required runs continued independently. Correction: collect loop results in an
 array and format that array in a separate statement; do not use this failed wrapper as check evidence.
+
+P-0.4 exact-main package wrapper: the first post-merge `mvn -B package` call was accidentally given a one-second
+tool timeout. The shell wrapper timed out after about five seconds while its Maven and Surefire process tree
+continued in the background. The exact workspace-bound PIDs and command lines were inspected, then only that
+captured Maven/Surefire tree was force-stopped before any rerun. No test result from the interrupted attempt is
+accepted. Correction: rerun with the normal ten-minute bound; that fresh command exited 0 with 3,440 tests across
+484 fresh reports, zero failures/errors/skips, and no dumps.
+
+# 2026-07-29 - P-0.6 simulation-core correctness audit
+
+Branch: `codex/p-0-6-simulation-core-correctness`
+
+First P-0.6 source-contract lookup: the focused expression searched for `P-0.6`, while the source plan uses the
+heading `PR-0.6`, and returned its normal no-match exit 1 after branch creation. A broader follow-up found the
+correct heading, but piping its many repository-wide matches through `Select-Object -First 240` closed the producer
+early and returned exit 1 after printing useful results. These were read-only lookup failures. Correction: treat
+neither wrapper as a gate and inspect the confirmed `docs/BUILD_PLAN_DEPLOYABLE.md` lines 40-41 directly before
+auditing the named production surfaces.

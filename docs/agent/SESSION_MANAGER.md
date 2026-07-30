@@ -6,6 +6,55 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 6 Start Checkpoint
+
+Timestamp: 2026-07-29T19:36:31-07:00
+
+Current slot: `P-0.6`, apply the simulation-core correctness batch.
+
+Current branch: `codex/p-0-6-simulation-core-correctness`.
+
+Slot status: `IN_PROGRESS`.
+
+Verified base: `46f03670ee3e0829fd0db8577c1a332612ab29bd`, the exact PR #502 merge commit and current
+`origin/main`.
+
+Previous slot closeout:
+
+- P-0.4 final head `7ee748ff938eb68b0dea32d5bf54ae71ea817552` passed PR CI `30508019833`, duplicate
+  push CI `30508018133`, CodeQL `30508019835`, dependency review, both package reruns, SBOM, packaged smokes,
+  Docker/runtime, container evidence, and blocking image scan;
+- PR #502 merged as `46f03670ee3e0829fd0db8577c1a332612ab29bd`;
+- the exact merge passed focused weight-drain/interruption/configuration and campaign guards;
+- post-merge `mvn -B package` passed 3,440 tests across 484 fresh reports with zero failures, errors, or skips and
+  no Surefire dumps;
+- exact-main CI `30508489170` and CodeQL `30508489168` passed, including package rerun, SBOM, packaged smokes,
+  Docker/runtime, container evidence, and blocking image scan.
+
+P-0.4 is `MAIN_GREEN`, completing 5 of 49 implementation slots.
+
+P-0.6 build contract: re-audit and, where still applicable, correct load-shedding priority ordering; health
+redistribution merge behavior; consistent-hashing locking and empty-ring races; history indexing overflow;
+metric-update validation/snapshot ordering; single-metric setter synchronization; dead registry load-queue state;
+and the global `isCloudServer` system-property override. Preserve already-correct behavior and do not manufacture a
+change for an imported defect that current main has already closed.
+
+Prohibited surfaces: no proxy/API redesign, auth/security-policy weakening, external/public target, secret, live
+cloud/tenant action, production deployment, CI/Maven/Docker/Compose change, unrelated lab/evidence behavior, or
+readiness/performance claim.
+
+Verification profile: `java-full` with exact red acceptance for each live defect, focused simulation-core and
+adjacent lifecycle/hash/health/load-shedding selectors, the full local Java/package/verify ladder, complete
+diff/scope audit, and exact-head remote CI, CodeQL, dependency review, SBOM, Docker/runtime, container evidence, and
+blocking image scan.
+
+Blocker: none.
+
+Next action: inspect the exact source-plan line and every named current production/test surface, classify already-
+fixed versus live defects, then write deterministic failing acceptance only for live behavior.
+
+Decision: continue only `P-0.6`; no later slot is active.
+
 ## Combined Build Plan Slot 5 Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T19:15:12-07:00

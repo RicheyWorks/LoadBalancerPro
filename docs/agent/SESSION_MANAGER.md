@@ -6,6 +6,40 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 15 PR-Open Checkpoint
+
+Timestamp: 2026-07-30T11:46:13-07:00
+
+Slot/branch/PR: `L-1.4`; `codex/l-1-4-collapse-comparison-paths`;
+[#512](https://github.com/RicheyWorks/LoadBalancerPro/pull/512).
+
+Status: `PR_OPEN`.
+
+Published implementation/local-green candidate: `344fef481a63013acf4770ff7e3b8e7e84f2092a`; this PR-open campaign
+update is documentation-only and will become the final candidate head after publication.
+
+Verified local gates: shared comparison-engine entry and fixture equivalence; consolidated pressure thresholds and
+boundary operators; retained scenario summary/detail/packet and retired endpoint contracts; 3,050-test clean package;
+skip-test verify/JaCoCo; embedded-server dependency tree; artifact/SBOM/LASE/adaptive-experiment/Enterprise-Lab and
+operator-profile smokes; final packaged loopback HTTP checks; bounded browser review; campaign/manifest guards;
+retired-reference, secret, external-target, protected-surface, overclaim, process/port, and complete-diff checks.
+
+Scope/safety: the bounded local/synthetic consolidation adds no credential/default, authorization,
+external/public/private target, cloud/tenant call, live proxy-route mutation, persistence, dependency,
+Maven/workflow, Docker/Compose, deployment, release, tag, or secret. Production readiness/certification,
+live-cloud/tenant validation, persistent audit or signature authenticity, production scoring, throughput/p95/p99,
+load/stress/soak behavior, distributed determinism, and broader automation remain unproven.
+
+Blocker: required checks are pending on the documentation checkpoint's not-yet-published exact head. The CI run
+started for implementation head `344fef481a63013acf4770ff7e3b8e7e84f2092a` becomes stale after this checkpoint and
+must not count.
+
+Next action: commit and publish this checkpoint, rerun the exact-head L-1.4/campaign/diff gates, then require CI,
+CodeQL, dependency review, package/SBOM/packaged-smoke/Docker/runtime/evidence, and blocking image-scan gates before
+complete-diff self-review and merge.
+
+Decision: continue only `L-1.4`; no later slot is active.
+
 ## Combined Build Plan Slot 15 Local-Green Checkpoint
 
 Timestamp: 2026-07-30T11:28:39-07:00

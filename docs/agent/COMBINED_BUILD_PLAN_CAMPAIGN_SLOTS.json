@@ -213,11 +213,11 @@
       "sourceIds": ["L-1.4"],
       "track": "lab",
       "title": "Collapse duplicate comparison and experiment surfaces",
-      "status": "LOCAL_GREEN",
+      "status": "PR_OPEN",
       "dependencies": ["L-1.3"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "Local verification is green on codex/l-1-4-collapse-comparison-paths from exact green main b73d20fa81f4713376f91c00dccd63f2eb5d31af. Experiment, scenario, and LASE decisions reach RoutingComparisonEngine; the experiment fixture catalog and advisor candidate synthesis are shared; duplicate matrix/gate surfaces are retired; and one PressureClassifier serves failure, shedding, and autoscaling policies. Focused equivalence and boundary tests, a 3,050-test clean package, artifact inspection, and packaged loopback API/browser smoke passed. The final tracked documentation checkpoint still requires an exact-candidate rerun before commit and PR publication."
+      "currentState": "PR #512 is open from codex/l-1-4-collapse-comparison-paths. Published implementation head 344fef481a63013acf4770ff7e3b8e7e84f2092a passed shared-engine equivalence and pressure-boundary selectors, a 3,050-test clean package, verify/coverage, artifact/SBOM/LASE/adaptive-experiment/Enterprise-Lab/operator smokes, final packaged loopback API checks, browser review, and complete-diff scope/security audits. The PR-open campaign checkpoint is documentation-only and must be published and gated as the exact final head before merge."
     },
     {
       "ordinal": 16,

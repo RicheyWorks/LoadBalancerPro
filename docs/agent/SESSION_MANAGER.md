@@ -6,6 +6,42 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 12 Main-Green / Slot 13 Start
+
+Timestamp: 2026-07-30T07:44:14-07:00
+
+Completed: `L-1.1`; `codex/l-1-1-remove-metadata-services`;
+[#509](https://github.com/RicheyWorks/LoadBalancerPro/pull/509); final head
+`4db5eabc712942e50df2ce500ff6529a8cb3efc9`; merge
+`1d57e4d664162ae4979ed1d24acfcc2af3673b1a`.
+
+Verified: push CI `30551567443`, PR CI `30551571279`, CodeQL `30551571238`, PR dependency review,
+package/SBOM/packaged-smoke/Docker/runtime/evidence/image-scan gates, and complete-diff self-review passed on the
+exact final head. Local `main`, `origin/main`, and `HEAD` then matched the merge commit with a clean worktree; the
+exact-main focused selector passed 144 tests with zero failures, errors, or skips; exact-main CI `30552406500`
+(25/25) and CodeQL `30552407045` (11/11) passed.
+
+Delivered scope: 15 derivational services, 20 DTOs, 15 dedicated documents, and 20 obsolete tests were deleted while
+the retained compare/replay decision-evidence contract and non-retired regression coverage remained green. The
+representative compare fixture shrank from 1,364,797 bytes to 620,027 bytes (54.6%).
+
+Safety/not proven: this completed slot removed response-only derivations and added no credential, external target,
+cloud/tenant call, traffic mutation, replay execution, persistence, telemetry, deployment behavior, or production
+claim. Production readiness/certification, live-cloud/tenant validation, throughput/p95/p99, and the compact
+Decision Explorer replacement remain unproven.
+
+Active: `L-1.2`, collapse Replay and Decision Explorer into one explainability module; branch
+`codex/l-1-2-collapse-explainability`; status `IN_PROGRESS`; base
+`1d57e4d664162ae4979ed1d24acfcc2af3673b1a`.
+
+Candidate contract: reconcile current main with the source plan, retain one non-derivational `RoutingExplanation`
+result with candidate factor contributions and bounded counterfactual weight scenarios, delete the parallel replay
+metadata chain and restatements, compact `/api/routing/decision-explorer`, and prove dominant/delta plus
+counterfactual behavior and payload reduction. No implementation claim is made before that audit and verification.
+
+Blocker: none. Next: validate this combined checkpoint, publish the branch start, inventory the current
+Decision Explorer construction and callers, then implement the smallest capability-preserving replacement.
+
 ## Combined Build Plan Slot 11 Main-Green / Slot 12 Start
 
 Timestamp: 2026-07-30T05:53:21-07:00

@@ -17,8 +17,8 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Latest completed slot: `L-0.4` in merged [PR #506](https://github.com/RicheyWorks/LoadBalancerPro/pull/506);
   final head `6234b889f2b31aba37cd5a43eb9e05c51e038001`, merge
   `a563e1ff3ae1288f9770a679be73a1861e8a7013`, exact-main local package, CI, and CodeQL green.
-- Active implementation slot: `L-0.5`; stable mocked-cloud ASG identity and restart reconciliation are locally green
-  on branch `codex/l-0-5-stable-mocked-asg-ownership` and await one exact-head PR gate.
+- Active implementation slot: `L-0.5`; stable mocked-cloud ASG identity and restart reconciliation are in
+  [PR #507](https://github.com/RicheyWorks/LoadBalancerPro/pull/507) and await exact-head remote gates.
 - Next implementation slot after the active gate: `L-0.6`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -37,7 +37,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 7 | L-0.2 | L-0.2 | Explorer size caps | SEC-DEFAULT-DENY | MAIN_GREEN |
 | 8 | L-0.3 | L-0.3 | Non-mutating CLI abort | SEC-DEFAULT-DENY | MAIN_GREEN |
 | 9 | L-0.4 | L-0.4 | Cockpit HTML-injection removal | SEC-DEFAULT-DENY | MAIN_GREEN |
-| 10 | L-0.5 | L-0.5 | Stable mocked-cloud ASG ownership | SEC-DEFAULT-DENY | LOCAL_GREEN |
+| 10 | L-0.5 | L-0.5 | Stable mocked-cloud ASG ownership | SEC-DEFAULT-DENY | PR_OPEN |
 | 11 | L-0.6 | L-0.6 | Ledger torn-read correctness | SEC-DEFAULT-DENY | OPEN |
 | 12 | L-1.1 | L-1.1 | Delete metadata-about-metadata services | L0 complete | OPEN |
 | 13 | L-1.2 | L-1.2 | One explainability module | L-1.1 | OPEN |

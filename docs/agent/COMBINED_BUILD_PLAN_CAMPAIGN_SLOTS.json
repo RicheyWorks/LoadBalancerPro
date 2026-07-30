@@ -153,11 +153,11 @@
       "sourceIds": ["L-0.5"],
       "track": "lab",
       "title": "Make owned ASG identity stable and recoverable",
-      "status": "LOCAL_GREEN",
+      "status": "PR_OPEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "CLOUD_GUARDED",
       "verificationProfile": "cloud-mocked",
-      "currentState": "Local green on codex/l-0-5-stable-mocked-asg-ownership from exact base a563e1ff3ae1288f9770a679be73a1861e8a7013. CloudConfig now derives the stable ASG identity from validated prefix plus environment; guarded startup inventories mocked ASGs, adopts one exact stable-name/ownership-tag match, creates only on no match, and fails closed for mismatched, duplicated, colliding, unavailable, or repeated-pagination evidence. Exact cloud/profile/campaign selectors passed 117 tests; clean package passed 3,481 tests; verify, SBOM, artifact, LASE, Enterprise Lab, and loopback runtime gates passed. No live AWS call or local container result is claimed."
+      "currentState": "PR #507 opened from locally green implementation head 167165d79409458baede2d1ec6389daf9efba366. CloudConfig derives the stable ASG identity from validated prefix plus environment; guarded startup inventories mocked ASGs, adopts one exact stable-name/ownership-tag match, creates only on no match, and fails closed for mismatched, duplicated, colliding, unavailable, or repeated-pagination evidence. Local selectors, 3,481-test clean package, verify, SBOM, artifact, LASE, Enterprise Lab, and loopback runtime gates passed. The PR-open checkpoint changes head, so every exact-head remote gate remains mandatory. No live AWS call or local container result is claimed."
     },
     {
       "ordinal": 11,

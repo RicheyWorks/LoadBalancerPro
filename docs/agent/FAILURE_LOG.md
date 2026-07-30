@@ -8789,3 +8789,10 @@ P-0.6 final executable-JAR inventory: a read-only metadata probe guessed the obs
 therefore had no input. The already-green package and packaged-workflow runs are unaffected, and no artifact or
 source was changed. Correction: resolve the unique executable JAR from the current `target` inventory before
 recording its size, entry count, or hash.
+
+P-0.6 exact-head workflow progress query: a three-command read-only `gh run view` bundle returned the useful
+Dependency Review, push-CI test-step, and CodeQL build-step state, but its final invocation was parsed by the CLI as
+four positional arguments and returned `accepts at most 1 arg(s)`. No workflow was cancelled, rerun, or changed,
+and no check result from the malformed invocation is accepted. Correction: query one confirmed run ID per command
+with only the bounded `status`, `conclusion`, and `jobs` JSON fields; the failure-log-only correction establishes a
+new head whose complete remote gate set must pass.

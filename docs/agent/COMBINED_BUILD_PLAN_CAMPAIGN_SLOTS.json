@@ -153,11 +153,11 @@
       "sourceIds": ["L-0.5"],
       "track": "lab",
       "title": "Make owned ASG identity stable and recoverable",
-      "status": "IN_PROGRESS",
+      "status": "LOCAL_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "CLOUD_GUARDED",
       "verificationProfile": "cloud-mocked",
-      "currentState": "Started from exact green main a563e1ff3ae1288f9770a679be73a1861e8a7013 on branch codex/l-0-5-stable-mocked-asg-ownership. Current-tree audit confirms CloudConfig still generates each ASG name from UUID.randomUUID and CloudManager create/delete paths recognize only that process-local name; deterministic identity, ownership-tag reconciliation, restart adoption, and killed-process recovery remain under mocked-client acceptance. No live AWS call is authorized."
+      "currentState": "Local green on codex/l-0-5-stable-mocked-asg-ownership from exact base a563e1ff3ae1288f9770a679be73a1861e8a7013. CloudConfig now derives the stable ASG identity from validated prefix plus environment; guarded startup inventories mocked ASGs, adopts one exact stable-name/ownership-tag match, creates only on no match, and fails closed for mismatched, duplicated, colliding, unavailable, or repeated-pagination evidence. Exact cloud/profile/campaign selectors passed 117 tests; clean package passed 3,481 tests; verify, SBOM, artifact, LASE, Enterprise Lab, and loopback runtime gates passed. No live AWS call or local container result is claimed."
     },
     {
       "ordinal": 11,

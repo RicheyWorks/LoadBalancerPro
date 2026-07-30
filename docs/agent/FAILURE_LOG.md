@@ -9056,3 +9056,9 @@ The stderr result is accepted only as capability evidence, not as a successful D
 image/runtime or scan claim is made from it. Correction: require non-empty server-version stdout in addition to
 the process exit code for this local probe; retain remote exact-head Docker/runtime and blocking image-scan checks
 as required gates.
+
+L-0.5 first compact exact-head remote poll: PowerShell's `ConvertFrom-Json | Where-Object headSha -eq ...`
+formatting pipeline returned an empty table even though the three expected runs existed. The command exited zero
+but supplied no usable status evidence. Correction: query GitHub with `gh run list --commit <exact-sha>` and retain
+the raw JSON fields; corrected polls tracked push CI, PR CI, and CodeQL for
+`98533bea5939f76152271512ace2112678604428` through successful completion.

@@ -153,11 +153,11 @@
       "sourceIds": ["L-0.5"],
       "track": "lab",
       "title": "Make owned ASG identity stable and recoverable",
-      "status": "PR_OPEN",
+      "status": "REMOTE_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "CLOUD_GUARDED",
       "verificationProfile": "cloud-mocked",
-      "currentState": "PR #507 opened from locally green implementation head 167165d79409458baede2d1ec6389daf9efba366. CloudConfig derives the stable ASG identity from validated prefix plus environment; guarded startup inventories mocked ASGs, adopts one exact stable-name/ownership-tag match, creates only on no match, and fails closed for mismatched, duplicated, colliding, unavailable, or repeated-pagination evidence. Local selectors, 3,481-test clean package, verify, SBOM, artifact, LASE, Enterprise Lab, and loopback runtime gates passed. The PR-open checkpoint changes head, so every exact-head remote gate remains mandatory. No live AWS call or local container result is claimed."
+      "currentState": "PR #507 exact head 98533bea5939f76152271512ace2112678604428 passed push CI 30537967318, PR CI 30537970205, CodeQL 30537970238, PR dependency review, both 25-step package/SBOM/packaged-smoke/Docker/runtime/evidence/Trivy jobs, and first complete-diff audit. GitHub reports it MERGEABLE and CLEAN. This remote-green checkpoint must be published and every gate repeated on the resulting final candidate before merge. No live AWS call or local container result is claimed."
     },
     {
       "ordinal": 11,

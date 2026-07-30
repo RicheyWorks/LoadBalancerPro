@@ -6,6 +6,63 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 10 Remote-Green Checkpoint
+
+Timestamp: 2026-07-30T04:27:09-07:00
+
+Current slot: `L-0.5`, make owned Auto Scaling Group identity stable and recoverable.
+
+Current branch: `codex/l-0-5-stable-mocked-asg-ownership`.
+
+Slot status: `REMOTE_GREEN`.
+
+Pull request: [#507](https://github.com/RicheyWorks/LoadBalancerPro/pull/507).
+
+Verified remote-green head: `98533bea5939f76152271512ace2112678604428`.
+
+Verified base: `a563e1ff3ae1288f9770a679be73a1861e8a7013`, the exact PR #506 merge commit and green
+`origin/main`.
+
+Exact-head remote verification:
+
+- push CI `30537967318`: success;
+- PR CI `30537970205`: success;
+- CodeQL `30537970238`: success;
+- PR dependency review: success; the push-only duplicate was correctly skipped;
+- both 25-step CI build jobs passed dependency resolution, 3,481 tests, zero-skip enforcement, JaCoCo, the second
+  full executable-JAR package pass, resource verification, CycloneDX SBOM, packaged LASE and JAR smokes, Docker
+  image build/runtime health, controlled container evidence, blocking HIGH/CRITICAL image scan, and artifact
+  uploads;
+- every step in both CI build jobs, the five-step PR dependency job, and the 11-step CodeQL job had a successful
+  conclusion; only the inapplicable push dependency job was skipped;
+- GitHub reports exact head `98533bea5939f76152271512ace2112678604428` mergeable and `CLEAN`.
+
+Review: no independent reviewer, review, or PR comment is currently available. The pre-authorized substitute
+complete-diff audit covered all ten changed files and three commits from exact base through head. It traced stable
+name construction, guardrail-before-inventory ordering, pagination/retry behavior, all reconciliation
+classifications, create/adopt/no-retag paths, exact deletion ownership, dry-run zero calls, mocked-client
+construction, README boundaries, and campaign state. It found no actionable correctness, security, scope, or
+documentation-trust defect. Local, remote-tracking, and PR head SHAs matched; whitespace, protected-path,
+random-identity, external-target, live-client-construction, credential, and positive-overclaim scans passed after
+classifying only test constants and negative boundary language.
+
+Scope and safety: the production change remains limited to deterministic CloudConfig ASG identity and guarded
+CloudManager startup/deletion reconciliation. No real credential, AWS account/tenant, live cloud call or mutation,
+public/private/external target, dependency, Maven/workflow, Docker/Compose, script, API/endpoint, auth policy,
+secret/default, deployment, cost action, or unrelated behavior changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+AWS IAM/network/launch-template behavior, actual killed-process recovery against AWS, TLS/ingress validation,
+distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader automation is established.
+
+Blocker: none on verified head `98533bea5939f76152271512ace2112678604428`.
+
+Next action: rerun the campaign guard and diff checks, commit/publish this remote-green checkpoint, treat the
+resulting SHA as the final candidate, repeat every exact-head required gate, then perform the authorized final
+complete-diff self-review and merge only if all evidence remains green.
+
+Decision: continue only `L-0.5`; no later slot is active.
+
 ## Combined Build Plan Slot 10 PR-Open Checkpoint
 
 Timestamp: 2026-07-30T04:16:13-07:00

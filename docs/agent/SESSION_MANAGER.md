@@ -6,6 +6,60 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 7 Remote-Green Checkpoint
+
+Timestamp: 2026-07-29T21:21:03-07:00
+
+Current slot: `L-0.2`, cap explorer candidate, strategy, and response sizes.
+
+Current branch: `codex/l-0-2-explorer-size-caps`.
+
+Slot status: `REMOTE_GREEN`.
+
+Pull request: [#504](https://github.com/RicheyWorks/LoadBalancerPro/pull/504).
+
+Verified remote-green head: `c7e48e1a224c563d56d29547a7f0870c459c6caf`.
+
+Verified base: `7f360c83a49b2629de3bbb56b6094118a8878f1b`, the exact PR #503 merge commit and current
+`origin/main`.
+
+Exact-head remote verification:
+
+- push CI `30513191730`: success;
+- PR CI `30513194086`: success;
+- CodeQL `30513194083`: success;
+- PR dependency review: success; the push-only duplicate was correctly skipped;
+- both 25-step CI build jobs passed dependency resolution, tests, zero-skip enforcement, JaCoCo, the second full
+  executable-JAR package pass, resource verification, CycloneDX SBOM, packaged LASE and JAR smokes, Docker image
+  build/runtime health, controlled container evidence, blocking image scan, and artifact uploads;
+- every completed step in both CI build jobs, the PR dependency job, and the 11-step CodeQL job had an accepted
+  success conclusion; only the inapplicable push dependency job was skipped;
+- GitHub reports exact head `c7e48e1a224c563d56d29547a7f0870c459c6caf` mergeable and `CLEAN`.
+
+Review: no independent reviewer, review, or PR comment was available. The pre-authorized substitute complete-diff
+self-review covered all 16 changed files, three commits, and 784 insertions/22 deletions from exact base through
+head. It rechecked candidate/strategy validation order, configured lower-limit enforcement, default-strategy
+fan-out, bounded response counting without duplicate byte buffering, startup hard ceilings, structured errors,
+tests, property defaults, operator documentation, and campaign records. It found no actionable correctness,
+security, scope, or documentation-trust defect. Local, remote-tracking, and PR head SHAs matched; the working tree
+was clean; whitespace and protected-surface scans passed.
+
+Scope and safety: production changes remain limited to the planned routing-comparison and Decision Explorer abuse
+bounds. No authentication/authorization policy was weakened, and no public/external target, secret, live
+cloud/tenant action, deployment, CI/Maven/Docker/Compose change, proxy behavior, persistent state, unrelated
+lab/evidence behavior, or readiness/performance claim is present.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader
+automation is established by this slot.
+
+Blocker: none on verified head `c7e48e1a224c563d56d29547a7f0870c459c6caf`.
+
+Next action: commit and publish this remote-green checkpoint, treat the resulting SHA as the final candidate, and
+repeat every exact-head required gate before authorized merge.
+
+Decision: continue only `L-0.2`; no later slot is active.
+
 ## Combined Build Plan Slot 7 PR-Open Checkpoint
 
 Timestamp: 2026-07-29T21:10:11-07:00

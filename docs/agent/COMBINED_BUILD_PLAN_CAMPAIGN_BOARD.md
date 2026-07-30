@@ -17,8 +17,9 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Latest completed slot: `P-0.6` in merged [PR #503](https://github.com/RicheyWorks/LoadBalancerPro/pull/503);
   final head `c53ffb52ef661d87cc1636fcb8b766eaff357c6f`, merge
   `7f360c83a49b2629de3bbb56b6094118a8878f1b`, exact-main local package, CI, and CodeQL green.
-- Active implementation slot: `L-0.2`; explorer candidate, strategy, and response size caps are in
-  [PR #504](https://github.com/RicheyWorks/LoadBalancerPro/pull/504) and await exact-head remote gates.
+- Active implementation slot: `L-0.2`; explorer candidate, strategy, and response size caps in
+  [PR #504](https://github.com/RicheyWorks/LoadBalancerPro/pull/504) are remotely green and await the final
+  checkpoint-head gate repetition.
 - Next implementation slot after the active gate: `L-0.3`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -34,7 +35,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | MAIN_GREEN |
 | 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | MAIN_GREEN |
 | 6 | P-0.6 | P-0.6 | Simulation-core correctness batch | — | MAIN_GREEN |
-| 7 | L-0.2 | L-0.2 | Explorer size caps | SEC-DEFAULT-DENY | PR_OPEN |
+| 7 | L-0.2 | L-0.2 | Explorer size caps | SEC-DEFAULT-DENY | REMOTE_GREEN |
 | 8 | L-0.3 | L-0.3 | Non-mutating CLI abort | SEC-DEFAULT-DENY | OPEN |
 | 9 | L-0.4 | L-0.4 | Cockpit HTML-injection removal | SEC-DEFAULT-DENY | OPEN |
 | 10 | L-0.5 | L-0.5 | Stable mocked-cloud ASG ownership | SEC-DEFAULT-DENY | OPEN |

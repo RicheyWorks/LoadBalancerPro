@@ -33,21 +33,16 @@ public final class AdaptiveRoutingExperimentService {
             "No CloudManager, cloud credentials, external network, release, tag, asset, or container action is used.");
 
     private final AdaptiveRoutingExperimentFixtureCatalog fixtureCatalog;
-    private final LoadDistributionEvaluator loadDistributionEvaluator;
     private final AdaptiveRoutingPolicyEngine policyEngine;
 
     public AdaptiveRoutingExperimentService() {
-        this(new AdaptiveRoutingExperimentFixtureCatalog(), new LoadDistributionEvaluator(),
-                new AdaptiveRoutingPolicyEngine());
+        this(new AdaptiveRoutingExperimentFixtureCatalog(), new AdaptiveRoutingPolicyEngine());
     }
 
     AdaptiveRoutingExperimentService(
             AdaptiveRoutingExperimentFixtureCatalog fixtureCatalog,
-            LoadDistributionEvaluator loadDistributionEvaluator,
             AdaptiveRoutingPolicyEngine policyEngine) {
         this.fixtureCatalog = Objects.requireNonNull(fixtureCatalog, "fixtureCatalog cannot be null");
-        this.loadDistributionEvaluator = Objects.requireNonNull(loadDistributionEvaluator,
-                "loadDistributionEvaluator cannot be null");
         this.policyEngine = Objects.requireNonNull(policyEngine, "policyEngine cannot be null");
     }
 
@@ -59,8 +54,8 @@ public final class AdaptiveRoutingExperimentService {
     }
 
     public AdaptiveRoutingExperimentReport runCatalog(AdaptiveRoutingPolicyMode mode) {
-        List<AdaptiveRoutingExperimentResult> results = fixtureCatalog.createAll().stream()
-                .map(scenario -> evaluate(scenario, mode))
+        List<AdaptiveRoutingExperimentResult> results = fixtureCatalog.prepareAll().stream()
+                .map(fixture -> evaluate(fixture, mode))
                 .toList();
         return new AdaptiveRoutingExperimentReport(
                 mode.wireValue(),
@@ -81,11 +76,16 @@ public final class AdaptiveRoutingExperimentService {
             AdaptiveRoutingExperimentScenario scenario,
             AdaptiveRoutingPolicyMode mode) {
         Objects.requireNonNull(scenario, "scenario cannot be null");
+        return evaluate(fixtureCatalog.prepare(scenario), mode);
+    }
+
+    private AdaptiveRoutingExperimentResult evaluate(
+            AdaptiveRoutingExperimentFixtureCatalog.PreparedFixture fixture,
+            AdaptiveRoutingPolicyMode mode) {
+        AdaptiveRoutingExperimentScenario scenario = fixture.scenario();
         AdaptiveRoutingPolicyMode safeMode = mode == null ? AdaptiveRoutingPolicyMode.OFF : mode;
-        List<Server> servers = scenario.servers().stream()
-                .map(AdaptiveRoutingExperimentService::toServer)
-                .toList();
-        LoadDistributionResult baseline = baseline(scenario, servers);
+        List<Server> servers = fixture.servers();
+        LoadDistributionResult baseline = fixture.baseline();
         Optional<LaseEvaluationReport> shadowReport = deterministicShadowAdvisor()
                 .observe(scenario.strategy(), servers, scenario.requestedLoad(), baseline);
         String recommendedBackend = shadowReport.flatMap(this::recommendedServerId).orElse(null);
@@ -133,13 +133,6 @@ public final class AdaptiveRoutingExperimentService {
                 influence.guardrailReason(),
                 policyDecision.rollbackReason(),
                 policyDecision);
-    }
-
-    private LoadDistributionResult baseline(AdaptiveRoutingExperimentScenario scenario, List<Server> servers) {
-        if ("PREDICTIVE".equals(scenario.strategy())) {
-            return loadDistributionEvaluator.predictive(servers, scenario.requestedLoad());
-        }
-        return loadDistributionEvaluator.capacityAware(servers, scenario.requestedLoad());
     }
 
     private InfluenceResult influencedResult(
@@ -235,15 +228,6 @@ public final class AdaptiveRoutingExperimentService {
                 new ShadowAutoscaler(),
                 new FailureScenarioRunner(),
                 EXPERIMENT_CLOCK), EXPERIMENT_CLOCK);
-    }
-
-    private static Server toServer(AdaptiveRoutingExperimentServer input) {
-        Server server = new Server(input.id(), input.cpuUsage(), input.memoryUsage(), input.diskUsage(),
-                ServerType.ONSITE);
-        server.setCapacity(input.capacity());
-        server.setWeight(input.weight());
-        server.setHealthy(input.healthy());
-        return server;
     }
 
     private record InfluenceResult(

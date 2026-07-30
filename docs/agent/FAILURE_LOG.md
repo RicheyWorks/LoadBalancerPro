@@ -9276,3 +9276,25 @@ The representative compare fixture measured 1,364,797 bytes before deletion and 
 (54.6% smaller), while the separately scoped `/api/routing/decision-explorer` response remained 7,784,535 bytes.
 Correction: L-1.1 requires at least 50% compare-payload reduction plus absence of the named services, DTOs, fields,
 docs, and UI references; L-1.2 owns the Decision Explorer/replay-chain collapse and its compact golden payload.
+
+# 2026-07-30 - L-1.4 comparison consolidation
+
+Branch: `codex/l-1-4-collapse-comparison-paths`
+
+First post-implementation compile: `mvn -q -DskipTests compile` failed because the new LASE comparison-engine
+adapter used Java 21 `List.getFirst()`, while the project's configured source level exposes only indexed `List`
+access. No test or package result is accepted from this compile. Correction: use `get(0)` after the engine's
+single-strategy request guarantees one result, then rerun compilation and the full focused selector.
+
+First post-compile focused selector: 116 tests completed with three failures in the adaptive scenario endpoint
+tests. The implementation now intentionally derives its three scenarios from the shared
+`AdaptiveRoutingExperimentFixtureCatalog`, but the assertions still named the retired `edge-*` and `capacity-*`
+fixtures. The pressure, experiment, LASE engine, and other scenario assertions passed. Correction: update only
+the stale fixture-name/server-id assertions, add a direct experiment-to-scenario shared-engine equivalence test,
+and rerun the full selector.
+
+First packaged browser-smoke launch: the candidate JAR failed closed before binding loopback port 18083 because
+the inherited runtime configuration selected API-key mode while no API key was configured. No endpoint or browser
+result is accepted from this launch, and no packaged process remained. Correction: restart the same candidate on
+`127.0.0.1:18083` with the explicit bounded local-development override
+`--loadbalancerpro.auth.mode=none`; do not introduce a key or relax any packaged/default security configuration.

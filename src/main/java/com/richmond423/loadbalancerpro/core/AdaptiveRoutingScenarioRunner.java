@@ -9,8 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
+import java.util.Objects;
 import java.util.Random;
 
 public final class AdaptiveRoutingScenarioRunner {
@@ -51,6 +50,15 @@ public final class AdaptiveRoutingScenarioRunner {
             "no external network calls",
             "no filesystem mutation",
             "no live CI inspection");
+    private final AdaptiveRoutingExperimentFixtureCatalog fixtureCatalog;
+
+    public AdaptiveRoutingScenarioRunner() {
+        this(new AdaptiveRoutingExperimentFixtureCatalog());
+    }
+
+    AdaptiveRoutingScenarioRunner(AdaptiveRoutingExperimentFixtureCatalog fixtureCatalog) {
+        this.fixtureCatalog = Objects.requireNonNull(fixtureCatalog, "fixtureCatalog cannot be null");
+    }
 
     public AdaptiveRoutingScenarioSummary runSummary() {
         List<AdaptiveRoutingScenarioResult> results = scenarios().stream()
@@ -115,46 +123,31 @@ public final class AdaptiveRoutingScenarioRunner {
     }
 
     public List<AdaptiveRoutingScenario> scenarios() {
-        return List.of(
-                new AdaptiveRoutingScenario(
-                        "balanced-weighted-local-synthetic",
-                        "Compares how strategies distribute choices across healthy weighted local candidates.",
-                        MODE,
-                        8,
-                        List.of(
-                                state("edge-a", true, 8, 120.0, 100.0, 3.0,
-                                        22.0, 38.0, 62.0, 0.01, 2),
-                                state("edge-b", true, 12, 120.0, 100.0, 2.0,
-                                        24.0, 42.0, 68.0, 0.01, 3),
-                                state("edge-c", true, 16, 120.0, 100.0, 1.0,
-                                        26.0, 48.0, 80.0, 0.02, 4)),
-                        List.of("healthy weighted candidates", "stable local decision distribution")),
-                new AdaptiveRoutingScenario(
-                        "tail-latency-degradation-local-synthetic",
-                        "Keeps one healthy candidate visibly degraded so latency-aware strategies can avoid it.",
-                        MODE,
-                        6,
-                        List.of(
-                                state("stable-a", true, 6, 100.0, 90.0, 2.0,
-                                        18.0, 34.0, 55.0, 0.01, 1),
-                                state("stable-b", true, 9, 100.0, 90.0, 1.5,
-                                        20.0, 36.0, 58.0, 0.02, 2),
-                                state("tail-risk", true, 5, 100.0, 90.0, 1.0,
-                                        48.0, 180.0, 320.0, 0.16, 9)),
-                        List.of("tail latency pressure", "error-rate pressure", "local-only synthetic signal")),
-                new AdaptiveRoutingScenario(
-                        "capacity-pressure-local-synthetic",
-                        "Models a local capacity-pressure case with one unhealthy backend and two viable choices.",
-                        MODE,
-                        6,
-                        List.of(
-                                state("capacity-a", true, 20, 160.0, 140.0, 2.0,
-                                        30.0, 55.0, 85.0, 0.02, 4),
-                                state("capacity-b", true, 5, 80.0, 70.0, 1.0,
-                                        24.0, 46.0, 76.0, 0.03, 2),
-                                state("capacity-c-unhealthy", false, 1, 120.0, 100.0, 1.0,
-                                        20.0, 40.0, 70.0, 0.01, 1)),
-                        List.of("capacity pressure", "unhealthy candidate excluded", "fail-closed review boundary")));
+        List<AdaptiveRoutingExperimentFixtureCatalog.PreparedFixture> fixtures =
+                fixtureCatalog.prepareAll().stream().limit(3).toList();
+        int[] iterations = {8, 6, 6};
+        List<AdaptiveRoutingScenario> scenarios = new ArrayList<>();
+        for (int index = 0; index < fixtures.size(); index++) {
+            AdaptiveRoutingExperimentFixtureCatalog.PreparedFixture fixture = fixtures.get(index);
+            AdaptiveRoutingExperimentScenario experiment = fixture.scenario();
+            LaseEvaluationInput input = LaseShadowAdvisor.buildInput(
+                    experiment.strategy(),
+                    fixture.servers(),
+                    experiment.requestedLoad(),
+                    fixture.baseline(),
+                    GENERATED_AT);
+            scenarios.add(new AdaptiveRoutingScenario(
+                    experiment.name(),
+                    experiment.description(),
+                    MODE,
+                    iterations[index],
+                    input.serverCandidates(),
+                    List.of(
+                            experiment.expectedPressure(),
+                            "shared AdaptiveRoutingExperimentFixtureCatalog input",
+                            "local-only synthetic signal")));
+        }
+        return List.copyOf(scenarios);
     }
 
     private AdaptiveRoutingScenarioResult runScenario(AdaptiveRoutingScenario scenario) {
@@ -463,29 +456,4 @@ public final class AdaptiveRoutingScenarioRunner {
                 .count();
     }
 
-    private static ServerStateVector state(String serverId,
-                                           boolean healthy,
-                                           int inFlightRequestCount,
-                                           double configuredCapacity,
-                                           double estimatedConcurrencyLimit,
-                                           double weight,
-                                           double averageLatencyMillis,
-                                           double p95LatencyMillis,
-                                           double p99LatencyMillis,
-                                           double recentErrorRate,
-                                           int queueDepth) {
-        return new ServerStateVector(
-                serverId,
-                healthy,
-                inFlightRequestCount,
-                OptionalDouble.of(configuredCapacity),
-                OptionalDouble.of(estimatedConcurrencyLimit),
-                weight,
-                averageLatencyMillis,
-                p95LatencyMillis,
-                p99LatencyMillis,
-                recentErrorRate,
-                OptionalInt.of(queueDepth),
-                GENERATED_AT);
-    }
 }

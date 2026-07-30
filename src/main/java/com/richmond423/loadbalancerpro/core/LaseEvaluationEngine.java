@@ -2,11 +2,12 @@ package com.richmond423.loadbalancerpro.core;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 public final class LaseEvaluationEngine {
-    private final TailLatencyPowerOfTwoStrategy routingStrategy;
+    private final RoutingComparisonEngine routingComparisonEngine;
     private final LoadSheddingPolicy loadSheddingPolicy;
     private final ShadowAutoscaler shadowAutoscaler;
     private final FailureScenarioRunner failureScenarioRunner;
@@ -22,7 +23,23 @@ public final class LaseEvaluationEngine {
                                 ShadowAutoscaler shadowAutoscaler,
                                 FailureScenarioRunner failureScenarioRunner,
                                 Clock clock) {
-        this.routingStrategy = Objects.requireNonNull(routingStrategy, "routingStrategy cannot be null");
+        this(new RoutingComparisonEngine(
+                        new RoutingStrategyRegistry(List.of(
+                                Objects.requireNonNull(routingStrategy, "routingStrategy cannot be null"))),
+                        clock),
+                loadSheddingPolicy,
+                shadowAutoscaler,
+                failureScenarioRunner,
+                clock);
+    }
+
+    LaseEvaluationEngine(RoutingComparisonEngine routingComparisonEngine,
+                         LoadSheddingPolicy loadSheddingPolicy,
+                         ShadowAutoscaler shadowAutoscaler,
+                         FailureScenarioRunner failureScenarioRunner,
+                         Clock clock) {
+        this.routingComparisonEngine = Objects.requireNonNull(
+                routingComparisonEngine, "routingComparisonEngine cannot be null");
         this.loadSheddingPolicy = Objects.requireNonNull(loadSheddingPolicy, "loadSheddingPolicy cannot be null");
         this.shadowAutoscaler = Objects.requireNonNull(shadowAutoscaler, "shadowAutoscaler cannot be null");
         this.failureScenarioRunner = Objects.requireNonNull(failureScenarioRunner, "failureScenarioRunner cannot be null");
@@ -33,7 +50,13 @@ public final class LaseEvaluationEngine {
         Objects.requireNonNull(input, "input cannot be null");
         Objects.requireNonNull(config, "config cannot be null");
 
-        RoutingDecision routingDecision = routingStrategy.choose(input.serverCandidates());
+        RoutingComparisonResult routingResult = routingComparisonEngine
+                .compare(input.serverCandidates(), List.of(RoutingStrategyId.TAIL_LATENCY_POWER_OF_TWO))
+                .results()
+                .get(0);
+        RoutingDecision routingDecision = routingResult.decision()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Routing comparison failed: " + routingResult.reason()));
         ConcurrencyLimitDecision concurrencyDecision = new AdaptiveConcurrencyLimiter(
                 config.adaptiveConcurrencyConfig(), clock)
                 .calculateNextLimit(input.currentConcurrencyLimit(), input.concurrencyFeedback());

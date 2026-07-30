@@ -6,6 +6,131 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 15 PR-Open Checkpoint
+
+Timestamp: 2026-07-30T11:46:13-07:00
+
+Slot/branch/PR: `L-1.4`; `codex/l-1-4-collapse-comparison-paths`;
+[#512](https://github.com/RicheyWorks/LoadBalancerPro/pull/512).
+
+Status: `PR_OPEN`.
+
+Published implementation/local-green candidate: `344fef481a63013acf4770ff7e3b8e7e84f2092a`; this PR-open campaign
+update is documentation-only and will become the final candidate head after publication.
+
+Verified local gates: shared comparison-engine entry and fixture equivalence; consolidated pressure thresholds and
+boundary operators; retained scenario summary/detail/packet and retired endpoint contracts; 3,050-test clean package;
+skip-test verify/JaCoCo; embedded-server dependency tree; artifact/SBOM/LASE/adaptive-experiment/Enterprise-Lab and
+operator-profile smokes; final packaged loopback HTTP checks; bounded browser review; campaign/manifest guards;
+retired-reference, secret, external-target, protected-surface, overclaim, process/port, and complete-diff checks.
+
+Scope/safety: the bounded local/synthetic consolidation adds no credential/default, authorization,
+external/public/private target, cloud/tenant call, live proxy-route mutation, persistence, dependency,
+Maven/workflow, Docker/Compose, deployment, release, tag, or secret. Production readiness/certification,
+live-cloud/tenant validation, persistent audit or signature authenticity, production scoring, throughput/p95/p99,
+load/stress/soak behavior, distributed determinism, and broader automation remain unproven.
+
+Blocker: required checks are pending on the documentation checkpoint's not-yet-published exact head. The CI run
+started for implementation head `344fef481a63013acf4770ff7e3b8e7e84f2092a` becomes stale after this checkpoint and
+must not count.
+
+Next action: commit and publish this checkpoint, rerun the exact-head L-1.4/campaign/diff gates, then require CI,
+CodeQL, dependency review, package/SBOM/packaged-smoke/Docker/runtime/evidence, and blocking image-scan gates before
+complete-diff self-review and merge.
+
+Decision: continue only `L-1.4`; no later slot is active.
+
+## Combined Build Plan Slot 15 Local-Green Checkpoint
+
+Timestamp: 2026-07-30T11:28:39-07:00
+
+Current slot: `L-1.4`, collapse duplicate comparison and experiment paths.
+
+Branch: `codex/l-1-4-collapse-comparison-paths`; status: `LOCAL_GREEN`; exact green base:
+`b73d20fa81f4713376f91c00dccd63f2eb5d31af`. The published branch-start checkpoint is
+`6e8a3833662e616af2287833c71b41cc05d4e753`; the exact implementation head remains pending until this checkpoint
+and the complete candidate are committed.
+
+Delivered bounded scope:
+
+- `AdaptiveRoutingExperimentService`, `AdaptiveRoutingScenarioRunner`, and the LASE evaluation path now reach the
+  existing `RoutingComparisonEngine`; the scenario runner reuses the experiment fixture catalog and the advisor's
+  candidate synthesis instead of maintaining parallel fixture and decision construction.
+- The duplicate strategy-comparison matrix and self-referential scenario-gate endpoints, models, builders, tests,
+  UI sections, and evidence-catalog entries are retired; the retained summary, detail, and evidence-packet paths
+  remain available.
+- `FailureScenarioRunner`, `LoadSheddingPolicy`, and `ShadowAutoscaler` use one `PressureClassifier` with explicit
+  threshold operators and adapter-specific policy mappings.
+- Equivalence tests cover every shared experiment fixture through the comparison engine; boundary tests cover all
+  pressure dimensions, equality behavior, disabled dimensions, and the LASE comparison-engine entry.
+
+Verified before this documentation checkpoint: focused and adjacent selectors passed after two logged corrections;
+CI-evidence documentation/prototype/contract selectors passed; `mvn -q clean package` passed 3,050 tests across 412
+fresh reports with zero failures, errors, or skips; the 95,003,261-byte executable JAR had SHA-256
+`34075719D4E24C1E5FC19DE13A972838D45134594FD969BDBE2350FD5FE5D340`, contained the retained comparison and
+pressure classes, and contained no retired gate/matrix classes. Packaged loopback API and browser review confirmed
+three scenarios, five strategies, 100 decisions, packet version `adaptive-routing-scenario-evidence-packet/v1`,
+no browser-console errors, and 404 responses for both retired endpoints. The exact test process was stopped and its
+loopback port was released. Three material correction cycles are preserved in `FAILURE_LOG.md`.
+
+Safety/scope: no credential/default, authorization, external/public/private target, cloud/tenant call, live
+proxy-route mutation, persistence, dependency, Maven/workflow, Docker/Compose, deployment, release, tag, or secret
+was added. The packaged smoke used explicit loopback plus `auth.mode=none` only for that local process. Production
+readiness/certification, live-cloud/tenant validation, persistent audit/signature authenticity, production scoring,
+throughput/p95/p99, load/stress/soak behavior, distributed determinism, and broader automation remain unproven.
+
+Blocker: none locally. This checkpoint changes tracked documentation, so the complete clean package, artifact/SBOM,
+scope, and diff ladder must be rerun before the exact implementation candidate is committed.
+
+Next action: run the final working-tree verification ladder, commit and publish the exact candidate, open its PR,
+then require unchanged-head CI, CodeQL, dependency review, package/SBOM/packaged-smoke/Docker/runtime/evidence, and
+blocking image-scan gates before complete-diff self-review and merge.
+
+Decision: continue only `L-1.4`; no later slot is active.
+
+## Combined Build Plan Slot 14 Main-Green / Slot 15 Start
+
+Timestamp: 2026-07-30T10:54:50-07:00
+
+Completed: `L-1.3`; `codex/l-1-3-explainability-correctness`;
+[#511](https://github.com/RicheyWorks/LoadBalancerPro/pull/511); final head
+`b46445e3d238b83cc3dbd5c4ef4c3747abdba98d`; merge
+`b73d20fa81f4713376f91c00dccd63f2eb5d31af`.
+
+Verified: push CI `30566489048` (25/25), PR CI `30566618871` (25/25 plus 5/5 dependency review),
+CodeQL `30566618757` (11/11), every package/SBOM/JAR/Docker/runtime/evidence/image-scan step, and the 34-file
+complete-diff self-review passed on the exact final head. Local `main`, `origin/main`, and GitHub main then matched
+the merge commit with a clean worktree; the exact-main explainability/core/API/OpenAPI/UI/campaign selector passed
+61 tests across nine reports with zero failures, errors, or skips; exact-main CI `30567426583` (25/25) and CodeQL
+`30567426446` (11/11) passed.
+
+Delivered scope: comparison explanations now use each strategy's own bounded factor model; tail sampling is seeded
+from canonical request fields; successful decisions carry a timestamp-independent, length-prefixed `sha256:v1:`
+fingerprint; repeated identical five-strategy requests retain selection and fingerprint; delimiter-shaped candidate
+identifiers no longer collide. Stateful live/scenario strategy progression is unchanged.
+
+Safety/not proven: the completed slot changed no credential/default, authorization, external/public/private target,
+cloud/tenant call, live proxy-route mutation, persistence, dependency, Maven/workflow, Docker/Compose, deployment,
+release, or secret. Production readiness/certification, live-cloud/tenant validation, persistent audit/signature
+authenticity, production scoring proof, throughput/p95/p99, load/stress/soak behavior, distributed determinism, and
+broader automation remain unproven.
+
+Active: `L-1.4`, collapse duplicate comparison and experiment paths; branch
+`codex/l-1-4-collapse-comparison-paths`; status `IN_PROGRESS`; base
+`b73d20fa81f4713376f91c00dccd63f2eb5d31af`. Dependency `L-1.3` is `MAIN_GREEN`.
+
+Candidate contract: route `RoutingComparisonService`, `AdaptiveRoutingExperimentService`, and
+`AdaptiveRoutingScenarioRunner` through one current-tree comparison engine where their contracts permit it; delete
+or reduce the duplicate comparison-matrix and self-referential gate paths; consolidate the three overlapping
+pressure classifiers into one truthful model. Required proof covers equivalent experiment/scenario output via the
+shared path and one pressure-classification test surface. No deletion or behavior claim is made before inventory,
+call-graph, and fixture reconciliation.
+
+Blocker: none. Next: validate and publish this combined checkpoint, then inventory the current comparison,
+experiment, scenario, matrix/gate, and pressure-classifier paths before selecting the smallest safe consolidation.
+
+Decision: continue only `L-1.4`; no later slot is active.
+
 ## Combined Build Plan Slot 14 PR-Open Checkpoint
 
 Timestamp: 2026-07-30T10:32:22-07:00

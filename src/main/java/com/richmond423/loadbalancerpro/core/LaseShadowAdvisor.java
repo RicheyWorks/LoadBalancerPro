@@ -228,11 +228,11 @@ public final class LaseShadowAdvisor {
         return sanitized.isBlank() ? "shadow evaluation failed safely" : sanitized;
     }
 
-    private LaseEvaluationInput buildInput(String strategyName,
-                                           List<Server> currentServers,
-                                           double requestedLoad,
-                                           LoadDistributionResult distributionResult,
-                                           Instant now) {
+    static LaseEvaluationInput buildInput(String strategyName,
+                                          List<Server> currentServers,
+                                          double requestedLoad,
+                                          LoadDistributionResult distributionResult,
+                                          Instant now) {
         List<Server> serverSnapshot = List.copyOf(currentServers);
         int queueDepth = toCount(distributionResult.unallocatedLoad());
         List<ServerStateVector> stateVectors = serverSnapshot.stream()
@@ -276,10 +276,10 @@ public final class LaseShadowAdvisor {
                 now);
     }
 
-    private ServerStateVector toStateVector(Server server,
-                                            Map<String, Double> allocations,
-                                            int queueDepth,
-                                            Instant now) {
+    private static ServerStateVector toStateVector(Server server,
+                                                   Map<String, Double> allocations,
+                                                   int queueDepth,
+                                                   Instant now) {
         double loadScore = Math.max(0.0, server.getLoadScore());
         double averageLatency = 50.0 + loadScore;
         double p95Latency = averageLatency + 40.0 + queueDepth * 0.5;
@@ -289,7 +289,7 @@ public final class LaseShadowAdvisor {
                 averageLatency, p95Latency, p99Latency, errorRate, queueDepth, now);
     }
 
-    private int currentConcurrencyLimit(List<Server> servers) {
+    private static int currentConcurrencyLimit(List<Server> servers) {
         double configuredCapacity = servers.stream()
                 .filter(Objects::nonNull)
                 .mapToDouble(Server::getCapacity)
@@ -298,14 +298,14 @@ public final class LaseShadowAdvisor {
         return Math.max(1, Math.min(100, toCount(configuredCapacity > 0.0 ? configuredCapacity : fallbackCapacity)));
     }
 
-    private int healthyCount(List<ServerStateVector> stateVectors) {
+    private static int healthyCount(List<ServerStateVector> stateVectors) {
         return (int) stateVectors.stream().filter(ServerStateVector::healthy).count();
     }
 
-    private FailureScenarioType scenarioType(List<ServerStateVector> stateVectors,
-                                             int currentInFlight,
-                                             int currentConcurrencyLimit,
-                                             int queueDepth) {
+    private static FailureScenarioType scenarioType(List<ServerStateVector> stateVectors,
+                                                    int currentInFlight,
+                                                    int currentConcurrencyLimit,
+                                                    int queueDepth) {
         double healthyRatio = healthyCount(stateVectors) / (double) stateVectors.size();
         double utilization = currentInFlight / (double) currentConcurrencyLimit;
         if (healthyRatio < 0.60) {
@@ -320,7 +320,7 @@ public final class LaseShadowAdvisor {
         return FailureScenarioType.TRAFFIC_SPIKE;
     }
 
-    private String evaluationId(String strategyName) {
+    private static String evaluationId(String strategyName) {
         String normalized = strategyName == null || strategyName.isBlank()
                 ? "unknown"
                 : strategyName.trim().toLowerCase(Locale.ROOT)
@@ -334,7 +334,7 @@ public final class LaseShadowAdvisor {
         return "lase-shadow-" + normalized;
     }
 
-    private int toCount(double value) {
+    private static int toCount(double value) {
         if (!Double.isFinite(value) || value <= 0.0) {
             return 0;
         }

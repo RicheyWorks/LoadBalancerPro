@@ -201,11 +201,11 @@
       "sourceIds": ["L-1.3"],
       "track": "lab",
       "title": "Correct and determinize explainability",
-      "status": "IN_PROGRESS",
+      "status": "MAIN_GREEN",
       "dependencies": ["L-1.2", "P-0.3"],
       "riskClass": "CORRECTNESS",
       "verificationProfile": "java-full",
-      "currentState": "PR #511 is open from codex/l-1-3-explainability-correctness. Published implementation head 3b8a1ef8def7c8ed3da5073a06fdc8f265eb8350 is locally green: each strategy returns its own bounded comparison factors, round-robin remains positional, tail sampling is request-seeded, and the sha256:v1 fingerprint is timestamp-independent and length-prefixed. WRR reconciliation, twenty repeated five-strategy requests, and the a,b versus a plus b collision case pass, as do the 3,054-test clean package, artifact, 144-component SBOM, packaged-smoke, browser, and safety audits. This PR-open campaign checkpoint must be published before any remote result counts; exact-head remote gates and merge/main closure remain pending."
+      "currentState": "PR #511 final head b46445e3d238b83cc3dbd5c4ef4c3747abdba98d passed push CI 30566489048, PR CI 30566618871, CodeQL 30566618757, dependency review, package/SBOM/packaged-smoke/Docker/runtime/evidence/image-scan gates, and complete-diff self-review, then merged as b73d20fa81f4713376f91c00dccd63f2eb5d31af. Exact-main 61-test focused verification, CI 30567426583, and CodeQL 30567426446 passed. Per-strategy bounded factors, identical-request selection/fingerprint determinism, and delimiter-collision resistance are proven for the local comparison contract only."
     },
     {
       "ordinal": 15,
@@ -213,11 +213,11 @@
       "sourceIds": ["L-1.4"],
       "track": "lab",
       "title": "Collapse duplicate comparison and experiment surfaces",
-      "status": "OPEN",
+      "status": "PR_OPEN",
       "dependencies": ["L-1.3"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "One-path equivalence and consolidated pressure classification are unproven."
+      "currentState": "PR #512 is open from codex/l-1-4-collapse-comparison-paths. Published implementation head 344fef481a63013acf4770ff7e3b8e7e84f2092a passed shared-engine equivalence and pressure-boundary selectors, a 3,050-test clean package, verify/coverage, artifact/SBOM/LASE/adaptive-experiment/Enterprise-Lab/operator smokes, final packaged loopback API checks, browser review, and complete-diff scope/security audits. The PR-open campaign checkpoint is documentation-only and must be published and gated as the exact final head before merge."
     },
     {
       "ordinal": 16,

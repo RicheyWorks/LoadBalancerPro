@@ -24,27 +24,32 @@ public final class LoadSheddingPolicy {
     }
 
     private Pressure pressure(LoadSheddingSignal signal, LoadSheddingConfig config) {
+        PressureClassifier.Observation observation = PressureClassifier.from(signal);
+        PressureClassifier.Assessment hardPressure = PressureClassifier.assess(
+                observation, PressureClassifier.forHardLoadShedding(config));
         List<String> hardPressureReasons = new ArrayList<>();
-        if (signal.utilization() >= config.hardUtilizationThreshold()) {
+        if (hardPressure.has(PressureClassifier.Dimension.UTILIZATION)) {
             hardPressureReasons.add("hard utilization " + format(signal.utilization())
                     + " reached threshold " + format(config.hardUtilizationThreshold()));
         }
-        if (signal.queueDepth() > config.maxQueueDepth()) {
+        if (hardPressure.has(PressureClassifier.Dimension.QUEUE)) {
             hardPressureReasons.add("queue depth " + signal.queueDepth()
                     + " exceeded threshold " + config.maxQueueDepth());
         }
-        if (signal.observedP95LatencyMillis() > config.maxP95LatencyMillis()) {
+        if (hardPressure.has(PressureClassifier.Dimension.P95_LATENCY)) {
             hardPressureReasons.add("p95 latency " + format(signal.observedP95LatencyMillis())
                     + "ms exceeded threshold " + format(config.maxP95LatencyMillis()) + "ms");
         }
-        if (signal.observedErrorRate() > config.maxErrorRate()) {
+        if (hardPressure.has(PressureClassifier.Dimension.ERROR_RATE)) {
             hardPressureReasons.add("error rate " + format(signal.observedErrorRate())
                     + " exceeded threshold " + format(config.maxErrorRate()));
         }
         if (!hardPressureReasons.isEmpty()) {
             return new Pressure(Level.HARD, "overload pressure: " + String.join("; ", hardPressureReasons));
         }
-        if (signal.utilization() >= config.softUtilizationThreshold()) {
+        PressureClassifier.Assessment softPressure = PressureClassifier.assess(
+                observation, PressureClassifier.forSoftLoadShedding(config));
+        if (softPressure.has(PressureClassifier.Dimension.UTILIZATION)) {
             return new Pressure(Level.SOFT, "soft utilization " + format(signal.utilization())
                     + " reached threshold " + format(config.softUtilizationThreshold()));
         }

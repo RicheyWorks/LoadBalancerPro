@@ -478,7 +478,7 @@
           <span><a href="/evidence-export-packet.html"><code>/evidence-export-packet.html</code></a><br>Reviewer handoff packet.</span>
         </div>
       </div>
-      <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/ci-evidence-gate-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-detail</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-evidence-packet</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-gate-evaluation</code>, <code>/api/enterprise-lab/adaptive-routing-strategy-comparison-matrix</code>, <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
+      <p class="compact"><strong>Key APIs:</strong> <code>/api/enterprise-lab/ci-evidence-gate-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-summary</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-detail</code>, <code>/api/enterprise-lab/adaptive-routing-scenario-evidence-packet</code>, <code>/api/enterprise-lab/reviewer-summary</code>, <code>/api/enterprise-lab/operator-evidence-summary</code>, <code>/api/enterprise-lab/evidence-timeline</code>, <code>/api/enterprise-lab/evidence-export-packet</code>.</p>
     </div>
   </section>
 
@@ -586,18 +586,6 @@
           localEvidencePath: "target/adaptive-routing-scenarios/adaptive-routing-scenario-evidence-packet.json",
           localProducer: "GET /api/enterprise-lab/adaptive-routing-scenario-evidence-packet",
           reviewPurpose: "in-memory reviewer packet shape combining summary and drilldown evidence"
-        },
-        {
-          name: "Adaptive routing scenario gate evaluation",
-          localEvidencePath: "target/adaptive-routing-scenarios/adaptive-routing-scenario-gate-evaluation.json",
-          localProducer: "GET /api/enterprise-lab/adaptive-routing-scenario-gate-evaluation",
-          reviewPurpose: "local pass/warn/fail-style reviewer findings over the scenario evidence packet"
-        },
-        {
-          name: "Adaptive routing strategy comparison matrix",
-          localEvidencePath: "target/adaptive-routing-scenarios/adaptive-routing-strategy-comparison-matrix.json",
-          localProducer: "GET /api/enterprise-lab/adaptive-routing-strategy-comparison-matrix",
-          reviewPurpose: "local strategy-by-scenario selected-server distribution and reviewer signal matrix"
         }
       ],
       readinessChecks: [

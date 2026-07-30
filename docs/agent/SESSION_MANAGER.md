@@ -6,6 +6,72 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 9 PR-Open Checkpoint
+
+Timestamp: 2026-07-30T02:29:32-07:00
+
+Current slot: `L-0.4`, remove Enterprise Lab cockpit HTML-injection sinks.
+
+Current branch: `codex/l-0-4-cockpit-xss`.
+
+Slot status: `PR_OPEN`.
+
+Pull request: [#506](https://github.com/RicheyWorks/LoadBalancerPro/pull/506).
+
+Published implementation head: `30e83798376819dca7714e3f25cc9c561f7f5bc6`.
+
+Verified base: `1968c4799eaefe0f8356bbeb67334944f3997a9c`, the exact PR #505 merge commit and current
+`origin/main`.
+
+Local gate: all six HTML-string sinks were replaced by text-only DOM construction; the pre-implementation red gate,
+focused/adjacent selectors, expanded 590-test Enterprise Lab selector, corrected current-tree 3,470-test clean
+package, verify, JaCoCo, JSON/XML SBOMs, artifact verifier, packaged LASE 0/0/2, literal-loopback runtime,
+ten-scenario shadow workflow, real-control-path hostile browser fixtures for both pages, campaign guards, complete
+diff review, protected-surface scan, and scope/safety audit passed.
+
+Remote state at open:
+
+- push CI `30530858186`: pending;
+- PR CI `30530873731`: pending;
+- CodeQL `30530873756`: pending;
+- PR dependency review: pending; the duplicate push-only dependency job is correctly skipped;
+- GitHub reports the implementation head mergeable, with required checks blocked only by pending results.
+
+These runs are not accepted as final evidence because this PR-open checkpoint will create a new head. Every required
+gate must pass again on the resulting exact SHA.
+
+Review state: the pre-commit complete-diff review found and corrected the JSON-spoofable structural `nodeType`
+check. No independent reviewer is currently available. The campaign's pre-authorized substitute is a documented
+complete-diff self-review after the exact final checkpoint head is published; required checks cannot be bypassed,
+disabled, or weakened.
+
+Changed files:
+
+- `README.md`
+- `src/main/resources/static/enterprise-lab.html`
+- `src/main/resources/static/enterprise-lab-reviewer.html`
+- `src/test/java/com/richmond423/loadbalancerpro/api/EnterpriseLabCockpitXssSafetyTest.java`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Scope and safety: the production change remains limited to safe static cockpit DOM rendering. No authentication or
+authorization policy, API/endpoint schema, runtime server behavior, dependency, Maven/workflow, Docker/Compose,
+secret/default, public/external target, live cloud/tenant action, deployment, unrelated cockpit redesign, or
+readiness/performance claim was changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader
+automation is established by this slot.
+
+Blocker: required exact-head remote checks are pending.
+
+Next action: run the campaign guards on this checkpoint, commit and publish it, then require every resulting
+exact-head remote gate before authorized complete-diff self-review and merge.
+
+Decision: continue only `L-0.4`; no later slot is active.
+
 ## Combined Build Plan Slot 9 Local-Green Checkpoint
 
 Timestamp: 2026-07-29T23:17:54-07:00

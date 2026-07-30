@@ -141,11 +141,11 @@
       "sourceIds": ["L-0.4"],
       "track": "lab",
       "title": "Remove cockpit HTML-injection sinks",
-      "status": "LOCAL_GREEN",
+      "status": "PR_OPEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "SECURITY",
       "verificationProfile": "web-static",
-      "currentState": "Locally green from exact base 1968c4799eaefe0f8356bbeb67334944f3997a9c on branch codex/l-0-4-cockpit-xss. All six dynamic HTML sinks were replaced with text-only DOM construction while preserving table headers and workflow layout; hostile browser fixtures stayed inert in both pages. Focused, expanded 590-test, full 3,470-test package, verify, coverage, SBOM, artifact, packaged LASE/runtime/shadow, diff, and scope gates passed. Exact-head remote gates remain pending."
+      "currentState": "PR #506 is open from exact base 1968c4799eaefe0f8356bbeb67334944f3997a9c; published implementation head 30e83798376819dca7714e3f25cc9c561f7f5bc6. All six dynamic HTML sinks use text-only DOM construction while preserving layout; hostile browser fixtures stayed inert. Focused, expanded 590-test, full 3,470-test package, verify, coverage, SBOM, artifact, packaged LASE/runtime/shadow, diff, and scope gates passed. Push CI 30530858186, PR CI 30530873731, and CodeQL 30530873756 are pending and will be superseded by the PR-open checkpoint head."
     },
     {
       "ordinal": 10,

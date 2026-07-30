@@ -8740,3 +8740,59 @@ P-0.4 exact-head progress formatter: a PowerShell loop attempted to pipe directl
 and failed at parse time with an empty-pipe-element error, before its planned bounded wait or any GitHub query ran.
 No remote state changed and the required runs continued independently. Correction: collect loop results in an
 array and format that array in a separate statement; do not use this failed wrapper as check evidence.
+
+P-0.4 exact-main package wrapper: the first post-merge `mvn -B package` call was accidentally given a one-second
+tool timeout. The shell wrapper timed out after about five seconds while its Maven and Surefire process tree
+continued in the background. The exact workspace-bound PIDs and command lines were inspected, then only that
+captured Maven/Surefire tree was force-stopped before any rerun. No test result from the interrupted attempt is
+accepted. Correction: rerun with the normal ten-minute bound; that fresh command exited 0 with 3,440 tests across
+484 fresh reports, zero failures/errors/skips, and no dumps.
+
+# 2026-07-29 - P-0.6 simulation-core correctness audit
+
+Branch: `codex/p-0-6-simulation-core-correctness`
+
+First P-0.6 source-contract lookup: the focused expression searched for `P-0.6`, while the source plan uses the
+heading `PR-0.6`, and returned its normal no-match exit 1 after branch creation. A broader follow-up found the
+correct heading, but piping its many repository-wide matches through `Select-Object -First 240` closed the producer
+early and returned exit 1 after printing useful results. These were read-only lookup failures. Correction: treat
+neither wrapper as a gate and inspect the confirmed `docs/BUILD_PLAN_DEPLOYABLE.md` lines 40-41 directly before
+auditing the named production surfaces.
+
+First P-0.6 red-gate design: eight acceptance tests ran with seven failures, zero errors, and zero skips, confirming
+the priority, redistribution, history-overflow, rollback-snapshot, concurrent-setter, dead-queue, and cloud-property
+defects. The consistent-hashing lock test unexpectedly passed because it blocked at the already-existing nested
+`getHealthyServers()` read lock after the unsafe initial registry/ring checks; it did not prove one lock scope
+around the whole method. Correction: add a deterministic source-scope assertion requiring the outer read-lock
+acquisition before the first registry/ring check and release in `finally`, rerun the complete red gate, and do not
+edit production code until all eight live defect contracts fail for the intended reason.
+
+Corrected P-0.6 red gate: nine tests ran with eight failures, zero errors, and zero skips. The new outer lock-scope
+guard failed all three assertions because `consistentHashing` had no method-level read lock; the other seven
+failures remained mapped to their intended live defects. The adjacent runtime lock test passed because the old
+nested healthy-snapshot call still blocked, but it is not used as proof of the outer scope. Production correction
+began only after this complete defect-to-acceptance mapping was established.
+
+P-0.6 local container/security-tool diagnostic: the Docker CLI remained unable to reach its configured Docker
+Desktop Linux engine, Trivy remained unavailable, and the repository root contained no Compose file. No local
+Docker/runtime, Compose, or Trivy result is claimed. Correction: retain exact-head remote Docker build/runtime,
+controlled container evidence, and blocking image scan as mandatory merge gates.
+
+P-0.6 final test-source inspection: a read-only `Get-Content` command used the incorrect package path
+`src/test/java/com/richeyworks/...` instead of the repository's confirmed `src/test/java/com/richmond423/...`
+path and returned a file-not-found error after the preceding status and diff checks succeeded. No source or test
+was changed by that lookup. Correction: inspect the already listed untracked test at its exact Git status path
+before accepting the full-diff review.
+
+P-0.6 final executable-JAR inventory: a read-only metadata probe guessed the obsolete artifact name
+`target/load-balancer-pro-1.0.0.jar`; `Get-Item` returned file-not-found and the dependent hash/entry commands
+therefore had no input. The already-green package and packaged-workflow runs are unaffected, and no artifact or
+source was changed. Correction: resolve the unique executable JAR from the current `target` inventory before
+recording its size, entry count, or hash.
+
+P-0.6 exact-head workflow progress query: a three-command read-only `gh run view` bundle returned the useful
+Dependency Review, push-CI test-step, and CodeQL build-step state, but its final invocation was parsed by the CLI as
+four positional arguments and returned `accepts at most 1 arg(s)`. No workflow was cancelled, rerun, or changed,
+and no check result from the malformed invocation is accepted. Correction: query one confirmed run ID per command
+with only the bounded `status`, `conclusion`, and `jobs` JSON fields; the failure-log-only correction establishes a
+new head whose complete remote gate set must pass.

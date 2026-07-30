@@ -144,7 +144,6 @@ final class ServerHealthCoordinator {
                 return;
             }
             Map<String, Double> newDist = leastLoadedDistributor.apply(redistributedData);
-            loadDistributionEngine.putAllAllocations(newDist);
             logger.info("Redistributed {}GB: {}", redistributedData, newDist);
         }
     }

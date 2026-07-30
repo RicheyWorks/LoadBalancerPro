@@ -34,7 +34,7 @@ The first slot does not change runtime behavior. It records what the current cod
 | Round robin allocation facade | Splits requested batch load evenly across healthy registered servers and returns an empty allocation when no healthy server is available. | `LoadBalancerTest`, `CoreRoutingDecisionIntegrationTest` | Add a compact cross-strategy invariant test for zero load, empty server set, and all-unhealthy behavior. |
 | Least-loaded allocation facade | Current contract sorts by load score but still allocates equal shares across healthy servers for positive-load tested cases. Zero-load least-loaded allocation exposes the lowest-load candidate before the current loop stops. | `LoadBalancerTest` characterization tests, `CoreLoadBalancerLeastLoadedSemanticsTest` | Preserve as an explicit contract unless a later behavior PR proposes and verifies different semantics. |
 | Weighted distribution facade | Uses server weights proportionally, gives zero-weight servers zero allocation when positive weights exist, and falls back to equal allocation when all weights are zero. | `LoadBalancerTest`, `CoreLoadBalancerWeightedDistributionInvariantTest` | Preserve the focused invariant matrix unless a later behavior PR proposes and verifies different semantics. |
-| Consistent hashing facade | Routes keys through the hash ring to healthy registered servers, rejects invalid key counts, fails closed for no eligible servers, and removes stale participation after server removal or duplicate replacement. | `LoadBalancerTest`, `CoreLoadBalancerConsistentHashingInvariantTest` | Preserve focused hash-ring facade invariants unless a later behavior PR proposes and verifies different semantics. |
+| Consistent hashing facade | Routes keys through the hash ring to healthy registered servers, rejects invalid key counts, fails closed for no eligible servers, removes stale participation after server removal or duplicate replacement, and keeps registry/ring reads in one server read-lock scope. | `LoadBalancerTest`, `CoreLoadBalancerConsistentHashingInvariantTest`, `SimulationCoreCorrectnessBatchTest` | Preserve focused hash-ring facade and lock-scope invariants unless a later behavior PR proposes and verifies different semantics. |
 | Capacity-aware allocation | Allocates only within available capacity, reports unallocated load when requested load exceeds available capacity, and preserves deterministic degraded/recovery behavior. | `LoadBalancerTest`, `CoreRoutingDecisionIntegrationTest` | Harden overload and unallocated-load assertions across edge cases. |
 | Predictive allocation | Uses predicted load as a capacity input, allocates only within predicted available capacity, and reports capped excess load through result variants. | `LoadBalancerTest` | Mirror the capacity-aware invariant matrix for predictive overload cases. |
 | Routing strategy registry | Default registry exposes tail-latency power-of-two, weighted least-load, weighted least-connections, weighted round-robin, and round-robin strategies in a stable reviewer-visible order. Requested comparison output preserves requested order, reports absent strategies safely, and keeps decision explanation fields visible. | `RoutingComparisonEngineTest`, `CoreRoutingRegistryComparisonContractTest`, strategy-specific tests | Preserve the registry/comparison contract unless a later behavior PR proposes and verifies different semantics. |
@@ -190,6 +190,11 @@ Gap:
 - Weighted round robin and weighted least connections default missing weight, exclude zero-weight candidates as a
   drain signal, preserve positive fractional weights, and reject invalid negative or non-finite weights.
 - Tail-latency routing explanations name material factors and anti-flapping decisions when relevant.
+- Hard-pressure shedding does not reject `CRITICAL` traffic while the same policy protects `USER` traffic.
+- Health redistribution preserves survivor allocations already accumulated before a peer is evicted.
+- Metric validation occurs before rollback-snapshot mutation, history indexing remains non-negative across integer
+  overflow, and synchronized single-metric setters preserve concurrent updates.
+- Explicit server type is not overridden by a JVM-global property, and the registry carries no unused load queue.
 
 ## Reviewer Evidence Map
 
@@ -275,15 +280,24 @@ Core-LB-G10 is tracked in [`CORE_LOADBALANCER_EVIDENCE_CONSOLIDATION.md`](CORE_L
 
 ### Core-LB-G12 - Consistent hashing invariants
 
-- Scope: fixed-input deterministic key routing, invalid key-count rejection, empty/all-unhealthy fail-closed behavior, server-removal cleanup, duplicate replacement cleanup, and zero-load characterization.
-- Decision: current consistent-hashing facade routes only to healthy registered servers and should not retain removed or replaced server participation in reviewer-visible allocation output.
-- Exit criteria: `CoreLoadBalancerConsistentHashingInvariantTest` protects the hash-ring facade contract without changing production behavior.
+- Scope: fixed-input deterministic key routing, invalid key-count rejection, empty/all-unhealthy fail-closed behavior, server-removal cleanup, duplicate replacement cleanup, zero-load characterization, and one read-lock scope around registry/ring reads.
+- Decision: current consistent-hashing facade routes only to healthy registered servers, does not retain removed or replaced server participation, and prevents write-side ring removal between its empty check and key selection.
+- Exit criteria: `CoreLoadBalancerConsistentHashingInvariantTest` and `SimulationCoreCorrectnessBatchTest` protect the hash-ring facade and lock-scope contracts.
 
 ### Core-LB-G13 - Rebalance and accumulated-load invariants
 
-- Scope: empty accumulated-load rebalance, current-strategy rebalance, removal and duplicate replacement reconciliation, and capacity-aware/predictive result allocation accumulation.
-- Decision: current rebalance behavior redistributes accumulated allocated load through the selected facade strategy, keeps unallocated load out of accumulated state, and remains deterministic after removal or replacement cleanup.
-- Exit criteria: `CoreLoadBalancerRebalanceInvariantTest` protects accumulated-load rebalance behavior without changing production behavior.
+- Scope: empty accumulated-load rebalance, current-strategy rebalance, removal and duplicate replacement reconciliation, health-eviction merge behavior, and capacity-aware/predictive result allocation accumulation.
+- Decision: current rebalance behavior redistributes accumulated allocated load through the selected facade strategy, merges a failed server's allocation with survivor allocations, keeps unallocated load out of accumulated state, and remains deterministic after removal or replacement cleanup.
+- Exit criteria: `CoreLoadBalancerRebalanceInvariantTest` and `SimulationCoreCorrectnessBatchTest` protect accumulated-load and health-redistribution behavior.
+
+### Core-LB-G14 - Simulation-core mutation and priority invariants
+
+- Scope: priority-monotonic hard-pressure shedding, validate-before-snapshot metric updates, history-index overflow,
+  concurrent single-metric setters, explicit server-type ownership, and absence of the unused registry load queue.
+- Decision: these behaviors are deterministic local correctness constraints for the simulation/allocation core; they
+  do not turn the simulation core into live proxy routing or production evidence.
+- Exit criteria: `SimulationCoreCorrectnessBatchTest`, `LoadSheddingPolicyTest`, and `ServerTest` protect the scoped
+  behaviors without adding external calls or production-readiness claims.
 
 ## Not-Proven Boundaries
 

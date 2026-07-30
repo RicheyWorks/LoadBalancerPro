@@ -6,6 +6,247 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 6 Remote-Green Checkpoint
+
+Timestamp: 2026-07-29T20:14:06-07:00
+
+Current slot: `P-0.6`, apply the simulation-core correctness batch.
+
+Current branch: `codex/p-0-6-simulation-core-correctness`.
+
+Slot status: `REMOTE_GREEN`.
+
+Pull request: [#503](https://github.com/RicheyWorks/LoadBalancerPro/pull/503).
+
+Verified remote-green head: `c5f9571995906e99a901eef48fb249dee659b501`.
+
+Verified base: `46f03670ee3e0829fd0db8577c1a332612ab29bd`, the exact PR #502 merge commit and green
+`origin/main`.
+
+Exact-head remote verification:
+
+- push CI `30510194763`: success;
+- PR CI `30510197217`: success;
+- CodeQL `30510197214`: success;
+- PR dependency review: success; the push-only duplicate was correctly skipped;
+- both 25-step CI build jobs passed tests, zero-skip enforcement, JaCoCo, executable-JAR package rerun and resource
+  audit, CycloneDX SBOM, LASE and packaged-JAR smokes, Docker image build, Docker runtime smoke, controlled container
+  evidence, blocking image scan, and evidence upload;
+- every completed step in both CI build jobs and the CodeQL job had an accepted success/skip conclusion;
+- GitHub reports the exact head `CLEAN` and mergeable.
+
+Review: no independent reviewer, review, or PR comment was available. The pre-authorized substitute complete-diff
+self-review covered all 14 changed files and 617 insertions/82 deletions from exact base through head. It found no
+actionable correctness, safety, scope, or documentation-trust defect. Local, remote-tracking, and PR head SHAs
+matched; the working tree was clean; whitespace and protected-surface scans passed.
+
+Scope and safety: production changes remain limited to the eight planned simulation-core correctness repairs. No
+auth/security-policy weakening, external/public target, secret, live cloud/tenant action, deployment, CI/Maven/
+Docker/Compose change, proxy/API redesign, unrelated lab/evidence behavior, or readiness/performance claim is
+present.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: none on verified head `c5f9571995906e99a901eef48fb249dee659b501`.
+
+Next action: commit and publish this remote-green checkpoint, treat the resulting SHA as the final candidate, and
+repeat every exact-head required gate before authorized merge.
+
+Decision: continue only `P-0.6`; no later slot is active.
+
+## Combined Build Plan Slot 6 PR-Open Checkpoint
+
+Timestamp: 2026-07-29T20:00:53-07:00
+
+Current slot: `P-0.6`, apply the simulation-core correctness batch.
+
+Current branch: `codex/p-0-6-simulation-core-correctness`.
+
+Slot status: `PR_OPEN`.
+
+Pull request: [#503](https://github.com/RicheyWorks/LoadBalancerPro/pull/503).
+
+Published implementation head: `c44fe33b1dd06a524f8dd94e101b96f1cdc15172`.
+
+Verified base: `46f03670ee3e0829fd0db8577c1a332612ab29bd`, the exact PR #502 merge commit and green
+`origin/main`.
+
+Local gate: the corrected red gate mapped all eight live defects; post-implementation focused and adjacent
+selectors passed; clean `mvn -B package` passed 3,449 tests across 485 reports with zero failures, errors, skips, or
+dumps. Verify, JaCoCo, executable-JAR resources, CycloneDX JSON/XML, packaged LASE, literal-loopback packaged
+runtime, Enterprise Lab packaged workflow, campaign guards, and the complete 14-file scope/safety audit passed.
+
+Remote state at open: push CI `30509982224`, PR CI `30510002774`, and CodeQL `30510002701` started for the
+published implementation head. PR dependency review passed and the duplicate push-only dependency job was
+correctly skipped. These runs are not accepted as final evidence because this PR-open checkpoint will create a new
+head; every required gate must pass again on that resulting exact SHA.
+
+Review state: no independent reviewer is available; the campaign's pre-authorized substitute is a documented
+complete-diff self-review after the exact final checkpoint head is published. Required checks cannot be bypassed,
+disabled, or weakened.
+
+Scope and safety: production changes remain limited to the eight planned simulation-core correctness repairs. No
+auth/security-policy weakening, external/public target, secret, live cloud/tenant action, deployment, CI/Maven/
+Docker/Compose change, proxy/API redesign, unrelated lab/evidence behavior, or readiness/performance claim is
+present.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: required exact-head remote checks are pending.
+
+Next action: commit and publish this PR-open checkpoint, then require every resulting exact-head remote gate before
+authorized complete-diff self-review and merge.
+
+Decision: continue only `P-0.6`; no later slot is active.
+
+## Combined Build Plan Slot 6 Local-Green Checkpoint
+
+Timestamp: 2026-07-29T19:57:48-07:00
+
+Current slot: `P-0.6`, apply the simulation-core correctness batch.
+
+Current branch: `codex/p-0-6-simulation-core-correctness`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `46f03670ee3e0829fd0db8577c1a332612ab29bd`, the exact PR #502 merge commit and green
+`origin/main`.
+
+Implementation:
+
+- hard-pressure shedding now preserves priority monotonicity: `CRITICAL` cannot be rejected while the same policy
+  protects `USER`;
+- health eviction relies on the least-loaded redistribution path's existing merge and no longer overwrites survivor
+  accumulated load with a duplicate `putAll`;
+- consistent hashing keeps its registry and ring reads within one server read-lock scope;
+- metric inputs are validated before rollback-snapshot mutation, history indexing uses `Math.floorMod`, and
+  single-metric setters synchronize their read-modify-write cycle;
+- explicit server type is no longer overridden by the JVM-global `isCloudServer` property;
+- the unused, non-thread-safe registry `loadQueue` and its dead allocation overwrite helper were removed;
+- decomposition and core feature-contract records now state these bounded local correctness guarantees without
+  upgrading runtime, deployment, or production evidence.
+
+Acceptance:
+
+- the first red design ran eight tests with seven failures; its hashing test exposed an inadequate nested-lock
+  oracle, so a deterministic full-method lock-scope guard was added before production edits;
+- the corrected red gate ran nine tests with eight expected failures, zero errors, and zero skips, mapping every
+  live imported defect to its intended assertion;
+- post-implementation focused and expanded simulation-core, health-lifecycle, load-distribution, hashing,
+  load-shedding, server, and campaign-documentation selectors passed;
+- deterministic acceptance proves monotonic priority behavior, survivor-load preservation, full hash read-lock
+  scope, integer-overflow-safe history indexing, snapshot integrity after invalid input, concurrent setter
+  preservation, dead-queue removal, and explicit server-type ownership.
+
+Changed files:
+
+- `src/main/java/com/richmond423/loadbalancerpro/core/LoadBalancer.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/LoadDistributionEngine.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/LoadSheddingPolicy.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/Server.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/ServerHealthCoordinator.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/ServerRegistry.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/ServerTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/SimulationCoreCorrectnessBatchTest.java`
+- `docs/LOADBALANCER_DECOMPOSITION_PLAN.md`
+- `docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Verification:
+
+- clean `mvn -B package`: exit 0, 3,449 tests across 485 fresh reports, zero failures/errors/skips, and no Surefire
+  dump files;
+- `mvn -q "-DskipTests" verify`, focused/adjacent selectors, campaign documentation guards, and
+  `git diff --check` passed;
+- JaCoCo XML generation passed: 83.19% instructions, 66.37% branches, 82.48% lines, 87.67% methods, and 94.31%
+  classes;
+- the checked-in artifact verifier passed all seven required executable-JAR entries;
+- final executable JAR after the packaged workflow rerun: 95,545,274 bytes, 1,433 entries, SHA-256
+  `DC3138B417F18D9FA0DEA368D472FC4614F3463279BC5B2116DCC8434CCF09E8`;
+- CycloneDX 2.9.1 generated parseable JSON/XML 1.6 BOMs with 144 components in each;
+- packaged healthy/overloaded/invalid LASE CLI cases passed with exits 0, 0, and 2, no Spring startup, and no raw
+  invalid-case exception;
+- literal-loopback packaged runtime returned HTTP 200 for health, root, proxy status, and both static operator
+  pages; exact captured-process cleanup released port 18080;
+- the packaged Enterprise Lab shadow workflow passed ten fixed scenarios and wrote ignored target-only evidence
+  under its explicit no-live-cloud/no-external-network boundary.
+
+Local limitations: the Docker CLI could not reach its configured engine, Trivy is not installed, and the repository
+root has no Compose file. No local Docker/runtime, container, Trivy, or Compose result is claimed. Exact-head remote
+CI, CodeQL, dependency review, SBOM, Docker/runtime, controlled container evidence, and blocking image scan remain
+mandatory before merge.
+
+Scope and safety: production changes are limited to the eight planned simulation-core correctness repairs. No auth
+or security-policy weakening, public/external target, secret, live cloud/tenant action, deployment, CI/Maven/Docker/
+Compose behavior, proxy/API redesign, unrelated lab/evidence behavior, or readiness/performance claim changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: none locally.
+
+Next action: rerun the campaign guards after this checkpoint, commit and publish the exact 14-file local-green
+slice, open one PR, and require every exact-head remote gate before authorized self-review and merge.
+
+Decision: continue only `P-0.6`; no later slot is active.
+
+## Combined Build Plan Slot 6 Start Checkpoint
+
+Timestamp: 2026-07-29T19:36:31-07:00
+
+Current slot: `P-0.6`, apply the simulation-core correctness batch.
+
+Current branch: `codex/p-0-6-simulation-core-correctness`.
+
+Slot status: `IN_PROGRESS`.
+
+Verified base: `46f03670ee3e0829fd0db8577c1a332612ab29bd`, the exact PR #502 merge commit and current
+`origin/main`.
+
+Previous slot closeout:
+
+- P-0.4 final head `7ee748ff938eb68b0dea32d5bf54ae71ea817552` passed PR CI `30508019833`, duplicate
+  push CI `30508018133`, CodeQL `30508019835`, dependency review, both package reruns, SBOM, packaged smokes,
+  Docker/runtime, container evidence, and blocking image scan;
+- PR #502 merged as `46f03670ee3e0829fd0db8577c1a332612ab29bd`;
+- the exact merge passed focused weight-drain/interruption/configuration and campaign guards;
+- post-merge `mvn -B package` passed 3,440 tests across 484 fresh reports with zero failures, errors, or skips and
+  no Surefire dumps;
+- exact-main CI `30508489170` and CodeQL `30508489168` passed, including package rerun, SBOM, packaged smokes,
+  Docker/runtime, container evidence, and blocking image scan.
+
+P-0.4 is `MAIN_GREEN`, completing 5 of 49 implementation slots.
+
+P-0.6 build contract: re-audit and, where still applicable, correct load-shedding priority ordering; health
+redistribution merge behavior; consistent-hashing locking and empty-ring races; history indexing overflow;
+metric-update validation/snapshot ordering; single-metric setter synchronization; dead registry load-queue state;
+and the global `isCloudServer` system-property override. Preserve already-correct behavior and do not manufacture a
+change for an imported defect that current main has already closed.
+
+Prohibited surfaces: no proxy/API redesign, auth/security-policy weakening, external/public target, secret, live
+cloud/tenant action, production deployment, CI/Maven/Docker/Compose change, unrelated lab/evidence behavior, or
+readiness/performance claim.
+
+Verification profile: `java-full` with exact red acceptance for each live defect, focused simulation-core and
+adjacent lifecycle/hash/health/load-shedding selectors, the full local Java/package/verify ladder, complete
+diff/scope audit, and exact-head remote CI, CodeQL, dependency review, SBOM, Docker/runtime, container evidence, and
+blocking image scan.
+
+Blocker: none.
+
+Next action: inspect the exact source-plan line and every named current production/test surface, classify already-
+fixed versus live defects, then write deterministic failing acceptance only for live behavior.
+
+Decision: continue only `P-0.6`; no later slot is active.
+
 ## Combined Build Plan Slot 5 Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T19:15:12-07:00

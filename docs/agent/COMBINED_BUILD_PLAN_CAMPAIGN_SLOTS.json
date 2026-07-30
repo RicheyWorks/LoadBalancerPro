@@ -141,11 +141,11 @@
       "sourceIds": ["L-0.4"],
       "track": "lab",
       "title": "Remove cockpit HTML-injection sinks",
-      "status": "IN_PROGRESS",
+      "status": "LOCAL_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "SECURITY",
       "verificationProfile": "web-static",
-      "currentState": "Started from exact green main 1968c4799eaefe0f8356bbeb67334944f3997a9c on branch codex/l-0-4-cockpit-xss. The five enterprise-lab.html innerHTML renderers and one enterprise-lab-reviewer.html key/value renderer are under current-tree audit against hostile server-derived strings; no acceptance claim yet."
+      "currentState": "Locally green from exact base 1968c4799eaefe0f8356bbeb67334944f3997a9c on branch codex/l-0-4-cockpit-xss. All six dynamic HTML sinks were replaced with text-only DOM construction while preserving table headers and workflow layout; hostile browser fixtures stayed inert in both pages. Focused, expanded 590-test, full 3,470-test package, verify, coverage, SBOM, artifact, packaged LASE/runtime/shadow, diff, and scope gates passed. Exact-head remote gates remain pending."
     },
     {
       "ordinal": 10,

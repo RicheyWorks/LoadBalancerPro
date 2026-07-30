@@ -244,18 +244,92 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-a
     return body;
   }
 
+  function appendTextCell(row, tagName, value) {
+    const cell = document.createElement(tagName);
+    cell.textContent = String(value ?? "");
+    row.appendChild(cell);
+    return cell;
+  }
+
+  function createPills(values, formatter = (value) => value) {
+    const fragment = document.createDocumentFragment();
+    if (!Array.isArray(values) || values.length === 0) {
+      fragment.appendChild(document.createTextNode("none"));
+      return fragment;
+    }
+    values.forEach((value, index) => {
+      if (index > 0) {
+        fragment.appendChild(document.createTextNode(" "));
+      }
+      const pill = document.createElement("span");
+      pill.className = "pill";
+      pill.textContent = String(formatter(value));
+      fragment.appendChild(pill);
+    });
+    return fragment;
+  }
+
+  function appendValueCell(row, value) {
+    if (value instanceof Node) {
+      const cell = document.createElement("td");
+      cell.appendChild(value);
+      row.appendChild(cell);
+    } else {
+      appendTextCell(row, "td", value);
+    }
+  }
+
+  function renderTable(container, headers, rows) {
+    const table = document.createElement("table");
+    if (headers.length > 0) {
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      headers.forEach((header) => appendTextCell(headerRow, "th", header));
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+    }
+    const tbody = document.createElement("tbody");
+    rows.forEach((values) => {
+      const row = document.createElement("tr");
+      values.forEach((value) => appendValueCell(row, value));
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    container.replaceChildren(table);
+  }
+
+  function renderKeyValueTable(container, rows) {
+    const table = document.createElement("table");
+    const tbody = document.createElement("tbody");
+    rows.forEach(([label, value]) => {
+      const row = document.createElement("tr");
+      appendTextCell(row, "th", label);
+      appendValueCell(row, value);
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    container.replaceChildren(table);
+  }
+
   function renderScenarios(catalog) {
     selectedScenarioIds.clear();
     const rows = catalog.scenarios.map((scenario) => {
       selectedScenarioIds.add(scenario.scenarioId);
-      return `<tr>
-        <td><label><input type="checkbox" data-scenario="${scenario.scenarioId}" checked> ${scenario.displayName}</label></td>
-        <td>${scenario.category}</td>
-        <td>${scenario.signalsInvolved.map(signal => `<span class="pill">${signal}</span>`).join(" ")}</td>
-        <td>${scenario.expectedGuardrails.join("; ")}</td>
-      </tr>`;
-    }).join("");
-    scenariosEl.innerHTML = `<table><thead><tr><th>Scenario</th><th>Category</th><th>Signals</th><th>Guardrails</th></tr></thead><tbody>${rows}</tbody></table>`;
+      const label = document.createElement("label");
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.dataset.scenario = String(scenario.scenarioId ?? "");
+      input.checked = true;
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(` ${String(scenario.displayName ?? "")}`));
+      return [
+        label,
+        scenario.category,
+        createPills(scenario.signalsInvolved),
+        Array.isArray(scenario.expectedGuardrails) ? scenario.expectedGuardrails.join("; ") : ""
+      ];
+    });
+    renderTable(scenariosEl, ["Scenario", "Category", "Signals", "Guardrails"], rows);
     scenariosEl.querySelectorAll("input[data-scenario]").forEach((input) => {
       input.addEventListener("change", () => {
         if (input.checked) {
@@ -268,66 +342,69 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke\enterprise-a
   }
 
   function renderScorecard(scorecard) {
-    scorecardEl.innerHTML = `<table><tbody>
-      <tr><th>Total scenarios</th><td>${scorecard.totalScenarios}</td></tr>
-      <tr><th>Baseline vs shadow differences</th><td>${scorecard.baselineVsShadowDifferences}</td></tr>
-      <tr><th>Baseline vs influence differences</th><td>${scorecard.baselineVsInfluenceDifferences}</td></tr>
-      <tr><th>Guardrail-blocked influence</th><td>${scorecard.guardrailBlockedInfluenceCount}</td></tr>
-      <tr><th>Unsafe/all-unhealthy blocked</th><td>${scorecard.unsafeAllUnhealthyBlockedCount}</td></tr>
-      <tr><th>Stale/conflicting blocked</th><td>${scorecard.staleConflictingSignalBlockedCount}</td></tr>
-      <tr><th>Explanation coverage</th><td>${scorecard.explanationCoverage}</td></tr>
-      <tr><th>Mode used</th><td>${scorecard.modeUsed}</td></tr>
-      <tr><th>Recommendation</th><td>${scorecard.finalRecommendation}</td></tr>
-    </tbody></table>`;
+    renderKeyValueTable(scorecardEl, [
+      ["Total scenarios", scorecard.totalScenarios],
+      ["Baseline vs shadow differences", scorecard.baselineVsShadowDifferences],
+      ["Baseline vs influence differences", scorecard.baselineVsInfluenceDifferences],
+      ["Guardrail-blocked influence", scorecard.guardrailBlockedInfluenceCount],
+      ["Unsafe/all-unhealthy blocked", scorecard.unsafeAllUnhealthyBlockedCount],
+      ["Stale/conflicting blocked", scorecard.staleConflictingSignalBlockedCount],
+      ["Explanation coverage", scorecard.explanationCoverage],
+      ["Mode used", scorecard.modeUsed],
+      ["Recommendation", scorecard.finalRecommendation]
+    ]);
   }
 
   function renderPolicy(policy) {
-    policyEl.innerHTML = `<table><tbody>
-      <tr><th>Configured mode</th><td>${policy.configuredMode}</td></tr>
-      <tr><th>Current mode</th><td>${policy.currentMode}</td></tr>
-      <tr><th>Active-experiment enabled</th><td>${policy.activeExperimentEnabled}</td></tr>
-      <tr><th>Retained audit events</th><td>${policy.retainedAuditEventCount} / ${policy.maxRetainedAuditEvents}</td></tr>
-      <tr><th>Last guardrail</th><td>${policy.lastGuardrailReason}</td></tr>
-      <tr><th>Warning</th><td>${policy.warning}</td></tr>
-    </tbody></table>`;
+    renderKeyValueTable(policyEl, [
+      ["Configured mode", policy.configuredMode],
+      ["Current mode", policy.currentMode],
+      ["Active-experiment enabled", policy.activeExperimentEnabled],
+      ["Retained audit events", `${policy.retainedAuditEventCount} / ${policy.maxRetainedAuditEvents}`],
+      ["Last guardrail", policy.lastGuardrailReason],
+      ["Warning", policy.warning]
+    ]);
   }
 
   function renderAudit(audit) {
-    if (!audit.events.length) {
+    const events = Array.isArray(audit.events) ? audit.events : [];
+    if (!events.length) {
       auditEl.textContent = "No policy audit events recorded yet.";
       return;
     }
-    const rows = audit.events.slice(-8).map((event) => `<tr>
-      <td>${event.eventId}</td>
-      <td>${event.mode}</td>
-      <td>${event.baselineDecision || "none"}</td>
-      <td>${event.recommendation || "none"}</td>
-      <td>${event.finalDecision || "none"}</td>
-      <td>${event.changed}</td>
-      <td>${event.guardrailReasons.join("; ")}</td>
-      <td>${event.rollbackReason}</td>
-    </tr>`).join("");
-    auditEl.innerHTML = `<table><thead><tr><th>Event</th><th>Mode</th><th>Baseline</th><th>Recommendation</th><th>Final</th><th>Changed</th><th>Guardrails</th><th>Rollback</th></tr></thead><tbody>${rows}</tbody></table>`;
+    const rows = events.slice(-8).map((event) => [
+      event.eventId,
+      event.mode,
+      event.baselineDecision || "none",
+      event.recommendation || "none",
+      event.finalDecision || "none",
+      event.changed,
+      Array.isArray(event.guardrailReasons) ? event.guardrailReasons.join("; ") : "",
+      event.rollbackReason
+    ]);
+    renderTable(
+      auditEl,
+      ["Event", "Mode", "Baseline", "Recommendation", "Final", "Changed", "Guardrails", "Rollback"],
+      rows
+    );
   }
 
   function renderMetrics(metrics) {
     const guardrails = Object.entries(metrics.guardrailBlocksByReason || {})
-      .map(([reason, count]) => `<span class="pill">${reason}: ${count}</span>`)
-      .join(" ") || "none";
+      .map(([reason, count]) => [reason, count]);
     const modes = Object.entries(metrics.policyDecisionsByMode || {})
-      .map(([mode, count]) => `<span class="pill">${mode}: ${count}</span>`)
-      .join(" ") || "none";
-    metricsEl.innerHTML = `<table><tbody>
-      <tr><th>Lab runs</th><td>${metrics.labRunsCreated}</td></tr>
-      <tr><th>Scenarios executed</th><td>${metrics.labScenariosExecuted}</td></tr>
-      <tr><th>Recommendations</th><td>${metrics.recommendationsProduced}</td></tr>
-      <tr><th>Active changes allowed</th><td>${metrics.activeExperimentChangesAllowed}</td></tr>
-      <tr><th>Rollback/fail-closed</th><td>${metrics.rollbackFailClosedEvents}</td></tr>
-      <tr><th>Audit retained/dropped</th><td>${metrics.auditEventsRetained} / ${metrics.auditEventsDropped}</td></tr>
-      <tr><th>Modes</th><td>${modes}</td></tr>
-      <tr><th>Guardrails</th><td>${guardrails}</td></tr>
-      <tr><th>Warning</th><td>${metrics.warning}</td></tr>
-    </tbody></table>`;
+      .map(([mode, count]) => [mode, count]);
+    renderKeyValueTable(metricsEl, [
+      ["Lab runs", metrics.labRunsCreated],
+      ["Scenarios executed", metrics.labScenariosExecuted],
+      ["Recommendations", metrics.recommendationsProduced],
+      ["Active changes allowed", metrics.activeExperimentChangesAllowed],
+      ["Rollback/fail-closed", metrics.rollbackFailClosedEvents],
+      ["Audit retained/dropped", `${metrics.auditEventsRetained} / ${metrics.auditEventsDropped}`],
+      ["Modes", createPills(modes, ([mode, count]) => `${mode}: ${count}`)],
+      ["Guardrails", createPills(guardrails, ([reason, count]) => `${reason}: ${count}`)],
+      ["Warning", metrics.warning]
+    ]);
   }
 
   document.getElementById("loadScenarios").addEventListener("click", async () => {

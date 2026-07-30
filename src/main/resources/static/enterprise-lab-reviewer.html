@@ -600,12 +600,32 @@
     });
   });
 
+  function appendSummaryValue(container, value) {
+    if (value && typeof value === "object" && value.code) {
+      const code = document.createElement("code");
+      code.textContent = String(value.text ?? "");
+      container.appendChild(code);
+      return;
+    }
+    container.appendChild(document.createTextNode(String(value ?? "")));
+  }
+
   function setSummaryItem(element, title, value, state) {
     element.classList.remove("ready", "blocked");
     if (state) {
       element.classList.add(state);
     }
-    element.innerHTML = `<strong>${title}</strong><span>${value}</span>`;
+    const strong = document.createElement("strong");
+    strong.textContent = title;
+    const span = document.createElement("span");
+    const values = Array.isArray(value) ? value : [value];
+    values.forEach((entry, index) => {
+      if (index > 0) {
+        span.appendChild(document.createElement("br"));
+      }
+      appendSummaryValue(span, entry);
+    });
+    element.replaceChildren(strong, span);
   }
 
   function formatList(values) {
@@ -629,7 +649,13 @@
     setSummaryItem(
       summaryArtifactEl,
       "CI Artifact",
-      `${artifact.name || "Unavailable"}<br><code>${artifact.evidenceDirectory || "target/container-dry-run-evidence/"}</code>`,
+      [
+        artifact.name || "Unavailable",
+        {
+          text: artifact.evidenceDirectory || "target/container-dry-run-evidence/",
+          code: true
+        }
+      ],
       "ready"
     );
     setSummaryItem(
@@ -640,7 +666,7 @@
         evidence.reviewerTrustMapPath,
         evidence.securityPosturePath,
         evidence.governanceHardeningPath
-      ].filter(Boolean).join("<br>"),
+      ].filter(Boolean),
       "ready"
     );
     setSummaryItem(

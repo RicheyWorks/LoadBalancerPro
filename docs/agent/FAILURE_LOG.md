@@ -6,6 +6,28 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-30T14:07:13-07:00
+
+Branch/PR: `codex/security-spring-boot-3-5-16` / no PR yet
+
+Failure type: local Docker engine unavailable; product-independent tooling limitation
+
+Failing check: local `docker version` prerequisite for Docker build/runtime smoke
+
+Observed/root cause: the Docker CLI is installed, but the Docker Desktop Linux engine named pipe
+`//./pipe/dockerDesktopLinuxEngine` does not exist in this environment. No image build or container start occurred,
+and no application, dependency, workflow, Dockerfile, configuration, credential, or external target was changed.
+
+Correction/result: the executable JAR's loopback health and static-resource runtime smoke passed locally, with its
+exact process stopped and port released. Require the unchanged-head GitHub CI Docker build/runtime jobs and blocking
+Trivy scan as the authoritative container gates before merge; do not treat local Docker as proven.
+
+Follow-up: continue the bounded prerequisite because this is an environment limitation, not the authorized pause
+condition of an unresolved test regression, unexpected production behavior, new blocking security finding, or
+scope expansion.
+
+## Entry
+
 Date/time: 2026-07-30T10:28:57-07:00
 
 Branch/PR: codex/l-1-3-explainability-correctness / no PR yet

@@ -331,7 +331,7 @@ class EnterpriseLabApplicationCommandLedgerTest {
     }
 
     @Test
-    void partialWriteFailsWriterAndFreshReplayClassifiesTail() {
+    void singleFrameWriteFailureFailsWriterAndLeavesCanonicalFrameReadable() {
         EnterpriseLabApplicationCommandLedger ledger =
                 EnterpriseLabApplicationCommandLedger.createForTesting(
                         temporaryDirectory,
@@ -339,8 +339,8 @@ class EnterpriseLabApplicationCommandLedgerTest {
                         EnterpriseLabApplicationCommandLedger.HARD_MAX_EVENTS,
                         authority,
                         (checkpoint, bytes) -> {
-                            if (checkpoint == WriteCheckpoint.AFTER_WRITE_CHUNK) {
-                                throw new IllegalStateException("injected partial write");
+                            if (checkpoint == WriteCheckpoint.AFTER_WRITE_ATTEMPT) {
+                                throw new IllegalStateException("injected uncertain write");
                             }
                         });
         try {
@@ -355,8 +355,11 @@ class EnterpriseLabApplicationCommandLedgerTest {
 
         try (EnterpriseLabApplicationCommandLedger inspection =
                      EnterpriseLabApplicationCommandLedger.inspect(temporaryDirectory)) {
-            StoreException truncated = assertThrows(StoreException.class, inspection::replay);
-            assertEquals(Failure.TRUNCATED_TAIL, truncated.failure());
+            assertEquals(
+                    List.of(EventType.APPLICATION_INTENT_PERSISTED),
+                    inspection.replay().events().stream()
+                            .map(EnterpriseLabCommandLedgerEvent::eventType)
+                            .toList());
         }
     }
 

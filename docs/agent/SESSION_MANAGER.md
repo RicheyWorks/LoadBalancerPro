@@ -6,6 +6,67 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 11 Focused-Verification Checkpoint
+
+Timestamp: 2026-07-30T05:13:51-07:00
+
+Current slot: `L-0.6`, eliminate ledger torn-read false failures.
+
+Current branch: `codex/l-0-6-ledger-torn-read`.
+
+Branch-start checkpoint: `32151f24cf8c414d73710455c15dd1e83e7f755c`, published from exact green main
+`e5f569d0444bf37e405064699b5eb3778815405e`.
+
+Slot status: `IN_PROGRESS`; focused and adjacent verification are green, but the complete local ladder and PR gates
+remain pending.
+
+Current-head audit and behavioral red evidence:
+
+- both ledger implementations still split each event into at most 256-byte writes and read the file without a
+  cross-process file-region lock;
+- a new test runner launched a real child JVM writer while the Surefire JVM replayed the same controlled file;
+- the completed pre-change red gate ran three tests with two expected failures, zero errors, and zero skips;
+- healthy continuous supervisor and application append/replay each produced false `CONCURRENT_CHANGE`
+  classifications, directly reproducing the imported acceptance defect without external or live targets.
+
+Bounded implementation:
+
+- both ledgers now attempt the complete newline-terminated canonical event in one `FileChannel.write`;
+- an exclusive fixed-file region lock remains held across any short-write continuation, while replay takes the matching
+  shared lock;
+- replay retries only `CONCURRENT_CHANGE` or an incomplete final frame four times with a fixed 10 ms backoff, then
+  preserves and classifies a stable incomplete tail as `TRUNCATED_TAIL`;
+- the write-test checkpoint was renamed from chunk to attempt semantics, and uncertain post-write failures still
+  fail-stop the writer while a fresh replay accepts only a complete canonical frame;
+- architecture documentation now distinguishes file-region read/write coordination from the unchanged ownership and
+  mutation authorities.
+
+Focused verification:
+
+- `EnterpriseLabCommandLedgerCrossProcessTest`: three tests, zero failures, errors, or skips; it proves the separate
+  writer JVM holds the exclusive frame lock and continuously overlaps both application and supervisor replay loops;
+- both existing ledger suites plus the cross-process suite: 51 tests, zero failures, errors, or skips;
+- adjacent eight-class selector: 84 tests, zero failures, errors, or skips, covering both ledgers, history
+  reconciliation, allocation bridge, supervisor service, experiment operator admission, and the existing separate-JVM
+  supervisor restart integration;
+- no `EnterpriseLabCommandLedgerProcessProbe` child process remained after verification;
+- `git diff --check` passed.
+
+Scope and safety: current changes are limited to the two local-lab command ledgers, their tests and separate-JVM test
+probe, bounded architecture documentation, and campaign records. They add no dependency, endpoint, credential,
+external/public/private target, live cloud/tenant call, production-looking default, CI/Maven/Docker/Compose behavior,
+ownership bypass, mutation authority, repair/truncation behavior, or broader runtime feature.
+
+Remaining not-proven boundaries: the evidence is local-filesystem and same-host JVM only. It proves no multi-host or
+network-filesystem locking, distributed durability, crash-safe database semantics, production readiness/certification,
+live-cloud or real-tenant behavior, external traffic, production performance, throughput/p95/p99, load/stress/soak
+result, hostile-administrator resistance, or broader automation.
+
+Next action: review the complete diff, run the campaign guard and full clean-package/artifact/SBOM/LASE/local-lab
+verification ladder, then record `LOCAL_GREEN` only if every applicable gate passes.
+
+Decision: continue only `L-0.6`; no later slot is active.
+
 ## Combined Build Plan Slot 10 Main-Green / Slot 11 Start Checkpoint
 
 Timestamp: 2026-07-30T04:58:27-07:00

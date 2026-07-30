@@ -6,6 +6,23 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-30T14:40:38-07:00
+
+Branch/PR: `codex/l-2-1-chained-jsonl-store` / #513
+
+Failure/resolution: exact-head CI `30579296323` and `30579298437` passed tests, package, SBOM, packaged-JAR,
+Docker/runtime, and evidence but failed Trivy on Spring Framework `6.2.18` HIGH findings `CVE-2026-41842`,
+`CVE-2026-41845`, and `CVE-2026-41850`. Because that Maven change was outside L2.1, the product branch was
+preserved while isolated prerequisite #514 moved Boot to `3.5.16` and Framework to `6.2.19` without an allowlist,
+suppression, or gate weakening.
+
+Correction/result: #514 exact head `267ad5b6b9014b977a347e6c5c0fc5cad1094954` and merge
+`c3f3d60f3ff7cc6e65fcc77f44df9ea7219efad7` passed push/PR/main CI, CodeQL, dependency review, Docker/runtime, and
+Trivy. Each inspected scan artifact reports zero Ubuntu and zero JAR findings, with all three CVEs absent. Resume
+only #513 after merging that verified main and rerun every applicable gate on its new head.
+
+## Entry
+
 Date/time: 2026-07-30T14:07:13-07:00
 
 Branch/PR: `codex/security-spring-boot-3-5-16` / no PR yet
@@ -9320,3 +9337,18 @@ the inherited runtime configuration selected API-key mode while no API key was c
 result is accepted from this launch, and no packaged process remained. Correction: restart the same candidate on
 `127.0.0.1:18083` with the explicit bounded local-development override
 `--loadbalancerpro.auth.mode=none`; do not introduce a key or relax any packaged/default security configuration.
+
+# 2026-07-30 - L-2.1 chained JSONL consolidation
+
+Branch: `codex/l-2-1-chained-jsonl-store`
+
+The first broad Enterprise Lab wildcard selector exceeded its command budget and left its Maven and Surefire JVMs
+running. No aggregate result was accepted. The exact campaign-owned processes were identified by command line,
+stopped, and verified absent; verification was split into bounded selectors, which passed. Reusable rule: a timed-out
+Maven selector requires an exact-process audit before later test evidence is accepted.
+
+A final clean-package run exposed incorrect identity-test evidence: on this Windows filesystem Java returned no file
+key, and two rapidly created files received the same creation timestamp. That run is not accepted. The replacement
+fixture now establishes a deliberately distinct creation time through `BasicFileAttributeView` when the platform
+collides, the focused identity proof passed, and the subsequent fresh 3,054-test clean package passed with zero
+failures, errors, or skips.

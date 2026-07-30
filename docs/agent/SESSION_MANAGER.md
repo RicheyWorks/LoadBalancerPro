@@ -6,6 +6,136 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 16 Post-Prerequisite Local-Green Checkpoint
+
+Timestamp: 2026-07-30T14:54:04-07:00
+
+Current slot/branch/PR: `L-2.1`; `codex/l-2-1-chained-jsonl-store`;
+[#513](https://github.com/RicheyWorks/LoadBalancerPro/pull/513). Verified-main merge
+`c3f3d60f3ff7cc6e65fcc77f44df9ea7219efad7` is integrated by local merge
+`48968f6ade6ddce5ce14b7b6953d9b4dd71acb8e`; this checkpoint is not yet published.
+
+Scope reconciliation: the PR remains exactly 19 files against new `main`. All 17 non-checkpoint paths are
+byte-for-byte unchanged from the previously published #513 head; only `FAILURE_LOG.md` and `SESSION_MANAGER.md`
+incorporate the preserved image-scan failure, prerequisite result, and resumed state. No product conflict occurred.
+
+Verified before this checkpoint: the focused shared-store/adapter/journal/cross-process/supervisor-process/allocation
+API/CLI/campaign/dependency bundle passed under Boot `3.5.16`; `mvn -q clean package` passed 3,054 tests across 413
+fresh reports with zero failures, errors, or skips; skip-test verify, effective Spring tree, 144-component CycloneDX
+JSON/XML, and packaged resources passed. Packaged LASE and loopback health/static-page checks passed with exact
+process/port cleanup. The ten-scenario workflow, separate-process allocation crash-window proof, and durable
+restart/corruption-quarantine/terminal-compaction proof all passed under ignored `target/` paths.
+
+Scope/safety audit: no unexpected path, credential/default, authorization, external/public/private target,
+cloud/tenant call, live proxy-route mutation, unrelated dependency, Maven/workflow, Docker/Compose, deployment,
+release, tag, suppression, allowlist, gate weakening, or secret was introduced. The workstation Docker engine
+remains unavailable as already logged; unchanged-head remote Docker/runtime and Trivy are mandatory.
+
+Next action: because this checkpoint changes tracked documentation, rerun the complete local ladder, commit and
+publish the exact candidate, then require new exact-head push/PR CI, CodeQL, dependency review,
+package/SBOM/JAR/Docker/runtime/evidence/Trivy, final complete-diff self-review, and automatic merge. Continue only
+`L-2.1`; do not start `L-2.2`.
+
+## Combined Build Plan Slot 16 Resumed After Security Prerequisite
+
+Timestamp: 2026-07-30T14:40:38-07:00
+
+Current slot: `L-2.1`, unify JSONL stores behind one chained engine.
+
+Branch: `codex/l-2-1-chained-jsonl-store`; status: `PR_OPEN` and campaign machine state `IN_PROGRESS`. The verified
+green base is now Spring prerequisite merge `c3f3d60f3ff7cc6e65fcc77f44df9ea7219efad7`. Published product head
+`4ac5bd7e1fde44297d7de92738519186381fc503` remains in
+[#513](https://github.com/RicheyWorks/LoadBalancerPro/pull/513); the main merge and this concise checkpoint
+reconciliation are not yet published.
+
+Delivered bounded scope:
+
+- one package-private `ChainedJsonlStore` now owns bounded canonical replay, per-path serialization, shared/exclusive
+  OS locks, exact-size single-frame append, force-under-lock, and pinned file-key plus creation-time identity for the
+  application ledger, supervisor ledger, allocation state store, and live experiment journal;
+- domain codecs, lifecycle rules, failure contracts, ownership gates, and exact read-back remain store-owned;
+- supervisor ownership fails closed on lock-path replacement and refuses to recreate a missing fixed lock inside an
+  initialized supervisor directory.
+
+Verified before this checkpoint:
+
+- focused storage, journal, process/transport, Enterprise Lab, API, CLI, and campaign selectors passed;
+- `mvn -q clean package` passed 3,054 tests across 413 fresh reports with zero failures, errors, or skips;
+- `mvn -q -DskipTests verify`, pinned CycloneDX 2.9.1 JSON/XML generation, JAR resource inspection, the packaged
+  ten-scenario Enterprise Lab workflow, the packaged allocation crash-window/separate-process proof, and the durable
+  recovery/corruption/compaction proof passed;
+- final executable JAR after exact-tree verify is 95,026,388 bytes with SHA-256
+  `69C08E71076B7706ACA4D2C13B54947551A20825B88AFBB92305F7D9B2991720`; CycloneDX 1.6 JSON/XML contain 144
+  components.
+
+Logged limit: the adjacent operator-profile script did not produce an accepted local result; this persistence-only
+slot changes no profile/runtime surface, and exact-head remote CI must supply that unchanged gate.
+
+Safety/scope: no credential/default, authorization, external/public/private target, cloud/tenant call, live
+proxy-route mutation, dependency, Maven/workflow, Docker/Compose, deployment, release, tag, or secret was added.
+The packaged proofs remained foreground, bounded, literal-loopback, and target-local. Rotation, archive continuity,
+automatic cleanup or repair, soft-limit/10k-command soak, lease-takeover policy, parent-directory fsync honesty,
+mutex eviction, broader logging, production readiness/certification, live-cloud/tenant validation,
+throughput/p95/p99, load/stress behavior, remote-filesystem semantics, and operating-system crash guarantees remain
+unproven and belong to later slots.
+
+Security prerequisite: isolated [#514](https://github.com/RicheyWorks/LoadBalancerPro/pull/514) final head
+`267ad5b6b9014b977a347e6c5c0fc5cad1094954` merged as
+`c3f3d60f3ff7cc6e65fcc77f44df9ea7219efad7`. Exact-head push/PR CI, dependency review, CodeQL, package, SBOM,
+packaged-JAR, Docker/runtime, evidence, and Trivy passed; post-merge main CI `30583840951` and CodeQL
+`30583840985` passed on the exact merge commit. Push, PR, and main Trivy artifacts each report zero Ubuntu and zero
+JAR findings, with `CVE-2026-41842`, `CVE-2026-41845`, and `CVE-2026-41850` absent. The effective graph is Spring
+Boot `3.5.16`, Spring Framework `6.2.19`, and Spring Security `6.5.11`.
+
+Reconciliation scope: merge verified main, keep the shared JSONL product diff otherwise unchanged, incorporate the
+preserved image-scan failure/session checkpoint, and rerun every applicable local and remote gate on the new final
+head. Do not count the superseded #513 failures as green and do not start `L-2.2` before #513 is merged and exact
+main is green.
+
+Decision: continue only `L-2.1`; no later slot is active.
+
+## Combined Build Plan Slot 15 Main-Green / Slot 16 Start
+
+Timestamp: 2026-07-30T12:07:52-07:00
+
+Completed: `L-1.4`; `codex/l-1-4-collapse-comparison-paths`;
+[#512](https://github.com/RicheyWorks/LoadBalancerPro/pull/512); final head
+`37f4382d07a36b48096ad1083bd60faf3df7b10d`; merge
+`36622b8b2ca27003a0a9a5e165ac361969173dd0`.
+
+Verified: push CI `30571990654`, PR CI `30571995420`, CodeQL `30571995080`, PR dependency review, every
+package/SBOM/JAR/Docker/runtime/evidence/image-scan step, and the 40-file complete-diff self-review passed on the
+exact final head. Local `main`, `origin/main`, and GitHub main then matched the merge commit with a clean worktree;
+the exact-main comparison/experiment/scenario/pressure/LASE/CI-evidence/campaign selector passed 65 tests across
+ten reports with zero failures, errors, or skips; exact-main CI `30572768693` and CodeQL `30572768745` passed.
+
+Delivered scope: adaptive experiment, scenario, and LASE decisions now reach the shared `RoutingComparisonEngine`;
+the experiment fixture catalog and advisor candidate synthesis are shared; duplicate scenario-gate and
+strategy-matrix APIs/models/UI are retired; and failure, shedding, and autoscaling policies use one explicit
+`PressureClassifier`. The retained summary, detail, and evidence-packet surfaces remain local/synthetic evidence.
+
+Safety/not proven: the completed slot changed no credential/default, authorization, external/public/private target,
+cloud/tenant call, live proxy-route mutation, persistence, dependency, Maven/workflow, Docker/Compose, deployment,
+release, tag, or secret. Production readiness/certification, live-cloud/tenant validation, persistent
+audit/signature authenticity, production scoring proof, throughput/p95/p99, load/stress/soak behavior, distributed
+determinism, and broader automation remain unproven.
+
+Active: `L-2.1`, unify JSONL stores behind one chained engine; branch
+`codex/l-2-1-chained-jsonl-store`; status `IN_PROGRESS`; base
+`36622b8b2ca27003a0a9a5e165ac361969173dd0`. Dependency `L-0.6` is `MAIN_GREEN`.
+
+Candidate contract: reconcile the current `EnterpriseLabApplicationCommandLedger`,
+`EnterpriseLabSupervisorCommandLedger`, allocation state store, local journal, and their ownership/lock helpers;
+extract one bounded hash-chained JSONL engine that preserves atomic single-frame append and applies OS locking plus
+inode/creation-time identity consistently. Existing store contracts must remain green, and a lock-path deletion plus
+second-locker acceptance test must prove split-brain refusal. Rotation, recovery/repair, takeover lease policy,
+directory fsync honesty, tooling relocation, and broader logging remain later-slot work.
+
+Blocker: none. Next: validate and publish this combined checkpoint, then inventory the four current stores, their
+formats/codecs, lock ownership, process mutexes, tests, and call sites before selecting the smallest safe shared
+engine seam.
+
+Decision: continue only `L-2.1`; no later slot is active.
 ## L2.1 Spring Boot Security Prerequisite PR-Open Checkpoint
 
 Timestamp: 2026-07-30T14:16:10-07:00
@@ -63,7 +193,6 @@ Scope/safety: no allowlist, suppression, scan exception, gate weakening, plugin,
 endpoint, configuration-default, credential, external-target, cloud/tenant, or unrelated dependency change is
 authorized. Production readiness/certification, live-cloud/tenant validation, runtime enforcement,
 load/stress/benchmark evidence, throughput/p95/p99, and broader automation remain unproven.
-
 ## Combined Build Plan Slot 15 PR-Open Checkpoint
 
 Timestamp: 2026-07-30T11:46:13-07:00

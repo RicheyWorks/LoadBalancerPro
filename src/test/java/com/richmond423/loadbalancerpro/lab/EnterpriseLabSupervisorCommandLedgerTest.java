@@ -299,6 +299,43 @@ class EnterpriseLabSupervisorCommandLedgerTest {
     }
 
     @Test
+    void deletedLockFileCannotCreateASecondSupervisorIdentity() throws IOException {
+        try (EnterpriseLabSupervisorOwnership ownership =
+                     EnterpriseLabSupervisorOwnership.acquire(root)) {
+            Path lockFile = root
+                    .resolve(EnterpriseLabSupervisorOwnership.DIRECTORY_NAME)
+                    .resolve(EnterpriseLabSupervisorOwnership.LOCK_FILE_NAME);
+            try {
+                assertTrue(Files.deleteIfExists(lockFile));
+            } catch (IOException deletionRefusedByPlatform) {
+                EnterpriseLabSupervisorOwnership.OwnershipException competing =
+                        assertThrows(
+                                EnterpriseLabSupervisorOwnership.OwnershipException.class,
+                                () -> EnterpriseLabSupervisorOwnership.acquire(root));
+                assertEquals(
+                        EnterpriseLabSupervisorOwnership.Failure.LIVE_COMPETING_SUPERVISOR,
+                        competing.failure());
+                assertTrue(ownership.held());
+                return;
+            }
+
+            assertFalse(ownership.held());
+            EnterpriseLabSupervisorOwnership.OwnershipException lost = assertThrows(
+                    EnterpriseLabSupervisorOwnership.OwnershipException.class,
+                    ownership::requireHeld);
+            assertEquals(EnterpriseLabSupervisorOwnership.Failure.LOCK_LOST, lost.failure());
+
+            EnterpriseLabSupervisorOwnership.OwnershipException competing = assertThrows(
+                    EnterpriseLabSupervisorOwnership.OwnershipException.class,
+                    () -> EnterpriseLabSupervisorOwnership.acquire(root));
+            assertEquals(
+                    EnterpriseLabSupervisorOwnership.Failure.LOCK_UNAVAILABLE,
+                    competing.failure());
+            assertFalse(Files.exists(lockFile));
+        }
+    }
+
+    @Test
     void mutationLifecycleRequiresOrderedApplyReadBackAndCommitEvidence() {
         try (EnterpriseLabSupervisorOwnership ownership =
                      EnterpriseLabSupervisorOwnership.acquire(root)) {

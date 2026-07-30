@@ -36,10 +36,12 @@ completion, cancellation, rollback, restoration, rejection, failure, and recover
 codec, verifier, replay payload, lifecycle states, allocation snapshots, and fingerprint rules.
 
 The default writer opens with `FORCE_DATA_AND_METADATA`. Each complete canonical JSON frame is appended, checked against
-the current writer-owned chain, and synchronized with `FileChannel.force(true)` before the operator action returns. The
-implementation therefore proves that the Java append and force calls succeeded on the exercised local filesystem. It does
-not prove drive firmware behavior, power-loss survival on every filesystem, remote-filesystem semantics, or a full
-operating-system crash matrix.
+the current writer-owned chain, and synchronized with `FileChannel.force(true)` before the operator action returns.
+Append and read-side scan use the same `ChainedJsonlStore` mechanics as the command ledgers and allocation transaction
+store: one complete frame buffer, a per-path process mutex, cooperating operating-system file locks, exact prior-size
+checks, and pinned file-key plus creation-time identity. The implementation therefore proves that the Java append and
+force calls succeeded on the exercised local filesystem. It does not prove parent-directory fsync, drive firmware
+behavior, power-loss survival on every filesystem, remote-filesystem semantics, or a full operating-system crash matrix.
 
 If an append, entry bound, journal bound, or synchronization check fails, the recovery gate becomes failed. An active
 process-local candidate allocation is returned through the existing baseline restoration and rollback path before the

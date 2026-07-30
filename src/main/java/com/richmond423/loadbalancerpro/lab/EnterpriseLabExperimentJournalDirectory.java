@@ -7,7 +7,6 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalStorage
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier.Outcome;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifier.VerificationResult;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -200,7 +199,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
         String journalId = journalId(safeExperimentId);
         Path journalPath = journalPath(journalId);
         Object owner = claim(journalPath);
-        FileChannel channel = null;
+        ChainedJsonlStore jsonlStore = null;
         boolean handedOff = false;
         try {
             requireSameMutationAuthorization(authorization);
@@ -221,12 +220,8 @@ public final class EnterpriseLabExperimentJournalDirectory {
                     verification.completeBytes(),
                     0,
                     verification.totalBytes());
-            channel = FileChannel.open(
-                    journalPath,
-                    StandardOpenOption.WRITE,
-                    StandardOpenOption.APPEND,
-                    LinkOption.NOFOLLOW_LINKS);
-            if (channel.size() != existing.totalBytes()) {
+            jsonlStore = new ChainedJsonlStore(journalPath, maxJournalBytes);
+            if (jsonlStore.currentSize() != existing.totalBytes()) {
                 throw failure(Failure.IO_FAILURE, "journal changed while its writer was opening");
             }
             requireSameMutationAuthorization(authorization);
@@ -235,7 +230,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
                     journalId,
                     safeExperimentId,
                     journalPath,
-                    channel,
+                    jsonlStore,
                     safeSyncPolicy,
                     codec,
                     existing,
@@ -246,11 +241,15 @@ public final class EnterpriseLabExperimentJournalDirectory {
             return journal;
         } catch (EnterpriseLabExperimentJournalStorageException exception) {
             throw exception;
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            throw failure(
+                    Failure.IO_FAILURE,
+                    "journal writer could not pin its chained JSONL identity",
+                    exception);
         } catch (IOException exception) {
             throw failure(Failure.IO_FAILURE, "journal writer could not be opened", exception);
         } finally {
             if (!handedOff) {
-                closeQuietly(channel);
                 ACTIVE_WRITERS.remove(journalPath, owner);
             }
         }
@@ -558,42 +557,28 @@ public final class EnterpriseLabExperimentJournalDirectory {
     }
 
     private Optional<EnterpriseLabExperimentJournalEvent> readCanonicalFirstFrame(Path path) {
-        ByteArrayOutputStream frame = new ByteArrayOutputStream();
-        try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
-            if (channel.size() > maxJournalBytes) {
+        try {
+            byte[] bytes = new ChainedJsonlStore(path, maxJournalBytes)
+                    .readBoundedBytes();
+            int end = -1;
+            for (int index = 0;
+                 index < bytes.length
+                         && index <= EnterpriseLabExperimentJournalCodec.HARD_MAX_ENTRY_BYTES;
+                 index++) {
+                if (bytes[index] == '\n') {
+                    end = index;
+                    break;
+                }
+            }
+            if (end <= 0) {
                 return Optional.empty();
             }
-            ByteBuffer one = ByteBuffer.allocate(1);
-            int zeroReads = 0;
-            while (frame.size() <= EnterpriseLabExperimentJournalCodec.HARD_MAX_ENTRY_BYTES) {
-                int read = channel.read(one);
-                if (read < 0) {
-                    return Optional.empty();
-                }
-                if (read == 0) {
-                    if (++zeroReads >= 3) {
-                        return Optional.empty();
-                    }
-                    continue;
-                }
-                zeroReads = 0;
-                one.flip();
-                byte value = one.get();
-                one.clear();
-                if (value == '\n') {
-                    if (frame.size() == 0) {
-                        return Optional.empty();
-                    }
-                    byte[] encoded = frame.toByteArray();
-                    EnterpriseLabExperimentJournalEvent event = codec.decode(encoded);
-                    return Arrays.equals(encoded, codec.encode(event))
-                            ? Optional.of(event)
-                            : Optional.empty();
-                }
-                frame.write(value);
-            }
-            return Optional.empty();
-        } catch (IOException | RuntimeException exception) {
+            byte[] encoded = Arrays.copyOfRange(bytes, 0, end);
+            EnterpriseLabExperimentJournalEvent event = codec.decode(encoded);
+            return Arrays.equals(encoded, codec.encode(event))
+                    ? Optional.of(event)
+                    : Optional.empty();
+        } catch (ChainedJsonlStore.StoreIOException | RuntimeException exception) {
             return Optional.empty();
         }
     }
@@ -621,95 +606,58 @@ public final class EnterpriseLabExperimentJournalDirectory {
             return new ReadResult(journalId, false, List.of(), TailStatus.COMPLETE, 0, 0, 0);
         }
         validateJournalFile(journalPath);
-        List<EnterpriseLabExperimentJournalEvent> events = new ArrayList<>();
-        ByteArrayOutputStream line = new ByteArrayOutputStream();
-        long observedBytes = 0;
-        long completeBytes = 0;
-        long declaredSize;
-        try (FileChannel channel = FileChannel.open(
-                journalPath, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
-            declaredSize = channel.size();
-            if (declaredSize > maxJournalBytes) {
-                throw failure(Failure.JOURNAL_SIZE_EXCEEDED,
-                        "journal exceeds the bounded local size limit");
-            }
-            ByteBuffer buffer = ByteBuffer.allocate(8_192);
-            int zeroReads = 0;
-            while (true) {
-                int read = channel.read(buffer);
-                if (read < 0) {
-                    break;
-                }
-                if (read == 0) {
-                    zeroReads++;
-                    if (zeroReads >= 3) {
-                        throw failure(Failure.IO_FAILURE, "bounded journal read made no progress");
-                    }
-                    continue;
-                }
-                zeroReads = 0;
-                buffer.flip();
-                while (buffer.hasRemaining()) {
-                    byte value = buffer.get();
-                    observedBytes++;
-                    if (observedBytes > maxJournalBytes) {
-                        throw failure(Failure.JOURNAL_SIZE_EXCEEDED,
-                                "journal exceeds the bounded local size limit");
-                    }
-                    if (value == '\n') {
-                        decodeCompleteLine(line.toByteArray(), events, experimentId);
-                        if (events.size() > maxJournalEntries) {
-                            throw failure(Failure.ENTRY_LIMIT_EXCEEDED,
-                                    "journal exceeds the bounded entry count");
-                        }
-                        line.reset();
-                        completeBytes = observedBytes;
-                    } else {
-                        if (line.size() >= EnterpriseLabExperimentJournalCodec.HARD_MAX_ENTRY_BYTES) {
-                            throw failure(Failure.INVALID_COMPLETE_ENTRY,
-                                    "journal entry exceeds the bounded frame size");
-                        }
-                        line.write(value);
-                    }
-                }
-                buffer.clear();
-            }
-        } catch (EnterpriseLabExperimentJournalStorageException exception) {
-            throw exception;
-        } catch (IOException exception) {
-            throw failure(Failure.IO_FAILURE, "journal could not be read", exception);
+        try {
+            ChainedJsonlStore.ChainReplay<EnterpriseLabExperimentJournalEvent> replay =
+                    new ChainedJsonlStore(journalPath, maxJournalBytes)
+                            .replayChain(
+                                    new ChainedJsonlStore.FrameCodec<>() {
+                                        @Override
+                                        public EnterpriseLabExperimentJournalEvent decode(
+                                                byte[] encoded) {
+                                            return codec.decode(encoded);
+                                        }
+
+                                        @Override
+                                        public byte[] encode(
+                                                EnterpriseLabExperimentJournalEvent event) {
+                                            return codec.encode(event);
+                                        }
+                                    },
+                                    (events, event) -> validateJournalNext(
+                                            events, event, experimentId),
+                                    maxJournalEntries,
+                                    EnterpriseLabExperimentJournalCodec.HARD_MAX_ENTRY_BYTES,
+                                    ChainedJsonlStore.TailPolicy.ALLOW);
+            TailStatus tailStatus = replay.tailBytes() == 0L
+                    ? TailStatus.COMPLETE
+                    : TailStatus.TRUNCATED_TAIL;
+            return new ReadResult(
+                    journalId,
+                    true,
+                    replay.entries(),
+                    tailStatus,
+                    replay.completeBytes(),
+                    replay.tailBytes(),
+                    replay.totalBytes());
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            Failure mapped = switch (exception.failure()) {
+                case SIZE_LIMIT_EXCEEDED -> Failure.JOURNAL_SIZE_EXCEEDED;
+                case ENTRY_LIMIT_EXCEEDED -> Failure.ENTRY_LIMIT_EXCEEDED;
+                case FRAME_SIZE_EXCEEDED, INVALID_COMPLETE_FRAME ->
+                        Failure.INVALID_COMPLETE_ENTRY;
+                case NON_CANONICAL_FRAME -> Failure.NON_CANONICAL_ENTRY;
+                case UNSAFE_FILE -> Failure.UNSAFE_PATH;
+                case INCOMPLETE_TAIL, CONCURRENT_CHANGE,
+                        FILE_IDENTITY_CHANGED, IO_FAILURE -> Failure.IO_FAILURE;
+            };
+            throw failure(mapped, "journal could not be read under its shared lock", exception);
         }
-        if (observedBytes != declaredSize) {
-            throw failure(Failure.IO_FAILURE, "journal changed during its bounded read");
-        }
-        long tailBytes = line.size();
-        TailStatus tailStatus = tailBytes == 0 ? TailStatus.COMPLETE : TailStatus.TRUNCATED_TAIL;
-        return new ReadResult(
-                journalId,
-                true,
-                events,
-                tailStatus,
-                completeBytes,
-                tailBytes,
-                observedBytes);
     }
 
-    private void decodeCompleteLine(
-            byte[] encoded,
+    private static void validateJournalNext(
             List<EnterpriseLabExperimentJournalEvent> events,
+            EnterpriseLabExperimentJournalEvent event,
             String experimentId) {
-        if (encoded.length == 0) {
-            throw failure(Failure.INVALID_COMPLETE_ENTRY, "journal contains an empty complete frame");
-        }
-        EnterpriseLabExperimentJournalEvent event;
-        try {
-            event = codec.decode(encoded);
-        } catch (RuntimeException exception) {
-            throw failure(Failure.INVALID_COMPLETE_ENTRY, "journal contains an invalid complete frame", exception);
-        }
-        if (!Arrays.equals(encoded, codec.encode(event))) {
-            throw failure(Failure.NON_CANONICAL_ENTRY, "journal contains a non-canonical complete frame");
-        }
         if (!experimentId.equals(event.experimentId())) {
             throw failure(Failure.IDENTITY_MISMATCH, "journal entry experiment identity does not match");
         }
@@ -723,7 +671,6 @@ public final class EnterpriseLabExperimentJournalDirectory {
         if (!expectedPrevious.equals(event.previousEntryFingerprint())) {
             throw failure(Failure.PREDECESSOR_MISMATCH, "journal entry predecessor does not match");
         }
-        events.add(event);
     }
 
     private static Path validateTrustedRoot(Path trustedRoot) {
@@ -1083,7 +1030,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
 
     enum WriteCheckpoint {
         BEFORE_APPEND,
-        AFTER_WRITE_CHUNK,
+        AFTER_WRITE_ATTEMPT,
         AFTER_APPEND_BEFORE_SYNC,
         AFTER_SYNC
     }

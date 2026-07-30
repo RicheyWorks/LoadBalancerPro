@@ -13,21 +13,16 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalVerifie
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceMutationAuthority.MutationAuthorization;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.Objects;
 
 /** Package-private controlled-directory writer; callers use the journal interface. */
 final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperimentJournal {
-    private static final int MAX_WRITE_CHUNK_BYTES = 256;
-    private static final int MAX_CONSECUTIVE_ZERO_WRITES = 3;
-
     private final EnterpriseLabExperimentJournalDirectory directory;
     private final String journalId;
     private final String experimentId;
     private final Path journalPath;
-    private final FileChannel channel;
+    private final ChainedJsonlStore jsonlStore;
     private final SyncPolicy syncPolicy;
     private final EnterpriseLabExperimentJournalCodec codec;
     private final MutationAuthorization mutationAuthorization;
@@ -48,7 +43,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
             String journalId,
             String experimentId,
             Path journalPath,
-            FileChannel channel,
+            ChainedJsonlStore jsonlStore,
             SyncPolicy syncPolicy,
             EnterpriseLabExperimentJournalCodec codec,
             ReadResult existing,
@@ -59,7 +54,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
         this.journalId = Objects.requireNonNull(journalId, "journalId cannot be null");
         this.experimentId = Objects.requireNonNull(experimentId, "experimentId cannot be null");
         this.journalPath = Objects.requireNonNull(journalPath, "journalPath cannot be null");
-        this.channel = Objects.requireNonNull(channel, "channel cannot be null");
+        this.jsonlStore = Objects.requireNonNull(jsonlStore, "jsonlStore cannot be null");
         this.syncPolicy = Objects.requireNonNull(syncPolicy, "syncPolicy cannot be null");
         this.codec = Objects.requireNonNull(codec, "codec cannot be null");
         this.mutationAuthorization = Objects.requireNonNull(
@@ -95,32 +90,16 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
                 throw EnterpriseLabExperimentJournalDirectory.failure(
                         Failure.JOURNAL_SIZE_EXCEEDED, "journal has reached its bounded local size limit");
             }
-            long observedSize = channel.size();
-            if (observedSize != totalBytes) {
-                throw EnterpriseLabExperimentJournalDirectory.failure(
-                        Failure.IO_FAILURE, "journal changed outside its process-local writer");
-            }
-
-            byte[] frame = new byte[encoded.length + 1];
-            System.arraycopy(encoded, 0, frame, 0, encoded.length);
-            frame[frame.length - 1] = '\n';
             failureInjector.checkpoint(WriteCheckpoint.BEFORE_APPEND, 0);
             directory.requireSameMutationAuthorization(mutationAuthorization);
-            writeFrame(frame);
-            failureInjector.checkpoint(WriteCheckpoint.AFTER_APPEND_BEFORE_SYNC, frame.length);
+            appendFrame(encoded);
 
             PersistenceStage stage;
             boolean forceCompleted;
             if (syncPolicy == SyncPolicy.FORCE_DATA) {
-                directory.requireSameMutationAuthorization(mutationAuthorization);
-                channel.force(false);
-                failureInjector.checkpoint(WriteCheckpoint.AFTER_SYNC, frame.length);
                 stage = PersistenceStage.DATA_FORCE_COMPLETE;
                 forceCompleted = true;
             } else if (syncPolicy == SyncPolicy.FORCE_DATA_AND_METADATA) {
-                directory.requireSameMutationAuthorization(mutationAuthorization);
-                channel.force(true);
-                failureInjector.checkpoint(WriteCheckpoint.AFTER_SYNC, frame.length);
                 stage = PersistenceStage.DATA_AND_METADATA_FORCE_COMPLETE;
                 forceCompleted = true;
             } else {
@@ -187,42 +166,39 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
             return;
         }
         closed = true;
-        IOException closeFailure = null;
-        try {
-            channel.close();
-        } catch (IOException exception) {
-            closeFailure = exception;
-        } finally {
-            releaseOwnershipOnce();
-        }
-        if (closeFailure != null) {
-            throw EnterpriseLabExperimentJournalDirectory.failure(
-                    Failure.IO_FAILURE, "journal writer could not be closed", closeFailure);
-        }
+        releaseOwnershipOnce();
     }
 
-    private void writeFrame(byte[] frame) throws IOException {
-        ByteBuffer buffer = ByteBuffer.wrap(frame);
-        int zeroWrites = 0;
-        while (buffer.hasRemaining()) {
-            directory.requireSameMutationAuthorization(mutationAuthorization);
-            int oldLimit = buffer.limit();
-            buffer.limit(Math.min(oldLimit, buffer.position() + MAX_WRITE_CHUNK_BYTES));
-            int written;
-            try {
-                written = channel.write(buffer);
-            } finally {
-                buffer.limit(oldLimit);
-            }
-            if (written == 0) {
-                zeroWrites++;
-                if (zeroWrites >= MAX_CONSECUTIVE_ZERO_WRITES) {
-                    throw new IOException("bounded journal write made no progress");
-                }
-            } else {
-                zeroWrites = 0;
-                failureInjector.checkpoint(WriteCheckpoint.AFTER_WRITE_CHUNK, buffer.position());
-            }
+    private void appendFrame(byte[] encoded) {
+        ChainedJsonlStore.ForceMode forceMode = switch (syncPolicy) {
+            case WRITE_TO_OS -> ChainedJsonlStore.ForceMode.NONE;
+            case FORCE_DATA -> ChainedJsonlStore.ForceMode.DATA;
+            case FORCE_DATA_AND_METADATA -> ChainedJsonlStore.ForceMode.DATA_AND_METADATA;
+        };
+        try {
+            jsonlStore.appendFrame(
+                    encoded,
+                    totalBytes,
+                    forceMode,
+                    () -> directory.requireSameMutationAuthorization(mutationAuthorization),
+                    writtenBytes -> failureInjector.checkpoint(
+                            WriteCheckpoint.AFTER_WRITE_ATTEMPT, writtenBytes),
+                    frameBytes -> failureInjector.checkpoint(
+                            WriteCheckpoint.AFTER_APPEND_BEFORE_SYNC, frameBytes),
+                    frameBytes -> failureInjector.checkpoint(
+                            WriteCheckpoint.AFTER_SYNC, frameBytes));
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            Failure mapped = switch (exception.failure()) {
+                case SIZE_LIMIT_EXCEEDED -> Failure.JOURNAL_SIZE_EXCEEDED;
+                case UNSAFE_FILE -> Failure.UNSAFE_PATH;
+                case ENTRY_LIMIT_EXCEEDED, FRAME_SIZE_EXCEEDED,
+                        INVALID_COMPLETE_FRAME, NON_CANONICAL_FRAME,
+                        INCOMPLETE_TAIL, CONCURRENT_CHANGE,
+                        FILE_IDENTITY_CHANGED, IO_FAILURE ->
+                        Failure.IO_FAILURE;
+            };
+            throw EnterpriseLabExperimentJournalDirectory.failure(
+                    mapped, "journal chained JSONL append did not complete", exception);
         }
     }
 
@@ -266,13 +242,7 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
         failed = true;
         if (!closed) {
             closed = true;
-            try {
-                channel.close();
-            } catch (IOException ignored) {
-                // The append failure remains authoritative.
-            } finally {
-                releaseOwnershipOnce();
-            }
+            releaseOwnershipOnce();
         }
     }
 

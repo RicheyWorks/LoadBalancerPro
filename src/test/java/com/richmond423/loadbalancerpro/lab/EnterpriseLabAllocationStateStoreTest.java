@@ -292,7 +292,8 @@ class EnterpriseLabAllocationStateStoreTest {
     }
 
     @Test
-    void injectedPartialWriteFailsWriterAndRestartDetectsTheTail() throws IOException {
+    void uncertainSingleFrameWriteFailsWriterAndRestartReadsCanonicalRecord()
+            throws IOException {
         EnterpriseLabAllocationState baseline = baseline();
         try (EnterpriseLabAllocationStateStore store = ownedStore()) {
             store.append(baseline);
@@ -308,8 +309,8 @@ class EnterpriseLabAllocationStateStoreTest {
                 EnterpriseLabAllocationStateStore.HARD_MAX_RECORDS,
                 authority,
                 (checkpoint, bytesWritten) -> {
-                    if (checkpoint == WriteCheckpoint.AFTER_WRITE_CHUNK) {
-                        throw new IOException("injected crash after partial record write");
+                    if (checkpoint == WriteCheckpoint.AFTER_WRITE_ATTEMPT) {
+                        throw new IOException("injected failure after single-frame write attempt");
                     }
                 });
         StoreException writeFailure = assertThrows(StoreException.class, () -> failing.append(candidate));
@@ -322,8 +323,9 @@ class EnterpriseLabAllocationStateStoreTest {
                 java.util.Arrays.copyOf(readStoreBytes(), completeBaseline.length));
         try (EnterpriseLabAllocationStateStore inspection =
                      EnterpriseLabAllocationStateStore.inspect(temporaryDirectory, targets)) {
-            StoreException replayFailure = assertThrows(StoreException.class, inspection::replay);
-            assertEquals(Failure.TRUNCATED_TAIL, replayFailure.failure());
+            assertEquals(
+                    List.of(baseline, candidate),
+                    inspection.replay().records());
         }
     }
 

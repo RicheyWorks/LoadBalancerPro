@@ -5,9 +5,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationState.Transact
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabAllocationState.VerificationResult;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceMutationAuthority.MutationAuthorization;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileAlreadyExistsException;
@@ -19,14 +17,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * One fixed, append-only allocation transaction chain beneath the controlled
@@ -40,14 +35,10 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
     static final String DIRECTORY_NAME = "allocation-state-v1";
     static final String FILE_NAME = "allocation-transactions-v1.jsonl";
 
-    private static final int READ_BUFFER_BYTES = 8_192;
-    private static final int MAX_WRITE_CHUNK_BYTES = 256;
-    private static final int MAX_ZERO_PROGRESS = 3;
     private static final Set<PosixFilePermission> DIRECTORY_PERMISSIONS =
             PosixFilePermissions.fromString("rwx------");
     private static final Set<PosixFilePermission> FILE_PERMISSIONS =
             PosixFilePermissions.fromString("rw-------");
-    private static final Map<Path, Object> PROCESS_MUTEXES = new ConcurrentHashMap<>();
     private static final FailureInjector NO_FAILURE = (checkpoint, bytesWritten) -> { };
     private static final EnterpriseLabEvidenceMutationAuthority READ_ONLY = () -> {
         throw new EnterpriseLabEvidenceOwnershipException(
@@ -64,6 +55,7 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
     private final long maxStoreBytes;
     private final int maxRecords;
     private final FailureInjector failureInjector;
+    private final ChainedJsonlStore jsonlStore;
     private final Object processMutex;
 
     private boolean failed;
@@ -109,7 +101,8 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
             requireSameMutationAuthorization(authorization);
         }
         this.storeFile = controlledPath(storeDirectory, FILE_NAME);
-        this.processMutex = PROCESS_MUTEXES.computeIfAbsent(storeFile, ignored -> new Object());
+        this.jsonlStore = new ChainedJsonlStore(storeFile, maxStoreBytes);
+        this.processMutex = jsonlStore.processMutex();
     }
 
     /** Opens the fixed store for bounded read-only inspection without creating paths. */
@@ -205,13 +198,7 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
                 failureInjector.checkpoint(WriteCheckpoint.BEFORE_APPEND, 0);
                 requireSameMutationAuthorization(authorization);
                 writeStarted = true;
-                appendFrame(encoded);
-                requireSameMutationAuthorization(authorization);
-                failureInjector.checkpoint(
-                        WriteCheckpoint.AFTER_APPEND_BEFORE_SYNC, Math.toIntExact(frameBytes));
-                forceStoreFile();
-                failureInjector.checkpoint(
-                        WriteCheckpoint.AFTER_SYNC, Math.toIntExact(frameBytes));
+                appendFrame(encoded, before.totalBytes(), authorization);
                 requireSameMutationAuthorization(authorization);
 
                 ReadResult after = replayLocked();
@@ -270,49 +257,32 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         validateControlledDirectory(storeDirectory, namespace, "allocation store directory");
         validateOnlyControlledFile();
         if (!Files.exists(storeFile, LinkOption.NOFOLLOW_LINKS)) {
+            requireMissingFileWasNeverObserved();
             return ReadResult.empty();
         }
         validateStoreFile();
-        byte[] bytes = readBoundedBytes();
-        if (bytes.length == 0) {
-            return new ReadResult(true, List.of(), 0L);
-        }
-        if (bytes[bytes.length - 1] != '\n') {
-            throw failure(Failure.TRUNCATED_TAIL,
-                    "allocation store has an incomplete final record and was preserved unchanged");
-        }
+        try {
+            ChainedJsonlStore.ChainReplay<EnterpriseLabAllocationState> replay =
+                    jsonlStore.replayChain(
+                            new ChainedJsonlStore.FrameCodec<>() {
+                                @Override
+                                public EnterpriseLabAllocationState decode(byte[] encoded) {
+                                    return codec.decode(encoded);
+                                }
 
-        List<EnterpriseLabAllocationState> records = new ArrayList<>();
-        int start = 0;
-        for (int index = 0; index < bytes.length; index++) {
-            if (bytes[index] != '\n') {
-                continue;
-            }
-            if (index == start) {
-                throw failure(Failure.CORRUPT_RECORD,
-                        "allocation store contains an empty complete record");
-            }
-            if (records.size() >= maxRecords) {
-                throw failure(Failure.RECORD_LIMIT_EXCEEDED,
-                        "allocation store exceeds its bounded record count");
-            }
-            byte[] encoded = Arrays.copyOfRange(bytes, start, index);
-            EnterpriseLabAllocationState state;
-            try {
-                state = codec.decode(encoded);
-            } catch (RuntimeException exception) {
-                throw failure(Failure.CORRUPT_RECORD,
-                        "allocation store contains an invalid complete record", exception);
-            }
-            if (!Arrays.equals(encoded, codec.encode(state))) {
-                throw failure(Failure.NON_CANONICAL_RECORD,
-                        "allocation store contains a non-canonical complete record");
-            }
-            validateNext(records, state);
-            records.add(state);
-            start = index + 1;
+                                @Override
+                                public byte[] encode(EnterpriseLabAllocationState state) {
+                                    return codec.encode(state);
+                                }
+                            },
+                            this::validateNext,
+                            maxRecords,
+                            EnterpriseLabAllocationStateCodec.HARD_MAX_RECORD_BYTES,
+                            ChainedJsonlStore.TailPolicy.REJECT);
+            return new ReadResult(true, replay.entries(), replay.totalBytes());
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            throw mapEngineFailure(exception);
         }
-        return new ReadResult(true, records, bytes.length);
     }
 
     private void validateNext(
@@ -466,99 +436,71 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         forceDirectoryMetadataIfSupported(storeDirectory);
     }
 
-    private void appendFrame(byte[] encoded) throws IOException {
-        byte[] frame = Arrays.copyOf(encoded, encoded.length + 1);
-        frame[frame.length - 1] = '\n';
-        try (FileChannel channel = FileChannel.open(
-                storeFile,
-                StandardOpenOption.WRITE,
-                StandardOpenOption.APPEND,
-                LinkOption.NOFOLLOW_LINKS)) {
-            ByteBuffer buffer = ByteBuffer.wrap(frame);
-            int writtenBytes = 0;
-            int zeroWrites = 0;
-            while (buffer.hasRemaining()) {
-                int originalLimit = buffer.limit();
-                buffer.limit(Math.min(originalLimit, buffer.position() + MAX_WRITE_CHUNK_BYTES));
-                int written;
-                try {
-                    written = channel.write(buffer);
-                } finally {
-                    buffer.limit(originalLimit);
-                }
-                if (written == 0) {
-                    zeroWrites++;
-                    if (zeroWrites >= MAX_ZERO_PROGRESS) {
-                        throw new IOException("bounded allocation store write made no progress");
-                    }
-                    continue;
-                }
-                zeroWrites = 0;
-                writtenBytes += written;
-                failureInjector.checkpoint(WriteCheckpoint.AFTER_WRITE_CHUNK, writtenBytes);
-            }
+    private void appendFrame(
+            byte[] encoded,
+            long expectedSize,
+            MutationAuthorization authorization) {
+        try {
+            jsonlStore.appendFrame(
+                    encoded,
+                    expectedSize,
+                    ChainedJsonlStore.ForceMode.DATA_AND_METADATA,
+                    () -> requireSameMutationAuthorization(authorization),
+                    writtenBytes -> failureInjector.checkpoint(
+                            WriteCheckpoint.AFTER_WRITE_ATTEMPT, writtenBytes),
+                    frameBytes -> failureInjector.checkpoint(
+                            WriteCheckpoint.AFTER_APPEND_BEFORE_SYNC, frameBytes),
+                    frameBytes -> failureInjector.checkpoint(
+                            WriteCheckpoint.AFTER_SYNC, frameBytes));
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            throw mapEngineFailure(exception);
         }
     }
 
-    private void forceStoreFile() throws IOException {
-        try (FileChannel channel = FileChannel.open(
-                storeFile,
-                StandardOpenOption.WRITE,
-                LinkOption.NOFOLLOW_LINKS)) {
-            channel.force(true);
+    private void requireMissingFileWasNeverObserved() {
+        try {
+            jsonlStore.requireMissingFileWasNeverObserved();
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            throw mapEngineFailure(exception);
         }
     }
 
-    private byte[] readBoundedBytes() {
-        long declaredSize;
-        try (FileChannel channel = FileChannel.open(
-                storeFile,
-                StandardOpenOption.READ,
-                LinkOption.NOFOLLOW_LINKS)) {
-            declaredSize = channel.size();
-            if (declaredSize > maxStoreBytes) {
-                throw failure(Failure.STORE_SIZE_EXCEEDED,
-                        "allocation store exceeds its bounded byte size");
-            }
-            ByteArrayOutputStream output = new ByteArrayOutputStream(
-                    Math.toIntExact(declaredSize));
-            ByteBuffer buffer = ByteBuffer.allocate(READ_BUFFER_BYTES);
-            int zeroReads = 0;
-            long observed = 0;
-            while (true) {
-                int read = channel.read(buffer);
-                if (read < 0) {
-                    break;
-                }
-                if (read == 0) {
-                    zeroReads++;
-                    if (zeroReads >= MAX_ZERO_PROGRESS) {
-                        throw failure(Failure.IO_FAILURE,
-                                "bounded allocation store read made no progress");
-                    }
-                    continue;
-                }
-                zeroReads = 0;
-                observed += read;
-                if (observed > maxStoreBytes) {
-                    throw failure(Failure.STORE_SIZE_EXCEEDED,
-                            "allocation store exceeds its bounded byte size");
-                }
-                buffer.flip();
-                output.write(buffer.array(), 0, buffer.remaining());
-                buffer.clear();
-            }
-            if (observed != declaredSize || channel.size() != declaredSize) {
-                throw failure(Failure.CONCURRENT_CHANGE,
-                        "allocation store changed during bounded replay");
-            }
-            return output.toByteArray();
-        } catch (StoreException exception) {
-            throw exception;
-        } catch (IOException exception) {
-            throw failure(Failure.IO_FAILURE,
-                    "allocation store could not be read", exception);
-        }
+    private static StoreException mapEngineFailure(
+            ChainedJsonlStore.StoreIOException exception) {
+        return switch (exception.failure()) {
+            case SIZE_LIMIT_EXCEEDED -> failure(
+                    Failure.STORE_SIZE_EXCEEDED,
+                    "allocation store exceeds its bounded byte size",
+                    exception);
+            case ENTRY_LIMIT_EXCEEDED -> failure(
+                    Failure.RECORD_LIMIT_EXCEEDED,
+                    "allocation store exceeds its bounded record count",
+                    exception);
+            case FRAME_SIZE_EXCEEDED, INVALID_COMPLETE_FRAME -> failure(
+                    Failure.CORRUPT_RECORD,
+                    "allocation store contains an invalid complete record",
+                    exception);
+            case NON_CANONICAL_FRAME -> failure(
+                    Failure.NON_CANONICAL_RECORD,
+                    "allocation store contains a non-canonical complete record",
+                    exception);
+            case INCOMPLETE_TAIL -> failure(
+                    Failure.TRUNCATED_TAIL,
+                    "allocation store has an incomplete final record and was preserved unchanged",
+                    exception);
+            case CONCURRENT_CHANGE, FILE_IDENTITY_CHANGED -> failure(
+                    Failure.CONCURRENT_CHANGE,
+                    "allocation store changed during bounded storage access",
+                    exception);
+            case UNSAFE_FILE -> failure(
+                    Failure.SYMLINK_OR_TYPE_ESCAPE,
+                    "allocation store file identity is unsafe",
+                    exception);
+            case IO_FAILURE -> failure(
+                    Failure.IO_FAILURE,
+                    "allocation store storage access failed",
+                    exception);
+        };
     }
 
     private void validateOnlyControlledFile() {
@@ -893,7 +835,7 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
 
     enum WriteCheckpoint {
         BEFORE_APPEND,
-        AFTER_WRITE_CHUNK,
+        AFTER_WRITE_ATTEMPT,
         AFTER_APPEND_BEFORE_SYNC,
         AFTER_SYNC
     }

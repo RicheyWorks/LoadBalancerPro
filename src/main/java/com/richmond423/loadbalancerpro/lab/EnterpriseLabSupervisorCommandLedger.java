@@ -12,11 +12,8 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabCommandLedgerEvent.Valid
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorProtocol.Request;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorProtocol.Response;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -28,15 +25,12 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Supervisor-owned append-only command evidence. The existing supervisor OS
@@ -51,15 +45,12 @@ public final class EnterpriseLabSupervisorCommandLedger {
     static final String DIRECTORY_NAME = "supervisor-command-ledger-v1";
     static final String FILE_NAME = "supervisor-command-events-v1.jsonl";
 
-    private static final int READ_BUFFER_BYTES = 8_192;
-    private static final int MAX_ZERO_PROGRESS = 3;
     private static final int MAX_TRANSIENT_REPLAY_ATTEMPTS = 4;
     private static final long TRANSIENT_REPLAY_BACKOFF_MILLIS = 10L;
     private static final Set<PosixFilePermission> DIRECTORY_PERMISSIONS =
             PosixFilePermissions.fromString("rwx------");
     private static final Set<PosixFilePermission> FILE_PERMISSIONS =
             PosixFilePermissions.fromString("rw-------");
-    private static final Map<Path, Object> PROCESS_MUTEXES = new ConcurrentHashMap<>();
     private static final FailureInjector NO_FAILURE = (checkpoint, bytesWritten) -> { };
     private static final Set<EventType> TERMINAL_EVENTS = Set.of(
             EventType.RESPONSE_SENT,
@@ -83,6 +74,7 @@ public final class EnterpriseLabSupervisorCommandLedger {
     private final long maxLedgerBytes;
     private final int maxEvents;
     private final FailureInjector failureInjector;
+    private final ChainedJsonlStore jsonlStore;
     private final Object processMutex;
 
     private boolean failed;
@@ -124,7 +116,8 @@ public final class EnterpriseLabSupervisorCommandLedger {
             this.ledgerDirectory = controlledPath(supervisorDirectory, DIRECTORY_NAME);
         }
         this.ledgerFile = controlledPath(ledgerDirectory, FILE_NAME);
-        this.processMutex = PROCESS_MUTEXES.computeIfAbsent(ledgerFile, ignored -> new Object());
+        this.jsonlStore = new ChainedJsonlStore(ledgerFile, maxLedgerBytes);
+        this.processMutex = jsonlStore.processMutex();
 
         if (prepareForMutation) {
             synchronized (processMutex) {
@@ -248,14 +241,7 @@ public final class EnterpriseLabSupervisorCommandLedger {
                 failureInjector.checkpoint(WriteCheckpoint.BEFORE_APPEND, 0);
                 requireOwnership();
                 writeStarted = true;
-                appendFrame(encoded);
-                failureInjector.checkpoint(
-                        WriteCheckpoint.AFTER_APPEND_BEFORE_SYNC,
-                        Math.toIntExact(frameBytes));
-                requireOwnership();
-                forceLedgerFile();
-                failureInjector.checkpoint(
-                        WriteCheckpoint.AFTER_SYNC, Math.toIntExact(frameBytes));
+                appendFrame(encoded, before.totalBytes());
                 requireOwnership();
 
                 ReadResult after = replayLocked();
@@ -300,45 +286,34 @@ public final class EnterpriseLabSupervisorCommandLedger {
                 ledgerDirectory, supervisorDirectory, "supervisor ledger directory");
         validateOnlyControlledFile();
         if (!Files.exists(ledgerFile, LinkOption.NOFOLLOW_LINKS)) {
+            requireMissingFileWasNeverObserved();
             return ReadResult.empty();
         }
         validateLedgerFile();
         byte[] bytes = readReplayBytesWithTransientRetry();
-        if (bytes.length == 0) {
-            return new ReadResult(true, List.of(), 0L);
-        }
+        try {
+            ChainedJsonlStore.ChainReplay<EnterpriseLabCommandLedgerEvent> replay =
+                    jsonlStore.decodeChain(
+                            bytes,
+                            new ChainedJsonlStore.FrameCodec<>() {
+                                @Override
+                                public EnterpriseLabCommandLedgerEvent decode(byte[] encoded) {
+                                    return codec.decode(encoded);
+                                }
 
-        List<EnterpriseLabCommandLedgerEvent> events = new ArrayList<>();
-        int start = 0;
-        for (int index = 0; index < bytes.length; index++) {
-            if (bytes[index] != '\n') {
-                continue;
-            }
-            if (index == start) {
-                throw failure(Failure.CORRUPT_EVENT,
-                        "supervisor ledger contains an empty complete event");
-            }
-            if (events.size() >= maxEvents) {
-                throw failure(Failure.EVENT_LIMIT_EXCEEDED,
-                        "supervisor ledger exceeds its bounded event count");
-            }
-            byte[] encoded = Arrays.copyOfRange(bytes, start, index);
-            EnterpriseLabCommandLedgerEvent event;
-            try {
-                event = codec.decode(encoded);
-            } catch (RuntimeException exception) {
-                throw failure(Failure.CORRUPT_EVENT,
-                        "supervisor ledger contains an invalid complete event", exception);
-            }
-            if (!Arrays.equals(encoded, codec.encode(event))) {
-                throw failure(Failure.NON_CANONICAL_EVENT,
-                        "supervisor ledger contains a non-canonical complete event");
-            }
-            validateNext(events, event);
-            events.add(event);
-            start = index + 1;
+                                @Override
+                                public byte[] encode(EnterpriseLabCommandLedgerEvent event) {
+                                    return codec.encode(event);
+                                }
+                            },
+                            EnterpriseLabSupervisorCommandLedger::validateNext,
+                            maxEvents,
+                            EnterpriseLabCommandLedgerEvent.HARD_MAX_EVENT_BYTES,
+                            ChainedJsonlStore.TailPolicy.REJECT);
+            return new ReadResult(true, replay.entries(), replay.totalBytes());
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            throw mapEngineFailure(exception);
         }
-        return new ReadResult(true, events, bytes.length);
     }
 
     private static void validateNext(
@@ -538,42 +513,21 @@ public final class EnterpriseLabSupervisorCommandLedger {
         forceDirectoryMetadataIfSupported(ledgerDirectory);
     }
 
-    private void appendFrame(byte[] encoded) throws IOException {
-        byte[] frame = Arrays.copyOf(encoded, encoded.length + 1);
-        frame[frame.length - 1] = '\n';
-        try (FileChannel channel = FileChannel.open(
-                ledgerFile,
-                StandardOpenOption.WRITE,
-                StandardOpenOption.APPEND,
-                LinkOption.NOFOLLOW_LINKS);
-             FileLock ignored = channel.lock()) {
-            ByteBuffer buffer = ByteBuffer.wrap(frame);
-            int writtenBytes = 0;
-            int zeroWrites = 0;
-            while (buffer.hasRemaining()) {
-                int written = channel.write(buffer);
-                if (written == 0) {
-                    zeroWrites++;
-                    if (zeroWrites >= MAX_ZERO_PROGRESS) {
-                        throw new IOException(
-                                "bounded supervisor ledger write made no progress");
-                    }
-                    continue;
-                }
-                zeroWrites = 0;
-                writtenBytes += written;
-                failureInjector.checkpoint(
-                        WriteCheckpoint.AFTER_WRITE_ATTEMPT, writtenBytes);
-            }
-        }
-    }
-
-    private void forceLedgerFile() throws IOException {
-        try (FileChannel channel = FileChannel.open(
-                ledgerFile,
-                StandardOpenOption.WRITE,
-                LinkOption.NOFOLLOW_LINKS)) {
-            channel.force(true);
+    private void appendFrame(byte[] encoded, long expectedSize) {
+        try {
+            jsonlStore.appendFrame(
+                    encoded,
+                    expectedSize,
+                    ChainedJsonlStore.ForceMode.DATA_AND_METADATA,
+                    this::requireOwnership,
+                    writtenBytes -> failureInjector.checkpoint(
+                            WriteCheckpoint.AFTER_WRITE_ATTEMPT, writtenBytes),
+                    frameBytes -> failureInjector.checkpoint(
+                            WriteCheckpoint.AFTER_APPEND_BEFORE_SYNC, frameBytes),
+                    frameBytes -> failureInjector.checkpoint(
+                            WriteCheckpoint.AFTER_SYNC, frameBytes));
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            throw mapEngineFailure(exception);
         }
     }
 
@@ -621,56 +575,57 @@ public final class EnterpriseLabSupervisorCommandLedger {
     }
 
     private byte[] readBoundedBytes() {
-        long declaredSize;
-        try (FileChannel channel = FileChannel.open(
-                ledgerFile,
-                StandardOpenOption.READ,
-                LinkOption.NOFOLLOW_LINKS);
-             FileLock ignored = channel.lock(0L, Long.MAX_VALUE, true)) {
-            declaredSize = channel.size();
-            if (declaredSize > maxLedgerBytes) {
-                throw failure(Failure.LEDGER_SIZE_EXCEEDED,
-                        "supervisor ledger exceeds its bounded byte size");
-            }
-            ByteArrayOutputStream output = new ByteArrayOutputStream(
-                    Math.toIntExact(declaredSize));
-            ByteBuffer buffer = ByteBuffer.allocate(READ_BUFFER_BYTES);
-            int zeroReads = 0;
-            long observed = 0L;
-            while (true) {
-                int read = channel.read(buffer);
-                if (read < 0) {
-                    break;
-                }
-                if (read == 0) {
-                    zeroReads++;
-                    if (zeroReads >= MAX_ZERO_PROGRESS) {
-                        throw failure(Failure.IO_FAILURE,
-                                "bounded supervisor ledger read made no progress");
-                    }
-                    continue;
-                }
-                zeroReads = 0;
-                observed += read;
-                if (observed > maxLedgerBytes) {
-                    throw failure(Failure.LEDGER_SIZE_EXCEEDED,
-                            "supervisor ledger exceeds its bounded byte size");
-                }
-                buffer.flip();
-                output.write(buffer.array(), 0, buffer.remaining());
-                buffer.clear();
-            }
-            if (observed != declaredSize || channel.size() != declaredSize) {
-                throw failure(Failure.CONCURRENT_CHANGE,
-                        "supervisor ledger changed during bounded replay");
-            }
-            return output.toByteArray();
-        } catch (StoreException exception) {
-            throw exception;
-        } catch (IOException exception) {
-            throw failure(Failure.IO_FAILURE,
-                    "supervisor ledger could not be read", exception);
+        try {
+            return jsonlStore.readBoundedBytes();
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            throw mapEngineFailure(exception);
         }
+    }
+
+    private void requireMissingFileWasNeverObserved() {
+        try {
+            jsonlStore.requireMissingFileWasNeverObserved();
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            throw mapEngineFailure(exception);
+        }
+    }
+
+    private static StoreException mapEngineFailure(
+            ChainedJsonlStore.StoreIOException exception) {
+        return switch (exception.failure()) {
+            case SIZE_LIMIT_EXCEEDED -> failure(
+                    Failure.LEDGER_SIZE_EXCEEDED,
+                    "supervisor ledger exceeds its bounded byte size",
+                    exception);
+            case ENTRY_LIMIT_EXCEEDED -> failure(
+                    Failure.EVENT_LIMIT_EXCEEDED,
+                    "supervisor ledger exceeds its bounded event count",
+                    exception);
+            case FRAME_SIZE_EXCEEDED, INVALID_COMPLETE_FRAME -> failure(
+                    Failure.CORRUPT_EVENT,
+                    "supervisor ledger contains an invalid complete event",
+                    exception);
+            case NON_CANONICAL_FRAME -> failure(
+                    Failure.NON_CANONICAL_EVENT,
+                    "supervisor ledger contains a non-canonical complete event",
+                    exception);
+            case INCOMPLETE_TAIL -> failure(
+                    Failure.TRUNCATED_TAIL,
+                    "supervisor ledger has an incomplete tail and was preserved unchanged",
+                    exception);
+            case CONCURRENT_CHANGE, FILE_IDENTITY_CHANGED -> failure(
+                    Failure.CONCURRENT_CHANGE,
+                    "supervisor ledger changed during bounded storage access",
+                    exception);
+            case UNSAFE_FILE -> failure(
+                    Failure.SYMLINK_OR_TYPE_ESCAPE,
+                    "supervisor ledger file identity is unsafe",
+                    exception);
+            case IO_FAILURE -> failure(
+                    Failure.IO_FAILURE,
+                    "supervisor ledger storage access failed",
+                    exception);
+        };
     }
 
     private void validateOnlyControlledFile() {

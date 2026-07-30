@@ -165,11 +165,11 @@
       "sourceIds": ["L-0.6"],
       "track": "lab",
       "title": "Eliminate ledger torn-read false failures",
-      "status": "PR_OPEN",
+      "status": "MAIN_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "PR #508 is open. Implementation head 0bdcb078663e9f0b03d050fb64f797972052038b passed the deterministic two-JVM red/green contract, 84 focused/adjacent tests, 3,484-test clean package, skip-test verify, artifact/SBOM/LASE/Enterprise Lab workflow checks, and literal-loopback operator-profile smoke. The PR-open checkpoint is documentation-only; exact final-head CI, CodeQL, dependency, Docker/runtime, and image-scan gates remain pending."
+      "currentState": "PR #508 final head 7ca0c5212f354f72350ce0e40eb4963fd2a17d65 passed push CI 30543007076, PR CI 30543014006, CodeQL 30543014064, PR dependency review, both package/SBOM/packaged-smoke/Docker/runtime/evidence/image-scan jobs, and complete-diff self-review, then merged as b726cab39ddf60cd32fd515b32b3397ea605da3f. The merge tree matched the verified PR tree; exact-main 57-test focused verification, CI 30543859923, and CodeQL 30543863028 passed."
     },
     {
       "ordinal": 12,
@@ -177,11 +177,11 @@
       "sourceIds": ["L-1.1"],
       "track": "lab",
       "title": "Delete metadata-about-metadata services",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": ["L-0.2", "L-0.3", "L-0.4", "L-0.5", "L-0.6"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "The complete deletion and replacement acceptance contract is unproven."
+      "currentState": "Active on codex/l-1-1-remove-metadata-services from exact green main b726cab39ddf60cd32fd515b32b3397ea605da3f. Reconcile the imported deletion inventory with current references and payload contracts before removing any implementation."
     },
     {
       "ordinal": 13,

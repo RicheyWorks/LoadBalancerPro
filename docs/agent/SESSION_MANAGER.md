@@ -6,6 +6,50 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 5 PR-Open Checkpoint
+
+Timestamp: 2026-07-29T19:04:35-07:00
+
+Current slot: `P-0.4`, make weight zero drain and correct interrupted retry classification.
+
+Current branch: `codex/p-0-4-weight-zero-retry`.
+
+Slot status: `PR_OPEN`.
+
+Pull request: [#502](https://github.com/RicheyWorks/LoadBalancerPro/pull/502).
+
+Published implementation head: `b57afad5659e08d1dd42461f2fa8c77f5491a84a`.
+
+Verified base: `8c491133041422b998d8e19eee5a18c827472ac8`, the exact PR #501 merge commit and green
+`origin/main`.
+
+Local gate: clean `mvn -B package` passed 3,440 tests across 484 reports with zero failures, errors, skips, or
+dumps. Focused and expanded proxy/strategy/configuration/integration/documentation selectors, verify, JaCoCo, JAR
+resources, packaged LASE CLI, literal-loopback packaged runtime, Enterprise Lab packaged workflow, CycloneDX
+JSON/XML, campaign guards, and complete scope/safety review passed.
+
+Remote state at open: required push/PR CI, CodeQL, dependency review, SBOM, Docker/runtime, container evidence, and
+blocking image scan are pending. No remote-green claim is made.
+
+Review state: no independent reviewer is available; the campaign's pre-authorized substitute is a documented
+complete-diff self-review after the exact final checkpoint head is published. Required checks cannot be bypassed,
+disabled, or weakened.
+
+Scope and safety: production changes remain limited to the planned WRR/WLC candidate semantics, proxy target-weight
+validation, and interrupted-forward retry classification. No auth/security-policy weakening, external/public
+target, secret, live cloud/tenant action, CI/Maven/Docker/Compose change, or readiness/performance claim is present.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: required exact-head remote checks are pending.
+
+Next action: commit and publish this PR-open checkpoint, then require every resulting exact-head remote gate before
+authorized self-review and merge.
+
+Decision: continue only `P-0.4`; no later slot is active.
+
 ## Combined Build Plan Slot 5 Local-Green Checkpoint
 
 Timestamp: 2026-07-29T19:01:25-07:00

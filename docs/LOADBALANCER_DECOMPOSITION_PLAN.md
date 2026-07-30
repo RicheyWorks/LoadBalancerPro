@@ -50,7 +50,7 @@ The request-level routing strategy registry/API is a separate layer. `RoutingStr
 | Helper | Status | Notes |
 | --- | --- | --- |
 | `ConsistentHashRing` | Extracted | Package-private helper for ring maintenance and healthy server selection. |
-| `ServerRegistry` | Extracted | Package-private helper for server list/map snapshots and typed/healthy views. It still contains `loadQueue`, which remains an audit item only. |
+| `ServerRegistry` | Extracted | Package-private helper for server list/map snapshots and typed/healthy views. The unused `loadQueue` shadow state has been removed; allocation ordering remains owned by the distribution planners. |
 | `LoadDistributionEngine` | Extracted | Package-private helper for legacy batch allocation, accumulated load, and metrics recording. |
 | `LoadDistributionPlanner` | Extracted helper | Static planner for legacy batch allocation formulas. |
 | `ServerHealthCoordinator` | Extracted | Package-private helper for health detection, removal, redistribution, and cloud replacement scaling coordination. |

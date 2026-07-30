@@ -60,10 +60,6 @@ final class LoadDistributionEngine {
         return data != null ? data : 0;
     }
 
-    void putAllAllocations(Map<String, Double> allocations) {
-        currentDistribution.putAll(allocations);
-    }
-
     double totalAccumulatedLoad() {
         return currentDistribution.values().stream().mapToDouble(Double::doubleValue).sum();
     }

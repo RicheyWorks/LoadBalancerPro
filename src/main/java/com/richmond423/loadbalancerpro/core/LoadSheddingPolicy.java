@@ -67,10 +67,9 @@ public final class LoadSheddingPolicy {
         }
         return switch (priority) {
             case PREFETCH, BACKGROUND -> LoadSheddingDecision.Action.SHED;
-            case USER -> config.shedUserOnHardPressure()
+            case USER, CRITICAL -> config.shedUserOnHardPressure()
                     ? LoadSheddingDecision.Action.SHED
                     : LoadSheddingDecision.Action.ALLOW;
-            case CRITICAL -> LoadSheddingDecision.Action.SHED;
         };
     }
 
@@ -96,6 +95,10 @@ public final class LoadSheddingPolicy {
         if (priority == RequestPriority.USER && action == LoadSheddingDecision.Action.ALLOW) {
             return "Allowing USER request during " + pressure.description()
                     + " because configured policy protects USER traffic under hard pressure.";
+        }
+        if (priority == RequestPriority.CRITICAL && action == LoadSheddingDecision.Action.ALLOW) {
+            return "Allowing CRITICAL request during " + pressure.description()
+                    + " because higher-priority traffic cannot be shed while USER traffic is protected.";
         }
         return (action == LoadSheddingDecision.Action.SHED ? "Shedding " : "Allowing ")
                 + priority + " request due to " + pressure.description() + ".";

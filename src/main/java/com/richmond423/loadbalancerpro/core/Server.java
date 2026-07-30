@@ -125,9 +125,7 @@ public class Server {
         this.capacity = DEFAULT_CAPACITY;
         this.isHealthy = true;
         this.degradationState = ServerDegradationState.HEALTHY;
-        this.serverType = Boolean.getBoolean("isCloudServer")
-            ? ServerType.CLOUD
-            : (serverType != null ? serverType : ServerType.ONSITE);
+        this.serverType = serverType != null ? serverType : ServerType.ONSITE;
         this.healthThreshold = clamp(healthThreshold);
         this.loadScoreFormula = loadScoreFormula != null ? loadScoreFormula : 
                                 s -> (s.getCpuUsage() + s.getMemoryUsage() + s.getDiskUsage()) / 3.0;
@@ -296,6 +294,9 @@ public class Server {
     }
 
     public synchronized void updateMetrics(double cpu, double mem, double disk) {
+        double sanitizedCpu = validateMetric(cpu, "CPU usage");
+        double sanitizedMem = validateMetric(mem, "Memory usage");
+        double sanitizedDisk = validateMetric(disk, "Disk usage");
         double oldCpu = cpuUsage;
         double oldMem = memoryUsage;
         double oldDisk = diskUsage;
@@ -304,9 +305,6 @@ public class Server {
                                                                  serverType,
                                                                  cpuHistory, memHistory, diskHistory, 
                                                                  historyIndex.get()));
-        double sanitizedCpu = validateMetric(cpu, "CPU usage");
-        double sanitizedMem = validateMetric(mem, "Memory usage");
-        double sanitizedDisk = validateMetric(disk, "Disk usage");
         CPU_USAGE_HANDLE.setVolatile(this, sanitizedCpu);
         MEMORY_USAGE_HANDLE.setVolatile(this, sanitizedMem);
         DISK_USAGE_HANDLE.setVolatile(this, sanitizedDisk);
@@ -322,7 +320,7 @@ public class Server {
     }
 
     private void updateHistory(double cpu, double mem, double disk) {
-        int index = historyIndex.getAndIncrement() % METRIC_HISTORY_SIZE;
+        int index = Math.floorMod(historyIndex.getAndIncrement(), METRIC_HISTORY_SIZE);
         cpuHistory.set(index, Double.doubleToLongBits(cpu));
         memHistory.set(index, Double.doubleToLongBits(mem));
         diskHistory.set(index, Double.doubleToLongBits(disk));
@@ -591,15 +589,15 @@ public class Server {
         setServerType(cloudInstance ? ServerType.CLOUD : ServerType.ONSITE);
     }
 
-    public void setCpuUsage(double cpuUsage) {
+    public synchronized void setCpuUsage(double cpuUsage) {
         updateMetrics(cpuUsage, memoryUsage, diskUsage);
     }
 
-    public void setMemoryUsage(double memoryUsage) {
+    public synchronized void setMemoryUsage(double memoryUsage) {
         updateMetrics(cpuUsage, memoryUsage, diskUsage);
     }
 
-    public void setDiskUsage(double diskUsage) {
+    public synchronized void setDiskUsage(double diskUsage) {
         updateMetrics(cpuUsage, memoryUsage, diskUsage);
     }
 

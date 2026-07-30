@@ -228,23 +228,26 @@ class ServerTest {
         logger.info("Invalid update metrics test passed: Method rejects out-of-range values.");
     }
 
-    /**
-     * Tests the cloud detection override via system property.
-     *
-     * Creates servers with and without the "isCloudServer" system property set,
-     * and verifies the cloud instance status reflects the override.
-     */
     @Test
-    void testCloudDetection_Override() {
-        logger.info("=== TESTING CLOUD DETECTION OVERRIDE ===");
-        System.setProperty("isCloudServer", "true");
-        Server cloudServer = createServer("S1", 30.0, 40.0, 50.0);
-        assertTrue(cloudServer.isCloudInstance(), "Server should be cloud with override!");
+    void testExplicitServerTypeIgnoresGlobalCloudProperty() {
+        logger.info("=== TESTING EXPLICIT SERVER TYPE OWNERSHIP ===");
+        String previous = System.getProperty("isCloudServer");
+        try {
+            System.setProperty("isCloudServer", "true");
+            Server onsite = new Server("S1", 30.0, 40.0, 50.0, ServerType.ONSITE);
+            assertFalse(onsite.isCloudInstance(), "Explicit onsite type must not be globally overridden!");
 
-        System.clearProperty("isCloudServer");
-        Server nonCloudServer = createServer("S2", 30.0, 40.0, 50.0);
-        assertFalse(nonCloudServer.isCloudInstance(), "Server should not be cloud without override!");
-        logger.info("Cloud detection override test passed: Override works correctly.");
+            System.setProperty("isCloudServer", "false");
+            Server cloud = new Server("S2", 30.0, 40.0, 50.0, ServerType.CLOUD);
+            assertTrue(cloud.isCloudInstance(), "Explicit cloud type must remain cloud!");
+        } finally {
+            if (previous == null) {
+                System.clearProperty("isCloudServer");
+            } else {
+                System.setProperty("isCloudServer", previous);
+            }
+        }
+        logger.info("Explicit server type ownership test passed.");
     }
 
     /**

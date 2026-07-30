@@ -185,30 +185,35 @@ public class LoadBalancer {
 
     public Map<String, Double> consistentHashing(double totalData, int numKeys) {
         if (totalData < 0 || numKeys <= 0) throw new IllegalArgumentException("Invalid totalData or numKeys");
-        if (serverRegistry.isEmpty()) {
-            logger.info("No servers available.");
-            return Collections.emptyMap();
-        }
-        Map<String, Double> dist = new HashMap<>();
-        if (consistentHashRing.isEmpty()) return dist;
-        double dataPerKey = totalData / numKeys;
-        List<Server> healthy = getHealthyServers();
-        if (healthy.isEmpty()) {
-            logger.warn("No healthy servers for consistent hashing.");
-            return dist;
-        }
-        for (int i = 0; i < numKeys; i++) {
-            Server server = consistentHashRing.selectHealthyServer("data-" + i);
-            if (server != null) {
-                dist.merge(server.getServerId(), dataPerKey, Double::sum);
-                loadDistributionEngine.accumulate(server.getServerId(), dataPerKey);
-            } else {
-                logger.warn("No healthy servers found for data key {}", i);
+        serverLock.readLock().lock();
+        try {
+            if (serverRegistry.isEmpty()) {
+                logger.info("No servers available.");
+                return Collections.emptyMap();
             }
+            Map<String, Double> dist = new HashMap<>();
+            if (consistentHashRing.isEmpty()) return dist;
+            double dataPerKey = totalData / numKeys;
+            List<Server> healthy = serverRegistry.healthySnapshot();
+            if (healthy.isEmpty()) {
+                logger.warn("No healthy servers for consistent hashing.");
+                return dist;
+            }
+            for (int i = 0; i < numKeys; i++) {
+                Server server = consistentHashRing.selectHealthyServer("data-" + i);
+                if (server != null) {
+                    dist.merge(server.getServerId(), dataPerKey, Double::sum);
+                    loadDistributionEngine.accumulate(server.getServerId(), dataPerKey);
+                } else {
+                    logger.warn("No healthy servers found for data key {}", i);
+                }
+            }
+            DomainMetrics.recordAllocation("CONSISTENT_HASHING", healthy.size(),
+                    dist.values().stream().mapToDouble(Double::doubleValue).sum(), 0.0);
+            return dist;
+        } finally {
+            serverLock.readLock().unlock();
         }
-        DomainMetrics.recordAllocation("CONSISTENT_HASHING", healthy.size(),
-                dist.values().stream().mapToDouble(Double::doubleValue).sum(), 0.0);
-        return dist;
     }
 
     public Map<String, Double> capacityAware(double totalData) {

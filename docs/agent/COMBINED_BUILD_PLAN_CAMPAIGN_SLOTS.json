@@ -105,11 +105,11 @@
       "sourceIds": ["P-0.6"],
       "track": "proxy",
       "title": "Apply the simulation-core correctness batch",
-      "status": "IN_PROGRESS",
+      "status": "LOCAL_GREEN",
       "dependencies": [],
       "riskClass": "CORRECTNESS",
       "verificationProfile": "java-full",
-      "currentState": "Started from exact green main 46f03670ee3e0829fd0db8577c1a332612ab29bd on branch codex/p-0-6-simulation-core-correctness. Each source-plan simulation-core defect is under current-tree audit; no acceptance claim yet."
+      "currentState": "Locally green from exact base 46f03670ee3e0829fd0db8577c1a332612ab29bd on branch codex/p-0-6-simulation-core-correctness. The corrected red gate mapped eight live defects; focused and adjacent selectors, a clean 3,449-test package, verify, JaCoCo, executable-JAR/SBOM checks, packaged LASE/runtime/Enterprise Lab smokes, and the scope/safety audit passed. Exact-head remote gates remain pending."
     },
     {
       "ordinal": 7,

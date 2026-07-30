@@ -6,6 +6,101 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 6 Local-Green Checkpoint
+
+Timestamp: 2026-07-29T19:57:48-07:00
+
+Current slot: `P-0.6`, apply the simulation-core correctness batch.
+
+Current branch: `codex/p-0-6-simulation-core-correctness`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `46f03670ee3e0829fd0db8577c1a332612ab29bd`, the exact PR #502 merge commit and green
+`origin/main`.
+
+Implementation:
+
+- hard-pressure shedding now preserves priority monotonicity: `CRITICAL` cannot be rejected while the same policy
+  protects `USER`;
+- health eviction relies on the least-loaded redistribution path's existing merge and no longer overwrites survivor
+  accumulated load with a duplicate `putAll`;
+- consistent hashing keeps its registry and ring reads within one server read-lock scope;
+- metric inputs are validated before rollback-snapshot mutation, history indexing uses `Math.floorMod`, and
+  single-metric setters synchronize their read-modify-write cycle;
+- explicit server type is no longer overridden by the JVM-global `isCloudServer` property;
+- the unused, non-thread-safe registry `loadQueue` and its dead allocation overwrite helper were removed;
+- decomposition and core feature-contract records now state these bounded local correctness guarantees without
+  upgrading runtime, deployment, or production evidence.
+
+Acceptance:
+
+- the first red design ran eight tests with seven failures; its hashing test exposed an inadequate nested-lock
+  oracle, so a deterministic full-method lock-scope guard was added before production edits;
+- the corrected red gate ran nine tests with eight expected failures, zero errors, and zero skips, mapping every
+  live imported defect to its intended assertion;
+- post-implementation focused and expanded simulation-core, health-lifecycle, load-distribution, hashing,
+  load-shedding, server, and campaign-documentation selectors passed;
+- deterministic acceptance proves monotonic priority behavior, survivor-load preservation, full hash read-lock
+  scope, integer-overflow-safe history indexing, snapshot integrity after invalid input, concurrent setter
+  preservation, dead-queue removal, and explicit server-type ownership.
+
+Changed files:
+
+- `src/main/java/com/richmond423/loadbalancerpro/core/LoadBalancer.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/LoadDistributionEngine.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/LoadSheddingPolicy.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/Server.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/ServerHealthCoordinator.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/ServerRegistry.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/ServerTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/SimulationCoreCorrectnessBatchTest.java`
+- `docs/LOADBALANCER_DECOMPOSITION_PLAN.md`
+- `docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Verification:
+
+- clean `mvn -B package`: exit 0, 3,449 tests across 485 fresh reports, zero failures/errors/skips, and no Surefire
+  dump files;
+- `mvn -q "-DskipTests" verify`, focused/adjacent selectors, campaign documentation guards, and
+  `git diff --check` passed;
+- JaCoCo XML generation passed: 83.19% instructions, 66.37% branches, 82.48% lines, 87.67% methods, and 94.31%
+  classes;
+- the checked-in artifact verifier passed all seven required executable-JAR entries;
+- final executable JAR after the packaged workflow rerun: 95,545,274 bytes, 1,433 entries, SHA-256
+  `DC3138B417F18D9FA0DEA368D472FC4614F3463279BC5B2116DCC8434CCF09E8`;
+- CycloneDX 2.9.1 generated parseable JSON/XML 1.6 BOMs with 144 components in each;
+- packaged healthy/overloaded/invalid LASE CLI cases passed with exits 0, 0, and 2, no Spring startup, and no raw
+  invalid-case exception;
+- literal-loopback packaged runtime returned HTTP 200 for health, root, proxy status, and both static operator
+  pages; exact captured-process cleanup released port 18080;
+- the packaged Enterprise Lab shadow workflow passed ten fixed scenarios and wrote ignored target-only evidence
+  under its explicit no-live-cloud/no-external-network boundary.
+
+Local limitations: the Docker CLI could not reach its configured engine, Trivy is not installed, and the repository
+root has no Compose file. No local Docker/runtime, container, Trivy, or Compose result is claimed. Exact-head remote
+CI, CodeQL, dependency review, SBOM, Docker/runtime, controlled container evidence, and blocking image scan remain
+mandatory before merge.
+
+Scope and safety: production changes are limited to the eight planned simulation-core correctness repairs. No auth
+or security-policy weakening, public/external target, secret, live cloud/tenant action, deployment, CI/Maven/Docker/
+Compose behavior, proxy/API redesign, unrelated lab/evidence behavior, or readiness/performance claim changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: none locally.
+
+Next action: rerun the campaign guards after this checkpoint, commit and publish the exact 14-file local-green
+slice, open one PR, and require every exact-head remote gate before authorized self-review and merge.
+
+Decision: continue only `P-0.6`; no later slot is active.
+
 ## Combined Build Plan Slot 6 Start Checkpoint
 
 Timestamp: 2026-07-29T19:36:31-07:00

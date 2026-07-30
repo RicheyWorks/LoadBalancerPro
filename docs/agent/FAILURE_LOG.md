@@ -8758,3 +8758,34 @@ correct heading, but piping its many repository-wide matches through `Select-Obj
 early and returned exit 1 after printing useful results. These were read-only lookup failures. Correction: treat
 neither wrapper as a gate and inspect the confirmed `docs/BUILD_PLAN_DEPLOYABLE.md` lines 40-41 directly before
 auditing the named production surfaces.
+
+First P-0.6 red-gate design: eight acceptance tests ran with seven failures, zero errors, and zero skips, confirming
+the priority, redistribution, history-overflow, rollback-snapshot, concurrent-setter, dead-queue, and cloud-property
+defects. The consistent-hashing lock test unexpectedly passed because it blocked at the already-existing nested
+`getHealthyServers()` read lock after the unsafe initial registry/ring checks; it did not prove one lock scope
+around the whole method. Correction: add a deterministic source-scope assertion requiring the outer read-lock
+acquisition before the first registry/ring check and release in `finally`, rerun the complete red gate, and do not
+edit production code until all eight live defect contracts fail for the intended reason.
+
+Corrected P-0.6 red gate: nine tests ran with eight failures, zero errors, and zero skips. The new outer lock-scope
+guard failed all three assertions because `consistentHashing` had no method-level read lock; the other seven
+failures remained mapped to their intended live defects. The adjacent runtime lock test passed because the old
+nested healthy-snapshot call still blocked, but it is not used as proof of the outer scope. Production correction
+began only after this complete defect-to-acceptance mapping was established.
+
+P-0.6 local container/security-tool diagnostic: the Docker CLI remained unable to reach its configured Docker
+Desktop Linux engine, Trivy remained unavailable, and the repository root contained no Compose file. No local
+Docker/runtime, Compose, or Trivy result is claimed. Correction: retain exact-head remote Docker build/runtime,
+controlled container evidence, and blocking image scan as mandatory merge gates.
+
+P-0.6 final test-source inspection: a read-only `Get-Content` command used the incorrect package path
+`src/test/java/com/richeyworks/...` instead of the repository's confirmed `src/test/java/com/richmond423/...`
+path and returned a file-not-found error after the preceding status and diff checks succeeded. No source or test
+was changed by that lookup. Correction: inspect the already listed untracked test at its exact Git status path
+before accepting the full-diff review.
+
+P-0.6 final executable-JAR inventory: a read-only metadata probe guessed the obsolete artifact name
+`target/load-balancer-pro-1.0.0.jar`; `Get-Item` returned file-not-found and the dependent hash/entry commands
+therefore had no input. The already-green package and packaged-workflow runs are unaffected, and no artifact or
+source was changed. Correction: resolve the unique executable JAR from the current `target` inventory before
+recording its size, entry count, or hash.

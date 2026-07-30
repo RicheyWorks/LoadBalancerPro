@@ -8911,3 +8911,74 @@ discipline despite the caller-count guard. Correction: fail fast when an integer
 `PROMPT_ABORTED` and add a focused regression proving the sentinel can never be a valid range value. Treat all
 running checks for `5cfe57d8809d7e9109abc6b4dbc5eaffc6691bc8` as superseded; repeat local and exact-head remote gates on the
 corrected SHA.
+
+# 2026-07-29 - L-0.4 cockpit HTML-injection audit
+
+Branch: `codex/l-0-4-cockpit-xss`
+
+Pre-implementation red gate: `EnterpriseLabCockpitXssSafetyTest` ran two tests with two expected failures, zero
+errors, and zero skips. `enterprise-lab.html` still used five `innerHTML` assignments for scenario, scorecard,
+policy, audit, and metrics rendering, while `enterprise-lab-reviewer.html` used one `innerHTML` assignment for
+reviewer summary items. Both source-wide guards failed at the forbidden sink assertion before the expected safe-DOM
+helper markers, mapping the imported O4 defect without any network or live target. Correction: preserve the current
+page layout with `createElement`, `createTextNode`, `textContent`, and `replaceChildren`, and prove hostile
+server-derived strings remain text in both pages.
+
+First L-0.4 browser-check server setup: local command policy rejected a compound PowerShell wrapper that combined
+hidden `python -m http.server` startup, readiness polling, and failure cleanup. The command did not execute, no
+server process was created, and no product verification failed. Correction: keep the loopback-only static-server
+launch, readiness check, and exact-PID cleanup as separate bounded commands, with the helper window hidden as
+required.
+
+First L-0.4 safe-DOM browser visual review: hostile scenario, scorecard, policy, audit, metrics, artifact, and
+evidence-path strings were inert with zero image nodes, zero execution-marker changes, and zero browser-console
+errors, but the initial generic table helper rendered key/value labels as `td` cells where the original markup used
+row-header `th` cells. Correction: add a dedicated safe-DOM key/value table builder that retains the original
+`th`/`td` structure while continuing to insert all dynamic content with text nodes.
+
+First L-0.4 packaged LASE assertion wrapper: the healthy and overloaded cases exited zero, and the invalid case
+correctly exited two with the bounded invalid-scenario message, but Windows PowerShell represented native stderr as
+a `RemoteException` error record when the wrapper merged streams. That wrapper's broad no-`Exception` assertion
+therefore rejected PowerShell's transport metadata rather than application output, so the invocation is not
+accepted as green evidence. Correction: capture the unchanged Java command through a raw native shell stream,
+retain exact exit-code and application-output assertions, and rerun all three packaged cases without weakening the
+application's no-stack-trace requirement.
+
+L-0.4 local container and image-scan probes: Docker CLI 28.0.4 is installed, but its configured Docker Desktop
+Linux engine named pipe is absent; standalone Trivy is unavailable; and the repository root has no Compose file.
+No local image build/runtime, controlled container evidence, Trivy scan, or Compose result is claimed. L-0.4 changes
+only static cockpit rendering, its regression contract, bounded README wording, and campaign records; it does not
+change dependencies, Maven, workflows, Dockerfiles, images, or container behavior. Correction: retain the green
+local Java/package/SBOM/packaged-smoke evidence and require the unchanged exact-head remote Docker build/runtime,
+controlled container evidence, and blocking HIGH/CRITICAL image scan before merge and again on exact merge-main.
+
+L-0.4 complete-diff pre-commit review: the first safe table helper distinguished trusted DOM fragments from scalar
+server values by testing for a numeric `nodeType` property. A hostile JSON object could spoof that structural check
+and make `appendChild` throw, causing a bounded cockpit render failure even though it could not become executable
+markup. Correction: require the browser's actual `Node` identity for the trusted locally constructed label and
+fragment values, add a static regression that rejects the structural `nodeType` check, and treat the prior full
+package/artifact evidence as superseded until the corrected current tree repeats its gates.
+
+L-0.4 post-review browser probe: three attempts to call the page renderers from the browser client's evaluation
+surface failed before rendering because that surface exposes read-only DOM proxies (`window`/`dataset` were
+non-extensible and `setAttribute` was not callable). No corrected-tree browser result is accepted from those
+attempts. Correction: use the already proven interaction path instead—serve the unchanged pages and bounded hostile
+API fixtures on literal loopback, drive the real page controls, inspect the resulting DOM/console, and stop the
+exact helper process. Do not infer a browser pass from the failed read-only evaluation surface.
+
+L-0.4 final browser console-inspection call: the first call used a nonexistent
+`dev.getConsoleMessages` method after the corrected main-page DOM proof had already completed. The call failed
+without changing page state, and no console claim is taken from it. Correction: inspect the browser client's
+documented `dev.logs` surface for both pages; both corrected-tree log lists were empty. The real control-path DOM
+proof remained green, and the exact loopback fixture process was stopped with its port released.
+
+L-0.4 first exact-head compact remote poll: PowerShell rejected a `foreach` statement piped directly to
+`Format-Table` with `An empty pipe element is not allowed`. The command failed during parsing before its planned
+sleep or any GitHub query, so it changed no remote state and provides no check evidence. Correction: accumulate
+each run snapshot in an explicit array, format only after the loop completes, and continue requiring exact SHA
+`7bfd72fc3b0ae6c27aa1d9b398ec4a6eaec9de8e`.
+
+L-0.4 compact active-step poll repeated the same PowerShell parse class by piping a second `foreach` statement
+directly to `Out-String`. It again failed before contacting GitHub and changed no state. Correction: stop using
+statement-to-pipeline shorthand in campaign polling; assign all formatted objects to an explicit array first, as
+the already successful corrected status snapshot did.

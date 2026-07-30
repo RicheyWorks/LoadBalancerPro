@@ -6,6 +6,272 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 9 Remote-Green Checkpoint
+
+Timestamp: 2026-07-30T02:40:42-07:00
+
+Current slot: `L-0.4`, remove Enterprise Lab cockpit HTML-injection sinks.
+
+Current branch: `codex/l-0-4-cockpit-xss`.
+
+Slot status: `REMOTE_GREEN`.
+
+Pull request: [#506](https://github.com/RicheyWorks/LoadBalancerPro/pull/506).
+
+Verified remote-green head: `7bfd72fc3b0ae6c27aa1d9b398ec4a6eaec9de8e`.
+
+Verified base: `1968c4799eaefe0f8356bbeb67334944f3997a9c`, the exact PR #505 merge commit and green
+`origin/main`.
+
+Exact-head remote verification:
+
+- push CI `30530997897`: success;
+- PR CI `30530998945`: success;
+- CodeQL `30530999015`: success;
+- PR dependency review: success; the push-only duplicate was correctly skipped;
+- both 25-step CI build jobs passed dependency resolution, tests, zero-skip enforcement, JaCoCo, the second full
+  executable-JAR package pass, resource verification, CycloneDX SBOM, packaged LASE and JAR smokes, Docker image
+  build/runtime health, controlled container evidence, blocking image scan, and artifact uploads;
+- every step in both CI build jobs, the five-step PR dependency job, and the 11-step CodeQL job had a successful
+  conclusion; only the inapplicable push dependency job was skipped;
+- GitHub reports exact head `7bfd72fc3b0ae6c27aa1d9b398ec4a6eaec9de8e` mergeable and `CLEAN`.
+
+Review: no independent reviewer, review, or PR comment was available. The pre-authorized substitute complete-diff
+self-review covered all eight changed files, three commits, and 520 insertions/72 deletions from exact base through
+head. It rechecked all six former HTML sinks; every scenario, scorecard, policy, audit, metrics, artifact, and path
+value now enters a text node; trusted locally constructed values require actual `Node` identity; reviewer `code` and
+line-break layout remains explicit; table row/column header structure remains intact; source guards forbid the four
+HTML-string sink families; README and campaign wording stay bounded. It found no further actionable correctness,
+security, safety, scope, layout, or documentation-trust defect. Local, remote-tracking, and PR head SHAs matched;
+whitespace, protected-surface, generated-path, and credential-pattern scans passed.
+
+Scope and safety: the production change remains limited to safe static cockpit DOM rendering. No authentication or
+authorization policy, API/endpoint schema, runtime server behavior, dependency, Maven/workflow, Docker/Compose,
+secret/default, public/external target, live cloud/tenant action, deployment, unrelated cockpit redesign, or
+readiness/performance claim was changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader
+automation is established by this slot.
+
+Blocker: none on verified head `7bfd72fc3b0ae6c27aa1d9b398ec4a6eaec9de8e`.
+
+Next action: commit and publish this remote-green checkpoint, treat the resulting SHA as the final candidate, and
+repeat every exact-head required gate before the authorized merge.
+
+Decision: continue only `L-0.4`; no later slot is active.
+
+## Combined Build Plan Slot 9 PR-Open Checkpoint
+
+Timestamp: 2026-07-30T02:29:32-07:00
+
+Current slot: `L-0.4`, remove Enterprise Lab cockpit HTML-injection sinks.
+
+Current branch: `codex/l-0-4-cockpit-xss`.
+
+Slot status: `PR_OPEN`.
+
+Pull request: [#506](https://github.com/RicheyWorks/LoadBalancerPro/pull/506).
+
+Published implementation head: `30e83798376819dca7714e3f25cc9c561f7f5bc6`.
+
+Verified base: `1968c4799eaefe0f8356bbeb67334944f3997a9c`, the exact PR #505 merge commit and current
+`origin/main`.
+
+Local gate: all six HTML-string sinks were replaced by text-only DOM construction; the pre-implementation red gate,
+focused/adjacent selectors, expanded 590-test Enterprise Lab selector, corrected current-tree 3,470-test clean
+package, verify, JaCoCo, JSON/XML SBOMs, artifact verifier, packaged LASE 0/0/2, literal-loopback runtime,
+ten-scenario shadow workflow, real-control-path hostile browser fixtures for both pages, campaign guards, complete
+diff review, protected-surface scan, and scope/safety audit passed.
+
+Remote state at open:
+
+- push CI `30530858186`: pending;
+- PR CI `30530873731`: pending;
+- CodeQL `30530873756`: pending;
+- PR dependency review: pending; the duplicate push-only dependency job is correctly skipped;
+- GitHub reports the implementation head mergeable, with required checks blocked only by pending results.
+
+These runs are not accepted as final evidence because this PR-open checkpoint will create a new head. Every required
+gate must pass again on the resulting exact SHA.
+
+Review state: the pre-commit complete-diff review found and corrected the JSON-spoofable structural `nodeType`
+check. No independent reviewer is currently available. The campaign's pre-authorized substitute is a documented
+complete-diff self-review after the exact final checkpoint head is published; required checks cannot be bypassed,
+disabled, or weakened.
+
+Changed files:
+
+- `README.md`
+- `src/main/resources/static/enterprise-lab.html`
+- `src/main/resources/static/enterprise-lab-reviewer.html`
+- `src/test/java/com/richmond423/loadbalancerpro/api/EnterpriseLabCockpitXssSafetyTest.java`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Scope and safety: the production change remains limited to safe static cockpit DOM rendering. No authentication or
+authorization policy, API/endpoint schema, runtime server behavior, dependency, Maven/workflow, Docker/Compose,
+secret/default, public/external target, live cloud/tenant action, deployment, unrelated cockpit redesign, or
+readiness/performance claim was changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader
+automation is established by this slot.
+
+Blocker: required exact-head remote checks are pending.
+
+Next action: run the campaign guards on this checkpoint, commit and publish it, then require every resulting
+exact-head remote gate before authorized complete-diff self-review and merge.
+
+Decision: continue only `L-0.4`; no later slot is active.
+
+## Combined Build Plan Slot 9 Local-Green Checkpoint
+
+Timestamp: 2026-07-29T23:17:54-07:00
+
+Current slot: `L-0.4`, remove Enterprise Lab cockpit HTML-injection sinks.
+
+Current branch: `codex/l-0-4-cockpit-xss`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `1968c4799eaefe0f8356bbeb67334944f3997a9c`, the exact PR #505 merge commit and green
+`origin/main`.
+
+Implementation:
+
+- `enterprise-lab.html` now builds scenario, scorecard, policy, audit, and metrics views with `createElement`,
+  `createTextNode`, `textContent`, and `replaceChildren`; no dynamic HTML-string sink remains;
+- a dedicated key/value table helper preserves the original row-header `th` structure, while the general table
+  helper preserves scenario and audit column headers;
+- the helper accepts only actual browser `Node` instances for the two trusted locally constructed DOM values, so a
+  server JSON object cannot spoof a structural `nodeType` check and force a render exception;
+- `enterprise-lab-reviewer.html` now constructs summary rows, artifact `code`, and multiline evidence paths as DOM
+  nodes, with all server-derived artifact/path values inserted as text;
+- the source guard forbids `innerHTML`, `outerHTML`, `insertAdjacentHTML`, and `document.write` across both pages
+  and pins the safe helper and vulnerable-field contracts;
+- README states the bounded inert-rendering contract without upgrading the Enterprise Lab's local/manual evidence
+  posture.
+
+Acceptance and browser verification:
+
+- the pre-implementation red gate ran two tests with two expected failures, zero errors, and zero skips, mapping all
+  five main-page sinks and the one reviewer sink;
+- focused and adjacent static-resource, workflow, reviewer, evidence, and campaign selectors passed 62 tests across
+  nine reports; README/security-contract coverage passed 13 tests across three reports;
+- the expanded Enterprise Lab and documentation selector passed 590 tests with zero failures, errors, or skips;
+- the in-app-browser skill drove both pages through loopback-only hostile fixtures: the main page listed scenarios,
+  ran the selected set, and loaded policy status with hostile scenario, guardrail, event, policy, rollback, audit,
+  and metrics strings visible only as text; the reviewer auto-loaded hostile artifact and evidence paths as text;
+- both pages retained zero injected image nodes, zero execution-marker changes, and zero browser-console errors.
+  The corrected layout retained four scenario column headers, eight audit headers, 24 key/value row headers, one
+  artifact code element, and three evidence-path line breaks; final screenshots were visually inspected.
+
+Changed files:
+
+- `README.md`
+- `src/main/resources/static/enterprise-lab.html`
+- `src/main/resources/static/enterprise-lab-reviewer.html`
+- `src/test/java/com/richmond423/loadbalancerpro/api/EnterpriseLabCockpitXssSafetyTest.java`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Full local verification:
+
+- corrected current-tree clean `mvn -B clean package`: exit zero in 247.7 seconds, 3,470 tests across 489 fresh
+  reports, zero
+  failures/errors/skips, and no Surefire dump files;
+- `mvn -q "-DskipTests" verify` passed; JaCoCo recorded 83.26% instructions, 66.48% branches, 82.58% lines,
+  87.78% methods, and 94.34% classes;
+- CycloneDX 2.9.1 generated and validated JSON/XML 1.6 BOMs with 144 components each;
+- the checked-in artifact verifier passed all seven required executable-JAR entries;
+- packaged healthy/overloaded/invalid LASE cases passed with exits 0, 0, and 2, no Spring startup, and no raw
+  invalid-case stack trace;
+- the checked-in literal-loopback packaged-runtime smoke returned HTTP 200 for health, the proxy status page, and
+  the proxy status API, then stopped its captured process;
+- the packaged Enterprise Lab shadow workflow passed ten fixed scenarios and wrote ignored target-only evidence
+  under its explicit no-live-cloud/no-external-network boundary;
+- final executable JAR after the corrected verify pass: 95,552,405 bytes, 1,438 entries, SHA-256
+  `FC11A92EBF748EEEAA693ABCD9785D36BAC27295EFAEF237AF964E305160A6ED`;
+- `git diff --check` passed.
+
+Local limitations: Docker CLI 28.0.4 cannot reach its configured Docker Desktop Linux engine, Trivy is unavailable,
+and the repository root has no Compose file. No local Docker/runtime, controlled container, Trivy, or Compose result
+is claimed. Exact-head remote CI, CodeQL, dependency review, SBOM, Docker build/runtime, controlled container
+evidence, and blocking image scan remain mandatory before merge.
+
+Scope and safety: the production change is limited to safe static cockpit DOM rendering. No authentication or
+authorization policy, API/endpoint schema, runtime server behavior, dependency, Maven/workflow, Docker/Compose,
+secret/default, public/external target, live cloud/tenant action, deployment, unrelated cockpit redesign, or
+readiness/performance claim was changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader
+automation is established by this slot.
+
+Blocker: none locally.
+
+Next action: rerun campaign guards after this checkpoint, commit and publish the exact eight-file local-green slice,
+open one PR, and require every exact-head remote gate before authorized complete-diff self-review and merge.
+
+Decision: continue only `L-0.4`; no later slot is active.
+
+## Combined Build Plan Slot 9 Start Checkpoint
+
+Timestamp: 2026-07-29T22:46:25-07:00
+
+Current slot: `L-0.4`, remove Enterprise Lab cockpit HTML-injection sinks.
+
+Current branch: `codex/l-0-4-cockpit-xss`.
+
+Slot status: `IN_PROGRESS`.
+
+Verified base: `1968c4799eaefe0f8356bbeb67334944f3997a9c`, the exact PR #505 merge commit and current
+`origin/main`.
+
+Previous slot closeout:
+
+- L-0.3 final head `0017c731e198dd95762aa8d516b8e98a89c3dd5c` passed push CI `30516687533`, PR CI
+  `30516689354`, CodeQL `30516689293`, dependency review, both 25-step package jobs, SBOM, packaged smokes,
+  Docker/runtime, controlled container evidence, and blocking image scan;
+- PR #505 merged as `1968c4799eaefe0f8356bbeb67334944f3997a9c`;
+- the exact merge passed 78 focused CLI/cloud/campaign tests across seven reports;
+- post-merge `mvn -B clean package` passed 3,467 tests across 488 fresh reports with zero failures, errors, or skips
+  and no Surefire dumps;
+- exact-main CI `30517165004` and CodeQL `30517165028` passed, including the second full package run, SBOM, packaged
+  smokes, Docker build/runtime, controlled container evidence, and blocking image scan; every required step was
+  audited successful.
+
+L-0.3 is `MAIN_GREEN`, completing 8 of 49 implementation slots.
+
+L-0.4 build contract: re-audit the five `innerHTML` renderers in `enterprise-lab.html` and the one reviewer key/value
+renderer in `enterprise-lab-reviewer.html`; ensure every server-derived value is inserted with safe DOM APIs or
+correct contextual escaping; and prove hostile guardrail-reason, event-ID, scenario, policy, rollback, and reviewer
+path strings render inert. Preserve the intended static page layout and operator workflows.
+
+Source: `docs/BUILD_PLAN_LAB_SHADOW.md` PR-L0.4 and `docs/AUDIT_LAB_SHADOW_2026-07-21.md` O4.
+
+Prohibited surfaces: no auth/security-policy weakening, endpoint or API schema change, public/external target,
+secret, live cloud/tenant action, production deployment, CI/Maven/Docker/Compose change, unrelated cockpit redesign,
+runtime server behavior, or readiness/performance claim.
+
+Verification profile: `web-static` with exact hostile-string red acceptance for both pages, source-wide sink audit,
+focused static-resource/documentation guards, browser inspection of both pages against malicious fixtures, full
+local Java/package/verify/artifact/SBOM/packaged-smoke ladder, complete diff/scope audit, and exact-head remote CI,
+CodeQL, dependency review, SBOM, Docker/runtime, controlled container evidence, and blocking image scan.
+
+Blocker: none.
+
+Next action: classify every `innerHTML` value by trusted static markup versus server-derived content, map existing
+static-resource tests and local serving paths, then write a deterministic hostile-string red acceptance for the
+live injection defects.
+
+Decision: continue only `L-0.4`; no later slot is active.
+
 ## Combined Build Plan Slot 8 Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T22:26:52-07:00

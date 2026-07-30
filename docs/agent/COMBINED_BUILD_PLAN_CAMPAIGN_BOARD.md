@@ -13,15 +13,14 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Source layout: `74b1f6758304bc5a3a85ff4888039e7309324ddf`, based on `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Source item count: 50.
 - Unique implementation slots: 49.
-- `MAIN_GREEN` implementation slots: 7 / 49.
-- Latest completed slot: `L-0.2` in merged [PR #504](https://github.com/RicheyWorks/LoadBalancerPro/pull/504);
-  final head `b55e677cc141f1b7f450f9469b9fe26d0fac9978`, merge
-  `408acded496caed88e849c947a46ba43fead6f5d`, exact-main local package, CI, and CodeQL green.
-- Active implementation slot: `L-0.3`; [PR #505](https://github.com/RicheyWorks/LoadBalancerPro/pull/505) is open
-  from branch `codex/l-0-3-non-mutating-cli-abort`. Corrected head
-  `887b0403d71cf4b414f44515494f6b6abe08ce23` passed all exact-head remote gates and complete-diff self-review; the
-  final remote-green checkpoint and its resulting exact-head rerun remain pending.
-- Next implementation slot after the active gate: `L-0.4`.
+- `MAIN_GREEN` implementation slots: 8 / 49.
+- Latest completed slot: `L-0.3` in merged [PR #505](https://github.com/RicheyWorks/LoadBalancerPro/pull/505);
+  final head `0017c731e198dd95762aa8d516b8e98a89c3dd5c`, merge
+  `1968c4799eaefe0f8356bbeb67334944f3997a9c`, exact-main local package, CI, and CodeQL green.
+- Active implementation slot: `L-0.4`; both Enterprise Lab cockpit HTML-injection surfaces are in
+  [PR #506](https://github.com/RicheyWorks/LoadBalancerPro/pull/506) on branch `codex/l-0-4-cockpit-xss`;
+  the first exact-head gate is green and the final remote-green checkpoint is pending publication.
+- Next implementation slot after the active gate: `L-0.5`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
 behavior exists. The active slot must reconcile its row with current main and the full source-plan acceptance contract.
@@ -37,8 +36,8 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | MAIN_GREEN |
 | 6 | P-0.6 | P-0.6 | Simulation-core correctness batch | — | MAIN_GREEN |
 | 7 | L-0.2 | L-0.2 | Explorer size caps | SEC-DEFAULT-DENY | MAIN_GREEN |
-| 8 | L-0.3 | L-0.3 | Non-mutating CLI abort | SEC-DEFAULT-DENY | REMOTE_GREEN |
-| 9 | L-0.4 | L-0.4 | Cockpit HTML-injection removal | SEC-DEFAULT-DENY | OPEN |
+| 8 | L-0.3 | L-0.3 | Non-mutating CLI abort | SEC-DEFAULT-DENY | MAIN_GREEN |
+| 9 | L-0.4 | L-0.4 | Cockpit HTML-injection removal | SEC-DEFAULT-DENY | REMOTE_GREEN |
 | 10 | L-0.5 | L-0.5 | Stable mocked-cloud ASG ownership | SEC-DEFAULT-DENY | OPEN |
 | 11 | L-0.6 | L-0.6 | Ledger torn-read correctness | SEC-DEFAULT-DENY | OPEN |
 | 12 | L-1.1 | L-1.1 | Delete metadata-about-metadata services | L0 complete | OPEN |

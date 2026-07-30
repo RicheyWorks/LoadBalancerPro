@@ -129,11 +129,11 @@
       "sourceIds": ["L-0.3"],
       "track": "lab",
       "title": "Make CLI prompt abort non-mutating",
-      "status": "REMOTE_GREEN",
+      "status": "MAIN_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "SAFETY",
       "verificationProfile": "java-full",
-      "currentState": "PR #505 corrected head 887b0403d71cf4b414f44515494f6b6abe08ce23 passed push CI 30516200283, PR CI 30516202278, CodeQL 30516202297, dependency review, both 25-step build/package/SBOM/packaged-smoke/Docker/runtime/evidence/Trivy jobs, and complete-diff self-review. The final remote-green checkpoint will create a new exact head, so all required gates must pass again before merge."
+      "currentState": "PR #505 final head 0017c731e198dd95762aa8d516b8e98a89c3dd5c passed push CI 30516687533, PR CI 30516689354, CodeQL 30516689293, dependency review, both 25-step package/SBOM/packaged-smoke/Docker/runtime/evidence/Trivy jobs, and complete-diff self-review, then merged as 1968c4799eaefe0f8356bbeb67334944f3997a9c. Exact-main focused and 3,467-test local package gates passed; CI 30517165004 and CodeQL 30517165028 passed with every required step audited."
     },
     {
       "ordinal": 9,
@@ -141,11 +141,11 @@
       "sourceIds": ["L-0.4"],
       "track": "lab",
       "title": "Remove cockpit HTML-injection sinks",
-      "status": "OPEN",
+      "status": "REMOTE_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "SECURITY",
       "verificationProfile": "web-static",
-      "currentState": "Acceptance is unproven at campaign start; re-audit all server-derived rendering sinks."
+      "currentState": "PR #506 exact head 7bfd72fc3b0ae6c27aa1d9b398ec4a6eaec9de8e passed push CI 30530997897, PR CI 30530998945, CodeQL 30530999015, dependency review, both 25-step package/SBOM/packaged-smoke/Docker/runtime/evidence/Trivy jobs, and complete-diff self-review. GitHub reports it mergeable and CLEAN. The remote-green checkpoint must be published and every gate repeated on the resulting final candidate before merge."
     },
     {
       "ordinal": 10,

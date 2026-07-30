@@ -80,7 +80,9 @@ public record ScoreFactorContribution(
     }
 
     public boolean hasExactContributionValue() {
-        return contributionValue.isPresent() && exactness == ScoreFactorExactness.EXACT_FROM_CALCULATOR;
+        return contributionValue.isPresent()
+                && (exactness == ScoreFactorExactness.EXACT_FROM_CALCULATOR
+                || exactness == ScoreFactorExactness.EXACT_FROM_STRATEGY_MODEL);
     }
 
     public boolean hasWeightedNormalizedValue() {

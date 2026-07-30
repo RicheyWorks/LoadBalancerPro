@@ -52,14 +52,29 @@ public record CandidateFactorContributionSummary(
                                                                     String selectedVsAlternativeExplanationNote) {
         Objects.requireNonNull(candidate, "candidate cannot be null");
         Objects.requireNonNull(calculator, "calculator cannot be null");
+        return fromCandidate(
+                candidate,
+                selected,
+                calculator.factorContributions(candidate),
+                selectedVsAlternativeExplanationNote,
+                EXACTNESS_BOUNDARY);
+    }
+
+    public static CandidateFactorContributionSummary fromCandidate(
+            ServerStateVector candidate,
+            boolean selected,
+            List<ScoreFactorContribution> factorContributions,
+            String selectedVsAlternativeExplanationNote,
+            String exactnessBoundary) {
+        Objects.requireNonNull(candidate, "candidate cannot be null");
         return new CandidateFactorContributionSummary(
                 candidate.serverId(),
                 selected,
                 knownVisibleSignals(candidate),
                 unknownOrUnexposedSignals(candidate),
-                calculator.factorContributions(candidate),
+                factorContributions,
                 selectedVsAlternativeExplanationNote,
-                EXACTNESS_BOUNDARY,
+                exactnessBoundary,
                 LAB_PROOF_BOUNDARY,
                 PRODUCTION_NOT_PROVEN_BOUNDARY);
     }
@@ -78,6 +93,35 @@ public record CandidateFactorContributionSummary(
             Objects.requireNonNull(candidate, "candidates cannot contain null values");
             String note = copiedNotes.getOrDefault(candidate.serverId(), defaultExplanationNote(candidate, selectedCandidateId));
             summaries.add(fromCandidate(candidate, candidate.serverId().equals(selectedCandidateId), calculator, note));
+        }
+        return List.copyOf(summaries);
+    }
+
+    public static List<CandidateFactorContributionSummary> fromCandidates(
+            List<ServerStateVector> candidates,
+            String selectedCandidateId,
+            Map<String, List<ScoreFactorContribution>> factorContributions,
+            Map<String, String> explanationNotes,
+            String exactnessBoundary) {
+        Objects.requireNonNull(candidates, "candidates cannot be null");
+        selectedCandidateId = requireNonBlank(selectedCandidateId, "selectedCandidateId");
+        Objects.requireNonNull(factorContributions, "factorContributions cannot be null");
+        Objects.requireNonNull(explanationNotes, "explanationNotes cannot be null");
+        exactnessBoundary = requireNonBlank(exactnessBoundary, "exactnessBoundary");
+        Map<String, String> copiedNotes = new LinkedHashMap<>(explanationNotes);
+        List<CandidateFactorContributionSummary> summaries = new ArrayList<>();
+        for (ServerStateVector candidate : candidates) {
+            Objects.requireNonNull(candidate, "candidates cannot contain null values");
+            String note = copiedNotes.getOrDefault(
+                    candidate.serverId(), defaultExplanationNote(candidate, selectedCandidateId));
+            List<ScoreFactorContribution> contributions =
+                    factorContributions.getOrDefault(candidate.serverId(), List.of());
+            summaries.add(fromCandidate(
+                    candidate,
+                    candidate.serverId().equals(selectedCandidateId),
+                    contributions,
+                    note,
+                    exactnessBoundary));
         }
         return List.copyOf(summaries);
     }

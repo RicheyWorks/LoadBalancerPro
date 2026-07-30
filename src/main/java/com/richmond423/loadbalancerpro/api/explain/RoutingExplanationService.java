@@ -44,6 +44,7 @@ public final class RoutingExplanationService {
                 valueOrUnknown(result == null ? null : result.strategyId()),
                 valueOrUnknown(result == null ? null : result.status()),
                 valueOrUnknown(result == null ? null : result.chosenServerId()),
+                valueOrUnknown(result == null ? null : result.decisionFingerprint()),
                 candidates,
                 dominantFactors,
                 decisionDelta,

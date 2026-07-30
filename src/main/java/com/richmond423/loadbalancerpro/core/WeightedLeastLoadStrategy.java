@@ -5,9 +5,11 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 public final class WeightedLeastLoadStrategy implements RoutingStrategy {
     public static final String STRATEGY_NAME = "WEIGHTED_LEAST_LOAD";
@@ -49,7 +51,8 @@ public final class WeightedLeastLoadStrategy implements RoutingStrategy {
             return noCandidateDecision("No healthy eligible servers were available.");
         }
 
-        Map<String, Double> scores = scoreCandidates(eligible);
+        Map<String, ServerScoreBreakdown> breakdowns = scoreCandidateBreakdowns(eligible);
+        Map<String, Double> scores = scoresFromBreakdowns(breakdowns);
         ServerStateVector chosen = eligible.stream()
                 .min(Comparator.comparingDouble((ServerStateVector state) -> scores.get(state.serverId()))
                         .thenComparing(ServerStateVector::serverId))
@@ -60,6 +63,7 @@ public final class WeightedLeastLoadStrategy implements RoutingStrategy {
                 eligible.stream().map(ServerStateVector::serverId).toList(),
                 Optional.of(chosen.serverId()),
                 scores,
+                factorContributionsFromBreakdowns(breakdowns),
                 reasonForChoice(chosen, eligible, scores),
                 Instant.now(clock));
         return new RoutingDecision(Optional.of(chosen), explanation);
@@ -71,15 +75,16 @@ public final class WeightedLeastLoadStrategy implements RoutingStrategy {
         return new RoutingDecision(Optional.empty(), explanation);
     }
 
-    private Map<String, Double> scoreCandidates(List<ServerStateVector> candidates) {
-        Map<String, Double> scores = new LinkedHashMap<>();
+    private Map<String, ServerScoreBreakdown> scoreCandidateBreakdowns(
+            List<ServerStateVector> candidates) {
+        Map<String, ServerScoreBreakdown> breakdowns = new LinkedHashMap<>();
         for (ServerStateVector candidate : candidates) {
-            scores.put(candidate.serverId(), score(candidate));
+            breakdowns.put(candidate.serverId(), scoreBreakdown(candidate));
         }
-        return scores;
+        return breakdowns;
     }
 
-    private double score(ServerStateVector state) {
+    private ServerScoreBreakdown scoreBreakdown(ServerStateVector state) {
         double effectiveCapacity = effectiveCapacity(state);
         double effectiveWeight = effectiveWeight(state.weight());
         double loadPressure = state.inFlightRequestCount() / effectiveCapacity;
@@ -93,7 +98,79 @@ public final class WeightedLeastLoadStrategy implements RoutingStrategy {
                 + (latencyPressure * LATENCY_PRESSURE_WEIGHT)
                 + (tailPressure * TAIL_PRESSURE_WEIGHT)
                 + (state.recentErrorRate() * ERROR_PRESSURE_WEIGHT);
-        return weightedScore / effectiveWeight;
+        double totalScore = weightedScore / effectiveWeight;
+        List<ScoreFactorContribution> contributions = List.of(
+                penaltyFactor(
+                        "loadPressure",
+                        loadPressure,
+                        LOAD_PRESSURE_WEIGHT,
+                        effectiveWeight,
+                        "inFlightRequestCount / effectiveCapacity"),
+                penaltyFactor(
+                        "queuePressure",
+                        queuePressure,
+                        QUEUE_PRESSURE_WEIGHT,
+                        effectiveWeight,
+                        "queueDepth / effectiveCapacity"),
+                penaltyFactor(
+                        "averageLatencyPressure",
+                        latencyPressure,
+                        LATENCY_PRESSURE_WEIGHT,
+                        effectiveWeight,
+                        "averageLatencyMillis / max(p95LatencyMillis, averageLatencyMillis, 1)"),
+                penaltyFactor(
+                        "tailLatencyPressure",
+                        tailPressure,
+                        TAIL_PRESSURE_WEIGHT,
+                        effectiveWeight,
+                        "p95LatencyMillis / max(p99LatencyMillis, p95LatencyMillis, 1)"),
+                penaltyFactor(
+                        "recentErrorRate",
+                        state.recentErrorRate(),
+                        ERROR_PRESSURE_WEIGHT,
+                        effectiveWeight,
+                        "recentErrorRate"));
+        return new ServerScoreBreakdown(state.serverId(), totalScore, contributions);
+    }
+
+    private Map<String, Double> scoresFromBreakdowns(
+            Map<String, ServerScoreBreakdown> breakdowns) {
+        Map<String, Double> scores = new LinkedHashMap<>();
+        breakdowns.forEach((candidateId, breakdown) ->
+                scores.put(candidateId, breakdown.totalScore()));
+        return scores;
+    }
+
+    private Map<String, List<ScoreFactorContribution>> factorContributionsFromBreakdowns(
+            Map<String, ServerScoreBreakdown> breakdowns) {
+        Map<String, List<ScoreFactorContribution>> contributions = new LinkedHashMap<>();
+        breakdowns.forEach((candidateId, breakdown) ->
+                contributions.put(candidateId, breakdown.factorContributions()));
+        return contributions;
+    }
+
+    private ScoreFactorContribution penaltyFactor(
+            String factorName,
+            double rawPressure,
+            double factorWeight,
+            double effectiveRoutingWeight,
+            String formulaInput) {
+        double contribution = rawPressure * factorWeight / effectiveRoutingWeight;
+        return new ScoreFactorContribution(
+                factorName,
+                formulaInput + "=" + formatScore(rawPressure)
+                        + ", effectiveRoutingWeight=" + formatScore(effectiveRoutingWeight),
+                "factorWeight=" + formatScore(factorWeight)
+                        + ", dividedByEffectiveRoutingWeight=" + formatScore(effectiveRoutingWeight),
+                contribution > 0.0
+                        ? ScoreFactorDirection.WEAKENS_SELECTION
+                        : ScoreFactorDirection.NEUTRAL,
+                "contribution = rawPressure * factorWeight / effectiveRoutingWeight = "
+                        + formatScore(contribution),
+                OptionalDouble.of(contribution),
+                ScoreFactorExactness.EXACT_FROM_STRATEGY_MODEL,
+                "This additive term is part of the weighted least-load score; lower total score wins.",
+                "Exact for the returned local state vector and strategy formula only; no production proof.");
     }
 
     private double effectiveCapacity(ServerStateVector state) {
@@ -126,6 +203,6 @@ public final class WeightedLeastLoadStrategy implements RoutingStrategy {
     }
 
     private String formatScore(double score) {
-        return String.format("%.3f", score);
+        return String.format(Locale.ROOT, "%.3f", score);
     }
 }

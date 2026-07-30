@@ -35,7 +35,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
         "loadbalancerpro.api.max-request-bytes=1048576",
         "loadbalancerpro.api.max-candidates=2",
         "loadbalancerpro.api.max-strategies=2",
-        "loadbalancerpro.api.max-decision-explorer-response-bytes=1024"
+        "loadbalancerpro.api.max-decision-explorer-response-bytes=512"
 })
 @AutoConfigureMockMvc
 class RoutingExplorerSizeLimitTest {
@@ -137,7 +137,7 @@ class RoutingExplorerSizeLimitTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", is("bad_request")))
                 .andExpect(jsonPath("$.message",
-                        containsString("decision explorer response exceeds maximum size of 1024 bytes")));
+                        containsString("decision explorer response exceeds maximum size of 512 bytes")));
     }
 
     @Test

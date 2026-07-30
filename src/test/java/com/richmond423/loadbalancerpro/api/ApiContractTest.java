@@ -116,7 +116,8 @@ class ApiContractTest {
         assertTrue(response.has("results"));
         assertFalse(response.has("decisionReplayEvidenceReviewerClosureRollup"));
         assertFalse(response.has("decisionReplayEvidenceReviewerClosureChecklist"));
-        assertEquals(9, result.size());
+        assertEquals(10, result.size());
+        assertTrue(result.has("decisionFingerprint"));
         assertTrue(result.has("decisionVector"));
         assertTrue(result.has("dominantFactorAnalysis"));
         assertTrue(result.has("decisionDeltaAnalysis"));
@@ -176,6 +177,8 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].strategyId", is("TAIL_LATENCY_POWER_OF_TWO")))
                 .andExpect(jsonPath("$.results[0].status", is("SUCCESS")))
                 .andExpect(jsonPath("$.results[0].chosenServerId", is("green")))
+                .andExpect(jsonPath("$.results[0].decisionFingerprint",
+                        org.hamcrest.Matchers.matchesPattern("sha256:v1:[0-9a-f]{64}")))
                 .andExpect(jsonPath("$.results[0].decisionVector.readOnly", is(true)))
                 .andExpect(jsonPath("$.results[0].dominantFactorAnalysis.status", is("AVAILABLE")))
                 .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.status").exists())
@@ -204,6 +207,8 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].chosenServerId", nullValue()))
                 .andExpect(jsonPath("$.results[0].candidateServersConsidered").isEmpty())
                 .andExpect(jsonPath("$.results[0].scores").isEmpty())
+                .andExpect(jsonPath("$.results[0].decisionFingerprint",
+                        org.hamcrest.Matchers.matchesPattern("sha256:v1:[0-9a-f]{64}")))
                 .andExpect(jsonPath("$.results[0].decisionVector", nullValue()))
                 .andExpect(jsonPath("$.results[0].dominantFactorAnalysis.status", is("UNKNOWN")))
                 .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.status", is("UNKNOWN")))

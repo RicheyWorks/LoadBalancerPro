@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 public final class WeightedLeastConnectionsRoutingStrategy implements RoutingStrategy {
     public static final String STRATEGY_NAME = "WEIGHTED_LEAST_CONNECTIONS";
@@ -42,7 +43,8 @@ public final class WeightedLeastConnectionsRoutingStrategy implements RoutingStr
                     "No healthy eligible servers with positive routing weight were available.");
         }
 
-        Map<String, Double> scores = scoreCandidates(eligible);
+        Map<String, ServerScoreBreakdown> breakdowns = scoreCandidateBreakdowns(eligible);
+        Map<String, Double> scores = scoresFromBreakdowns(breakdowns);
         ServerStateVector chosen = eligible.stream()
                 .min(Comparator.comparingDouble((ServerStateVector state) -> scores.get(state.serverId()))
                         .thenComparing(ServerStateVector::serverId))
@@ -53,6 +55,7 @@ public final class WeightedLeastConnectionsRoutingStrategy implements RoutingStr
                 eligible.stream().map(ServerStateVector::serverId).toList(),
                 Optional.of(chosen.serverId()),
                 scores,
+                factorContributionsFromBreakdowns(breakdowns),
                 reasonForChoice(chosen, eligible, scores),
                 Instant.now(clock));
         return new RoutingDecision(Optional.of(chosen), explanation);
@@ -64,16 +67,49 @@ public final class WeightedLeastConnectionsRoutingStrategy implements RoutingStr
         return new RoutingDecision(Optional.empty(), explanation);
     }
 
-    private Map<String, Double> scoreCandidates(List<ServerStateVector> candidates) {
-        Map<String, Double> scores = new LinkedHashMap<>();
+    private Map<String, ServerScoreBreakdown> scoreCandidateBreakdowns(
+            List<ServerStateVector> candidates) {
+        Map<String, ServerScoreBreakdown> breakdowns = new LinkedHashMap<>();
         for (ServerStateVector candidate : candidates) {
-            scores.put(candidate.serverId(), score(candidate));
+            breakdowns.put(candidate.serverId(), scoreBreakdown(candidate));
         }
+        return breakdowns;
+    }
+
+    private ServerScoreBreakdown scoreBreakdown(ServerStateVector state) {
+        double effectiveRoutingWeight = effectiveWeight(state.weight());
+        double score = state.inFlightRequestCount() / effectiveRoutingWeight;
+        ScoreFactorContribution contribution = new ScoreFactorContribution(
+                "weightedConnectionPressure",
+                "inFlightRequestCount=" + state.inFlightRequestCount()
+                        + ", effectiveRoutingWeight=" + formatScore(effectiveRoutingWeight),
+                "inFlightRequestCount / effectiveRoutingWeight",
+                score > 0.0
+                        ? ScoreFactorDirection.WEAKENS_SELECTION
+                        : ScoreFactorDirection.NEUTRAL,
+                "contribution = inFlightRequestCount / effectiveRoutingWeight = "
+                        + formatScore(score),
+                OptionalDouble.of(score),
+                ScoreFactorExactness.EXACT_FROM_STRATEGY_MODEL,
+                "This is the complete weighted least-connections score; lower score wins.",
+                "Exact for the returned local state vector and strategy formula only; no production proof.");
+        return new ServerScoreBreakdown(state.serverId(), score, List.of(contribution));
+    }
+
+    private Map<String, Double> scoresFromBreakdowns(
+            Map<String, ServerScoreBreakdown> breakdowns) {
+        Map<String, Double> scores = new LinkedHashMap<>();
+        breakdowns.forEach((candidateId, breakdown) ->
+                scores.put(candidateId, breakdown.totalScore()));
         return scores;
     }
 
-    private double score(ServerStateVector state) {
-        return state.inFlightRequestCount() / effectiveWeight(state.weight());
+    private Map<String, List<ScoreFactorContribution>> factorContributionsFromBreakdowns(
+            Map<String, ServerScoreBreakdown> breakdowns) {
+        Map<String, List<ScoreFactorContribution>> contributions = new LinkedHashMap<>();
+        breakdowns.forEach((candidateId, breakdown) ->
+                contributions.put(candidateId, breakdown.factorContributions()));
+        return contributions;
     }
 
     private double effectiveWeight(double weight) {

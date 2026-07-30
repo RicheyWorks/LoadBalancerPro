@@ -117,11 +117,11 @@
       "sourceIds": ["L-0.2"],
       "track": "lab",
       "title": "Cap explorer candidate, strategy, and response sizes",
-      "status": "LOCAL_GREEN",
+      "status": "PR_OPEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "SECURITY",
       "verificationProfile": "security-full",
-      "currentState": "Locally green on branch codex/l-0-2-explorer-size-caps from exact base 7f360c83a49b2629de3bbb56b6094118a8878f1b. Absolute 32-candidate and five-strategy DTO ceilings, configurable lower effective ceilings, a bounded Decision Explorer counting-serialization guard, startup property validation, structured HTTP 400 acceptance, 3,461-test clean package, verify, coverage, SBOM, packaged CLI/JAR and Enterprise Lab smokes, and complete local scope review passed. Exact-head remote gates remain mandatory."
+      "currentState": "PR #504 opened from published implementation head d54b65801b6e5eb9274ec7a6876752216ee2220d against exact base 7f360c83a49b2629de3bbb56b6094118a8878f1b. Absolute 32-candidate and five-strategy ceilings, configurable lower effective ceilings, the bounded Explorer response guard, startup validation, structured HTTP 400 acceptance, 3,461-test clean package, and full local evidence ladder passed. The PR-open checkpoint creates a new head; all remote gates remain mandatory on that resulting exact SHA."
     },
     {
       "ordinal": 8,

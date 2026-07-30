@@ -509,8 +509,6 @@ class DecisionExplorerPayloadServiceTest {
                 List.of("TAIL_LATENCY_POWER_OF_TWO", "WEIGHTED_LEAST_CONNECTIONS"),
                 2,
                 java.time.Instant.parse("2026-05-27T00:00:00Z"),
-                null,
-                null,
                 List.of(results));
     }
 
@@ -537,20 +535,7 @@ class DecisionExplorerPayloadServiceTest {
                 null,
                 null,
                 readiness,
-                sourceMap,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+                sourceMap);
     }
 
     private static List<String> candidateServerIds(

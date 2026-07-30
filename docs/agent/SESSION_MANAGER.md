@@ -24,11 +24,26 @@ target, or build/deployment change. Multi-host/network-filesystem locking, distr
 readiness/certification, live-cloud/tenant behavior, external traffic, and performance remain unproven.
 
 Active: `L-1.1`, delete metadata-about-metadata services; branch
-`codex/l-1-1-remove-metadata-services`; status `IN_PROGRESS`; base
+`codex/l-1-1-remove-metadata-services`; status `LOCAL_GREEN`; base
 `b726cab39ddf60cd32fd515b32b3397ea605da3f`.
 
-Blocker: none. Next: publish this checkpoint, reconcile the exact deletion inventory and response references, add a
-current-head deletion/payload contract, then implement the smallest complete removal.
+Candidate scope: 15 derivational services, 20 DTOs, 15 dedicated docs, 20 obsolete tests, the coupled compare/replay
+response construction, two static cockpit surfaces, and their retained contract tests. The representative compare
+fixture shrank from 1,364,797 bytes to 620,027 bytes (54.6%); the separate 7,784,535-byte Decision Explorer chain is
+unchanged and remains L-1.2 scope.
+
+Verified: restored non-retired UI/docs regression coverage; focused deletion/API/OpenAPI/replay/UI/docs selectors;
+3,376-test `mvn -B clean package`; skip-test verify; artifact verifier; 144-component JSON/XML CycloneDX SBOMs;
+packaged LASE exits 0/0/2; ten-scenario packaged Enterprise Lab workflow; literal-loopback operator-profile smoke;
+inline JavaScript parse, retired-reference scan, overclaim scan, and `git diff --check`.
+
+Safety/not proven: this slot removes response-only metadata derivations and does not add external targets, secrets,
+cloud/tenant calls, traffic mutation, replay execution, persistence, telemetry, deployment behavior, or production
+claims. Production readiness/certification, live-cloud/tenant validation, throughput/p95/p99, and the L-1.2 compact
+Decision Explorer contract remain unproven.
+
+Blocker: none locally. Next: commit and publish the exact candidate, open the PR, then require exact-head CI, CodeQL,
+dependency review, package/SBOM, Docker/runtime/evidence, and blocking image-scan gates before self-review and merge.
 
 ## Combined Build Plan Slot 11 PR-Open Checkpoint
 

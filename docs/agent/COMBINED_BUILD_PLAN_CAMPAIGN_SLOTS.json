@@ -177,11 +177,11 @@
       "sourceIds": ["L-1.1"],
       "track": "lab",
       "title": "Delete metadata-about-metadata services",
-      "status": "IN_PROGRESS",
+      "status": "LOCAL_GREEN",
       "dependencies": ["L-0.2", "L-0.3", "L-0.4", "L-0.5", "L-0.6"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "Active on codex/l-1-1-remove-metadata-services from exact green main b726cab39ddf60cd32fd515b32b3397ea605da3f. Reconcile the imported deletion inventory with current references and payload contracts before removing any implementation."
+      "currentState": "Locally green on codex/l-1-1-remove-metadata-services from exact green main b726cab39ddf60cd32fd515b32b3397ea605da3f. Removed the named compare metadata chain while retaining decision evidence; the representative compare fixture is 54.6% smaller. Full 3,376-test package, verify, artifact, SBOM, packaged LASE/workflow/operator smokes, reference/scope checks, and non-retired regression coverage passed. Exact-head remote gates remain pending; the separate Decision Explorer collapse remains L-1.2."
     },
     {
       "ordinal": 13,

@@ -264,9 +264,7 @@ Related docs:
 - [`../ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md`](../ARCHITECTURE_REPORT_ALIGNMENT_INDEX.md) maps the architecture report's evidence phase to current docs and future-only boundaries.
 - [`../REVIEWER_TRUST_MAP.md`](../REVIEWER_TRUST_MAP.md) provides reviewer navigation and evidence boundaries.
 - [`../ENTERPRISE_READINESS_AUDIT.md`](../ENTERPRISE_READINESS_AUDIT.md) records readiness posture and not-proven boundaries.
-- [`../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_BOUNDARY_SUMMARY.md`](../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_BOUNDARY_SUMMARY.md) summarizes current decision replay evidence boundaries.
-- [`../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_GUIDANCE.md`](../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_GUIDANCE.md) gives current reviewer guidance for decision replay evidence.
-- [`../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_HANDOFF_SUMMARY.md`](../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_REVIEWER_HANDOFF_SUMMARY.md) describes current reviewer handoff evidence summaries.
+- [`../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_SOURCE_MAP.md`](../ENTERPRISE_LAB_DECISION_REPLAY_EVIDENCE_SOURCE_MAP.md) documents the retained read-only source relationship map.
 - [`../SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md`](../SOURCE_NAME_GUARD_REPORT_SCHEMA_PLAN.md) documents future report schema vocabulary for source-name guard planning.
 
 This ADR does not supersede those docs. It provides a proposed decision frame for future evidence-as-architecture work.

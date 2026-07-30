@@ -418,7 +418,7 @@ public class ReverseProxyService {
             return new ForwardAttemptResult(
                     proxyError(HttpStatus.BAD_GATEWAY, "proxy_upstream_failure",
                             "Proxy forwarding was interrupted while calling upstream " + upstreamId),
-                    true);
+                    false);
         } catch (IOException | IllegalArgumentException exception) {
             logger.warn("proxy.forward.failure upstreamId={} reason=upstream_unreachable exceptionType={}",
                     upstreamId, exception.getClass().getSimpleName());

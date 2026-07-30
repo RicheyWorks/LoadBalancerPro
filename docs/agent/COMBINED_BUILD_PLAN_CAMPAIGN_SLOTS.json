@@ -93,11 +93,11 @@
       "sourceIds": ["P-0.4"],
       "track": "proxy",
       "title": "Make weight zero drain and correct interrupted retry classification",
-      "status": "IN_PROGRESS",
+      "status": "LOCAL_GREEN",
       "dependencies": [],
       "riskClass": "ROUTING",
       "verificationProfile": "proxy-integration",
-      "currentState": "Started from exact green main 8c491133041422b998d8e19eee5a18c827472ac8 on branch codex/p-0-4-weight-zero-retry. Current WRR/WLC weight validation and selection plus interrupted forward retry behavior are under audit; no acceptance claim yet."
+      "currentState": "Local implementation is green on branch codex/p-0-4-weight-zero-retry from exact base 8c491133041422b998d8e19eee5a18c827472ac8. Deterministic strategy and direct proxy acceptance prove zero-weight drain, an exact 100/10,000 split for 0.01 versus 1.0, and no retry after InterruptedException. Focused/adjacent selectors, a 3,440-test clean package, verify, coverage, artifact, SBOM, packaged CLI/runtime, Enterprise Lab, diff, and scope gates passed. Exact-head remote gates remain pending."
     },
     {
       "ordinal": 6,

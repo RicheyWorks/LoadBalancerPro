@@ -180,8 +180,8 @@ final class ReverseProxyRoutePlanner {
                 throw new IllegalStateException(fieldPrefix + " contains duplicate target id: " + id);
             }
             validateTargetUrl(target.getUrl(), targetPrefix + ".url", privateNetworkValidationEnabled);
-            if (!Double.isFinite(target.getWeight()) || target.getWeight() <= 0.0) {
-                throw new IllegalStateException(targetPrefix + ".weight must be finite and greater than 0");
+            if (!Double.isFinite(target.getWeight()) || target.getWeight() < 0.0) {
+                throw new IllegalStateException(targetPrefix + ".weight must be finite and non-negative");
             }
         }
     }

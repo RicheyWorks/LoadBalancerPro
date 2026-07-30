@@ -8684,3 +8684,54 @@ loopback port, launched the packaged JAR, polled health/status, and force-stoppe
 `finally` block. The command did not run, no process started, and no repository or external state changed.
 Correction: split launch, bounded literal-loopback polling, and exact captured-process cleanup into separate simple
 commands, verifying the child PID before cleanup.
+
+# 2026-07-29 - P-0.4 weight-zero and retry audit
+
+Branch: `codex/p-0-4-weight-zero-retry`
+
+First focused proxy-test lookup: `rg` received PowerShell-style `*.java` path arguments. On Windows, ripgrep did not
+expand those globs and returned exit 1 with an invalid-filename error after the preceding exact file inventory
+succeeded. This is a read-only search-command failure, not a source or test failure. Correction: pass the confirmed
+test directories to `rg` and constrain matches with `-g '*.java'`.
+
+Exact P-0.4 red gate: 39 tests ran with seven expected failures, zero errors, and zero skips. Current main rejected
+configured weight zero, reported the old greater-than-zero validation message for a negative weight, treated zero
+as weight one in both weighted strategies, clamped 0.01 to 0.1, and retried an interrupted forward once. The
+10,100-call WRR acceptance produced 9,182/918 rather than 10,000/100 because of the clamp. Correction: accept finite
+non-negative configured weights, exclude zero-weight state vectors before both weighted algorithms score/select,
+preserve every positive finite weight without a floor, and return interrupted forwarding as non-retriable while
+restoring the interrupt flag.
+
+P-0.4 stale-wording test lookup: the first focused `rg` found no Java tests containing the exact former weight-
+semantics phrases and returned its normal no-match exit 1; a second lookup in the same shell still printed the
+broader documentation-test inventory. This is a read-only no-match result, not a product or test failure.
+Correction: treat the absence as confirmation that no exact-string test needs repair and run the relevant named
+documentation/strategy selectors directly.
+
+First P-0.4 executable-resource probe: an ad-hoc check looked for `application.yml` and
+`logback-spring.xml`, which are not entries required by this repository's packaged-artifact contract, and printed
+both as absent without failing the command. The JAR and source tree were not changed. Correction: discard that
+probe as a gate and use `scripts/local-artifact-verify.ps1`, whose required entries match the CI workflow, before
+recording any executable-resource result.
+
+P-0.4 smoke-script lookup: a recursive `rg` command again included a Windows `scripts/*.ps1` path argument, so
+ripgrep reported that literal glob as an invalid filename after returning the useful confirmed script inventory.
+This was read-only and did not start a smoke process. Correction: use a directory path with `--glob '*.ps1'` for
+PowerShell script searches; the subsequent direct workflow and script reads established the smoke commands.
+
+P-0.4 Enterprise Lab workflow lookup: a double-quoted ripgrep expression allowed PowerShell to expand
+`$Package` to an empty value and left an invalid regular expression. No workflow or product command ran.
+Correction: use a single-quoted fixed expression when inspecting PowerShell source, then invoke only the
+checked-in workflow parameters established by that inspection.
+
+P-0.4 local container/security-tool diagnostic: the Docker CLI was present, but its configured Docker Desktop
+Linux engine pipe did not exist; Trivy was not installed, and the repository root contained no Compose file.
+No image build, container runtime, Compose, or Trivy result is claimed locally. Correction: retain those as
+mandatory exact-head remote CI gates and do not merge this slot unless the remote Docker/runtime, container
+evidence, and blocking image-scan jobs are green.
+
+First P-0.4 public-target scope wrapper: the scanner inspected every line of each modified Java file and flagged
+pre-existing public/invalid-URL validation fixtures in `EnterpriseProxyConfigurationTest`, even though none of
+those lines changed in this slot. The wrapper stopped before producing a green scope result. Correction: scan only
+added diff lines plus the complete new test, require every newly added Java URL to be literal loopback, and keep the
+full-file findings classified as unchanged test fixtures rather than slot changes.

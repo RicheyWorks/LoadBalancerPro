@@ -942,9 +942,9 @@ The comparison endpoint is read-only, recommendation-only, and shadow-style: it 
 
 `WEIGHTED_LEAST_LOAD` evaluates all healthy candidates and normalizes in-flight request count, queue depth, latency, tail latency, and error rate by effective capacity, then applies optional server `weight`. Missing or zero routing weight defaults to `1.0`; very small positive weight is clamped safely during scoring; negative or non-finite weight is rejected.
 
-`WEIGHTED_LEAST_CONNECTIONS` is request-level and chooses one healthy candidate by scoring active in-flight requests divided by effective routing weight. Lower weighted connection score wins, ties break deterministically by server ID, and the endpoint remains read-only/shadow-style rather than legacy batch routing.
+`WEIGHTED_LEAST_CONNECTIONS` is request-level and chooses one healthy, positive-weight candidate by scoring active in-flight requests divided by routing weight. Weight `0` drains a candidate from selection, every positive finite weight is used without a minimum clamp, negative or non-finite weight is rejected, lower weighted connection score wins, and ties break deterministically by server ID. The endpoint remains read-only/shadow-style rather than legacy batch routing.
 
-`WEIGHTED_ROUND_ROBIN` uses smooth weighted round-robin across healthy request-level candidates. It uses the same routing `weight` input semantics as the comparison endpoint: missing or zero weight defaults to `1.0`, very small positive weight is clamped safely, and negative or non-finite weight is rejected before strategy execution.
+`WEIGHTED_ROUND_ROBIN` uses smooth weighted round-robin across healthy, positive-weight request-level candidates. Missing weight defaults to `1.0`; weight `0` drains a candidate from selection; every positive finite weight is used without a minimum clamp; and negative or non-finite weight is rejected before strategy execution.
 
 `ROUND_ROBIN` rotates across healthy request-level candidates in request order, skips unhealthy candidates, and returns an explanation with no score map because the strategy does not score candidates.
 

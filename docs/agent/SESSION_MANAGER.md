@@ -6,6 +6,97 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 5 Local-Green Checkpoint
+
+Timestamp: 2026-07-29T19:01:25-07:00
+
+Current slot: `P-0.4`, make weight zero drain and correct interrupted retry classification.
+
+Current branch: `codex/p-0-4-weight-zero-retry`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `8c491133041422b998d8e19eee5a18c827472ac8`, the exact PR #501 merge commit and green
+`origin/main`.
+
+Implementation:
+
+- weighted round robin and weighted least connections now exclude healthy zero-weight candidates as configured
+  drain targets while keeping missing-weight defaulting and every positive finite fractional weight;
+- proxy route validation now accepts finite non-negative target weights and continues to reject negative and
+  non-finite values;
+- interrupted upstream forwarding restores the caller interrupt flag and returns a non-retriable result, so the
+  configured retry loop cannot issue a second send;
+- README, reverse-proxy operations, and core feature-contract wording distinguish these WRR/WLC semantics from the
+  separately documented weighted-least-load and batch-allocation semantics.
+
+Acceptance:
+
+- the exact red gate first ran 39 tests and failed seven assertions on the old zero/default/clamp/retry behavior;
+- focused and expanded proxy/strategy/configuration/integration/documentation selectors passed after implementation;
+- deterministic strategy and direct-service acceptance both prove zero selections for a drained target and an
+  exact 10,000/100 selection split for weights 1.0/0.01 over 10,100 sends;
+- the direct-service interruption acceptance proves HTTP 502, restored interrupt state, one upstream send, one
+  failure, and zero retry attempts with retries configured.
+
+Changed files:
+
+- `src/main/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyRoutePlanner.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyService.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/WeightedLeastConnectionsRoutingStrategy.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/WeightedRoundRobinRoutingStrategy.java`
+- `src/test/java/com/richmond423/loadbalancerpro/api/EnterpriseProxyConfigurationTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyWeightDrainAndInterruptionTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/WeightedLeastConnectionsRoutingStrategyTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/WeightedRoundRobinRoutingStrategyTest.java`
+- `README.md`
+- `docs/REVERSE_PROXY_MODE.md`
+- `docs/agent/CORE_LOADBALANCER_FEATURE_CONTRACT.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Verification:
+
+- clean `mvn -B package`: exit 0, 3,440 tests across 484 reports, zero failures/errors/skips, and no Surefire dump
+  files;
+- `mvn -q "-DskipTests" verify`, expanded focused/adjacent selectors, and campaign documentation guards passed;
+- JaCoCo XML generation passed: 83.13% instructions, 66.34% branches, and 82.42% lines;
+- the checked-in artifact verifier passed every required executable-JAR entry;
+- final executable JAR after the packaged workflow rerun: 95,545,514 bytes, 1,433 entries, SHA-256
+  `49BE364AC6790C0E58F615B2AFCC2BD1E242F4277A7ED2797702CB0C26F576F9`;
+- CycloneDX 2.9.1 generated parseable JSON/XML 1.6 BOMs with 144 components in each;
+- packaged healthy/overloaded/invalid LASE CLI cases passed with exact exits, no Spring startup, and no raw invalid-
+  case exception;
+- literal-loopback packaged runtime returned HTTP 200 for health, root, proxy status, and both static operator
+  pages; exact captured-process cleanup released port 18080;
+- the packaged Enterprise Lab shadow workflow passed ten fixed scenarios and wrote ignored target-only evidence
+  under its explicit no-live-cloud/no-external-network boundary;
+- complete-diff whitespace, manifest parsing, public-target, secret-like, generated-output, and protected-surface
+  scans passed.
+
+Local limitations: the Docker CLI could not reach its configured engine, Trivy is not installed, and the repository
+root has no Compose file. No local Docker/runtime, container, Trivy, or Compose result is claimed. Exact-head remote
+CI, CodeQL, dependency review, SBOM, Docker/runtime, controlled container evidence, and blocking image scan remain
+mandatory before merge.
+
+Scope and safety: production changes are limited to the planned WRR/WLC candidate semantics, proxy target-weight
+validation, and interrupted-forward retry classification. No auth/security-policy weakening, public/external target,
+secret, live cloud/tenant action, deployment, CI/Maven/Docker/Compose behavior, unrelated routing strategy, or
+readiness/performance claim changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: none locally.
+
+Next action: commit and publish the local-green implementation, open one PR, then require every exact-head remote
+gate before authorized self-review and merge.
+
+Decision: continue only `P-0.4`; no later slot is active.
+
 ## Combined Build Plan Slot 5 Start Checkpoint
 
 Timestamp: 2026-07-29T18:39:21-07:00

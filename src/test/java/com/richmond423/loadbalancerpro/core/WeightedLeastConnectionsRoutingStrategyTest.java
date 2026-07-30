@@ -78,25 +78,26 @@ class WeightedLeastConnectionsRoutingStrategyTest {
     }
 
     @Test
-    void missingAndZeroWeightDefaultSafely() {
+    void zeroWeightIsDrainedWhileMissingWeightKeepsItsDefault() {
         ServerStateVector missingWeight = stateWithoutWeight("missing", 8);
-        ServerStateVector zeroWeight = state("zero", 8, 0.0);
+        ServerStateVector zeroWeight = state("zero", 0, 0.0);
 
         RoutingDecision decision = strategy.choose(List.of(missingWeight, zeroWeight));
 
         assertEquals(1.0, missingWeight.weight(), 0.0);
         assertEquals(8.0, score(decision, "missing"), 0.0);
-        assertEquals(8.0, score(decision, "zero"), 0.0);
+        assertFalse(decision.explanation().scores().containsKey("zero"));
+        assertEquals(List.of("missing"), decision.explanation().candidateServersConsidered());
     }
 
     @Test
-    void verySmallPositiveWeightClampsSafely() {
+    void verySmallPositiveWeightIsNotClamped() {
         RoutingDecision decision = strategy.choose(List.of(
                 state("min", 1, 0.1),
                 state("tiny", 1, 0.01)));
 
         assertEquals(10.0, score(decision, "min"), 0.0);
-        assertEquals(10.0, score(decision, "tiny"), 0.0);
+        assertEquals(100.0, score(decision, "tiny"), 0.0);
     }
 
     @Test

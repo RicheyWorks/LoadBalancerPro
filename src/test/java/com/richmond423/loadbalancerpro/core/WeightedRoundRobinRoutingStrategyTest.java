@@ -74,28 +74,29 @@ class WeightedRoundRobinRoutingStrategyTest {
     }
 
     @Test
-    void zeroAndMissingWeightDefaultSafely() {
+    void zeroWeightIsDrainedWhileMissingWeightKeepsItsDefault() {
         ServerStateVector zeroWeight = state("zero", true, 0.0);
         ServerStateVector missingWeight = stateWithoutWeight("missing", true);
 
-        RoutingDecision first = strategy.choose(List.of(zeroWeight, missingWeight));
-        RoutingDecision second = strategy.choose(List.of(zeroWeight, missingWeight));
+        RoutingDecision decision = strategy.choose(List.of(zeroWeight, missingWeight));
 
-        assertEquals("zero", first.chosenServer().orElseThrow().serverId());
-        assertEquals("missing", second.chosenServer().orElseThrow().serverId());
-        assertEquals(1.0, first.explanation().scores().get("zero"), 0.0);
-        assertEquals(1.0, first.explanation().scores().get("missing"), 0.0);
+        assertEquals("missing", decision.chosenServer().orElseThrow().serverId());
+        assertEquals(List.of("missing"), decision.explanation().candidateServersConsidered());
+        assertFalse(decision.explanation().scores().containsKey("zero"));
+        assertEquals(1.0, decision.explanation().scores().get("missing"), 0.0);
         assertEquals(1.0, missingWeight.weight(), 0.0);
     }
 
     @Test
-    void verySmallPositiveWeightClampsSafely() {
-        RoutingDecision decision = strategy.choose(List.of(
-                state("min", true, 0.1),
-                state("tiny", true, 0.01)));
+    void verySmallPositiveWeightKeepsItsOnePercentShare() {
+        List<ServerStateVector> candidates = List.of(
+                state("primary", true, 1.0),
+                state("one-percent", true, 0.01));
 
-        assertEquals(0.1, decision.explanation().scores().get("min"), 0.0);
-        assertEquals(0.1, decision.explanation().scores().get("tiny"), 0.0);
+        List<String> selections = chooseMany(candidates, 10_100);
+
+        assertEquals(10_000, selections.stream().filter("primary"::equals).count());
+        assertEquals(100, selections.stream().filter("one-percent"::equals).count());
     }
 
     @Test

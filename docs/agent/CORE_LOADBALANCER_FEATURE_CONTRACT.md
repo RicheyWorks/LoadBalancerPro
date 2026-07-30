@@ -113,7 +113,7 @@ Gap:
 
 ### Zero weight and all-zero weight behavior
 
-Weighted batch distribution preserves the current proportional semantics, gives zero-weight servers zero allocation when total weight is positive, and falls back to equal allocation when all weights are zero. Request-level weighted strategies default missing or zero routing weight safely according to their own strategy contracts.
+Weighted batch distribution preserves the current proportional semantics, gives zero-weight servers zero allocation when total weight is positive, and falls back to equal allocation when all weights are zero. Request-level weighted round robin and weighted least connections default missing weight to `1.0`, exclude zero-weight candidates as a drain signal, and preserve every positive finite routing weight without a minimum clamp. Weighted least load retains its separately documented scoring contract.
 
 Evidence:
 
@@ -187,7 +187,8 @@ Gap:
 - No-server and all-unhealthy paths fail closed into empty allocations or explicit unallocated load.
 - Health recovery can re-admit a server in deterministic local integration tests.
 - Request-level strategies skip unhealthy candidates and return safe no-candidate decisions.
-- Weighted request-level strategies handle missing or zero routing weight safely and reject invalid negative weights.
+- Weighted round robin and weighted least connections default missing weight, exclude zero-weight candidates as a
+  drain signal, preserve positive fractional weights, and reject invalid negative or non-finite weights.
 - Tail-latency routing explanations name material factors and anti-flapping decisions when relevant.
 
 ## Reviewer Evidence Map

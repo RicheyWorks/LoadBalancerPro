@@ -13,9 +13,6 @@ import java.util.Optional;
 public final class WeightedLeastConnectionsRoutingStrategy implements RoutingStrategy {
     public static final String STRATEGY_NAME = "WEIGHTED_LEAST_CONNECTIONS";
 
-    private static final double DEFAULT_WEIGHT = 1.0;
-    private static final double MIN_POSITIVE_WEIGHT = 0.1;
-
     private final Clock clock;
 
     public WeightedLeastConnectionsRoutingStrategy() {
@@ -37,10 +34,12 @@ public final class WeightedLeastConnectionsRoutingStrategy implements RoutingStr
         List<ServerStateVector> eligible = servers.stream()
                 .filter(Objects::nonNull)
                 .filter(ServerStateVector::healthy)
+                .filter(state -> state.weight() > 0.0)
                 .sorted(Comparator.comparing(ServerStateVector::serverId))
                 .toList();
         if (eligible.isEmpty()) {
-            return noCandidateDecision("No healthy eligible servers were available.");
+            return noCandidateDecision(
+                    "No healthy eligible servers with positive routing weight were available.");
         }
 
         Map<String, Double> scores = scoreCandidates(eligible);
@@ -78,10 +77,7 @@ public final class WeightedLeastConnectionsRoutingStrategy implements RoutingStr
     }
 
     private double effectiveWeight(double weight) {
-        if (weight == 0.0) {
-            return DEFAULT_WEIGHT;
-        }
-        return Math.max(MIN_POSITIVE_WEIGHT, weight);
+        return weight;
     }
 
     private String reasonForChoice(ServerStateVector chosen,

@@ -127,6 +127,13 @@ uncertain post-write failure makes that writer unusable; a fresh bounded replay 
 present or the stable partial tail must remain quarantined from further mutation. Read-only inspection creates no path
 and `unresolvedHeads()` reconstructs the latest nonterminal event per correlation from durable evidence alone.
 
+The application ledger, supervisor ledger, allocation transaction store, and live experiment journal now delegate these
+bounded frame mechanics to the same package-private `ChainedJsonlStore`. That engine owns the per-path process mutex,
+shared/exclusive operating-system file locks, exact-size append check, single complete frame buffer, force while the
+exclusive lock remains held, canonical frame replay, chain-validator callback, and pinned file-key plus creation-time
+identity. Domain codecs and lifecycle rules remain with each store; a shared storage engine does not make one chain's
+events valid in another chain.
+
 ### Storage And Replay Contract
 
 The application ledger uses one canonical event per line. Newline is the frame terminator rather than caller content:
@@ -153,6 +160,7 @@ The writable path repeats replay before deriving an event and again after prepar
 list and byte count so a file change between those observations is rejected. After append it forces the file with the
 data-and-metadata policy, replays again, and returns a receipt only when the new head and byte count match exactly. An
 exception after any write begins invalidates that writer even if a later replay proves that the full frame reached disk.
+Rotation, automatic repair, and parent-directory crash durability remain outside this contract.
 
 ### Application Lifecycle Contract
 

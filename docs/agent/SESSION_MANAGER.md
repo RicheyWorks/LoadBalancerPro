@@ -6,6 +6,56 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 16 Local-Green Checkpoint
+
+Timestamp: 2026-07-30T13:22:30-07:00
+
+Current slot: `L-2.1`, unify JSONL stores behind one chained engine.
+
+Branch: `codex/l-2-1-chained-jsonl-store`; status: local green while the campaign machine state remains
+`IN_PROGRESS`; exact green base: `36622b8b2ca27003a0a9a5e165ac361969173dd0`. The published branch-start
+checkpoint is `3114e541abea26d7001fad3f713cefe9f3478e2b`; the exact implementation head remains pending until this
+checkpoint and the complete candidate are committed.
+
+Delivered bounded scope:
+
+- one package-private `ChainedJsonlStore` now owns bounded canonical replay, per-path serialization, shared/exclusive
+  OS locks, exact-size single-frame append, force-under-lock, and pinned file-key plus creation-time identity for the
+  application ledger, supervisor ledger, allocation state store, and live experiment journal;
+- domain codecs, lifecycle rules, failure contracts, ownership gates, and exact read-back remain store-owned;
+- supervisor ownership fails closed on lock-path replacement and refuses to recreate a missing fixed lock inside an
+  initialized supervisor directory.
+
+Verified before this checkpoint:
+
+- focused storage, journal, process/transport, Enterprise Lab, API, CLI, and campaign selectors passed;
+- `mvn -q clean package` passed 3,054 tests across 413 fresh reports with zero failures, errors, or skips;
+- `mvn -q -DskipTests verify`, pinned CycloneDX 2.9.1 JSON/XML generation, JAR resource inspection, the packaged
+  ten-scenario Enterprise Lab workflow, the packaged allocation crash-window/separate-process proof, and the durable
+  recovery/corruption/compaction proof passed;
+- final executable JAR after exact-tree verify is 95,026,388 bytes with SHA-256
+  `69C08E71076B7706ACA4D2C13B54947551A20825B88AFBB92305F7D9B2991720`; CycloneDX 1.6 JSON/XML contain 144
+  components.
+
+Logged limit: the adjacent operator-profile script did not produce an accepted local result; this persistence-only
+slot changes no profile/runtime surface, and exact-head remote CI must supply that unchanged gate.
+
+Safety/scope: no credential/default, authorization, external/public/private target, cloud/tenant call, live
+proxy-route mutation, dependency, Maven/workflow, Docker/Compose, deployment, release, tag, or secret was added.
+The packaged proofs remained foreground, bounded, literal-loopback, and target-local. Rotation, archive continuity,
+automatic cleanup or repair, soft-limit/10k-command soak, lease-takeover policy, parent-directory fsync honesty,
+mutex eviction, broader logging, production readiness/certification, live-cloud/tenant validation,
+throughput/p95/p99, load/stress behavior, remote-filesystem semantics, and operating-system crash guarantees remain
+unproven and belong to later slots.
+
+PR/head: not opened; exact implementation commit pending. Blocker: none locally.
+
+Next action: commit and publish the complete candidate, open the L-2.1 PR, require exact-head CI, CodeQL, dependency
+review, package/SBOM/packaged-smoke/Docker/runtime/evidence/image-scan gates, perform a complete-diff self-review,
+merge only the unchanged green head, verify exact merge-main, then start only `L-2.2`.
+
+Decision: continue only `L-2.1`; no later slot is active.
+
 ## Combined Build Plan Slot 15 Main-Green / Slot 16 Start
 
 Timestamp: 2026-07-30T12:07:52-07:00

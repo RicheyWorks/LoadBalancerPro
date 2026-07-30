@@ -4,12 +4,9 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabExperimentJournalCodec.C
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,9 +22,6 @@ import java.util.Set;
  * The controlled directory supplies the backing path without exposing it to callers.
  */
 public final class EnterpriseLabExperimentJournalVerifier {
-    private static final int READ_BUFFER_BYTES = 8_192;
-    private static final int MAX_CONSECUTIVE_ZERO_READS = 3;
-
     private final EnterpriseLabExperimentJournalCodec codec;
     private final long maxJournalBytes;
     private final int maxJournalEntries;
@@ -68,93 +62,75 @@ public final class EnterpriseLabExperimentJournalVerifier {
         long observedBytes = 0;
         long acceptedCompleteBytes = 0;
         long frameStartOffset = 0;
-        try (FileChannel channel = FileChannel.open(
-                journalPath, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
-            declaredBytes = channel.size();
-            if (declaredBytes > maxJournalBytes) {
-                return invalid(journalId, Classification.JOURNAL_SIZE_EXCEEDED, 0, 0,
-                        "JOURNAL_SIZE_EXCEEDED", "journal exceeds the configured byte limit",
-                        0, 0, 0, declaredBytes);
-            }
-            ByteBuffer buffer = ByteBuffer.allocate(READ_BUFFER_BYTES);
-            int zeroReads = 0;
-            while (true) {
-                int read = channel.read(buffer);
-                if (read < 0) {
-                    break;
-                }
-                if (read == 0) {
-                    zeroReads++;
-                    if (zeroReads >= MAX_CONSECUTIVE_ZERO_READS) {
-                        return invalid(journalId, Classification.IO_FAILURE, frames.size() + 1L,
-                                frameStartOffset, "READ_NO_PROGRESS",
-                                "bounded journal verification read made no progress",
-                                acceptedCompleteBytes, current.size(), observedBytes, declaredBytes);
-                    }
-                    continue;
-                }
-                zeroReads = 0;
-                buffer.flip();
-                while (buffer.hasRemaining()) {
-                    byte value = buffer.get();
-                    observedBytes++;
-                    if (value == '\n') {
-                        long frameNumber = frames.size() + 1L;
-                        if (current.size() == 0) {
-                            Classification classification = frames.isEmpty()
-                                    ? Classification.INVALID_FRAMING
-                                    : Classification.TRAILING_UNEXPECTED_DATA;
-                            return invalid(journalId, classification, frameNumber, frameStartOffset,
-                                    classification.name(), "journal contains an empty complete frame",
-                                    acceptedCompleteBytes, 0, observedBytes, declaredBytes);
-                        }
-                        if (frames.size() >= maxJournalEntries) {
-                            return invalid(journalId, Classification.ENTRY_COUNT_EXCEEDED,
-                                    frameNumber, frameStartOffset, "ENTRY_COUNT_EXCEEDED",
-                                    "journal exceeds the configured entry-count limit",
-                                    acceptedCompleteBytes, 0, observedBytes, declaredBytes);
-                        }
-                        byte[] encoded = current.toByteArray();
-                        EnterpriseLabExperimentJournalEvent event;
-                        try {
-                            event = decodeCanonical(encoded);
-                        } catch (VerificationFailure failure) {
-                            return invalid(journalId, failure.classification(), frameNumber,
-                                    frameStartOffset, failure.code(), failure.getMessage(),
-                                    acceptedCompleteBytes, 0, observedBytes, declaredBytes);
-                        }
-                        if (!experimentId.equals(event.experimentId())) {
-                            return invalid(journalId, Classification.IDENTITY_MISMATCH,
-                                    frameNumber, frameStartOffset, "EXPERIMENT_IDENTITY_MISMATCH",
-                                    "journal frame belongs to a different experiment",
-                                    acceptedCompleteBytes, 0, observedBytes, declaredBytes);
-                        }
-                        frames.add(new Frame(event, frameNumber, frameStartOffset));
-                        current.reset();
-                        acceptedCompleteBytes = observedBytes;
-                        frameStartOffset = observedBytes;
-                    } else {
-                        if (current.size() >= EnterpriseLabExperimentJournalCodec.HARD_MAX_ENTRY_BYTES) {
-                            return invalid(journalId, Classification.ENTRY_SIZE_EXCEEDED,
-                                    frames.size() + 1L, frameStartOffset, "ENTRY_SIZE_EXCEEDED",
-                                    "journal frame exceeds the canonical entry-size limit",
-                                    acceptedCompleteBytes, current.size() + 1L, observedBytes, declaredBytes);
-                        }
-                        current.write(value);
-                    }
-                }
-                buffer.clear();
-            }
-        } catch (IOException exception) {
-            return invalid(journalId, Classification.IO_FAILURE, frames.size() + 1L,
-                    frameStartOffset, "READ_FAILED", "journal could not be read for verification",
-                    acceptedCompleteBytes, current.size(), observedBytes, observedBytes);
+        byte[] source;
+        try {
+            source = new ChainedJsonlStore(journalPath, maxJournalBytes)
+                    .readBoundedBytes();
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            Classification classification = switch (exception.failure()) {
+                case SIZE_LIMIT_EXCEEDED -> Classification.JOURNAL_SIZE_EXCEEDED;
+                case UNSAFE_FILE -> Classification.UNSAFE_STORAGE;
+                default -> Classification.IO_FAILURE;
+            };
+            return invalid(
+                    journalId,
+                    classification,
+                    frames.size() + 1L,
+                    frameStartOffset,
+                    classification.name(),
+                    "journal could not be read under its shared storage lock",
+                    acceptedCompleteBytes,
+                    current.size(),
+                    observedBytes,
+                    observedBytes);
         }
-
-        if (observedBytes != declaredBytes) {
-            return invalid(journalId, Classification.IO_FAILURE, frames.size() + 1L,
-                    frameStartOffset, "SOURCE_CHANGED", "journal changed during bounded verification",
-                    acceptedCompleteBytes, current.size(), observedBytes, declaredBytes);
+        declaredBytes = source.length;
+        for (byte value : source) {
+            observedBytes++;
+            if (value == '\n') {
+                long frameNumber = frames.size() + 1L;
+                if (current.size() == 0) {
+                    Classification classification = frames.isEmpty()
+                            ? Classification.INVALID_FRAMING
+                            : Classification.TRAILING_UNEXPECTED_DATA;
+                    return invalid(journalId, classification, frameNumber, frameStartOffset,
+                            classification.name(), "journal contains an empty complete frame",
+                            acceptedCompleteBytes, 0, observedBytes, declaredBytes);
+                }
+                if (frames.size() >= maxJournalEntries) {
+                    return invalid(journalId, Classification.ENTRY_COUNT_EXCEEDED,
+                            frameNumber, frameStartOffset, "ENTRY_COUNT_EXCEEDED",
+                            "journal exceeds the configured entry-count limit",
+                            acceptedCompleteBytes, 0, observedBytes, declaredBytes);
+                }
+                byte[] encoded = current.toByteArray();
+                EnterpriseLabExperimentJournalEvent event;
+                try {
+                    event = decodeCanonical(encoded);
+                } catch (VerificationFailure failure) {
+                    return invalid(journalId, failure.classification(), frameNumber,
+                            frameStartOffset, failure.code(), failure.getMessage(),
+                            acceptedCompleteBytes, 0, observedBytes, declaredBytes);
+                }
+                if (!experimentId.equals(event.experimentId())) {
+                    return invalid(journalId, Classification.IDENTITY_MISMATCH,
+                            frameNumber, frameStartOffset, "EXPERIMENT_IDENTITY_MISMATCH",
+                            "journal frame belongs to a different experiment",
+                            acceptedCompleteBytes, 0, observedBytes, declaredBytes);
+                }
+                frames.add(new Frame(event, frameNumber, frameStartOffset));
+                current.reset();
+                acceptedCompleteBytes = observedBytes;
+                frameStartOffset = observedBytes;
+            } else {
+                if (current.size() >= EnterpriseLabExperimentJournalCodec.HARD_MAX_ENTRY_BYTES) {
+                    return invalid(journalId, Classification.ENTRY_SIZE_EXCEEDED,
+                            frames.size() + 1L, frameStartOffset, "ENTRY_SIZE_EXCEEDED",
+                            "journal frame exceeds the canonical entry-size limit",
+                            acceptedCompleteBytes, current.size() + 1L, observedBytes, declaredBytes);
+                }
+                current.write(value);
+            }
         }
 
         VerificationFailure chainFailure = verifyChain(frames);

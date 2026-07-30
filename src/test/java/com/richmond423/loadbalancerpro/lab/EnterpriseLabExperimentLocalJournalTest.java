@@ -198,15 +198,16 @@ class EnterpriseLabExperimentLocalJournalTest {
     }
 
     @Test
-    void partialWriteFailureLeavesADetectableTailThatReadDoesNotMutate() throws Exception {
+    void uncertainSingleFrameWriteLeavesOneCanonicalEventThatReadDoesNotMutate()
+            throws Exception {
         EnterpriseLabExperimentJournalDirectory directory =
                 EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);
         EnterpriseLabExperimentJournal journal = directory.openJournal(
                 "experiment-partial",
                 SyncPolicy.FORCE_DATA_AND_METADATA,
                 (checkpoint, bytesWritten) -> {
-                    if (checkpoint == WriteCheckpoint.AFTER_WRITE_CHUNK) {
-                        throw new IOException("injected partial write");
+                    if (checkpoint == WriteCheckpoint.AFTER_WRITE_ATTEMPT) {
+                        throw new IOException("injected failure after single-frame write attempt");
                     }
                 });
 
@@ -214,32 +215,35 @@ class EnterpriseLabExperimentLocalJournalTest {
                 "experiment-partial", 1, EnterpriseLabExperimentJournalEvent.GENESIS_FINGERPRINT)));
         Path file = findOnlyJournalFile(tempDirectory);
         byte[] beforeRead = Files.readAllBytes(file);
-        assertEquals(256, beforeRead.length);
+        assertEquals('\n', beforeRead[beforeRead.length - 1]);
 
         ReadResult result = directory.read("experiment-partial");
-        assertEquals(TailStatus.TRUNCATED_TAIL, result.tailStatus());
-        assertEquals(0, result.completeBytes());
-        assertEquals(beforeRead.length, result.tailBytes());
-        assertEquals(List.of(), result.events());
+        assertEquals(TailStatus.COMPLETE, result.tailStatus());
+        assertEquals(beforeRead.length, result.completeBytes());
+        assertEquals(0, result.tailBytes());
+        assertEquals(1, result.events().size());
         assertArrayEquals(beforeRead, Files.readAllBytes(file));
-        assertStorage(Failure.PARTIAL_TAIL,
-                () -> directory.openJournal("experiment-partial", SyncPolicy.FORCE_DATA));
+        try (EnterpriseLabExperimentJournal reopened =
+                     directory.openJournal("experiment-partial", SyncPolicy.FORCE_DATA)) {
+            assertEquals(1, reopened.read().events().size());
+        }
         assertArrayEquals(beforeRead, Files.readAllBytes(file));
     }
 
     @Test
-    void ownershipLossBetweenWriteChunksStopsTheAppendAndPreservesADetectableTail() throws Exception {
+    void ownershipLossAfterSingleFrameWriteStopsBeforeSyncAndPreservesCanonicalEvent()
+            throws Exception {
         EnterpriseLabMutationTestAuthority ownership =
                 new EnterpriseLabMutationTestAuthority(tempDirectory);
         EnterpriseLabExperimentJournalDirectory directory =
                 EnterpriseLabExperimentJournalDirectory.createOwned(tempDirectory, ownership);
-        AtomicInteger chunks = new AtomicInteger();
+        AtomicInteger writes = new AtomicInteger();
         EnterpriseLabExperimentJournal journal = directory.openJournal(
                 "ownership-lost-mid-append",
                 SyncPolicy.FORCE_DATA_AND_METADATA,
                 (checkpoint, bytesWritten) -> {
-                    if (checkpoint == WriteCheckpoint.AFTER_WRITE_CHUNK
-                            && chunks.incrementAndGet() == 1) {
+                    if (checkpoint == WriteCheckpoint.AFTER_WRITE_ATTEMPT
+                            && writes.incrementAndGet() == 1) {
                         ownership.fail(
                                 EnterpriseLabEvidenceOwnership.FailureClassification.LOCK_LOST);
                     }
@@ -256,9 +260,9 @@ class EnterpriseLabExperimentLocalJournalTest {
                 failure.classification());
         ownership.clearFailure();
         ReadResult preserved = directory.read("ownership-lost-mid-append");
-        assertEquals(TailStatus.TRUNCATED_TAIL, preserved.tailStatus());
-        assertEquals(256L, preserved.tailBytes());
-        assertTrue(preserved.events().isEmpty());
+        assertEquals(TailStatus.COMPLETE, preserved.tailStatus());
+        assertEquals(0L, preserved.tailBytes());
+        assertEquals(1, preserved.events().size());
     }
 
     @Test

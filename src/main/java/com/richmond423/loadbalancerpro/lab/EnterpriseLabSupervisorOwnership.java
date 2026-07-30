@@ -31,6 +31,7 @@ public final class EnterpriseLabSupervisorOwnership implements AutoCloseable {
     private final Path lockFile;
     private final FileChannel channel;
     private final FileLock lock;
+    private final ChainedJsonlStore.FileIdentity lockFileIdentity;
     private boolean closed;
 
     private EnterpriseLabSupervisorOwnership(
@@ -38,20 +39,29 @@ public final class EnterpriseLabSupervisorOwnership implements AutoCloseable {
             Path supervisorDirectory,
             Path lockFile,
             FileChannel channel,
-            FileLock lock) {
+            FileLock lock,
+            ChainedJsonlStore.FileIdentity lockFileIdentity) {
         this.trustedRoot = trustedRoot;
         this.supervisorDirectory = supervisorDirectory;
         this.lockFile = lockFile;
         this.channel = channel;
         this.lock = lock;
+        this.lockFileIdentity = Objects.requireNonNull(
+                lockFileIdentity, "lockFileIdentity cannot be null");
     }
 
     public static EnterpriseLabSupervisorOwnership acquire(Path trustedRoot) {
         Path root = validateTrustedRoot(trustedRoot);
+        Path directoryPath = controlledPath(root, DIRECTORY_NAME);
+        boolean initializeLockFile = !Files.exists(
+                directoryPath, LinkOption.NOFOLLOW_LINKS);
         Path directory = controlledDirectory(root, DIRECTORY_NAME);
         Path lockPath = controlledPath(directory, LOCK_FILE_NAME);
         FileChannel channel = null;
         try {
+            prepareLockFile(lockPath, initializeLockFile);
+            ChainedJsonlStore.FileIdentity identityBeforeOpen =
+                    lockFileIdentity(lockPath);
             channel = openLockChannel(lockPath);
             FileLock lock;
             try {
@@ -65,9 +75,30 @@ public final class EnterpriseLabSupervisorOwnership implements AutoCloseable {
                         Failure.LIVE_COMPETING_SUPERVISOR,
                         "another supervisor owns the controlled local lock");
             }
+            ChainedJsonlStore.FileIdentity identityAfterLock =
+                    lockFileIdentity(lockPath);
+            if (!identityBeforeOpen.equals(identityAfterLock)) {
+                lock.release();
+                channel.close();
+                throw new OwnershipException(
+                        Failure.LOCK_UNAVAILABLE,
+                        "supervisor lock-file identity changed during acquisition");
+            }
             return new EnterpriseLabSupervisorOwnership(
-                    root, directory, lockPath, channel, lock);
+                    root,
+                    directory,
+                    lockPath,
+                    channel,
+                    lock,
+                    identityAfterLock);
         } catch (OwnershipException exception) {
+            if (channel != null) {
+                try {
+                    channel.close();
+                } catch (IOException ignored) {
+                    // The bounded ownership failure remains authoritative.
+                }
+            }
             throw exception;
         } catch (IOException | UnsupportedOperationException exception) {
             if (channel != null) {
@@ -84,7 +115,14 @@ public final class EnterpriseLabSupervisorOwnership implements AutoCloseable {
     }
 
     public boolean held() {
-        return !closed && channel.isOpen() && lock.isValid();
+        if (closed || !channel.isOpen() || !lock.isValid()) {
+            return false;
+        }
+        try {
+            return lockFileIdentity.equals(lockFileIdentity(lockFile));
+        } catch (OwnershipException exception) {
+            return false;
+        }
     }
 
     void requireHeld() {
@@ -182,8 +220,15 @@ public final class EnterpriseLabSupervisorOwnership implements AutoCloseable {
         return path;
     }
 
-    private static FileChannel openLockChannel(Path lockFile) throws IOException {
+    private static void prepareLockFile(
+            Path lockFile,
+            boolean allowCreation) throws IOException {
         if (!Files.exists(lockFile, LinkOption.NOFOLLOW_LINKS)) {
+            if (!allowCreation) {
+                throw new OwnershipException(
+                        Failure.LOCK_UNAVAILABLE,
+                        "existing supervisor directory is missing its fixed lock file");
+            }
             try {
                 Files.createFile(lockFile, fileAttribute());
             } catch (FileAlreadyExistsException ignored) {
@@ -198,11 +243,25 @@ public final class EnterpriseLabSupervisorOwnership implements AutoCloseable {
         }
         validateControlledFile(lockFile, lockFile.getParent());
         restrictPermissions(lockFile, FILE_PERMISSIONS);
+    }
+
+    private static FileChannel openLockChannel(Path lockFile) throws IOException {
         return FileChannel.open(
                 lockFile,
                 StandardOpenOption.READ,
                 StandardOpenOption.WRITE,
                 LinkOption.NOFOLLOW_LINKS);
+    }
+
+    private static ChainedJsonlStore.FileIdentity lockFileIdentity(Path lockFile) {
+        try {
+            return ChainedJsonlStore.identityOfControlledRegularFile(lockFile);
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            throw new OwnershipException(
+                    Failure.LOCK_LOST,
+                    "supervisor lock-file identity is no longer authoritative",
+                    exception);
+        }
     }
 
     static void validateControlledDirectory(Path directory, Path parent) {

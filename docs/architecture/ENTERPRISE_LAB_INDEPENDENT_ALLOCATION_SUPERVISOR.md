@@ -45,6 +45,12 @@ canonical supervisor state, binds a `ServerSocket` only through the byte-constru
 publishes completed readiness metadata by same-directory atomic move. No hostname, wildcard address, external fallback,
 HTTP server framework, environment proxy, production backend, or application in-memory allocation is involved.
 
+The held supervisor capability pins the lock file's file-key plus creation-time identity and compares the current fixed
+path before every protected use. A missing lock file inside an already initialized supervisor directory is not recreated
+by a second acquisition: acquisition fails closed, and the original capability also reports the replaced or missing path
+as lock loss. This refusal prevents a deleted-lock-file second inode from becoming a simultaneous supervisor authority;
+it is not an automatic repair path.
+
 The runtime transport is a one-request-per-connection binary envelope around the PR1 canonical JSON business message.
 It has fixed magic and version fields, one 256-bit per-process credential encoded as 64 lowercase hexadecimal bytes,
 and explicit credential/request lengths. The credential is stored separately from readiness and business evidence,

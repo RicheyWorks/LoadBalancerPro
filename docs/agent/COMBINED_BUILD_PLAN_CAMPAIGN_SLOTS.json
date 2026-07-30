@@ -229,7 +229,7 @@
       "dependencies": ["L-0.6"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "Started from exact green main 36622b8b2ca27003a0a9a5e165ac361969173dd0 on codex/l-2-1-chained-jsonl-store. The application and supervisor command ledgers, allocation state store, local journal, ownership/lock helpers, formats, codecs, process mutexes, and call sites must be reconciled before selecting the shared-engine seam. Shared-engine parity and lock-path-deletion split-brain refusal remain unproven."
+      "currentState": "Local implementation is green on codex/l-2-1-chained-jsonl-store from exact base 36622b8b2ca27003a0a9a5e165ac361969173dd0. ChainedJsonlStore now owns bounded canonical replay, chain validation callbacks, per-path serialization, shared/exclusive OS locks, exact-size single-frame append, force-under-lock, and pinned file-key plus creation-time identity for all four stores. Supervisor lock deletion/replacement fails closed and second acquisition refuses a missing fixed lock in an initialized directory. Clean package passed 3,054 tests across 413 reports; process, Enterprise Lab, packaged workflow/allocation/recovery, verify, JAR, and CycloneDX checks passed. Exact candidate commit, PR, and remote gates remain pending."
     },
     {
       "ordinal": 17,

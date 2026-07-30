@@ -9298,3 +9298,18 @@ the inherited runtime configuration selected API-key mode while no API key was c
 result is accepted from this launch, and no packaged process remained. Correction: restart the same candidate on
 `127.0.0.1:18083` with the explicit bounded local-development override
 `--loadbalancerpro.auth.mode=none`; do not introduce a key or relax any packaged/default security configuration.
+
+# 2026-07-30 - L-2.1 chained JSONL consolidation
+
+Branch: `codex/l-2-1-chained-jsonl-store`
+
+The first broad Enterprise Lab wildcard selector exceeded its command budget and left its Maven and Surefire JVMs
+running. No aggregate result was accepted. The exact campaign-owned processes were identified by command line,
+stopped, and verified absent; verification was split into bounded selectors, which passed. Reusable rule: a timed-out
+Maven selector requires an exact-process audit before later test evidence is accepted.
+
+A final clean-package run exposed incorrect identity-test evidence: on this Windows filesystem Java returned no file
+key, and two rapidly created files received the same creation timestamp. That run is not accepted. The replacement
+fixture now establishes a deliberately distinct creation time through `BasicFileAttributeView` when the platform
+collides, the focused identity proof passed, and the subsequent fresh 3,054-test clean package passed with zero
+failures, errors, or skips.

@@ -19,7 +19,9 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   `36622b8b2ca27003a0a9a5e165ac361969173dd0`, exact-main 65-test focused checks, CI `30572768693`,
   and CodeQL `30572768745` green.
 - Active implementation slot: `L-2.1`; unify JSONL stores behind one chained engine on
-  `codex/l-2-1-chained-jsonl-store`.
+  `codex/l-2-1-chained-jsonl-store`. Local implementation is green: the four stores use one bounded canonical
+  replay/append and OS-lock engine, the supervisor lock path is file-identity fenced, 3,054 clean-package tests and
+  the relevant packaged proofs passed; exact-head remote gates remain pending.
 - Next implementation slot after the active gate: `L-2.2`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

@@ -62,7 +62,7 @@ The performance baseline runner uses the existing API contracts only; it adds no
 
 The prior CLI experiment harness remains available as an offline comparison path. Run `--adaptive-routing-experiment=all` through `scripts/smoke/adaptive-routing-experiment.ps1 -Package` to generate ignored `target/adaptive-routing-experiments/` evidence. Run `scripts/smoke/enterprise-lab-workflow.ps1 -Package` to generate the Enterprise Lab scenario catalog JSON, lab run JSON, Markdown scorecard summary, and metadata under ignored `target/enterprise-lab-runs/`. Run `scripts/smoke/controlled-adaptive-routing-policy.ps1 -Package` to generate controlled policy evidence under ignored `target/controlled-adaptive-routing/`. Run `scripts/smoke/enterprise-lab-observability-pack.ps1 -Package` to generate metrics JSON, Prometheus-style sample text, Markdown summary, and manifest under ignored `target/enterprise-lab-observability/`. The default runtime allocation behavior remains unchanged; active-experiment remains explicit, guarded, and lab/evaluation-grade rather than production traffic control or production SLO certification.
 
-Routing comparison responses expose `requestedStrategies`, `candidateCount`, `timestamp`, and a `results` array. Each result exposes the strategy id, status, selected server id when one is available, the strategy reason, considered candidates, score map, Decision Vector, dominant-factor analysis, and decision-delta analysis. The former replay snapshot/trace/capsule/readiness/source-map restatement chain is not part of the current contract. A no-healthy-server comparison still returns a controlled result with `chosenServerId` set to `null`, empty candidate/scores collections, and an explanatory reason.
+Routing comparison responses expose `requestedStrategies`, `candidateCount`, `timestamp`, and a `results` array. Each result exposes the strategy id, status, selected server id when one is available, the strategy reason, considered candidates, score map, a timestamp-independent `sha256:v1:` decision fingerprint, Decision Vector, dominant-factor analysis, and decision-delta analysis. The fingerprint uses count-delimited, length-prefixed fields rather than delimiter joins; it is a stable comparison identity, not a signature or production audit record. The former replay snapshot/trace/capsule/readiness/source-map restatement chain is not part of the current contract. A no-healthy-server comparison still returns a controlled, fingerprinted no-selection result with `chosenServerId` set to `null`, empty candidate/scores collections, and an explanatory reason.
 
 Routing comparison requests have an absolute DTO ceiling of 32 candidates and five explicit strategies. Operators
 can lower those ceilings with `loadbalancerpro.api.max-candidates` and
@@ -72,7 +72,7 @@ limits supplement the separate API request-body byte ceiling and do not authoriz
 
 `POST /api/routing/decision-explorer` accepts the same `RoutingComparisonRequest` as the comparison route and returns
 an array of compact `RoutingExplanation` v2 results derived from the already-built routing comparison response. Each
-result contains only the strategy/status/selection identity, per-candidate factor contributions, compact dominant-
+result contains only the strategy/status/selection identity and decision fingerprint, per-candidate factor contributions, compact dominant-
 factor rows, the selected-vs-closest-alternative decision delta, numeric ±10% factor-weight projections, and one
 boundary note. The endpoint does not return the retired confidence, diagnostics, tradeoff, shadow, replay-readiness,
 reviewer-badge, evidence-packet, or agent-schema restatement graphs. The route
@@ -115,7 +115,8 @@ The current reviewer vocabulary maps directly to the compact JSON fields:
 | Decision Explorer reviewer concept | Normalized reviewer-evidence group | Current API field or surface |
 | --- | --- | --- |
 | Top-level explanation | Compact routing explanation | `RoutingExplanation` |
-| Candidate evidence | Factor contributions | `candidates[].factors[]` |
+| Decision identity | Collision-safe, timestamp-independent digest | `decisionFingerprint` |
+| Candidate evidence | Strategy-model factor contributions | `candidates[].factors[]` |
 | Dominant-factor analysis | Per-candidate dominant rows | `dominantFactors.candidates[]` |
 | Selected-vs-alternative analysis | Decision delta and factor deltas | `decisionDelta` |
 | Counterfactual analysis | ±10% arithmetic projections | `counterfactualWeightScenarios[]` |
@@ -125,8 +126,10 @@ The current reviewer vocabulary maps directly to the compact JSON fields:
 Each `counterfactualWeightScenarios` row scales one returned selected/alternative factor contribution by -10% or
 +10%, reports the adjusted contribution delta, and—when the returned final score gap is finite—reports an arithmetic
 projected score gap. It does not rerun the strategy or claim that the projection would change a real selection.
-Per-strategy factor-model correctness remains a separate tracked correction; this v2 consolidation does not upgrade
-that evidence boundary. The endpoint and page remain read-only and simulation-only and do not persist storage, export
+Factor contributions now come from each strategy's returned comparison model: WRR exposes effective routing weight,
+weighted least-load and weighted least-connections expose their additive formula terms, tail-latency power-of-two
+exposes its sampled candidates and calculator breakdown, and round-robin remains positional with no invented additive
+score. This proves reconciliation for the bounded comparison response only. The endpoint and page remain read-only and simulation-only and do not persist storage, export
 evidence, execute replay, generate evidence packets, call external systems, mutate routing, or prove production
 readiness, live-cloud behavior, real-tenant behavior, load/stress behavior, or throughput/p95/p99 behavior.
 
@@ -172,4 +175,4 @@ Structured API errors expose `status`, `error`, `message`, `path`, `timestamp`, 
 ## Generated-Client Compatibility
 
 This repository does not currently include a generated-client build pipeline. Compatibility confidence comes from the OpenAPI path/schema assertions plus representative JSON shape checks. If a future client generator is introduced, keep it lightweight and run it as a contract validation lane without changing release automation or publishing generated artifacts.
-`POST /api/routing/compare` remains read-only and recommendation-only. Its result objects expose `decisionVector`, `dominantFactorAnalysis`, and `decisionDeltaAnalysis`; the former replay restatement fields are retired. These fields are derived from controlled local compare evidence; they do not execute replay, perform what-if mutation, persist audit data, recompute scores, retune weights, change routing behavior, or add upload/share/download or server-side export behavior.
+`POST /api/routing/compare` remains read-only and recommendation-only. Its result objects expose `decisionFingerprint`, `decisionVector`, `dominantFactorAnalysis`, and `decisionDeltaAnalysis`; the former replay restatement fields are retired. These fields are derived from controlled local compare evidence; they do not execute replay, perform what-if mutation, persist audit data, recompute scores, retune weights, change routing behavior, or add upload/share/download or server-side export behavior.

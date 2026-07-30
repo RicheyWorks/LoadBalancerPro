@@ -205,7 +205,7 @@
       "dependencies": ["L-1.2", "P-0.3"],
       "riskClass": "CORRECTNESS",
       "verificationProfile": "java-full",
-      "currentState": "Started from exact green main eb521467ba17f09fcb5f2ee3b2683a20958af6fd on codex/l-1-3-explainability-correctness. Post-L-1.2 strategy scoring, state and tie-break paths, and any retained fingerprint builders must be reconciled before changing behavior. WRR factor reconciliation, identical-request selected-candidate and fingerprint determinism, and delimiter collision resistance remain unproven."
+      "currentState": "The exact-base candidate on codex/l-1-3-explainability-correctness is locally green. Each strategy now returns factor evidence from its own bounded comparison model; round-robin remains positional without invented factors; tail sampling uses a canonical request-derived seed; the timestamp-independent sha256:v1 fingerprint uses count-delimited, length-prefixed fields. WRR reconciliation, twenty repeated five-strategy requests, and the a,b versus a plus b collision case pass. Focused and adjacent checks plus the 3,054-test clean package, artifact, 144-component SBOM, packaged-smoke, browser, and safety audits passed. Exact published-head remote gates and merge/main closure remain pending."
     },
     {
       "ordinal": 15,

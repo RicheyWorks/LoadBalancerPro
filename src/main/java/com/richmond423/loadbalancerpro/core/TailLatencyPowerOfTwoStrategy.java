@@ -38,7 +38,17 @@ public final class TailLatencyPowerOfTwoStrategy implements RoutingStrategy {
 
     @Override
     public RoutingDecision choose(List<ServerStateVector> servers) {
+        return chooseWithRandom(servers, random);
+    }
+
+    @Override
+    public RoutingDecision chooseForComparison(List<ServerStateVector> servers, long deterministicSeed) {
+        return chooseWithRandom(servers, new Random(deterministicSeed));
+    }
+
+    private RoutingDecision chooseWithRandom(List<ServerStateVector> servers, Random selectionRandom) {
         Objects.requireNonNull(servers, "servers cannot be null");
+        Objects.requireNonNull(selectionRandom, "selectionRandom cannot be null");
         List<ServerStateVector> eligible = servers.stream()
                 .filter(Objects::nonNull)
                 .filter(ServerStateVector::healthy)
@@ -47,7 +57,7 @@ public final class TailLatencyPowerOfTwoStrategy implements RoutingStrategy {
             return noCandidateDecision("No healthy eligible servers were available.");
         }
 
-        List<ServerStateVector> candidates = sampleCandidates(eligible);
+        List<ServerStateVector> candidates = sampleCandidates(eligible, selectionRandom);
         Map<String, ServerScoreBreakdown> breakdowns = scoreCandidateBreakdowns(candidates);
         Map<String, Double> scores = scoresFromBreakdowns(breakdowns);
         CandidateSelection selection = selectCandidate(candidates, scores);
@@ -59,6 +69,7 @@ public final class TailLatencyPowerOfTwoStrategy implements RoutingStrategy {
                 candidates.stream().map(ServerStateVector::serverId).toList(),
                 Optional.of(chosen.serverId()),
                 scores,
+                factorContributionsFromBreakdowns(breakdowns),
                 reason,
                 Instant.now(clock));
         return new RoutingDecision(Optional.of(chosen), explanation);
@@ -70,12 +81,13 @@ public final class TailLatencyPowerOfTwoStrategy implements RoutingStrategy {
         return new RoutingDecision(Optional.empty(), explanation);
     }
 
-    private List<ServerStateVector> sampleCandidates(List<ServerStateVector> eligible) {
+    private List<ServerStateVector> sampleCandidates(
+            List<ServerStateVector> eligible, Random selectionRandom) {
         if (eligible.size() <= 2) {
             return List.copyOf(eligible);
         }
-        int firstIndex = random.nextInt(eligible.size());
-        int secondIndex = random.nextInt(eligible.size() - 1);
+        int firstIndex = selectionRandom.nextInt(eligible.size());
+        int secondIndex = selectionRandom.nextInt(eligible.size() - 1);
         if (secondIndex >= firstIndex) {
             secondIndex++;
         }
@@ -96,6 +108,14 @@ public final class TailLatencyPowerOfTwoStrategy implements RoutingStrategy {
             scores.put(entry.getKey(), entry.getValue().totalScore());
         }
         return scores;
+    }
+
+    private Map<String, List<ScoreFactorContribution>> factorContributionsFromBreakdowns(
+            Map<String, ServerScoreBreakdown> breakdowns) {
+        Map<String, List<ScoreFactorContribution>> contributions = new LinkedHashMap<>();
+        breakdowns.forEach((candidateId, breakdown) ->
+                contributions.put(candidateId, breakdown.factorContributions()));
+        return contributions;
     }
 
     private CandidateSelection selectCandidate(List<ServerStateVector> candidates, Map<String, Double> scores) {

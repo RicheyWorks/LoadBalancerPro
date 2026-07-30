@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Test;
 
 class RoutingExplanationServiceTest {
     private static final long LEGACY_DECISION_EXPLORER_BYTES = 7_784_535L;
+    private static final String DECISION_FINGERPRINT =
+            "sha256:v1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     private static final Path GOLDEN =
             Path.of("src/test/resources/api/routing-explanation-v2-golden.json");
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -36,6 +38,7 @@ class RoutingExplanationServiceTest {
 
         assertEquals("TAIL_LATENCY_POWER_OF_TWO", explanation.strategyId());
         assertEquals("edge-a", explanation.selectedCandidateId());
+        assertEquals(DECISION_FINGERPRINT, explanation.decisionFingerprint());
         assertEquals(List.of("edge-a", "edge-b"),
                 explanation.candidates().stream().map(RoutingExplanation.CandidateFactors::candidateId).toList());
         assertEquals(List.of("errors", "latency"),
@@ -92,7 +95,7 @@ class RoutingExplanationServiceTest {
                 "not implemented", "not implemented", "not implemented");
         RoutingExplanation explanation = service.explain(new RoutingComparisonResultResponse(
                 "ROUND_ROBIN", "SUCCESS", "edge-a", "selected", List.of("edge-a", "edge-b"),
-                Map.of("edge-a", 1.0, "edge-b", 2.0), vector,
+                Map.of("edge-a", 1.0, "edge-b", 2.0), DECISION_FINGERPRINT, vector,
                 new RoutingDominantFactorAnalysisService().analyze(vector),
                 new RoutingDecisionDeltaAnalysisService().analyze(
                         vector, Map.of("edge-a", 1.0, "edge-b", 2.0))));
@@ -104,9 +107,10 @@ class RoutingExplanationServiceTest {
     void missingEvidenceStaysUnknownAndDoesNotInventCounterfactualRows() {
         RoutingExplanation explanation = service.explain(new RoutingComparisonResultResponse(
                 "ROUND_ROBIN", "FAILED", null, "no decision", List.of(), Map.of(),
-                null, null, null));
+                null, null, null, null));
 
         assertEquals("UNKNOWN", explanation.selectedCandidateId());
+        assertEquals("UNKNOWN", explanation.decisionFingerprint());
         assertTrue(explanation.candidates().isEmpty());
         assertEquals("UNKNOWN", explanation.dominantFactors().status());
         assertEquals("UNKNOWN", explanation.decisionDelta().status());
@@ -144,6 +148,7 @@ class RoutingExplanationServiceTest {
                 "selected",
                 List.of("edge-a", "edge-b"),
                 Map.of("edge-a", 100.0, "edge-b", 120.0),
+                DECISION_FINGERPRINT,
                 vector,
                 dominant,
                 delta);

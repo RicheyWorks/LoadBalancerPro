@@ -15,6 +15,7 @@ public record RoutingExplanation(
         String strategyId,
         String status,
         String selectedCandidateId,
+        String decisionFingerprint,
         List<CandidateFactors> candidates,
         DominantFactors dominantFactors,
         DecisionDelta decisionDelta,

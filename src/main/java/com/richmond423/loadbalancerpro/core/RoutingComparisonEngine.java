@@ -51,7 +51,8 @@ public final class RoutingComparisonEngine {
                                                          RoutingStrategy strategy,
                                                          List<ServerStateVector> candidates) {
         try {
-            RoutingDecision decision = strategy.choose(candidates);
+            long deterministicSeed = RoutingComparisonDeterminism.seed(strategyId, candidates);
+            RoutingDecision decision = strategy.chooseForComparison(candidates, deterministicSeed);
             if (decision == null) {
                 return RoutingComparisonResult.failed(strategyId,
                         "Routing strategy returned no decision: " + strategyId);

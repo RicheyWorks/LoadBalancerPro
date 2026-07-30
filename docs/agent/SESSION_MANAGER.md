@@ -6,6 +6,78 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 14 Local-Green Checkpoint
+
+Timestamp: 2026-07-30T10:28:57-07:00
+
+Current slot: `L-1.3`, correct and determinize explainability.
+
+Branch: `codex/l-1-3-explainability-correctness`; status: `IN_PROGRESS`; exact green base:
+`eb521467ba17f09fcb5f2ee3b2683a20958af6fd`. The current head before the local-green implementation commit is the
+published branch-start checkpoint `89eb124dbc048d547101657dfce56018612f3bf0`; the exact implementation head remains
+pending until this checkpoint and the complete candidate are committed.
+
+Implemented:
+
+- the retained routing explanation now carries immutable per-candidate factor contributions emitted by the strategy
+  that selected the candidate. Weighted least-load exposes its five additive formula terms, weighted
+  least-connections exposes connection pressure divided by effective routing weight, weighted round-robin exposes
+  effective routing weight, tail-latency power-of-two exposes its sampled calculator breakdown, and round-robin
+  remains positional with empty scores/factors;
+- tail-latency comparison sampling derives its `Random` seed from a canonical encoding of the strategy and complete
+  request candidate state. Default per-request strategy factories preserve identical-request round-robin and
+  weighted-round-robin selection while stateful scenario registries retain their intentional multi-iteration
+  progression;
+- each successful comparison returns a timestamp-independent `sha256:v1:` decision fingerprint over framed strategy,
+  selection, candidate, score, and factor fields. Counts plus UTF-8 length prefixes prevent the `a,b` versus `a` and
+  `b` collision; the digest is an advisory local comparison identity, not a signature or persistent audit record;
+- the compact Decision Explorer API/UI exposes and copies the fingerprint. Tail candidate vectors are limited to the
+  sampled pair, strategy-specific exactness boundaries replace generic calculator claims, and the page has no
+  horizontal overflow at the reviewed desktop viewport.
+
+Verified:
+
+- focused core, API, golden-contract, OpenAPI, response-cap, compact-explanation, static-page, and L-1.3 acceptance
+  selectors passed. The acceptance test reconciles every returned score for the four additive/scored strategies,
+  preserves positional round-robin, repeats the five-strategy request twenty times, and proves both collision
+  resistance and timestamp exclusion;
+- authoritative `mvn -q clean package` passed 3,054 tests across 413 fresh reports with zero failures, errors, skips,
+  or dump files. `target/LoadBalancerPro-2.5.0.jar` is 95,020,417 bytes with SHA-256
+  `64C72E7227289936C1A97BAFCC7D8DCE39C5802C8DCA036B13D0D036BBB358AC`;
+- the embedded Tomcat dependency tree resolved 10.1.55; the local artifact verifier passed; CycloneDX 1.6 JSON/XML
+  each validated 144 components and 145 dependency rows; packaged LASE healthy/overloaded/invalid exits were 0/0/2
+  without Spring startup; the adaptive experiment and ten-scenario Enterprise Lab shadow workflow passed;
+- the release-free packaged-JAR HTTP smoke passed health, static status, and proxy status. The operator-profile smoke
+  passed local health/root, API-key 401/200, two literal-loopback backend checks, actual proxy forwarding, and proxy
+  status. Its known Windows job-host teardown stall was bounded to the exact wrapper/children; stderr remained empty,
+  all explicit ports were released, and no workspace packaged-application Java process remained;
+- bounded browser review rendered and copied the fingerprint, repeated requests showed the same fingerprint, console
+  errors/warnings were empty, and final page width equaled viewport width after the subpanel containment correction.
+  `git diff --check` and the pre-checkpoint artifact/scope inventory passed.
+
+Failures/recovery: an inherited incomplete API-key setting correctly failed closed during the first browser launch;
+the full suite caught a stale test-only response-size fixture; the first clean candidate caught over-broad
+round-robin state isolation that broke scenario progression; and the operator-profile script repeated its known
+Windows job-teardown stall after every product assertion passed. Each recovery and exact boundary is recorded
+newest-first in `FAILURE_LOG.md`.
+
+Scope/safety: the candidate changes the bounded synthetic comparison/explanation path and its UI/API contract only.
+It changes no credential/default, authorization, external/public/private target, cloud/tenant call, live proxy route,
+production routing state, persistence, replay execution, telemetry, dependency, Maven/workflow, Docker/Compose,
+deployment, release, tag, secret, or broader automation. Stateful live and scenario strategy behavior is retained.
+
+Remaining not proven: production readiness/certification, live-cloud or real-tenant validation, public/external
+traffic, persistent audit identity, cryptographic signature/authenticity, production scoring correctness,
+throughput/p95/p99, load/stress/soak behavior, distributed determinism, and broader automation remain unproven.
+
+Blocker: none locally.
+
+Next action: rerun the L-1.3 acceptance/campaign guards and diff/safety audit on this checkpoint, commit and publish
+the complete exact-base candidate, open one PR, then require every exact-head remote gate before full-diff
+self-review and merge.
+
+Decision: continue only `L-1.3`; no later slot is active.
+
 ## Combined Build Plan Slot 13 Main-Green / Slot 14 Start
 
 Timestamp: 2026-07-30T09:28:37-07:00

@@ -3,6 +3,7 @@ package com.richmond423.loadbalancerpro.api;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,9 +19,9 @@ import com.richmond423.loadbalancerpro.core.RoutingComparisonReport;
 import com.richmond423.loadbalancerpro.core.RoutingComparisonResult;
 import com.richmond423.loadbalancerpro.core.RoutingDecision;
 import com.richmond423.loadbalancerpro.core.RoutingDecisionExplanation;
+import com.richmond423.loadbalancerpro.core.RoutingDecisionFingerprint;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyId;
 import com.richmond423.loadbalancerpro.core.RoutingStrategyRegistry;
-import com.richmond423.loadbalancerpro.core.ServerScoreCalculator;
 import com.richmond423.loadbalancerpro.core.ServerStateVector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,8 +32,8 @@ public class RoutingComparisonService {
     private static final String DECISION_ID_NOT_EXPOSED =
             "not exposed by this read-only local lab response";
     private static final String FACTOR_CONTRIBUTION_AVAILABILITY =
-            "exposed for current ServerScoreCalculator components through read-only controlled lab response data; "
-                    + "hidden scoring is not inferred and exact production scoring is not claimed.";
+            "exposed from each strategy's returned comparison score model through read-only controlled lab "
+                    + "response data; hidden scoring is not inferred and exact production scoring is not claimed.";
     private static final String REPLAY_READINESS =
             "future/not implemented; read-only Decision Vector exposure does not execute replay.";
     private static final String WHAT_IF_READINESS =
@@ -42,7 +43,6 @@ public class RoutingComparisonService {
 
     private final RoutingStrategyRegistry registry;
     private final RoutingComparisonEngine engine;
-    private final ServerScoreCalculator scoreCalculator;
     private final RoutingDominantFactorAnalysisService dominantFactorAnalysisService;
     private final RoutingDecisionDeltaAnalysisService decisionDeltaAnalysisService;
     private final RoutingApiLimitsProperties limits;
@@ -64,7 +64,6 @@ public class RoutingComparisonService {
         this.clock = clock;
         this.limits = limits;
         this.engine = new RoutingComparisonEngine(registry, clock);
-        this.scoreCalculator = new ServerScoreCalculator();
         this.dominantFactorAnalysisService = new RoutingDominantFactorAnalysisService();
         this.decisionDeltaAnalysisService = new RoutingDecisionDeltaAnalysisService();
     }
@@ -212,6 +211,7 @@ public class RoutingComparisonService {
                 List.of(),
                 Map.of(),
                 null,
+                null,
                 dominantFactorAnalysis,
                 decisionDeltaAnalysis);
     }
@@ -220,7 +220,8 @@ public class RoutingComparisonService {
             RoutingComparisonResult result, RoutingDecision decision, List<ServerStateVector> candidates) {
         RoutingDecisionExplanation explanation = decision.explanation();
         String selectedServerId = explanation.chosenServerId().orElse(null);
-        RoutingDecisionVectorResponse decisionVector = decisionVector(result.strategyId(), selectedServerId, candidates);
+        RoutingDecisionVectorResponse decisionVector =
+                decisionVector(result.strategyId(), selectedServerId, candidates, explanation);
         DominantFactorAnalysisResponse dominantFactorAnalysis = dominantFactorAnalysisService.analyze(decisionVector);
         RoutingDecisionDeltaAnalysisResponse decisionDeltaAnalysis =
                 decisionDeltaAnalysisService.analyze(decisionVector, explanation.scores());
@@ -231,6 +232,7 @@ public class RoutingComparisonService {
                 result.reason(),
                 explanation.candidateServersConsidered(),
                 explanation.scores(),
+                RoutingDecisionFingerprint.from(explanation),
                 decisionVector,
                 dominantFactorAnalysis,
                 decisionDeltaAnalysis);
@@ -238,15 +240,19 @@ public class RoutingComparisonService {
 
     private RoutingDecisionVectorResponse decisionVector(RoutingStrategyId strategyId,
                                                         String selectedServerId,
-                                                        List<ServerStateVector> candidates) {
+                                                        List<ServerStateVector> candidates,
+                                                        RoutingDecisionExplanation explanation) {
         if (selectedServerId == null || selectedServerId.isBlank()) {
             return null;
         }
+        List<ServerStateVector> consideredCandidates =
+                consideredCandidates(candidates, explanation.candidateServersConsidered());
         List<CandidateFactorContributionSummary> summaries = CandidateFactorContributionSummary.fromCandidates(
-                candidates,
+                consideredCandidates,
                 selectedServerId,
-                scoreCalculator,
-                explanationNotes(strategyId, selectedServerId, candidates));
+                explanation.factorContributions(),
+                explanationNotes(strategyId, selectedServerId, consideredCandidates),
+                factorExactnessBoundary(strategyId));
         List<CandidateDecisionVectorResponse> candidateVectors = summaries.stream()
                 .map(CandidateDecisionVectorResponse::from)
                 .toList();
@@ -274,7 +280,7 @@ public class RoutingComparisonService {
                 DECISION_ID_NOT_EXPOSED,
                 strategyId.externalName(),
                 selectedServerId,
-                candidates.size(),
+                consideredCandidates.size(),
                 candidateVectors,
                 selectedCandidate,
                 nonSelectedCandidates,
@@ -297,8 +303,8 @@ public class RoutingComparisonService {
         for (ServerStateVector candidate : candidates) {
             if (candidate.serverId().equals(selectedServerId)) {
                 notes.put(candidate.serverId(), "Selected by " + strategyId.externalName()
-                        + "; factor contributions expose current calculator components for controlled lab review "
-                        + "without changing routing behavior or claiming exact production scoring.");
+                        + "; factor contributions expose that strategy's returned comparison model for controlled "
+                        + "lab review without changing routing behavior or claiming production scoring proof.");
             } else if (!candidate.healthy()) {
                 notes.put(candidate.serverId(), "Non-selected candidate; visible unhealthy state cautions against "
                         + "selection, and hidden scoring is not inferred.");
@@ -308,6 +314,34 @@ public class RoutingComparisonService {
             }
         }
         return notes;
+    }
+
+    private List<ServerStateVector> consideredCandidates(
+            List<ServerStateVector> candidates, List<String> consideredCandidateIds) {
+        Map<String, ServerStateVector> candidatesById = new LinkedHashMap<>();
+        for (ServerStateVector candidate : candidates) {
+            candidatesById.put(candidate.serverId(), candidate);
+        }
+        List<ServerStateVector> considered = new ArrayList<>();
+        for (String candidateId : consideredCandidateIds) {
+            ServerStateVector candidate = candidatesById.get(candidateId);
+            if (candidate == null) {
+                throw new IllegalStateException(
+                        "strategy returned an unknown considered candidate: " + candidateId);
+            }
+            considered.add(candidate);
+        }
+        return List.copyOf(considered);
+    }
+
+    private String factorExactnessBoundary(RoutingStrategyId strategyId) {
+        if (strategyId == RoutingStrategyId.ROUND_ROBIN) {
+            return "ROUND_ROBIN has no additive score model; factor contributions are intentionally empty, "
+                    + "and the returned candidate order plus selected position are the available explanation.";
+        }
+        return "Factor contributions are emitted by " + strategyId.externalName()
+                + "'s own comparison selection model and reconcile with its returned candidate score. "
+                + "This is exact for the bounded read-only comparison only, not production scoring proof.";
     }
 
     private static void validateLatencyOrdering(double averageLatencyMillis,

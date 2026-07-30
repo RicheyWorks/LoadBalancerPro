@@ -46,6 +46,7 @@ class DecisionExplorerStaticPageTest {
 
         for (String expected : List.of(
                 "Decision summary",
+                "Decision fingerprint",
                 "Candidate factor contributions",
                 "Dominant + delta analysis",
                 "Dominant factors",
@@ -89,6 +90,7 @@ class DecisionExplorerStaticPageTest {
         assertTrue(page.contains("fetch(DECISION_EXPLORER_SCENARIOS_ENDPOINT"));
         assertTrue(page.contains("textContent"));
         assertTrue(page.contains("createElement"));
+        assertTrue(page.contains(".subpanel { min-width: 0;"));
         assertFalse(page.contains("innerHTML"));
         assertFalse(page.contains("localStorage"));
         assertFalse(page.contains("sessionStorage"));

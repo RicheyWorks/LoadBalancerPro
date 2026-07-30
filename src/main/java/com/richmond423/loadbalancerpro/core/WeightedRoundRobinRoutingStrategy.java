@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -70,6 +71,7 @@ public final class WeightedRoundRobinRoutingStrategy implements RoutingStrategy 
                 eligible.stream().map(ServerStateVector::serverId).toList(),
                 Optional.of(chosen.serverId()),
                 effectiveWeights,
+                factorContributions(eligible, effectiveWeights),
                 reasonForChoice(chosen, eligible.size(), effectiveWeights, totalWeight),
                 Instant.now(clock));
         return new RoutingDecision(Optional.of(chosen), explanation);
@@ -98,6 +100,30 @@ public final class WeightedRoundRobinRoutingStrategy implements RoutingStrategy 
 
     private double effectiveWeight(double weight) {
         return weight;
+    }
+
+    private Map<String, List<ScoreFactorContribution>> factorContributions(
+            List<ServerStateVector> candidates, Map<String, Double> effectiveWeights) {
+        Map<String, List<ScoreFactorContribution>> contributions = new LinkedHashMap<>();
+        for (ServerStateVector candidate : candidates) {
+            double effectiveRoutingWeight = effectiveWeights.get(candidate.serverId());
+            ScoreFactorContribution contribution = new ScoreFactorContribution(
+                    "effectiveRoutingWeight",
+                    "configuredRoutingWeight=" + formatWeight(candidate.weight()),
+                    "smooth weighted round-robin adds the effective routing weight each selection cycle",
+                    ScoreFactorDirection.SUPPORTS_SELECTION,
+                    "contribution = effectiveRoutingWeight = "
+                            + formatWeight(effectiveRoutingWeight),
+                    OptionalDouble.of(effectiveRoutingWeight),
+                    ScoreFactorExactness.EXACT_FROM_STRATEGY_MODEL,
+                    "On a fresh comparison strategy instance, the candidate with the highest accumulated "
+                            + "effective routing weight is selected; this contribution reconciles with the "
+                            + "returned effective-weight score.",
+                    "Exact for the fresh read-only comparison instance only; it does not expose or mutate "
+                            + "live route-cycle state.");
+            contributions.put(candidate.serverId(), List.of(contribution));
+        }
+        return contributions;
     }
 
     private String reasonForChoice(ServerStateVector chosen,

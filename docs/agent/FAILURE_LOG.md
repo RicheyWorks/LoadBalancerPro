@@ -6,6 +6,96 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-30T10:28:57-07:00
+
+Branch/PR: codex/l-1-3-explainability-correctness / no PR yet
+
+Failure type: successful operator-profile smoke again blocked in Windows background-job teardown
+
+Failing check: normal completion and port release after
+`scripts/smoke/operator-run-profiles-smoke.ps1 -SkipPackage` on explicit alternate loopback ports
+
+Observed/root cause: the captured output proves every local-demo, API-key 401/200, loopback-backend health,
+proxy-forwarding, and proxy-status assertion passed, and all three packaged application processes stopped. The
+PowerShell script then blocked in its known `Stop-Job` tail because both child `HttpListener.GetContext()` calls
+remained synchronous; the two HTTP.sys loopback registrations outlived the wrapper.
+
+Correction/result: terminate only the exact smoke wrapper and its two verified child job hosts, then confirm all five
+explicit loopback ports are released, stderr is empty, and no workspace packaged-application Java process remains.
+No product code, external target, cloud/tenant system, credential, or unrelated process was involved.
+
+Follow-up: retain the successful bounded profile assertions as local evidence, record the cleanup limitation, and
+continue only after the exact-process and port audit is clean.
+
+## Entry
+
+Date/time: 2026-07-30T10:11:13-07:00
+
+Branch/PR: codex/l-1-3-explainability-correctness / no PR yet
+
+Failure type: clean candidate gate caught over-broad state isolation in the shared comparison engine
+
+Failing check: `mvn -q clean package`; 3,055 tests across 413 reports completed with three failures, zero errors,
+and zero skips in `AdaptiveRoutingScenarioDrilldownTest`, `AdaptiveRoutingScenarioRunnerTest`, and
+`CoreRoutingDecisionIntegrationTest`
+
+Observed/root cause: comparison-only overrides added to round-robin and weighted round-robin always constructed a
+fresh strategy. That made the public `/compare` result deterministic, but it also erased intentional cursor
+progression when the shared `RoutingComparisonEngine` is supplied a stateful registry for multi-iteration synthetic
+scenario runs. Round-robin selected the first candidate on every iteration instead of rotating.
+
+Correction/result: remove the two over-broad strategy overrides and the new shared-registry statelessness test.
+Retain endpoint determinism through the default registry's per-request factories, which was delivered by P-0.3 and
+is covered by repeated five-strategy `RoutingComparisonService` tests. Tail sampling remains request-seeded through
+its comparison-only override.
+
+Follow-up: rerun the three failed selectors plus the L-1.3 acceptance selector, then repeat the clean package gate
+and accept only zero failures/errors/skips.
+
+## Entry
+
+Date/time: 2026-07-30T10:03:48-07:00
+
+Branch/PR: codex/l-1-3-explainability-correctness / no PR yet
+
+Failure type: full-suite response-size guard fixture no longer exceeded its test-only ceiling
+
+Failing check: `mvn -q test`; 3,054 tests across 413 reports completed with one failure, zero errors, and zero
+skips in `RoutingExplorerSizeLimitTest.decisionExplorerResponseGuardRejectsOversizedGeneratedPayload`
+
+Observed/root cause: the one-candidate round-robin Decision Explorer response fell below the test's 1,024-byte
+ceiling after L-1.3 correctly removed the generic `ServerScoreCalculator` factor rows from round-robin. The endpoint
+returned HTTP 200, so the test no longer exercised the response-size rejection path. No production limit or response
+guard failed.
+
+Correction/result: lower only this test context's configured Decision Explorer ceiling to 512 bytes and update the
+expected error text. Keep the production 16 MiB default and 64 MiB hard maximum unchanged.
+
+Follow-up: rerun the response-size selector, then require the single full clean package on the intended candidate to
+finish with zero failures/errors/skips.
+
+## Entry
+
+Date/time: 2026-07-30T09:56:37-07:00
+
+Branch/PR: codex/l-1-3-explainability-correctness / no PR yet
+
+Failure type: bounded local browser-QA application start refused unsafe incomplete authentication configuration
+
+Failing check: hidden local `spring-boot:run` launch on loopback port 18080
+
+Observed/root cause: the inherited environment selected `loadbalancerpro.auth.mode=api-key` without providing
+`loadbalancerpro.api.key`. The startup validator failed closed before the application opened a listener. No secret,
+external target, cloud/tenant path, proxy traffic, or repository behavior changed.
+
+Correction/result: relaunch only for bounded loopback browser QA with the explicit documented
+`loadbalancerpro.auth.mode=none` local-development setting and retain the production/default startup guard unchanged.
+
+Follow-up: require the local health route, Decision Explorer fingerprint rendering, repeated-request determinism,
+and post-QA process/port cleanup before accepting browser evidence.
+
+## Entry
+
 Date/time: 2026-07-30T08:59:05-07:00
 
 Branch/PR: codex/l-1-2-collapse-explainability / no PR yet

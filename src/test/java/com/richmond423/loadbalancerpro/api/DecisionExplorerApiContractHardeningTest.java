@@ -87,6 +87,7 @@ class DecisionExplorerApiContractHardeningTest {
                         "strategyId",
                         "status",
                         "selectedCandidateId",
+                        "decisionFingerprint",
                         "candidates",
                         "dominantFactors",
                         "decisionDelta",
@@ -98,6 +99,7 @@ class DecisionExplorerApiContractHardeningTest {
         assertEquals("v2", payload.path("contractVersion").asText());
         assertEquals("TAIL_LATENCY_POWER_OF_TWO", payload.path("strategyId").asText());
         assertEquals("green", payload.path("selectedCandidateId").asText());
+        assertTrue(payload.path("decisionFingerprint").asText().matches("sha256:v1:[0-9a-f]{64}"));
         assertEquals(2, payload.path("candidates").size());
         assertTrue(payload.path("candidates").get(0).path("factors").isArray());
         assertEquals("AVAILABLE", payload.at("/dominantFactors/status").asText());

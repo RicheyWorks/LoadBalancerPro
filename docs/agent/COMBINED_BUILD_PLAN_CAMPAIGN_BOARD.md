@@ -19,7 +19,10 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   `eb521467ba17f09fcb5f2ee3b2683a20958af6fd`, exact-main 105-test focused checks, CI `30560861123`,
   and CodeQL `30560861146` green.
 - Active implementation slot: `L-1.3`; correct and determinize explainability on
-  `codex/l-1-3-explainability-correctness`.
+  `codex/l-1-3-explainability-correctness`. The candidate is locally green: each strategy now returns its own
+  bounded comparison factors, identical compare requests retain the same selection and fingerprint, delimiter-shaped
+  identifiers are framed safely, and the 3,054-test clean package plus artifact, SBOM, packaged-smoke, browser,
+  safety, and campaign-preflight gates passed before publication.
 - Next implementation slot after the active gate: `L-1.4`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

@@ -62,6 +62,7 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertEquals("TAIL_LATENCY_POWER_OF_TWO", result.path("strategyId").asText());
         assertEquals("SUCCESS", result.path("status").asText());
         assertEquals("edge-alpha", result.path("chosenServerId").asText());
+        assertTrue(result.path("decisionFingerprint").asText().matches("sha256:v1:[0-9a-f]{64}"));
         assertTrue(result.path("scores").has("edge-alpha"));
         DELETED_RESULT_FIELDS.forEach(field -> assertFalse(result.has(field), field));
 
@@ -69,7 +70,11 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(vector.path("readOnly").asBoolean());
         assertEquals("/api/routing/compare", vector.path("localLabResponsePath").asText());
         assertEquals("edge-alpha", vector.path("selectedBackend").asText());
-        assertEquals(3, vector.path("candidateCount").asInt());
+        assertEquals(2, vector.path("candidateCount").asInt());
+        assertEquals(result.at("/candidateServersConsidered/0").asText(),
+                vector.at("/candidateSummaries/0/candidateId").asText());
+        assertEquals(result.at("/candidateServersConsidered/1").asText(),
+                vector.at("/candidateSummaries/1/candidateId").asText());
         assertEquals("edge-alpha", vector.at("/selectedCandidateVector/candidateId").asText());
         assertTrue(vector.at("/selectedCandidateVector/factorContributions").isArray());
 

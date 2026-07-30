@@ -78,6 +78,7 @@ class RoutingOpenApiContractTest {
                 "reason",
                 "candidateServersConsidered",
                 "scores",
+                "decisionFingerprint",
                 "decisionVector",
                 "dominantFactorAnalysis",
                 "decisionDeltaAnalysis")) {

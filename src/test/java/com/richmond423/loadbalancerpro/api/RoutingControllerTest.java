@@ -83,6 +83,8 @@ class RoutingControllerTest {
                     .andExpect(jsonPath("$.results[0].strategyId", is("TAIL_LATENCY_POWER_OF_TWO")))
                     .andExpect(jsonPath("$.results[0].status", is("SUCCESS")))
                     .andExpect(jsonPath("$.results[0].chosenServerId", is("green")))
+                    .andExpect(jsonPath("$.results[0].decisionFingerprint",
+                            org.hamcrest.Matchers.matchesPattern("sha256:v1:[0-9a-f]{64}")))
                     .andExpect(jsonPath("$.results[0].reason", containsString("Chose green")))
                     .andExpect(jsonPath("$.results[0].candidateServersConsidered[0]", is("green")))
                     .andExpect(jsonPath("$.results[0].candidateServersConsidered[1]", is("blue")))
@@ -107,6 +109,8 @@ class RoutingControllerTest {
                     .andExpect(jsonPath("$[0].contractVersion", is("v2")))
                     .andExpect(jsonPath("$[0].strategyId", is("TAIL_LATENCY_POWER_OF_TWO")))
                     .andExpect(jsonPath("$[0].selectedCandidateId", is("green")))
+                    .andExpect(jsonPath("$[0].decisionFingerprint",
+                            org.hamcrest.Matchers.matchesPattern("sha256:v1:[0-9a-f]{64}")))
                     .andExpect(jsonPath("$[0].candidates[0].candidateId", is("blue")))
                     .andExpect(jsonPath("$[0].candidates[1].candidateId", is("green")))
                     .andExpect(jsonPath("$[0].candidates[1].selected", is(true)))

@@ -6,6 +6,60 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 7 Start Checkpoint
+
+Timestamp: 2026-07-29T20:35:18-07:00
+
+Current slot: `L-0.2`, cap explorer candidate, strategy, and response sizes.
+
+Current branch: `codex/l-0-2-explorer-size-caps`.
+
+Slot status: `IN_PROGRESS`.
+
+Verified base: `7f360c83a49b2629de3bbb56b6094118a8878f1b`, the exact PR #503 merge commit and current
+`origin/main`.
+
+Previous slot closeout:
+
+- P-0.6 final head `c53ffb52ef661d87cc1636fcb8b766eaff357c6f` passed push CI `30510683750`, PR CI
+  `30510686941`, CodeQL `30510686932`, dependency review, both package reruns, SBOM, packaged smokes,
+  Docker/runtime, container evidence, and blocking image scan;
+- PR #503 merged as `7f360c83a49b2629de3bbb56b6094118a8878f1b`;
+- the exact merge passed focused simulation-core, health-lifecycle, hashing, load-distribution, load-shedding, server,
+  and campaign guards;
+- post-merge `mvn -B package` passed 3,449 tests across 485 fresh reports with zero failures, errors, or skips and
+  no Surefire dumps;
+- exact-main CI `30511133011` and CodeQL `30511133001` passed, including package rerun, SBOM, packaged smokes,
+  Docker/runtime, container evidence, and blocking image scan.
+
+P-0.6 is `MAIN_GREEN`, completing 6 of 49 implementation slots.
+
+L-0.2 build contract: re-audit and, where still applicable, place a bounded configurable maximum on submitted
+server/candidate lists, enforce a hard strategies-per-request cap, reject over-cap input with HTTP 400 before
+building comparison/explorer payloads, and apply a decision-explorer response-size guard. The imported large-N
+acceptance requires 100 candidates with five strategies to fail boundedly rather than amplify into a large response.
+Preserve current security defaults and already-correct bounds; do not manufacture changes for defects current main
+has already closed.
+
+Source: `docs/BUILD_PLAN_LAB_SHADOW.md` PR-L0.2 and `docs/AUDIT_LAB_SHADOW_2026-07-21.md` E1.
+
+Prohibited surfaces: no auth/security-policy weakening, public/external target, secret, live cloud/tenant action,
+production deployment, CI/Maven/Docker/Compose change, unrelated proxy/routing behavior, unbounded evidence
+generation, or readiness/performance claim.
+
+Verification profile: `security-full` with exact large-N red acceptance, focused routing comparison/controller/
+decision-explorer validation selectors, adjacent authentication/exception-shape guards, full local Java/package/
+verify/artifact/SBOM/packaged-smoke ladder, complete diff/scope audit, and exact-head remote CI, CodeQL, dependency
+review, SBOM, Docker/runtime, container evidence, and blocking image scan.
+
+Blocker: none.
+
+Next action: inventory the exact current DTO, comparison, controller, explorer, configuration, validation, exception,
+and test surfaces; classify existing versus missing caps; then write deterministic failing acceptance only for live
+defects.
+
+Decision: continue only `L-0.2`; no later slot is active.
+
 ## Combined Build Plan Slot 6 Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T20:14:06-07:00

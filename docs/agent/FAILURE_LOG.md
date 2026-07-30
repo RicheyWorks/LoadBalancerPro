@@ -8796,3 +8796,13 @@ four positional arguments and returned `accepts at most 1 arg(s)`. No workflow w
 and no check result from the malformed invocation is accepted. Correction: query one confirmed run ID per command
 with only the bounded `status`, `conclusion`, and `jobs` JSON fields; the failure-log-only correction establishes a
 new head whose complete remote gate set must pass.
+
+# 2026-07-29 - L-0.2 explorer size-cap audit
+
+Branch: `codex/l-0-2-explorer-size-caps`
+
+First L-0.2 source lookup: branch creation succeeded from exact green main, but the subsequent read-only ripgrep
+passed `docs/BUILD_PLAN*` as a literal Windows path and also guessed the nonexistent directory
+`docs/audit-and-playground`. Ripgrep returned exit 1 after finding only the campaign-manifest references. No source
+or test was changed by the lookup. Correction: inventory confirmed files with `rg --files docs`, then search only
+the resolved source-plan paths using directory arguments plus `-g` filters where needed.

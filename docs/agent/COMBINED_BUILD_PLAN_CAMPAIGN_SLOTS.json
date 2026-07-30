@@ -105,11 +105,11 @@
       "sourceIds": ["P-0.6"],
       "track": "proxy",
       "title": "Apply the simulation-core correctness batch",
-      "status": "REMOTE_GREEN",
+      "status": "MAIN_GREEN",
       "dependencies": [],
       "riskClass": "CORRECTNESS",
       "verificationProfile": "java-full",
-      "currentState": "PR #503 head c5f9571995906e99a901eef48fb249dee659b501 passed push CI 30510194763, PR CI 30510197217, CodeQL 30510197214, dependency review, both package reruns, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan. GitHub reports CLEAN and mergeable; the remote-green checkpoint will establish the final candidate whose exact-head gates must repeat before merge."
+      "currentState": "PR #503 final head c53ffb52ef661d87cc1636fcb8b766eaff357c6f passed push CI 30510683750, PR CI 30510686941, CodeQL 30510686932, dependency review, both package reruns, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan, then merged as 7f360c83a49b2629de3bbb56b6094118a8878f1b. Exact-main focused and 3,449-test local package gates passed; CI 30511133011 and CodeQL 30511133001 passed, including package rerun, SBOM, packaged smokes, Docker/runtime, container evidence, and blocking image scan."
     },
     {
       "ordinal": 7,
@@ -117,11 +117,11 @@
       "sourceIds": ["L-0.2"],
       "track": "lab",
       "title": "Cap explorer candidate, strategy, and response sizes",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "SECURITY",
       "verificationProfile": "security-full",
-      "currentState": "Acceptance is unproven at campaign start; re-audit current main before implementation."
+      "currentState": "Started from exact green main 7f360c83a49b2629de3bbb56b6094118a8878f1b on branch codex/l-0-2-explorer-size-caps. The imported candidate, strategy, and decision-explorer response size-cap contract is under current-tree audit; no acceptance claim yet."
     },
     {
       "ordinal": 8,

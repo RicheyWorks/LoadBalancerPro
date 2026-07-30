@@ -6,6 +6,49 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 4 PR-Open Checkpoint
+
+Timestamp: 2026-07-29T18:09:39-07:00
+
+Current slot: `P-0.3`, create route-scoped routing-strategy instances.
+
+Current branch: `codex/p-0-3-route-scoped-strategy`.
+
+Slot status: `PR_OPEN`.
+
+Pull request: [#501](https://github.com/RicheyWorks/LoadBalancerPro/pull/501).
+
+Published head: `89ba1e459949c31a840d69e2e1176e4410f34836`.
+
+Verified base: `c04014892244dfc646406f2d8698592f254ddef3`, the exact corrective PR #500 merge commit
+and exact green `origin/main`.
+
+Local gate: fresh `mvn -B clean package` passed 3,437 tests across 483 reports with zero failures, errors, skips, or
+dumps. Focused route/registry/proxy/reload selectors, verify, JaCoCo, JAR resources, packaged LASE smokes,
+literal-loopback packaged runtime, CycloneDX JSON/XML, campaign guards, and complete scope/safety review passed.
+
+Remote state at open: the exact published head is mergeable but blocked while the push/PR CI and CodeQL runs plus
+PR dependency review are in progress. No remote-green claim is made.
+
+Review state: no independent reviewer is available; the campaign's pre-authorized substitute is a documented
+complete-diff self-review after the exact final checkpoint head is published. Required checks cannot be bypassed,
+disabled, or weakened.
+
+Scope and safety: production changes remain limited to the planned registry factory and reverse-proxy
+route-planning/reload ownership surfaces. No security-policy weakening, external/public target, secret, live
+cloud/tenant action, CI/Maven/Docker/Compose change, or readiness/performance claim is present.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: required exact-head remote checks are pending.
+
+Next action: commit this PR-open checkpoint, publish the new exact head, then require the resulting exact-head CI,
+CodeQL, dependency review, SBOM, Docker/runtime, container evidence, and blocking Trivy gates before merge.
+
+Decision: continue only `P-0.3`; no later slot is active.
+
 ## Combined Build Plan Slot 4 Local-Green Checkpoint
 
 Timestamp: 2026-07-29T18:07:19-07:00

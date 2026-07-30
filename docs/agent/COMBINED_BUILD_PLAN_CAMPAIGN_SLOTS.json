@@ -81,11 +81,11 @@
       "sourceIds": ["P-0.3"],
       "track": "proxy",
       "title": "Create route-scoped routing-strategy instances",
-      "status": "LOCAL_GREEN",
+      "status": "PR_OPEN",
       "dependencies": [],
       "riskClass": "ROUTING",
       "verificationProfile": "proxy-integration",
-      "currentState": "Started from exact green main c04014892244dfc646406f2d8698592f254ddef3 on branch codex/p-0-3-route-scoped-strategy. Factory-backed route-owned strategies, unchanged-route reload carryover, singleton-factory rejection, two interleaved 1,000-request 3:1 WRR acceptance routes, and literal-loopback reload continuity are locally proven. Fresh clean package passed 3,437 tests across 483 reports with no failures, errors, skips, or dumps; exact-head remote gates remain required."
+      "currentState": "PR #501 opened at head 89ba1e459949c31a840d69e2e1176e4410f34836 from exact green main c04014892244dfc646406f2d8698592f254ddef3. Factory-backed route-owned strategies, unchanged-route reload carryover, singleton-factory rejection, two interleaved 1,000-request 3:1 WRR acceptance routes, and literal-loopback reload continuity are locally proven. Fresh clean package passed 3,437 tests across 483 reports with no failures, errors, skips, or dumps; exact-head remote gates are in progress."
     },
     {
       "ordinal": 5,

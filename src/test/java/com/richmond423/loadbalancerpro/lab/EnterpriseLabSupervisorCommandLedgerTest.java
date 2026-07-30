@@ -526,6 +526,86 @@ class EnterpriseLabSupervisorCommandLedgerTest {
     }
 
     @Test
+    void replayAndAppendPreserveSupervisorChainAcrossArchivedSegment()
+            throws Exception {
+        try (EnterpriseLabSupervisorOwnership ownership =
+                     EnterpriseLabSupervisorOwnership.acquire(root)) {
+            EnterpriseLabSupervisorState state = service(ownership).state();
+            EnterpriseLabSupervisorCommandLedger first =
+                    EnterpriseLabSupervisorCommandLedger.createForTesting(
+                            ownership,
+                            EnterpriseLabSupervisorCommandLedger.HARD_MAX_LEDGER_BYTES,
+                            1,
+                            (point, bytes) -> { });
+            first.append(
+                    observation("rotation-command-1", state, NOW),
+                    SupervisorEventDraft.receipt(state, NOW));
+            ChainedJsonlStore engine = new ChainedJsonlStore(
+                    first.controlledLedgerFile(),
+                    EnterpriseLabSupervisorCommandLedger.HARD_MAX_LEDGER_BYTES);
+            engine.prepareRotationDirectory();
+            engine.rotateCurrentSegment(ownership::requireHeld);
+
+            EnterpriseLabSupervisorCommandLedger restarted =
+                    EnterpriseLabSupervisorCommandLedger.createForTesting(
+                            ownership,
+                            EnterpriseLabSupervisorCommandLedger.HARD_MAX_LEDGER_BYTES,
+                            1,
+                            (point, bytes) -> { });
+            restarted.append(
+                    observation(
+                            "rotation-command-2",
+                            state,
+                            NOW.plusSeconds(1)),
+                    SupervisorEventDraft.receipt(
+                            state,
+                            NOW.plusSeconds(1)));
+            var replay = restarted.replay();
+            assertEquals(2, replay.events().size());
+            assertEquals(2L, replay.head().orElseThrow().sequence());
+            assertEquals(
+                    replay.events().get(0).currentFingerprint(),
+                    replay.events().get(1).predecessorFingerprint());
+        }
+    }
+
+    @Test
+    void tenThousandCommandSoakRotatesWithoutReachingEventLimit()
+            throws Exception {
+        Path ledgerFile;
+        try (EnterpriseLabSupervisorOwnership ownership =
+                     EnterpriseLabSupervisorOwnership.acquire(root)) {
+            EnterpriseLabSupervisorState state = service(ownership).state();
+            EnterpriseLabSupervisorCommandLedger ledger =
+                    EnterpriseLabSupervisorCommandLedger.create(ownership);
+            for (int index = 1; index <= 10_000; index++) {
+                Instant occurredAt = NOW.plusMillis(index);
+                ledger.append(
+                        observation(
+                                "rotation-soak-" + index,
+                                state,
+                                occurredAt),
+                        SupervisorEventDraft.receipt(
+                                state,
+                                occurredAt));
+            }
+            ledgerFile = ledger.controlledLedgerFile();
+            assertEquals(10_000, ledger.replay().events().size());
+            try (var archives = Files.list(
+                    ledgerFile.getParent()
+                            .resolve(ChainedJsonlStore.SEGMENTS_DIRECTORY_NAME))) {
+                assertTrue(archives.count() >= 9L);
+            }
+        }
+
+        var replay = EnterpriseLabSupervisorCommandLedger
+                .inspect(root)
+                .replay();
+        assertEquals(10_000, replay.events().size());
+        assertEquals(10_000L, replay.head().orElseThrow().sequence());
+    }
+
+    @Test
     void ownershipLossLeavesDurableBytesUnchanged() throws IOException {
         EnterpriseLabSupervisorOwnership ownership =
                 EnterpriseLabSupervisorOwnership.acquire(root);

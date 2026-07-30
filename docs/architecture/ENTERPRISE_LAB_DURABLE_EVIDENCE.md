@@ -123,7 +123,9 @@ Compaction writes a bounded temporary manifest, restricts permissions where supp
 requires an atomic move. If atomic installation is unavailable, compaction fails and preserves the source. The installed
 manifest is strictly decoded, canonical-byte compared, fingerprint verified, and identity compared before the exact
 controlled source file is removed. A crash between installation and source cleanup leaves both pieces and is safe to retry.
-Repeated compaction reuses the verified manifest.
+Repeated compaction reuses the verified manifest. Mutation startup removes only a recognized terminal-manifest
+`.json.installing` orphan after revalidating the live ownership authorization and controlled regular-file identity;
+unrecognized entries still fail closed, so a stale recognized temporary no longer blocks compacted-evidence listing.
 
 Retention accepts only a maximum terminal-journal count from 0 through 256. Dry-run reports the oldest terminal candidates
 without mutation. Apply compacts only the excess exactly valid terminal journals. Active journals are not counted as

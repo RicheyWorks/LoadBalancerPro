@@ -28,6 +28,12 @@ class LoadBalancerApiApplicationTest {
                 new String[]{"--enterprise-lab-allocation-proof-holder"}));
         assertFalse(LoadBalancerApiApplication.shouldStartApi(
                 new String[]{"--enterprise-lab-supervisor"}));
+        assertFalse(LoadBalancerApiApplication.shouldStartApi(
+                new String[]{
+                        "--enterprise-lab-storage-repair",
+                        "--enterprise-lab-storage-repair-data-root=C:\\bounded-root",
+                        "--enterprise-lab-storage-repair-store=application-ledger"
+                }));
         assertFalse(LoadBalancerApiApplication.shouldStartApi(new String[]{"--version"}));
         assertTrue(LoadBalancerApiApplication.shouldStartApi(new String[]{"--server.port=18080"}));
         assertTrue(LoadBalancerApiApplication.shouldStartApi(new String[]{}));

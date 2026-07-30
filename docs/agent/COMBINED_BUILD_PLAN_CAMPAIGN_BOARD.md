@@ -13,16 +13,15 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Source layout: `74b1f6758304bc5a3a85ff4888039e7309324ddf`, based on `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Source item count: 50.
 - Unique implementation slots: 49.
-- `MAIN_GREEN` implementation slots: 15 / 49.
-- Latest completed slot: `L-1.4` in merged [PR #512](https://github.com/RicheyWorks/LoadBalancerPro/pull/512);
-  final head `37f4382d07a36b48096ad1083bd60faf3df7b10d`, merge
-  `36622b8b2ca27003a0a9a5e165ac361969173dd0`, exact-main 65-test focused checks, CI `30572768693`,
-  and CodeQL `30572768745` green.
-- Active implementation slot: `L-2.1`; unify JSONL stores behind one chained engine on
-  `codex/l-2-1-chained-jsonl-store`. Local implementation is green: the four stores use one bounded canonical
-  replay/append and OS-lock engine, the supervisor lock path is file-identity fenced, 3,054 clean-package tests and
-  the relevant packaged proofs passed; exact-head remote gates remain pending.
-- Next implementation slot after the active gate: `L-2.2`.
+- `MAIN_GREEN` implementation slots: 16 / 49.
+- Latest completed slot: `L-2.1` in merged [PR #513](https://github.com/RicheyWorks/LoadBalancerPro/pull/513);
+  final head `dd847ef27467abd148b4bfa2f2ca3384c1df4e53`, merge
+  `178322bc3f9572b74ee35caea7b654fb19ff111e`, exact-main CI `30586463172` and CodeQL `30586463123` green.
+- Active implementation slot: `L-2.2`; add bounded ledger/state-store rotation and recovery on
+  `codex/l-2-2-rotation-recovery` from exact green main in
+  [PR #515](https://github.com/RicheyWorks/LoadBalancerPro/pull/515). The bounded implementation, acceptance tests,
+  and full local candidate gates are green; the required PR checkpoint and exact-head remote gates remain pending.
+- Next implementation slot after the active gate: `L-2.3`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
 behavior exists. The active slot must reconcile its row with current main and the full source-plan acceptance contract.
@@ -46,8 +45,8 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 13 | L-1.2 | L-1.2 | One explainability module | L-1.1 | MAIN_GREEN |
 | 14 | L-1.3 | L-1.3 | Explainability correctness/determinism | L-1.2, P-0.3 | MAIN_GREEN |
 | 15 | L-1.4 | L-1.4 | One comparison/experiment path | L-1.3 | MAIN_GREEN |
-| 16 | L-2.1 | L-2.1 | One chained JSONL engine | L-0.6 | IN_PROGRESS |
-| 17 | L-2.2 | L-2.2 | Rotation and recovery | L-2.1 | OPEN |
+| 16 | L-2.1 | L-2.1 | One chained JSONL engine | L-0.6 | MAIN_GREEN |
+| 17 | L-2.2 | L-2.2 | Rotation and recovery | L-2.1 | IN_PROGRESS |
 | 18 | L-2.3 | L-2.3 | OS-lock-aware takeover | L-2.2 | OPEN |
 | 19 | L-2.4 | L-2.4 | Proof tools/JavaFX out of production artifact | L-2.3 | OPEN |
 | 20 | L-2.5 | L-2.5 | Honest durability and logging | L-2.4 | OPEN |

@@ -191,7 +191,8 @@ final class EnterpriseLabExperimentLocalJournal implements EnterpriseLabExperime
             Failure mapped = switch (exception.failure()) {
                 case SIZE_LIMIT_EXCEEDED -> Failure.JOURNAL_SIZE_EXCEEDED;
                 case UNSAFE_FILE -> Failure.UNSAFE_PATH;
-                case ENTRY_LIMIT_EXCEEDED, FRAME_SIZE_EXCEEDED,
+                case ENTRY_LIMIT_EXCEEDED, ARCHIVE_LIMIT_EXCEEDED,
+                        FRAME_SIZE_EXCEEDED,
                         INVALID_COMPLETE_FRAME, NON_CANONICAL_FRAME,
                         INCOMPLETE_TAIL, CONCURRENT_CHANGE,
                         FILE_IDENTITY_CHANGED, IO_FAILURE ->

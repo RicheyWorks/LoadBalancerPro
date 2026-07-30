@@ -11,6 +11,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorClient;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabSupervisorConfiguration;
 import com.richmond423.loadbalancerpro.api.config.AdaptiveRoutingPolicyProperties;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -106,6 +107,42 @@ class EnterpriseLabExperimentControllerTest {
         assertThrows(IllegalArgumentException.class,
                 () -> configuration.enterpriseLabExperimentOperatorService(
                         EnterpriseLabExperimentTargetCatalog.empty(), "target/relative-journal-root"));
+    }
+
+    @Test
+    void startupRemovesOrphanInstallingFileAndCompactedEndpointStaysHealthy()
+            throws Exception {
+        var configuration =
+                new EnterpriseLabExperimentController.EnterpriseLabExperimentConfiguration();
+        try (EnterpriseLabExperimentOperatorService ignored =
+                     configuration.enterpriseLabExperimentOperatorService(
+                             EnterpriseLabExperimentTargetCatalog.empty(),
+                             journalRoot.toString())) {
+            // Create the fixed controlled hierarchy, then simulate a crash.
+        }
+        Path orphan = journalRoot
+                .resolve("enterprise-lab-experiment-journals-v1")
+                .resolve("compacted")
+                .resolve("terminal-v1-"
+                        + "a".repeat(64)
+                        + ".json.installing");
+        Files.writeString(
+                orphan, "incomplete", StandardCharsets.UTF_8);
+
+        try (EnterpriseLabExperimentOperatorService restarted =
+                     configuration.enterpriseLabExperimentOperatorService(
+                             EnterpriseLabExperimentTargetCatalog.empty(),
+                             journalRoot.toString())) {
+            EnterpriseLabExperimentController controller =
+                    new EnterpriseLabExperimentController(
+                            restarted, new AdaptiveRoutingPolicyProperties());
+            var response =
+                    (EnterpriseLabExperimentController.CompactedEvidenceResponse)
+                            controller.compactedEvidence().getBody();
+
+            assertFalse(Files.exists(orphan));
+            assertEquals(0, response.count());
+        }
     }
 
     @Test

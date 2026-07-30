@@ -70,6 +70,7 @@ public final class EnterpriseLabExperimentJournalVerifier {
             Classification classification = switch (exception.failure()) {
                 case SIZE_LIMIT_EXCEEDED -> Classification.JOURNAL_SIZE_EXCEEDED;
                 case UNSAFE_FILE -> Classification.UNSAFE_STORAGE;
+                case ARCHIVE_LIMIT_EXCEEDED -> Classification.ENTRY_COUNT_EXCEEDED;
                 default -> Classification.IO_FAILURE;
             };
             return invalid(

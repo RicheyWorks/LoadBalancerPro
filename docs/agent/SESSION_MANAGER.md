@@ -6,6 +6,69 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 10 Start Checkpoint
+
+Timestamp: 2026-07-30T03:19:43-07:00
+
+Current slot: `L-0.5`, make owned Auto Scaling Group identity stable and recoverable.
+
+Current branch: `codex/l-0-5-stable-mocked-asg-ownership`.
+
+Slot status: `IN_PROGRESS`.
+
+Verified base: `a563e1ff3ae1288f9770a679be73a1861e8a7013`, the exact PR #506 merge commit and current
+`origin/main`.
+
+Previous slot closeout:
+
+- L-0.4 final head `6234b889f2b31aba37cd5a43eb9e05c51e038001` passed push CI `30531764069`, PR CI
+  `30531768487`, CodeQL `30531768474`, dependency review, both 25-step package jobs, SBOM, packaged smokes,
+  Docker/runtime, controlled container evidence, and blocking image scan;
+- PR #506 merged as `a563e1ff3ae1288f9770a679be73a1861e8a7013`;
+- exact-main focused verification passed 63 cockpit/reviewer/evidence/campaign tests across nine reports;
+- post-merge `mvn -B clean package` passed 3,470 tests across 489 fresh reports with zero failures, errors, or skips
+  and no Surefire dumps;
+- exact-main CI `30533547044` and CodeQL `30533546997` passed, including the second full package run, SBOM, packaged
+  smokes, Docker build/runtime, controlled container evidence, and blocking image scan; every required step was
+  audited successful.
+
+L-0.4 is `MAIN_GREEN`, completing 9 of 49 implementation slots.
+
+L-0.5 current-tree defect confirmation:
+
+- `CloudConfig` still builds `autoScalingGroupName` from `UUID.randomUUID()`, so identical configuration produces a
+  different identity after restart;
+- `CloudManager` creates and describes only that process-local name, and shutdown deletion requires the ownership
+  tag value to match it exactly;
+- no initialization reconciliation lists managed ASGs by ownership tag, so a group left by a killed process cannot
+  be rediscovered by the next process.
+
+L-0.5 build contract: derive a deterministic recoverable ASG identity from the validated resource-name prefix and
+deployment environment; keep deletion dependent on the stable name plus the explicit ownership tag and all
+existing live/deletion gates; add startup reconciliation that classifies owned prior-run groups and adopts the
+single safe configured group without creating a duplicate. Prove two independently constructed configs resolve
+the same ASG, a simulated prior/killed-process group is rediscovered after restart, ambiguous or mismatched groups
+fail closed, and dry-run/mocked acceptance performs no live AWS mutation.
+
+Source: `docs/BUILD_PLAN_LAB_SHADOW.md` PR-L0.5 and `docs/AUDIT_LAB_SHADOW_2026-07-21.md` L7.
+
+Prohibited surfaces: no real AWS credential, tenant/account target, external network, billable resource, live
+mutation, weakened operator-intent/account/region/cap/deletion guardrail, automatic ambiguous-group deletion,
+public target, secret/default, production deployment, CI/Maven/Docker/Compose change, or cloud-readiness claim.
+
+Verification profile: `cloud-mocked` with exact deterministic-name red acceptance, mocked ASG
+reconciliation/adoption and ambiguity/mismatch tests, zero-mutation dry-run assertions, existing CloudConfig/
+CloudManager guardrail suites, full local Java/package/verify/artifact/SBOM/packaged-smoke ladder, complete
+diff/scope audit, and exact-head remote CI, CodeQL, dependency review, Docker/runtime, controlled container
+evidence, and blocking image scan.
+
+Blocker: none.
+
+Next action: map the exact stable-name format and ownership-tag invariant, then write deterministic restart,
+prior-group adoption, ambiguity, and mismatch red acceptance against mocked AWS response objects only.
+
+Decision: continue only `L-0.5`; no later slot is active.
+
 ## Combined Build Plan Slot 9 Remote-Green Checkpoint
 
 Timestamp: 2026-07-30T02:40:42-07:00

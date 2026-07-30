@@ -8982,3 +8982,13 @@ L-0.4 compact active-step poll repeated the same PowerShell parse class by pipin
 directly to `Out-String`. It again failed before contacting GitHub and changed no state. Correction: stop using
 statement-to-pipeline shorthand in campaign polling; assign all formatted objects to an explicit array first, as
 the already successful corrected status snapshot did.
+
+# 2026-07-30 - L-0.5 stable mocked-cloud ASG ownership audit
+
+Branch: `codex/l-0-5-stable-mocked-asg-ownership`
+
+First L-0.5 broad source inventory: a combined `rg` search piped through `Select-Object -First` produced the needed
+build-plan and source matches but returned exit one after its output was truncated. The result is not treated as a
+complete inventory. Correction: split the build-contract lookup from precise `CloudConfig`, `CloudManager`, and
+guardrail-test searches, then read the exact constructor, create/describe/delete, ownership-tag, and initialization
+regions before writing acceptance tests.

@@ -91,6 +91,12 @@ The allowlist sample plan provides static documentation-only examples for future
 
 This lifecycle plan depends on [`SOURCE_NAME_GUARD_ALLOWLIST_SAMPLE_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_SAMPLE_PLAN.md). Reviewers should use those examples to rehearse what candidate entries might look like, then use this lifecycle plan to keep future entries from becoming stale, too broad, or incorrectly interpreted as production safety proof.
 
+## Relationship To Source-Name Guard Allowlist Exit Criteria Plan
+
+The allowlist exit criteria plan defines when the allowlist planning lane is complete enough to consider a separately approved implementation sprint later.
+
+This lifecycle plan supports [`SOURCE_NAME_GUARD_ALLOWLIST_EXIT_CRITERIA_PLAN.md`](SOURCE_NAME_GUARD_ALLOWLIST_EXIT_CRITERIA_PLAN.md). Reviewers should use this lifecycle plan to understand creation, re-review, expiration, retirement, migration, audit, and stale-entry handling, then use the exit criteria plan to decide whether the planning lane has enough documentation completeness, review readiness, privacy/secret-safety, determinism, allowlist quality, misuse-risk, implementation-gate, and non-exit coverage before any allowlist file, source scanning, report generation, JSON/YAML/TOML output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
+
 The future source-name guard rule review checklist is documented in [`SOURCE_NAME_GUARD_RULE_REVIEW_CHECKLIST.md`](SOURCE_NAME_GUARD_RULE_REVIEW_CHECKLIST.md). The future source-name guard rule catalog plan is documented in [`SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md`](SOURCE_NAME_GUARD_RULE_CATALOG_PLAN.md). Both remain docs/test-only references and do not add allowlist files, source scanning, report generation, JSON/YAML/TOML output, CI workflow changes, PR comment/report artifact behavior, runtime naming enforcement, source-name guard enforcement, package-boundary enforcement, class renames, package moves, ArchUnit tooling, Maven build changes, or behavior changes.
 
 ## Why Allowlist Lifecycle Comes Before Implementation

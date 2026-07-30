@@ -1204,6 +1204,11 @@ CLOUD_CONFIRM_RESOURCE_OWNERSHIP
 
 Required credentials are rejected if they are blank or placeholder values. Missing required cloud config disables CLI cloud mode safely and prints an operator-facing error.
 
+Interactive integer prompts use a dedicated out-of-range abort sentinel after an explicit cancel or three failed
+attempts. Every current caller checks that sentinel before acting. In particular, cancelling the `Scale Cloud`
+adjustment performs no `CloudManager` interaction, while an intentionally entered `-1` remains a valid scale-down
+adjustment and still passes through the separate cloud live-mutation guardrails below.
+
 ## Dependency Lifecycle Notes
 
 LoadBalancerPro uses AWS SDK for Java 2.x modules for the guarded CloudManager integration. AWS announced that SDK v1 entered maintenance mode on July 31, 2024 and reached end-of-support on December 31, 2025; the project has migrated away from SDK v1 dependencies while preserving dry-run behavior, cloud mutation guardrails, and mocked default test coverage.

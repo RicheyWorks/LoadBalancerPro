@@ -6,6 +6,8 @@ import org.apache.logging.log4j.Logger;
 import java.util.Scanner;
 
 public class ConsoleUtils {
+    public static final int PROMPT_ABORTED = Integer.MIN_VALUE;
+
     private static final Logger logger = LogManager.getLogger(ConsoleUtils.class);
     private final Scanner scanner;
     private final CliConfig config;
@@ -76,6 +78,9 @@ public class ConsoleUtils {
     }
 
     public int promptForInt(String prompt, int min, int max, String fieldName) {
+        if (min == PROMPT_ABORTED) {
+            throw new IllegalArgumentException("Integer prompt range cannot include the abort sentinel");
+        }
         int attempts = 0;
         final int maxAttempts = 3;
         while (attempts < maxAttempts && !isScannerClosed()) {
@@ -89,7 +94,7 @@ public class ConsoleUtils {
                         attempts++;
                         continue;
                     }
-                    return -1;
+                    return PROMPT_ABORTED;
                 }
                 return value;
             } catch (NumberFormatException e) {
@@ -99,11 +104,11 @@ public class ConsoleUtils {
                     attempts++;
                     continue;
                 }
-                return -1;
+                return PROMPT_ABORTED;
             }
         }
         printError("Max attempts (" + maxAttempts + ") reached for " + fieldName + ".");
-        return -1;
+        return PROMPT_ABORTED;
     }
 
     private void printError(String message) {

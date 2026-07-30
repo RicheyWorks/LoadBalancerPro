@@ -6,6 +6,54 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 4 Start Checkpoint
+
+Timestamp: 2026-07-29T17:25:53-07:00
+
+Current slot: `P-0.3`, create route-scoped routing-strategy instances.
+
+Current branch: `codex/p-0-3-route-scoped-strategy`.
+
+Slot status: `IN_PROGRESS`.
+
+Verified base: `c04014892244dfc646406f2d8698592f254ddef3`, the exact corrective PR #500 merge commit
+and current `origin/main`.
+
+Previous slot closeout:
+
+- P-0.2 implementation PR #499 final head `60e0fae65732ef0f07a80f41a6c1330cac27f538` merged as
+  `44d303318b7828c64c8fb2f21fe03ae64bd499bb`;
+- exact-main CI exposed a 200 ms Enterprise Lab test timing race;
+- test-only corrective PR #500 final head `94f11c61c3ea7fa4121014a370ad2b150845b923` passed every exact-head gate
+  and merged as `c04014892244dfc646406f2d8698592f254ddef3`;
+- the exact corrective merge passed focused supervisor/process, health-lifecycle, and campaign guards;
+- post-merge `mvn -B package` passed 3,430 tests across 480 reports with zero failures, errors, or skips and no
+  Surefire dumps;
+- exact-main CI `30502139005` and CodeQL `30502139000` passed, including package rerun, SBOM, packaged smokes,
+  Docker/runtime, container evidence, and blocking image scan.
+
+P-0.2 is `MAIN_GREEN`, completing 3 of 49 implementation slots.
+
+P-0.3 build contract: audit and implement route-owned routing-strategy instances so stateful strategy state cannot
+leak between routes. Reconcile registry factory behavior, route planner/config build and reload ownership, and
+service request selection with current main. Preserve an old route strategy instance only when its strategy
+identifier and upstream set are unchanged. Prove two interleaved weighted-round-robin routes maintain independent
+3:1 distributions within the imported tolerance after 1,000 requests each.
+
+Prohibited surfaces: no security-policy weakening, external/public target, secret, live cloud/tenant, production
+deployment, CI/Maven/Docker/Compose change, unrelated proxy behavior, or readiness/performance claim.
+
+Verification profile: `proxy-integration` with deterministic literal-loopback or in-process fixtures, focused and
+adjacent selectors, the full local Java/package/verify ladder, complete diff/scope audit, and exact-head remote CI,
+CodeQL, dependency review, SBOM, Docker/runtime, container evidence, and blocking image scan.
+
+Blocker: none.
+
+Next action: audit current routing strategy registry/planner/service and reload tests, then write an exact failing
+route-isolation acceptance test before implementation.
+
+Decision: continue only `P-0.3`; no later slot is active.
+
 ## Combined Build Plan Slot 3 Corrective Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T17:05:26-07:00

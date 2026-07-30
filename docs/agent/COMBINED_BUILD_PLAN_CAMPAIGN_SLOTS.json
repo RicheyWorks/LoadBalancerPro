@@ -69,11 +69,11 @@
       "sourceIds": ["P-0.2"],
       "track": "proxy",
       "title": "Replace health deletion with drain, eviction thresholds, and re-admission",
-      "status": "REMOTE_GREEN",
+      "status": "MAIN_GREEN",
       "dependencies": [],
       "riskClass": "RELIABILITY",
       "verificationProfile": "java-full",
-      "currentState": "PR #499 final head 60e0fae65732ef0f07a80f41a6c1330cac27f538 passed exact-head gates and merged as 44d303318b7828c64c8fb2f21fe03ae64bd499bb. Exact-main CI run 30500110273 exposed a 200 ms timing race in EnterpriseLabSupervisorServerTest. Corrective PR #500 head 469276ded2bbddb62786daf4e7dedd4dda8bb893 passed push CI 30501081462, PR CI 30501083935, CodeQL 30501083940, dependency review, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan. Its factual REMOTE_GREEN checkpoint advances the head once; final exact-head and resulting exact-main gates remain required, and the slot is uncounted."
+      "currentState": "PR #499 final head 60e0fae65732ef0f07a80f41a6c1330cac27f538 passed exact-head gates and merged as 44d303318b7828c64c8fb2f21fe03ae64bd499bb. Exact-main CI exposed a 200 ms test timing race, corrected test-only in PR #500 final head 94f11c61c3ea7fa4121014a370ad2b150845b923 and merged as c04014892244dfc646406f2d8698592f254ddef3. Exact-main focused and 3,430-test local package gates passed; CI 30502139005 and CodeQL 30502139000 passed, including package rerun, SBOM, packaged smokes, Docker/runtime, container evidence, and blocking image scan."
     },
     {
       "ordinal": 4,
@@ -81,11 +81,11 @@
       "sourceIds": ["P-0.3"],
       "track": "proxy",
       "title": "Create route-scoped routing-strategy instances",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": [],
       "riskClass": "ROUTING",
       "verificationProfile": "proxy-integration",
-      "currentState": "Acceptance is unproven at campaign start; re-audit current main before implementation."
+      "currentState": "Started from exact green main c04014892244dfc646406f2d8698592f254ddef3 on branch codex/p-0-3-route-scoped-strategy. Current source, tests, reload behavior, and imported acceptance are under audit; no acceptance claim yet."
     },
     {
       "ordinal": 5,

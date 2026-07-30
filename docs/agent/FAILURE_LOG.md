@@ -8628,3 +8628,11 @@ supervisor server/client/process/protocol/service and combined-campaign document
 and no Surefire dumps; `mvn -q "-DskipTests" verify`, campaign JSON parsing, and diff whitespace checks also passed.
 The correction remains limited to test timing plus factual campaign records. Remote corrective-PR and resulting
 exact-main gates remain pending and are not claimed green.
+
+Final recovery result: corrective PR #500 final head
+`94f11c61c3ea7fa4121014a370ad2b150845b923` passed both exact-head CI lanes, CodeQL, dependency review, both
+package-stage test reruns, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan,
+then merged as `c04014892244dfc646406f2d8698592f254ddef3`. That exact main completed the focused supervisor/process,
+health-lifecycle, and campaign guards; a local `mvn -B package` with 3,430 tests across 480 reports and zero
+failures, errors, or skips; exact-main CI run `30502139005`; and CodeQL run `30502139000`. The failure is resolved
+as test-only timing stabilization; production defaults and runtime behavior remain unchanged.

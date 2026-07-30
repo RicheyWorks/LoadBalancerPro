@@ -6,6 +6,58 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 9 Start Checkpoint
+
+Timestamp: 2026-07-29T22:46:25-07:00
+
+Current slot: `L-0.4`, remove Enterprise Lab cockpit HTML-injection sinks.
+
+Current branch: `codex/l-0-4-cockpit-xss`.
+
+Slot status: `IN_PROGRESS`.
+
+Verified base: `1968c4799eaefe0f8356bbeb67334944f3997a9c`, the exact PR #505 merge commit and current
+`origin/main`.
+
+Previous slot closeout:
+
+- L-0.3 final head `0017c731e198dd95762aa8d516b8e98a89c3dd5c` passed push CI `30516687533`, PR CI
+  `30516689354`, CodeQL `30516689293`, dependency review, both 25-step package jobs, SBOM, packaged smokes,
+  Docker/runtime, controlled container evidence, and blocking image scan;
+- PR #505 merged as `1968c4799eaefe0f8356bbeb67334944f3997a9c`;
+- the exact merge passed 78 focused CLI/cloud/campaign tests across seven reports;
+- post-merge `mvn -B clean package` passed 3,467 tests across 488 fresh reports with zero failures, errors, or skips
+  and no Surefire dumps;
+- exact-main CI `30517165004` and CodeQL `30517165028` passed, including the second full package run, SBOM, packaged
+  smokes, Docker build/runtime, controlled container evidence, and blocking image scan; every required step was
+  audited successful.
+
+L-0.3 is `MAIN_GREEN`, completing 8 of 49 implementation slots.
+
+L-0.4 build contract: re-audit the five `innerHTML` renderers in `enterprise-lab.html` and the one reviewer key/value
+renderer in `enterprise-lab-reviewer.html`; ensure every server-derived value is inserted with safe DOM APIs or
+correct contextual escaping; and prove hostile guardrail-reason, event-ID, scenario, policy, rollback, and reviewer
+path strings render inert. Preserve the intended static page layout and operator workflows.
+
+Source: `docs/BUILD_PLAN_LAB_SHADOW.md` PR-L0.4 and `docs/AUDIT_LAB_SHADOW_2026-07-21.md` O4.
+
+Prohibited surfaces: no auth/security-policy weakening, endpoint or API schema change, public/external target,
+secret, live cloud/tenant action, production deployment, CI/Maven/Docker/Compose change, unrelated cockpit redesign,
+runtime server behavior, or readiness/performance claim.
+
+Verification profile: `web-static` with exact hostile-string red acceptance for both pages, source-wide sink audit,
+focused static-resource/documentation guards, browser inspection of both pages against malicious fixtures, full
+local Java/package/verify/artifact/SBOM/packaged-smoke ladder, complete diff/scope audit, and exact-head remote CI,
+CodeQL, dependency review, SBOM, Docker/runtime, controlled container evidence, and blocking image scan.
+
+Blocker: none.
+
+Next action: classify every `innerHTML` value by trusted static markup versus server-derived content, map existing
+static-resource tests and local serving paths, then write a deterministic hostile-string red acceptance for the
+live injection defects.
+
+Decision: continue only `L-0.4`; no later slot is active.
+
 ## Combined Build Plan Slot 8 Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T22:26:52-07:00

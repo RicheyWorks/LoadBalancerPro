@@ -62,7 +62,7 @@ The performance baseline runner uses the existing API contracts only; it adds no
 
 The prior CLI experiment harness remains available as an offline comparison path. Run `--adaptive-routing-experiment=all` through `scripts/smoke/adaptive-routing-experiment.ps1 -Package` to generate ignored `target/adaptive-routing-experiments/` evidence. Run `scripts/smoke/enterprise-lab-workflow.ps1 -Package` to generate the Enterprise Lab scenario catalog JSON, lab run JSON, Markdown scorecard summary, and metadata under ignored `target/enterprise-lab-runs/`. Run `scripts/smoke/controlled-adaptive-routing-policy.ps1 -Package` to generate controlled policy evidence under ignored `target/controlled-adaptive-routing/`. Run `scripts/smoke/enterprise-lab-observability-pack.ps1 -Package` to generate metrics JSON, Prometheus-style sample text, Markdown summary, and manifest under ignored `target/enterprise-lab-observability/`. The default runtime allocation behavior remains unchanged; active-experiment remains explicit, guarded, and lab/evaluation-grade rather than production traffic control or production SLO certification.
 
-Routing comparison responses expose `requestedStrategies`, `candidateCount`, `timestamp`, and a `results` array. Each result exposes the strategy id, status, selected server id when one is available, the strategy reason, considered candidates, score map, Decision Vector, dominant-factor and delta analysis, replay snapshot/trace/capsule/readiness evidence, and the retained evidence source map. A no-healthy-server comparison still returns a controlled result with `chosenServerId` set to `null`, empty candidate/scores collections, and an explanatory reason.
+Routing comparison responses expose `requestedStrategies`, `candidateCount`, `timestamp`, and a `results` array. Each result exposes the strategy id, status, selected server id when one is available, the strategy reason, considered candidates, score map, Decision Vector, dominant-factor analysis, and decision-delta analysis. The former replay snapshot/trace/capsule/readiness/source-map restatement chain is not part of the current contract. A no-healthy-server comparison still returns a controlled result with `chosenServerId` set to `null`, empty candidate/scores collections, and an explanatory reason.
 
 Routing comparison requests have an absolute DTO ceiling of 32 candidates and five explicit strategies. Operators
 can lower those ceilings with `loadbalancerpro.api.max-candidates` and
@@ -71,7 +71,11 @@ over either effective ceiling return structured HTTP 400 before comparison or Ex
 limits supplement the separate API request-body byte ceiling and do not authorize larger request bodies.
 
 `POST /api/routing/decision-explorer` accepts the same `RoutingComparisonRequest` as the comparison route and returns
-an array of `DecisionExplorerPayloadV1` readouts derived from the already-built routing comparison response. The route
+an array of compact `RoutingExplanation` v2 results derived from the already-built routing comparison response. Each
+result contains only the strategy/status/selection identity, per-candidate factor contributions, compact dominant-
+factor rows, the selected-vs-closest-alternative decision delta, numeric ±10% factor-weight projections, and one
+boundary note. The endpoint does not return the retired confidence, diagnostics, tradeoff, shadow, replay-readiness,
+reviewer-badge, evidence-packet, or agent-schema restatement graphs. The route
 uses a bounded counting serialization pass before returning output and rejects output beyond
 `loadbalancerpro.api.max-decision-explorer-response-bytes` (16 MiB by default) with structured HTTP 400; it does not
 buffer a second response byte array while measuring. The configured response ceiling must remain between one byte
@@ -95,87 +99,36 @@ traffic, call cloud or tenant systems, persist storage, execute replay, generate
 prove production readiness, certification, live-cloud validation, real-tenant validation, benchmark/load/stress
 behavior, throughput/p95/p99 behavior, replay/export behavior, storage behavior, or broader automation.
 
-The static Decision Explorer first-pass page is served at `GET /decision-explorer.html`. It calls the same-origin
+The static Decision Explorer page is served at `GET /decision-explorer.html`. It calls the same-origin
 `POST /api/routing/decision-explorer` route with deterministic synthetic routing telemetry and the same-origin
 `GET /api/routing/decision-explorer/scenarios` route for deterministic scenario catalog metadata. It keeps the optional
-API key in page memory only, renders scenario selector, scenario category filtering, evidence-status filtering,
-decision summary, reviewer explanation badges, selected candidate, candidate set, candidate comparison rows, factor
-contributions, factor drill-down readouts, counterfactual analysis, counterfactual policy scenario rows,
-counterfactual candidate outcome rows, counterfactual factor-weight delta rows, policy gates, decision diffs, evidence
-packet readouts, agent structured output, warnings, unknowns, not-proven boundaries, and raw payload locally in the
-browser, and writes no runtime files.
-Scenario selection is reviewer orientation only and does not run routing by itself. Candidate comparison, factor
-drill-down, counterfactual, and reviewer badge display use fields already returned by `DecisionExplorerPayloadV1` plus
-selected same-origin scenario metadata; the page does not compute new scores, enforce decisions, prove runtime
-behavior, or fabricate missing evidence. Its root-page and reviewer-doc navigation points to the page as a local
-inspection surface only. The page does not add storage, export, replay execution, evidence-packet generation, live
-traffic shifting, production approval controls, cloud controls, tenant controls, or benchmark/load/stress claims.
+API key in page memory only and renders the decision summary, candidate factor contributions, compact dominant/delta
+analysis, counterfactual weight projections, raw response, and not-proven boundaries. Scenario selection is reviewer
+orientation only and does not run routing by itself. The page does not persist browser or server storage, compute new
+routing scores, enforce decisions, execute replay, export files, generate evidence packets, shift traffic, call cloud
+or tenant systems, prove runtime behavior, or add benchmark/load/stress claims.
 
-### Reviewer-Facing Decision Explorer Terminology Normalization
+### Compact Routing Explanation v2
 
-For reviewer-facing API contract prose, Decision Explorer uses the Phase 6 normalized vocabulary below for
-reviewer-facing Decision Explorer evidence groups. This is documentation-only normalization for existing additive
-fields: it does not add endpoints, rename JSON fields, change
-schemas, change runtime API behavior, execute replay, write storage/export artifacts, generate evidence packets, shift
-traffic, or prove production readiness. Reviewers should use this contract for field shape, then
-[`REVIEWER_TRUST_MAP.md`](REVIEWER_TRUST_MAP.md) for the `/decision-explorer.html` navigation path, then
-[`agent/LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md`](agent/LASE_ROUTING_INTELLIGENCE_PHASE6_REVIEWER_EVIDENCE_NORMALIZATION.md)
-for naming rules and not-proven boundaries.
+The current reviewer vocabulary maps directly to the compact JSON fields:
 
 | Decision Explorer reviewer concept | Normalized reviewer-evidence group | Current API field or surface |
 | --- | --- | --- |
-| Top-level payload readout | Decision Explorer payload | `DecisionExplorerPayloadV1` |
-| Routing Intelligence Status | Confidence summary | `confidenceSummary` |
-| Routing Diagnostics | Routing diagnostics | `routingDiagnostics` |
-| Route Tradeoff Intelligence | Route tradeoff analysis | `routeTradeoffAnalysis` |
-| Shadow Decision Quality | Shadow decision quality | `shadowDecisionQualityEvaluation` |
-| Counterfactual Analysis | Counterfactual analysis | `counterfactualAnalysis` |
+| Top-level explanation | Compact routing explanation | `RoutingExplanation` |
+| Candidate evidence | Factor contributions | `candidates[].factors[]` |
+| Dominant-factor analysis | Per-candidate dominant rows | `dominantFactors.candidates[]` |
+| Selected-vs-alternative analysis | Decision delta and factor deltas | `decisionDelta` |
+| Counterfactual analysis | ±10% arithmetic projections | `counterfactualWeightScenarios[]` |
 | Static browser reviewer path | Static reviewer page | `/decision-explorer.html` |
 | Scenario catalog orientation | Scenario catalog | `GET /api/routing/decision-explorer/scenarios` |
 
-The UI-to-field shorthand is:
-
-- Routing Intelligence Status -> `confidenceSummary`;
-- Routing Diagnostics -> `routingDiagnostics`;
-- Route Tradeoff Intelligence -> `routeTradeoffAnalysis`;
-- Shadow Decision Quality -> `shadowDecisionQualityEvaluation`;
-- Counterfactual Analysis -> `counterfactualAnalysis`.
-
-`DecisionExplorerPayloadV1.counterfactualAnalysis` is a current additive field derived from already-returned local
-Decision Explorer evidence. It exposes local-only `DecisionExplorerCounterfactualAnalysisV1` summary labels,
-policy-weight sensitivity scenario rows, candidate outcome rows, factor-weight delta rows, fingerprints, and
-reproducibility keys. These counterfactual readouts do not recompute production routing scores, change routing
-behavior, mutate proxy behavior, persist storage, export evidence, execute replay, generate evidence packets, call
-external systems, or prove benchmark/load/stress, throughput/p95/p99, live-cloud, real-tenant, production-readiness,
-or broader automation behavior.
-
-`DecisionExplorerPayloadV1.factorDrilldowns` is an additive Phase 2 field derived from already-returned
-`ScoreFactorContributionResponse` evidence. Each `DecisionFactorDrilldownV1` readout names the factor and candidate,
-copies the observed value/status, classifies the returned influence category, records an evidence status, explanation,
-warnings, unknowns, and source reference IDs. These drill-downs do not recompute scores, change routing behavior,
-mutate proxy behavior, persist storage, export evidence, execute replay, generate evidence packets, call external
-systems, or prove benchmark/load/stress, throughput/p95/p99, live-cloud, real-tenant, production-readiness, or broader
-automation behavior.
-
-`DecisionExplorerPayloadV1.candidateComparisons` is an additive Phase 2 field derived from the already-built
-`CandidateReadoutV1` set. Each `DecisionExplorerCandidateComparisonRowV1` row preserves deterministic selected-first
-ordering, candidate identity, selection state, final score when returned, score delta from the selected candidate when
-both scores are available, visible signals, unknown signals, reason codes, policy gates, evidence references, warnings,
-unknowns, and boundary text. These comparison rows do not recompute scores, change routing behavior, mutate proxy
-behavior, persist storage, export evidence, execute replay, generate evidence packets, call external systems, or prove
-benchmark/load/stress, throughput/p95/p99, live-cloud, real-tenant, production-readiness, or broader automation
-behavior.
-
-Decision Explorer Phase 2 API contract hardening keeps the `DecisionExplorerPayloadV1` JSON field set additive and
-compatible with Phase 1 consumers. The serialized payload keeps Phase 1 fields present while preserving additive Phase
-2 arrays for `candidateComparisons` and `factorDrilldowns`; legacy constructor paths and partial/unknown evidence
-paths serialize missing additive collections as present empty arrays rather than omitted fields. Repeated candidate,
-comparison, factor, policy-gate, diff, evidence-packet, warning, unknown, and not-proven-boundary readouts remain
-deterministically ordered by returned identifiers, display order, or stable source references. This hardening is a
-contract guard only: it does not add a new endpoint, change routing/scoring/proxy behavior, persist storage, export
-evidence, execute replay, generate evidence packets, call external systems, or prove production readiness,
-certification, live-cloud validation, real-tenant validation, benchmark/load/stress behavior, throughput/p95/p99
-behavior, replay/export behavior, storage behavior, or broader automation.
+Each `counterfactualWeightScenarios` row scales one returned selected/alternative factor contribution by -10% or
++10%, reports the adjusted contribution delta, and—when the returned final score gap is finite—reports an arithmetic
+projected score gap. It does not rerun the strategy or claim that the projection would change a real selection.
+Per-strategy factor-model correctness remains a separate tracked correction; this v2 consolidation does not upgrade
+that evidence boundary. The endpoint and page remain read-only and simulation-only and do not persist storage, export
+evidence, execute replay, generate evidence packets, call external systems, mutate routing, or prove production
+readiness, live-cloud behavior, real-tenant behavior, load/stress behavior, or throughput/p95/p99 behavior.
 
 Decision Explorer Phase 1 reviewer examples live in
 [`agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md`](agent/DECISION_EXPLORER_PHASE1_REVIEWER_EXAMPLES.md). They
@@ -219,4 +172,4 @@ Structured API errors expose `status`, `error`, `message`, `path`, `timestamp`, 
 ## Generated-Client Compatibility
 
 This repository does not currently include a generated-client build pipeline. Compatibility confidence comes from the OpenAPI path/schema assertions plus representative JSON shape checks. If a future client generator is introduced, keep it lightweight and run it as a contract validation lane without changing release automation or publishing generated artifacts.
-`POST /api/routing/compare` remains read-only and recommendation-only. Its result objects expose `decisionVector`, `dominantFactorAnalysis`, `decisionDeltaAnalysis`, `decisionReplaySnapshot`, `decisionReplayReconstructionTrace`, `decisionReplayCapsule`, `decisionReplayReadinessChecklist`, and `decisionReplayEvidenceSourceMap`. These fields are derived from controlled local compare evidence; they do not execute replay, perform what-if mutation, persist audit data, recompute scores, retune weights, change routing behavior, or add upload/share/download or server-side export behavior.
+`POST /api/routing/compare` remains read-only and recommendation-only. Its result objects expose `decisionVector`, `dominantFactorAnalysis`, and `decisionDeltaAnalysis`; the former replay restatement fields are retired. These fields are derived from controlled local compare evidence; they do not execute replay, perform what-if mutation, persist audit data, recompute scores, retune weights, change routing behavior, or add upload/share/download or server-side export behavior.

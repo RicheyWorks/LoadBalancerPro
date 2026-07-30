@@ -1,5 +1,9 @@
 # Enterprise Lab Decision Replay Snapshot
 
+> Historical contract: this derivational response lane was retired by L-1.2. Current compare responses retain
+> `decisionVector`, `dominantFactorAnalysis`, and `decisionDeltaAnalysis`; current compact exploration uses
+> `RoutingExplanation` v2. The details below describe the former v1 surface and are not a current API contract.
+
 LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
 
 Decision Replay Snapshot is a read-only evidence lane for `POST /api/routing/compare`. It captures a deterministic, structured summary of the lab decision evidence that was already produced for one routing comparison result. It is the evidence foundation for future replay and what-if lanes, but it is not replay execution and it is not what-if mutation.

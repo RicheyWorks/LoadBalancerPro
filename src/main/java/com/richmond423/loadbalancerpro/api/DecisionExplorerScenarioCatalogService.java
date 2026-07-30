@@ -91,7 +91,7 @@ public class DecisionExplorerScenarioCatalogService {
     private static List<String> sourceReferences(AdaptiveRoutingExperimentScenario fixture) {
         return List.of(
                 "AdaptiveRoutingExperimentFixtureCatalog:" + fixture.name(),
-                "DecisionExplorerPayloadV1",
+                "RoutingExplanation",
                 "POST /api/routing/decision-explorer");
     }
 

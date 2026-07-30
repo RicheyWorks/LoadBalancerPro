@@ -6,6 +6,133 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 13 PR-Open Checkpoint
+
+Timestamp: 2026-07-30T09:06:51-07:00
+
+Slot/branch/PR: `L-1.2`; `codex/l-1-2-collapse-explainability`;
+[#510](https://github.com/RicheyWorks/LoadBalancerPro/pull/510).
+
+Status: `PR_OPEN`.
+
+Published implementation/local-green candidate: `fdec562aeb3fa51bf0110fe86285eb3aa2fc6da3`; this PR-open campaign
+update is documentation-only and will become the final candidate head after publication.
+
+Verified local gates: compact behavior/arithmetic/golden/API/OpenAPI/response-cap/UI/deletion selectors; 133-test
+adjacent selector; 3,051-test clean package; skip-test verify; artifact/SBOM/LASE/Enterprise Lab workflow and
+literal-loopback operator-profile assertions; desktop/mobile browser review; campaign/manifest guards; retired-field,
+unsafe-sink, overclaim, protected-surface, and diff checks.
+
+Scope/safety: the response-only collapse changes no credential/default, authorization, external/public target,
+cloud/tenant call, traffic mutation, replay execution, persistence, telemetry, dependency, build/workflow,
+Docker/Compose, deployment, or unrelated production behavior. Production readiness/certification, live-cloud or
+real-tenant validation, throughput/p95/p99, load/stress/soak behavior, broader automation, and the L-1.3
+correctness/determinism properties remain unproven.
+
+Blocker: required checks are pending on the documentation checkpoint's not-yet-published exact head.
+
+Next action: commit and publish this checkpoint, rerun exact-head local campaign/compact/diff gates, then require CI,
+CodeQL, dependency review, package/SBOM/packaged-smoke/Docker/runtime/evidence, and blocking image-scan gates before
+complete-diff self-review and merge.
+
+Decision: continue only `L-1.2`; no later slot is active.
+
+## Combined Build Plan Slot 13 Local-Green Checkpoint
+
+Timestamp: 2026-07-30T09:02:00-07:00
+
+Current slot: `L-1.2`, collapse Replay and Decision Explorer into one explainability module.
+
+Branch: `codex/l-1-2-collapse-explainability`; status: `LOCAL_GREEN`; exact green base:
+`1d57e4d664162ae4979ed1d24acfcc2af3673b1a`. The current head before the local-green implementation commit is the
+published branch-start checkpoint `737bb929`; the exact implementation head remains pending until this checkpoint
+and the complete candidate are committed.
+
+Implemented:
+
+- `/api/routing/decision-explorer` now maps the retained compare evidence into one compact, read-only,
+  simulation-only `RoutingExplanation` per strategy, with candidate factor contributions, dominant-factor evidence,
+  selected-versus-alternative deltas, and bounded plus/minus-ten-percent weight projections;
+- 80 production Java files, including the replay snapshot/trace/capsule/readiness/source-map chain and parallel
+  confidence/diagnostic/tradeoff/shadow restatements, and 64 obsolete tests were deleted. Five input/catalog/size
+  helpers and the separate scenario-replay capability remain;
+- the focused Decision Explorer page was rebuilt for the compact contract, while the routing demo and cockpit no
+  longer parse or render the retired replay chain. Browser review covered desktop and 390-pixel mobile layouts with
+  no console errors or warnings;
+- the representative five-strategy response is 65,626 bytes, down from the 7,784,535-byte legacy fixture by about
+  99.2 percent (118.6 times smaller), with the retired fields absent.
+
+Verified:
+
+- compact behavior, arithmetic, golden-payload, API/OpenAPI, response-cap, UI, navigation, deletion, and retained
+  decision-evidence selectors passed; the expanded adjacent selector passed 133 tests and the final
+  `mvn -B clean package` passed 3,051 tests across 412 fresh reports with zero failures, errors, skips, or dump files;
+- skip-test verify, the local artifact verifier, 144-component CycloneDX JSON/XML SBOMs, packaged LASE exits
+  0/0/2, the ten-scenario packaged Enterprise Lab workflow, and the literal-loopback operator-profile assertions
+  passed. The final 95,007,560-byte JAR has 1,325 entries and SHA-256
+  `D3CE76BEEF83A143E0817F3471B4785B3137C802CE97CC241BDB7EFEF75C677E`;
+- JaCoCo recorded 30,361 of 38,054 lines (79.78 percent) and 10,911 of 17,363 branches (62.84 percent). Inline
+  JavaScript parsing, retired-reference, overclaim, browser-safety, response-boundary, and `git diff --check` audits
+  passed.
+
+Failures/recovery: three obsolete historical phase guards were retired after they contradicted the L-1.2 deletion
+contract. The operator smoke used explicit alternate loopback ports because its defaults were occupied; every
+product assertion passed, then its blocked background-job teardown was bounded by terminating only the exact smoke
+wrapper/job host and verifying all five ports and workspace Java processes were clear. All material events are in
+`FAILURE_LOG.md`.
+
+Scope/safety: no credential/default, authorization, external/public target, cloud/tenant call, traffic mutation,
+replay execution, persistence, telemetry, dependency, Maven/workflow, Docker/Compose, deployment, or unrelated
+production behavior changed. Response-size and input caps remain.
+
+Remaining not proven: this slot does not prove production readiness/certification, live-cloud or real-tenant
+validation, production throughput/p95/p99, load/stress/soak behavior, broader automation, per-strategy factor-model
+correctness, repeated-request determinism, or collision resistance. The final three explainability properties remain
+explicit `L-1.3` scope.
+
+Blocker: none locally.
+
+Next action: audit and commit the complete exact-base diff, push the implementation, open one PR, then publish the
+required PR-open checkpoint and require every resulting exact-head remote gate before complete-diff self-review.
+
+Decision: continue only `L-1.2`; no later slot is active.
+
+## Combined Build Plan Slot 12 Main-Green / Slot 13 Start
+
+Timestamp: 2026-07-30T07:44:14-07:00
+
+Completed: `L-1.1`; `codex/l-1-1-remove-metadata-services`;
+[#509](https://github.com/RicheyWorks/LoadBalancerPro/pull/509); final head
+`4db5eabc712942e50df2ce500ff6529a8cb3efc9`; merge
+`1d57e4d664162ae4979ed1d24acfcc2af3673b1a`.
+
+Verified: push CI `30551567443`, PR CI `30551571279`, CodeQL `30551571238`, PR dependency review,
+package/SBOM/packaged-smoke/Docker/runtime/evidence/image-scan gates, and complete-diff self-review passed on the
+exact final head. Local `main`, `origin/main`, and `HEAD` then matched the merge commit with a clean worktree; the
+exact-main focused selector passed 144 tests with zero failures, errors, or skips; exact-main CI `30552406500`
+(25/25) and CodeQL `30552407045` (11/11) passed.
+
+Delivered scope: 15 derivational services, 20 DTOs, 15 dedicated documents, and 20 obsolete tests were deleted while
+the retained compare/replay decision-evidence contract and non-retired regression coverage remained green. The
+representative compare fixture shrank from 1,364,797 bytes to 620,027 bytes (54.6%).
+
+Safety/not proven: this completed slot removed response-only derivations and added no credential, external target,
+cloud/tenant call, traffic mutation, replay execution, persistence, telemetry, deployment behavior, or production
+claim. Production readiness/certification, live-cloud/tenant validation, throughput/p95/p99, and the compact
+Decision Explorer replacement remain unproven.
+
+Active: `L-1.2`, collapse Replay and Decision Explorer into one explainability module; branch
+`codex/l-1-2-collapse-explainability`; status `IN_PROGRESS`; base
+`1d57e4d664162ae4979ed1d24acfcc2af3673b1a`.
+
+Candidate contract: reconcile current main with the source plan, retain one non-derivational `RoutingExplanation`
+result with candidate factor contributions and bounded counterfactual weight scenarios, delete the parallel replay
+metadata chain and restatements, compact `/api/routing/decision-explorer`, and prove dominant/delta plus
+counterfactual behavior and payload reduction. No implementation claim is made before that audit and verification.
+
+Blocker: none. Next: validate this combined checkpoint, publish the branch start, inventory the current
+Decision Explorer construction and callers, then implement the smallest capability-preserving replacement.
+
 ## Combined Build Plan Slot 11 Main-Green / Slot 12 Start
 
 Timestamp: 2026-07-30T05:53:21-07:00

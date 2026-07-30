@@ -935,72 +935,13 @@ class RoutingDecisionDemoTest {
                     .andExpect(jsonPath("$.results[0].decisionVector.selectedCandidateVector.candidateId", is("edge-weighted")))
                     .andExpect(jsonPath("$.results[0].decisionVector.unknownOrUnexposedSignals",
                             hasItem("hidden routing internals not exposed")))
-                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.readOnly", is(true)))
-                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.snapshotSchemaVersion",
-                            is("decision-replay-snapshot/v1")))
-                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.selectedCandidateId",
-                            is("edge-weighted")))
-                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.candidateIdsConsidered[0]",
-                            is("edge-standard")))
-                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.candidateIdsConsidered[1]",
-                            is("edge-weighted")))
-                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot.snapshotFingerprint").isString())
-                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.readOnly", is(true)))
-                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.traceSchemaVersion",
-                            is("decision-replay-reconstruction-trace/v1")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.selectedCandidateId",
-                            is("edge-weighted")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.candidateIdsConsidered[0]",
-                            is("edge-standard")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.candidateIdsConsidered[1]",
-                            is("edge-weighted")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace.traceFingerprint")
-                            .isString())
-                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule.readOnly", is(true)))
-                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule.capsuleSchemaVersion",
-                            is("decision-replay-capsule/v1")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule.selectedCandidateId",
-                            is("edge-weighted")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule.candidateIdsConsidered[0]",
-                            is("edge-standard")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule.candidateIdsConsidered[1]",
-                            is("edge-weighted")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule.capsuleFingerprint")
-                            .isString())
-                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.readOnly", is(true)))
-                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.checklistSchemaVersion",
-                            is("decision-replay-readiness-checklist/v1")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.status").isString())
-                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.decisionVectorStatus",
-                            is("AVAILABLE")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.linkedReplaySnapshotFingerprint")
-                            .isString())
-                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.linkedReconstructionTraceFingerprint")
-                            .isString())
-                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.linkedReplayCapsuleFingerprint")
-                            .isString())
-                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.checklistItems[0].itemId",
-                            is("decision-vector-evidence")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist.checklistItems[8].itemId",
-                            is("read-only-boundary-evidence")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.readOnly", is(true)))
-                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapSchemaVersion",
-                            is("decision-replay-evidence-source-map/v1")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.status").isString())
-                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.decisionVectorStatus",
-                            is("AVAILABLE")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap"
-                            + ".linkedReplaySnapshotFingerprint").isString())
-                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap"
-                            + ".linkedReconstructionTraceFingerprint").isString())
-                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.linkedReplayCapsuleFingerprint")
-                            .isString())
-                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[0].sourceId",
-                            is("decision-vector-source")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[7].sourceId",
-                            is("linked-fingerprint-source")))
-                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.sourceMapEntries[8].sourceId",
-                            is("read-only-boundary-source")));
+                    .andExpect(jsonPath("$.results[0].dominantFactorAnalysis").isMap())
+                    .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis").isMap())
+                    .andExpect(jsonPath("$.results[0].decisionReplaySnapshot").doesNotExist())
+                    .andExpect(jsonPath("$.results[0].decisionReplayReconstructionTrace").doesNotExist())
+                    .andExpect(jsonPath("$.results[0].decisionReplayCapsule").doesNotExist())
+                    .andExpect(jsonPath("$.results[0].decisionReplayReadinessChecklist").doesNotExist())
+                    .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap").doesNotExist());
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "routing demo comparison must not construct CloudManager");

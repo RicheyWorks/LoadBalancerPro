@@ -6,6 +6,75 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-30T08:59:05-07:00
+
+Branch/PR: codex/l-1-2-collapse-explainability / no PR yet
+
+Failure type: successful operator-profile smoke did not finish loopback-backend teardown
+
+Failing check: post-run cleanup and port-release audit for
+`scripts/smoke/operator-run-profiles-smoke.ps1 -SkipPackage` on the explicit alternate ports
+
+Observed/root cause: all local-demo, API-key, and proxy-to-backend assertions passed, and all workspace Java
+processes exited. The PowerShell wrapper nevertheless remained blocked in its background-job cleanup, with one
+HTTP.sys listener still registered on `127.0.0.1:19182`. The script's loopback backend waits synchronously in
+`HttpListener.GetContext()`, and its final `Stop-Job` did not return after the successful run.
+
+Correction/result: terminate only the exact smoke wrapper and its child job host, then require all five explicit
+smoke ports to be released and confirm that no workspace Java process remains. The feature assertions remain valid;
+this is a local smoke-harness teardown limitation, not product-runtime evidence.
+
+Follow-up: keep the teardown limitation bounded to local verification and do not describe the smoke as clean until
+the post-cleanup process and port audit passes.
+
+## Entry
+
+Date/time: 2026-07-30T08:55:45-07:00
+
+Branch/PR: codex/l-1-2-collapse-explainability / no PR yet
+
+Failure type: operator-profile smoke could not reserve its default loopback backend ports
+
+Failing check: `scripts/smoke/operator-run-profiles-smoke.ps1 -SkipPackage`
+
+Observed/root cause: the bounded smoke stopped before launching the packaged application because literal-loopback
+ports 18181 and 18182 were already held by the Windows System process. No workspace Java or PowerShell process
+remained, and no application, proxy, backend, cloud, external-network, or repository mutation occurred.
+
+Correction/result: verified alternate literal-loopback ports 19080, 19081, 19082, 19181, and 19182 are available.
+
+Follow-up: rerun the unchanged packaged-JAR smoke on those explicit alternate ports and require all profile,
+authorization, proxy-to-backend, cleanup, and port-release assertions to pass.
+
+## Entry
+
+Date/time: 2026-07-30T08:43:52-07:00
+
+Branch/PR: codex/l-1-2-collapse-explainability / no PR yet
+
+Failure type: adjacent audit selector found obsolete Decision Explorer phase-documentation guards
+
+Failing check: focused execution of
+`AgentLaseRoutingIntelligencePhase1FinalHandoffDocumentationTest`,
+`AgentLaseRoutingIntelligencePhase5CloseoutDocumentationTest`, and
+`AgentLaseRoutingIntelligencePhase6NormalizationDocumentationTest`
+
+Observed/root cause: 16 tests ran with six failures, zero errors, and zero skips. The failures required deleted
+`DecisionExplorerConfidenceSummaryV1` and `DecisionExplorerCounterfactualAnalysisV1` source files, the former
+14-panel static-page vocabulary, and current-contract links to historical Phase 6 prose. Those assertions contradicted
+L-1.2's explicit acceptance contract to remove the derivational DTO/restatement chain and replace it with compact
+`RoutingExplanation` evidence.
+
+Correction/result: retire the three prose-only historical phase guards. Retain and expand executable API, golden
+payload, dominant/delta, counterfactual arithmetic, response-size, OpenAPI, UI-safety, navigation, deletion-acceptance,
+and historical-boundary coverage. The expanded adjacent selector subsequently passed 133 tests with zero
+failures/errors/skips.
+
+Follow-up: run the single full clean package on the intended L-1.2 candidate and accept only a current-head green
+result before publication.
+
+## Entry
+
 Date/time: 2026-07-29T12:00:35-07:00
 
 Branch/PR: codex/combined-build-plan-campaign-contract / PR #496

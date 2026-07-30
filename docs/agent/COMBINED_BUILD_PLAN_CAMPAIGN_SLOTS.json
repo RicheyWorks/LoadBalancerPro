@@ -177,11 +177,11 @@
       "sourceIds": ["L-1.1"],
       "track": "lab",
       "title": "Delete metadata-about-metadata services",
-      "status": "PR_OPEN",
+      "status": "MAIN_GREEN",
       "dependencies": ["L-0.2", "L-0.3", "L-0.4", "L-0.5", "L-0.6"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "PR #509 is open from codex/l-1-1-remove-metadata-services on exact green main b726cab39ddf60cd32fd515b32b3397ea605da3f; implementation head 67fd5617674bc29c8e9803a58488ee4d03323981. The named compare metadata chain is removed while decision evidence remains; the representative compare fixture is 54.6% smaller. Full 3,376-test package, verify, artifact, SBOM, packaged LASE/workflow/operator smokes, reference/scope checks, and non-retired regression coverage passed. This PR-open checkpoint changes the final head, whose remote gates remain pending; the separate Decision Explorer collapse remains L-1.2."
+      "currentState": "PR #509 final head 4db5eabc712942e50df2ce500ff6529a8cb3efc9 passed push CI 30551567443, PR CI 30551571279, CodeQL 30551571238, dependency review, package/SBOM/packaged-smoke/Docker/runtime/evidence/image-scan gates, and complete-diff self-review, then merged as 1d57e4d664162ae4979ed1d24acfcc2af3673b1a. Exact-main 144-test focused verification, CI 30552406500, and CodeQL 30552407045 passed. The named compare metadata chain is removed while decision evidence remains; the representative compare fixture is 54.6% smaller. The separate Decision Explorer collapse remains L-1.2."
     },
     {
       "ordinal": 13,
@@ -189,11 +189,11 @@
       "sourceIds": ["L-1.2"],
       "track": "lab",
       "title": "Collapse Replay and Decision Explorer into one explainability module",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": ["L-1.1"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "The compact replacement contract and capability-preserving deletion are unproven."
+      "currentState": "PR #510 is open from codex/l-1-2-collapse-explainability at published implementation head fdec562aeb3fa51bf0110fe86285eb3aa2fc6da3; the required PR-open checkpoint is documentation-only and will change the final exact head. The locally green candidate maps retained compare evidence into one compact RoutingExplanation result, deletes 80 production Java files and 64 obsolete tests from the replay/restatement chain, preserves response/input caps and separate scenario replay, and reduces the representative five-strategy response to 65,626 bytes. Focused and adjacent checks plus the 3,051-test clean package, artifact, SBOM, packaged-smoke, UI, safety, and campaign audits passed. Final exact-head remote gates and merge/main closure remain pending; L-1.3 correctness and determinism remain unproven."
     },
     {
       "ordinal": 14,

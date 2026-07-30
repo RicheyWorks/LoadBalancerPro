@@ -13,13 +13,18 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Source layout: `74b1f6758304bc5a3a85ff4888039e7309324ddf`, based on `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Source item count: 50.
 - Unique implementation slots: 49.
-- `MAIN_GREEN` implementation slots: 11 / 49.
-- Latest completed slot: `L-0.6` in merged [PR #508](https://github.com/RicheyWorks/LoadBalancerPro/pull/508);
-  final head `7ca0c5212f354f72350ce0e40eb4963fd2a17d65`, merge
-  `b726cab39ddf60cd32fd515b32b3397ea605da3f`, exact-main focused checks, CI, and CodeQL green.
-- Active implementation slot: `L-1.1`; metadata-about-metadata deletion is open as
-  [PR #509](https://github.com/RicheyWorks/LoadBalancerPro/pull/509) and awaits its final exact-head remote gate.
-- Next implementation slot after the active gate: `L-1.2`.
+- `MAIN_GREEN` implementation slots: 12 / 49.
+- Latest completed slot: `L-1.1` in merged [PR #509](https://github.com/RicheyWorks/LoadBalancerPro/pull/509);
+  final head `4db5eabc712942e50df2ce500ff6529a8cb3efc9`, merge
+  `1d57e4d664162ae4979ed1d24acfcc2af3673b1a`, exact-main 144-test focused checks, CI `30552406500`,
+  and CodeQL `30552407045` green.
+- Active implementation slot: `L-1.2`; collapse Replay and Decision Explorer into one explainability module on
+  `codex/l-1-2-collapse-explainability`; [PR #510](https://github.com/RicheyWorks/LoadBalancerPro/pull/510).
+  Published implementation head `fdec562aeb3fa51bf0110fe86285eb3aa2fc6da3` is locally green: 80 production Java
+  files and 64 obsolete tests are deleted, the compact five-strategy response is 65,626 bytes, and the 3,051-test
+  clean package plus artifact, SBOM, packaged-smoke, UI, safety, and campaign gates passed. The required PR-open
+  documentation checkpoint will change the exact head before remote-gate review.
+- Next implementation slot after the active gate: `L-1.3`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
 behavior exists. The active slot must reconcile its row with current main and the full source-plan acceptance contract.
@@ -39,8 +44,8 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 9 | L-0.4 | L-0.4 | Cockpit HTML-injection removal | SEC-DEFAULT-DENY | MAIN_GREEN |
 | 10 | L-0.5 | L-0.5 | Stable mocked-cloud ASG ownership | SEC-DEFAULT-DENY | MAIN_GREEN |
 | 11 | L-0.6 | L-0.6 | Ledger torn-read correctness | SEC-DEFAULT-DENY | MAIN_GREEN |
-| 12 | L-1.1 | L-1.1 | Delete metadata-about-metadata services | L0 complete | PR_OPEN |
-| 13 | L-1.2 | L-1.2 | One explainability module | L-1.1 | OPEN |
+| 12 | L-1.1 | L-1.1 | Delete metadata-about-metadata services | L0 complete | MAIN_GREEN |
+| 13 | L-1.2 | L-1.2 | One explainability module | L-1.1 | IN_PROGRESS |
 | 14 | L-1.3 | L-1.3 | Explainability correctness/determinism | L-1.2, P-0.3 | OPEN |
 | 15 | L-1.4 | L-1.4 | One comparison/experiment path | L-1.3 | OPEN |
 | 16 | L-2.1 | L-2.1 | One chained JSONL engine | L-0.6 | OPEN |

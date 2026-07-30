@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richmond423.loadbalancerpro.api.config.RoutingApiLimitsProperties;
+import com.richmond423.loadbalancerpro.api.explain.RoutingExplanationService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
@@ -62,7 +63,7 @@ class RoutingExplorerSizeLimitTest {
     @Test
     void hundredCandidateFiveStrategyAuditPocReturnsHttp400BeforePayloadServices() throws Exception {
         RoutingComparisonService comparisonService = mock(RoutingComparisonService.class);
-        DecisionExplorerPayloadService payloadService = mock(DecisionExplorerPayloadService.class);
+        RoutingExplanationService explanationService = mock(RoutingExplanationService.class);
         DecisionExplorerScenarioCatalogService scenarioCatalogService =
                 mock(DecisionExplorerScenarioCatalogService.class);
         RoutingApiLimitsProperties limits = new RoutingApiLimitsProperties();
@@ -73,7 +74,7 @@ class RoutingExplorerSizeLimitTest {
         try {
             MockMvc validationOnlyMvc = MockMvcBuilders.standaloneSetup(new RoutingController(
                             comparisonService,
-                            payloadService,
+                            explanationService,
                             scenarioCatalogService,
                             responseSizeGuard))
                     .setControllerAdvice(new RestExceptionHandler())
@@ -87,7 +88,7 @@ class RoutingExplorerSizeLimitTest {
                     .andExpect(jsonPath("$.error", is("validation_failed")))
                     .andExpect(jsonPath("$.details", hasItem(containsString("at most 32 candidates"))));
 
-            verifyNoInteractions(comparisonService, payloadService, scenarioCatalogService);
+            verifyNoInteractions(comparisonService, explanationService, scenarioCatalogService);
         } finally {
             validator.close();
         }

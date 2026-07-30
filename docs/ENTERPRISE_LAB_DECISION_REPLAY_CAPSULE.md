@@ -1,5 +1,9 @@
 # Enterprise Lab Decision Replay Capsule
 
+> Historical contract: this derivational response lane was retired by L-1.2. Current compare responses retain
+> `decisionVector`, `dominantFactorAnalysis`, and `decisionDeltaAnalysis`; current compact exploration uses
+> `RoutingExplanation` v2. The details below describe the former v1 surface and are not a current API contract.
+
 LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
 
 The Decision Replay Capsule is a read-only canonical evidence packaging lane for `POST /api/routing/compare`.

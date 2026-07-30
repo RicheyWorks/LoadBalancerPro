@@ -42,7 +42,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(doc.contains(
                 "LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo."));
         assertTrue(doc.contains(
-                "The Enterprise Lab `decisionVector` is the structured explanation object for one controlled lab routing decision."));
+                "The Enterprise Lab `decisionVector` is retained read-only evidence for one controlled lab routing decision."));
         assertTrue(doc.contains("## Decision Vector Fields"));
         assertTrue(doc.contains("`selectedStrategy`"));
         assertTrue(doc.contains("`selectedBackend`"));
@@ -480,7 +480,7 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("ServerScoreCalculator factor contribution contract extraction has begun"));
         assertTrue(page.contains("read-only comparison response can expose those summaries for selected and non-selected candidate vectors"));
         assertTrue(page.contains("no score weights are retuned"));
-        assertTrue(page.contains("The same-origin <code>/api/routing/compare</code> response returns the useful read-only evidence surfaces"));
+        assertTrue(page.contains("The same-origin <code>/api/routing/compare</code> response returns the retained read-only evidence surfaces"));
         assertTrue(page.contains("Decision Vector data is unavailable in this response; static lab guidance remains available."));
         assertTrue(page.contains("Copy structured decision vector summary"));
         assertTrue(page.contains("Decision replay, what-if experiments, and structured decision logging should build on this contract later"));
@@ -503,26 +503,11 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("id=\"decision-vector-delta-comparison\""));
         assertTrue(page.contains("id=\"decision-vector-delta-largest\""));
         assertTrue(page.contains("id=\"decision-vector-delta-boundary\""));
-        assertTrue(page.contains("Decision Evidence Snapshot"));
-        assertTrue(page.contains("id=\"decision-vector-replay-snapshot\""));
-        assertTrue(page.contains("id=\"decision-vector-replay-fingerprint\""));
-        assertTrue(page.contains("id=\"decision-vector-replay-boundary\""));
-        assertTrue(page.contains("Replay Reconstruction Trace"));
-        assertTrue(page.contains("id=\"decision-vector-reconstruction-trace\""));
-        assertTrue(page.contains("id=\"decision-vector-reconstruction-fingerprint\""));
-        assertTrue(page.contains("id=\"decision-vector-reconstruction-boundary\""));
-        assertTrue(page.contains("Replay Capsule"));
-        assertTrue(page.contains("id=\"decision-vector-replay-capsule\""));
-        assertTrue(page.contains("id=\"decision-vector-capsule-fingerprint\""));
-        assertTrue(page.contains("id=\"decision-vector-capsule-boundary\""));
-        assertTrue(page.contains("Replay Readiness Checklist"));
-        assertTrue(page.contains("id=\"decision-vector-readiness-checklist\""));
-        assertTrue(page.contains("id=\"decision-vector-readiness-fingerprints\""));
-        assertTrue(page.contains("id=\"decision-vector-readiness-boundary\""));
-        assertTrue(page.contains("Decision Replay Evidence Source Map"));
-        assertTrue(page.contains("id=\"decision-vector-source-map\""));
-        assertTrue(page.contains("id=\"decision-vector-source-map-fingerprints\""));
-        assertTrue(page.contains("id=\"decision-vector-source-map-boundary\""));
+        assertFalse(page.contains("id=\"decision-vector-replay-snapshot\""));
+        assertFalse(page.contains("id=\"decision-vector-reconstruction-trace\""));
+        assertFalse(page.contains("id=\"decision-vector-replay-capsule\""));
+        assertFalse(page.contains("id=\"decision-vector-readiness-checklist\""));
+        assertFalse(page.contains("id=\"decision-vector-source-map\""));
         assertTrue(page.contains("# Decision Vector Foundation"));
         assertTrue(page.contains("decisionIdOrLabRunId: "));
         assertTrue(page.contains("candidateVectors: "));
@@ -532,11 +517,11 @@ class EnterpriseLabDecisionVectorDocumentationTest {
         assertTrue(page.contains("dominantFactorAnalysis: "));
         assertTrue(page.contains("candidateDominantFactors: "));
         assertTrue(page.contains("decisionDeltaAnalysis: "));
-        assertTrue(page.contains("decisionReplaySnapshot: "));
-        assertTrue(page.contains("decisionReplayReconstructionTrace: "));
-        assertTrue(page.contains("decisionReplayCapsule: "));
-        assertTrue(page.contains("decisionReplayReadinessChecklist: "));
-        assertTrue(page.contains("decisionReplayEvidenceSourceMap: "));
+        assertFalse(page.contains("decisionReplaySnapshot: "));
+        assertFalse(page.contains("decisionReplayReconstructionTrace: "));
+        assertFalse(page.contains("decisionReplayCapsule: "));
+        assertFalse(page.contains("decisionReplayReadinessChecklist: "));
+        assertFalse(page.contains("decisionReplayEvidenceSourceMap: "));
         assertTrue(page.contains("readOnlyExposure: "));
         assertTrue(page.contains("internal calculator contribution and candidate summary contracts started"));
         assertTrue(page.contains("replayReadiness: "));

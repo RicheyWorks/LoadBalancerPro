@@ -4,6 +4,10 @@ LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routi
 
 The Enterprise Lab Cockpit provides controlled lab evidence, local reproducibility, and reviewer/operator explanations. It does not claim production certification, live-cloud proof, real-tenant proof, SLA/SLO proof, registry publication, container signing, governance application, production telemetry, or production monitoring proof.
 
+> L-1.2 contract note: references below to compare-response snapshot, reconstruction trace, capsule, readiness
+> checklist, and evidence source-map lanes are historical. Current compare responses retain `decisionVector`,
+> `dominantFactorAnalysis`, and `decisionDeltaAnalysis`; compact exploration uses `RoutingExplanation` v2.
+
 ## Product Identity
 
 LoadBalancerPro should be presented as an Enterprise Lab Cockpit for controlled pre-production routing validation. The cockpit helps reviewers and operators inspect routing decisions, compare controlled lab scenarios, explain visible input signals, and follow evidence pages without changing production routing behavior.

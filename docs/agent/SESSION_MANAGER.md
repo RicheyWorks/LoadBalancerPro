@@ -6,6 +6,80 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 4 Local-Green Checkpoint
+
+Timestamp: 2026-07-29T18:07:19-07:00
+
+Current slot: `P-0.3`, create route-scoped routing-strategy instances.
+
+Current branch: `codex/p-0-3-route-scoped-strategy`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `c04014892244dfc646406f2d8698592f254ddef3`, the exact corrective PR #500 merge commit
+and exact green `origin/main`.
+
+Implemented acceptance: `RoutingStrategyRegistry` now exposes guarded factories and its default factories create
+fresh stateful strategies. `ReverseProxyRoutePlanner` creates and owns one strategy per route, rejects a factory
+that shares one instance across active routes, and preserves a prior route's instance across reload only when the
+route name, strategy identifier, and trimmed upstream-ID set are unchanged. `ReverseProxyService` supplies the
+previous immutable route snapshot during its existing atomic reload. Two interleaved weighted-round-robin routes
+each served 1,000 requests at the expected 750/250 split, within the imported five-percentage-point tolerance.
+
+Changed files:
+
+- `src/main/java/com/richmond423/loadbalancerpro/core/RoutingStrategyRegistry.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyRoutePlanner.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyService.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/RoutingStrategyRegistryFactoryTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyRouteStrategyIsolationTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/api/ReverseProxyRouteStrategyReloadIntegrationTest.java`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Verification:
+
+- exact route-isolation red gate failed on the green base because two WRR routes received the same strategy
+  instance;
+- focused registry, planner, comparison-engine, round-robin, weighted-round-robin, service-forwarding, proxy,
+  security/reload, and literal-loopback reload-continuity selectors passed after implementation;
+- service-level acceptance executed 2,000 interleaved forwards, 1,000 per route, and each route selected its
+  3-weight upstream 750 times and its 1-weight upstream 250 times;
+- authoritative fresh `mvn -B clean package` passed 3,437 tests across 483 reports with zero failures, errors, or
+  skips and no Surefire dump files;
+- `mvn -q "-DskipTests" verify`, JaCoCo XML generation, executable-JAR resource checks, packaged healthy,
+  overloaded, and invalid synthetic LASE CLI cases, literal-loopback packaged JAR health/static-page smoke, exact
+  child-process identification, and cleanup passed;
+- executable JAR: 95,545,582 bytes, SHA-256
+  `80916D64FCA16D285B70C24E2AA285A631FF24D06B5F076CF96F3094CE5076DC`;
+- JaCoCo recorded 191,979 of 230,960 instructions, 16,539 of 24,928 branches, and 39,127 of 47,482 lines covered;
+- CycloneDX 2.9.1 generated parseable JSON/XML 1.6 BOMs with 144 components in each;
+- complete-diff whitespace, campaign-manifest parse, secret-like-value, and public/external-target scans passed;
+  changed tests use only literal loopback targets.
+
+Local limitations: the Docker CLI could not reach an engine earlier in this campaign session, Trivy is not
+installed, and the repository root has no Compose file. No local Docker/runtime, Trivy, or Compose result is
+claimed. Exact-head remote Docker build/runtime, container evidence, dependency review, SBOM, blocking Trivy, CI,
+and CodeQL remain mandatory before merge.
+
+Scope and safety: production changes are limited to the planned registry factory and reverse-proxy route-planning/
+reload ownership surfaces. No authentication/authorization policy, target validation, retry/timeout semantics,
+Maven/CI/Docker/Compose behavior, secret, external/public target, live cloud/tenant action, or readiness claim
+changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: none.
+
+Next action: rerun campaign/documentation guards at this checkpoint, commit and publish the exact local-green head,
+open one PR, and require every exact-head remote gate before merge.
+
+Decision: continue only `P-0.3`; no later slot is active.
+
 ## Combined Build Plan Slot 4 Start Checkpoint
 
 Timestamp: 2026-07-29T17:25:53-07:00

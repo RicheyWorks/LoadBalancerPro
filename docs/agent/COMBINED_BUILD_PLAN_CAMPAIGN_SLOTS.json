@@ -213,11 +213,11 @@
       "sourceIds": ["L-1.4"],
       "track": "lab",
       "title": "Collapse duplicate comparison and experiment surfaces",
-      "status": "PR_OPEN",
+      "status": "MAIN_GREEN",
       "dependencies": ["L-1.3"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "PR #512 is open from codex/l-1-4-collapse-comparison-paths. Published implementation head 344fef481a63013acf4770ff7e3b8e7e84f2092a passed shared-engine equivalence and pressure-boundary selectors, a 3,050-test clean package, verify/coverage, artifact/SBOM/LASE/adaptive-experiment/Enterprise-Lab/operator smokes, final packaged loopback API checks, browser review, and complete-diff scope/security audits. The PR-open campaign checkpoint is documentation-only and must be published and gated as the exact final head before merge."
+      "currentState": "PR #512 final head 37f4382d07a36b48096ad1083bd60faf3df7b10d passed push CI 30571990654, PR CI 30571995420, CodeQL 30571995080, dependency review, package/SBOM/packaged-smoke/Docker/runtime/evidence/image-scan gates, and complete-diff self-review, then merged as 36622b8b2ca27003a0a9a5e165ac361969173dd0. Exact-main 65-test focused verification, CI 30572768693, and CodeQL 30572768745 passed. Experiment, scenario, and LASE decisions share RoutingComparisonEngine; duplicate matrix/gate surfaces are retired; and one PressureClassifier serves failure, shedding, and autoscaling policies."
     },
     {
       "ordinal": 16,
@@ -225,11 +225,11 @@
       "sourceIds": ["L-2.1"],
       "track": "lab",
       "title": "Unify JSONL stores behind one chained engine",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": ["L-0.6"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "Shared-engine parity and split-brain refusal are unproven."
+      "currentState": "Started from exact green main 36622b8b2ca27003a0a9a5e165ac361969173dd0 on codex/l-2-1-chained-jsonl-store. The application and supervisor command ledgers, allocation state store, local journal, ownership/lock helpers, formats, codecs, process mutexes, and call sites must be reconciled before selecting the shared-engine seam. Shared-engine parity and lock-path-deletion split-brain refusal remain unproven."
     },
     {
       "ordinal": 17,

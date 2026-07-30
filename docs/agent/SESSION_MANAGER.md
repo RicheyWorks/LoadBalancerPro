@@ -6,6 +6,49 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 15 Main-Green / Slot 16 Start
+
+Timestamp: 2026-07-30T12:07:52-07:00
+
+Completed: `L-1.4`; `codex/l-1-4-collapse-comparison-paths`;
+[#512](https://github.com/RicheyWorks/LoadBalancerPro/pull/512); final head
+`37f4382d07a36b48096ad1083bd60faf3df7b10d`; merge
+`36622b8b2ca27003a0a9a5e165ac361969173dd0`.
+
+Verified: push CI `30571990654`, PR CI `30571995420`, CodeQL `30571995080`, PR dependency review, every
+package/SBOM/JAR/Docker/runtime/evidence/image-scan step, and the 40-file complete-diff self-review passed on the
+exact final head. Local `main`, `origin/main`, and GitHub main then matched the merge commit with a clean worktree;
+the exact-main comparison/experiment/scenario/pressure/LASE/CI-evidence/campaign selector passed 65 tests across
+ten reports with zero failures, errors, or skips; exact-main CI `30572768693` and CodeQL `30572768745` passed.
+
+Delivered scope: adaptive experiment, scenario, and LASE decisions now reach the shared `RoutingComparisonEngine`;
+the experiment fixture catalog and advisor candidate synthesis are shared; duplicate scenario-gate and
+strategy-matrix APIs/models/UI are retired; and failure, shedding, and autoscaling policies use one explicit
+`PressureClassifier`. The retained summary, detail, and evidence-packet surfaces remain local/synthetic evidence.
+
+Safety/not proven: the completed slot changed no credential/default, authorization, external/public/private target,
+cloud/tenant call, live proxy-route mutation, persistence, dependency, Maven/workflow, Docker/Compose, deployment,
+release, tag, or secret. Production readiness/certification, live-cloud/tenant validation, persistent
+audit/signature authenticity, production scoring proof, throughput/p95/p99, load/stress/soak behavior, distributed
+determinism, and broader automation remain unproven.
+
+Active: `L-2.1`, unify JSONL stores behind one chained engine; branch
+`codex/l-2-1-chained-jsonl-store`; status `IN_PROGRESS`; base
+`36622b8b2ca27003a0a9a5e165ac361969173dd0`. Dependency `L-0.6` is `MAIN_GREEN`.
+
+Candidate contract: reconcile the current `EnterpriseLabApplicationCommandLedger`,
+`EnterpriseLabSupervisorCommandLedger`, allocation state store, local journal, and their ownership/lock helpers;
+extract one bounded hash-chained JSONL engine that preserves atomic single-frame append and applies OS locking plus
+inode/creation-time identity consistently. Existing store contracts must remain green, and a lock-path deletion plus
+second-locker acceptance test must prove split-brain refusal. Rotation, recovery/repair, takeover lease policy,
+directory fsync honesty, tooling relocation, and broader logging remain later-slot work.
+
+Blocker: none. Next: validate and publish this combined checkpoint, then inventory the four current stores, their
+formats/codecs, lock ownership, process mutexes, tests, and call sites before selecting the smallest safe shared
+engine seam.
+
+Decision: continue only `L-2.1`; no later slot is active.
+
 ## Combined Build Plan Slot 15 PR-Open Checkpoint
 
 Timestamp: 2026-07-30T11:46:13-07:00

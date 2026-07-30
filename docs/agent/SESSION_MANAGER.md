@@ -6,6 +6,107 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 7 Local-Green Checkpoint
+
+Timestamp: 2026-07-29T21:05:38-07:00
+
+Current slot: `L-0.2`, cap explorer candidate, strategy, and response sizes.
+
+Current branch: `codex/l-0-2-explorer-size-caps`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `7f360c83a49b2629de3bbb56b6094118a8878f1b`, the exact PR #503 merge commit and green
+`origin/main`.
+
+Implementation:
+
+- `RoutingComparisonRequest` now rejects more than 32 candidates or five explicit strategies at DTO validation;
+- validated `loadbalancerpro.api.max-candidates` and `loadbalancerpro.api.max-strategies` settings can lower, but not
+  raise, those hard ceilings;
+- `RoutingComparisonService` enforces the effective configured limits before timestamp, strategy resolution,
+  candidate conversion, comparison construction, or Explorer payload construction, including the default-strategy
+  fan-out when the request omits strategies;
+- Decision Explorer output receives a configurable 16 MiB default counting-serialization ceiling before response
+  return, with a 64 MiB configuration hard ceiling; counting stops as soon as the limit would be crossed and does
+  not allocate a duplicate response byte array;
+- over-cap input and output return the existing structured HTTP 400 shapes without exception or diagnostic
+  internals;
+- README and API contract/security pages state the exact bounds and preserve the local abuse-resistance,
+  recommendation-only, no-performance-proof boundary.
+
+Acceptance:
+
+- the corrected pre-implementation red gate ran six tests with five expected failures and one already-correct
+  inclusive-boundary pass;
+- the imported 100-candidate/five-strategy proof now returns validation HTTP 400 before any comparison, payload, or
+  scenario-catalog interaction;
+- configured candidate and strategy ceilings of two reject three-item requests before construction while the exact
+  two/two boundary succeeds;
+- a 1,024-byte Explorer output ceiling rejects the generated response with controlled HTTP 400;
+- configuration tests prove defaults, lower-value binding, and fail-fast rejection above all three hard ceilings;
+- the consolidated size, routing-controller, Explorer API/payload/modularity, request-size, authentication, CSRF,
+  performance-baseline, and documentation selector passed 89 tests across 15 reports with zero failures, errors, or
+  skips.
+
+Changed files:
+
+- `src/main/java/com/richmond423/loadbalancerpro/api/RoutingComparisonRequest.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/RoutingComparisonService.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/RoutingController.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/DecisionExplorerResponseSizeGuard.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/config/RoutingApiLimitsConfiguration.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/config/RoutingApiLimitsProperties.java`
+- `src/main/resources/application.properties`
+- `src/test/java/com/richmond423/loadbalancerpro/api/RoutingExplorerSizeLimitTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/api/config/RoutingApiLimitsConfigurationTest.java`
+- `README.md`
+- `docs/API_CONTRACTS.md`
+- `docs/API_SECURITY.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Verification:
+
+- clean `mvn -B clean package`: exit 0 in 276.4 seconds, 3,461 tests across 487 fresh reports, zero
+  failures/errors/skips, and no Surefire dump files;
+- `mvn -q "-DskipTests" verify`, the focused/adjacent selector, and `git diff --check` passed;
+- JaCoCo XML generation passed: 83.20% instructions, 66.41% branches, 82.51% lines, 87.69% methods, and 94.34%
+  classes;
+- CycloneDX 2.9.1 generated parseable JSON/XML 1.6 BOMs with 144 components in each;
+- the checked-in artifact verifier passed all seven required executable-JAR entries;
+- the packaged healthy/overloaded/invalid LASE CLI cases passed with exits 0, 0, and 2, no Spring startup, and no
+  raw invalid-case exception;
+- the checked-in literal-loopback packaged runtime smoke returned HTTP 200 for health, the proxy status page, and
+  proxy status API, then stopped its captured process;
+- the packaged Enterprise Lab shadow workflow passed ten fixed scenarios and wrote ignored target-only evidence
+  under its explicit no-live-cloud/no-external-network boundary;
+- final executable JAR after the packaged workflow rerun: 95,551,571 bytes, 1,438 entries, SHA-256
+  `AC468379AC95239B19F4A4619D4D9B50969DD08F7F0513C847ABA56493032D87`.
+
+Local limitations: Docker CLI 28.0.4 could not reach its configured Docker Desktop Linux engine, Trivy is not
+installed, and the repository root has no Compose file. No local Docker/runtime, controlled container, Trivy, or
+Compose result is claimed. Exact-head remote CI, CodeQL, dependency review, SBOM, Docker build/runtime, controlled
+container evidence, and blocking image scan remain mandatory before merge.
+
+Scope and safety: production changes are limited to the planned routing-comparison and Decision Explorer abuse
+bounds. No authentication/authorization policy was weakened, and no public/external target, secret, live
+cloud/tenant action, deployment, CI/Maven/Docker/Compose change, proxy behavior, persistent state, unrelated
+lab/evidence behavior, or readiness/performance claim was added.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader
+automation is established by this slot.
+
+Blocker: none locally.
+
+Next action: rerun the campaign guards after this checkpoint, commit and publish the exact 16-file local-green
+slice, open one PR, and require every exact-head remote gate before authorized self-review and merge.
+
+Decision: continue only `L-0.2`; no later slot is active.
+
 ## Combined Build Plan Slot 7 Start Checkpoint
 
 Timestamp: 2026-07-29T20:35:18-07:00

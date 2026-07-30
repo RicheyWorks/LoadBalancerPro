@@ -34,11 +34,19 @@ This is not a distributed quota system and does not depend on Redis, a database,
 
 ## Abuse-Resistance Guarantees
 
-The API rejects malformed JSON, unsupported content types, oversized API mutation bodies, invalid numeric ranges, unknown strategies, duplicate routing identifiers, and invalid load-shedding metadata with controlled error responses. Error bodies should not include stack traces, exception class names, secrets, or diagnostic internals.
+The API rejects malformed JSON, unsupported content types, oversized API mutation bodies, invalid numeric ranges, unknown strategies, duplicate routing identifiers, over-cap routing candidate/strategy lists, oversized Decision Explorer output, and invalid load-shedding metadata with controlled error responses. Error bodies should not include stack traces, exception class names, secrets, or diagnostic internals.
 
 Rejected requests must not construct or mutate `CloudManager`. Read-only evaluation requests must remain recommendation-only and keep `metricsPreview.emitted` set to `false`.
 
 Request-size limits are enforced for `/api/**` POST, PUT, and PATCH requests. The default limit is 16 KiB and can be changed with `loadbalancerpro.api.max-request-bytes`. Optional proxy mode has a separate request-body ceiling, `loadbalancerpro.proxy.max-request-bytes`, defaulting to 64 KiB.
+
+Routing comparison and Decision Explorer requests also have an absolute 32-candidate and five-strategy ceiling.
+`loadbalancerpro.api.max-candidates` and `loadbalancerpro.api.max-strategies` can lower those limits, and
+`loadbalancerpro.api.max-decision-explorer-response-bytes` bounds the counting-serialization pass for Explorer output
+(16 MiB by default, with a one-byte minimum and 64 MiB hard maximum). Candidate and strategy violations fail with
+HTTP 400 before comparison/Explorer payload construction. The output guard stops serialization once the ceiling
+would be crossed and returns structured HTTP 400; out-of-range settings fail application configuration validation.
+This is a local process bound, not load/stress proof or a substitute for deployment-level quotas.
 
 Evidence training onboarding routes under `/api/evidence-training/**` expose packaged template, example, scorecard, and answer-template metadata for local operator onboarding and Postman demos. Discovery routes are read-only. They are public only when the operator explicitly selects `auth.mode=none`; API-key mode requires `X-API-Key`, and OAuth2 requires the configured allocation role. `POST /api/evidence-training/scorecards/grade` performs deterministic in-memory grading only; it does not write report files, construct `CloudManager`, or mutate cloud state. The Postman operator demo uses local `{{baseUrl}}` requests and deterministic no-secret grading bodies only; it must not include cloud mutation, admin, release, tag, ruleset, or credential requests. The browser cockpit at `/evidence-training-demo.html` uses plain same-origin HTML/CSS/JavaScript, has no external scripts, styles, fonts, images, CDNs, services, dependencies, secrets, auth fields, browser storage, or admin/release/ruleset/cloud controls, and calls only the evidence training demo routes. Its run-sequence and summary/transcript preview are client-side only; they do not write runtime reports or introduce server-side automation. Treat the scorecard output as a local training aid only, not certification, legal compliance proof, or identity proof.
 

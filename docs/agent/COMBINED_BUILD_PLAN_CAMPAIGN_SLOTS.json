@@ -129,11 +129,11 @@
       "sourceIds": ["L-0.3"],
       "track": "lab",
       "title": "Make CLI prompt abort non-mutating",
-      "status": "PR_OPEN",
+      "status": "REMOTE_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "SAFETY",
       "verificationProfile": "java-full",
-      "currentState": "PR #505 is open from codex/l-0-3-non-mutating-cli-abort. Complete-diff review found and corrected the remaining sentinel-range overlap edge: promptForInt now rejects a range containing the abort sentinel, all six callers check it explicitly, valid -1 remains valid, and mocked Scale Cloud cancellation performs zero CloudManager interactions. Corrected full local Java, artifact, SBOM, packaged loopback, and lab-shadow gates passed; the corrected exact-head remote gates remain pending."
+      "currentState": "PR #505 corrected head 887b0403d71cf4b414f44515494f6b6abe08ce23 passed push CI 30516200283, PR CI 30516202278, CodeQL 30516202297, dependency review, both 25-step build/package/SBOM/packaged-smoke/Docker/runtime/evidence/Trivy jobs, and complete-diff self-review. The final remote-green checkpoint will create a new exact head, so all required gates must pass again before merge."
     },
     {
       "ordinal": 9,

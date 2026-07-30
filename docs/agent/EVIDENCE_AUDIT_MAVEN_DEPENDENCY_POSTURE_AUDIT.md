@@ -34,7 +34,7 @@ The `dependencyManagement` section currently includes:
 
 - Jackson BOM `com.fasterxml.jackson:jackson-bom` version `${jackson.version}`, currently `2.21.4`;
 - Netty BOM `io.netty:netty-bom` version `${netty.version}`, currently `4.2.16.Final`;
-- Spring Boot dependency BOM `org.springframework.boot:spring-boot-dependencies` version `${spring-boot.version}`, currently `3.5.14`;
+- Spring Boot dependency BOM `org.springframework.boot:spring-boot-dependencies` version `${spring-boot.version}`, currently `3.5.16`;
 - explicit Tomcat embedded overrides for `tomcat-embed-core`, `tomcat-embed-el`, and `tomcat-embed-websocket` at `${tomcat.version}`, currently `10.1.55`;
 - AWS SDK v2 BOM `software.amazon.awssdk:bom` version `${aws-sdk-v2.version}`, currently `2.44.4`.
 
@@ -50,6 +50,31 @@ The 2026-07-29 blocking-image-scan recovery moves only the centrally managed Net
 `CVE-2026-59901`, `CVE-2026-55831`, `CVE-2026-55833`, and `CVE-2026-56745` in the packaged `4.2.15.Final` family.
 The recovery does not add an allowlist, weaken the scan, change other dependencies or plugins, or claim that the later
 baseline is free from present or future vulnerabilities.
+
+The 2026-07-30 isolated Spring security prerequisite moves only the Spring Boot BOM/plugin property from `3.5.14`
+to `3.5.16`. Maven's resolved 171-coordinate dependency list has no added or removed coordinate and resolves Spring
+Framework `6.2.19` and Spring Security `6.5.11`. This removes the `spring-expression`/`spring-webmvc` `6.2.18`
+versions behind the exact-head image scan's HIGH `CVE-2026-41850`, `CVE-2026-41842`, and `CVE-2026-41845`
+findings. It does not add a CVE allowlist or suppression, weaken a gate, or change application behavior,
+configuration defaults, plugins, workflows, Docker configuration, credentials, or external targets.
+
+The complete resolved-version delta from the Boot patch is:
+
+| Managed family | From | To | Resolved artifacts |
+| --- | --- | --- | --- |
+| Spring Boot | `3.5.14` | `3.5.16` | 16: `spring-boot`, `spring-boot-actuator`, `spring-boot-actuator-autoconfigure`, `spring-boot-autoconfigure`, 10 `spring-boot-starter*` artifacts, `spring-boot-test`, and `spring-boot-test-autoconfigure` |
+| Spring Framework | `6.2.18` | `6.2.19` | 9: `spring-aop`, `spring-beans`, `spring-context`, `spring-core`, `spring-expression`, `spring-jcl`, `spring-test`, `spring-web`, and `spring-webmvc` |
+| Spring Security | `6.5.10` | `6.5.11` | 8: `spring-security-config`, `spring-security-core`, `spring-security-crypto`, `spring-security-oauth2-core`, `spring-security-oauth2-jose`, `spring-security-oauth2-resource-server`, `spring-security-test`, and `spring-security-web` |
+| Micrometer | `1.15.11` | `1.15.12` | 6: `micrometer-commons`, `micrometer-core`, `micrometer-jakarta9`, `micrometer-observation`, `micrometer-registry-otlp`, and `micrometer-registry-prometheus` |
+| Logback | `1.5.32` | `1.5.34` | 2: `logback-classic` and `logback-core` |
+| SLF4J | `2.0.17` | `2.0.18` | 2: `jul-to-slf4j` and `slf4j-api` |
+| Reactor | `3.7.18` | `3.7.19` | 1: `reactor-core` |
+| Jakarta XML Bind | `4.0.4` | `4.0.5` | 1: `jakarta.xml.bind-api` |
+
+All 45 version changes are members of those Boot-managed patch families; separately pinned Jackson, Netty, Tomcat,
+AWS SDK, JavaFX, Log4j, JSON, Gson, Caffeine, Maven plugin, workflow, and container declarations remain unchanged.
+This inventory establishes the effective local graph for this prerequisite; it does not claim future vulnerability
+absence or broaden the repository's production-readiness evidence.
 
 ## Runtime Dependency Families
 
@@ -90,7 +115,7 @@ The build plugin surface currently includes:
 - `exec-maven-plugin` `3.5.0`, present for optional local operator launcher recipes with no execution bound to the default lifecycle;
 - `jacoco-maven-plugin` `${jacoco.version}`, currently `0.8.13`, with `prepare-agent` and `report` executions;
 - `maven-jar-plugin` `3.5.0`, adding default implementation and specification manifest entries;
-- `spring-boot-maven-plugin` `${spring-boot.version}`, currently `3.5.14`, configured with Spring Boot main class `com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication`, `build-info`, and `repackage` executions.
+- `spring-boot-maven-plugin` `${spring-boot.version}`, currently `3.5.16`, configured with Spring Boot main class `com.richmond423.loadbalancerpro.api.LoadBalancerApiApplication`, `build-info`, and `repackage` executions.
 
 This plugin posture supports tests, coverage, executable JAR packaging, and build metadata. It does not add CI/Maven wiring in this slot, does not publish artifacts, does not create releases, does not create container images, and does not deploy anything.
 

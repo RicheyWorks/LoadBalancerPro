@@ -274,7 +274,7 @@ Maven warnings observed during the passing run:
 | Expected feature | Actual state |
 | --- | --- |
 | AWS SDK v2 dependencies | Present. `pom.xml` uses `software.amazon.awssdk:bom` version `2.42.35` and SDK v2 modules `autoscaling`, `cloudwatch`, and `ec2`. Source imports are SDK v2. |
-| Spring Boot 3.x | Present. `pom.xml` has `spring-boot.version` = `3.5.14`. |
+| Spring Boot 3.x | Present. `pom.xml` has `spring-boot.version` = `3.5.16`. |
 | Dockerfile | Present. Root `Dockerfile` exists and README/CI describe Docker build and healthcheck behavior. |
 | docker-compose | Missing. No compose file found. README does not appear to claim one. |
 | CI workflows | Present locally. `.github/workflows/ci.yml` runs dependency tree, tests, package, LASE demo smoke checks, packaged JAR smoke, Docker build/runtime smoke, Trivy, and dependency review. |

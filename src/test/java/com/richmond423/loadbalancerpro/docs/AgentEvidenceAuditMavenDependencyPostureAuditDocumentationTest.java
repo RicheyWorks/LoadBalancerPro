@@ -62,7 +62,12 @@ class AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest {
                 "java.version",
                 "17",
                 "spring boot",
-                "3.5.14",
+                "3.5.16",
+                "spring framework",
+                "6.2.19",
+                "spring security",
+                "6.5.11",
+                "all 45 version changes",
                 "tomcat",
                 "10.1.55",
                 "netty-bom",
@@ -92,7 +97,7 @@ class AgentEvidenceAuditMavenDependencyPostureAuditDocumentationTest {
         Document pom = parsePom();
 
         assertEquals("17", property(pom, "java.version"));
-        assertEquals("3.5.14", property(pom, "spring-boot.version"));
+        assertEquals("3.5.16", property(pom, "spring-boot.version"));
         assertEquals("10.1.55", property(pom, "tomcat.version"));
         assertEquals("4.2.16.Final", property(pom, "netty.version"));
         assertEquals("2.21.4", property(pom, "jackson.version"));

@@ -1,6 +1,7 @@
 package com.richmond423.loadbalancerpro.cli;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -47,6 +48,14 @@ class PromptForIntAbortSafetyTest {
         int result = console.promptForInt("adjust: ", -10, 10, "adjustment");
 
         assertEquals(-1, result);
+    }
+
+    @Test
+    void validRangeCannotOverlapTheDedicatedAbortSentinel() {
+        ConsoleUtils console = consoleWithInput(Integer.MIN_VALUE + "\n");
+
+        assertThrows(IllegalArgumentException.class, () ->
+                console.promptForInt("value: ", Integer.MIN_VALUE, 10, "value"));
     }
 
     @Test

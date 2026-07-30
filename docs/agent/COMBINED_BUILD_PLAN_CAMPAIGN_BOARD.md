@@ -18,8 +18,9 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   final head `b55e677cc141f1b7f450f9469b9fe26d0fac9978`, merge
   `408acded496caed88e849c947a46ba43fead6f5d`, exact-main local package, CI, and CodeQL green.
 - Active implementation slot: `L-0.3`; [PR #505](https://github.com/RicheyWorks/LoadBalancerPro/pull/505) is open
-  from branch `codex/l-0-3-non-mutating-cli-abort`. The dedicated integer-prompt abort sentinel, all six caller
-  checks, and zero-interaction Scale Cloud cancellation are local-green; exact-head remote gates remain pending.
+  from branch `codex/l-0-3-non-mutating-cli-abort`. The corrected dedicated integer-prompt abort sentinel, range-
+  overlap rejection, all six caller checks, and zero-interaction Scale Cloud cancellation are local-green;
+  corrected exact-head remote gates remain pending.
 - Next implementation slot after the active gate: `L-0.4`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

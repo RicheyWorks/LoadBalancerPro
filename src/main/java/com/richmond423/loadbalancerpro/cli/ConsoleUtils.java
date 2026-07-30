@@ -78,6 +78,9 @@ public class ConsoleUtils {
     }
 
     public int promptForInt(String prompt, int min, int max, String fieldName) {
+        if (min == PROMPT_ABORTED) {
+            throw new IllegalArgumentException("Integer prompt range cannot include the abort sentinel");
+        }
         int attempts = 0;
         final int maxAttempts = 3;
         while (attempts < maxAttempts && !isScannerClosed()) {

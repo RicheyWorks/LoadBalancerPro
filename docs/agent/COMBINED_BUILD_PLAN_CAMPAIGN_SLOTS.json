@@ -133,7 +133,7 @@
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "SAFETY",
       "verificationProfile": "java-full",
-      "currentState": "PR #505 is open from codex/l-0-3-non-mutating-cli-abort. Published implementation head a040d543ac31197ce61d11ddb113be00ac2e3110 passed the full local Java, artifact, SBOM, packaged loopback, and lab-shadow gates: promptForInt uses an out-of-range abort sentinel, all six callers check it explicitly, valid -1 remains valid, and mocked Scale Cloud cancellation performs zero CloudManager interactions. The PR-open checkpoint will create a new exact head, so all remote gates remain pending."
+      "currentState": "PR #505 is open from codex/l-0-3-non-mutating-cli-abort. Complete-diff review found and corrected the remaining sentinel-range overlap edge: promptForInt now rejects a range containing the abort sentinel, all six callers check it explicitly, valid -1 remains valid, and mocked Scale Cloud cancellation performs zero CloudManager interactions. Corrected full local Java, artifact, SBOM, packaged loopback, and lab-shadow gates passed; the corrected exact-head remote gates remain pending."
     },
     {
       "ordinal": 9,

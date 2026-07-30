@@ -6,6 +6,59 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 8 Review-Correction Local-Green Checkpoint
+
+Timestamp: 2026-07-29T22:16:10-07:00
+
+Current slot: `L-0.3`, make CLI integer-prompt abort non-mutating.
+
+Current branch: `codex/l-0-3-non-mutating-cli-abort`.
+
+Slot status: `PR_OPEN`; corrected local tree is green and not yet published.
+
+Pull request: [#505](https://github.com/RicheyWorks/LoadBalancerPro/pull/505).
+
+Superseded reviewed head: `5cfe57d8809d7e9109abc6b4dbc5eaffc6691bc8`.
+
+Review correction: every current caller excluded `Integer.MIN_VALUE`, but `promptForInt` still permitted a future
+valid range beginning at the sentinel. The method now fails fast if its range would contain `PROMPT_ABORTED`, and a
+focused regression proves the abort sentinel cannot be a valid range value. This preserves intentional `-1` input
+and the previously proven zero-interaction Scale Cloud cancellation.
+
+Corrected verification:
+
+- focused CLI/cloud/campaign selector: 78 tests across seven reports, zero failures, errors, or skips;
+- expanded all-CLI and adjacent documentation selector: 207 tests across 25 reports, zero failures, errors, or
+  skips;
+- clean `mvn -B clean package`: exit 0 in 272.8 seconds, 3,467 tests across 488 fresh reports, zero
+  failures/errors/skips, and no Surefire dump files;
+- verify and JaCoCo passed: 83.26% instructions, 66.47% branches, 82.58% lines, 87.78% methods, and 94.34% classes;
+- CycloneDX JSON/XML 1.6 BOMs parsed with 144 components each;
+- the artifact verifier, packaged LASE exits 0/0/2, literal-loopback health/status smoke, and ten-scenario packaged
+  Enterprise Lab shadow workflow passed;
+- final corrected executable JAR: 95,551,698 bytes, 1,438 entries, SHA-256
+  `BF28C21878883B0BC8A056B9AC73EB97502C62FC0572A293752294641E796A18`;
+- `git diff --check` passed.
+
+Local Docker/runtime, controlled container, Trivy, and Compose remain not run and not green for the logged tooling
+reasons. The corrected exact-head remote container and blocking image-scan lanes remain mandatory.
+
+Scope and safety remain unchanged: the eight-file PR slice changes only the planned CLI integer-abort contract,
+caller handling, regression evidence, README contract, and campaign records. It adds no authentication/
+authorization weakening, public/external target, secret, live cloud/tenant action, deployment, CI/Maven/Docker/
+Compose change, endpoint, cloud enablement, or readiness/performance claim.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader
+automation is established by this slot.
+
+Blocker: none locally; all remote results for the superseded reviewed head are stale by design.
+
+Next action: commit and publish this review correction, then require every remote gate on the resulting exact SHA
+before repeating complete-diff self-review and any merge decision.
+
+Decision: continue only `L-0.3`; no later slot is active.
+
 ## Combined Build Plan Slot 8 PR-Open Checkpoint
 
 Timestamp: 2026-07-29T22:02:52-07:00

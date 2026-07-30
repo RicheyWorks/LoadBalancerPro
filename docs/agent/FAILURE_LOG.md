@@ -8903,3 +8903,11 @@ failure. L-0.3 changes no dependency, POM, workflow, Dockerfile, Compose file, b
 Correction: claim no local Docker/runtime, controlled container, Trivy, or Compose validation. Preserve the
 unchanged security gates and require exact-head remote Docker build/runtime, controlled container evidence, and
 blocking HIGH/CRITICAL Trivy success before merge and again on exact merge-main.
+
+L-0.3 complete-diff self-review on PR #505 head `5cfe57d8809d7e9109abc6b4dbc5eaffc6691bc8`: every current caller
+kept `Integer.MIN_VALUE` outside its valid range, but the general `promptForInt` contract did not reject a future
+range whose minimum was the sentinel itself. That left the dedicated sentinel invariant dependent on caller
+discipline despite the caller-count guard. Correction: fail fast when an integer-prompt range includes
+`PROMPT_ABORTED` and add a focused regression proving the sentinel can never be a valid range value. Treat all
+running checks for `5cfe57d8809d7e9109abc6b4dbc5eaffc6691bc8` as superseded; repeat local and exact-head remote gates on the
+corrected SHA.

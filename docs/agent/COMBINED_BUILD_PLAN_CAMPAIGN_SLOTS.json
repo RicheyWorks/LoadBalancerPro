@@ -105,11 +105,11 @@
       "sourceIds": ["P-0.6"],
       "track": "proxy",
       "title": "Apply the simulation-core correctness batch",
-      "status": "LOCAL_GREEN",
+      "status": "PR_OPEN",
       "dependencies": [],
       "riskClass": "CORRECTNESS",
       "verificationProfile": "java-full",
-      "currentState": "Locally green from exact base 46f03670ee3e0829fd0db8577c1a332612ab29bd on branch codex/p-0-6-simulation-core-correctness. The corrected red gate mapped eight live defects; focused and adjacent selectors, a clean 3,449-test package, verify, JaCoCo, executable-JAR/SBOM checks, packaged LASE/runtime/Enterprise Lab smokes, and the scope/safety audit passed. Exact-head remote gates remain pending."
+      "currentState": "PR #503 opened from exact green base 46f03670ee3e0829fd0db8577c1a332612ab29bd after the corrected red gate mapped eight live defects and the focused, clean 3,449-test package, verify, JaCoCo, executable-JAR/SBOM, packaged smoke, and scope/safety gates passed. Published implementation head c44fe33b1dd06a524f8dd94e101b96f1cdc15172 was mergeable; the PR-open checkpoint will establish a new exact head whose remote gates must all pass before merge."
     },
     {
       "ordinal": 7,

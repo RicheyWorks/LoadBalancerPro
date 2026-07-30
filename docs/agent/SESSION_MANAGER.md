@@ -6,6 +6,64 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 10 Main-Green / Slot 11 Start Checkpoint
+
+Timestamp: 2026-07-30T04:58:27-07:00
+
+Completed slot: `L-0.5`, make owned Auto Scaling Group identity stable and recoverable.
+
+Merged branch and pull request: `codex/l-0-5-stable-mocked-asg-ownership`,
+[#507](https://github.com/RicheyWorks/LoadBalancerPro/pull/507).
+
+Final PR head: `4c9f5da3141ffb6dbb4b3a221bda2451871e25be`.
+
+Merge commit and verified exact main: `e5f569d0444bf37e405064699b5eb3778815405e`.
+
+Final exact-head verification:
+
+- push CI `30538699375`: success;
+- PR CI `30538703940`: success;
+- CodeQL `30538702452`: success;
+- PR dependency review: success; the inapplicable push duplicate was skipped;
+- every required package, SBOM, packaged-smoke, Docker build/runtime/evidence, blocking image-scan, and artifact step
+  passed;
+- GitHub reported the unchanged final head mergeable and `CLEAN`;
+- no independent review was available, so the campaign-authorized full-diff self-review covered all ten changed
+  files and four commits and found no actionable correctness, security, scope, or trust-contract issue.
+
+Exact-main verification:
+
+- local focused selector: 64 tests across four reports, zero failures, errors, or skips;
+- `mvn -B clean package`: 3,481 tests across 490 fresh reports, zero failures, errors, skips, or dumps;
+- CI `30539356954`: success on the exact merge commit, including all 21 substantive build, test, packaging, SBOM,
+  packaged-smoke, Docker runtime/evidence, and blocking image-scan steps; only push-inapplicable dependency review
+  was skipped;
+- CodeQL `30539356937`: success, 11 of 11 steps;
+- local `HEAD`, `main`, and `origin/main` all matched the exact merge commit and the worktree was clean before
+  branch creation.
+
+Scope and safety: the completed slot changed deterministic mocked-cloud ASG ownership/reconciliation, bounded
+README language, tests, and campaign records. It did not add credentials, live AWS clients or calls, tenant/cloud
+targets, external or production-looking defaults, CI/Maven/Docker/Compose behavior, dependencies, deployment,
+security-policy weakening, or unrelated production behavior.
+
+Remaining not-proven boundaries: no production readiness or certification, live-cloud or real-tenant validation,
+AWS IAM/network/launch-template behavior, actual killed-process recovery against AWS, TLS/ingress validation,
+distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader automation is established.
+
+Active slot: `L-0.6`, eliminate ledger torn-read false failures.
+
+Active branch: `codex/l-0-6-ledger-torn-read`, created from exact green main
+`e5f569d0444bf37e405064699b5eb3778815405e`.
+
+Slot status: `IN_PROGRESS`.
+
+Next action: commit and publish this checkpoint, audit the two ledger implementations and authoritative `L-0.6`
+acceptance contract, add a completed behavioral red gate for concurrent append/replay, implement only the bounded
+correctness change, then run the applicable cross-process and full campaign ladders.
+
+Decision: continue only `L-0.6`; no later slot is active.
+
 ## Combined Build Plan Slot 10 Remote-Green Checkpoint
 
 Timestamp: 2026-07-30T04:27:09-07:00

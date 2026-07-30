@@ -9062,3 +9062,14 @@ formatting pipeline returned an empty table even though the three expected runs 
 but supplied no usable status evidence. Correction: query GitHub with `gh run list --commit <exact-sha>` and retain
 the raw JSON fields; corrected polls tracked push CI, PR CI, and CodeQL for
 `98533bea5939f76152271512ace2112678604428` through successful completion.
+
+L-0.5 exact-main job-detail lookup: a diagnostic GitHub API request used invented job ID `90860237947` and
+returned HTTP 404. It changed no repository or GitHub state and is not accepted as check evidence. Correction:
+obtain the job ID from exact run `30539356954`; corrected job `90860190174` showed the Docker image build in
+progress and later supplied the completed successful exact-main step record.
+
+L-0.5 exact-main workflow-timeout lookup: an unbounded recursive `rg` search for the Docker step produced more
+output than the tool context and was truncated, so it is not accepted as a complete workflow read. Correction:
+use bounded `Select-String` against exact `.github/workflows/ci.yml`; the corrected read found the 25-minute job
+timeout at line 15 and the single `docker build -t loadbalancerpro:ci .` step at lines 298-299. Exact-main CI later
+completed successfully, including that Docker build, runtime smoke, evidence capture, and image scan.

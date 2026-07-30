@@ -6,6 +6,51 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 11 Local-Green Checkpoint
+
+Timestamp: 2026-07-30T05:30:07-07:00
+
+Slot: `L-0.6`, eliminate ledger torn-read false failures.
+
+Branch: `codex/l-0-6-ledger-torn-read`.
+
+Verified implementation head: `0bdcb078663e9f0b03d050fb64f797972052038b`, based on exact green main
+`e5f569d0444bf37e405064699b5eb3778815405e`.
+
+Status: `LOCAL_GREEN`.
+
+Changed scope: both command-ledger implementations; their existing unit tests; one test-only separate-JVM writer
+and three-test cross-process acceptance suite; the bounded ledger architecture contract; required campaign records.
+
+Verified gates:
+
+- behavioral red: three tests, two expected false-`CONCURRENT_CHANGE` failures;
+- final focused/adjacent: 84 tests, zero failures, errors, or skips;
+- `mvn -B clean package`: 3,484 tests across 491 fresh reports, zero failures, errors, skips, or dumps;
+- `mvn -q "-DskipTests" verify`: passed;
+- executable JAR: 95,556,389 bytes, 1,439 entries, SHA-256
+  `677A432BE1B68614018A09C2727B6824A62C69C04B15A694CF7883D80333AD76`;
+- seven required artifact entries present; CycloneDX JSON/XML each contain 144 components;
+- JaCoCo: 83.25% instructions, 66.47% branches, 82.55% lines, 87.80% methods, 94.34% classes;
+- packaged LASE healthy/overloaded/invalid: exits 0/0/2 and 13 of 13 assertions;
+- packaged Enterprise Lab workflow: 10 scenarios, ignored `target/` evidence only;
+- packaged operator profiles: loopback local health/UI, prod 401/200 auth, and proxy-to-loopback backend passed; all
+  five ports and all packaged-JAR processes were released;
+- campaign guard and diff checks passed before this required checkpoint; the checkpoint-only final candidate requires
+  the affected guard/diff rerun.
+
+Blocker: none locally. Exact-head CI, CodeQL, PR dependency review, Docker build/runtime, controlled container
+evidence, and blocking HIGH/CRITICAL image scan remain remote gates.
+
+Safety/not proven: no new credential, endpoint, dependency, workflow, Maven, Docker/Compose, cloud/tenant/external
+target, ownership bypass, repair/truncation path, or security-policy reduction. Evidence remains same-host/local
+filesystem and literal-loopback only; it proves no network-filesystem or multi-host locking, distributed durability,
+production readiness/certification, live-cloud/tenant behavior, external traffic, throughput/p95/p99, or
+load/stress/soak result.
+
+Next: commit this checkpoint, rerun the affected campaign guard and diff audit, publish the unchanged-product final
+candidate, open the PR, and require every exact-head remote gate before self-review and merge.
+
 ## Combined Build Plan Slot 11 Focused-Verification Checkpoint
 
 Timestamp: 2026-07-30T05:13:51-07:00

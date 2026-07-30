@@ -38,7 +38,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 8 | L-0.3 | L-0.3 | Non-mutating CLI abort | SEC-DEFAULT-DENY | MAIN_GREEN |
 | 9 | L-0.4 | L-0.4 | Cockpit HTML-injection removal | SEC-DEFAULT-DENY | MAIN_GREEN |
 | 10 | L-0.5 | L-0.5 | Stable mocked-cloud ASG ownership | SEC-DEFAULT-DENY | MAIN_GREEN |
-| 11 | L-0.6 | L-0.6 | Ledger torn-read correctness | SEC-DEFAULT-DENY | IN_PROGRESS |
+| 11 | L-0.6 | L-0.6 | Ledger torn-read correctness | SEC-DEFAULT-DENY | LOCAL_GREEN |
 | 12 | L-1.1 | L-1.1 | Delete metadata-about-metadata services | L0 complete | OPEN |
 | 13 | L-1.2 | L-1.2 | One explainability module | L-1.1 | OPEN |
 | 14 | L-1.3 | L-1.3 | Explainability correctness/determinism | L-1.2, P-0.3 | OPEN |

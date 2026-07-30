@@ -165,11 +165,11 @@
       "sourceIds": ["L-0.6"],
       "track": "lab",
       "title": "Eliminate ledger torn-read false failures",
-      "status": "IN_PROGRESS",
+      "status": "LOCAL_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "Active on codex/l-0-6-ledger-torn-read from exact green main e5f569d0444bf37e405064699b5eb3778815405e. Reconcile both command-ledger implementations and cross-process acceptance contract before implementation; current defect text is a hypothesis, not current-head proof."
+      "currentState": "Implementation head 0bdcb078663e9f0b03d050fb64f797972052038b passed the deterministic two-JVM red/green contract, 84 focused/adjacent tests, 3,484-test clean package, skip-test verify, artifact/SBOM/LASE/Enterprise Lab workflow checks, and literal-loopback operator-profile smoke. The final checkpoint commit requires only the campaign guard and diff audit before publication; remote exact-head CI, CodeQL, dependency, Docker/runtime, and image-scan gates remain pending."
     },
     {
       "ordinal": 12,

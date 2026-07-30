@@ -193,7 +193,7 @@
       "dependencies": ["L-1.1"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "The exact-base candidate on codex/l-1-2-collapse-explainability is locally green. It maps retained compare evidence into one compact RoutingExplanation result, deletes 80 production Java files and 64 obsolete tests from the replay/restatement chain, preserves response/input caps and separate scenario replay, and reduces the representative five-strategy response to 65,626 bytes. Focused and adjacent checks plus the 3,051-test clean package, artifact, SBOM, packaged-smoke, UI, and safety audits passed. Exact published-head remote gates and merge/main closure remain pending; L-1.3 correctness and determinism remain unproven."
+      "currentState": "PR #510 is open from codex/l-1-2-collapse-explainability at published implementation head fdec562aeb3fa51bf0110fe86285eb3aa2fc6da3; the required PR-open checkpoint is documentation-only and will change the final exact head. The locally green candidate maps retained compare evidence into one compact RoutingExplanation result, deletes 80 production Java files and 64 obsolete tests from the replay/restatement chain, preserves response/input caps and separate scenario replay, and reduces the representative five-strategy response to 65,626 bytes. Focused and adjacent checks plus the 3,051-test clean package, artifact, SBOM, packaged-smoke, UI, safety, and campaign audits passed. Final exact-head remote gates and merge/main closure remain pending; L-1.3 correctness and determinism remain unproven."
     },
     {
       "ordinal": 14,

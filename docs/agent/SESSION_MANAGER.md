@@ -6,6 +6,37 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 13 PR-Open Checkpoint
+
+Timestamp: 2026-07-30T09:06:51-07:00
+
+Slot/branch/PR: `L-1.2`; `codex/l-1-2-collapse-explainability`;
+[#510](https://github.com/RicheyWorks/LoadBalancerPro/pull/510).
+
+Status: `PR_OPEN`.
+
+Published implementation/local-green candidate: `fdec562aeb3fa51bf0110fe86285eb3aa2fc6da3`; this PR-open campaign
+update is documentation-only and will become the final candidate head after publication.
+
+Verified local gates: compact behavior/arithmetic/golden/API/OpenAPI/response-cap/UI/deletion selectors; 133-test
+adjacent selector; 3,051-test clean package; skip-test verify; artifact/SBOM/LASE/Enterprise Lab workflow and
+literal-loopback operator-profile assertions; desktop/mobile browser review; campaign/manifest guards; retired-field,
+unsafe-sink, overclaim, protected-surface, and diff checks.
+
+Scope/safety: the response-only collapse changes no credential/default, authorization, external/public target,
+cloud/tenant call, traffic mutation, replay execution, persistence, telemetry, dependency, build/workflow,
+Docker/Compose, deployment, or unrelated production behavior. Production readiness/certification, live-cloud or
+real-tenant validation, throughput/p95/p99, load/stress/soak behavior, broader automation, and the L-1.3
+correctness/determinism properties remain unproven.
+
+Blocker: required checks are pending on the documentation checkpoint's not-yet-published exact head.
+
+Next action: commit and publish this checkpoint, rerun exact-head local campaign/compact/diff gates, then require CI,
+CodeQL, dependency review, package/SBOM/packaged-smoke/Docker/runtime/evidence, and blocking image-scan gates before
+complete-diff self-review and merge.
+
+Decision: continue only `L-1.2`; no later slot is active.
+
 ## Combined Build Plan Slot 13 Local-Green Checkpoint
 
 Timestamp: 2026-07-30T09:02:00-07:00

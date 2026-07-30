@@ -19,9 +19,11 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   `1d57e4d664162ae4979ed1d24acfcc2af3673b1a`, exact-main 144-test focused checks, CI `30552406500`,
   and CodeQL `30552407045` green.
 - Active implementation slot: `L-1.2`; collapse Replay and Decision Explorer into one explainability module on
-  `codex/l-1-2-collapse-explainability`. The candidate is locally green: 80 production Java files and 64 obsolete
-  tests are deleted, the compact five-strategy response is 65,626 bytes, and the 3,051-test clean package plus
-  artifact, SBOM, packaged-smoke, UI, safety, and campaign gates passed before publication.
+  `codex/l-1-2-collapse-explainability`; [PR #510](https://github.com/RicheyWorks/LoadBalancerPro/pull/510).
+  Published implementation head `fdec562aeb3fa51bf0110fe86285eb3aa2fc6da3` is locally green: 80 production Java
+  files and 64 obsolete tests are deleted, the compact five-strategy response is 65,626 bytes, and the 3,051-test
+  clean package plus artifact, SBOM, packaged-smoke, UI, safety, and campaign gates passed. The required PR-open
+  documentation checkpoint will change the exact head before remote-gate review.
 - Next implementation slot after the active gate: `L-1.3`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

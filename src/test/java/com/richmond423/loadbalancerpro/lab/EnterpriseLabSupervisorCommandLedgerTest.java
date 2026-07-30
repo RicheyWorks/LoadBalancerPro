@@ -510,7 +510,7 @@ class EnterpriseLabSupervisorCommandLedgerTest {
     }
 
     @Test
-    void uncertainPartialWriteFailsWriterAndLeavesTruncationVisible() {
+    void uncertainSingleFrameWriteFailsWriterAndLeavesCanonicalFrameReadable() {
         try (EnterpriseLabSupervisorOwnership ownership =
                      EnterpriseLabSupervisorOwnership.acquire(root)) {
             EnterpriseLabSupervisorState state = service(ownership).state();
@@ -520,7 +520,7 @@ class EnterpriseLabSupervisorCommandLedgerTest {
                             EnterpriseLabSupervisorCommandLedger.HARD_MAX_LEDGER_BYTES,
                             EnterpriseLabSupervisorCommandLedger.HARD_MAX_EVENTS,
                             (point, bytes) -> {
-                                if (point == WriteCheckpoint.AFTER_WRITE_CHUNK) {
+                                if (point == WriteCheckpoint.AFTER_WRITE_ATTEMPT) {
                                     throw new SimulatedFailure();
                                 }
                             });
@@ -534,9 +534,12 @@ class EnterpriseLabSupervisorCommandLedgerTest {
                             observation("command-2", state, NOW.plusSeconds(1)),
                             SupervisorEventDraft.receipt(state, NOW.plusSeconds(1))));
             assertEquals(Failure.WRITER_FAILED, failedWriter.failure());
-            StoreException truncated = assertThrows(StoreException.class,
-                    () -> EnterpriseLabSupervisorCommandLedger.inspect(root).replay());
-            assertEquals(Failure.TRUNCATED_TAIL, truncated.failure());
+            assertEquals(
+                    List.of(EventType.SUPERVISOR_RECEIPT_PERSISTED),
+                    EnterpriseLabSupervisorCommandLedger.inspect(root).replay()
+                            .events().stream()
+                            .map(EnterpriseLabCommandLedgerEvent::eventType)
+                            .toList());
         }
     }
 

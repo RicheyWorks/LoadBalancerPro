@@ -104,8 +104,9 @@ evidence namespace. Callers supply only the explicit trusted root; they cannot s
 The production writer requires the existing live application ownership gate. It verifies the exact ownership record
 fingerprint, application instance, and generation carried by each canonical request, rejects a second process-local
 writer, and rechecks the live ownership epoch before append, synchronization, and read-back. The ownership gate's
-existing operating-system lock remains the cross-process writer authority; the ledger does not add a second lock or
-ownership identity.
+existing operating-system lock remains the cross-process writer authority. The ledger adds no ownership identity or
+mutation capability; its fixed-file region lock only coordinates a full event-frame write with independent
+cross-process readers.
 
 The ledger is bounded to 8 MiB and 4,096 events. Creation validates any existing chain before returning. Every append:
 
@@ -114,13 +115,17 @@ The ledger is bounded to 8 MiB and 4,096 events. Creation validates any existing
 3. binds the event to the exact canonical request and, when supplied, response;
 4. rejects correlation reuse, generation regression, missing/duplicate intent, illegal lifecycle transitions, or an
    event after a terminal head;
-5. appends one newline-delimited canonical event, forces data and metadata, and replays for exact read-back.
+5. attempts the complete newline-delimited canonical frame in one write while holding the fixed file's exclusive
+   region lock, finishes any operating-system short write without releasing that lock, forces data and metadata, and
+   replays for exact read-back.
 
 Malformed complete events, noncanonical content, fingerprint or predecessor changes, partial tails, unexpected storage
 entries, symlink/type escapes, concurrent file changes, and hard-limit overflow fail closed without repair or truncation.
-An uncertain post-write failure makes that writer unusable; a fresh bounded replay determines whether the complete event
-is present or the partial tail must remain quarantined from further mutation. Read-only inspection creates no path and
-`unresolvedHeads()` reconstructs the latest nonterminal event per correlation from durable evidence alone.
+Independent readers take the matching shared file-region lock and retry a changing or incomplete final frame for a
+short fixed bound. A stable incomplete tail remains `TRUNCATED_TAIL`; it is not repaired or silently accepted. An
+uncertain post-write failure makes that writer unusable; a fresh bounded replay determines whether the complete event is
+present or the stable partial tail must remain quarantined from further mutation. Read-only inspection creates no path
+and `unresolvedHeads()` reconstructs the latest nonterminal event per correlation from durable evidence alone.
 
 ### Storage And Replay Contract
 
@@ -221,15 +226,18 @@ only through exact supervisor evidence and authoritative installed-state verific
 `EnterpriseLabSupervisorCommandLedger` owns one fixed JSONL file beneath the existing
 `enterprise-lab-supervisor-v1` directory. Callers cannot select the directory or filename. The existing
 `EnterpriseLabSupervisorOwnership` operating-system lock is the sole cross-process writer capability; the ledger adds no
-second ownership record, generation, transaction ID, or file lock. A process-local mutex serializes complete replay and
-append operations for the fixed path.
+second ownership record, generation, transaction ID, or mutation capability. A process-local mutex serializes complete
+replay and append operations for the fixed path, while a fixed-file exclusive/shared region lock coordinates event-frame
+writes with independent readers without granting ownership.
 
 The supervisor ledger has the same 8 MiB and 4,096-event hard limits and the same strict newline-framed canonical replay
 posture as the application ledger. Writable creation requires the live supervisor lock and validates the complete prior
-chain. Append rechecks that lock before path preparation, write, force, and exact read-back. A lost lock, unexpected
-entry, symlink/type escape, malformed or noncanonical frame, truncated tail, concurrent change, hard-limit overflow, or
-uncertain post-write result fails closed without repair. Read-only inspection creates no path and cannot acquire the
-supervisor lock.
+chain. Append rechecks that lock before path preparation, one full-frame write attempt, force, and exact read-back; any
+short write finishes while the exclusive frame lock remains held. Independent replay uses the matching shared lock and
+a short bounded transient-tail/concurrent-change retry. A lost ownership lock, unexpected entry, symlink/type escape,
+malformed or noncanonical frame, stable truncated tail, stable concurrent change, hard-limit overflow, or uncertain
+post-write result fails closed without repair. Read-only inspection creates no path and cannot acquire the supervisor
+ownership lock.
 
 ### Authenticated Receipt Boundary
 

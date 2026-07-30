@@ -153,11 +153,11 @@
       "sourceIds": ["L-0.5"],
       "track": "lab",
       "title": "Make owned ASG identity stable and recoverable",
-      "status": "REMOTE_GREEN",
+      "status": "MAIN_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "CLOUD_GUARDED",
       "verificationProfile": "cloud-mocked",
-      "currentState": "PR #507 exact head 98533bea5939f76152271512ace2112678604428 passed push CI 30537967318, PR CI 30537970205, CodeQL 30537970238, PR dependency review, both 25-step package/SBOM/packaged-smoke/Docker/runtime/evidence/Trivy jobs, and first complete-diff audit. GitHub reports it MERGEABLE and CLEAN. This remote-green checkpoint must be published and every gate repeated on the resulting final candidate before merge. No live AWS call or local container result is claimed."
+      "currentState": "PR #507 final head 4c9f5da3141ffb6dbb4b3a221bda2451871e25be passed push CI 30538699375, PR CI 30538703940, CodeQL 30538702452, PR dependency review, both 25-step package/SBOM/packaged-smoke/Docker/runtime/evidence/Trivy jobs, and final complete-diff self-review, then merged as e5f569d0444bf37e405064699b5eb3778815405e. Exact-main 64-test focused and 3,481-test local package gates passed; CI 30539356954 and CodeQL 30539356937 passed with every required step audited. No live AWS call or local container result is claimed."
     },
     {
       "ordinal": 11,
@@ -165,11 +165,11 @@
       "sourceIds": ["L-0.6"],
       "track": "lab",
       "title": "Eliminate ledger torn-read false failures",
-      "status": "OPEN",
+      "status": "PR_OPEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "Both command ledgers still use 256-byte write chunks and classify truncated tails; restart reconciliation does not prove concurrent append/replay acceptance."
+      "currentState": "PR #508 is open. Implementation head 0bdcb078663e9f0b03d050fb64f797972052038b passed the deterministic two-JVM red/green contract, 84 focused/adjacent tests, 3,484-test clean package, skip-test verify, artifact/SBOM/LASE/Enterprise Lab workflow checks, and literal-loopback operator-profile smoke. The PR-open checkpoint is documentation-only; exact final-head CI, CodeQL, dependency, Docker/runtime, and image-scan gates remain pending."
     },
     {
       "ordinal": 12,

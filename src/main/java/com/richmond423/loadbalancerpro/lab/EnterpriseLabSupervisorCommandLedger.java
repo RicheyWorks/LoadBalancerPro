@@ -16,6 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -40,7 +41,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Supervisor-owned append-only command evidence. The existing supervisor OS
  * lock is the cross-process writer authority; a process-local mutex serializes
- * every replay and append against the one fixed bounded JSONL file.
+ * every replay and append, while cooperating file-region locks keep independent
+ * readers from observing a short write to the one fixed bounded JSONL file.
  */
 public final class EnterpriseLabSupervisorCommandLedger {
     public static final long HARD_MAX_LEDGER_BYTES = 8L * 1024L * 1024L;
@@ -50,8 +52,9 @@ public final class EnterpriseLabSupervisorCommandLedger {
     static final String FILE_NAME = "supervisor-command-events-v1.jsonl";
 
     private static final int READ_BUFFER_BYTES = 8_192;
-    private static final int MAX_WRITE_CHUNK_BYTES = 256;
     private static final int MAX_ZERO_PROGRESS = 3;
+    private static final int MAX_TRANSIENT_REPLAY_ATTEMPTS = 4;
+    private static final long TRANSIENT_REPLAY_BACKOFF_MILLIS = 10L;
     private static final Set<PosixFilePermission> DIRECTORY_PERMISSIONS =
             PosixFilePermissions.fromString("rwx------");
     private static final Set<PosixFilePermission> FILE_PERMISSIONS =
@@ -300,13 +303,9 @@ public final class EnterpriseLabSupervisorCommandLedger {
             return ReadResult.empty();
         }
         validateLedgerFile();
-        byte[] bytes = readBoundedBytes();
+        byte[] bytes = readReplayBytesWithTransientRetry();
         if (bytes.length == 0) {
             return new ReadResult(true, List.of(), 0L);
-        }
-        if (bytes[bytes.length - 1] != '\n') {
-            throw failure(Failure.TRUNCATED_TAIL,
-                    "supervisor ledger has an incomplete tail and was preserved unchanged");
         }
 
         List<EnterpriseLabCommandLedgerEvent> events = new ArrayList<>();
@@ -546,20 +545,13 @@ public final class EnterpriseLabSupervisorCommandLedger {
                 ledgerFile,
                 StandardOpenOption.WRITE,
                 StandardOpenOption.APPEND,
-                LinkOption.NOFOLLOW_LINKS)) {
+                LinkOption.NOFOLLOW_LINKS);
+             FileLock ignored = channel.lock()) {
             ByteBuffer buffer = ByteBuffer.wrap(frame);
             int writtenBytes = 0;
             int zeroWrites = 0;
             while (buffer.hasRemaining()) {
-                int originalLimit = buffer.limit();
-                buffer.limit(Math.min(
-                        originalLimit, buffer.position() + MAX_WRITE_CHUNK_BYTES));
-                int written;
-                try {
-                    written = channel.write(buffer);
-                } finally {
-                    buffer.limit(originalLimit);
-                }
+                int written = channel.write(buffer);
                 if (written == 0) {
                     zeroWrites++;
                     if (zeroWrites >= MAX_ZERO_PROGRESS) {
@@ -571,7 +563,7 @@ public final class EnterpriseLabSupervisorCommandLedger {
                 zeroWrites = 0;
                 writtenBytes += written;
                 failureInjector.checkpoint(
-                        WriteCheckpoint.AFTER_WRITE_CHUNK, writtenBytes);
+                        WriteCheckpoint.AFTER_WRITE_ATTEMPT, writtenBytes);
             }
         }
     }
@@ -585,12 +577,56 @@ public final class EnterpriseLabSupervisorCommandLedger {
         }
     }
 
+    private byte[] readReplayBytesWithTransientRetry() {
+        StoreException lastTransient = null;
+        for (int attempt = 1; attempt <= MAX_TRANSIENT_REPLAY_ATTEMPTS; attempt++) {
+            byte[] bytes;
+            try {
+                bytes = readBoundedBytes();
+            } catch (StoreException exception) {
+                if (exception.failure() != Failure.CONCURRENT_CHANGE) {
+                    throw exception;
+                }
+                lastTransient = exception;
+                if (attempt == MAX_TRANSIENT_REPLAY_ATTEMPTS) {
+                    throw lastTransient;
+                }
+                transientReplayBackoff();
+                continue;
+            }
+            if (bytes.length == 0 || bytes[bytes.length - 1] == '\n') {
+                return bytes;
+            }
+            lastTransient = failure(
+                    Failure.TRUNCATED_TAIL,
+                    "supervisor ledger has an incomplete tail and was preserved unchanged");
+            if (attempt == MAX_TRANSIENT_REPLAY_ATTEMPTS) {
+                throw lastTransient;
+            }
+            transientReplayBackoff();
+        }
+        throw Objects.requireNonNull(lastTransient);
+    }
+
+    private static void transientReplayBackoff() {
+        try {
+            Thread.sleep(TRANSIENT_REPLAY_BACKOFF_MILLIS);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw failure(
+                    Failure.IO_FAILURE,
+                    "supervisor ledger transient replay retry was interrupted",
+                    exception);
+        }
+    }
+
     private byte[] readBoundedBytes() {
         long declaredSize;
         try (FileChannel channel = FileChannel.open(
                 ledgerFile,
                 StandardOpenOption.READ,
-                LinkOption.NOFOLLOW_LINKS)) {
+                LinkOption.NOFOLLOW_LINKS);
+             FileLock ignored = channel.lock(0L, Long.MAX_VALUE, true)) {
             declaredSize = channel.size();
             if (declaredSize > maxLedgerBytes) {
                 throw failure(Failure.LEDGER_SIZE_EXCEEDED,
@@ -1161,7 +1197,7 @@ public final class EnterpriseLabSupervisorCommandLedger {
 
     public enum WriteCheckpoint {
         BEFORE_APPEND,
-        AFTER_WRITE_CHUNK,
+        AFTER_WRITE_ATTEMPT,
         AFTER_APPEND_BEFORE_SYNC,
         AFTER_SYNC
     }

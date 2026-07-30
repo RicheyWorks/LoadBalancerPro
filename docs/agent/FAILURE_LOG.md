@@ -9062,3 +9062,47 @@ formatting pipeline returned an empty table even though the three expected runs 
 but supplied no usable status evidence. Correction: query GitHub with `gh run list --commit <exact-sha>` and retain
 the raw JSON fields; corrected polls tracked push CI, PR CI, and CodeQL for
 `98533bea5939f76152271512ace2112678604428` through successful completion.
+
+L-0.5 exact-main job-detail lookup: a diagnostic GitHub API request used invented job ID `90860237947` and
+returned HTTP 404. It changed no repository or GitHub state and is not accepted as check evidence. Correction:
+obtain the job ID from exact run `30539356954`; corrected job `90860190174` showed the Docker image build in
+progress and later supplied the completed successful exact-main step record.
+
+L-0.5 exact-main workflow-timeout lookup: an unbounded recursive `rg` search for the Docker step produced more
+output than the tool context and was truncated, so it is not accepted as a complete workflow read. Correction:
+use bounded `Select-String` against exact `.github/workflows/ci.yml`; the corrected read found the 25-minute job
+timeout at line 15 and the single `docker build -t loadbalancerpro:ci .` step at lines 298-299. Exact-main CI later
+completed successfully, including that Docker build, runtime smoke, evidence capture, and image scan.
+
+# 2026-07-30 - L-0.6 ledger torn-read correctness audit
+
+Branch: `codex/l-0-6-ledger-torn-read`
+
+First L-0.6 source/contract search: the command included nonexistent `docs/audit-and-playground`, so `rg` returned
+exit one after useful campaign and test matches. The output is not accepted as a complete source-plan or source-code
+inventory. Correction: locate the imported artifacts with `rg --files docs`, then read exact
+`docs/BUILD_PLAN_LAB_SHADOW.md`, both ledger implementations, their tests, and the reconciliation call sites.
+
+L-0.6 behavioral red gate: `mvn -q test "-Dtest=EnterpriseLabCommandLedgerCrossProcessTest"` completed with three
+tests, two expected failures, zero errors, and zero skips. Healthy separate-JVM continuous replay observed two false
+supervisor `CONCURRENT_CHANGE` classifications and one false application `CONCURRENT_CHANGE`; the paused-frame
+fixture passed because its scheduled release could complete before the unlocked read. Correction: make one
+full-frame write attempt, hold an exclusive fixed-file region lock across any short-write continuation, take a shared
+lock for reads, retry only bounded transient tail/change observations, and retain stable corruption classification.
+
+First post-implementation existing-ledger selector: 51 tests completed with two failures because the old failure
+injection tests still asserted that `AFTER_WRITE_CHUNK` necessarily exposed a partial tail. With the 256-byte split
+removed, the local file system completed each frame in one write before the injected failure, so fresh replay
+correctly reconstructed one canonical event. Correction: rename the checkpoint to `AFTER_WRITE_ATTEMPT`, retain the
+writer fail-stop assertions, and assert the observed complete canonical frame while separate stable-tail tests
+continue to require `TRUNCATED_TAIL`.
+
+L-0.6 checkpoint-renaming patch: the first multi-file `apply_patch` assumed the nested `WriteCheckpoint` enums were
+package-private, but both declarations are public; the context mismatch caused the patch to fail atomically with no
+file change. Correction: read the exact declarations, use their public-enum context, and apply the rename and test
+corrections successfully.
+
+L-0.6 documentation inventory: a Windows `rg` command used unsupported literal wildcard arguments
+`docs/ENTERPRISE_LAB*` and `docs/*.md`, so it returned exit one after only README matches. Correction: enumerate exact
+documentation paths with `rg --files docs`, then run a bounded Markdown glob search and read the exact command-ledger
+architecture sections before updating their now-stale no-file-lock wording.

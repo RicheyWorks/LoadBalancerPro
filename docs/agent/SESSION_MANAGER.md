@@ -6,6 +6,189 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 11 PR-Open Checkpoint
+
+Timestamp: 2026-07-30T05:32:24-07:00
+
+Slot/branch/PR: `L-0.6`; `codex/l-0-6-ledger-torn-read`;
+[#508](https://github.com/RicheyWorks/LoadBalancerPro/pull/508).
+
+Status: `PR_OPEN`.
+
+Published implementation/local-green candidate: `bfbf28ddfc90ab691c312ab4435e7a9c79cd5262`; the PR-open campaign update
+is documentation-only.
+
+Verified local gates: deterministic two-JVM red/green proof, 84 focused/adjacent tests, 3,484-test clean package,
+skip-test verify, artifact/SBOM/LASE/Enterprise Lab workflow and literal-loopback operator-profile smokes, campaign
+guard, JSON validation, and diff checks.
+
+Blocker: none locally. Next: publish this required checkpoint, verify the resulting exact PR head, and wait for CI,
+CodeQL, dependency review, Docker/runtime/evidence, and blocking image scan before complete-diff self-review and merge.
+
+## Combined Build Plan Slot 11 Local-Green Checkpoint
+
+Timestamp: 2026-07-30T05:30:07-07:00
+
+Slot: `L-0.6`, eliminate ledger torn-read false failures.
+
+Branch: `codex/l-0-6-ledger-torn-read`.
+
+Verified implementation head: `0bdcb078663e9f0b03d050fb64f797972052038b`, based on exact green main
+`e5f569d0444bf37e405064699b5eb3778815405e`.
+
+Status: `LOCAL_GREEN`.
+
+Changed scope: both command-ledger implementations; their existing unit tests; one test-only separate-JVM writer
+and three-test cross-process acceptance suite; the bounded ledger architecture contract; required campaign records.
+
+Verified gates:
+
+- behavioral red: three tests, two expected false-`CONCURRENT_CHANGE` failures;
+- final focused/adjacent: 84 tests, zero failures, errors, or skips;
+- `mvn -B clean package`: 3,484 tests across 491 fresh reports, zero failures, errors, skips, or dumps;
+- `mvn -q "-DskipTests" verify`: passed;
+- executable JAR: 95,556,389 bytes, 1,439 entries, SHA-256
+  `677A432BE1B68614018A09C2727B6824A62C69C04B15A694CF7883D80333AD76`;
+- seven required artifact entries present; CycloneDX JSON/XML each contain 144 components;
+- JaCoCo: 83.25% instructions, 66.47% branches, 82.55% lines, 87.80% methods, 94.34% classes;
+- packaged LASE healthy/overloaded/invalid: exits 0/0/2 and 13 of 13 assertions;
+- packaged Enterprise Lab workflow: 10 scenarios, ignored `target/` evidence only;
+- packaged operator profiles: loopback local health/UI, prod 401/200 auth, and proxy-to-loopback backend passed; all
+  five ports and all packaged-JAR processes were released;
+- campaign guard and diff checks passed before this required checkpoint; the checkpoint-only final candidate requires
+  the affected guard/diff rerun.
+
+Blocker: none locally. Exact-head CI, CodeQL, PR dependency review, Docker build/runtime, controlled container
+evidence, and blocking HIGH/CRITICAL image scan remain remote gates.
+
+Safety/not proven: no new credential, endpoint, dependency, workflow, Maven, Docker/Compose, cloud/tenant/external
+target, ownership bypass, repair/truncation path, or security-policy reduction. Evidence remains same-host/local
+filesystem and literal-loopback only; it proves no network-filesystem or multi-host locking, distributed durability,
+production readiness/certification, live-cloud/tenant behavior, external traffic, throughput/p95/p99, or
+load/stress/soak result.
+
+Next: commit this checkpoint, rerun the affected campaign guard and diff audit, publish the unchanged-product final
+candidate, open the PR, and require every exact-head remote gate before self-review and merge.
+
+## Combined Build Plan Slot 11 Focused-Verification Checkpoint
+
+Timestamp: 2026-07-30T05:13:51-07:00
+
+Current slot: `L-0.6`, eliminate ledger torn-read false failures.
+
+Current branch: `codex/l-0-6-ledger-torn-read`.
+
+Branch-start checkpoint: `32151f24cf8c414d73710455c15dd1e83e7f755c`, published from exact green main
+`e5f569d0444bf37e405064699b5eb3778815405e`.
+
+Slot status: `IN_PROGRESS`; focused and adjacent verification are green, but the complete local ladder and PR gates
+remain pending.
+
+Current-head audit and behavioral red evidence:
+
+- both ledger implementations still split each event into at most 256-byte writes and read the file without a
+  cross-process file-region lock;
+- a new test runner launched a real child JVM writer while the Surefire JVM replayed the same controlled file;
+- the completed pre-change red gate ran three tests with two expected failures, zero errors, and zero skips;
+- healthy continuous supervisor and application append/replay each produced false `CONCURRENT_CHANGE`
+  classifications, directly reproducing the imported acceptance defect without external or live targets.
+
+Bounded implementation:
+
+- both ledgers now attempt the complete newline-terminated canonical event in one `FileChannel.write`;
+- an exclusive fixed-file region lock remains held across any short-write continuation, while replay takes the matching
+  shared lock;
+- replay retries only `CONCURRENT_CHANGE` or an incomplete final frame four times with a fixed 10 ms backoff, then
+  preserves and classifies a stable incomplete tail as `TRUNCATED_TAIL`;
+- the write-test checkpoint was renamed from chunk to attempt semantics, and uncertain post-write failures still
+  fail-stop the writer while a fresh replay accepts only a complete canonical frame;
+- architecture documentation now distinguishes file-region read/write coordination from the unchanged ownership and
+  mutation authorities.
+
+Focused verification:
+
+- `EnterpriseLabCommandLedgerCrossProcessTest`: three tests, zero failures, errors, or skips; it proves the separate
+  writer JVM holds the exclusive frame lock and continuously overlaps both application and supervisor replay loops;
+- both existing ledger suites plus the cross-process suite: 51 tests, zero failures, errors, or skips;
+- adjacent eight-class selector: 84 tests, zero failures, errors, or skips, covering both ledgers, history
+  reconciliation, allocation bridge, supervisor service, experiment operator admission, and the existing separate-JVM
+  supervisor restart integration;
+- no `EnterpriseLabCommandLedgerProcessProbe` child process remained after verification;
+- `git diff --check` passed.
+
+Scope and safety: current changes are limited to the two local-lab command ledgers, their tests and separate-JVM test
+probe, bounded architecture documentation, and campaign records. They add no dependency, endpoint, credential,
+external/public/private target, live cloud/tenant call, production-looking default, CI/Maven/Docker/Compose behavior,
+ownership bypass, mutation authority, repair/truncation behavior, or broader runtime feature.
+
+Remaining not-proven boundaries: the evidence is local-filesystem and same-host JVM only. It proves no multi-host or
+network-filesystem locking, distributed durability, crash-safe database semantics, production readiness/certification,
+live-cloud or real-tenant behavior, external traffic, production performance, throughput/p95/p99, load/stress/soak
+result, hostile-administrator resistance, or broader automation.
+
+Next action: review the complete diff, run the campaign guard and full clean-package/artifact/SBOM/LASE/local-lab
+verification ladder, then record `LOCAL_GREEN` only if every applicable gate passes.
+
+Decision: continue only `L-0.6`; no later slot is active.
+
+## Combined Build Plan Slot 10 Main-Green / Slot 11 Start Checkpoint
+
+Timestamp: 2026-07-30T04:58:27-07:00
+
+Completed slot: `L-0.5`, make owned Auto Scaling Group identity stable and recoverable.
+
+Merged branch and pull request: `codex/l-0-5-stable-mocked-asg-ownership`,
+[#507](https://github.com/RicheyWorks/LoadBalancerPro/pull/507).
+
+Final PR head: `4c9f5da3141ffb6dbb4b3a221bda2451871e25be`.
+
+Merge commit and verified exact main: `e5f569d0444bf37e405064699b5eb3778815405e`.
+
+Final exact-head verification:
+
+- push CI `30538699375`: success;
+- PR CI `30538703940`: success;
+- CodeQL `30538702452`: success;
+- PR dependency review: success; the inapplicable push duplicate was skipped;
+- every required package, SBOM, packaged-smoke, Docker build/runtime/evidence, blocking image-scan, and artifact step
+  passed;
+- GitHub reported the unchanged final head mergeable and `CLEAN`;
+- no independent review was available, so the campaign-authorized full-diff self-review covered all ten changed
+  files and four commits and found no actionable correctness, security, scope, or trust-contract issue.
+
+Exact-main verification:
+
+- local focused selector: 64 tests across four reports, zero failures, errors, or skips;
+- `mvn -B clean package`: 3,481 tests across 490 fresh reports, zero failures, errors, skips, or dumps;
+- CI `30539356954`: success on the exact merge commit, including all 21 substantive build, test, packaging, SBOM,
+  packaged-smoke, Docker runtime/evidence, and blocking image-scan steps; only push-inapplicable dependency review
+  was skipped;
+- CodeQL `30539356937`: success, 11 of 11 steps;
+- local `HEAD`, `main`, and `origin/main` all matched the exact merge commit and the worktree was clean before
+  branch creation.
+
+Scope and safety: the completed slot changed deterministic mocked-cloud ASG ownership/reconciliation, bounded
+README language, tests, and campaign records. It did not add credentials, live AWS clients or calls, tenant/cloud
+targets, external or production-looking defaults, CI/Maven/Docker/Compose behavior, dependencies, deployment,
+security-policy weakening, or unrelated production behavior.
+
+Remaining not-proven boundaries: no production readiness or certification, live-cloud or real-tenant validation,
+AWS IAM/network/launch-template behavior, actual killed-process recovery against AWS, TLS/ingress validation,
+distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader automation is established.
+
+Active slot: `L-0.6`, eliminate ledger torn-read false failures.
+
+Active branch: `codex/l-0-6-ledger-torn-read`, created from exact green main
+`e5f569d0444bf37e405064699b5eb3778815405e`.
+
+Slot status: `IN_PROGRESS`.
+
+Next action: commit and publish this checkpoint, audit the two ledger implementations and authoritative `L-0.6`
+acceptance contract, add a completed behavioral red gate for concurrent append/replay, implement only the bounded
+correctness change, then run the applicable cross-process and full campaign ladders.
+
+Decision: continue only `L-0.6`; no later slot is active.
+
 ## Combined Build Plan Slot 10 Remote-Green Checkpoint
 
 Timestamp: 2026-07-30T04:27:09-07:00

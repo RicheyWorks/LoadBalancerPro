@@ -241,7 +241,7 @@
       "dependencies": ["L-2.1"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "On codex/l-2-2-rotation-recovery from exact green main 178322bc3f9572b74ee35caea7b654fb19ff111e, the candidate adds bounded 65-segment archive-and-truncate history for both command ledgers and allocation state, global chain replay, recognized orphan-install startup recovery, and an explicit dry-run-first offline torn-tail repair with exact-byte quarantine. Adversarial focused tests, 10,000-command fresh replay, the complete 3,068-test suite, package/verify, 144-component SBOM, packaged workflow/allocation/recovery proofs, loopback runtime smoke, and complete-diff self-review pass. Commit and exact-head remote gates remain pending."
+      "currentState": "PR #515 on codex/l-2-2-rotation-recovery from exact green main 178322bc3f9572b74ee35caea7b654fb19ff111e adds bounded 65-segment archive-and-truncate history for both command ledgers and allocation state, global chain replay, recognized orphan-install startup recovery, and an explicit dry-run-first offline torn-tail repair with exact-byte quarantine. Product commit 24138eb6ba5d7a63021f7fb8670e0d0f7384a574 passed adversarial focused tests, 10,000-command fresh replay, the complete 3,068-test suite, package/verify, 144-component SBOM, packaged workflow/allocation/recovery proofs, loopback runtime smoke, and complete-diff self-review. The current campaign-checkpoint-only head still requires exact-head remote gates."
     },
     {
       "ordinal": 18,

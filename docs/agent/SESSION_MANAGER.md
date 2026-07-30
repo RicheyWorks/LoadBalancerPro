@@ -10,8 +10,10 @@ Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTR
 
 Timestamp: 2026-07-30T16:15:44-07:00
 
-Current slot/branch/PR: `L-2.2`; `codex/l-2-2-rotation-recovery`; no PR yet; base
-`178322bc3f9572b74ee35caea7b654fb19ff111e`; status `IN_PROGRESS`.
+Current slot/branch/PR: `L-2.2`; `codex/l-2-2-rotation-recovery`;
+[#515](https://github.com/RicheyWorks/LoadBalancerPro/pull/515); product commit
+`24138eb6ba5d7a63021f7fb8670e0d0f7384a574`; base
+`178322bc3f9572b74ee35caea7b654fb19ff111e`; status `PR_OPEN`.
 
 Candidate: the shared engine now retains one fixed current file plus at most 64 contiguous immutable segments,
 rotates ledgers/allocation state at the bounded soft thresholds without resetting sequence or predecessor hashes,
@@ -40,9 +42,9 @@ Complete-diff self-review: no findings. The branch is still based exactly on cur
 `178322bc3f9572b74ee35caea7b654fb19ff111e`; no unexpected path, secret-like value, external target, conflict marker,
 dependency/build/workflow/container change, or out-of-scope destructive operation is present.
 
-Blocker: none. Next: rerun the campaign documentation selector for this required checkpoint, commit the exact candidate,
-publish one PR, and require exact-head CI, CodeQL, dependency review, Docker/runtime, SBOM/artifact/evidence, and blocking
-HIGH/CRITICAL image scan before automatic merge.
+Blocker: none. Next: run the campaign documentation selector for this required PR-creation checkpoint, commit and push
+that checkpoint-only final head, and require exact-head CI, CodeQL, dependency review, Docker/runtime,
+SBOM/artifact/evidence, and blocking HIGH/CRITICAL image scan before automatic merge.
 
 ## Combined Build Plan Slot 16 Main-Green / Slot 17 Start
 

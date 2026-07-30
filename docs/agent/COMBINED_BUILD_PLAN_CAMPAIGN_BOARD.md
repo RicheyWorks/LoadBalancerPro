@@ -18,8 +18,9 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   final head `dd847ef27467abd148b4bfa2f2ca3384c1df4e53`, merge
   `178322bc3f9572b74ee35caea7b654fb19ff111e`, exact-main CI `30586463172` and CodeQL `30586463123` green.
 - Active implementation slot: `L-2.2`; add bounded ledger/state-store rotation and recovery on
-  `codex/l-2-2-rotation-recovery` from exact green main. The bounded implementation, acceptance tests, and full local
-  candidate gates are green; commit and exact-head publication remain pending.
+  `codex/l-2-2-rotation-recovery` from exact green main in
+  [PR #515](https://github.com/RicheyWorks/LoadBalancerPro/pull/515). The bounded implementation, acceptance tests,
+  and full local candidate gates are green; the required PR checkpoint and exact-head remote gates remain pending.
 - Next implementation slot after the active gate: `L-2.3`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

@@ -6,6 +6,91 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 8 Local-Green Checkpoint
+
+Timestamp: 2026-07-29T22:00:01-07:00
+
+Current slot: `L-0.3`, make CLI integer-prompt abort non-mutating.
+
+Current branch: `codex/l-0-3-non-mutating-cli-abort`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `408acded496caed88e849c947a46ba43fead6f5d`, the exact PR #504 merge commit and green
+`origin/main`.
+
+Implementation:
+
+- `ConsoleUtils.promptForInt` now returns the dedicated out-of-range `PROMPT_ABORTED` sentinel for explicit
+  cancellation, declined retry, and max-attempt exhaustion;
+- an intentionally entered `-1` remains a valid integer whenever it is inside the requested range;
+- every one of the six current `LoadBalancerCLI` integer-prompt callers checks the dedicated sentinel explicitly;
+- Scale Cloud returns before command construction or any `CloudManager` interaction when its prompt is cancelled;
+- the README records the bounded CLI contract while retaining the independent live-cloud mutation guardrails.
+
+Acceptance:
+
+- the corrected pre-implementation red gate ran five tests with four expected failures and one already-correct valid
+  `-1` pass;
+- the post-implementation acceptance passed all five tests, including explicit abort, max-attempt abort, valid `-1`,
+  exact six-caller source audit, and mocked zero-`CloudManager` Scale Cloud cancellation;
+- the focused CLI/cloud/campaign selector passed 77 tests across seven reports with zero failures, errors, or skips;
+- the expanded all-CLI and adjacent documentation selector passed 206 tests across 25 reports with zero failures,
+  errors, or skips.
+
+Changed files:
+
+- `src/main/java/com/richmond423/loadbalancerpro/cli/ConsoleUtils.java`
+- `src/main/java/com/richmond423/loadbalancerpro/cli/LoadBalancerCLI.java`
+- `src/test/java/com/richmond423/loadbalancerpro/cli/PromptForIntAbortSafetyTest.java`
+- `README.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Verification:
+
+- clean `mvn -B clean package`: exit 0 in 272.3 seconds, 3,466 tests across 488 fresh reports, zero
+  failures/errors/skips, and no Surefire dump files;
+- `mvn -q "-DskipTests" verify`, `mvn -q jacoco:report`, and `git diff --check` passed;
+- the post-checkpoint acceptance/campaign guard rerun passed 11 tests across two reports with zero failures,
+  errors, or skips;
+- JaCoCo XML generation passed: 83.26% instructions, 66.47% branches, 82.58% lines, 87.78% methods, and 94.34%
+  classes;
+- CycloneDX 2.9.1 generated parseable JSON/XML 1.6 BOMs with 144 components in each;
+- the checked-in artifact verifier passed all seven required executable-JAR entries before and after the packaged
+  Enterprise Lab workflow;
+- the packaged healthy/overloaded/invalid LASE CLI cases passed with exits 0, 0, and 2, no Spring startup, and no
+  exception text;
+- the checked-in literal-loopback packaged runtime smoke returned HTTP 200 for health, the proxy status page, and
+  proxy status API, then stopped its captured process;
+- the packaged Enterprise Lab shadow workflow passed ten fixed scenarios and wrote ignored target-only evidence
+  under its explicit no-live-cloud/no-external-network boundary;
+- final executable JAR after the packaged workflow rerun: 95,551,598 bytes, 1,438 entries, SHA-256
+  `E5EC69C328B72B46A4E4C349EC8A1A702D5C53F138E9B9EF777734DC618195DB`.
+
+Local limitations: Docker CLI 28.0.4 could not reach its configured Docker Desktop Linux engine, Trivy is not
+installed, and the repository root has no Compose file. No local Docker/runtime, controlled container, Trivy, or
+Compose result is claimed. Exact-head remote CI, CodeQL, dependency review, SBOM, Docker build/runtime, controlled
+container evidence, and blocking image scan remain mandatory before merge.
+
+Scope and safety: production changes are limited to the planned CLI integer-abort contract and caller handling.
+No authentication/authorization policy was weakened, and no public/external target, secret, live cloud/tenant
+action, deployment, CI/Maven/Docker/Compose change, endpoint, unrelated CLI/GUI redesign, cloud enablement, or
+readiness/performance claim was added.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader
+automation is established by this slot.
+
+Blocker: none locally.
+
+Next action: rerun the campaign guards after this checkpoint, commit and publish the exact eight-file local-green
+slice, open one PR, and require every exact-head remote gate before authorized self-review and merge.
+
+Decision: continue only `L-0.3`; no later slot is active.
+
 ## Combined Build Plan Slot 8 Start Checkpoint
 
 Timestamp: 2026-07-29T21:40:53-07:00

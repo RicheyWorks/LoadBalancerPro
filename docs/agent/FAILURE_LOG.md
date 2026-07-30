@@ -8882,3 +8882,24 @@ First L-0.3 start-checkpoint patch: the multi-file patch was rejected atomically
 sentence `audit every promptForInt caller`, while the exact checked-in text was `re-audit every promptForInt caller`.
 No file changed. Correction: read the exact L-0.2/L-0.3 manifest objects and apply the checkpoint against their
 literal current values before any implementation audit.
+
+Corrected L-0.3 red gate: five tests ran with four expected failures, zero errors, and zero skips. Explicit prompt
+abort and max-attempt exhaustion both returned `-1`, all six `promptForInt` callers lacked an explicit dedicated-
+abort check, and aborting Scale Cloud interacted with `CloudManager` through `getCurrentCapacity` and
+`scaleServersAsync(-1, ...)`. The valid-input case confirmed that `-1` must remain a real adjustment when the
+requested range includes it. Correction: introduce one out-of-range integer abort sentinel, return it from every
+integer-prompt abort path, and make all six callers test it explicitly before any action or mutation.
+
+First L-0.3 sentinel implementation patch: the caller edits and constant landed correctly, but three generic return
+hunks matched `promptForDouble` instead of the intended later `promptForInt` method. Review caught the mismatch
+before any test ran on the intermediate tree. Correction: restore every double-prompt abort return to its unchanged
+`-1` contract, apply the dedicated sentinel only inside `promptForInt`, and inspect the exact diff before rerunning
+the acceptance selector.
+
+L-0.3 local container and image-scan probes: Docker CLI 28.0.4 is installed, but it cannot reach the configured
+Docker Desktop Linux engine named pipe; standalone Trivy is unavailable; and the repository root has no Compose
+file. This is an environment/tooling limitation, not a green result and not evidence of a branch-specific product
+failure. L-0.3 changes no dependency, POM, workflow, Dockerfile, Compose file, base image, or container behavior.
+Correction: claim no local Docker/runtime, controlled container, Trivy, or Compose validation. Preserve the
+unchanged security gates and require exact-head remote Docker build/runtime, controlled container evidence, and
+blocking HIGH/CRITICAL Trivy success before merge and again on exact merge-main.

@@ -106,7 +106,7 @@ public class LoadBalancerCLI {
 
                         displayMenu();
                         int choice = console.promptForInt("Enter your choice: ", 1, 15, "Menu choice");
-                        if (choice != -1) {
+                        if (choice != ConsoleUtils.PROMPT_ABORTED) {
                             lastInputTime = System.currentTimeMillis();
                             CliAction action = actions.get(choice);
                             if (action != null) {
@@ -393,7 +393,7 @@ public class LoadBalancerCLI {
             if (capacity < 0) return;
             System.out.println("Select Server Type:\n1. CLOUD\t2. ONSITE");
             int typeChoice = console.promptForInt("Enter choice: ", 1, 2, "Server type");
-            if (typeChoice < 0) return;
+            if (typeChoice == ConsoleUtils.PROMPT_ABORTED) return;
 
             try {
                 Server server = new Server(id, cpu, mem, disk, typeChoice == 1 ? ServerType.CLOUD : ServerType.ONSITE);
@@ -441,7 +441,7 @@ public class LoadBalancerCLI {
             if (data < 0) return;
             System.out.println("Select strategy:\n1. Round Robin\n2. Least Loaded\n3. Weighted\n4. Consistent Hashing\n5. Capacity-Aware\n6. Predictive");
             int strategyChoice = console.promptForInt("Enter your choice: ", 1, 6, "Strategy");
-            if (strategyChoice < 0) return;
+            if (strategyChoice == ConsoleUtils.PROMPT_ABORTED) return;
 
             LoadDistributionResult result = null;
             try {
@@ -451,7 +451,7 @@ public class LoadBalancerCLI {
                     case 3: result = new LoadDistributionResult(balancer.weightedDistribution(data), 0.0); break;
                     case 4:
                         int keys = console.promptForInt("Enter number of data keys: [1-infinity] ", 1, Integer.MAX_VALUE, "Number of keys");
-                        if (keys < 0) return;
+                        if (keys == ConsoleUtils.PROMPT_ABORTED) return;
                         result = new LoadDistributionResult(balancer.consistentHashing(data, keys), 0.0);
                         break;
                     case 5: result = balancer.capacityAwareWithResult(data); break;
@@ -681,7 +681,7 @@ public class LoadBalancerCLI {
             int count = console.promptForInt("Enter number of cloud servers to initialize: [" + 
                                              config.getCloudMinServers() + "-" + config.getCloudMaxServers() + "] ", 
                                              config.getCloudMinServers(), config.getCloudMaxServers(), "Cloud servers");
-            if (count < 0) return;
+            if (count == ConsoleUtils.PROMPT_ABORTED) return;
 
             Command initCommand = new InitCloudCommand(this, cloudManager, count);
             try {
@@ -754,7 +754,7 @@ public class LoadBalancerCLI {
             int adjust = console.promptForInt("Enter number of cloud servers to adjust (±): [-" + 
                                               config.getCloudMaxServers() + " to +" + config.getCloudMaxServers() + "] ", 
                                               -config.getCloudMaxServers(), config.getCloudMaxServers(), "Cloud adjustment");
-            if (adjust == Integer.MIN_VALUE) return;
+            if (adjust == ConsoleUtils.PROMPT_ABORTED) return;
 
             Command scaleCommand = new ScaleCloudCommand(this, cloudManager, adjust);
             try {

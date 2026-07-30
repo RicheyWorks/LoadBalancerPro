@@ -129,11 +129,11 @@
       "sourceIds": ["L-0.3"],
       "track": "lab",
       "title": "Make CLI prompt abort non-mutating",
-      "status": "IN_PROGRESS",
+      "status": "LOCAL_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "SAFETY",
       "verificationProfile": "java-full",
-      "currentState": "Started from exact green main 408acded496caed88e849c947a46ba43fead6f5d on branch codex/l-0-3-non-mutating-cli-abort. The dedicated prompt-abort sentinel and every promptForInt caller are under current-tree audit; no acceptance claim yet."
+      "currentState": "Local-green on codex/l-0-3-non-mutating-cli-abort from exact green main 408acded496caed88e849c947a46ba43fead6f5d: promptForInt uses an out-of-range abort sentinel, all six callers check it explicitly, valid -1 input remains valid, and mocked Scale Cloud cancellation performs zero CloudManager interactions. Full local Java, artifact, SBOM, packaged loopback, and lab-shadow gates passed; exact-head remote gates remain pending."
     },
     {
       "ordinal": 9,

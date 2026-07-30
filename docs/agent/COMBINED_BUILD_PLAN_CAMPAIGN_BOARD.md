@@ -17,9 +17,9 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Latest completed slot: `L-0.2` in merged [PR #504](https://github.com/RicheyWorks/LoadBalancerPro/pull/504);
   final head `b55e677cc141f1b7f450f9469b9fe26d0fac9978`, merge
   `408acded496caed88e849c947a46ba43fead6f5d`, exact-main local package, CI, and CodeQL green.
-- Active implementation slot: `L-0.3`; the dedicated integer-prompt abort sentinel, all six caller checks, and
-  zero-interaction Scale Cloud cancellation are local-green on branch `codex/l-0-3-non-mutating-cli-abort`;
-  exact-head remote gates remain pending.
+- Active implementation slot: `L-0.3`; [PR #505](https://github.com/RicheyWorks/LoadBalancerPro/pull/505) is open
+  from branch `codex/l-0-3-non-mutating-cli-abort`. The dedicated integer-prompt abort sentinel, all six caller
+  checks, and zero-interaction Scale Cloud cancellation are local-green; exact-head remote gates remain pending.
 - Next implementation slot after the active gate: `L-0.4`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -36,7 +36,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | MAIN_GREEN |
 | 6 | P-0.6 | P-0.6 | Simulation-core correctness batch | — | MAIN_GREEN |
 | 7 | L-0.2 | L-0.2 | Explorer size caps | SEC-DEFAULT-DENY | MAIN_GREEN |
-| 8 | L-0.3 | L-0.3 | Non-mutating CLI abort | SEC-DEFAULT-DENY | LOCAL_GREEN |
+| 8 | L-0.3 | L-0.3 | Non-mutating CLI abort | SEC-DEFAULT-DENY | PR_OPEN |
 | 9 | L-0.4 | L-0.4 | Cockpit HTML-injection removal | SEC-DEFAULT-DENY | OPEN |
 | 10 | L-0.5 | L-0.5 | Stable mocked-cloud ASG ownership | SEC-DEFAULT-DENY | OPEN |
 | 11 | L-0.6 | L-0.6 | Ledger torn-read correctness | SEC-DEFAULT-DENY | OPEN |

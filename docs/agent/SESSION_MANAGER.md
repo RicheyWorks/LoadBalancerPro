@@ -6,6 +6,54 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 8 PR-Open Checkpoint
+
+Timestamp: 2026-07-29T22:02:52-07:00
+
+Current slot: `L-0.3`, make CLI integer-prompt abort non-mutating.
+
+Current branch: `codex/l-0-3-non-mutating-cli-abort`.
+
+Slot status: `PR_OPEN`.
+
+Pull request: [#505](https://github.com/RicheyWorks/LoadBalancerPro/pull/505).
+
+Published implementation head: `a040d543ac31197ce61d11ddb113be00ac2e3110`.
+
+Verified base: `408acded496caed88e849c947a46ba43fead6f5d`, the exact PR #504 merge commit and green
+`origin/main`.
+
+Local gate: the corrected red gate mapped the overlapping `-1` abort defect; post-implementation acceptance,
+focused, expanded, and post-checkpoint campaign selectors passed. Clean `mvn -B clean package` passed 3,466 tests
+across 488 fresh reports with zero failures, errors, skips, or dumps. Verify, JaCoCo, executable-JAR resources,
+CycloneDX JSON/XML, packaged LASE, literal-loopback packaged runtime, Enterprise Lab shadow workflow, and the
+complete eight-file diff/scope audit passed.
+
+Remote state at open: push CI `30515501762`, PR CI `30515513297`, and CodeQL `30515513302` started for the published
+implementation head. PR dependency review also started and the duplicate push-only dependency job was correctly
+skipped. These runs are not accepted as final evidence because this PR-open checkpoint will create a new head; every
+required gate must pass again on the resulting exact SHA.
+
+Review state: no independent reviewer is available; the campaign's pre-authorized substitute is a documented
+complete-diff self-review after the exact final checkpoint head is published. Required checks cannot be bypassed,
+disabled, or weakened.
+
+Scope and safety: production changes are limited to the planned CLI integer-abort contract and caller handling.
+No authentication/authorization policy was weakened, and no public/external target, secret, live cloud/tenant
+action, deployment, CI/Maven/Docker/Compose change, endpoint, unrelated CLI/GUI redesign, cloud enablement, or
+readiness/performance claim is present.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader
+automation is established by this slot.
+
+Blocker: required exact-head remote checks are pending.
+
+Next action: commit and publish this PR-open checkpoint, then require every resulting exact-head remote gate before
+authorized complete-diff self-review and merge.
+
+Decision: continue only `L-0.3`; no later slot is active.
+
 ## Combined Build Plan Slot 8 Local-Green Checkpoint
 
 Timestamp: 2026-07-29T22:00:01-07:00

@@ -2,6 +2,7 @@ package com.richmond423.loadbalancerpro.api.proxy;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,12 +26,22 @@ final class ReverseProxyRoutePlanner {
 
     static List<ConfiguredRoute> buildEnabledRoutes(ReverseProxyProperties properties,
                                                     RoutingStrategyRegistry registry) {
+        return buildEnabledRoutes(properties, registry, List.of());
+    }
+
+    static List<ConfiguredRoute> buildEnabledRoutes(
+            ReverseProxyProperties properties,
+            RoutingStrategyRegistry registry,
+            List<ConfiguredRoute> previousRoutes) {
         Objects.requireNonNull(properties, "properties cannot be null");
         Objects.requireNonNull(registry, "registry cannot be null");
+        Objects.requireNonNull(previousRoutes, "previousRoutes cannot be null");
         if (!properties.isEnabled()) {
             return List.of();
         }
 
+        Map<String, ConfiguredRoute> previousRoutesByName = new LinkedHashMap<>();
+        previousRoutes.forEach(route -> previousRoutesByName.put(route.name(), route));
         boolean privateNetworkValidationEnabled = properties.getPrivateNetworkValidation().isEnabled();
         if (!properties.getRoutes().isEmpty()) {
             List<ConfiguredRoute> routes = new ArrayList<>();
@@ -45,7 +56,6 @@ final class ReverseProxyRoutePlanner {
                         : route.getStrategy();
                 RoutingStrategyId strategyId = strategyId(strategyName,
                         "loadbalancerpro.proxy.routes." + routeName + ".strategy");
-                RoutingStrategy strategy = strategy(registry, strategyId);
                 List<ReverseProxyProperties.Upstream> targets = route.getTargets();
                 if (targets.isEmpty()) {
                     throw new IllegalStateException(
@@ -53,6 +63,9 @@ final class ReverseProxyRoutePlanner {
                 }
                 validateTargets(targets, "loadbalancerpro.proxy.routes." + routeName + ".targets",
                         privateNetworkValidationEnabled);
+                RoutingStrategy strategy = routeStrategy(
+                        registry, strategyId, routeName, targets, previousRoutesByName);
+                requireRouteOwnedStrategy(routeName, strategy, routes);
                 routes.add(new ConfiguredRoute(routeName, pathPrefix, strategyId, strategy, List.copyOf(targets)));
             }
             return List.copyOf(routes);
@@ -64,8 +77,9 @@ final class ReverseProxyRoutePlanner {
                     "loadbalancerpro.proxy.enabled=true requires at least one configured route or upstream target");
         }
         RoutingStrategyId strategyId = strategyId(properties.getStrategy(), "loadbalancerpro.proxy.strategy");
-        RoutingStrategy strategy = strategy(registry, strategyId);
         validateTargets(upstreams, "loadbalancerpro.proxy.upstreams", privateNetworkValidationEnabled);
+        RoutingStrategy strategy = routeStrategy(
+                registry, strategyId, LEGACY_ROUTE_NAME, upstreams, previousRoutesByName);
         return List.of(new ConfiguredRoute(
                 LEGACY_ROUTE_NAME, "/", strategyId, strategy, List.copyOf(upstreams)));
     }
@@ -115,10 +129,40 @@ final class ReverseProxyRoutePlanner {
                         + " must be a supported strategy id; received: " + strategyName));
     }
 
-    private static RoutingStrategy strategy(RoutingStrategyRegistry registry, RoutingStrategyId strategyId) {
-        return registry.find(strategyId)
+    private static RoutingStrategy routeStrategy(
+            RoutingStrategyRegistry registry,
+            RoutingStrategyId strategyId,
+            String routeName,
+            List<ReverseProxyProperties.Upstream> targets,
+            Map<String, ConfiguredRoute> previousRoutesByName) {
+        ConfiguredRoute previousRoute = previousRoutesByName.get(routeName);
+        if (previousRoute != null
+                && previousRoute.strategyId() == strategyId
+                && upstreamIds(previousRoute.targets()).equals(upstreamIds(targets))) {
+            return previousRoute.strategy();
+        }
+        return registry.findFactory(strategyId)
+                .map(RoutingStrategyRegistry.RoutingStrategyFactory::create)
                 .orElseThrow(() -> new IllegalStateException(
                         "Proxy routing strategy is not registered: " + strategyId.externalName()));
+    }
+
+    private static Set<String> upstreamIds(List<ReverseProxyProperties.Upstream> targets) {
+        Set<String> ids = new LinkedHashSet<>();
+        targets.forEach(target -> ids.add(target.getId().trim()));
+        return ids;
+    }
+
+    private static void requireRouteOwnedStrategy(
+            String routeName,
+            RoutingStrategy strategy,
+            List<ConfiguredRoute> configuredRoutes) {
+        boolean alreadyOwned = configuredRoutes.stream()
+                .anyMatch(configuredRoute -> configuredRoute.strategy() == strategy);
+        if (alreadyOwned) {
+            throw new IllegalStateException(
+                    "Proxy routing strategy factory must create a route-owned instance for route " + routeName);
+        }
     }
 
     private static void validateTargets(List<ReverseProxyProperties.Upstream> targets,

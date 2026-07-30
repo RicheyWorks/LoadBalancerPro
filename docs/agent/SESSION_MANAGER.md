@@ -6,6 +6,220 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 4 Remote-Green Checkpoint
+
+Timestamp: 2026-07-29T18:19:33-07:00
+
+Current slot: `P-0.3`, create route-scoped routing-strategy instances.
+
+Current branch: `codex/p-0-3-route-scoped-strategy`.
+
+Slot status: `REMOTE_GREEN`.
+
+Pull request: [#501](https://github.com/RicheyWorks/LoadBalancerPro/pull/501).
+
+Verified remote-green head: `219e1331f0910c97ec7f89ebcb1aacc4c202c67f`.
+
+Verified base: `c04014892244dfc646406f2d8698592f254ddef3`, the exact corrective PR #500 merge commit
+and exact green `origin/main`.
+
+Exact-head remote verification:
+
+- PR CI `30504917830`: success;
+- duplicate push CI `30504915283`: success;
+- CodeQL `30504917829`: success;
+- PR dependency review: success; the push-only duplicate was correctly skipped;
+- both CI runs passed tests, zero-skip enforcement, JaCoCo, executable-JAR package rerun and resource audit,
+  CycloneDX SBOM, LASE and packaged-JAR smokes, Docker image build, Docker runtime smoke, container dry-run
+  evidence, blocking image scan, and evidence upload;
+- GitHub reports the exact head mergeable and `CLEAN`.
+
+Review: no independent reviewer was available. The pre-authorized substitute complete-diff self-review covered all
+10 changed files and 726 insertions/42 deletions from exact base through head. It found no actionable correctness,
+safety, scope, or documentation-trust defect. Local, remote-tracking, and PR head SHAs matched; whitespace,
+protected-surface, public/external-target, and secret-like scans passed.
+
+Scope and safety: production changes remain limited to the planned registry factory and reverse-proxy
+route-planning/reload ownership surfaces. No security-policy weakening, target-validation relaxation, external/
+public target, secret, live cloud/tenant action, CI/Maven/Docker/Compose change, or readiness/performance claim is
+present.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: none on verified head `219e1331f0910c97ec7f89ebcb1aacc4c202c67f`.
+
+Next action: commit and publish this remote-green checkpoint, then treat that resulting SHA as the final candidate
+and repeat every exact-head required gate before merge.
+
+Decision: continue only `P-0.3`; no later slot is active.
+
+## Combined Build Plan Slot 4 PR-Open Checkpoint
+
+Timestamp: 2026-07-29T18:09:39-07:00
+
+Current slot: `P-0.3`, create route-scoped routing-strategy instances.
+
+Current branch: `codex/p-0-3-route-scoped-strategy`.
+
+Slot status: `PR_OPEN`.
+
+Pull request: [#501](https://github.com/RicheyWorks/LoadBalancerPro/pull/501).
+
+Published head: `89ba1e459949c31a840d69e2e1176e4410f34836`.
+
+Verified base: `c04014892244dfc646406f2d8698592f254ddef3`, the exact corrective PR #500 merge commit
+and exact green `origin/main`.
+
+Local gate: fresh `mvn -B clean package` passed 3,437 tests across 483 reports with zero failures, errors, skips, or
+dumps. Focused route/registry/proxy/reload selectors, verify, JaCoCo, JAR resources, packaged LASE smokes,
+literal-loopback packaged runtime, CycloneDX JSON/XML, campaign guards, and complete scope/safety review passed.
+
+Remote state at open: the exact published head is mergeable but blocked while the push/PR CI and CodeQL runs plus
+PR dependency review are in progress. No remote-green claim is made.
+
+Review state: no independent reviewer is available; the campaign's pre-authorized substitute is a documented
+complete-diff self-review after the exact final checkpoint head is published. Required checks cannot be bypassed,
+disabled, or weakened.
+
+Scope and safety: production changes remain limited to the planned registry factory and reverse-proxy
+route-planning/reload ownership surfaces. No security-policy weakening, external/public target, secret, live
+cloud/tenant action, CI/Maven/Docker/Compose change, or readiness/performance claim is present.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: required exact-head remote checks are pending.
+
+Next action: commit this PR-open checkpoint, publish the new exact head, then require the resulting exact-head CI,
+CodeQL, dependency review, SBOM, Docker/runtime, container evidence, and blocking Trivy gates before merge.
+
+Decision: continue only `P-0.3`; no later slot is active.
+
+## Combined Build Plan Slot 4 Local-Green Checkpoint
+
+Timestamp: 2026-07-29T18:07:19-07:00
+
+Current slot: `P-0.3`, create route-scoped routing-strategy instances.
+
+Current branch: `codex/p-0-3-route-scoped-strategy`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `c04014892244dfc646406f2d8698592f254ddef3`, the exact corrective PR #500 merge commit
+and exact green `origin/main`.
+
+Implemented acceptance: `RoutingStrategyRegistry` now exposes guarded factories and its default factories create
+fresh stateful strategies. `ReverseProxyRoutePlanner` creates and owns one strategy per route, rejects a factory
+that shares one instance across active routes, and preserves a prior route's instance across reload only when the
+route name, strategy identifier, and trimmed upstream-ID set are unchanged. `ReverseProxyService` supplies the
+previous immutable route snapshot during its existing atomic reload. Two interleaved weighted-round-robin routes
+each served 1,000 requests at the expected 750/250 split, within the imported five-percentage-point tolerance.
+
+Changed files:
+
+- `src/main/java/com/richmond423/loadbalancerpro/core/RoutingStrategyRegistry.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyRoutePlanner.java`
+- `src/main/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyService.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/RoutingStrategyRegistryFactoryTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/api/proxy/ReverseProxyRouteStrategyIsolationTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/api/ReverseProxyRouteStrategyReloadIntegrationTest.java`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Verification:
+
+- exact route-isolation red gate failed on the green base because two WRR routes received the same strategy
+  instance;
+- focused registry, planner, comparison-engine, round-robin, weighted-round-robin, service-forwarding, proxy,
+  security/reload, and literal-loopback reload-continuity selectors passed after implementation;
+- service-level acceptance executed 2,000 interleaved forwards, 1,000 per route, and each route selected its
+  3-weight upstream 750 times and its 1-weight upstream 250 times;
+- authoritative fresh `mvn -B clean package` passed 3,437 tests across 483 reports with zero failures, errors, or
+  skips and no Surefire dump files;
+- `mvn -q "-DskipTests" verify`, JaCoCo XML generation, executable-JAR resource checks, packaged healthy,
+  overloaded, and invalid synthetic LASE CLI cases, literal-loopback packaged JAR health/static-page smoke, exact
+  child-process identification, and cleanup passed;
+- executable JAR: 95,545,582 bytes, SHA-256
+  `80916D64FCA16D285B70C24E2AA285A631FF24D06B5F076CF96F3094CE5076DC`;
+- JaCoCo recorded 191,979 of 230,960 instructions, 16,539 of 24,928 branches, and 39,127 of 47,482 lines covered;
+- CycloneDX 2.9.1 generated parseable JSON/XML 1.6 BOMs with 144 components in each;
+- complete-diff whitespace, campaign-manifest parse, secret-like-value, and public/external-target scans passed;
+  changed tests use only literal loopback targets.
+
+Local limitations: the Docker CLI could not reach an engine earlier in this campaign session, Trivy is not
+installed, and the repository root has no Compose file. No local Docker/runtime, Trivy, or Compose result is
+claimed. Exact-head remote Docker build/runtime, container evidence, dependency review, SBOM, blocking Trivy, CI,
+and CodeQL remain mandatory before merge.
+
+Scope and safety: production changes are limited to the planned registry factory and reverse-proxy route-planning/
+reload ownership surfaces. No authentication/authorization policy, target validation, retry/timeout semantics,
+Maven/CI/Docker/Compose behavior, secret, external/public target, live cloud/tenant action, or readiness claim
+changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+TLS/ingress validation, distributed durability, throughput/p95/p99 or load/soak evidence, or broader automation is
+established by this slot.
+
+Blocker: none.
+
+Next action: rerun campaign/documentation guards at this checkpoint, commit and publish the exact local-green head,
+open one PR, and require every exact-head remote gate before merge.
+
+Decision: continue only `P-0.3`; no later slot is active.
+
+## Combined Build Plan Slot 4 Start Checkpoint
+
+Timestamp: 2026-07-29T17:25:53-07:00
+
+Current slot: `P-0.3`, create route-scoped routing-strategy instances.
+
+Current branch: `codex/p-0-3-route-scoped-strategy`.
+
+Slot status: `IN_PROGRESS`.
+
+Verified base: `c04014892244dfc646406f2d8698592f254ddef3`, the exact corrective PR #500 merge commit
+and current `origin/main`.
+
+Previous slot closeout:
+
+- P-0.2 implementation PR #499 final head `60e0fae65732ef0f07a80f41a6c1330cac27f538` merged as
+  `44d303318b7828c64c8fb2f21fe03ae64bd499bb`;
+- exact-main CI exposed a 200 ms Enterprise Lab test timing race;
+- test-only corrective PR #500 final head `94f11c61c3ea7fa4121014a370ad2b150845b923` passed every exact-head gate
+  and merged as `c04014892244dfc646406f2d8698592f254ddef3`;
+- the exact corrective merge passed focused supervisor/process, health-lifecycle, and campaign guards;
+- post-merge `mvn -B package` passed 3,430 tests across 480 reports with zero failures, errors, or skips and no
+  Surefire dumps;
+- exact-main CI `30502139005` and CodeQL `30502139000` passed, including package rerun, SBOM, packaged smokes,
+  Docker/runtime, container evidence, and blocking image scan.
+
+P-0.2 is `MAIN_GREEN`, completing 3 of 49 implementation slots.
+
+P-0.3 build contract: audit and implement route-owned routing-strategy instances so stateful strategy state cannot
+leak between routes. Reconcile registry factory behavior, route planner/config build and reload ownership, and
+service request selection with current main. Preserve an old route strategy instance only when its strategy
+identifier and upstream set are unchanged. Prove two interleaved weighted-round-robin routes maintain independent
+3:1 distributions within the imported tolerance after 1,000 requests each.
+
+Prohibited surfaces: no security-policy weakening, external/public target, secret, live cloud/tenant, production
+deployment, CI/Maven/Docker/Compose change, unrelated proxy behavior, or readiness/performance claim.
+
+Verification profile: `proxy-integration` with deterministic literal-loopback or in-process fixtures, focused and
+adjacent selectors, the full local Java/package/verify ladder, complete diff/scope audit, and exact-head remote CI,
+CodeQL, dependency review, SBOM, Docker/runtime, container evidence, and blocking image scan.
+
+Blocker: none.
+
+Next action: audit current routing strategy registry/planner/service and reload tests, then write an exact failing
+route-isolation acceptance test before implementation.
+
+Decision: continue only `P-0.3`; no later slot is active.
+
 ## Combined Build Plan Slot 3 Corrective Remote-Green Checkpoint
 
 Timestamp: 2026-07-29T17:05:26-07:00

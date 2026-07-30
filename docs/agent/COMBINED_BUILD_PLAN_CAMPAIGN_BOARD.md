@@ -13,17 +13,16 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Source layout: `74b1f6758304bc5a3a85ff4888039e7309324ddf`, based on `e800ba06875d0897f8459ad14a5d5cf60dc34568`.
 - Source item count: 50.
 - Unique implementation slots: 49.
-- `MAIN_GREEN` implementation slots: 2 / 49.
-- Latest completed slot: `P-0.1` in merged [PR #498](https://github.com/RicheyWorks/LoadBalancerPro/pull/498);
-  head `274f03f9bf608f8c0e543d69ba45bf788a39b81b`, merge
-  `6369fcb7918d74b62b17dd73af564321f356073f`, exact-main CI and CodeQL green.
-- Active implementation slot: `P-0.2`; [PR #499](https://github.com/RicheyWorks/LoadBalancerPro/pull/499)
-  merged as `44d303318b7828c64c8fb2f21fe03ae64bd499bb`, but exact-main CI run `30500110273` exposed
-  a 200 ms wall-clock race in an Enterprise Lab test during the package-stage test rerun. A test-only corrective
-  [PR #500](https://github.com/RicheyWorks/LoadBalancerPro/pull/500) has passed local and first exact-head remote
-  gates; its factual remote checkpoint must repeat the gates before merge, and `P-0.2` remains uncounted until
-  resulting exact-main gates pass.
-- Next implementation slot after the active gate: `P-0.3`.
+- `MAIN_GREEN` implementation slots: 3 / 49.
+- Latest completed slot: `P-0.2` in merged [PR #499](https://github.com/RicheyWorks/LoadBalancerPro/pull/499),
+  followed by test-only corrective [PR #500](https://github.com/RicheyWorks/LoadBalancerPro/pull/500); final
+  corrective head `94f11c61c3ea7fa4121014a370ad2b150845b923`, merge
+  `c04014892244dfc646406f2d8698592f254ddef3`, exact-main local package, CI, and CodeQL green.
+- Active implementation slot: `P-0.3`; route-scoped routing-strategy instances are in
+  [PR #501](https://github.com/RicheyWorks/LoadBalancerPro/pull/501) at head
+  `219e1331f0910c97ec7f89ebcb1aacc4c202c67f`; duplicate exact-head CI runs `30504917830` and
+  `30504915283`, CodeQL `30504917829`, and PR dependency review passed.
+- Next implementation slot after the active gate: `P-0.4`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
 behavior exists. The active slot must reconcile its row with current main and the full source-plan acceptance contract.
@@ -34,8 +33,8 @@ behavior exists. The active slot must reconcile its row with current main and th
 | ---: | --- | --- | --- | --- | --- |
 | 1 | SEC-DEFAULT-DENY | P-0.5, L-0.1 | Fail-closed auth, role matrix, actuator lockdown | — | MAIN_GREEN |
 | 2 | P-0.1 | P-0.1 | Shutdown-hook lifecycle | — | MAIN_GREEN |
-| 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | REMOTE_GREEN |
-| 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | OPEN |
+| 3 | P-0.2 | P-0.2 | Health drain, thresholds, re-admission | — | MAIN_GREEN |
+| 4 | P-0.3 | P-0.3 | Route-scoped strategy instances | — | REMOTE_GREEN |
 | 5 | P-0.4 | P-0.4 | Weight-zero drain and retry classification | — | OPEN |
 | 6 | P-0.6 | P-0.6 | Simulation-core correctness batch | — | OPEN |
 | 7 | L-0.2 | L-0.2 | Explorer size caps | SEC-DEFAULT-DENY | OPEN |

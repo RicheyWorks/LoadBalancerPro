@@ -8628,3 +8628,59 @@ supervisor server/client/process/protocol/service and combined-campaign document
 and no Surefire dumps; `mvn -q "-DskipTests" verify`, campaign JSON parsing, and diff whitespace checks also passed.
 The correction remains limited to test timing plus factual campaign records. Remote corrective-PR and resulting
 exact-main gates remain pending and are not claimed green.
+
+Final recovery result: corrective PR #500 final head
+`94f11c61c3ea7fa4121014a370ad2b150845b923` passed both exact-head CI lanes, CodeQL, dependency review, both
+package-stage test reruns, SBOM, packaged smokes, Docker build/runtime, container evidence, and blocking image scan,
+then merged as `c04014892244dfc646406f2d8698592f254ddef3`. That exact main completed the focused supervisor/process,
+health-lifecycle, and campaign guards; a local `mvn -B package` with 3,430 tests across 480 reports and zero
+failures, errors, or skips; exact-main CI run `30502139005`; and CodeQL run `30502139000`. The failure is resolved
+as test-only timing stabilization; production defaults and runtime behavior remain unchanged.
+
+# 2026-07-29 - P-0.3 route-scoped strategy audit
+
+Branch: `codex/p-0-3-route-scoped-strategy`
+
+First broad source audit: a recursive routing-strategy ripgrep produced more than 500 matches and was piped through
+`Select-Object -First 500`; the early-closing consumer caused the wrapper to report exit 1 after printing the
+bounded results. This is a read-only search-orchestration failure, not a source, compile, or test failure.
+Correction: resolve exact filenames first with `rg --files`, then run bounded searches only within the confirmed
+registry, planner, service, route model, and relevant test files.
+
+P-0.3 source-contract lookup: the search found the exact `docs/BUILD_PLAN_DEPLOYABLE.md` P-0.3 change/files/
+acceptance block and campaign references, but piping the duplicated broad documentation results through
+`Select-Object -First 240` again closed the producer and returned exit 1. The printed source-plan contract is
+accepted only after direct bounded inspection of confirmed `docs/BUILD_PLAN_DEPLOYABLE.md` lines 25-28; the failed
+broad wrapper is not a gate. Correction: use direct file/range reads for known plan paths and avoid early-closing
+pipelines.
+
+Exact P-0.3 route-isolation red gate: one deterministic test ran with one failure, zero errors, and zero skips.
+`ReverseProxyRoutePlanner.buildEnabledRoutes` stored the same
+`WeightedRoundRobinRoutingStrategy` object from `RoutingStrategyRegistry` on both configured routes, so the
+identity assertion failed before the interleaved 1,000-request-per-route 3:1 distribution assertions. Correction:
+make the registry expose factories, instantiate one strategy per route during config build, and explicitly carry
+an old route-owned instance across reload only when route name, strategy id, and upstream set are unchanged.
+
+P-0.3 direct-service-test lookup: a focused ripgrep for existing `new ReverseProxyMetrics` test construction found
+no matches and returned its normal no-match exit 1 after the metrics source was printed by the preceding successful
+file read. This is a read-only no-match result, not a product or test failure. Correction: construct the zero-argument
+metrics component directly in the new package-level service acceptance test and treat future expected no-match
+searches explicitly instead of as combined command failures.
+
+First P-0.3 packaged LASE smoke wrapper: the healthy and overloaded cases exited 0 and passed their required output
+and no-Spring-startup assertions. The invalid-name case exited the required 2, but PowerShell's merged native
+stderr capture contained the word `Exception`, so the combined wrapper stopped before accepting the smoke. This
+may be PowerShell's `NativeCommandError`/stream formatting rather than JAR output and is not yet classified as a
+product failure. Correction: launch the same invalid case with separate raw stdout/stderr redirection outside the
+repository, inspect only those raw child streams, and rerun all exact assertions without accepting this wrapper.
+
+P-0.3 LASE smoke recovery: separate raw child stdout/stderr proved the invalid case emitted only the bounded
+invalid-scenario/valid-values message, contained neither `Exception` nor `java.lang`, and exited 2. A fresh
+three-case raw-stream run then passed all healthy, overloaded, invalid, and no-Spring-startup assertions with exits
+0, 0, and 2. The first wrapper failure was PowerShell stream decoration, not application output.
+
+First P-0.3 packaged-runtime launcher: shell policy rejected a single compound command that checked the literal-
+loopback port, launched the packaged JAR, polled health/status, and force-stopped only the captured child in a
+`finally` block. The command did not run, no process started, and no repository or external state changed.
+Correction: split launch, bounded literal-loopback polling, and exact captured-process cleanup into separate simple
+commands, verifying the child PID before cleanup.

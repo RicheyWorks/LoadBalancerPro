@@ -89,7 +89,8 @@ public class ReverseProxyService {
         this.metrics = Objects.requireNonNull(metrics, "metrics cannot be null");
         this.registry = Objects.requireNonNull(registry, "registry cannot be null");
         this.clock = Objects.requireNonNull(clock, "clock cannot be null");
-        ActiveProxyConfig startupConfig = buildActiveConfig(properties, nextGeneration.getAndIncrement());
+        ActiveProxyConfig startupConfig = buildActiveConfig(
+                properties, nextGeneration.getAndIncrement(), List.of());
         this.activeConfig = new AtomicReference<>(startupConfig);
         this.reloadState = new AtomicReference<>(ReloadState.notAttempted(startupConfig));
         logStartupSummary();
@@ -256,7 +257,8 @@ public class ReverseProxyService {
         Instant attemptedAt = Instant.now(clock);
         ActiveProxyConfig previousConfig = activeConfig.get();
         try {
-            ActiveProxyConfig candidateConfig = buildActiveConfigForReload(candidateProperties);
+            ActiveProxyConfig candidateConfig = buildActiveConfigForReload(
+                    candidateProperties, previousConfig);
             activeConfig.set(candidateConfig);
             nextGeneration.updateAndGet(current -> Math.max(current, candidateConfig.generation() + 1));
             probeStates.clear();
@@ -276,21 +278,27 @@ public class ReverseProxyService {
         }
     }
 
-    private ActiveProxyConfig buildActiveConfigForReload(ReverseProxyProperties candidateProperties) {
+    private ActiveProxyConfig buildActiveConfigForReload(
+            ReverseProxyProperties candidateProperties,
+            ActiveProxyConfig previousConfig) {
         if (candidateProperties == null) {
             throw new IllegalStateException("reload payload must include proxy configuration");
         }
         if (!candidateProperties.isEnabled()) {
             throw new IllegalStateException("loadbalancerpro.proxy.enabled must be true for runtime reload");
         }
-        return buildActiveConfig(candidateProperties, nextGeneration.get());
+        return buildActiveConfig(
+                candidateProperties, nextGeneration.get(), previousConfig.routes());
     }
 
-    private ActiveProxyConfig buildActiveConfig(ReverseProxyProperties candidateProperties, long generation) {
+    private ActiveProxyConfig buildActiveConfig(
+            ReverseProxyProperties candidateProperties,
+            long generation,
+            List<ReverseProxyRoutePlanner.ConfiguredRoute> previousRoutes) {
         ReverseProxyProperties safeProperties = copyProperties(
                 Objects.requireNonNull(candidateProperties, "properties cannot be null"));
         List<ReverseProxyRoutePlanner.ConfiguredRoute> configuredRoutes =
-                ReverseProxyRoutePlanner.buildEnabledRoutes(safeProperties, registry);
+                ReverseProxyRoutePlanner.buildEnabledRoutes(safeProperties, registry, previousRoutes);
         validateRuntimeFields(safeProperties, configuredRoutes);
         return new ActiveProxyConfig(safeProperties, configuredRoutes, generation);
     }

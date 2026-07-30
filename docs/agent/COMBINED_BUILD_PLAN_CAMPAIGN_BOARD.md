@@ -17,8 +17,8 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
 - Latest completed slot: `L-0.6` in merged [PR #508](https://github.com/RicheyWorks/LoadBalancerPro/pull/508);
   final head `7ca0c5212f354f72350ce0e40eb4963fd2a17d65`, merge
   `b726cab39ddf60cd32fd515b32b3397ea605da3f`, exact-main focused checks, CI, and CodeQL green.
-- Active implementation slot: `L-1.1`; metadata-about-metadata deletion is locally green on
-  `codex/l-1-1-remove-metadata-services` and awaits its exact-head PR gate.
+- Active implementation slot: `L-1.1`; metadata-about-metadata deletion is open as
+  [PR #509](https://github.com/RicheyWorks/LoadBalancerPro/pull/509) and awaits its final exact-head remote gate.
 - Next implementation slot after the active gate: `L-1.2`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target
@@ -39,7 +39,7 @@ behavior exists. The active slot must reconcile its row with current main and th
 | 9 | L-0.4 | L-0.4 | Cockpit HTML-injection removal | SEC-DEFAULT-DENY | MAIN_GREEN |
 | 10 | L-0.5 | L-0.5 | Stable mocked-cloud ASG ownership | SEC-DEFAULT-DENY | MAIN_GREEN |
 | 11 | L-0.6 | L-0.6 | Ledger torn-read correctness | SEC-DEFAULT-DENY | MAIN_GREEN |
-| 12 | L-1.1 | L-1.1 | Delete metadata-about-metadata services | L0 complete | LOCAL_GREEN |
+| 12 | L-1.1 | L-1.1 | Delete metadata-about-metadata services | L0 complete | PR_OPEN |
 | 13 | L-1.2 | L-1.2 | One explainability module | L-1.1 | OPEN |
 | 14 | L-1.3 | L-1.3 | Explainability correctness/determinism | L-1.2, P-0.3 | OPEN |
 | 15 | L-1.4 | L-1.4 | One comparison/experiment path | L-1.3 | OPEN |

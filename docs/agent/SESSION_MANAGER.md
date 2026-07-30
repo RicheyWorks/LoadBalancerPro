@@ -24,8 +24,9 @@ target, or build/deployment change. Multi-host/network-filesystem locking, distr
 readiness/certification, live-cloud/tenant behavior, external traffic, and performance remain unproven.
 
 Active: `L-1.1`, delete metadata-about-metadata services; branch
-`codex/l-1-1-remove-metadata-services`; status `LOCAL_GREEN`; base
-`b726cab39ddf60cd32fd515b32b3397ea605da3f`.
+`codex/l-1-1-remove-metadata-services`; [PR #509](https://github.com/RicheyWorks/LoadBalancerPro/pull/509);
+status `PR_OPEN`; base `b726cab39ddf60cd32fd515b32b3397ea605da3f`; published implementation head
+`67fd5617674bc29c8e9803a58488ee4d03323981`.
 
 Candidate scope: 15 derivational services, 20 DTOs, 15 dedicated docs, 20 obsolete tests, the coupled compare/replay
 response construction, two static cockpit surfaces, and their retained contract tests. The representative compare
@@ -42,8 +43,9 @@ cloud/tenant calls, traffic mutation, replay execution, persistence, telemetry, 
 claims. Production readiness/certification, live-cloud/tenant validation, throughput/p95/p99, and the L-1.2 compact
 Decision Explorer contract remain unproven.
 
-Blocker: none locally. Next: commit and publish the exact candidate, open the PR, then require exact-head CI, CodeQL,
-dependency review, package/SBOM, Docker/runtime/evidence, and blocking image-scan gates before self-review and merge.
+Blocker: none locally. This required PR-open checkpoint is documentation-only and will change the exact branch head.
+Next: publish it, then require that final exact head's CI, CodeQL, dependency review, package/SBOM,
+Docker/runtime/evidence, and blocking image-scan gates before complete-diff self-review and merge.
 
 ## Combined Build Plan Slot 11 PR-Open Checkpoint
 

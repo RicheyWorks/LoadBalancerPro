@@ -23,6 +23,7 @@ class CloudConfigGuardrailTest {
         assertFalse(config.isAutonomousScaleUpAllowed());
         assertEquals(CloudConfig.DEFAULT_ENVIRONMENT, config.getEnvironment());
         assertEquals(CloudConfig.DEFAULT_RESOURCE_NAME_PREFIX, config.getResourceNamePrefix());
+        assertEquals("LoadBalancerPro-ASG-unconfigured", config.getAutoScalingGroupName());
         assertEquals(CloudConfig.DEFAULT_CURRENT_AWS_ACCOUNT_ID, config.getCurrentAwsAccountId());
         assertTrue(config.getAllowedAwsAccountIds().isEmpty());
         assertTrue(config.getAllowedRegions().isEmpty());
@@ -99,6 +100,18 @@ class CloudConfigGuardrailTest {
         assertEquals(CloudConfig.DEFAULT_CURRENT_AWS_ACCOUNT_ID, config.getCurrentAwsAccountId());
         assertEquals(java.util.List.of("123456789012"), config.getAllowedAwsAccountIds());
         assertEquals(java.util.List.of("us-east-1"), config.getAllowedRegions());
+    }
+
+    @Test
+    void invalidEnvironmentFailsClosedToStableUnconfiguredIdentity() {
+        Properties props = new Properties();
+        props.setProperty(CloudConfig.ENVIRONMENT_PROPERTY, "../unsafe environment");
+
+        CloudConfig config = new CloudConfig(
+                ACCESS_KEY, SECRET_KEY, "us-east-1", "lt-test", "subnet-test", props);
+
+        assertEquals(CloudConfig.DEFAULT_ENVIRONMENT, config.getEnvironment());
+        assertEquals("LoadBalancerPro-ASG-unconfigured", config.getAutoScalingGroupName());
     }
 
     @Test

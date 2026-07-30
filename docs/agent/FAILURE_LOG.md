@@ -8982,3 +8982,83 @@ L-0.4 compact active-step poll repeated the same PowerShell parse class by pipin
 directly to `Out-String`. It again failed before contacting GitHub and changed no state. Correction: stop using
 statement-to-pipeline shorthand in campaign polling; assign all formatted objects to an explicit array first, as
 the already successful corrected status snapshot did.
+
+# 2026-07-30 - L-0.5 stable mocked-cloud ASG ownership audit
+
+Branch: `codex/l-0-5-stable-mocked-asg-ownership`
+
+First L-0.5 broad source inventory: a combined `rg` search piped through `Select-Object -First` produced the needed
+build-plan and source matches but returned exit one after its output was truncated. The result is not treated as a
+complete inventory. Correction: split the build-contract lookup from precise `CloudConfig`, `CloudManager`, and
+guardrail-test searches, then read the exact constructor, create/describe/delete, ownership-tag, and initialization
+regions before writing acceptance tests.
+
+First L-0.5 red-test invocation: test compilation failed before any acceptance method ran because the AWS SDK
+overloads `describeAutoScalingGroups` for both a request and a builder consumer, and Mockito could not infer the
+untyped `argThat` lambda at the verification site. This is a test-harness compile failure, not red product evidence.
+Correction: type the matcher parameter explicitly as `DescribeAutoScalingGroupsRequest`, recompile, and accept only
+the resulting behavioral failures as the pre-implementation red gate.
+
+Second L-0.5 red-test invocation: the existing implementation treated the same-name, wrong-owner fixture as a
+newly created ASG and entered its bounded 300-second readiness wait, so the focused Maven process exceeded the
+184-second command timeout before producing a complete red result. The fixture omitted instances and therefore
+could not let the pre-change path finish promptly. Exact lingering Java process IDs `43996` and `41408` were
+stopped, and a separate process-count check confirmed that neither remained. Correction: retain the mismatched
+ownership contract while giving that fixture one healthy mocked instance, then rerun the unchanged focused class
+to obtain completed behavioral failures.
+
+L-0.5 red-fixture correction patch: the first combined `apply_patch` placed failure-log context inside the
+test-file hunk, so the patch failed atomically on missing context and changed no file. Correction: use file-scoped
+hunks with their own valid context, verify the resulting diff, and continue to require a completed red gate.
+
+L-0.5 corrected behavioral red gate: `mvn -q test "-Dtest=CloudAsgRestartReconciliationTest"` completed in
+20.1 seconds with 5 tests run, 5 expected failures, 0 errors, and 0 skipped. The failures proved that independently
+constructed configurations still used different UUID-derived names and that startup created instead of adopting
+or failing closed for prior, mismatched, and ambiguous mocked ASG inventory. One pre-change ambiguous path also
+logged a null mocked EC2-client error after its prohibited create, but Surefire recorded no test error and all five
+acceptance assertions reached behavioral failures. Correction: derive a validated stable identity, reconcile
+read-only ASG inventory after mutation guardrails pass, adopt only one exact name/tag match, and fail closed for
+unavailable or ambiguous ownership before any mutation.
+
+L-0.5 post-red source inventory: two follow-up read-only commands returned exit one after producing useful output
+because broad recursive output was truncated and because their explicit search paths included nonexistent
+`src/test/.../gui`, `docs/SECURE_CLOUD_SANDBOX.md`, and `docs/DEPLOYMENT_HARDENING.md` paths. Neither result is
+accepted as a complete inventory. Correction: use exact existing files and bounded line regions; the subsequent
+reads covered the initialization, reconciliation-adjacent describe, stable-name deletion tag, guardrail tests,
+README cloud-safety contract, and the authoritative PR-L0.5 build-plan section.
+
+L-0.5 campaign-checkpoint orientation: the first checkpoint read used generic
+`docs/agent/CAMPAIGN_BOARD.md` and `.json` guesses that do not exist, so PowerShell returned exit one after the
+session-manager tail and Git history were printed. A follow-up broad `rg` command found the exact combined-campaign
+filenames but returned exit one when `Select-Object -First 120` closed the output stream early. Neither invocation
+is accepted as a complete checkpoint read. Correction: read
+`COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`, `COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`, and the bounded
+`SESSION_MANAGER.md` regions directly; the corrected read completed successfully.
+
+L-0.5 local-ladder orientation: a read-only checklist/workflow search supplied the applicable readiness and scope
+checklists plus CI artifact/SBOM locations, but returned exit one because a Windows `rg` argument used the
+unsupported literal wildcard path `docs/agent/CAMPAIGN*`. Correction: rely on the successfully read exact
+checklists, use explicit campaign filenames for later searches, and do not count the wildcard invocation as
+verification evidence.
+
+L-0.5 first packaged LASE smoke wrapper: Windows PowerShell's .NET
+`System.Diagnostics.ProcessStartInfo` implementation exposed no usable `ArgumentList`, so three argument-add calls
+raised non-terminating null-expression errors and the wrapper eventually reached its 120-second tool timeout. No
+valid LASE scenario was launched and no smoke result is accepted. The timed-out wrapper process was gone, and a
+separate exact command-line process check confirmed zero packaged-JAR Java processes remained. Correction: use
+the supported fixed `Arguments` property with redirected raw stdout/stderr, fail immediately on wrapper errors,
+and rerun all healthy/overloaded/invalid assertions.
+
+L-0.5 local Docker capability probe: Docker CLI 28.0.4 reported that the Docker Desktop Linux-engine named pipe
+does not exist while displaying `DockerEngineExit=0`. A corrected `ProcessStartInfo` probe with separate streams
+confirmed the CLI itself returned process exit zero with empty stdout and the missing-engine error on stderr.
+The stderr result is accepted only as capability evidence, not as a successful Docker result, and no local
+image/runtime or scan claim is made from it. Correction: require non-empty server-version stdout in addition to
+the process exit code for this local probe; retain remote exact-head Docker/runtime and blocking image-scan checks
+as required gates.
+
+L-0.5 first compact exact-head remote poll: PowerShell's `ConvertFrom-Json | Where-Object headSha -eq ...`
+formatting pipeline returned an empty table even though the three expected runs existed. The command exited zero
+but supplied no usable status evidence. Correction: query GitHub with `gh run list --commit <exact-sha>` and retain
+the raw JSON fields; corrected polls tracked push CI, PR CI, and CodeQL for
+`98533bea5939f76152271512ace2112678604428` through successful completion.

@@ -222,7 +222,7 @@ class CloudManagerGuardrailTest {
         when(autoScaling.createAutoScalingGroup(any(CreateAutoScalingGroupRequest.class)))
                 .thenThrow(SdkServiceException.builder().message("create failed").build());
         when(autoScaling.describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class)))
-                .thenReturn(asgDescribeResultWithInstances(config, "i-owned-1"));
+                .thenReturn(DescribeAutoScalingGroupsResponse.builder().build());
         when(ec2.describeInstances()).thenReturn(DescribeInstancesResponse.builder()
                 .reservations(Reservation.builder().instances(runningEc2Instance("i-owned-1")).build())
                 .build());
@@ -231,7 +231,8 @@ class CloudManagerGuardrailTest {
         manager.initializeCloudServers(1, 2);
 
         verify(autoScaling).createAutoScalingGroup(any(CreateAutoScalingGroupRequest.class));
-        verify(autoScaling, after(500).never()).describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class));
+        verify(autoScaling).describeAutoScalingGroups(argThat((DescribeAutoScalingGroupsRequest request) ->
+                request.autoScalingGroupNames() == null || request.autoScalingGroupNames().isEmpty()));
         verify(ec2, never()).describeInstances();
         verify(ec2, never()).createTags(any(CreateTagsRequest.class));
         manager.shutdown();
@@ -712,6 +713,23 @@ class CloudManagerGuardrailTest {
         verify(autoScaling).describeAutoScalingGroups(argThat((DescribeAutoScalingGroupsRequest request) ->
                 request.autoScalingGroupNames().contains(config.getAutoScalingGroupName())));
         verify(autoScaling).deleteAutoScalingGroup(any(DeleteAutoScalingGroupRequest.class));
+    }
+
+    @Test
+    void deletionWithAmbiguousMatchingOwnershipInventoryDoesNotDelete() {
+        AutoScalingClient autoScaling = mock(AutoScalingClient.class);
+        CloudConfig config = configWithDeletionFlags(true, true, true);
+        AutoScalingGroup owned = asgDescribeResult(config, config.getAutoScalingGroupName())
+                .autoScalingGroups().get(0);
+        when(autoScaling.describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class)))
+                .thenReturn(DescribeAutoScalingGroupsResponse.builder()
+                        .autoScalingGroups(owned, owned)
+                        .build());
+        CloudManager manager = new CloudManager(new LoadBalancer(), config, null, null, autoScaling, null);
+
+        manager.shutdown();
+
+        verify(autoScaling, never()).deleteAutoScalingGroup(any(DeleteAutoScalingGroupRequest.class));
     }
 
     @Test

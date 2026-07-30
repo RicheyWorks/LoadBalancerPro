@@ -1227,6 +1227,13 @@ The default Maven test suite uses mocked cloud clients for CloudManager and Serv
 
 Dry-run is the default because `cloud.liveMode=false` unless set otherwise. In dry-run mode, CloudManager logs decisions and does not perform live AWS mutation.
 
+The configured ASG identity is stable across restarts and is derived from the validated
+`cloud.resourceNamePrefix` and `cloud.environment`. After all live-mutation guardrails pass, startup performs a
+read-only ASG inventory reconciliation: one exact stable-name group with
+`LoadBalancerPro=<auto-scaling-group-name>` is adopted, no match is eligible for guarded creation, and missing,
+conflicting, duplicated, or unavailable ownership evidence for that stable identity fails closed without automatic
+cleanup.
+
 Live ASG scale/update requires all of the following:
 
 - `cloud.liveMode=true`
@@ -1234,7 +1241,7 @@ Live ASG scale/update requires all of the following:
 - `cloud.operatorIntent=LOADBALANCERPRO_LIVE_MUTATION`
 - `cloud.maxDesiredCapacity` set high enough for the requested desired capacity
 - `cloud.maxScaleStep` set high enough for the requested scale step
-- `cloud.environment` set to a non-blank environment name
+- `cloud.environment` set to a validated environment name using letters, numbers, and hyphens
 - `cloud.allowedAwsAccountIds` containing `cloud.currentAwsAccountId`
 - `cloud.allowedRegions` either empty or containing `aws.region`
 - `cloud.launchTemplateId` and `cloud.subnetId` when live mode is requested through the CLI

@@ -51,6 +51,7 @@ public class CloudManager {
     private static final Logger logger = LogManager.getLogger(CloudManager.class);
     private static final String REQUIRED_LIVE_MUTATION_INTENT = "LOADBALANCERPRO_LIVE_MUTATION";
     private static final String REQUIRED_SANDBOX_RESOURCE_NAME_PREFIX = "lbp-sandbox-";
+    private static final String OWNERSHIP_TAG_KEY = "LoadBalancerPro";
 
     private final CloudAwsClients awsClients;
     private final LoadBalancer balancer;
@@ -180,6 +181,30 @@ public class CloudManager {
                 status = Status.FAILED;
                 return;
             }
+
+            AsgReconciliationOutcome reconciliation = manager.reconcileConfiguredAutoScalingGroup();
+            if (reconciliation == AsgReconciliationOutcome.FAILED) {
+                manager.logZeroCopy("[{}] Denied Auto Scaling Group creation because ownership reconciliation "
+                        + "was unavailable or ambiguous.", timestamp);
+                status = Status.FAILED;
+                return;
+            }
+
+            if (reconciliation == AsgReconciliationOutcome.ADOPTED) {
+                manager.logZeroCopy("[{}] Adopted existing owned Auto Scaling Group: {}",
+                        timestamp, manager.config.getAutoScalingGroupName());
+                try {
+                    manager.waitForInstancesReady(minServers);
+                    manager.registerRunningInstances(false);
+                    status = Status.COMPLETED;
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    manager.logZeroCopy("Initialization interrupted: {}", e.getMessage());
+                    status = Status.FAILED;
+                }
+                return;
+            }
+
             CreateAutoScalingGroupRequest asgRequest = CreateAutoScalingGroupRequest.builder()
                     .autoScalingGroupName(manager.config.getAutoScalingGroupName())
                     .minSize(minServers)
@@ -190,7 +215,7 @@ public class CloudManager {
                             .build())
                     .vpcZoneIdentifier(manager.config.getSubnetId())
                     .tags(software.amazon.awssdk.services.autoscaling.model.Tag.builder()
-                            .key("LoadBalancerPro")
+                            .key(OWNERSHIP_TAG_KEY)
                             .value(manager.config.getAutoScalingGroupName())
                             .build())
                     .build();
@@ -297,7 +322,9 @@ public class CloudManager {
                     if (tagInstances) {
                         tagInstance(instanceId);
                     }
-                    logZeroCopy("Registered and tagged cloud server: {}", instanceId);
+                    logZeroCopy(tagInstances
+                            ? "Registered and tagged cloud server: {}"
+                            : "Registered adopted cloud server without retagging: {}", instanceId);
                 }
             }
         }
@@ -470,6 +497,72 @@ public class CloudManager {
         return result.autoScalingGroups().stream()
                 .filter(asg -> config.getAutoScalingGroupName().equals(asg.autoScalingGroupName()))
                 .findFirst();
+    }
+
+    private AsgReconciliationOutcome reconcileConfiguredAutoScalingGroup() {
+        List<AutoScalingGroup> inventory = new ArrayList<>();
+        Set<String> seenTokens = new HashSet<>();
+        String nextToken = null;
+
+        do {
+            DescribeAutoScalingGroupsRequest.Builder request = DescribeAutoScalingGroupsRequest.builder();
+            if (nextToken != null) {
+                request.nextToken(nextToken);
+            }
+            DescribeAutoScalingGroupsResponse result = executeWithRetry(
+                    () -> awsClients.autoScaling().describeAutoScalingGroups(request.build()),
+                    "list ASGs for startup ownership reconciliation", null);
+            if (result == null) {
+                logZeroCopy("ASG ownership reconciliation failed because inventory was unavailable.");
+                return AsgReconciliationOutcome.FAILED;
+            }
+            if (result.autoScalingGroups() != null) {
+                inventory.addAll(result.autoScalingGroups());
+            }
+            nextToken = result.nextToken();
+            if (nextToken != null && !nextToken.isBlank() && !seenTokens.add(nextToken)) {
+                logZeroCopy("ASG ownership reconciliation failed because inventory pagination repeated a token.");
+                return AsgReconciliationOutcome.FAILED;
+            }
+        } while (nextToken != null && !nextToken.isBlank());
+
+        String stableName = config.getAutoScalingGroupName();
+        List<AutoScalingGroup> sameName = inventory.stream()
+                .filter(asg -> stableName.equals(asg.autoScalingGroupName()))
+                .toList();
+        List<AutoScalingGroup> exactlyOwned = sameName.stream()
+                .filter(this::hasStableOwnershipTag)
+                .toList();
+        boolean ownershipCollision = inventory.stream()
+                .filter(asg -> !stableName.equals(asg.autoScalingGroupName()))
+                .anyMatch(this::hasStableOwnershipTag);
+        boolean conflictingSameNameTag = sameName.stream()
+                .anyMatch(asg -> !hasStableOwnershipTag(asg) || hasConflictingOwnershipTag(asg));
+
+        if (exactlyOwned.size() == 1 && sameName.size() == 1
+                && !ownershipCollision && !conflictingSameNameTag) {
+            return AsgReconciliationOutcome.ADOPTED;
+        }
+        if (sameName.isEmpty() && !ownershipCollision) {
+            return AsgReconciliationOutcome.NONE;
+        }
+
+        logZeroCopy("ASG ownership reconciliation denied mutation for stable name {}: sameNameCount={}, "
+                        + "ownedCount={}, ownershipCollision={}, conflictingSameNameTag={}",
+                stableName, sameName.size(), exactlyOwned.size(), ownershipCollision, conflictingSameNameTag);
+        return AsgReconciliationOutcome.FAILED;
+    }
+
+    private boolean hasStableOwnershipTag(AutoScalingGroup asg) {
+        return asg.tags() != null && asg.tags().stream()
+                .anyMatch(tag -> OWNERSHIP_TAG_KEY.equals(tag.key())
+                        && config.getAutoScalingGroupName().equals(tag.value()));
+    }
+
+    private boolean hasConflictingOwnershipTag(AutoScalingGroup asg) {
+        return asg.tags() != null && asg.tags().stream()
+                .anyMatch(tag -> OWNERSHIP_TAG_KEY.equals(tag.key())
+                        && !config.getAutoScalingGroupName().equals(tag.value()));
     }
 
     public void scaleServersAsync(int desiredCapacity, Consumer<Boolean> callback) {
@@ -930,15 +1023,24 @@ public class CloudManager {
             return false;
         }
 
-        return result.autoScalingGroups().stream()
+        List<AutoScalingGroup> configuredGroups = result.autoScalingGroups().stream()
                 .filter(asg -> config.getAutoScalingGroupName().equals(asg.autoScalingGroupName()))
-                .anyMatch(this::hasDeletionOwnershipTag);
+                .toList();
+        if (configuredGroups.size() != 1
+                || !hasStableOwnershipTag(configuredGroups.get(0))
+                || hasConflictingOwnershipTag(configuredGroups.get(0))) {
+            logZeroCopy("Denied cloud resource deletion. Expected one exact stable-name ownership match for {}, "
+                            + "found {}.",
+                    config.getAutoScalingGroupName(), configuredGroups.size());
+            return false;
+        }
+        return true;
     }
 
-    private boolean hasDeletionOwnershipTag(AutoScalingGroup asg) {
-        return asg.tags() != null && asg.tags().stream()
-                .anyMatch(tag -> "LoadBalancerPro".equals(tag.key())
-                        && config.getAutoScalingGroupName().equals(tag.value()));
+    private enum AsgReconciliationOutcome {
+        NONE,
+        ADOPTED,
+        FAILED
     }
 
     private static class MetricCacheEntry {

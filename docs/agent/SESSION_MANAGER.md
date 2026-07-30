@@ -6,6 +6,276 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 10 Remote-Green Checkpoint
+
+Timestamp: 2026-07-30T04:27:09-07:00
+
+Current slot: `L-0.5`, make owned Auto Scaling Group identity stable and recoverable.
+
+Current branch: `codex/l-0-5-stable-mocked-asg-ownership`.
+
+Slot status: `REMOTE_GREEN`.
+
+Pull request: [#507](https://github.com/RicheyWorks/LoadBalancerPro/pull/507).
+
+Verified remote-green head: `98533bea5939f76152271512ace2112678604428`.
+
+Verified base: `a563e1ff3ae1288f9770a679be73a1861e8a7013`, the exact PR #506 merge commit and green
+`origin/main`.
+
+Exact-head remote verification:
+
+- push CI `30537967318`: success;
+- PR CI `30537970205`: success;
+- CodeQL `30537970238`: success;
+- PR dependency review: success; the push-only duplicate was correctly skipped;
+- both 25-step CI build jobs passed dependency resolution, 3,481 tests, zero-skip enforcement, JaCoCo, the second
+  full executable-JAR package pass, resource verification, CycloneDX SBOM, packaged LASE and JAR smokes, Docker
+  image build/runtime health, controlled container evidence, blocking HIGH/CRITICAL image scan, and artifact
+  uploads;
+- every step in both CI build jobs, the five-step PR dependency job, and the 11-step CodeQL job had a successful
+  conclusion; only the inapplicable push dependency job was skipped;
+- GitHub reports exact head `98533bea5939f76152271512ace2112678604428` mergeable and `CLEAN`.
+
+Review: no independent reviewer, review, or PR comment is currently available. The pre-authorized substitute
+complete-diff audit covered all ten changed files and three commits from exact base through head. It traced stable
+name construction, guardrail-before-inventory ordering, pagination/retry behavior, all reconciliation
+classifications, create/adopt/no-retag paths, exact deletion ownership, dry-run zero calls, mocked-client
+construction, README boundaries, and campaign state. It found no actionable correctness, security, scope, or
+documentation-trust defect. Local, remote-tracking, and PR head SHAs matched; whitespace, protected-path,
+random-identity, external-target, live-client-construction, credential, and positive-overclaim scans passed after
+classifying only test constants and negative boundary language.
+
+Scope and safety: the production change remains limited to deterministic CloudConfig ASG identity and guarded
+CloudManager startup/deletion reconciliation. No real credential, AWS account/tenant, live cloud call or mutation,
+public/private/external target, dependency, Maven/workflow, Docker/Compose, script, API/endpoint, auth policy,
+secret/default, deployment, cost action, or unrelated behavior changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+AWS IAM/network/launch-template behavior, actual killed-process recovery against AWS, TLS/ingress validation,
+distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader automation is established.
+
+Blocker: none on verified head `98533bea5939f76152271512ace2112678604428`.
+
+Next action: rerun the campaign guard and diff checks, commit/publish this remote-green checkpoint, treat the
+resulting SHA as the final candidate, repeat every exact-head required gate, then perform the authorized final
+complete-diff self-review and merge only if all evidence remains green.
+
+Decision: continue only `L-0.5`; no later slot is active.
+
+## Combined Build Plan Slot 10 PR-Open Checkpoint
+
+Timestamp: 2026-07-30T04:16:13-07:00
+
+Current slot: `L-0.5`, make owned Auto Scaling Group identity stable and recoverable.
+
+Current branch: `codex/l-0-5-stable-mocked-asg-ownership`.
+
+Slot status: `PR_OPEN`.
+
+Pull request: [#507](https://github.com/RicheyWorks/LoadBalancerPro/pull/507).
+
+Published implementation head: `167165d79409458baede2d1ec6389daf9efba366`.
+
+Verified base: `a563e1ff3ae1288f9770a679be73a1861e8a7013`, the exact PR #506 merge commit and green
+`origin/main`.
+
+Local gate: deterministic validated ASG identity, guarded paginated ownership reconciliation, exact-match restart
+adoption, empty-inventory guarded creation, no-retag adoption, ambiguous/mismatched/colliding/unavailable
+fail-closed behavior, exact deletion ownership, mocked/dry-run tests, the 117-test cloud/profile/campaign selector,
+3,481-test clean package, skip-test verify/JaCoCo, 144-component JSON/XML SBOMs, artifact verifier, packaged LASE
+0/0/2, ten-scenario Enterprise Lab workflow, literal-loopback operator smoke, campaign guards, complete-diff review,
+protected-path scan, and scope/safety audit passed.
+
+Initial remote state at PR opening for implementation head `167165d79409458baede2d1ec6389daf9efba366`:
+
+- push CI `30537861104`: in progress;
+- PR CI `30537878079`: in progress;
+- CodeQL `30537878029`: queued;
+- PR dependency review: in progress; the push-only duplicate was correctly skipped;
+- GitHub reported the implementation head mergeable, with merge state blocked only by pending required checks.
+
+These initial runs are not accepted as final evidence because this PR-open checkpoint changes the branch head. Every
+required CI, CodeQL, dependency, package, SBOM, packaged-smoke, Docker/runtime, controlled-container-evidence, and
+blocking image-scan gate must pass on the resulting exact SHA before review or merge.
+
+Scope and safety: the ten-file branch diff contains only the scoped CloudConfig/CloudManager stable identity and
+ownership reconciliation, mocked guardrails, bounded README wording, and campaign records. It introduces no real
+credential, AWS account/tenant, live cloud call or mutation, public/private/external target, dependency,
+Maven/workflow, Docker/Compose, script, API/endpoint, auth policy, secret/default, deployment, cost action, or
+unrelated behavior.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+AWS IAM/network/launch-template behavior, actual killed-process recovery against AWS, TLS/ingress validation,
+distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader automation is established.
+
+Blocker: required checks are pending and this checkpoint is not yet published.
+
+Next action: rerun the campaign guard and diff checks, commit/push this checkpoint, then require every remote gate on
+the new exact head before authorized complete-diff self-review.
+
+Decision: continue only `L-0.5`; no later slot is active.
+
+## Combined Build Plan Slot 10 Local-Green Checkpoint
+
+Timestamp: 2026-07-30T04:11:28-07:00
+
+Current slot: `L-0.5`, make owned Auto Scaling Group identity stable and recoverable.
+
+Current branch: `codex/l-0-5-stable-mocked-asg-ownership`.
+
+Slot status: `LOCAL_GREEN`.
+
+Verified base: `a563e1ff3ae1288f9770a679be73a1861e8a7013`, the exact PR #506 merge commit and green
+`origin/main`.
+
+Current repository head before the local-green implementation commit:
+`2fae0a0153e16b7b6a2927a5c70966ae592c8d29`. The exact published implementation head remains pending until this
+checkpoint and the final diff are committed.
+
+Implementation:
+
+- `CloudConfig` no longer uses a process-local UUID. It validates the deployment environment and derives one
+  recoverable identity from `resourceNamePrefix + "LoadBalancerPro-ASG-" + normalized environment`, using the
+  stable `unconfigured` suffix only for the fail-closed default;
+- guarded live initialization preserves the existing operator-intent, capacity, account, region, environment, and
+  sandbox-prefix gates before making a read-only ASG inventory call;
+- startup walks mocked paginated inventory and adopts only one exact stable-name group with
+  `LoadBalancerPro=<stable-name>`; unrelated groups are ignored, while same-name wrong tags, duplicate exact
+  groups, ownership-tag/name collisions, repeated pagination, and unavailable inventory fail closed before create,
+  update, delete, EC2 registration, or retagging;
+- empty inventory retains the guarded create path and creates exactly one stable-name group with the exact
+  ownership tag; adopted instances are registered without retagging;
+- shutdown deletion still requires every existing live/deletion/confirmation gate and now also refuses missing,
+  conflicting, or duplicate exact-name ownership evidence;
+- README describes the bounded restart/reconciliation contract and validated environment syntax without claiming
+  live-cloud validation or readiness.
+
+Changed files:
+
+- `README.md`
+- `src/main/java/com/richmond423/loadbalancerpro/core/CloudConfig.java`
+- `src/main/java/com/richmond423/loadbalancerpro/core/CloudManager.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/CloudAsgRestartReconciliationTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/CloudConfigGuardrailTest.java`
+- `src/test/java/com/richmond423/loadbalancerpro/core/CloudManagerGuardrailTest.java`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_BOARD.md`
+- `docs/agent/COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`
+- `docs/agent/SESSION_MANAGER.md`
+- `docs/agent/FAILURE_LOG.md`
+
+Mocked acceptance and local verification:
+
+- corrected pre-implementation red gate completed 5 tests with 5 expected behavioral failures, zero errors, and
+  zero skips, proving UUID identity and missing adopt/fail-closed behavior;
+- final exact cloud/profile/campaign selector passed 117 tests across ten reports with zero failures, errors, or
+  skips, including nine restart/reconciliation tests and all existing CloudManager/CloudConfig guardrails;
+- `mvn -B clean package` passed in 275.4 seconds with 3,481 tests across 490 fresh reports, zero
+  failures/errors/skips, no Surefire dumps, and executable packaging;
+- `mvn -q "-DskipTests" verify` passed; JaCoCo recorded 83.29% instructions, 66.51% branches, 82.61% lines,
+  87.81% methods, and 94.34% classes;
+- CycloneDX 2.9.1 generated and validated JSON/XML 1.6 BOMs with 144 components each;
+- the checked-in artifact verifier passed all seven required executable-JAR entries after the final package;
+- packaged healthy/overloaded/invalid LASE cases passed with exits 0, 0, and 2, no Spring startup, and no raw
+  invalid-case exception output;
+- the packaged Enterprise Lab workflow passed ten fixed shadow scenarios and wrote ignored target-only evidence
+  under its explicit no-live-cloud/no-external-network boundary;
+- the checked-in operator run-profile smoke passed on literal loopback: local and API-key health returned 200,
+  protected proxy status returned 401 without and 200 with the bounded local key, and a proxy request reached only
+  the two loopback backends; all five ports and packaged-JAR processes were released;
+- final executable JAR: 95,555,250 bytes, 1,439 entries, SHA-256
+  `7E548C847B6071A2F42F906C22F4DE18B9B48E328477E365B60BAF2A1A773905`;
+- `git diff --check` passed, the changed-path audit found no dependency, Maven, workflow, Docker, Compose, script,
+  or runtime-resource change, and the production ASG sources contain no remaining random identity.
+
+Local limitations: Docker CLI 28.0.4 is installed, but the configured Docker Desktop Linux-engine named pipe is
+absent; standalone Trivy is unavailable; and the repository root has no Compose file. No local image build/runtime,
+controlled container evidence, Trivy scan, or Compose result is claimed. Exact-head remote CI, CodeQL, dependency
+review, SBOM, Docker build/runtime, controlled container evidence, and blocking image scan remain mandatory before
+merge.
+
+Scope and safety: the production change is limited to deterministic CloudConfig ASG identity and guarded
+CloudManager startup/deletion reconciliation. Tests use Mockito AWS clients and AWS response value objects only.
+No real credential, AWS account/tenant, live cloud call or mutation, public/private/external target, dependency,
+Maven/workflow, Docker/Compose, script, API/endpoint, authentication/authorization policy, secret/default,
+deployment, cost action, or unrelated production behavior changed.
+
+Remaining not-proven boundaries: no production readiness/certification, live-cloud or real-tenant validation,
+AWS IAM/network/launch-template behavior, actual killed-process recovery against AWS, TLS/ingress validation,
+distributed durability, throughput/p95/p99 or load/stress/soak evidence, or broader automation is established by
+this slot.
+
+Blocker: none locally.
+
+Next action: rerun campaign guards after this checkpoint, stage and audit the complete exact-base diff, commit and
+publish the local-green slice, open one PR, and require every exact-head remote gate before authorized self-review
+and merge.
+
+Decision: continue only `L-0.5`; no later slot is active.
+
+## Combined Build Plan Slot 10 Start Checkpoint
+
+Timestamp: 2026-07-30T03:19:43-07:00
+
+Current slot: `L-0.5`, make owned Auto Scaling Group identity stable and recoverable.
+
+Current branch: `codex/l-0-5-stable-mocked-asg-ownership`.
+
+Slot status: `IN_PROGRESS`.
+
+Verified base: `a563e1ff3ae1288f9770a679be73a1861e8a7013`, the exact PR #506 merge commit and current
+`origin/main`.
+
+Previous slot closeout:
+
+- L-0.4 final head `6234b889f2b31aba37cd5a43eb9e05c51e038001` passed push CI `30531764069`, PR CI
+  `30531768487`, CodeQL `30531768474`, dependency review, both 25-step package jobs, SBOM, packaged smokes,
+  Docker/runtime, controlled container evidence, and blocking image scan;
+- PR #506 merged as `a563e1ff3ae1288f9770a679be73a1861e8a7013`;
+- exact-main focused verification passed 63 cockpit/reviewer/evidence/campaign tests across nine reports;
+- post-merge `mvn -B clean package` passed 3,470 tests across 489 fresh reports with zero failures, errors, or skips
+  and no Surefire dumps;
+- exact-main CI `30533547044` and CodeQL `30533546997` passed, including the second full package run, SBOM, packaged
+  smokes, Docker build/runtime, controlled container evidence, and blocking image scan; every required step was
+  audited successful.
+
+L-0.4 is `MAIN_GREEN`, completing 9 of 49 implementation slots.
+
+L-0.5 current-tree defect confirmation:
+
+- `CloudConfig` still builds `autoScalingGroupName` from `UUID.randomUUID()`, so identical configuration produces a
+  different identity after restart;
+- `CloudManager` creates and describes only that process-local name, and shutdown deletion requires the ownership
+  tag value to match it exactly;
+- no initialization reconciliation lists managed ASGs by ownership tag, so a group left by a killed process cannot
+  be rediscovered by the next process.
+
+L-0.5 build contract: derive a deterministic recoverable ASG identity from the validated resource-name prefix and
+deployment environment; keep deletion dependent on the stable name plus the explicit ownership tag and all
+existing live/deletion gates; add startup reconciliation that classifies owned prior-run groups and adopts the
+single safe configured group without creating a duplicate. Prove two independently constructed configs resolve
+the same ASG, a simulated prior/killed-process group is rediscovered after restart, ambiguous or mismatched groups
+fail closed, and dry-run/mocked acceptance performs no live AWS mutation.
+
+Source: `docs/BUILD_PLAN_LAB_SHADOW.md` PR-L0.5 and `docs/AUDIT_LAB_SHADOW_2026-07-21.md` L7.
+
+Prohibited surfaces: no real AWS credential, tenant/account target, external network, billable resource, live
+mutation, weakened operator-intent/account/region/cap/deletion guardrail, automatic ambiguous-group deletion,
+public target, secret/default, production deployment, CI/Maven/Docker/Compose change, or cloud-readiness claim.
+
+Verification profile: `cloud-mocked` with exact deterministic-name red acceptance, mocked ASG
+reconciliation/adoption and ambiguity/mismatch tests, zero-mutation dry-run assertions, existing CloudConfig/
+CloudManager guardrail suites, full local Java/package/verify/artifact/SBOM/packaged-smoke ladder, complete
+diff/scope audit, and exact-head remote CI, CodeQL, dependency review, Docker/runtime, controlled container
+evidence, and blocking image scan.
+
+Blocker: none.
+
+Next action: map the exact stable-name format and ownership-tag invariant, then write deterministic restart,
+prior-group adoption, ambiguity, and mismatch red acceptance against mocked AWS response objects only.
+
+Decision: continue only `L-0.5`; no later slot is active.
+
 ## Combined Build Plan Slot 9 Remote-Green Checkpoint
 
 Timestamp: 2026-07-30T02:40:42-07:00

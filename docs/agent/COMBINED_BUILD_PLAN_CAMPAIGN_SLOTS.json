@@ -141,11 +141,11 @@
       "sourceIds": ["L-0.4"],
       "track": "lab",
       "title": "Remove cockpit HTML-injection sinks",
-      "status": "REMOTE_GREEN",
+      "status": "MAIN_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "SECURITY",
       "verificationProfile": "web-static",
-      "currentState": "PR #506 exact head 7bfd72fc3b0ae6c27aa1d9b398ec4a6eaec9de8e passed push CI 30530997897, PR CI 30530998945, CodeQL 30530999015, dependency review, both 25-step package/SBOM/packaged-smoke/Docker/runtime/evidence/Trivy jobs, and complete-diff self-review. GitHub reports it mergeable and CLEAN. The remote-green checkpoint must be published and every gate repeated on the resulting final candidate before merge."
+      "currentState": "PR #506 final head 6234b889f2b31aba37cd5a43eb9e05c51e038001 passed push CI 30531764069, PR CI 30531768487, CodeQL 30531768474, dependency review, both 25-step package/SBOM/packaged-smoke/Docker/runtime/evidence/Trivy jobs, and final complete-diff self-review, then merged as a563e1ff3ae1288f9770a679be73a1861e8a7013. Exact-main 63-test focused and 3,470-test local package gates passed; CI 30533547044 and CodeQL 30533546997 passed with every required step audited."
     },
     {
       "ordinal": 10,
@@ -153,11 +153,11 @@
       "sourceIds": ["L-0.5"],
       "track": "lab",
       "title": "Make owned ASG identity stable and recoverable",
-      "status": "OPEN",
+      "status": "REMOTE_GREEN",
       "dependencies": ["SEC-DEFAULT-DENY"],
       "riskClass": "CLOUD_GUARDED",
       "verificationProfile": "cloud-mocked",
-      "currentState": "Acceptance is unproven; only mocked liveMode=false verification is authorized by this campaign."
+      "currentState": "PR #507 exact head 98533bea5939f76152271512ace2112678604428 passed push CI 30537967318, PR CI 30537970205, CodeQL 30537970238, PR dependency review, both 25-step package/SBOM/packaged-smoke/Docker/runtime/evidence/Trivy jobs, and first complete-diff audit. GitHub reports it MERGEABLE and CLEAN. This remote-green checkpoint must be published and every gate repeated on the resulting final candidate before merge. No live AWS call or local container result is claimed."
     },
     {
       "ordinal": 11,

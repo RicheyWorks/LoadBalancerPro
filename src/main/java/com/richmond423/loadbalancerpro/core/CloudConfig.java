@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.function.Predicate;
 
 /**
@@ -94,10 +93,12 @@ public class CloudConfig {
         this.launchTemplateId = launchTemplateId;
         this.subnetId = subnetId;
         validateCredentials(accessKey, secretKey);
+        this.environment = parseValidatedString(props, ENVIRONMENT_PROPERTY,
+                DEFAULT_ENVIRONMENT, this::isValidEnvironment);
         this.resourceNamePrefix = parseValidatedString(props, RESOURCE_NAME_PREFIX_PROPERTY,
                 DEFAULT_RESOURCE_NAME_PREFIX, this::isValidResourceNamePrefix);
         this.autoScalingGroupName = resourceNamePrefix + "LoadBalancerPro-ASG-"
-                + UUID.randomUUID().toString().substring(0, 8);
+                + (environment.isBlank() ? "unconfigured" : environment.toLowerCase(Locale.ROOT));
         this.retryAttempts = parseInt(props, "retryAttempts", DEFAULT_RETRY_ATTEMPTS, 1, Integer.MAX_VALUE);
         this.retryBaseDelayMs = parseLong(props, "retryBaseDelayMs", DEFAULT_RETRY_BASE_DELAY_MS, 100, Long.MAX_VALUE);
         this.pollIntervalSeconds = parseInt(props, "pollIntervalSeconds", DEFAULT_POLL_INTERVAL_SECONDS, 1, 60);
@@ -119,7 +120,6 @@ public class CloudConfig {
         this.allowLiveMutation = parseBoolean(props, ALLOW_LIVE_MUTATION_PROPERTY, DEFAULT_ALLOW_LIVE_MUTATION);
         this.operatorIntent = parseString(props, OPERATOR_INTENT_PROPERTY, DEFAULT_OPERATOR_INTENT);
         this.allowAutonomousScaleUp = parseBoolean(props, ALLOW_AUTONOMOUS_SCALE_UP_PROPERTY, DEFAULT_ALLOW_AUTONOMOUS_SCALE_UP);
-        this.environment = parseString(props, ENVIRONMENT_PROPERTY, DEFAULT_ENVIRONMENT);
         this.allowedAwsAccountIds = parseCsvList(props, ALLOWED_AWS_ACCOUNT_IDS_PROPERTY, this::isValidAwsAccountId);
         this.currentAwsAccountId = parseValidatedString(props, CURRENT_AWS_ACCOUNT_ID_PROPERTY,
                 DEFAULT_CURRENT_AWS_ACCOUNT_ID, this::isValidAwsAccountId);
@@ -237,6 +237,10 @@ public class CloudConfig {
     }
 
     private boolean isValidResourceNamePrefix(String value) {
+        return value != null && value.matches("[A-Za-z0-9][A-Za-z0-9-]{0,63}");
+    }
+
+    private boolean isValidEnvironment(String value) {
         return value != null && value.matches("[A-Za-z0-9][A-Za-z0-9-]{0,63}");
     }
 

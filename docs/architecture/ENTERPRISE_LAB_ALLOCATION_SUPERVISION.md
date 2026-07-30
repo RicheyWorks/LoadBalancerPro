@@ -18,7 +18,7 @@ Durable startup retains this ordering:
 1. Resolve the configured absolute controlled data root.
 2. Acquire or safely take over live ownership.
 3. verify and reconcile experiment journals.
-4. Open and replay the fixed allocation state store.
+4. Open and replay the fixed allocation state store and its bounded immutable rotation segments as one predecessor chain.
 5. Read the installed router snapshot.
 6. Classify drift and restore the durable baseline when required.
 7. Verify the final installed fingerprint and owner generation.
@@ -29,6 +29,12 @@ Each armed lifecycle attaches the exact session router to the supervisor and run
 reconciliation. Candidate start then uses the durable transaction coordinator: persist intent, reverify ownership,
 apply, read back, compare fingerprint and generations, and persist commit. Completion, rollback, cancellation, shutdown,
 and durable-journal failure restore through the supervisor so restoration evidence is part of the allocation chain.
+
+The allocation transaction store uses the same bounded archive-and-truncate engine as both command ledgers: a current
+segment rotates at the 2 MiB or 1,024-record soft threshold, each segment retains the existing 8 MiB/4,096-record hard
+bound, and at most 64 contiguous archives are accepted. Mutation startup recovers only recognized rotation artifacts.
+Ordinary replay remains fail-closed on incomplete or corrupt records; the explicit offline repair command can remove
+only a separately verified incomplete current tail after retaining its exact original bytes.
 
 There is no periodic allocation scheduler. Request selection continues to read one immutable installed snapshot without
 a global request-path lock.

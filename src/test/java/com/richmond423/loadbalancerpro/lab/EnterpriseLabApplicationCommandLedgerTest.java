@@ -424,6 +424,130 @@ class EnterpriseLabApplicationCommandLedgerTest {
     }
 
     @Test
+    void replayAndAppendPreserveGlobalChainAcrossArchivedSegment()
+            throws Exception {
+        Request first = request("rotation-command-1", 1L, NOW);
+        Path ledgerFile;
+        try (EnterpriseLabApplicationCommandLedger ledger =
+                     EnterpriseLabApplicationCommandLedger.createForTesting(
+                             temporaryDirectory,
+                             EnterpriseLabApplicationCommandLedger.HARD_MAX_LEDGER_BYTES,
+                             1,
+                             authority,
+                             (checkpoint, bytes) -> { })) {
+            ledger.append(first, intent());
+            ledgerFile = ledger.controlledLedgerFile();
+        }
+        ChainedJsonlStore engine = new ChainedJsonlStore(
+                ledgerFile,
+                EnterpriseLabApplicationCommandLedger.HARD_MAX_LEDGER_BYTES);
+        engine.prepareRotationDirectory();
+        engine.rotateCurrentSegment(
+                () -> authority.requireMutationAuthorization());
+
+        try (EnterpriseLabApplicationCommandLedger restarted =
+                     EnterpriseLabApplicationCommandLedger.createForTesting(
+                             temporaryDirectory,
+                             EnterpriseLabApplicationCommandLedger.HARD_MAX_LEDGER_BYTES,
+                             1,
+                             authority,
+                             (checkpoint, bytes) -> { })) {
+            restarted.append(
+                    request("rotation-command-2", 1L, NOW.plusSeconds(1)),
+                    intent());
+            var replay = restarted.replay();
+            assertEquals(2, replay.events().size());
+            assertEquals(2L, replay.head().orElseThrow().sequence());
+            assertEquals(
+                    replay.events().get(0).currentFingerprint(),
+                    replay.events().get(1).predecessorFingerprint());
+        }
+    }
+
+    @Test
+    void explicitRepairPlansAndQuarantinesOnlyAStableIncompleteTail()
+            throws Exception {
+        Path ledgerFile;
+        try (EnterpriseLabApplicationCommandLedger ledger =
+                     EnterpriseLabApplicationCommandLedger.createOwned(
+                             temporaryDirectory, authority)) {
+            ledger.append(
+                    request("repair-command", 1L, NOW),
+                    intent());
+            ledgerFile = ledger.controlledLedgerFile();
+        }
+        Files.writeString(
+                ledgerFile,
+                "{\"incomplete\":",
+                StandardCharsets.UTF_8,
+                StandardOpenOption.APPEND);
+        byte[] original = Files.readAllBytes(ledgerFile);
+        EnterpriseLabStorageRepairService repairs =
+                new EnterpriseLabStorageRepairService();
+
+        var plan = repairs.execute(
+                temporaryDirectory,
+                EnterpriseLabStorageRepairService.StoreKind.APPLICATION_LEDGER,
+                false);
+        assertEquals(
+                EnterpriseLabStorageRepairService.RepairStatus.REPAIR_AVAILABLE,
+                plan.status());
+        assertFalse(plan.applied());
+        assertTrue(plan.tailBytes() > 0L);
+        assertArrayEquals(original, Files.readAllBytes(ledgerFile));
+
+        var applied = repairs.execute(
+                temporaryDirectory,
+                EnterpriseLabStorageRepairService.StoreKind.APPLICATION_LEDGER,
+                true);
+        assertEquals(
+                EnterpriseLabStorageRepairService.RepairStatus.REPAIRED,
+                applied.status());
+        assertTrue(applied.applied());
+        assertTrue(applied.exactPostRepairVerified());
+        Path quarantine = ledgerFile.getParent()
+                .resolve(ChainedJsonlStore.REPAIR_QUARANTINE_DIRECTORY_NAME)
+                .resolve(applied.quarantineFileName());
+        assertArrayEquals(original, Files.readAllBytes(quarantine));
+        try (EnterpriseLabApplicationCommandLedger inspection =
+                     EnterpriseLabApplicationCommandLedger.inspect(
+                             temporaryDirectory)) {
+            assertEquals(1, inspection.replay().events().size());
+        }
+    }
+
+    @Test
+    void explicitRepairRefusesCompleteFrameCorruptionWithoutMutation()
+            throws Exception {
+        Path ledgerFile;
+        try (EnterpriseLabApplicationCommandLedger ledger =
+                     EnterpriseLabApplicationCommandLedger.createOwned(
+                             temporaryDirectory, authority)) {
+            ledger.append(
+                    request("repair-refusal", 1L, NOW),
+                    intent());
+            ledgerFile = ledger.controlledLedgerFile();
+        }
+        Files.writeString(
+                ledgerFile,
+                "{}\n",
+                StandardCharsets.UTF_8,
+                StandardOpenOption.APPEND);
+        byte[] preserved = Files.readAllBytes(ledgerFile);
+
+        assertThrows(
+                EnterpriseLabStorageRepairService.RepairException.class,
+                () -> new EnterpriseLabStorageRepairService().execute(
+                        temporaryDirectory,
+                        EnterpriseLabStorageRepairService.StoreKind.APPLICATION_LEDGER,
+                        true));
+        assertArrayEquals(preserved, Files.readAllBytes(ledgerFile));
+        assertFalse(Files.exists(
+                ledgerFile.getParent().resolve(
+                        ChainedJsonlStore.REPAIR_QUARANTINE_DIRECTORY_NAME)));
+    }
+
+    @Test
     void readOnlyInspectionDoesNotCreatePathsAndUnexpectedEntryFailsClosed()
             throws IOException {
         try (EnterpriseLabApplicationCommandLedger inspection =

@@ -225,11 +225,11 @@
       "sourceIds": ["L-2.1"],
       "track": "lab",
       "title": "Unify JSONL stores behind one chained engine",
-      "status": "IN_PROGRESS",
+      "status": "MAIN_GREEN",
       "dependencies": ["L-0.6"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "Local implementation is green on codex/l-2-1-chained-jsonl-store from exact base 36622b8b2ca27003a0a9a5e165ac361969173dd0. ChainedJsonlStore now owns bounded canonical replay, chain validation callbacks, per-path serialization, shared/exclusive OS locks, exact-size single-frame append, force-under-lock, and pinned file-key plus creation-time identity for all four stores. Supervisor lock deletion/replacement fails closed and second acquisition refuses a missing fixed lock in an initialized directory. Clean package passed 3,054 tests across 413 reports; process, Enterprise Lab, packaged workflow/allocation/recovery, verify, JAR, and CycloneDX checks passed. Exact candidate commit, PR, and remote gates remain pending."
+      "currentState": "PR #513 final head dd847ef27467abd148b4bfa2f2ca3384c1df4e53 passed exact-head push/PR CI, CodeQL, dependency review, package/SBOM/JAR/Docker/runtime/evidence/Trivy, the complete 3,054-test suite, packaged workflow/allocation/recovery proofs, and complete-diff self-review, then merged as 178322bc3f9572b74ee35caea7b654fb19ff111e. Exact-main CI 30586463172 and CodeQL 30586463123 passed; the image scan reports zero OS and zero JAR findings. The four stores share bounded canonical replay/append and OS-lock mechanics, and supervisor lock-path replacement fails closed."
     },
     {
       "ordinal": 17,
@@ -237,11 +237,11 @@
       "sourceIds": ["L-2.2"],
       "track": "lab",
       "title": "Add ledger/state-store rotation and recovery",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": ["L-2.1"],
       "riskClass": "DURABILITY",
       "verificationProfile": "cross-process",
-      "currentState": "Rotation-chain continuity, soft-limit soak, startup cleanup, and repair tooling are unproven."
+      "currentState": "On codex/l-2-2-rotation-recovery from exact green main 178322bc3f9572b74ee35caea7b654fb19ff111e, the candidate adds bounded 65-segment archive-and-truncate history for both command ledgers and allocation state, global chain replay, recognized orphan-install startup recovery, and an explicit dry-run-first offline torn-tail repair with exact-byte quarantine. Adversarial focused tests, 10,000-command fresh replay, the complete 3,068-test suite, package/verify, 144-component SBOM, packaged workflow/allocation/recovery proofs, loopback runtime smoke, and complete-diff self-review pass. Commit and exact-head remote gates remain pending."
     },
     {
       "ordinal": 18,

@@ -99,8 +99,9 @@ location-like, and forbidden control metadata is rejected before encoding.
 
 ## Application Ledger
 
-`EnterpriseLabApplicationCommandLedger` owns one fixed JSONL file beneath the existing controlled Enterprise Lab
-evidence namespace. Callers supply only the explicit trusted root; they cannot select the ledger directory or filename.
+`EnterpriseLabApplicationCommandLedger` owns one fixed current JSONL file and one fixed `segments-v1` directory beneath
+the existing controlled Enterprise Lab evidence namespace. Callers supply only the explicit trusted root; they cannot
+select the ledger directory, filename, archive directory, or archive name.
 The production writer requires the existing live application ownership gate. It verifies the exact ownership record
 fingerprint, application instance, and generation carried by each canonical request, rejects a second process-local
 writer, and rechecks the live ownership epoch before append, synchronization, and read-back. The ownership gate's
@@ -108,23 +109,27 @@ existing operating-system lock remains the cross-process writer authority. The l
 mutation capability; its fixed-file region lock only coordinates a full event-frame write with independent
 cross-process readers.
 
-The ledger is bounded to 8 MiB and 4,096 events. Creation validates any existing chain before returning. Every append:
+Each segment is bounded to 8 MiB and 4,096 events. The production writer rotates the complete current segment at a
+2 MiB or 1,024-event soft threshold and retains at most 64 numbered immutable archives. The full history is therefore
+bounded to 65 segments and the event model's stricter sequence limit still applies. Creation validates every archive
+and the current segment as one global predecessor chain before returning. Every append:
 
-1. replays the complete bounded chain;
+1. uses the verified in-process chain head and rejects an externally changed storage version before writing;
 2. derives the next sequence and predecessor fingerprint inside the writer boundary;
 3. binds the event to the exact canonical request and, when supplied, response;
 4. rejects correlation reuse, generation regression, missing/duplicate intent, illegal lifecycle transitions, or an
    event after a terminal head;
-5. attempts the complete newline-delimited canonical frame in one write while holding the fixed file's exclusive
+5. attempts the complete newline-delimited canonical frame in one write while holding the current file's exclusive
    region lock, finishes any operating-system short write without releasing that lock, forces data and metadata, and
-   replays for exact read-back.
+   performs exact same-lock frame read-back.
 
 Malformed complete events, noncanonical content, fingerprint or predecessor changes, partial tails, unexpected storage
-entries, symlink/type escapes, concurrent file changes, and hard-limit overflow fail closed without repair or truncation.
-Independent readers take the matching shared file-region lock and retry a changing or incomplete final frame for a
-short fixed bound. A stable incomplete tail remains `TRUNCATED_TAIL`; it is not repaired or silently accepted. An
+entries, symlink/type escapes, concurrent file changes, and hard-limit overflow fail closed without automatic repair or
+truncation.
+Independent readers take the matching shared current-file region lock and replay all immutable archives plus the current
+segment. A stable incomplete tail remains `TRUNCATED_TAIL`; it is not repaired or silently accepted. An
 uncertain post-write failure makes that writer unusable; a fresh bounded replay determines whether the complete event is
-present or the stable partial tail must remain quarantined from further mutation. Read-only inspection creates no path
+present or the stable partial tail must remain excluded from further mutation. Read-only inspection creates no path
 and `unresolvedHeads()` reconstructs the latest nonterminal event per correlation from durable evidence alone.
 
 The application ledger, supervisor ledger, allocation transaction store, and live experiment journal now delegate these
@@ -145,22 +150,28 @@ Replay validates these layers in order:
 
 1. the supplied root is absolute, existing, local, non-root, and free of symbolic-link traversal;
 2. the fixed namespace and application-ledger directory remain direct, non-symbolic-link children;
-3. the ledger directory contains only the one fixed ledger filename;
-4. the file is a direct non-symbolic-link regular file and remains within the hard byte bound;
+3. the ledger directory contains only the fixed current file, `segments-v1`, and controlled repair quarantine;
+4. archives are contiguous numbered direct regular files, each segment remains within its hard bounds, and incomplete
+   bytes are allowed only at the current tail;
 5. every complete frame is strict UTF-8 canonical JSON with a matching content fingerprint;
 6. sequence, predecessor, application side, owner-generation, correlation identity, and lifecycle rules hold across the
    complete chain.
 
 No replay result is returned from a partially valid chain. A corrupt later frame therefore cannot leave an apparently
-usable earlier prefix. This is deliberate: the ledger preserves the complete bytes for later operator evidence and does
-not
-provide repair, truncation, salvage, or caller-selected alternate storage.
+usable earlier prefix. This is deliberate: ordinary startup never guesses through, truncates, or salvages corrupt
+complete evidence.
 
-The writable path repeats replay before deriving an event and again after preparing the file. It compares both the event
-list and byte count so a file change between those observations is rejected. After append it forces the file with the
-data-and-metadata policy, replays again, and returns a receipt only when the new head and byte count match exactly. An
-exception after any write begins invalidates that writer even if a later replay proves that the full frame reached disk.
-Rotation, automatic repair, and parent-directory crash durability remain outside this contract.
+Archive installation uses a forced `.installing` file, atomic move, exact read-back, and same-inode current-file
+truncate. Mutation startup removes only recognized orphan `.installing` files and completes a post-install/pre-truncate
+rotation when the current bytes exactly duplicate the final archive. The global sequence and predecessor hash do not
+reset at the boundary. Parent-directory synchronization and broader power-loss durability remain unproven and are not
+claimed here.
+
+An explicit offline `--enterprise-lab-storage-repair` command is dry-run by default. With an absolute local data root
+and a fixed store selection, apply mode first verifies every complete frame, retains the exact pre-repair current bytes
+in a fingerprint-named controlled quarantine file, and truncates only a stable incomplete current tail. It refuses
+complete-frame corruption, arbitrary paths, symlinked hierarchy, automatic invocation, or operation presented as safe
+while the application or supervisor is running.
 
 ### Application Lifecycle Contract
 
@@ -231,20 +242,20 @@ only through exact supervisor evidence and authoritative installed-state verific
 
 ## Supervisor Ledger
 
-`EnterpriseLabSupervisorCommandLedger` owns one fixed JSONL file beneath the existing
+`EnterpriseLabSupervisorCommandLedger` owns one fixed current JSONL file and bounded immutable segments beneath the existing
 `enterprise-lab-supervisor-v1` directory. Callers cannot select the directory or filename. The existing
 `EnterpriseLabSupervisorOwnership` operating-system lock is the sole cross-process writer capability; the ledger adds no
 second ownership record, generation, transaction ID, or mutation capability. A process-local mutex serializes complete
 replay and append operations for the fixed path, while a fixed-file exclusive/shared region lock coordinates event-frame
 writes with independent readers without granting ownership.
 
-The supervisor ledger has the same 8 MiB and 4,096-event hard limits and the same strict newline-framed canonical replay
-posture as the application ledger. Writable creation requires the live supervisor lock and validates the complete prior
-chain. Append rechecks that lock before path preparation, one full-frame write attempt, force, and exact read-back; any
-short write finishes while the exclusive frame lock remains held. Independent replay uses the matching shared lock and
-a short bounded transient-tail/concurrent-change retry. A lost ownership lock, unexpected entry, symlink/type escape,
+The supervisor ledger has the same per-segment hard limits, soft rotation thresholds, 64-archive cap, and strict
+newline-framed global replay posture as the application ledger. Writable creation requires the live supervisor lock and
+validates the complete prior chain. Append rechecks that lock before path preparation, one full-frame write attempt,
+force, and exact same-lock read-back; any short write finishes while the exclusive frame lock remains held. Independent
+replay uses the matching shared current-file lock. A lost ownership lock, unexpected entry, symlink/type escape,
 malformed or noncanonical frame, stable truncated tail, stable concurrent change, hard-limit overflow, or uncertain
-post-write result fails closed without repair. Read-only inspection creates no path and cannot acquire the supervisor
+post-write result fails closed during ordinary operation. Read-only inspection creates no path and cannot acquire the supervisor
 ownership lock.
 
 ### Authenticated Receipt Boundary

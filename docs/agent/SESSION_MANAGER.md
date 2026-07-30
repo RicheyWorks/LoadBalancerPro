@@ -6,6 +6,68 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 17 Local-Green Candidate
+
+Timestamp: 2026-07-30T16:15:44-07:00
+
+Current slot/branch/PR: `L-2.2`; `codex/l-2-2-rotation-recovery`; no PR yet; base
+`178322bc3f9572b74ee35caea7b654fb19ff111e`; status `IN_PROGRESS`.
+
+Candidate: the shared engine now retains one fixed current file plus at most 64 contiguous immutable segments,
+rotates ledgers/allocation state at the bounded soft thresholds without resetting sequence or predecessor hashes,
+recovers only recognized install artifacts, and validates controlled repair evidence. The explicit offline command is
+dry-run first, accepts only a fixed store under an absolute local root, refuses corrupt complete frames, and in apply
+mode quarantines exact original bytes before removing only a verified incomplete current tail. Startup cleanup also
+removes recognized compacted-manifest install orphans so the compacted-evidence endpoint remains healthy.
+
+Verified: compile/test-compile and the focused engine, allocation, application ledger, supervisor ledger, journal,
+repair-command, API dispatch, and controller bundles pass. The full supervisor-ledger class passes its real
+10,000-command rotation soak and fresh replay with sequence 10,000. Adversarial coverage rejects noncontiguous
+archives, mismatched quarantine fingerprints, complete-frame corruption, and unsafe/unexpected storage while
+preserving the source bytes. `mvn -q clean package` passes 3,068 tests across 414 fresh reports with zero failures,
+errors, or skips; skip-test verify, 144-component CycloneDX JSON/XML, packaged-class inspection, ten-scenario workflow,
+separate-process allocation/crash-window proof, durable restart/corruption/compaction proof, and loopback JAR
+health/static-page smoke pass. The exact JAR is 95,094,969 bytes with SHA-256
+`5E74DACC9BAC41D9CA7CD30EC37CAA9DA8DF7B10DD7FD71C0D5A153E32451276`.
+
+Scope/boundaries: 25 intentional files; no dependency, Maven/workflow, Docker/Compose, endpoint contract,
+configuration default, credential, external/cloud/tenant target, suppression, allowlist, or security-gate change.
+L-2.3 takeover, L-2.4 packaging, and L-2.5 directory-fsync/logging/mutex work remain excluded. Parent-directory
+power-loss durability, safe online repair, multi-host storage, production readiness, throughput, and latency remain
+not proven.
+
+Complete-diff self-review: no findings. The branch is still based exactly on current `origin/main`
+`178322bc3f9572b74ee35caea7b654fb19ff111e`; no unexpected path, secret-like value, external target, conflict marker,
+dependency/build/workflow/container change, or out-of-scope destructive operation is present.
+
+Blocker: none. Next: rerun the campaign documentation selector for this required checkpoint, commit the exact candidate,
+publish one PR, and require exact-head CI, CodeQL, dependency review, Docker/runtime, SBOM/artifact/evidence, and blocking
+HIGH/CRITICAL image scan before automatic merge.
+
+## Combined Build Plan Slot 16 Main-Green / Slot 17 Start
+
+Timestamp: 2026-07-30T15:24:17-07:00
+
+Completed: `L-2.1`; `codex/l-2-1-chained-jsonl-store`;
+[#513](https://github.com/RicheyWorks/LoadBalancerPro/pull/513); final head
+`dd847ef27467abd148b4bfa2f2ca3384c1df4e53`; merge
+`178322bc3f9572b74ee35caea7b654fb19ff111e`.
+
+Verified: all final-head local gates, push/PR CI, dependency review, CodeQL, package/SBOM/JAR/Docker/runtime/evidence/
+Trivy, and complete-diff self-review passed. Exact-main CI `30586463172` and CodeQL `30586463123` passed; the main
+container scan reports zero OS and zero JAR findings, and its 144-component SBOM contains Spring Boot `3.5.16`,
+Framework `6.2.19`, and Security `6.5.11`.
+
+Active: `L-2.2`; `codex/l-2-2-rotation-recovery`; base
+`178322bc3f9572b74ee35caea7b654fb19ff111e`; status `IN_PROGRESS`. Dependency `L-2.1` is `MAIN_GREEN`.
+Contract: add bounded archive-and-truncate rotation for the ledgers and allocation store while preserving chain
+continuity, clean only recognized orphan install files during controlled startup, provide an explicit bounded
+operator repair path, and prove a 10k-command soak plus orphan-startup recovery. Do not broaden into L-2.3 takeover,
+L-2.4 packaging, L-2.5 directory-fsync/logging/mutex eviction, external targets, or production-readiness claims.
+
+Blocker: none. Next: inventory the shared engine, all store/domain restart consumers, journal compaction conventions,
+operator CLI dispatch, and existing cross-process proofs before selecting the smallest complete rotation seam.
+
 ## Combined Build Plan Slot 16 Post-Prerequisite Local-Green Checkpoint
 
 Timestamp: 2026-07-30T14:54:04-07:00

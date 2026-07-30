@@ -25,6 +25,7 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,18 +36,23 @@ import java.util.Set;
 /**
  * Supervisor-owned append-only command evidence. The existing supervisor OS
  * lock is the cross-process writer authority; a process-local mutex serializes
- * every replay and append, while cooperating file-region locks keep independent
- * readers from observing a short write to the one fixed bounded JSONL file.
+ * replay and append, while cooperating file-region locks keep independent
+ * readers from observing a short write to the fixed current JSONL segment.
+ * Bounded immutable archive segments preserve the global predecessor chain.
  */
 public final class EnterpriseLabSupervisorCommandLedger {
     public static final long HARD_MAX_LEDGER_BYTES = 8L * 1024L * 1024L;
     public static final int HARD_MAX_EVENTS = 4_096;
+    public static final long HARD_MAX_HISTORY_BYTES =
+            HARD_MAX_LEDGER_BYTES * (ChainedJsonlStore.HARD_MAX_ARCHIVED_SEGMENTS + 1L);
+    public static final int HARD_MAX_HISTORY_EVENTS =
+            HARD_MAX_EVENTS * (ChainedJsonlStore.HARD_MAX_ARCHIVED_SEGMENTS + 1);
+    static final long SOFT_MAX_SEGMENT_BYTES = 2L * 1024L * 1024L;
+    static final int SOFT_MAX_SEGMENT_EVENTS = 1_024;
 
     static final String DIRECTORY_NAME = "supervisor-command-ledger-v1";
     static final String FILE_NAME = "supervisor-command-events-v1.jsonl";
 
-    private static final int MAX_TRANSIENT_REPLAY_ATTEMPTS = 4;
-    private static final long TRANSIENT_REPLAY_BACKOFF_MILLIS = 10L;
     private static final Set<PosixFilePermission> DIRECTORY_PERMISSIONS =
             PosixFilePermissions.fromString("rwx------");
     private static final Set<PosixFilePermission> FILE_PERMISSIONS =
@@ -76,7 +82,12 @@ public final class EnterpriseLabSupervisorCommandLedger {
     private final FailureInjector failureInjector;
     private final ChainedJsonlStore jsonlStore;
     private final Object processMutex;
+    private final boolean rotationEnabled;
 
+    private long currentSegmentBytes;
+    private int currentSegmentEvents;
+    private ReadResult cachedReplay;
+    private ChainedJsonlStore.StorageVersion cachedVersion;
     private boolean failed;
 
     private EnterpriseLabSupervisorCommandLedger(
@@ -118,10 +129,19 @@ public final class EnterpriseLabSupervisorCommandLedger {
         this.ledgerFile = controlledPath(ledgerDirectory, FILE_NAME);
         this.jsonlStore = new ChainedJsonlStore(ledgerFile, maxLedgerBytes);
         this.processMutex = jsonlStore.processMutex();
+        this.rotationEnabled = maxLedgerBytes == HARD_MAX_LEDGER_BYTES
+                && maxEvents == HARD_MAX_EVENTS;
 
         if (prepareForMutation) {
             synchronized (processMutex) {
                 requireOwnership();
+                if (rotationEnabled) {
+                    try {
+                        jsonlStore.recoverRotationArtifacts(this::requireOwnership);
+                    } catch (ChainedJsonlStore.StoreIOException exception) {
+                        throw mapEngineFailure(exception);
+                    }
+                }
                 replayLocked();
             }
         }
@@ -205,7 +225,7 @@ public final class EnterpriseLabSupervisorCommandLedger {
             SupervisorEventDraft safeDraft = Objects.requireNonNull(
                     eventDraft, "eventDraft cannot be null");
             requireOwnership();
-            ReadResult before = replayLocked();
+            ReadResult before = replayForAppendLocked();
             Draft codecDraft = codecDraft(
                     safeRequest,
                     safeDraft,
@@ -219,11 +239,12 @@ public final class EnterpriseLabSupervisorCommandLedger {
             validateNext(before.events(), event);
             byte[] encoded = codec.encode(event);
             long frameBytes = encoded.length + 1L;
-            if (before.events().size() >= maxEvents) {
+            rotateBeforeAppendIfNeeded(frameBytes);
+            if (currentSegmentEvents >= maxEvents) {
                 throw failure(Failure.EVENT_LIMIT_EXCEEDED,
                         "supervisor ledger has reached its bounded event count");
             }
-            if (before.totalBytes() + frameBytes > maxLedgerBytes) {
+            if (currentSegmentBytes + frameBytes > maxLedgerBytes) {
                 throw failure(Failure.LEDGER_SIZE_EXCEEDED,
                         "supervisor ledger has reached its bounded byte size");
             }
@@ -232,7 +253,7 @@ public final class EnterpriseLabSupervisorCommandLedger {
             try {
                 requireOwnership();
                 prepareLedgerFile();
-                ReadResult stable = replayLocked();
+                ReadResult stable = replayForAppendLocked();
                 if (!stable.events().equals(before.events())
                         || stable.totalBytes() != before.totalBytes()) {
                     throw failure(Failure.CONCURRENT_CHANGE,
@@ -241,10 +262,20 @@ public final class EnterpriseLabSupervisorCommandLedger {
                 failureInjector.checkpoint(WriteCheckpoint.BEFORE_APPEND, 0);
                 requireOwnership();
                 writeStarted = true;
-                appendFrame(encoded, before.totalBytes());
+                appendFrame(encoded);
                 requireOwnership();
 
-                ReadResult after = replayLocked();
+                List<EnterpriseLabCommandLedgerEvent> afterEvents =
+                        new ArrayList<>(before.events());
+                afterEvents.add(event);
+                currentSegmentBytes += frameBytes;
+                currentSegmentEvents++;
+                ReadResult after = new ReadResult(
+                        true,
+                        afterEvents,
+                        before.totalBytes() + frameBytes);
+                cachedReplay = after;
+                cachedVersion = null;
                 if (after.events().size() != before.events().size() + 1
                         || after.totalBytes() != before.totalBytes() + frameBytes
                         || !after.head().orElseThrow().equals(event)) {
@@ -290,11 +321,14 @@ public final class EnterpriseLabSupervisorCommandLedger {
             return ReadResult.empty();
         }
         validateLedgerFile();
-        byte[] bytes = readReplayBytesWithTransientRetry();
         try {
-            ChainedJsonlStore.ChainReplay<EnterpriseLabCommandLedgerEvent> replay =
-                    jsonlStore.decodeChain(
-                            bytes,
+            ChainedJsonlStore.StorageVersion version =
+                    jsonlStore.storageVersion();
+            if (cachedReplay != null && version.equals(cachedVersion)) {
+                return cachedReplay;
+            }
+            ChainedJsonlStore.SegmentedChainReplay<EnterpriseLabCommandLedgerEvent> replay =
+                    jsonlStore.replaySegmentedChain(
                             new ChainedJsonlStore.FrameCodec<>() {
                                 @Override
                                 public EnterpriseLabCommandLedgerEvent decode(byte[] encoded) {
@@ -310,13 +344,19 @@ public final class EnterpriseLabSupervisorCommandLedger {
                             maxEvents,
                             EnterpriseLabCommandLedgerEvent.HARD_MAX_EVENT_BYTES,
                             ChainedJsonlStore.TailPolicy.REJECT);
-            return new ReadResult(true, replay.entries(), replay.totalBytes());
+            currentSegmentBytes = replay.currentBytes();
+            currentSegmentEvents = replay.currentEntries();
+            ReadResult result = new ReadResult(
+                    true, replay.entries(), replay.totalBytes());
+            cachedReplay = result;
+            cachedVersion = replay.version();
+            return result;
         } catch (ChainedJsonlStore.StoreIOException exception) {
             throw mapEngineFailure(exception);
         }
     }
 
-    private static void validateNext(
+    static void validateNext(
             List<EnterpriseLabCommandLedgerEvent> prior,
             EnterpriseLabCommandLedgerEvent event) {
         if (event.ledgerSide() != LedgerSide.SUPERVISOR) {
@@ -513,11 +553,11 @@ public final class EnterpriseLabSupervisorCommandLedger {
         forceDirectoryMetadataIfSupported(ledgerDirectory);
     }
 
-    private void appendFrame(byte[] encoded, long expectedSize) {
+    private void appendFrame(byte[] encoded) {
         try {
             jsonlStore.appendFrame(
                     encoded,
-                    expectedSize,
+                    currentSegmentBytes,
                     ChainedJsonlStore.ForceMode.DATA_AND_METADATA,
                     this::requireOwnership,
                     writtenBytes -> failureInjector.checkpoint(
@@ -531,52 +571,22 @@ public final class EnterpriseLabSupervisorCommandLedger {
         }
     }
 
-    private byte[] readReplayBytesWithTransientRetry() {
-        StoreException lastTransient = null;
-        for (int attempt = 1; attempt <= MAX_TRANSIENT_REPLAY_ATTEMPTS; attempt++) {
-            byte[] bytes;
-            try {
-                bytes = readBoundedBytes();
-            } catch (StoreException exception) {
-                if (exception.failure() != Failure.CONCURRENT_CHANGE) {
-                    throw exception;
-                }
-                lastTransient = exception;
-                if (attempt == MAX_TRANSIENT_REPLAY_ATTEMPTS) {
-                    throw lastTransient;
-                }
-                transientReplayBackoff();
-                continue;
-            }
-            if (bytes.length == 0 || bytes[bytes.length - 1] == '\n') {
-                return bytes;
-            }
-            lastTransient = failure(
-                    Failure.TRUNCATED_TAIL,
-                    "supervisor ledger has an incomplete tail and was preserved unchanged");
-            if (attempt == MAX_TRANSIENT_REPLAY_ATTEMPTS) {
-                throw lastTransient;
-            }
-            transientReplayBackoff();
-        }
-        throw Objects.requireNonNull(lastTransient);
+    private ReadResult replayForAppendLocked() {
+        return cachedReplay == null ? replayLocked() : cachedReplay;
     }
 
-    private static void transientReplayBackoff() {
-        try {
-            Thread.sleep(TRANSIENT_REPLAY_BACKOFF_MILLIS);
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
-            throw failure(
-                    Failure.IO_FAILURE,
-                    "supervisor ledger transient replay retry was interrupted",
-                    exception);
+    private void rotateBeforeAppendIfNeeded(long frameBytes) {
+        if (!rotationEnabled
+                || currentSegmentEvents == 0
+                || (currentSegmentEvents < SOFT_MAX_SEGMENT_EVENTS
+                && currentSegmentBytes + frameBytes <= SOFT_MAX_SEGMENT_BYTES)) {
+            return;
         }
-    }
-
-    private byte[] readBoundedBytes() {
         try {
-            return jsonlStore.readBoundedBytes();
+            jsonlStore.rotateCurrentSegment(this::requireOwnership);
+            currentSegmentBytes = 0L;
+            currentSegmentEvents = 0;
+            cachedVersion = null;
         } catch (ChainedJsonlStore.StoreIOException exception) {
             throw mapEngineFailure(exception);
         }
@@ -597,7 +607,7 @@ public final class EnterpriseLabSupervisorCommandLedger {
                     Failure.LEDGER_SIZE_EXCEEDED,
                     "supervisor ledger exceeds its bounded byte size",
                     exception);
-            case ENTRY_LIMIT_EXCEEDED -> failure(
+            case ENTRY_LIMIT_EXCEEDED, ARCHIVE_LIMIT_EXCEEDED -> failure(
                     Failure.EVENT_LIMIT_EXCEEDED,
                     "supervisor ledger exceeds its bounded event count",
                     exception);
@@ -632,13 +642,19 @@ public final class EnterpriseLabSupervisorCommandLedger {
         try (var entries = Files.newDirectoryStream(ledgerDirectory)) {
             for (Path entry : entries) {
                 Path normalized = entry.toAbsolutePath().normalize();
-                if (!normalized.equals(ledgerFile)) {
+                if (!normalized.equals(ledgerFile)
+                        && !normalized.equals(jsonlStore.segmentsDirectory())
+                        && !normalized.equals(
+                        jsonlStore.repairQuarantineDirectory())) {
                     throw failure(Failure.UNEXPECTED_STORAGE_ENTRY,
                             "supervisor ledger directory contains an unexpected entry");
                 }
             }
+            jsonlStore.validateRepairQuarantine();
         } catch (StoreException exception) {
             throw exception;
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            throw mapEngineFailure(exception);
         } catch (IOException exception) {
             throw failure(Failure.IO_FAILURE,
                     "supervisor ledger directory could not be inspected", exception);
@@ -1092,9 +1108,12 @@ public final class EnterpriseLabSupervisorCommandLedger {
             boolean exactReadBackVerified) {
 
         public AppendReceipt {
-            if (sequence < 1L || totalBytes < 1L) {
+            if (sequence < 1L
+                    || sequence > HARD_MAX_HISTORY_EVENTS
+                    || totalBytes < 1L
+                    || totalBytes > HARD_MAX_HISTORY_BYTES) {
                 throw new IllegalArgumentException(
-                        "append receipt sequence and totalBytes must be positive");
+                        "append receipt sequence and totalBytes are outside hard bounds");
             }
             Objects.requireNonNull(correlationId, "correlationId cannot be null");
             Objects.requireNonNull(eventFingerprint, "eventFingerprint cannot be null");
@@ -1113,7 +1132,10 @@ public final class EnterpriseLabSupervisorCommandLedger {
 
         public ReadResult {
             events = List.copyOf(Objects.requireNonNull(events, "events cannot be null"));
-            if (totalBytes < 0L || (!ledgerPresent && (!events.isEmpty() || totalBytes != 0L))) {
+            if (events.size() > HARD_MAX_HISTORY_EVENTS
+                    || totalBytes < 0L
+                    || totalBytes > HARD_MAX_HISTORY_BYTES
+                    || (!ledgerPresent && (!events.isEmpty() || totalBytes != 0L))) {
                 throw new IllegalArgumentException("supervisor ledger read result is inconsistent");
             }
         }

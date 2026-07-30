@@ -17,6 +17,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -24,13 +25,21 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * One fixed, append-only allocation transaction chain beneath the controlled
- * Enterprise Lab evidence namespace. Mutation is possible only through a live
- * ownership authority; read-only replay never manufactures that authority.
+ * One append-only allocation transaction chain beneath the controlled
+ * Enterprise Lab evidence namespace. One fixed current file and bounded
+ * immutable segments preserve the global predecessor chain across rotation.
+ * Mutation is possible only through a live ownership authority; read-only
+ * replay never manufactures that authority.
  */
 public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
     public static final long HARD_MAX_STORE_BYTES = 8L * 1024L * 1024L;
     public static final int HARD_MAX_RECORDS = 4_096;
+    public static final long HARD_MAX_HISTORY_BYTES =
+            HARD_MAX_STORE_BYTES * (ChainedJsonlStore.HARD_MAX_ARCHIVED_SEGMENTS + 1L);
+    public static final int HARD_MAX_HISTORY_RECORDS =
+            HARD_MAX_RECORDS * (ChainedJsonlStore.HARD_MAX_ARCHIVED_SEGMENTS + 1);
+    static final long SOFT_MAX_SEGMENT_BYTES = 2L * 1024L * 1024L;
+    static final int SOFT_MAX_SEGMENT_RECORDS = 1_024;
 
     static final String DIRECTORY_NAME = "allocation-state-v1";
     static final String FILE_NAME = "allocation-transactions-v1.jsonl";
@@ -57,7 +66,12 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
     private final FailureInjector failureInjector;
     private final ChainedJsonlStore jsonlStore;
     private final Object processMutex;
+    private final boolean rotationEnabled;
 
+    private long currentSegmentBytes;
+    private int currentSegmentRecords;
+    private ReadResult cachedReplay;
+    private ChainedJsonlStore.StorageVersion cachedVersion;
     private boolean failed;
     private boolean closed;
 
@@ -103,6 +117,19 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         this.storeFile = controlledPath(storeDirectory, FILE_NAME);
         this.jsonlStore = new ChainedJsonlStore(storeFile, maxStoreBytes);
         this.processMutex = jsonlStore.processMutex();
+        this.rotationEnabled = maxStoreBytes == HARD_MAX_STORE_BYTES
+                && maxRecords == HARD_MAX_RECORDS;
+        if (prepareForMutation && rotationEnabled) {
+            synchronized (processMutex) {
+                requireSameMutationAuthorization(authorization);
+                try {
+                    jsonlStore.recoverRotationArtifacts(
+                            () -> requireSameMutationAuthorization(authorization));
+                } catch (ChainedJsonlStore.StoreIOException exception) {
+                    throw mapEngineFailure(exception);
+                }
+            }
+        }
     }
 
     /** Opens the fixed store for bounded read-only inspection without creating paths. */
@@ -172,15 +199,16 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         }
         synchronized (processMutex) {
             requireSameMutationAuthorization(authorization);
-            ReadResult before = replayLocked();
+            ReadResult before = replayForAppendLocked();
             validateNext(before.records(), safe);
             byte[] encoded = codec.encode(safe);
             long frameBytes = encoded.length + 1L;
-            if (before.records().size() >= maxRecords) {
+            rotateBeforeAppendIfNeeded(frameBytes, authorization);
+            if (currentSegmentRecords >= maxRecords) {
                 throw failure(Failure.RECORD_LIMIT_EXCEEDED,
                         "allocation store has reached its bounded record count");
             }
-            if (before.totalBytes() + frameBytes > maxStoreBytes) {
+            if (currentSegmentBytes + frameBytes > maxStoreBytes) {
                 throw failure(Failure.STORE_SIZE_EXCEEDED,
                         "allocation store has reached its bounded byte size");
             }
@@ -189,7 +217,7 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
             try {
                 requireSameMutationAuthorization(authorization);
                 prepareStoreFile();
-                ReadResult stable = replayLocked();
+                ReadResult stable = replayForAppendLocked();
                 if (!stable.records().equals(before.records())
                         || stable.totalBytes() != before.totalBytes()) {
                     throw failure(Failure.CONCURRENT_CHANGE,
@@ -198,10 +226,20 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
                 failureInjector.checkpoint(WriteCheckpoint.BEFORE_APPEND, 0);
                 requireSameMutationAuthorization(authorization);
                 writeStarted = true;
-                appendFrame(encoded, before.totalBytes(), authorization);
+                appendFrame(encoded, authorization);
                 requireSameMutationAuthorization(authorization);
 
-                ReadResult after = replayLocked();
+                List<EnterpriseLabAllocationState> afterRecords =
+                        new ArrayList<>(before.records());
+                afterRecords.add(safe);
+                currentSegmentBytes += frameBytes;
+                currentSegmentRecords++;
+                ReadResult after = new ReadResult(
+                        true,
+                        afterRecords,
+                        before.totalBytes() + frameBytes);
+                cachedReplay = after;
+                cachedVersion = null;
                 if (after.records().size() != before.records().size() + 1
                         || after.totalBytes() != before.totalBytes() + frameBytes
                         || !after.records().get(after.records().size() - 1).equals(safe)) {
@@ -262,8 +300,13 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         }
         validateStoreFile();
         try {
-            ChainedJsonlStore.ChainReplay<EnterpriseLabAllocationState> replay =
-                    jsonlStore.replayChain(
+            ChainedJsonlStore.StorageVersion version =
+                    jsonlStore.storageVersion();
+            if (cachedReplay != null && version.equals(cachedVersion)) {
+                return cachedReplay;
+            }
+            ChainedJsonlStore.SegmentedChainReplay<EnterpriseLabAllocationState> replay =
+                    jsonlStore.replaySegmentedChain(
                             new ChainedJsonlStore.FrameCodec<>() {
                                 @Override
                                 public EnterpriseLabAllocationState decode(byte[] encoded) {
@@ -275,17 +318,23 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
                                     return codec.encode(state);
                                 }
                             },
-                            this::validateNext,
+                            EnterpriseLabAllocationStateStore::validateNext,
                             maxRecords,
                             EnterpriseLabAllocationStateCodec.HARD_MAX_RECORD_BYTES,
                             ChainedJsonlStore.TailPolicy.REJECT);
-            return new ReadResult(true, replay.entries(), replay.totalBytes());
+            currentSegmentBytes = replay.currentBytes();
+            currentSegmentRecords = replay.currentEntries();
+            ReadResult result = new ReadResult(
+                    true, replay.entries(), replay.totalBytes());
+            cachedReplay = result;
+            cachedVersion = replay.version();
+            return result;
         } catch (ChainedJsonlStore.StoreIOException exception) {
             throw mapEngineFailure(exception);
         }
     }
 
-    private void validateNext(
+    static void validateNext(
             List<EnterpriseLabAllocationState> existing,
             EnterpriseLabAllocationState next) {
         if (existing.isEmpty()) {
@@ -438,12 +487,11 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
 
     private void appendFrame(
             byte[] encoded,
-            long expectedSize,
             MutationAuthorization authorization) {
         try {
             jsonlStore.appendFrame(
                     encoded,
-                    expectedSize,
+                    currentSegmentBytes,
                     ChainedJsonlStore.ForceMode.DATA_AND_METADATA,
                     () -> requireSameMutationAuthorization(authorization),
                     writtenBytes -> failureInjector.checkpoint(
@@ -465,6 +513,30 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         }
     }
 
+    private ReadResult replayForAppendLocked() {
+        return cachedReplay == null ? replayLocked() : cachedReplay;
+    }
+
+    private void rotateBeforeAppendIfNeeded(
+            long frameBytes,
+            MutationAuthorization authorization) {
+        if (!rotationEnabled
+                || currentSegmentRecords == 0
+                || (currentSegmentRecords < SOFT_MAX_SEGMENT_RECORDS
+                && currentSegmentBytes + frameBytes <= SOFT_MAX_SEGMENT_BYTES)) {
+            return;
+        }
+        try {
+            jsonlStore.rotateCurrentSegment(
+                    () -> requireSameMutationAuthorization(authorization));
+            currentSegmentBytes = 0L;
+            currentSegmentRecords = 0;
+            cachedVersion = null;
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            throw mapEngineFailure(exception);
+        }
+    }
+
     private static StoreException mapEngineFailure(
             ChainedJsonlStore.StoreIOException exception) {
         return switch (exception.failure()) {
@@ -472,7 +544,7 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
                     Failure.STORE_SIZE_EXCEEDED,
                     "allocation store exceeds its bounded byte size",
                     exception);
-            case ENTRY_LIMIT_EXCEEDED -> failure(
+            case ENTRY_LIMIT_EXCEEDED, ARCHIVE_LIMIT_EXCEEDED -> failure(
                     Failure.RECORD_LIMIT_EXCEEDED,
                     "allocation store exceeds its bounded record count",
                     exception);
@@ -507,13 +579,19 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
         try (var entries = Files.newDirectoryStream(storeDirectory)) {
             for (Path entry : entries) {
                 Path normalized = entry.toAbsolutePath().normalize();
-                if (!normalized.equals(storeFile)) {
+                if (!normalized.equals(storeFile)
+                        && !normalized.equals(jsonlStore.segmentsDirectory())
+                        && !normalized.equals(
+                        jsonlStore.repairQuarantineDirectory())) {
                     throw failure(Failure.UNEXPECTED_STORAGE_ENTRY,
                             "allocation store directory contains an unexpected entry");
                 }
             }
+            jsonlStore.validateRepairQuarantine();
         } catch (StoreException exception) {
             throw exception;
+        } catch (ChainedJsonlStore.StoreIOException exception) {
+            throw mapEngineFailure(exception);
         } catch (IOException exception) {
             throw failure(Failure.IO_FAILURE,
                     "allocation store directory could not be inspected", exception);
@@ -780,11 +858,11 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
             SyncPolicy syncPolicy,
             boolean exactReadBackVerified) {
         public AppendReceipt {
-            if (recordCount < 1 || recordCount > HARD_MAX_RECORDS) {
+            if (recordCount < 1 || recordCount > HARD_MAX_HISTORY_RECORDS) {
                 throw new IllegalArgumentException("recordCount is outside hard bounds");
             }
             recordFingerprint = requireFingerprint(recordFingerprint);
-            if (totalBytes < 1 || totalBytes > HARD_MAX_STORE_BYTES) {
+            if (totalBytes < 1 || totalBytes > HARD_MAX_HISTORY_BYTES) {
                 throw new IllegalArgumentException("totalBytes is outside hard bounds");
             }
             syncPolicy = Objects.requireNonNull(syncPolicy, "syncPolicy cannot be null");
@@ -800,9 +878,9 @@ public final class EnterpriseLabAllocationStateStore implements AutoCloseable {
             long totalBytes) {
         public ReadResult {
             records = List.copyOf(Objects.requireNonNull(records, "records cannot be null"));
-            if (records.size() > HARD_MAX_RECORDS
+            if (records.size() > HARD_MAX_HISTORY_RECORDS
                     || totalBytes < 0
-                    || totalBytes > HARD_MAX_STORE_BYTES
+                    || totalBytes > HARD_MAX_HISTORY_BYTES
                     || (!storePresent && (!records.isEmpty() || totalBytes != 0L))) {
                 throw new IllegalArgumentException("allocation read result is inconsistent");
             }

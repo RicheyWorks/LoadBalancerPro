@@ -287,6 +287,30 @@ class EnterpriseLabExperimentLocalJournalTest {
     }
 
     @Test
+    void mutationStartupRemovesOnlyRecognizedOrphanManifestInstallingFile()
+            throws Exception {
+        EnterpriseLabMutationTestAuthority ownership =
+                new EnterpriseLabMutationTestAuthority(tempDirectory);
+        EnterpriseLabExperimentJournalDirectory.createOwned(
+                tempDirectory, ownership);
+        Path compacted = tempDirectory
+                .resolve(EnterpriseLabExperimentJournalDirectory.NAMESPACE)
+                .resolve("compacted");
+        Path orphan = compacted.resolve(
+                "terminal-v1-"
+                        + "a".repeat(64)
+                        + ".json.installing");
+        Files.writeString(orphan, "incomplete", StandardCharsets.UTF_8);
+
+        EnterpriseLabExperimentJournalDirectory restarted =
+                EnterpriseLabExperimentJournalDirectory.createOwned(
+                        tempDirectory, ownership);
+
+        assertFalse(Files.exists(orphan));
+        assertTrue(restarted.compactedManifests().isEmpty());
+    }
+
+    @Test
     void failureAfterForceMayLeaveOneCompleteEventWithoutReturningAReceipt() {
         EnterpriseLabExperimentJournalDirectory directory =
                 EnterpriseLabMutationTestAuthority.ownedDirectory(tempDirectory);

@@ -6,6 +6,19 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 ## Entry
 
+Date/time: 2026-07-30T16:12:00-07:00
+
+Branch/PR: `codex/l-2-2-rotation-recovery` / no PR yet
+
+Failure/resolution: the first same-lock append/read-back implementation opened the current segment with Java NIO
+`READ` plus `APPEND`; Windows rejects that option combination, so the focused store bundle failed before exercising
+domain behavior. The engine now opens `READ` plus `WRITE`, holds the existing exclusive file lock, writes from the
+exact verified end offset, forces, and performs positional exact-frame read-back before releasing the lock. The
+corrected focused store/controller bundle and the 10,000-command supervisor-ledger soak pass. Reuse this portable
+open-mode pattern for any later cross-platform same-channel append verification.
+
+## Entry
+
 Date/time: 2026-07-30T14:40:38-07:00
 
 Branch/PR: `codex/l-2-1-chained-jsonl-store` / #513

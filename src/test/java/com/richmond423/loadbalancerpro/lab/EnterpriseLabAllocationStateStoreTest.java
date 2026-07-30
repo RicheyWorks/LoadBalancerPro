@@ -360,6 +360,48 @@ class EnterpriseLabAllocationStateStoreTest {
     }
 
     @Test
+    void replayAndAppendPreserveAllocationChainAcrossArchivedSegment()
+            throws Exception {
+        EnterpriseLabAllocationState baseline = baseline();
+        Path storeFile;
+        try (EnterpriseLabAllocationStateStore store =
+                     EnterpriseLabAllocationStateStore.createForTesting(
+                             temporaryDirectory,
+                             targets,
+                             EnterpriseLabAllocationStateStore.HARD_MAX_STORE_BYTES,
+                             1,
+                             authority,
+                             (checkpoint, bytes) -> { })) {
+            store.append(baseline);
+            storeFile = store.controlledStoreFile();
+        }
+        ChainedJsonlStore engine = new ChainedJsonlStore(
+                storeFile,
+                EnterpriseLabAllocationStateStore.HARD_MAX_STORE_BYTES);
+        engine.prepareRotationDirectory();
+        engine.rotateCurrentSegment(
+                () -> authority.requireMutationAuthorization());
+
+        EnterpriseLabAllocationState next = candidate(
+                "allocation-tx-2",
+                2,
+                baseline.currentRecordFingerprint());
+        try (EnterpriseLabAllocationStateStore restarted =
+                     EnterpriseLabAllocationStateStore.createForTesting(
+                             temporaryDirectory,
+                             targets,
+                             EnterpriseLabAllocationStateStore.HARD_MAX_STORE_BYTES,
+                             1,
+                             authority,
+                             (checkpoint, bytes) -> { })) {
+            restarted.append(next);
+            assertEquals(
+                    List.of(baseline, next),
+                    restarted.replay().records());
+        }
+    }
+
+    @Test
     void processLocalConcurrentWritersAllowOnlyOneChainHeadSuccess() throws Exception {
         EnterpriseLabAllocationState baseline = baseline();
         try (EnterpriseLabAllocationStateStore store = ownedStore()) {

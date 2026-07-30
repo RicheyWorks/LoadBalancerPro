@@ -55,6 +55,8 @@ public final class EnterpriseLabExperimentJournalDirectory {
             Pattern.compile("journal-v1-[0-9a-f]{64}\\.jsonl");
     private static final Pattern MANIFEST_FILE_NAME =
             Pattern.compile("terminal-v1-[0-9a-f]{64}\\.json");
+    private static final Pattern MANIFEST_INSTALLING_FILE_NAME =
+            Pattern.compile("terminal-v1-[0-9a-f]{64}\\.json\\.installing");
     private static final Pattern CANONICAL_EXPERIMENT_ID = Pattern.compile("[A-Za-z0-9._:-]+");
     private static final Set<PosixFilePermission> DIRECTORY_PERMISSIONS =
             PosixFilePermissions.fromString("rwx------");
@@ -109,6 +111,7 @@ public final class EnterpriseLabExperimentJournalDirectory {
             requireSameMutationAuthorization(authorization);
             this.compactedDirectory = controlledDirectory(namespace, COMPACTED);
             requireSameMutationAuthorization(authorization);
+            cleanupOrphanManifestInstallingFiles(authorization);
         } else {
             Path namespace = controlledInspectionPath(root, NAMESPACE);
             this.journalsDirectory = controlledInspectionPath(namespace, JOURNALS);
@@ -642,7 +645,8 @@ public final class EnterpriseLabExperimentJournalDirectory {
         } catch (ChainedJsonlStore.StoreIOException exception) {
             Failure mapped = switch (exception.failure()) {
                 case SIZE_LIMIT_EXCEEDED -> Failure.JOURNAL_SIZE_EXCEEDED;
-                case ENTRY_LIMIT_EXCEEDED -> Failure.ENTRY_LIMIT_EXCEEDED;
+                case ENTRY_LIMIT_EXCEEDED, ARCHIVE_LIMIT_EXCEEDED ->
+                        Failure.ENTRY_LIMIT_EXCEEDED;
                 case FRAME_SIZE_EXCEEDED, INVALID_COMPLETE_FRAME ->
                         Failure.INVALID_COMPLETE_ENTRY;
                 case NON_CANONICAL_FRAME -> Failure.NON_CANONICAL_ENTRY;
@@ -879,6 +883,35 @@ public final class EnterpriseLabExperimentJournalDirectory {
         } catch (IOException | RuntimeException exception) {
             throw failure(Failure.VERIFICATION_FAILED,
                     "terminal manifest failed canonical fingerprint verification", exception);
+        }
+    }
+
+    private void cleanupOrphanManifestInstallingFiles(
+            MutationAuthorization authorization) {
+        int observed = 0;
+        try (var entries = Files.newDirectoryStream(compactedDirectory)) {
+            for (Path path : entries) {
+                if (++observed > HARD_MAX_DISCOVERED_JOURNALS) {
+                    throw failure(
+                            Failure.DISCOVERY_LIMIT_EXCEEDED,
+                            "compacted manifest startup cleanup exceeds its bounded count");
+                }
+                if (!MANIFEST_INSTALLING_FILE_NAME
+                        .matcher(path.getFileName().toString())
+                        .matches()) {
+                    continue;
+                }
+                validateJournalFile(path);
+                requireSameMutationAuthorization(authorization);
+                Files.delete(path);
+            }
+        } catch (EnterpriseLabExperimentJournalStorageException exception) {
+            throw exception;
+        } catch (IOException exception) {
+            throw failure(
+                    Failure.IO_FAILURE,
+                    "orphan compacted-manifest installing cleanup failed",
+                    exception);
         }
     }
 

@@ -6,18 +6,17 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Combined Build Plan Slot 16 PR-Open Checkpoint
+## Combined Build Plan Slot 16 Resumed After Security Prerequisite
 
-Timestamp: 2026-07-30T13:27:30-07:00
+Timestamp: 2026-07-30T14:40:38-07:00
 
 Current slot: `L-2.1`, unify JSONL stores behind one chained engine.
 
-Branch: `codex/l-2-1-chained-jsonl-store`; status: `PR_OPEN` while the campaign machine state remains
-`IN_PROGRESS`; exact green base: `36622b8b2ca27003a0a9a5e165ac361969173dd0`. The published branch-start
-checkpoint is `3114e541abea26d7001fad3f713cefe9f3478e2b`; implementation/local-green head
-`4c75b9348611bb8888f9b1cc6df4b4e2dc247301` is published in
-[#513](https://github.com/RicheyWorks/LoadBalancerPro/pull/513). This required PR-open checkpoint becomes the final
-candidate head when committed and published.
+Branch: `codex/l-2-1-chained-jsonl-store`; status: `PR_OPEN` and campaign machine state `IN_PROGRESS`. The verified
+green base is now Spring prerequisite merge `c3f3d60f3ff7cc6e65fcc77f44df9ea7219efad7`. Published product head
+`4ac5bd7e1fde44297d7de92738519186381fc503` remains in
+[#513](https://github.com/RicheyWorks/LoadBalancerPro/pull/513); the main merge and this concise checkpoint
+reconciliation are not yet published.
 
 Delivered bounded scope:
 
@@ -50,11 +49,18 @@ mutex eviction, broader logging, production readiness/certification, live-cloud/
 throughput/p95/p99, load/stress behavior, remote-filesystem semantics, and operating-system crash guarantees remain
 unproven and belong to later slots.
 
-PR: #513. Blocker: exact-head remote checks are pending.
+Security prerequisite: isolated [#514](https://github.com/RicheyWorks/LoadBalancerPro/pull/514) final head
+`267ad5b6b9014b977a347e6c5c0fc5cad1094954` merged as
+`c3f3d60f3ff7cc6e65fcc77f44df9ea7219efad7`. Exact-head push/PR CI, dependency review, CodeQL, package, SBOM,
+packaged-JAR, Docker/runtime, evidence, and Trivy passed; post-merge main CI `30583840951` and CodeQL
+`30583840985` passed on the exact merge commit. Push, PR, and main Trivy artifacts each report zero Ubuntu and zero
+JAR findings, with `CVE-2026-41842`, `CVE-2026-41845`, and `CVE-2026-41850` absent. The effective graph is Spring
+Boot `3.5.16`, Spring Framework `6.2.19`, and Spring Security `6.5.11`.
 
-Next action: publish this checkpoint, require exact-head CI, CodeQL, dependency review,
-package/SBOM/packaged-smoke/Docker/runtime/evidence/image-scan gates, merge only the unchanged green head, verify
-exact merge-main, then start only `L-2.2`.
+Reconciliation scope: merge verified main, keep the shared JSONL product diff otherwise unchanged, incorporate the
+preserved image-scan failure/session checkpoint, and rerun every applicable local and remote gate on the new final
+head. Do not count the superseded #513 failures as green and do not start `L-2.2` before #513 is merged and exact
+main is green.
 
 Decision: continue only `L-2.1`; no later slot is active.
 
@@ -100,7 +106,63 @@ formats/codecs, lock ownership, process mutexes, tests, and call sites before se
 engine seam.
 
 Decision: continue only `L-2.1`; no later slot is active.
+## L2.1 Spring Boot Security Prerequisite PR-Open Checkpoint
 
+Timestamp: 2026-07-30T14:16:10-07:00
+
+Branch/PR: `codex/security-spring-boot-3-5-16`;
+[#514](https://github.com/RicheyWorks/LoadBalancerPro/pull/514).
+
+Published implementation/local-green head: `78e806702d3a4629cce72e6aec45d38745d92c08`; this PR-open checkpoint
+is documentation-only and will become the final candidate after publication.
+
+PR #514 is ready, mergeable, and limited to the six authorized dependency/evidence/campaign files. Push and PR CI,
+PR dependency review, and CodeQL started on the implementation head, but they become stale after this checkpoint
+and must not count toward the final merge gate.
+
+Next action: rerun the complete current-tree local ladder, commit and publish this checkpoint, then require
+unchanged-head push/PR CI, CodeQL, dependency review, package/SBOM/artifact/Docker/runtime evidence, and the blocking
+Trivy scan with the three Spring Framework HIGH findings absent before complete-diff self-review and automatic
+merge. PR #513 remains preserved and must not be updated until verified green `main` includes this prerequisite.
+
+## L2.1 Spring Boot Security Prerequisite Local-Green Candidate
+
+Timestamp: 2026-07-30T13:35:00-07:00
+
+Branch: `codex/security-spring-boot-3-5-16`; exact green-main base:
+`36622b8b2ca27003a0a9a5e165ac361969173dd0`.
+
+Scope: isolated security maintenance only. Move the shared Spring Boot BOM/plugin property from `3.5.14` to
+`3.5.16`, retain every separately pinned dependency and all Maven/workflow/Docker/application behavior, and record
+only the effective dependency delta and guards needed to prove the prerequisite.
+
+Preservation audit: PR #513 remains on `codex/l-2-1-chained-jsonl-store` at
+`4ac5bd7e1fde44297d7de92738519186381fc503` with its 19-file product diff and its two intentional unstaged campaign
+checkpoint edits preserved. This worktree was created from exact green `main`, was clean before editing, and carries
+none of #513's files or changes.
+
+Dependency inventory: both Boot versions resolve the same 171 coordinates. The patch changes 45 versions only
+across expected Boot-managed families: Spring Boot `3.5.16`, Spring Framework `6.2.19`, Spring Security `6.5.11`,
+Micrometer `1.15.12`, Logback `1.5.34`, SLF4J `2.0.18`, Reactor `3.7.19`, and Jakarta XML Bind `4.0.5`.
+
+Verified before this documentation checkpoint: focused dependency/documentation/campaign guards passed; the
+effective dependency tree contains Spring Boot `3.5.16`, Spring Framework `6.2.19`, and Spring Security `6.5.11`
+with none of their superseded versions; `mvn -q clean package` passed 3,050 tests across 412 fresh reports with zero
+failures, errors, or skips; skip-test verify passed; the executable JAR passed required-resource, synthetic LASE,
+loopback health, and static-page proofs with its exact process and port released; CycloneDX produced valid JSON/XML
+SBOMs with 144 components and the expected Spring versions. The local Docker Desktop Linux engine is unavailable,
+so exact-head CI Docker build/runtime and Trivy remain required and the limitation is recorded in
+`FAILURE_LOG.md`.
+
+Status: local-green candidate; because this checkpoint changes tracked documentation, rerun the complete focused,
+clean-package, verify, dependency-tree, artifact, SBOM, packaged-runtime, scope, and diff ladder before committing.
+All remote gates remain pending on the not-yet-created exact head. Do not resume or merge #513 until this
+prerequisite is exact-head green, merged, and verified on `main`.
+
+Scope/safety: no allowlist, suppression, scan exception, gate weakening, plugin, workflow, Docker, application,
+endpoint, configuration-default, credential, external-target, cloud/tenant, or unrelated dependency change is
+authorized. Production readiness/certification, live-cloud/tenant validation, runtime enforcement,
+load/stress/benchmark evidence, throughput/p95/p99, and broader automation remain unproven.
 ## Combined Build Plan Slot 15 PR-Open Checkpoint
 
 Timestamp: 2026-07-30T11:46:13-07:00

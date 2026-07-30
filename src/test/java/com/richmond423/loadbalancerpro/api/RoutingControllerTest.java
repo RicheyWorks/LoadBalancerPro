@@ -104,86 +104,21 @@ class RoutingControllerTest {
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$[0].readOnly", is(true)))
                     .andExpect(jsonPath("$[0].simulationOnly", is(true)))
-                    .andExpect(jsonPath("$[0].payloadObject", is("DecisionExplorerPayloadV1")))
-                    .andExpect(jsonPath("$[0].contractVersion", is("v1")))
-                    .andExpect(jsonPath("$[0].source", containsString("/api/routing/compare")))
-                    .andExpect(jsonPath("$[0].decisionReadout.selectedCandidateId", is("green")))
-                    .andExpect(jsonPath("$[0].selectedCandidate.candidateId", is("green")))
-                    .andExpect(jsonPath("$[0].candidateSet[0].candidateId", is("green")))
-                    .andExpect(jsonPath("$[0].candidateSet[0].selected", is(true)))
-                    .andExpect(jsonPath("$[0].candidateSet[1].candidateId", is("blue")))
-                    .andExpect(jsonPath("$[0].factorContributions[0].factorName").exists())
-                    .andExpect(jsonPath("$[0].routingDiagnostics.readOnly", is(true)))
-                    .andExpect(jsonPath("$[0].routingDiagnostics.simulationOnly", is(true)))
-                    .andExpect(jsonPath("$[0].routingDiagnostics.diagnosticsObject",
-                            is("DecisionExplorerRoutingDiagnosticsV1")))
-                    .andExpect(jsonPath("$[0].routingDiagnostics.overallStatus", is("PARTIAL")))
-                    .andExpect(jsonPath("$[0].routingDiagnostics.selectedCandidateId", is("green")))
-                    .andExpect(jsonPath("$[0].routingDiagnostics.explanationText",
-                            containsString("selected candidate green as PARTIAL")))
-                    .andExpect(jsonPath("$[0].routingDiagnostics.evidenceDiagnostics[0].diagnosticId").exists())
-                    .andExpect(jsonPath("$[0].routingDiagnostics.selectedCandidateDiagnostic.candidateId",
-                            is("green")))
-                    .andExpect(jsonPath("$[0].routingDiagnostics.candidateDiagnostics[0].candidateId",
-                            is("green")))
-                    .andExpect(jsonPath("$[0].routingDiagnostics.factorDiagnostics[0].factorName").exists())
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.readOnly", is(true)))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.simulationOnly", is(true)))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.analysisObject",
-                            is("DecisionExplorerRouteTradeoffAnalysisV1")))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.overallStatus", is("PARTIAL")))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.selectedCandidateId", is("green")))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.fingerprintAlgorithm",
-                            is(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM)))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.diagnosticFingerprint",
-                            containsString("route-tradeoff|v1|")))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.explanationText",
-                            containsString("selected candidate green is PARTIAL")))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.evidenceSufficiency.diagnosticFingerprint",
-                            containsString("evidence-sufficiency|v1|")))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.diagnosticFingerprint",
-                            containsString("replay-readiness|v1|")))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.candidateTradeoffs[0].candidateId",
-                            is("green")))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.candidateScoringExplanations[0].candidateId",
-                            is("green")))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.evidenceSufficiency.diagnosticObject",
-                            is("DecisionExplorerEvidenceSufficiencyV1")))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.diagnosticObject",
-                            is("DecisionExplorerReplayReadinessDiagnosticV1")))
-                    .andExpect(jsonPath("$[0].routeTradeoffAnalysis.replayReadinessDiagnostic.replayExecutionAvailable",
-                            is(false)))
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.readOnly", is(true)))
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.simulationOnly", is(true)))
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.evaluationObject",
-                            is("DecisionExplorerShadowDecisionQualityEvaluationV1")))
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.qualityLabel",
-                            is("REVIEW_RECOMMENDED")))
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.selectedCandidateId",
-                            is("green")))
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.fingerprintAlgorithm",
-                            is(DecisionExplorerRouteTradeoffService.FINGERPRINT_ALGORITHM)))
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.diagnosticFingerprint",
-                            containsString("shadow-decision-quality|v1|")))
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.reproducibilityKey").exists())
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.fingerprintInputs[0]").exists())
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.explanationText",
-                            containsString("Shadow decision-quality explanation is REVIEW_RECOMMENDED")))
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.candidateOutcomeComparisons[0].candidateId",
-                            is("green")))
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.policySensitivityDiagnostic.diagnosticObject",
-                            is("DecisionExplorerShadowPolicySensitivityDiagnosticV1")))
-                    .andExpect(jsonPath("$[0].shadowDecisionQualityEvaluation.scenarioInputQuality.evaluationObject",
-                            is("DecisionExplorerShadowScenarioInputQualityV1")))
-                    .andExpect(jsonPath("$[0].policyGateReadouts[0].gateId", is("boundary-read-only")))
-                    .andExpect(jsonPath("$[0].policyGateReadouts[0].outcome", is("PASS")))
-                    .andExpect(jsonPath("$[0].agentStructuredOutput.schemaName", is("AgentStructuredOutputV1")))
-                    .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no production readiness")))
-                    .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no storage proof")))
-                    .andExpect(jsonPath("$[0].notProvenBoundaries", hasItem("no evidence-packet generation")))
-                    .andExpect(jsonPath("$[0].notProvenBoundaries", not(hasItem(
-                            "no Decision Explorer endpoint, UI, storage, export, replay execution, or evidence-packet generation"))))
-                    .andExpect(jsonPath("$[0].boundaryNote", containsString("does not change routing behavior")));
+                    .andExpect(jsonPath("$[0].contractVersion", is("v2")))
+                    .andExpect(jsonPath("$[0].strategyId", is("TAIL_LATENCY_POWER_OF_TWO")))
+                    .andExpect(jsonPath("$[0].selectedCandidateId", is("green")))
+                    .andExpect(jsonPath("$[0].candidates[0].candidateId", is("blue")))
+                    .andExpect(jsonPath("$[0].candidates[1].candidateId", is("green")))
+                    .andExpect(jsonPath("$[0].candidates[1].selected", is(true)))
+                    .andExpect(jsonPath("$[0].candidates[0].factors[0].factorName").exists())
+                    .andExpect(jsonPath("$[0].dominantFactors.status", is("AVAILABLE")))
+                    .andExpect(jsonPath("$[0].decisionDelta.status").exists())
+                    .andExpect(jsonPath("$[0].counterfactualWeightScenarios").isArray())
+                    .andExpect(jsonPath("$[0].confidenceSummary").doesNotExist())
+                    .andExpect(jsonPath("$[0].routingDiagnostics").doesNotExist())
+                    .andExpect(jsonPath("$[0].decisionReplaySnapshot").doesNotExist())
+                    .andExpect(jsonPath("$[0].boundaryNote",
+                            containsString("does not execute replay")));
 
             assertTrue(mockedCloudManager.constructed().isEmpty(),
                     "Decision Explorer endpoint must not construct CloudManager or call AWS paths.");

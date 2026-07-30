@@ -40,7 +40,12 @@ class ApiContractTest {
             "decisionReplayEvidenceReviewerSnapshot",
             "decisionReplayEvidenceReviewerGuidance",
             "decisionReplayEvidenceReviewerHandoffSummary",
-            "decisionReplayEvidenceReviewerClosureSummary");
+            "decisionReplayEvidenceReviewerClosureSummary",
+            "decisionReplaySnapshot",
+            "decisionReplayReconstructionTrace",
+            "decisionReplayCapsule",
+            "decisionReplayReadinessChecklist",
+            "decisionReplayEvidenceSourceMap");
     private static final String CAPACITY_AWARE_REQUEST = """
             {
               "requestedLoad": 75.0,
@@ -111,9 +116,10 @@ class ApiContractTest {
         assertTrue(response.has("results"));
         assertFalse(response.has("decisionReplayEvidenceReviewerClosureRollup"));
         assertFalse(response.has("decisionReplayEvidenceReviewerClosureChecklist"));
-        assertEquals(14, result.size());
+        assertEquals(9, result.size());
         assertTrue(result.has("decisionVector"));
-        assertTrue(result.has("decisionReplayEvidenceSourceMap"));
+        assertTrue(result.has("dominantFactorAnalysis"));
+        assertTrue(result.has("decisionDeltaAnalysis"));
         DELETED_RESULT_FIELDS.forEach(field -> assertFalse(result.has(field), field));
     }
 
@@ -172,7 +178,7 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].chosenServerId", is("green")))
                 .andExpect(jsonPath("$.results[0].decisionVector.readOnly", is(true)))
                 .andExpect(jsonPath("$.results[0].dominantFactorAnalysis.status", is("AVAILABLE")))
-                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.readOnly", is(true)))
+                .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.status").exists())
                 .andExpect(jsonPath("$.error").doesNotExist())
                 .andReturn().getResponse().getContentAsString();
         JsonNode result = OBJECT_MAPPER.readTree(body).at("/results/0");
@@ -200,7 +206,7 @@ class ApiContractTest {
                 .andExpect(jsonPath("$.results[0].scores").isEmpty())
                 .andExpect(jsonPath("$.results[0].decisionVector", nullValue()))
                 .andExpect(jsonPath("$.results[0].dominantFactorAnalysis.status", is("UNKNOWN")))
-                .andExpect(jsonPath("$.results[0].decisionReplayEvidenceSourceMap.status", is("UNKNOWN")))
+                .andExpect(jsonPath("$.results[0].decisionDeltaAnalysis.status", is("UNKNOWN")))
                 .andExpect(jsonPath("$.results[0].reason", containsString("No healthy eligible servers")))
                 .andReturn().getResponse().getContentAsString();
         JsonNode response = OBJECT_MAPPER.readTree(body);

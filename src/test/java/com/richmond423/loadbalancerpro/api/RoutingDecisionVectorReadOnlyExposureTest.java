@@ -40,7 +40,12 @@ class RoutingDecisionVectorReadOnlyExposureTest {
             "decisionReplayEvidenceReviewerSnapshot",
             "decisionReplayEvidenceReviewerGuidance",
             "decisionReplayEvidenceReviewerHandoffSummary",
-            "decisionReplayEvidenceReviewerClosureSummary");
+            "decisionReplayEvidenceReviewerClosureSummary",
+            "decisionReplaySnapshot",
+            "decisionReplayReconstructionTrace",
+            "decisionReplayCapsule",
+            "decisionReplayReadinessChecklist",
+            "decisionReplayEvidenceSourceMap");
 
     @Autowired
     private MockMvc mockMvc;
@@ -70,11 +75,6 @@ class RoutingDecisionVectorReadOnlyExposureTest {
 
         assertEquals("AVAILABLE", result.at("/dominantFactorAnalysis/status").asText());
         assertEquals("PARTIAL", result.at("/decisionDeltaAnalysis/status").asText());
-        assertEquals("PARTIAL", result.at("/decisionReplaySnapshot/status").asText());
-        assertEquals("PARTIAL", result.at("/decisionReplayReconstructionTrace/status").asText());
-        assertEquals("PARTIAL", result.at("/decisionReplayCapsule/status").asText());
-        assertEquals("PARTIAL", result.at("/decisionReplayReadinessChecklist/status").asText());
-        assertEquals("PARTIAL", result.at("/decisionReplayEvidenceSourceMap/status").asText());
     }
 
     @Test
@@ -121,11 +121,6 @@ class RoutingDecisionVectorReadOnlyExposureTest {
         assertTrue(result.path("decisionVector").isNull());
         assertEquals("UNKNOWN", result.at("/dominantFactorAnalysis/status").asText());
         assertEquals("UNKNOWN", result.at("/decisionDeltaAnalysis/status").asText());
-        assertEquals("UNKNOWN", result.at("/decisionReplaySnapshot/status").asText());
-        assertEquals("UNKNOWN", result.at("/decisionReplayReconstructionTrace/status").asText());
-        assertEquals("UNKNOWN", result.at("/decisionReplayCapsule/status").asText());
-        assertEquals("UNKNOWN", result.at("/decisionReplayReadinessChecklist/status").asText());
-        assertEquals("UNKNOWN", result.at("/decisionReplayEvidenceSourceMap/status").asText());
         assertTrue(result.path("reason").asText().contains("No healthy eligible servers"));
         assertFalse(response.has("decisionReplayEvidenceReviewerClosureRollup"));
         assertFalse(response.has("decisionReplayEvidenceReviewerClosureChecklist"));

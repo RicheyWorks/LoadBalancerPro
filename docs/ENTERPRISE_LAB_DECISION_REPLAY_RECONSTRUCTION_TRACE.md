@@ -1,5 +1,9 @@
 # Enterprise Lab Decision Replay Reconstruction Trace
 
+> Historical contract: this derivational response lane was retired by L-1.2. Current compare responses retain
+> `decisionVector`, `dominantFactorAnalysis`, and `decisionDeltaAnalysis`; current compact exploration uses
+> `RoutingExplanation` v2. The details below describe the former v1 surface and are not a current API contract.
+
 LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
 
 Decision Replay Reconstruction Trace is a read-only reconstruction evidence lane for `POST /api/routing/compare`. It shows which already-returned lab evidence fields are available to reconstruct the decision explanation later. It is derived from existing routing compare lab evidence; it is not replay execution, not what-if mutation, and not audit-log persistence.

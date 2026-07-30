@@ -2,6 +2,8 @@ package com.richmond423.loadbalancerpro.api;
 
 import java.util.List;
 
+import com.richmond423.loadbalancerpro.api.explain.RoutingExplanation;
+import com.richmond423.loadbalancerpro.api.explain.RoutingExplanationService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,16 +16,16 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/routing")
 public class RoutingController {
     private final RoutingComparisonService routingComparisonService;
-    private final DecisionExplorerPayloadService decisionExplorerPayloadService;
+    private final RoutingExplanationService routingExplanationService;
     private final DecisionExplorerScenarioCatalogService decisionExplorerScenarioCatalogService;
     private final DecisionExplorerResponseSizeGuard decisionExplorerResponseSizeGuard;
 
     public RoutingController(RoutingComparisonService routingComparisonService,
-                             DecisionExplorerPayloadService decisionExplorerPayloadService,
+                             RoutingExplanationService routingExplanationService,
                              DecisionExplorerScenarioCatalogService decisionExplorerScenarioCatalogService,
                              DecisionExplorerResponseSizeGuard decisionExplorerResponseSizeGuard) {
         this.routingComparisonService = routingComparisonService;
-        this.decisionExplorerPayloadService = decisionExplorerPayloadService;
+        this.routingExplanationService = routingExplanationService;
         this.decisionExplorerScenarioCatalogService = decisionExplorerScenarioCatalogService;
         this.decisionExplorerResponseSizeGuard = decisionExplorerResponseSizeGuard;
     }
@@ -34,9 +36,9 @@ public class RoutingController {
     }
 
     @PostMapping("/decision-explorer")
-    public List<DecisionExplorerPayloadV1> decisionExplorer(@Valid @RequestBody RoutingComparisonRequest request) {
-        List<DecisionExplorerPayloadV1> response =
-                decisionExplorerPayloadService.buildPayloads(routingComparisonService.compare(request));
+    public List<RoutingExplanation> decisionExplorer(@Valid @RequestBody RoutingComparisonRequest request) {
+        List<RoutingExplanation> response =
+                routingExplanationService.explain(routingComparisonService.compare(request));
         decisionExplorerResponseSizeGuard.requireWithinLimit(response);
         return response;
     }

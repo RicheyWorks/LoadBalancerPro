@@ -57,6 +57,12 @@ class RoutingDecisionMetadataDeletionAcceptanceTest {
             "decisionReplayEvidenceReviewerGuidance",
             "decisionReplayEvidenceReviewerHandoffSummary",
             "decisionReplayEvidenceReviewerClosureSummary");
+    private static final List<String> RETIRED_REPLAY_FIELDS = List.of(
+            "decisionReplaySnapshot",
+            "decisionReplayReconstructionTrace",
+            "decisionReplayCapsule",
+            "decisionReplayReadinessChecklist",
+            "decisionReplayEvidenceSourceMap");
     private static final List<String> RETIRED_SERVICE_TYPES = List.of(
             "RoutingDecisionReplayEvidenceBoundarySummaryService",
             "RoutingDecisionReplayEvidenceFieldInventoryService",
@@ -150,10 +156,12 @@ class RoutingDecisionMetadataDeletionAcceptanceTest {
                 () -> response.path("results").forEach(result ->
                         RESULT_METADATA_FIELDS.forEach(field ->
                                 assertFalse(result.has(field), field + " must be deleted"))),
+                () -> response.path("results").forEach(result ->
+                        RETIRED_REPLAY_FIELDS.forEach(field ->
+                                assertFalse(result.has(field), field + " must be deleted"))),
                 () -> assertTrue(response.at("/results/0/decisionVector").isObject()),
                 () -> assertTrue(response.at("/results/0/dominantFactorAnalysis").isObject()),
                 () -> assertTrue(response.at("/results/0/decisionDeltaAnalysis").isObject()),
-                () -> assertTrue(response.at("/results/0/decisionReplayEvidenceSourceMap").isObject()),
                 () -> assertTrue(
                         responseBytes <= PRE_DELETION_FIXTURE_BYTES / 2,
                         "representative compare payload must shrink by at least half: "
@@ -196,7 +204,15 @@ class RoutingDecisionMetadataDeletionAcceptanceTest {
                             assertFalse(content.contains(field), path + ": " + field));
                     RETIRED_SURFACE_TITLES.forEach(title ->
                             assertFalse(content.contains(title), path + ": " + title));
-                }));
+                }),
+                () -> List.of(
+                                Path.of("src/main/resources/static/load-balancing-cockpit.html"),
+                                Path.of("src/main/resources/static/routing-demo.html"))
+                        .forEach(path -> {
+                            String content = read(path);
+                            RETIRED_REPLAY_FIELDS.forEach(field ->
+                                    assertFalse(content.contains(field), path + ": " + field));
+                        }));
     }
 
     private static String read(Path path) {

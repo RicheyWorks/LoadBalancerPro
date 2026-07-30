@@ -2,7 +2,14 @@
 
 LoadBalancerPro is an Enterprise Lab Cockpit for controlled pre-production routing validation. It is not a demo.
 
-The Enterprise Lab `decisionVector` is the structured explanation object for one controlled lab routing decision. It turns a final selected-backend outcome into replayable, explainable, and testable local lab evidence without claiming production telemetry, production monitoring, exact production scoring, or production certification.
+The Enterprise Lab `decisionVector` is retained read-only evidence for one controlled lab routing decision. It turns
+a final selected-backend outcome into explainable and testable local lab evidence with no production telemetry and
+no production monitoring, no exact production scoring, and no production certification.
+
+> L-1.2 contract note: the former snapshot, reconstruction trace, capsule, readiness checklist, and evidence
+> source-map response lanes described later in this historical build record are retired. Current compare responses
+> retain `decisionVector`, `dominantFactorAnalysis`, and `decisionDeltaAnalysis`; compact counterfactual exploration
+> uses `RoutingExplanation` v2.
 
 ## Why the Lab Needs It
 

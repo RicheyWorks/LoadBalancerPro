@@ -1,0 +1,141 @@
+[
+  {
+    "readOnly": true,
+    "simulationOnly": true,
+    "contractVersion": "v2",
+    "strategyId": "TAIL_LATENCY_POWER_OF_TWO",
+    "status": "SUCCESS",
+    "selectedCandidateId": "edge-a",
+    "candidates": [
+      {
+        "candidateId": "edge-a",
+        "selected": true,
+        "factors": [
+          {
+            "factorName": "errors",
+            "contributionValue": 1.0,
+            "direction": "WEAKENS_SELECTION",
+            "exactness": "EXACT_FROM_RETURNED_EVIDENCE"
+          },
+          {
+            "factorName": "latency",
+            "contributionValue": 10.0,
+            "direction": "WEAKENS_SELECTION",
+            "exactness": "EXACT_FROM_RETURNED_EVIDENCE"
+          }
+        ]
+      },
+      {
+        "candidateId": "edge-b",
+        "selected": false,
+        "factors": [
+          {
+            "factorName": "errors",
+            "contributionValue": 5.0,
+            "direction": "WEAKENS_SELECTION",
+            "exactness": "EXACT_FROM_RETURNED_EVIDENCE"
+          },
+          {
+            "factorName": "latency",
+            "contributionValue": 20.0,
+            "direction": "WEAKENS_SELECTION",
+            "exactness": "EXACT_FROM_RETURNED_EVIDENCE"
+          }
+        ]
+      }
+    ],
+    "dominantFactors": {
+      "status": "AVAILABLE",
+      "candidates": [
+        {
+          "candidateId": "edge-a",
+          "selected": true,
+          "largestSupport": null,
+          "largestPenalty": {
+            "factorName": "latency",
+            "contributionValue": 10.0,
+            "direction": "WEAKENS_SELECTION",
+            "exactness": "RETURNED_ANALYSIS"
+          },
+          "largestAbsoluteImpact": {
+            "factorName": "latency",
+            "contributionValue": 10.0,
+            "direction": "WEAKENS_SELECTION",
+            "exactness": "RETURNED_ANALYSIS"
+          }
+        },
+        {
+          "candidateId": "edge-b",
+          "selected": false,
+          "largestSupport": null,
+          "largestPenalty": {
+            "factorName": "latency",
+            "contributionValue": 20.0,
+            "direction": "WEAKENS_SELECTION",
+            "exactness": "RETURNED_ANALYSIS"
+          },
+          "largestAbsoluteImpact": {
+            "factorName": "latency",
+            "contributionValue": 20.0,
+            "direction": "WEAKENS_SELECTION",
+            "exactness": "RETURNED_ANALYSIS"
+          }
+        }
+      ]
+    },
+    "decisionDelta": {
+      "status": "AVAILABLE",
+      "closestAlternativeCandidateId": "edge-b",
+      "finalScoreGap": -20.0,
+      "factors": [
+        {
+          "factorName": "errors",
+          "selectedContribution": 1.0,
+          "alternativeContribution": 5.0,
+          "contributionDelta": -4.0
+        },
+        {
+          "factorName": "latency",
+          "selectedContribution": 10.0,
+          "alternativeContribution": 20.0,
+          "contributionDelta": -10.0
+        }
+      ]
+    },
+    "counterfactualWeightScenarios": [
+      {
+        "factorName": "errors",
+        "weightShiftPercent": -10,
+        "adjustedSelectedContribution": 0.9,
+        "adjustedAlternativeContribution": 4.5,
+        "adjustedContributionDelta": -3.6,
+        "projectedFinalScoreGap": -19.6
+      },
+      {
+        "factorName": "errors",
+        "weightShiftPercent": 10,
+        "adjustedSelectedContribution": 1.1,
+        "adjustedAlternativeContribution": 5.5,
+        "adjustedContributionDelta": -4.4,
+        "projectedFinalScoreGap": -20.4
+      },
+      {
+        "factorName": "latency",
+        "weightShiftPercent": -10,
+        "adjustedSelectedContribution": 9.0,
+        "adjustedAlternativeContribution": 18.0,
+        "adjustedContributionDelta": -9.0,
+        "projectedFinalScoreGap": -19.0
+      },
+      {
+        "factorName": "latency",
+        "weightShiftPercent": 10,
+        "adjustedSelectedContribution": 11.0,
+        "adjustedAlternativeContribution": 22.0,
+        "adjustedContributionDelta": -11.0,
+        "projectedFinalScoreGap": -21.0
+      }
+    ],
+    "boundaryNote": "Read-only, simulation-only arithmetic over evidence returned by the routing comparison. It does not execute replay, rerun a strategy, mutate weights or traffic, call external systems, persist evidence, or prove production behavior."
+  }
+]

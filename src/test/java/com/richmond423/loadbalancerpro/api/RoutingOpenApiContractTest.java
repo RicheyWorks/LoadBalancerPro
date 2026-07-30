@@ -33,24 +33,12 @@ class RoutingOpenApiContractTest {
             "decisionReplayEvidenceReviewerSnapshot",
             "decisionReplayEvidenceReviewerGuidance",
             "decisionReplayEvidenceReviewerHandoffSummary",
-            "decisionReplayEvidenceReviewerClosureSummary");
-    private static final List<String> DELETED_SCHEMA_FRAGMENTS = List.of(
-            "BoundarySummary",
-            "FieldInventory",
-            "NullSafetySummary",
-            "StatusRollup",
-            "LaneNavigationSummary",
-            "LaneDependencyMap",
-            "LaneReferenceIndex",
-            "LaneDependencySummary",
-            "LaneConsistencySummary",
-            "ReviewerSnapshot",
-            "ReviewerGuidance",
-            "ReviewerHandoffSummary",
-            "ReviewerClosureSummary",
-            "ReviewerClosureRollup",
-            "ReviewerClosureChecklist");
-
+            "decisionReplayEvidenceReviewerClosureSummary",
+            "decisionReplaySnapshot",
+            "decisionReplayReconstructionTrace",
+            "decisionReplayCapsule",
+            "decisionReplayReadinessChecklist",
+            "decisionReplayEvidenceSourceMap");
     @Autowired
     private MockMvc mockMvc;
 
@@ -92,24 +80,16 @@ class RoutingOpenApiContractTest {
                 "scores",
                 "decisionVector",
                 "dominantFactorAnalysis",
-                "decisionDeltaAnalysis",
-                "decisionReplaySnapshot",
-                "decisionReplayReconstructionTrace",
-                "decisionReplayCapsule",
-                "decisionReplayReadinessChecklist",
-                "decisionReplayEvidenceSourceMap")) {
+                "decisionDeltaAnalysis")) {
             assertTrue(resultProperties.has(field), field);
         }
         DELETED_RESULT_FIELDS.forEach(field -> assertFalse(resultProperties.has(field), field));
 
         assertTrue(schemas.has("RoutingDecisionVectorResponse"));
-        assertTrue(schemas.has("RoutingDecisionReplayEvidenceSourceMapResponse"));
+        assertTrue(schemas.has("RoutingExplanation"));
+        assertFalse(schemas.has("RoutingDecisionReplayEvidenceSourceMapResponse"));
         schemas.fieldNames().forEachRemaining(schemaName ->
-                DELETED_SCHEMA_FRAGMENTS.forEach(fragment ->
-                        assertFalse(
-                                schemaName.startsWith("RoutingDecisionReplayEvidence")
-                                        && schemaName.contains(fragment),
-                                schemaName)));
+                assertFalse(schemaName.startsWith("RoutingDecisionReplay"), schemaName));
     }
 
     private JsonNode openApi() throws Exception {

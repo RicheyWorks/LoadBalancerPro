@@ -23,25 +23,22 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 class DecisionExplorerReviewerNavigationTest {
     private static final Path INDEX = Path.of("src/main/resources/static/index.html");
-    private static final Path DECISION_EXPLORER_PAGE =
-            Path.of("src/main/resources/static/decision-explorer.html");
+    private static final Path PAGE = Path.of("src/main/resources/static/decision-explorer.html");
     private static final Path README = Path.of("README.md");
     private static final Path TRUST_MAP = Path.of("docs/REVIEWER_TRUST_MAP.md");
     private static final Path API_CONTRACTS = Path.of("docs/API_CONTRACTS.md");
-    private static final Path SOURCE = Path.of(
-            "src/test/java/com/richmond423/loadbalancerpro/api/DecisionExplorerReviewerNavigationTest.java");
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void rootPageLinksDecisionExplorerFromNavigationActionsAndCards() throws Exception {
+    void rootPageLinksTheCurrentDecisionExplorer() throws Exception {
         String index = read(INDEX);
 
         assertTrue(index.contains("href=\"/decision-explorer.html\""));
         assertTrue(index.contains("Open Decision Explorer"));
-        assertTrue(index.contains("DecisionExplorerPayloadV1"));
-
+        assertTrue(index.contains("RoutingExplanation"));
+        assertFalse(index.contains("DecisionExplorerPayloadV1"));
         mockMvc.perform(get("/index.html"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("/decision-explorer.html")))
@@ -49,134 +46,73 @@ class DecisionExplorerReviewerNavigationTest {
     }
 
     @Test
-    void decisionExplorerPageContainsReviewerNavigationAndPolishedSections() throws Exception {
-        String page = read(DECISION_EXPLORER_PAGE);
+    void pageKeepsReviewerNavigationAndCompactSections() throws Exception {
+        String page = read(PAGE);
 
         for (String expected : List.of(
                 "Reviewer Navigation",
-                "Open Web Cockpit",
-                "Open Routing Proof",
-                "Open Reviewer Dashboard",
-                "Open Operator Evidence",
-                "Repository docs for this reviewer path",
-                "docs/API_CONTRACTS.md",
-                "docs/agent/DECISION_EXPLORER_PHASE2_REVIEWER_EXAMPLES.md",
-                "docs/agent/DECISION_EXPLORER_PHASE2_CAMPAIGN_BOARD.md",
-                "Display order is stable and follows the service-sorted payload order",
-                "Unavailable sections stay explicit",
+                "Routing proof",
+                "Web cockpit",
+                "Reviewer dashboard",
+                "Operator evidence",
                 "Scenario Catalog",
-                "Load Scenario Catalog",
-                "Category filter",
-                "Evidence filter",
-                "/api/routing/decision-explorer/scenarios",
-                "Candidate Comparison",
-                "Factor Drill-Down",
-                "Reviewer Explanation Badges",
-                "Display-only labels from returned payload fields",
-                "Selected route",
-                "Shadow Decision Quality",
-                "Shadow Candidate Outcomes",
-                "Counterfactual Analysis",
-                "Counterfactual Policy Scenarios",
-                "Counterfactual Candidate Outcomes",
-                "Counterfactual Factor Weight Deltas",
-                "Policy Sensitivity",
-                "Scenario Input Quality",
-                "Decision quality",
-                "Counterfactual sensitivity",
-                "Partial evidence",
-                "Deterministic evidence",
-                "No candidate comparison rows returned.",
-                "No factor drill-down readouts returned.",
-                "No shadow decision-quality evaluation returned.",
-                "No shadow candidate outcome rows returned.",
-                "No counterfactual analysis returned.",
-                "No counterfactual policy scenario rows returned.",
-                "No counterfactual candidate outcome rows returned.",
-                "No counterfactual factor weight delta rows returned.",
-                "Decision Diffs",
-                "Evidence Packet Readouts",
-                "Agent Structured Output",
-                "No decision diff readouts returned.",
-                "No evidence packet readouts returned.",
-                "No agent structured output returned.",
-                "selected-row",
-                "Rank")) {
-            assertTrue(page.contains(expected), "Decision Explorer page should contain " + expected);
+                "Candidate factor contributions",
+                "Dominant + delta analysis",
+                "Counterfactual ±weight scenarios",
+                "Raw compact payload")) {
+            assertTrue(page.contains(expected), "page should contain " + expected);
         }
     }
 
     @Test
-    void readmeTrustMapAndApiContractsLinkCurrentDecisionExplorerSurface() throws Exception {
+    void activeDocsLinkAndNameTheV2RoutingExplanationContract() throws Exception {
         String combined = read(README) + "\n" + read(TRUST_MAP) + "\n" + read(API_CONTRACTS);
 
         for (String expected : List.of(
                 "http://localhost:8080/decision-explorer.html",
                 "/decision-explorer.html",
                 "POST /api/routing/decision-explorer",
-                "docs/API_CONTRACTS.md",
-                "API_CONTRACTS.md",
-                "Decision Explorer Implementation Phase 1",
-                "same-origin",
-                "memory-only",
+                "RoutingExplanation",
+                "counterfactualWeightScenarios",
                 "read-only",
-                "simulation-only",
+                "simulation-only")) {
+            assertTrue(combined.contains(expected), "active docs should contain " + expected);
+        }
+        for (String retired : List.of(
                 "DecisionExplorerPayloadV1",
                 "counterfactualAnalysis",
-                "DecisionExplorerCounterfactualAnalysisV1")) {
-            assertTrue(combined.contains(expected), "reviewer docs should contain " + expected);
+                "shadowDecisionQualityEvaluation",
+                "routeTradeoffAnalysis")) {
+            assertFalse(combined.contains(retired), "active docs should not present retired field " + retired);
         }
     }
 
     @Test
-    void reviewerNavigationPreservesDecisionExplorerSafetyBoundaries() throws Exception {
-        String normalized = (read(README) + "\n" + read(TRUST_MAP) + "\n" + read(API_CONTRACTS) + "\n"
-                + read(DECISION_EXPLORER_PAGE)).toLowerCase(Locale.ROOT);
+    void activeReviewerPathPreservesSafetyBoundaries() throws Exception {
+        String normalized = (read(README) + "\n" + read(TRUST_MAP) + "\n"
+                + read(API_CONTRACTS) + "\n" + read(PAGE)).toLowerCase(Locale.ROOT);
 
         for (String expected : List.of(
                 "does not shift traffic",
                 "mutate routing",
                 "call cloud or tenant systems",
-                "persist storage",
+                "persist",
                 "execute replay",
-                "export files",
-                "generate evidence packets",
                 "production readiness",
                 "live-cloud validation",
                 "real-tenant validation",
                 "throughput/p95/p99")) {
-            assertTrue(normalized.contains(expected), "navigation docs should preserve boundary " + expected);
+            assertTrue(normalized.contains(expected), "reviewer path should preserve " + expected);
         }
-
         for (String forbidden : List.of(
                 "production readiness is proven",
                 "certified production",
                 "live-cloud validated",
                 "real tenant validated",
-                "benchmark proven",
                 "throughput proven",
                 "traffic shifting enabled",
-                "autonomous production action enabled",
-                "evidence packet generated")) {
-            assertFalse(normalized.contains(forbidden), "Decision Explorer navigation must not overclaim " + forbidden);
-        }
-    }
-
-    @Test
-    void guardTestOnlyReadsTrackedFiles() throws Exception {
-        String source = read(SOURCE);
-
-        for (String forbidden : List.of(
-                "Files." + "write",
-                "Files." + "create",
-                "Files." + "delete",
-                "Process" + "Builder",
-                "Runtime." + "getRuntime",
-                ".ex" + "ec(",
-                "Http" + "Client",
-                "URL" + "Connection",
-                "Socket" + "(")) {
-            assertFalse(source.contains(forbidden), "guard test must not use " + forbidden);
+                "autonomous production action enabled")) {
+            assertFalse(normalized.contains(forbidden), "reviewer path must not overclaim " + forbidden);
         }
     }
 

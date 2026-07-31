@@ -96,6 +96,7 @@ Important defaults in `application.properties`:
 | `loadbalancerpro.proxy.connect-timeout` | `1s` | Bounded upstream connection establishment |
 | `loadbalancerpro.proxy.request-timeout` | `2s` | Bounded upstream request |
 | `loadbalancerpro.proxy.routes.<name>.request-timeout` | inherits global | Per-route upstream request bound |
+| `loadbalancerpro.proxy.forwarded.mode` | `strip-and-set` | Replace caller-supplied forwarding metadata by default |
 | `loadbalancerpro.proxy.health-check.enabled` | `false` | Opt-in active checks |
 | `loadbalancerpro.proxy.health-check.healthy-threshold` | `2` | Successful background probes required to recover |
 | `loadbalancerpro.proxy.health-check.unhealthy-threshold` | `3` | Failed background probes required to mark unhealthy |

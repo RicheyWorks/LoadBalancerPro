@@ -544,18 +544,31 @@ public class ReverseProxyService {
         String id = requireNonBlank(upstream.getId(), "loadbalancerpro.proxy.upstreams[].id");
         URI baseUri = configuredBaseUri(upstream, id);
         EffectiveHealth effectiveHealth = effectiveHealth(properties, upstream, id, baseUri, timestamp);
+        int configuredInFlight = nonNegative(upstream.getInFlightRequestCount(), "inFlightRequestCount");
+        double configuredAverageLatency =
+                nonNegative(upstream.getAverageLatencyMillis(), "averageLatencyMillis");
+        double configuredP95Latency = nonNegative(upstream.getP95LatencyMillis(), "p95LatencyMillis");
+        double configuredP99Latency = nonNegative(upstream.getP99LatencyMillis(), "p99LatencyMillis");
+        double configuredErrorRate = rate(upstream.getRecentErrorRate(), "recentErrorRate");
+        OptionalInt configuredQueueDepth = optionalNonNegativeInt(upstream.getQueueDepth(), "queueDepth");
+        UpstreamRuntimeStats.Snapshot runtime = runtimeStatsFor(id).snapshot();
+        boolean hasRuntimeActivity =
+                runtime.inFlightRequestCount() > 0 || runtime.completedRequestCount() > 0;
+        boolean hasLatencySamples = runtime.latencySampleCount() > 0;
+        boolean hasRecentOutcomes =
+                runtime.recentSuccessCount() + runtime.recentFailureCount() > 0;
         ServerStateVector state = new ServerStateVector(
                 id,
                 effectiveHealth.healthy(),
-                nonNegative(upstream.getInFlightRequestCount(), "inFlightRequestCount"),
+                hasRuntimeActivity ? runtime.inFlightRequestCount() : configuredInFlight,
                 optionalNonNegative(upstream.getConfiguredCapacity(), "configuredCapacity"),
                 optionalPositive(upstream.getEstimatedConcurrencyLimit(), "estimatedConcurrencyLimit"),
                 nonNegative(upstream.getWeight(), "weight"),
-                nonNegative(upstream.getAverageLatencyMillis(), "averageLatencyMillis"),
-                nonNegative(upstream.getP95LatencyMillis(), "p95LatencyMillis"),
-                nonNegative(upstream.getP99LatencyMillis(), "p99LatencyMillis"),
-                rate(upstream.getRecentErrorRate(), "recentErrorRate"),
-                optionalNonNegativeInt(upstream.getQueueDepth(), "queueDepth"),
+                hasLatencySamples ? runtime.ewmaLatencyMillis() : configuredAverageLatency,
+                hasLatencySamples ? runtime.p95LatencyMillis() : configuredP95Latency,
+                hasLatencySamples ? runtime.p99LatencyMillis() : configuredP99Latency,
+                hasRecentOutcomes ? runtime.recentErrorRate() : configuredErrorRate,
+                hasRuntimeActivity ? OptionalInt.of(runtime.inFlightRequestCount()) : configuredQueueDepth,
                 NetworkAwarenessSignal.neutral(id, timestamp),
                 timestamp);
         return new UpstreamCandidate(baseUri, state);

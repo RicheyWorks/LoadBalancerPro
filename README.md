@@ -9,7 +9,7 @@ The default posture is conservative: API-key authentication is selected, proxyin
 - Capacity-aware, predictive, and evaluation-only allocation APIs.
 - Deterministic request-level comparison for round-robin, weighted round-robin, weighted least-load, weighted least-connections, and tail-latency-aware strategies.
 - Read-only Decision Explorer and browser cockpit surfaces for local review.
-- Optional reverse proxy with configured routes, bounded request size and timeout, active health checks, retry controls, cooldown/recovery, status, and guarded reload.
+- Optional reverse proxy with configured routes, bounded request size and timeout, live per-upstream routing telemetry, active health checks, retry controls, cooldown/recovery, status, and guarded reload.
 - Enterprise Lab scenarios, decisions, experiments, allocation supervision, durable chained JSONL evidence, compaction, recovery, ownership, and packaged proof tools.
 - API-key and OAuth2 resource-server modes with deny-by-default API classification.
 - Actuator health/readiness, optional Prometheus metrics, and optional OTLP metrics export with endpoint validation.

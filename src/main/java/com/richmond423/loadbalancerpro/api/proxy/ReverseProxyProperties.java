@@ -164,6 +164,11 @@ public class ReverseProxyProperties {
         }
     }
 
+    /**
+     * Configured in-flight, queue, latency, and error-rate values are deprecated as continuously authoritative
+     * routing telemetry. They remain binding-compatible cold-start seed/fallback values for one compatibility
+     * window; live proxy observations replace each corresponding signal when evidence is available.
+     */
     public static final class Upstream {
         private String id;
         private String url;

@@ -94,6 +94,10 @@ loadbalancerpro.proxy.upstreams[0].recent-error-rate=0.0
 loadbalancerpro.proxy.upstreams[0].queue-depth=0
 ```
 
+The in-flight, queue-depth, latency, and recent-error fields above are cold-start seed/fallback values. Once the proxy
+has corresponding live observations for an upstream id, routing candidates use the process-local runtime measurements;
+configured health, weight, capacity, and concurrency-limit values remain authoritative.
+
 ## Forward Requests
 
 Requests under `/proxy/**` are forwarded to the selected upstream with the `/proxy` prefix removed:
@@ -170,7 +174,7 @@ curl -s http://127.0.0.1:8080/api/proxy/status
 
 The response reports the proxy enabled flag, selected strategy, configured routes, health-check configuration, retry/cooldown configuration, configured upstreams, effective health state, consecutive failure and cooldown state, total forwarded count, total failure count, retry attempts, cooldown activations, per-upstream counters, status-class counters (`2xx`, `3xx`, `4xx`, `5xx`, `other`), the last selected upstream id, and reload status fields such as active config generation, last reload status, validation errors, and active route/backend counts.
 
-Each upstream also reports process-local runtime statistics: current in-flight attempts; completed-attempt count; latency EWMA and p50/p95/p99 from the newest 256 completions; successes, failures, and error rate from the trailing 30 seconds; and the last completion timestamp. Statistics remain attached when a successful reload keeps the same upstream id. These measurements are read-only status evidence in this slot; routing still uses the configured telemetry values described above.
+Each upstream also reports process-local runtime statistics: current in-flight attempts; completed-attempt count; latency EWMA and p50/p95/p99 from the newest 256 completions; successes, failures, and error rate from the trailing 30 seconds; and the last completion timestamp. Statistics remain attached when a successful reload keeps the same upstream id. Weighted least-connections and tail-latency-aware proxy routes consume the applicable live measurements as described above.
 
 For a browser view of the same read-only status data, open:
 

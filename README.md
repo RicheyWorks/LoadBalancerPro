@@ -9,7 +9,7 @@ The default posture is conservative: API-key authentication is selected, proxyin
 - Capacity-aware, predictive, and evaluation-only allocation APIs.
 - Deterministic request-level comparison for round-robin, weighted round-robin, weighted least-load, weighted least-connections, and tail-latency-aware strategies.
 - Read-only Decision Explorer and browser cockpit surfaces for local review.
-- Optional reverse proxy with configured routes, bounded request size and timeout, live per-upstream routing telemetry, active health checks, retry controls, cooldown/recovery, status, and guarded reload.
+- Optional reverse proxy with configured routes, bounded request size and timeout, live per-upstream routing telemetry, active health checks, retry controls, cooldown/recovery, process-local concurrency/load-shedding controls, status, and guarded reload.
 - Enterprise Lab scenarios, decisions, experiments, allocation supervision, durable chained JSONL evidence, compaction, recovery, ownership, and packaged proof tools.
 - API-key and OAuth2 resource-server modes with deny-by-default API classification.
 - Actuator health/readiness, optional Prometheus metrics, and optional OTLP metrics export with endpoint validation.
@@ -97,6 +97,9 @@ Important defaults in `application.properties`:
 | `loadbalancerpro.proxy.request-timeout` | `2s` | Bounded upstream request |
 | `loadbalancerpro.proxy.routes.<name>.request-timeout` | inherits global | Per-route upstream request bound |
 | `loadbalancerpro.proxy.forwarded.mode` | `strip-and-set` | Replace caller-supplied forwarding metadata by default |
+| `loadbalancerpro.proxy.limits.max-in-flight` | `0` | Process-local global cap; `0` leaves it unlimited |
+| `loadbalancerpro.proxy.limits.adaptive` | `false` | Opt-in latency-feedback adjustment below the configured cap |
+| `loadbalancerpro.proxy.shedding.enabled` | `false` | Opt-in priority-aware process-local load shedding |
 | `loadbalancerpro.proxy.health-check.enabled` | `false` | Opt-in active checks |
 | `loadbalancerpro.proxy.health-check.healthy-threshold` | `2` | Successful background probes required to recover |
 | `loadbalancerpro.proxy.health-check.unhealthy-threshold` | `3` | Failed background probes required to mark unhealthy |

@@ -8,6 +8,8 @@ public record ReverseProxyStatusResponse(
         HealthCheckStatus healthCheck,
         RetryStatus retry,
         CooldownStatus cooldown,
+        LimitsStatus limits,
+        LoadSheddingStatus shedding,
         List<RouteStatus> routes,
         List<UpstreamStatus> upstreams,
         ReverseProxyMetricsSnapshot metrics,
@@ -40,6 +42,29 @@ public record ReverseProxyStatusResponse(
             boolean recoverOnSuccessfulHealthCheck) {
     }
 
+    public record LimitsStatus(
+            int configuredMaxInFlight,
+            int effectiveMaxInFlight,
+            int currentInFlight,
+            boolean adaptiveEnabled,
+            String lastAdaptiveAction,
+            String lastAdaptiveReason,
+            String lastAdaptiveUpdate) {
+    }
+
+    public record LoadSheddingStatus(
+            boolean enabled,
+            double softUtilizationThreshold,
+            double hardUtilizationThreshold,
+            int maxQueueDepth,
+            double maxP95LatencyMillis,
+            double maxErrorRate,
+            boolean criticalBypassEnabled,
+            boolean shedUserOnHardPressure,
+            String priorityHeader,
+            int retryAfterSeconds) {
+    }
+
     public record RouteStatus(
             String name,
             String pathPrefix,
@@ -58,6 +83,7 @@ public record ReverseProxyStatusResponse(
             int consecutiveFailures,
             boolean cooldownActive,
             long cooldownRemainingMillis,
+            int maxInFlight,
             UpstreamRuntimeStatus runtimeStats) {
     }
 

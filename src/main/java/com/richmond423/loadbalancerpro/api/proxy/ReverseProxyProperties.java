@@ -23,6 +23,8 @@ public class ReverseProxyProperties {
     private Retry retry = new Retry();
     private Cooldown cooldown = new Cooldown();
     private Forwarded forwarded = new Forwarded();
+    private Limits limits = new Limits();
+    private Shedding shedding = new Shedding();
     private List<Upstream> upstreams = new ArrayList<>();
     private Map<String, Route> routes = new LinkedHashMap<>();
 
@@ -116,6 +118,22 @@ public class ReverseProxyProperties {
 
     public void setForwarded(Forwarded forwarded) {
         this.forwarded = forwarded == null ? new Forwarded() : forwarded;
+    }
+
+    public Limits getLimits() {
+        return limits;
+    }
+
+    public void setLimits(Limits limits) {
+        this.limits = limits == null ? new Limits() : limits;
+    }
+
+    public Shedding getShedding() {
+        return shedding;
+    }
+
+    public void setShedding(Shedding shedding) {
+        this.shedding = shedding == null ? new Shedding() : shedding;
     }
 
     public List<Upstream> getUpstreams() {
@@ -233,6 +251,120 @@ public class ReverseProxyProperties {
         }
     }
 
+    public static final class Limits {
+        private int maxInFlight = 0;
+        private boolean adaptive = false;
+
+        public int getMaxInFlight() {
+            return maxInFlight;
+        }
+
+        public void setMaxInFlight(int maxInFlight) {
+            this.maxInFlight = maxInFlight;
+        }
+
+        public boolean isAdaptive() {
+            return adaptive;
+        }
+
+        public void setAdaptive(boolean adaptive) {
+            this.adaptive = adaptive;
+        }
+    }
+
+    public static final class Shedding {
+        private boolean enabled = false;
+        private double softUtilizationThreshold = 0.75;
+        private double hardUtilizationThreshold = 0.90;
+        private int maxQueueDepth = 20;
+        private double maxP95LatencyMillis = 250.0;
+        private double maxErrorRate = 0.10;
+        private boolean criticalBypassEnabled = true;
+        private boolean shedUserOnHardPressure = true;
+        private String priorityHeader = "";
+        private Duration retryAfter = Duration.ofSeconds(1);
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public double getSoftUtilizationThreshold() {
+            return softUtilizationThreshold;
+        }
+
+        public void setSoftUtilizationThreshold(double softUtilizationThreshold) {
+            this.softUtilizationThreshold = softUtilizationThreshold;
+        }
+
+        public double getHardUtilizationThreshold() {
+            return hardUtilizationThreshold;
+        }
+
+        public void setHardUtilizationThreshold(double hardUtilizationThreshold) {
+            this.hardUtilizationThreshold = hardUtilizationThreshold;
+        }
+
+        public int getMaxQueueDepth() {
+            return maxQueueDepth;
+        }
+
+        public void setMaxQueueDepth(int maxQueueDepth) {
+            this.maxQueueDepth = maxQueueDepth;
+        }
+
+        public double getMaxP95LatencyMillis() {
+            return maxP95LatencyMillis;
+        }
+
+        public void setMaxP95LatencyMillis(double maxP95LatencyMillis) {
+            this.maxP95LatencyMillis = maxP95LatencyMillis;
+        }
+
+        public double getMaxErrorRate() {
+            return maxErrorRate;
+        }
+
+        public void setMaxErrorRate(double maxErrorRate) {
+            this.maxErrorRate = maxErrorRate;
+        }
+
+        public boolean isCriticalBypassEnabled() {
+            return criticalBypassEnabled;
+        }
+
+        public void setCriticalBypassEnabled(boolean criticalBypassEnabled) {
+            this.criticalBypassEnabled = criticalBypassEnabled;
+        }
+
+        public boolean isShedUserOnHardPressure() {
+            return shedUserOnHardPressure;
+        }
+
+        public void setShedUserOnHardPressure(boolean shedUserOnHardPressure) {
+            this.shedUserOnHardPressure = shedUserOnHardPressure;
+        }
+
+        public String getPriorityHeader() {
+            return priorityHeader;
+        }
+
+        public void setPriorityHeader(String priorityHeader) {
+            this.priorityHeader = priorityHeader;
+        }
+
+        public Duration getRetryAfter() {
+            return retryAfter;
+        }
+
+        public void setRetryAfter(Duration retryAfter) {
+            this.retryAfter = retryAfter == null ? Duration.ofSeconds(1) : retryAfter;
+        }
+    }
+
     /**
      * Configured in-flight, queue, latency, and error-rate values are deprecated as continuously authoritative
      * routing telemetry. They remain binding-compatible cold-start seed/fallback values for one compatibility
@@ -245,6 +377,7 @@ public class ReverseProxyProperties {
         private int inFlightRequestCount = 0;
         private Double configuredCapacity = 100.0;
         private Double estimatedConcurrencyLimit = 100.0;
+        private int maxInFlight = 0;
         private double weight = 1.0;
         private double averageLatencyMillis = 1.0;
         private double p95LatencyMillis = 1.0;
@@ -298,6 +431,14 @@ public class ReverseProxyProperties {
 
         public void setEstimatedConcurrencyLimit(Double estimatedConcurrencyLimit) {
             this.estimatedConcurrencyLimit = estimatedConcurrencyLimit;
+        }
+
+        public int getMaxInFlight() {
+            return maxInFlight;
+        }
+
+        public void setMaxInFlight(int maxInFlight) {
+            this.maxInFlight = maxInFlight;
         }
 
         public double getWeight() {

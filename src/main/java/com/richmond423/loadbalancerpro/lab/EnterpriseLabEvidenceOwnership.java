@@ -33,7 +33,8 @@ public final class EnterpriseLabEvidenceOwnership {
             Duration renewalInterval,
             int acquisitionAttempts,
             int renewalAttempts,
-            Duration retryDelay) {
+            Duration retryDelay,
+            TakeoverLeaseMode takeoverLeaseMode) {
         public static final Duration HARD_MAX_LEASE_DURATION = Duration.ofMinutes(10);
         public static final Duration HARD_MAX_RENEWAL_INTERVAL = Duration.ofMinutes(2);
         public static final Duration HARD_MAX_RETRY_DELAY = Duration.ofSeconds(2);
@@ -45,6 +46,8 @@ public final class EnterpriseLabEvidenceOwnership {
             renewalInterval = requirePositiveDuration(
                     renewalInterval, "renewalInterval", HARD_MAX_RENEWAL_INTERVAL);
             retryDelay = requireNonNegativeDuration(retryDelay, "retryDelay", HARD_MAX_RETRY_DELAY);
+            takeoverLeaseMode = Objects.requireNonNull(
+                    takeoverLeaseMode, "takeoverLeaseMode cannot be null");
             if (renewalInterval.multipliedBy(2).compareTo(leaseDuration) > 0) {
                 throw new IllegalArgumentException(
                         "leaseDuration must allow at least two bounded renewal intervals");
@@ -55,9 +58,58 @@ public final class EnterpriseLabEvidenceOwnership {
             }
         }
 
+        public Policy(
+                Duration leaseDuration,
+                Duration renewalInterval,
+                int acquisitionAttempts,
+                int renewalAttempts,
+                Duration retryDelay) {
+            this(leaseDuration, renewalInterval, acquisitionAttempts, renewalAttempts, retryDelay,
+                    TakeoverLeaseMode.SINGLE_HOST_OS_LOCK);
+        }
+
         public static Policy safetyFirstDefaults() {
             return new Policy(Duration.ofSeconds(30), Duration.ofSeconds(10), 1, 2,
-                    Duration.ofMillis(100));
+                    Duration.ofMillis(100), TakeoverLeaseMode.SINGLE_HOST_OS_LOCK);
+        }
+
+        public Policy withTakeoverLeaseMode(TakeoverLeaseMode mode) {
+            return new Policy(leaseDuration, renewalInterval, acquisitionAttempts, renewalAttempts,
+                    retryDelay, mode);
+        }
+    }
+
+    /**
+     * Selects whether an acquired exclusive OS lock or the prior lease controls
+     * takeover eligibility. The multi-host value only preserves the lease guard;
+     * it does not establish distributed-lock or network-filesystem safety.
+     */
+    public enum TakeoverLeaseMode {
+        SINGLE_HOST_OS_LOCK("single-host-os-lock"),
+        MULTI_HOST_LEASE_GUARDED("multi-host-lease-guarded");
+
+        private final String configuredValue;
+
+        TakeoverLeaseMode(String configuredValue) {
+            this.configuredValue = configuredValue;
+        }
+
+        public String configuredValue() {
+            return configuredValue;
+        }
+
+        public static TakeoverLeaseMode parse(String value) {
+            if (value == null || !value.equals(value.trim())) {
+                throw new IllegalArgumentException(
+                        "ownership takeover mode must be an exact supported value");
+            }
+            for (TakeoverLeaseMode mode : values()) {
+                if (mode.configuredValue.equals(value)) {
+                    return mode;
+                }
+            }
+            throw new IllegalArgumentException(
+                    "ownership takeover mode must be single-host-os-lock or multi-host-lease-guarded");
         }
     }
 

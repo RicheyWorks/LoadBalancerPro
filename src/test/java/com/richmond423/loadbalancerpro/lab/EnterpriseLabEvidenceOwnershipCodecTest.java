@@ -9,6 +9,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.OwnerI
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.OwnershipRecord;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.OwnershipState;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.Policy;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.TakeoverLeaseMode;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.ReconciliationStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.ReleaseResult;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.ReleaseStatus;
@@ -172,6 +173,15 @@ class EnterpriseLabEvidenceOwnershipCodecTest {
         Policy defaults = Policy.safetyFirstDefaults();
         assertEquals(Duration.ofSeconds(30), defaults.leaseDuration());
         assertEquals(1, defaults.acquisitionAttempts());
+        assertEquals(TakeoverLeaseMode.SINGLE_HOST_OS_LOCK, defaults.takeoverLeaseMode());
+        assertEquals(TakeoverLeaseMode.MULTI_HOST_LEASE_GUARDED,
+                TakeoverLeaseMode.parse("multi-host-lease-guarded"));
+        assertThrows(IllegalArgumentException.class,
+                () -> TakeoverLeaseMode.parse(" multi-host-lease-guarded"));
+        assertThrows(IllegalArgumentException.class,
+                () -> TakeoverLeaseMode.parse("distributed"));
+        assertThrows(NullPointerException.class,
+                () -> defaults.withTakeoverLeaseMode(null));
 
         assertThrows(IllegalArgumentException.class,
                 () -> new Policy(Duration.ZERO, Duration.ofSeconds(1), 1, 1, Duration.ZERO));

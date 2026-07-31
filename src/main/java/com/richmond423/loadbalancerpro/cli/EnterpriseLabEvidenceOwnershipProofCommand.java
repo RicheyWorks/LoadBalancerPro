@@ -80,6 +80,8 @@ public final class EnterpriseLabEvidenceOwnershipProofCommand {
             out.println("Initial generation: " + report.initialGeneration());
             out.println("Clean takeover generation: " + report.cleanTakeoverGeneration());
             out.println("Abrupt takeover generation: " + report.abruptTakeoverGeneration());
+            out.println("Abrupt takeover before prior lease expiry: "
+                    + report.abruptTakeoverBeforePriorLeaseExpiry());
             out.println("Separate-process live-owner denial: " + report.liveOwnerDenied());
             out.println("Competing takeover single winner: "
                     + report.competingTakeoverSingleWinner());
@@ -112,6 +114,8 @@ public final class EnterpriseLabEvidenceOwnershipProofCommand {
                 + "- Initial generation: `" + report.initialGeneration() + "`" + line
                 + "- Clean takeover generation: `" + report.cleanTakeoverGeneration() + "`" + line
                 + "- Abrupt takeover generation: `" + report.abruptTakeoverGeneration() + "`" + line
+                + "- Abrupt takeover before prior lease expiry: `"
+                + report.abruptTakeoverBeforePriorLeaseExpiry() + "`" + line
                 + "- Live owner denied: `" + report.liveOwnerDenied() + "`" + line
                 + "- Simultaneous acquisition single winner: `"
                 + report.simultaneousAcquisitionSingleWinner() + "`" + line

@@ -6,6 +6,115 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
+## Combined Build Plan Slot 18 PR-Creation Checkpoint
+
+Timestamp: 2026-07-30T17:23:17-07:00
+
+Current slot/branch/PR: `L-2.3`; `codex/l-2-3-os-lock-aware-takeover`;
+[#516](https://github.com/RicheyWorks/LoadBalancerPro/pull/516); product head
+`218be6ab4e5891e1bf28c0b6eee1192f15afd2a6`; base
+`1c1d6107e65b99075f39472b08f4c274b3272d68`; status `PR_OPEN`.
+
+The exact 17-file locally green candidate was committed and pushed. At PR creation, GitHub reported the PR mergeable
+but blocked pending checks; push/PR CI and dependency review were in progress and CodeQL was queued. No remote result is
+accepted until this checkpoint is committed and pushed as the new final head.
+
+Scope and verification remain exactly as recorded in the local-green checkpoint: default single-host pre-expiry
+takeover under the validated exclusive OS lock, explicit lease-guarded opt-in, live-holder exclusion, immediate packaged
+restart proofs, 3,070-test full suite, package/verify/SBOM/artifact/workflow evidence, and no unrelated behavior or
+security-gate change.
+
+Blocker: none. Next: validate this campaign-only checkpoint, commit and push it, then require all remote checks against
+the resulting exact head before complete-diff self-review and automatic merge.
+
+## Combined Build Plan Slot 18 Local-Green Candidate
+
+Timestamp: 2026-07-30T17:21:11-07:00
+
+Current slot/branch/base: `L-2.3`; `codex/l-2-3-os-lock-aware-takeover`;
+`1c1d6107e65b99075f39472b08f4c274b3272d68`; status `IN_PROGRESS`; no PR yet.
+
+Candidate: the default single-host takeover path now treats a prior unexpired lease as stale only after acquiring and
+validating the exclusive OS lock, then uses the existing monotonic-generation and startup-reconciliation flow. A live
+lock still refuses all contenders. The exact `multi-host-lease-guarded` opt-in retains unexpired-lease refusal without
+claiming distributed coordination. Packaged ownership and independent-supervisor proofs now restart immediately after
+forced application termination instead of sleeping through the prior lease.
+
+Verified: focused/adjacent selectors passed; final `mvn -q clean package` passed 3,070 tests across 414 fresh reports
+with zero failures, errors, or skips in 393 seconds; `mvn -q "-DskipTests" verify` passed. CycloneDX 1.6 JSON/XML contains
+144 components and the expected Boot `3.5.16`, Framework `6.2.19`, and Security `6.5.11`. The final packaged JAR is
+95,097,479 bytes with SHA-256 `F8E259ECA42E1D35D231EA272B6392FB4C9E4C3236E819A29A356CA15E4DF66B`.
+The ownership proof reports v2, immediate pre-expiry takeover, live denial, one competing takeover winner, and all
+checks passed. The independent-supervisor proof passed seven fixed checks, eight crash windows, and eighteen IPC checks
+across 22 application and 24 supervisor processes. The ten-scenario package workflow and diff whitespace checks passed.
+
+Local Docker is unavailable because the Docker Desktop Linux named pipe is absent; no local image result is claimed.
+Exact-head remote Docker build/runtime, SBOM/artifact proof, blocking Trivy, CI, dependency review, and CodeQL remain
+mandatory.
+
+Scope/boundaries: 17 intentional files, no dependency, Maven, workflow, Docker/Compose, endpoint, credential, external
+target, cloud/tenant, suppression, allowlist, or security-gate change. Multi-host operation, network-filesystem lock
+semantics, distributed consensus, power-loss durability, production readiness, throughput, and latency remain not
+proven. Preliminary complete-diff self-review found no issue; the required final exact-head review remains after remote
+gates.
+
+Blocker: none. Next: rerun the campaign documentation guard for this checkpoint, perform exact-tree scope/secret/conflict
+checks, commit, push, open the PR, and require every current-head remote gate before automatic merge.
+
+## Combined Build Plan Slot 18 Focused-Green Checkpoint
+
+Timestamp: 2026-07-30T17:00:43-07:00
+
+Current slot/branch/base: `L-2.3`; `codex/l-2-3-os-lock-aware-takeover`;
+`1c1d6107e65b99075f39472b08f4c274b3272d68`; status `IN_PROGRESS`; no PR yet.
+
+Implemented: after takeover acquires and validates the exclusive OS file lock, the default `single-host-os-lock` policy
+classifies an unexpired prior record as a stale candidate and runs the existing archive, generation fence, and startup
+reconciliation path. A live lock still refuses acquisition/takeover. The exact
+`loadbalancer.enterprise-lab.ownership-takeover-mode=multi-host-lease-guarded` opt-in retains the prior unexpired-lease
+refusal but explicitly does not claim distributed-lock or network-filesystem safety.
+
+Proof correction: the packaged ownership proof no longer sleeps past a short lease. It kills the owner forcibly, starts
+the replacement immediately under a 30-second lease, and makes takeover-before-prior-lease-expiry part of the v2 proof
+report and smoke gate. The adjacent independent-supervisor crash proofs also no longer hide restart behavior behind
+lease-expiry waits.
+
+Focused verification: the implementation selector and adjacent ownership/Spring/allocation-proof selector passed.
+The resulting union is 92 tests across 11 Surefire reports with zero failures, errors, or skips, including live-holder
+refusal, explicit lease-guarded refusal, immediate unexpired takeover, separate-process restart, Spring startup, and
+allocation-proof aggregation. `git diff --check` passed.
+
+Scope/boundaries: no dependency, Maven, workflow, Docker/Compose, endpoint, credential, external target, cloud/tenant,
+suppression, allowlist, or security-gate change. Multi-host operation, network-filesystem lock semantics,
+distributed consensus, power-loss durability, production readiness, throughput, and latency remain not proven.
+
+Blocker: none. Next: run the one final clean full local gate, package/verify/SBOM/artifact and packaged proof checks,
+complete-diff self-review, then create and publish the exact-head PR checkpoint.
+
+## Combined Build Plan Slot 17 Main-Green / Slot 18 Start
+
+Timestamp: 2026-07-30T16:48:25-07:00
+
+Completed: `L-2.2`; `codex/l-2-2-rotation-recovery`;
+[#515](https://github.com/RicheyWorks/LoadBalancerPro/pull/515); final head
+`c83cd12a76cf3ef67ae24c620a8fbfb1000cb5a0`; merge
+`1c1d6107e65b99075f39472b08f4c274b3272d68`.
+
+Verified: all final-head local gates, push/PR CI, dependency review, CodeQL, package/SBOM/JAR/Docker/runtime/evidence/
+Trivy, 10,000-command fresh replay, and complete-diff self-review passed. Exact-main CI `30591199330` and CodeQL
+`30591199322` passed; the main container scan reports zero OS and zero JAR findings, and its 144-component SBOM
+contains Spring Boot `3.5.16`, Framework `6.2.19`, and Security `6.5.11`.
+
+Active: `L-2.3`; `codex/l-2-3-os-lock-aware-takeover`; base
+`1c1d6107e65b99075f39472b08f4c274b3272d68`; status `IN_PROGRESS`. Dependency `L-2.2` is `MAIN_GREEN`.
+Contract: when a single-host taker already holds the exclusive OS file lock, treat the prior unexpired lease as stale
+instead of refusing startup; retain lease behavior for a genuinely multi-host mode only behind an explicit flag and
+preserve multi-writer exclusion. Do not broaden into L-2.4 artifact packaging, L-2.5 durability/logging/mutex work,
+cloud/tenant coordination, external targets, or production-readiness claims.
+
+Blocker: none. Next: inventory the ownership acquisition/takeover state machine, lock ordering, lease configuration,
+restart/process proofs, and API/CLI consumers before selecting the smallest exact behavioral seam.
+
 ## Combined Build Plan Slot 17 Local-Green Candidate
 
 Timestamp: 2026-07-30T16:15:44-07:00

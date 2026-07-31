@@ -51,7 +51,6 @@ public final class EnterpriseLabIndependentSupervisorProofRunner {
     private static final Duration START_TIMEOUT = Duration.ofSeconds(30);
     private static final Duration EXIT_TIMEOUT = Duration.ofSeconds(15);
     private static final Duration HOLD_TIMEOUT = Duration.ofSeconds(60);
-    private static final Duration STALE_WAIT = Duration.ofMillis(10_300);
     private static final Policy PROOF_POLICY = new Policy(
             Duration.ofSeconds(10), Duration.ofSeconds(5), 1, 2, Duration.ofMillis(10));
     private static final List<String> CRASH_WINDOWS = List.of(
@@ -170,7 +169,6 @@ public final class EnterpriseLabIndependentSupervisorProofRunner {
             require(first.ready() && "CANDIDATE".equals(first.installedKind()),
                     "first application did not install a candidate: " + first);
             firstApplication.killAbruptly();
-            awaitStaleBoundary();
 
             recoveredApplication = startChild(
                     output, token, proofCase, ChildAction.HOLD_RECONCILE,
@@ -240,7 +238,6 @@ public final class EnterpriseLabIndependentSupervisorProofRunner {
             crashing.awaitExit(EXIT_TIMEOUT);
             require(crashing.exitCode() == 92,
                     "application crash child did not stop at its exact boundary");
-            awaitStaleBoundary();
 
             ChildEvidence firstRecovery = runOneShot(
                     output, token, proofCase, ChildAction.RECONCILE_ONCE,
@@ -1261,10 +1258,6 @@ public final class EnterpriseLabIndependentSupervisorProofRunner {
                     "independent supervisor proof root escaped the target boundary");
         }
         return root;
-    }
-
-    private static void awaitStaleBoundary() {
-        sleep(STALE_WAIT);
     }
 
     private static void sleep(Duration duration) {

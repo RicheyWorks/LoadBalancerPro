@@ -9,6 +9,7 @@ import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.Policy
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.ReconciliationStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.ReleaseStatus;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.StaleClassification;
+import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnership.TakeoverLeaseMode;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager.AcquisitionAttempt;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager.FailurePoint;
 import com.richmond423.loadbalancerpro.lab.EnterpriseLabEvidenceOwnershipManager.TakeoverAttempt;
@@ -97,7 +98,7 @@ class EnterpriseLabEvidenceOwnershipTakeoverTest {
     }
 
     @Test
-    void unexpiredActiveLookingRecordIsPreservedAndRefusedEvenWithoutALockHolder()
+    void unexpiredAbruptOwnerIsTakenOverWhenExclusiveSingleHostLockIsHeld()
             throws Exception {
         EnterpriseLabEvidenceOwnershipPaths paths = paths("unexpired-abrupt");
         OwnershipRecord prior = installPrior(paths, CLOCK, OwnershipState.OWNED,
@@ -105,11 +106,37 @@ class EnterpriseLabEvidenceOwnershipTakeoverTest {
 
         TakeoverAttempt attempt = takeover(paths, NEXT_OWNER, reconciler(paths));
 
+        assertEquals(OperationStatus.SUCCEEDED, attempt.result().status());
+        assertEquals(StaleClassification.STALE_CANDIDATE,
+                attempt.staleOwnerFinding().orElseThrow().classification());
+        assertEquals("UNEXPIRED_OWNER_WITHOUT_LOCK_SINGLE_HOST",
+                attempt.staleOwnerFinding().orElseThrow().reasonCode());
+        assertEquals(prior, decode(paths.historyRecordFile(prior)));
+        assertEquals(prior.generation() + 1L,
+                attempt.result().record().orElseThrow().generation());
+        attempt.ownership().orElseThrow().release();
+        assertLockAvailable(paths);
+    }
+
+    @Test
+    void explicitMultiHostLeaseGuardPreservesUnexpiredOwnerRefusal()
+            throws Exception {
+        EnterpriseLabEvidenceOwnershipPaths paths = paths("multi-host-lease-guard");
+        OwnershipRecord prior = installPrior(paths, CLOCK, OwnershipState.OWNED,
+                1L, 0L, ReconciliationStatus.NOT_STARTED);
+        Policy multiHostPolicy = POLICY.withTakeoverLeaseMode(
+                TakeoverLeaseMode.MULTI_HOST_LEASE_GUARDED);
+
+        TakeoverAttempt attempt = takeover(
+                paths, multiHostPolicy, NEXT_OWNER, reconciler(paths));
+
         assertEquals(OperationStatus.REFUSED, attempt.result().status());
         assertEquals(FailureClassification.TAKEOVER_NOT_PERMITTED,
                 attempt.result().failure());
         assertEquals(StaleClassification.ACTIVE_LOOKING_WITHOUT_LOCK,
                 attempt.staleOwnerFinding().orElseThrow().classification());
+        assertEquals("UNEXPIRED_OWNER_WITHOUT_LOCK",
+                attempt.staleOwnerFinding().orElseThrow().reasonCode());
         assertEquals(prior, decode(paths.recordFile()));
         assertFalse(Files.exists(paths.historyRecordFile(prior)));
         assertLockAvailable(paths);
@@ -439,8 +466,16 @@ class EnterpriseLabEvidenceOwnershipTakeoverTest {
             EnterpriseLabEvidenceOwnershipPaths paths,
             OwnerIdentity owner,
             EnterpriseLabExperimentStartupReconciler reconciler) {
+        return takeover(paths, POLICY, owner, reconciler);
+    }
+
+    private TakeoverAttempt takeover(
+            EnterpriseLabEvidenceOwnershipPaths paths,
+            Policy policy,
+            OwnerIdentity owner,
+            EnterpriseLabExperimentStartupReconciler reconciler) {
         return EnterpriseLabEvidenceOwnershipManager.takeover(
-                paths, POLICY, CLOCK, owner, reconciler,
+                paths, policy, CLOCK, owner, reconciler,
                 point -> { }, FileChannel::tryLock);
     }
 

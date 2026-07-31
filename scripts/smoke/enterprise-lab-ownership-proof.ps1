@@ -85,7 +85,8 @@ foreach ($check in @(
         "nonOwnerAppendDenied", "nonOwnerCompactionDenied", "nonOwnerRetentionDenied",
         "nonOwnerExperimentStartDenied", "nonOwnerAllocationChangeDenied", "renewalSucceeded",
         "cleanReleaseRecorded", "repeatedReleaseIdempotent", "cleanTakeoverClassified",
-        "restartedPriorOwnerDenied", "abruptStaleOwnerClassified", "journalsVerifiedAndReplayed",
+        "restartedPriorOwnerDenied", "abruptStaleOwnerClassified",
+        "abruptTakeoverBeforePriorLeaseExpiry", "journalsVerifiedAndReplayed",
         "interruptedExperimentRolledBack", "baselineRestorationVerified", "takeoverRecoveryRecorded",
         "repeatedRestartIdempotent", "simultaneousAcquisitionSingleWinner",
         "competingTakeoverSingleWinner")) {

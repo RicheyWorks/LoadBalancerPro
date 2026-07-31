@@ -14,6 +14,15 @@ symbolic-link traversal, and surrounding whitespace. API callers never provide a
 configuration retains the legacy process-local service and makes durable endpoints report
 `DURABLE_EVIDENCE_NOT_CONFIGURED`.
 
+Ownership takeover defaults to
+`loadbalancer.enterprise-lab.ownership-takeover-mode=single-host-os-lock`: after the process has acquired and validated
+the exclusive OS file lock, an unexpired prior lease is treated as evidence from a terminated single-host owner and
+startup performs the existing fenced reconciliation before publishing a new owner. The explicit
+`multi-host-lease-guarded` value retains refusal until an unexpired prior lease ends, for an environment that separately
+proves its cross-host lock and shared-filesystem semantics. This flag does not itself provide or prove distributed
+locking, network-filesystem safety, multi-host readiness, or production readiness. A live local OS lock remains an
+authoritative refusal in either mode.
+
 Installed-allocation authority is selected once at startup through
 `loadbalancer.enterprise-lab.allocation-supervisor-mode`. The exact supported values are `in-process` (the default
 local/test-compatible holder), `external-supervisor-required`, and `disabled`. External-required mode also requires this

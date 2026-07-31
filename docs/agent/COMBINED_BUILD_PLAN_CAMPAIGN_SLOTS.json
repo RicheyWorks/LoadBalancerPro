@@ -301,7 +301,7 @@
       "dependencies": ["L-0.2", "L-0.3", "L-0.4", "L-0.5", "L-0.6"],
       "riskClass": "DELETION",
       "verificationProfile": "deletion-full",
-      "currentState": "Active on codex/l-4-2-retire-javafx from exact green main 952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555. The deletion path removes eight desktop-only Java files, both checked-in copies of the desktop message bundle, javafx.version, org.openjfx:javafx-controls, and stale packaging exclusions while retaining the JavaFX-free public gui.Command contract consumed by CloudManager. Skip-test compilation, 91 focused tests with zero failures/errors/skips, source scans, and a 166-line effective dependency tree with zero JavaFX/OpenJFX entries are green. A packaged-content check caught and removed the duplicate resource copy; its 20-test correction selector is green and full final-head verification remains pending."
+      "currentState": "Active on codex/l-4-2-retire-javafx from exact green main 952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555. The deletion path removes eight desktop-only Java files, both checked-in copies of the desktop message bundle, javafx.version, org.openjfx:javafx-controls, and stale packaging exclusions while retaining the JavaFX-free public gui.Command contract consumed by CloudManager. Corrected product head 91fed46584156952520fc7dfab7347c5e65b64fc passed 3,076 clean full-suite tests with zero failures/errors/skips, package/verify, a 166-line JavaFX-free dependency tree, 138-component JavaFX-free CycloneDX SBOM, 1,258-entry JAR audit, packaged proof, and loopback runtime smoke. Local Docker is unavailable; exact-head remote Docker/runtime, Trivy, CI, dependency review, and CodeQL remain pending."
     },
     {
       "ordinal": 23,

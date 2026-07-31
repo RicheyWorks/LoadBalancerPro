@@ -6,12 +6,13 @@ For the full Codex session startup path, use [`AGENT_WORKFLOW_QUICKSTART.md`](AG
 
 Historical 10-PR trial references remain available through [`GOAL_CAMPAIGN_CONTRACT.md`](GOAL_CAMPAIGN_CONTRACT.md), [`GOAL_CAMPAIGN_BOARD.md`](GOAL_CAMPAIGN_BOARD.md), [`GOAL_CAMPAIGN_PR_TEMPLATE.md`](GOAL_CAMPAIGN_PR_TEMPLATE.md), [`GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md`](GOAL_CAMPAIGN_CHECKPOINT_TEMPLATE.md), [`GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md`](GOAL_CAMPAIGN_FINAL_REPORT_TEMPLATE.md), [`GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md`](GOAL_CAMPAIGN_BUILD_CONTRACT_EXAMPLE.md), [`GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md`](GOAL_CAMPAIGN_SESSION_CHECKPOINT_EXAMPLES.md), [`GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md`](GOAL_CAMPAIGN_FAILURE_RECOVERY_EXAMPLES.md), [`GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md`](GOAL_CAMPAIGN_VERIFICATION_PROTOCOL_REFINEMENT.md), [`GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md`](GOAL_CAMPAIGN_REVIEWER_TRUST_NAVIGATION.md), [`GOAL_CAMPAIGN_AGENT_DISCIPLINE.md`](GOAL_CAMPAIGN_AGENT_DISCIPLINE.md), and [`GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md`](GOAL_CAMPAIGN_FINAL_HANDOFF_REPORT.md), but they are historical closeout records rather than the active campaign pointer.
 
-## Combined Build Plan Slot 22 Focused-Verification Checkpoint
+## Combined Build Plan Slot 22 Local-Green Checkpoint
 
-Timestamp: 2026-07-31T04:22:30-07:00
+Timestamp: 2026-07-31T04:48:00-07:00
 
 Active: `L-4.2`; `codex/l-4-2-retire-javafx`; exact green-main base
-`952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`; status `IN_PROGRESS`.
+`952d56cf844c3dcc9e941f0c3f1f4e82c5bd3555`; corrected product head
+`91fed46584156952520fc7dfab7347c5e65b64fc`; status `LOCAL_GREEN`, PR pending.
 
 Prior slot closure: L-4.1 final head `da0779b7feb48bfdcebb4a588e3da84a128a97a9` passed push CI
 `30625130126`, PR CI `30625132290`, dependency review, CodeQL `30625132265`, Docker/runtime, SBOM/artifact evidence,
@@ -47,16 +48,27 @@ is present.
 The first packaged-content audit then caught the duplicate resource copy under `src/main/resources/gui`. The
 correction removes it, extends the source-absence guard to both former locations, and passes a clean focused selector
 of 20 tests with zero failures, errors, or skips. No current production source loads `gui.messages`. Because the
-artifact gate changed the exact head, the complete full/gate ladder must be rerun before PR creation.
+artifact gate changed the exact head, the complete full/gate ladder was rerun rather than reusing pre-correction
+evidence.
+
+Corrected-head local verification is green: clean full suite 3,076 tests across 414 fresh reports with zero failures,
+errors, or skips; package and verify passed; the 166-line dependency tree has zero JavaFX/OpenJFX entries and resolves
+Boot `3.5.16`, Framework `6.2.19`, and Security `6.5.11`; CycloneDX 1.6 JSON/XML SBOM generation passed with 138
+components and zero OpenJFX; and the 1,258-entry JAR audit retained `gui.Command` while finding zero retired GUI
+classes, desktop message resources, proof-tool classes, or JavaFX/OpenJFX content. The executable JAR SHA-256 is
+`809fe1b68c5101d5bf87d6638763f38964db15ca72c24b822776eb05ef114d54`. Packaged healthy/overloaded/invalid proof
+dispatch and loopback `/api/health`, `/proxy-status.html`, and `/api/proxy/status` smoke passed. Local Docker is
+unavailable because the Docker Desktop Linux engine pipe is absent; Docker build, container runtime/health, and
+blocking Trivy remain mandatory exact-head remote CI gates.
 
 Scope/boundaries: no API/proxy/cloud behavior, workflow, Docker/Compose, configuration default, credential,
 external/cloud/tenant target, security suppression/allowlist, or live mutation is authorized. Deletion must not
 remove shared core behavior still used outside the retired simulator. Existing HTML cockpit pages remain bounded
 local reviewer/operator surfaces and do not prove production readiness or live-cloud validation.
 
-Blocker: none. Next: validate the updated campaign records, perform the complete-diff scope/safety review, freeze the
-intentional product commit, then run the deletion-full clean test/package/verify/SBOM/artifact/Docker/runtime/security
-gate ladder before PR creation.
+Blocker: none. Next: commit this concise local-green checkpoint, run focused guards on the resulting documentation-only
+head, push, create the L-4.2 PR, and require exact-head CI, dependency review, CodeQL, Docker runtime, SBOM/artifact
+evidence, and zero-finding blocking Trivy before automatic merge.
 
 ## Combined Build Plan Slot 21 Remote-Green Audit Checkpoint
 

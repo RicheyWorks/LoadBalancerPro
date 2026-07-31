@@ -24,7 +24,9 @@ checked inventory is [`COMBINED_BUILD_PLAN_CAMPAIGN_SLOTS.json`](COMBINED_BUILD_
   retaining the JavaFX-free public
   `gui.Command` contract consumed by `CloudManager`. Skip-test compilation, 91 focused tests, source scans, and the
   effective dependency-tree audit are green. A packaged-content check caught and removed the duplicate resource copy;
-  its 20-test correction selector is green and the deletion-full final-head gate ladder remains pending.
+  corrected product head `91fed46584156952520fc7dfab7347c5e65b64fc` then passed 3,076 clean full-suite tests,
+  package/verify, dependency-tree, 138-component SBOM, 1,258-entry JAR audit, packaged proof, and loopback runtime
+  smoke. Local Docker is unavailable, so Docker runtime and blocking Trivy remain required remote gates.
 - Next implementation slot after the active gate: `L-4.3`.
 
 All `OPEN` rows are planned work, not evidence that the imported defect description remains exact or that the target

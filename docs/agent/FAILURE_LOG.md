@@ -9808,3 +9808,19 @@ The first L-4.2 packaged-content audit correctly rejected
 therefore still packaged that resource. The JAR is not accepted. Correction: verify that no surviving source loads
 `gui.messages`, remove the duplicate resource, extend the absence guard to both former locations, and rerun focused,
 full, package, verify, SBOM, artifact, runtime, Docker, and security gates on the corrected exact head.
+
+The first corrected-head packaged-manifest audit used a PowerShell regex with a doubly escaped literal dot and
+therefore falsely reported the Spring Boot `Start-Class` as absent after all required/forbidden entry checks passed.
+No artifact mutation occurred and that invocation is not accepted. Correction: inspect the manifest text directly,
+use the correctly escaped PowerShell regex, and rerun the complete packaged-content audit.
+
+The first corrected-head packaged LASE proof wrapper left PowerShell's stop-on-error preference active while invoking
+the deliberately invalid scenario. PowerShell converted the expected native stderr/exit-2 result into an exception
+before the wrapper could assert that exit contract. Healthy and overloaded output from that aggregate invocation is
+not accepted. Correction: temporarily permit native stderr inside the bounded Java invocation, capture output and
+exit status explicitly, restore stop-on-error behavior for assertions, and rerun all three packaged scenarios.
+
+The L-4.2 local Docker preflight cannot connect because the Docker Desktop Linux engine named pipe is absent on this
+workstation. No image or container was created, so no local Docker build/runtime or Trivy result exists. Correction:
+retain Docker build, container health/runtime smoke, and blocking Trivy as required exact-head GitHub CI gates; do not
+weaken or skip them remotely, and inspect their logs/artifacts before merge.
